@@ -1,0 +1,128 @@
+---
+- hosts: all
+  become: true
+  gather_facts: no
+
+  vars:
+    docker_bin_dir: /usr/bin
+    bin_dir: /usr/local/bin
+    system_namespace: kube-system
+    ansible_ssh_pipelining: true
+    etcd_cert_dir: /etc/ssl/etcd/ssl
+    commands:
+      - name: timedate_info
+        cmd: timedatectl status
+      - name: kernel_info
+        cmd: uname -r
+      - name: docker_info
+        cmd: "{{ docker_bin_dir }}/docker info"
+      - name: ip_info
+        cmd: ip -4 -o a
+      - name: route_info
+        cmd: ip ro
+      - name: proc_info
+        cmd: ps auxf | grep -v ]$
+      - name: systemctl_failed_info
+        cmd: systemctl --state=failed --no-pager
+      - name: k8s_info
+        cmd: kubectl get all --all-namespaces -o wide
+      - name: errors_info
+        cmd: journalctl -p err --no-pager
+      - name: etcd_info
+        cmd: etcdctl --peers={{ etcd_access_addresses | default("http://127.0.0.1:2379") }} cluster-health
+      - name: calico_info
+        cmd: "{{bin_dir}}/calicoctl node status"
+      - name: calico_workload_info
+        cmd: "{{bin_dir}}/calicoctl get workloadEndpoint -o wide"
+      - name: calico_pool_info
+        cmd: "{{bin_dir}}/calicoctl get ippool -o wide"
+      - name: weave_info
+        cmd: weave report
+      - name: weave_logs
+        cmd: "{{ docker_bin_dir }}/docker logs weave"
+      - name: kube_describe_all
+        cmd: kubectl describe all --all-namespaces
+      - name: kube_describe_nodes
+        cmd: kubectl describe nodes
+      - name: kubelet_logs
+        cmd: journalctl -u kubelet --no-pager
+      - name: kubedns_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l k8s-app=kubedns -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}} kubedns; done"
+      - name: apiserver_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l k8s-app=kube-apiserver -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}}; done"
+      - name: controller_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l k8s-app=kube-controller -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}}; done"
+      - name: scheduler_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l k8s-app=kube-scheduler -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}}; done"
+      - name: proxy_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l k8s-app=kube-proxy -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}}; done"
+      - name: nginx_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l k8s-app=kube-nginx -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}}; done"
+      - name: flannel_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l app=flannel -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}} flannel-container; done"
+      - name: canal_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l k8s-app=canal-node -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}} flannel; done"
+      - name: calico_policy_logs
+        cmd: "for i in `kubectl get pods --all-namespaces -l k8s-app=calico-policy -o jsonpath={.items..metadata.name}`;
+          do kubectl logs ${i} --namespace {{system_namespace}} calico-policy-controller; done"
+
+    logs:
+      - /var/log/syslog
+      - /var/log/daemon.log
+      - /var/log/kern.log
+      - /var/log/dpkg.log
+      - /var/log/apt/history.log
+      - /var/log/yum.log
+      - /var/log/calico/bird/current
+      - /var/log/calico/bird6/current
+      - /var/log/calico/felix/current
+      - /var/log/calico/confd/current
+
+  environment:
+    ETCDCTL_CERT_FILE: "{{ etcd_cert_dir }}/node-{{ inventory_hostname }}.pem"
+    ETCDCTL_KEY_FILE: "{{ etcd_cert_dir }}/node-{{ inventory_hostname }}-key.pem"
+
+  tasks:
+    - set_fact:
+        etcd_access_addresses: |-
+          {% for item in groups['etcd'] -%}
+            https://{{ item }}:2379{% if not loop.last %},{% endif %}
+          {%- endfor %}
+      when: "'etcd' in groups"
+
+    - name: Storing commands output
+      shell: "{{ item.cmd }} 2>&1 | tee {{ item.name }}"
+      failed_when: false
+      with_items: "{{commands}}"
+      no_log: True
+
+    - name: Fetch results
+      fetch: src={{ item.name }} dest=/tmp/collect-info/commands
+      with_items: "{{commands}}"
+      failed_when: false
+
+    - name: Fetch logs
+      fetch: src={{ item }} dest=/tmp/collect-info/logs
+      with_items: "{{logs}}"
+
+    - name: Pack results and logs
+      archive:
+        path: "/tmp/collect-info"
+        dest: "{{ dir|default('.') }}/logs.tar.gz"
+        remove: true
+      delegate_to: localhost
+      become: false
+      run_once: true
+
+    - name: Clean up collected command outputs
+      file: path={{ item.name }} state=absent
+      with_items: "{{commands}}"
+
