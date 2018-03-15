@@ -1,0 +1,8 @@
+controller:
+  hostNetwork: True
+  kind: 'DaemonSet'
+  stats:
+    enabled: True
+
+rbac:
+  create: True
