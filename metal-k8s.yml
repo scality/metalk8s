@@ -1,0 +1,29 @@
+- hosts: k8s-cluster
+  gather_facts: False
+  roles:
+    - role: python2_install
+
+- import_playbook: 'kubespray/cluster.yml'
+  tags: kubespray
+
+- hosts: kube-master
+  gather_facts: False
+  roles:
+    - role: kube_nginx_ingress
+      tags: ingress
+
+- hosts: k8s-cluster
+  gather_facts: False
+  roles:
+    - role: info_displayer
+      add_info:
+        - master_dashboard_url: >-
+            https://{{ kube_login }}:{{ kube_password }}@{{ ip_master }}:6443/ui
+          kube_login: '{{ kube_login }}'
+          kube_password: '{{ kube_password }}'
+      vars:
+        kube_login: 'kube'
+        kube_password: >-
+          {{ lookup('file', 'kubespray/credentials/kube_user') }}
+        ip_master: >-
+          {{ hostvars[groups['kube-master'][0]].ansible_default_ipv4.address }}

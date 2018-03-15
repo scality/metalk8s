@@ -1,0 +1,16 @@
+- name: 'install nginx ingress'
+  command: >-
+    helm install stable/nginx-ingress
+    --name nginx-ingress
+    --namespace kube-ingress
+    --set controller.hostNetwork=true
+    --set controller.kind=DaemonSet
+    --set rbac.create=true
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+  register: helm_nginx_ingress
+  failed_when: >-
+    helm_nginx_ingress.rc != 0 and
+    'already exists' not in helm_nginx_ingress.stderr|default('')
+  changed_when: >-
+    'already exists' not in helm_nginx_ingress.stderr|default('')

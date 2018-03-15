@@ -1,0 +1,6 @@
+- name: 'fail fast if disks cannot be found'
+  fail:
+    msg: >-
+      Disks on server '{{ inventory_hostname }}' doesn't have the
+      expected disks: {{ storage_disk }}
+  when: ansible_devices|difference(storage_disk)|length > 0

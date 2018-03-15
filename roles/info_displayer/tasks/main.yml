@@ -1,0 +1,15 @@
+- name: 'update info'
+  add_host:
+    groups: all
+    name: localhost
+    displayable_info: >-
+        {{ hostvars['localhost'].displayable_info|default([])
+            + add_info }}
+  run_once: True
+  when: add_info is defined
+
+- name: 'display info'
+  debug:
+    var: hostvars['localhost'].displayable_info
+  run_once: True
+  when: enable_final_display|bool
