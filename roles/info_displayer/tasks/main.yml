@@ -3,8 +3,10 @@
     groups: all
     name: localhost
     displayable_info: >-
-        {{ hostvars['localhost'].displayable_info|default([])
+        {{ hostvars.localhost.displayable_info|default([])
             + add_info }}
+    ansible_connection: '{{ hostvars.localhost.ansible_connection }}'
+    ansible_python_interpreter: '{{ hostvars.localhost.ansible_python_interpreter }}'
   run_once: True
   when: add_info is defined
 
