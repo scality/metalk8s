@@ -29,17 +29,6 @@ source ./venv/bin/activate
 pip install ansible==2.5.0rc2
 ```
 
-### Usage
-You also need `kubectl` and `helm` binary to play with your cluster from your
-local computer.
-
-Please refer to the official documentation to install those tools:
-
-- https://kubernetes.io/docs/tasks/tools/install-kubectl/
-- https://docs.helm.sh/using_helm/#installing-helm
-
-
-
 ## Inventory file
 Create an inventory file somewhere on the file system. You can make use of
 `inventories` directory, but it's ignore from git by default, so make sure to
@@ -66,22 +55,18 @@ kube-master
 
 ```
 
-
-## group_vars
-Before running metal k8s-cluster make sure you have `group _vars` available at
-the root of the repository. For sensible default you can use the sample one.
-```
-ln -s inventories/sample/group_vars group_vars
-```
-or
-```
-cp -r inventories/sample/group_vars group_vars
-```
-
-
 ## Roll !
 If you pocede all the step above, you can launch the `metal-k8s.yml`:
 
 ```
 ansible-playbook -i inventories/example.cfg metal-k8s.yml
 ```
+
+## Usage
+You also need `kubectl` and `helm` binary to play with your cluster from your
+local computer.
+
+Please refer to the official documentation to install those tools:
+
+- https://kubernetes.io/docs/tasks/tools/install-kubectl/
+- https://docs.helm.sh/using_helm/#installing-helm
