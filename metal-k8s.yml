@@ -39,6 +39,8 @@
       tags: ['ingress']
     - role: kube_prometheus
       tags: ['kube-prometheus']
+    - role: kube_heapster
+      tags: ['heapster']
 
 - hosts: k8s-cluster
   gather_facts: False

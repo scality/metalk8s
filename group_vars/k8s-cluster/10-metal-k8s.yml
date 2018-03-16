@@ -5,3 +5,6 @@ kube_basic_auth: True
 kubeconfig_localhost: True
 kubelet_authentication_token_webhook: True
 kube_api_pwd: "{{ lookup('password', playbook_dir + '/credentials/kube_user length=15 chars=ascii_letters,digits') }}"
+
+# Currently required for Heapster kubelet access
+kube_read_only_port: 10255
