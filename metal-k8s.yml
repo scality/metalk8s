@@ -1,5 +1,10 @@
 - hosts: k8s-cluster
   gather_facts: False
+  tasks:
+    - ping:
+
+- hosts: k8s-cluster
+  gather_facts: False
   roles:
     - role: python2_install
 
