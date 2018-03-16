@@ -3,4 +3,5 @@ helm_version: v2.8.1
 helm_enabled: True
 kube_basic_auth: True
 kubeconfig_localhost: True
+kubelet_authentication_token_webhook: True
 kube_api_pwd: "{{ lookup('password', playbook_dir + '/credentials/kube_user length=15 chars=ascii_letters,digits') }}"
