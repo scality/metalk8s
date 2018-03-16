@@ -1,0 +1,41 @@
+- name: 'install prometheus-operator'
+  command: >-
+    helm upgrade prometheus-operator
+    --install {{ prometheus_operator_release_name }}
+    --repo {{ prometheus_operator_repo }}
+    --version {{ prometheus_operator_version }}
+    --namespace {{ prometheus_operator_namespace }}
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'create tempfile for kube-prometheus values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: kube_prometheus_value_file
+
+- debug:
+    var: kube_prometheus_value_file.path
+  when: debug|bool
+
+- name: 'copy kube-prometheus values into temporary file'
+  template:
+    src: kube_prometheus_values.yml.j2
+    dest: '{{ kube_prometheus_value_file.path }}'
+
+- name: 'install kube-prometheus'
+  command: >-
+    helm upgrade kube-prometheus
+    --install {{ kube_prometheus_release_name }}
+    --repo {{ kube_prometheus_repo }}
+    --version {{ kube_prometheus_version }}
+    --namespace {{ kube_prometheus_namespace }}
+    -f {{ kube_prometheus_value_file.path }}
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove unneeded kube-prometheus values file'
+  file:
+    dest: '{{ kube_prometheus_value_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool

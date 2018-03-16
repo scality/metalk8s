@@ -15,7 +15,9 @@
   gather_facts: False
   roles:
     - role: kube_nginx_ingress
-      tags: ingress
+      tags: ['ingress']
+    - role: kube_prometheus
+      tags: ['kube-prometheus']
 
 - hosts: k8s-cluster
   gather_facts: False
