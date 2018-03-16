@@ -2,3 +2,4 @@
 /venv
 /host_vars
 /inventories
+/credentials/
