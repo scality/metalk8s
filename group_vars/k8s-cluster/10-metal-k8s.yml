@@ -1,7 +1,6 @@
+docker_dns_servers_strict: False
 helm_version: v2.8.1
 helm_enabled: True
-docker_dns_servers_strict: False
 kube_basic_auth: True
 kubeconfig_localhost: True
-docker_dns_servers_strict: False
 kube_api_pwd: "{{ lookup('password', playbook_dir + '/credentials/kube_user length=15 chars=ascii_letters,digits') }}"
