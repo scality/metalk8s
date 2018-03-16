@@ -14,7 +14,7 @@
     dest: '{{ nginx_ingress_value_file.path }}'
 
 - name: 'install nginx ingress'
-  command: >-{{
+  command: >-
     helm upgrade nginx-ingress
     --install {{ nginx_ingress_release_name }}
     --repo {{ nginx_ingress_repo }}
