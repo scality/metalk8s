@@ -1,0 +1,6 @@
+debug: False
+
+lvm_mount_prefix: '/mnt/lvm'
+
+local_volume_provisioner_image_repo: quay.io/external_storage/local-volume-provisioner
+local_volume_provisioner_image_tag: v2.0.0
