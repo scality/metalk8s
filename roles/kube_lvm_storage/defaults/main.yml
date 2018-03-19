@@ -6,12 +6,6 @@ local_volume_provisioner_image_tag: v2.0.0
 # ################ #
 # LVM confguration #
 # ################ #
-#
-# Specify which VG and which drive to use in host_vars for each node
-metal_k8s_lvm:
-  vgs:
-    kubevg:
-      drives: []
 
 # Set the storage class setup on kubernetes node
 # possible values are "lvm" or "local-storage"
