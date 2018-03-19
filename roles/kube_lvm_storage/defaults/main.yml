@@ -1,6 +1,51 @@
 debug: False
 
-lvm_mount_prefix: '/mnt/lvm'
-
 local_volume_provisioner_image_repo: quay.io/external_storage/local-volume-provisioner
 local_volume_provisioner_image_tag: v2.0.0
+
+# ################ #
+# LVM confguration #
+# ################ #
+#
+# Specify which VG and which drive to use in host_vars for each node
+metal_k8s_lvm:
+  vgs:
+    kubevg:
+      drives: []
+
+# Set the storage class setup on kubernetes node
+# possible values are "lvm" or "local-storage"
+metal_k8s_storage_class:
+  type: "lvm"
+  lvm:
+    default_fstype: 'ext4'
+    default_fs_force: False
+    default_fs_opts: '-m 0'
+    default_mount_opts: 'defaults'
+    vgs:
+      kubevg:
+        volumes:
+          - name: lv01
+            size: 10G
+          - name: lv02
+            size: 10G
+          - name: lv03
+            size: 10G
+          - name: lv04
+            size: 10G
+          - name: lv05
+            size: 10G
+        host_path: '/mnt/kubevg'
+
+#
+# You can also customize a specific volume like this
+#
+#    vgs:
+#      kubevg:
+#        volumes:
+#          - name: lv01
+#            size: 10G
+#            fstype: xfs
+#            fs_force: True
+#            fs_opts: '-m 0 -cc'
+#            mount_opts: 'defaults,noatime'
