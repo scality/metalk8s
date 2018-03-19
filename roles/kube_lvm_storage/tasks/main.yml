@@ -14,6 +14,7 @@
 - name: display vgs in metal_k8s_storage_class
   debug:
     msg: '{{ metal_k8s_storage_class.lvm.vgs }}'
+  when: debug|bool
 
 #
 # Set a dictionary that will be used for the LVM configuration
@@ -67,6 +68,7 @@
 - name: display metal_k8s_lvm_conf dictionary
   debug:
     msg: '{{ metal_k8s_lvm_conf }}'
+  when: debug|bool
 
 - name: 'create lvm volumes with required size for each vg'
   lvol:
@@ -94,6 +96,7 @@
 - name: display UUIDs
   debug:
     msg: '{{ metal_k8s_lvm_uuids.results }}'
+  when: debug|bool
 
 # Update metal_k8s_conf with UUIDs of the filesystems
 #
@@ -129,6 +132,7 @@
 - name: display metal_k8s_lvm_conf dictionary with UUIDs
   debug:
     msg: '{{ metal_k8s_lvm_conf }}'
+  when: debug|bool
 
 - name: 'mount filesystem for each lvm volumes'
   mount:
