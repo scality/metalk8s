@@ -1,0 +1,10 @@
+- name: 'wait for helm to be deployed'
+  command: helm version
+  register: helm_version
+  until: not helm_version|failed
+  retries: 50000
+  delay: 10
+  changed_when: False
+  check_mode: False
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
