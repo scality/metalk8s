@@ -14,6 +14,14 @@
   roles:
     - role: setup_lvm
 
+- hosts: k8s-cluster
+  gather_facts: False
+  tags:
+    - kubespray
+  roles:
+    - role: kubespray/roles/kubespray-defaults/
+    - role: kubespray_var_patcher
+
 - import_playbook: 'kubespray/cluster.yml'
   tags: kubespray
 

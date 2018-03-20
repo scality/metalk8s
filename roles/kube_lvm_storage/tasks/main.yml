@@ -51,18 +51,23 @@
             {%- set _ = volume.update(
               {'fs_force': volume.fs_force
                 |default(
-                    metal_k8s_storage_class.lvm_conf.default_fs_force
+                  metal_k8s_storage_class.lvm_conf.default_fs_force
                 )}) -%}
             {%- set _ = volume.update(
               {'fs_opts': volume.fs_opts
-                |default(metal_k8s_storage_class.lvm_conf.default_fs_opts)}) -%}
+                |default(
+                    metal_k8s_storage_class.lvm_conf.default_fs_opts)}) -%}
             {%- set _ = volume.update(
               {'mount_opts': volume.mount_opts
-                |default(metal_k8s_storage_class.lvm_conf.default_mount_opts)}) -%}
+                |default(
+                  metal_k8s_storage_class.lvm_conf.default_mount_opts)}) -%}
             {%- set device = '/dev/mapper/' ~ vg ~ '-'
               ~ volume.name.replace("-", "--") -%}
             '{{ device }}': {{ dict(vg=vg,
-                volume=volume, host_path=host_path) }},
+                volume=volume,
+                host_path=prop.host_path,
+                storage_class=prop.storage_class,)
+             }},
           {%- endfor -%}
         {%- endfor -%}
       }
@@ -151,9 +156,13 @@
       - 'item.value.storage_class'
   with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
 
-- name: 'Create the local LVM based StorageClass'
+- name: 'Create the Kubernetes resources | StorageClass'
+  delegate_to: localhost
+  run_once: True
+  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
   k8s_raw:
     state: present
+    kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
     definition:
       apiVersion: v1
       kind: StorageClass
@@ -163,5 +172,37 @@
           storageclass.kubernetes.io/is-default-class: '{{ item.value.is_default|default(False)|string }}'
       provisioner: kubernetes.io/no-provisioner
       volumeBindingMode: WaitForFirstConsumer
-  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
+
+- name: 'Create the Kubernetes resources | PVs'
   delegate_to: localhost
+  with_dict: '{{ metal_k8s_lvm_conf }}'
+  k8s_raw:
+    state: present
+    kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
+    definition:
+      apiVersion: v1
+      kind: PersistentVolume
+      metadata:
+        name: >-
+          {{ item.value.vg|replace("_","-") }}-{{ item.value.volume.uuid }}
+        annotations:
+          "volume.alpha.kubernetes.io/node-affinity": ' {
+              "requiredDuringSchedulingIgnoredDuringExecution": {
+                  "nodeSelectorTerms": [
+                      { "matchExpressions": [
+                          { "key": "kubernetes.io/hostname",
+                            "operator": "In",
+                            "values": ["{{ ansible_hostname }}"]
+                          }
+                      ]}
+                   ]}
+                }'
+      spec:
+        capacity:
+          storage: '{{ item.value.volume.size }}'
+        accessModes:
+        - ReadWriteOnce
+        persistentVolumeReclaimPolicy: Delete
+        storageClassName: '{{ item.value.storage_class }}'
+        local:
+          path: '{{ item.value.host_path }}/{{ item.value.volume.uuid }}'
