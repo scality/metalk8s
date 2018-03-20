@@ -22,15 +22,15 @@ metal_k8s_storage_class:
         host_path: '/mnt/kubevg'
         storage_class: 'local-lvm'
         volumes:
-          - name: lv01
+          lv01:
+            size: 50G
+          lv02:
+            size: 50G
+          lv03:
+            size: 50G
+          lv04:
             size: 10G
-          - name: lv02
-            size: 10G
-          - name: lv03
-            size: 10G
-          - name: lv04
-            size: 10G
-          - name: lv05
+          lv05:
             size: 10G
 
 #
@@ -39,7 +39,7 @@ metal_k8s_storage_class:
 #    vgs:
 #      kubevg:
 #        volumes:
-#          - name: lv01
+#          lv01:
 #            size: 10G
 #            fstype: xfs
 #            fs_force: True

@@ -28,6 +28,7 @@
 - hosts: kube-node
   tags:
     - lvm-storage
+    - kube-pv
   roles:
     - role: kube_lvm_storage
 

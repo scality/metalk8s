@@ -44,7 +44,7 @@
       {
         {%- for vg, prop in metal_k8s_storage_class.lvm_conf.vgs.items() -%}
           {%- set host_path = prop.host_path -%}
-          {%- for volume in prop.volumes -%}
+          {%- for volume_name, volume in prop.volumes.items() -%}
             {%- set _ = volume.update(
               {'fstype': volume.fstype
                 |default(metal_k8s_storage_class.lvm_conf.default_fstype)}) -%}
@@ -62,9 +62,10 @@
                 |default(
                   metal_k8s_storage_class.lvm_conf.default_mount_opts)}) -%}
             {%- set device = '/dev/mapper/' ~ vg ~ '-'
-              ~ volume.name.replace("-", "--") -%}
+              ~ volume_name.replace("-", "--") -%}
             '{{ device }}': {{ dict(vg=vg,
                 volume=volume,
+                volume_name=volume_name,
                 host_path=prop.host_path,
                 storage_class=prop.storage_class,)
              }},
@@ -79,7 +80,7 @@
 
 - name: 'create lvm volumes with required size for each vg'
   lvol:
-    lv: '{{ item.value.volume.name }}'
+    lv: '{{ item.value.volume_name }}'
     vg: '{{ item.value.vg }}'
     size: '{{ item.value.volume.size }}'
     state: present
@@ -95,8 +96,9 @@
   with_dict: '{{ metal_k8s_lvm_conf }}'
 
 - name: 'get UUIDs of lvm volumes'
-  shell: |
-    blkid -s UUID -o value {{ item.key }}
+  command: blkid -s UUID -o value {{ item.key }}
+  check_mode: False
+  changed_when: False
   register: metal_k8s_lvm_uuids
   with_dict: '{{ metal_k8s_lvm_conf }}'
 
@@ -125,16 +127,10 @@
 - name: update fact metal_k8s_lvm_conf with UUIDs
   set_fact:
     metal_k8s_lvm_conf: >-
-      {
-        {%- for device, prop in metal_k8s_lvm_conf.items() -%}
-          {%- for result in metal_k8s_lvm_uuids.results -%}
-            {%- if result.item.key == device -%}
-              {%- set _ =  prop.volume.update({'uuid': result.stdout}) -%}
-              '{{ device }}': {{ prop }},
-            {%- endif -%}
-          {%- endfor -%}
-        {%- endfor -%}
-      }
+      {%- for result in metal_k8s_lvm_uuids.results|default([]) -%}
+         {%- set _ =  metal_k8s_lvm_conf[result.item.key].volume.update({'uuid': result.stdout}) -%}
+      {%- endfor -%}
+      {{ metal_k8s_lvm_conf }}
 
 - name: display metal_k8s_lvm_conf dictionary with UUIDs
   debug:
@@ -157,9 +153,6 @@
   with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
 
 - name: 'Create the Kubernetes resources | StorageClass'
-  delegate_to: localhost
-  run_once: True
-  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
   k8s_raw:
     state: present
     kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
@@ -172,10 +165,11 @@
           storageclass.kubernetes.io/is-default-class: '{{ item.value.is_default|default(False)|string }}'
       provisioner: kubernetes.io/no-provisioner
       volumeBindingMode: WaitForFirstConsumer
+  delegate_to: localhost
+  run_once: True
+  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
 
 - name: 'Create the Kubernetes resources | PVs'
-  delegate_to: localhost
-  with_dict: '{{ metal_k8s_lvm_conf }}'
   k8s_raw:
     state: present
     kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
@@ -206,3 +200,5 @@
         storageClassName: '{{ item.value.storage_class }}'
         local:
           path: '{{ item.value.host_path }}/{{ item.value.volume.uuid }}'
+  delegate_to: localhost
+  with_dict: '{{ metal_k8s_lvm_conf }}'
