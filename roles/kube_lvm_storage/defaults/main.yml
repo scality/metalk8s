@@ -23,15 +23,15 @@ metal_k8s_storage_class:
         storage_class: 'local-lvm'
         volumes:
           lv01:
-            size: 50G
+            size: 52G
           lv02:
-            size: 50G
+            size: 52G
           lv03:
-            size: 50G
+            size: 52G
           lv04:
-            size: 10G
+            size: 11G
           lv05:
-            size: 10G
+            size: 11G
 
 #
 # You can also customize a specific volume like this
