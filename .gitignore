@@ -1,2 +1,4 @@
 /*.retry
 /venv
+/host_vars
+/inventories

@@ -1,0 +1,8 @@
+- debug: var=kube_feature_gates
+  when: debug|bool
+
+- name: 'Add MountPropagation feature gate'
+  set_fact:
+    kube_feature_gates: >-
+        {{ kube_feature_gates + ['PersistentLocalVolumes=true', 'MountPropagation=true', 'VolumeScheduling=true'] }}
+  when: local_volume|bool

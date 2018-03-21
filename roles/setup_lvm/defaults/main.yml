@@ -1,0 +1,11 @@
+debug: False
+
+# ################ #
+# LVM confguration #
+# ################ #
+
+# Specify which VG and which drive to use in host_vars for each node
+metal_k8s_lvm:
+  vgs:
+    kubevg:
+      drives: []

@@ -8,8 +8,29 @@
   roles:
     - role: python2_install
 
+- hosts: kube-node
+  tags:
+    - lvm-storage
+  roles:
+    - role: setup_lvm
+
+- hosts: k8s-cluster
+  gather_facts: False
+  tags:
+    - kubespray
+  roles:
+    - role: kubespray/roles/kubespray-defaults/
+    - role: kubespray_var_patcher
+
 - import_playbook: 'kubespray/cluster.yml'
   tags: kubespray
+
+- hosts: kube-node
+  tags:
+    - lvm-storage
+    - kube-pv
+  roles:
+    - role: kube_lvm_storage
 
 - hosts: kube-master
   gather_facts: False
