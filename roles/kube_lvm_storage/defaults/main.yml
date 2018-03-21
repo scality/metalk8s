@@ -8,7 +8,6 @@ local_volume_provisioner_image_tag: v2.0.0
 # ################ #
 
 # Set the storage class setup on kubernetes node
-# possible values are "lvm" or "local-storage"
 metal_k8s_storage_class:
   storage_classes:
     local-lvm:
