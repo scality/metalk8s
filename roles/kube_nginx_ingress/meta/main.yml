@@ -1,1 +1,2 @@
-dependencies: []
+dependencies:
+    - role: wait_helm

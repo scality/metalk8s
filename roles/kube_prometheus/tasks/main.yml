@@ -1,0 +1,19 @@
+- name: 'install prometheus-operator'
+  command: >-
+    helm upgrade prometheus-operator
+    --install {{ prometheus_operator_release_name }}
+    --repo {{ prometheus_operator_repo }}
+    --version {{ prometheus_operator_version }}
+    --namespace {{ prometheus_operator_namespace }}
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'install kube-prometheus'
+  command: >-
+    helm upgrade kube-prometheus
+    --install {{ kube_prometheus_release_name }}
+    --repo {{ kube_prometheus_repo }}
+    --version {{ kube_prometheus_version }}
+    --namespace {{ kube_prometheus_namespace }}
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
