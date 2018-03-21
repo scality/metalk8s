@@ -1,0 +1,10 @@
+debug: False
+
+remove_metal_k8s_temporary_file: True
+
+heapster_version: '0.2.7'
+# For kubernetes-dashboard to find Heapster, it needs to be installed in
+# `kube-system`.
+heapster_namespace: 'kube-system'
+heapster_repo: 'https://kubernetes-charts.storage.googleapis.com'
+heapster_release_name: 'heapster'
