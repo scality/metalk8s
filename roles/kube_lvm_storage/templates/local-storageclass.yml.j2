@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: StorageClass
+metadata:
+  name: {{ item.key}}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: '{{ item.value.is_default|default(False)|string|lower }}'
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
