@@ -8,6 +8,30 @@
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
+- name: 'create tempfile for kube-prometheus values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: kube_prometheus_value_files
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+  with_items:
+    - additionnal_dashboard.yml
+
+- debug:
+    var: kube_prometheus_value_file
+  when: debug|bool
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'copy kube-prometheus values into temporary file'
+  copy:
+    src: '{{ item.item }}'
+    dest: '{{ item.path }}'
+  with_items: '{{ kube_prometheus_value_files.results|default([]) }}'
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
 - name: 'install kube-prometheus'
   command: >-
     helm upgrade kube-prometheus
@@ -15,5 +39,17 @@
     --repo {{ kube_prometheus_repo }}
     --version {{ kube_prometheus_version }}
     --namespace {{ kube_prometheus_namespace }}
+    {% for value_files in kube_prometheus_value_files.results|default([]) %}
+    -f {{ value_files.path }}
+    {% endfor %}
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove unneeded kube-prometheus values file'
+  file:
+    dest: '{{ item.path }}'
+    state: absent
+  with_items: '{{ kube_prometheus_value_files.results|default([]) }}'
+  when: remove_metal_k8s_temporary_file|bool
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
