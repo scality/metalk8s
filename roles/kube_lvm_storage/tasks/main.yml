@@ -158,6 +158,7 @@
     kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
     definition: "{{ lookup('template', '../templates//local-storageclass.yml.j2')| from_yaml }}"
   delegate_to: localhost
+  become: False
   run_once: True
   with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
 
@@ -167,4 +168,5 @@
     kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
     definition: "{{ lookup('template', '../templates//local-pv.yml.j2')| from_yaml }}"
   delegate_to: localhost
+  become: False
   with_dict: '{{ metal_k8s_lvm_conf }}'
