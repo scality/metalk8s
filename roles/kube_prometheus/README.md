@@ -7,3 +7,4 @@
 # Current dashboards
 
 [prometheus_2_stats.json](https://github.com/grafana/grafana/blob/master/public/app/plugins/datasource/prometheus/dashboards/prometheus_2_stats.json)
+[node-exporter-full.json](https://github.com/rfrail3/grafana-dashboards/blob/master/prometheus/node-exporter-full.json)
