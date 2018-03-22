@@ -2,6 +2,7 @@ debug: False
 
 local_volume_provisioner_image_repo: quay.io/external_storage/local-volume-provisioner
 local_volume_provisioner_image_tag: v2.0.0
+storage_addon_dir: '{{ kube_config_dir }}/addons/storage_lvm'
 
 # ################ #
 # LVM confguration #

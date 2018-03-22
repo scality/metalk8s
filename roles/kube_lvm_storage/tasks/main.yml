@@ -152,21 +152,49 @@
       - 'item.value.storage_class'
   with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
 
-- name: 'Create the Kubernetes resources | StorageClass'
-  k8s_raw:
-    state: present
-    kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
-    definition: "{{ lookup('template', '../templates//local-storageclass.yml.j2')| from_yaml }}"
-  delegate_to: localhost
-  become: False
-  run_once: True
-  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
+# TODO: think about moving this part (till the end) in another role
+# that only target 'kube-master' group
 
-- name: 'Create the Kubernetes resources | PVs'
-  k8s_raw:
-    state: present
-    kubeconfig: "{{ lookup('env', 'KUBECONFIG') }}"
-    definition: "{{ lookup('template', '../templates//local-pv.yml.j2')| from_yaml }}"
-  delegate_to: localhost
-  become: False
+- name: 'create storage addon dir'
+  file:
+    path: '{{ storage_addon_dir }}'
+    owner: root
+    group: root
+    mode: 0755
+    recurse: true
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'Create storage-class manifests'
+  template:
+    src: local-storageclass.yml.j2
+    dest: '{{ storage_addon_dir }}/storage-class-{{ item.key }}.yml'
+  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'Apply manifests for storage-class'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ storage_addon_dir }}/storage-class-{{ item.key }}.yml'
+    state: 'latest'
+  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'Create pv manifests'
+  template:
+    src: local-pv.yml.j2
+    dest: '{{ storage_addon_dir }}/pv-{{ item.value.volume.uuid }}.yml'
   with_dict: '{{ metal_k8s_lvm_conf }}'
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'Apply manifests for pv'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ storage_addon_dir }}/pv-{{ item.value.volume.uuid }}.yml'
+    state: 'latest'
+  with_dict: '{{ metal_k8s_lvm_conf }}'
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
