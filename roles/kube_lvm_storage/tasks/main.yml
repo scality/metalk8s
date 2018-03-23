@@ -161,6 +161,7 @@
     owner: root
     group: root
     mode: 0755
+    state: directory
     recurse: true
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
@@ -187,7 +188,6 @@
     src: local-pv.yml.j2
     dest: '{{ storage_addon_dir }}/pv-{{ item.value.volume.uuid }}.yml'
   with_dict: '{{ metal_k8s_lvm_conf }}'
-  run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
 - name: 'Apply manifests for pv'
@@ -196,5 +196,4 @@
     filename: '{{ storage_addon_dir }}/pv-{{ item.value.volume.uuid }}.yml'
     state: 'latest'
   with_dict: '{{ metal_k8s_lvm_conf }}'
-  run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"

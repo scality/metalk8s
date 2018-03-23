@@ -31,7 +31,12 @@ metal_k8s_storage_class:
             size: 11G
           lv05:
             size: 11G
-
+          lv06:
+            size: 11G
+          lv07:
+            size: 5G
+          lv08:
+            size: 5G
 #
 # You can also customize a specific volume like this
 #
