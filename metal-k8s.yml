@@ -30,7 +30,6 @@
     - lvm-storage
     - kube-pv
   roles:
-    - role: kubespray/roles/kubespray-defaults/
     - role: kube_lvm_storage
 
 - hosts: kube-master
