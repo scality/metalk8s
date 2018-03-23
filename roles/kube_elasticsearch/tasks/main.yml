@@ -18,13 +18,25 @@
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
+- name: 'Copy kibana ingress manifest'
+  copy:
+    src: '{{ item }}'
+    dest: '{{ es_addon_dir }}/'
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+  register: es_custom_manifests
+  with_items:
+    - kibana-ingress.yml
+
 - name: 'Deploy ElasticSearch'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
     filename: '{{ es_addon_dir }}/{{ item }}'
     namespace: '{{ es_namespace }}'
     state: 'latest'
-  with_items: '{{ es_manifests.results|default([])|map(attribute="item")|list }}'
+  with_items: >-
+    {{ (es_manifests.results|default([]) + es_custom_manifests.results|default([]))
+        |map(attribute="item")|list }}
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 

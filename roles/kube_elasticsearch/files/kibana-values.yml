@@ -3,3 +3,4 @@ image:
 
 env:
   ELASTICSEARCH_URL: 'http://elasticsearch:9200'
+  SERVER_BASEPATH: '/_/kibana'
