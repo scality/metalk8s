@@ -13,6 +13,7 @@
     - metrics-server-deployment.yaml
     - metrics-server-service.yaml
     - resource-reader.yaml
+  register: ms_manifests
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
@@ -21,12 +22,6 @@
     kubectl: '{{ bin_dir }}/kubectl'
     filename: '{{ ms_addon_dir }}/{{ item }}'
     state: 'latest'
-  with_items:
-    - auth-delegator.yaml
-    - auth-reader.yaml
-    - metrics-apiservice.yaml
-    - metrics-server-deployment.yaml
-    - metrics-server-service.yaml
-    - resource-reader.yaml
+  with_items: '{{ ms_manifests.results|default([])|map(attribute="item")|list }}'
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
