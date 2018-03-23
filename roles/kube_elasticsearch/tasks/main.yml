@@ -14,6 +14,7 @@
     - es-data.yaml
     - es-curator-config.yaml
     - es-curator_v1beta1.yaml
+  register: es_manifests
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
@@ -23,14 +24,7 @@
     filename: '{{ es_addon_dir }}/{{ item }}'
     namespace: '{{ es_namespace }}'
     state: 'latest'
-  with_items:
-    - es-discovery-svc.yaml
-    - es-svc.yaml
-    - es-master.yaml
-    - es-client.yaml
-    - es-data.yaml
-    - es-curator-config.yaml
-    - es-curator_v1beta1.yaml
+  with_items: '{{ es_manifests.results|default([])|map(attribute="item")|list }}'
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
