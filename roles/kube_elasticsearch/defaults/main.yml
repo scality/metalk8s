@@ -1,0 +1,2 @@
+es_addon_dir: '{{ kube_config_dir }}/addons/elasticsearch'
+es_namespace: 'kube-ops'
