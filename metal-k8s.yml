@@ -52,6 +52,9 @@
       tags: ['elasticsearch']
     - role: kube_metrics_server
       tags: ['metrics-server']
+    - role: kube_cert_manager
+      tags: ['cert-manager']
+      when: cert_manager_self_sign|default(False)|bool
 
 - hosts: k8s-cluster
   gather_facts: False

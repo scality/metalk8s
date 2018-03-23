@@ -1,0 +1,95 @@
+- name: 'Create tempfile for CA private key'
+  tempfile:
+    state: file
+  register: ca_key_tempfile
+  when:
+    - ca_key is undefined or ca_cert is undefined
+
+- name: 'copy current ca_key if any'
+  copy:
+    content: '{{ ca_key }}'
+    dest: '{{ ca_key_tempfile.path|default }}'
+  when:
+    - ca_key is defined
+    - ca_cert is undefined
+
+# TODO: use openssl_private (/!\ ansible 2.3)
+- name: 'create a CA (ca_key)'
+  command: openssl genrsa -out {{ ca_key_tempfile.path|default }} 4096
+  register: new_private_key
+  when:
+    - ca_key is undefined
+
+- name: 'get content of ca_key'
+  slurp:
+    path: '{{ ca_key_tempfile.path|default }}'
+  register: ca_key_download
+  when:
+    - ca_key is undefined
+
+- name: 'dump generated CA key into group_vars'
+  copy:
+    content: |-
+      ca_key: |-
+        {{ ca_key_download.content|default('')|b64decode|indent(2) }}
+    dest: '{{ ca_key_localpath }}'
+  delegate_to: localhost
+  when:
+    - ca_key is undefined
+    - ca_key_localpath|default(None, True) != None ## Not undefined, False, None, ''
+
+- name: 'set_fact generated ca_key for current run'
+  set_fact:
+    ca_key: '{{ ca_key_download.content|default("")|b64decode }}'
+  when:
+    - ca_key is undefined
+
+- name: 'Create tempfile for CA cert'
+  tempfile:
+    state: file
+  register: ca_cert_tempfile
+  when:
+    - new_private_key|changed or ca_cert is undefined
+
+# TODO: use openssl_certificate (/!\ ansible 2.4)
+- name: 'Self-sign CA'
+  command: >-
+    openssl req -x509 -new -nodes
+    -key {{ ca_key_tempfile.path|default }}
+    -subj "/CN={{ kube_ca_cn }}" -days 3650
+    -out {{ ca_cert_tempfile.path|default }}
+  when:
+    - new_private_key|changed or ca_cert is undefined
+
+- name: 'get content of ca_key'
+  slurp:
+    path: '{{ ca_cert_tempfile.path|default }}'
+  register: ca_cert_download
+  when:
+    - new_private_key|changed or ca_cert is undefined
+
+- name: 'dump generated CA key into group_vars'
+  copy:
+    content: |-
+      ca_cert: |-
+        {{ ca_cert_download.content|default('')|b64decode|indent(2) }}
+    dest: '{{ ca_cert_localpath }}'
+  delegate_to: localhost
+  when:
+    - new_private_key|changed or ca_cert is undefined
+    - ca_cert_localpath|default(None, True) != None ## Not undefined, False, None, ''
+
+- name: 'set_fact generated ca_cert for current run'
+  set_fact:
+    ca_cert: '{{ ca_cert_download.content|default("")|b64decode }}'
+  when:
+    - new_private_key|changed or ca_cert is undefined
+
+- name: 'delete tempfile'
+  file:
+    path: '{{ item }}'
+    state: absent
+  with_items: >-
+    {{ [ca_key_tempfile, ca_cert_tempfile]
+          |selectattr('path', 'defined')
+          |map(attribute='path')|list }}

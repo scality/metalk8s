@@ -1,0 +1,66 @@
+- name: 'create tempfile for cert-manager values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: cert_manager_value_file
+  delegate_to: "{{ groups['kube-master'][0] }}"
+  run_once: True
+
+- debug:
+    var: cert_manager_value_file.path
+  when: debug|bool
+  run_once: True
+
+- name: 'copy cert-manager values into temporary file'
+  template:
+    src: cert_manager_values.yml.j2
+    dest: '{{ cert_manager_value_file.path }}'
+  delegate_to: "{{ groups['kube-master'][0] }}"
+  run_once: True
+
+- name: 'install cert manager'
+  command: >-
+    helm upgrade cert-manager
+    --install {{ cert_manager_release_name }}
+    --repo {{ cert_manager_repo }}
+    --version {{ cert_manager_version }}
+    --namespace {{ cert_manager_namespace }}
+    -f {{ cert_manager_value_file.path }}
+  delegate_to: "{{ groups['kube-master'][0] }}"
+  run_once: True
+
+- name: 'remove unneeded cert-manager values file'
+  file:
+    dest: '{{ cert_manager_value_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool
+
+- import_tasks: generate_ca.yml
+  run_once: True
+
+- name: 'create addons dir for cert-manager'
+  file:
+    path: '{{ cert_manager_addon_dir }}'
+    owner: root
+    group: root
+    mode: 0755
+    recurse: true
+    state: directory
+
+- name: 'template manifests'
+  template:
+    src: '{{ item }}.j2'
+    dest: '{{ cert_manager_addon_dir }}/{{ item }}'
+  register: ca_cert_manifests
+  with_items:
+    - ca_cert_secret.yml
+    - ca_cluster_issuer.yml
+
+- name: 'Apply manifests for ca'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ cert_manager_addon_dir }}/{{ item }}'
+    namespace: '{{ cert_manager_namespace }}'
+    state: 'latest'
+  with_items: '{{ ca_cert_manifests.results|default([])|map(attribute="item")|list }}'
+  run_once: True

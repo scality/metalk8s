@@ -1,0 +1,12 @@
+debug: False
+
+cert_manager_version: '0.2.4'
+cert_manager_namespace: 'kube-ingress'
+cert_manager_repo: 'https://kubernetes-charts.storage.googleapis.com'
+cert_manager_release_name: 'cert-manager'
+
+ca_key_localpath: '{{ playbook_dir }}/group_vars/k8s-cluster/11-zenko-ca-private-key.yml'
+ca_cert_localpath: '{{ playbook_dir }}/group_vars/k8s-cluster/11-zenko-ca-cert.yml'
+kube_ca_cn: example.com
+
+cert_manager_addon_dir: '{{ kube_config_dir }}/addons/cert_manager'
