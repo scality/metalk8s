@@ -7,7 +7,7 @@ GRAFANA_DASHBOARD=$(wildcard $(SRCDIR)/*.json)
 all: compile
 
 define SOURCE_EXTRACTOR
-$$(python -c "import json; j=json.load(open('$${dashboard}')); print(j['__inputs'][0]['name'])")
+$$(python -c "import json; j=json.load(open('$${dashboard}')); print(j.get('__inputs', [{}])[0].get('name', 'DS_DUMMY'))")
 endef
 
 

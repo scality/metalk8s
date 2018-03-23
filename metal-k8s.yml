@@ -41,6 +41,8 @@
       tags: ['kube-prometheus']
     - role: kube_heapster
       tags: ['heapster']
+    - role: kube_elasticsearch
+      tags: ['elasticsearch']
     - role: kube_metrics_server
       tags: ['metrics-server']
 
