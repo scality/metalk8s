@@ -11,3 +11,5 @@ kube_prometheus_version: '0.0.33'
 kube_prometheus_namespace: 'kube-ops'
 kube_prometheus_repo: 'https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/'
 kube_prometheus_release_name: 'kube-prometheus'
+
+prometheus_addon_dir: '{{ kube_config_dir }}/addons/prometheus'

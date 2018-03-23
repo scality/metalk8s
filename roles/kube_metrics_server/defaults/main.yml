@@ -1,0 +1,3 @@
+debug: false
+
+ms_addon_dir: '{{ kube_config_dir }}/addons/metrics-server'

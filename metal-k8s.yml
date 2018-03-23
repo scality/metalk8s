@@ -44,6 +44,8 @@
       tags: ['heapster']
     - role: kube_elasticsearch
       tags: ['elasticsearch']
+    - role: kube_metrics_server
+      tags: ['metrics-server']
 
 - hosts: k8s-cluster
   gather_facts: False

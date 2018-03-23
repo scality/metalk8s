@@ -1,0 +1,12 @@
+grafana:
+  extraVars:
+    - name: 'GF_SERVER_ROOT_URL'
+      value: '%(protocol)s://%(domain)s:/_/grafana'
+
+prometheus:
+  externalUrl: '/_/prometheus'
+  routePrefix: '/'
+
+alertmanager:
+  externalUrl: '/_/alertmanager'
+  routePrefix: '/'
