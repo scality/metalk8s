@@ -1,2 +1,18 @@
+debug: false
+
+remove_metal_k8s_temporary_file: true
+
 es_addon_dir: '{{ kube_config_dir }}/addons/elasticsearch'
 es_namespace: 'kube-ops'
+
+fluentd_chart: 'fluentd-elasticsearch'
+fluentd_version: '0.1.4'
+fluentd_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
+fluentd_namespace: 'kube-ops'
+fluentd_release_name: 'fluentd'
+
+kibana_chart: 'kibana'
+kibana_version: '0.2.2'
+kibana_repo: 'https://kubernetes-charts.storage.googleapis.com'
+kibana_namespace: 'kube-ops'
+kibana_release_name: 'kibana'

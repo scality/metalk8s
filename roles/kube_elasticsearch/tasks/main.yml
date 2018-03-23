@@ -29,3 +29,73 @@
     - es-data.yaml
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
+
+# Fluentd
+- name: 'create tempfile for Fluentd values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: fluentd_values_file
+
+- debug:
+  var: fluentd_values_file.path
+  when: debug|bool
+
+- name: 'copy Fluentd values into temporary file'
+  copy:
+    src: fluentd-elasticsearch-values.yml
+    dest: '{{ fluentd_values_file.path }}'
+
+- name: 'install Fluentd ElasticSearch Chart'
+  command: >-
+    helm upgrade
+    --install
+    --repo {{ fluentd_repo }}
+    --version {{ fluentd_version }}
+    --namespace {{ fluentd_namespace }}
+    -f {{ fluentd_values_file.path }}
+    {{ fluentd_release_name }}
+    {{ fluentd_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary Fluentd values file'
+  file:
+    dest: '{{ fluentd_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool
+
+# Kibana
+- name: 'create tempfile for Kibana values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: kibana_values_file
+
+- debug:
+  var: kibana_values_file.path
+  when: debug|bool
+
+- name: 'copy Kibana values into temporary file'
+  copy:
+    src: kibana-values.yml
+    dest: '{{ kibana_values_file.path }}'
+
+- name: 'install Kibana Chart'
+  command: >-
+    helm upgrade
+    --install
+    --repo {{ kibana_repo }}
+    --version {{ kibana_version }}
+    --namespace {{ kibana_namespace }}
+    -f {{ kibana_values_file.path }}
+    {{ kibana_release_name }}
+    {{ kibana_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary Kibana values file'
+  file:
+    dest: '{{ kibana_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool
