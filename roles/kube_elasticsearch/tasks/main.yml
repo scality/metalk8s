@@ -12,6 +12,8 @@
     - es-master.yaml
     - es-client.yaml
     - es-data.yaml
+    - es-curator-config.yaml
+    - es-curator_v1beta1.yaml
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
@@ -27,6 +29,8 @@
     - es-master.yaml
     - es-client.yaml
     - es-data.yaml
+    - es-curator-config.yaml
+    - es-curator_v1beta1.yaml
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
