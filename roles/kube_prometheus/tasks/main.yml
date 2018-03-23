@@ -71,6 +71,7 @@
   register: prometheus_manifests
   with_items:
     - grafana_ingress.yml
+    - prometheus_ingress.yml
 
 - name: 'Apply manifests for prometheus'
   kube:
