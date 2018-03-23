@@ -1,0 +1,20 @@
+- hosts: kube-node
+  gather_facts: False
+  tasks:
+    - ping:
+
+- hosts: kube-node
+  tags:
+    - lvm-storage
+  roles:
+    - role: setup_lvm
+
+- import_playbook: 'kubespray/scale.yml'
+  tags: kubespray
+
+- hosts: kube-node
+  tags:
+    - lvm-storage
+    - kube-pv
+  roles:
+    - role: kube_lvm_storage
