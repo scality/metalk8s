@@ -161,6 +161,7 @@
     owner: root
     group: root
     mode: 0755
+    state: directory
     recurse: true
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
