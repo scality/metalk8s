@@ -16,3 +16,13 @@ kibana_version: '0.2.2'
 kibana_repo: 'https://kubernetes-charts.storage.googleapis.com'
 kibana_namespace: 'kube-ops'
 kibana_release_name: 'kibana'
+
+elasticsearch_exporter_chart: 'elasticsearch-exporter'
+elasticsearch_exporter_version: '0.1.2'
+elasticsearch_exporter_repo: 'https://kubernetes-charts.storage.googleapis.com'
+# Note: When changing this name, the 'ServiceMonitor' manifest needs to be
+# updated as well
+elasticsearch_exporter_namespace: 'kube-ops'
+# Note: When changing this name, the `ServiceMonitor` manifest needs to be
+# updated as well
+elasticsearch_exporter_release_name: 'es-exporter'
