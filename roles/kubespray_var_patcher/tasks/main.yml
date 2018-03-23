@@ -4,5 +4,13 @@
 - name: 'Add MountPropagation feature gate'
   set_fact:
     kube_feature_gates: >-
-        {{ kube_feature_gates + ['PersistentLocalVolumes=true', 'MountPropagation=true', 'VolumeScheduling=true'] }}
-  when: local_volume|bool
+        {%- for feature_gate in kube_feature_gates|list -%}
+           {%- if feature_gate.startswith('PersistentLocalVolumes=')
+                  or feature_gate.startswith('VolumeScheduling=') -%}
+                {%- set _ = kube_feature_gates.remove(feature_gate) -%}
+           {%- endif -%}
+        {%- endfor -%}
+        {{ kube_feature_gates + ['PersistentLocalVolumes=true', 'VolumeScheduling=true'] }}
+
+- debug: var=kube_feature_gates
+  when: debug|bool

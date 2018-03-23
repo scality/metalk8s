@@ -20,7 +20,7 @@ spec:
     storage: '{{ item.value.volume.size }}'
   accessModes:
   - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Retain
   storageClassName: '{{ item.value.storage_class }}'
   local:
     path: '{{ item.value.host_path }}/{{ item.value.volume.uuid }}'

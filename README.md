@@ -21,12 +21,12 @@ For production-ready environment, you need:
 ## Software prerequisite for host running metal-k8s
 
 ###  Install
-You need ansible version 2.5. You can create a virtualenv
+You need ansible. You can create a virtualenv
 ```
 cd metal-k8s
 virtualenv venv
 source ./venv/bin/activate
-pip install ansible==2.5.0rc2
+pip install ansible
 ```
 
 ## Inventory file
