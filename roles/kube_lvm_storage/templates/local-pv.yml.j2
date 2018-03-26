@@ -17,7 +17,7 @@ metadata:
           }'
 spec:
   capacity:
-    storage: '{{ item.value.volume.size }}'
+    storage: '{{ item.value.volume.size|size_lvm_to_k8s }}'
   accessModes:
   - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
