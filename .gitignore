@@ -1,3 +1,4 @@
+*.pyc
 /*.retry
 /venv
 /host_vars
