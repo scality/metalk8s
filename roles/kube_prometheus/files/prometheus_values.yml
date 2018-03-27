@@ -6,7 +6,10 @@ grafana:
 prometheus:
   externalUrl: '/_/prometheus'
   routePrefix: '/'
+  replicaCount: 2
+
 
 alertmanager:
   externalUrl: '/_/alertmanager'
   routePrefix: '/'
+  replicaCount: 2
