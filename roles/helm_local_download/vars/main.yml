@@ -1,0 +1,9 @@
+helm_sha1:
+  v2.8.1:
+    linux_amd64: sha1:72e83646b165dcf19a3934e80e6927e7b72874ae
+
+arch_dict:
+    x86_64: amd64
+
+exe_dict:
+    windows: helm.exe

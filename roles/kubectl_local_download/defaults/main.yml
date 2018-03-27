@@ -1,0 +1,7 @@
+debug: False
+
+kubectl_version: 1.9.4
+
+arch: '{{ arch_dict[ansible_userspace_architecture] }}'
+system: '{{ ansible_system|lower() }}'
+exe: "{{ exe_dict[system]|default('kubectl')}}"
