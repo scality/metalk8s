@@ -1,0 +1,4 @@
+- hosts: kube-node:kube-master
+  gather_facts: False
+  roles:
+    - role: reclaim_local_storage

@@ -1,0 +1,70 @@
+- name: 'get list of PV from api server'
+  uri:
+    url: 'http://localhost:8080/api/v1/persistentvolumes'
+    return: content
+  run_once: True
+  delegate_to: '{{ groups["kube-master"]|first }}'
+  register: cluster_pv
+
+- name: 'get all released pv indexed by server'
+  set_fact:
+    released_pv: >-
+      {%- set released_pv = {} -%}
+      {%- for pv in cluster_pv.json['items'] if pv.status.phase == "Released" -%}
+            {%- set node_affinity = pv.metadata.annotations[
+                    'volume.alpha.kubernetes.io/node-affinity']|from_json -%}
+            {%- set node = ((node_affinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms
+                        |first).matchExpressions|first)['values']|first -%}
+
+            {%- set _ = released_pv.setdefault(node, []).append(pv) -%}
+      {%- endfor -%}
+      {{ released_pv }}
+  run_once: True
+
+- name: 'debug list of released pv'
+  debug:
+    var: released_pv
+  when: debug|bool
+  run_once: True
+
+- name: 'delete content of released pv'
+  shell: rm -rf {{ item.spec.local.path }}/*
+  args:
+    warn: False
+  loop_control:
+     label: "{{ inventory_hostname }}-{{ item.spec.local.path }}"
+  with_items: '{{ released_pv[inventory_hostname]|default([]) }}'
+
+- name: 'delete pv'
+  uri:
+    url: 'http://localhost:8080/api/v1/persistentvolumes/{{ item.metadata.name }}'
+    method: 'DELETE'
+  run_once: True
+  delegate_to: '{{ groups["kube-master"]|first }}'
+  loop_control:
+     label: "{{ item.metadata.name }}"
+  with_items: '{{ released_pv.values()|list }}'
+
+- name: 'recreate pv'
+  uri:
+    url: 'http://localhost:8080/api/v1/persistentvolumes'
+    method: 'POST'
+    body_format: json
+    status_code: 201
+    body: >-
+        {%- for annotation in item.metadata.annotations|list
+                if annotation not in ['volume.alpha.kubernetes.io/node-affinity'] -%}
+            {%- set _ = item.metadata.annotations.pop(annotation) -%}
+        {%- endfor -%}
+        {%- set _ = item.metadata.pop('creationTimestamp') -%}
+        {%- set _ = item.metadata.pop('resourceVersion') -%}
+        {%- set _ = item.metadata.pop('selfLink') -%}
+        {%- set _ = item.metadata.pop('uid') -%}
+        {%- set _ = item.spec.pop('claimRef') -%}
+        {%- set _ = item.pop('status') -%}
+        {{ item }}
+  run_once: True
+  delegate_to: '{{ groups["kube-master"]|first }}'
+  loop_control:
+     label: "{{ item.metadata.name }}"
+  with_items: '{{ released_pv.values()|list }}'
