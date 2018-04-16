@@ -1,24 +1,20 @@
-- name: "Assert {{ inventory_hostname }} has vgs correctly declared"
+- name: "LVM Setup: Assert {{ inventory_hostname }} has vgs correctly declared"
   assert:
     that:
       - 'item.value.drives|length > 0'
   with_dict: '{{ metal_k8s_lvm.vgs }}'
 
-- name: "Check LVM packages"
+- name: "LVM Setup: Check LVM packages"
   package:
     name: lvm2
     state: present
 
-- name: "Start lvm storage setup"
-  debug:
-    msg: "LVM Setup: Start LVM storage setup"
-
-- name: "Display metal_k8s_lvm config"
+- name: "LVM Setup: Display metal_k8s_lvm config"
   debug:
     msg: '{{ metal_k8s_lvm.vgs }}'
   when: debug|bool
 
-- name: "Create the LVM Volume Groups"
+- name: "LVM Setup: Create the LVM Volume Groups"
   lvg:
     pvs: '{{ item.value.drives|join(",") }}'
     vg: '{{ item.key }}'
