@@ -1,6 +1,6 @@
 - name: 'install prometheus-operator'
   command: >-
-    helm upgrade prometheus-operator
+    {{ bin_dir }}/helm upgrade prometheus-operator
     --install {{ prometheus_operator_release_name }}
     --repo {{ prometheus_operator_repo }}
     --version {{ prometheus_operator_version }}
@@ -35,7 +35,7 @@
 
 - name: 'install kube-prometheus'
   command: >-
-    helm upgrade kube-prometheus
+    {{ bin_dir }}/helm upgrade kube-prometheus
     --install {{ kube_prometheus_release_name }}
     --repo {{ kube_prometheus_repo }}
     --version {{ kube_prometheus_version }}
