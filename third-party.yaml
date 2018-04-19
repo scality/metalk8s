@@ -1,0 +1,26 @@
+modules:
+- path: vendor/kubernetes-elasticsearch-cluster
+  source:
+    type: git-subtree
+    repository: https://github.com/pires/kubernetes-elasticsearch-cluster.git
+    ref: master
+  license: Apache-2.0
+- path: kubespray
+  source:
+    type: git-subtree
+    repository: https://github.com/kubernetes-incubator/kubespray.git
+    ref: master
+  license: Apache-2.0
+
+version: '0.1'
+
+# Schema for a module:
+# `path`: Path within repository where module is tracked
+#
+# `source.type`: Source type, likely `git-subtree`
+#
+# When `source.type` equals `git-subtree`:
+#  `source.repository`: URI of Git repository
+#  `source.ref`: Name of the upstream branch we track, or tag, or SHA1, or ...
+#
+# `license`: A valid SPDX license identifier, see https://spdx.org/licenses/
