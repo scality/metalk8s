@@ -1,4 +1,0 @@
-- name: 'install python2'
-  script: ../files/install_python2.sh
-  register: install_python2
-  changed_when: "'python2 already installed' not in install_python2.stdout"
