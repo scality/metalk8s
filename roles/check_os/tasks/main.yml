@@ -1,0 +1,7 @@
+
+- name: 'Assertion on OS'
+  assert:
+    that:
+      # Only centos >= 7.4 supports docker overlay2 storagedriver
+      - '(ansible_os_family == "RedHat")|int <= ansible_kernel|version_compare("3.10.0-693", ">=")|int'
+  when: not skip_check_os|bool

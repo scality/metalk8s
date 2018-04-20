@@ -3,6 +3,10 @@
   tasks:
     - ping:
 
+- hosts: k8s-cluster:etcd
+  roles:
+    - role: check_os
+
 - hosts: kube-node
   tags:
     - lvm-storage
