@@ -4,3 +4,4 @@
 /host_vars
 /inventories
 /credentials/
+/.tox/
