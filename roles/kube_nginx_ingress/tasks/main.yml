@@ -15,7 +15,7 @@
 
 - name: 'install nginx ingress'
   command: >-
-    helm upgrade nginx-ingress
+    {{ bin_dir }}/helm upgrade nginx-ingress
     --install {{ nginx_ingress_release_name }}
     --repo {{ nginx_ingress_repo }}
     --version {{ nginx_ingress_version }}

@@ -58,7 +58,7 @@
 
 - name: 'install Fluentd ElasticSearch Chart'
   command: >-
-    helm upgrade
+    {{ bin_dir }}/helm upgrade
     --install
     --repo {{ fluentd_repo }}
     --version {{ fluentd_version }}
@@ -93,7 +93,7 @@
 
 - name: 'install Kibana Chart'
   command: >-
-    helm upgrade
+    {{ bin_dir }}/helm upgrade
     --install
     --repo {{ kibana_repo }}
     --version {{ kibana_version }}
@@ -129,7 +129,7 @@
 
 - name: 'install ElasticSearch Exporter Chart'
   command: >-
-    helm upgrade
+    {{ bin_dir }}/helm upgrade
     --install
     --repo {{ elasticsearch_exporter_repo }}
     --version {{ elasticsearch_exporter_version }}

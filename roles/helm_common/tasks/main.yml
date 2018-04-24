@@ -1,5 +1,5 @@
 - name: 'wait for helm to be deployed'
-  command: helm version
+  command: '{{ bin_dir }}/helm version'
   register: helm_version
   until: not helm_version|failed
   retries: 50000
