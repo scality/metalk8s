@@ -1,3 +1,11 @@
+- hosts: localhost
+  gather_facts: False
+  any_errors_fatal: True
+  roles:
+    - role: preflight_checks
+  tags:
+    - preflight-checks
+
 - hosts: k8s-cluster
   gather_facts: False
   tasks:
