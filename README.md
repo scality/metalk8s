@@ -11,7 +11,7 @@ If you want  to test metal-k8s you just need one simple VM running ubuntu
 For production-ready environment, you need:
 
 - 5 servers
-- each server running ubuntu 16.04
+- each server running centos 7.4
 - hard-drive dedicated to system
 - a "/" partition of at least 20G
 - a "/var"/ partition of at least 100G

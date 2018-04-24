@@ -11,10 +11,9 @@
   tasks:
     - ping:
 
-- hosts: k8s-cluster
-  gather_facts: False
+- hosts: k8s-cluster:etcd
   roles:
-    - role: python2_install
+    - role: check_os
 
 - hosts: kube-node
   tags:

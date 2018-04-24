@@ -15,7 +15,7 @@
 
 - name: 'install Heapster Chart'
   command: >-
-    helm upgrade
+    {{ bin_dir }}/helm upgrade
     --install
     --repo {{ heapster_repo }}
     --version {{ heapster_version }}
