@@ -1,11 +1,11 @@
-![Kubernetes Logo](https://s28.postimg.org/lf3q4ocpp/k8s.png)
+![Kubernetes Logo](https://raw.githubusercontent.com/kubernetes-incubator/kubespray/master/docs/img/kubernetes-logo.png)
 
 Deploy a Production Ready Kubernetes Cluster
 ============================================
 
 If you have questions, join us on the [kubernetes slack](https://kubernetes.slack.com), channel **\#kubespray**.
 
--   Can be deployed on **AWS, GCE, Azure, OpenStack or Baremetal**
+-   Can be deployed on **AWS, GCE, Azure, OpenStack, vSphere or Baremetal**
 -   **High available** cluster
 -   **Composable** (Choice of the network plugin for instance)
 -   Support most popular **Linux distributions**
@@ -66,7 +66,7 @@ Supported Linux Distributions
 -----------------------------
 
 -   **Container Linux by CoreOS**
--   **Debian** Jessie
+-   **Debian** Jessie, Stretch, Wheezy
 -   **Ubuntu** 16.04
 -   **CentOS/RHEL** 7
 -   **Fedora/CentOS** Atomic
@@ -76,14 +76,14 @@ Note: Upstart/SysV init based OS types are not supported.
 Versions of supported components
 --------------------------------
 
--   [kubernetes](https://github.com/kubernetes/kubernetes/releases) v1.9.3
+-   [kubernetes](https://github.com/kubernetes/kubernetes/releases) v1.9.5
 -   [etcd](https://github.com/coreos/etcd/releases) v3.2.4
--   [flanneld](https://github.com/coreos/flannel/releases) v0.9.1
--   [calico](https://docs.projectcalico.org/v2.5/releases/) v2.5.0
+-   [flanneld](https://github.com/coreos/flannel/releases) v0.10.0
+-   [calico](https://docs.projectcalico.org/v2.6/releases/) v2.6.8
 -   [canal](https://github.com/projectcalico/canal) (given calico/flannel versions)
--   [cilium](https://github.com/cilium/cilium) v1.0.0-rc4
--   [contiv](https://github.com/contiv/install/releases) v1.0.3
--   [weave](http://weave.works/) v2.0.1
+-   [cilium](https://github.com/cilium/cilium) v1.0.0-rc8
+-   [contiv](https://github.com/contiv/install/releases) v1.1.7
+-   [weave](http://weave.works/) v2.3.0
 -   [docker](https://www.docker.com/) v17.03 (see note)
 -   [rkt](https://coreos.com/rkt/docs/latest/) v1.21.0 (see Note 2)
 
@@ -105,6 +105,9 @@ Requirements
 -   **Your ssh key must be copied** to all the servers part of your inventory.
 -   The **firewalls are not managed**, you'll need to implement your own rules the way you used to.
     in order to avoid any issue during deployment you should disable your firewall.
+-   If kubespray is ran from non-root user account, correct privilege escalation method
+    should be configured in the target servers. Then the `ansible_become` flag
+    or command parameters `--become or -b` should be specified.
 
 Network Plugins
 ---------------
