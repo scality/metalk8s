@@ -5,3 +5,5 @@
 /inventories
 /credentials/
 /.tox/
+/.kube/
+/.shell-env/
