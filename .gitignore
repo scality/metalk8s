@@ -6,3 +6,4 @@
 /credentials/
 /.tox/
 /.kube/
+/.shell-env/

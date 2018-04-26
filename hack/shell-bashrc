@@ -1,0 +1,8 @@
+if [ -r ~/.bashrc ]; then
+    . ~/.bashrc
+fi
+
+. @VENV_ACTIVATE@
+
+. <(kubectl completion bash)
+. <(helm completion bash)
