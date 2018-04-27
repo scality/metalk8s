@@ -69,7 +69,7 @@ KUBECTL = $(VENV_BIN)/kubectl
 $(KUBECTL): $(KUBECTL_BIN) $(VENV_EXISTS)
 	@ln -sf $(shell realpath $(KUBECTL_BIN)) $@
 
-HELM_SRC_TAR = $(SHELL_ENV)/$(shell basename $HELM_SRC)
+HELM_SRC_TAR = $(SHELL_ENV)/$(shell basename $(HELM_SRC))
 $(HELM_SRC_TAR): $(SHELL_ENV_EXISTS)
 	@rm -f $@.tmp
 	@echo "Downloading Helm..."
