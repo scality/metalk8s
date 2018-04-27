@@ -1,0 +1,6 @@
+- name: 'Download kubernetes-client archive'
+  get_url:
+    url: 'https://dl.k8s.io/v{{ kubectl_version }}/bin/{{ system }}/{{ arch }}/{{ exe }}'
+    checksum: '{{ (kubectl_sha1[kubectl_version]|default())[system ~ "_" ~ arch]|default(omit) }}'
+    dest: '{{ playbook_dir }}/bin/'
+    mode: 0755

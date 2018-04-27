@@ -1,0 +1,9 @@
+kubectl_sha1:
+  1.9.4:
+    linux_amd64: sha1:3085aebbaa7d54b2d52730b64ae44966d8fe2954
+
+arch_dict:
+    x86_64: amd64
+
+exe_dict:
+    windows: kubectl.exe

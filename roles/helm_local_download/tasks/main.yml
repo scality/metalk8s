@@ -1,0 +1,17 @@
+- name: 'Download helm archive'
+  get_url:
+    url: 'https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_version }}-{{ system }}-{{ arch }}.tar.gz'
+    checksum: '{{ (helm_sha1[helm_version]|default())[system ~ "_" ~ arch]|default(omit) }}'
+    dest: '{{ playbook_dir }}/bin/'
+
+- name: 'untar helm archive'
+  command: tar -xvf {{ playbook_dir }}/bin/helm-{{ helm_version }}-{{ system }}-{{ arch }}.tar.gz
+  args:
+    chdir: '{{ playbook_dir }}/bin'
+    warn: False
+
+- name: 'make link'
+  file:
+    src: './{{ system }}-{{ arch }}/{{ exe }}'
+    dest: '{{ playbook_dir }}/bin/{{ exe }}'
+    state: link

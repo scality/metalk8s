@@ -1,0 +1,7 @@
+- hosts: localhost
+  gather_facts: True
+  roles:
+    - role: kubectl_local_download
+      tags: ['kubectl']
+    - role: helm_local_download
+      tags: ['helm']
