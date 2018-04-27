@@ -29,7 +29,7 @@ PYTHON_VIRTUALENV_SRC = $(SHELL_ENV)/$(shell basename $(VIRTUALENV_SRC))
 $(PYTHON_VIRTUALENV_SRC): $(SHELL_ENV_EXISTS)
 	@rm -f $@.tmp
 	@$(PYTHON) hack/download.py $(VIRTUALENV_SRC) $@.tmp
-	@echo $(VIRTUALENV_SRC_SHA256SUM)  $@.tmp | sha256sum -c > /dev/null
+	@echo $(VIRTUALENV_SRC_SHA256SUM)  $@.tmp | $(PYTHON) hack/sha256sum.py -c > /dev/null
 	@mv $@.tmp $@
 
 PYTHON_VIRTUALENV = $(SHELL_ENV)/$(shell basename $(PYTHON_VIRTUALENV_SRC) .tar.gz)
@@ -61,7 +61,7 @@ $(KUBECTL_BIN): $(SHELL_ENV_EXISTS)
 	@rm -f $@.tmp
 	@echo "Downloading kubectl..."
 	@$(PYTHON) hack/download.py $(KUBECTL_SRC) $@.tmp
-	@echo $(KUBECTL_SRC_SHA256SUM)  $@.tmp | sha256sum -c > /dev/null
+	@echo $(KUBECTL_SRC_SHA256SUM)  $@.tmp | $(PYTHON) hack/sha256sum.py -c > /dev/null
 	@chmod a+x $@.tmp
 	@mv $@.tmp $@
 
@@ -74,14 +74,14 @@ $(HELM_SRC_TAR): $(SHELL_ENV_EXISTS)
 	@rm -f $@.tmp
 	@echo "Downloading Helm..."
 	@$(PYTHON) hack/download.py $(HELM_SRC) $@.tmp
-	@echo $(HELM_SRC_SHA256SUM)  $@.tmp | sha256sum -c > /dev/null
+	@echo $(HELM_SRC_SHA256SUM)  $@.tmp | $(PYTHON) hack/sha256sum.py -c > /dev/null
 	@mv $@.tmp $@
 
 HELM_BIN = $(SHELL_ENV)/helm-$(HELM_VERSION)
 $(HELM_BIN): $(HELM_SRC_TAR) $(SHELL_ENV_EXISTS)
 	@rm -f $(SHELL_ENV)/$(UNAME_KERNEL)-$(UNAME_MACHINE)/helm
 	@tar -xf $(HELM_SRC_TAR) -C $(SHELL_ENV) $(UNAME_KERNEL)-$(UNAME_MACHINE)/helm
-	@echo $(HELM_BIN_SHA256SUM)  $(SHELL_ENV)/$(UNAME_KERNEL)-$(UNAME_MACHINE)/helm | sha256sum -c > /dev/null
+	@echo $(HELM_BIN_SHA256SUM)  $(SHELL_ENV)/$(UNAME_KERNEL)-$(UNAME_MACHINE)/helm | $(PYTHON) hack/sha256sum.py -c > /dev/null
 	@mv $(SHELL_ENV)/$(UNAME_KERNEL)-$(UNAME_MACHINE)/helm $@
 
 HELM = $(VENV_BIN)/helm
