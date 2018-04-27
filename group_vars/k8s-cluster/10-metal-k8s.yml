@@ -8,3 +8,10 @@ kube_api_pwd: "{{ lookup('password', playbook_dir + '/credentials/kube_user leng
 
 # Currently required for Heapster kubelet access
 kube_read_only_port: 10255
+
+# Request usage of the `overlay2` storage driver, even on pre-18.03 Docker
+# installs.
+# Whilst this is not guaranteed to work on 'old' kernels, we check whether we're
+# running CentOS 7.4 or higher, with a kernel which contains all required
+# backports.
+docker_storage_options: -s overlay2 --storage-opt overlay2.override_kernel_check=true

@@ -105,7 +105,7 @@ def main(root, yaml_path):
 
     assert doc['version'] == '0.1'
 
-    rc = False
+    rc = True
 
     for module in doc['modules']:
         rc2 = check_module(root, module)
