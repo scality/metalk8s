@@ -1,5 +1,13 @@
 .POSIX:
 
+MAKEFLAGS += -r
+.DEFAULT_GOAL := default
+.DELETE_ON_ERROR:
+.SUFFIXES:
+
+default: help
+.PHONY: default
+
 VIRTUALENV_SRC = https://files.pythonhosted.org/packages/b1/72/2d70c5a1de409ceb3a27ff2ec007ecdd5cc52239e7c74990e32af57affe9/virtualenv-15.2.0.tar.gz
 VIRTUALENV_SRC_SHA256SUM = 1d7e241b431e7afce47e77f8843a276f652699d1fa4f93b9d8ce0076fd7b0b54
 
@@ -110,11 +118,17 @@ $(BASHRC): $(SHELL_ENV_EXISTS) hack/shell-bashrc
 	$(V)rm -f $@
 	$(V)sed s:@VENV_ACTIVATE@:$(VENV_ACTIVATE):g < hack/shell-bashrc > $@ || (rm -f $@; exit 1)
 
-shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC)
+shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC) ## Run a shell with `ansible-playbook`, `kubectl` and `helm` pre-installed
 	$(V)echo "Launching metal-k8s shell environment. Run 'exit' to quit."
 	$(V)bash --rcfile $(BASHRC) ||:
 .PHONY: shell
 
-clean-shell:
+clean-shell: ## Clean-up the `shell` environment
 	$(V)rm -rf $(SHELL_ENV)
 .PHONY: clean-shell
+
+help: ## Show this help message
+	$(V)echo "The following targets are available:"
+	$(V)echo
+	$(V)grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+.PHONY: help
