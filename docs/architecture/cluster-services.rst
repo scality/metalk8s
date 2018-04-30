@@ -1,3 +1,13 @@
+.. spelling::
+
+   Addons
+   addons
+   operability
+   preconfigured
+   prometheus
+   kube
+   Todo
+
 Cluster Services
 ================
 A Kubernetes_ cluster deployed on the `Google Cloud Platform`_ using GKE_, on
@@ -20,9 +30,9 @@ same level of operability.
 .. _MetalK8s: https://github.com/scality/metal-k8s/
 .. _Kubespray: https://github.com/kubernetes-incubator/kubespray/
 
-Basic Cluster Add-ons
----------------------
-On top of the basic Kubernetes services, the following add-ons are deployed:
+Basic Cluster Addons
+--------------------
+On top of the basic Kubernetes services, the following addons are deployed:
 
 Helm / Tiller
 *************
@@ -70,7 +80,7 @@ Metering / Monitoring
 ---------------------
 Metering and monitoring of a MetalK8s cluster is handled by the Prometheus_
 stack, including the Prometheus TSDB for metrics storage, Alertmanager_ to send
-alerts when pre-configured conditions are (not) met, and Grafana_ to visualize
+alerts when preconfigured conditions are (not) met, and Grafana_ to visualize
 stored metrics using predefined dashboards.
 
 .. _Prometheus: https://prometheus.io
@@ -88,7 +98,7 @@ Prometheus instances, scrape targets and alerting rules.
 kube-prometheus
 ***************
 We use `kube-prometheus`_ to provide operational insight into the Kubernetes
-cluster and containers managed by it. This includes pre-defined alerting rules
+cluster and containers managed by it. This includes predefined alerting rules
 and various Grafana dashboards.
 
 `kube-prometheus` uses `prometheus-operator` to deploy all required services.
@@ -129,7 +139,7 @@ ElasticSearch Curator
 *********************
 To ensure ingested logs don't flood the ElasticSearch resources, `ElasticSearch
 Curator`_ is deployed with a default configuration which drops `logstash-*`
-indices regulary.
+indices on a given schedule.
 
 .. _ElasticSearch Curator: https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html
 

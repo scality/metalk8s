@@ -1,3 +1,7 @@
+.. spelling::
+
+   prem
+
 .. MetalK8s documentation master file, created by
    sphinx-quickstart on Thu Apr 26 18:12:47 2018.
    You can adapt this file completely to your liking, but it should at least

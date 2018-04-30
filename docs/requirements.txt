@@ -44,6 +44,11 @@ packaging==17.1 \
     --hash=sha256:e9215d2d2535d3ae866c3d6efc77d5b24a0192cce0ff20e42896cc0664f889c0 \
     --hash=sha256:f019b770dd64e585a99714f1fd5e01c7a8f11b45635aa953fd41c689a657375b \
     # via sphinx
+pyenchant==2.0.0 \
+    --hash=sha256:b9526fc2c5f1ba0637e50200b645a7c20fb6644dbc6f6322027e7d2fbf1084a5 \
+    --hash=sha256:e8000144e61551fcab9cd1b6fdccdded20e577e8d6d0985533f0b2b9c38fd952 \
+    --hash=sha256:fc31cda72ace001da8fe5d42f11c26e514a91fa8c70468739216ddd8de64e2a0 \
+    # via sphinxcontrib-spelling
 pygments==2.2.0 \
     --hash=sha256:78f3f434bcc5d6ee09020f92ba487f95ba50f1e3ef83ae96b9d5ffa1bab25c5d \
     --hash=sha256:dbae1046def0efb574852fab9e90209b23f556367b5a320c0bcb871c77c3e8cc \
@@ -63,7 +68,7 @@ requests==2.18.4 \
 six==1.11.0 \
     --hash=sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9 \
     --hash=sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb \
-    # via packaging, sphinx
+    # via packaging, sphinx, sphinxcontrib-spelling
 snowballstemmer==1.2.1 \
     --hash=sha256:919f26a68b2c17a7634da993d91339e288964f93c274f1343e3bbbe2096e1128 \
     --hash=sha256:9f3bcd3c401c3e862ec0ebe6d2c069ebc012ce142cce209c098ccb5b09136e89 \
@@ -74,6 +79,9 @@ sphinx-rtd-theme==0.3.0 \
 sphinx==1.7.4 \
     --hash=sha256:2e7ad92e96eff1b2006cf9f0cdb2743dacbae63755458594e9e8238b0c3dc60b \
     --hash=sha256:e9b1a75a3eae05dded19c80eb17325be675e0698975baae976df603b6ed1eb10
+sphinxcontrib-spelling==4.1.0 \
+    --hash=sha256:769381eb5c791b7ff671457feeae5702142d231ba091a415e0eda695f221358b \
+    --hash=sha256:9aa05a7b5ad6a9884b01c9823467fab77ea34317697120073158ff365c20711f
 sphinxcontrib-websupport==1.0.1 \
     --hash=sha256:7a85961326aa3a400cd4ad3c816d70ed6f7c740acd7ce5d78cd0a67825072eb9 \
     --hash=sha256:f4932e95869599b89bf4f80fc3989132d83c9faa5bf633e7b5e0c25dffb75da2 \

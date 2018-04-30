@@ -42,6 +42,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.ifconfig',
     'sphinx.ext.githubpages',
+    'sphinxcontrib.spelling',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -165,3 +166,8 @@ texinfo_documents = [
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+
+# -- Options for sphinxcontrib-spelling --------------------------------------
+# See http://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
+spelling_word_list_filename='spelling-wordlist.txt'

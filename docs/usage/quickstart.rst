@@ -1,3 +1,10 @@
+.. spelling::
+
+   Quickstart
+   subdirectory
+   Todo
+   usernames
+
 Quickstart Guide
 ================
 To quickly set up a testing cluster using MetalK8s_, you need 3 machines running
