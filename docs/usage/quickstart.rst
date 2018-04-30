@@ -157,8 +157,8 @@ accessing this service for the first time, set up an *index pattern* for the
 ``logstash-*`` index, using the ``@timestamp`` field as *Time Filter field
 name*.
 
-See :doc:`../architecture/services` for more information about these services
-and their configuration.
+See :doc:`../architecture/cluster-services` for more information about these
+services and their configuration.
 
 .. _Kubernetes dashboard: https://github.com/kubernetes/dashboard
 .. _Grafana: https://grafana.com

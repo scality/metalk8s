@@ -5,5 +5,5 @@ Architecture
    :maxdepth: 2
    :caption: Contents:
 
-   services
+   cluster-services
    storage

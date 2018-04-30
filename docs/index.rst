@@ -20,7 +20,7 @@ provisioning tool. This installation is further augmented with operational
 tools for monitoring and metering, including Prometheus_, Grafana_,
 ElasticSearch_ and Kibana_. Furthermore, an "ingress controller" is deployed
 by default, based on Nginx_. All of these are managed as Helm_ packages. See
-:doc:`architecture/services` for a whole listing.
+:doc:`architecture/cluster-services` for a whole listing.
 
 .. _Kubespray: https://github.com/kubernetes-incubator/kubespray/
 .. _etcd: https://coreos.com/etcd/
