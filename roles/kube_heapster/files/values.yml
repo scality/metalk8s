@@ -1,2 +1,9 @@
 rbac:
   create: true
+
+command:
+- "/heapster"
+# Chart default:
+# - "--source=kubernetes.summary_api:''"
+# For https://github.com/scality/metal-k8s/issues/36:
+- "--source=kubernetes.summary_api:''?useServiceAccount=true&kubeletHttps=true&kubeletPort=10250&insecure=true"
