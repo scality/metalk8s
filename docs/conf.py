@@ -16,6 +16,9 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import os
+
+ON_RTD = os.environ.get('READTHEDOCS') == 'True'
 
 # -- Project information -----------------------------------------------------
 
@@ -44,6 +47,11 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinxcontrib.spelling',
 ]
+
+if ON_RTD:
+    extensions.extend([
+        'sphinxcontrib.googleanalytics',
+    ])
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -171,3 +179,8 @@ todo_include_todos = True
 # -- Options for sphinxcontrib-spelling --------------------------------------
 # See http://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
 spelling_word_list_filename='spelling-wordlist.txt'
+
+# -- Options for sphinxcontrib-googleanalytics -------------------------------
+# See https://pypi.org/project/sphinxcontrib-googleanalytics/
+googleanalytics_id = 'UA-78443762-1'
+googleanalytics_enabled = ON_RTD
