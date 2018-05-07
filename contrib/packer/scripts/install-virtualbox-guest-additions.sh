@@ -8,7 +8,9 @@ PACKAGES="bzip2 gcc kernel-devel kernel-devel-$(uname -r) kernel-headers perl"
 
 VBOX_VERSION=$(pwd)/.vbox_version
 
-test -e "${VBOX_VERSION}" || exit 0
+if [ "$PACKER_BUILDER_TYPE" != "virtualbox-iso" ]; then
+    exit 0
+fi
 
 VBOX_ISO="$(pwd)/VBoxGuestAdditions_$(cat "${VBOX_VERSION}").iso"
 VBOX_ISO_MOUNT=/mnt/VBoxGuestAdditions

@@ -1,3 +1,5 @@
 /packer_cache/
 /builds/
+/output-virtualbox-iso/
 /.vagrant/
+/admin.conf

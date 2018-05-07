@@ -4,40 +4,54 @@
       "boot_command": [
         "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/kickstart.cfg<enter><wait>"
       ],
-      "boot_wait": "10s",
-      "disk_size": 300000,
+      "boot_wait": "{{user `boot_wait`}}",
+      "disk_size": "{{user `disk_size`}}",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "guest_os_type": "RedHat_64",
       "hard_drive_discard": true,
       "hard_drive_interface": "sata",
       "hard_drive_nonrotational": true,
+      "headless": "{{user `headless`}}",
       "http_directory": "http",
-      "iso_checksum": "bba314624956961a2ea31dd460cd860a77911c1e0a56e4820a12b9c5dad363f5",
-      "iso_checksum_type": "sha256",
-      "iso_checksum_url": "http://mirrors.atosworldline.com/public/centos/7/isos/x86_64/sha256sum.txt",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_checksum_url": "{{user `mirror`}}/7/isos/x86_64/sha256sum.txt",
       "iso_interface": "sata",
       "iso_urls": [
         "CentOS-7-x86_64-Minimal-1708.iso",
-        "http://mirrors.atosworldline.com/public/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1708.iso"
+        "{{user `mirror`}}/7/isos/x86_64/CentOS-7-x86_64-Minimal-1708.iso"
       ],
-      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/halt -h -p",
+      "shutdown_command": "sudo systemctl poweroff",
       "ssh_password": "vagrant",
       "ssh_port": 22,
+      "ssh_timeout": "{{user `ssh_timeout`}}",
       "ssh_username": "vagrant",
-      "ssh_wait_timeout": "30m",
+      "ssh_wait_timeout": "{{user `ssh_timeout`}}",
       "type": "virtualbox-iso",
       "vboxmanage": [
         [
           "modifyvm",
           "{{.Name}}",
           "--memory",
-          "8192"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
+          "{{user `memory`}}",
           "--cpus",
-          "4"
+          "{{user `cpus`}}",
+          "--rtcuseutc",
+          "on",
+          "--nictype1",
+          "virtio",
+          "--natdnshostresolver1",
+          "on",
+          "--natdnsproxy1",
+          "on",
+          "--pae",
+          "on",
+          "--acpi",
+          "on",
+          "--ioapic",
+          "on",
+          "--chipset",
+          "ich9"
         ]
       ],
       "virtualbox_version_file": ".vbox_version"
@@ -45,30 +59,24 @@
   ],
   "post-processors": [
     {
-      "type": "checksum"
-    },
-    {
-      "compression_level": 9,
-      "include": "box/",
-      "type": "vagrant"
-    },
-    {
-      "type": "manifest"
+      "compression_level": "{{user `compression_level`}}",
+      "include": [
+        "box/info.json",
+        "builds/admin.conf"
+      ],
+      "output": "builds/packer_{{.BuildName}}_{{.Provider}}.box",
+      "type": "vagrant",
+      "vagrantfile_template": "box/Vagrantfile.template"
     }
   ],
   "provisioners": [
     {
-      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "execute_command": "{{.Vars}} sudo -E bash '{{.Path}}'",
       "script": "scripts/install-virtualbox-guest-additions.sh",
       "type": "shell"
     },
     {
       "script": "scripts/configure-vagrant.sh",
-      "type": "shell"
-    },
-    {
-      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
-      "script": "scripts/clean-empty-space.sh",
       "type": "shell"
     },
     {
@@ -89,12 +97,12 @@
       "user": "vagrant"
     },
     {
-      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "execute_command": "{{.Vars}} sudo -E bash '{{.Path}}'",
       "script": "scripts/create-temporary-admin-conf.sh",
       "type": "shell"
     },
     {
-      "destination": "./admin.conf",
+      "destination": "builds/admin.conf",
       "direction": "download",
       "source": "/home/vagrant/temporary-admin.conf",
       "type": "file"
@@ -102,7 +110,28 @@
     {
       "script": "scripts/remove-temporary-admin-conf.sh",
       "type": "shell"
+    },
+    {
+      "command": "sed -i -r 's/server: https:\\/\\/(\\b[0-9]{1,3}\\.){3}[0-9]{1,3}:6443\\b'/server:\\ https:\\\\/\\\\/127.0.0.1:16443/ builds/admin.conf",
+      "type": "shell-local"
+    },
+    {
+      "execute_command": "{{.Vars}} sudo -E bash '{{.Path}}'",
+      "script": "scripts/clean.sh",
+      "type": "shell"
     }
-  ]
+  ],
+  "variables": {
+    "boot_wait": "30s",
+    "compression_level": "9",
+    "cpus": "4",
+    "disk_size": "300000",
+    "headless": "false",
+    "iso_checksum": "bba314624956961a2ea31dd460cd860a77911c1e0a56e4820a12b9c5dad363f5",
+    "iso_checksum_type": "sha256",
+    "memory": "8192",
+    "mirror": "http://mirrors.kernel.org/centos",
+    "ssh_timeout": "30m"
+  }
 }
 
