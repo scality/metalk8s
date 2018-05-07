@@ -1,0 +1,5 @@
+{
+  "description": "MetalK8s, an opinionated Kubernetes distribution with a focus on long-term on-prem deployments",
+  "author": "Scality",
+  "homepage": "https://github.com/scality/metal-k8s"
+}

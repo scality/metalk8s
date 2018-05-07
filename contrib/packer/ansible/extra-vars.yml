@@ -1,0 +1,12 @@
+kube_api_pwd: 'insecure'
+
+helm_version: v2.8.2
+
+kubeconfig_localhost: false
+
+kube_apiserver_address: '127.0.0.1'
+
+metal_k8s_lvm:
+  vgs:
+    kubevg:
+      drives: ['/dev/sda2']

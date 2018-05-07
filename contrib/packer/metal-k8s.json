@@ -2,10 +2,10 @@
   "builders": [
     {
       "boot_command": [
-        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/kickstart.cfg<enter><wait>"
       ],
       "boot_wait": "10s",
-      "disk_size": 16384,
+      "disk_size": 300000,
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "guest_os_type": "RedHat_64",
       "hard_drive_discard": true,
@@ -24,7 +24,7 @@
       "ssh_password": "vagrant",
       "ssh_port": 22,
       "ssh_username": "vagrant",
-      "ssh_wait_timeout": "120s",
+      "ssh_wait_timeout": "30m",
       "type": "virtualbox-iso",
       "vboxmanage": [
         [
@@ -37,11 +37,72 @@
           "modifyvm",
           "{{.Name}}",
           "--cpus",
-          "2"
+          "4"
         ]
-      ]
+      ],
+      "virtualbox_version_file": ".vbox_version"
     }
   ],
-  "post-processors": []
+  "post-processors": [
+    {
+      "type": "checksum"
+    },
+    {
+      "compression_level": 9,
+      "include": "box/",
+      "type": "vagrant"
+    },
+    {
+      "type": "manifest"
+    }
+  ],
+  "provisioners": [
+    {
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "script": "scripts/install-virtualbox-guest-additions.sh",
+      "type": "shell"
+    },
+    {
+      "script": "scripts/configure-vagrant.sh",
+      "type": "shell"
+    },
+    {
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "script": "scripts/clean-empty-space.sh",
+      "type": "shell"
+    },
+    {
+      "extra_arguments": [
+        "--become",
+        "--extra-vars",
+        "@ansible/extra-vars.yml"
+      ],
+      "groups": [
+        "kube-master",
+        "etcd",
+        "kube-node",
+        "k8s-cluster"
+      ],
+      "host_alias": "node1",
+      "playbook_file": "../../metal-k8s.yml",
+      "type": "ansible",
+      "user": "vagrant"
+    },
+    {
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "script": "scripts/create-temporary-admin-conf.sh",
+      "type": "shell"
+    },
+    {
+      "destination": "./admin.conf",
+      "direction": "download",
+      "source": "/home/vagrant/temporary-admin.conf",
+      "type": "file"
+    },
+    {
+      "script": "scripts/remove-temporary-admin-conf.sh",
+      "type": "shell"
+    }
+  ]
 }
 
