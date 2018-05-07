@@ -11,6 +11,7 @@ build-locale-archive
 
 # Clean Yum cache etc
 yum clean -y all
+rm -rf /var/cache/yum
 
 # Make sure all leftover space is TRIM'ed
 dd if=/dev/zero of=/EMPTY bs=1M || true

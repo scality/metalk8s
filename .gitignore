@@ -7,3 +7,4 @@
 /.tox/
 /.kube/
 /.shell-env/
+/.vagrant/

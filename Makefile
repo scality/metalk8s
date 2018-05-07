@@ -127,6 +127,10 @@ clean-shell: ## Clean-up the `shell` environment
 	$(V)rm -rf $(SHELL_ENV)
 .PHONY: clean-shell
 
+boxes: ## Build Vagrant boxes using Packer (see `contrib/packer/README.md`)
+	$(V)$(MAKE) -C contrib/packer $@
+.PHONY:  boxes
+
 help: ## Show this help message
 	$(V)echo "The following targets are available:"
 	$(V)echo
