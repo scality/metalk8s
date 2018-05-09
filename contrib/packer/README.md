@@ -3,11 +3,16 @@ Generating pre-provisioned VM images using Packer
 The manifests and scripts in this folder allow to create [Vagrant] *Boxes* using
 [Packer].
 
+[Vagrant]: https://www.vagrantup.com
+[Packer]: https://www.packer.io
+
 Note: what's below is tested with
 
 - Packer 1.2.2
 - Vagrant 2.0.3
 - VirtualBox 5.2.8
+
+[VirtualBox]: https://www.virtualbox.org
 
 Note: even though there's some support for building Qemu/KVM *Boxes*, this is
 currently not working (see below)
