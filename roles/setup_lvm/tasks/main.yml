@@ -1,7 +1,10 @@
 - name: "LVM Setup: Assert {{ inventory_hostname }} has vgs correctly declared"
   assert:
     that:
-      - 'item.value.drives|length > 0'
+      - '(item.value.drives|length > 0
+            and item.value.create|default(True)|bool)
+        or (item.value.drives|length == 0
+            and not item.value.create|default(True)|bool)'
   with_dict: '{{ metal_k8s_lvm.vgs }}'
 
 - name: "LVM Setup: Check LVM packages"
@@ -20,3 +23,5 @@
     vg: '{{ item.key }}'
     state: present
   with_dict: '{{ metal_k8s_lvm.vgs }}'
+  when:
+    - 'item.value.create|default(True)|bool'
