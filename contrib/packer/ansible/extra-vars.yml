@@ -10,4 +10,4 @@ supplementary_addresses_in_ssl_keys:
 metal_k8s_lvm:
   vgs:
     kubevg:
-      drives: ['/dev/sda2']
+      drives: ['/dev/vda2']

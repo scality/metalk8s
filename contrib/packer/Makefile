@@ -11,7 +11,8 @@ default: help
 PACKER = packer
 PACKER_TEMPLATE = metal-k8s.json
 
-BOXES = box-virtualbox
+BOXES = box-virtualbox \
+	box-qemu
 
 V=@
 
@@ -20,6 +21,7 @@ INCLUDES = ansible/extra-vars.yml \
 	   box/Vagrantfile.template \
 	   http/kickstart.cfg \
 	   scripts/install-virtualbox-guest-additions.sh \
+	   scripts/qemu-remove-mac-check.sh \
 	   scripts/configure-vagrant.sh \
 	   scripts/create-temporary-admin-conf.sh \
 	   scripts/remove-temporary-admin-conf.sh \
@@ -30,6 +32,11 @@ check-packer:
 		( echo "$(PACKER) doesn't look like Hashicorp Packer"; false )
 .PHONY: check-packer
 
+builds/packer_qemu_libvirt.box: $(PACKER_TEMPLATE) $(INCLUDES)
+	$(V)$(MAKE) check-packer
+	$(V)rm -f build/admin.conf
+	$(V)$(PACKER) build -only=qemu $(PACKER_TEMPLATE)
+
 builds/packer_virtualbox-iso_virtualbox.box: $(PACKER_TEMPLATE) $(INCLUDES)
 	$(V)$(MAKE) check-packer
 	$(V)rm -f build/admin.conf
@@ -37,6 +44,9 @@ builds/packer_virtualbox-iso_virtualbox.box: $(PACKER_TEMPLATE) $(INCLUDES)
 
 box-virtualbox: builds/packer_virtualbox-iso_virtualbox.box ## Build Vagrant box for VirtualBox using Packer
 .PHONY: box-virtualbox
+
+box-qemu: builds/packer_qemu_libvirt.box ## Build Vagrant box for Qemu/libvirt using Packer
+.PHONY: box-qemu
 
 boxes: $(BOXES) ## Build Vagrant boxes using Packer
 .PHONY: boxes

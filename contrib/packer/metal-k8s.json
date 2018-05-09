@@ -55,6 +55,50 @@
         ]
       ],
       "virtualbox_version_file": ".vbox_version"
+    },
+    {
+      "accelerator": "kvm",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/kickstart.cfg<enter><wait>"
+      ],
+      "boot_wait": "{{user `boot_wait`}}",
+      "disk_compression": true,
+      "disk_discard": "unmap",
+      "disk_interface": "virtio",
+      "disk_size": "{{user `disk_size`}}",
+      "format": "qcow2",
+      "headless": "{{user `headless`}}",
+      "http_directory": "http",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_checksum_url": "{{user `mirror`}}/7/isos/x86_64/sha256sum.txt",
+      "iso_urls": [
+        "CentOS-7-x86_64-Minimal-1708.iso",
+        "{{user `mirror`}}/7/isos/x86_64/CentOS-7-x86_64-Minimal-1708.iso"
+      ],
+      "machine_type": "q35",
+      "net_device": "virtio-net",
+      "qemuargs": [
+        [
+          "-m",
+          "{{user `memory`}}M"
+        ],
+        [
+          "-smp",
+          "{{user `cpus`}}"
+        ],
+        [
+          "-rtc",
+          "base=utc"
+        ]
+      ],
+      "shutdown_command": "sudo systemctl poweroff",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_timeout": "{{user `ssh_timeout`}}",
+      "ssh_username": "vagrant",
+      "type": "qemu",
+      "vm_name": "metal-k8s"
     }
   ],
   "post-processors": [
@@ -72,7 +116,10 @@
   "provisioners": [
     {
       "execute_command": "{{.Vars}} sudo -E bash '{{.Path}}'",
-      "script": "scripts/install-virtualbox-guest-additions.sh",
+      "scripts": [
+        "scripts/install-virtualbox-guest-additions.sh",
+        "scripts/qemu-remove-mac-check.sh"
+      ],
       "type": "shell"
     },
     {

@@ -18,4 +18,11 @@ Vagrant.configure("2") do |config|
       "--chipset", "ich9"
     ]
   end
+
+  config.vm.provider "libvirt" do |lv|
+    lv.cpus = 4
+    lv.memory = 8192
+    lv.video_type = "qxl"
+    lv.machine_type = "q35"
+  end
 end
