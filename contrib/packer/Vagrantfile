@@ -1,6 +1,6 @@
 LOCAL_BOXES = {
-    "virtualbox" => "./contrib/packer/builds/packer_virtualbox-iso_virtualbox.box",
-    "libvirt" => "./contrib/packer/builds/packer_qemu_libvirt.box"
+    "virtualbox" => "./builds/packer_virtualbox-iso_virtualbox.box",
+    "libvirt" => "./builds/packer_qemu_libvirt.box"
 }
 
 Vagrant.configure("2") do |config|
