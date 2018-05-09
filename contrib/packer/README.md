@@ -58,8 +58,11 @@ by `qemu` during `packer build`. As a result, `etcd` refuses to start.
 
 TODO
 ----
+- Enable [ElasticSearch] again, properly sized
 - Get Qemu/KVM images to work
 - Add some tooling to wait for Kubernetes services to be fully deployed before
 finalizing the build: due to Kubernetes' out-of-band behaviour after deploying
 new manifests, a VM image can be frozen before all images are pulled, at which
 point they'll still need to be pulled when running the *Box* for the first time.
+
+[ElasticSearch]: https://www.elastic.co/products/elasticsearch
