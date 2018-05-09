@@ -41,7 +41,7 @@ Note: it may take some time before these services are accessible.
 
 To use `kubectl` and `helm`, run
 
-  $ export KUBECONFIG=$(pwd)/contrib/packer/builds/admin.conf
+  $ export KUBECONFIG=$(pwd)/builds/admin.conf
 
 in your environment
 EOS
