@@ -152,9 +152,10 @@ Access to dashboard, Grafana and Kibana
 Once the cluster is running, you can access the `Kubernetes dashboard`_,
 Grafana_ metrics and Kibana_ logs from your browser.
 
-The Kubernetes dashboard is available at :samp:`https://{master-ip}:6443/ui`,
-where *master-ip* should be replaced by the IP-address of one of the hosts in
-the *kube-master* group.
+To access the Kubernetes dashboard, first create a secure tunnel into your
+cluster by running ``kubectl proxy``. Then, while the tunnel is up and running,
+access the dashboard at
+http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/.
 
 Grafana can be accessed at :samp:`http://{node-ip}/_/grafana`, with *node-ip*
 replaced by the IP-address of one of the hosts in the *kube-node* group.
