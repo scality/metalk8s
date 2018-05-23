@@ -10,9 +10,11 @@
     - es-discovery-svc.yaml
     - es-svc.yaml
     - es-master.yaml
+    - es-master-pdb.yaml
     - es-client.yaml
     - stateful/es-data-svc.yaml
     - stateful/es-data-stateful.yaml
+    - es-data-pdb.yaml
     - es-curator-config.yaml
     - es-curator_v1beta1.yaml
   register: es_manifests
