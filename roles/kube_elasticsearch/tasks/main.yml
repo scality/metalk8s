@@ -11,7 +11,8 @@
     - es-svc.yaml
     - es-master.yaml
     - es-client.yaml
-    - es-data.yaml
+    - stateful/es-data-svc.yaml
+    - stateful/es-data-stateful.yaml
     - es-curator-config.yaml
     - es-curator_v1beta1.yaml
   register: es_manifests
@@ -31,7 +32,7 @@
 - name: 'Deploy ElasticSearch'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
-    filename: '{{ es_addon_dir }}/{{ item }}'
+    filename: '{{ es_addon_dir }}/{{ item | basename }}'
     namespace: '{{ es_namespace }}'
     state: 'latest'
   with_items: >-
