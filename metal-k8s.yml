@@ -6,7 +6,7 @@
   tags:
     - preflight-checks
 
-- hosts: k8s-cluster
+- hosts: k8s-cluster:etcd
   gather_facts: False
   tasks:
     - ping:

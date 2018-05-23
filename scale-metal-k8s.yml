@@ -1,7 +1,19 @@
-- hosts: kube-node
+- hosts: localhost
+  gather_facts: False
+  any_errors_fatal: True
+  roles:
+    - role: preflight_checks
+  tags:
+    - preflight-checks
+
+- hosts: k8s-cluster:etcd
   gather_facts: False
   tasks:
     - ping:
+
+- hosts: k8s-cluster:etcd
+  roles:
+    - role: check_os
 
 - hosts: kube-node
   tags:
