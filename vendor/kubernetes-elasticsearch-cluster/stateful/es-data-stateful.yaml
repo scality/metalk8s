@@ -36,7 +36,7 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: CLUSTER_NAME
-          value: myesdb
+          value: metal-k8s
         - name: NODE_MASTER
           value: "false"
         - name: NODE_INGEST
