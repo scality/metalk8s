@@ -18,13 +18,13 @@ customer datacenters.
 .. _Scality: https://www.scality.com
 .. _Zenko: https://www.zenko.io
 
-It is based on the Kubespray_ project to reliably install a base Kubernetes
+MetalK8s, based on the Kubespray_ project, reliably installs a base Kubernetes
 cluster, including all dependencies (like etcd_), using the Ansible_
-provisioning tool. This installation is further augmented with operational
-tools for monitoring and metering, including Prometheus_, Grafana_,
-ElasticSearch_ and Kibana_. Furthermore, an "ingress controller" is deployed
-by default, based on Nginx_. All of these are managed as Helm_ packages. See
-:doc:`architecture/cluster-services` for a whole listing.
+provisioning tool. MetalK8s augments this installation with operational
+monitoring and metering tools, including Prometheus_, Grafana_, ElasticSearch_
+and Kibana_. Furthermore, MetalK8s deploys an "ingress controller" based on 
+Nginx_ by default. All of these are managed as Helm_ packages by MetalK8s. See
+:doc:`architecture/cluster-services` for a complete listing.
 
 .. _Kubespray: https://github.com/kubernetes-incubator/kubespray/
 .. _etcd: https://coreos.com/etcd/
@@ -38,8 +38,8 @@ by default, based on Nginx_. All of these are managed as Helm_ packages. See
 
 Unlike hosted Kubernetes solutions, where network-attached storage is available
 and managed by the provider, we assume no such system to be available in
-environments where MetalK8s is deployed. As such, we focus on managing
-node-local storage, and exposing these volumes to containers managed in the
+environments where MetalK8s is deployed. Consequently, we focus on managing
+node-local storage and exposing these volumes to containers managed in the
 cluster. See :doc:`architecture/storage` for more information.
 
 Getting started
