@@ -1,7 +1,5 @@
 .. spelling::
 
-   Addons
-   addons
    operability
    preconfigured
    prometheus
@@ -10,10 +8,11 @@
 
 Cluster Services
 ================
-A Kubernetes_ cluster deployed on the `Google Cloud Platform`_ using GKE_, on
-`Microsoft Azure`_ using AKS_ or even using Kops_ or similar tools on `Amazon
-AWS`_ comes with built-in tooling for centralized container log management,
-metrics collection, tracing, node health checking and more.
+When deployed on the `Google Cloud Platform`_ (using GKE_), on
+`Microsoft Azure`_ (using AKS_), or on `Amazon AWS`_ (using Kops_
+or similar tools) a Kubernetes_ cluster comes with built-in tooling for
+centralized container log management, metrics collection, tracing, node
+health checking, and more.
 
 .. _Kubernetes: https://kubernetes.io
 .. _Google Cloud Platform: https://cloud.google.com
@@ -23,41 +22,40 @@ metrics collection, tracing, node health checking and more.
 .. _Kops: https://github.com/kubernetes/kops/
 .. _Amazon AWS: https://aws.amazon.com
 
-In MetalK8s_, we augment a basic Kubernetes cluster deployed using the
-Kubespray_ playbook) with various tools to bring an on-premise cluster to the
-same level of operability.
+MetalK8s_ augments a basic Kubernetes cluster deployed using the
+Kubespray_ playbook with tools that bring an on-premise cluster to
+the same level of operability.
 
 .. _MetalK8s: https://github.com/scality/metal-k8s/
 .. _Kubespray: https://github.com/kubernetes-incubator/kubespray/
 
-Basic Cluster Addons
+Basic Cluster Add-ons
 --------------------
-On top of the basic Kubernetes services, the following addons are deployed:
+The following add-ons are deployed atop the basic Kubernetes services:
 
 Helm / Tiller
 *************
-Helm_ is a *package manager* for Kubernetes. It can be used to deploy various
-services in a Kubernetes cluster using templates to describe objects. *Tiller*
-is a cluster-side service used by the :command:`helm` CLI tool to manage these
+Helm_ is a *package manager* for Kubernetes that can deploy various services
+in a Kubernetes cluster using templates to describe objects. *Tiller* is a 
+cluster-side service the :command:`helm` CLI tool uses to manage these
 deployments.
 
 .. _Helm: https://www.helm.sh
 
 Heapster
 ********
-Heapster_ is a service which collects and exposes resource consumption metrics
-of containers running in a cluster. The Kubernetes Dashboard uses the Heapster
-service, when available, to display CPU and memory usage of Pods, Deployments
-and more.
+Heapster_ is a service that collects and exposes resource consumption metrics
+of containers running in a cluster. When the Heapster service is available, the
+Kubernetes Dashboard uses it to display CPU and memory usage of pods,
+deployments, and more.
 
 .. _Heapster: https://github.com/kubernetes/heapster
 
 metrics-server
 **************
-The metrics-server_ service is derived from Heapster, and provides an
-implementation of the `Metrics API`_ exposing CPU and memory consumption of
-containers. These metrics are in turn used by the HorizontalPodAutoscaler_
-controller.
+Derived from Heapster, the metrics-server_ service provides an implementation
+of the `Metrics API`_ exposing containers' CPU and memory consumption. These
+metrics are in turn used by the HorizontalPodAutoscaler_ controller.
 
 .. _metrics-server: https://github.com/kubernetes-incubator/metrics-server
 .. _Metrics API: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/resource-metrics-api.md
@@ -78,7 +76,7 @@ well-known Nginx_ HTTP server under the hood.
 
 Metering / Monitoring
 ---------------------
-Metering and monitoring of a MetalK8s cluster is handled by the Prometheus_
+Metering and monitoring a MetalK8s cluster is handled by the Prometheus_
 stack, including the Prometheus TSDB for metrics storage, Alertmanager_ to send
 alerts when preconfigured conditions are (not) met, and Grafana_ to visualize
 stored metrics using predefined dashboards.
@@ -97,9 +95,9 @@ Prometheus instances, scrape targets and alerting rules.
 
 kube-prometheus
 ***************
-We use `kube-prometheus`_ to provide operational insight into the Kubernetes
-cluster and containers managed by it. This includes predefined alerting rules
-and various Grafana dashboards.
+`kube-prometheus`_ provides operational insight into the Kubernetes cluster
+and the containers it manages. This includes predefined alerting rules and
+various Grafana dashboards.
 
 `kube-prometheus` uses `prometheus-operator` to deploy all required services.
 
@@ -107,17 +105,17 @@ and various Grafana dashboards.
 
 node-exporter
 *************
-The node-exporter_ service is deployed to expose various node OS metrics, which
-are in turn captured by Prometheus. These metrics include CPU, memory, disk and
-network consumption as well as many Linux-specific values.
+The node-exporter_ service exposes various node OS metrics, which Prometheus
+captures in turn. These metrics include consumption of CPU, memory, disk,
+and network resources, as well as many Linux-specific values.
 
 .. _node-exporter: https://github.com/prometheus/node_exporter
 
 Grafana
 *******
-To ease cluster operations, several Grafana dashboards are made available,
-including cluster-wide views and health-checks, node OS metrics,
-per-*Deployment* or per-*Pod* resource usage, monitoring of the Prometheus
+To ease cluster operations, several Grafana dashboards are offered,
+providing cluster-wide views and health checks, node OS metrics,
+per-*deployment* and per-*pod* resource usage, monitoring of the Prometheus
 service itself, and many more.
 
 .. todo:: Do we need to list all exported deployed with kube-prometheus?
@@ -126,20 +124,20 @@ Log Collection
 --------------
 ElasticSearch
 *************
-The ElasticSearch_ full-text indexing service is used to ingest all container
-logs in a central place, and make them accessible to operators. This
-ElasticSearch cluster is deployed using the manifests provided in
+The Elasticsearch_ full-text indexing service ingests all container
+logs in a central place and makes them accessible to operators. This
+Elasticsearch cluster is deployed using the manifests provided in
 `pires/kubernetes-elasticsearch-cluster`_, which are tuned to use
 production-grade settings.
 
-.. _ElasticSearch: https://www.elastic.co/products/elasticsearch/
+.. _Elasticsearch: https://www.elastic.co/products/elasticsearch/
 .. _pires/kubernetes-elasticsearch-cluster:
 
-ElasticSearch Curator
+Elasticsearch Curator
 *********************
-To ensure ingested logs don't flood the ElasticSearch resources, `ElasticSearch
-Curator`_ is deployed with a default configuration which drops `logstash-*`
-indices on a given schedule.
+To ensure ingested logs don't flood the Elasticsearch resources,
+`Elasticsearch Curator`_ is deployed with a default configuration
+that drops `logstash-*` indexes on a given schedule.
 
 .. _ElasticSearch Curator: https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html
 
@@ -157,11 +155,11 @@ stack.
 
 Kibana
 ******
-To give operators access to the logs stored in ElasticSearch, a `Kibana`_
+To give operators access to the logs stored in Elasticsearch, a `Kibana`_
 instance is provided.
 
-.. note:: When accessing Kibana for the first time, an *index pattern* for the
-   ``logstash-*`` indices needs to be configured, using ``@timestamp`` as *Time
+.. note:: When Kibana is first accessed, an *index pattern* for the
+   ``logstash-*`` indexes must configured, using ``@timestamp`` as *Time
    Filter field name*.
 
 .. _Kibana: https://www.elastic.co/products/kibana/
