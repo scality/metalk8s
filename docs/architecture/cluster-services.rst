@@ -8,9 +8,9 @@
 
 Cluster Services
 ================
-When deployed on the `Google Cloud Platform`_ (using GKE_), on
-`Microsoft Azure`_ (using AKS_), or on `Amazon AWS`_ (using Kops_
-or similar tools) a Kubernetes_ cluster comes with built-in tooling for
+Platform-native Kubernetes engines like GKE_, AKS, or Kops (or similar) 
+ensure that Kubernetes_ clusters deployed their native cloud platforms
+(GCP_, Azure_, or AWS_, respectively) come with built-in tooling for
 centralized container log management, metrics collection, tracing, node
 health checking, and more.
 
@@ -31,7 +31,7 @@ the same level of operability.
 
 Basic Cluster Add-ons
 --------------------
-The following add-ons are deployed atop the basic Kubernetes services:
+The following add-ons are deployed along with the basic Kubernetes services:
 
 Helm / Tiller
 *************
@@ -46,8 +46,8 @@ Heapster
 ********
 Heapster_ is a service that collects and exposes resource consumption metrics
 of containers running in a cluster. When the Heapster service is available, the
-Kubernetes Dashboard uses it to display CPU and memory usage of pods,
-deployments, and more.
+Kubernetes Dashboard uses it to display CPU and memory usage of Pods,
+Deployments, and more.
 
 .. _Heapster: https://github.com/kubernetes/heapster
 
@@ -115,7 +115,7 @@ Grafana
 *******
 To ease cluster operations, several Grafana dashboards are offered,
 providing cluster-wide views and health checks, node OS metrics,
-per-*deployment* and per-*pod* resource usage, monitoring of the Prometheus
+per-*Deployment* and per-*Pod* resource usage, monitoring of the Prometheus
 service itself, and many more.
 
 .. todo:: Do we need to list all exported deployed with kube-prometheus?
@@ -159,7 +159,7 @@ To give operators access to the logs stored in Elasticsearch, a `Kibana`_
 instance is provided.
 
 .. note:: When Kibana is first accessed, an *index pattern* for the
-   ``logstash-*`` indexes must configured, using ``@timestamp`` as *Time
+   ``logstash-*`` indexes must be configured, using ``@timestamp`` as *Time
    Filter field name*.
 
 .. _Kibana: https://www.elastic.co/products/kibana/
