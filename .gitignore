@@ -8,3 +8,5 @@
 /.tox/
 /.kube/
 /.shell-env/
+requirements.txt
+_build
