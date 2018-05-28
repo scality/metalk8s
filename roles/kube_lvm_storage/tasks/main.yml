@@ -1,3 +1,11 @@
+- name: 'Check that you have mkfs for ext4 and xfs filesystem'
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - e2fsprogs
+    - xfsprogs
+
 - name: 'Assert all vgs have a host_path and volumes defined'
   assert:
     that:
