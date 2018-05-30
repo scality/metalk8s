@@ -3,18 +3,6 @@ kind: PersistentVolume
 metadata:
   name: >-
     {{ item.value.vg|replace("_","-") }}-{{ item.value.volume.uuid }}
-  annotations:
-    "volume.alpha.kubernetes.io/node-affinity": ' {
-        "requiredDuringSchedulingIgnoredDuringExecution": {
-            "nodeSelectorTerms": [
-                { "matchExpressions": [
-                    { "key": "kubernetes.io/hostname",
-                      "operator": "In",
-                      "values": ["{{ ansible_hostname }}"]
-                    }
-                ]}
-             ]}
-          }'
 spec:
   capacity:
     storage: '{{ item.value.volume.size|size_lvm_to_k8s }}'
@@ -24,3 +12,11 @@ spec:
   storageClassName: '{{ item.value.storage_class }}'
   local:
     path: '{{ item.value.host_path }}/{{ item.value.volume.uuid }}'
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - '{{ ansible_nodename }}'
