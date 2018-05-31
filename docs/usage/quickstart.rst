@@ -67,6 +67,8 @@ To create an inventory:
     default configuration) on hosts in the *kube-node* group, that is,
     hosts on which Pods will be scheduled::
 
+.. code-block:: yaml
+
          metal_k8s_lvm:
            vgs:
              kubevg:
@@ -79,18 +81,18 @@ more information about storage, see :doc:`../architecture/storage`.
 Entering the MetalK8s Shell
 ---------------------------
 To install a supported version of Ansible and its dependencies, along with some
-Kubernetes tools (:program:`kubectl` and :program:`helm`), create a
+Kubernetes tools (:program:`kubectl` and :program:`helm`), we provide a
 :program:`make` target that installs these in a local environment. To enter this
 environment, run :command:`make shell` (this takes a couple of seconds on first
 run)::
 
-      $ make shell
-      Creating virtualenv...
-      Installing Python dependencies...
-      Downloading kubectl...
-      Downloading Helm...
-      Launching metal-k8s shell environment. Run 'exit' to quit.
-      (metal-k8s) $
+    $ make shell
+    Creating virtualenv...
+    Installing Python dependencies...
+    Downloading kubectl...
+    Downloading Helm...
+    Launching metal-k8s shell environment. Run 'exit' to quit.
+    (metal-k8s) $
 
 Now, you're all set to deploy a cluster::
 
@@ -144,7 +146,6 @@ Similarly, you can list all deployed Helm_ applications::
     kube-prometheus         3               Wed Apr 25 23:09:22 2018        DEPLOYED        kube-prometheus-0.0.33          kube-ops
     nginx-ingress           3               Wed Apr 25 23:09:09 2018        DEPLOYED        nginx-ingress-0.11.1            kube-ingress
     prometheus-operator     3               Wed Apr 25 23:09:14 2018        DEPLOYED        prometheus-operator-0.0.15      kube-ops
-
 
 .. _Helm: https://www.helm.sh
 
