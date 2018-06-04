@@ -11,11 +11,8 @@
     released_pv: >-
       {%- set released_pv = {} -%}
       {%- for pv in cluster_pv.json['items'] if pv.status.phase == "Released" -%}
-            {%- set node_affinity = pv.metadata.annotations[
-                    'volume.alpha.kubernetes.io/node-affinity']|from_json -%}
-            {%- set node = ((node_affinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms
-                        |first).matchExpressions|first)['values']|first -%}
-
+            {%- set node = ((pv.spec.nodeAffinity.required.nodeSelectorTerms|first).matchExpressions
+                 |first)['values']|first -%}
             {%- set _ = released_pv.setdefault(node, []).append(pv) -%}
       {%- endfor -%}
       {{ released_pv }}
