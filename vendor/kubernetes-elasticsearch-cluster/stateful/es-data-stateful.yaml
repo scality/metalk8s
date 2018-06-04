@@ -44,14 +44,17 @@ spec:
         - name: HTTP_ENABLE
           value: "false"
         - name: ES_JAVA_OPTS
-          value: -Xms512m -Xmx512m
+          value: -Xms1g -Xmx1g
         - name: PROCESSORS
           valueFrom:
             resourceFieldRef:
               resource: limits.cpu
         resources:
-          limits:
+          requests:
             cpu: 1
+            memory: 1Gi
+          limits:
+            cpu: 2
         ports:
         - containerPort: 9300
           name: transport
@@ -70,4 +73,4 @@ spec:
       accessModes: [ ReadWriteOnce ]
       resources:
         requests:
-          storage: 12Gi
+          storage: 50Gi
