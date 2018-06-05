@@ -61,7 +61,7 @@
       vars:
         add_info:
         - master_dashboard_url: >-
-            {{ external_apiserver_endpoint
+            {{ hostvars[groups['kube-master']|first].external_apiserver_endpoint
             }}/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy
           kube_login: 'kube'
           kube_password: '{{ kube_api_pwd }}'
