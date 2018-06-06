@@ -6,7 +6,7 @@ metadata:
     component: elasticsearch
     role: client
 spec:
-  replicas: 2
+  replicas: 3
   template:
     metadata:
       labels:
@@ -35,7 +35,7 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: CLUSTER_NAME
-          value: myesdb
+          value: metal-k8s
         - name: NODE_MASTER
           value: "false"
         - name: NODE_DATA
@@ -43,7 +43,7 @@ spec:
         - name: HTTP_ENABLE
           value: "true"
         - name: ES_JAVA_OPTS
-          value: -Xms1g -Xmx1g
+          value: -Xms2g -Xmx2g
         - name: NETWORK_HOST
           value: _site_,_lo_
         - name: PROCESSORS
@@ -51,8 +51,11 @@ spec:
             resourceFieldRef:
               resource: limits.cpu
         resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
           limits:
-            cpu: 2
+            cpu: 4
         ports:
         - containerPort: 9200
           name: http

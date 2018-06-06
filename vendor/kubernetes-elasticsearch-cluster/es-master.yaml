@@ -35,7 +35,7 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: CLUSTER_NAME
-          value: myesdb
+          value: metal-k8s
         - name: NUMBER_OF_MASTERS
           value: "2"
         - name: NODE_MASTER
@@ -53,8 +53,11 @@ spec:
             resourceFieldRef:
               resource: limits.cpu
         resources:
+          requests:
+            cpu: 0.5
+            memory: 512Mi
           limits:
-            cpu: 1
+            cpu: 2
         ports:
         - containerPort: 9300
           name: transport
