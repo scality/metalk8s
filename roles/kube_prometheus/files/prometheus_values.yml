@@ -1,15 +1,24 @@
 grafana:
   extraVars:
     - name: 'GF_SERVER_ROOT_URL'
-      value: '%(protocol)s://%(domain)s:/_/grafana'
+      value: '%(protocol)s://%(domain)s/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/'
+  service:
+    labels:
+      kubernetes.io/cluster-service: "true"
+      kubernetes.io/name: "Grafana"
 
 prometheus:
-  externalUrl: '/_/prometheus'
-  routePrefix: '/'
+  externalUrl: '/api/v1/namespaces/kube-ops/services/kube-prometheus-prometheus:http/proxy/'
+  service:
+    labels:
+      kubernetes.io/cluster-service: "true"
+      kubernetes.io/name: "Prometheus"
   replicaCount: 2
 
-
 alertmanager:
-  externalUrl: '/_/alertmanager'
-  routePrefix: '/'
+  externalUrl: '/api/v1/namespaces/kube-ops/services/kube-prometheus-alertmanager:http/proxy/'
+  service:
+    labels:
+      kubernetes.io/cluster-service: "true"
+      kubernetes.io/name: "Alertmanager"
   replicaCount: 2
