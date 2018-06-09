@@ -6,6 +6,7 @@
 
 Quickstart Guide
 ================
+
 To set up a testing cluster quickly using MetalK8s_ requires three machines
 running CentOS_ 7.4 to which you have SSH access (these can be VMs). Each
 machine acting as a Kubernetes_ node (all of them, in this example) must also
@@ -19,9 +20,10 @@ have at least one disk available to provision storage volumes.
 
 .. _Kubernetes: https://kubernetes.io
 
-Defining an Inventory
----------------------
-To tell the Ansible_-based deployment system which machines MetalK8s should be
+Define an Inventory
+-------------------
+
+To tell the Ansible_-based deployment system which machines MetalK8s shall be
 installed on, you must provide an *inventory*. This inventory contains a file
 that lists all hosts in the cluster, as well as some configuration.
 
@@ -29,70 +31,107 @@ that lists all hosts in the cluster, as well as some configuration.
 
 To create an inventory:
 
-1. Create a directory (for example,
-:file:`inventory/quickstart-cluster`) in which the inventory will be stored.
+  1. Create a directory (for example, :file:`inventory/quickstart-cluster`)
+     in which the inventory will be stored.
 
-2. Create two files:
+     .. code:: shell
 
-  - The first, called :file:`hosts`:, lists all hosts::
+      $ mkdir inventory
+       $ mkdir inventory/quickstart-cluster
+       $ cd inventory/quickstart-cluster/
 
-         node-01 ansible_host=10.0.0.1 ansible_user=centos
-         node-02 ansible_host=10.0.0.2 ansible_user=centos
-         node-03 ansible_host=10.0.0.3 ansible_user=centos
+  2. Create the hosts file, which contains a listing of all hosts.
 
-         [kube-master]
-         node-01
-         node-02
-         node-03
+     ::
 
-         [etcd]
-         node-01
-         node-02
-         node-03
+       node-01 ansible_host=10.0.0.1 ansible_user=centos
+        node-02 ansible_host=10.0.0.2 ansible_user=centos
+        node-03 ansible_host=10.0.0.3 ansible_user=centos
 
-         [kube-node]
-         node-01
-         node-02
-         node-03
+        [kube-master]
+        node-01
+        node-02
+        node-03
 
-         [k8s-cluster:children]
-         kube-node
-         kube-master
+        [etcd]
+        node-01
+        node-02
+        node-03
 
-    Make sure to change IP addresses, user names, etc. to conform to your
-    infrastructure.
+        [kube-node]
+        node-01
+        node-02
+        node-03
+
+        [k8s-cluster:children]
+        kube-node
+        kube-master
+
+    Change the IP addresses, domain names, and user names to conform to
+    your infrastructure.
+
+ 3. Create a :file:`group_vars` subdirectory in the inventory directory.
 
   - A second file, called :file:`kube-node.yml`, in a :file:`group_vars`
     subdirectory of the inventory, declares how to set up storage (in the
     default configuration) on hosts in the *kube-node* group, that is,
     hosts on which Pods will be scheduled::
 
-.. code-block:: yaml
+      $ cd ..
+      $ mkdir group_vars ; cd group_vars
+
+ 4. In group_vars, create a file named :file:`kube-node.yml`. This file
+    declares the default storage configuration on hosts in the *kube-node*
+    group—that is, hosts on which Pods shall be scheduled
+
+     .. code-block:: yaml
 
          metal_k8s_lvm:
            vgs:
              kubevg:
                drives: ['/dev/vdb']
 
-In the above, every *kube-node* host is assumed to have a disk available as
-:file:`/dev/vdb` which can be used to set up Kubernetes *PersistentVolumes*. For
-more information about storage, see :doc:`../architecture/storage`.
+    In this example, every *kube-node* host is assumed to have a disk available
+    as :file:`/dev/vdb` which can be used to set up Kubernetes
+    *PersistentVolumes*. For more information about storage, see
+    :doc:`../architecture/storage`.
 
-Entering the MetalK8s Shell
----------------------------
+Clone or Copy the MetalK8s Git Repo
+-----------------------------------
+
+Return to the home subdirectory.
+
+.. code-block:: shell
+
+  $ cd
+
+Clone the MetalK8s project from GitHub (if you're building a new machine, you
+may also need to install Git).
+
+.. code-block:: shell
+
+   $ git clone https://github.com/scality/metal-k8s
+
+
+Enter the MetalK8s Shell
+------------------------
+
 To install a supported version of Ansible and its dependencies, along with some
-Kubernetes tools (:program:`kubectl` and :program:`helm`), we provide a
-:program:`make` target that installs these in a local environment. To enter this
-environment, run :command:`make shell` (this takes a couple of seconds on first
-run)::
+Kubernetes tools (:program:`kubectl` and :program:`helm`), Metal Kubernetes
+provides a :program:`make` target that installs these in a local environment.
+To enter this environment, run ``make shell`` (this takes a few seconds
+when first run).
 
+  .. code::
+
+   $ cd metal-k8s
     $ make shell
     Creating virtualenv...
     Installing Python dependencies...
     Downloading kubectl...
     Downloading Helm...
     Launching metal-k8s shell environment. Run 'exit' to quit.
-    (metal-k8s) $
+    (metal-k8s) [centos@node-01 metal-k8s]$
 
 Now, you're all set to deploy a cluster::
 
@@ -100,8 +139,9 @@ Now, you're all set to deploy a cluster::
 
 Grab a coffee and wait for deployment to end.
 
-Inspecting the Cluster
-----------------------
+Inspect the Cluster
+-------------------
+
 Once deployment finishes, a file containing credentials to access the cluster is
 created: :file:`inventory/quickstart-cluster/artifacts/admin.conf`. Export this
 location in the shell so that the :program:`kubectl` and :program:`helm` tools
@@ -151,6 +191,7 @@ Similarly, you can list all deployed Helm_ applications::
 
 Access to Dashboard, Grafana and Kibana
 ---------------------------------------
+
 Once the cluster is running, you can access the `Kubernetes dashboard`_,
 Grafana_ metrics, and Kibana_ logs from your browser.
 
