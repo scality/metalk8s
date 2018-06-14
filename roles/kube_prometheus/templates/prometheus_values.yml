@@ -14,6 +14,13 @@ prometheus:
       kubernetes.io/cluster-service: "true"
       kubernetes.io/name: "Prometheus"
   replicaCount: 2
+  storageSpec:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ prometheus_storage_size }}
 
 alertmanager:
   externalUrl: '/api/v1/namespaces/kube-ops/services/kube-prometheus-alertmanager:http/proxy/'
