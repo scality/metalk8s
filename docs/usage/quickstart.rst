@@ -15,9 +15,7 @@ have at least one disk available to provision storage volumes.
 .. todo:: Give some sizing examples
 
 .. _MetalK8s: https://github.com/scality/metal-k8s/
-
 .. _CentOS: https://www.centos.org
-
 .. _Kubernetes: https://kubernetes.io
 
 Define an Inventory
@@ -44,7 +42,7 @@ To create an inventory:
 
      ::
 
-       node-01 ansible_host=10.0.0.1 ansible_user=centos
+        node-01 ansible_host=10.0.0.1 ansible_user=centos
         node-02 ansible_host=10.0.0.2 ansible_user=centos
         node-03 ansible_host=10.0.0.3 ansible_user=centos
 
@@ -211,7 +209,5 @@ See :doc:`../architecture/cluster-services` for more about these services
 and their configuration.
 
 .. _Kubernetes dashboard: https://github.com/kubernetes/dashboard
-
 .. _Grafana: https://grafana.com
-
 .. _Kibana: https://www.elastic.co/products/kibana/
