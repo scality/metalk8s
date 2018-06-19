@@ -34,7 +34,7 @@ To create an inventory:
 
      .. code:: shell
 
-      $ mkdir inventory
+       $ mkdir inventory
        $ mkdir inventory/quickstart-cluster
        $ cd inventory/quickstart-cluster/
 
@@ -72,13 +72,15 @@ To create an inventory:
 
   - A second file, called :file:`kube-node.yml`, in a :file:`group_vars`
     subdirectory of the inventory, declares how to set up storage (in the
-    default configuration) on hosts in the *kube-node* group, that is,
-    hosts on which Pods will be scheduled::
+    default configuration) on hosts in the *kube-node* group; that is,
+    hosts on which Pods will be scheduled
+
+     .. code:: shell
 
       $ cd ..
       $ mkdir group_vars ; cd group_vars
 
- 4. In group_vars, create a file named :file:`kube-node.yml`. This file
+  - In group_vars, create a file named :file:`kube-node.yml`. This file
     declares the default storage configuration on hosts in the *kube-node*
     group—that is, hosts on which Pods shall be scheduled
 
@@ -122,7 +124,7 @@ when first run).
 
   .. code::
 
-   $ cd metal-k8s
+    $ cd metal-k8s
     $ make shell
     Creating virtualenv...
     Installing Python dependencies...
