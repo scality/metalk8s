@@ -21,18 +21,31 @@ green = lambda s: '{}{}{}'.format(GREEN, s, RESET)
 red = lambda s: '{}{}{}'.format(RED, s, RESET)
 bold = lambda s: '{}{}{}'.format(BOLD, s, RESET)
 
-def check_module(root, module):
-    #sys.stdout.write('Checking module {!r}...\n'.format(module['path']))
 
-    assert module['source']['type'] == 'git-subtree'
+def check_module_subtree(root, module):
 
     latest_commit = find_latest_squash(module['path'], root)
     latest_remote = find_latest_remote(
-        module['source']['repository'], module['source']['ref']).decode('ascii')
+        module['source']['repository'], module['source']['ref']
+    ).decode('ascii')
 
-    rc = False
+    return latest_commit[1] == latest_remote, latest_remote, latest_commit
 
-    if latest_commit[1] == latest_remote:
+def check_module(root, module):
+    # sys.stdout.write('Checking module {!r}...\n'.format(module['path']))
+
+    module_check_mapping = {
+        'git-subtree': check_module_subtree,
+        'url': lambda *args: (True, None, None)
+    }
+    try:
+        rc, latest_remote, latest_commit = module_check_mapping[
+            module['source']['type']
+        ](root, module)
+    except KeyError as exc:
+        raise AssertionError('Unsupported source type: {}'.format(exc.args[0]))
+
+    if rc:
         sys.stdout.write(
             '{} Subtree {} up to date\n'.format(green(TICK), bold(module['path'])))
         rc = True
