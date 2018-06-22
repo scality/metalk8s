@@ -24,7 +24,7 @@ spec:
           privileged: true
       containers:
       - name: es-master
-        image: quay.io/pires/docker-elasticsearch-kubernetes:6.2.4
+        image: quay.io/pires/docker-elasticsearch-kubernetes:6.3.0
         env:
         - name: NAMESPACE
           valueFrom:
@@ -53,6 +53,8 @@ spec:
             resourceFieldRef:
               resource: limits.cpu
         resources:
+          requests:
+            cpu: 0.25
           limits:
             cpu: 1
         ports:
@@ -61,6 +63,8 @@ spec:
         livenessProbe:
           tcpSocket:
             port: transport
+          initialDelaySeconds: 20
+          periodSeconds: 10
         volumeMounts:
         - name: storage
           mountPath: /data
