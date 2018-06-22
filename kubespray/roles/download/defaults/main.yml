@@ -24,9 +24,9 @@ download_always_pull: False
 download_delegate: "{% if download_localhost %}localhost{% else %}{{groups['kube-master'][0]}}{% endif %}"
 
 # Versions
-kube_version: v1.10.2
+kube_version: v1.10.4
 kubeadm_version: "{{ kube_version }}"
-etcd_version: v3.2.16
+etcd_version: v3.2.18
 # TODO(mattymo): Move calico versions to roles/network_plugins/calico/defaults
 # after migration to container download
 calico_version: "v2.6.8"
@@ -50,7 +50,7 @@ vault_download_url: "https://releases.hashicorp.com/vault/{{ vault_version }}/va
 
 # Checksums
 istioctl_checksum: fd703063c540b8c0ab943f478c05ab257d88ae27224c746a27d0526ddbf7c370
-kubeadm_checksum: 394d7d340214c91d669186cf4f2110d8eb840ca965399b4d8b22d0545a60e377
+kubeadm_checksum: 7e1169bbbeed973ab402941672dec957638dea5952a1e8bc89a37d5e709cc4b4
 vault_binary_checksum: 3c4d70ba71619a43229e65c67830e30e050eab7a81ac6b28325ff707e5914188
 
 # Containers
@@ -105,6 +105,8 @@ contiv_image_repo: "contiv/netplugin"
 contiv_image_tag: "{{ contiv_version }}"
 contiv_auth_proxy_image_repo: "contiv/auth_proxy"
 contiv_auth_proxy_image_tag: "{{ contiv_version }}"
+contiv_etcd_init_image_repo: "ferest/etcd-initer"
+contiv_etcd_init_image_tag: latest
 cilium_image_repo: "docker.io/cilium/cilium"
 cilium_image_tag: "{{ cilium_version }}"
 nginx_image_repo: nginx
@@ -139,7 +141,7 @@ fluentd_image_tag: "{{ fluentd_version }}"
 kibana_version: "v4.6.1"
 kibana_image_repo: "gcr.io/google_containers/kibana"
 kibana_image_tag: "{{ kibana_version }}"
-helm_version: "v2.8.1"
+helm_version: "v2.9.1"
 helm_image_repo: "lachlanevenson/k8s-helm"
 helm_image_tag: "{{ helm_version }}"
 tiller_image_repo: "gcr.io/kubernetes-helm/tiller"
@@ -155,14 +157,12 @@ local_volume_provisioner_image_tag: "v2.0.0"
 cephfs_provisioner_image_repo: "quay.io/kubespray/cephfs-provisioner"
 cephfs_provisioner_image_tag: "a71a49d4"
 ingress_nginx_controller_image_repo: "quay.io/kubernetes-ingress-controller/nginx-ingress-controller"
-ingress_nginx_controller_image_tag: "0.14.0"
+ingress_nginx_controller_image_tag: "0.15.0"
 ingress_nginx_default_backend_image_repo: "gcr.io/google_containers/defaultbackend"
 ingress_nginx_default_backend_image_tag: "1.4"
-cert_manager_version: "v0.2.4"
+cert_manager_version: "v0.3.0"
 cert_manager_controller_image_repo: "quay.io/jetstack/cert-manager-controller"
 cert_manager_controller_image_tag: "{{ cert_manager_version }}"
-cert_manager_ingress_shim_image_repo: "quay.io/jetstack/cert-manager-ingress-shim"
-cert_manager_ingress_shim_image_tag: "{{ cert_manager_version }}"
 
 downloads:
   netcheck_server:
@@ -383,6 +383,14 @@ downloads:
     sha256: "{{ contiv_auth_proxy_digest_checksum|default(None) }}"
     groups:
       - k8s-cluster
+  contiv_etcd_init:
+    enabled: "{{ kube_network_plugin == 'contiv' }}"
+    container: true
+    repo: "{{ contiv_etcd_init_image_repo }}"
+    tag: "{{ contiv_etcd_init_image_tag }}"
+    sha256: "{{ contiv_etcd_init_digest_checksum|default(None) }}"
+    groups:
+      - k8s-cluster
   pod_infra:
     enabled: true
     container: true
@@ -571,14 +579,6 @@ downloads:
     repo: "{{ cert_manager_controller_image_repo }}"
     tag: "{{ cert_manager_controller_image_tag }}"
     sha256: "{{ cert_manager_controller_digest_checksum|default(None) }}"
-    groups:
-      - kube-node
-  cert_manager_ingress_shim:
-    enabled: "{{ cert_manager_enabled }}"
-    container: true
-    repo: "{{ cert_manager_ingress_shim_image_repo }}"
-    tag: "{{ cert_manager_ingress_shim_image_tag }}"
-    sha256: "{{ cert_manager_ingress_shim_digest_checksum|default(None) }}"
     groups:
       - kube-node
 

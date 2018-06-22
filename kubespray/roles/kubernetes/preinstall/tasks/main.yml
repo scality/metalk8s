@@ -1,4 +1,8 @@
 ---
+# Disable swap
+- import_tasks: swapoff.yml
+  when: disable_swap
+
 - import_tasks: verify-settings.yml
   tags:
     - asserts
@@ -184,7 +188,7 @@
   delay: "{{ retry_stagger | random + 3 }}"
   when:
     - ansible_distribution == "Fedora"
-    - ansible_distribution_major_version > 21
+    - ansible_distribution_major_version|int > 21
     - not is_atomic
   changed_when: False
   tags:
