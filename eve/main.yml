@@ -14,6 +14,7 @@ stages:
         name: trigger all the tests
         stage_names:
         - single-node
+        - upgrade
 
   single-node:
     worker: &openstack
@@ -34,3 +35,13 @@ stages:
         haltOnFailure: true
         command: |-
           bash ./vendor/bash_unit/bash_unit tests/single-node/test.sh
+
+  upgrade:
+    worker: *openstack
+    steps:
+    - Git: *git_pull
+    - ShellCommand:
+        name: 'Run test-suite'
+        haltOnFailure: true
+        command: |-
+          bash ./vendor/bash_unit/bash_unit tests/upgrade/test.sh
