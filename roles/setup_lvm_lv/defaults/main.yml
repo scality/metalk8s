@@ -1,0 +1,38 @@
+debug: False
+
+# Metalk8s defaults lv/FS options
+# This will be combine with the possible specific options
+metalk8s_lvm_lv_defaults_fstype: "ext4"
+metalk8s_lvm_lv_defaults_fs_opts: "-m 0"
+metalk8s_lvm_lv_defaults_force: False
+metalk8s_lvm_lv_defaults_mount_opts: "defaults,noatime"
+
+# Path prefix on the host for the mountpoint of the default LVM LVs
+metalk8s_host_path_prefix: "/mnt"
+
+# The host_path will be determined as this :
+# {{ metalk8s_host_path_prefix }}/<VG name>
+# If you want to change it, define the variable
+# metalk8s_host_path_<vg name>
+# i.e:
+# metalk8s_host_path_vg_metalk8s: '/mnt/metalk8s'
+
+
+# Add the extra LVM LV that you want to be managed by this role.
+# by specifying the following format in a variable as
+# metalk8s_lvm_lvs_<vg name>:
+#   lv01:
+#     size: 50G
+#     fstype: xfs
+#     force: True
+#     fs_opts: '-m 0'
+#     mount_opts: 'defaults,noatime'
+#     labels: {
+#       'scality.com/mylabel': 'mycustomlabel'
+#     }
+#   lv02:
+#     size: 10G
+#
+# Only the "size" attribute is mandatory.
+# The others attribute value will have the values specified in
+# metalk8s_lvm_lv_defaults variable

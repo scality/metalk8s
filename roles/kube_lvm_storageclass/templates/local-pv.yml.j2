@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: >-
+    {{ item.value.vg_prop.vg_name|replace("_","-") }}-{{ item.value.uuid }}
+  labels: {{ item.value.labels|to_json }}
+spec:
+  capacity:
+    storage: '{{ item.value.size|size_lvm_to_k8s }}'
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: '{{ item.value.vg_prop.storageclass }}'
+  local:
+    path: '{{ item.value.vg_prop.host_path }}/{{ item.value.uuid }}'
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - '{{ item.value.host }}'
