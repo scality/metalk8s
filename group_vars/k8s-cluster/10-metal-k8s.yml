@@ -1,9 +1,7 @@
 docker_dns_servers_strict: False
-helm_version: v2.9.1
 helm_enabled: True
 kube_basic_auth: True
 kubeconfig_localhost: True
-kubelet_authentication_token_webhook: True
 
 # Request usage of the `overlay2` storage driver, even on pre-18.03 Docker
 # installs.

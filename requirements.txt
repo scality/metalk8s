@@ -4,10 +4,10 @@
 #
 #    tox -e pip-compile
 #
-ansible-modules-hashivault==3.9.4 \
-    --hash=sha256:337dc4f0db9beac5bd6ed0c788337df854eb559d5808c7caf6d387c165b4725a
-ansible==2.5.2 \
-    --hash=sha256:a95483f3b33e0f97d03badaad073392ed03a2b2f526bec4ddf598edfc1c03ae5
+ansible-modules-hashivault==3.9.5 \
+    --hash=sha256:5bb6ea37c126e4fa940f7e94dc1960b6df9321b88b601d4850318beb9f06eafb
+ansible==2.5.5 \
+    --hash=sha256:d7e5aae60c0e76c824bf8a410fe247b5c4afcfaee272f6283b4f996d237e365a
 asn1crypto==0.24.0 \
     --hash=sha256:2f1adbb7546ed199e3c90ef23ec95c5cf3585bac7d11fb7eb562a3fe89c64e87 \
     --hash=sha256:9d5c20441baf0cb60a4ac34cc447c6c189024b6b4c6cd7877034f4965c464e49 \
@@ -105,11 +105,11 @@ enum34==1.1.6 \
     --hash=sha256:6bd0f6ad48ec2aa117d3d141940d484deccda84d4fcd884f5c3d93c23ecd8c79 \
     --hash=sha256:8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1 \
     # via cryptography
-hvac==0.5.0 \
-    --hash=sha256:2c9308334301daee3b5c6d56a032ca2c81eeb97d2777b73d795e201e8d037687
-idna==2.6 \
-    --hash=sha256:2c6a5de3089009e3da7c5dde64a141dbc8551d5b7f6cf4ed7c2568d0cc520a8f \
-    --hash=sha256:8c7309c718f94b3a625cb648ace320157ad16ff131ae0af362c9f21b80ef6ec4 \
+hvac==0.6.0 \
+    --hash=sha256:e7b8425ce36894cda8b8ed3387a47119edc517302e6a72942602df54a96ee453
+idna==2.7 \
+    --hash=sha256:156a6814fb5ac1fc6850fb002e0852d56c0c8d2531923a51032d1b70760e186e \
+    --hash=sha256:684a38a6f903c1d71d6d5fac066b58d7768af4de2b832e426ec79c30daa94a16 \
     # via cryptography, requests
 ipaddress==1.0.22 \
     --hash=sha256:64b28eec5e78e7510698f6d4da08800a5c575caa4a286c93d651c5d3ff7b6794 \
@@ -128,12 +128,12 @@ paramiko==2.4.1 \
     --hash=sha256:24fb31c947de85fbdeca09e222d41206781581fb0bdf118d2ef18f6e414cd388 \
     --hash=sha256:33e36775a6c71790ba7692a73f948b329cf9295a72b0102144b031114bd2a4f3 \
     # via ansible
-pbr==4.0.3 \
-    --hash=sha256:680bf5ba9b28dd56e08eb7c267991a37c7a5f90a92c2e07108829931a50ff80a \
-    --hash=sha256:6874feb22334a1e9a515193cba797664e940b763440c88115009ec323a7f2df5
-pyasn1==0.4.2 \
-    --hash=sha256:d258b0a71994f7770599835249cece1caef3c70def868c4915e6e5ca49b67d15 \
-    --hash=sha256:d5cd6ed995dba16fad0c521cfe31cd2d68400b53fcc2bce93326829be73ab6d1 \
+pbr==4.0.4 \
+    --hash=sha256:3747c6f017f2dc099986c325239661948f9f5176f6880d9fdef164cb664cd665 \
+    --hash=sha256:a9c27eb8f0e24e786e544b2dbaedb729c9d8546342b5a6818d8eda098ad4340d
+pyasn1==0.4.3 \
+    --hash=sha256:a66dcda18dbf6e4663bde70eb30af3fc4fe1acb2d14c4867a861681887a5f9a2 \
+    --hash=sha256:fb81622d8f3509f0026b0683fe90fea27be7284d3826a5f2edf97f69151ab0fc \
     # via paramiko
 pycparser==2.18 \
     --hash=sha256:99a8ca03e29851d96616ad0404b4aad7d9ee16f25c9f9708a11faf2810f7b226 \
@@ -173,15 +173,15 @@ pyyaml==3.12 \
     --hash=sha256:c01b880ec30b5a6e6aa67b09a2fe3fb30473008c85cd6a67359a1b15ed6d83a4 \
     --hash=sha256:e863072cdf4c72eebf179342c94e6989c67185842d9997960b3e69290b2fa269 \
     # via ansible
-requests==2.18.4 \
-    --hash=sha256:6a1b267aa90cac58ac3a765d067950e7dbbf75b1da07e895d1f594193a40a38b \
-    --hash=sha256:9c443e7324ba5b85070c4a818ade28bfabedf16ea10206da1132edaa6dda237e \
+requests==2.19.1 \
+    --hash=sha256:63b52e3c866428a224f97cab011de738c36aec0185aa91cfacd418b5d58911d1 \
+    --hash=sha256:ec22d826a36ed72a7358ff3fe56cbd4ba69dd7a6718ffd450ff0e9df7a47ce6a \
     # via hvac
 six==1.11.0 \
     --hash=sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9 \
     --hash=sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb \
     # via bcrypt, cryptography, pynacl
-urllib3==1.22 \
-    --hash=sha256:06330f386d6e4b195fbfc736b297f58c5a892e4440e54d294d7004e3a9bbea1b \
-    --hash=sha256:cc44da8e1145637334317feebd728bd869a35285b93cbb4cca2577da7e62db4f \
+urllib3==1.23 \
+    --hash=sha256:a68ac5e15e76e7e5dd2b8f94007233e01effe3e50e8daddf69acfd81cb686baf \
+    --hash=sha256:b5725a0bd4ba422ab0e66e89e030c806576753ea3ee08554382c14e685d117b5 \
     # via requests
