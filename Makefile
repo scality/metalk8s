@@ -138,10 +138,10 @@ shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC) ## 
 		bash --rcfile $(BASHRC); \
 	elif test -e "$(C)"; then \
 		# A script \
-		bash --rcfile $(BASHRC) "$(C)"; \
+		bash --rcfile $(BASHRC) -i "$(C)"; \
 	else \
 		# A command \
-		bash --rcfile $(BASHRC) -c "$(C)"; \
+		bash --rcfile $(BASHRC) -i -c "$(C)"; \
 	fi
 .PHONY: shell
 
