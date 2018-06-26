@@ -9,75 +9,39 @@
 - name: 'Assert all vgs have a host_path and volumes defined'
   assert:
     that:
-      - item.value.volumes|length > 0
+      - item.value.storage_class in metal_k8s_storage_class
       - item.value.host_path|default("") != ""
-  with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
+  with_dict: '{{ metal_k8s_storage_class_vgs }}'
 
 - name: 'create dir for lvm storage'
   file:
     dest: '{{ item.value.host_path }}'
     state: directory
-  with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
+  with_dict: '{{ metal_k8s_storage_class_vgs }}'
 
 - name: display vgs in metal_k8s_storage_class
   debug:
-    msg: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
+    msg: '{{ metal_k8s_storage_class_vgs }}'
   when: debug|bool
-
-#
-# Set a dictionary that will be used for the LVM configuration
-# based on the metal_k8s_storage_class var
-#
-#   ..code::
-#
-#     {
-#         '/dev/mapper/kubevg-lv01' : {
-#             'host_path': '/mnt/kubevg',
-#             'vg': 'kubevg',
-#             'volume': {
-#                 'name': 'lv01',
-#                 'fstype': 'ext4',
-#                 'size': '10G',
-#                 'fs_force': False,
-#                 'fs_opts': "",
-#                 'mount_opts': "",
-#             },
-#         }
-#     }
-#
 
 - name: set fact with metal_k8s_storage_class attributes
   set_fact:
     metal_k8s_lvm_conf: >-
       {
-        {%- for vg, prop in metal_k8s_storage_class.lvm_conf.vgs.items() -%}
-          {%- set host_path = prop.host_path -%}
-          {%- for volume_name, volume in prop.volumes.items() -%}
-            {%- set _ = volume.update(
-              {'fstype': volume.fstype
-                |default(metal_k8s_storage_class.lvm_conf.default_fstype)}) -%}
-            {%- set _ = volume.update(
-              {'fs_force': volume.fs_force
-                |default(
-                  metal_k8s_storage_class.lvm_conf.default_fs_force
-                )}) -%}
-            {%- set _ = volume.update(
-              {'fs_opts': volume.fs_opts
-                |default(
-                    metal_k8s_storage_class.lvm_conf.default_fs_opts)}) -%}
-            {%- set _ = volume.update(
-              {'mount_opts': volume.mount_opts
-                |default(
-                  metal_k8s_storage_class.lvm_conf.default_mount_opts)}) -%}
-            {%- set device = '/dev/mapper/' ~ vg ~ '-'
-              ~ volume_name.replace("-", "--") -%}
-            '{{ device }}': {{ dict(vg=vg,
-                volume=volume,
-                volume_name=volume_name,
-                host_path=prop.host_path,
-                storage_class=prop.storage_class,)
-             }},
-          {%- endfor -%}
+        {%- for vg_name, lv_dict in metal_k8s_lvm_lvs.items() -%}
+            {%- for lv_name, lv_prop in lv_dict.items() -%}
+                '/dev/mapper/{{ vg_name }}-{{ lv_name.replace("-", "--") }}': {{ dict(
+                    volume=lv_prop|combine({
+                        'mount_opts': lv_prop.mount_opts|default(metal_k8s_default_mount_opts),
+                        'fs_force': lv_prop.fs_force|default(metal_k8s_default_fs_force),
+                        'fs_opts': lv_prop.fs_opts|default(metal_k8s_default_fs_opts),
+                        'fstype': lv_prop.fstype|default(metal_k8s_default_fstype)
+                    }),
+                    vg=vg_name,
+                    host_path=metal_k8s_storage_class_vgs[vg_name].host_path,
+                    storage_class=metal_k8s_storage_class_vgs[vg_name].storage_class
+                ) }},
+            {%- endfor -%}
         {%- endfor -%}
       }
 
@@ -85,15 +49,6 @@
   debug:
     msg: '{{ metal_k8s_lvm_conf }}'
   when: debug|bool
-
-- name: 'create lvm volumes with required size for each vg'
-  lvol:
-    lv: '{{ item.value.volume_name }}'
-    vg: '{{ item.value.vg }}'
-    size: '{{ item.value.volume.size }}'
-    state: present
-    shrink: False
-  with_dict: '{{ metal_k8s_lvm_conf }}'
 
 - name: 'create filesystem on each lvm volumes'
   filesystem:
@@ -112,7 +67,7 @@
 
 - name: display UUIDs
   debug:
-    msg: '{{ metal_k8s_lvm_uuids.results }}'
+    var: metal_k8s_lvm_uuids
   when: debug|bool
 
 # Update metal_k8s_conf with UUIDs of the filesystems
@@ -132,7 +87,7 @@
 #         }
 #     }
 
-- name: update fact metal_k8s_lvm_conf with UUIDs
+- name: 'update fact metal_k8s_lvm_conf with UUIDs'
   set_fact:
     metal_k8s_lvm_conf: >-
       {%- for result in metal_k8s_lvm_uuids.results|default([]) -%}
@@ -154,12 +109,6 @@
     state: mounted
   with_dict: '{{ metal_k8s_lvm_conf }}'
 
-- name: 'Assert each LVM Vgs has a StorageClass name'
-  assert:
-    that:
-      - 'item.value.storage_class'
-  with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
-
 # TODO: think about moving this part (till the end) in another role
 # that only target 'kube-master' group
 
@@ -178,7 +127,7 @@
   template:
     src: local-storageclass.yml.j2
     dest: '{{ storage_addon_dir }}/storage-class-{{ item.key }}.yml'
-  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
+  with_dict: '{{ metal_k8s_storage_class }}'
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
@@ -187,7 +136,7 @@
     kubectl: '{{ bin_dir }}/kubectl'
     filename: '{{ storage_addon_dir }}/storage-class-{{ item.key }}.yml'
     state: 'latest'
-  with_dict: '{{ metal_k8s_storage_class.storage_classes }}'
+  with_dict: '{{ metal_k8s_storage_class }}'
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 

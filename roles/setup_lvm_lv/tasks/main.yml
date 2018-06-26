@@ -1,0 +1,23 @@
+
+- name: 'compute all lv'
+  set_fact:
+    metal_k8s_lvm_lvs: '{{ metal_k8s_lvm_lvs }}'
+    all_lvs: >-
+      { {%- for vg_name, lv_dict in metal_k8s_lvm_lvs.items() -%}
+          {%- for lv_name, lv_prop in lv_dict.items() -%}
+             '{{lv_name}}': {{ lv_prop|combine({'vg_name': vg_name, 'lv_name': lv_name}) }},
+          {%- endfor -%}
+        {%- endfor -%} }
+
+- debug:
+    var: all_lvs
+# when: debug|bool
+
+- name: 'create lvm volumes with required size for each vg'
+  lvol:
+    lv: '{{ item.lv_name }}'
+    vg: '{{ item.vg_name }}'
+    size: '{{ item.size }}'
+    state: present
+    shrink: False
+  with_items: '{{ all_lvs.values()|list }}'

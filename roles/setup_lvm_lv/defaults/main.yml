@@ -1,0 +1,30 @@
+debug: False
+
+metal_k8s_lvm_lvs:
+  kubevg:
+    lv01:
+      size: 52G
+    lv02:
+      size: 52G
+    lv03:
+      size: 52G
+    lv04:
+      size: 11G
+    lv05:
+      size: 11G
+    lv06:
+      size: 11G
+    lv07:
+      size: 5G
+    lv08:
+      size: 5G
+
+# You can also customize a specific volume like this
+#
+#      kubevg:
+#        lv01:
+#          size: 10G
+#          fstype: xfs
+#          fs_force: True
+#          fs_opts: '-m 0 -cc'
+#          mount_opts: 'defaults,noatime'

@@ -8,44 +8,15 @@ storage_addon_dir: '{{ kube_config_dir }}/addons/storage_lvm'
 
 # Set the storage class setup on kubernetes node
 metal_k8s_storage_class:
-  storage_classes:
-    local-lvm:
-      is_default: true
-  lvm_conf:
-    default_fstype: 'ext4'
-    default_fs_force: False
-    default_fs_opts: '-m 0'
-    default_mount_opts: 'defaults'
-    vgs:
-      kubevg:
-        host_path: '/mnt/kubevg'
-        storage_class: 'local-lvm'
-        volumes:
-          lv01:
-            size: 52G
-          lv02:
-            size: 52G
-          lv03:
-            size: 52G
-          lv04:
-            size: 11G
-          lv05:
-            size: 11G
-          lv06:
-            size: 11G
-          lv07:
-            size: 5G
-          lv08:
-            size: 5G
-#
-# You can also customize a specific volume like this
-#
-#    vgs:
-#      kubevg:
-#        volumes:
-#          lv01:
-#            size: 10G
-#            fstype: xfs
-#            fs_force: True
-#            fs_opts: '-m 0 -cc'
-#            mount_opts: 'defaults,noatime'
+  local-lvm:
+    is_default: True
+
+metal_k8s_default_fstype: 'ext4'
+metal_k8s_default_fs_force: False
+metal_k8s_default_fs_opts: '-m 0'
+metal_k8s_default_mount_opts: 'defaults'
+
+metal_k8s_storage_class_vgs:
+  kubevg:
+    host_path: '/mnt/kubevg'
+    storage_class: 'local-lvm'

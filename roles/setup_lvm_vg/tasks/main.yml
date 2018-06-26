@@ -1,0 +1,37 @@
+- name: "LVM Setup: Assert {{ inventory_hostname }} has vgs correctly declared"
+  assert:
+    that:
+      # create == True implies drives|length > 0
+      - 'not(item.value.create|default(True)|bool and item.value.drives|length == 0)'
+      # create == False implies drive|length == 0
+      - 'not(not item.value.create|default(True)|bool and item.value.drives|length > 0)'
+  with_dict: '{{ metal_k8s_lvm_drives }}'
+
+- name: "LVM Setup: Check LVM packages"
+  package:
+    name: lvm2
+    state: present
+  register: lvm_just_installed
+
+- name: "re-compute facts now that lvm is installed"
+  setup:
+  when: lvm_just_installed is changed
+
+- name: 'compute vg to manage'
+  set_fact:
+    managed_vgs: >-
+      { {%- for vg_name, vg_prop in metal_k8s_lvm_drives.items()
+              if vg_prop.create|default(True)|bool == True -%}
+           '{{ vg_name }}': {{ vg_prop }},
+        {%- endfor -%} }
+
+- debug:
+    msg: '{{ managed_vgs }}'
+  when: debug|bool
+
+- name: "LVM Setup: Create the LVM Volume Groups"
+  lvg:
+    pvs: '{{ item.value.drives }}'
+    vg: '{{ item.key }}'
+    state: present
+  with_dict: '{{ managed_vgs }}'

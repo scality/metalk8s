@@ -1,0 +1,15 @@
+debug: False
+
+# ################ #
+# LVM confguration #
+# ################ #
+
+# Specify which VG and which drive to use in host_vars for each node
+metal_k8s_lvm_drives:
+  kubevg:
+    # The list of drives used for this LVM Volume Group. Leave empty and set
+    # create to 'False' if you want to use an already existing Volume Group
+    drives: []
+    # Put this to False if you want to use
+    # an already existing LVM Volume Group
+    create: True
