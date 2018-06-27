@@ -1,4 +1,4 @@
-# metal-k8s
+# MetalK8s
 An opinionated Kubernetes distribution with a focus on long-term on-prem deployments
 
 ## Quickstart
@@ -14,7 +14,7 @@ welcome!
 ## Hardware Requirements
 
 ### Test config
-If you want to test metal-k8s you just need one simple VM running CentOS 7.4.
+If you want to test MetalK8s you just need one simple VM running CentOS 7.4.
 
 ### Production Config
 For production-ready environment, you need:
