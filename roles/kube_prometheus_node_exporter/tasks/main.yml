@@ -1,0 +1,33 @@
+- name: 'make assertions'
+  assert:
+    that:
+     - prometheus_addon_dir is defined
+     - kube_prometheus_namespace is defined
+
+- name: 'create addons dir'
+  file:
+    dest: '{{ prometheus_addon_dir }}'
+    state: 'directory'
+
+- name: 'Add node_exporter to prometheus monitoring'
+  copy:
+    src: 'node_exporter.yaml'
+    dest: '{{ prometheus_addon_dir }}/node_exporter.yaml'
+  run_once: True
+
+- name: 'Add node_exporter endpoints'
+  template:
+    src: endpoints.yaml.j2
+    dest: '{{ prometheus_addon_dir }}/endpoints.yaml'
+  run_once: True
+
+- name: 'Deploy node-exporter monitoring'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ prometheus_addon_dir }}/{{ item }}'
+    namespace: '{{ kube_prometheus_namespace }}'
+    state: 'latest'
+  run_once: true
+  with_items:
+    - node_exporter.yaml
+    - endpoints.yaml
