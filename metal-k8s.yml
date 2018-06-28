@@ -44,6 +44,8 @@
   roles:
     - role: kube_nginx_ingress
       tags: ['ingress']
+    - role: etcd_prometheus_exporter_cert
+      tags: ['kube-prometheus']
     - role: kube_prometheus
       tags: ['kube-prometheus']
     - role: kube_heapster

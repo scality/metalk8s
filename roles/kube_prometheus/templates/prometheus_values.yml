@@ -14,6 +14,12 @@ prometheus:
       kubernetes.io/cluster-service: "true"
       kubernetes.io/name: "Prometheus"
   replicaCount: 2
+{% if kube_prometheus_secret|default %}
+  secrets:
+{% for secret in kube_prometheus_secret %}
+  - {{ secret }}
+{% endfor %}
+{% endif %}
   storageSpec:
     volumeClaimTemplate:
       spec:
@@ -29,3 +35,15 @@ alertmanager:
       kubernetes.io/cluster-service: "true"
       kubernetes.io/name: "Alertmanager"
   replicaCount: 2
+
+exporter-kube-etcd:
+  etcdPort: 2379
+  endpoints: {{ groups.etcd | map('extract', hostvars, ['ansible_default_ipv4', 'address'])|list|to_json }}
+  scheme: https
+  # Linked to the secret of prometheus
+{% if exporter_kube_etcd_certFile|default %}
+  certFile: {{ exporter_kube_etcd_certFile }}
+{% endif %}
+{% if exporter_kube_etcd_keyFile|default %}
+  keyFile: {{ exporter_kube_etcd_keyFile }}
+{% endif %}
