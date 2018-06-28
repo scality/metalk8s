@@ -7,6 +7,8 @@
       tags: ['kube-prometheus']
     - role: kube_prometheus
       tags: ['kube-prometheus']
+    - role: kube_prometheus_node_exporter
+      tags: ['kube-prometheus', 'node-exporter']
     - role: kube_heapster
       tags: ['heapster']
     - role: kube_elasticsearch
@@ -14,3 +16,8 @@
       when: metalk8s_elasticsearch_enabled|bool
     - role: kube_metrics_server
       tags: ['metrics-server']
+
+- hosts: k8s-cluster:etcd
+  roles:
+    - role: node_exporter
+      tags: ['kube-prometheus', 'node-exporter', 'node-exporter-pkg']
