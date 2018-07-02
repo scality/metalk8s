@@ -1,3 +1,4 @@
+deployExporterNode: False
 grafana:
   extraVars:
     - name: 'GF_SERVER_ROOT_URL'
