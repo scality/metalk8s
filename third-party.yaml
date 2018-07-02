@@ -17,6 +17,11 @@ modules:
     repository: https://github.com/pgrange/bash_unit.git
     ref: v1.6.1
   license: GPL-3.0-or-later
+- path: vendor/etcd
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/coreos/etcd/v3.2.16/
+  license: Apache-2.0
 
 charts:
 - role: kube_heapster

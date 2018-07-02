@@ -2,7 +2,10 @@
 GRAFANA_DASHBOARD_YAML=files/additionnal_dashboard.yml
 SRCDIR=src
 
-GRAFANA_DASHBOARD=$(wildcard $(SRCDIR)/*.json)
+GRAFANA_DASHBOARD=\
+  ../../vendor/etcd/Documentation/op-guide/grafana.json \
+  $(wildcard $(SRCDIR)/*.json)
+
 
 all: compile
 
@@ -31,7 +34,8 @@ compile:
 	   echo '        ],'; \
 	   echo '        "overwrite": true,'; \
 	   echo '        "dashboard":'; \
-	   sed 's/^/          /' $${dashboard}; \
+	   sed -e 's/^/          /' \
+	       -e '/^\s*$$/d' $${dashboard}; \
 	   echo '      }'; \
 	) >> $(GRAFANA_DASHBOARD_YAML); \
 	done;
