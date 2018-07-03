@@ -23,7 +23,7 @@
 # Once in the environment, run
 #
 # ```
-# (metal-k8s) bash-4.4# ansible-playbook -b metal-k8s.yml
+# (metal-k8s) bash-4.4# ansible-playbook -b playbooks/deploy.yml
 # ```
 #
 # and wait for the deployment to complete. Afterwards, run e.g. `kubectl get

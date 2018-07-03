@@ -26,7 +26,7 @@ setup_suite() {
         make_shell true
 
         echo "Deploy the cluster"
-        make_shell ansible-playbook -i "$(pwd)/inventory" metal-k8s.yml --skip elasticsearch || die
+        make_shell ansible-playbook -i "$(pwd)/inventory" playbooks/deploy.yml --skip elasticsearch || die
 
         KUBECONFIG=$(pwd)/inventory/artifacts/admin.conf
         export KUBECONFIG
@@ -97,7 +97,7 @@ EOF
                 "No PVs in Released state"
 
         echo "Reclaim storage"
-        make_shell ansible-playbook -i "$(pwd)/inventory" reclaim-storage.yml
+        make_shell ansible-playbook -i "$(pwd)/inventory" playbooks/reclaim-storage.yml
 
         echo "Verify that no PV is in released state"
         assert_fails 'make_shell kubectl get pv -o jsonpath={.items[*].status.phase} | grep Released > /dev/null' \
