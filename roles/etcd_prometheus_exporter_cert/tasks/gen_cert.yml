@@ -58,6 +58,7 @@
   file:
     name: '{{ csr_on_etcd_node.dest }}'
     state: absent
+  when: gen_etcd_exporter_csr is changed
 
 - debug:
     var: gen_etcd_exporter_cert
