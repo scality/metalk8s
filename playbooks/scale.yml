@@ -1,32 +1,14 @@
-- hosts: localhost
-  gather_facts: False
-  any_errors_fatal: True
-  roles:
-    - role: preflight_checks
-  tags:
-    - preflight-checks
+- import_playbook: 'init.yml'
+  tags: ['init']
 
-- hosts: k8s-cluster:etcd
-  gather_facts: False
-  tasks:
-    - ping:
+- import_playbook: 'storage-pre.yml'
+  tags: ['storage']
 
-- hosts: k8s-cluster:etcd
-  roles:
-    - role: check_os
-
-- hosts: kube-node
-  tags:
-    - lvm-storage
-  roles:
-    - role: setup_lvm
+- import_playbook: 'kubespray-pre.yml'
+  tags: ['kubespray']
 
 - import_playbook: '../kubespray/scale.yml'
-  tags: kubespray
+  tags: ['kubespray']
 
-- hosts: kube-node
-  tags:
-    - lvm-storage
-    - kube-pv
-  roles:
-    - role: kube_lvm_storage
+- import_playbook: 'storage-post.yml'
+  tags: ['storage']

@@ -1,59 +1,20 @@
-- hosts: localhost
-  gather_facts: False
-  any_errors_fatal: True
-  roles:
-    - role: preflight_checks
-  tags:
-    - preflight-checks
+- import_playbook: 'init.yml'
+  tags: ['init']
 
-- hosts: k8s-cluster:etcd
-  gather_facts: False
-  tasks:
-    - ping:
+- import_playbook: 'storage-pre.yml'
+  tags: ['storage']
 
-- hosts: k8s-cluster:etcd
-  roles:
-    - role: check_os
-
-- hosts: kube-node
-  tags:
-    - lvm-storage
-  roles:
-    - role: setup_lvm
-
-- hosts: k8s-cluster
-  gather_facts: False
-  tags:
-    - kubespray
-  roles:
-    - role: ../kubespray/roles/kubespray-defaults/
-    - role: kubespray_var_patcher
+- import_playbook: 'kubespray-pre.yml'
+  tags: ['kubespray']
 
 - import_playbook: '../kubespray/cluster.yml'
   tags: kubespray
 
-- hosts: kube-node
-  tags:
-    - lvm-storage
-    - kube-pv
-  roles:
-    - role: kube_lvm_storage
+- import_playbook: 'storage-post.yml'
+  tags: ['storage']
 
-- hosts: kube-master
-  gather_facts: False
-  roles:
-    - role: kube_nginx_ingress
-      tags: ['ingress']
-    - role: etcd_prometheus_exporter_cert
-      tags: ['kube-prometheus']
-    - role: kube_prometheus
-      tags: ['kube-prometheus']
-    - role: kube_heapster
-      tags: ['heapster']
-    - role: kube_elasticsearch
-      tags: ['elasticsearch']
-    - role: kube_metrics_server
-      tags: ['metrics-server']
+- import_playbook: 'services.yml'
+  tags: ['services']
 
 - hosts: k8s-cluster
   gather_facts: False

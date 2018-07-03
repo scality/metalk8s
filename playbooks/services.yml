@@ -1,0 +1,15 @@
+- hosts: kube-master
+  gather_facts: False
+  roles:
+    - role: kube_nginx_ingress
+      tags: ['ingress']
+    - role: etcd_prometheus_exporter_cert
+      tags: ['kube-prometheus']
+    - role: kube_prometheus
+      tags: ['kube-prometheus']
+    - role: kube_heapster
+      tags: ['heapster']
+    - role: kube_elasticsearch
+      tags: ['elasticsearch']
+    - role: kube_metrics_server
+      tags: ['metrics-server']
