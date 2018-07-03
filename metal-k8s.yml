@@ -15,6 +15,10 @@
   roles:
     - role: check_os
 
+- hosts: k8s-cluster
+  roles:
+    - role: prepare_os
+
 - hosts: kube-node
   tags:
     - lvm-storage

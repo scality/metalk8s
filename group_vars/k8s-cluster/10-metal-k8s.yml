@@ -4,6 +4,7 @@ kube_basic_auth: True
 kubeconfig_localhost: True
 
 dns_mode: 'coredns'
+kube_proxy_mode: 'ipvs'
 
 # Request usage of the `overlay2` storage driver, even on pre-18.03 Docker
 # installs.
