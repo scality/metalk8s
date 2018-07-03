@@ -3,6 +3,8 @@ top_srcdir="$(realpath "$(pwd)/../..")"
 ANSIBLE_FORCE_COLOR=true
 export ANSIBLE_FORCE_COLOR
 
+PROMETHEUS_NAMESPACE='kube-ops'
+
 make_shell() {
         make --no-print-directory -C "${top_srcdir}" shell C="$*"
 }
@@ -106,4 +108,18 @@ EOF
         echo "Verify that no PV is in released state"
         assert_fails 'make_shell kubectl get pv -o jsonpath={.items[*].status.phase} | grep Released > /dev/null' \
                 "PVs in Released state found"
+}
+
+test_prometheus_node_exporter_metrics() {
+        sudo yum install -y epel-release
+        sudo yum install -y jq
+        PROMETHEUS_IP=$(make_shell kubectl \
+                        --namespace ${PROMETHEUS_NAMESPACE} \
+                        get service kube-prometheus -o jsonpath={.spec.clusterIP})
+        echo "Prometheus IP: ${PROMETHEUS_IP}"
+        NB_TARGET=$(curl -s http://${PROMETHEUS_IP}:9090/api/v1/targets| \
+          jq '.data.activeTargets |[.[]|select(.labels.job == $job)]|length' \
+          --arg job "node-exporter")
+        echo "Found ${NB_TARGET} targets"
+        assert_not_equals 0 "${NB_TARGET}"
 }
