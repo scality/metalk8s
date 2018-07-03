@@ -1,0 +1,70 @@
+---
+- name: Kubernetes Apps | Wait for kube-apiserver
+  uri:
+    url: "{{ kube_apiserver_endpoint }}/healthz"
+    validate_certs: no
+    client_cert: "{{ kube_apiserver_client_cert }}"
+    client_key: "{{ kube_apiserver_client_key }}"
+  register: result
+  until: result.status == 200
+  retries: 10
+  delay: 2
+  when: inventory_hostname == groups['kube-master'][0]
+
+- name: Kubernetes Apps | Cleanup DNS
+  import_tasks: tasks/cleanup_dns.yml
+  when:
+    - inventory_hostname == groups['kube-master'][0]
+  tags:
+    - upgrade
+
+- name: Kubernetes Apps | CoreDNS
+  import_tasks: "tasks/coredns.yml"
+  when:
+    - dns_mode in ['coredns', 'coredns_dual']
+    - inventory_hostname == groups['kube-master'][0]
+  tags:
+    - coredns
+
+- name: Kubernetes Apps | KubeDNS
+  import_tasks: "tasks/kubedns.yml"
+  when:
+    - dns_mode in ['kubedns', 'dnsmasq_kubedns']
+    - inventory_hostname == groups['kube-master'][0]
+  tags:
+    - dnsmasq
+
+- name: Kubernetes Apps | Start Resources
+  kube:
+    name: "{{ item.item.name }}"
+    namespace: "kube-system"
+    kubectl: "{{ bin_dir }}/kubectl"
+    resource: "{{ item.item.type }}"
+    filename: "{{ kube_config_dir }}/{{ item.item.file }}"
+    state: "latest"
+  with_items:
+    - "{{ kubedns_manifests.results | default({}) }}"
+    - "{{ coredns_manifests.results | default({}) }}"
+    - "{{ coredns_secondary_manifests.results | default({}) }}"
+  when:
+    - dns_mode != 'none'
+    - inventory_hostname == groups['kube-master'][0]
+    - not item|skipped
+  register: resource_result
+  until: resource_result|succeeded
+  retries: 4
+  delay: 5
+  tags:
+    - dnsmasq
+
+- name: Kubernetes Apps | Netchecker
+  import_tasks: tasks/netchecker.yml
+  when: deploy_netchecker
+  tags:
+    - netchecker
+
+- name: Kubernetes Apps | Dashboard
+  import_tasks: tasks/dashboard.yml
+  when: dashboard_enabled
+  tags:
+    - dashboard
