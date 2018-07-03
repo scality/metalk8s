@@ -1,0 +1,15 @@
+---
+- name: restart calico-node
+  command: /bin/true
+  notify:
+    - Calico | reload systemd
+    - Calico | reload calico-node
+
+- name: Calico | reload systemd
+  shell: systemctl daemon-reload
+
+- name: Calico | reload calico-node
+  service:
+    name: calico-node
+    state: restarted
+    sleep: 10
