@@ -8,7 +8,7 @@ grafana:
       kubernetes.io/name: "Grafana"
 
 prometheus:
-  externalUrl: '/api/v1/namespaces/kube-ops/services/kube-prometheus-prometheus:http/proxy/'
+  externalUrl: '/api/v1/namespaces/kube-ops/services/kube-prometheus:http/proxy/'
   service:
     labels:
       kubernetes.io/cluster-service: "true"
