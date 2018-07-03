@@ -1,7 +1,0 @@
----
-dependencies:
-  - role: adduser
-    user: "{{ addusers.kube }}"
-    when: not is_atomic
-    tags:
-      - kubelet

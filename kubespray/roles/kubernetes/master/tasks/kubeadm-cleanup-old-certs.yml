@@ -1,3 +1,0 @@
----
-- name: kubeadm | Purge old certs
-  command: "rm -f {{kube_cert_dir }}/*.pem"

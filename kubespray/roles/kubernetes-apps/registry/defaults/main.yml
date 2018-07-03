@@ -1,4 +1,0 @@
----
-registry_namespace: "kube-system"
-registry_storage_class: ""
-registry_disk_size: "10Gi"
