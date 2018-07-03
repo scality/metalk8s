@@ -21,7 +21,7 @@
   roles:
     - role: setup_lvm
 
-- import_playbook: 'kubespray/scale.yml'
+- import_playbook: 'vendor/kubespray/scale.yml'
   tags: kubespray
 
 - hosts: kube-node
