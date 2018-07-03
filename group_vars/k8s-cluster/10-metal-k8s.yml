@@ -3,6 +3,8 @@ helm_enabled: True
 kube_basic_auth: True
 kubeconfig_localhost: True
 
+dns_mode: 'coredns'
+
 # Request usage of the `overlay2` storage driver, even on pre-18.03 Docker
 # installs.
 # Whilst this is not guaranteed to work on 'old' kernels, we check whether we're
