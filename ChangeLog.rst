@@ -12,16 +12,27 @@ This marks the first release of `MetalK8s`_.
 
 Incompatible changes
 --------------------
-:ghpull:`106` - the Ansible playbook which used to be called :file:`metal-k8s.yml` has been moved to :file:`playbooks/deploy.yml`
+:ghpull:`106` - the Ansible playbook which used to be called
+:file:`metal-k8s.yml` has been moved to :file:`playbooks/deploy.yml`
 
 Features added
 --------------
-:ghpull:`100` - disable Elasticsearch deployment by setting `metalk8s_elasticsearch_enabled` to `false` (:ghissue:`98`)
+:ghpull:`100` - disable Elasticsearch deployment by setting
+`metalk8s_elasticsearch_enabled` to `false` (:ghissue:`98`)
+
+:ghpull:`104` - `kube-proxy` now uses `ipvs` instead of `iptables` to route
+*Service* addresses, in preparation for Kubernetes 1.11. The `ipvsadm` tool is
+installed on all `k8s-cluster` hosts.
+
+:ghpull:`104` - use CoreDNS instead of kubedns for in-cluster DNS services, in
+preparation for Kubernetes 1.11.
 
 Known issues
 ------------
-:ghissue:`62` - Elasticsearch Curator may not properly prune old `logstash-*` indices
+:ghissue:`62` - Elasticsearch Curator may not properly prune old `logstash-*`
+indices
 
-:ghissue:`107` - the dashboard for Etcd monitoring isn't properly loaded by Grafana
+:ghissue:`107` - the dashboard for Etcd monitoring isn't properly loaded by
+Grafana
 
 :ghissue:`108` - Elasticsearch metrics are not properly scraped by Prometheus
