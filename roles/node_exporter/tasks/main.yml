@@ -19,6 +19,17 @@
     creates: /var/lib/yum/repos/{{ ansible_machine }}/{{  ansible_distribution_major_version }}/prometheus-rpm_release/gpgdir/gpg.conf
     warn: False
 
+- name: 'install version-lock'
+  yum:
+    name: yum-plugin-versionlock
+    state: present
+
+- name: 'lock version of node_exporter'
+  lineinfile:
+    dest: /etc/yum/pluginconf.d/versionlock.list
+    line: 0:node_exporter-{{ node_exporter_version }}
+    regexp: '0:node_exporter-.*'
+
 - name: 'install Prometheus Node exporter'
   yum:
     name: node_exporter-{{ node_exporter_version }}
