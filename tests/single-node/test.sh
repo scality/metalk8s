@@ -35,6 +35,10 @@ setup_suite() {
         make_shell kubectl get nodes
 }
 
+test_deploy_again() {
+        assert make_shell ansible-playbook -i "$(pwd)/inventory" metal-k8s.yml --skip elasticsearch
+}
+
 test_reclaim_storage() {
         echo "Listing all PVs before test (some should be available)"
         make_shell kubectl get pv

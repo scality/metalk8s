@@ -14,3 +14,7 @@
 - hosts: k8s-cluster:etcd
   roles:
     - role: check_os
+
+- hosts: k8s-cluster
+  roles:
+    - role: prepare_os

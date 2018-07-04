@@ -3,5 +3,5 @@
   tags:
     - kubespray
   roles:
-    - role: ../kubespray/roles/kubespray-defaults/
+    - role: ../vendor/kubespray/roles/kubespray-defaults/
     - role: kubespray_var_patcher

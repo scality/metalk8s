@@ -7,7 +7,7 @@
 - import_playbook: 'kubespray-pre.yml'
   tags: ['kubespray']
 
-- import_playbook: '../kubespray/scale.yml'
+- import_playbook: '../vendor/kubespray/scale.yml'
   tags: ['kubespray']
 
 - import_playbook: 'storage-post.yml'

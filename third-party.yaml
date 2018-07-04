@@ -5,7 +5,7 @@ modules:
     repository: https://github.com/pires/kubernetes-elasticsearch-cluster.git
     ref: master
   license: Apache-2.0
-- path: kubespray
+- path: vendor/kubespray
   source:
     type: git-subtree
     repository: https://github.com/kubernetes-incubator/kubespray.git
