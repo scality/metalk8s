@@ -15,18 +15,6 @@
   roles:
     - role: check_os
 
-- hosts: kube-node
-  tags:
-    - lvm-storage
+- hosts: k8s-cluster
   roles:
-    - role: setup_lvm
-
-- import_playbook: 'vendor/kubespray/scale.yml'
-  tags: kubespray
-
-- hosts: kube-node
-  tags:
-    - lvm-storage
-    - kube-pv
-  roles:
-    - role: kube_lvm_storage
+    - role: prepare_os

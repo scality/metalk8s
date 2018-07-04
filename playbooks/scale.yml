@@ -1,0 +1,14 @@
+- import_playbook: 'init.yml'
+  tags: ['init']
+
+- import_playbook: 'storage-pre.yml'
+  tags: ['storage']
+
+- import_playbook: 'kubespray-pre.yml'
+  tags: ['kubespray']
+
+- import_playbook: '../vendor/kubespray/scale.yml'
+  tags: ['kubespray']
+
+- import_playbook: 'storage-post.yml'
+  tags: ['storage']

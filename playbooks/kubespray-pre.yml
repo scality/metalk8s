@@ -1,0 +1,7 @@
+- hosts: k8s-cluster
+  gather_facts: False
+  tags:
+    - kubespray
+  roles:
+    - role: ../vendor/kubespray/roles/kubespray-defaults/
+    - role: kubespray_var_patcher

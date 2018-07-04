@@ -1,5 +1,6 @@
 *.pyc
 /*.retry
+/playbooks/*.retry
 /venv
 /host_vars
 /inventories

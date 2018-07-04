@@ -1,0 +1,5 @@
+- hosts: kube-node
+  tags:
+    - lvm-storage
+  roles:
+    - role: setup_lvm

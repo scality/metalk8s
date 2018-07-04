@@ -93,7 +93,7 @@ run)::
 
 Now we're all set to deploy a cluster::
 
-    (metal-k8s) $ ansible-playbook -i inventory/quickstart-cluster -b metal-k8s.yml
+    (metal-k8s) $ ansible-playbook -i inventory/quickstart-cluster -b playbooks/deploy.yml
 
 Grab a coffee and wait for deployment to end.
 

@@ -1,0 +1,30 @@
+- import_playbook: 'init.yml'
+  tags: ['init']
+
+- import_playbook: 'storage-pre.yml'
+  tags: ['storage']
+
+- import_playbook: 'kubespray-pre.yml'
+  tags: ['kubespray']
+
+- import_playbook: '../vendor/kubespray/cluster.yml'
+  tags: kubespray
+
+- import_playbook: 'storage-post.yml'
+  tags: ['storage']
+
+- import_playbook: 'services.yml'
+  tags: ['services']
+
+- hosts: k8s-cluster
+  gather_facts: False
+  tags: ['kubespray']
+  roles:
+    - role: info_displayer
+      vars:
+        add_info:
+        - master_dashboard_url: >-
+            {{ hostvars[groups['kube-master']|first].external_apiserver_endpoint
+            }}/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy
+          kube_login: 'kube'
+          kube_password: '{{ kube_api_pwd }}'
