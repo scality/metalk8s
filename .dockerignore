@@ -1,6 +1,6 @@
 credentials/
-kubespray/artifacts/
-kubespray/credentials/
+vendor/kubespray/artifacts/
+vendor/kubespray/credentials/
 
 .kube/
 .shell-env/

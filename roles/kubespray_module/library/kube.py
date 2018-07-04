@@ -1,1 +1,1 @@
-../../../kubespray/library/kube.py
+../../../vendor/kubespray/library/kube.py
