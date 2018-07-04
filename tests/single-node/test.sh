@@ -26,7 +26,7 @@ setup_suite() {
         make_shell true
 
         echo "Deploy the cluster"
-        make_shell ansible-playbook -i "$(pwd)/inventory" metal-k8s.yml --skip elasticsearch || die
+        make_shell ansible-playbook -i "$(pwd)/inventory" metal-k8s.yml|| die
 
         KUBECONFIG=$(pwd)/inventory/artifacts/admin.conf
         export KUBECONFIG

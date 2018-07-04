@@ -56,6 +56,7 @@
       tags: ['heapster']
     - role: kube_elasticsearch
       tags: ['elasticsearch']
+      when: metalk8s_elasticsearch_enabled|bool
     - role: kube_metrics_server
       tags: ['metrics-server']
 
