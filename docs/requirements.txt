@@ -57,9 +57,9 @@ pyparsing==2.2.0 \
     --hash=sha256:0832bcf47acd283788593e7a0f542407bd9550a55a8a8435214a1960e04bcb04 \
     --hash=sha256:fee43f17a9c4087e7ed1605bd6df994c6173c1e977d7ade7b651292fab2bd010 \
     # via packaging
-pytz==2018.4 \
-    --hash=sha256:65ae0c8101309c45772196b21b74c46b2e5d11b6275c45d251b150d5da334555 \
-    --hash=sha256:c06425302f2cf668f1bba7a0a03f3c1d34d4ebeef2c72003da308b3947c7f749 \
+pytz==2018.5 \
+    --hash=sha256:a061aa0a9e06881eb8b3b2b43f05b9439d6583c206d0a6c340ff72a7b6669053 \
+    --hash=sha256:ffb9ef1de172603304d9d2819af6f5ece76f2e85ec10692a524dd876e72bf277 \
     # via babel
 requests==2.19.1 \
     --hash=sha256:63b52e3c866428a224f97cab011de738c36aec0185aa91cfacd418b5d58911d1 \
@@ -79,6 +79,8 @@ sphinx-rtd-theme==0.4.0 \
 sphinx==1.7.5 \
     --hash=sha256:85f7e32c8ef07f4ba5aeca728e0f7717bef0789fba8458b8d9c5c294cad134f3 \
     --hash=sha256:d45480a229edf70d84ca9fae3784162b1bc75ee47e480ffe04a4b7f21a95d76d
+sphinxcontrib-github-alt==1.0 \
+    --hash=sha256:41666fbea5a7bb318363d45e39a1b3f01502ebb734e9acef332e34bf655448db
 sphinxcontrib-googleanalytics==0.1 \
     --hash=sha256:92b7d74a45defb01e7d29e86fd8206eba42c896b2272cbd1b4b4f6a7d178d5a8
 sphinxcontrib-spelling==4.2.0 \
