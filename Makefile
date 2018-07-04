@@ -129,7 +129,7 @@ $(BASHRC): $(SHELL_ENV_EXISTS) hack/shell-bashrc
 	$(V)sed s:@VENV_ACTIVATE@:$(VENV_ACTIVATE):g < hack/shell-bashrc > $@ || (rm -f $@; exit 1)
 
 shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC) ## Run a shell with `ansible-playbook`, `kubectl` and `helm` pre-installed
-	$(V)if test -z "$(C)"; then \
+	$(V)BASH_ENV="$(BASHRC)"; export BASH_ENV; if test -z "$(C)"; then \
 		# Interactive shell \
 		echo "Launching MetalK8s shell environment. Run 'exit' to quit."; \
 		bash --rcfile $(BASHRC) ||:; \
@@ -138,10 +138,10 @@ shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC) ## 
 		bash --rcfile $(BASHRC); \
 	elif test -e "$(C)"; then \
 		# A script \
-		bash --rcfile $(BASHRC) -i "$(C)"; \
+		bash --rcfile $(BASHRC) "$(C)"; \
 	else \
 		# A command \
-		bash --rcfile $(BASHRC) -i -c "$(C)"; \
+		bash --rcfile $(BASHRC) -c "$(C)"; \
 	fi
 .PHONY: shell
 
