@@ -1,0 +1,110 @@
+---
+# Copyright 2016, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: V-71983 - USB mass storage must be disabled.
+  lineinfile:
+    dest: /etc/modprobe.d/ansible-hardening-disable-usb-storage.conf
+    line: install usb-storage /bin/true
+    create: yes
+  when:
+    - security_rhel7_disable_usb_storage | bool
+  tags:
+    - kernel
+    - medium
+    - V-71983
+
+- name: Set sysctl configurations
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: "{{ item.enabled | ternary('present', 'absent') }}"
+    reload: yes
+  when:
+    - item.enabled | bool
+  with_items: "{{ sysctl_settings_rhel7 }}"
+  tags:
+    - medium
+    - kernel
+    - V-72283
+    - V-72285
+    - V-72287
+    - V-72289
+    - V-73175
+    - V-72291
+    - V-72293
+    - V-72309
+    - V-72319
+    - C-00001
+
+- name: Check kdump service
+  command: systemctl status kdump
+  register: kdump_service_check
+  failed_when: kdump_service_check.rc not in [0,3,4]
+  changed_when: False
+  check_mode: no
+  tags:
+    - kernel
+    - medium
+    - V-72057
+
+- name: V-72057 - Kernel core dumps must be disabled unless needed.
+  service:
+    name: kdump
+    state: stopped
+    enabled: no
+  when:
+    - kdump_service_check.rc not in [3,4]
+    - security_disable_kdump
+  tags:
+    - kernel
+    - medium
+    - V-72057
+
+- name: Check if FIPS is enabled
+  command: cat /proc/sys/crypto/fips_enabled
+  register: fips_check
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  when:
+    - ansible_pkg_mgr in ['yum', 'zypper']
+  tags:
+    - always
+
+- name: Print a warning if FIPS isn't enabled
+  debug:
+    msg: >
+      FIPS is not enabled at boot time on this server.
+      The STIG requires FIPS to be enabled at boot time.
+  when:
+    - ansible_pkg_mgr in ['yum', 'zypper']
+    - fips_check is defined
+    - fips_check.stdout != '1'
+  tags:
+    - high
+    - misc
+    - V-72067
+
+- name: V-77821 - Datagram Congestion Control Protocol (DCCP) kernel module must be disabled
+  lineinfile:
+    dest: /etc/modprobe.d/ansible-hardening-disable-dccp.conf
+    line: install dccp /bin/true
+    create: yes
+  when:
+    - security_rhel7_disable_dccp | bool
+  tags:
+    - kernel
+    - medium
+    - V-77821

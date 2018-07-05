@@ -1,0 +1,140 @@
+---
+# Copyright 2016, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Verify that AIDE configuration directory exists
+  stat:
+    path: "{{ item }}"
+  register: aide_conf
+  check_mode: no
+  with_items:
+    - /etc/aide/aide.conf.d
+    - /etc/aide.conf
+  tags:
+    - always
+
+- name: Exclude certain directories from AIDE
+  template:
+    src: ZZ_aide_exclusions.j2
+    dest: /etc/aide/aide.conf.d/ZZ_aide_exclusions
+  when: aide_conf.results[0].stat.exists | bool
+  tags:
+    - medium
+    - aide
+    - V-71973
+
+# NOTE(mhayden): CentOS/RHEL already provide a very strict AIDE configuration
+# that meets the requirements of V-72069 and V-72071. That config
+# is borrowed for Ubuntu 16.04 here.
+- name: Configure AIDE to verify additional properties (Ubuntu)
+  blockinfile:
+    dest: "/etc/aide/aide.conf"
+    insertbefore: EOF
+    marker: "# {mark} MANAGED BY ANSIBLE-HARDENING"
+    block: |
+      # Rules borrowed from CentOS/RHEL AIDE configuration
+      # (SELinux was removed for Ubuntu compatibility.)
+      FIPSR = p+i+n+u+g+s+m+c+acl+xattrs+sha256
+      NORMAL = FIPSR+sha512
+
+      # The following two lines apply the NORMAL rule (above this line) to the
+      # /bin and /sbin directories to meet the requirements of two STIG controls:
+      #
+      #   V-72069 - Verify ACLs
+      #   V-72071 - Verify extended attributes
+      #
+      /bin    NORMAL
+      /sbin   NORMAL
+  when:
+    - aide_conf.results[0].stat.exists | bool
+    - ansible_os_family | lower == 'debian'
+  tags:
+    - low
+    - aide
+    - V-72069
+    - V-72071
+    - V-72073
+
+# NOTE(hwoarang): Add acl and xattrs on SUSE to meet V-72069 and V-72071.
+- name: Configure AIDE to verify additional properties (SUSE)
+  lineinfile:
+    dest: "/etc/aide.conf"
+    regexp: '(^Binlib.*= )'
+    line: '\1p+i+n+u+g+s+b+m+c+sha256+sha512+acl+xattrs'
+    state: present
+    backrefs: yes
+  when:
+    - aide_conf.results[1].stat.exists | bool
+    - ansible_pkg_mgr == 'zypper'
+  tags:
+    - low
+    - aide
+    - V-72069
+    - V-72071
+    - V-72073
+
+- name: Check to see if AIDE database is already in place
+  stat:
+    path: "{{ aide_database_file }}"
+  register: aide_database
+  check_mode: no
+  tags:
+    - always
+
+- name: Initialize AIDE (this will take a few minutes)
+  # NOTE(hwoarang): aideinit is an Ubuntu wrapper. An alternative
+  # would be to use aideinit || aide -i but that will possibly mask
+  # genuine aideinit failures.
+  shell: "if test -x /usr/sbin/aideinit; then aideinit; else aide -i; fi"
+  changed_when: false
+  register: aide_init
+  when:
+    - aide_conf.results[0].stat.exists | bool or aide_conf.results[1].stat.exists | bool
+    - not aide_database.stat.exists | bool
+    - security_rhel7_initialize_aide | bool
+  tags:
+    - medium
+    - aide
+    - V-71973
+
+# NOTE(mhayden): This is only needed for CentOS 7, RHEL 7 and SUSE since Ubuntu
+# copies the new AIDE database into place automatically with its AIDE wrapper
+# script.
+- name: Move AIDE database into place
+  command: "mv {{ aide_database_out_file }} {{ aide_database_file }}"
+  changed_when: false
+  when:
+    - not aide_init | skipped
+    - ansible_pkg_mgr in ['yum', 'zypper']
+  tags:
+    - medium
+    - aide
+    - V-71973
+
+# NOTE(mhayden): This is only needed for CentOS 7, RHEL 7 and SUSE since the AIDE
+# package doesn't come with a cron job file. Ubuntu packages a cron job for
+# AIDE checks already.
+- name: Create AIDE cron job
+  cron:
+    name: aide
+    cron_file: aide
+    user: root
+    special_time: daily
+    job: "aide --check | /bin/mail -s \"$HOSTNAME - Daily aide integrity check run\" root"
+  when:
+    - ansible_pkg_mgr in ['yum', 'zypper']
+  tags:
+    - medium
+    - aide
+    - V-71975

@@ -1,0 +1,112 @@
+---
+# Copyright 2016, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Copy login warning banner
+  copy:
+    content: "{{ security_login_banner_text }}"
+    dest: "{{ security_sshd_banner_file }}"
+    owner: root
+    group: root
+  tags:
+    - high
+    - sshd
+    - V-71861
+    - V-72225
+
+- name: Adjust ssh server configuration based on STIG requirements
+  blockinfile:
+    dest: /etc/ssh/sshd_config
+    state: present
+    marker: "# {mark} MANAGED BY ANSIBLE-HARDENING"
+    insertbefore: "BOF"
+    validate: '/usr/sbin/sshd -T -f %s'
+    block: "{{ lookup('template', 'sshd_config_block.j2') }}"
+  notify:
+    - restart ssh
+  tags:
+    - high
+    - sshd
+    - V-71939
+    - V-71957
+    - V-71959
+    - V-72221
+    - V-72225
+    - V-72237
+    - V-72241
+    - V-72245
+    - V-72247
+    - V-72249
+    - V-72243
+    - V-72243
+    - V-72303
+    - V-72251
+    - V-72253
+    - V-72265
+    - V-72267
+    - V-72261
+    - V-72263
+
+- name: Ensure sshd is enabled at boot time
+  service:
+    name: "{{ ssh_service }}"
+    enabled: yes
+  when:
+    - security_enable_sshd | bool
+  tags:
+    - medium
+    - sshd
+    - V-72235
+
+- name: Determine existing public ssh host keys
+  shell: ls /etc/ssh/*.pub
+  register: public_ssh_host_keys
+  # The shell command will always report 'changed' so we need to
+  # ignore that since this role is supposed to be idempotent.
+  changed_when: false
+  check_mode: no
+  tags:
+    - always
+
+- name: Public host key files must have mode 0644 or less
+  file:
+    path: "{{ item }}"
+    mode: "u-xX,g-wxs,o-wxt"
+  with_items:
+    - "{{ public_ssh_host_keys.stdout_lines | default([]) }}"
+  tags:
+    - medium
+    - sshd
+    - V-72255
+
+- name: Determine existing private ssh host keys
+  shell: ls /etc/ssh/*_key
+  register: private_ssh_host_keys
+  # The shell command will always report 'changed' so we need to
+  # ignore that since this role is supposed to be idempotent
+  changed_when: false
+  check_mode: no
+  tags:
+    - always
+
+- name: Private host key files must have mode 0600 or less
+  file:
+    path: "{{ item }}"
+    mode: "u-xX,g-rwxs,o-rwxt"
+  with_items:
+    - "{{ private_ssh_host_keys.stdout_lines | default([]) }}"
+  tags:
+    - medium
+    - sshd
+    - V-72257
