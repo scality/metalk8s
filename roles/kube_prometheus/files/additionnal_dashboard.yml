@@ -13,7 +13,6 @@ grafana:
         "overwrite": true,
         "dashboard":
           {
-              "etcd.json": {
                   "annotations": {
                       "list": [
                       ]
@@ -22,7 +21,7 @@ grafana:
                   "editable": true,
                   "gnetId": null,
                   "hideControls": false,
-                  "id": 6,
+                  "id": null,
                   "links": [
                   ],
                   "refresh": false,
@@ -1170,7 +1169,6 @@ grafana:
                   "timezone": "browser",
                   "title": "etcd",
                   "version": 215
-              }
           }
       }
     elasticsearch-exporter-dashboard.json: |+
