@@ -1,0 +1,354 @@
+---
+# Copyright 2016, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+## Common variables for all distributions
+# This file contains variables that apply to all distributions that the
+# security role supports. Distribution-specific variables should be placed in:
+#
+#   - vars/redhat.yml
+#   - vars/ubuntu.yml
+
+## grub custom configuration
+grub_custom_file: /etc/grub.d/40_custom
+## grub main linux configuration
+grub_linux_file: /etc/grub.d/10_linux
+
+## auditd configuration
+auditd_config:
+  - parameter: disk_full_action
+    value: "{{ security_rhel7_auditd_disk_full_action }}"
+    config: /etc/audisp/audisp-remote.conf
+  - parameter: network_failure_action
+    value: "{{ security_rhel7_auditd_network_failure_action }}"
+    config: /etc/audisp/audisp-remote.conf
+  - parameter: space_left
+    value: "{{ security_rhel7_auditd_space_left }}"
+    config: /etc/audit/auditd.conf
+  - parameter: space_left_action
+    value: "{{ security_rhel7_auditd_space_left_action }}"
+    config: /etc/audit/auditd.conf
+  - parameter: action_mail_acct
+    value: "{{ security_rhel7_auditd_action_mail_acct }}"
+    config: /etc/audit/auditd.conf
+
+## auditd rules
+# This variable is used in tasks/rhel7stig/auditd.yml to deploy auditd rules
+# for various commands and syscalls.
+#
+# Each dictionary has this structure:
+#
+#   command: the command/syscall to audit (required)
+#   stig_id: the number/ID from the STIG (required)
+#   arch_specific: 'yes' if the rule depends on the architecture type,
+#                  otherwise 'no' (required)
+#   path: the path to the command (optional, default is '/usr/bin')
+#   distro: restrict deployment to a single Linux distribution (optional,
+#           should be equal to 'ansible_os_family | lower', such as 'redhat'
+#           or 'ubuntu')
+#
+audited_commands:
+  - command: chsh
+    stig_id: V-72167
+    arch_specific: no
+  - command: chage
+    stig_id: V-72155
+    arch_specific: no
+  - command: chcon
+    stig_id: V-72139
+    arch_specific: no
+  - command: chmod
+    stig_id: V-72105
+    arch_specific: yes
+  - command: chown
+    stig_id: V-72097
+    arch_specific: yes
+  - command: creat
+    stig_id: V-72123
+    arch_specific: yes
+  - command: crontab
+    stig_id: V-72183
+    arch_specific: no
+  - command: delete_module
+    stig_id: V-72189
+    arch_specific: yes
+  - command: fchmod
+    stig_id: V-72107
+    arch_specific: yes
+  - command: fchmodat
+    stig_id: V-72109
+    arch_specific: yes
+  - command: fchown
+    stig_id: V-72099
+    arch_specific: yes
+  - command: fchownat
+    stig_id: V-72103
+    arch_specific: yes
+  - command: fremovexattr
+    stig_id: V-72119
+    arch_specific: yes
+  - command: fsetxattr
+    stig_id: V-72113
+    arch_specific: yes
+  - command: ftruncate
+    stig_id: V-72133
+    arch_specific: yes
+  - command: init_module
+    stig_id: V-72187
+    arch_specific: yes
+  - command: gpasswd
+    stig_id: V-72153
+    arch_specific: no
+  - command: lchown
+    stig_id: V-72101
+    arch_specific: yes
+  - command: lremovexattr
+    stig_id: V-72121
+    arch_specific: yes
+  - command: lsetxattr
+    stig_id: V-72115
+    arch_specific: yes
+  - command: mount
+    path: /bin
+    stig_id: V-72171
+    arch_specific: no
+  - command: newgrp
+    stig_id: V-72165
+    arch_specific: no
+  - command: open
+    stig_id: V-72125
+    arch_specific: yes
+  - command: openat
+    stig_id: V-72127
+    arch_specific: yes
+  - command: open_by_handle_at
+    stig_id: V-72129
+    arch_specific: yes
+  - command: pam_timestamp_check
+    path: /sbin
+    stig_id: V-72185
+    arch_specific: no
+  - command: passwd
+    stig_id: V-72149
+    arch_specific: no
+  - command: postdrop
+    path: /usr/sbin
+    stig_id: V-72175
+    arch_specific: no
+  - command: postqueue
+    path: /usr/sbin
+    stig_id: V-72177
+    arch_specific: no
+  - command: removexattr
+    stig_id: V-72117
+    arch_specific: yes
+  - command: rename
+    stig_id: V-72199
+    arch_specific: yes
+  - command: renameat
+    stig_id: V-72201
+    arch_specific: yes
+  - command: restorecon
+    path: /usr/sbin
+    stig_id: V-72141
+    arch_specific: no
+  - command: rmdir
+    stig_id: V-72203
+    arch_specific: yes
+  - command: semanage
+    path: /usr/sbin
+    stig_id: V-72135
+    arch_specific: no
+  - command: setsebool
+    path: /usr/sbin
+    stig_id: V-72137
+    arch_specific: no
+  - command: setxattr
+    stig_id: V-72111
+    arch_specific: yes
+  - command: ssh-keysign
+    path: "{{ ssh_keysign_path }}"
+    stig_id: V-72179
+    arch_specific: no
+  - command: su
+    path: /bin
+    stig_id: V-72159
+    arch_specific: no
+  - command: sudo
+    stig_id: V-72161
+    arch_specific: no
+  - command: sudoedit
+    path: /bin
+    stig_id: V-72169
+    arch_specific: no
+  - command: truncate
+    stig_id: V-72131
+    arch_specific: yes
+  - command: umount
+    path: /bin
+    stig_id: V-72173
+    arch_specific: no
+  - command: unix_chkpwd
+    path: /sbin
+    stig_id: V-72151
+    arch_specific: no
+  - command: unlink
+    stig_id: V-72205
+    arch_specific: yes
+  - command: unlinkat
+    stig_id: V-72207
+    arch_specific: yes
+  - command: userhelper
+    path: /usr/sbin
+    stig_id: V-72157
+    arch_specific: no
+
+## Password quality settings
+# This variable is used in main/rhel7stig/auth.yml to set password quality
+# requirements.
+#
+# Each dictionary has this structure:
+#
+#   parameter: the pwquality parameter to set
+#   value: the value of the parameter
+#   stig_id: the STIG id number
+#   description: description of the control from the STIG
+#   enabled: whether the change should be applied
+#
+password_quality_rhel7:
+  - parameter: ucredit
+    value: -1
+    stig_id: V-71903
+    description: "Password must contain at least one upper-case character"
+    enabled: "{{ security_pwquality_require_uppercase }}"
+  - parameter: lcredit
+    value: -1
+    stig_id: V-71905
+    description: "Password must contain at least one lower-case character"
+    enabled: "{{ security_pwquality_require_lowercase }}"
+  - parameter: dcredit
+    value: -1
+    stig_id: V-71907
+    description: "Password must contain at least one numeric character"
+    enabled: "{{ security_pwquality_require_numeric }}"
+  - parameter: ocredit
+    value: -1
+    stig_id: V-71909
+    description: "Password must contain at least one special character"
+    enabled: "{{ security_pwquality_require_special }}"
+  - parameter: difok
+    value: 8
+    stig_id: V-71911
+    description: "Password must have at least eight characters changed"
+    enabled: "{{ security_pwquality_require_characters_changed }}"
+  - parameter: minclass
+    value: 4
+    stig_id: V-71913
+    description: "Password must have at least four character classes changed"
+    enabled: "{{ security_pwquality_require_character_classes_changed }}"
+  - parameter: maxrepeat
+    value: 3
+    stig_id: V-71915
+    description: "Password must have at most three characters repeated consecutively"
+    enabled: "{{ security_pwquality_limit_repeated_characters }}"
+  - parameter: maxclassrepeat
+    value: 4
+    stig_id: V-71917
+    description: "Password must have at most four characters in the same character class repeated consecutively"
+    enabled: "{{ security_pwquality_limit_repeated_character_classes }}"
+  - parameter: minlen
+    value: 15
+    stig_id: V-71935
+    description: "Passwords must be a minimum of 15 characters in length"
+    enabled: "{{ security_pwquality_require_minimum_password_length }}"
+
+## shadow-utils settings
+# This variable is used in main/rhel7stig/auth.yml to set shadow file-related
+# configurations in /etc/login.defs.
+#
+# Each dictionary has this structure:
+#
+#   parameter: the parameter to set
+#   value: the value for the parameter
+#   stig_id: the STIG ID number for the requirement
+#
+shadow_utils_rhel7:
+  - parameter: ENCRYPT_METHOD
+    value: "{{ security_password_encrypt_method | default('') }}"
+    stig_id: V-71921
+    ansible_os_family: all
+  - parameter: PASS_MIN_DAYS
+    value: "{{ security_password_min_lifetime_days | default('') }}"
+    stig_id: V-71925
+    ansible_os_family: all
+  - parameter: PASS_MAX_DAYS
+    value: "{{ security_password_max_lifetime_days | default('') }}"
+    stig_id: V-71929
+    ansible_os_family: all
+  - parameter: FAIL_DELAY
+    value: "{{ security_shadow_utils_fail_delay | default('') }}"
+    stig_id: V-71951
+    ansible_os_family: RedHat
+  - parameter: UMASK
+    value: "{{ security_shadow_utils_umask | default('') }}"
+    stig_id: V-71995
+    ansible_os_family: all
+  - parameter: CREATE_HOME
+    value: "{{ security_shadow_utils_create_home | default('') }}"
+    stig_id: V-72013
+    ansible_os_family: all
+
+## sysctl settings
+# This variable is used in main/rhel7stig/kernel.yml to set sysctl
+# configurations on hosts.
+#
+# Each dictionary has this structure:
+#
+#   name: the sysctl configuration name
+#   value: the value to set for the sysctl configuration
+#   enabled: yes or no
+#     - 'yes' (ensure the variable is set)
+#     - 'no' (the role will not alter the configuration)
+#
+sysctl_settings_rhel7:
+  - name: net.ipv4.conf.all.accept_source_route
+    value: 0
+    enabled: "{{ security_disallow_source_routed_packet_forward_ipv4 | bool }}"
+  - name: net.ipv4.conf.default.accept_source_route
+    value: 0
+    enabled: "{{ security_disallow_source_routed_packet_forward_ipv4 | bool}}"
+  - name: net.ipv4.icmp_echo_ignore_broadcasts
+    value: 1
+    enabled: "{{ security_disallow_echoes_broadcast_address | bool }}"
+  - name: net.ipv4.conf.all.send_redirects
+    value: 0
+    enabled: "{{ security_disallow_icmp_redirects | bool }}"
+  - name: net.ipv4.conf.default.send_redirects
+    value: 0
+    enabled: "{{ security_disallow_icmp_redirects | bool }}"
+  - name: net.ipv4.ip_forward
+    value: 0
+    enabled: "{{ security_disallow_ip_forwarding | bool }}"
+  - name: net.ipv6.conf.all.accept_source_route
+    value: 0
+    enabled: "{{ security_disallow_source_routed_packet_forward_ipv6 | bool }}"
+  - name: net.ipv4.conf.default.accept_redirects
+    value: 0
+    enabled: "{{ security_disallow_icmp_redirects | bool }}"
+  - name: kernel.randomize_va_space
+    value: 2
+    enabled: "{{ security_enable_aslr | bool }}"
+  - name: net.ipv6.conf.all.disable_ipv6
+    value: 1
+    enabled: "{{ (security_contrib_enabled | bool) and (security_contrib_disable_ipv6 | bool) }}"

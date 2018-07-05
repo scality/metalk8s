@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+#
+# added for RHEL 6 STIG V-38501
+
+[DEFAULT]
+# "bantime" is the number of seconds that a host is banned.
+bantime  = {{ security_fail2ban_bantime }}
