@@ -46,6 +46,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.githubpages',
     'sphinxcontrib.spelling',
+    'sphinxcontrib_github_alt',
 ]
 
 if ON_RTD:
@@ -184,3 +185,7 @@ spelling_word_list_filename='spelling-wordlist.txt'
 # See https://pypi.org/project/sphinxcontrib-googleanalytics/
 googleanalytics_id = 'UA-78443762-1'
 googleanalytics_enabled = ON_RTD
+
+# -- Options for sphinxcontrib_github_alt ------------------------------------
+# See https://pypi.org/project/sphinxcontrib_github_alt/
+github_project_url = 'https://github.com/Scality/metal-k8s'
