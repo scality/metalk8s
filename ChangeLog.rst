@@ -27,6 +27,9 @@ installed on all `k8s-cluster` hosts.
 :ghpull:`104` - use CoreDNS instead of kubedns for in-cluster DNS services, in
 preparation for Kubernetes 1.11.
 
+:ghpull:`113` - deploy the Prometheus `node_exporter` on `k8s-cluster` and
+`etcd` hosts instead of using a *DaemonSet*
+
 Known issues
 ------------
 :ghissue:`62` - Elasticsearch Curator may not properly prune old `logstash-*`
