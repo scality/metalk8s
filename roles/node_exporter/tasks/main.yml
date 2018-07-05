@@ -1,0 +1,43 @@
+- name: 'set node exporter repository'
+  yum_repository:
+    name: prometheus-rpm_release
+    baseurl: https://packagecloud.io/prometheus-rpm/release/el/$releasever/$basearch
+    description: prometheus-rpm_release
+    enabled: True
+    gpgcheck: False
+    gpgkey: https://packagecloud.io/prometheus-rpm/release/gpgkey
+    sslverify: True
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+    repo_gpgcheck: True
+    state: present
+
+# https://github.com/ansible/ansible/issues/20711
+# For ansible < 2.6
+- name: 'rebuild cache'
+  command: yum -y makecache
+  args:
+    creates: /var/lib/yum/repos/{{ ansible_machine }}/{{  ansible_distribution_major_version }}/prometheus-rpm_release/gpgdir/gpg.conf
+    warn: False
+
+- name: 'install version-lock'
+  yum:
+    name: yum-plugin-versionlock
+    state: present
+
+- name: 'lock version of node_exporter'
+  lineinfile:
+    dest: /etc/yum/pluginconf.d/versionlock.list
+    line: 0:node_exporter-{{ node_exporter_version }}
+    regexp: '0:node_exporter-.*'
+
+- name: 'install Prometheus Node exporter'
+  yum:
+    name: node_exporter-{{ node_exporter_version }}
+    state: present
+    update_cache: True
+
+- name: 'Start and enable the node_exporter service'
+  service:
+    name: node_exporter
+    enabled: True
+    state: started
