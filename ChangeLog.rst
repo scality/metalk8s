@@ -34,6 +34,3 @@ Known issues
 ------------
 :ghissue:`62` - Elasticsearch Curator may not properly prune old `logstash-*`
 indices
-
-:ghissue:`107` - the dashboard for Etcd monitoring isn't properly loaded by
-Grafana
