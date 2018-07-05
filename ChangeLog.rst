@@ -37,5 +37,3 @@ indices
 
 :ghissue:`107` - the dashboard for Etcd monitoring isn't properly loaded by
 Grafana
-
-:ghissue:`108` - Elasticsearch metrics are not properly scraped by Prometheus
