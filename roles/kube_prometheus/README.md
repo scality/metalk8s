@@ -1,7 +1,7 @@
 # Adding new dashboards
 
 - Drop json files into `src` directory
-- run `make`
+- run `hack/aggregate_dashboard.py`
 - Commit new jsonfile under `src` and modification to `files/additionnal_dashboard.yml`
 
 # Current dashboards
