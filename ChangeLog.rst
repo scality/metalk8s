@@ -3,6 +3,12 @@
 Release 0.1.1 (in development)
 ==============================
 
+Features added
+--------------
+:ghpull:`127` - deploy Cerebro_ to manage the Elasticsearch cluster
+(:ghissue:`126`)
+
+.. _Cerebro: https://github.com/lmenezes/cerebro
 
 Release 0.1.0
 =============
