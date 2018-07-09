@@ -39,10 +39,13 @@ ENV KUBECONFIG=/inventory/artifacts/admin.conf
 # Runtime dependencies of `make shell`
 RUN apk --no-cache add \
         bash \
+        bash-completion \
         libffi \
         make \
         openssl \
         python
+
+RUN echo "source /etc/profile.d/bash_completion.sh" | tee ~/.bashrc
 
 # Be able to run `make shell`
 COPY Makefile requirements.txt ./
