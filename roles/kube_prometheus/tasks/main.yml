@@ -50,6 +50,16 @@
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
+- name: 'remove old exporter-node objects (#113)'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    namespace: '{{ kube_prometheus_namespace }}'
+    label: chart=exporter-node-0.4.0,release=exporter-node
+    resource: configmap,service,servicemonitor,endpoints
+    state: 'absent'
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
 - name: 'install kube-prometheus'
   command: >-
     {{ bin_dir }}/helm upgrade kube-prometheus
