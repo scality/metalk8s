@@ -69,6 +69,22 @@ spec:
         volumeMounts:
         - name: storage
           mountPath: /data
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                  - elasticsearch
+                - key: role
+                  operator: In
+                  values:
+                  - master
+              topologyKey: kubernetes.io/hostname
       volumes:
           - emptyDir:
               medium: ""

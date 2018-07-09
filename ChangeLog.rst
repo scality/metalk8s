@@ -3,6 +3,10 @@
 Release 0.1.1 (in development)
 ==============================
 
+Bugs fixed
+----------
+:ghissue:`103` - set up host anti-affinity for Elasticsearch service scheduling
+(:ghpull:`113`)
 
 Release 0.1.0
 =============
