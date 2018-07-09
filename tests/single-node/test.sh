@@ -42,7 +42,7 @@ setup_suite() {
 
 test_deploy_again() {
         set -x
-        assert make_shell ansible-playbook -i "$(pwd)/inventory" metal-k8s.yml --skip elasticsearch
+        assert "make_shell ansible-playbook -i '$(pwd)/inventory' metal-k8s.yml --skip elasticsearch"
         set +x
         fail "Whut"
 }
