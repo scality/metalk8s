@@ -1,5 +1,8 @@
 top_srcdir="$(realpath "$(pwd)/../..")"
 
+FORCE_COLOR=true
+export FORCE_COLOR
+
 ANSIBLE_FORCE_COLOR=true
 export ANSIBLE_FORCE_COLOR
 
@@ -38,7 +41,9 @@ setup_suite() {
 }
 
 test_deploy_again() {
+        set -x
         assert make_shell ansible-playbook -i "$(pwd)/inventory" metal-k8s.yml --skip elasticsearch
+        set +x
 }
 
 test_reclaim_storage() {
