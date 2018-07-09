@@ -1,14 +1,24 @@
-from centos:7
+# Note: this Docker image is meant to be built using the root of the repository
+# as context
+# Note: the MetalK8s repository root is supposed to be mounted at
+# `/usr/src/metal-k8s` when running the container
 
-RUN yum install -y epel-release make gcc git && \
-    yum install -y enchant \
-                   python2-pip \
-                   python-tox
+FROM docker.io/alpine:3.8
 
-RUN pip install buildbot-worker
+WORKDIR /usr/src/metal-k8s
 
-COPY requirements.txt .
-RUN pip2 install -r requirements.txt
+RUN mkdir docs
 
-ARG WORKDIR=/workdir
-WORKDIR ${WORKDIR}
+RUN apk --no-cache add \
+        enchant \
+        make \
+        py2-pip \
+        && \
+    pip install tox
+
+COPY tox.ini .
+COPY docs/requirements.txt docs/
+
+RUN tox --workdir /tmp/tox --notest -e docs
+
+ENTRYPOINT ["tox", "--workdir", "/tmp/tox", "-e", "docs"]
