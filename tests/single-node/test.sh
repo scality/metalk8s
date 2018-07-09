@@ -123,3 +123,7 @@ test_prometheus_node_exporter_metrics() {
         echo "Found ${NB_TARGET} targets"
         assert_not_equals 0 "${NB_TARGET}"
 }
+
+test_services_playbook() {
+        assert "make_shell ansible-playbook -i '$(pwd)/inventory' playbooks/services.yml"
+}

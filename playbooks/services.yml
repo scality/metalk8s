@@ -1,3 +1,9 @@
+# https://github.com/scality/metal-k8s/issues/120
+- hosts: k8s-cluster:etcd
+  tasks:
+    - setup:
+  gather_facts: false
+
 - hosts: kube-master
   gather_facts: False
   roles:
