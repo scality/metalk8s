@@ -38,7 +38,7 @@ setup_suite() {
 }
 
 test_deploy_again() {
-        assert make_shell ansible-playbook -i "$(pwd)/inventory" metal-k8s.yml --skip elasticsearch
+        assert "make_shell ansible-playbook -i '$(pwd)/inventory' playbooks/deploy.yml"
 }
 
 test_reclaim_storage() {
