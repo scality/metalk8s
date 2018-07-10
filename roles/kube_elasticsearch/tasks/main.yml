@@ -178,3 +178,16 @@
     state: 'latest'
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
+
+# Cerebro
+- name: 'install Cerebro Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ cerebro_repo }}
+    --version {{ cerebro_version }}
+    --namespace {{ cerebro_namespace }}
+    {{ cerebro_release_name }}
+    {{ cerebro_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"

@@ -147,26 +147,35 @@ Similarly, we can list all deployed Helm_ applications::
 
 .. _Helm: https://www.helm.sh
 
-Access to dashboard, Grafana and Kibana
----------------------------------------
-Once the cluster is running, you can access the `Kubernetes dashboard`_,
-Grafana_ metrics and Kibana_ logs from your browser.
+Cluster Services
+----------------
+Various services to operate and monitor your MetalK8s cluster are provided. To
+access these, first create a secure tunnel into your cluster by running
+``kubectl proxy``. Then, while the tunnel is up and running, the following tools
+are available:
 
-To access these services, first create a secure tunnel into your
-cluster by running ``kubectl proxy``. Then, while the tunnel is up and running,
-access the dashboard at
-http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/,
-Grafana at
-http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/
-and Kibana at
-http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/.
-When accessing Kibana for the first time, set up an *index pattern* for the
-``logstash-*`` index, using the ``@timestamp`` field as *Time Filter field
-name*.
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| Service                 | Role                                                    | Link                                                                                            | Notes                                 |
++=========================+=========================================================+=================================================================================================+=======================================+
+| `Kubernetes dashboard`_ | A general purpose, web-based UI for Kubernetes clusters | http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/ |                                       |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Grafana`_              | Monitoring dashboards for cluster services              | http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/   |                                       |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Cerebro`_              | An administration and monitoring console for            | http://localhost:8001/api/v1/namespaces/kube-ops/services/cerebro:http/proxy/                   | When accessing Cerebro, connect it to |
+|                         | Elasticsearch clusters                                  |                                                                                                 | http://elasticsearch:9200 to operate  |
+|                         |                                                         |                                                                                                 | the MetalK8s Elasticsearch cluster.   |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   | When accessing Kibana for the first   |
+|                         |                                                         |                                                                                                 | time, set up an *index pattern* for   |
+|                         |                                                         |                                                                                                 | the ``logstash-*`` index, using the   |
+|                         |                                                         |                                                                                                 | ``@timestamp`` field as *Time Filter  |
+|                         |                                                         |                                                                                                 | field name*.                          |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
 
 See :doc:`../architecture/cluster-services` for more information about these
 services and their configuration.
 
 .. _Kubernetes dashboard: https://github.com/kubernetes/dashboard
 .. _Grafana: https://grafana.com
+.. _Cerebro: https://github.com/lmenezes/cerebro
 .. _Kibana: https://www.elastic.co/products/kibana/

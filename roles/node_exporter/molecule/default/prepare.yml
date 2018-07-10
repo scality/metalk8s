@@ -1,0 +1,11 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Install packages required to test this role
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - iproute

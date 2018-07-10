@@ -38,7 +38,7 @@ setup_suite() {
 }
 
 test_deploy_again() {
-        assert make_shell ansible-playbook -i "$(pwd)/inventory" metal-k8s.yml --skip elasticsearch
+        assert "make_shell ansible-playbook -i '$(pwd)/inventory' playbooks/deploy.yml"
 }
 
 test_reclaim_storage() {
@@ -122,4 +122,8 @@ test_prometheus_node_exporter_metrics() {
           --arg job "node-exporter")
         echo "Found ${NB_TARGET} targets"
         assert_not_equals 0 "${NB_TARGET}"
+}
+
+test_services_playbook() {
+        assert "make_shell ansible-playbook -i '$(pwd)/inventory' playbooks/services.yml"
 }
