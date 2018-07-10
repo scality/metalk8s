@@ -1,0 +1,100 @@
+---
+# Copyright 2015, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Create temporary directory to hold any temporary files
+  command: "mktemp -d"
+  register: mktemp_result
+  changed_when: False
+  when:
+    - not check_mode | bool
+  tags:
+    - always
+
+- name: Set a fact for the temporary directory
+  set_fact:
+    temp_dir: "{{ mktemp_result.stdout }}"
+  changed_when: False
+  when:
+    - not check_mode | bool
+  tags:
+    - always
+
+# Some of the tasks in the role may take a long time to run. Let's start them
+# as early as possible so they have time to finish.
+- include_tasks: async_tasks.yml
+
+- name: Get user data for all users on the system
+  get_users:
+    min_uid: 0
+  register: user_list
+  check_mode: no
+  tags:
+    - always
+
+- name: Get user data for all interactive users on the system
+  get_users:
+    min_uid: "{{ security_interactive_user_minimum_uid }}"
+  register: interactive_user_list
+  check_mode: no
+  tags:
+    - always
+
+# NOTE(mhayden): EPEL is only needed for the clamav packages. We should only
+# install EPEL if the deployer asked for clamav to be installed.
+- name: Install EPEL repository
+  yum:
+    name: "{{ security_epel_release_package }}"
+    state: "{{ security_package_state }}"
+  when:
+    - ansible_pkg_mgr == 'yum'
+    - security_epel_install_repository | bool
+    - security_enable_virus_scanner | bool
+  tags:
+    - always
+
+# Package installations and removals must come first so that configuration
+# changes can be made later.
+- include_tasks: packages.yml
+  tags:
+    - always
+
+# Package managers are managed first since the changes in these tasks will
+# affect the remainder of the tasks in the role.
+- include_tasks: "{{ ansible_pkg_mgr }}.yml"
+
+# The bulk of the security changes are applied in these tasks. The tasks in
+# each file are tagged with the same name (for example, tasks in `auth.yml`
+# are tagged with `auth`). Also, the tag name matches up with the "STIG
+# Controls by Tag" section of the role documentation.
+- include_tasks: accounts.yml
+- include_tasks: aide.yml
+- include_tasks: auditd.yml
+- include_tasks: auth.yml
+- include_tasks: file_perms.yml
+- include_tasks: graphical.yml
+- include_tasks: kernel.yml
+- include_tasks: lsm.yml
+- include_tasks: misc.yml
+- include_tasks: sshd.yml
+
+- name: Remove the temporary directory
+  file:
+    path: "{{ temp_dir }}"
+    state: absent
+  changed_when: False
+  when:
+    - not check_mode | bool
+  tags:
+    - always

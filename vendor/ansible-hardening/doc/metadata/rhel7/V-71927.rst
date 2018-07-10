@@ -1,0 +1,19 @@
+---
+id: V-71927
+status: opt-in
+tag: accounts
+---
+
+Setting a minimum password lifetime on interactive user accounts provides
+security benefits by limiting the frequency of password changes. However, this
+can cause login problems for users without proper communication and
+coordination.
+
+Deployers can opt-in for this change by setting the following Ansible variable:
+
+.. code-block:: yaml
+
+    security_set_minimum_password_lifetime: yes
+
+The tasks will examine each interactive user account and set the minimum
+password age if the existing setting is not equal to one day.
