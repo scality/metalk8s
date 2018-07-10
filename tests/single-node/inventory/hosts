@@ -1,13 +1,13 @@
-ci-metal-k8s ansible_connection=local ansible_become=True
+ci-metalk8s ansible_connection=local ansible_become=True
 
 [etcd]
-ci-metal-k8s
+ci-metalk8s
 
 [kube-master]
-ci-metal-k8s
+ci-metalk8s
 
 [kube-node]
-ci-metal-k8s
+ci-metalk8s
 
 [k8s-cluster:children]
 kube-master
