@@ -19,6 +19,8 @@
   roles:
     - role: '../vendor/ansible-hardening'
       when: metalk8s_ansible_hardening_enabled | default(true) | bool
+  vars:
+    security_rhel7_enable_linux_security_module: false
   tags:
     - ansible-hardening
 
