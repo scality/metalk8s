@@ -1,4 +1,3 @@
-deployExporterNode: False
 grafana:
   extraVars:
     - name: 'GF_SERVER_ROOT_URL'
@@ -48,3 +47,7 @@ exporter-kube-etcd:
 {% if exporter_kube_etcd_keyFile|default %}
   keyFile: {{ exporter_kube_etcd_keyFile }}
 {% endif %}
+
+exporter-node:
+  enableDaemonSet: false
+  endpoints: {{ groups.etcd | union(groups['k8s-cluster']) | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list | to_json }}

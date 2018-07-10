@@ -10,6 +10,13 @@ Features added
 
 .. _Cerebro: https://github.com/lmenezes/cerebro
 
+Bugs fixed
+----------
+:ghissue:`103` - set up host anti-affinity for Elasticsearch service scheduling
+(:ghpull:`113`)
+
+:ghpull:`134` - fix `bash-completion` in the MetalK8s Docker image
+
 Release 0.1.0
 =============
 This marks the first release of `MetalK8s`_.
