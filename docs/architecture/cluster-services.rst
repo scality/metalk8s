@@ -135,6 +135,13 @@ production-grade settings.
 .. _ElasticSearch: https://www.elastic.co/products/elasticsearch/
 .. _pires/kubernetes-elasticsearch-cluster:
 
+Cerebro
+*******
+The Cerebro_ dashboard is a monitoring and administration tool for Elasticsearch
+clusters.
+
+.. _Cerebro: https://github.com/lmenezes/cerebro
+
 ElasticSearch Curator
 *********************
 To ensure ingested logs don't flood the ElasticSearch resources, `ElasticSearch
