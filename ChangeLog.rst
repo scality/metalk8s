@@ -12,6 +12,12 @@ security hardening configurations from the
 .. _ansible-hardening: https://github.com/openstack/ansible-hardening
 .. _Security Technical Implementation Guide (STIG): http://iase.disa.mil/stigs/Pages/index.aspx
 
+Bugs fixed
+----------
+:ghissue:`103` - set up host anti-affinity for Elasticsearch service scheduling
+(:ghpull:`113`)
+
+:ghpull:`134` - fix `bash-completion` in the MetalK8s Docker image
 
 Release 0.1.0
 =============
