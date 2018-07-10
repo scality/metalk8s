@@ -1,7 +1,6 @@
-# Can't use `-r../requirements.txt` because that pins package versions, e.g. for
-# `pbr`, to versions which are not compatible with versions pinned by
-# (dependencies of) `molecule`.
--r../vendor/kubespray/requirements.txt
-molecule >= 2.15.0
-
-requests >= 2.19.1
+ansible<=2.6
+pytest
+pytest-bdd
+pytest-services
+pyyaml
+requests
