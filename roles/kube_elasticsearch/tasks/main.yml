@@ -73,12 +73,12 @@
   command: >-
     {{ bin_dir }}/helm upgrade
     --install
-    --repo {{ fluentd_repo }}
-    --version {{ fluentd_version }}
-    --namespace {{ fluentd_namespace }}
+    --repo {{ fluentd_elasticsearch_repo }}
+    --version {{ fluentd_elasticsearch_version }}
+    --namespace {{ fluentd_elasticsearch_namespace }}
     -f {{ fluentd_values_file.path }}
-    {{ fluentd_release_name }}
-    {{ fluentd_chart }}
+    {{ fluentd_elasticsearch_release_name }}
+    {{ fluentd_elasticsearch_chart }}
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
