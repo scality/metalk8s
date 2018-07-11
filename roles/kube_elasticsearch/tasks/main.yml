@@ -69,6 +69,19 @@
     src: fluentd-elasticsearch-values.yml
     dest: '{{ fluentd_values_file.path }}'
 
+# Upgrading in-place doesn't work because some immutable fields are attempted to
+# be upgraded. Removing the whole release seems overkill as well. Temporarily
+# deleting the DaemonSet does the job.
+- name: 'Delete fluentd-elasticsearch 0.1.4 DaemonSet'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    label: chart=fluentd-elasticsearch-0.1.4,heritage=Tiller,release=fluentd
+    resource: daemonset
+    state: absent
+    namespace: '{{ fluentd_elasticsearch_namespace }}'
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
 - name: 'install Fluentd ElasticSearch Chart'
   command: >-
     {{ bin_dir }}/helm upgrade
