@@ -1,0 +1,269 @@
+---
+# Copyright 2016, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# NOTE(mhayden): pam_faildelay expects the `delay` parameter to be in
+# microseconds.
+- name: Set pam_faildelay configuration on Ubuntu
+  lineinfile:
+    dest: /etc/pam.d/login
+    regexp: '^(auth[\s]+optional[\s]+pam_faildelay.so).*$'
+    line: '\1 delay={{ (security_shadow_utils_fail_delay | int) * 10**6 }}'
+    state: present
+    backrefs: yes
+  when:
+    - security_shadow_utils_fail_delay is defined
+    - ansible_os_family | lower == 'debian'
+  tags:
+    - auth
+    - medium
+    - V-71951
+
+- name: Prevent users with blank or null passwords from authenticating (Debian/Ubuntu)
+  lineinfile:
+    dest: "{{ pam_auth_file }}"
+    state: present
+    regexp: "^(.*)nullok_secure(.*)$"
+    line: '\1\2'
+    backup: yes
+    backrefs: yes
+  when:
+    - ansible_os_family == 'Debian'
+    - security_disallow_blank_password_login | bool
+  tags:
+    - auth
+    - high
+    - V-71937
+
+- name: Prevent users with blank or null passwords from authenticating (Red Hat)
+  lineinfile:
+    dest: "{{ pam_auth_file }}"
+    state: present
+    regexp: "^({{ item }}.*sufficient.*)nullok(.*)$"
+    line: '\1\2'
+    backup: yes
+    backrefs: yes
+  with_items:
+    - auth
+    - password
+  when:
+    - ansible_os_family == 'RedHat'
+    - security_disallow_blank_password_login | bool
+  tags:
+    - auth
+    - high
+    - V-71937
+
+- name: Prevent users with blank or null passwords from authenticating (SUSE)
+  lineinfile:
+    dest: "{{ item }}"
+    state: present
+    regexp: "^(.*required.*)nullok(.*)$"
+    line: '\1\2'
+    backup: yes
+    backrefs: yes
+  with_items:
+    - "{{ pam_auth_file }}"
+    - "{{ pam_password_file }}"
+  when:
+    - ansible_pkg_mgr == 'zypper'
+    - security_disallow_blank_password_login | bool
+  tags:
+    - auth
+    - high
+    - V-71937
+
+- name: Lock accounts after three failed login attempts a 15 minute period
+  blockinfile:
+    dest: "{{ pam_password_file }}"
+    state: present
+    marker: "# {mark} MANAGED BY ANSIBLE-HARDENING"
+    insertbefore: EOF
+    block: "{{ lookup('template', 'pam_faillock.j2') }}"
+  when:
+    - ansible_pkg_mgr in ['yum', 'zypper']
+    - security_pam_faillock_enable | bool
+  tags:
+    - auth
+    - medium
+    - V-71943
+    - V-71945
+
+# NOTE(mhayden): The unusual regex here ensures that we're omitting any lines
+# that are commented out. Some commented lines may be preprended with spaces,
+# so we need to account for that as well.
+#
+# First step is to find lines with 'nopasswd' in them and then omit any of
+# those lines that have a '#' as the first character or '#' as the first
+# character following a space (or series of spaces).
+- name: Check for 'nopasswd' in sudoers files
+  shell: 'grep -ir nopasswd /etc/sudoers /etc/sudoers.d/ | egrep -v "^([[:space:]]*)?(#|$)" || echo "not found"'
+  register: sudoers_nopasswd_check
+  changed_when: False
+  tags:
+    - auth
+    - medium
+    - V-71947
+
+- name: V-71947 - Users must provide a password for privilege escalation.
+  debug:
+    msg: >
+      The 'NOPASSWD' directive was found in the sudoers configuration files.
+      Remove the directive to ensure that all users must provide a password to
+      run commands as the root user.
+  when:
+    - not sudoers_nopasswd_check | skipped
+    - sudoers_nopasswd_check.stdout != 'not found'
+  tags:
+    - auth
+    - medium
+    - V-71947
+    - skip_ansible_lint
+
+- name: Check for '!authenticate' in sudoers files
+  shell: grep -ir '\!authenticate' /etc/sudoers /etc/sudoers.d/ || echo 'not found'
+  register: sudoers_authenticate_check
+  changed_when: False
+  tags:
+    - auth
+    - medium
+    - V-71949
+
+- name: V-71949 - Users must re-authenticate for privilege escalation.
+  debug:
+    msg: >
+      The '!authenticate' directive was found in the sudoers configuration
+      files. Remove the directive to ensure that all users must provide a
+      password to run commands as the root user each time they use sudo.
+  when:
+    - not sudoers_authenticate_check | skipped
+    - sudoers_authenticate_check.stdout != 'not found'
+  tags:
+    - auth
+    - medium
+    - V-71949
+    - skip_ansible_lint
+
+- name: Check if sssd.conf exists
+  stat:
+    path: /etc/sssd/sssd.conf
+  register: sssd_conf_check
+  check_mode: no
+  tags:
+    - always
+
+# NOTE(mhayden): Some systems, such as ARM, don't have grub at all. This task
+# should be skipped on those systems.
+- name: Check if GRUB2 custom file exists
+  stat:
+    path: "{{ grub_custom_file }}"
+  register: grub_custom_file_check
+  check_mode: no
+  tags:
+    - always
+
+- name: Set a GRUB 2 password for single-user/maintenance modes
+  block:
+    - blockinfile:
+        path: "{{ grub_custom_file }}"
+        insertbefore: EOF
+        marker: "# {mark} MANAGED BY ANSIBLE-HARDENING"
+        block: |
+          set superusers="root"
+          password_pbkdf2 root {{ security_grub_password_hash }}
+        state: present
+      notify:
+        - update grub config
+    - lineinfile:
+        path: "{{ grub_linux_file }}"
+        regexp: '^CLASS=.*'
+        line: 'CLASS="--class gnu-linux --class gnu --class os --unrestricted"'
+        state: present
+        backrefs: yes
+      notify:
+        - update grub config
+  when:
+    - grub_custom_file_check.stat.exists | bool
+    - security_require_grub_authentication | bool
+  tags:
+    - auth
+    - high
+    - V-71961
+    - V-71963
+
+- name: V-72217 - The operating system must limit the number of concurrent sessions to 10 for all accounts and/or account types.
+  blockinfile:
+    dest: /etc/security/limits.d/ansible-hardening-maxlogins.conf
+    create: yes
+    block: |
+      # Deployed by the ansible-hardening role
+      # V-72217 - Limit concurrent sessions for all accounts/types
+      * hard maxlogins {{ security_rhel7_concurrent_session_limit }}
+  when:
+    - security_rhel7_concurrent_session_limit is defined
+  tags:
+    - auth
+    - low
+    - V-72217
+
+- name: Check for pam_lastlog in PAM configuration
+  command: "grep pam_lastlog {{ pam_postlogin_file }}"
+  register: pam_lastlog_check
+  changed_when: False
+  failed_when: False
+  check_mode: no
+  tags:
+    - always
+
+- name: V-72275 - Display date/time of last logon after logon
+  debug:
+    msg: >
+      The 'pam_lastlog' directive is missing in {{ pam_postlogin_file }}.
+      This is required by V-72275.
+  when:
+    - pam_lastlog_check.rc != 0
+  tags:
+    - low
+    - auth
+    - V-72275
+
+- name: Ensure .shosts find has finished
+  async_status:
+    jid: "{{ shosts_find.ansible_job_id }}"
+  failed_when: False
+  changed_when: False
+  register: job_result
+  until: job_result.finished | bool
+  retries: 30
+  when:
+    - not shosts_find | skipped
+  tags:
+    - high
+    - auth
+    - V-72277
+    - V-72279
+
+- name: Remove .shosts or shosts.equiv files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ job_result.files }}"
+  when:
+    - not job_result | skipped
+    - security_rhel7_remove_shosts_files | bool
+  tags:
+    - high
+    - auth
+    - V-72277
+    - V-72279

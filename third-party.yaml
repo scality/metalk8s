@@ -22,6 +22,12 @@ modules:
     type: url
     base: https://raw.githubusercontent.com/coreos/etcd/v3.2.16/
   license: Apache-2.0
+- path: vendor/ansible-hardening
+  source:
+    type: git-subtree
+    repository: https://github.com/openstack/ansible-hardening.git
+    ref: 17.0.4
+  license: Apache-2.0
 
 charts:
 - role: kube_heapster

@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+#
+# These excluded paths prevent AIDE from wandering into directories where it
+# shouldn't be hashing/monitoring files.
+
+{% for dir in security_aide_exclude_dirs %}
+!{{ dir }}
+{% endfor %}

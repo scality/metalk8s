@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+# Copyright 2016, Rackspace US, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Get user facts."""
+
+import grp
+import pwd
+import spwd
+from ansible.module_utils.basic import AnsibleModule
+
+
+DOCUMENTATION = """
+---
+module: get_users
+short_description:
+    - A module for gathering facts about Linux users.
+description:
+    - This module gathers facts about the Linux users and groups that exist
+      on the system.
+author: major@mhtx.net
+"""
+
+EXAMPLES = '''
+- get_users:
+    min_uid: 1000
+    max_uid: 2000
+'''
+
+RETURN = '''
+users:
+    description: users matching arguments provided
+    returned: success
+    type: list
+'''
+
+
+def make_user_dict(user_record):
+    """Create a dictionary of user attributes."""
+    user_dict = {
+        'name': user_record.pw_name,
+        'uid': user_record.pw_uid,
+        'gid': user_record.pw_gid,
+        'gecos': user_record.pw_gecos,
+        'dir': user_record.pw_dir,
+        'shell': user_record.pw_shell,
+        'group': make_group_dict(user_record.pw_gid),
+        'shadow': make_shadow_dict(user_record.pw_name)
+    }
+    return user_dict
+
+
+def make_group_dict(gid):
+    """Create dictionary from group record."""
+    try:
+        group_record = grp.getgrgid(gid)
+    except KeyError:
+        return False
+
+    group_dict = {
+        'name': group_record.gr_name,
+        'passwd': group_record.gr_passwd,
+        'gid': group_record.gr_gid,
+    }
+    return group_dict
+
+
+def make_shadow_dict(username):
+    """Create a dictionary of user shadow password database attributes."""
+    try:
+        shadow_record = spwd.getspnam(username)
+    except KeyError:
+        return False
+
+    shadow_dict = {
+        'last_changed': shadow_record.sp_lstchg,
+        'min_days': shadow_record.sp_min,
+        'max_days': shadow_record.sp_max,
+        'warn_days': shadow_record.sp_warn,
+        'inact_days': shadow_record.sp_inact,
+        'expire_days': shadow_record.sp_expire,
+    }
+    return shadow_dict
+
+
+def main():
+    """Ansible calls this function."""
+    module = AnsibleModule(
+        argument_spec=dict(
+            min_uid=dict(default=0, type='int'),
+            max_uid=dict(default=65535, type='int'),
+        ),
+        supports_check_mode=True,
+    )
+
+    # Get all of the users on the system into a list of dicts. The 'pwd' module
+    # returns them in a struct.
+    all_users = [make_user_dict(x) for x in pwd.getpwall()]
+
+    # Get the users that match our criteria.
+    user_list = [x for x in all_users
+                 if (x['uid'] >= module.params['min_uid'] and
+                     x['uid'] <= module.params['max_uid'])]
+
+    # Return the user data to the Ansible task.
+    module.exit_json(
+        changed=False,
+        users=user_list
+    )
+
+if __name__ == '__main__':
+    main()

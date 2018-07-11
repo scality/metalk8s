@@ -3,10 +3,29 @@
 Release 0.1.1 (in development)
 ==============================
 
+Features added
+--------------
+:ghpull:`11` - run the OpenStack `ansible-hardening`_ role on nodes to apply
+security hardening configurations from the
+`Security Technical Implementation Guide (STIG)`_ (:ghissue:`88`)
+
+.. _ansible-hardening: https://github.com/openstack/ansible-hardening
+.. _Security Technical Implementation Guide (STIG): http://iase.disa.mil/stigs/Pages/index.aspx
+
+:ghpull:`127` - deploy Cerebro_ to manage the Elasticsearch cluster
+(:ghissue:`126`)
+
+.. _Cerebro: https://github.com/lmenezes/cerebro
+
 Bugs fixed
 ----------
 :ghissue:`103` - set up host anti-affinity for Elasticsearch service scheduling
 (:ghpull:`113`)
+
+:ghissue:`120` - required facts not gathered when running the `services`
+playbook in isolation (:ghpull:`132`)
+
+:ghpull:`134` - fix `bash-completion` in the MetalK8s Docker image
 
 Release 0.1.0
 =============
