@@ -132,14 +132,14 @@ kubednsautoscaler_image_repo: "gcr.io/google_containers/cluster-proportional-aut
 kubednsautoscaler_image_tag: "{{ kubednsautoscaler_version }}"
 test_image_repo: busybox
 test_image_tag: latest
-elasticsearch_version: "v2.4.1"
-elasticsearch_image_repo: "gcr.io/google_containers/elasticsearch"
+elasticsearch_version: "v5.6.4"
+elasticsearch_image_repo: "k8s.gcr.io/elasticsearch"
 elasticsearch_image_tag: "{{ elasticsearch_version }}"
-fluentd_version: "1.22"
-fluentd_image_repo: "gcr.io/google_containers/fluentd-elasticsearch"
+fluentd_version: "v2.0.4"
+fluentd_image_repo: "k8s.gcr.io/fluentd-elasticsearch"
 fluentd_image_tag: "{{ fluentd_version }}"
-kibana_version: "v4.6.1"
-kibana_image_repo: "gcr.io/google_containers/kibana"
+kibana_version: "5.6.4"
+kibana_image_repo: "docker.elastic.co/kibana/kibana"
 kibana_image_tag: "{{ kibana_version }}"
 helm_version: "v2.9.1"
 helm_image_repo: "lachlanevenson/k8s-helm"
@@ -154,13 +154,13 @@ registry_proxy_image_repo: "gcr.io/google_containers/kube-registry-proxy"
 registry_proxy_image_tag: "0.4"
 local_volume_provisioner_image_repo: "quay.io/external_storage/local-volume-provisioner"
 local_volume_provisioner_image_tag: "v2.0.0"
-cephfs_provisioner_image_repo: "quay.io/kubespray/cephfs-provisioner"
-cephfs_provisioner_image_tag: "a71a49d4"
+cephfs_provisioner_image_repo: "quay.io/external_storage/cephfs-provisioner"
+cephfs_provisioner_image_tag: "v1.1.0-k8s1.10"
 ingress_nginx_controller_image_repo: "quay.io/kubernetes-ingress-controller/nginx-ingress-controller"
-ingress_nginx_controller_image_tag: "0.15.0"
+ingress_nginx_controller_image_tag: "0.16.2"
 ingress_nginx_default_backend_image_repo: "gcr.io/google_containers/defaultbackend"
 ingress_nginx_default_backend_image_tag: "1.4"
-cert_manager_version: "v0.3.0"
+cert_manager_version: "v0.3.2"
 cert_manager_controller_image_repo: "quay.io/jetstack/cert-manager-controller"
 cert_manager_controller_image_tag: "{{ cert_manager_version }}"
 
@@ -564,7 +564,7 @@ downloads:
     tag: "{{ ingress_nginx_controller_image_tag }}"
     sha256: "{{ ingress_nginx_controller_digest_checksum|default(None) }}"
     groups:
-      - kube-ingress
+      - kube-node
   ingress_nginx_default_backend:
     enabled: "{{ ingress_nginx_enabled }}"
     container: true
@@ -572,7 +572,7 @@ downloads:
     tag: "{{ ingress_nginx_default_backend_image_tag }}"
     sha256: "{{ ingress_nginx_default_backend_digest_checksum|default(None) }}"
     groups:
-      - kube-ingress
+      - kube-node
   cert_manager_controller:
     enabled: "{{ cert_manager_enabled }}"
     container: true
