@@ -51,3 +51,6 @@ exporter-kube-etcd:
 exporter-node:
   enableDaemonSet: false
   endpoints: {{ groups.etcd | union(groups['k8s-cluster']) | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list | to_json }}
+
+deployKubeDNS: false
+deployCoreDNS: true

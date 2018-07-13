@@ -17,6 +17,11 @@ security hardening configurations from the
 
 .. _Cerebro: https://github.com/lmenezes/cerebro
 
+:ghpull:`140` - set up kube-prometheus_ to monitor CoreDNS_ (cfr. :ghpull:`104`)
+
+.. _kube-prometheus: https://github.com/coreos/prometheus-operator/tree/master/contrib/kube-prometheus
+.. _CoreDNS: https://coredns.io/
+
 Bugs fixed
 ----------
 :ghissue:`103` - set up host anti-affinity for Elasticsearch service scheduling
