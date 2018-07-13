@@ -17,6 +17,14 @@ security hardening configurations from the
 
 .. _Cerebro: https://github.com/lmenezes/cerebro
 
+:ghpull:`138` - update versions of Fluentd_, Kibana_, `Elasticsearch Exporter`_
+and Kubespray_
+
+.. _Fluentd: https://www.fluentd.org
+.. _Kibana: https://www.elastic.co/products/kibana
+.. _Elasticsearch Exporter: https://github.com/justwatchcom/elasticsearch_exporter
+.. _Kubespray: https://github.com/kubernetes-incubator/kubespray/
+
 :ghpull:`140` - set up kube-prometheus_ to monitor CoreDNS_ (cfr. :ghpull:`104`)
 
 .. _kube-prometheus: https://github.com/coreos/prometheus-operator/tree/master/contrib/kube-prometheus
