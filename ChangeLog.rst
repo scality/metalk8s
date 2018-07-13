@@ -1,7 +1,10 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
-Release 0.1.1 (in development)
-==============================
+Release 0.1.1
+=============
+.. note:: Compatibility with future releases of MetalK8s is not guaranteed until
+   version 1.0.0 is available. When deploying a cluster using pre-1.0 versions
+   of this package, you may need to redeploy later.
 
 Features added
 --------------
