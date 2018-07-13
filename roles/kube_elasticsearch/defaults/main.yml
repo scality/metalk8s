@@ -8,20 +8,20 @@ remove_metal_k8s_temporary_file: true
 es_addon_dir: '{{ kube_config_dir }}/addons/elasticsearch'
 es_namespace: 'kube-ops'
 
-fluentd_chart: 'fluentd-elasticsearch'
-fluentd_version: '0.1.4'
-fluentd_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
-fluentd_namespace: 'kube-ops'
-fluentd_release_name: 'fluentd'
+fluentd_elasticsearch_chart: 'fluentd-elasticsearch'
+fluentd_elasticsearch_version: '0.6.4'
+fluentd_elasticsearch_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
+fluentd_elasticsearch_namespace: 'kube-ops'
+fluentd_elasticsearch_release_name: 'fluentd'
 
 kibana_chart: 'kibana'
-kibana_version: '0.2.2'
+kibana_version: '0.6.0'
 kibana_repo: 'https://kubernetes-charts.storage.googleapis.com'
 kibana_namespace: 'kube-ops'
 kibana_release_name: 'kibana'
 
 elasticsearch_exporter_chart: 'elasticsearch-exporter'
-elasticsearch_exporter_version: '0.1.2'
+elasticsearch_exporter_version: '0.1.4'
 elasticsearch_exporter_repo: 'https://kubernetes-charts.storage.googleapis.com'
 # Note: When changing this name, the 'ServiceMonitor' manifest needs to be
 # updated as well
