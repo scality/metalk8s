@@ -1,7 +1,10 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
-Release 0.1.1 (in development)
-==============================
+Release 0.1.1
+=============
+.. note:: Compatibility with future releases of MetalK8s is not guaranteed until
+   version 1.0.0 is available. When deploying a cluster using pre-1.0 versions
+   of this package, you may need to redeploy later.
 
 Features added
 --------------
@@ -16,6 +19,14 @@ security hardening configurations from the
 (:ghissue:`126`)
 
 .. _Cerebro: https://github.com/lmenezes/cerebro
+
+:ghpull:`138` - update versions of Fluentd_, Kibana_, `Elasticsearch Exporter`_
+and Kubespray_
+
+.. _Fluentd: https://www.fluentd.org
+.. _Kibana: https://www.elastic.co/products/kibana
+.. _Elasticsearch Exporter: https://github.com/justwatchcom/elasticsearch_exporter
+.. _Kubespray: https://github.com/kubernetes-incubator/kubespray/
 
 :ghpull:`140` - set up kube-prometheus_ to monitor CoreDNS_ (cfr. :ghpull:`104`)
 
