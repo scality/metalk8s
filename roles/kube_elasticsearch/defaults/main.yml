@@ -31,7 +31,7 @@ elasticsearch_exporter_namespace: 'kube-ops'
 elasticsearch_exporter_release_name: 'es-exporter'
 
 cerebro_repo: 'https://kubernetes-charts.storage.googleapis.com'
-cerebro_version: '0.1.1'
+cerebro_version: '0.2.0'
 cerebro_namespace: 'kube-ops'
 cerebro_release_name: 'cerebro'
 cerebro_chart: 'cerebro'

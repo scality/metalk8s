@@ -1,0 +1,4 @@
+config:
+  hosts:
+    - host: 'http://elasticsearch:9200'
+      name: 'MetalK8s'

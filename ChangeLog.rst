@@ -7,6 +7,9 @@ Features added
 --------------
 :ghpull:`144` - update Kibana chart version
 
+:ghpull:`145` - update the Cerebro chart, and pre-configure the MetalK8s
+Elasticsearch cluster
+
 Bugs fixed
 ----------
 :ghpull:`151` - fix `debug` clause `var` scoping
