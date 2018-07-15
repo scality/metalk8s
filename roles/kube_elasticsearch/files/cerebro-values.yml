@@ -1,3 +1,8 @@
+service:
+  labels:
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "Cerebro"
+
 config:
   hosts:
     - host: 'http://elasticsearch:9200'
