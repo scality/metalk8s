@@ -29,7 +29,23 @@ stages:
         retryFetch: true
         haltOnFailure: true
     - ShellCommand:
-        name: 'Run test-suite'
+        name: 'Init node'
         haltOnFailure: true
         command: |-
-          bash ./vendor/bash_unit/bash_unit tests/single-node/test.sh
+          bash tests/single-node/init.sh
+    - ShellCommand:
+        name: 'Run the install test suite'
+        haltOnFailure: true
+        usePTY: true
+        command: |-
+          tox -e test-install -- -s
+        env:
+          ANSIBLE_INVENTORY: tests/single-node/inventory/hosts
+    - ShellCommand:
+        name: 'Run the post-install test suite'
+        haltOnFailure: true
+        usePTY: true
+        command: |-
+          tox -e test -- -s --run-services
+        env:
+          ANSIBLE_INVENTORY: tests/single-node/inventory/hosts
