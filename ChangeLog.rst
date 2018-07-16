@@ -3,6 +3,9 @@
 Release 0.1.2 (in development)
 ==============================
 
+Bugs fixed
+----------
+:ghpull:`151` - fix `debug` clause `var` scoping
 
 Release 0.1.1
 =============
