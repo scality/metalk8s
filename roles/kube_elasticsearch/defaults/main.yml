@@ -15,7 +15,7 @@ fluentd_elasticsearch_namespace: 'kube-ops'
 fluentd_elasticsearch_release_name: 'fluentd'
 
 kibana_chart: 'kibana'
-kibana_version: '0.6.0'
+kibana_version: '0.8.0'
 kibana_repo: 'https://kubernetes-charts.storage.googleapis.com'
 kibana_namespace: 'kube-ops'
 kibana_release_name: 'kibana'

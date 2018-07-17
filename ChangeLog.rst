@@ -3,6 +3,10 @@
 Release 0.1.2 (in development)
 ==============================
 
+Features added
+--------------
+:ghpull:`144` - update Kibana chart version
+
 Bugs fixed
 ----------
 :ghpull:`151` - fix `debug` clause `var` scoping
