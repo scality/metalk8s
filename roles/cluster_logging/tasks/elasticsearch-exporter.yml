@@ -1,0 +1,54 @@
+# elasticsearch-exporter
+- name: 'create tempfile for ElasticSearch Exporter values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: es_exporter_values_file
+
+- debug:
+  var: es_exporter_values_file.path
+  when: debug|bool
+
+- name: 'copy ElasticSearch Exporter values into temporary file'
+  copy:
+    src: elasticsearch-exporter/values.yml
+    dest: '{{ es_exporter_values_file.path }}'
+
+- name: 'install ElasticSearch Exporter Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ elasticsearch_exporter_repo }}
+    --version {{ elasticsearch_exporter_version }}
+    --namespace {{ elasticsearch_exporter_namespace }}
+    -f {{ es_exporter_values_file.path }}
+    {{ elasticsearch_exporter_release_name }}
+    {{ elasticsearch_exporter_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary ElasticSearch Exporter values file'
+  file:
+    dest: '{{ es_exporter_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool
+
+- name: 'Copy ElasticSearch Exporter ServiceMonitor file'
+  copy:
+    src: 'elasticsearch-exporter/servicemonitor.yml'
+    dest: '{{ es_addon_dir }}/'
+    owner: root
+    group: root
+    mode: 0644
+    directory_mode: 0755
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'Deploy ElasticSearch Exporter ServiceMonitor'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ es_addon_dir }}/servicemonitor.yml'
+    namespace: '{{ elasticsearch_exporter_namespace }}'
+    state: 'latest'
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"

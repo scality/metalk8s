@@ -1,0 +1,47 @@
+# Fluentd
+- name: 'create tempfile for Fluentd values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: fluentd_values_file
+
+- debug:
+  var: fluentd_values_file.path
+  when: debug|bool
+
+- name: 'copy Fluentd values into temporary file'
+  copy:
+    src: fluentd-elasticsearch/values.yml
+    dest: '{{ fluentd_values_file.path }}'
+
+# Upgrading in-place doesn't work because some immutable fields are attempted to
+# be upgraded. Removing the whole release seems overkill as well. Temporarily
+# deleting the DaemonSet does the job.
+- name: 'Delete fluentd-elasticsearch 0.1.4 DaemonSet'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    label: chart=fluentd-elasticsearch-0.1.4,heritage=Tiller,release=fluentd
+    resource: daemonset
+    state: absent
+    namespace: '{{ fluentd_elasticsearch_namespace }}'
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'install Fluentd ElasticSearch Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ fluentd_elasticsearch_repo }}
+    --version {{ fluentd_elasticsearch_version }}
+    --namespace {{ fluentd_elasticsearch_namespace }}
+    -f {{ fluentd_values_file.path }}
+    {{ fluentd_elasticsearch_release_name }}
+    {{ fluentd_elasticsearch_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary Fluentd values file'
+  file:
+    dest: '{{ fluentd_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool
