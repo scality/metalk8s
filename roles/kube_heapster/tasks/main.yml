@@ -5,7 +5,7 @@
   register: heapster_values_file
 
 - debug:
-  var: heapster_values_file.path
+    var: heapster_values_file.path
   when: debug|bool
 
 - name: 'copy Heapster values into temporary file'

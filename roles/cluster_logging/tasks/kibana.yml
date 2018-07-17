@@ -6,7 +6,7 @@
   register: kibana_values_file
 
 - debug:
-  var: kibana_values_file.path
+    var: kibana_values_file.path
   when: debug|bool
 
 - name: 'copy Kibana values into temporary file'

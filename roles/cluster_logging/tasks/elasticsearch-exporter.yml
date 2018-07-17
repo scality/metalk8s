@@ -6,7 +6,7 @@
   register: es_exporter_values_file
 
 - debug:
-  var: es_exporter_values_file.path
+    var: es_exporter_values_file.path
   when: debug|bool
 
 - name: 'copy ElasticSearch Exporter values into temporary file'
