@@ -39,7 +39,9 @@ charts:
 - role: kube_prometheus
   name: kube-prometheus
 - role: cluster_logging
-  name: fluentd-elasticsearch
+  name: fluentd
+- role: cluster_logging
+  name: fluent-bit
 - role: cluster_logging
   name: kibana
 - role: cluster_logging

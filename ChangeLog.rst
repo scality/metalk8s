@@ -3,6 +3,14 @@
 Release 0.1.2 (in development)
 ==============================
 
+Features added
+--------------
+:ghpull:`154` - rework log collection architecture, now using `Fluent Bit`_ to
+capture logs, then forward to `fluentd`_ to aggregate them and batch-insert in
+Elasticsearch (:ghissue:`51`)
+
+.. _Fluent Bit: https://fluentbit.io
+.. _fluentd: https://www.fluentd.org
 
 Release 0.1.1
 =============

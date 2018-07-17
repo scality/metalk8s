@@ -1,0 +1,13 @@
+replicaCount: 2
+
+output:
+  host: 'elasticsearch-ingest'
+
+service:
+  ports:
+    - name: "monitor-agent"
+      protocol: TCP
+      containerPort: 24220
+    - name: "forward"
+      protocol: TCP
+      containerPort: 24224

@@ -1,5 +1,21 @@
 - import_tasks: elasticsearch.yml
-- import_tasks: fluentd-elasticsearch.yml
+
+# Delete the old 'fluentd' Helm release, *iff* it is the `fluentd-elasticsearch`
+# chart
+- name: Get chart of {{ fluentd_release_name }} release
+  shell: "{{ bin_dir }}/helm get {{ fluentd_release_name }} || true"
+  register: helm_get_fluentd
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: Delete {{ fluentd_release_name }} release if it is fluentd-elasticsearch
+  shell: "{{ bin_dir }}/helm delete --purge {{ fluentd_release_name }}"
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+  when: "helm_get_fluentd.stdout | regex_search('^CHART\\:\\ fluentd-elasticsearch', multiline=True)"
+
+- import_tasks: fluentd.yml
+- import_tasks: fluent-bit.yml
 - import_tasks: kibana.yml
 - import_tasks: elasticsearch-exporter.yml
 - import_tasks: cerebro.yml
