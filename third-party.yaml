@@ -38,13 +38,13 @@ charts:
   name: prometheus-operator
 - role: kube_prometheus
   name: kube-prometheus
-- role: kube_elasticsearch
+- role: cluster_logging
   name: fluentd-elasticsearch
-- role: kube_elasticsearch
+- role: cluster_logging
   name: kibana
-- role: kube_elasticsearch
+- role: cluster_logging
   name: elasticsearch-exporter
-- role: kube_elasticsearch
+- role: cluster_logging
   name: cerebro
 
 # TODO `metrics-server`
