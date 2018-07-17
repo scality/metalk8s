@@ -7,6 +7,10 @@ Features added
 --------------
 :ghpull:`144` - update Kibana chart version
 
+Bugs fixed
+----------
+:ghpull:`151` - fix `debug` clause `var` scoping
+
 Release 0.1.1
 =============
 .. note:: Compatibility with future releases of MetalK8s is not guaranteed until

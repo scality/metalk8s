@@ -61,7 +61,7 @@
   register: fluentd_values_file
 
 - debug:
-  var: fluentd_values_file.path
+    var: fluentd_values_file.path
   when: debug|bool
 
 - name: 'copy Fluentd values into temporary file'
@@ -109,7 +109,7 @@
   register: kibana_values_file
 
 - debug:
-  var: kibana_values_file.path
+    var: kibana_values_file.path
   when: debug|bool
 
 - name: 'copy Kibana values into temporary file'
@@ -145,7 +145,7 @@
   register: es_exporter_values_file
 
 - debug:
-  var: es_exporter_values_file.path
+    var: es_exporter_values_file.path
   when: debug|bool
 
 - name: 'copy ElasticSearch Exporter values into temporary file'
