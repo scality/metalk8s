@@ -14,6 +14,8 @@ Bugs fixed
 ----------
 :ghpull:`151` - fix `debug` clause `var` scoping
 
+:ghissue:`150` - fix deployment of Elasticsearch, node and Prometheus Grafana dashboards (:ghpull:`158`)
+
 Release 0.1.1
 =============
 .. note:: Compatibility with future releases of MetalK8s is not guaranteed until
