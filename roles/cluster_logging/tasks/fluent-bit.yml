@@ -1,0 +1,34 @@
+# fluent-bit
+- name: 'create tempfile for fluent-bit values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: fluent_bit_values_file
+
+- debug:
+    var: fluent_bit_values_file.path
+  when: debug|bool
+
+- name: 'copy fluent-bit values into temporary file'
+  copy:
+    src: fluent-bit/values.yml
+    dest: '{{ fluent_bit_values_file.path }}'
+
+- name: 'install fluent-bit Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ fluent_bit_repo }}
+    --version {{ fluent_bit_version }}
+    --namespace {{ fluent_bit_namespace }}
+    -f {{ fluent_bit_values_file.path }}
+    {{ fluent_bit_release_name }}
+    {{ fluent_bit_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary fluent-bit values file'
+  file:
+    dest: '{{ fluent_bit_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool

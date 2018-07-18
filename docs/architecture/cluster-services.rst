@@ -149,14 +149,16 @@ indices on a given schedule.
 
 .. _ElasticSearch Curator: https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html
 
-fluentd
-*******
-The `fluentd`_ service is deployed as a `DaemonSet`_ to stream all container
-logs into ElasticSearch.
+Fluent Bit and fluentd
+**********************
+The `Fluent Bit`_ service is deployed as a `DaemonSet`_ to stream all container
+logs into `fluentd`_ instances, which collect them and submit batches to
+Elasticsearch.
 
-In MetalK8s, :program:`fluentd` has a role similar to `Logstash`_ in the `ELK`
-stack.
+In MetalK8s, Fluent Bit and :program:`fluentd` have a role similar to
+`Logstash`_ in the `ELK` stack.
 
+.. _Fluent Bit: https://fluentbit.io
 .. _fluentd: https://www.fluentd.org
 .. _DaemonSet: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
 .. _Logstash: https://www.elastic.co/products/logstash/

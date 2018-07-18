@@ -1,0 +1,34 @@
+# Cerebro
+- name: 'create tempfile for Cerebro values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: cerebro_values_file
+
+- debug:
+    var: cerebro_values_file.path
+  when: debug|bool
+
+- name: 'copy Cerebro values into temporary file'
+  copy:
+    src: cerebro/values.yml
+    dest: '{{ cerebro_values_file.path }}'
+
+- name: 'install Cerebro Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ cerebro_repo }}
+    --version {{ cerebro_version }}
+    --namespace {{ cerebro_namespace }}
+    -f {{ cerebro_values_file.path }}
+    {{ cerebro_release_name }}
+    {{ cerebro_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary Cerebro values file'
+  file:
+    dest: '{{ cerebro_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool
