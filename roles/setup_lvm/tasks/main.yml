@@ -5,7 +5,7 @@
             and item.value.create|default(True)|bool)
         or (item.value.drives|length == 0
             and not item.value.create|default(True)|bool)'
-  with_dict: '{{ metal_k8s_lvm.vgs }}'
+  with_dict: '{{ metal_k8s_lvm.vgs }}'
 
 - name: "LVM Setup: Check LVM packages"
   package:
@@ -22,6 +22,6 @@
     pvs: '{{ item.value.drives|join(",") }}'
     vg: '{{ item.key }}'
     state: present
-  with_dict: '{{ metal_k8s_lvm.vgs }}'
+  with_dict: '{{ metal_k8s_lvm.vgs }}'
   when:
     - 'item.value.create|default(True)|bool'

@@ -11,13 +11,13 @@
     that:
       - item.value.volumes|length > 0
       - item.value.host_path|default("") != ""
-  with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
+  with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
 
 - name: 'create dir for lvm storage'
   file:
     dest: '{{ item.value.host_path }}'
     state: directory
-  with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
+  with_dict: '{{ metal_k8s_storage_class.lvm_conf.vgs }}'
 
 - name: display vgs in metal_k8s_storage_class
   debug:
