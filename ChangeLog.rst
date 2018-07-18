@@ -17,6 +17,9 @@ Elasticsearch (:ghissue:`51`)
 .. _Fluent Bit: https://fluentbit.io
 .. _fluentd: https://www.fluentd.org
 
+:ghpull:`163` - update versions of Elasticsearch Exporter, `nginx-ingress`,
+`kube-prometheus` and Kubespray
+
 Bugs fixed
 ----------
 :ghpull:`151` - fix `debug` clause `var` scoping
