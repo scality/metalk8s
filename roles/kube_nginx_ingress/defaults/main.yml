@@ -2,7 +2,7 @@ debug: False
 
 remove_metal_k8s_temporary_file: True
 
-nginx_ingress_version: '0.22.1'
+nginx_ingress_version: '0.23.0'
 nginx_ingress_namespace: 'kube-ingress'
 nginx_ingress_repo: 'https://kubernetes-charts.storage.googleapis.com'
 nginx_ingress_release_name: 'nginx-ingress'
