@@ -109,8 +109,9 @@ class Dashboard:
         json_dashboard = json.dumps({
                 'inputs': [{
                     'name': self.source or self.DEFAULT_SOURCE,
-                    'type:': 'datasource',
-                    'pluginId': 'prometheus'
+                    'type': 'datasource',
+                    'pluginId': 'prometheus',
+                    'value': 'prometheus'
                 }],
                 'overwrite': True,
                 'dashboard': spec
@@ -197,10 +198,11 @@ class DashboardAggregator:
         target_path = os.path.join(self.configdir, target_filename)
         with open(target_path, 'w') as target:
             target.write('grafana:\n')
-            target.write('  serverDashboardFiles:\n')
+            target.write('  serverDashboardFiles:')
             for filename in self.iter_filenames():
                 log.info('Take {}'.format(filename))
                 dashboard = self.get_dashboard(filename)
+                target.write('\n')
                 target.write(indent(
                     dashboard.compute_dashboard_string(),
                     ' '*4
