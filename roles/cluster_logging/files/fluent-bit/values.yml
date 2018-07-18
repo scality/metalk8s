@@ -1,0 +1,18 @@
+metrics:
+  enabled: true
+
+backend:
+  forward:
+    port: 24224
+
+trackOffsets: true
+
+filter:
+  mergeJSONLog: true
+  enableParser: true
+  enableExclude: true
+
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule

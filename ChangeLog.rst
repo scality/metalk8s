@@ -10,6 +10,13 @@ Features added
 :ghpull:`145` - update the Cerebro chart, and pre-configure the MetalK8s
 Elasticsearch cluster
 
+:ghpull:`154` - rework log collection architecture, now using `Fluent Bit`_ to
+capture logs, then forward to `fluentd`_ to aggregate them and batch-insert in
+Elasticsearch (:ghissue:`51`)
+
+.. _Fluent Bit: https://fluentbit.io
+.. _fluentd: https://www.fluentd.org
+
 Bugs fixed
 ----------
 :ghpull:`151` - fix `debug` clause `var` scoping

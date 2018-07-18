@@ -1,7 +1,0 @@
-elasticsearch:
-  host: 'elasticsearch-ingest'
-
-tolerations:
-  - key: node-role.kubernetes.io/master
-    operator: Exists
-    effect: NoSchedule
