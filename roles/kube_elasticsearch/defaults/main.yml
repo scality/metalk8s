@@ -8,6 +8,18 @@ remove_metal_k8s_temporary_file: true
 es_addon_dir: '{{ kube_config_dir }}/addons/elasticsearch'
 es_namespace: 'kube-ops'
 
+elasticsearch_chart: 'elasticsearch'
+elasticsearch_version: '1.3.0'
+elasticsearch_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
+elasticsearch_namespace: 'kube-ops'
+elasticsearch_release_name: 'elasticsearch'
+
+elasticsearch_curator_chart: 'elasticsearch-curator'
+elasticsearch_curator_version: '0.3.0'
+elasticsearch_curator_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
+elasticsearch_curator_namespace: 'kube-ops'
+elasticsearch_curator_release_name: 'elasticsearch-curator'
+
 fluentd_elasticsearch_chart: 'fluentd-elasticsearch'
 fluentd_elasticsearch_version: '0.6.4'
 fluentd_elasticsearch_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'

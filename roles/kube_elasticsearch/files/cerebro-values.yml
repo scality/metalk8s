@@ -5,5 +5,5 @@ service:
 
 config:
   hosts:
-    - host: 'http://elasticsearch:9200'
+    - host: 'http://elasticsearch-client:9200'
       name: 'MetalK8s'

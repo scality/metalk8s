@@ -1,2 +1,2 @@
 es:
-  uri: 'http://elasticsearch:9200'
+  uri: 'http://elasticsearch-client:9200'

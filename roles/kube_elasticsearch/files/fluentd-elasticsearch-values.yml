@@ -1,5 +1,5 @@
 elasticsearch:
-  host: 'elasticsearch-ingest'
+  host: 'elasticsearch-client'
 
 tolerations:
   - key: node-role.kubernetes.io/master

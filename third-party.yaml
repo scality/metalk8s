@@ -1,10 +1,4 @@
 modules:
-- path: vendor/kubernetes-elasticsearch-cluster
-  source:
-    type: git-subtree
-    repository: https://github.com/pires/kubernetes-elasticsearch-cluster.git
-    ref: master
-  license: Apache-2.0
 - path: vendor/kubespray
   source:
     type: git-subtree
@@ -38,6 +32,10 @@ charts:
   name: prometheus-operator
 - role: kube_prometheus
   name: kube-prometheus
+- role: kube_elasticsearch
+  name: elasticsearch
+- role: kube_elasticsearch
+  name: elasticsearch-curator
 - role: kube_elasticsearch
   name: fluentd-elasticsearch
 - role: kube_elasticsearch
