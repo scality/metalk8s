@@ -1,37 +1,70 @@
-- name: "LVM Setup: Assert {{ inventory_hostname }} has vgs correctly declared"
-  assert:
-    that:
-      # create == True implies drives|length > 0
-      - 'not(item.value.create|default(True)|bool and item.value.drives|length == 0)'
-      # create == False implies drive|length == 0
-      - 'not(not item.value.create|default(True)|bool and item.value.drives|length > 0)'
-  with_dict: '{{ metal_k8s_lvm_drives }}'
+# TODO: link to documentation in fail message
+- name: "LVM Setup: Detect old configuration style < 0.2.0"
+  tags:
+    - assertion
+  fail:
+    msg: >
+      You're still having the old storage configuration.
+      A breaking change was introduced in MetalK8S 0.2.0 and the default
+       LVM Volume Group has been changed from "kubevg" to"
+      {{ metalk8s_lvm_default_vg }}.
+      Please follow the following documentation to upgrade
+  when: metal_k8s_lvm is defined
 
 - name: "LVM Setup: Check LVM packages"
   package:
-    name: lvm2
+    name: '{{ item }}'
     state: present
   register: lvm_just_installed
+  with_items:
+    - lvm2
 
-- name: "re-compute facts now that lvm is installed"
+- name: "LVM Setup: re-compute facts now that lvm is installed"
   setup:
   when: lvm_just_installed is changed
 
-- name: 'compute vg to manage'
+- name: "LVM Setup: Compute vgs to manage"
   set_fact:
-    managed_vgs: >-
-      { {%- for vg_name, vg_prop in metal_k8s_lvm_drives.items()
-              if vg_prop.create|default(True)|bool == True -%}
-           '{{ vg_name }}': {{ vg_prop }},
-        {%- endfor -%} }
+    # loop over all possibly defined metalk8s_lvm_extra_vgs
+    # variables to get the managed LVm VG
+    # Always manage {{ metalk8s_lvm_default_vg }}
+    # Add their drives in the mix
+    metalk8s_lvm_managed_vgs: >-
+      {
+        {%- set vgs = [metalk8s_lvm_default_vg|default("vg_metalk8s")] + metalk8s_lvm_extra_vgs -%}
+        {%- for vg in vgs -%}
+        {%- set drives = hostvars[inventory_hostname]['metalk8s_lvm_' ~ vg ~ '_drives']|default([]) -%}
+        '{{ vg }}': {'drives': {{ drives }} },
+        {%- endfor -%}
+      }
 
 - debug:
-    msg: '{{ managed_vgs }}'
+    msg: '{{ metalk8s_lvm_managed_vgs }}'
   when: debug|bool
+
+- name: "LVM Setup: Assert LVM Volume Groups are correctly declared"
+  tags:
+    - assertion
+  assert:
+    that:
+      # drives|length > 0 means we create the VG
+      # drives| length == 0 means the VG must exists
+      - 'item.value.drives|length > 0 or
+          (
+            item.value.drives|length == 0 and
+            item.key in ansible_lvm.vgs
+          )'
+  with_dict: '{{ metalk8s_lvm_managed_vgs }}'
+
+  # TODO: Check that device exists
+  # TODO: Check that device do not have any ansible_device_links if
+  # VG is to created
+  # TODO: Check that device of existing VG are the same if drives are specified
 
 - name: "LVM Setup: Create the LVM Volume Groups"
   lvg:
     pvs: '{{ item.value.drives }}'
     vg: '{{ item.key }}'
     state: present
-  with_dict: '{{ managed_vgs }}'
+  when: item.value.drives|length > 0
+  with_dict: '{{ metalk8s_lvm_managed_vgs }}'

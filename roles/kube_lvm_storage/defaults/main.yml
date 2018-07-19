@@ -1,22 +1,13 @@
 debug: False
 
-storage_addon_dir: '{{ kube_config_dir }}/addons/storage_lvm'
+metalk8s_storage_addon_dir: '{{ kube_config_dir }}/addons/storage_lvm'
 
-# ################ #
-# LVM confguration #
-# ################ #
+# Set default LVm VGs storageclass and hostpath
+metalk8s_storageclass_vg_metalk8s: 'local-lvm'
+metalk8s_storageclass_default_vg_metalk8s: True
+metalk8s_host_path_vg_metalk8s: '/mnt/vg_metalk8s'
 
-# Set the storage class setup on kubernetes node
-metal_k8s_storage_class:
-  local-lvm:
-    is_default: True
-
-metal_k8s_default_fstype: 'ext4'
-metal_k8s_default_fs_force: False
-metal_k8s_default_fs_opts: '-m 0'
-metal_k8s_default_mount_opts: 'defaults'
-
-metal_k8s_storage_class_vgs:
-  kubevg:
-    host_path: '/mnt/kubevg'
-    storage_class: 'local-lvm'
+# Check vg metalk8s_lvm_extra_vgs in setup_lvm_vg role
+# if the variable exists
+# metalk8s_storageclass_<vg>: 'my-new-storage-class'
+# metalk8s_host_path_<vg>: '/mnt/myhostpath'

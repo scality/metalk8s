@@ -1,6 +1,11 @@
 - hosts: kube-node
   tags:
     - lvm-storage
-    - kube-pv
   roles:
     - role: kube_lvm_storage
+
+- hosts: kube-master
+  tags:
+    - kube-pv
+  roles:
+    - role: kube_lvm_storageclass

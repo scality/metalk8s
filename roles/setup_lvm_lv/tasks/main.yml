@@ -1,23 +1,121 @@
+- name: 'LVM Setup: Check that you have mkfs for ext4 and xfs filesystem'
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - e2fsprogs
+    - xfsprogs
 
-- name: 'compute all lv'
+- name: "LVM Setup: Gather fact with LVM data"
+  setup:
+    gather_subset: 'hardware'
+    filter: 'ansible_lvm'
+
+- name: "LVM Setup: Display LVs defined"
+  debug:
+    var: metalk8s_lvm_lvs
+  when: debug|bool
+
+- name: 'LVM Setup: Compute all LVM logical volumes'
   set_fact:
-    metal_k8s_lvm_lvs: '{{ metal_k8s_lvm_lvs }}'
-    all_lvs: >-
-      { {%- for vg_name, lv_dict in metal_k8s_lvm_lvs.items() -%}
+    # Combine te default properties with the one defined on a per LVM LV basis
+    metalk8s_lvm_all_lvs: >-
+      {
+        {%- set default_vg = metalk8s_lvm_default_vg|default("vg_metalk8s") -%}
+        {%- set device_prefix = "/dev/mapper/" -%}
+        {%- for lv_name, lv_prop in metalk8s_lvm_lvs.items() -%}
+          '{{ device_prefix }}{{ default_vg }}-{{ lv_name.replace("-", "--") }}':
+            {{ lv_prop|combine({
+              'lv_name': lv_name,
+              'vg_name': default_vg,
+              'force': lv_prop.force|default(metalk8s_lvm_lv_defaults_force),
+              'fs_opts': lv_prop.fs_opts|default(metalk8s_lvm_lv_defaults_fs_opts),
+              'fstype': lv_prop.fstype|default(metalk8s_lvm_lv_defaults_fstype),
+              'mount_opts': lv_prop.mount_opts|default(metalk8s_lvm_lv_defaults_mount_opts),
+            }) }},
+        {%- endfor -%}
+        {%- for vg_name, lv_dict in metalk8s_lvm_extra_lvs.items() -%}
           {%- for lv_name, lv_prop in lv_dict.items() -%}
-             '{{lv_name}}': {{ lv_prop|combine({'vg_name': vg_name, 'lv_name': lv_name}) }},
+            '{{ device_prefix }}{{ vg_name }}-{{ lv_name.replace("-", "--") }}':
+              {{ lv_prop|combine({
+                'lv_name': lv_name,
+                'vg_name': vg_name,
+                'force': lv_prop.force|default(metalk8s_lvm_lv_defaults_force),
+                'fs_opts': lv_prop.fs_opts|default(metalk8s_lvm_lv_defaults_fs_opts),
+                'fstype': lv_prop.fstype|default(metalk8s_lvm_lv_defaults_fstype),
+                'mount_opts': lv_prop.mount_opts|default(metalk8s_lvm_lv_defaults_mount_opts),
+                }) }},
           {%- endfor -%}
-        {%- endfor -%} }
+        {%- endfor -%}
+      }
 
-- debug:
-    var: all_lvs
-# when: debug|bool
+- name: "LVM Setup: Display LVM LVs computed"
+  debug:
+    var: metalk8s_lvm_all_lvs
+  when: debug|bool
 
-- name: 'create lvm volumes with required size for each vg'
+- name: "LVM Setup: Check that each volume has a size attribute and the VG exists"
+  tags:
+    - assertion
+  assert:
+    that:
+      - 'item.value.vg_name in ansible_lvm.vgs'
+      - '"size" in item.value'
+  with_dict: '{{ metalk8s_lvm_all_lvs }}'
+
+- name: 'LVM Setup: Create lvm volumes with required size for each vg'
   lvol:
     lv: '{{ item.lv_name }}'
     vg: '{{ item.vg_name }}'
     size: '{{ item.size }}'
     state: present
     shrink: False
-  with_items: '{{ all_lvs.values()|list }}'
+  with_items: '{{ metalk8s_lvm_all_lvs.values()|list }}'
+
+- name: 'LVM Setup: Create filesystem on each LVM LVs'
+  filesystem:
+    fstype: '{{ item.value.fstype }}'
+    dev: '{{ item.key }}'
+    opts: '{{ item.value.fs_opts }}'
+    force: '{{ item.value.force }}'
+  with_dict: '{{ metalk8s_lvm_all_lvs }}'
+
+- name: 'Setup LVM: Get UUIDs of LVM LVs'
+  command: blkid -s UUID -o value {{ item.key }}
+  check_mode: False
+  changed_when: False
+  register: metalk8s_lvm_lvs_uuids
+  with_dict: '{{ metalk8s_lvm_all_lvs }}'
+
+
+# Update metal_k8s_conf with UUIDs of the filesystems
+#
+#   ..code::
+#
+#     {
+#         '/dev/mapper/vg_metalk8s-lv01' : {
+#             'vg_name': 'vg_metalk8s',
+#             'lv_name': 'lv01',
+#             'fstype': 'ext4',
+#             'size': '10G',
+#             'fs_opts': '-m 0',
+#             'mount_opts': 'defaults,noatime',
+#             'uuid': 'xxxx-yyyy'
+#         },
+#     }
+
+- name: 'Setup LVM: Update fact metalk8s_lvm_all_lvs with UUIDs'
+  set_fact:
+    metalk8s_lvm_all_lvs: >-
+      {%- for result in metalk8s_lvm_lvs_uuids.results|default([]) -%}
+         {%- set _ =  metalk8s_lvm_all_lvs[result.item.key].update({
+           'uuid': result.stdout}) -%}
+      {%- endfor -%}
+      {{ metalk8s_lvm_all_lvs }}
+
+- name: "Display LVM LVs UUIDs"
+  debug:
+    var: metalk8s_lvm_lvs_uuids
+  when: debug|bool
+
+
