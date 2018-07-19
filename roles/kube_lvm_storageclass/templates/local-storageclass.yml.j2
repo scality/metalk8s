@@ -1,9 +1,10 @@
+{%- set _storageclass = vars['metalk8s_storageclass_' ~ item.key] -%}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: {{ item.key }}
+  name: {{ _storageclass }}
   annotations:
-    storageclass.kubernetes.io/is-default-class: '{{ item.value.is_default|default(False)|string|lower }}'
+    storageclass.kubernetes.io/is-default-class: '{{ (_storageclass == metalk8s_default_storageclass)|string|lower }}'
 provisioner: kubernetes.io/no-provisioner
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer

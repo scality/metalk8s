@@ -1,0 +1,7 @@
+debug: False
+
+metalk8s_storage_addon_dir: '{{ kube_config_dir }}/addons/storage_lvm'
+
+# Set default LVm VGs storageclass and hostpath
+metalk8s_storageclass_vg_metalk8s: 'local-lvm'
+metalk8s_default_storageclass: 'local-lvm'

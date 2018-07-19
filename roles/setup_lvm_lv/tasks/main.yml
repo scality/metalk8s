@@ -1,3 +1,14 @@
+# The role default variable are not present in hostvars[inventory_hostname]
+# https://github.com/ansible/ansible/issues/6189
+# We then rely on "vars" which "works" but not happy about it
+- name: "LVM Setup: Check that VG specific variables are defined"
+  tags:
+    - assertion
+  assert:
+    that:
+      - vars['metalk8s_host_path_' ~ item.key] is defined
+  with_dict: '{{ metalk8s_lvm_managed_vgs }}'
+
 - name: 'LVM Setup: Check that you have mkfs for ext4 and xfs filesystem'
   package:
     name: '{{ item }}'
@@ -32,6 +43,8 @@
               'fs_opts': lv_prop.fs_opts|default(metalk8s_lvm_lv_defaults_fs_opts),
               'fstype': lv_prop.fstype|default(metalk8s_lvm_lv_defaults_fstype),
               'mount_opts': lv_prop.mount_opts|default(metalk8s_lvm_lv_defaults_mount_opts),
+              'labels': lv_prop.labels|default(metalk8s_lvm_lv_defaults_labels),
+              'host_path': vars['metalk8s_host_path_' ~ lv_prop.vg_name],
             }) }},
         {%- endfor -%}
         {%- for vg_name, lv_dict in metalk8s_lvm_extra_lvs.items() -%}
@@ -44,6 +57,8 @@
                 'fs_opts': lv_prop.fs_opts|default(metalk8s_lvm_lv_defaults_fs_opts),
                 'fstype': lv_prop.fstype|default(metalk8s_lvm_lv_defaults_fstype),
                 'mount_opts': lv_prop.mount_opts|default(metalk8s_lvm_lv_defaults_mount_opts),
+                'labels': lv_prop.labels|default(metalk8s_lvm_lv_defaults_labels),
+                'host_path': vars['metalk8s_host_path_' ~ lv_prop.vg_name],
                 }) }},
           {%- endfor -%}
         {%- endfor -%}
@@ -118,4 +133,17 @@
     var: metalk8s_lvm_lvs_uuids
   when: debug|bool
 
+- name: 'Setup MetalK8S Storage: Create dir for LVM storage'
+  file:
+    dest: '{{ item.value.host_path }}'
+    state: directory
+  with_dict: '{{ metalk8s_kube_lvm_storage }}'
 
+- name: 'Setup MetalK8S Storage: Mount filesystem for each LVM LVs'
+  mount:
+    path: '{{ item.value.host_path }}/{{ item.value.uuid }}'
+    src: UUID={{ item.value.uuid }}
+    opts: '{{ item.value.mount_opts }}'
+    fstype: '{{ item.value.fstype }}'
+    state: mounted
+  with_dict: '{{ metalk8s_kube_lvm_storage }}'

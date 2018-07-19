@@ -1,3 +1,15 @@
+# The role default variable are not present in hostvars[inventory_hostname]
+# https://github.com/ansible/ansible/issues/6189
+# We then rely on "vars" which "works" but not happy about it
+- name: "Setup MetalK8S Storage: Check that VG variables are defined"
+  tags:
+    - assertion
+  assert:
+    that:
+      - vars['metalk8s_storageclass_' ~ item.key] is defined
+      - vars['metalk8s_storageclass_default_' ~ item.key] is defined
+  with_dict: '{{ metalk8s_lvm_managed_vgs }}'
+
 - name: 'Setup MetalK8S StoracgeClass: Create storage addon dir'
   file:
     path: '{{ metalk8s_storage_addon_dir }}'
@@ -11,27 +23,27 @@
 - name: 'Setup MetalK8S StoracgeClass: Create storage-class manifests'
   template:
     src: local-storageclass.yml.j2
-    dest: '{{ metalk8s_storage_addon_dir }}/storage-class-{{ item.key }}.yml'
-  with_dict: '{{ metalk8s_kube_lvm_storage }}'
+    dest: '{{ metalk8s_storage_addon_dir }}/storage-class-{{ item.value.storageclass }}.yml'
+  with_dict: '{{ metalk8s_lvm_managed_vgs }}'
   run_once: True
 
 - name: 'Setup MetalK8S StoracgeClass: Apply manifests for storage-class'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
-    filename: '{{ metalk8s_storage_addon_dir }}/storage-class-{{ item.key }}.yml'
+    filename: '{{ metalk8s_storage_addon_dir }}/storage-class-{{ item.value.storageclass }}.yml'
     state: 'latest'
-  with_dict: '{{ metalk8s_kube_lvm_storage }}'
+  with_dict: '{{ metalk8s_lvm_all_lvs }}'
   run_once: True
 
 - name: 'Setup MetalK8S StoracgeClass: Create pv manifests'
   template:
     src: local-pv.yml.j2
-    dest: '{{ metalk8s_storage_addon_dir }}/pv-{{ item.value.volume.uuid }}.yml'
-  with_dict: '{{ metalk8s_kube_lvm_storage }}'
+    dest: '{{ metalk8s_storage_addon_dir }}/pv-{{ item.value.uuid }}.yml'
+  with_dict: '{{ metalk8s_lvm_all_lvs }}'
 
 - name: 'Setup MetalK8S StoracgeClass: Apply manifests for pv'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
-    filename: '{{ metalk8s_storage_addon_dir }}/pv-{{ item.value.volume.uuid }}.yml'
+    filename: '{{ metalk8s_storage_addon_dir }}/pv-{{ item.value.uuid }}.yml'
     state: 'latest'
-  with_dict: '{{ metalk8s_kube_lvm_storage }}'
+  with_dict: '{{ metalk8s_lvm_all_lvs }}'
