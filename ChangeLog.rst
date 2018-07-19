@@ -36,7 +36,7 @@ Bugs fixed
 
 :ghissue:`150` - fix deployment of Elasticsearch, node and Prometheus Grafana dashboards (:ghpull:`158`)
 
-:ghissue:`139` - Stabilize `helm init` (:ghpull:`#167`)
+:ghissue:`139` - stabilize :command:`helm init` (:ghpull:`167`)
 
 Release 0.1.1
 =============
