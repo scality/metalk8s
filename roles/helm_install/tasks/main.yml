@@ -1,0 +1,25 @@
+- name: "Check helm binary version"
+  command: >-
+    {{ helm_bin_dir }}/helm version --client --short
+  failed_when: helm_version_output.rc not in [0, 2]
+  register: helm_version_output
+  changed_when: False
+  check_mode: False
+
+- debug:
+    var: helm_version_output
+  when: debug|bool
+
+- import_tasks: download.yml
+  when: >-
+    helm_version_output.rc != 0 or
+    helm_version_output.stdout|regex_replace( 'Client: ([^+]+)+.*', '\g<1>' ) != helm_version
+
+- import_tasks: install_tiller.yml
+  when: install_tiller|bool
+
+- name: 'enable default repository'
+  command: >-
+    {{ helm_bin_dir }}/helm init --client-only
+  args:
+    creates: /root/.helm/repository/repositories.yaml

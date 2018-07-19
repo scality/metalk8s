@@ -1,5 +1,4 @@
 docker_dns_servers_strict: False
-helm_enabled: True
 kube_basic_auth: True
 kubeconfig_localhost: True
 
