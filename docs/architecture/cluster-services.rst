@@ -128,12 +128,11 @@ ElasticSearch
 *************
 The ElasticSearch_ full-text indexing service is used to ingest all container
 logs in a central place, and make them accessible to operators. This
-ElasticSearch cluster is deployed using the manifests provided in
-`pires/kubernetes-elasticsearch-cluster`_, which are tuned to use
-production-grade settings.
+ElasticSearch cluster is deployed using the `Helm chart`_, with a configuration
+tuned for production-grade settings.
 
 .. _ElasticSearch: https://www.elastic.co/products/elasticsearch/
-.. _pires/kubernetes-elasticsearch-cluster:
+.. _Helm chart: https://github.com/kubernetes/charts/tree/master/incubator/elasticsearch
 
 Cerebro
 *******

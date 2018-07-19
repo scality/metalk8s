@@ -1,4 +1,6 @@
+- import_tasks: remove-old-elasticsearch.yml
 - import_tasks: elasticsearch.yml
+- import_tasks: elasticsearch-curator.yml
 
 # Delete the old 'fluentd' Helm release, *iff* it is the `fluentd-elasticsearch`
 # chart

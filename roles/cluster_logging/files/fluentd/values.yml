@@ -1,7 +1,7 @@
 replicaCount: 2
 
 output:
-  host: 'elasticsearch-ingest'
+  host: 'elasticsearch-client'
 
 service:
   ports:

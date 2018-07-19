@@ -1,5 +1,15 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
+Release 0.2.0 (in development)
+==============================
+
+Breaking changes
+----------------
+:ghpull:`159` - use upstream chart for Elasticsearch. Historical log data will
+be lost. Please see the pull-request description for manual steps required after
+upgrading a MetalK8s 0.1 cluster to MetalK8s 0.2 (:ghissue:`147`)
+
+
 Release 0.1.2 (in development)
 ==============================
 
