@@ -1,0 +1,35 @@
+- name: 'get tiller manifest'
+  command: >-
+    {{ helm_bin_dir }}/helm init -o yaml --service-account=tiller
+  register: helm_tiller_manifest
+  check_mode: False
+  changed_when: False
+  run_once: true
+
+- debug:
+    var: helm_tiller_manifest.stdout_lines
+  when: debug|bool
+
+- name: 'create tiller addon dir'
+  file:
+    dest: '{{ tiller_addon_dir }}'
+    state: directory
+
+- name: 'template manifests'
+  template:
+    src: '{{ item }}.j2'
+    dest: '{{ tiller_addon_dir }}/{{ item }}'
+  register: tiller_manifests
+  with_items:
+    - rbac.yaml
+    - tiller_manifests.yaml
+
+- name: 'Deploy tiller'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ tiller_addon_dir }}/{{ item | basename }}'
+    namespace: 'kube-system'
+    state: 'latest'
+  with_items: >-
+    {{ tiller_manifests.results|default([])|map(attribute="item")|list }}
+  run_once: true

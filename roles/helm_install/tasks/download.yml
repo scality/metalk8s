@@ -1,0 +1,29 @@
+- name: 'create temporary directory'
+  tempfile:
+    state: directory
+  register: helm_pkg_dir
+
+- set_fact:
+    helm_pkg_dir: '{{ helm_pkg_dir.path }}'
+
+- name: 'Download helm archive'
+  get_url:
+    url: >-
+      https://storage.googleapis.com/kubernetes-helm/helm-{{ helm_version
+      }}-linux-amd64.tar.gz
+    checksum: '{{ vars["helm_checksum_" ~ helm_version] }}'
+    dest: '{{ helm_pkg_dir }}'
+
+- name: 'untar helm package'
+  unarchive:
+    src: '{{ helm_pkg_dir }}/helm-{{ helm_version }}-linux-amd64.tar.gz'
+    dest: '{{ helm_pkg_dir }}'
+    remote_src: yes
+
+- name: 'Move file into binary dir'
+  command: mv {{ helm_pkg_dir }}/linux-amd64/helm {{ helm_bin_dir }}
+
+- name: 'clean unwanted files'
+  file:
+    dest: '{{ helm_pkg_dir }}'
+    state: absent
