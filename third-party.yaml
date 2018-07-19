@@ -22,6 +22,21 @@ modules:
     repository: https://github.com/openstack/ansible-hardening.git
     ref: 17.0.4
   license: Apache-2.0
+- path: vendor/grafana/grafana
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/grafana/grafana/master/
+  license: Apache-2.0
+- path: vendor/justwatchcom/elasticsearch_exporter
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/justwatchcom/elasticsearch_exporter/master/
+  license: Apache-2.0
+- path: vendor/rfrail3/grafana-dashboards
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/rfrail3/grafana-dashboards/master/
+  license: GPL-3.0-or-later
 
 charts:
 - role: kube_heapster
