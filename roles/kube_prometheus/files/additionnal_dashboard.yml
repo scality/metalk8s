@@ -1098,11 +1098,13 @@ grafana:
           {
             "name": "DS_DUMMY",
             "pluginId": "prometheus",
-            "type:": "datasource"
+            "type": "datasource",
+            "value": "prometheus"
           }
         ],
         "overwrite": true
-      }    elasticsearch-exporter-dashboard.json: |+
+      }
+    elasticsearch-exporter-dashboard.json: |+
       {
         "dashboard": {
           "annotations": {
@@ -2280,11 +2282,13 @@ grafana:
           {
             "name": "DS_DUMMY",
             "pluginId": "prometheus",
-            "type:": "datasource"
+            "type": "datasource",
+            "value": "prometheus"
           }
         ],
         "overwrite": true
-      }    node-exporter-full-dashboard.json: |+
+      }
+    node-exporter-full-dashboard.json: |+
       {
         "dashboard": {
           "__inputs": [
@@ -21843,11 +21847,13 @@ grafana:
           {
             "name": "DS_LOCALHOST",
             "pluginId": "prometheus",
-            "type:": "datasource"
+            "type": "datasource",
+            "value": "prometheus"
           }
         ],
         "overwrite": true
-      }    prometheus_2_stats-dashboard.json: |+
+      }
+    prometheus_2_stats-dashboard.json: |+
       {
         "dashboard": {
           "__inputs": [
@@ -23081,7 +23087,8 @@ grafana:
           {
             "name": "DS_NAME",
             "pluginId": "prometheus",
-            "type:": "datasource"
+            "type": "datasource",
+            "value": "prometheus"
           }
         ],
         "overwrite": true

@@ -7,6 +7,8 @@
 - hosts: kube-master
   gather_facts: False
   roles:
+    - role: helm_install
+      tags: ['helm']
     - role: kube_nginx_ingress
       tags: ['ingress']
     - role: etcd_prometheus_exporter_cert

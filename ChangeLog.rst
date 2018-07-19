@@ -27,9 +27,16 @@ Elasticsearch (:ghissue:`51`)
 .. _Fluent Bit: https://fluentbit.io
 .. _fluentd: https://www.fluentd.org
 
+:ghpull:`163` - update versions of Elasticsearch Exporter, `nginx-ingress`,
+`kube-prometheus` and Kubespray
+
 Bugs fixed
 ----------
 :ghpull:`151` - fix `debug` clause `var` scoping
+
+:ghissue:`150` - fix deployment of Elasticsearch, node and Prometheus Grafana dashboards (:ghpull:`158`)
+
+:ghissue:`139` - Stabilize `helm init` (:ghpull:`#167`)
 
 Release 0.1.1
 =============
