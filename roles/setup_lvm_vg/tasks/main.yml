@@ -49,11 +49,7 @@
     that:
       # drives|length > 0 means we create the VG
       # drives| length == 0 means the VG must exists
-      - 'item.value.drives|length > 0 or
-          (
-            item.value.drives|length == 0 and
-            item.key in ansible_lvm.vgs
-          )'
+      - not(item.value.drives|length == 0 and item.key not in ansible_lvm.vgs)
   with_dict: '{{ metalk8s_lvm_managed_vgs }}'
 
   # TODO: Check that device exists
