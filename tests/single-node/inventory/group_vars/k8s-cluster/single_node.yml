@@ -1,43 +1,8 @@
-
-# What prefix ?
-# metal_k8s_
-# MetalK8s_
-# metalk8s_
-
-### begin sample
-#
-# should be specified entirely
-metalk8s_lvm_drives:
-  kubevg:
-    storage_class: local-lvm
-    drives: ['/dev/loop0']
-    lv:
-      lv01:
-        size: 11G
-      lv02:
-        size: 8G
-# othervg:
-#   storage_class
-#   drivers: []
-#   lv:
-#       ...
-
-#metalk8s_storage_class:
-#  local-lvm:
-#    is_default: True
-#
-### end sample
-#
-# Other trick of ansible: access a templated variable
-#
-# metalk8s_lvm_pv_kubevg:
-#   lv01:
-#     size: 11G
-#
-# Could be specified indenpendly of:
-# metal_lvm_pv_othervg:
-#   lv11:
-#     size: 01G
-#
+metalk8s_lvm_drives_vg_metalk8s: ['/dev/loop0']
+metalk8s_lvm_lvs_vg_metalk8s:
+  lv01:
+    size: 11G
+  lv02:
+    size: 8G
 
 metalk8s_elasticsearch_enabled: False
