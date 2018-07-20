@@ -32,34 +32,30 @@
     # Combine te default properties with the one defined on a per LVM LV basis
     metalk8s_lvm_all_lvs: >-
       {
-        {%- set default_vg = metalk8s_lvm_default_vg|default("vg_metalk8s") -%}
-        {%- set device_prefix = "/dev/mapper/" -%}
-        {%- for lv_name, lv_prop in metalk8s_lvm_lvs.items() -%}
-          '{{ device_prefix }}{{ default_vg }}-{{ lv_name.replace("-", "--") }}':
-            {{ lv_prop|combine({
+        {%- for vg_name in metalk8s_lvm_managed_vgs.keys() -%}
+          {%- set device_prefix = "/dev/mapper/" -%}
+          {%- for lv_name, lv_prop in metalk8s_lvm_lvs.items() -%}
+            {%- set lv_properties = lv_prop|combine({
               'lv_name': lv_name,
-              'vg_name': default_vg,
+              'vg_name': vg_name,
               'force': lv_prop.force|default(metalk8s_lvm_lv_defaults_force),
-              'fs_opts': lv_prop.fs_opts|default(metalk8s_lvm_lv_defaults_fs_opts),
-              'fstype': lv_prop.fstype|default(metalk8s_lvm_lv_defaults_fstype),
-              'mount_opts': lv_prop.mount_opts|default(metalk8s_lvm_lv_defaults_mount_opts),
-              'labels': lv_prop.labels|default(metalk8s_lvm_lv_defaults_labels),
-              'host_path': vars['metalk8s_host_path_' ~ lv_prop.vg_name],
-            }) }},
-        {%- endfor -%}
-        {%- for vg_name, lv_dict in metalk8s_lvm_extra_lvs.items() -%}
-          {%- for lv_name, lv_prop in lv_dict.items() -%}
+              'fs_opts': lv_prop.fs_opts
+                |default(metalk8s_lvm_lv_defaults_fs_opts),
+              'fstype': lv_prop.fstype
+                |default(metalk8s_lvm_lv_defaults_fstype),
+              'mount_opts': lv_prop.mount_opts
+                |default(metalk8s_lvm_lv_defaults_mount_opts),
+              'labels': lv_prop.labels|default({}),
+              'host_path': vars['metalk8s_host_path_' ~ vg_name],
+              })
+            -%}
+            {%- set _ = lv_properties.labels|combine({
+              'scality.com/metalk8s_vg': lv_properties.vg_name,
+              'scality.com/metalk8s_node': ansible_nodename,
+              'scality.com/metalk8s_fstype': lv_properties.fstype,
+              }) -%}
             '{{ device_prefix }}{{ vg_name }}-{{ lv_name.replace("-", "--") }}':
-              {{ lv_prop|combine({
-                'lv_name': lv_name,
-                'vg_name': vg_name,
-                'force': lv_prop.force|default(metalk8s_lvm_lv_defaults_force),
-                'fs_opts': lv_prop.fs_opts|default(metalk8s_lvm_lv_defaults_fs_opts),
-                'fstype': lv_prop.fstype|default(metalk8s_lvm_lv_defaults_fstype),
-                'mount_opts': lv_prop.mount_opts|default(metalk8s_lvm_lv_defaults_mount_opts),
-                'labels': lv_prop.labels|default(metalk8s_lvm_lv_defaults_labels),
-                'host_path': vars['metalk8s_host_path_' ~ lv_prop.vg_name],
-                }) }},
+              {{ lv_properties }},
           {%- endfor -%}
         {%- endfor -%}
       }
@@ -133,17 +129,17 @@
     var: metalk8s_lvm_lvs_uuids
   when: debug|bool
 
-- name: 'Setup MetalK8S Storage: Create dir for LVM storage'
+- name: 'LVM Setup: Create dir for LVM storage'
   file:
     dest: '{{ item.value.host_path }}'
     state: directory
-  with_dict: '{{ metalk8s_kube_lvm_storage }}'
+  with_dict: '{{ metalk8s_lvm_all_lvs }}'
 
-- name: 'Setup MetalK8S Storage: Mount filesystem for each LVM LVs'
+- name: 'LVM Setup: Mount filesystem for each LVM LVs'
   mount:
     path: '{{ item.value.host_path }}/{{ item.value.uuid }}'
     src: UUID={{ item.value.uuid }}
     opts: '{{ item.value.mount_opts }}'
     fstype: '{{ item.value.fstype }}'
     state: mounted
-  with_dict: '{{ metalk8s_kube_lvm_storage }}'
+  with_dict: '{{ metalk8s_lvm_all_lvs }}'

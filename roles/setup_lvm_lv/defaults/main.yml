@@ -6,9 +6,6 @@ metalk8s_lvm_lv_defaults_fstype: "ext4"
 metalk8s_lvm_lv_defaults_fs_opts: "-m 0"
 metalk8s_lvm_lv_defaults_force: False
 metalk8s_lvm_lv_defaults_mount_opts: "defaults,noatime"
-metalk8s_lvm_lv_defaults_labels: {
-  'scality.com/metalk8s_lv': 'true'
-}
 
 # Path prefix on the host for the mountpoint of the default LVM LVs
 metalk8s_host_path_vg_metalk8s: '/mnt/vg_metalk8s'
