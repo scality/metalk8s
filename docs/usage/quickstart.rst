@@ -66,10 +66,8 @@ Pods will be scheduled:
 
 .. code-block:: yaml
 
-    metal_k8s_lvm:
-      vgs:
-        kubevg:
-          drives: ['/dev/vdb']
+    metalk8s_lvm_drives_vg_metalk8s: ['/dev/vdb']
+    metalk8s_storageclass_vg_metalk8s: 'local-lvm'
 
 In the above, we assume every *kube-node* host has a disk available as
 :file:`/dev/vdb` which can be used to set up Kubernetes *PersistentVolumes*. For
