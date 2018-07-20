@@ -7,4 +7,6 @@
 Changes in MetalK8s
 *******************
 
+.. contents:: :local:
+
 .. include:: ../ChangeLog.rst
