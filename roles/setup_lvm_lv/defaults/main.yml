@@ -8,23 +8,19 @@ metalk8s_lvm_lv_defaults_force: False
 metalk8s_lvm_lv_defaults_mount_opts: "defaults,noatime"
 
 # Path prefix on the host for the mountpoint of the default LVM LVs
-metalk8s_host_path_vg_metalk8s: '/mnt/vg_metalk8s'
-# Check vg metalk8s_lvm_extra_vgs in setup_lvm_vg role
-# if the variable exists
-# metalk8s_storageclass_<vg>: 'my-new-storage-class'
-# metalk8s_host_path_<vg>: '/mnt/myhostpath'
+metalk8s_host_path_prefix: "/mnt"
 
-metalk8s_lvm_lvs:
-  lv01:
-    size: 52G
-  lv02:
-    size: 5G
-  lv03:
-    size: 11G
+# The host_path will be determined as this :
+# {{ metalk8s_host_path_prefix }}/<VG name>
+# If you want to change it, define the variable
+# metalk8s_host_path_<vg name>
+# i.e:
+# metalk8s_host_path_vg_metalk8s: '/mnt/metalk8s'
+
 
 # Add the extra LVM LV that you want to be managed by this role.
-# Use the following format
-# <VG>:
+# by specifying the following format in a variable as
+# metalk8s_lvm_lvs_<vg name>:
 #   lv01:
 #     size: 50G
 #     fstype: xfs
@@ -40,4 +36,4 @@ metalk8s_lvm_lvs:
 # Only the "size" attribute is mandatory.
 # The others attribute value will have the values specified in
 # metalk8s_lvm_lv_defaults variable
-metalk8s_lvm_extra_lvs: {}
+metalk8s_lvm_lvs_vg_metalk8s: {}

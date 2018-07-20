@@ -7,6 +7,7 @@ debug: False
 # Specify which VG and which drive to use in host_vars for each node
 # This is the default LVM VG created for MetalK8S needs
 metalk8s_lvm_default_vg: "vg_metalk8s"
+
 # The list of drives used for this LVM Volume Group :
 # * empty drives list means that the VG already exists
 # * list of drives means this devices will be used for the LVM VG
@@ -14,15 +15,14 @@ metalk8s_lvm_default_vg: "vg_metalk8s"
 # Drives can be either raw devices or partitions. In case of raw devices,
 # a check that no lingering partition will be done before creating the
 # VG on this(these) drive(s)
-metalk8s_lvm_vg_metalk8s_drives: []
-
-# If you need an extra LVM VG, add the vg to the following variable
-metalk8s_lvm_extra_vgs: []
-# VGs listed here must have either a variable defined with drives:
-# * empty drives list means that the VG already exists
-# * list of drives means this devices will be used for the LVM VG
-# if the variable doesn't exist, the VG will be considered present
-# metalk8s_lvm_<vgname>_drives: []
-# if the variable doesn't exist, the VG will be considered present
-#
+# You can also not define this variable, the Volume Group existence will be
+# checked and an error will occur if it is absent
+# To specify the drives, you need a variable including the name of the
+# Volume Group like metalk8s_lvm_drives_<vg name>
+# i.e:
+# metalk8s_lvm_drives_vg_metalk8s: ['/dev/sdb', '/dev/sdc2']
 # Check the documentation #TODO insert link to doc for further information
+
+# If you need an extra LVM VG, add the name of the Volume Group
+# to the following variable
+metalk8s_lvm_vgs: ['vg_metalk8s']

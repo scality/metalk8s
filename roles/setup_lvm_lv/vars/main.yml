@@ -1,0 +1,9 @@
+# this LVM Logical Volumes will be added to the list of user specified LVM LVs
+# on the default LVM VG
+metalk8s_lvm_default_lvs:
+  mk8s_lv01:
+    size: 52G
+  mk8s_lv02:
+    size: 5G
+  mk8s_lv03:
+    size: 11G

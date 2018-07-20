@@ -1,3 +1,14 @@
+- name: "LVM Setup: Check that the host_path prefix is defined"
+  tags:
+    - assertion
+  stat:
+    path: '{{ metalk8s_host_path_prefix }}'
+  register: metalk8s_host_path_prefix_stat
+
+- debug:
+   var: metalk8s_host_path_prefix_stat
+  when: debug|bool
+
 # The role default variable are not present in hostvars[inventory_hostname]
 # https://github.com/ansible/ansible/issues/6189
 # We then rely on "vars" which "works" but not happy about it
@@ -6,8 +17,7 @@
     - assertion
   assert:
     that:
-      - vars['metalk8s_host_path_' ~ item.key] is defined
-  with_dict: '{{ metalk8s_lvm_managed_vgs }}'
+      - 'metalk8s_host_path_prefix_stat.stat.isdir'
 
 - name: 'LVM Setup: Check that you have mkfs for ext4 and xfs filesystem'
   package:
@@ -22,19 +32,20 @@
     gather_subset: 'hardware'
     filter: 'ansible_lvm'
 
-- name: "LVM Setup: Display LVs defined"
-  debug:
-    var: metalk8s_lvm_lvs
-  when: debug|bool
-
 - name: 'LVM Setup: Compute all LVM logical volumes'
   set_fact:
     # Combine te default properties with the one defined on a per LVM LV basis
     metalk8s_lvm_all_lvs: >-
+      {%- if metalk8s_lvm_default_vg|bool -%}
+        {%- set _ = vars['metalk8s_lvm_lvs_' ~ metalk8s_lvm_default_vg].update(
+          metalk8s_lvm_default_lvs) -%}
+      {%- endif -%}
       {
-        {%- for vg_name in metalk8s_lvm_managed_vgs.keys() -%}
+        {%- for vg_name in metalk8s_lvm_vgs -%}
           {%- set device_prefix = "/dev/mapper/" -%}
-          {%- for lv_name, lv_prop in metalk8s_lvm_lvs.items() -%}
+          {%- for lv_name, lv_prop in vars['metalk8s_lvm_lvs_' ~ vg_name].items() -%}
+            {%- set host_path =  vars['metalk8s_host_path_' ~ vg_name]|default(
+              metalk8s_host_path_prefix ~ "/" ~ vg_name) -%}
             {%- set lv_properties = lv_prop|combine({
               'lv_name': lv_name,
               'vg_name': vg_name,
@@ -45,15 +56,16 @@
                 |default(metalk8s_lvm_lv_defaults_fstype),
               'mount_opts': lv_prop.mount_opts
                 |default(metalk8s_lvm_lv_defaults_mount_opts),
-              'labels': lv_prop.labels|default({}),
-              'host_path': vars['metalk8s_host_path_' ~ vg_name],
+              'host_path': host_path,
               })
             -%}
-            {%- set _ = lv_properties.labels|combine({
-              'scality.com/metalk8s_vg': lv_properties.vg_name,
-              'scality.com/metalk8s_node': ansible_nodename,
-              'scality.com/metalk8s_fstype': lv_properties.fstype,
-              }) -%}
+              {%- set _ = lv_properties.update({'labels':
+                lv_prop.labels|default({})|combine({
+                  'scality.com/metalk8s_vg': lv_properties.vg_name,
+                  'scality.com/metalk8s_node': ansible_nodename,
+                  'scality.com/metalk8s_fstype': lv_properties.fstype,
+               })})
+              -%}
             '{{ device_prefix }}{{ vg_name }}-{{ lv_name.replace("-", "--") }}':
               {{ lv_properties }},
           {%- endfor -%}

@@ -1,4 +1,4 @@
-{%- set _storageclass = vars['metalk8s_storageclass_' ~ item.key] -%}
+{%- set _storageclass = vars['metalk8s_storageclass_' ~ item] -%}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:

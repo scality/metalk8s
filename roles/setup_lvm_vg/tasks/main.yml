@@ -23,34 +23,20 @@
   setup:
   when: lvm_just_installed is changed
 
-- name: "LVM Setup: Compute vgs to manage"
-  set_fact:
-    # loop over all possibly defined metalk8s_lvm_extra_vgs
-    # variables to get the managed LVm VG
-    # Always manage {{ metalk8s_lvm_default_vg }}
-    # Add their drives in the mix
-    metalk8s_lvm_managed_vgs: >-
-      {
-        {%- set vgs = [metalk8s_lvm_default_vg|default("vg_metalk8s")] + metalk8s_lvm_extra_vgs -%}
-        {%- for vg in vgs -%}
-        {%- set drives = hostvars[inventory_hostname]['metalk8s_lvm_' ~ vg ~ '_drives']|default([]) -%}
-        '{{ vg }}': {'drives': {{ drives }} },
-        {%- endfor -%}
-      }
-
-- debug:
-    msg: '{{ metalk8s_lvm_managed_vgs }}'
-  when: debug|bool
-
-- name: "LVM Setup: Assert LVM Volume Groups are correctly declared"
+- name: "LVM Setup: Check that the default VG is in the list of managed VGs"
   tags:
     - assertion
   assert:
     that:
-      # drives|length > 0 means we create the VG
-      # drives| length == 0 means the VG must exists
-      - not(item.value.drives|length == 0 and item.key not in ansible_lvm.vgs)
-  with_dict: '{{ metalk8s_lvm_managed_vgs }}'
+      - not(metalk8s_lvm_default_vg) or metalk8s_lvm_default_vg in metalk8s_lvm_vgs
+
+- debug:
+    msg: '{{ metalk8s_lvm_vgs }}'
+  when: debug|bool
+
+# drives|length > 0 means we create the VG
+# drives| length == 0 means the VG must exists
+# - not(item.value.drives|length == 0 and item.key not in ansible_lvm.vgs)
 
   # TODO: Check that device exists
   # TODO: Check that device do not have any ansible_device_links if
@@ -59,8 +45,19 @@
 
 - name: "LVM Setup: Create the LVM Volume Groups"
   lvg:
-    pvs: '{{ item.value.drives }}'
-    vg: '{{ item.key }}'
+    pvs: '{{ vars["metalk8s_lvm_drives_" ~ item] }}'
+    vg: '{{ item }}'
     state: present
-  when: item.value.drives|length > 0
-  with_dict: '{{ metalk8s_lvm_managed_vgs }}'
+  with_dict: >-
+    {
+      {%- for vg in metalk8s_lvm_vgs -%}
+      {%- set drives = vars['metalk8s_lvm_drives_' ~ vg]|default([]) -%}
+      {%- if drives -%}
+        '{{ vg }}': {{ drives }},
+      {%- endif -%}
+      {%- endfor -%}
+    }
+
+- name: "LVM Setup: Set the metalk8s_lvm_vgs fact" 
+  set_fact:
+    metalk8s_lvm_vgs: '{{ metalk8s_lvm_vgs }}'
