@@ -9,7 +9,7 @@
       - vars['metalk8s_storageclass_' ~ item.key] is defined
   with_dict: '{{ metalk8s_lvm_managed_vgs }}'
 
-- name: 'Setup MetalK8s StoracgeClass: Create storage addon dir'
+- name: 'Setup MetalK8s StorageClass: Create storage addon dir'
   file:
     path: '{{ metalk8s_storage_addon_dir }}'
     owner: root
@@ -18,13 +18,13 @@
     state: directory
     recurse: true
 
-- name: 'Setup MetalK8s StoracgeClass: Create storage-class manifests'
+- name: 'Setup MetalK8s StorageClass: Create StorageClass manifests'
   template:
     src: local-storageclass.yml.j2
     dest: '{{ metalk8s_storage_addon_dir }}/storage-class-{{ vars["metalk8s_storageclass_" ~ item.key] }}.yml'
   with_dict: '{{ metalk8s_lvm_managed_vgs }}'
 
-- name: 'Setup MetalK8s StoracgeClass: Apply manifests for storage-class'
+- name: 'Setup MetalK8s StorageClass: Apply manifests for StorageClass'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
     filename: '{{ metalk8s_storage_addon_dir }}/storage-class-{{ vars["metalk8s_storageclass_" ~ item.value.vg_name] }}.yml'
@@ -32,13 +32,13 @@
   with_dict: '{{ metalk8s_lvm_all_lvs }}'
   run_once: True
 
-- name: 'Setup MetalK8s StoracgeClass: Create pv manifests'
+- name: 'Setup MetalK8s StorageClass: Create pv manifests'
   template:
     src: local-pv.yml.j2
     dest: '{{ metalk8s_storage_addon_dir }}/pv-{{ item.value.uuid }}.yml'
   with_dict: '{{ metalk8s_lvm_all_lvs }}'
 
-- name: 'Setup MetalK8s StoracgeClass: Apply manifests for pv'
+- name: 'Setup MetalK8s StorageClass: Apply manifests for pv'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
     filename: '{{ metalk8s_storage_addon_dir }}/pv-{{ item.value.uuid }}.yml'
