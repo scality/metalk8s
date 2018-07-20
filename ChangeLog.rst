@@ -15,6 +15,8 @@ Features added
 :ghpull:`193` - update versions of `kube-prometheus`, Elasticsearch and
 Kubespray
 
+:ghpull:`181` - format `PersistentVolumes` asynchronously (:ghissue:`173`)
+
 Release 0.2.1 (in development)
 ==============================
 Bugs fixed

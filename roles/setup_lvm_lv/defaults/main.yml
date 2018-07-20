@@ -36,3 +36,7 @@ metalk8s_host_path_prefix: "/mnt"
 # Only the "size" attribute is mandatory.
 # The others attribute value will have the values specified in
 # metalk8s_lvm_lv_defaults variable
+
+format_async: 45
+format_poll: 5
+format_retries: 30000
