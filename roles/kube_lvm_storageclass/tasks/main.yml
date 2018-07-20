@@ -7,7 +7,6 @@
   assert:
     that:
       - vars['metalk8s_storageclass_' ~ item.key] is defined
-      - vars['metalk8s_storageclass_default_' ~ item.key] is defined
   with_dict: '{{ metalk8s_lvm_managed_vgs }}'
 
 - name: 'Setup MetalK8S StoracgeClass: Create storage addon dir'
