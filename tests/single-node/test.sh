@@ -28,7 +28,7 @@ setup_suite() {
         make_shell true
 
         echo "Deploy the cluster"
-        make_shell ansible-playbook -i "$(pwd)/inventory" playbooks/deploy.yml || die
+        make_shell ansible-playbook -i "$(pwd)/inventory" -e metalk8s_ansible_hardening_enabled=false playbooks/deploy.yml || die
 
         KUBECONFIG=$(pwd)/inventory/artifacts/admin.conf
         export KUBECONFIG

@@ -1,0 +1,68 @@
+# TODO: link to documentation in fail message
+- name: "LVM Setup: Detect old configuration style < 0.2.0"
+  tags:
+    - assertion
+  fail:
+    msg: >
+      You're still having the old storage configuration.
+      A breaking change was introduced in MetalK8S 0.2.0 and the default
+       LVM Volume Group has been changed from "kubevg" to"
+      {{ metalk8s_lvm_default_vg }}.
+      Please follow the following documentation to upgrade
+  when: metal_k8s_lvm is defined
+
+- name: "LVM Setup: Check LVM packages"
+  package:
+    name: '{{ item }}'
+    state: present
+  register: lvm_just_installed
+  with_items:
+    - lvm2
+
+- name: "LVM Setup: re-compute facts now that lvm is installed"
+  setup:
+  when: lvm_just_installed is changed
+
+- name: "LVM Setup: Check that the default VG is in the list of managed VGs"
+  tags:
+    - assertion
+  assert:
+    that:
+      - not(metalk8s_lvm_default_vg) or metalk8s_lvm_default_vg in metalk8s_lvm_vgs
+
+- debug:
+    msg: '{{ metalk8s_lvm_vgs }}'
+  when: debug|bool
+
+# drives|length > 0 means we create the VG
+# drives| length == 0 means the VG must exists
+# - not(item.value.drives|length == 0 and item.key not in ansible_lvm.vgs)
+
+  # TODO: Check that device exists
+  # TODO: Check that device do not have any ansible_device_links if
+  # VG is to created
+  # TODO: Check that device of existing VG are the same if drives are specified
+
+- name: "LVM Setup: Create the LVM Volume Groups"
+  lvg:
+    pvs: '{{ vars["metalk8s_lvm_drives_" ~ item.key]|join(",") }}'
+    vg: '{{ item.key }}'
+    state: present
+  with_dict: >-
+    {
+      {%- for vg in metalk8s_lvm_vgs -%}
+      {%- set drives = vars['metalk8s_lvm_drives_' ~ vg]|default([]) -%}
+      {%- if drives -%}
+        '{{ vg }}': {{ drives }},
+      {%- endif -%}
+      {%- endfor -%}
+    }
+
+- name: "LVM Setup: Set the metalk8s_lvm_vgs fact"
+  set_fact:
+    metalk8s_lvm_vgs: '{{ metalk8s_lvm_vgs }}'
+
+- name: "LVM Setup: export fact of all StorageClass"
+  set_fact:
+    'metalk8s_storageclass_{{ item }}': '{{ vars["metalk8s_storageclass_" ~ item ] }}'
+  with_items: '{{ metalk8s_lvm_vgs }}'

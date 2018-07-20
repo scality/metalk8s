@@ -1,17 +1,19 @@
+{%- set _storageclass = vars['metalk8s_storageclass_' ~ item.value.vg_name] -%}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: >-
-    {{ item.value.vg|replace("_","-") }}-{{ item.value.volume.uuid }}
+    {{ item.value.vg_name|replace("_","-") }}-{{ item.value.uuid }}
+  labels: {{ item.value.labels|to_json }}
 spec:
   capacity:
-    storage: '{{ item.value.volume.size|size_lvm_to_k8s }}'
+    storage: '{{ item.value.size|size_lvm_to_k8s }}'
   accessModes:
   - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: '{{ item.value.storage_class }}'
+  storageClassName: '{{ _storageclass }}'
   local:
-    path: '{{ item.value.host_path }}/{{ item.value.volume.uuid }}'
+    path: '{{ item.value.host_path }}/{{ item.value.uuid }}'
   nodeAffinity:
     required:
       nodeSelectorTerms:
