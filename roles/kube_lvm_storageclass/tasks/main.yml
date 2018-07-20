@@ -17,14 +17,12 @@
     mode: 0755
     state: directory
     recurse: true
-  run_once: True
 
 - name: 'Setup MetalK8s StoracgeClass: Create storage-class manifests'
   template:
     src: local-storageclass.yml.j2
     dest: '{{ metalk8s_storage_addon_dir }}/storage-class-{{ vars["metalk8s_storageclass_" ~ item.key] }}.yml'
   with_dict: '{{ metalk8s_lvm_managed_vgs }}'
-  run_once: True
 
 - name: 'Setup MetalK8s StoracgeClass: Apply manifests for storage-class'
   kube:
@@ -46,3 +44,4 @@
     filename: '{{ metalk8s_storage_addon_dir }}/pv-{{ item.value.uuid }}.yml'
     state: 'latest'
   with_dict: '{{ metalk8s_lvm_all_lvs }}'
+  run_once: True
