@@ -2,7 +2,7 @@
   tags: ['init']
 
 - import_playbook: 'storage-pre.yml'
-  tags: ['storage', 'storage-pre']
+  tags: ['storage']
 
 - import_playbook: 'kubespray-pre.yml'
   tags: ['kubespray']
@@ -11,7 +11,7 @@
   tags: kubespray
 
 - import_playbook: 'storage-post.yml'
-  tags: ['storage', 'storage-post']
+  tags: ['storage']
 
 - import_playbook: 'services.yml'
   tags: ['services']

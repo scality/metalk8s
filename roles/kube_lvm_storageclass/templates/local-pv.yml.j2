@@ -4,7 +4,7 @@ kind: PersistentVolume
 metadata:
   name: >-
     {{ item.value.vg_name|replace("_","-") }}-{{ item.value.uuid }}
-  labels: '{{ item.value.labels|to_json }}'
+  labels: {{ item.value.labels|to_json }}
 spec:
   capacity:
     storage: '{{ item.value.size|size_lvm_to_k8s }}'
