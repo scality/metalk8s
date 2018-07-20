@@ -26,3 +26,6 @@ metalk8s_lvm_default_vg: "vg_metalk8s"
 # If you need an extra LVM VG, add the name of the Volume Group
 # to the following variable
 metalk8s_lvm_vgs: ['vg_metalk8s']
+
+# this is the StorageClass name of the default VG
+metalk8s_storageclass_vg_metalk8s: 'local-lvm'

@@ -57,6 +57,7 @@
               'mount_opts': lv_prop.mount_opts
                 |default(metalk8s_lvm_lv_defaults_mount_opts),
               'host_path': host_path,
+              'host': ansible_nodename,
               })
             -%}
               {%- set _ = lv_properties.update({'labels':

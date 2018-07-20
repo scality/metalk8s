@@ -45,8 +45,8 @@
 
 - name: "LVM Setup: Create the LVM Volume Groups"
   lvg:
-    pvs: '{{ vars["metalk8s_lvm_drives_" ~ item] }}'
-    vg: '{{ item }}'
+    pvs: '{{ vars["metalk8s_lvm_drives_" ~ item.key]|join(",") }}'
+    vg: '{{ item.value }}'
     state: present
   with_dict: >-
     {
@@ -58,6 +58,11 @@
       {%- endfor -%}
     }
 
-- name: "LVM Setup: Set the metalk8s_lvm_vgs fact" 
+- name: "LVM Setup: Set the metalk8s_lvm_vgs fact"
   set_fact:
     metalk8s_lvm_vgs: '{{ metalk8s_lvm_vgs }}'
+
+- name: "LVM Setup: export fact of all StorageClass"
+  set_fact:
+    'metalk8s_storageclass_{{ item }}': '{{ vars["metalk8s_storageclass_" ~ item ] }}'
+  with_items: '{{ metalk8s_lvm_vgs }}'
