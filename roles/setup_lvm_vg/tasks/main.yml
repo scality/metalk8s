@@ -46,7 +46,7 @@
 - name: "LVM Setup: Create the LVM Volume Groups"
   lvg:
     pvs: '{{ vars["metalk8s_lvm_drives_" ~ item.key]|join(",") }}'
-    vg: '{{ item.value }}'
+    vg: '{{ item.key }}'
     state: present
   with_dict: >-
     {
