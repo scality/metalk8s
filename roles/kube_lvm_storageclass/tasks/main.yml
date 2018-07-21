@@ -1,0 +1,77 @@
+# The role default variable are not present in hostvars[inventory_hostname]
+# https://github.com/ansible/ansible/issues/6189
+# We then rely on "vars" which "works" but not happy about it
+#- name: "Setup MetalK8s Storage: Check that VG variables are defined"
+#  tags:
+#    - assertion
+#  assert:
+#    that:
+#      - metalk8s_lvm_all_vgs is defined
+#  with_items: '{{ metalk8s_lvm_vgs }}'
+
+- name: 'Setup MetalK8s StorageClass: Create storage addon dir'
+  file:
+    path: '{{ metalk8s_storage_addon_dir }}'
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+    recurse: true
+
+- name: 'Setup MetalK8s StorageClass: Create StorageClass manifests'
+  template:
+    src: local-storageclass.yml.j2
+    dest: '{{ metalk8s_storage_addon_dir }}/storage-class-{{ item }}.yml'
+  register: metalk8s_storageclass_manifests
+  with_items: >-
+    {%- set _storageclasses = [] -%}
+    {%- for host in groups['kube-node'] -%}
+       {%- for vg_prop in hostvars[host].metalk8s_lvm_all_vgs.values() -%}
+          {%- set _ = _storageclasses.append(vg_prop.storageclass) -%}
+       {%- endfor -%}
+    {%- endfor -%}
+    {{ _storageclasses|unique }}
+
+- debug:
+    var: metalk8s_storageclass_manifests
+  when: debug|bool
+
+- name: 'Setup MetalK8s StorageClass: Apply manifests for StorageClass'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ item.dest }}'
+    state: 'latest'
+  loop_control:
+    label: '{{ item.dest }}'
+  with_items: '{{ metalk8s_storageclass_manifests.results|default([]) }}'
+  run_once: True
+
+- name: 'Setup MetalK8s StorageClass: Create pv manifests'
+  template:
+    src: local-pv.yml.j2
+    dest: '{{ metalk8s_storage_addon_dir }}/{{item.value.host }}-pv-{{ item.value.uuid }}.yml'
+  register: metalk8s_persistenvolumes_manifests
+  loop_control:
+    label: '{{ item.value.uuid }}'
+  with_dict: >-
+    {
+      {%- for host in groups['kube-node'] -%}
+        {%- for lv_name, lv_prop in hostvars[host].metalk8s_lvm_all_lvs.items() -%}
+          '{{ host }}-{{ lv_name }}': {{ lv_prop }},
+        {%- endfor -%}
+      {%- endfor -%}
+    }
+
+- debug:
+    var: metalk8s_persistenvolumes_manifests
+  when: debug|bool
+
+- name: 'Setup MetalK8s StorageClass: Apply manifests for pv'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ item.dest }}'
+    state: 'latest'
+  loop_control:
+    label: '{{ item.dest }}'
+  with_items: '{{ metalk8s_persistenvolumes_manifests.results|default([]) }}'
+  run_once: True

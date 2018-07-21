@@ -1,9 +1,9 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: {{ item.key }}
+  name: {{ item }}
   annotations:
-    storageclass.kubernetes.io/is-default-class: '{{ item.value.is_default|default(False)|string|lower }}'
+    storageclass.kubernetes.io/is-default-class: '{{ (item == metalk8s_default_storageclass)|string|lower }}'
 provisioner: kubernetes.io/no-provisioner
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer

@@ -15,7 +15,7 @@ die() {
 
 setup_suite() {
         echo "Creating loopback block-device and configuring VM"
-        sudo truncate -s 20G /kube-lvm || die
+        sudo truncate -s 256G /kube-lvm || die
         sudo losetup /dev/loop0 /kube-lvm || die
 
         echo "Disabling iptables"

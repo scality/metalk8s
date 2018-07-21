@@ -66,14 +66,71 @@ Pods will be scheduled:
 
 .. code-block:: yaml
 
+    metalk8s_lvm_drives_vg_metalk8s: ['/dev/vdb']
+
+In the above, we assume every *kube-node* host has a disk available as
+:file:`/dev/vdb` which can be used to set up Kubernetes *PersistentVolumes*. For
+more information about storage, see :doc:`../architecture/storage`.
+
+.. _upgrade_from_MetalK8s_before_0.2.0:
+
+Upgrading from MetalK8s < 0.2.0
+-------------------------------
+
+The storage configuration changed in a non-backward compatible way on
+MetalK8s 0.2.0 release.
+The old configuration will trigger an error when the playbook
+:file:`playbooks/deploy.yml` is run.
+
+
+An old configuration looking like this
+
+.. code-block:: yaml
+
     metal_k8s_lvm:
       vgs:
         kubevg:
           drives: ['/dev/vdb']
 
-In the above, we assume every *kube-node* host has a disk available as
-:file:`/dev/vdb` which can be used to set up Kubernetes *PersistentVolumes*. For
-more information about storage, see :doc:`../architecture/storage`.
+would become
+
+.. code-block:: yaml
+
+    metalk8s_lvm_default_vg: False
+    metalk8s_lvm_vgs: ['kubevg']
+    metalk8s_lvm_drives_kubevg: ['/dev/vdb']
+    metalk8s_lvm_lvs_kubevg:
+      lv01:
+        size: 52G
+      lv02:
+        size: 52G
+      lv03:
+        size: 52G
+      lv04:
+        size: 11G
+      lv05:
+        size: 11G
+      lv06:
+        size: 11G
+      lv07:
+        size: 5G
+      lv08:
+        size: 5G
+
+A quick explanation of these new variables and why they are required
+
+* metalk8s_lvm_default_vg: The value *False* will ensure that we disable all
+  automatic logic behind configuring the storage
+
+* metalk8s_lvm_vgs: This is a list of the LVM VGs managed by MetalK8s
+
+* metalk8s_lvm_drives_kubevg: This variable is a concatenation of the prefix
+  *metalk8s_lvm_drives_* and the name of the LVM VG. It is used to specify
+  the drives used for this LVM VG
+
+* metalk8s_lvm_lvs_kubevg: This variable is a concatenation of the prefix
+  *metalk8s_lvm_lvs_* and the name of the LVM VG. It is used to specify
+  the LVM LVs created in this LVM VG.
 
 Entering the MetalK8s Shell
 ---------------------------
