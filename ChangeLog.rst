@@ -14,9 +14,6 @@ storage related actions. Please see :ref:`upgrade_from_MetalK8s_before_0.2.0`
 (:ghissue:`153`)
 
 
-Release 0.1.2 (in development)
-==============================
-
 Features added
 --------------
 :ghpull:`144` - update Kibana chart version
