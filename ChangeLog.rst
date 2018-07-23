@@ -1,7 +1,10 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
-Release 0.2.0 (in development)
-==============================
+Release 0.2.0
+=============
+.. note:: Compatibility with future releases of MetalK8s is not guaranteed until
+   version 1.0.0 is available. When deploying a cluster using pre-1.0 versions
+   of this package, you may need to redeploy later.
 
 Breaking changes
 ----------------
@@ -38,6 +41,11 @@ Bugs fixed
 :ghissue:`150` - fix deployment of Elasticsearch, node and Prometheus Grafana dashboards (:ghpull:`158`)
 
 :ghissue:`139` - stabilize :command:`helm init` (:ghpull:`167`)
+
+Known issues
+------------
+:ghissue:`179` - some Grafana dashboard charts are not displaying any metrics
+
 
 Release 0.1.1
 =============
