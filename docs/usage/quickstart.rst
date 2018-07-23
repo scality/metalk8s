@@ -76,14 +76,19 @@ more information about storage, see :doc:`../architecture/storage`.
 
 Upgrading from MetalK8s < 0.2.0
 -------------------------------
+MetalK8s 0.2.0 introduced changes to persistent storage provisioning which are
+not backwards-compatible with MetalK8s 0.1. These changes include:
 
-The storage configuration changed in a non-backward compatible way on
-MetalK8s 0.2.0 release.
-The old configuration will trigger an error when the playbook
-:file:`playbooks/deploy.yml` is run.
+- The default LVM VG was renamed from `kubevg` to `vg_metalk8s`.
+- Only *PersistentVolumes* required by MetalK8s services are created by
+  default.
+- Instead of using dictionaries to configure the storage, these are now
+  flattened.
 
+When a MetalK8s 0.1 configuration is detected, the playbook will report an
+error.
 
-An old configuration looking like this
+Given an old configuration looking like this
 
 .. code-block:: yaml
 
@@ -92,45 +97,51 @@ An old configuration looking like this
         kubevg:
           drives: ['/dev/vdb']
 
-would become
+the following values must be set in :file:`kube-node.yml` to maintain the
+pre-0.2 behaviour:
 
-.. code-block:: yaml
+- Disable deployment of 'default' volumes:
 
-    metalk8s_lvm_default_vg: False
-    metalk8s_lvm_vgs: ['kubevg']
-    metalk8s_lvm_drives_kubevg: ['/dev/vdb']
-    metalk8s_lvm_lvs_kubevg:
-      lv01:
-        size: 52G
-      lv02:
-        size: 52G
-      lv03:
-        size: 52G
-      lv04:
-        size: 11G
-      lv05:
-        size: 11G
-      lv06:
-        size: 11G
-      lv07:
-        size: 5G
-      lv08:
-        size: 5G
+  .. code-block:: yaml
 
-A quick explanation of these new variables and why they are required
+      metalk8s_lvm_default_vg: False
 
-* metalk8s_lvm_default_vg: The value *False* will ensure that we disable all
-  automatic logic behind configuring the storage
+- Register the `kubevg` VG to be managed:
 
-* metalk8s_lvm_vgs: This is a list of the LVM VGs managed by MetalK8s
+  .. code-block:: yaml
 
-* metalk8s_lvm_drives_kubevg: This variable is a concatenation of the prefix
-  *metalk8s_lvm_drives_* and the name of the LVM VG. It is used to specify
-  the drives used for this LVM VG
+      metalk8s_lvm_vgs: ['kubevg']
 
-* metalk8s_lvm_lvs_kubevg: This variable is a concatenation of the prefix
-  *metalk8s_lvm_lvs_* and the name of the LVM VG. It is used to specify
-  the LVM LVs created in this LVM VG.
+- Use :file:`/dev/vdb` as a volume for the `kubevg` VG:
+
+  .. code-block:: yaml
+
+      metalk8s_lvm_drives_kubevg: ['/dev/vdb']
+
+  Note how the VG name is appended to the `metalk8s_lvm_drives_` prefix to
+  configure a VG-specific setting.
+
+- Create and register the default MetalK8s 0.1 LVs and *PersistentVolumes*:
+
+  .. code-block:: yaml
+
+      metalk8s_lvm_lvs_kubevg:
+        lv01:
+          size: 52G
+        lv02:
+          size: 52G
+        lv03:
+          size: 52G
+        lv04:
+          size: 11G
+        lv05:
+          size: 11G
+        lv06:
+          size: 11G
+        lv07:
+          size: 5G
+        lv08:
+          size: 5G
 
 Entering the MetalK8s Shell
 ---------------------------
