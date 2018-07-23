@@ -3,5 +3,8 @@
   tags:
     - lvm-storage
   roles:
+    - role: metalk8s_lvm_vg
     - role: setup_lvm_vg
+      vars:
+        vg_list: '{{ metalk8s_lvm_all_vgs }}'
     - role: setup_lvm_lv
