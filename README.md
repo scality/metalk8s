@@ -14,7 +14,7 @@ welcome!
 ## Requirements
 ### Cluster Nodes
 To run a test cluster, one or more VMs running CentOS 7.4 or higher should do.
-Every server requires a 256GB storage drive.
+Every server requires a 80GB storage drive.
 
 For production use, we recommend at least
 
@@ -26,7 +26,7 @@ For production use, we recommend at least
   * 20GB for `/`
   * 100GB for `/var`
 
-- An extra drive of at least 500GB for Kubernetes `PersistentVolume` storage
+- An extra drive of at least 80GB for Kubernetes `PersistentVolume` storage
 
 ### Software
 On the host from which the cluster is provisioned, all you need is `python` and

@@ -55,6 +55,8 @@ See our :doc:`usage/quickstart` to deploy a cluster.
 
    changes
 
+   glossary
+
 Indices and tables
 ==================
 
