@@ -6,11 +6,6 @@
     - e2fsprogs
     - xfsprogs
 
-- name: "LVM Setup: Gather fact with LVM data"
-  setup:
-    gather_subset: 'hardware'
-    filter: 'ansible_lvm'
-
 - name: 'update default vgs'
   set_fact:
     metalk8s_lvm_all_vgs: >-

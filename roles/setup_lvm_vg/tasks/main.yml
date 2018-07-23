@@ -52,6 +52,7 @@
     pvs: '{{ item.value.drives|join(",") }}'
     vg: '{{ item.key }}'
     state: present
+  register: vg_creation
   with_dict: >-
     {
       {%- for vg_name, vg_prop in metalk8s_lvm_all_vgs.items()
@@ -59,3 +60,9 @@
         '{{ vg_name }}': {{ vg_prop }},
       {%- endfor -%}
     }
+
+- name: "LVM Setup: Gather fact with LVM data"
+  setup:
+    gather_subset: 'hardware'
+    filter: 'ansible_lvm'
+  when: vg_creation is changed
