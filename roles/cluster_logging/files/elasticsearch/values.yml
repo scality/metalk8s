@@ -10,6 +10,8 @@ client:
       memory: 2Gi
     limits:
       cpu: 4
+  podDisruptionBudget:
+    enabled: true
 
 master:
   heapSize: '512m'
@@ -20,6 +22,8 @@ master:
       memory: 512Mi
     limits:
       cpu: 2
+  podDisruptionBudget:
+    enabled: true
 
 data:
   replicas: 3
@@ -33,3 +37,5 @@ data:
       memory: 1Gi
     limits:
       cpu: 2
+  podDisruptionBudget:
+    enabled: true

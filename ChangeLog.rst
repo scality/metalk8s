@@ -7,6 +7,11 @@ Breaking changes
 :ghpull:`187` - no longer remove the MetalK8s 0.1.x Elasticsearch cluster upon
 upgrade (:ghissue:`160`)
 
+Features added
+--------------
+:ghpull:`191` - deploy `PodDisruptionBudgets` for Elasticsearch
+(:ghissue:`157`)
+
 Release 0.2.1 (in development)
 ==============================
 
