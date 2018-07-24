@@ -11,13 +11,34 @@
     - es-svc.yaml
     - es-master.yaml
     - es-master-pdb.yaml
-    - es-client.yaml
+    - es-ingest.yaml
+    - es-ingest-svc.yaml
     - stateful/es-data-svc.yaml
     - stateful/es-data-stateful.yaml
     - es-data-pdb.yaml
     - es-curator-config.yaml
     - es-curator_v1beta1.yaml
   register: es_manifests
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'Delete old es-client deployment'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    name: 'es-client'
+    namespace: '{{ es_namespace }}'
+    resource: 'deploy'
+    state: 'absent'
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'Delete old elasticsearch service'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    name: 'elasticsearch'
+    namespace: '{{ es_namespace }}'
+    resource: 'svc'
+    state: 'absent'
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
@@ -155,5 +176,18 @@
     filename: '{{ es_addon_dir }}/es-exporter-servicemonitor.yml'
     namespace: '{{ elasticsearch_exporter_namespace }}'
     state: 'latest'
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+# Cerebro
+- name: 'install Cerebro Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ cerebro_repo }}
+    --version {{ cerebro_version }}
+    --namespace {{ cerebro_namespace }}
+    {{ cerebro_release_name }}
+    {{ cerebro_chart }}
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"

@@ -1,0 +1,52 @@
+# This file facilitates OpenStack-CI package installation
+# before the execution of any tests.
+#
+# See the following for details:
+#  - https://docs.openstack.org/infra/bindep/
+#  - https://git.openstack.org/cgit/openstack-infra/bindep
+#
+# Even if the role does not make use of this facility, it
+# is better to have this file empty, otherwise OpenStack-CI
+# will fall back to installing its default packages which
+# will potentially be detrimental to the tests executed.
+#
+# Note:
+# This file is maintained in the openstack-ansible-tests repository.
+# https://git.openstack.org/cgit/openstack/openstack-ansible-tests/tree/bindep.txt
+# If you need to remove or add extra dependencies, you should modify
+# the central file instead and once your change is accepted then update
+# this file as well. The purpose of this file is to ensure that Python and
+# Ansible have all their necessary binary requirements on the test host before
+# tox executes. Any binary requirements needed by services/roles should be
+# installed by those roles in their applicable package install tasks, not through
+# using this file.
+#
+
+# The gcc compiler
+gcc
+
+# Base requirements for Ubuntu
+git-core          [platform:dpkg]
+libssl-dev        [platform:dpkg]
+libffi-dev        [platform:dpkg]
+python2.7         [platform:dpkg]
+python-apt        [platform:dpkg]
+python-dev        [platform:dpkg]
+python3           [platform:dpkg]
+python3-apt       [platform:dpkg]
+python3-dev       [platform:dpkg]
+
+# Base requirements for RPM distros
+gcc-c++           [platform:rpm]
+git               [platform:rpm]
+libffi-devel      [platform:rpm]
+openssl-devel     [platform:rpm]
+python-devel      [platform:rpm]
+python2-dnf       [platform:fedora]
+
+# For SELinux
+libselinux-python [platform:redhat]
+libsemanage-python [platform:redhat]
+
+# Required for compressing collected log files in CI
+gzip

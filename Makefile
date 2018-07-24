@@ -1,5 +1,15 @@
 .POSIX:
 
+# Using this variable, on can run shell commands or scripts inside a `make
+# shell` environment easily.
+# The following values are supported:
+# - `-`, in which case `bash` will be invoked as-is, and a script could be
+#   passed on `stdin` (`echo "echo 123" | make shell C=-`). Unlike the
+#   invocation without `C` being set, the exit code will be retained.
+# - A file, in which case `bash $C` will be invoked.
+# - Any other string, which will be passed verbatim to `bash -c "$C"`.
+C=
+
 MAKEFLAGS += -r
 .DEFAULT_GOAL := default
 .DELETE_ON_ERROR:
@@ -119,8 +129,20 @@ $(BASHRC): $(SHELL_ENV_EXISTS) hack/shell-bashrc
 	$(V)sed s:@VENV_ACTIVATE@:$(VENV_ACTIVATE):g < hack/shell-bashrc > $@ || (rm -f $@; exit 1)
 
 shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC) ## Run a shell with `ansible-playbook`, `kubectl` and `helm` pre-installed
-	$(V)echo "Launching metal-k8s shell environment. Run 'exit' to quit."
-	$(V)bash --rcfile $(BASHRC) ||:
+	$(V)BASH_ENV="$(BASHRC)"; export BASH_ENV; if test -z "$(C)"; then \
+		# Interactive shell \
+		echo "Launching MetalK8s shell environment. Run 'exit' to quit."; \
+		bash --rcfile $(BASHRC) ||:; \
+	elif test "x$(C)" = "x-"; then  \
+		# Semi-interactive shell, keeping exit-code \
+		bash --rcfile $(BASHRC); \
+	elif test -e "$(C)"; then \
+		# A script \
+		bash --rcfile $(BASHRC) "$(C)"; \
+	else \
+		# A command \
+		bash --rcfile $(BASHRC) -c "$(C)"; \
+	fi
 .PHONY: shell
 
 clean-shell: ## Clean-up the `shell` environment

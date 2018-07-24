@@ -1,0 +1,53 @@
+grafana:
+  extraVars:
+    - name: 'GF_SERVER_ROOT_URL'
+      value: '%(protocol)s://%(domain)s/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/'
+  service:
+    labels:
+      kubernetes.io/cluster-service: "true"
+      kubernetes.io/name: "Grafana"
+
+prometheus:
+  externalUrl: '/api/v1/namespaces/kube-ops/services/kube-prometheus:http/proxy/'
+  service:
+    labels:
+      kubernetes.io/cluster-service: "true"
+      kubernetes.io/name: "Prometheus"
+  replicaCount: 2
+{% if kube_prometheus_secret|default %}
+  secrets:
+{% for secret in kube_prometheus_secret %}
+  - {{ secret }}
+{% endfor %}
+{% endif %}
+  storageSpec:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ prometheus_storage_size }}
+
+alertmanager:
+  externalUrl: '/api/v1/namespaces/kube-ops/services/kube-prometheus-alertmanager:http/proxy/'
+  service:
+    labels:
+      kubernetes.io/cluster-service: "true"
+      kubernetes.io/name: "Alertmanager"
+  replicaCount: 2
+
+exporter-kube-etcd:
+  etcdPort: 2379
+  endpoints: {{ groups.etcd | map('extract', hostvars, ['ansible_default_ipv4', 'address'])|list|to_json }}
+  scheme: https
+  # Linked to the secret of prometheus
+{% if exporter_kube_etcd_certFile|default %}
+  certFile: {{ exporter_kube_etcd_certFile }}
+{% endif %}
+{% if exporter_kube_etcd_keyFile|default %}
+  keyFile: {{ exporter_kube_etcd_keyFile }}
+{% endif %}
+
+exporter-node:
+  enableDaemonSet: false
+  endpoints: {{ groups.etcd | union(groups['k8s-cluster']) | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list | to_json }}

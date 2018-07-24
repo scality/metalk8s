@@ -1,0 +1,4 @@
+---
+debug: false
+
+node_exporter_version: 0.15.*

@@ -5,11 +5,28 @@ modules:
     repository: https://github.com/pires/kubernetes-elasticsearch-cluster.git
     ref: master
   license: Apache-2.0
-- path: kubespray
+- path: vendor/kubespray
   source:
     type: git-subtree
     repository: https://github.com/kubernetes-incubator/kubespray.git
     ref: master
+  license: Apache-2.0
+- path: vendor/bash_unit
+  source:
+    type: git-subtree
+    repository: https://github.com/pgrange/bash_unit.git
+    ref: v1.6.1
+  license: GPL-3.0-or-later
+- path: vendor/etcd
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/coreos/etcd/v3.2.16/
+  license: Apache-2.0
+- path: vendor/ansible-hardening
+  source:
+    type: git-subtree
+    repository: https://github.com/openstack/ansible-hardening.git
+    ref: 17.0.4
   license: Apache-2.0
 
 charts:

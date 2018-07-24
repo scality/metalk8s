@@ -23,7 +23,7 @@
 # Once in the environment, run
 #
 # ```
-# (metal-k8s) bash-4.4# ansible-playbook -b metal-k8s.yml
+# (metal-k8s) bash-4.4# ansible-playbook -b playbooks/deploy.yml
 # ```
 #
 # and wait for the deployment to complete. Afterwards, run e.g. `kubectl get
@@ -39,10 +39,13 @@ ENV KUBECONFIG=/inventory/artifacts/admin.conf
 # Runtime dependencies of `make shell`
 RUN apk --no-cache add \
         bash \
+        bash-completion \
         libffi \
         make \
         openssl \
         python
+
+RUN echo "source /etc/profile.d/bash_completion.sh" | tee ~/.bashrc
 
 # Be able to run `make shell`
 COPY Makefile requirements.txt ./

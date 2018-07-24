@@ -1,0 +1,35 @@
+- import_tasks: gen_cert.yml
+
+- name: 'create tempfile for etcd-exporter auth secret'
+  tempfile:
+    state: file
+    suffix: yml
+  register: kube_etcd_exporter_auth
+  run_once: True
+
+- name: 'template secret'
+  template:
+    src: etcd_exporter_secret.yml.j2
+    dest: '{{ kube_etcd_exporter_auth.path|default("<check_mode_tempfile>") }}'
+  run_once: True
+
+- name: 'Deploy etcd exporter secret'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ kube_etcd_exporter_auth.path|default }}'
+    namespace: '{{ kube_prometheus_namespace }}'
+    state: 'latest'
+  run_once: True
+
+- name: 'remove unneeded tempfile'
+  file:
+    path: '{{ kube_etcd_exporter_auth.path|default }}'
+    state: absent
+  run_once: True
+
+- name: 'export some vars for later roles'
+  set_fact:
+    kube_prometheus_secret: >-
+      {{ kube_prometheus_secret|default([]) + ['kube-prometheus-exporter-kube-etcd'] }}
+    exporter_kube_etcd_certFile: '/etc/prometheus/secrets/kube-prometheus-exporter-kube-etcd/tls.crt'
+    exporter_kube_etcd_keyFile: '/etc/prometheus/secrets/kube-prometheus-exporter-kube-etcd/tls.key'

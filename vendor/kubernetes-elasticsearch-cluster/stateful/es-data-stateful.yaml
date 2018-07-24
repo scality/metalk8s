@@ -25,7 +25,7 @@ spec:
           privileged: true
       containers:
       - name: es-data
-        image: quay.io/pires/docker-elasticsearch-kubernetes:6.2.4
+        image: quay.io/pires/docker-elasticsearch-kubernetes:6.3.0
         env:
         - name: NAMESPACE
           valueFrom:
@@ -42,7 +42,7 @@ spec:
         - name: NODE_INGEST
           value: "false"
         - name: HTTP_ENABLE
-          value: "false"
+          value: "true"
         - name: ES_JAVA_OPTS
           value: -Xms1g -Xmx1g
         - name: PROCESSORS
@@ -56,6 +56,8 @@ spec:
           limits:
             cpu: 2
         ports:
+        - containerPort: 9200
+          name: http
         - containerPort: 9300
           name: transport
         livenessProbe:
@@ -63,9 +65,31 @@ spec:
             port: transport
           initialDelaySeconds: 20
           periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: http
+          initialDelaySeconds: 20
+          timeoutSeconds: 5
         volumeMounts:
         - name: storage
           mountPath: /data
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                  - elasticsearch
+                - key: role
+                  operator: In
+                  values:
+                  - data
+              topologyKey: kubernetes.io/hostname
   volumeClaimTemplates:
   - metadata:
       name: storage

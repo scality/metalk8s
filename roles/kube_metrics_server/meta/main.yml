@@ -1,2 +1,2 @@
 dependencies:
-  - role: ../kubespray/roles/kubespray-defaults
+  - role: ../vendor/kubespray/roles/kubespray-defaults

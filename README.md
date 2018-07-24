@@ -1,4 +1,4 @@
-# metal-k8s
+# MetalK8s
 An opinionated Kubernetes distribution with a focus on long-term on-prem deployments
 
 ## Quickstart
@@ -11,20 +11,25 @@ The project documentation is available at https://metal-k8s.readthedocs.io.
 Sources can be found in the `docs` folder of this repository. Pull-requests
 welcome!
 
-## Hardware Requirements
+## Requirements
+### Cluster Nodes
+To run a test cluster, one or more VMs running CentOS 7.4 or higher should do.
+Every server requires a 256GB storage drive.
 
-### Test config
-If you want to test metal-k8s you just need one simple VM running CentOS 7.4.
-
-### Production Config
-For production-ready environment, you need:
+For production use, we recommend at least
 
 - 5 servers
-- each server running centos 7.4
-- hard-drive dedicated to system
-- a "/" partition of at least 20G
-- a "/var"/ partition of at least 100G
-- 1 extra-drive  of 500Go per-server
+- Each server running CentOS 7.4 or higher (this is the only supported
+  distribution)
+- Dedicated system storage on every server, including
 
-## Software Requirements
-To get started, all you need is `python` and `make` on a Unix-like system.
+  * 20GB for `/`
+  * 100GB for `/var`
+
+- An extra drive of at least 500GB for Kubernetes `PersistentVolume` storage
+
+### Software
+On the host from which the cluster is provisioned, all you need is `python` and
+`make` on a Unix-like system. On some platforms, Python development packages
+(`python-dev` or `python-devel`) and a compiler (`gcc`) may need to be
+installed.

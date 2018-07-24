@@ -1,0 +1,7 @@
+- name: Install packages
+  yum:
+    name: '{{ item }}'
+    state: latest
+  with_items:
+    - ipvsadm
+  when: ansible_os_family == 'RedHat'

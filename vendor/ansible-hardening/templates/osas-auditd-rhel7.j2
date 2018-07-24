@@ -1,0 +1,97 @@
+## Rules for auditd deployed by ansible-hardening
+# Do not edit any of these rules directly. The contents of this file are
+# controlled by Ansible variables and each variable is explained in detail
+# within the role documentation:
+#
+#    http://docs.openstack.org/developer/ansible-hardening/
+#
+
+# Delete all existing auditd rules prior to loading this ruleset.
+-D
+
+# Increase the buffers to survive stress events.
+-b 320
+
+# Set the auditd failure flag.
+-f {{ security_rhel7_audit_failure_flag }}
+
+{#                                                                           #}
+{# The following loop takes a variable called audited_commands (a list of    #}
+{# dictionaries) and creates audit rules for each audited command or         #}
+{# syscall.                                                                  #}
+{#                                                                           #}
+# Audited commands and syscalls
+{% for audited_command in audited_commands %}
+{#                                                                           #}
+{# We replace any dashes in the command with underscores. The variables that #}
+{# control the deployment of each rule can only contain underscores.         #}
+{#                                                                           #}
+{% set command_sanitized = audited_command['command'] | replace('-', '_') %}
+{#                                                                           #}
+{# Verify that the variable controlling the rule is enabled and any distro-  #}
+{# specific requirements are met.                                            #}
+{#                                                                           #}
+{% if vars['security_rhel7_audit_' + command_sanitized ] | bool and (audited_command['distro'] | default(ansible_os_family | lower) == ansible_os_family | lower) %}
+# {{ audited_command['stig_id'] }} - All uses of the {{ audited_command['command'] }} command must be audited.
+{#                                                                           #}
+{# Some audit rules are specific to syscalls. Different rules are needed for #}
+{# x86 and ppc64 systems.                                                    #}
+{#                                                                           #}
+{% if audited_command['arch_specific'] %}
+{% for arch in auditd_architectures %}
+-a always,exit -F arch={{ arch }} -S {{ audited_command['command'] }}  -F perm=x -F auid>=1000 -F auid!=4294967295 -k {{ audited_command['stig_id'] }}
+{% endfor %}
+{% else %}
+-a always,exit -F path={{ audited_command['path'] | default('/usr/bin') }}/{{ audited_command['command'] }} -F perm=x -F auid>=1000 -F auid!=4294967295 -k {{ audited_command['stig_id'] }}
+{% endif %}
+{% endif %}
+
+{% endfor %}
+
+# Other audited events
+{#                                                                           #}
+{# These events are more specific and require static templating.             #}
+{#                                                                           #}
+{% if security_rhel7_audit_account_access | bool %}
+# V-72143 - The operating system must generate audit records for all
+# successful/unsuccessful account access count events.
+-w /var/log/tallylog -p wa -k V-72143
+# V-72145 - The operating system must generate audit records for all
+# unsuccessful account access events.
+-w /var/run/faillock -p wa -k V-72145
+# V-72147 - The operating system must generate audit records for all
+# successful account access events.
+-w /var/log/lastlog -p wa -k V-72147
+{% endif %}
+
+{% if security_rhel7_audit_sudo_config_changes | bool %}
+# V-72163 - The operating system must generate audit records containing
+# the full-text recording of modifications to sudo configuration files.
+-w /etc/sudoers -p wa -k V-72163
+-w /etc/sudoers.d/ -p wa -k V-72163
+{% endif %}
+
+{% if security_rhel7_audit_insmod | bool %}
+# V-72191 - All uses of the insmod command must be audited.
+-w /sbin/insmod -p x -F auid!=4294967295 -k V-72191
+{% endif %}
+
+{% if security_rhel7_audit_rmmod | bool %}
+# V-72193 - All uses of the rmmod command must be audited.
+-w /sbin/rmmod -p x -F auid!=4294967295 -k V-72193
+{% endif %}
+
+{% if security_rhel7_audit_modprobe | bool %}
+# V-72195 - All uses of the modprobe command must be audited.
+-w /sbin/modprobe -p x -F auid!=4294967295 -k V-72195
+{% endif %}
+
+{% if security_rhel7_audit_account_actions | bool %}
+# V-72197 - The operating system must generate audit records for all
+# account creations, modifications, disabling, and termination events.
+-w /etc/group -p wa -k V-72197
+-w /etc/passwd -p wa -k V-72197
+-w /etc/gshadow -p wa -k V-72197
+-w /etc/shadow -p wa -k V-72197
+-w /etc/security/opasswd -p wa -k V-72197
+{% endif %}

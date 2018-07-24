@@ -1,3 +1,6 @@
+metalk8s_elasticsearch_enabled: True
+
+
 debug: false
 
 remove_metal_k8s_temporary_file: true
@@ -26,3 +29,9 @@ elasticsearch_exporter_namespace: 'kube-ops'
 # Note: When changing this name, the `ServiceMonitor` manifest needs to be
 # updated as well
 elasticsearch_exporter_release_name: 'es-exporter'
+
+cerebro_repo: 'https://kubernetes-charts.storage.googleapis.com'
+cerebro_version: '0.1.1'
+cerebro_namespace: 'kube-ops'
+cerebro_release_name: 'cerebro'
+cerebro_chart: 'cerebro'

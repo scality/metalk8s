@@ -1,8 +1,12 @@
-if [ -r ~/.bashrc ]; then
+# Only load `~/.bashrc` in interactive shells
+if [[ $- == *i* && -r ~/.bashrc ]]; then
     . ~/.bashrc
 fi
 
 . @VENV_ACTIVATE@
 
-. <(kubectl completion bash)
-. <(helm completion bash)
+# Only set up completion in interactive shells
+if [[ $- == *i* ]]; then
+    . <(kubectl completion bash)
+    . <(helm completion bash)
+fi

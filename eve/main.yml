@@ -30,60 +30,7 @@ stages:
         retryFetch: true
         haltOnFailure: true
     - ShellCommand:
-        name: 'create loopback blockdevice and configure VM'
+        name: 'Run test-suite'
         haltOnFailure: true
         command: |-
-          sudo ./eve/single_node/setup/single_node.sh
-    - ShellCommand:
-        name: 'Create virtual env'
-        haltOnFailure: true
-        command: |-
-          make shell
-    - ShellCommand:
-        name: 'Run the install with ansible'
-        haltOnFailure: true
-        command: >-
-          ./.shell-env/metal-k8s/bin/ansible-playbook
-          -i eve/single_node/
-          metal-k8s.yml --skip elasticsearch
-        env:
-          ANSIBLE_FORCE_COLOR: 'true'
-    - ShellCommand:
-        name: 'Run sample kubectl command'
-        haltOnFailure: true
-        command: |-
-            export PATH=${PATH}:/usr/local/bin
-            kubectl get nodes
-        env: &env_kubeconfig
-          KUBECONFIG: inventories/single-node-ci/artifacts/admin.conf
-    - ShellCommand:
-        name: 'Test storage'
-        haltOnFailure: true
-        command: |-
-            export PATH=${PATH}:/usr/local/bin
-            make test-simple-storage
-        workdir: build/tests
-        env: *env_kubeconfig
-    - ShellCommand:
-        name: 'Verify that some pv are in released state'
-        command: |-
-          export PATH=${PATH}:/usr/local/bin
-          kubectl get pv
-          kubectl get pv -o jsonpath={.items[*].status.phase} | grep 'Released' > /dev/null
-        env: *env_kubeconfig
-    - ShellCommand:
-        name: 'Reclaim storage'
-        haltOnFailure: true
-        command: >-
-          ./.shell-env/metal-k8s/bin/ansible-playbook
-          -i eve/single_node/
-          reclaim-storage.yml
-        env:
-          ANSIBLE_FORCE_COLOR: 'true'
-    - ShellCommand:
-        name: 'Verify that no pv are in released state'
-        command: |-
-          export PATH=${PATH}:/usr/local/bin
-          kubectl get pv
-          ! kubectl get pv -o jsonpath={.items[*].status.phase}| grep 'Released' > /dev/null
-        env: *env_kubeconfig
+          bash ./vendor/bash_unit/bash_unit tests/single-node/test.sh

@@ -18,6 +18,15 @@ have at least one disk available to provision storage volumes.
 .. _CentOS: https://www.centos.org
 .. _Kubernetes: https://kubernetes.io
 
+Clone or Copy the MetalK8s Git Repo
+-----------------------------------
+
+Clone the MetalK8s project from GitHub:
+
+.. code-block:: shell
+
+   $ git clone https://github.com/scality/metal-k8s
+
 Define an Inventory
 -------------------
 
@@ -29,18 +38,19 @@ that lists all hosts in the cluster, as well as some configuration.
 
 To create an inventory:
 
-  1. Create a directory (for example, :file:`inventory/quickstart-cluster`)
-     in which the inventory will be stored.
+  1. Create a directory inside MetalK8s (for example,
+     :file:`inventory/quickstart-cluster`) in which the inventory will
+     be stored.
 
-     .. code:: shell
+     .. code-block:: shell
 
-       $ mkdir inventory
-       $ mkdir inventory/quickstart-cluster
+       $ cd metal-k8s
+       $ mkdir -p inventory/quickstart-cluster
        $ cd inventory/quickstart-cluster/
 
-  2. Create the hosts file, which contains a listing of all hosts.
+  2. Create the :file:`hosts` file, which contains a listing of all hosts.
 
-     ::
+     .. code-block:: ini
 
         node-01 ansible_host=10.0.0.1 ansible_user=centos
         node-02 ansible_host=10.0.0.2 ansible_user=centos
@@ -65,41 +75,47 @@ To create an inventory:
         kube-node
         kube-master
 
-    Change the IP addresses, domain names, and user names to conform to
+    Change the IP addresses, host names, and user names to conform to
     your infrastructure.
 
- 3. Create a :file:`group_vars` subdirectory in the inventory directory.
+  3. Create a :file:`group_vars` subdirectory in the inventory directory.
 
-  - A second file, called :file:`kube-node.yml`, in a :file:`group_vars`
-    subdirectory of the inventory, declares how to set up storage (in the
-    default configuration) on hosts in the *kube-node* group; that is,
-    hosts on which Pods will be scheduled
+   - A second file, called :file:`kube-node.yml`, in :file:`group_vars`
+     subdirectory of the inventory, declares how to set up storage (in the
+     default configuration) on hosts in the *kube-node* group; that is,
+     hosts on which Pods will be scheduled
 
-     .. code:: shell
+     .. code-block:: shell
 
-      $ cd ..
-      $ mkdir group_vars ; cd group_vars
+       $ mkdir group_vars ; cd group_vars
 
-  - In group_vars, create a file named :file:`kube-node.yml`. This file
-    declares the default storage configuration on hosts in the *kube-node*
-    group—that is, hosts on which Pods shall be scheduled
+   - In :file:`group_vars`, create a file named :file:`kube-node.yml`.
+     This file declares the default storage configuration on hosts in
+     the *kube-node* group—that is, hosts on which Pods shall be
+     scheduled:
 
      .. code-block:: yaml
 
-         metal_k8s_lvm:
-           vgs:
-             kubevg:
-               drives: ['/dev/vdb']
+          metal_k8s_lvm:
+            vgs:
+              kubevg:
+                drives: ['/dev/vdb']
 
-    In this example, every *kube-node* host is assumed to have a disk available
-    as :file:`/dev/vdb` which can be used to set up Kubernetes
-    *PersistentVolumes*. For more information about storage, see
-    :doc:`../architecture/storage`.
+     In this example, every *kube-node* host is assumed to have a disk available
+     as :file:`/dev/vdb` which can be used to set up Kubernetes
+     *PersistentVolumes*. For more information about storage, see
+     :doc:`../architecture/storage`.
 
-Clone or Copy the MetalK8s Git Repo
------------------------------------
+Enter the MetalK8s Shell
+------------------------
 
-Return to the home subdirectory.
+To install a supported version of Ansible and its dependencies, along with some
+Kubernetes tools (:program:`kubectl` and :program:`helm`), MetalK8s
+provides a :program:`make` target that installs these in a local
+environment. To enter this environment, run ``make shell`` (this takes
+a few seconds when first run).
+
+.. code-block:: shell
 
 .. code-block:: shell
 
@@ -130,12 +146,12 @@ when first run).
     Installing Python dependencies...
     Downloading kubectl...
     Downloading Helm...
-    Launching metal-k8s shell environment. Run 'exit' to quit.
-    (metal-k8s) [centos@node-01 metal-k8s]$
+    Launching MetalK8s shell environment. Run 'exit' to quit.
+    (metal-k8s) $
 
 Now, you're all set to deploy a cluster::
 
-    (metal-k8s) $ ansible-playbook -i inventory/quickstart-cluster -b metal-k8s.yml
+    (metal-k8s) $ ansible-playbook -i inventory/quickstart-cluster -b playbooks/deploy.yml
 
 Grab a coffee and wait for deployment to end.
 
@@ -189,27 +205,35 @@ Similarly, you can list all deployed Helm_ applications::
 
 .. _Helm: https://www.helm.sh
 
-Access to Dashboard, Grafana and Kibana
----------------------------------------
+Cluster Services
+----------------
+Various services to operate and monitor your MetalK8s cluster are provided. To
+access these, first create a secure tunnel into your cluster by running
+``kubectl proxy``. Then, while the tunnel is up and running, the following tools
+are available:
 
-Once the cluster is running, you can access the `Kubernetes dashboard`_,
-Grafana_ metrics, and Kibana_ logs from your browser.
-
-To access these services, create a secure tunnel into your
-cluster by running ``kubectl proxy``. While the tunnel is up and running,
-access the dashboard at:
-http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/,
-Grafana at:
-http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/
-and Kibana at:
-http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/.
-When you first access Kibana, set up an *index pattern* for the
-``logstash-*`` index, using the ``@timestamp`` field as *Time Filter field
-name*.
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| Service                 | Role                                                    | Link                                                                                            | Notes                                 |
++=========================+=========================================================+=================================================================================================+=======================================+
+| `Kubernetes dashboard`_ | A general purpose, web-based UI for Kubernetes clusters | http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/ |                                       |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Grafana`_              | Monitoring dashboards for cluster services              | http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/   |                                       |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Cerebro`_              | An administration and monitoring console for            | http://localhost:8001/api/v1/namespaces/kube-ops/services/cerebro:http/proxy/                   | When accessing Cerebro, connect it to |
+|                         | Elasticsearch clusters                                  |                                                                                                 | http://elasticsearch:9200 to operate  |
+|                         |                                                         |                                                                                                 | the MetalK8s Elasticsearch cluster.   |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   | When accessing Kibana for the first   |
+|                         |                                                         |                                                                                                 | time, set up an *index pattern* for   |
+|                         |                                                         |                                                                                                 | the ``logstash-*`` index, using the   |
+|                         |                                                         |                                                                                                 | ``@timestamp`` field as *Time Filter  |
+|                         |                                                         |                                                                                                 | field name*.                          |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
 
 See :doc:`../architecture/cluster-services` for more about these services
 and their configuration.
 
 .. _Kubernetes dashboard: https://github.com/kubernetes/dashboard
 .. _Grafana: https://grafana.com
+.. _Cerebro: https://github.com/lmenezes/cerebro
 .. _Kibana: https://www.elastic.co/products/kibana/
