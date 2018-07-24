@@ -2,6 +2,10 @@
 
 Release 1.0.0 (in development)
 ==============================
+Breaking changes
+----------------
+:ghpull:`187` - no longer remove the MetalK8s 0.1.x Elasticsearch cluster upon
+upgrade (:ghissue:`160`)
 
 Release 0.2.1 (in development)
 ==============================
