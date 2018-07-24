@@ -1,4 +1,3 @@
-- import_tasks: remove-old-elasticsearch.yml
 - import_tasks: elasticsearch.yml
 - import_tasks: elasticsearch-curator.yml
 
