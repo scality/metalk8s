@@ -9,12 +9,12 @@
   roles:
     - role: helm_install
       tags: ['helm']
-    - role: kube_nginx_ingress
-      tags: ['ingress']
     - role: etcd_prometheus_exporter_cert
       tags: ['kube-prometheus']
     - role: kube_prometheus
       tags: ['kube-prometheus']
+    - role: kube_nginx_ingress
+      tags: ['ingress']
     - role: kube_heapster
       tags: ['heapster']
     - role: cluster_logging

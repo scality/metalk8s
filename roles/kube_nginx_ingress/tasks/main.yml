@@ -29,3 +29,7 @@
     dest: '{{ nginx_ingress_value_file.path }}'
     state: absent
   when: remove_metal_k8s_temporary_file|bool
+
+- name: 'Enable monitoring of nginx-ingress'
+  import_tasks: prometheus_monitoring.yml
+  when: nginx_ingress_prometheus_monitoring|bool
