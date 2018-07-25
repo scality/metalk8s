@@ -35,9 +35,10 @@ class Dashboard:
 
     NOT_A_DASHBOARD_ERROR = "File '{}' doesn't look like a dashboard"
 
-    def __init__(self, filename, name=None, force=False):
+    def __init__(self, filename, name=None, title=None, force=False):
         self.filename = filename
         self.name = name
+        self.title = title
         self.force = force
         self._spec = None
         self._basename = None
@@ -109,6 +110,8 @@ class Dashboard:
     def compute_dashboard_string(self):
         spec = dict(self.spec)
         spec.pop('id', None)  # Clean id
+        if self.title:
+            spec['title'] = self.title
         json_dashboard = json.dumps({
                 'inputs': [{
                     'name': self.source or self.DEFAULT_SOURCE,
@@ -183,6 +186,12 @@ class DashboardAggregator:
         except configparser.NoOptionError:
             pass
 
+        title = None
+        try:
+            title = self.config.get(source_name, 'title')
+        except configparser.NoOptionError:
+            pass
+
         iter_filename = glob.iglob(source_path)
         first_file = next(iter_filename)
         try:
@@ -190,13 +199,16 @@ class DashboardAggregator:
         except StopIteration:
             if first_file == source_path and os.path.isdir(source_path):
                 assert name is None
-                return  ((path, None) for path in
+                assert title is None
+                return  ((path, None, None) for path in
                     glob.iglob('{}/*'.format(source_path)))
             else:
-                return iter([(first_file, name)])
+                return iter([(first_file, name, title)])
         else:
             assert name is None
-            return itertools.chain([(first_file, None), (second_file, None)],
+            assert title is None
+            return itertools.chain(
+                [(first_file, None, None), (second_file, None, None)],
                 iter_filename)
 
     def iter_filenames(self):
@@ -204,8 +216,9 @@ class DashboardAggregator:
             for filename in self.iter_filenames_in_source(source):
                 yield filename
 
-    def get_dashboard(self, filename, name=None):
-        return self.dashboard_class(filename, name=name, force=self.force)
+    def get_dashboard(self, filename, name=None, title=None):
+        return self.dashboard_class(
+            filename, name=name, title=title, force=self.force)
 
     def run(self):
         target_filename = self.config.get('default', 'target')
@@ -213,9 +226,9 @@ class DashboardAggregator:
         with open(target_path, 'w') as target:
             target.write('grafana:\n')
             target.write('  serverDashboardFiles:')
-            for (filename, name) in self.iter_filenames():
+            for (filename, name, title) in self.iter_filenames():
                 log.info('Take {}'.format(filename))
-                dashboard = self.get_dashboard(filename, name)
+                dashboard = self.get_dashboard(filename, name, title)
                 target.write('\n')
                 target.write(indent(
                     dashboard.compute_dashboard_string(),
