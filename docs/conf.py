@@ -93,7 +93,9 @@ html_theme = 'sphinx_rtd_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'logo_only': True,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -117,6 +119,8 @@ html_context = {
 # html_sidebars = {}
 
 html_show_sourcelink = False
+
+html_logo = '../artwork/generated/metalk8s-logo-wide-white-200.png'
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
