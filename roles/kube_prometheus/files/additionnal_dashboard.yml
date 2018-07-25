@@ -2275,7 +2275,7 @@ grafana:
             ]
           },
           "timezone": "utc",
-          "title": "ElasticSearch Example",
+          "title": "Elasticsearch",
           "version": 9
         },
         "inputs": [
@@ -21840,7 +21840,7 @@ grafana:
             ]
           },
           "timezone": "browser",
-          "title": "Node Exporter Full",
+          "title": "Nodes (Detailed)",
           "version": 8
         },
         "inputs": [

@@ -9,6 +9,10 @@ upgrade (:ghissue:`160`)
 
 Release 0.2.1 (in development)
 ==============================
+Bugs fixed
+----------
+:ghissue:`170` - rename `ElasticSearch Example` and `Node Exporter Full` Grafana
+dashboards (:ghpull:`188`)
 
 Release 0.2.0
 =============
