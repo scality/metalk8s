@@ -62,7 +62,7 @@ To create an inventory:
        $ mkdir -p inventory/quickstart-cluster
        $ cd inventory/quickstart-cluster/
 
-  2. Create the :file:`hosts` file, which contains a listing of all hosts.
+  3. Create the :file:`hosts` file, which contains a listing of all hosts.
 
      .. code-block:: ini
 
@@ -89,19 +89,19 @@ To create an inventory:
         kube-node
         kube-master
 
-    Change the host names, IP addresses, and user names to conform to
-    your infrastructure. For example, if your servers are named "server1",
-    "server2", and "server3", copy the code block above and replace ALL
-    instances of "node-0" with "server".
+     Change the host names, IP addresses, and user names to conform to
+     your infrastructure. For example, if your servers are named "server1",
+     "server2", and "server3", copy the code block above and replace ALL
+     instances of "node-0" with "server".
 
-  3. Create a :file:`group_vars` subdirectory in the quickstart-cluster
-     directory (the same directory as the :file:`hosts` file).
+  4. Create a :file:`group_vars` subdirectory in the directory you created in
+     step 2 (the same directory as the :file:`hosts` file).
 
      .. code-block:: shell
 
       $ mkdir group_vars ; cd group_vars
 
-  4. Create a file, :file:`kube-node.yml`, in the :file:`group_vars`
+  5. Create a file, :file:`kube-node.yml`, in the :file:`group_vars`
      subdirectory of the inventory. This file declares how to set up storage
      (in the default configuration) on hosts in the *kube-node* group; that is,
      hosts on which Pods shall be scheduled:
