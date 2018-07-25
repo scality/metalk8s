@@ -7,6 +7,11 @@ Breaking changes
 :ghpull:`187` - no longer remove the MetalK8s 0.1.x Elasticsearch cluster upon
 upgrade (:ghissue:`160`)
 
+Features added
+--------------
+:ghpull:`193` - update versions of `kube-prometheus`, Elasticsearch and
+Kubespray
+
 Release 0.2.1 (in development)
 ==============================
 
