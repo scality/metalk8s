@@ -1061,7 +1061,7 @@ grafana:
             ]
           },
           "time": {
-            "from": "now-15m",
+            "from": "now-6h",
             "to": "now"
           },
           "timepicker": {
@@ -2246,7 +2246,7 @@ grafana:
             ]
           },
           "time": {
-            "from": "now-24h",
+            "from": "now-6h",
             "to": "now"
           },
           "timepicker": {
@@ -21811,7 +21811,7 @@ grafana:
             ]
           },
           "time": {
-            "from": "now-24h",
+            "from": "now-6h",
             "to": "now"
           },
           "timepicker": {
@@ -23050,7 +23050,7 @@ grafana:
             "list": []
           },
           "time": {
-            "from": "now-1h",
+            "from": "now-6h",
             "to": "now"
           },
           "timepicker": {
