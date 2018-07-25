@@ -9,6 +9,9 @@ upgrade (:ghissue:`160`)
 
 Features added
 --------------
+:ghpull:`191` - deploy `PodDisruptionBudgets` for Elasticsearch
+(:ghissue:`157`)
+
 :ghpull:`193` - update versions of `kube-prometheus`, Elasticsearch and
 Kubespray
 
