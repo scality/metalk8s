@@ -19,8 +19,10 @@ setup_suite() {
         sudo losetup /dev/loop0 /kube-lvm || die
 
         echo "Disabling iptables"
-        sudo systemctl disable --now iptables || die
-        sudo systemctl disable --now ip6tables || die
+        if systemctl is-enabled --quiet iptables; then
+          sudo systemctl disable --now iptables || die
+          sudo systemctl disable --now ip6tables || die
+        fi
         sudo iptables -F || die
         sudo iptables -X || die
 
