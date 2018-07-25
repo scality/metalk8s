@@ -31,3 +31,7 @@ function generate_png() {
 }
 
 mkdir -p generated/
+
+generate_svg wide white '#FFFFFF'
+
+generate_png wide white 200
