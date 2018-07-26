@@ -17,12 +17,20 @@ Kubespray
 
 :ghpull:`181` - format `PersistentVolumes` asynchronously (:ghissue:`173`)
 
+:ghpull:`201` - collect Calico metrics and deploy Grafana dashboards for them
+(:ghissue:`81`)
+
+:ghpull:`210` - deploy `metrics-server` using Helm (:ghissue:`146`)
+
 Release 0.2.1 (in development)
 ==============================
 Bugs fixed
 ----------
 :ghissue:`170` - rename `ElasticSearch Example` and `Node Exporter Full` Grafana
 dashboards (:ghpull:`188`)
+
+:ghissue:`196` - deploy the Elasticsearch Curator configuration we want to
+deploy instead of falling back to the chart default (:ghpull:`197`)
 
 Release 0.2.0
 =============

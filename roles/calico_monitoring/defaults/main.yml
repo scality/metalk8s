@@ -1,0 +1,1 @@
+calico_monitoring_addon_dir: '{{ kube_config_dir}}/addons/calico_monitoring'
