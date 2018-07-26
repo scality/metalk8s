@@ -20,7 +20,6 @@ stages:
       type: openstack
       image: CentOS 7 (PVHVM)
       flavor: general1-4
-      #path: eve/workers/centos7
     steps:
     - Git: &git_pull
         name: git pull
