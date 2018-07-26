@@ -1,0 +1,5 @@
+calico_monitoring_manifests:
+  - file: calico-node-service.yml
+    namespace: kube-system
+  - file: calico-node-servicemonitor.yml
+    namespace: kube-ops

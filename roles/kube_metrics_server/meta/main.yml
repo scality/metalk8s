@@ -1,2 +1,2 @@
 dependencies:
-  - role: ../vendor/kubespray/roles/kubespray-defaults
+  - role: helm_common

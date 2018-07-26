@@ -37,6 +37,21 @@ modules:
     type: url
     base: https://raw.githubusercontent.com/rfrail3/grafana-dashboards/master/
   license: GPL-3.0-or-later
+- path: vendor/grafana-dashboards
+  source:
+    type: url
+    base: https://grafana.com/api/dashboards
+  # This one is tricky... See e.g.
+  # https://github.com/scality/metal-k8s/issues/81#issuecomment-406806510
+  license: Apache-2.0
+- path: vendor/zihaoyu/calico
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/zihaoyu/calico/
+  # Given this was slated to be merged in Calico, it can (likely) be used under
+  # the Calico license
+  # See https://github.com/projectcalico/calico/pull/1167
+  license: Apache-2.0
 
 charts:
 - role: kube_heapster
@@ -61,8 +76,8 @@ charts:
   name: elasticsearch-exporter
 - role: cluster_logging
   name: cerebro
-
-# TODO `metrics-server`
+- role: kube_metrics_server
+  name: metrics-server
 
 version: '0.1'
 
