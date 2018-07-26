@@ -15,6 +15,8 @@ Features added
 :ghpull:`193` - update versions of `kube-prometheus`, Elasticsearch and
 Kubespray
 
+:ghpull:`210` - deploy `metrics-server` using Helm (:ghissue:`146`)
+
 Release 0.2.1 (in development)
 ==============================
 Bugs fixed
