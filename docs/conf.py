@@ -156,6 +156,7 @@ latex_documents = [
      'Scality', 'manual'),
 ]
 
+latex_logo = '../artwork/generated/metalk8s-logo-wide-black.pdf'
 
 # -- Options for manual page output ------------------------------------------
 
