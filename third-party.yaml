@@ -76,8 +76,8 @@ charts:
   name: elasticsearch-exporter
 - role: cluster_logging
   name: cerebro
-
-# TODO `metrics-server`
+- role: kube_metrics_server
+  name: metrics-server
 
 version: '0.1'
 
