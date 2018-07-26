@@ -22,6 +22,8 @@
       when: metalk8s_elasticsearch_enabled|bool
     - role: kube_metrics_server
       tags: ['metrics-server']
+    - role: calico_monitoring
+      tags: ['calico']
 
 - hosts: k8s-cluster:etcd
   roles:

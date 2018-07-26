@@ -112,6 +112,11 @@ class Dashboard:
         spec.pop('id', None)  # Clean id
         if self.title:
             spec['title'] = self.title
+        spec['time'] = {
+            'from': 'now-6h',
+            'to': 'now',
+        }
+
         json_dashboard = json.dumps({
                 'inputs': [{
                     'name': self.source or self.DEFAULT_SOURCE,

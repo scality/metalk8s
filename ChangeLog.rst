@@ -15,6 +15,9 @@ Features added
 :ghpull:`193` - update versions of `kube-prometheus`, Elasticsearch and
 Kubespray
 
+:ghpull:`201` - collect Calico metrics and deploy Grafana dashboards for them
+(:ghissue:`81`)
+
 :ghpull:`210` - deploy `metrics-server` using Helm (:ghissue:`146`)
 
 Release 0.2.1 (in development)
