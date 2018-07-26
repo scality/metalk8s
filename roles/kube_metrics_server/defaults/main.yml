@@ -1,3 +1,11 @@
 debug: false
 
-ms_addon_dir: '{{ kube_config_dir }}/addons/metrics-server'
+metrics_server_repo: 'https://kubernetes-charts.storage.googleapis.com'
+metrics_server_version: 1.1.0
+metrics_server_namespace: kube-system
+metrics_server_release_name: metrics-server
+metrics_server_chart: metrics-server
+
+kube_metrics_server_uninstall: false
+
+remove_metal_k8s_temporary_file: true
