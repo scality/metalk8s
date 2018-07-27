@@ -68,6 +68,26 @@ def check_no_duplicate_addresses(task_vars):
                 seen_addresses.add(address)
 
 
+def check_no_old_storage_configuration(task_vars):
+    '''
+    Check that the storage configuration of MetalK8s < 0.2.0 is not present
+    anymore
+    '''
+
+    for host in task_vars['hostvars'].keys():
+        assert 'metal_k8s_lvm' not in task_vars['hostvars'][host], (
+            "You are still having the old storage configuration for {host}. "
+            "A breaking change was introduced in MetalK8s 0.2.0 "
+            "and the default LVM Volume Group has been changed "
+            "from 'kubevg' to '{metalk8s_lvm_default_vg}'. "
+            "Please follow the 'Upgrading from MetalK8s < 0.2.0' "
+            "chapter of the documentation").format(
+                host=host,
+                metalk8s_lvm_default_vg=task_vars['hostvars'][host].get(
+                    'metalk8s_lvm_default_vg', 'vg_metalk8s')
+            )
+
+
 class ActionModule(ActionBase):
     def run(self, tmp=None, task_vars=None):
         if task_vars is None:
