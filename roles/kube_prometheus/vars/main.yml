@@ -5,3 +5,4 @@ kube_prometheus_dashboards:
   - kube-prometheus-etcd-dashboard
   - kube-prometheus-node-exporter-dashboard
   - kube-prometheus-prometheus-dashboard
+  - kube-prometheus-nginx-ingress-dashboard
