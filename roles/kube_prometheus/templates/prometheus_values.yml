@@ -6,6 +6,7 @@ grafana:
     labels:
       kubernetes.io/cluster-service: "true"
       kubernetes.io/name: "Grafana"
+  serverDashboardConfigmaps: {{ kube_prometheus_dashboards|to_json }}
 
 prometheus:
   externalUrl: '/api/v1/namespaces/kube-ops/services/kube-prometheus:http/proxy/'
