@@ -24,6 +24,8 @@ Kubespray
 
 :ghpull:`189`, :ghpull:`215` - collect `nginx-ingress` metrics and deploy a dashboard (:ghissue:`143`)
 
+:ghpull:`218` - update versions of Kibana and `fluent-bit`
+
 Release 0.2.1 (in development)
 ==============================
 Bugs fixed
