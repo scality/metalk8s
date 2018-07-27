@@ -61,6 +61,20 @@
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
+- name: 'get prometheus crd'
+  command: >-
+    {{ bin_dir }}/kubectl get
+    customresourcedefinitions
+    alertmanagers.monitoring.coreos.com
+    prometheuses.monitoring.coreos.com
+    servicemonitors.monitoring.coreos.com
+  register: prometheus_crd
+  run_once: True
+  until: prometheus_crd is success
+  check_mode: False
+  changed_when: False
+  retries: 10
+
 - name: 'install kube-prometheus'
   command: >-
     {{ bin_dir }}/helm upgrade kube-prometheus

@@ -1,8 +1,14 @@
 controller:
+  image:
+    tag: "0.17.1"
   hostNetwork: True
   kind: 'DaemonSet'
   stats:
     enabled: True
+  metrics:
+    enabled: True
+    service:
+      clusterIP: None
 
 rbac:
   create: True
