@@ -1,17 +1,3 @@
-# TODO: link to documentation in fail message
-- name: "LVM Setup: Detect old configuration style < 0.2.0"
-  tags:
-    - assertion
-  fail:
-    msg: >
-      You're still having the old storage configuration.
-      A breaking change was introduced in MetalK8s 0.2.0 and the default
-       LVM Volume Group has been changed from "kubevg" to
-      {{ metalk8s_lvm_default_vg }}.
-      Please follow the "Upgrading from MetalK8s < 0.2.0" chapter of the
-      documentation
-  when: metal_k8s_lvm is defined
-
 - name: "LVM Setup: Check LVM packages"
   package:
     name: '{{ item }}'
