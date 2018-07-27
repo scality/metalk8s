@@ -176,6 +176,19 @@ class KubeManager(object):
 
         return self._execute(cmd)
 
+    def inplace_replace(self, force=True):
+        cmd = ['replace']
+
+        if force:
+            cmd.append('--force')
+
+        if not self.filename:
+            self.module.fail_json(msg='filename required to inplace-replace')
+
+        cmd.append('--filename=' + ','.join(self.filename))
+
+        return self._execute(cmd)
+
     def delete(self):
 
         if not self.force and not self.exists():
@@ -277,7 +290,7 @@ def main():
             force=dict(default=False, type='bool'),
             all=dict(default=False, type='bool'),
             log_level=dict(default=0, type='int'),
-            state=dict(default='present', choices=['present', 'absent', 'latest', 'reloaded', 'stopped']),
+            state=dict(default='present', choices=['present', 'absent', 'latest', 'reloaded', 'stopped', 'inplace-replaced']),
             ),
             mutually_exclusive=[['filename', 'list']]
         )
@@ -300,6 +313,9 @@ def main():
 
     elif state == 'latest':
         result = manager.replace()
+
+    elif state == 'inplace-replaced':
+        result = manager.inplace_replace()
 
     else:
         module.fail_json(msg='Unrecognized state %s.' % state)
