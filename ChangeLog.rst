@@ -15,6 +15,8 @@ Features added
 :ghpull:`193` - update versions of `kube-prometheus`, Elasticsearch and
 Kubespray
 
+:ghpull:`181` - format `PersistentVolumes` asynchronously (:ghissue:`173`)
+
 :ghpull:`201` - collect Calico metrics and deploy Grafana dashboards for them
 (:ghissue:`81`)
 

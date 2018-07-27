@@ -105,7 +105,21 @@
     dev: '{{ item.key }}'
     opts: '{{ item.value.fs_opts }}'
     force: '{{ item.value.force }}'
+  async: '{{ format_async }}'
+  poll: '{{ format_poll }}'
+  register: lv_format
   with_dict: '{{ metalk8s_lvm_all_lvs }}'
+
+- name: 'Wait for filesystem to be formatted'
+  async_status:
+    jid: '{{ item.ansible_job_id }}'
+  loop_control:
+    label: '{{ item["item"].key }}'
+  with_items: >-
+    {{ lv_format.results|default([]) }}
+  register: job_result
+  until: job_result.finished
+  retries: '{{ format_retries }}'
 
 - name: 'Setup LVM: Get UUIDs of LVM LVs'
   command: blkid -s UUID -o value {{ item.key }}
