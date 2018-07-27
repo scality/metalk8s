@@ -79,12 +79,12 @@ def check_no_old_storage_configuration(task_vars):
             "You are still having the old storage configuration for {host}. "
             "A breaking change was introduced in MetalK8s 0.2.0 "
             "and the default LVM Volume Group has been changed "
-            "from 'kubevg' to {metalk8s_lvm_default_vg}."
+            "from 'kubevg' to '{metalk8s_lvm_default_vg}'. "
             "Please follow the 'Upgrading from MetalK8s < 0.2.0' "
             "chapter of the documentation").format(
                 host=host,
-                metalk8s_lvm_default_vg=task_vars['hostvars']
-                                                 ['metalk8s_lvm_default_vg'],
+                metalk8s_lvm_default_vg=task_vars['hostvars'][host].get(
+                    'metalk8s_lvm_default_vg', 'vg_metalk8s')
             )
 
 
