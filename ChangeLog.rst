@@ -22,6 +22,8 @@ Kubespray
 
 :ghpull:`210` - deploy `metrics-server` using Helm (:ghissue:`146`)
 
+:ghpull:`189`, :ghpull:`203` - collect `nginx-ingress` metrics and deploy a dashboard (:ghissue:`143`)
+
 Release 0.2.1 (in development)
 ==============================
 Bugs fixed

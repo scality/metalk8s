@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import argparse
+import copy
 import glob
 import itertools
 import json
@@ -41,6 +42,7 @@ class Dashboard:
         self.title = title
         self.force = force
         self._spec = None
+        self._patched_spec = None
         self._basename = None
 
     def raw(self):
@@ -64,7 +66,7 @@ class Dashboard:
                 if not self._is_dashboard(spec):
                     message = self.NOT_A_DASHBOARD_ERROR.format(self.filename)
                     self._raise_error(message)
-        self._spec = spec
+        self.spec = spec
         self._basename = basename
 
     def _raise_error(self, message):
@@ -79,14 +81,67 @@ class Dashboard:
             self._load_dashboard()
         return self._spec
 
+    @spec.setter
+    def spec(self, spec):
+        # Invalidate/reset _patched_spec if spec is modified
+        self._pathed_spec = None
+        self._spec = spec
+
+    @property
+    def patched_spec(self):
+        source_template = '${{{}}}'.format(self.defaulted_source)
+        if self._patched_spec is None:
+            spec = copy.deepcopy(self.spec)
+            for panel in self._iter_panels(spec):
+                datasource = panel['datasource']
+                if  not datasource or '$' not in datasource:
+                    panel['datasource'] = source_template
+            for template in spec.get('templating', {}).get('list', []):
+                try:
+                    datasource = template['datasource']
+                except KeyError:
+                    pass
+                else:
+                    if not datasource or '$' not in datasource:
+                        template['datasource'] = source_template
+            for annotation in spec.get('annotations', {}).get('list', []):
+                try:
+                    datasource = annotation['datasource']
+                except KeyError:
+                    pass
+                else:
+                    if not datasource or (datasource != "-- Grafana --" and
+                            '$' not in datasource):
+                        annotation['datasource'] = source_template
+            if self.title:
+                spec['title'] = self.title
+            spec.pop('id', None)  # Clean id
+            spec['time'] = {
+                'from': 'now-6h',
+                'to': 'now',
+            }
+            self._patched_spec = spec
+        return self._patched_spec
+
+    def _iter_panels(self, spec):
+        for row in spec.get('rows') or [spec]:
+            for panel in row['panels']:
+                yield panel
+
     @staticmethod
     def _is_dashboard(spec):
-        return 'annotations' in spec and 'rows' in spec
+        return 'annotations' in spec and \
+            ('rows' in spec or 'panels' in spec)
 
     @property
     def source(self):
         """return source of dashboard, None if not found"""
         return self.spec.get('__inputs', [{}])[0].get('name')
+
+    @property
+    def defaulted_source(self):
+        """return source of dashboard, DEFAULT_SOURCE if not found"""
+        return self.source or self.DEFAULT_SOURCE
 
     @property
     def basename(self):
@@ -108,24 +163,15 @@ class Dashboard:
         return '{}-dashboard.json'.format(prefix)
 
     def compute_dashboard_string(self):
-        spec = dict(self.spec)
-        spec.pop('id', None)  # Clean id
-        if self.title:
-            spec['title'] = self.title
-        spec['time'] = {
-            'from': 'now-6h',
-            'to': 'now',
-        }
-
         json_dashboard = json.dumps({
                 'inputs': [{
-                    'name': self.source or self.DEFAULT_SOURCE,
+                    'name': self.defaulted_source,
                     'type': 'datasource',
                     'pluginId': 'prometheus',
                     'value': 'prometheus'
                 }],
                 'overwrite': True,
-                'dashboard': spec
+                'dashboard': self.patched_spec
             },
             sort_keys=True,
             indent=2,
@@ -138,6 +184,9 @@ class Dashboard:
 
 
 class DashboardAggregator:
+
+    NO_GLOBBING_ALLOWED = "No globbing allowed if option \
+        'name' or 'title' is defined"
 
     def __init__(self, configfile=None, dashboard_class=Dashboard):
         self.configfile = configfile
@@ -181,21 +230,10 @@ class DashboardAggregator:
             if section.startswith('source:'):
                 yield section
 
-    def iter_filenames_in_source(self, source_name):
+    def iter_filenames_in_source(self, source_name, no_globbing=False):
         source_path = '{}/{}'.format(self.configdir,
                                      self.config.get(source_name, 'dest'))
 
-        name = None
-        try:
-            name = self.config.get(source_name, 'name')
-        except configparser.NoOptionError:
-            pass
-
-        title = None
-        try:
-            title = self.config.get(source_name, 'title')
-        except configparser.NoOptionError:
-            pass
 
         iter_filename = glob.iglob(source_path)
         first_file = next(iter_filename)
@@ -203,23 +241,33 @@ class DashboardAggregator:
             second_file = next(iter_filename)
         except StopIteration:
             if first_file == source_path and os.path.isdir(source_path):
-                assert name is None
-                assert title is None
-                return  ((path, None, None) for path in
-                    glob.iglob('{}/*'.format(source_path)))
+                if no_globbing:
+                    raise ValueError(self.NO_GLOBBING_ALLOWED)
+                return glob.iglob('{}/*'.format(source_path))
             else:
-                return iter([(first_file, name, title)])
+                return iter([first_file])
         else:
-            assert name is None
-            assert title is None
-            return itertools.chain(
-                [(first_file, None, None), (second_file, None, None)],
-                iter_filename)
+            if no_globbing:
+                raise ValueError(self.NO_GLOBBING_ALLOWED)
+            return itertools.chain([first_file, second_file], iter_filename)
 
-    def iter_filenames(self):
+    def iter_dashboard(self):
         for source in self.iter_sources():
-            for filename in self.iter_filenames_in_source(source):
-                yield filename
+            try:
+                name = self.config.get(source, 'name')
+            except configparser.NoOptionError:
+                name = None
+
+            try:
+                title = self.config.get(source, 'title')
+            except configparser.NoOptionError:
+                title = None
+
+            no_globbing = bool(name and title)
+            for filename in self.iter_filenames_in_source(
+                    source, no_globbing=no_globbing):
+                log.info('Take {}'.format(filename))
+                yield self.get_dashboard(filename, name, title)
 
     def get_dashboard(self, filename, name=None, title=None):
         return self.dashboard_class(
@@ -231,9 +279,7 @@ class DashboardAggregator:
         with open(target_path, 'w') as target:
             target.write('grafana:\n')
             target.write('  serverDashboardFiles:')
-            for (filename, name, title) in self.iter_filenames():
-                log.info('Take {}'.format(filename))
-                dashboard = self.get_dashboard(filename, name, title)
+            for dashboard in self.iter_dashboard():
                 target.write('\n')
                 target.write(indent(
                     dashboard.compute_dashboard_string(),
