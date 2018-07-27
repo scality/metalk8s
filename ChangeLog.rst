@@ -22,6 +22,8 @@ Kubespray
 
 :ghpull:`210` - deploy `metrics-server` using Helm (:ghissue:`146`)
 
+:ghpull:`218` - update versions of Kibana and `fluent-bit`
+
 Release 0.2.1 (in development)
 ==============================
 Bugs fixed
