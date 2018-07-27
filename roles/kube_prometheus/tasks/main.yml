@@ -25,7 +25,7 @@
     kubectl: '{{ bin_dir }}/kubectl'
     filename: '{{ prometheus_addon_dir }}/{{ item }}.yml'
     namespace: '{{ kube_prometheus_namespace }}'
-    state: 'latest'
+    state: 'inplace-replaced'
   with_items: '{{ kube_prometheus_dashboards }}'
   run_once: true
   delegate_to: '{{ groups["kube-master"][0] }}'
