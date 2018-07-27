@@ -52,6 +52,11 @@ modules:
   # the Calico license
   # See https://github.com/projectcalico/calico/pull/1167
   license: Apache-2.0
+- path: vendor/kubernetes/ingress-nginx
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master
+  licence: Apache-2.0
 
 charts:
 - role: kube_heapster
