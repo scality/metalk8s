@@ -8,6 +8,28 @@
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
+- name: copy kube-prometheus additional dashboard manifests
+  copy:
+    src: 'additional-dashboards/{{ item }}.yml'
+    dest: '{{ prometheus_addon_dir }}/'
+    owner: root
+    group: root
+    mode: 0644
+    directory_mode: 0755
+  with_items: '{{ kube_prometheus_dashboards }}'
+  run_once: true
+  delegate_to: '{{ groups["kube-master"][0] }}'
+
+- name: deploy kube-prometheus additional dashboard manifests
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ prometheus_addon_dir }}/{{ item }}.yml'
+    namespace: '{{ kube_prometheus_namespace }}'
+    state: 'latest'
+  with_items: '{{ kube_prometheus_dashboards }}'
+  run_once: true
+  delegate_to: '{{ groups["kube-master"][0] }}'
+
 - name: 'create tempfile for kube-prometheus values'
   tempfile:
     state: file
@@ -29,27 +51,6 @@
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
-- name: 'create tempfile for kube-prometheus values'
-  tempfile:
-    state: file
-    suffix: yml
-  register: kube_prometheus_dashboard_file
-  run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
-
-- debug:
-    var: kube_prometheus_dashboard_file
-  when: debug|bool
-  run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
-
-- name: 'copy kube-prometheus dashboard into temporary file'
-  copy:
-    src: additionnal_dashboard.yml
-    dest: '{{ kube_prometheus_dashboard_file.path }}'
-  run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
-
 - name: 'remove old exporter-node objects (#113)'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
@@ -68,7 +69,6 @@
     --version {{ kube_prometheus_version }}
     --namespace {{ kube_prometheus_namespace }}
     -f {{ kube_prometheus_value_file.path }}
-    -f {{ kube_prometheus_dashboard_file.path }}
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
@@ -77,8 +77,7 @@
     dest: '{{ item }}'
     state: absent
   with_items: >-
-    {{ [kube_prometheus_value_file.path,
-        kube_prometheus_dashboard_file.path]|select|list }}
+    {{ [kube_prometheus_value_file.path]|select|list }}
   when: remove_metal_k8s_temporary_file|bool
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
