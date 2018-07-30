@@ -1,0 +1,24 @@
+---
+
+- name: 'create remote addons directory'
+  file:
+    state: directory
+    path: '{{ kibana_addons_dir }}'
+
+- name: 'push addons files'
+  template:
+    src: '{{ item }}.j2'
+    dest: '{{ kibana_addons_dir }}/{{ item }}'
+  register: kibana_setup_manifests
+  with_items:
+    - job-setup-configmap.yml
+    - job-setup.yml
+
+- name: 'apply the kibana job setup'
+  run_once: true
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ item.dest }}'
+    namespace: '{{ kibana_namespace }}'
+    state: 'latest'
+  with_items: '{{ kibana_setup_manifests.results | default([]) }}'

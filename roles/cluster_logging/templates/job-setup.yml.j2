@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: provision-kibana-index
+  labels:
+    app: kibana-job-setup
+spec:
+  template:
+    metadata:
+      name: job-setup-configmap
+    spec:
+      containers:
+        - name: kibana-job-setup
+          image: appropriate/curl
+          command: ['sh', '-c', '/scripts/provision-index.sh']
+          volumeMounts:
+            - name: job-setup-configmap
+              mountPath: /scripts
+      restartPolicy: Never
+      volumes:
+        - name: job-setup-configmap
+          configMap:
+            defaultMode: 0755
+            name: job-setup-configmap
