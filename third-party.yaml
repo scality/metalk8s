@@ -14,7 +14,7 @@ modules:
 - path: vendor/etcd
   source:
     type: url
-    base: https://raw.githubusercontent.com/coreos/etcd/v3.2.16/
+    base: https://raw.githubusercontent.com/coreos/etcd/master/
   license: Apache-2.0
 - path: vendor/ansible-hardening
   source:
