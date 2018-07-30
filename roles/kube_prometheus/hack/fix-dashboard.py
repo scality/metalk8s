@@ -32,16 +32,20 @@ def main(dashboard_data, output, filename, title=None):
 
     assert is_dashboard(dashboard)
 
-    source = dashboard.get('__inputs', [{}])[0].get('name') or DEFAULT_SOURCE
+    source_name = dashboard.get('__inputs', [{}])[0].get('name')
+    has_source = bool(source_name)
+    source = source_name or DEFAULT_SOURCE
 
     # Remove the 'id' field
     dashboard.pop('id', None)
 
     source_template = '${{{}}}'.format(source)
+    change = False
     for panel in _iter_panels(dashboard):
         datasource = panel['datasource']
-        if  not datasource or '$' not in datasource:
+        if not datasource or '$' not in datasource:
             panel['datasource'] = source_template
+            change = True
     for template in dashboard.get('templating', {}).get('list', []):
         try:
             datasource = template['datasource']
@@ -50,6 +54,7 @@ def main(dashboard_data, output, filename, title=None):
         else:
             if not datasource or '$' not in datasource:
                 template['datasource'] = source_template
+                change = True
     for annotation in dashboard.get('annotations', {}).get('list', []):
         try:
             datasource = annotation['datasource']
@@ -59,6 +64,16 @@ def main(dashboard_data, output, filename, title=None):
             if not datasource or (datasource != "-- Grafana --" and
                     '$' not in datasource):
                 annotation['datasource'] = source_template
+                change = True
+
+    if change and not has_source:
+        __input = dashboard.setdefault('__inputs', [])
+        __input.append({
+            "name": "DS_DUMMY",
+            "pluginId": "prometheus",
+            "pluginName": "Prometheus",
+            "type": "datasource"
+        })
 
     # Set dashboard title, if desired
     if title:

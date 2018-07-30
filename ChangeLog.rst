@@ -26,6 +26,10 @@ Kubespray
 
 :ghpull:`218` - update versions of Kibana and `fluent-bit`
 
+Bugs fixed
+----------
+:ghissue:`220` - 'Kubernetes Calico (Alternative)' dashboard doesn't work (:ghpull:`221`)
+
 Release 0.2.1 (in development)
 ==============================
 Bugs fixed
