@@ -4,6 +4,14 @@
     "kube-prometheus-calico2-dashboard.json": |-
         {
           "dashboard": {
+            "__inputs": [
+              {
+                "name": "DS_DUMMY",
+                "pluginId": "prometheus",
+                "pluginName": "Prometheus",
+                "type": "datasource"
+              }
+            ],
             "annotations": {
               "list": []
             },
