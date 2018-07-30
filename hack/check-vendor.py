@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+import os
+import os.path
 import sys
+import hashlib
 import subprocess
 
 import yaml
@@ -29,33 +32,65 @@ def check_module_subtree(root, module):
         module['source']['repository'], module['source']['ref']
     ).decode('ascii')
 
-    return latest_commit[1] == latest_remote, latest_remote, latest_commit
+    if latest_commit[1] != latest_remote:
+        yield ('.', latest_remote, latest_commit[1])
+
+
+def check_url(root, module):
+    path = os.path.join(root, module['path'])
+    base = module['source']['base']
+
+    for (dirpath, _, files) in os.walk(path):
+        for filename in files:
+            file_path = os.path.join(dirpath, filename)
+            rel = os.path.relpath(file_path, start=path)
+
+            local = hashlib.sha1()
+
+            with open(file_path, 'rb') as fd:
+                data = fd.read(4096)
+                while data:
+                    local.update(data)
+                    data = fd.read(4096)
+
+            url = '{}/{}'.format(base.rstrip('/'), rel)
+            response = requests.get(url)
+
+            remote = hashlib.sha1()
+            remote.update(response.content)
+
+            if local.hexdigest() != remote.hexdigest():
+                yield (rel, remote.hexdigest(), local.hexdigest())
+
 
 def check_module(root, module):
     # sys.stdout.write('Checking module {!r}...\n'.format(module['path']))
 
     module_check_mapping = {
         'git-subtree': check_module_subtree,
-        'url': lambda *args: (True, None, None)
+        'url': check_url,
     }
     try:
-        rc, latest_remote, latest_commit = module_check_mapping[
+        result = list(module_check_mapping[
             module['source']['type']
-        ](root, module)
+        ](root, module))
     except KeyError as exc:
         raise AssertionError('Unsupported source type: {}'.format(exc.args[0]))
 
-    if rc:
-        sys.stdout.write(
-            '{} Subtree {} up to date\n'.format(green(TICK), bold(module['path'])))
+    if not result:
+        sys.stdout.write('{} Module {} up to date\n'.format(
+            green(TICK), bold(module['path'])))
         rc = True
     else:
-        sys.stdout.write(
-            '{} Subtree {} is outdated\n'
-            '    Local: {}\n'
-            '    Upstream: {}\n'.format(
-                red(CROSS), bold(module['path']),
-                bold(latest_commit[1]), bold(latest_remote)))
+        sys.stdout.write('{} Module {} is outdated\n'.format(
+            red(TICK), bold(module['path'])))
+
+        for (path, remote, local) in result:
+            sys.stdout.write(
+                '    Path: {}\n'
+                '    Local: {}\n'
+                '    Upstream: {}\n'.format(
+                    bold(path), bold(local), bold(remote)))
         rc = False
 
     return rc
