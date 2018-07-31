@@ -32,3 +32,6 @@
     dest: '{{ kibana_values_file.path }}'
     state: absent
   when: remove_metal_k8s_temporary_file|bool
+
+- name: 'include Kibana index provisioning job'
+  import_tasks: kibana-index-provisioning.yml

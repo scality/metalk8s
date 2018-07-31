@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-index-provisioning
+  labels:
+    app: kibana
+    heritage: MetalK8s
+    component: index-provisioning
+data:
+  provision-index.sh: |-
+    {{ lookup('file', role_path ~ '/files/kibana/provision-index.sh') | indent(8) }}

@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kibana-index-provisioning
+  labels:
+    app: kibana
+    heritage: MetalK8s
+    component: index-provisioning
+spec:
+  template:
+    metadata:
+      name: kibana-index-provisioning
+      labels:
+        app: kibana
+        heritage: MetalK8s
+        component: index-provisioning
+    spec:
+      containers:
+        - name: provision-index
+          image: appropriate/curl
+          command: ['sh', '/scripts/provision-index.sh']
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+      restartPolicy: OnFailure
+      volumes:
+        - name: scripts
+          configMap:
+            name: kibana-index-provisioning
