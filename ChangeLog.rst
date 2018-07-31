@@ -1,5 +1,9 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
+Release 1.0.1 (in development)
+==============================
+
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
