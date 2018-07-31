@@ -6,3 +6,4 @@ service:
 env:
   ELASTICSEARCH_URL: 'http://elasticsearch-client:9200'
   SERVER_BASEPATH: '/api/v1/namespaces/kube-ops/services/http:kibana:/proxy'
+  SERVER_DEFAULTROUTE: '/app/kibana#/discover'
