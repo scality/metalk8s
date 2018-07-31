@@ -42,7 +42,7 @@ while [ "$COUNTDOWN" -gt 0 ]; do
     else
         COUNTDOWN=$((COUNTDOWN - 1))
         if [ "$COUNTDOWN" -le 0 ]; then
-            echo "Error: Can't connect to the kibana api server"
+            echo "Error: Can't connect to the Kibana API server"
             exit 1
         else
             sleep $SLEEP_DELAY
@@ -55,15 +55,15 @@ http_code=$(set_index_pattern)
 if [ "$http_code" = "409" ]; then
     echo "Index pattern '$INDEX_ID' is already registered"
 elif [ "$http_code" != "200" ]; then
-    echo "Error: An error occured when trying to set kibana index pattern (http code: $http_code)"
+    echo "Error: An error occurred when trying to set the Kibana index pattern (http code: $http_code)"
     exit 1
 fi
 
 http_code=$(set_default_index)
 
 if [ "$http_code" != "200" ]; then
-    echo "Error: An error occured when trying to set default kibana index (http code: $http_code)"
+    echo "Error: An error occurred when trying to set the default Kibana index (http code: $http_code)"
     exit 1
 fi
 
-echo "Successful register '$INDEX_ID' as kibana index pattern"
+echo "Successful registered '$INDEX_ID' as Kibana index pattern"
