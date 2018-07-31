@@ -1,4 +1,5 @@
 - hosts: k8s-cluster
+  any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
   gather_facts: False
   tags:
     - kubespray

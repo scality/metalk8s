@@ -3,6 +3,9 @@
 Release 1.1.0 (in development)
 ==============================
 
+Features added
+--------------
+:ghpull:`225` - Figure out the "fail fast" option of ansible (:ghissue:`129`)
 
 Release 1.0.1 (in development)
 ==============================
