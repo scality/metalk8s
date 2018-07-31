@@ -10,8 +10,8 @@ INDEX_ID="logstash-*"
 
 API_HOSTNAME="$KIBANA_SERVICE_HOST:$KIBANA_SERVICE_PORT"
 
-COUNTDOWN=3
-
+COUNTDOWN=10
+SLEEP_DELAY=5
 
 set_index_pattern()
 {
@@ -45,7 +45,7 @@ while [ "$COUNTDOWN" -gt 0 ]; do
             echo "Error: Can't connect to the kibana api server"
             exit 1
         else
-            sleep 30
+            sleep $SLEEP_DELAY
         fi
     fi
 done
