@@ -11,10 +11,10 @@
     dest: '{{ kibana_addons_dir }}/{{ item }}'
   register: kibana_setup_manifests
   with_items:
-    - job-setup-configmap.yml
-    - job-setup.yml
+    - kibana-index-provisioning-configmap.yml
+    - kibana-index-provisioning-job.yml
 
-- name: 'apply the kibana job setup'
+- name: 'apply the Kibana job setup'
   run_once: true
   kube:
     kubectl: '{{ bin_dir }}/kubectl'

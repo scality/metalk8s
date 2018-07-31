@@ -33,5 +33,5 @@
     state: absent
   when: remove_metal_k8s_temporary_file|bool
 
-- name: 'include kibana provision index job'
-  import_tasks: kibana-setup.yml
+- name: 'include Kibana index provisioning job'
+  import_tasks: kibana-index-provisioning.yml
