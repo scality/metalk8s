@@ -12,13 +12,12 @@ spec:
       containers:
         - name: kibana-job-setup
           image: appropriate/curl
-          command: ['sh', '-c', '/scripts/provision-index.sh']
+          command: ['sh', '/scripts/provision-index.sh']
           volumeMounts:
             - name: job-setup-configmap
               mountPath: /scripts
-      restartPolicy: Never
+      restartPolicy: OnFailure
       volumes:
         - name: job-setup-configmap
           configMap:
-            defaultMode: 0755
             name: job-setup-configmap
