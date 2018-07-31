@@ -26,7 +26,7 @@ Kubespray
 
 :ghpull:`218` - update versions of Kibana and `fluent-bit`
 
-:ghpull:`223` - Pre-provision kibana index configuration (:ghissue:`174`)
+:ghpull:`223` - pre-provision Kibana index configuration (:ghissue:`174`)
 
 Bugs fixed
 ----------
