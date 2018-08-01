@@ -10,6 +10,9 @@ Features added
 
 :ghpull:`305` - ensure that journald logs are persisted across reboot (:ghissue:`303`)
 
+:ghpull:`232` - Add more storage checks regarding the device presence and the
+partition existence on specificied drives (:ghissue:`231`)
+
 Bugs fixed
 ----------
 :ghissue:`50` - raise default `etcd` memory limits (:ghpull:`331`)
