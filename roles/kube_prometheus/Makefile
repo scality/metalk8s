@@ -31,7 +31,7 @@ files/additional-dashboards/kube-prometheus-calico2-dashboard.yml: TITLE=Kuberne
 
 files/additional-dashboards/kube-prometheus-nginx-ingress-dashboard.yml: ../../vendor/kubernetes/ingress-nginx/deploy/grafana/dashboards/nginx.yaml
 
-files/additional-dashboards/%.yml:
+files/additional-dashboards/%.yml: hack/fix-dashboard.py
 	@mkdir -p files/additional-dashboards
-	env TITLE="$(TITLE)" FILENAME="$(shell basename $@)" python hack/fix-dashboard.py < $< > $@.tmp || rm -f $@.tmp
+	env TITLE="$(TITLE)" FILENAME="$(shell basename $@)" python hack/fix-dashboard.py < $(word 2,$^) > $@.tmp || rm -f $@.tmp
 	mv $@.tmp $@
