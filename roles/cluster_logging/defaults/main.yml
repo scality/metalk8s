@@ -38,6 +38,7 @@ kibana_repo: 'https://kubernetes-charts.storage.googleapis.com'
 kibana_namespace: 'kube-ops'
 kibana_release_name: 'kibana'
 kibana_addons_dir: '/etc/kubernetes/addons/kibana'
+kibana_index_pattern: 'logstash-*'
 
 elasticsearch_exporter_chart: 'elasticsearch-exporter'
 elasticsearch_exporter_version: '0.2.0'

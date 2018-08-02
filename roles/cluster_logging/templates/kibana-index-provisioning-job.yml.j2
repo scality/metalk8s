@@ -19,6 +19,12 @@ spec:
         - name: provision-index
           image: appropriate/curl
           command: ['sh', '/scripts/provision-index.sh']
+          env:
+           - name: INDEX_PATTERN
+             valueFrom:
+               configMapKeyRef:
+                 name: kibana-index-provisioning
+                 key: index.pattern
           volumeMounts:
             - name: scripts
               mountPath: /scripts
