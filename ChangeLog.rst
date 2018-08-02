@@ -45,6 +45,11 @@ deploy instead of falling back to the chart default (:ghpull:`197`)
 
 :ghissue:`220` - 'Kubernetes Calico (Alternative)' dashboard doesn't work (:ghpull:`221`)
 
+Known issues
+------------
+:ghissue:`179` - some Grafana dashboard charts are not displaying any metrics
+
+
 Release 0.2.0
 =============
 .. note:: Compatibility with future releases of MetalK8s is not guaranteed until
