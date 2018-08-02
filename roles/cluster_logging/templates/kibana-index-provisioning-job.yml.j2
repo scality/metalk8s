@@ -25,6 +25,11 @@ spec:
                configMapKeyRef:
                  name: kibana-index-provisioning
                  key: index.pattern
+           - name: KIBANA_SVC
+             valueFrom:
+               configMapKeyRef:
+                 name: kibana-index-provisioning
+                 key: kibana.service
           volumeMounts:
             - name: scripts
               mountPath: /scripts
