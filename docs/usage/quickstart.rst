@@ -222,22 +222,18 @@ access these, first create a secure tunnel into your cluster by running
 ``kubectl proxy``. Then, while the tunnel is up and running, the following tools
 are available:
 
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+--------------------------------------+
-| Service                 | Role                                                    | Link                                                                                            | Notes                                |
-+=========================+=========================================================+=================================================================================================+======================================+
-| `Kubernetes dashboard`_ | A general purpose, web-based UI for Kubernetes clusters | http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/ |                                      |
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+--------------------------------------+
-| `Grafana`_              | Monitoring dashboards for cluster services              | http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/   |                                      |
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+--------------------------------------+
-| `Cerebro`_              | An administration and monitoring console for            | http://localhost:8001/api/v1/namespaces/kube-ops/services/cerebro:http/proxy/                   |                                      |
-|                         | Elasticsearch clusters                                  |                                                                                                 |                                      |
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+--------------------------------------+
-| `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   | When accessing Kibana for the first  |
-|                         |                                                         |                                                                                                 | time, set up an *index pattern* for  |
-|                         |                                                         |                                                                                                 | the ``logstash-*`` index, using the  |
-|                         |                                                         |                                                                                                 | ``@timestamp`` field as *Time Filter |
-|                         |                                                         |                                                                                                 | field name*.                         |
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+--------------------------------------+
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+| Service                 | Role                                                    | Link                                                                                            |
++=========================+=========================================================+=================================================================================================+
+| `Kubernetes dashboard`_ | A general purpose, web-based UI for Kubernetes clusters | http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/ |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+| `Grafana`_              | Monitoring dashboards for cluster services              | http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/   |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+| `Cerebro`_              | An administration and monitoring console for            | http://localhost:8001/api/v1/namespaces/kube-ops/services/cerebro:http/proxy/                   |
+|                         | Elasticsearch clusters                                  |                                                                                                 |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+| `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
 
 See :doc:`../architecture/cluster-services` for more information about these
 services and their configuration.
