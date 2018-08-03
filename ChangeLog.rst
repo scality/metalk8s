@@ -2,7 +2,9 @@
 
 Release 1.0.1 (in development)
 ==============================
-
+Features added
+--------------
+:ghpull:`240` - update Python `cryptography` package to 2.3
 
 Release 1.0.0
 =============
