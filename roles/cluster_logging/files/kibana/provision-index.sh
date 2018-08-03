@@ -7,7 +7,8 @@
 set -ue
 
 if [ ! -z "$INDEX_PATTERN" ]; then
-    INDEX_PATTERN="logstash-*"
+    echo "Error: INDEX_PATTERN is not set"
+    exit 1
 fi
 
 API_HOSTNAME="$(printenv "${KIBANA_SVC}_SERVICE_HOST"):$(printenv "${KIBANA_SVC}_SERVICE_PORT")"

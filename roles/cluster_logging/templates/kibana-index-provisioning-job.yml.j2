@@ -20,16 +20,10 @@ spec:
           image: appropriate/curl
           command: ['sh', '/scripts/provision-index.sh']
           env:
-           - name: INDEX_PATTERN
-             valueFrom:
-               configMapKeyRef:
-                 name: kibana-index-provisioning
-                 key: index.pattern
-           - name: KIBANA_SVC
-             valueFrom:
-               configMapKeyRef:
-                 name: kibana-index-provisioning
-                 key: kibana.service
+            - name: INDEX_PATTERN
+              value: {{ kibana_index_pattern }}
+            - name: KIBANA_SVC
+              value: {{ kibana_release_name | upper }}
           volumeMounts:
             - name: scripts
               mountPath: /scripts

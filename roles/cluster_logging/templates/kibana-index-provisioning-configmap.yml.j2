@@ -7,7 +7,5 @@ metadata:
     heritage: MetalK8s
     component: index-provisioning
 data:
-  index.pattern: {{ kibana_index_pattern }}
-  kibana.service: {{ kibana_release_name | upper }}
   provision-index.sh: |-
     {{ lookup('file', role_path ~ '/files/kibana/provision-index.sh') | indent(8) }}
