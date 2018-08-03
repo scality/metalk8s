@@ -4,7 +4,7 @@
 # Script to setup the default index pattern in kibana
 #
 
-set -ue
+set -e
 
 if [ ! -z "$INDEX_PATTERN" ]; then
     echo "Error: INDEX_PATTERN is not set"
