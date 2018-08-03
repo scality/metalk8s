@@ -3,6 +3,11 @@
 Release 1.1.0 (in development)
 ==============================
 
+
+Features added
+--------------
+:ghpull:`225` - Figure out the "fail fast" option of ansible (:ghissue:`129`)
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the kibana index pattern and service name in
