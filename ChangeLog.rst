@@ -8,6 +8,8 @@ Features added
 
 :ghpull:`225` - Figure out the "fail fast" option of ansible (:ghissue:`129`)
 
+:ghpull:`280` - add an Ansible module to handle Helm chart installation (:ghissue:`190`)
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
