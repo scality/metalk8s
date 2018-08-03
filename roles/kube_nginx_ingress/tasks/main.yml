@@ -1,34 +1,23 @@
-- name: 'create tempfile for nginx-ingress values'
-  tempfile:
-    state: file
-    suffix: yml
-  register: nginx_ingress_value_file
-
-- debug:
-    var: nginx_ingress_value_file.path
-  when: debug|bool
-
-- name: 'copy nginx-ingress values into temporary file'
-  copy:
-    src: nginx_ingress_values.yml
-    dest: '{{ nginx_ingress_value_file.path }}'
 
 - name: 'install nginx ingress'
-  command: >-
-    {{ bin_dir }}/helm upgrade nginx-ingress
-    --install {{ nginx_ingress_release_name }}
-    --repo {{ nginx_ingress_repo }}
-    --version {{ nginx_ingress_version }}
-    --namespace {{ nginx_ingress_namespace }}
-    -f {{ nginx_ingress_value_file.path }}
+  helm_cli:
+    release: '{{ nginx_ingress_release_name }}'
+    chart:
+      name: nginx-ingress
+      version: '{{ nginx_ingress_version }}'
+      repo: '{{ nginx_ingress_repo }}'
+    namespace: '{{ nginx_ingress_namespace }}'
+    binary: '{{ bin_dir }}/helm'
+    values:
+    - "{{ lookup('file', role_path ~ '/files/nginx_ingress_values.yml') }}"
+    state: latest
+  register: nginx_helm_install
   run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
 
-- name: 'remove unneeded nginx-ingress values file'
-  file:
-    dest: '{{ nginx_ingress_value_file.path }}'
-    state: absent
-  when: remove_metal_k8s_temporary_file|bool
+- debug:
+    var: nginx_helm_install
+  run_once: True
+  when: debug|bool
 
 - name: 'Enable monitoring of nginx-ingress'
   import_tasks: prometheus_monitoring.yml
