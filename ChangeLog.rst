@@ -3,6 +3,10 @@
 Release 1.1.0 (in development)
 ==============================
 
+Bugs Fixed
+----------
+:ghissue:`224` - variabilize the kibana index pattern and service name in
+the index provisioning job (:ghpull:`233`).
 
 Release 1.0.1 (in development)
 ==============================
