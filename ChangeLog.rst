@@ -1,7 +1,21 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
-Release 1.0.0 (in development)
+Release 1.1.0 (in development)
 ==============================
+
+Features added
+--------------
+:ghpull:`225` - Figure out the "fail fast" option of ansible (:ghissue:`129`)
+
+Release 1.0.1 (in development)
+==============================
+
+
+Release 1.0.0
+=============
+This marks the first production-ready release of `MetalK8s`_. Deployments using
+this release can be upgraded to later MetalK8s 1.x versions.
+
 Breaking changes
 ----------------
 :ghpull:`187` - no longer remove the MetalK8s 0.1.x Elasticsearch cluster upon
@@ -26,12 +40,8 @@ Kubespray
 
 :ghpull:`218` - update versions of Kibana and `fluent-bit`
 
-Bugs fixed
-----------
-:ghissue:`220` - 'Kubernetes Calico (Alternative)' dashboard doesn't work (:ghpull:`221`)
+:ghpull:`223` - pre-provision Kibana index configuration (:ghissue:`174`)
 
-Release 0.2.1 (in development)
-==============================
 Bugs fixed
 ----------
 :ghissue:`170` - rename `ElasticSearch Example` and `Node Exporter Full` Grafana
@@ -39,6 +49,8 @@ dashboards (:ghpull:`188`)
 
 :ghissue:`196` - deploy the Elasticsearch Curator configuration we want to
 deploy instead of falling back to the chart default (:ghpull:`197`)
+
+:ghissue:`220` - 'Kubernetes Calico (Alternative)' dashboard doesn't work (:ghpull:`221`)
 
 Release 0.2.0
 =============

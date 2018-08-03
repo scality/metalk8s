@@ -1,6 +1,6 @@
 - hosts: localhost
   gather_facts: False
-  any_errors_fatal: True
+  any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
   roles:
     - role: preflight_checks
   tags:
@@ -8,6 +8,7 @@
 
 - hosts: k8s-cluster:etcd
   gather_facts: False
+  any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
   tasks:
     - ping:
 
@@ -16,6 +17,7 @@
     - role: check_os
 
 - hosts: k8s-cluster:etcd
+  any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
   roles:
     - role: '../vendor/ansible-hardening'
       when: metalk8s_ansible_hardening_enabled | default(true) | bool
@@ -25,5 +27,6 @@
     - ansible-hardening
 
 - hosts: k8s-cluster
+  any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
   roles:
     - role: prepare_os
