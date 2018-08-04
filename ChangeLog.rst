@@ -6,6 +6,11 @@ Features added
 --------------
 :ghpull:`240` - update Python `cryptography` package to 2.3
 
+Bugs fixed
+----------
+:ghissue:`237` - increase timeout of `prometheus-operator` deployment
+(:ghpull:`244`)
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
