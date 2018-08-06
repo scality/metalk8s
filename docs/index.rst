@@ -53,6 +53,8 @@ See our :doc:`usage/quickstart` to deploy a cluster.
    usage/quickstart
    architecture/index
 
+   faq
+
    changes
 
    glossary
