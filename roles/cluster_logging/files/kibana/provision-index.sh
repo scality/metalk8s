@@ -6,7 +6,7 @@
 
 set -e
 
-if [ ! -z "$INDEX_PATTERN" ]; then
+if [ -z "$INDEX_PATTERN" ]; then
     echo "Error: INDEX_PATTERN is not set"
     exit 1
 fi
