@@ -7,6 +7,8 @@ Features added
 --------------
 :ghpull:`225` - Figure out the "fail fast" option of ansible (:ghissue:`129`)
 
+:ghpull:`222` - update Elasticsearch and `node_exporter` dashboards
+
 Release 1.0.1 (in development)
 ==============================
 Features added

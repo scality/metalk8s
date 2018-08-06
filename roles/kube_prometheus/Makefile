@@ -19,7 +19,7 @@ files/additional-dashboards/kube-prometheus-etcd-dashboard.yml: ../../vendor/etc
 files/additional-dashboards/kube-prometheus-elasticsearch-dashboard.yml: ../../vendor/justwatchcom/elasticsearch_exporter/examples/grafana/dashboard.json
 files/additional-dashboards/kube-prometheus-elasticsearch-dashboard.yml: TITLE=Elasticsearch
 
-files/additional-dashboards/kube-prometheus-node-exporter-dashboard.yml: ../../vendor/rfrail3/grafana-dashboards/prometheus/node-exporter-full.json
+files/additional-dashboards/kube-prometheus-node-exporter-dashboard.yml: ../../vendor/rfrail3/grafana-dashboards/prometheus/node-exporter-full-old.json
 files/additional-dashboards/kube-prometheus-node-exporter-dashboard.yml: TITLE=Nodes (Detailed)
 
 files/additional-dashboards/kube-prometheus-prometheus-dashboard.yml: ../../vendor/grafana/grafana/public/app/plugins/datasource/prometheus/dashboards/prometheus_2_stats.json
