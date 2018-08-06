@@ -2,10 +2,10 @@
 
 Release 1.1.0 (in development)
 ==============================
-
-
 Features added
 --------------
+:ghpull:`222` - update Elasticsearch and `node_exporter` dashboards
+
 :ghpull:`225` - Figure out the "fail fast" option of ansible (:ghissue:`129`)
 
 Bugs Fixed
