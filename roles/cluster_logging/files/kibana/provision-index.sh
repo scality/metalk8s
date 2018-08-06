@@ -4,11 +4,14 @@
 # Script to setup the default index pattern in kibana
 #
 
-set -ue
+set -e
 
-INDEX_ID="logstash-*"
+if [ -z "$INDEX_PATTERN" ]; then
+    echo "Error: INDEX_PATTERN is not set"
+    exit 1
+fi
 
-API_HOSTNAME="$KIBANA_SERVICE_HOST:$KIBANA_SERVICE_PORT"
+API_HOSTNAME="$(printenv "${KIBANA_SVC}_SERVICE_HOST"):$(printenv "${KIBANA_SVC}_SERVICE_PORT")"
 
 COUNTDOWN=10
 SLEEP_DELAY=5
@@ -19,8 +22,8 @@ set_index_pattern()
         -XPOST \
         -H "Content-type: application/json" \
         -H "kbn-xsrf: anything" \
-        "http://$API_HOSTNAME/api/saved_objects/index-pattern/$INDEX_ID" \
-        -d "{\"attributes\": {\"title\": \"$INDEX_ID\", \"timeFieldName\": \"@timestamp\"}}"
+        "http://$API_HOSTNAME/api/saved_objects/index-pattern/$INDEX_PATTERN" \
+        -d "{\"attributes\": {\"title\": \"$INDEX_PATTERN\", \"timeFieldName\": \"@timestamp\"}}"
 }
 
 set_default_index()
@@ -30,7 +33,7 @@ set_default_index()
         -H "Content-type: application/json" \
         -H "kbn-xsrf: anything" \
         "http://$API_HOSTNAME/api/kibana/settings/defaultIndex" \
-        -d "{\"value\": \"$INDEX_ID\"}"
+        -d "{\"value\": \"$INDEX_PATTERN\"}"
 }
 
 
@@ -53,7 +56,7 @@ done
 http_code=$(set_index_pattern)
 
 if [ "$http_code" = "409" ]; then
-    echo "Index pattern '$INDEX_ID' is already registered"
+    echo "Index pattern '$INDEX_PATTERN' is already registered"
 elif [ "$http_code" != "200" ]; then
     echo "Error: An error occurred when trying to set the Kibana index pattern (http code: $http_code)"
     exit 1
@@ -66,4 +69,4 @@ if [ "$http_code" != "200" ]; then
     exit 1
 fi
 
-echo "Successful registered '$INDEX_ID' as Kibana index pattern"
+echo "Successful registered '$INDEX_PATTERN' as Kibana index pattern"

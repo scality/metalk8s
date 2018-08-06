@@ -2,12 +2,16 @@
 
 Release 1.1.0 (in development)
 ==============================
-
 Features added
 --------------
+:ghpull:`222` - update Elasticsearch and `node_exporter` dashboards
+
 :ghpull:`225` - Figure out the "fail fast" option of ansible (:ghissue:`129`)
 
-:ghpull:`222` - update Elasticsearch and `node_exporter` dashboards
+Bugs Fixed
+----------
+:ghissue:`224` - variabilize the Kibana index pattern and service name in
+the index provisioning job (:ghpull:`233`).
 
 Release 1.0.1 (in development)
 ==============================

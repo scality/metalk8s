@@ -168,8 +168,4 @@ Kibana
 To give operators access to the logs stored in ElasticSearch, a `Kibana`_
 instance is provided.
 
-.. note:: When accessing Kibana for the first time, an *index pattern* for the
-   ``logstash-*`` indices needs to be configured, using ``@timestamp`` as *Time
-   Filter field name*.
-
 .. _Kibana: https://www.elastic.co/products/kibana/

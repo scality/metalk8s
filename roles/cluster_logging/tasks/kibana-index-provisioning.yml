@@ -14,6 +14,15 @@
     - kibana-index-provisioning-configmap.yml
     - kibana-index-provisioning-job.yml
 
+- name: 'remove any previous job setup'
+  run_once: true
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    filename: '{{ item.dest }}'
+    namespace: '{{ kibana_namespace }}'
+    state: 'absent'
+  with_items: '{{ kibana_setup_manifests.results | default([]) }}'
+
 - name: 'apply the Kibana job setup'
   run_once: true
   kube:
