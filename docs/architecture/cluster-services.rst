@@ -128,12 +128,18 @@ ElasticSearch
 *************
 The ElasticSearch_ full-text indexing service is used to ingest all container
 logs in a central place, and make them accessible to operators. This
-ElasticSearch cluster is deployed using the manifests provided in
-`pires/kubernetes-elasticsearch-cluster`_, which are tuned to use
-production-grade settings.
+ElasticSearch cluster is deployed using the `Helm chart`_, with a configuration
+tuned for production-grade settings.
 
 .. _ElasticSearch: https://www.elastic.co/products/elasticsearch/
-.. _pires/kubernetes-elasticsearch-cluster:
+.. _Helm chart: https://github.com/kubernetes/charts/tree/master/incubator/elasticsearch
+
+Cerebro
+*******
+The Cerebro_ dashboard is a monitoring and administration tool for Elasticsearch
+clusters.
+
+.. _Cerebro: https://github.com/lmenezes/cerebro
 
 ElasticSearch Curator
 *********************
@@ -143,14 +149,16 @@ indices on a given schedule.
 
 .. _ElasticSearch Curator: https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html
 
-fluentd
-*******
-The `fluentd`_ service is deployed as a `DaemonSet`_ to stream all container
-logs into ElasticSearch.
+Fluent Bit and fluentd
+**********************
+The `Fluent Bit`_ service is deployed as a `DaemonSet`_ to stream all container
+logs into `fluentd`_ instances, which collect them and submit batches to
+Elasticsearch.
 
-In MetalK8s, :program:`fluentd` has a role similar to `Logstash`_ in the `ELK`
-stack.
+In MetalK8s, Fluent Bit and :program:`fluentd` have a role similar to
+`Logstash`_ in the `ELK` stack.
 
+.. _Fluent Bit: https://fluentbit.io
 .. _fluentd: https://www.fluentd.org
 .. _DaemonSet: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
 .. _Logstash: https://www.elastic.co/products/logstash/

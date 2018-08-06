@@ -1,0 +1,79 @@
+- name: 'make assertions'
+  assert:
+    that:
+     - groups.etcd is defined
+
+- name: 'create private key on master'
+  command: openssl genrsa -out {{ etcd_exporter_key }} 4096
+  args:
+    creates: '{{ etcd_exporter_key }}'
+  run_once: True
+  register: gen_etcd_exporter_key
+
+- name: 'test if etcd_exporter cert already exists'
+  stat:
+    path: '{{ etcd_exporter_cert }}'
+  register: etcd_exporter_cert_file
+
+- name: 'generate csr and cert'
+  block:
+    - name: 'generate csr'
+      command: >-
+        openssl req -new
+        -subj '/CN=etcd-exporter'
+        -key {{ etcd_exporter_key }}
+      register: gen_etcd_exporter_csr
+
+    - debug:
+        var: gen_etcd_exporter_csr
+      when: debug|bool
+
+    - name: 'copy csr over a server capable of signing etcd cert'
+      copy:
+        dest: '/tmp/ansible.{{ lookup("password", "/dev/null chars=ascii_letters length=8") }}'
+        content: '{{ gen_etcd_exporter_csr.stdout }}'
+      delegate_to: '{{ groups.etcd|first }}'
+      register: csr_on_etcd_node
+
+    - debug:
+        var: csr_on_etcd_node
+      when: debug|bool
+
+    - name: 'generate certificate'
+      command: >-
+        openssl x509 -req -days 3650
+        -in {{ csr_on_etcd_node.dest }}
+        -CAkey {{ etcd_cert_dir }}/ca-key.pem
+        -CA {{ etcd_cert_dir }}/ca.pem
+        -CAcreateserial
+      delegate_to: '{{ groups.etcd|first }}'
+      register: gen_etcd_exporter_cert
+
+    - name: 'delete temporary file'
+      file:
+        name: '{{ csr_on_etcd_node.dest }}'
+        state: absent
+
+    - debug:
+        var: gen_etcd_exporter_cert
+      when: debug|bool
+
+    - name: 'copy cert on master node'
+      copy:
+        dest: '{{ etcd_exporter_cert }}'
+        content: '{{ gen_etcd_exporter_cert.stdout }}'
+  run_once: True
+  when: >-
+    gen_etcd_exporter_key is changed or not etcd_exporter_cert_file.stat.exists
+
+- name: 'download cert from signing server '
+  slurp:
+    path: '{{ etcd_exporter_cert }}'
+  run_once: True
+  register: etcd_exporter_cert_content
+
+- name: 'get private key content'
+  slurp:
+    path: '{{ etcd_exporter_key }}'
+  run_once: True
+  register: etcd_exporter_key_content

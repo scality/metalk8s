@@ -1,0 +1,8 @@
+service:
+  labels:
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "Kibana"
+
+env:
+  ELASTICSEARCH_URL: 'http://elasticsearch-client:9200'
+  SERVER_BASEPATH: '/api/v1/namespaces/kube-ops/services/http:kibana:/proxy'

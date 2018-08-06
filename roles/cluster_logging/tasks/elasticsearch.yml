@@ -1,0 +1,33 @@
+- name: 'create tempfile for Elasticsearch values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: elasticsearch_values_file
+
+- debug:
+    var: elasticsearch_values_file.path
+  when: debug|bool
+
+- name: 'copy Elasticsearch values into temporary file'
+  copy:
+    src: elasticsearch/values.yml
+    dest: '{{ elasticsearch_values_file.path }}'
+
+- name: 'install Elasticsearch Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ elasticsearch_repo }}
+    --version {{ elasticsearch_version }}
+    --namespace {{ elasticsearch_namespace }}
+    -f {{ elasticsearch_values_file.path }}
+    {{ elasticsearch_release_name }}
+    {{ elasticsearch_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary Elasticsearch values file'
+  file:
+    dest: '{{ elasticsearch_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool

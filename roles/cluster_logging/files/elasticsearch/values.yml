@@ -1,0 +1,35 @@
+cluster:
+  name: 'MetalK8s'
+
+client:
+  replicas: 3
+  heapSize: '2g'
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      cpu: 4
+
+master:
+  heapSize: '512m'
+  antiAffinity: 'hard'
+  resources:
+    requests:
+      cpu: 0.5
+      memory: 512Mi
+    limits:
+      cpu: 2
+
+data:
+  replicas: 3
+  heapSize: '1g'
+  persistence:
+    size: '50Gi'
+  antiAffinity: 'hard'
+  resources:
+    requests:
+      cpu: 1
+      memory: 1Gi
+    limits:
+      cpu: 2

@@ -1,0 +1,5 @@
+- hosts: kube-master
+  tags:
+    - kube-pv
+  roles:
+    - role: kube_lvm_storageclass

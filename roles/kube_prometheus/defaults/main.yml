@@ -2,14 +2,16 @@ debug: False
 
 remove_metal_k8s_temporary_file: True
 
-prometheus_operator_version: '0.0.24'
+prometheus_operator_version: '0.0.27'
 prometheus_operator_namespace: 'kube-ops'
 prometheus_operator_repo: 'https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/'
 prometheus_operator_release_name: 'prometheus-operator'
 
-kube_prometheus_version: '0.0.68'
+kube_prometheus_version: '0.0.96'
 kube_prometheus_namespace: 'kube-ops'
 kube_prometheus_repo: 'https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/'
 kube_prometheus_release_name: 'kube-prometheus'
 
 prometheus_addon_dir: '{{ kube_config_dir }}/addons/prometheus'
+
+prometheus_storage_size: '10Gi'

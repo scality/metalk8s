@@ -1,0 +1,33 @@
+- name: 'create tempfile for Elasticsearch Curator values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: elasticsearch_curator_values_file
+
+- debug:
+    var: elasticsearch_curator_values_file.path
+  when: debug|bool
+
+- name: 'copy Elasticsearch Curator values into temporary file'
+  copy:
+    src: elasticsearch-curator/values.yml
+    dest: '{{ elasticsearch_curator_values_file.path }}'
+
+- name: 'install Elasticsearch Curator Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ elasticsearch_curator_repo }}
+    --version {{ elasticsearch_curator_version }}
+    --namespace {{ elasticsearch_curator_namespace }}
+    -f {{ elasticsearch_curator_values_file.path }}
+    {{ elasticsearch_curator_release_name }}
+    {{ elasticsearch_curator_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary Elasticsearch Curator values file'
+  file:
+    dest: '{{ elasticsearch_curator_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool

@@ -1,0 +1,35 @@
+version: "0.2"
+
+branches:
+  default:
+    stage: "pre-merge"
+
+stages:
+  pre-merge:
+    worker: &pod
+      type: kube_pod
+      path: eve/workers/zenko.yaml
+    steps:
+    - TriggerStages:
+        name: trigger all the tests
+        stage_names:
+        - single-node
+
+  single-node:
+    worker: &openstack
+      type: openstack
+      image: CentOS 7 (PVHVM)
+      flavor: general1-4
+    steps:
+    - Git: &git_pull
+        name: git pull
+        repourl: "%(prop:git_reference)s"
+        mode: full
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: 'Run test-suite'
+        haltOnFailure: true
+        command: |-
+          bash ./vendor/bash_unit/bash_unit tests/single-node/test.sh

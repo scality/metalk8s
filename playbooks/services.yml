@@ -1,0 +1,29 @@
+# https://github.com/scality/metal-k8s/issues/120
+- hosts: k8s-cluster:etcd
+  tasks:
+    - setup:
+  gather_facts: false
+
+- hosts: kube-master
+  gather_facts: False
+  roles:
+    - role: helm_install
+      tags: ['helm']
+    - role: kube_nginx_ingress
+      tags: ['ingress']
+    - role: etcd_prometheus_exporter_cert
+      tags: ['kube-prometheus']
+    - role: kube_prometheus
+      tags: ['kube-prometheus']
+    - role: kube_heapster
+      tags: ['heapster']
+    - role: cluster_logging
+      tags: ['elasticsearch', 'logging']
+      when: metalk8s_elasticsearch_enabled|bool
+    - role: kube_metrics_server
+      tags: ['metrics-server']
+
+- hosts: k8s-cluster:etcd
+  roles:
+    - role: node_exporter
+      tags: ['kube-prometheus', 'node-exporter', 'node-exporter-pkg']

@@ -1,6 +1,0 @@
-image:
-  tag: '6.2.3'
-
-env:
-  ELASTICSEARCH_URL: 'http://elasticsearch:9200'
-  SERVER_BASEPATH: '/_/kibana'

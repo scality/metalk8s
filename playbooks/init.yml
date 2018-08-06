@@ -1,0 +1,29 @@
+- hosts: localhost
+  gather_facts: False
+  any_errors_fatal: True
+  roles:
+    - role: preflight_checks
+  tags:
+    - preflight-checks
+
+- hosts: k8s-cluster:etcd
+  gather_facts: False
+  tasks:
+    - ping:
+
+- hosts: k8s-cluster:etcd
+  roles:
+    - role: check_os
+
+- hosts: k8s-cluster:etcd
+  roles:
+    - role: '../vendor/ansible-hardening'
+      when: metalk8s_ansible_hardening_enabled | default(true) | bool
+  vars:
+    security_rhel7_enable_linux_security_module: false
+  tags:
+    - ansible-hardening
+
+- hosts: k8s-cluster
+  roles:
+    - role: prepare_os

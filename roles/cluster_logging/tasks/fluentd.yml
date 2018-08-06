@@ -1,0 +1,34 @@
+# Fluentd
+- name: 'create tempfile for Fluentd values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: fluentd_values_file
+
+- debug:
+    var: fluentd_values_file.path
+  when: debug|bool
+
+- name: 'copy Fluentd values into temporary file'
+  copy:
+    src: fluentd/values.yml
+    dest: '{{ fluentd_values_file.path }}'
+
+- name: 'install Fluentd Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ fluentd_repo }}
+    --version {{ fluentd_version }}
+    --namespace {{ fluentd_namespace }}
+    -f {{ fluentd_values_file.path }}
+    {{ fluentd_release_name }}
+    {{ fluentd_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary Fluentd values file'
+  file:
+    dest: '{{ fluentd_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool

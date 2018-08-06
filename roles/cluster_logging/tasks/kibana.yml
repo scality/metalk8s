@@ -1,0 +1,34 @@
+# Kibana
+- name: 'create tempfile for Kibana values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: kibana_values_file
+
+- debug:
+    var: kibana_values_file.path
+  when: debug|bool
+
+- name: 'copy Kibana values into temporary file'
+  copy:
+    src: kibana/values.yml
+    dest: '{{ kibana_values_file.path }}'
+
+- name: 'install Kibana Chart'
+  command: >-
+    {{ bin_dir }}/helm upgrade
+    --install
+    --repo {{ kibana_repo }}
+    --version {{ kibana_version }}
+    --namespace {{ kibana_namespace }}
+    -f {{ kibana_values_file.path }}
+    {{ kibana_release_name }}
+    {{ kibana_chart }}
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove temporary Kibana values file'
+  file:
+    dest: '{{ kibana_values_file.path }}'
+    state: absent
+  when: remove_metal_k8s_temporary_file|bool

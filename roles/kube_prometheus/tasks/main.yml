@@ -12,12 +12,9 @@
   tempfile:
     state: file
     suffix: yml
-  register: kube_prometheus_value_files
+  register: kube_prometheus_value_file
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
-  with_items:
-    - additionnal_dashboard.yml
-    - prometheus_values.yml
 
 - debug:
     var: kube_prometheus_value_file
@@ -26,11 +23,41 @@
   delegate_to: "{{ groups['kube-master'][0] }}"
 
 - name: 'copy kube-prometheus values into temporary file'
-  copy:
-    src: '{{ item.item }}'
-    dest: '{{ item.path }}'
-  with_items: '{{ kube_prometheus_value_files.results|default([]) }}'
+  template:
+    src: prometheus_values.yml
+    dest: '{{ kube_prometheus_value_file.path }}'
   run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'create tempfile for kube-prometheus values'
+  tempfile:
+    state: file
+    suffix: yml
+  register: kube_prometheus_dashboard_file
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- debug:
+    var: kube_prometheus_dashboard_file
+  when: debug|bool
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'copy kube-prometheus dashboard into temporary file'
+  copy:
+    src: additionnal_dashboard.yml
+    dest: '{{ kube_prometheus_dashboard_file.path }}'
+  run_once: True
+  delegate_to: "{{ groups['kube-master'][0] }}"
+
+- name: 'remove old exporter-node objects (#113)'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    namespace: '{{ kube_prometheus_namespace }}'
+    label: chart=exporter-node-0.4.0,release=exporter-node
+    resource: configmap,service,servicemonitor,endpoints
+    state: 'absent'
+  run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
 - name: 'install kube-prometheus'
@@ -40,45 +67,18 @@
     --repo {{ kube_prometheus_repo }}
     --version {{ kube_prometheus_version }}
     --namespace {{ kube_prometheus_namespace }}
-    {% for value_files in kube_prometheus_value_files.results|default([]) %}
-    -f {{ value_files.path }}
-    {% endfor %}
+    -f {{ kube_prometheus_value_file.path }}
+    -f {{ kube_prometheus_dashboard_file.path }}
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
 - name: 'remove unneeded kube-prometheus values file'
   file:
-    dest: '{{ item.path }}'
+    dest: '{{ item }}'
     state: absent
-  with_items: '{{ kube_prometheus_value_files.results|default([]) }}'
+  with_items: >-
+    {{ [kube_prometheus_value_file.path,
+        kube_prometheus_dashboard_file.path]|select|list }}
   when: remove_metal_k8s_temporary_file|bool
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
-
-- name: 'create prometheus addons dir'
-  file:
-    path: '{{ prometheus_addon_dir }}'
-    owner: root
-    group: root
-    mode: 0755
-    recurse: true
-    state: directory
-
-- name: 'Create prometheus manifests'
-  copy:
-    src: '{{ item }}'
-    dest: '{{ prometheus_addon_dir }}/{{ item }}'
-  register: prometheus_manifests
-  with_items:
-    - grafana_ingress.yml
-    - prometheus_ingress.yml
-
-- name: 'Apply manifests for prometheus'
-  kube:
-    kubectl: '{{ bin_dir }}/kubectl'
-    filename: '{{ prometheus_addon_dir }}/{{ item }}'
-    namespace: '{{ prometheus_operator_namespace }}'
-    state: 'latest'
-  run_once: True
-  with_items: >-
-    {{ prometheus_manifests.results|default([])|map(attribute="item")|list }}

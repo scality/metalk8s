@@ -66,14 +66,82 @@ Pods will be scheduled:
 
 .. code-block:: yaml
 
+    metalk8s_lvm_drives_vg_metalk8s: ['/dev/vdb']
+
+In the above, we assume every *kube-node* host has a disk available as
+:file:`/dev/vdb` which can be used to set up Kubernetes *PersistentVolumes*. For
+more information about storage, see :doc:`../architecture/storage`.
+
+.. _upgrade_from_MetalK8s_before_0.2.0:
+
+Upgrading from MetalK8s < 0.2.0
+-------------------------------
+MetalK8s 0.2.0 introduced changes to persistent storage provisioning which are
+not backwards-compatible with MetalK8s 0.1. These changes include:
+
+- The default LVM VG was renamed from `kubevg` to `vg_metalk8s`.
+- Only *PersistentVolumes* required by MetalK8s services are created by
+  default.
+- Instead of using dictionaries to configure the storage, these are now
+  flattened.
+
+When a MetalK8s 0.1 configuration is detected, the playbook will report an
+error.
+
+Given an old configuration looking like this
+
+.. code-block:: yaml
+
     metal_k8s_lvm:
       vgs:
         kubevg:
           drives: ['/dev/vdb']
 
-In the above, we assume every *kube-node* host has a disk available as
-:file:`/dev/vdb` which can be used to set up Kubernetes *PersistentVolumes*. For
-more information about storage, see :doc:`../architecture/storage`.
+the following values must be set in :file:`kube-node.yml` to maintain the
+pre-0.2 behaviour:
+
+- Disable deployment of 'default' volumes:
+
+  .. code-block:: yaml
+
+      metalk8s_lvm_default_vg: False
+
+- Register the `kubevg` VG to be managed:
+
+  .. code-block:: yaml
+
+      metalk8s_lvm_vgs: ['kubevg']
+
+- Use :file:`/dev/vdb` as a volume for the `kubevg` VG:
+
+  .. code-block:: yaml
+
+      metalk8s_lvm_drives_kubevg: ['/dev/vdb']
+
+  Note how the VG name is appended to the `metalk8s_lvm_drives_` prefix to
+  configure a VG-specific setting.
+
+- Create and register the default MetalK8s 0.1 LVs and *PersistentVolumes*:
+
+  .. code-block:: yaml
+
+      metalk8s_lvm_lvs_kubevg:
+        lv01:
+          size: 52G
+        lv02:
+          size: 52G
+        lv03:
+          size: 52G
+        lv04:
+          size: 11G
+        lv05:
+          size: 11G
+        lv06:
+          size: 11G
+        lv07:
+          size: 5G
+        lv08:
+          size: 5G
 
 Entering the MetalK8s Shell
 ---------------------------
@@ -88,12 +156,12 @@ run)::
     Installing Python dependencies...
     Downloading kubectl...
     Downloading Helm...
-    Launching metal-k8s shell environment. Run 'exit' to quit.
+    Launching MetalK8s shell environment. Run 'exit' to quit.
     (metal-k8s) $
 
 Now we're all set to deploy a cluster::
 
-    (metal-k8s) $ ansible-playbook -i inventory/quickstart-cluster -b metal-k8s.yml
+    (metal-k8s) $ ansible-playbook -i inventory/quickstart-cluster -b playbooks/deploy.yml
 
 Grab a coffee and wait for deployment to end.
 
@@ -147,27 +215,35 @@ Similarly, we can list all deployed Helm_ applications::
 
 .. _Helm: https://www.helm.sh
 
-Access to dashboard, Grafana and Kibana
----------------------------------------
-Once the cluster is running, you can access the `Kubernetes dashboard`_,
-Grafana_ metrics and Kibana_ logs from your browser.
+Cluster Services
+----------------
+Various services to operate and monitor your MetalK8s cluster are provided. To
+access these, first create a secure tunnel into your cluster by running
+``kubectl proxy``. Then, while the tunnel is up and running, the following tools
+are available:
 
-To access the Kubernetes dashboard, first create a secure tunnel into your
-cluster by running ``kubectl proxy``. Then, while the tunnel is up and running,
-access the dashboard at
-http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/.
-
-Grafana can be accessed at :samp:`http://{node-ip}/_/grafana`, with *node-ip*
-replaced by the IP-address of one of the hosts in the *kube-node* group.
-
-Similarly, Kibana can be accessed at :samp:`http://{node-ip}/_/kibana`. When
-accessing this service for the first time, set up an *index pattern* for the
-``logstash-*`` index, using the ``@timestamp`` field as *Time Filter field
-name*.
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| Service                 | Role                                                    | Link                                                                                            | Notes                                 |
++=========================+=========================================================+=================================================================================================+=======================================+
+| `Kubernetes dashboard`_ | A general purpose, web-based UI for Kubernetes clusters | http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/ |                                       |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Grafana`_              | Monitoring dashboards for cluster services              | http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/   |                                       |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Cerebro`_              | An administration and monitoring console for            | http://localhost:8001/api/v1/namespaces/kube-ops/services/cerebro:http/proxy/                   | When accessing Cerebro, connect it to |
+|                         | Elasticsearch clusters                                  |                                                                                                 | http://elasticsearch:9200 to operate  |
+|                         |                                                         |                                                                                                 | the MetalK8s Elasticsearch cluster.   |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
+| `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   | When accessing Kibana for the first   |
+|                         |                                                         |                                                                                                 | time, set up an *index pattern* for   |
+|                         |                                                         |                                                                                                 | the ``logstash-*`` index, using the   |
+|                         |                                                         |                                                                                                 | ``@timestamp`` field as *Time Filter  |
+|                         |                                                         |                                                                                                 | field name*.                          |
++-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+---------------------------------------+
 
 See :doc:`../architecture/cluster-services` for more information about these
 services and their configuration.
 
 .. _Kubernetes dashboard: https://github.com/kubernetes/dashboard
 .. _Grafana: https://grafana.com
+.. _Cerebro: https://github.com/lmenezes/cerebro
 .. _Kibana: https://www.elastic.co/products/kibana/

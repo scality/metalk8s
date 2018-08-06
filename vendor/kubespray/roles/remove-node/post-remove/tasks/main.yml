@@ -1,0 +1,9 @@
+---
+
+- name: Delete node
+  command: kubectl delete node {{ item }}
+  with_items:
+    - "{{ node.split(',') | default(groups['kube-node']) }}"
+  delegate_to: "{{ groups['kube-master']|first }}"
+  run_once: true
+  ignore_errors: yes

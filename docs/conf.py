@@ -27,9 +27,9 @@ copyright = '2018, Scality'
 author = 'Scality'
 
 # The short X.Y version
-version = ''
+version = '0.2'
 # The full version, including alpha/beta/rc tags
-release = ''
+release = '0.2.1-dev'
 
 
 # -- General configuration ---------------------------------------------------
@@ -46,6 +46,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.githubpages',
     'sphinxcontrib.spelling',
+    'sphinxcontrib_github_alt',
 ]
 
 if ON_RTD:
@@ -98,6 +99,12 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+html_context = {
+    'css_files': [
+        '_static/theme-overrides.css',
+    ],
+}
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -184,3 +191,7 @@ spelling_word_list_filename='spelling-wordlist.txt'
 # See https://pypi.org/project/sphinxcontrib-googleanalytics/
 googleanalytics_id = 'UA-78443762-1'
 googleanalytics_enabled = ON_RTD
+
+# -- Options for sphinxcontrib_github_alt ------------------------------------
+# See https://pypi.org/project/sphinxcontrib_github_alt/
+github_project_url = 'https://github.com/Scality/metal-k8s'

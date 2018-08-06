@@ -1,0 +1,6 @@
+debug: False
+
+etcd_cert_dir: "/etc/ssl/etcd/ssl"
+
+etcd_exporter_key: '{{ etcd_cert_dir }}/etcd-exporter-key.pem'
+etcd_exporter_cert: '{{ etcd_cert_dir }}/etcd-exporter.pem'

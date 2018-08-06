@@ -1,0 +1,9 @@
+service:
+  labels:
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "Cerebro"
+
+config:
+  hosts:
+    - host: 'http://elasticsearch-client:9200'
+      name: 'MetalK8s'

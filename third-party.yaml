@@ -1,16 +1,42 @@
 modules:
-- path: vendor/kubernetes-elasticsearch-cluster
-  source:
-    type: git-subtree
-    repository: https://github.com/pires/kubernetes-elasticsearch-cluster.git
-    ref: master
-  license: Apache-2.0
-- path: kubespray
+- path: vendor/kubespray
   source:
     type: git-subtree
     repository: https://github.com/kubernetes-incubator/kubespray.git
     ref: master
   license: Apache-2.0
+- path: vendor/bash_unit
+  source:
+    type: git-subtree
+    repository: https://github.com/pgrange/bash_unit.git
+    ref: v1.6.1
+  license: GPL-3.0-or-later
+- path: vendor/etcd
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/coreos/etcd/v3.2.16/
+  license: Apache-2.0
+- path: vendor/ansible-hardening
+  source:
+    type: git-subtree
+    repository: https://github.com/openstack/ansible-hardening.git
+    ref: 17.0.4
+  license: Apache-2.0
+- path: vendor/grafana/grafana
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/grafana/grafana/master/
+  license: Apache-2.0
+- path: vendor/justwatchcom/elasticsearch_exporter
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/justwatchcom/elasticsearch_exporter/master/
+  license: Apache-2.0
+- path: vendor/rfrail3/grafana-dashboards
+  source:
+    type: url
+    base: https://raw.githubusercontent.com/rfrail3/grafana-dashboards/master/
+  license: GPL-3.0-or-later
 
 charts:
 - role: kube_heapster
@@ -21,6 +47,20 @@ charts:
   name: prometheus-operator
 - role: kube_prometheus
   name: kube-prometheus
+- role: cluster_logging
+  name: elasticsearch
+- role: cluster_logging
+  name: elasticsearch-curator
+- role: cluster_logging
+  name: fluentd
+- role: cluster_logging
+  name: fluent-bit
+- role: cluster_logging
+  name: kibana
+- role: cluster_logging
+  name: elasticsearch-exporter
+- role: cluster_logging
+  name: cerebro
 
 # TODO `metrics-server`
 

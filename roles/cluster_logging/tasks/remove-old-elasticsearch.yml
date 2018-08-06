@@ -1,0 +1,50 @@
+- name: 'Delete old Elasticsearch objects'
+  kube:
+    kubectl: '{{ bin_dir }}/kubectl'
+    name: '{{ item.name }}'
+    namespace: '{{ es_namespace }}'
+    resource: '{{ item.resource }}'
+    label: '{{ item.label | default("") }}'
+    state: 'absent'
+  run_once: true
+  delegate_to: "{{ groups['kube-master'][0] }}"
+  with_items:
+    - resource: deploy
+      name: es-client
+      label: component=elasticsearch,role=client
+    - resource: svc
+      name: elasticsearch
+      label: component=elasticsearch,role=client
+    - resource: cronjob
+      name: curator
+      # No labels
+    - resource: configmap
+      name: curator-config
+      # No labels
+    - resource: poddisruptionbudget
+      name: elasticsearch-data
+      # No labels
+    - resource: statefulset
+      name: es-data
+      label: component=elasticsearch,role=data
+    - resource: service
+      name: elasticsearch-data
+      label: component=elasticsearch,role=data
+    - resource: service
+      name: elasticsearch-ingest
+      label: component=elasticsearch,role=ingest
+    - resource: deployment
+      name: es-ingest
+      label: component=elasticsearch,role=ingest
+    - resource: poddisruptionbudget
+      name: elasticsearch-master
+      # No labels
+    - resource: deployment
+      name: es-master
+      label: component=elasticsearch,role=master
+    - resource: service
+      name: elasticsearch
+      label: component=elasticsearch,role=data
+    - resource: service
+      name: elasticsearch-discovery
+      label: component=elasticsearch,role=master
