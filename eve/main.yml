@@ -71,4 +71,4 @@ stages:
     - Git: *git_pull
     - ShellCommand:
         name: 'Build doc'
-        command: make -C docs html
+        command: tox -e docs
