@@ -5,6 +5,7 @@
     --repo {{ prometheus_operator_repo }}
     --version {{ prometheus_operator_version }}
     --namespace {{ prometheus_operator_namespace }}
+    --timeout {{ prometheus_operator_timeout }}
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
