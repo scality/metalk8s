@@ -1,0 +1,41 @@
+- name: 'LVM Setup: Compute list of all vgs'
+  set_fact:
+    metalk8s_lvm_all_vgs: >-
+      {
+        {%- for vg_name in metalk8s_lvm_vgs -%}
+          '{{ vg_name }}': {{ dict(
+                drives=vars['metalk8s_lvm_drives_' ~ vg_name]|default([]),
+                host_path = vars['metalk8s_host_path_' ~ vg_name]|default(
+                    metalk8s_host_path_prefix ~ "/" ~ vg_name),
+                pv_dict=vars['metalk8s_lvm_lvs_' ~ vg_name]|default({}),
+                storageclass=vars['metalk8s_lvm_storageclass' ~ vg_name]
+                    |default(metalk8s_default_storageclass),
+                vg_name=vg_name,
+            ) }},
+        {%- endfor -%}
+      }
+
+- debug:
+    var: metalk8s_lvm_all_vgs
+  when: debug|bool
+
+- name: "LVM Setup: Check LVM packages"
+  package:
+    name: '{{ item }}'
+    state: present
+  register: lvm_just_installed
+  with_items:
+    - lvm2
+
+- name: "LVM Setup: re-compute facts now that lvm is installed"
+  setup:
+    gather_subset: 'hardware'
+    filter: 'ansible_lvm'
+  when: lvm_just_installed is changed
+
+- name: "LVM Setup: Check that the default VG is in the list of managed VGs"
+  tags:
+    - assertion
+  assert:
+    that:
+      - not(metalk8s_lvm_default_vg|bool) or metalk8s_lvm_default_vg in metalk8s_lvm_vgs
