@@ -66,6 +66,7 @@ def main(dashboard_data, output, filename, title=None, tags=None):
                 annotation['datasource'] = source_template
                 change = True
 
+    sys.stderr.write("{}\n".format(tags))
     if tags is not None:
         # reset initial tags list
         dashboard['tags'] = []

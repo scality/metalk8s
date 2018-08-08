@@ -1213,7 +1213,9 @@
             "schemaVersion": 14,
             "style": "dark",
             "tags": [
-              "calico"
+              "calico",
+              "cluster",
+              "networking"
             ],
             "templating": {
               "list": []

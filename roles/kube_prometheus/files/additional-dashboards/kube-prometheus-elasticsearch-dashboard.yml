@@ -1096,7 +1096,8 @@
             "schemaVersion": 14,
             "style": "dark",
             "tags": [
-              "elasticsearch"
+              "elasticsearch",
+              "logging"
             ],
             "templating": {
               "list": [
