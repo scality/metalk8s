@@ -1113,8 +1113,8 @@
             "style": "dark",
             "tags": [
               "nginx",
-              "cluster",
-              "networking"
+              "networking",
+              "cluster"
             ],
             "templating": {
               "list": [

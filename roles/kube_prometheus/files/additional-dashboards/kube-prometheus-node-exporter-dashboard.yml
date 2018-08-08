@@ -19222,8 +19222,8 @@
             "schemaVersion": 14,
             "style": "dark",
             "tags": [
-              "nodes",
-              "cluster"
+              "cluster",
+              "nodes"
             ],
             "templating": {
               "list": [

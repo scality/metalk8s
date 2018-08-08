@@ -1020,8 +1020,8 @@
             "sharedCrosshair": false,
             "style": "dark",
             "tags": [
-              "etcd",
-              "cluster"
+              "cluster",
+              "etcd"
             ],
             "templating": {
               "list": [
