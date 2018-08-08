@@ -9,7 +9,7 @@ Features added
 
 :ghpull:`222` - update Elasticsearch and `node_exporter` dashboards
 
-:ghpull:`208` - tag Grafana dashboards (:ghissue:`251`)
+:ghpull:`251` - tag Grafana dashboards (:ghissue:`208`)
 
 Release 1.0.1 (in development)
 ==============================
