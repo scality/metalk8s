@@ -1192,7 +1192,8 @@
             "schemaVersion": 14,
             "style": "dark",
             "tags": [
-              "prometheus"
+              "prometheus",
+              "metrics"
             ],
             "templating": {
               "list": []
