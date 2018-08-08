@@ -20,3 +20,5 @@ inventory/
 **/*.pyc
 **/*.bak
 **/__pycache__/
+
+venv

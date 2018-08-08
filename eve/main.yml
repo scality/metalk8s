@@ -14,7 +14,7 @@ stages:
         name: trigger all the tests
         stage_names:
         - single-node
-        - build-doc-inter-stage
+        - build-doc
 
   single-node:
     worker: &openstack
@@ -36,24 +36,15 @@ stages:
         command: |-
           bash ./vendor/bash_unit/bash_unit tests/single-node/test.sh
 
-  build-doc-inter-stage:
+  build-doc:
     worker:
       type: kube_pod
       path: eve/workers/zenko.yaml
     steps:
-    - TriggerStages:
-        name: Stage to defer the build of docker of doc-builder
-        stage_names:
-        - build-doc
-
-  build-doc:
-    worker:
-      type: kube_pod
-      path: eve/workers/doc-builder.yaml
-      images:
-        doc-builder: docs/
-    steps:
     - Git: *git_pull
-    - ShellCommand:
-        name: 'Build doc'
-        command: tox -e docs
+    - DockerBuild:
+        label: doc
+        image: doc
+        name: build doc image
+        context_dir: "%(prop:master_builddir)s/build"
+        dockerfile: "%(prop:master_builddir)s/build/docs/Dockerfile"

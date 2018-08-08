@@ -21,4 +21,4 @@ COPY docs/requirements.txt docs/
 
 RUN tox --workdir /tmp/tox --notest -e docs
 
-ENTRYPOINT ["tox", "--workdir", "/tmp/tox", "-e", "docs"]
+CMD ["tox", "--workdir", "/tmp/tox", "-e", "docs"]
