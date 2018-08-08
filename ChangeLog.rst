@@ -13,6 +13,8 @@ Bugs Fixed
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
 the index provisioning job (:ghpull:`233`).
 
+:ghpull:`251` - tag Grafana dashboards (:ghissue:`208`)
+
 Release 1.0.1 (in development)
 ==============================
 Features added

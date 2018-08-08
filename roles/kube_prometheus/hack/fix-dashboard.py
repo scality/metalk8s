@@ -21,7 +21,7 @@ def _iter_panels(dashboard):
             yield panel
 
 
-def main(dashboard_data, output, filename, title=None):
+def main(dashboard_data, output, filename, title=None, tags=None):
     name = os.path.splitext(filename)[0]
 
     dashboard = json.load(dashboard_data)
@@ -65,6 +65,10 @@ def main(dashboard_data, output, filename, title=None):
                     '$' not in datasource):
                 annotation['datasource'] = source_template
                 change = True
+
+    if tags is not None:
+        # reset initial tags list
+        dashboard['tags'] = list(set(tag.strip() for tag in tags.split(',')))
 
     if change and not has_source:
         __input = dashboard.setdefault('__inputs', [])
@@ -129,4 +133,5 @@ if __name__ == '__main__':
         sys.stdout,
         filename=os.environ['FILENAME'],
         title=os.environ.get('TITLE', None),
+        tags=os.environ.get('TAGS', None),
     )

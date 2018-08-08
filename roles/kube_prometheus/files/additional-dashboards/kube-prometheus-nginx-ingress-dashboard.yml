@@ -1112,7 +1112,9 @@
             "schemaVersion": 16,
             "style": "dark",
             "tags": [
-              "nginx"
+              "nginx",
+              "networking",
+              "cluster"
             ],
             "templating": {
               "list": [
