@@ -1,0 +1,24 @@
+
+metal_k8s_lvm:
+  vgs:
+    kubevg:
+      drives: ['/dev/loop0']
+
+metal_k8s_storage_class:
+  storage_classes:
+    local-lvm:
+      is_default: true
+  lvm_conf:
+    default_fstype: 'ext4'
+    default_fs_force: False
+    default_fs_opts: '-m 0'
+    default_mount_opts: 'defaults'
+    vgs:
+      kubevg:
+        host_path: '/mnt/kubevg'
+        storage_class: 'local-lvm'
+        volumes:
+          lv01:
+            size: 11G
+          lv02:
+            size: 8G

@@ -1,0 +1,32 @@
+commit 0e63d42b3d2df1e4208778d901bea91c2d9058c6
+Author: Nicolas Trangez <ikke@nicolast.be>
+Date:   Tue Jun 26 19:25:14 2018 +0200
+
+    Makefile: Force an interactive shell in non-interactive mode
+    
+    When running a non-interactive shell, `bashrc`-style files are not
+    loaded. As a result, the `virtualenv` environment is not entered.
+    
+    See: https://superuser.com/questions/671372/running-command-in-new-bash-shell-with-rcfile-and-c
+    See: 06c5bbc5dc41afec40f1ce1dd40a089cc7f3984f
+    See: b642f7383b1647e646e6809483142fece8fc456e
+    See: #79
+    See: https://github.com/scality/metal-k8s/pull/79
+
+diff --git a/Makefile b/Makefile
+index c862ccdfd..c3b4f80a3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -138,10 +138,10 @@ shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC) ##
+ 		bash --rcfile $(BASHRC); \
+ 	elif test -e "$(C)"; then \
+ 		# A script \
+-		bash --rcfile $(BASHRC) "$(C)"; \
++		bash --rcfile $(BASHRC) -i "$(C)"; \
+ 	else \
+ 		# A command \
+-		bash --rcfile $(BASHRC) -c "$(C)"; \
++		bash --rcfile $(BASHRC) -i -c "$(C)"; \
+ 	fi
+ .PHONY: shell
+ 
