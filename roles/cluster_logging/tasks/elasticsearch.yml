@@ -13,6 +13,18 @@
     src: elasticsearch/values.yml
     dest: '{{ elasticsearch_values_file.path }}'
 
+- name: 'create tempfile for Elasticsearch override values'
+  copy:
+    content: ""
+    dest: '{{ elasticsearch_values_file.path }}-custom.yml'
+
+- name: 'copy Elasticsearch override values into temporary file'
+  copy:
+    src: "{{ item }}"
+    dest: "{{ elasticsearch_values_file.path }}-custom.yml"
+  with_fileglob:
+    - '{{ inventory_dir }}/customizations/cluster_logging/elasticsearch/values.yml'
+
 - name: 'install Elasticsearch Chart'
   command: >-
     {{ bin_dir }}/helm upgrade
@@ -21,6 +33,7 @@
     --version {{ elasticsearch_version }}
     --namespace {{ elasticsearch_namespace }}
     -f {{ elasticsearch_values_file.path }}
+    -f {{ elasticsearch_values_file.path }}-custom.yml
     {{ elasticsearch_release_name }}
     {{ elasticsearch_chart }}
   run_once: true
@@ -28,6 +41,9 @@
 
 - name: 'remove temporary Elasticsearch values file'
   file:
-    dest: '{{ elasticsearch_values_file.path }}'
+    dest: '{{ item }}'
     state: absent
+  with_items:
+    - '{{ elasticsearch_values_file.path }}'
+    - '{{ elasticsearch_values_file.path }}-custom.yml'
   when: remove_metal_k8s_temporary_file|bool

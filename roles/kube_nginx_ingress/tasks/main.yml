@@ -10,8 +10,20 @@
 
 - name: 'copy nginx-ingress values into temporary file'
   copy:
-    src: nginx_ingress_values.yml
+    src: values.yml
     dest: '{{ nginx_ingress_value_file.path }}'
+
+- name: 'create tempfile for nginx-ingress override values'
+  copy:
+    content: ""
+    dest: '{{ nginx_ingress_value_file.path }}-custom.yml'
+
+- name: 'copy nginx-ingress override values into temporary file'
+  copy:
+    src: "{{ inventory_dir }}/customizations/kube_nginx_ingess/values.yml"
+    dest: "{{ nginx_ingress_value_file.path }}-custom.yml"
+  with_fileglob:
+    - '{{ inventory_dir }}/customizations/kube_nginx_ingess/values.yml'
 
 - name: 'install nginx ingress'
   command: >-
@@ -21,13 +33,17 @@
     --version {{ nginx_ingress_version }}
     --namespace {{ nginx_ingress_namespace }}
     -f {{ nginx_ingress_value_file.path }}
+    -f {{ nginx_ingress_value_file.path }}-custom.yml
   run_once: True
   delegate_to: "{{ groups['kube-master'][0] }}"
 
 - name: 'remove unneeded nginx-ingress values file'
   file:
-    dest: '{{ nginx_ingress_value_file.path }}'
+    dest: '{{ item }}'
     state: absent
+  with_items:
+    - '{{ nginx_ingress_value_file.path }}'
+    - '{{ nginx_ingress_value_file.path }}-custom.yml'
   when: remove_metal_k8s_temporary_file|bool
 
 - name: 'Enable monitoring of nginx-ingress'
