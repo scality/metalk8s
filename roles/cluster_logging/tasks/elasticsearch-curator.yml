@@ -13,6 +13,18 @@
     src: elasticsearch-curator/values.yml
     dest: '{{ elasticsearch_curator_values_file.path }}'
 
+- name: 'create tempfile for Elasticsearch Curator override values'
+  copy:
+    content: ""
+    dest: '{{ elasticsearch_curator_values_file.path }}-custom.yml'
+
+- name: 'copy Elasticsearch Curator override values into temporary file'
+  copy:
+    src: "{{ item }}"
+    dest: "{{ elasticsearch_curator_values_file.path }}-custom.yml"
+  with_fileglob:
+    - '{{ inventory_dir }}/customizations/cluster_logging/elasticsearch-curator/values.yml'
+
 - name: 'install Elasticsearch Curator Chart'
   command: >-
     {{ bin_dir }}/helm upgrade
@@ -21,6 +33,7 @@
     --version {{ elasticsearch_curator_version }}
     --namespace {{ elasticsearch_curator_namespace }}
     -f {{ elasticsearch_curator_values_file.path }}
+    -f {{ elasticsearch_curator_values_file.path }}-custom.yml
     {{ elasticsearch_curator_release_name }}
     {{ elasticsearch_curator_chart }}
   run_once: true
@@ -28,6 +41,9 @@
 
 - name: 'remove temporary Elasticsearch Curator values file'
   file:
-    dest: '{{ elasticsearch_curator_values_file.path }}'
+    dest: '{{ item }}'
     state: absent
+  with_items:
+    - '{{ elasticsearch_curator_values_file.path }}'
+    - '{{ elasticsearch_curator_values_file.path }}-custom.yml'
   when: remove_metal_k8s_temporary_file|bool

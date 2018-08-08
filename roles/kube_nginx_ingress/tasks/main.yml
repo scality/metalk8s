@@ -10,6 +10,7 @@
     binary: '{{ bin_dir }}/helm'
     values:
     - "{{ lookup('file', role_path ~ '/files/nginx_ingress_values.yml') }}"
+    - "{{ lookup('file', inventory_dir ~ '/customizations/kube_nginx_ingess/values.yml') }}"
     state: latest
   register: nginx_helm_install
   run_once: True

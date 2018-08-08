@@ -9,6 +9,5 @@ controller:
     enabled: True
     service:
       clusterIP: None
-
 rbac:
   create: True
