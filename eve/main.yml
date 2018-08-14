@@ -40,6 +40,10 @@ stages:
     worker:
       type: kube_pod
       path: eve/workers/zenko.yaml
+      images:
+        doc:
+          context: '.'
+          dockerfile: docs/Dockerfile
     steps:
     - Git: *git_pull
     - DockerBuild:
