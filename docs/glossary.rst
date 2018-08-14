@@ -1,3 +1,5 @@
+:tocdepth: 1
+
 Glossary
 ========
 .. glossary::
@@ -25,3 +27,10 @@ Glossary
   Kubernetes PVC : Kubernetes
     A claim on a :term:`PersistentVolume<Kubernetes PersistentVolume>`, consumed
     by one or more *Pods*.
+
+Common Environment Variables
+----------------------------
+.. envvar:: KUBECONFIG
+
+   Path to a file used to configure access to a Kubernetes cluster when using
+   :command:`kubectl` or other tools.
