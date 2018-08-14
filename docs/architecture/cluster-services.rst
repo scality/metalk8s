@@ -136,8 +136,8 @@ tuned for production-grade settings.
 
 Cerebro
 *******
-The Cerebro_ dashboard is a monitoring and administration tool for Elasticsearch
-clusters.
+The Cerebro_ dashboard is a monitoring and administration tool for
+Elasticsearch clusters.
 
 .. _Cerebro: https://github.com/lmenezes/cerebro
 

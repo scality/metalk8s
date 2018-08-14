@@ -7,10 +7,10 @@
 
 Quickstart Guide
 ================
-To quickly set up a testing cluster using MetalK8s_, you need 3 machines running
-CentOS_ 7.4 to which you have SSH access (these can be VMs). Each machine
-acting as a Kubernetes_ node (all of them, in this example) also need to have at
-least one disk available to provision storage volumes.
+To quickly set up a testing cluster using MetalK8s_, you need 3 machines
+running CentOS_ 7.4 to which you have SSH access (these can be VMs). Each
+machine acting as a Kubernetes_ node (all of them, in this example) also
+need to have at least one disk available to provision storage volumes.
 
 .. todo:: Give some sizing examples
 
@@ -147,9 +147,9 @@ Entering the MetalK8s Shell
 ---------------------------
 To easily install a supported version of Ansible and its dependencies, as well
 as some Kubernetes tools (:program:`kubectl` and :program:`helm`), we provide a
-:program:`make` target which installs these in a local environment. To enter this
-environment, run :command:`make shell` (this takes a couple of seconds on first
-run)::
+:program:`make` target which installs these in a local environment. To enter
+this environment, run :command:`make shell` (this takes a couple of seconds on
+first run)::
 
     $ make shell
     Creating virtualenv...
@@ -167,16 +167,16 @@ Grab a coffee and wait for deployment to end.
 
 Inspecting the cluster
 ----------------------
-Once deployment finished, a file containing credentials to access the cluster is
-created: :file:`inventory/quickstart-cluster/artifacts/admin.conf`. We can
+Once deployment finished, a file containing credentials to access the cluster
+is created: :file:`inventory/quickstart-cluster/artifacts/admin.conf`. We can
 export this location in the shell such that the :program:`kubectl` and
 :program:`helm` tools know how to contact the cluster *kube-master* nodes, and
 authenticate properly::
 
     (metal-k8s) $ export KUBECONFIG=`pwd`/inventory/quickstart-cluster/artifacts/admin.conf
 
-Now, assuming port *6443* on the first *kube-master* node is reachable from your
-system, we can e.g. list the nodes::
+Now, assuming port *6443* on the first *kube-master* node is reachable from
+your system, we can e.g. list the nodes::
 
     (metal-k8s) $ kubectl get nodes
     NAME        STATUS    ROLES            AGE       VERSION
@@ -219,8 +219,8 @@ Cluster Services
 ----------------
 Various services to operate and monitor your MetalK8s cluster are provided. To
 access these, first create a secure tunnel into your cluster by running
-``kubectl proxy``. Then, while the tunnel is up and running, the following tools
-are available:
+``kubectl proxy``. Then, while the tunnel is up and running, the following
+tools are available:
 
 +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
 | Service                 | Role                                                    | Link                                                                                            |
