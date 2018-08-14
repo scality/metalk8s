@@ -11,15 +11,13 @@ stages:
       path: eve/workers/zenko.yaml
     steps:
     - TriggerStages:
-        name: trigger all the tests
+        name: All pre-merge stages
         stage_names:
+        - prechecks
         - single-node
 
-  single-node:
-    worker: &openstack
-      type: openstack
-      image: CentOS 7 (PVHVM)
-      flavor: general1-4
+  prechecks:
+    worker: *pod
     steps:
     - Git: &git_pull
         name: git pull
@@ -28,6 +26,18 @@ stages:
         method: clobber
         retryFetch: true
         haltOnFailure: true
+    - ShellCommand:
+        name: 'Check DCO signature'
+        haltOnFailure: true
+        command: sh ./hack/check-dco
+
+  single-node:
+    worker: &openstack
+      type: openstack
+      image: CentOS 7 (PVHVM)
+      flavor: general1-4
+    steps:
+    - Git: *git_pull
     - ShellCommand:
         name: 'Run test-suite'
         haltOnFailure: true
