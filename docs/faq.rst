@@ -38,3 +38,16 @@ execute the following steps:
 
 Once the above cleanup steps are executed, re-run the playbook to finalize
 the deployment.
+
+
+How can I keep a logfile of Ansible executions?
+-----------------------------------------------
+There are two methods to configure Ansible to keep a logfile:
+
+- Set `log_path` in the `defaults` section of :file:`ansible.cfg`. Relative
+  paths are relative to the location of :file:`ansible.cfg`.
+
+- Export :envvar:`ANSIBLE_LOG_PATH` in the environment from which
+  :command:`ansible-playbook` will be invoked.
+
+For more information, see :ref:`ansible:DEFAULT_LOG_PATH`.

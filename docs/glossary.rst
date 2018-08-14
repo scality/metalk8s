@@ -30,6 +30,11 @@ Glossary
 
 Common Environment Variables
 ----------------------------
+.. envvar:: ANSIBLE_LOG_PATH
+
+   File to which Ansible will log on the controller. When empty logging is
+   disabled. See :ref:`ansible:DEFAULT_LOG_PATH` for more information.
+
 .. envvar:: KUBECONFIG
 
    Path to a file used to configure access to a Kubernetes cluster when using
