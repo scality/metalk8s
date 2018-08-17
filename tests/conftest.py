@@ -49,7 +49,17 @@ def inventory(inventory_sources):
 @pytest.fixture(scope="session")
 def kubeconfig(inventory):
     inventory_dir = os.path.dirname(inventory)
-    return '{}/artifacts/admin.conf'.format(inventory_dir)
+    kubeconfig = os.environ.get(
+        'KUBECONFIG',
+        '{}/artifacts/admin.conf'.format(inventory_dir)
+    )
+    if not os.path.exists(kubeconfig):
+        pytest.fail(
+            "The path in KUBECONFIG environment variable "
+            "does not exist: '{0}'".format(kubeconfig)
+        )
+
+    return kubeconfig
 
 
 @when(parsers.parse("I launch ansible with the '{playbook}' playbook"))
