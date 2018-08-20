@@ -9,7 +9,7 @@ from ansible.inventory.manager import InventoryManager
 def run_make_shell(args=None, tmpdir=None, **kwargs):
     make_args = []
     if tmpdir:
-        make_args.append('SHELL-ENV={}/.shell-env'.format(tmpdir))
+        make_args.append('SHELL_ENV={}'.format(tmpdir))
     if args:
         command = args
     else:
