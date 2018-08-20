@@ -38,7 +38,7 @@ stages:
         haltOnFailure: true
         usePTY: true
         command: |-
-          tox -e test-install -- -s
+          tox -e test -- install -s
         env:
           ANSIBLE_INVENTORY: eve/tests/single-node/inventory/hosts
     - ShellCommand:
@@ -46,6 +46,6 @@ stages:
         haltOnFailure: true
         usePTY: true
         command: |-
-          tox -e test -- -s --run-services
+          tox -e test -- post -s --run-services
         env:
           ANSIBLE_INVENTORY: eve/tests/single-node/inventory/hosts
