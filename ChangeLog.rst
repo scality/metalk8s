@@ -42,6 +42,8 @@ Kubespray
 
 :ghpull:`223` - pre-provision Kibana index configuration (:ghissue:`174`)
 
+:ghpull:`274` - Add support for python3.7
+
 Bugs fixed
 ----------
 :ghissue:`170` - rename `ElasticSearch Example` and `Node Exporter Full` Grafana
