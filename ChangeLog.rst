@@ -6,6 +6,8 @@ Features added
 --------------
 :ghpull:`240` - update Python `cryptography` package to 2.3
 
+:ghpull:`274` - add support for python3.7
+
 Bugs fixed
 ----------
 :ghissue:`237` - increase timeout of `prometheus-operator` deployment
