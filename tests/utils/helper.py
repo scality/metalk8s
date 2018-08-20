@@ -22,7 +22,7 @@ def run_make_shell(args=None, tmpdir=None, **kwargs):
     return make_process
 
 
-def run_ansible_playbook(playbook, inventory, env=None, tmpdir=None):
+def run_ansible_playbook(playbook, inventory=None, env=None, tmpdir=None):
     env_vars = dict(os.environ)
     env_vars.setdefault('ANSIBLE_FORCE_COLOR', "true")
     if env:
