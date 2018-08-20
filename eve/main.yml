@@ -32,7 +32,7 @@ stages:
         name: 'Init node'
         haltOnFailure: true
         command: |-
-          bash tests/single-node/init.sh
+          bash eve/tests/single-node/init.sh
     - ShellCommand:
         name: 'Run the install test suite'
         haltOnFailure: true
@@ -40,7 +40,7 @@ stages:
         command: |-
           tox -e test-install -- -s
         env:
-          ANSIBLE_INVENTORY: tests/single-node/inventory/hosts
+          ANSIBLE_INVENTORY: eve/tests/single-node/inventory/hosts
     - ShellCommand:
         name: 'Run the post-install test suite'
         haltOnFailure: true
@@ -48,4 +48,4 @@ stages:
         command: |-
           tox -e test -- -s --run-services
         env:
-          ANSIBLE_INVENTORY: tests/single-node/inventory/hosts
+          ANSIBLE_INVENTORY: eve/tests/single-node/inventory/hosts
