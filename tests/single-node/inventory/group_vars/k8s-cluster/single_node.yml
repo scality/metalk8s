@@ -5,4 +5,4 @@ metalk8s_lvm_lvs_vg_metalk8s:
   lv02:
     size: 8G
 
-metalk8s_elasticsearch_enabled: False
+metalk8s_elasticsearch_enabled: True

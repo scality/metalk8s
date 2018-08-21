@@ -19,7 +19,7 @@ stages:
     worker: &openstack
       type: openstack
       image: CentOS 7 (PVHVM)
-      flavor: general1-4
+      flavor: general1-8
     steps:
     - Git: &git_pull
         name: git pull
