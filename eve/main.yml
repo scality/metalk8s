@@ -32,7 +32,7 @@ stages:
         name: 'Init node'
         haltOnFailure: true
         command: |-
-          bash eve/tests/single-node/init.sh
+          sudo bash eve/tests/single-node/init.sh
     - ShellCommand:
         name: 'Run the install test suite'
         haltOnFailure: true
