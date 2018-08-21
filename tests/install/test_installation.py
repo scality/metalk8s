@@ -17,7 +17,7 @@ def pytestbdd_strict_gherkin():
    return False
 
 
-@scenario('features/installation.feature', 'Run basic installation')
+@scenario('features/installation.feature', 'Run install and re-install')
 def test_installation():
     pass
 

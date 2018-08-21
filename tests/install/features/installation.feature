@@ -1,7 +1,7 @@
 Feature: MetalK8s installation
     Check install on servers
 
-Scenario: Run basic installation
+Scenario: Run install and re-install
     Given A complete inventory
     When I run 'make shell'
     And I launch ansible with the 'deploy.yml' playbook
