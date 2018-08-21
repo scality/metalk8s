@@ -1,5 +1,5 @@
 ansible<=2.6
-pytest
+pytest<=3.6
 pytest-bdd
 pytest-services
 pyyaml
