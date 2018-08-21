@@ -38,11 +38,13 @@ def kubeconfig(inventory):
 
     return kubeconfig
 
+
 @given('A complete inventory')
 def inventory_check(inventory):
     return inventory
 
-@when(parsers.parse("I launch ansible with the '{playbook}' playbook"))
+
+@when(parsers.re("I launch ansible with the '(?P<playbook>.+)' playbook"))
 def ansible_playbook_step(request, inventory, playbook):
     ansible_process = run_ansible_playbook(playbook)
     request.ansible_process = ansible_process
@@ -52,5 +54,3 @@ def ansible_playbook_step(request, inventory, playbook):
 @then('Playbook should complete without error')
 def ansible_no_error(request):
     assert request.ansible_process.returncode == 0
-
-
