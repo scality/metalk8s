@@ -8,6 +8,8 @@ Features added
 
 :ghpull:`274` - add support for python3.7
 
+:ghpull:`282` - test refactoring: new test-suite via pytest (:ghissue:`116`)
+
 Bugs fixed
 ----------
 :ghissue:`237` - increase timeout of `prometheus-operator` deployment
