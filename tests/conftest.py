@@ -1,5 +1,3 @@
-import functools
-import logging
 import os
 import os.path
 
@@ -13,6 +11,7 @@ from pytest_bdd import when
 from utils.helper import run_ansible_playbook
 
 
+@pytest.fixture(scope="session")
 def inventory():
     inventory_file = os.environ.get('ANSIBLE_INVENTORY')
     assert os.path.exists(inventory_file)
@@ -39,9 +38,12 @@ def kubeconfig(inventory):
 
     return kubeconfig
 
+@given('A complete inventory')
+def inventory_check(inventory):
+    return inventory
 
 @when(parsers.parse("I launch ansible with the '{playbook}' playbook"))
-def ansible_playbook_step(request, inventoryplaybook):
+def ansible_playbook_step(request, inventory, playbook):
     ansible_process = run_ansible_playbook(playbook)
     request.ansible_process = ansible_process
     return ansible_process
@@ -50,3 +52,5 @@ def ansible_playbook_step(request, inventoryplaybook):
 @then('Playbook should complete without error')
 def ansible_no_error(request):
     assert request.ansible_process.returncode == 0
+
+
