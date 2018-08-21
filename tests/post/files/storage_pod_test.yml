@@ -1,0 +1,32 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: testclaim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pv
+spec:
+  restartPolicy: Never
+  containers:
+  - name: test-pv
+    image: busybox
+    command: ['/bin/sh']
+    args:
+    - "-c"
+    - "mount | grep /var/test_pv && touch /var/test_pv/foo"
+    volumeMounts:
+    - name: test-volume
+      mountPath: /var/test_pv
+  volumes:
+  - name: test-volume
+    persistentVolumeClaim:
+      claimName: testclaim
