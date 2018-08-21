@@ -1,3 +1,7 @@
 metalk8s_lvm_drives_vg_metalk8s: ['/dev/loop0']
 
 metalk8s_elasticsearch_enabled: True
+
+metalk8s_lvm_lvs_vg_metalk8s:
+  lv01:
+    size: 2G
