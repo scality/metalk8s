@@ -8,6 +8,7 @@
 
 Quickstart Guide
 ================
+
 This guide describes how to set up a MetalK8s test cluster. It offers general
 requirements and describes sizing, configuration, and deployment. With respect
 to installation procedures, the only significant difference between a test
@@ -167,6 +168,7 @@ provides a :program:`make` target that installs these in a local environment.
 To enter this environment, run :command:`make shell` (this takes a few
 seconds when first run)::
 
+
     $ make shell
     Creating virtualenv...
     Installing Python dependencies...
@@ -177,13 +179,11 @@ seconds when first run)::
 
 Deploy the Cluster
 ------------------
-
 Run the following command to deploy the cluster::
 
    (metal-k8s) $ ansible-playbook -i inventory/quickstart-cluster -b playbooks/deploy.yml
 
 Deployment takes about a half hour.
-
 
 Inspect the Cluster
 -------------------
@@ -198,6 +198,7 @@ virtual environment shell, export this locationto give :program:`kubectl` and
 If your system can reach port 6443 on the first kube-master node, you can
 
 * List all nodes::
+
 
     (metal-k8s) $ kubectl get nodes
     NAME        STATUS    ROLES            AGE       VERSION
@@ -264,6 +265,7 @@ access these dashboards:
   +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
   | `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   |
   +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+
 
 See :doc:`../architecture/cluster-services` for more information about these
 services and their configuration.

@@ -4,3 +4,5 @@ sphinxcontrib_github_alt >= 1.0
 sphinxcontrib-spelling >= 4.1
 sphinxcontrib-googleanalytics >= 0.1
 sphinx-autobuild >= 0.7.1
+
+doc8 >= 0.8.0
