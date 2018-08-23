@@ -1,7 +1,11 @@
+ansible == 2.6
+pytest >= 3.6.4 && > 3.7.2  # https://github.com/pytest-dev/pytest-bdd/issues/250
+pytest-bdd >= 2.21.0
+pytest-services >= 1.3.0
+pyyaml >= 3.13
 # Can't use `-r../requirements.txt` because that pins package versions, e.g. for
 # `pbr`, to versions which are not compatible with versions pinned by
 # (dependencies of) `molecule`.
 -r../vendor/kubespray/requirements.txt
 molecule >= 2.15.0
-
 requests >= 2.19.1
