@@ -10,3 +10,4 @@ nginx_ingress_release_name: 'nginx-ingress'
 nginx_ingress_prometheus_monitoring: True
 nginx_ingress_addons_dir: /etc/kubernetes/addons/nginx_ingress
 
+nginx_ingress_external_values: []
