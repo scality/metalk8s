@@ -1,3 +1,10 @@
+# We have `ansible.cfg` in VCS, but because one may make local changes, we don't
+# necessarily want 'your' version checked in. When making changes to
+# `ansible.cfg` which are meant to be pushed in the repository, make sure you
+# make those changes on a 'clean' `ansible.cfg` and use `git add -f`.
+# If need be, use `git update-index --assume-unchanged`.
+ansible.cfg
+
 *.pyc
 /*.retry
 /playbooks/*.retry
@@ -8,3 +15,5 @@
 /.tox/
 /.kube/
 /.shell-env/
+
+ansible-playbook.log
