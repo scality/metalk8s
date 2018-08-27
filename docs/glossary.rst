@@ -32,8 +32,9 @@ Common Environment Variables
 ----------------------------
 .. envvar:: ANSIBLE_LOG_PATH
 
-   File to which Ansible will write logs on the controller when empty logging is
-   disabled. See :ref:`ansible:DEFAULT_LOG_PATH` for more information.
+   File to which Ansible will write logs on the controller. When empty,
+   logging is disabled. See :ref:`ansible:DEFAULT_LOG_PATH` for more
+   information.
 
 .. envvar:: KUBECONFIG
 
