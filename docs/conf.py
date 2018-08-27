@@ -45,6 +45,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.ifconfig',
     'sphinx.ext.githubpages',
+    'sphinx.ext.intersphinx',
     'sphinxcontrib.spelling',
     'sphinxcontrib_github_alt',
 ]
@@ -200,3 +201,9 @@ googleanalytics_enabled = ON_RTD
 # -- Options for sphinxcontrib_github_alt ------------------------------------
 # See https://pypi.org/project/sphinxcontrib_github_alt/
 github_project_url = 'https://github.com/Scality/metal-k8s'
+
+# -- Options for sphinx.ext.intersphinx --------------------------------------
+# See http://www.sphinx-doc.org/en/stable/ext/intersphinx.html
+intersphinx_mapping = {
+    'ansible': ('https://docs.ansible.com/ansible/2.6', None),
+}
