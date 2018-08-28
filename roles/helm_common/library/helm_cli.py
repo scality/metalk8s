@@ -1,7 +1,6 @@
-import os
-import json
-
 from contextlib import contextmanager
+import json
+import os
 from tempfile import NamedTemporaryFile
 
 from ansible.module_utils.basic import AnsibleModule

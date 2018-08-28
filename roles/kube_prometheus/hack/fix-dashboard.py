@@ -1,8 +1,7 @@
+import json
 import os
 import os.path
 import sys
-import copy
-import json
 
 import yaml
 
@@ -14,6 +13,7 @@ def is_dashboard(dashboard):
         'annotations' in dashboard,
         'rows' in dashboard or 'panels' in dashboard,
     ])
+
 
 def _iter_panels(dashboard):
     for row in dashboard.get('rows') or [dashboard]:
@@ -61,8 +61,8 @@ def main(dashboard_data, output, filename, title=None, tags=None):
         except KeyError:
             pass
         else:
-            if not datasource or (datasource != "-- Grafana --" and
-                    '$' not in datasource):
+            if not datasource or \
+                    (datasource != "-- Grafana --" and '$' not in datasource):
                 annotation['datasource'] = source_template
                 change = True
 
