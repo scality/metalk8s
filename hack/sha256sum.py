@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import sys
 import hashlib
+import sys
+
 
 def main():
     assert len(sys.argv) == 2

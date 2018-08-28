@@ -1,11 +1,12 @@
 import collections
-import os
 import logging
+import os
 import subprocess
 import time
 
-import pytest
 import yaml
+
+import pytest
 
 from pytest_bdd import given
 from pytest_bdd import parsers

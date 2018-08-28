@@ -2,8 +2,8 @@ import logging
 import os
 import subprocess
 
-from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
+from ansible.parsing.dataloader import DataLoader
 
 
 def run_make_shell(args=None, tmpdir=None, **kwargs):
@@ -31,10 +31,11 @@ def run_ansible_playbook(playbook, env=None, tmpdir=None):
     return run_make_shell(args=command, env=env_vars, tmpdir=tmpdir)
 
 
-class Inventory:
+class Inventory(object):
     def __init__(self, filename):
         self._loader = DataLoader()
-        self._inventory = InventoryManager(loader=self._loader, sources=filename)
+        self._inventory = InventoryManager(
+            loader=self._loader, sources=filename)
 
     def __getattr__(self, key):
         return getattr(self._inventory, key)
