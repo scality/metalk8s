@@ -1,7 +1,7 @@
 '''Various inventory validation checks, and an Ansible `Action` to run them'''
 
-import sys
 import inspect
+import sys
 
 from ansible.plugins.action import ActionBase
 
@@ -13,6 +13,7 @@ from ansible.plugins.action import ActionBase
 # course, contain multiple assertions.
 # Alternatively, for checks which can result in multiple errors, a check can
 # return a list of (or yield) error messages.
+
 
 def check_etcd_ensemble_size(task_vars):
     ensemble_size = len(task_vars['groups']['etcd'])
@@ -55,12 +56,13 @@ def check_no_duplicate_addresses(task_vars):
             address = task_vars['hostvars'][host].get(name)
 
             if address:
-                # A host can have e.g. `access_ip` and `ansible_host` set to the
-                # same value, which would be legal.
+                # A host can have e.g. `access_ip` and `ansible_host` set to
+                # the same value, which would be legal.
                 # The code below relies on the assumption that any address in
                 # `this_host_addresses` was already checked against
                 # `seen_addresses` before.
-                if address not in this_host_addresses and address in seen_addresses:
+                if address not in this_host_addresses \
+                        and address in seen_addresses:
                     yield 'Duplicate address in `{}` of {}: {}'.format(
                         name, host, address)
 
@@ -69,10 +71,7 @@ def check_no_duplicate_addresses(task_vars):
 
 
 def check_no_old_storage_configuration(task_vars):
-    '''
-    Check that the storage configuration of MetalK8s < 0.2.0 is not present
-    anymore
-    '''
+    '''Ensure MetalK8s 0.1 storage configuration is not present'''
 
     for host in task_vars['hostvars'].keys():
         assert 'metal_k8s_lvm' not in task_vars['hostvars'][host], (
@@ -85,7 +84,7 @@ def check_no_old_storage_configuration(task_vars):
                 host=host,
                 metalk8s_lvm_default_vg=task_vars['hostvars'][host].get(
                     'metalk8s_lvm_default_vg', 'vg_metalk8s')
-            )
+        )
 
 
 class ActionModule(ActionBase):
@@ -118,7 +117,8 @@ class ActionModule(ActionBase):
                 failed = True
                 errors.append(
                     '{} [{}]'.format(
-                        exc.args[0] if len(exc.args) >= 1 else 'Unknown failure',
+                        exc.args[0] if len(exc.args) >= 1
+                        else 'Unknown failure',
                         name)
                 )
 
