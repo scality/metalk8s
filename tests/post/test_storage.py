@@ -14,6 +14,7 @@ from pytest_bdd import then
 from pytest_bdd import when
 
 from utils.helper import run_make_shell
+from utils.helper import get_kube_resources
 
 
 @pytest.fixture
@@ -25,27 +26,13 @@ scenarios('features/storage.feature')
 
 
 def get_kubernetes_pv(kubeconfig):
-    pv_list_process = run_make_shell(
-        'kubectl get pv --export -o yaml',
-        env={'KUBECONFIG': kubeconfig},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    kubectl_output = pv_list_process.stdout.read()
-    if pv_list_process.returncode == 0:
-        pv_list = yaml.load(kubectl_output)
-        return pv_list['items']
-    else:
-        logging.error("kubectl stdout: {}\n stderr: {}".format(
-            kubectl_output,
-            pv_list_process.stderr.read()
-        ))
+    return get_kube_resources(kubeconfig, 'persistent_volume').items
 
 
 def count_pv(pv_list):
     pv_count = collections.Counter()
     for pv in pv_list:
-        pv_count[pv['status']['phase']] += 1
+        pv_count[pv.status.phase] += 1
     return pv_count
 
 
