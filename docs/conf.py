@@ -190,7 +190,7 @@ todo_include_todos = True
 
 # -- Options for sphinxcontrib-spelling --------------------------------------
 # See http://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
-spelling_word_list_filename='spelling-wordlist.txt'
+spelling_word_list_filename = 'spelling-wordlist.txt'
 
 # -- Options for sphinxcontrib-googleanalytics -------------------------------
 # See https://pypi.org/project/sphinxcontrib-googleanalytics/
