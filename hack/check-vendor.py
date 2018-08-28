@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
+import os.path
 import subprocess
+import sys
 
 import yaml
 
@@ -17,19 +18,27 @@ BOLD = '\u001b[1m'
 TICK = '\u2714'
 CROSS = '\u2718'
 
-green = lambda s: '{}{}{}'.format(GREEN, s, RESET)
-red = lambda s: '{}{}{}'.format(RED, s, RESET)
-bold = lambda s: '{}{}{}'.format(BOLD, s, RESET)
+
+def green(s):
+    return '{}{}{}'.format(GREEN, s, RESET)
+
+
+def red(s):
+    return '{}{}{}'.format(RED, s, RESET)
+
+
+def bold(s):
+    return '{}{}{}'.format(BOLD, s, RESET)
 
 
 def check_module_subtree(root, module):
-
     latest_commit = find_latest_squash(module['path'], root)
     latest_remote = find_latest_remote(
         module['source']['repository'], module['source']['ref']
     ).decode('ascii')
 
     return latest_commit[1] == latest_remote, latest_remote, latest_commit
+
 
 def check_module(root, module):
     # sys.stdout.write('Checking module {!r}...\n'.format(module['path']))
@@ -47,7 +56,8 @@ def check_module(root, module):
 
     if rc:
         sys.stdout.write(
-            '{} Subtree {} up to date\n'.format(green(TICK), bold(module['path'])))
+            '{} Subtree {} up to date\n'.format(
+                green(TICK), bold(module['path'])))
         rc = True
     else:
         sys.stdout.write(
@@ -63,9 +73,8 @@ def check_module(root, module):
 
 HELM_REPO_CACHE = {}
 
-def check_chart(root, chart):
-    #sys.stdout.write('Checking Chart {!r}...\n'.format(chart['name']))
 
+def check_chart(root, chart):
     defaults = os.path.join(
         root, 'roles', chart['role'], 'defaults', 'main.yml')
     with open(defaults, 'r') as fd:
@@ -131,7 +140,6 @@ def main(root, yaml_path):
     return rc
 
 
-
 def find_latest_squash(path, repo_path=None):
     # A fairly literal port of the related shell code in git-subtree
 
@@ -139,11 +147,11 @@ def find_latest_squash(path, repo_path=None):
     main = None
     sub = None
 
-    #git log --grep="^git-subtree-dir: %dir/*\$" \
-    #        --pretty=format:'START %H%n%s%n%n%b%nEND%n' HEAD
+    # git log --grep="^git-subtree-dir: %dir/*\$" \
+    #         --pretty=format:'START %H%n%s%n%n%b%nEND%n' HEAD
 
-    # Keep it simple, don't use pipes to stream output, assuming all output will
-    # fit in a reasonable amount of memory / one pipe buffer.
+    # Keep it simple, don't use pipes to stream output, assuming all output
+    # will fit in a reasonable amount of memory / one pipe buffer.
     result = subprocess.run(
         args=[
             'git', 'log',
@@ -157,7 +165,7 @@ def find_latest_squash(path, repo_path=None):
         check=True,
     )
 
-    #while read a b junk
+    # while read a b junk
     for line in result.stdout.splitlines():
         a = None
         b = None
@@ -178,7 +186,7 @@ def find_latest_squash(path, repo_path=None):
         elif a == b'git-subtree-mainline:':
             main = b
         elif a == b'git-subtree-split:':
-    #       sub="$(git rev-parse "$b^0")" || die
+            # sub="$(git rev-parse "$b^0")" || die
             sub = subprocess.run(
                 args=[
                     'git', 'rev-parse',
@@ -190,9 +198,9 @@ def find_latest_squash(path, repo_path=None):
                 check=True,
             ).stdout.strip()
         elif a == b'END':
-    #       if test -n "$sub"
+            # if test -n "$sub"
             if sub:
-    #           if test -n "$main"
+                # if test -n "$main"
                 if main:
                     sq = sub
                 return (sq.decode('ascii'), sub.decode('ascii'))
@@ -227,10 +235,7 @@ def find_latest_remote(remote, ref):
     return line.split(b'\t', 1)[0]
 
 
-
 if __name__ == '__main__':
-    import os.path
-
     base = os.path.abspath(os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         os.path.pardir))
