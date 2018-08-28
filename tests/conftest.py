@@ -1,5 +1,7 @@
 import os
 import os.path
+import logging
+import subprocess
 
 import pytest
 
@@ -9,6 +11,7 @@ from pytest_bdd import then
 from pytest_bdd import when
 
 from utils.helper import run_ansible_playbook
+from utils.helper import run_make_shell
 
 
 @pytest.fixture(scope="session")
@@ -37,9 +40,11 @@ def kubeconfig(inventory):
 
     return kubeconfig
 
+
 @given('A complete inventory')
 def inventory_check(inventory):
     return inventory
+
 
 @when(parsers.parse("I launch ansible with the '{playbook}' playbook"))
 def ansible_playbook_step(request, inventory, playbook):
@@ -53,3 +58,20 @@ def ansible_no_error(request):
     assert request.ansible_process.returncode == 0
 
 
+@when(parsers.parse("I run 'kubectl {kubectl_args}' in a supported shell"))
+def run_kubectl_command(request, kubeconfig, kubectl_args):
+    kubectl_command = "kubectl {}".format(kubectl_args)
+    kubectl_run = run_make_shell(
+        kubectl_command,
+        env={'KUBECONFIG': kubeconfig},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    if kubectl_run.returncode == 0:
+        request.kubectl_result = kubectl_run
+        return kubectl_run
+    else:
+        logging.error("kubectl stdout: {}\n stderr: {}".format(
+            kubectl_run.stdout.read(),
+            kubectl_run.stderr.read()
+        ))
