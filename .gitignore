@@ -1,3 +1,5 @@
+ansible.cfg
+
 *.pyc
 /*.retry
 /playbooks/*.retry
@@ -8,3 +10,5 @@
 /.tox/
 /.kube/
 /.shell-env/
+
+ansible-playbook.log
