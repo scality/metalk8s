@@ -1,0 +1,114 @@
+---
+- name: Create MetalK8s repository configuration directories
+  file:
+    path: '{{ item }}'
+    mode: '0755'
+    owner: root
+    group: root
+    state: directory
+  become: true
+  with_items:
+    - '{{ repository__config }}'
+
+- name: Create MetalK8s offline repository storage directories
+  file:
+    path: '{{ item }}'
+    mode: '0755'
+    owner: root
+    group: root
+    state: directory
+  become: true
+  with_items:
+    - '{{ repository__data }}'
+    - '{{ repository__data }}/www-data'
+
+- name: Create MetalK8s offline repository empty index.html
+  copy:
+    dest: '{{ repository__data }}/www-data/index.html'
+    mode: '0644'
+    owner: root
+    group: root
+    # Yes, this is valid HTML5
+    content: '<!DOCTYPE html><title>MetalK8s repository</title>'
+  become: true
+
+- name: Create MetalK8s offline Docker repository storage directories
+  file:
+    path: '{{ item }}'
+    mode: '0755'
+    # Keep in sync with `runAsUser` and `fsGroup` in the Pod manifest
+    owner: 1000
+    group: 1000
+    state: directory
+  become: true
+  with_items:
+    - '{{ repository__data }}/registry'
+
+- name: Copy MetalK8s repository configuration files
+  copy:
+    dest: '{{ repository__config }}/{{ item }}'
+    mode: '0644'
+    owner: root
+    group: root
+    src: 'etc/metalk8s/repository/{{ item }}'
+  become: true
+  with_items:
+    - registry.yml
+
+- name: Copy MetalK8s repository configuration templates
+  template:
+    dest: '{{ repository__config }}/{{ item }}'
+    mode: '0644'
+    owner: root
+    group: root
+    src: 'etc/metalk8s/repository/{{ item }}.j2'
+  become: true
+  with_items:
+    - nginx.conf
+
+- name: Install module dependencies
+  package:
+    name: '{{ item }}'
+    state: present
+  become: true
+  with_items: '{{ repository__role_dependencies }}'
+
+- name: Pull Docker images
+  docker_image:
+    name: '{{ item }}'
+  become: true
+  with_items: '{{ repository__images }}'
+
+- name: Stat nginx configuration
+  stat:
+    path: '{{ repository__config }}/nginx.conf'
+  register: stat_nginx
+
+- name: Stat registry configuration
+  stat:
+    path: '{{ repository__config }}/registry.yml'
+  register: stat_registry
+
+- name: Copy MetalK8s repository static Pod manifest
+  template:
+    dest: '{{ repository__kubelet_manifests }}/{{ item }}'
+    mode: '0644'
+    owner: root
+    group: root
+    src: 'etc/kubernetes/manifests/{{ item }}.j2'
+  become: true
+  with_items:
+    - metalk8s-repository.manifest
+
+- name: Wait for the repository to be up and running
+  uri:
+    url: '{{ item }}'
+  register: result
+  until: result.status == 200
+  retries: 60
+  delay: 1
+  when:
+    - not ansible_check_mode
+  with_items:
+    - 'http://{{ repository__address }}/'
+    - 'http://{{ repository__address }}/v2/'

@@ -1,0 +1,6 @@
+---
+dependencies:
+- kubespray-defaults
+- bootstrap-os
+- docker
+- kubernetes/node

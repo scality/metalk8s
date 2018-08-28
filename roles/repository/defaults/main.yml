@@ -1,0 +1,19 @@
+---
+repository__ip: '{{ ansible_default_ipv4.address }}'
+repository__port: 1985
+
+repository__config: '/etc/metalk8s/repository'
+repository__data: '/var/lib/metalk8s/repository'
+
+repository__role_dependencies:
+  - docker-python
+
+repository__nginx_image: 'docker.io/nginx'
+repository__nginx_tag: '1.14.0-alpine'
+repository__registry_image: 'docker.io/registry'
+repository__registry_tag: '2.6.2'
+repository__images:
+  - '{{ repository__nginx_image }}:{{ repository__nginx_tag }}'
+  - '{{ repository__registry_image }}:{{ repository__registry_tag }}'
+
+repository__kubelet_manifests: '/etc/kubernetes/manifests'

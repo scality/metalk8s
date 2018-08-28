@@ -1,0 +1,6 @@
+---
+- hosts: metalk8s-repository
+  tags:
+  - repository
+  roles:
+    - role: repository

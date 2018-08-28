@@ -1,0 +1,2 @@
+---
+repository__address: '{{ repository__ip }}:{{ repository__port }}'
