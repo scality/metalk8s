@@ -1,20 +1,15 @@
 import pytest
-import requests
 
-from pytest_bdd import given
-from pytest_bdd import parsers
 from pytest_bdd import scenario
 from pytest_bdd import scenarios
-from pytest_bdd import then
 from pytest_bdd import when
 
 from utils.helper import run_make_shell
-from utils.helper import run_ansible_playbook
 
 
 @pytest.fixture
 def pytestbdd_strict_gherkin():
-   return False
+    return False
 
 
 @scenario('features/installation.feature', 'Run install and re-install')
