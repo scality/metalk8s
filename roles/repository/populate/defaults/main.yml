@@ -1,0 +1,7 @@
+---
+repository__kubespray_docker_images: []
+
+repository__chart_docker_images:
+- 'fluent/fluent-bit:0.13.0'
+
+repository__extra_docker_images: []
