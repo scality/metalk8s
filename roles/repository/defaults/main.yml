@@ -12,8 +12,11 @@ repository__nginx_image: 'docker.io/nginx'
 repository__nginx_tag: '1.14.0-alpine'
 repository__registry_image: 'docker.io/registry'
 repository__registry_tag: '2.6.2'
+repository__docker_auth_image: 'docker.io/cesanta/docker_auth'
+repository__docker_auth_tag: '1.3.1'
 repository__images:
   - '{{ repository__nginx_image }}:{{ repository__nginx_tag }}'
   - '{{ repository__registry_image }}:{{ repository__registry_tag }}'
+  - '{{ repository__docker_auth_image }}:{{ repository__docker_auth_tag }}'
 
 repository__kubelet_manifests: '/etc/kubernetes/manifests'

@@ -4,3 +4,5 @@ dependencies:
 - bootstrap-os
 - docker
 - kubernetes/node
+- role: repository/pki
+  tags: ['repository', 'pki']

@@ -1,4 +1,11 @@
 ---
+# Work-around https://github.com/ansible/ansible/issues/38149
+- name: Ensure password hashing works properly
+  assert:
+    that: ('test'|bcrypt_blowfish(ident='2y', seed=inventory_hostname)|length) > 0
+    msg: The Ansible 'password_hash' filter on your system is buggy, please upgrade.
+  tags: ['assert']
+
 - name: Create MetalK8s repository configuration directories
   file:
     path: '{{ item }}'
@@ -44,16 +51,22 @@
   with_items:
     - '{{ repository__data }}/registry'
 
-- name: Copy MetalK8s repository configuration files
-  copy:
-    dest: '{{ repository__config }}/{{ item }}'
-    mode: '0644'
-    owner: root
-    group: root
-    src: 'etc/metalk8s/repository/{{ item }}'
-  become: true
-  with_items:
-    - registry.yml
+- name: Retrieve existing Docker repository password
+  import_tasks: read-docker-password.yml
+
+- name: Generate Docker repository credentials
+  block:
+    - name: Generate random password
+      command: openssl rand -hex 16
+      changed_when: true
+      check_mode: no
+      register: openssl_rand
+    - name: Set new Docker repository credentials facts
+      set_fact:
+        repository__docker_creds_user: 'admin'
+        repository__docker_creds_password: '{{ openssl_rand.stdout }}'
+        repository__docker_login: true
+  when: repository__docker_login is not defined
 
 - name: Copy MetalK8s repository configuration templates
   template:
@@ -65,6 +78,8 @@
   become: true
   with_items:
     - nginx.conf
+    - registry.yml
+    - docker_auth.yml
 
 - name: Install module dependencies
   package:
@@ -89,6 +104,11 @@
     path: '{{ repository__config }}/registry.yml'
   register: stat_registry
 
+- name: Stat docker_auth configuration
+  stat:
+    path: '{{ repository__config }}/docker_auth.yml'
+  register: stat_docker_auth
+
 - name: Copy MetalK8s repository static Pod manifest
   template:
     dest: '{{ repository__kubelet_manifests }}/{{ item }}'
@@ -103,12 +123,20 @@
 - name: Wait for the repository to be up and running
   uri:
     url: '{{ item }}'
+    validate_certs: false
+    status_code: 200,401
   register: result
-  until: result.status == 200
   retries: 60
   delay: 1
+  until: result.status == 200 or result.status == 401
   when:
     - not ansible_check_mode
   with_items:
-    - 'http://{{ repository__address }}/'
-    - 'http://{{ repository__address }}/v2/'
+    - 'https://{{ repository__address }}/'
+    - 'https://{{ repository__address }}/v2/'
+    - 'https://{{ repository__address }}/auth'
+
+- name: Log in to Docker registry
+  command: docker login -u '{{ repository__docker_creds_user }}' -p '{{ repository__docker_creds_password }}'
+  become: true
+  when: repository__docker_login

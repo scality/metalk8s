@@ -1,0 +1,2 @@
+-r vendor/kubespray/requirements.txt
+passlib >= 1.7.1

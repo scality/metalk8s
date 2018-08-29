@@ -10,6 +10,7 @@ metadata:
   annotations:
     checksum/config-nginx: '{{ stat_nginx.stat.checksum }}'
     checksum/config-repository: '{{ stat_registry.stat.checksum }}'
+    checksum/config-docker-auth: '{{ stat_docker_auth.stat.checksum }}'
 spec:
   hostNetwork: true
   containers:
@@ -25,6 +26,9 @@ spec:
       - name: nginx-config
         mountPath: /etc/nginx/conf.d/default.conf
         readOnly: true
+      - name: pki
+        mountPath: /etc/metalk8s/repository/pki
+        readOnly: true
       - name: nginx-cache
         mountPath: /var/cache/nginx
       - name: nginx-run
@@ -38,10 +42,12 @@ spec:
       livenessProbe:
         httpGet:
           port: http
+          scheme: HTTPS
           path: /
       readinessProbe:
         httpGet:
           port: http
+          scheme: HTTPS
           path: /
     - name: registry
       image: '{{ repository__registry_image }}:{{ repository__registry_tag }}'
@@ -62,9 +68,41 @@ spec:
         readOnly: true
       - name: registry-data
         mountPath: /var/lib/registry
+      - name: pki
+        mountPath: /etc/metalk8s/repository/pki
+        readOnly: true
       ports:
       - name: http
         containerPort: 5000
+      livenessProbe:
+        httpGet:
+          host: '127.0.0.1'
+          port: http
+          path: /
+      readinessProbe:
+        httpGet:
+          host: '127.0.0.1'
+          port: http
+          path: /
+    - name: docker-auth
+      image: '{{ repository__docker_auth_image }}:{{ repository__docker_auth_tag }}'
+      args: ['-logtostderr', '/config.yml']
+      imagePullPolicy: Never
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          remove: ['ALL']
+        readOnlyRootFilesystem: true
+      volumeMounts:
+      - name: docker-auth-config
+        mountPath: /config.yml
+        readOnly: true
+      - name: pki
+        mountPath: /etc/metalk8s/repository/pki
+        readOnly: true
+      ports:
+      - name: http
+        containerPort: 5001
       livenessProbe:
         httpGet:
           host: '127.0.0.1'
@@ -96,4 +134,12 @@ spec:
     - name: registry-data
       hostPath:
         path: '{{ repository__data }}/registry'
+        type: Directory
+    - name: docker-auth-config
+      hostPath:
+        path: '{{ repository__config }}/docker_auth.yml'
+        type: File
+    - name: pki
+      hostPath:
+        path: '{{ repository__config }}/pki'
         type: Directory

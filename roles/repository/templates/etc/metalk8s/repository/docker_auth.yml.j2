@@ -1,0 +1,21 @@
+server:
+  addr: '127.0.0.1:5001'
+
+token:
+  issuer: 'MetalK8s Docker auth server'
+  expiration: 900
+  certificate: '/etc/metalk8s/repository/pki/server.crt'
+  key: '/etc/metalk8s/repository/pki/server.key'
+
+users:
+  "admin":
+    password: "{{ repository__docker_creds_password|bcrypt_blowfish(ident='2y', seed=inventory_hostname) }}"
+  "": {} # Allow anonymous access
+
+acl:
+  - match: {account: 'admin'}
+    actions: ['*']
+    comment: 'Admin full access'
+  - match: {account: ''}
+    actions: ['pull']
+    comment: 'Anonymous read-only access'

@@ -1,0 +1,83 @@
+- name: Create PKI directory
+  file:
+    path: '{{ item }}'
+    mode: '0755'
+    owner: root
+    group: root
+    state: directory
+  become: true
+  with_items:
+    - '{{ repository__config }}/pki'
+
+- name: Install module dependencies
+  package:
+    name: '{{ item }}'
+    state: present
+  become: true
+  with_items:
+    - openssl
+    - pyOpenSSL
+
+- name: Generate CA private key
+  openssl_privatekey:
+    path: '{{ repository__config }}/pki/ca.key'
+  become: true
+
+- name: Generate CA certificate
+  command: >
+    openssl req
+        -new
+        -x509
+        -days 3650
+        -key '{{ repository__config }}/pki/ca.key'
+        -subj '/CN=MetalK8s Root CA'
+        -out '{{ repository__config }}/pki/ca.crt'
+  args:
+    creates: '{{ repository__config }}/pki/ca.crt'
+  become: true
+
+- name: Generate server private key and CSR
+  command: >
+    openssl req
+        -newkey rsa:4096
+        -keyout '{{ repository__config }}/pki/server.key'
+        -nodes
+        -subj '/CN={{ ansible_hostname }}'
+        -out '{{ repository__config }}/pki/server.csr'
+  args:
+    creates: '{{ repository__config }}/pki/server.csr'
+  become: true
+
+- name: Generate OpenSSL extensions file
+  copy:
+    dest: '{{ repository__config }}/pki/san.cfg'
+    mode: '0644'
+    owner: root
+    group: root
+    content: 'subjectAltName=IP:{{ repository__ip }}'
+  become: true
+
+- name: Generate server certificate
+  command: >
+    openssl x509
+        -req
+        -extfile '{{ repository__config }}/pki/san.cfg'
+        -days 3650
+        -in '{{ repository__config }}/pki/server.csr'
+        -CA '{{ repository__config }}/pki/ca.crt'
+        -CAkey '{{ repository__config }}/pki/ca.key'
+        -CAcreateserial
+        -out '{{ repository__config }}/pki/server.crt'
+  args:
+    creates: '{{ repository__config }}/pki/server.crt'
+  become: true
+
+- name: Read CA certificate
+  command: >
+    cat '{{ repository__config }}/pki/ca.crt'
+  register: ca_crt
+  changed_when: false
+
+- name: Set CA certificate fact
+  set_fact:
+    repository__ca_certificate: '{{ ca_crt.stdout }}'

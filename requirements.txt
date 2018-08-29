@@ -4,8 +4,8 @@
 #
 #    tox -e pip-compile
 #
-ansible-modules-hashivault==3.9.6 \
-    --hash=sha256:14c9636931309cadabc62298f71758658bc2331cd16a81dce99d359f73e507af
+ansible-modules-hashivault==3.9.7 \
+    --hash=sha256:a2dc0450fb86ac3d463c168f4b9297f9071f1cc8b50c05405a623f38dbf0f207
 ansible==2.6.3 \
     --hash=sha256:1027f627e6d8a2d51f3a79abb01447716a78aa646e0c2f9860cfde273256a28c
 asn1crypto==0.24.0 \
@@ -48,9 +48,9 @@ bcrypt==3.1.4 \
     --hash=sha256:f7fd3ed3745fe6e81e28dc3b3d76cce31525a91f32a387e1febd6b982caf8cdb \
     --hash=sha256:f9210820ee4818d84658ed7df16a7f30c9fba7d8b139959950acef91745cc0f7 \
     # via paramiko
-certifi==2018.8.13 \
-    --hash=sha256:4c1d68a1408dd090d2f3a869aa94c3947cc1d967821d1ed303208c9f41f0f2f4 \
-    --hash=sha256:b6e8b28b2b7e771a41ecdd12d4d43262ecab52adebbafa42c77d6b57fb6ad3a4 \
+certifi==2018.8.24 \
+    --hash=sha256:376690d6f16d32f9d1fe8932551d80b23e9d393a8578c5633a2ed39a64861638 \
+    --hash=sha256:456048c7e371c089d0a77a5212fb37a2c2dce1e24146e3b7e0261736aaeaa22a \
     # via requests
 cffi==1.11.5 \
     --hash=sha256:151b7eefd035c56b2b2e1eb9963c90c6302dc15fbd8c1c0a83a163ff2c7d7743 \
@@ -141,6 +141,9 @@ paramiko==2.4.1 \
     --hash=sha256:24fb31c947de85fbdeca09e222d41206781581fb0bdf118d2ef18f6e414cd388 \
     --hash=sha256:33e36775a6c71790ba7692a73f948b329cf9295a72b0102144b031114bd2a4f3 \
     # via ansible
+passlib==1.7.1 \
+    --hash=sha256:3d948f64138c25633613f303bcc471126eae67c04d5e3f6b7b8ce6242f8653e0 \
+    --hash=sha256:43526aea08fa32c6b6dbbbe9963c4c767285b78147b7437597f992812f69d280
 pbr==4.2.0 \
     --hash=sha256:1b8be50d938c9bb75d0eaf7eda111eec1bf6dc88a62a6412e33bf077457e0f45 \
     --hash=sha256:b486975c0cafb6beeb50ca0e17ba047647f229087bd74e37f4a7e2cac17d2caa

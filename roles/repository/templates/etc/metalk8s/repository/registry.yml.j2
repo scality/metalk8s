@@ -18,3 +18,10 @@ health:
     enabled: true
     interval: 10s
     threshold: 3
+
+auth:
+  token:
+    realm: 'https://{{ repository__address }}/auth'
+    service: 'Docker registry'
+    issuer: 'MetalK8s Docker auth server'
+    rootcertbundle: '/etc/metalk8s/repository/pki/server.crt'
