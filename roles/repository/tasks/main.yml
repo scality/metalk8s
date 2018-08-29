@@ -136,6 +136,27 @@
     - 'https://{{ repository__address }}/v2/'
     - 'https://{{ repository__address }}/auth'
 
+- name: Create Docker CA certificate configuration directory
+  file:
+    path: '{{ item }}'
+    mode: '0755'
+    owner: root
+    group: root
+    state: directory
+  become: true
+  with_items:
+    - '/etc/docker/certs.d'
+    - '/etc/docker/certs.d/{{ repository__address }}'
+
+- name: Copy CA certificate to Docker configuration directory
+  copy:
+    dest: '/etc/docker/certs.d/{{ repository__address }}/ca.crt'
+    mode: '0644'
+    owner: root
+    group: root
+    content: '{{ repository__ca_certificate }}'
+  become: true
+
 - name: Log in to Docker registry
   command: docker login -u '{{ repository__docker_creds_user }}' -p '{{ repository__docker_creds_password }}'
   become: true
