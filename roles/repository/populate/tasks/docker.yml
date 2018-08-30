@@ -1,0 +1,20 @@
+---
+- name: Pull all Docker images
+  docker_image:
+    name: '{{ item }}'
+  become: true
+  with_flattened:
+    - '{{ repository__kubespray_docker_images }}'
+    - '{{ repository__chart_docker_images }}'
+    - '{{ repository__extra_docker_images }}'
+
+- name: Tag and push all Docker images
+  docker_image:
+    name: '{{ item }}'
+    repository: '{{ repository__address }}/{{ item }}'
+    push: true
+  become: true
+  with_flattened:
+    - '{{ repository__kubespray_docker_images }}'
+    - '{{ repository__chart_docker_images }}'
+    - '{{ repository__extra_docker_images }}'

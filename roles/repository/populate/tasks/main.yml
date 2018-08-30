@@ -6,64 +6,11 @@
   become: true
   with_items: '{{ repository__role_dependencies }}'
 
-- name: Pull all Docker images
-  docker_image:
-    name: '{{ item }}'
-  become: true
-  with_flattened:
-    - '{{ repository__kubespray_docker_images }}'
-    - '{{ repository__chart_docker_images }}'
-    - '{{ repository__extra_docker_images }}'
+- name: Populate Docker registry
+  import_tasks: docker.yml
 
-- name: Tag and push all Docker images
-  docker_image:
-    name: '{{ item }}'
-    repository: '{{ repository__address }}/{{ item }}'
-    push: true
-  become: true
-  with_flattened:
-    - '{{ repository__kubespray_docker_images }}'
-    - '{{ repository__chart_docker_images }}'
-    - '{{ repository__extra_docker_images }}'
-
-- name: Create MetalK8s offline repository charts directory
-  file:
-    path: '{{ item }}'
-    mode: '0755'
-    owner: root
-    group: root
-    state: directory
-  become: true
-  with_items:
-    - '{{ repository__data }}/www-data/charts'
-
-- name: Fetch Helm charts
-  command: '{{ helm_bin_dir }}/helm fetch --repo {{ item.repo|quote }} --version {{ item.version|quote }} {{ item.name|quote }}'
-  args:
-    chdir: '{{ repository__data }}/www-data/charts'
-    creates: '{{ repository__data}}/www-data/charts/{{ item.name }}-{{ item.version }}.tgz'
-  become: true
-  with_flattened:
-    - '{{ repository__helm_charts }}'
-    - '{{ repository__extra_helm_charts }}'
-
-- name: Stat Helm repository charts directory
-  stat:
-    path: '{{ repository__data }}/www-data/charts'
-  register: stat_charts_dir
-
-- name: Stat Helm repository index
-  stat:
-    path: '{{ repository__data }}/www-data/charts/index.yaml'
-  register: stat_charts_index
-
-- name: Create Helm repository index
-  command: '{{ helm_bin_dir }}/helm repo index --url http://{{ repository__address }}/charts .'
-  args:
-    chdir: '{{ repository__data }}/www-data/charts'
-    # No `creates`! This would cause the index to not be updated
-  become: true
-  when: (not stat_charts_index.stat.exists) or (stat_charts_index.stat.mtime <= stat_charts_dir.stat.mtime)
+- name: Populate Helm chart repository
+  import_tasks: helm.yml
 
 - name: Populate RPM repository
   import_tasks: yum.yml
