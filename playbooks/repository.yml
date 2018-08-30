@@ -1,5 +1,6 @@
 ---
-- hosts: metalk8s-repository
+- name: Set up package repositories
+  hosts: metalk8s-repository
   tags:
   - repository
   roles:
