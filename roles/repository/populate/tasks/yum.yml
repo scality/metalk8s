@@ -7,17 +7,6 @@
     - yum-utils
     - createrepo
 
-- name: Copy repotrack configuration
-  copy:
-    dest: '{{ repository__config }}/{{ item }}'
-    owner: root
-    group: root
-    mode: '0644'
-    src: 'etc/metalk8s/repository/{{ item }}'
-  become: true
-  with_items:
-    - repotrack.conf
-
 - name: Create RPM repository directory
   file:
     path: '{{ repository__data }}/www-data/rpm'
@@ -27,13 +16,31 @@
     state: directory
   become: true
 
-- name: Sync packages
+- name: Generate list of '@base' packages
+  shell: >
+    repoquery -g --list --grouppkgs=all "base" | xargs repoquery --qf="%{name}.%{arch}"
+  changed_when: false
+  check_mode: false
+  register: repoquery_base
+  tags: ['role::repository::populate::yum::base']
+
+- name: Mirror '@base' packages
   command: >
     repotrack
-    -c '{{ repository__config }}/repotrack.conf'
+    -t
     -p '{{ repository__data }}/www-data/rpm'
-    -n
-    pyOpenSSL
+    {{ repoquery_base.stdout_lines|join(" ") }}
+  register: repotrack_base
+  become: true
+  changed_when: "'Downloading' in repotrack_base.stdout"
+  tags: ['role::repository::populate::yum::base']
+
+- name: Mirror packages
+  command: >
+    repotrack
+    -t
+    -p '{{ repository__data }}/www-data/rpm'
+    {{ (repository__yum_packages + repository__extra_yum_packages)|join(" ") }}
   register: repotrack
   become: true
   changed_when: "'Downloading' in repotrack.stdout"
@@ -42,4 +49,6 @@
   command: createrepo '{{ repository__data }}/www-data/rpm'
   become: true
   changed_when: true
-  when: repotrack is changed
+  when: >
+    (repotrack_base is defined and repotrack_base is changed) or
+    (repotrack is defined and repotrack is changed)

@@ -30,3 +30,8 @@ repository__helm_charts:
   repo: https://kubernetes-charts.storage.googleapis.com
 
 repository__extra_helm_charts: []
+
+repository__yum_packages:
+- pyOpenSSL.x86_64
+
+repository__extra_yum_packages: []
