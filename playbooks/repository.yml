@@ -5,6 +5,6 @@
   - repository
   roles:
     - role: repository
-      tags: ['repository']
+      tags: ['role::repository']
     - role: repository/populate
-      tags: ['repository', 'populate']
+      tags: ['role::repository::populate']

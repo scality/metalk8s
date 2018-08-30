@@ -5,4 +5,4 @@ dependencies:
 - docker
 - kubernetes/node
 - role: repository/pki
-  tags: ['repository', 'pki']
+  tags: ['role::repository::pki']

@@ -8,9 +8,12 @@
 
 - name: Populate Docker registry
   import_tasks: docker.yml
+  tags: ['role::repository::populate::docker']
 
 - name: Populate Helm chart repository
   import_tasks: helm.yml
+  tags: ['role::repository::populate::helm']
 
 - name: Populate RPM repository
   import_tasks: yum.yml
+  tags: ['role::repository::populate::yum']
