@@ -7,7 +7,7 @@
     - yum-utils
     - createrepo
 
-- name: Copy reposync configuration
+- name: Copy repotrack configuration
   copy:
     dest: '{{ repository__config }}/{{ item }}'
     owner: root
@@ -16,7 +16,7 @@
     src: 'etc/metalk8s/repository/{{ item }}'
   become: true
   with_items:
-    - reposync.conf
+    - repotrack.conf
 
 - name: Create RPM repository directory
   file:
@@ -29,16 +29,17 @@
 
 - name: Sync packages
   command: >
-    reposync
-    -c '{{ repository__config }}/reposync.conf'
+    repotrack
+    -c '{{ repository__config }}/repotrack.conf'
     -p '{{ repository__data }}/www-data/rpm'
     -n
-  register: reposync
+    pyOpenSSL
+  register: repotrack
   become: true
-  changed_when: reposync.stdout|length > 0
+  changed_when: "'Downloading' in repotrack.stdout"
 
 - name: Generate repository metadata
   command: createrepo '{{ repository__data }}/www-data/rpm'
   become: true
   changed_when: true
-  when: reposync.stdout|length > 0
+  when: repotrack is changed
