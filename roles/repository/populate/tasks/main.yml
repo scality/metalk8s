@@ -64,3 +64,6 @@
     # No `creates`! This would cause the index to not be updated
   become: true
   when: (not stat_charts_index.stat.exists) or (stat_charts_index.stat.mtime <= stat_charts_dir.stat.mtime)
+
+- name: Populate RPM repository
+  import_tasks: yum.yml

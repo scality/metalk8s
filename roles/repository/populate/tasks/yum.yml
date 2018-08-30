@@ -1,0 +1,44 @@
+- name: Install task dependencies
+  package:
+    name: '{{ item }}'
+    state: present
+  become: true
+  with_items:
+    - yum-utils
+    - createrepo
+
+- name: Copy reposync configuration
+  copy:
+    dest: '{{ repository__config }}/{{ item }}'
+    owner: root
+    group: root
+    mode: '0644'
+    src: 'etc/metalk8s/repository/{{ item }}'
+  become: true
+  with_items:
+    - reposync.conf
+
+- name: Create RPM repository directory
+  file:
+    path: '{{ repository__data }}/www-data/rpm'
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+  become: true
+
+- name: Sync packages
+  command: >
+    reposync
+    -c '{{ repository__config }}/reposync.conf'
+    -p '{{ repository__data }}/www-data/rpm'
+    -n
+  register: reposync
+  become: true
+  changed_when: reposync.stdout|length > 0
+
+- name: Generate repository metadata
+  command: createrepo '{{ repository__data }}/www-data/rpm'
+  become: true
+  changed_when: true
+  when: reposync.stdout|length > 0
