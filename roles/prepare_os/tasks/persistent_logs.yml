@@ -1,0 +1,24 @@
+- name: 'check existence of {{ persistent_logs_dir }}'
+  stat:
+    path: '{{ persistent_logs_dir }}'
+  register: persistent_logs_dir_test
+
+- name: 'create {{ persistent_logs_dir }} if required'
+  file:
+    path: '{{ persistent_logs_dir }}'
+    state: directory
+  when:
+    - not persistent_logs_dir_test.stat.isdir|default(False)
+    - persistent_logs|bool
+
+- name: 'fail if {{ persistent_logs_dir }} exists and persistent_logs disabled'
+  fail:
+    msg: >-
+      By default journald enables persistent logs if {{ persistent_logs_dir }}
+      is present. We see that {{ persistent_logs_dir }} is present, but that
+      you have disabled persistent_logs. As we are cautious with your logs,
+      MetalK8s will not attempt to fix this. Please move or remove the
+      directory manually.
+  when:
+   - persistent_logs_dir_test.stat.isdir|default(False)
+   - not persistent_logs|bool
