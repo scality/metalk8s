@@ -1,0 +1,53 @@
+---
+- name: Generate lists of group packages
+  command: >
+    repoquery
+      --repoid="{{ repository.repoid }}"
+      -g
+      --list
+      --grouppkgs=all
+      {{ repository.groups | join(" ") }}
+  changed_when: false
+  check_mode: false
+  register: repoquery_groups
+  when:
+    - repository.groups|default([])|length > 0
+
+- name: Generate list of all packages
+  command: >
+    repoquery
+      --repoid="{{ repository.repoid }}"
+      --nevra
+      {{ (repoquery_groups.stdout_lines|default([]) + (repository.packages|default([]))) | join(" ") }}
+  register: repoquery
+  changed_when: false
+  check_mode: false
+
+- name: Create repository directory
+  file:
+    path: '{{ repository__data }}/www-data/rpm/{{ repository.repoid }}'
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+  become: true
+
+- name: Mirror packages
+  command: >
+    repotrack
+      --repoid="{{ repository.repoid }}"
+      -t
+      -p '{{ repository__data }}/www-data/rpm/{{ repository.repoid }}'
+      {{ repoquery.stdout_lines|join(" ") }}
+  register: repotrack
+  become: true
+  changed_when: "'Downloading' in repotrack.stdout"
+  when: repoquery.stdout_lines
+
+- name: Generate repository metadata
+  command: createrepo '{{ repository__data }}/www-data/rpm/{{ repository.repoid }}'
+  become: true
+  changed_when: true
+  when:
+    - repotrack is defined
+    - repotrack is changed

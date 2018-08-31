@@ -31,7 +31,15 @@ repository__helm_charts:
 
 repository__extra_helm_charts: []
 
-repository__yum_packages:
-- pyOpenSSL.x86_64
+repository__yum_repositories:
+- repoid: base
+  groups:
+  - base
+  packages:
+  - pyOpenSSL
+- repoid: docker-ce
+  packages:
+  - docker-ce-17.03.2.ce
 
-repository__extra_yum_packages: []
+
+repository__extra_yum_repositories: []

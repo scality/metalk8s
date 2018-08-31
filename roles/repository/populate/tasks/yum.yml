@@ -16,39 +16,10 @@
     state: directory
   become: true
 
-- name: Generate list of '@base' packages
-  shell: >
-    repoquery -g --list --grouppkgs=all "base" | xargs repoquery --qf="%{name}.%{arch}"
-  changed_when: false
-  check_mode: false
-  register: repoquery_base
-  tags: ['role::repository::populate::yum::base']
-
-- name: Mirror '@base' packages
-  command: >
-    repotrack
-    -t
-    -p '{{ repository__data }}/www-data/rpm'
-    {{ repoquery_base.stdout_lines|join(" ") }}
-  register: repotrack_base
-  become: true
-  changed_when: "'Downloading' in repotrack_base.stdout"
-  tags: ['role::repository::populate::yum::base']
-
-- name: Mirror packages
-  command: >
-    repotrack
-    -t
-    -p '{{ repository__data }}/www-data/rpm'
-    {{ (repository__yum_packages + repository__extra_yum_packages)|join(" ") }}
-  register: repotrack
-  become: true
-  changed_when: "'Downloading' in repotrack.stdout"
-
-- name: Generate repository metadata
-  command: createrepo '{{ repository__data }}/www-data/rpm'
-  become: true
-  changed_when: true
-  when: >
-    (repotrack_base is defined and repotrack_base is changed) or
-    (repotrack is defined and repotrack is changed)
+- name: Mirror repositories
+  include_tasks: yum-repository.yml
+  vars:
+    repository: '{{ item }}'
+  with_flattened:
+    - '{{ repository__yum_repositories }}'
+    - '{{ repository__extra_yum_repositories }}'
