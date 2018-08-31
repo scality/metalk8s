@@ -1,0 +1,3 @@
+persistent_logs: True
+
+persistent_logs_dir: /var/log/journal
