@@ -5,3 +5,5 @@
   with_items:
     - ipvsadm
   when: ansible_os_family == 'RedHat'
+
+- import_tasks: persistent_logs.yml
