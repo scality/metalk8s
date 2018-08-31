@@ -51,3 +51,12 @@
   when:
     - repotrack is defined
     - repotrack is changed
+
+- name: Copy repository GPG key
+  copy:
+    dest: '{{ repository__data }}/www-data/rpm/{{ repository.gpgkey }}'
+    owner: root
+    group: root
+    mode: '0644'
+    src: '{{ repository.gpgkey }}'
+  become: true

@@ -150,13 +150,13 @@
     - '/etc/docker/certs.d'
     - '/etc/docker/certs.d/{{ repository__address }}'
 
-- name: Copy CA certificate to Docker configuration directory
-  copy:
+- name: Link CA certificate to Docker configuration directory
+  file:
+    src: '{{ repository__config }}/pki/ca.crt'
     dest: '/etc/docker/certs.d/{{ repository__address }}/ca.crt'
-    mode: '0644'
     owner: root
     group: root
-    content: '{{ repository__ca_certificate }}'
+    state: link
   become: true
 
 - name: Log in to Docker registry

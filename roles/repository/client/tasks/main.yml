@@ -19,15 +19,19 @@
 
 - name: Enable MetalK8s mirror yum repository
   yum_repository:
-    baseurl: 'https://{{ repository__address }}/rpm/{{ item }}'
-    description: 'MetalK8s mirror of {{ item }}'
+    baseurl: 'https://{{ repository__address }}/rpm/{{ item.name }}'
+    description: 'MetalK8s mirror of {{ item.description|default(item.name) }}'
     file: 'metalk8s-mirror'
-    name: 'metalk8s-mirror-{{ item }}'
+    name: 'metalk8s-mirror-{{ item.name }}'
+    gpgcheck: true
+    gpgkey: 'https://{{ repository__address }}/rpm/{{ item.gpgkey }}'
     sslcacert: '{{ repository__client__pki }}/ca.crt'
   become: true
   with_items:
-    - base
-    - docker-ce
+    - name: base
+      gpgkey: RPM-GPG-KEY-CentOS-7
+    - name: docker-ce
+      gpgkey: RPM-GPG-KEY-Docker-CE
   when: repository__client__enable_yum
 
 - name: Set up CA certificate for Docker

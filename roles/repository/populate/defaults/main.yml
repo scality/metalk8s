@@ -37,9 +37,11 @@ repository__yum_repositories:
   - base
   packages:
   - pyOpenSSL
+  gpgkey: RPM-GPG-KEY-CentOS-7
+
 - repoid: docker-ce
   packages:
   - docker-ce-17.03.2.ce
-
+  gpgkey: RPM-GPG-KEY-Docker-CE
 
 repository__extra_yum_repositories: []

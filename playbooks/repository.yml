@@ -1,15 +1,10 @@
 ---
-- name: Load repository environment
-  hosts: metalk8s-repository
-  tags: ['role::repository', 'role::repository::env']
-  roles:
-    - role: repository/env
-      tags: ['role::repository::env']
-
 - name: Set up package repositories
   hosts: metalk8s-repository
   tags: ['role::repository']
   roles:
+    - role: repository/env
+      tags: ['role::repository', 'role::repository::populate']
     - role: repository
       tags: ['role::repository']
     - role: repository/populate
@@ -17,10 +12,9 @@
 
 - name: Reload repository environment
   hosts: metalk8s-repository
-  tags: ['role::repository::env', 'role::repository::client']
+  tags: ['role::repository::client']
   roles:
     - role: repository/env
-      tags: ['role::repository::env']
 
 - name: Configure nodes to use package repositories
   hosts: k8s-cluster:etcd
