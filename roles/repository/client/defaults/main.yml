@@ -1,0 +1,5 @@
+---
+repository__client__enable_yum: true
+repository__client__enable_docker: true
+
+repository__client__pki: '{{ repository__config|default("/etc/metalk8s/repository") }}/pki'

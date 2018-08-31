@@ -1,8 +1,4 @@
 ---
-repository__ip: '{{ ansible_default_ipv4.address }}'
-repository__port: 1985
-
-repository__config: '/etc/metalk8s/repository'
 repository__data: '/var/lib/metalk8s/repository'
 
 repository__role_dependencies:

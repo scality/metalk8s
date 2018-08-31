@@ -1,0 +1,5 @@
+---
+repository__ip: '{{ ansible_default_ipv4.address }}'
+repository__port: 1985
+
+repository__config: '/etc/metalk8s/repository'

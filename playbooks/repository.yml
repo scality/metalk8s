@@ -1,10 +1,34 @@
 ---
+- name: Load repository environment
+  hosts: metalk8s-repository
+  tags: ['role::repository', 'role::repository::env']
+  roles:
+    - role: repository/env
+      tags: ['role::repository::env']
+
 - name: Set up package repositories
   hosts: metalk8s-repository
-  tags:
-  - repository
+  tags: ['role::repository']
   roles:
     - role: repository
       tags: ['role::repository']
     - role: repository/populate
       tags: ['role::repository::populate']
+
+- name: Reload repository environment
+  hosts: metalk8s-repository
+  tags: ['role::repository::env', 'role::repository::client']
+  roles:
+    - role: repository/env
+      tags: ['role::repository::env']
+
+- name: Configure nodes to use package repositories
+  hosts: k8s-cluster:etcd
+  gather_facts: false
+  tags: ['role::repository::client']
+  roles:
+    - role: repository/client
+      tags: ['role::repository::client']
+      vars:
+        repository__pki__ca_cert: '{{ hostvars[groups["metalk8s-repository"]|first].repository__pki__ca_cert }}'
+        repository__address: '{{ hostvars[groups["metalk8s-repository"]|first].repository__address }}'

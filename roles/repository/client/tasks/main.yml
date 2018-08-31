@@ -1,0 +1,57 @@
+---
+- name: Create MetalK8s CA certificate directory
+  file:
+    path: '{{ repository__client__pki}}'
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+  become: true
+
+- name: Create MetalK8s CA certificate
+  copy:
+    dest: '{{ repository__client__pki }}/ca.crt'
+    owner: root
+    group: root
+    mode: '0644'
+    content: '{{ repository__pki__ca_cert }}'
+  become: true
+
+- name: Enable MetalK8s mirror yum repository
+  yum_repository:
+    baseurl: 'https://{{ repository__address }}/rpm/{{ item }}'
+    description: 'MetalK8s mirror of {{ item }}'
+    file: 'metalk8s-mirror'
+    name: 'metalk8s-mirror-{{ item }}'
+    sslcacert: '{{ repository__client__pki }}/ca.crt'
+  become: true
+  with_items:
+    - base
+    - docker-ce
+  when: repository__client__enable_yum
+
+- name: Set up CA certificate for Docker
+  block:
+    - name: Create Docker configuration directories
+      file:
+        path: '{{ item.path }}'
+        owner: root
+        group: root
+        mode: '{{ item.mode|default("0755") }}'
+        state: directory
+      become: true
+      with_items:
+        - path: /etc/docker
+          mode: '0700'
+        - path: /etc/docker/certs.d
+        - path: '/etc/docker/certs.d/{{ repository__address }}'
+
+    - name: Create Docker CA symlink
+      file:
+        src: '{{ repository__client__pki }}/ca.crt'
+        dest: '/etc/docker/certs.d/{{ repository__address }}/ca.crt'
+        owner: root
+        group: root
+        state: link
+      become: true
+  when: repository__client__enable_docker

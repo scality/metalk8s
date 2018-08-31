@@ -1,0 +1,16 @@
+---
+- name: Set facts
+  set_fact:
+    repository__address: '{{ repository__address }}'
+
+- name: Retrieve PKI CA certificate
+  slurp:
+    path: '{{ repository__config }}/pki/ca.crt'
+  register: repository__ca_cert
+  ignore_errors: true
+
+- name: Set CA certificate fact
+  set_fact:
+    repository__pki__ca_cert: '{{ repository__ca_cert.content|b64decode }}'
+  when:
+    - not repository__ca_cert is failed
