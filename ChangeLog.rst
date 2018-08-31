@@ -25,6 +25,8 @@ Features added
 
 :ghpull:`274` - add support for python3.7
 
+:ghull:`` - ensure that journald logs are persisted across reboot (:ghissue:`303`)
+
 Bugs fixed
 ----------
 :ghissue:`237` - increase timeout of `prometheus-operator` deployment
