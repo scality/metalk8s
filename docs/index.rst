@@ -46,11 +46,16 @@ Getting started
 ---------------
 See our :doc:`usage/quickstart` to deploy a cluster.
 
+Advanced Configuration
+----------------------
+Then give a look at :doc:`usage/advanced_configuration`
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    usage/quickstart
+   usage/advanced_configuration
    architecture/index
 
    faq

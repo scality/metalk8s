@@ -21,6 +21,7 @@ CLUSTER_RESOURCES = {
     'persistent_volume': 'CoreV1Api'
 }
 
+
 def run_make_shell(args=None, tmpdir=None, **kwargs):
     make_args = []
     if tmpdir:
@@ -37,12 +38,20 @@ def run_make_shell(args=None, tmpdir=None, **kwargs):
     return make_process
 
 
-def run_ansible_playbook(playbook, env=None, tmpdir=None):
+def run_ansible_playbook(playbook, env=None, tags=None, skip_tags=None,
+                         external_vars=None, tmpdir=None):
     env_vars = dict(os.environ)
     env_vars.setdefault('ANSIBLE_FORCE_COLOR', "true")
     if env:
         env_vars.update(env)
     command = "ansible-playbook playbooks/{}".format(playbook)
+    if external_vars:
+        for key, value in external_vars.items():
+            command += ' -e {}={}'.format(key, value)
+    if tags:
+        command += ' -t {}'.format(tags)
+    if skip_tags:
+        command += ' --skip-tags {}'.format(skip_tags)
     return run_make_shell(args=command, env=env_vars, tmpdir=tmpdir)
 
 

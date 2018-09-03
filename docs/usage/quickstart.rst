@@ -238,6 +238,10 @@ tools are available:
 See :doc:`../architecture/cluster-services` for more information about these
 services and their configuration.
 
+If you want to configure the deployment of those services give a look at
+:doc:`advanced_configuration`
+
+
 .. _Kubernetes dashboard: https://github.com/kubernetes/dashboard
 .. _Grafana: https://grafana.com
 .. _Cerebro: https://github.com/lmenezes/cerebro
