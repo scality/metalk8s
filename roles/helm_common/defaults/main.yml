@@ -1,1 +1,4 @@
 bin_dir: /usr/local/bin
+
+helm_wait: False
+helm_state: latest
