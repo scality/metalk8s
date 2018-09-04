@@ -12,7 +12,7 @@ def pytestbdd_strict_gherkin():
 
 
 @scenario('features/installation.feature', 'Run install and re-install')
-def test_installation():
+def test_installation(inventory_tagging):
     pass
 
 
