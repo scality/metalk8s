@@ -2,7 +2,6 @@ import collections
 import logging
 import os
 import subprocess
-import time
 
 import yaml
 
@@ -15,6 +14,7 @@ from pytest_bdd import then
 from pytest_bdd import when
 
 from utils.helper import run_make_shell
+from utils.helper import retry
 
 
 @pytest.fixture
@@ -91,8 +91,8 @@ def lauch_test_storage_pod(kubeconfig):
 
 @then("The result of test storage pod should be 'success'")
 def storage_pod_test_result(kubeconfig):
-    count = 5
-    while count:
+    try_ = retry(5)
+    while next(try_):
         test_pv_process = run_make_shell(
             'kubectl get pods test-pv -o yaml',
             env={'KUBECONFIG': kubeconfig},
@@ -108,6 +108,4 @@ def storage_pod_test_result(kubeconfig):
             ))
         if test_pv_info['status']['phase'] in ['Succeeded', 'Failed']:
             break
-        count -= 1
-        time.sleep(1)
     assert test_pv_info['status']['phase'] == 'Succeeded'

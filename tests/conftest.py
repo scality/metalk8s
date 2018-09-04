@@ -43,6 +43,11 @@ def inventory_check(inventory):
     return inventory
 
 
+@given('an installed platform')
+def complete_installation(inventory):
+    pass
+
+
 @when(parsers.parse("I launch ansible with the '{playbook}' playbook"))
 def ansible_playbook_step(request, inventory, playbook):
     ansible_process = run_ansible_playbook(playbook)
