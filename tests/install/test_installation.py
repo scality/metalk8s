@@ -17,10 +17,6 @@ def test_installation():
     pass
 
 
-# All other scenarios will be discovered and bound
-scenarios('features')
-
-
 @when("I run 'make shell'")
 def make_shells_step():
     make_process = run_make_shell()
