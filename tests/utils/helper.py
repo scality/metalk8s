@@ -39,3 +39,14 @@ class Inventory(object):
 
     def __getattr__(self, key):
         return getattr(self._inventory, key)
+
+
+class RetryCountExceededError(StopIteration):
+    "Exception to finish retry"
+
+
+def retry(count, wait=2, msg=None):
+    for _ in range(count):
+        yield True
+        time.sleep(wait)
+    raise RetryCountExceededError(msg)

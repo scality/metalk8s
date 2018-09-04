@@ -36,8 +36,3 @@ def kubectl_proxy(request, run_services, watcher_getter, kubeconfig):
 @when("I run 'kubectl proxy' in a supported shell")
 def run_kubectl_proxy(kubectl_proxy):
     pass
-
-
-@given('A complete installation')
-def complete_installation(inventory):
-    pass
