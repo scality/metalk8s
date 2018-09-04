@@ -16,9 +16,9 @@ RUN apk --no-cache add \
         && \
     pip install tox
 
-COPY tox.ini .
-COPY docs/requirements.txt docs/
+COPY tox.ini docs/
+COPY requirements.txt docs/
 
-RUN tox --workdir /tmp/tox --notest -e docs
+RUN tox --workdir /tmp/tox --notest -c docs -e docs
 
 ENTRYPOINT ["tox", "--workdir", "/tmp/tox", "-e", "docs"]
