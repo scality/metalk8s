@@ -12,9 +12,12 @@ RUN mkdir docs
 RUN apk --no-cache add \
         enchant \
         make \
+        py-twisted \
         py2-pip \
         && \
-    pip install tox
+    pip install \
+        tox \
+        buildbot-worker==0.9.12
 
 COPY tox.ini .
 COPY docs/requirements.txt docs/
