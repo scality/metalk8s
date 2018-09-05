@@ -15,6 +15,7 @@ from pytest_bdd import when
 
 from utils.helper import run_make_shell
 from utils.helper import retry
+from utils.kube import get_kube_resources
 
 
 @pytest.fixture
@@ -26,27 +27,13 @@ scenarios('features/storage.feature')
 
 
 def get_kubernetes_pv(kubeconfig):
-    pv_list_process = run_make_shell(
-        'kubectl get pv --export -o yaml',
-        env={'KUBECONFIG': kubeconfig},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    kubectl_output = pv_list_process.stdout.read()
-    if pv_list_process.returncode == 0:
-        pv_list = yaml.load(kubectl_output)
-        return pv_list['items']
-    else:
-        logging.error("kubectl stdout: {}\n stderr: {}".format(
-            kubectl_output,
-            pv_list_process.stderr.read()
-        ))
+    return get_kube_resources(kubeconfig, 'PersistentVolume').items
 
 
 def count_pv(pv_list):
     pv_count = collections.Counter()
     for pv in pv_list:
-        pv_count[pv['status']['phase']] += 1
+        pv_count[pv.status.phase] += 1
     return pv_count
 
 
@@ -93,19 +80,7 @@ def lauch_test_storage_pod(kubeconfig):
 def storage_pod_test_result(kubeconfig):
     try_ = retry(5)
     while next(try_):
-        test_pv_process = run_make_shell(
-            'kubectl get pods test-pv -o yaml',
-            env={'KUBECONFIG': kubeconfig},
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        kubectl_output = test_pv_process.stdout.read()
-        test_pv_info = yaml.load(kubectl_output)
-        if test_pv_info is None:
-            logging.error("kubectl stdout: {}\n stderr: {}".format(
-                kubectl_output,
-                test_pv_process.stderr.read()
-            ))
-        if test_pv_info['status']['phase'] in ['Succeeded', 'Failed']:
+        test_pv = get_kube_resources(kubeconfig, 'pod', name='test-pv')
+        if test_pv.status.phase in ['Succeeded', 'Failed']:
             break
-    assert test_pv_info['status']['phase'] == 'Succeeded'
+    assert test_pv.status.phase == 'Succeeded'
