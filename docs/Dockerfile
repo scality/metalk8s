@@ -11,6 +11,7 @@ RUN mkdir docs
 
 RUN apk --no-cache add \
         enchant \
+        git \
         make \
         py-twisted \
         py2-pip \
