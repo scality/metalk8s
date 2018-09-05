@@ -10,7 +10,8 @@
     binary: '{{ bin_dir }}/helm'
     values:
     - "{{ lookup('file', role_path ~ '/files/nginx_ingress_values.yml') }}"
-    state: latest
+    wait: '{{ helm_wait|bool }}'
+    state: '{{ helm_state }}'
   register: nginx_helm_install
   run_once: True
 

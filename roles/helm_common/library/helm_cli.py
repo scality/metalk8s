@@ -16,6 +16,7 @@ class Helm(AnsibleModule):
                 release=dict(type='str', aliases=['name']),
                 namespace=dict(type='str'),
                 binary=dict(type='str'),
+                wait=dict(default=False, type='bool'),
                 state=dict(default='present',
                            choice=['latest', 'present', 'absent', 'purged']),
                 values=dict(type='list'),
@@ -76,6 +77,8 @@ class Helm(AnsibleModule):
         namespace = self.params.get('namespace')
         if namespace:
             cmd.extend(['--namespace', namespace])
+        if self.params.get('wait'):
+            cmd.extend(['--wait'])
         with self.write_values_files() as values_filenames:
             for value in values_filenames:
                 cmd.extend(['--values', value])

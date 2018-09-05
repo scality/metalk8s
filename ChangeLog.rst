@@ -10,6 +10,8 @@ Features added
 
 :ghpull:`280` - add an Ansible module to handle Helm chart installation (:ghissue:`190`)
 
+:ghpull:`309` - introduce variables to control helm behaviour. New 'wait' option
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
