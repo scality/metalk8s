@@ -8,7 +8,7 @@ Features added
 
 :ghpull:`274` - add support for python3.7
 
-:ghull:`305` - ensure that journald logs are persisted across reboot (:ghissue:`303`)
+:ghpull:`305` - ensure that journald logs are persisted across reboot (:ghissue:`303`)
 
 Bugs fixed
 ----------
