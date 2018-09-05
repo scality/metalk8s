@@ -3,3 +3,5 @@ dependencies:
 - role: repository
 - role: helm_install
   install_tiller: false
+- role: ../vendor/kubespray/roles/download
+  skip_downloads: true

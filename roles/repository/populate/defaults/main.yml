@@ -1,5 +1,11 @@
 ---
-repository__kubespray_docker_images: []
+repository__kubespray_docker_images:
+- 'gcr.io/google-containers/hyperkube:v1.10.4'
+- 'docker.io/coredns/coredns:1.1.2'
+- 'quay.io/calico/node:v2.6.8'
+- 'quay.io/calico/cni:v1.11.4'
+- 'quay.io/calico/ctl:v1.6.3'
+- 'gcr.io/google_containers/pause-amd64:3.0'
 
 repository__chart_docker_images:
 - 'fluent/fluent-bit:0.13.0'
@@ -42,6 +48,7 @@ repository__yum_repositories:
 - repoid: docker-ce
   packages:
   - docker-ce-17.03.2.ce
+  - docker-ce-selinux-17.03.2.ce
   gpgkey: RPM-GPG-KEY-Docker-CE
 
 repository__extra_yum_repositories: []
