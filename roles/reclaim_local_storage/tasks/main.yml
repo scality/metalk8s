@@ -65,3 +65,6 @@
   loop_control:
      label: "{{ item.metadata.name }}"
   with_items: '{{ released_pv.values()|list }}'
+  register: pv_recreation
+  until: pv_recreation is success
+  retries: 5
