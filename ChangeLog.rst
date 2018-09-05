@@ -73,6 +73,8 @@ deploy instead of falling back to the chart default (:ghpull:`197`)
 
 :ghissue:`220` - 'Kubernetes Calico (Alternative)' dashboard doesn't work (:ghpull:`221`)
 
+:ghissue:`321` - race condition in CI (:ghpull:`319`)
+
 Known issues
 ------------
 :ghissue:`179` - some Grafana dashboard charts are not displaying any metrics
