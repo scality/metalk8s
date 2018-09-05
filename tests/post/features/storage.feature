@@ -1,7 +1,7 @@
 Feature: Check that storage works correctly
 
    Scenario: Storage access and reclaim script
-   Given A complete installation
+   Given an installed platform
    Given Some PersistentVolume should be in 'Available' state
    When I launch test storage pod
    Then The result of test storage pod should be 'success'
