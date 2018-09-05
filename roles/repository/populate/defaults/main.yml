@@ -1,11 +1,14 @@
 ---
-repository__kubespray_docker_images:
-- 'gcr.io/google-containers/hyperkube:v1.10.4'
-- 'docker.io/coredns/coredns:1.1.2'
-- 'quay.io/calico/node:v2.6.8'
-- 'quay.io/calico/cni:v1.11.4'
-- 'quay.io/calico/ctl:v1.6.3'
-- 'gcr.io/google_containers/pause-amd64:3.0'
+# TODO This is super ugly
+repository__kubespray_docker_images: >-
+  {%- set containers = [] -%}
+  {%- for download in downloads.values() -%}
+    {%- set download2 = download_defaults | combine(download) -%}
+    {%- if download2.enabled and download2.container -%}
+      {%- set _ = containers.append(download2.repo + ":" + download2.tag|string) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {{ containers }}
 
 repository__chart_docker_images:
 - 'fluent/fluent-bit:0.13.0'

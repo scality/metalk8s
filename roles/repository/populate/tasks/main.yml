@@ -1,7 +1,4 @@
 ---
-- debug:
-    var: downloads
-
 - name: Install module dependencies
   package:
     name: '{{ item }}'
