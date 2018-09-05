@@ -15,6 +15,8 @@ Bugs fixed
 :ghissue:`237` - increase timeout of `prometheus-operator` deployment
 (:ghpull:`244`)
 
+:ghissue:`321` - retry until PV creation succeeds in `reclaim-storage` playbook (:ghpull:`319`)
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
@@ -55,6 +57,7 @@ dashboards (:ghpull:`188`)
 deploy instead of falling back to the chart default (:ghpull:`197`)
 
 :ghissue:`220` - 'Kubernetes Calico (Alternative)' dashboard doesn't work (:ghpull:`221`)
+
 
 Known issues
 ------------
