@@ -21,4 +21,6 @@ COPY requirements.txt docs/
 
 RUN tox --workdir /tmp/tox --notest -c docs -e docs
 
+RUN apk --no-cache add git py-twisted && pip install buildbot-worker==0.9.12
+
 ENTRYPOINT ["tox", "--workdir", "/tmp/tox", "-e", "docs"]
