@@ -6,7 +6,7 @@ Frequently Asked Questions
 Deployment failed at `install prometheus-operator`: what should I do?
 ---------------------------------------------------------------------
 On slow networks or overloaded systems, `prometheus-operator`_ installation
-can time out, causing the deployment to fail. If this happens, you must 
+can time out, causing the deployment to fail. If this happens, you must
 follow these steps before restarting the playbook.
 
 .. _prometheus-operator: https://github.com/coreos/prometheus-operator
