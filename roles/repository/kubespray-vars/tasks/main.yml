@@ -1,0 +1,5 @@
+---
+- name: Set repository for Docker images to local mirror
+  set_fact:
+    '{{ item }}': '{{ repository__address }}/{{ vars[item] }}'
+  with_items: '{{ repository__kubespray_vars__docker_repositories }}'

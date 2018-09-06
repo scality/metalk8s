@@ -1,0 +1,3 @@
+debug: false
+
+repository__address: '{{ hostvars[groups["metalk8s-repository"]|first].repository__address }}'

@@ -1,0 +1,4 @@
+dependencies:
+- role: repository/env
+- role: ../vendor/kubespray/roles/download
+  skip_downloads: true

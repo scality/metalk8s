@@ -1,8 +1,9 @@
 - hosts: k8s-cluster
   any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
-  gather_facts: False
   tags:
     - kubespray
   roles:
     - role: ../vendor/kubespray/roles/kubespray-defaults/
     - role: kubespray_var_patcher
+    - role: repository/kubespray-vars
+      tags: ['role::repository::kubespray-vars']

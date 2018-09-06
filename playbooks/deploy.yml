@@ -4,6 +4,9 @@
 - import_playbook: 'storage-pre.yml'
   tags: ['storage']
 
+- import_playbook: 'repository.yml'
+  tags: ['role::repository']
+
 - import_playbook: 'kubespray-pre.yml'
   tags: ['kubespray']
 
