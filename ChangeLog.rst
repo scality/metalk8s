@@ -31,6 +31,8 @@ Features added
 
 Bugs fixed
 ----------
+:ghissue:`50` - raise default `etcd` memory limits (:ghpull:`331`)
+
 :ghissue:`237` - increase timeout of `prometheus-operator` deployment
 (:ghpull:`244`)
 
