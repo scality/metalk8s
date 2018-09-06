@@ -6,3 +6,17 @@ docker_dns_servers_strict: False
 # running CentOS 7.4 or higher, with a kernel which contains all required
 # backports.
 docker_storage_options: -s overlay2 --storage-opt overlay2.override_kernel_check=true
+
+# Relax default memory limits for etcd processes.
+# The Kubespray default for this value is 0 (unlimited) when a system has
+# >= 4096MB of memory available, otherwise it's set to 512MB. Our recommended
+# memory sizing for etcd nodes is 4GB. However, even if a system has 4GB of
+# physical memory available, some kernels will report a slightly lower amount of
+# total memory available, hence the etcd process would be restricted to 512MB of
+# RAM (including kmem), and leave a large amount of memory allocated to this
+# role unused.
+# Instead of falling back to 512MB, let's assume that if an etcd node has less
+# than 4096MB RAM available it's a dedicated etcd node, and the process can use
+# up to 80% of the available memory.
+# See: https://github.com/scality/metalk8s/issues/50
+etcd_memory_limit: '{% if ansible_memtotal_mb < 4096 %}{{ (ansible_memtotal_mb * 0.80) | round(0, "floor") | int }}M{% else %}0{% endif %}'
