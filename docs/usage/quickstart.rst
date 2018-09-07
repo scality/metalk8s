@@ -59,6 +59,11 @@ listing all the hosts, aptly called :file:`hosts`:
 Make sure to change IP-addresses, usernames etc. according to your
 infrastructure.
 
+.. warning::
+
+   Using the remote `root` user to deploy MetalK8s is not supported, see
+   :ref:`ansible-user-root-detection`.
+
 In a second file, called :file:`kube-node.yml` in a :file:`group_vars`
 subdirectory of our inventory, we declare how to setup storage (in the
 default configuration) on hosts in the *kube-node* group, i.e. hosts on which

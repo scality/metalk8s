@@ -87,6 +87,28 @@ def check_no_old_storage_configuration(task_vars):
         )
 
 
+def check_ansible_user_is_not_root(task_vars):
+    '''Ensure `ansible_user` is not `root`
+
+    As part of the deployment, SSH login using the `root` user is disabled
+    (STIG rule V-2247). Since this could cause a system to be no longer
+    accessible, we make sure the `root` user is not used to deploy the system.
+
+    See:
+    https://www.stigviewer.com/stig/red_hat_enterprise_linux_7/2017-12-14/finding/V-72247
+    See: https://github.com/scality/metalk8s/issues/329
+    '''
+
+    for (host, hostvars) in sorted(task_vars['hostvars'].items()):
+        if hostvars.get('ansible_user', None) == 'root' and \
+                not hostvars.get('security_sshd_permit_root_login', False):
+            yield (
+                "Using 'root' as 'ansible_user' for host '{host}'. "
+                "This is not permitted.").format(
+                    host=host,
+            )
+
+
 class ActionModule(ActionBase):
     def run(self, tmp=None, task_vars=None):
         if task_vars is None:

@@ -10,6 +10,8 @@ Features added
 
 :ghpull:`305` - ensure that journald logs are persisted across reboot (:ghissue:`303`)
 
+:ghpull:`337` - assert `ansible_user` is not `root` (:ghissue:`329`)
+
 Bugs fixed
 ----------
 :ghissue:`50` - raise default `etcd` memory limits (:ghpull:`331`)
