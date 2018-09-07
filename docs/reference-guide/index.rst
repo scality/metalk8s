@@ -1,5 +1,5 @@
-Architecture
-============
+Reference Guide
+===============
 
 .. toctree::
    :maxdepth: 2
@@ -7,3 +7,4 @@ Architecture
 
    cluster-services
    storage
+   changes

@@ -1,3 +1,5 @@
+.. _storage-architecture:
+
 Storage Architecture
 ====================
 Storage provisioned by MetalK8s is currently backed by :term:`LVM Logical

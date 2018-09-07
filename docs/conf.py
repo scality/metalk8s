@@ -155,6 +155,12 @@ latex_elements = {
 latex_documents = [
     (master_doc, 'MetalK8s.tex', 'MetalK8s Documentation',
      'Scality', 'manual'),
+    ('installation-guide/index', 'InstallationGuide.tex',
+     'MetalK8s Installation Guide', 'Scality', 'manual'),
+    ('operations-guide/index', 'OperationsGuide.tex',
+     'MetalK8s Operations Guide', 'Scality', 'manual'),
+    ('reference-guide/index', 'ReferenceGuide.tex',
+     'MetalK8s Reference Guide', 'Scality', 'manual'),
 ]
 
 latex_logo = '../artwork/generated/metalk8s-logo-wide-black.pdf'

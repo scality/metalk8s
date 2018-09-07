@@ -5,8 +5,10 @@
    Todo
    usernames
 
-Quickstart Guide
-================
+.. _quickstart:
+
+Quickstart
+==========
 To quickly set up a testing cluster using MetalK8s_, you need 3 machines
 running CentOS_ 7.4 to which you have SSH access (these can be VMs). Each
 machine acting as a Kubernetes_ node (all of them, in this example) also
@@ -70,7 +72,7 @@ Pods will be scheduled:
 
 In the above, we assume every *kube-node* host has a disk available as
 :file:`/dev/vdb` which can be used to set up Kubernetes *PersistentVolumes*. For
-more information about storage, see :doc:`../architecture/storage`.
+more information about storage, see :ref:`storage-architecture`.
 
 .. _upgrade_from_MetalK8s_before_0.2.0:
 
@@ -235,7 +237,7 @@ tools are available:
 | `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   |
 +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
 
-See :doc:`../architecture/cluster-services` for more information about these
+See :ref:`cluster-services` for more information about these
 services and their configuration.
 
 .. _Kubernetes dashboard: https://github.com/kubernetes/dashboard

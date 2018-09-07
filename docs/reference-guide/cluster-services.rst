@@ -8,6 +8,8 @@
    kube
    Todo
 
+.. _cluster-services:
+
 Cluster Services
 ================
 A Kubernetes_ cluster deployed on the `Google Cloud Platform`_ using GKE_, on
