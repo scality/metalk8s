@@ -13,12 +13,14 @@ elasticsearch_version: '1.4.0'
 elasticsearch_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
 elasticsearch_namespace: 'kube-ops'
 elasticsearch_release_name: 'elasticsearch'
+elasticsearch_external_values: []
 
 elasticsearch_curator_chart: 'elasticsearch-curator'
 elasticsearch_curator_version: '0.3.0'
 elasticsearch_curator_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
 elasticsearch_curator_namespace: 'kube-ops'
 elasticsearch_curator_release_name: 'elasticsearch-curator'
+elasticsearch_curator_external_values: []
 
 fluentd_release_name: 'fluentd'
 fluentd_chart: 'fluentd'
@@ -49,6 +51,7 @@ elasticsearch_exporter_namespace: 'kube-ops'
 # Note: When changing this name, the `ServiceMonitor` manifest needs to be
 # updated as well
 elasticsearch_exporter_release_name: 'es-exporter'
+elasticsearch_exporter_external_values: []
 
 cerebro_repo: 'https://kubernetes-charts.storage.googleapis.com'
 cerebro_version: '0.3.0'
