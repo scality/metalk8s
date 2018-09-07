@@ -37,3 +37,12 @@ Note: that the relative path are relative to :file:`{{ inventory_dir }}`.
 
 As `nginx-ingress` is a list you can mix direct-based values,
 with lookup-based values.
+
+Services which support this way of configuration
+------------------------------------------------
+
+- Elasticsearch
+- Elasticsearch curator
+- Elasticsearch exporter
+- Nginx ingress
+
