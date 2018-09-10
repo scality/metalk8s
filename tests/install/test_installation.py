@@ -12,6 +12,7 @@ def pytestbdd_strict_gherkin():
     return False
 
 
+@pytest.mark.run(order=50)
 @scenario('features/installation.feature', 'Run install and re-install')
 def test_installation():
     pass

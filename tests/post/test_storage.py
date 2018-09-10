@@ -17,7 +17,6 @@ from utils.helper import run_make_shell
 from utils.helper import retry
 from utils.kube import get_kube_resources
 
-
 @pytest.fixture
 def pytestbdd_strict_gherkin():
     return False

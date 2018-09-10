@@ -1,0 +1,4 @@
+nginx_ingress_external_values:
+- controller:
+    podAnnotations:
+      metalk8s.io/test: 'true'

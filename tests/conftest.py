@@ -12,6 +12,7 @@ from pytest_bdd import when
 
 from utils.helper import run_ansible_playbook
 from utils.helper import run_make_shell
+from utils.kube import get_kube_resources
 
 
 @pytest.fixture(scope="session")
@@ -52,9 +53,19 @@ def complete_installation(inventory):
 
 
 @when(parsers.parse("I launch ansible with the '{playbook}' playbook"))
-def ansible_playbook_step(request, inventory, playbook):
+def ansible_playbook_step(request, playbook):
     ansible_process = run_ansible_playbook(playbook)
     request.ansible_process = ansible_process
+    return ansible_process
+
+
+@when(parsers.parse("I redeploy '{tag}'"))
+def redeploy_tag(request, tag):
+    ansible_process = run_ansible_playbook(
+        "deploy.yml",
+        skip_tags='always',
+        tags=tag)
+    assert ansible_process.returncode == 0
     return ansible_process
 
 
@@ -79,3 +90,10 @@ def run_kubectl_command(request, kubeconfig, kubectl_args):
         ))
     request.kubectl_result = kubectl_run
     return kubectl_run
+
+
+@when(parsers.parse(
+    "I look at {resource} '{name}' in '{namespace}' namespace"))
+def get_kube_object(request, kubeconfig, resource, name, namespace):
+    request.get_kube_object = lambda: get_kube_resources(
+        kubeconfig, resource, namespace, name)
