@@ -60,10 +60,11 @@ def then_quantity_storage_in_state(quantity, state, kubeconfig):
 
 @when('I clean the pvc')
 def clean_pvc(kubeconfig):
-    run_make_shell(
+    kube_clean_pv = run_make_shell(
         'kubectl delete pod test-pv; kubectl delete pvc testclaim',
         env={'KUBECONFIG': kubeconfig}
     )
+    assert kube_clean_pv.returncode == 0
 
 
 @when('I launch test storage pod')
