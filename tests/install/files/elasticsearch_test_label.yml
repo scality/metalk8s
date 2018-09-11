@@ -1,0 +1,12 @@
+elasticsearch_external_values:
+  - client:
+      podAnnotations:
+        metalk8s.io/test: 'true'
+
+elasticsearch_curator_external_values:
+  - cronjob:
+      annotations:
+        metalk8s.io/test: 'true'
+
+elasticsearch_exporter_external_values:
+  - replicaCount: 2

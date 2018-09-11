@@ -9,6 +9,7 @@ NAMESPACED_RESOURCES = {
     'job': 'BatchV1Api',
     'service': 'CoreV1Api',
     'pod': 'CoreV1Api',
+    'cron_job': 'BatchV1beta1Api',
 }
 CLUSTER_RESOURCES = {
     'persistent_volume': 'CoreV1Api'
