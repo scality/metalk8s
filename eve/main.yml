@@ -6,15 +6,15 @@ branches:
 
 stages:
   pre-merge:
-    worker: &pod
-      type: kube_pod
-      path: eve/workers/zenko.yaml
+    worker:
+      type: local
     steps:
     - TriggerStages:
-        name: Build docs
+        name: Docs and syntax checker
         haltOnFailure: true
         stage_names:
         - build-doc
+        - pep8
     - TriggerStages:
         name: trigger all the tests
         haltOnFailure: true
@@ -35,11 +35,6 @@ stages:
         method: clobber
         retryFetch: true
         haltOnFailure: true
-    - ShellCommand:
-        name: 'Check syntax'
-        haltOnFailure: true
-        command: |-
-          tox -e pep8
     - ShellCommand:
         name: 'Init node'
         haltOnFailure: true
@@ -75,3 +70,18 @@ stages:
     - ShellCommand:
         name: 'Build doc'
         command: tox --workdir /tmp/tox -e docs -- html latexpdf
+
+  pep8:
+    worker:
+      type: kube_pod
+      path: eve/workers/pep8.yaml
+      images:
+        pep8-checker:
+          context: '.'
+          dockerfile: eve/images/pep8-checker/Dockerfile
+    steps:
+    - Git: *git_pull
+    - ShellCommand:
+        name: 'Check syntax'
+        haltOnFailure: true
+        command: tox --workdir /var/tmp/tox -e pep8
