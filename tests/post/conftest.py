@@ -1,7 +1,6 @@
 import pytest
 import requests
 
-from pytest_bdd import given
 from pytest_bdd import when
 
 from utils.helper import Inventory

@@ -6,20 +6,6 @@ import time
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 
-from kubernetes import client as k8s_client
-from kubernetes import config as k8s_config
-
-
-NAMESPACED_RESOURCES = {
-    'daemon_set': 'AppsV1Api',
-    'deployment': 'AppsV1Api',
-    'stateful_set': 'AppsV1Api',
-    'job': 'BatchV1Api',
-    'service': 'CoreV1Api',
-}
-CLUSTER_RESOURCES = {
-    'persistent_volume': 'CoreV1Api'
-}
 
 def run_make_shell(args=None, tmpdir=None, **kwargs):
     make_args = []
