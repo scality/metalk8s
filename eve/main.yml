@@ -26,6 +26,7 @@ stages:
       type: openstack
       image: CentOS 7 (PVHVM)
       flavor: io1-30
+      path: eve/workers/centos7_tests
     steps:
     - Git: &git_pull
         name: git pull
@@ -34,6 +35,11 @@ stages:
         method: clobber
         retryFetch: true
         haltOnFailure: true
+    - ShellCommand:
+        name: 'Check syntax'
+        haltOnFailure: true
+        command: |-
+          tox -e pep8
     - ShellCommand:
         name: 'Init node'
         haltOnFailure: true
