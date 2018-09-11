@@ -4,6 +4,8 @@ Release 1.1.0 (in development)
 ==============================
 Features added
 --------------
+:ghpull:`346` - add Elasticsearch external values capability (:ghissue:`340`)
+
 :ghpull:`222` - update Elasticsearch and `node_exporter` dashboards
 
 :ghpull:`225` - Figure out the "fail fast" option of ansible (:ghissue:`129`)
