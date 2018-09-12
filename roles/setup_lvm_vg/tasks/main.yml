@@ -1,15 +1,3 @@
-- name: "LVM Setup: Check LVM packages"
-  package:
-    name: '{{ item }}'
-    state: present
-  register: lvm_just_installed
-  with_items:
-    - lvm2
-
-- name: "LVM Setup: re-compute facts now that lvm is installed"
-  setup:
-  when: lvm_just_installed is changed
-
 - name: "LVM Setup: Check that the default VG is in the list of managed VGs"
   tags:
     - assertion
@@ -38,14 +26,24 @@
     var: metalk8s_lvm_all_vgs
   when: debug|bool
 
-# drives|length > 0 means we create the VG
-# drives| length == 0 means the VG must exists
-# - not(item.value.drives|length == 0 and item.key not in ansible_lvm.vgs)
+- name: "LVM Setup: Check LVM packages"
+  package:
+    name: '{{ item }}'
+    state: present
+  register: lvm_just_installed
+  with_items:
+    - lvm2
 
-  # TODO: Check that device exists
-  # TODO: Check that device do not have any ansible_device_links if
-  # VG is to created
-  # TODO: Check that device of existing VG are the same if drives are specified
+- name: "LVM Setup: re-compute facts now that lvm is installed"
+  setup:
+  when: lvm_just_installed is changed
+
+- name: "LVM Setup: Check the storage configuration"
+  action: validate_storage
+  tags:
+    - assertion
+  become: False
+  run_once: True
 
 - name: "LVM Setup: Create the LVM Volume Groups"
   lvg:
