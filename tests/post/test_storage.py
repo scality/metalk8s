@@ -40,9 +40,13 @@ def count_pv(pv_list):
 def check_quantity_storage_in_state(quantity, state, kubeconfig):
     assert quantity in ['No', 'Some']
     nb = ['No', 'Some'].index(quantity)
-    pv_count = count_pv(get_kubernetes_pv(kubeconfig))
-    assert bool(nb) == bool(pv_count[state]), \
-        'PV count {} for {} in {}'.format(pv_count, quantity, state)
+    for _ in retry(5):
+        pv_count = count_pv(get_kubernetes_pv(kubeconfig))
+        if bool(nb) == bool(pv_count[state]):
+            break
+    else:
+        raise AssertionError("Could not meet '{}' '{}' pv in {}".format(
+            quantity, state, pv_count))
 
 
 state_storage_str = "{quantity} PersistentVolume should be in '{state}' state"
@@ -60,10 +64,12 @@ def then_quantity_storage_in_state(quantity, state, kubeconfig):
 
 @when('I clean the pvc')
 def clean_pvc(kubeconfig):
-    run_make_shell(
+    kube_clean_pv = run_make_shell(
         'kubectl delete pod test-pv; kubectl delete pvc testclaim',
         env={'KUBECONFIG': kubeconfig}
     )
+    kube_clean_pv.wait()
+    assert kube_clean_pv.returncode == 0
 
 
 @when('I launch test storage pod')
