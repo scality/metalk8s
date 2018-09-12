@@ -5,7 +5,7 @@
 
 FROM alpine:3.8
 
-RUN apk add --no-cache git python py2-pip py-twisted && \
+RUN apk add --no-cache git python python3 py2-pip py-twisted && \
     pip install tox && \
     pip install buildbot-worker
 
