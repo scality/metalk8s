@@ -2,7 +2,6 @@
 # Inspired by https://pytest-ordering.readthedocs.io/,
 # who is missing critical features and consist in ~50 lines of codes
 
-import functools
 import os
 import shutil
 
@@ -18,7 +17,6 @@ def pytest_configure(config):
         'in relation to one another'
     )
     config.addinivalue_line('markers', config_line)
-
 
 
 class Order(object):
@@ -44,25 +42,31 @@ class Order(object):
     True
     """
     __slots__ = ['order']
+
     def __init__(self, order):
         self.order = order
+
     def __lt__(self, other):
-        if self.order * other.order > 0: # Detect same sign
+        if self.order * other.order > 0:  # Detect same sign
             return self.order < other.order
         else:
             # Opposite sign or 0. Compute the opposite is
             # [-1, -2, -3, .., 0, .., 3, 2, 1]
             # Wich is ordered for opposite sign or null number.
             return -self.order < -other.order
+
     def __gt__(self, other):
         return other.__lt__(self)
+
     def __eq__(self, other):
         return self.order == other.order
+
     def __le__(self, other):
-        if self.order * other.order > 0: # Detect same sign
+        if self.order * other.order > 0:  # Detect same sign
             return self.order <= other.order
         else:  # Same as trick as __lt__
             return -self.order <= -other.order
+
     def __ge__(self, other):
         return other.__le__(self)
 
@@ -91,6 +95,7 @@ def add_to_group_vars(inventory, file_, group):
         os.path.join('./tests/install/files', file_),
         os.path.join(group_vars, file_)
     )
+
 
 @when(parsers.parse("I remove '{file_}' to '{group}' group_vars"))
 def remove_to_group_vars(inventory, file_, group):
