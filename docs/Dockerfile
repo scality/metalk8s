@@ -3,26 +3,35 @@
 # Note: the MetalK8s repository root is supposed to be mounted at
 # `/usr/src/metalk8s` when running the container
 
-FROM docker.io/alpine:3.8
+FROM docker.io/ubuntu:18.04
+
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
+    apt-get install --no-install-recommends -y \
+        enchant \
+        git \
+        latexmk \
+        make \
+        python2.7 \
+        python3-buildbot-worker \
+        texlive-fonts-extra \
+        texlive-fonts-recommended \
+        texlive-latex-extra \
+        texlive-latex-recommended \
+        tox \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/metalk8s
 
 RUN mkdir docs
 
-RUN apk --no-cache add \
-        enchant \
-        git \
-        make \
-        py-twisted \
-        py2-pip \
-        && \
-    pip install \
-        tox \
-        buildbot-worker==0.9.12
-
 COPY tox.ini .
 COPY docs/requirements.txt docs/
 
-RUN tox --workdir /tmp/tox --notest -e docs
+RUN tox --workdir /tmp/tox --notest -e docs && \
+    rm -rf ~/.cache/pip
 
-ENTRYPOINT ["tox", "--workdir", "/tmp/tox", "-e", "docs"]
+ENTRYPOINT ["tox", "--workdir", "/tmp/tox", "-e", "docs", "--"]
+CMD ["html"]

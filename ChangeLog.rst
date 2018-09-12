@@ -4,6 +4,9 @@ Release 1.0.1 (in development)
 ==============================
 Features added
 --------------
+:ghpull:`232` - Add more storage checks regarding the device presence and the
+partition existence on specificied drives (:ghissue:`231`)
+
 :ghpull:`240` - update Python `cryptography` package to 2.3
 
 :ghpull:`274` - add support for python3.7
