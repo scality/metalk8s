@@ -84,8 +84,7 @@ be lost. Please see the pull-request description for manual steps required after
 upgrading a MetalK8s 0.1 cluster to MetalK8s 0.2 (:ghissue:`147`)
 
 :ghpull:`94` - flatten the storage configuration and allow more user defined
-storage related actions. Please see :ref:`upgrade_from_MetalK8s_before_0.2.0`
-(:ghissue:`153`)
+storage related actions (:ghissue:`153`)
 
 
 Features added
