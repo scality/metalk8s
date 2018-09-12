@@ -7,7 +7,6 @@ from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 
 
-
 def run_make_shell(args=None, tmpdir=None, **kwargs):
     make_args = []
     if tmpdir:
