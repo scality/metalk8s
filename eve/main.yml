@@ -6,15 +6,15 @@ branches:
 
 stages:
   pre-merge:
-    worker: &pod
-      type: kube_pod
-      path: eve/workers/zenko.yaml
+    worker:
+      type: local
     steps:
     - TriggerStages:
-        name: Build docs
+        name: Docs and syntax checker
         haltOnFailure: true
         stage_names:
         - build-doc
+        - pep8
     - TriggerStages:
         name: trigger all the tests
         haltOnFailure: true
@@ -26,6 +26,7 @@ stages:
       type: openstack
       image: CentOS 7 (PVHVM)
       flavor: io1-30
+      path: eve/workers/centos7_tests
     steps:
     - Git: &git_pull
         name: git pull
@@ -69,3 +70,18 @@ stages:
     - ShellCommand:
         name: 'Build doc'
         command: tox --workdir /tmp/tox -e docs -- html latexpdf
+
+  pep8:
+    worker:
+      type: kube_pod
+      path: eve/workers/pep8.yaml
+      images:
+        pep8-checker:
+          context: '.'
+          dockerfile: eve/images/pep8-checker/Dockerfile
+    steps:
+    - Git: *git_pull
+    - ShellCommand:
+        name: 'Check syntax'
+        haltOnFailure: true
+        command: tox --workdir /tmp/tox -e pep8
