@@ -29,24 +29,23 @@ def _find_resource_name(resource):
 
 def get_kube_resources(kubeconfig, resource, namespace='default', name=None):
     k8s_config.load_kube_config(config_file=kubeconfig)
-    resource_name, api_name, namespaced_resource = _find_resource_name(resource)
+    res_name, api_name, namespaced_resource = _find_resource_name(resource)
     api = getattr(k8s_client, api_name)()
     if name is None:
         if namespace is None and namespaced_resource:
-            resources = getattr(
-                api, 'list_' + resource_name + '_all_namespaces')()
+            resources = getattr(api, 'list_' + res_name + '_all_namespaces')()
         elif namespace is not None and namespaced_resource:
-            resources = getattr(api, 'list_namespaced_' + resource_name)(
+            resources = getattr(api, 'list_namespaced_' + res_name)(
                 namespace=namespace)
         else:  # not namespaced_resource
-            resources = getattr(api, 'list_' + resource_name)()
+            resources = getattr(api, 'list_' + res_name)()
 
     else:
         if namespace is not None and namespaced_resource:
-            resources = getattr(api, 'read_namespaced_' + resource_name)(
+            resources = getattr(api, 'read_namespaced_' + res_name)(
                 namespace=namespace, name=name)
         elif not namespaced_resource:
-            resources = getattr(api, 'read_' + resource_name)(name=name)
+            resources = getattr(api, 'read_' + res_name)(name=name)
         else:
             raise ValueError('Cannot get a specific name, without namespace')
     return resources

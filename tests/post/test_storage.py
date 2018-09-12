@@ -1,9 +1,5 @@
 import collections
-import logging
 import os
-import subprocess
-
-import yaml
 
 import pytest
 
@@ -13,8 +9,8 @@ from pytest_bdd import scenarios
 from pytest_bdd import then
 from pytest_bdd import when
 
-from utils.helper import run_make_shell
 from utils.helper import retry
+from utils.helper import run_make_shell
 from utils.kube import get_kube_resources
 
 @pytest.fixture
