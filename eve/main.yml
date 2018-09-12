@@ -68,4 +68,5 @@ stages:
     - Git: *git_pull
     - ShellCommand:
         name: 'Build doc'
+        haltOnFailure: true
         command: tox --workdir /tmp/tox -e docs -- html latexpdf
