@@ -18,9 +18,9 @@ customer datacenters.
 .. _Scality: https://www.scality.com
 .. _Zenko: https://www.zenko.io
 
-It is based on the Kubespray_ project to reliably install a base Kubernetes
+It is based on the Kubespray_ project to reliably install a Kubernetes-based
 cluster, including all dependencies (like etcd_), using the Ansible_
-provisioning tool. This installation is further augmented with operational
+provisioning tool. This installation is also augmented with operational
 tools for monitoring and metering, including Prometheus_, Grafana_,
 ElasticSearch_ and Kibana_. Furthermore, an "ingress controller" is deployed
 by default, based on Nginx_. All of these are managed as Helm_ packages. See
@@ -36,7 +36,7 @@ by default, based on Nginx_. All of these are managed as Helm_ packages. See
 .. _Nginx: http://nginx.org
 .. _Helm: https://www.helm.sh
 
-Unlike hosted Kubernetes solutions, where network-attached storage is available
+Unlike hosted Kubernetes solutions, network-attached storage is available
 and managed by the provider, we assume no such system to be available in
 environments where MetalK8s is deployed. As such, we focus on managing
 node-local storage, and exposing these volumes to containers managed in the
@@ -48,7 +48,7 @@ See our :doc:`usage/quickstart` to deploy a cluster.
 
 Advanced Configuration
 ----------------------
-Then give a look at :doc:`usage/advanced_configuration`
+Then refer to :doc:`usage/advanced_configuration`.
 
 .. toctree::
    :maxdepth: 2
