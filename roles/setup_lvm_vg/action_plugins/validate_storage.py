@@ -159,8 +159,7 @@ def get_drive_attributes(device, ansible_devices, unused=False):
 
 
 def is_device_present(device, ansible_devices):
-    '''
-    Check that the device passed in parameters exists
+    '''Check that the device passed in parameters exists
 
     The device can be either a raw device or a partition but nothing else.
 
@@ -295,7 +294,7 @@ def verify_if_vg_defined_with_right_device(mk8s_vg, hostvars):
             # if not defined, skip, it will be created later
             # Careful because key is 'lvm' here, and not 'ansible_lvm'
             # as seen when executing "setup" ansible module
-            # TODO: be sure that ['ansible_lvm'] always exists
+            # TODO(benjamin.allot): be sure that ['ansible_lvm'] always exists
             if lvm_vg not in hostvars['ansible_lvm']['vgs']:
                 continue
         # if one of the previous key is missing, we're on a fresh install
@@ -327,7 +326,9 @@ def verify_if_vg_defined_with_right_device(mk8s_vg, hostvars):
 
 
 def check_devices_presence_and_usage(hostvars):
-    '''Check that the devices specified in metalk8S_lvm_drives_<vg name>
+    '''Check presence and usage of any disk defined in metalk8S_lvm_drives_*
+
+    Check that the devices specified in metalk8S_lvm_drives_<vg name>
     exists on the server and are free to be used for a LVM setup
 
     :param dict hostvars: The dictionary 'hostvars' from 'setup' ansible module
@@ -424,9 +425,7 @@ def check_devices_presence_and_usage(hostvars):
 
 
 class ActionModule(ActionBase):
-    '''
-    Check storage configuration against the current setup for MetalK8s
-    '''
+    '''Check storage configuration against the current setup for MetalK8s'''
 
     def run(self, tmp=None, task_vars=None):
         if task_vars is None:
