@@ -7,7 +7,7 @@
 
 Quickstart Guide
 ================
-To quickly set up a testing cluster using MetalK8s_, you need 3 machines
+To quickly set up a testing cluster using MetalK8s_, you need three machines
 running CentOS_ 7.4 to which you have SSH access (these can be VMs). Each
 machine acting as a Kubernetes_ node (all of them, in this example) also
 need to have at least one disk available to provision storage volumes.
@@ -27,9 +27,8 @@ configuration.
 
 .. _Ansible: https://www.ansible.com
 
-First, create a directory, e.g. :file:`inventory/quickstart-cluster`, in which
-the inventory will be stored. For our setup, we need to create two files. One
-listing all the hosts, aptly called :file:`hosts`:
+Create a directory to store the inventory, e.g. :file:`inventory/quickstart-cluster`.
+For our setup, we need to create two files. One listing all the hosts, aptly called :file:`hosts`:
 
 .. code-block:: ini
 
