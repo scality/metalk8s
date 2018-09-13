@@ -25,14 +25,16 @@ Release 1.0.1 (in development)
 ==============================
 Features added
 --------------
+:ghpull:`232` - Add more storage checks regarding the device presence and the
+partition existence on specificied drives (:ghissue:`231`)
+
 :ghpull:`240` - update Python `cryptography` package to 2.3
 
 :ghpull:`274` - add support for python3.7
 
 :ghpull:`305` - ensure that journald logs are persisted across reboot (:ghissue:`303`)
 
-:ghpull:`232` - Add more storage checks regarding the device presence and the
-partition existence on specificied drives (:ghissue:`231`)
+:ghpull:`337` - assert `ansible_user` is not `root` (:ghissue:`329`)
 
 Bugs fixed
 ----------
