@@ -6,6 +6,7 @@ from pytest_bdd import then
 
 from utils.helper import retry
 
+
 @pytest.fixture
 def pytestbdd_strict_gherkin():
     return False
@@ -23,8 +24,7 @@ def look_at_label(request):
     while next(try_):
         kube_object = request.get_kube_object()
         if kube_object.spec.template.metadata.annotations[
-                    'metalk8s.io/test'
-                ] == 'true':
+                'metalk8s.io/test'] == 'true':
             break
 
 
