@@ -49,3 +49,27 @@ There are two ways to configure Ansible to keep a logfile:
   :command:`ansible-playbook` will be invoked.
 
 For more information, see :ref:`ansible:DEFAULT_LOG_PATH`.
+
+
+.. _ansible-user-root-detection:
+
+Can I use the 'root' user to deploy MetalK8s to servers?
+--------------------------------------------------------
+During the deployment of MetalK8s, a set of tasks are executed to bring the
+target system in line with the `RHEL7 STIG`_ security guidelines, using the
+`ansible-hardening`_ role. STIG rule `V-72247`_ does not permit remote SSH
+access using the `root` user. As such, if MetalK8s were deployed using `root`
+to access a remote system, this would effectively disable access to said
+server.
+
+We integrated a check in the playbook to assert `ansible_user` is not set to
+`root` on any of the target hosts to abort the deployment if this
+configuration is detected.
+
+To disable this security measure, set the `security_sshd_permit_root_login`_
+variable to `true` on the relevant hosts or groups.
+
+.. _RHEL7 STIG: https://www.stigviewer.com/stig/red_hat_enterprise_linux_7/
+.. _ansible-hardening: https://docs.openstack.org/ansible-hardening/
+.. _V-72247: https://www.stigviewer.com/stig/red_hat_enterprise_linux_7/2017-12-14/finding/V-72247
+.. _security_sshd_permit_root_login: https://docs.openstack.org/ansible-hardening/latest/rhel7/domains/sshd.html#v-72247
