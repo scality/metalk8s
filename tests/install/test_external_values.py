@@ -26,8 +26,8 @@ def test_elasticsearch_external_values():
     pass
 
 
-@then(parsers.parse("I can see the test label"))
-def look_at_label(request):
+@then(parsers.parse("I can see the test annotation"))
+def look_at_annotation(request):
     try_ = retry(10, msg='Cannot meet the assertion')
     while next(try_):
         kube_object = request.get_kube_object()
@@ -49,8 +49,8 @@ def look_at_replicas_number(request, count):
             break
 
 
-@then(parsers.parse("I can't see the test label"))
-def look_at_label_absence(request):
+@then(parsers.parse("I can't see the test annotation"))
+def look_at_annotation_absence(request):
     try_ = retry(10, msg='Cannot meet the assertion')
     while next(try_):
         kube_object = request.get_kube_object()
