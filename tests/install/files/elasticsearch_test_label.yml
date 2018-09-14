@@ -1,4 +1,4 @@
-elasticsearch_external_values:
+test_elasticsearch_external_values:
   - client:
       podAnnotations:
         metalk8s.io/test: 'true'
