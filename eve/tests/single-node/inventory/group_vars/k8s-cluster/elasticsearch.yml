@@ -3,9 +3,11 @@ elasticsearch_external_values:
 - client:
     replicas: 1
   master:
-    replicas: 1
+    antiAffinity: "soft"
   data:
-    replicas: 1
+    antiAffinity: "soft"
+    persistence:
+      size: 4Gi
   cluster:
     env:
       MINIMUM_MASTER_NODES: 1
