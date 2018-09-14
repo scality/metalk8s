@@ -8,6 +8,7 @@ from utils.helper import retry
 
 from kubernetes.client import V1beta1CronJob
 
+
 @pytest.fixture
 def pytestbdd_strict_gherkin():
     return False
