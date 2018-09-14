@@ -16,4 +16,4 @@ custom_external_values:
 
 elasticsearch_external_values:
   - '{{ custom_external_values }}'
-  - '{{ test_elasticsearch_external_values }}'
+  - '{{ test_elasticsearch_external_values | default({})}}'
