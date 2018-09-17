@@ -1,0 +1,52 @@
+---
+- name: Ping nodes from deployment host
+  ping:
+
+- name: Ping nodes from deployment host, and 'become'
+  ping:
+  become: true
+
+- name: Assert remote SSH user is not 'root'
+  block:
+    - name: Assert 'ansible_become_method' is 'sudo'
+      assert:
+        that:
+          # Granted, can not detect 'wrong' setups
+          - 'ansible_become_method|default("sudo") == "sudo"'
+        msg: Using non-'sudo' 'ansible_become_method'
+    - name: Lookup '$USER'
+      shell: 'echo -n "$USER"'
+      register: env_user
+      changed_when: false
+    - name: Lookup 'become' '$USER'
+      shell: 'echo -n "$USER"'
+      become: true
+      register: env_become_user
+      changed_when: false
+    - name: Lookup '$SUDO_USER'
+      shell: 'echo -n "$SUDO_USER"'
+      become: true
+      register: env_sudo_user
+      changed_when: false
+    - name: Lookup '$SUDO_UID'
+      shell: 'echo -n "$SUDO_UID"'
+      become: true
+      register: env_sudo_uid
+      changed_when: false
+    - name: Ensure 'ansible_user' is not 'root'
+      assert:
+        that:
+          - 'env_user.stdout != ""'
+          - 'env_user.stdout != "root"'
+          - 'env_become_user.stdout == "root"'
+          - 'env_sudo_user.stdout != ""'
+          - 'env_sudo_user.stdout != "root"'
+          - 'env_sudo_uid.stdout != ""'
+          - 'env_sudo_uid.stdout != "0"'
+        msg: Using 'root' as SSH user. This is not permitted.
+
+- name: Check inter-node connectivity using 'ping'
+  command: 'ping -4 -n -W 5 -c 1 "{{ hostvars[item]["ansible_default_ipv4"]["address"] }}"'
+  changed_when: false
+  with_inventory_hostnames: '{{ node_access_checks__remote_groups }}'
+  tags: ['role::node-access-checks::ping']
