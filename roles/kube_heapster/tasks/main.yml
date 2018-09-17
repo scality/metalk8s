@@ -1,33 +1,20 @@
-- name: 'create tempfile for Heapster values'
-  tempfile:
-    state: file
-    suffix: yml
-  register: heapster_values_file
+---
+- name: install Heapster chart
+  helm_cli:
+    release: '{{ heapster_release_name }}'
+    chart:
+      name: heapster
+      version: '{{ heapster_version }}'
+      repo: '{{ heapster_repo }}'
+    namespace: '{{ heapster_namespace }}'
+    binary: '{{ bin_dir }}/helm'
+    values: >-
+      {{ [kube_heapster__default_values] + heapster_external_values }}
+    state: latest
+  register: heapster_helm_install
+  run_once: true
 
 - debug:
-    var: heapster_values_file.path
+    var: heapster_helm_install
+  run_once: true
   when: debug|bool
-
-- name: 'copy Heapster values into temporary file'
-  copy:
-    src: values.yml
-    dest: '{{ heapster_values_file.path }}'
-
-- name: 'install Heapster Chart'
-  command: >-
-    {{ bin_dir }}/helm upgrade
-    --install
-    --repo {{ heapster_repo }}
-    --version {{ heapster_version }}
-    --namespace {{ heapster_namespace }}
-    -f {{ heapster_values_file.path }}
-    {{ heapster_release_name }}
-    heapster
-  run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
-
-- name: 'remove temporary values file'
-  file:
-    dest: '{{ heapster_values_file.path }}'
-    state: absent
-  when: remove_metal_k8s_temporary_file|bool

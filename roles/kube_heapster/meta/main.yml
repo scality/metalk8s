@@ -1,2 +1,4 @@
+---
 dependencies:
-    - role: helm_common
+  - role: kubespray_module
+  - role: helm_common
