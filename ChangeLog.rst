@@ -14,6 +14,9 @@ Features added
 
 :ghpull:`291` - add external values for nginx_ingress
 
+:ghpull:`327` - support 'external values' in `kube_heapster` and
+`kube_metrics_server`
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
