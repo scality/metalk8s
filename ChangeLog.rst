@@ -15,6 +15,9 @@ partition existence on specificied drives (:ghissue:`231`)
 
 :ghpull:`337` - assert `ansible_user` is not `root` (:ghissue:`329`)
 
+:ghpull:`368` - add more `ansible_user` assertions and cross-node connectivity
+checks (:ghissue:`128`, :ghissue:`329`, :ghissue:`367`, :ghpull:`337`)
+
 Bugs fixed
 ----------
 :ghissue:`50` - raise default `etcd` memory limits (:ghpull:`331`)
