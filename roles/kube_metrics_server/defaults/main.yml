@@ -1,3 +1,4 @@
+---
 debug: false
 
 metrics_server_repo: 'https://kubernetes-charts.storage.googleapis.com'
@@ -6,6 +7,6 @@ metrics_server_namespace: kube-system
 metrics_server_release_name: metrics-server
 metrics_server_chart: metrics-server
 
-kube_metrics_server_uninstall: false
+metrics_server_external_values: []
 
-remove_metal_k8s_temporary_file: true
+kube_metrics_server_uninstall: false

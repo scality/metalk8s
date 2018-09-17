@@ -1,3 +1,4 @@
+---
 - name: delete old metrics-server objects
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
@@ -29,35 +30,21 @@
   run_once: true
   when: kube_metrics_server_uninstall|bool
 
-- name: create tempfile for metrics-server values
-  tempfile:
-    state: file
-    suffix: .yml
-  register: kube_metrics_server_values_file
-
-- debug:
-    var: kube_metrics_server_values_file
-  when: debug|bool
-
-- name: copy metrics-servevr values into temporary file
-  copy:
-    src: values.yml
-    dest: '{{ kube_metrics_server_values_file.path }}'
-
 - name: install metrics-server chart
-  command: >-
-    {{ bin_dir }}/helm upgrade
-    --install
-    --repo {{ metrics_server_repo }}
-    --version {{ metrics_server_version }}
-    --namespace {{ metrics_server_namespace }}
-    -f {{ kube_metrics_server_values_file.path }}
-    {{ metrics_server_release_name }}
-    {{ metrics_server_chart }}
+  helm_cli:
+    release: '{{ metrics_server_release_name }}'
+    chart:
+      name: '{{ metrics_server_chart }}'
+      version: '{{ metrics_server_version }}'
+      repo: '{{ metrics_server_repo }}'
+    namespace: '{{ metrics_server_namespace }}'
+    binary: '{{ bin_dir }}/helm'
+    values: >-
+      {{ [kube_metrics_server__default_values] + metrics_server_external_values }}
+  register: metrics_server_helm_install
   run_once: true
 
-- name: remove tempfile for metrics-server values
-  file:
-    dest: '{{ kube_metrics_server_values_file.path }}'
-    state: absent
-  when: remove_metal_k8s_temporary_file|bool
+- debug:
+    var: metrics_server_helm_install
+  run_once: true
+  when: debug|bool
