@@ -1,3 +1,4 @@
+---
 - hosts: localhost
   gather_facts: False
   any_errors_fatal: True
@@ -6,10 +7,17 @@
   tags:
     - preflight-checks
 
-- hosts: k8s-cluster:etcd
-  gather_facts: False
-  tasks:
-    - ping:
+- name: Check node access
+  hosts: k8s-cluster:etcd
+  gather_facts: true
+  any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
+  roles:
+    - role: node-access-checks
+      vars:
+        node_access_checks__remote_groups:
+          - k8s-cluster
+          - etcd
+  tags: ['role::node-access-checks']
 
 - hosts: k8s-cluster:etcd
   roles:
