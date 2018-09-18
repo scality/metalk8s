@@ -17,20 +17,20 @@
 # $ docker run -ti -v $(pwd)/inventory:/inventory \
 #     -v $(readlink -f $SSH_AUTH_SOCK):/ssh-agent -e SSH_AUTH_SOCK=/ssh-agent \
 #     -e ANSIBLE_HOST_KEY_CHECKING=False \
-#     scality/metal-k8s
+#     zenko/metalk8s
 # ```
 #
 # Once in the environment, run
 #
 # ```
-# (metal-k8s) bash-4.4# ansible-playbook -b playbooks/deploy.yml
+# (metalk8s) bash-4.4# ansible-playbook -b playbooks/deploy.yml
 # ```
 #
 # and wait for the deployment to complete. Afterwards, run e.g. `kubectl get
 # nodes` to validate connectivity.
 
 FROM docker.io/alpine:3.7
-WORKDIR /usr/src/metal-k8s
+WORKDIR /usr/src/metalk8s
 VOLUME /inventory
 
 ENV ANSIBLE_INVENTORY=/inventory

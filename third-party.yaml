@@ -42,7 +42,7 @@ modules:
     type: url
     base: https://grafana.com/api/dashboards
   # This one is tricky... See e.g.
-  # https://github.com/scality/metal-k8s/issues/81#issuecomment-406806510
+  # https://github.com/scality/metalk8s/issues/81#issuecomment-406806510
   license: Apache-2.0
 - path: vendor/zihaoyu/calico
   source:

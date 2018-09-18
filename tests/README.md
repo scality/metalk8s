@@ -2,7 +2,7 @@ There is multiple test-suites for MetalK8s:
 
 
 1. Installation test-suite: Test installation on process on an empty set of centos 7 servers.
-    After running this test-suite, metal-k8s is installed successfully.
+    After running this test-suite, MetalK8s is installed successfully.
 
 2. Post-install test-suite: On an instance of MetalK8s run test to check usability of the cluster.
 

@@ -14,7 +14,7 @@ need to have at least one disk available to provision storage volumes.
 
 .. todo:: Give some sizing examples
 
-.. _MetalK8s: https://github.com/scality/metal-k8s/
+.. _MetalK8s: https://github.com/scality/metalk8s/
 .. _CentOS: https://www.centos.org
 .. _Kubernetes: https://kubernetes.io
 
@@ -162,11 +162,11 @@ first run)::
     Downloading kubectl...
     Downloading Helm...
     Launching MetalK8s shell environment. Run 'exit' to quit.
-    (metal-k8s) $
+    (metalk8s) $
 
 Now we're all set to deploy a cluster::
 
-    (metal-k8s) $ ansible-playbook -i inventory/quickstart-cluster -b playbooks/deploy.yml
+    (metalk8s) $ ansible-playbook -i inventory/quickstart-cluster -b playbooks/deploy.yml
 
 Grab a coffee and wait for deployment to end.
 
@@ -178,12 +178,12 @@ export this location in the shell such that the :program:`kubectl` and
 :program:`helm` tools know how to contact the cluster *kube-master* nodes, and
 authenticate properly::
 
-    (metal-k8s) $ export KUBECONFIG=`pwd`/inventory/quickstart-cluster/artifacts/admin.conf
+    (metalk8s) $ export KUBECONFIG=`pwd`/inventory/quickstart-cluster/artifacts/admin.conf
 
 Now, assuming port *6443* on the first *kube-master* node is reachable from
 your system, we can e.g. list the nodes::
 
-    (metal-k8s) $ kubectl get nodes
+    (metalk8s) $ kubectl get nodes
     NAME        STATUS    ROLES            AGE       VERSION
     node-01     Ready     master,node      1m        v1.9.5+coreos.0
     node-02     Ready     master,node      1m        v1.9.5+coreos.0
@@ -191,7 +191,7 @@ your system, we can e.g. list the nodes::
 
 or list all pods::
 
-    (metal-k8s) $ kubectl get pods --all-namespaces
+    (metalk8s) $ kubectl get pods --all-namespaces
     NAMESPACE      NAME                                                   READY     STATUS      RESTARTS   AGE
     kube-ingress   nginx-ingress-controller-9d8jh                         1/1       Running     0          1m
     kube-ingress   nginx-ingress-controller-d7vvg                         1/1       Running     0          1m
@@ -208,7 +208,7 @@ or list all pods::
 
 Similarly, we can list all deployed Helm_ applications::
 
-    (metal-k8s) $ helm list
+    (metalk8s) $ helm list
     NAME                    REVISION        UPDATED                         STATUS          CHART                           NAMESPACE
     es-exporter             3               Wed Apr 25 23:10:13 2018        DEPLOYED        elasticsearch-exporter-0.1.2    kube-ops
     fluentd                 3               Wed Apr 25 23:09:59 2018        DEPLOYED        fluentd-elasticsearch-0.1.4     kube-ops
