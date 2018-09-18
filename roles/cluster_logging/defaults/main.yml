@@ -9,7 +9,7 @@ es_addon_dir: '{{ kube_config_dir }}/addons/elasticsearch'
 es_namespace: 'kube-ops'
 
 elasticsearch_chart: 'elasticsearch'
-elasticsearch_version: '1.4.0'
+elasticsearch_version: '1.7.2'
 elasticsearch_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
 elasticsearch_namespace: 'kube-ops'
 elasticsearch_release_name: 'elasticsearch'
