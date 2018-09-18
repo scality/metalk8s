@@ -5,6 +5,7 @@ vendor/kubespray/credentials/
 .kube/
 .shell-env/
 .tox/
+.pytest_cache/
 contrib/packer/packer_cache/
 contrib/packer/*.log
 docs/_build/

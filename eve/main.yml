@@ -20,6 +20,7 @@ stages:
         haltOnFailure: true
         stage_names:
         - single-node
+        - single-node-upgrade-1.0
 
   single-node:
     worker: &openstack
@@ -46,6 +47,32 @@ stages:
         usePTY: true
         command: |-
           tox -e tests -- install -s
+        env:
+          ANSIBLE_INVENTORY: eve/tests/single-node/inventory/hosts
+    - ShellCommand:
+        name: 'Run the post-install test suite'
+        haltOnFailure: true
+        usePTY: true
+        command: |-
+          tox -e tests -- post -s --run-services
+        env:
+          ANSIBLE_INVENTORY: eve/tests/single-node/inventory/hosts
+
+  single-node-upgrade-1.0:
+    worker: *openstack
+    steps:
+    - Git: *git_pull
+    - ShellCommand:
+        name: 'Init node'
+        haltOnFailure: true
+        command: |-
+          sudo bash eve/tests/single-node/init.sh
+    - ShellCommand:
+        name: 'Run the install test suite'
+        haltOnFailure: true
+        usePTY: true
+        command: |-
+          tox -e tests -- install -s -k upgrade
         env:
           ANSIBLE_INVENTORY: eve/tests/single-node/inventory/hosts
     - ShellCommand:

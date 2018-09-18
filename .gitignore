@@ -10,5 +10,6 @@ ansible.cfg
 /.tox/
 /.kube/
 /.shell-env/
+/.pytest_cache/
 
 ansible-playbook.log
