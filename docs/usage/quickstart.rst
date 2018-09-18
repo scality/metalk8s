@@ -5,33 +5,94 @@
    Todo
    usernames
 
+
 Quickstart Guide
 ================
-To quickly set up a testing cluster using MetalK8s_, you need 3 machines
-running CentOS_ 7.4 to which you have SSH access (these can be VMs). Each
-machine acting as a Kubernetes_ node (all of them, in this example) also
-need to have at least one disk available to provision storage volumes.
-
-.. todo:: Give some sizing examples
+This guide describes how to set up a MetalK8s_ cluster. It offers general
+requirements and describes sizing, configuration, and deployment. With respect
+to installation procedures, the only significant difference between a test
+cluster and a full production environment is the amount of resources required
+to implement the design.
 
 .. _MetalK8s: https://github.com/scality/metalk8s/
 .. _CentOS: https://www.centos.org
 .. _Kubernetes: https://kubernetes.io
 
-Defining an Inventory
----------------------
-To tell the Ansible_-based deployment system on which machines MetalK8s should
-be installed, a so-called *inventory* needs to be provided. This inventory
-contains a file listing all the hosts comprising the cluster, as well as some
-configuration.
+General Cluster Requirements
+----------------------------
+Setting up a MetalK8s cluster quickly requires at least three machines
+running CentOS_ 7.4 or higher (these can be VMs) to which you have SSH access.
+Each machine acting as a Kubernetes_ node (all three in the present example)
+must also have at least one disk available to provision storage volumes.
+
+Sizing
+^^^^^^
+
+Each node must satisfy the following sizing requirements.
+
+.. note::
+   The root file system requires at least 20 GB.
+
++-----------------+--------+--------+-------+
+|    Component    | etcd   | Master | Node  |
++=================+========+========+=======+
+| Cores           | 2      | 4      | 4     |
++-----------------+--------+--------+-------+
+| RAM             | 4 GB   | 8 GB   | 8 GB  |
++-----------------+--------+--------+-------+
+| Minimum         |        |        |       |
+| dedicated       |        |        |       |
+| storage capacity|        |        |       |
+| required        |    -   |    -   | 128 GB|
++-----------------+--------+--------+-------+
+
+Proxies
+^^^^^^^
+For nodes operating behind a proxy, add the following lines to each cluster
+server's :file:`/etc/environment` file:
+
+.. code-block:: shell
+
+ http_proxy=http://user;pass@<HTTP proxy IP address>:<port>
+ https_proxy=http://user;pass@<HTTPS proxy IP address>:<port>
+ no_proxy=localhost,127.0.0.1,10.*
+
+Download the MetalK8s Source
+----------------------------
+Go to the MetalK8s releases_ page and download the source code zip file
+for the release you wish to install.
+When the download is complete, unpack the zipped file.
+
+.. _releases: https://github.com/scality/metalk8s/releases
+
+Define an Inventory
+-------------------
+Each server must be configured in an inventory that identifies the servers to
+the Ansible_-based deployment system, as well as their basic configuration,
+including masters and nodes.
+
+The inventory is a directory that contains a :file:`hosts` file, which lists
+all hosts in the cluster, and a subdirectory (:file:`group_vars`) that contains
+:file:`kube-node.yml`, a configuration file.
 
 .. _Ansible: https://www.ansible.com
 
-First, create a directory, e.g. :file:`inventory/quickstart-cluster`, in which
-the inventory will be stored. For our setup, we need to create two files. One
-listing all the hosts, aptly called :file:`hosts`:
+To create an inventory:
 
-.. code-block:: ini
+1. Log in to the machine to which you downloaded the MetalK8s project.
+
+2. Create a directory (for example, :file:`inventory/quickstart-cluster`) in
+   which the inventory will be stored. Change to that directory.
+
+   .. code-block:: shell
+
+    $ cd metalk8s
+    $ mkdir -p inventory/quickstart-cluster
+    $ cd inventory/quickstart-cluster/
+
+3. Create the :file:`hosts` file, which lists all hosts.
+
+   .. code-block:: ini
 
     node-01 ansible_host=10.0.0.1 ansible_user=centos
     node-02 ansible_host=10.0.0.2 ansible_user=centos
@@ -56,105 +117,42 @@ listing all the hosts, aptly called :file:`hosts`:
     kube-node
     kube-master
 
-Make sure to change IP-addresses, usernames etc. according to your
-infrastructure.
+   Change the host names, IP addresses, and user names to conform to your
+   infrastructure. For example, if your servers are named "server1", "server2",
+   and "server3", copy the code block above and replace ALL instances of
+   "node-0" with "server".
 
-.. warning::
+  .. warning::
 
-   Using the remote `root` user to deploy MetalK8s is not supported, see
-   :ref:`ansible-user-root-detection`.
+     Using the remote `root` user to deploy MetalK8s is not supported, see
+     :ref:`ansible-user-root-detection`.
 
-In a second file, called :file:`kube-node.yml` in a :file:`group_vars`
-subdirectory of our inventory, we declare how to setup storage (in the
-default configuration) on hosts in the *kube-node* group, i.e. hosts on which
-Pods will be scheduled:
+4. Create a :file:`group_vars` subdirectory in the directory you created in
+   step 2 (the one that contains the :file:`hosts` file) and change to it.
 
-.. code-block:: yaml
+   .. code-block:: shell
+
+    $ mkdir group_vars ; cd group_vars
+
+5. In the :file:`group_vars` subdirectory, create a :file:`kube-node.yml` file.
+   This file declares how to set up hosts in the kube-node group; that is,
+   hosts on which pods shall be scheduled:
+
+   .. code-block:: yaml
 
     metalk8s_lvm_drives_vg_metalk8s: ['/dev/vdb']
 
-In the above, we assume every *kube-node* host has a disk available as
-:file:`/dev/vdb` which can be used to set up Kubernetes *PersistentVolumes*. For
-more information about storage, see :doc:`../architecture/storage`.
+   This example assumes every *kube-node* host has a disk available as
+   :file:`/dev/vdb` that can be used to set up Kubernetes *PersistentVolumes*.
+   For more information, see :ref:`storage-architecture`.
 
-.. _upgrade_from_MetalK8s_before_0.2.0:
-
-Upgrading from MetalK8s < 0.2.0
--------------------------------
-MetalK8s 0.2.0 introduced changes to persistent storage provisioning which are
-not backwards-compatible with MetalK8s 0.1. These changes include:
-
-- The default LVM VG was renamed from `kubevg` to `vg_metalk8s`.
-- Only *PersistentVolumes* required by MetalK8s services are created by
-  default.
-- Instead of using dictionaries to configure the storage, these are now
-  flattened.
-
-When a MetalK8s 0.1 configuration is detected, the playbook will report an
-error.
-
-Given an old configuration looking like this
-
-.. code-block:: yaml
-
-    metal_k8s_lvm:
-      vgs:
-        kubevg:
-          drives: ['/dev/vdb']
-
-the following values must be set in :file:`kube-node.yml` to maintain the
-pre-0.2 behaviour:
-
-- Disable deployment of 'default' volumes:
-
-  .. code-block:: yaml
-
-      metalk8s_lvm_default_vg: False
-
-- Register the `kubevg` VG to be managed:
-
-  .. code-block:: yaml
-
-      metalk8s_lvm_vgs: ['kubevg']
-
-- Use :file:`/dev/vdb` as a volume for the `kubevg` VG:
-
-  .. code-block:: yaml
-
-      metalk8s_lvm_drives_kubevg: ['/dev/vdb']
-
-  Note how the VG name is appended to the `metalk8s_lvm_drives_` prefix to
-  configure a VG-specific setting.
-
-- Create and register the default MetalK8s 0.1 LVs and *PersistentVolumes*:
-
-  .. code-block:: yaml
-
-      metalk8s_lvm_lvs_kubevg:
-        lv01:
-          size: 52G
-        lv02:
-          size: 52G
-        lv03:
-          size: 52G
-        lv04:
-          size: 11G
-        lv05:
-          size: 11G
-        lv06:
-          size: 11G
-        lv07:
-          size: 5G
-        lv08:
-          size: 5G
-
-Entering the MetalK8s Shell
----------------------------
-To easily install a supported version of Ansible and its dependencies, as well
-as some Kubernetes tools (:program:`kubectl` and :program:`helm`), we provide a
-:program:`make` target which installs these in a local environment. To enter
-this environment, run :command:`make shell` (this takes a couple of seconds on
-first run)::
+Enter the MetalK8s Virtual Environment Shell
+--------------------------------------------
+To install a supported version of Ansible and its dependencies, along with
+some Kubernetes tools (:program:`kubectl` and :program:`helm`), MetalK8s
+provides a :program:`make` target that installs these in a local environment.
+To enter this environment, run :command:`make shell` (this takes a few
+seconds when first run)::
 
     $ make shell
     Creating virtualenv...
@@ -164,24 +162,31 @@ first run)::
     Launching MetalK8s shell environment. Run 'exit' to quit.
     (metalk8s) $
 
-Now we're all set to deploy a cluster::
+Deploy the Cluster
+------------------
 
-    (metalk8s) $ ansible-playbook -i inventory/quickstart-cluster -b playbooks/deploy.yml
+Run the following command to deploy the cluster::
 
-Grab a coffee and wait for deployment to end.
+  (metalk8s) $ ansible-playbook -i inventory/quickstart-cluster/hosts -b playbooks/deploy.yml
 
-Inspecting the cluster
-----------------------
-Once deployment finished, a file containing credentials to access the cluster
-is created: :file:`inventory/quickstart-cluster/artifacts/admin.conf`. We can
-export this location in the shell such that the :program:`kubectl` and
-:program:`helm` tools know how to contact the cluster *kube-master* nodes, and
-authenticate properly::
+For a simple test deployment such as the present three-node cluster, this takes
+about a half hour. Actual deployment time will vary based on the size of the
+cluster and hardware and network performance.
+
+Inspect the Cluster
+-------------------
+Deployment creates a file containing credentials to access the cluster
+(:file:`inventory/quickstart-cluster/artifacts/admin.conf`). Remaining in the
+virtual environment shell, export this location to give :program:`kubectl` and
+:program:`helm` the correct credentials to contact the cluster’s *kube-master*
+nodes::
 
     (metalk8s) $ export KUBECONFIG=`pwd`/inventory/quickstart-cluster/artifacts/admin.conf
 
-Now, assuming port *6443* on the first *kube-master* node is reachable from
-your system, we can e.g. list the nodes::
+If your system can reach port 6443 on the master node
+referred to in ``admin.conf``, you can
+
+* List all nodes::
 
     (metalk8s) $ kubectl get nodes
     NAME        STATUS    ROLES            AGE       VERSION
@@ -189,24 +194,24 @@ your system, we can e.g. list the nodes::
     node-02     Ready     master,node      1m        v1.9.5+coreos.0
     node-03     Ready     master,node      1m        v1.9.5+coreos.0
 
-or list all pods::
+* List all pods::
 
     (metalk8s) $ kubectl get pods --all-namespaces
-    NAMESPACE      NAME                                                   READY     STATUS      RESTARTS   AGE
-    kube-ingress   nginx-ingress-controller-9d8jh                         1/1       Running     0          1m
-    kube-ingress   nginx-ingress-controller-d7vvg                         1/1       Running     0          1m
-    kube-ingress   nginx-ingress-controller-m8jpq                         1/1       Running     0          1m
-    kube-ingress   nginx-ingress-default-backend-6664bc64c9-xsws5         1/1       Running     0          1m
-    kube-ops       alertmanager-kube-prometheus-0                         2/2       Running     0          2m
-    kube-ops       alertmanager-kube-prometheus-1                         2/2       Running     0          2m
-    kube-ops       es-client-7cf569f5d8-2z974                             1/1       Running     0          2m
-    kube-ops       es-client-7cf569f5d8-qq4h2                             1/1       Running     0          2m
-    kube-ops       es-data-cd5446fff-pkmhn                                1/1       Running     0          2m
-    kube-ops       es-data-cd5446fff-zzd2h                                1/1       Running     0          2m
-    kube-ops       es-exporter-elasticsearch-exporter-7df5bcf58b-k9fdd    1/1       Running     3          1m
+    NAMESPACE     NAME                                                 READY  STATUS    RESTARTS  AGE
+    kube-ingress  nginx-ingress-controller-9d8jh                       1/1    Running   0         1m
+    kube-ingress  nginx-ingress-controller-d7vvg                       1/1    Running   0         1m
+    kube-ingress  nginx-ingress-controller-m8jpq                       1/1    Running   0         1m
+    kube-ingress  nginx-ingress-default-backend-6664bc64c9-xsws5       1/1    Running   0         1m
+    kube-ops      alertmanager-kube-prometheus-0                       2/2    Running   0         2m
+    kube-ops      alertmanager-kube-prometheus-1                       2/2    Running   0         2m
+    kube-ops      es-client-7cf569f5d8-2z974                           1/1    Running   0         2m
+    kube-ops      es-client-7cf569f5d8-qq4h2                           1/1    Running   0         2m
+    kube-ops      es-data-cd5446fff-pkmhn                              1/1    Running   0         2m
+    kube-ops      es-data-cd5446fff-zzd2h                              1/1    Running   0         2m
+    kube-ops      es-exporter-elasticsearch-exporter-7df5bcf58b-k9fdd  1/1    Running   3         1m
     ...
 
-Similarly, we can list all deployed Helm_ applications::
+* List all deployed Helm_ applications::
 
     (metalk8s) $ helm list
     NAME                    REVISION        UPDATED                         STATUS          CHART                           NAMESPACE
@@ -222,23 +227,31 @@ Similarly, we can list all deployed Helm_ applications::
 
 Cluster Services
 ----------------
-Various services to operate and monitor your MetalK8s cluster are provided. To
-access these, first create a secure tunnel into your cluster by running
-``kubectl proxy``. Then, while the tunnel is up and running, the following
-tools are available:
+Services to operate and monitor your MetalK8s cluster are provided. To
+access these dashboards:
 
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Service                 | Role                                                    | Link                                                                                            |
-+=========================+=========================================================+=================================================================================================+
-| `Kubernetes dashboard`_ | A general purpose, web-based UI for Kubernetes clusters | http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/ |
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| `Grafana`_              | Monitoring dashboards for cluster services              | http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/   |
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| `Cerebro`_              | An administration and monitoring console for            | http://localhost:8001/api/v1/namespaces/kube-ops/services/cerebro:http/proxy/                   |
-|                         | Elasticsearch clusters                                  |                                                                                                 |
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   |
-+-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+1. If you are accessing the cluster using a machine from which you didn't
+   install MetalK8s, copy the credentials in admin.conf and export its path
+   (see `Inspect the Cluster`_).
+
+2. Open port 6443 on your cluster’s master nodes for remote access to cluster
+   services.
+
+3. Inside a ``make shell`` environment, run ``kubectl proxy`` from your local machine.
+   This opens a tunnel to the Kubernetes cluster, which makes the following tools available:
+
+   +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+   | Service                 | Role                                                    | Link                                                                                            |
+   +=========================+=========================================================+=================================================================================================+
+   | `Kubernetes dashboard`_ | A general purpose, web-based UI for Kubernetes clusters | http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/ |
+   +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+   | `Grafana`_              | Monitoring dashboards for cluster services              | http://localhost:8001/api/v1/namespaces/kube-ops/services/kube-prometheus-grafana:http/proxy/   |
+   +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+   | `Cerebro`_              | An administration and monitoring console for            | http://localhost:8001/api/v1/namespaces/kube-ops/services/cerebro:http/proxy/                   |
+   |                         | Elasticsearch clusters                                  |                                                                                                 |
+   +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
+   | `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   |
+   +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
 
 See :doc:`../architecture/cluster-services` for more information about these
 services and their configuration.
