@@ -1,7 +1,7 @@
 ---
 debug: False
 
-heapster_version: '0.3.0'
+heapster_version: '0.3.1'
 # For kubernetes-dashboard to find Heapster, it needs to be installed in
 # `kube-system`.
 heapster_namespace: 'kube-system'
