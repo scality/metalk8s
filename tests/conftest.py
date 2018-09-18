@@ -42,6 +42,19 @@ def kubeconfig(inventory):
     return kubeconfig
 
 
+@pytest.fixture(scope="session")
+def inventory_usage():
+    return {}
+
+
+@pytest.fixture
+def inventory_tagging(inventory, inventory_usage):
+    if inventory_usage.get(inventory, False):
+        pytest.skip('Inventory has been already used for a scenario')
+    else:
+        inventory_usage[inventory] = True
+
+
 @given('A complete inventory')
 def inventory_check(inventory):
     return inventory
@@ -76,10 +89,12 @@ def ansible_no_error(request):
 
 @when(parsers.parse("I run 'kubectl {kubectl_args}' in a supported shell"))
 def run_kubectl_command(request, kubeconfig, kubectl_args):
+    env_vars = os.environ.copy()
+    env_vars.update({'KUBECONFIG': kubeconfig})
     kubectl_command = "kubectl {}".format(kubectl_args)
     kubectl_run = run_make_shell(
         kubectl_command,
-        env={'KUBECONFIG': kubeconfig},
+        env=env_vars,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )

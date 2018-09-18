@@ -1,12 +1,16 @@
-# Small pytest plugin to re-order test.
-# Inspired by https://pytest-ordering.readthedocs.io/,
-# who is missing critical features and consist in ~50 lines of codes
 
 import os
 import shutil
 
+import pytest
+
 from pytest_bdd import parsers
 from pytest_bdd import when
+
+
+# Small pytest plugin to re-order test.
+# Inspired by https://pytest-ordering.readthedocs.io/,
+# who is missing critical features and consist in ~50 lines of codes
 
 
 def pytest_configure(config):
@@ -102,3 +106,8 @@ def remove_to_group_vars(inventory, file_, group):
     base_dir = os.path.dirname(inventory)
     group_vars = os.path.join(base_dir, 'group_vars', group)
     os.remove(os.path.join(group_vars, file_))
+
+
+@pytest.fixture(scope="session")
+def archive_dir(tmpdir_factory):
+    return tmpdir_factory.mktemp("archive")
