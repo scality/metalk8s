@@ -41,6 +41,7 @@
     binary: '{{ bin_dir }}/helm'
     values: >-
       {{ [kube_metrics_server__default_values] + metrics_server_external_values }}
+    state: latest
   register: metrics_server_helm_install
   run_once: true
 
