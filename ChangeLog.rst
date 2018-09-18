@@ -169,7 +169,7 @@ This marks the first release of `MetalK8s`_.
    version 1.0.0 is available. When deploying a cluster using pre-1.0 versions
    of this package, you may need to redeploy later.
 
-.. _MetalK8s: https://github.com/Scality/metal-k8s
+.. _MetalK8s: https://github.com/Scality/metalk8s
 
 Incompatible changes
 --------------------

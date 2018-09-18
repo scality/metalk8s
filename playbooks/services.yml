@@ -1,4 +1,4 @@
-# https://github.com/scality/metal-k8s/issues/120
+# https://github.com/scality/metalk8s/issues/120
 - hosts: k8s-cluster:etcd
   tasks:
     - setup:

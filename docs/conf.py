@@ -204,7 +204,7 @@ googleanalytics_enabled = ON_RTD
 
 # -- Options for sphinxcontrib_github_alt ------------------------------------
 # See https://pypi.org/project/sphinxcontrib_github_alt/
-github_project_url = 'https://github.com/Scality/metal-k8s'
+github_project_url = 'https://github.com/Scality/metalk8s'
 
 # -- Options for sphinx.ext.intersphinx --------------------------------------
 # See http://www.sphinx-doc.org/en/stable/ext/intersphinx.html

@@ -1,5 +1,5 @@
 args:
 # Default:
 #- --source=kubernetes.summary_api:''
-# For https://github.com/scality/metal-k8s/issues/36:
+# For https://github.com/scality/metalk8s/issues/36:
 - "--source=kubernetes.summary_api:''?useServiceAccount=true&kubeletHttps=true&kubeletPort=10250&insecure=true"

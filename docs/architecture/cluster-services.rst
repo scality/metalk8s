@@ -27,7 +27,7 @@ In MetalK8s_, we augment a basic Kubernetes cluster deployed using the
 Kubespray_ playbook) with various tools to bring an on-premise cluster to the
 same level of operability.
 
-.. _MetalK8s: https://github.com/scality/metal-k8s/
+.. _MetalK8s: https://github.com/scality/metalk8s/
 .. _Kubespray: https://github.com/kubernetes-incubator/kubespray/
 
 Basic Cluster Addons
