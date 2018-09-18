@@ -1,39 +1,31 @@
-# elasticsearch-exporter
-- name: 'create tempfile for ElasticSearch Exporter values'
-  tempfile:
-    state: file
-    suffix: yml
-  register: es_exporter_values_file
+---
+
+- name: 'install Elasticsearch ServiceMonitor'
+  vars:
+    values_file: '{{ role_path }}/files/elasticsearch-exporter/values.yml'
+  helm_cli:
+    release: '{{ elasticsearch_exporter_release_name }}'
+    chart:
+      name: '{{ elasticsearch_exporter_chart }}'
+      version: '{{ elasticsearch_exporter_version }}'
+      repo: '{{ elasticsearch_exporter_repo }}'
+    namespace: '{{ elasticsearch_exporter_namespace }}'
+    binary: '{{ bin_dir }}/helm'
+    values: >-
+      {{ [
+        lookup('file', values_file) | from_yaml
+      ] + elasticsearch_exporter_external_values }}
+    wait: '{{ helm_wait | bool }}'
+    state: '{{ helm_state }}'
+  register: elasticsearch_exporter_helm_install
+  run_once: true
 
 - debug:
-    var: es_exporter_values_file.path
-  when: debug|bool
-
-- name: 'copy ElasticSearch Exporter values into temporary file'
-  copy:
-    src: elasticsearch-exporter/values.yml
-    dest: '{{ es_exporter_values_file.path }}'
-
-- name: 'install ElasticSearch Exporter Chart'
-  command: >-
-    {{ bin_dir }}/helm upgrade
-    --install
-    --repo {{ elasticsearch_exporter_repo }}
-    --version {{ elasticsearch_exporter_version }}
-    --namespace {{ elasticsearch_exporter_namespace }}
-    -f {{ es_exporter_values_file.path }}
-    {{ elasticsearch_exporter_release_name }}
-    {{ elasticsearch_exporter_chart }}
+    var: elasticsearch_exporter_helm_install
   run_once: true
-  delegate_to: "{{ groups['kube-master'][0] }}"
+  when: debug | bool
 
-- name: 'remove temporary ElasticSearch Exporter values file'
-  file:
-    dest: '{{ es_exporter_values_file.path }}'
-    state: absent
-  when: remove_metal_k8s_temporary_file|bool
-
-- name: 'Copy ElasticSearch Exporter ServiceMonitor file'
+- name: 'copy ElasticSearch Exporter ServiceMonitor file'
   copy:
     src: 'elasticsearch-exporter/servicemonitor.yml'
     dest: '{{ es_addon_dir }}/'
@@ -44,7 +36,7 @@
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
-- name: 'Deploy ElasticSearch Exporter ServiceMonitor'
+- name: 'deploy ElasticSearch Exporter ServiceMonitor'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
     filename: '{{ es_addon_dir }}/servicemonitor.yml'
