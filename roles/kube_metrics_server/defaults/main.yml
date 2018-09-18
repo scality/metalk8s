@@ -2,7 +2,7 @@
 debug: false
 
 metrics_server_repo: 'https://kubernetes-charts.storage.googleapis.com'
-metrics_server_version: 1.1.0
+metrics_server_version: '2.0.2'
 metrics_server_namespace: kube-system
 metrics_server_release_name: metrics-server
 metrics_server_chart: metrics-server

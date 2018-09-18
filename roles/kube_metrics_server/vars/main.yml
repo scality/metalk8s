@@ -2,6 +2,9 @@
 kube_metrics_server__default_values:
   args:
   # Default:
-  #- --source=kubernetes.summary_api:''
-  # For https://github.com/scality/metalk8s/issues/36:
-  - "--source=kubernetes.summary_api:''?useServiceAccount=true&kubeletHttps=true&kubeletPort=10250&insecure=true"
+  - --logtostderr
+  # MetalK8s-specific:
+  - --kubelet-insecure-tls
+  # Required to make sure node hostnames aren't resolved through DNS
+  # See https://github.com/kubernetes-incubator/metrics-server/issues/131
+  - --kubelet-preferred-address-types=InternalIP,Hostname,InternalDNS,ExternalDNS,ExternalIP
