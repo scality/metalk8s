@@ -7,6 +7,15 @@ fi
 
 # Only set up completion in interactive shells
 if [[ $- == *i* ]]; then
-    . <(kubectl completion bash)
-    . <(helm completion bash)
+    if type -t _get_comp_words_by_ref > /dev/null; then
+        . <(kubectl completion bash)
+        . <(helm completion bash)
+    else
+        cat 1>&2 << EOF
+
+Shell completion for 'kubectl' and 'helm' not available. Consider installing
+the 'bash-completion' package.
+
+EOF
+    fi
 fi
