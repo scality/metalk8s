@@ -10,8 +10,8 @@
 Welcome to the MetalK8s documentation!
 ======================================
 MetalK8s_ is an opinionated Kubernetes_ distribution with a focus on long-term
-on-prem deployments. See :doc:`introduction` to learn more about the project,
-or :doc:`usage/quickstart` to get started.
+on-prem deployments. See :doc:`installation-guide/introduction` to learn more
+about the project, or :doc:`installation-guide/quickstart` to get started.
 
 .. _MetalK8s: https://github.com/scality/metalk8s/
 .. _Kubernetes: https://kubernetes.io
@@ -20,15 +20,9 @@ or :doc:`usage/quickstart` to get started.
    :maxdepth: 2
    :caption: Contents:
 
-   introduction
-   usage/quickstart
-   architecture/index
-
-   faq
-
-   changes
-
-   glossary
+   installation-guide/index
+   operations-guide/index
+   reference-guide/index
 
 Indices and tables
 ==================
