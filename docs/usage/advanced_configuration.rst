@@ -44,5 +44,7 @@ Services which support this way of configuration
 - Elasticsearch
 - Elasticsearch curator
 - Elasticsearch exporter
+- Kube Heapster
+- Kube metrics server
 - Nginx ingress
 
