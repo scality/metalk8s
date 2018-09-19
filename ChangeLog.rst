@@ -53,6 +53,9 @@ Bugs fixed
 
 :ghissue:`321` - retry until PV creation succeeds in `reclaim-storage` playbook (:ghpull:`319`)
 
+:ghissue:`381` - warn when Bash completion is not available in `make shell`
+(:ghpull:`382`)
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
