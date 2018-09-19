@@ -19,6 +19,9 @@ Features added
 :ghpull:`327` - support 'external values' in `kube_heapster` and
 `kube_metrics_server`
 
+:ghpull:`373` - update third-party chart versions and use the `RollingUpdate`
+deployment strategy for Elasticsearch `data` and `master` daemons
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
