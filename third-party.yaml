@@ -5,12 +5,6 @@ modules:
     repository: https://github.com/kubernetes-incubator/kubespray.git
     ref: master
   license: Apache-2.0
-- path: vendor/bash_unit
-  source:
-    type: git-subtree
-    repository: https://github.com/pgrange/bash_unit.git
-    ref: v1.6.1
-  license: GPL-3.0-or-later
 - path: vendor/etcd
   source:
     type: url
