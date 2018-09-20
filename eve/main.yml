@@ -10,17 +10,23 @@ stages:
       type: local
     steps:
     - TriggerStages:
-        name: Docs and syntax checker
+        name: test multi vm
         haltOnFailure: true
         stage_names:
-        - build-doc
-        - pep8
-    - TriggerStages:
-        name: trigger all the tests
-        haltOnFailure: true
-        stage_names:
-        - single-node
-        - single-node-upgrade-1.0
+        - multivm
+
+    # - TriggerStages:
+    #     name: Docs and syntax checker
+    #     haltOnFailure: true
+    #     stage_names:
+    #     - build-doc
+    #     - pep8
+    # - TriggerStages:
+    #     name: trigger all the tests
+    #     haltOnFailure: true
+    #     stage_names:
+    #     - single-node
+    #     - single-node-upgrade-1.0
 
   single-node:
     worker: &openstack
@@ -113,3 +119,52 @@ stages:
         name: 'Check syntax'
         haltOnFailure: true
         command: tox --workdir /var/tmp/tox -e pep8
+
+
+  multivm:
+    worker:
+      type: multi_vm
+      image: CentOS 7 (PVHVM)
+      flavor: general1-4
+      path: eve/workers/centos7_tests
+    steps:
+    - Git: *git_pull
+    - ShellCommand:
+        name: 'Cloning Zenko-Private-Tools'
+        command: |-
+          git clone git@github.com:scality/Zenko-Private-Tools.git --branch fix_metalk8s_name
+    - ShellCommand:
+        name: 'Setup Secrets Scality.cloud token'
+        command: echo "%(secret:scality_cloud_token)s" > ~/.scality_cloud_token
+    - ShellCommand:
+        name: 'Setup ssh private key'
+        command: |-
+          mkdir ~/.ssh/
+          echo "%(secret:scality_cloud_ssh_private_key)s" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+    - ShellCommand:
+        name: Setup scality.cloud config
+        command: |-
+          cat << EOF > playbooks/group_vars/all/scality.cloud.yml
+            onelogin_username: '%(secret:scality_cloud_username)s'
+            tenant_name: '%(secret:scality_cloud_tenant_name)s'
+            region: 'NorthAmerica'
+            key_name: '%(secret:scality_cloud_key_name)s'
+            kube_version: v1.9.3
+          EOF
+        workdir: build/Zenko-Private-Tools
+    - ShellCommand:
+        name: Install Kune
+        command: |-
+          make kube AA="-e onelogin_password='' -e dump_inventory=False -e stack_name=%(prop:multivm_prefix)s"
+        workdir: build/Zenko-Private-Tools
+        env:
+          ANSIBLE_FORCE_COLOR: "true"
+    - ShellCommand:
+        name: Delete ressources
+        command: |-
+          make kube AA="-e onelogin_password='' -e dump_inventory=False -e state=absent -e stack_name=%(prop:multivm_prefix)s"
+        workdir: build/Zenko-Private-Tools
+        env:
+          ANSIBLE_FORCE_COLOR: "true"
+        alwaysRun: true
