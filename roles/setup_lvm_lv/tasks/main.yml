@@ -92,6 +92,7 @@
     lv: '{{ item.lv_name }}'
     vg: '{{ item.vg_prop.vg_name }}'
     size: '{{ item.size }}'
+    resizefs: True
     state: present
     shrink: False
   with_items: '{{ metalk8s_lvm_all_lvs.values()|list }}'
