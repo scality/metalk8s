@@ -18,6 +18,7 @@ SUPPORTED_OS = {
   "coreos-beta"   => {box: "coreos-beta",        bootstrap_os: "coreos", user: "core", box_url: COREOS_URL_TEMPLATE % ["beta"]},
   "ubuntu"        => {box: "bento/ubuntu-16.04", bootstrap_os: "ubuntu", user: "vagrant"},
   "centos"        => {box: "centos/7",           bootstrap_os: "centos", user: "vagrant"},
+  "fedora"        => {box: "fedora/28-cloud-base", bootstrap_os: "fedora", user: "vagrant"},
   "opensuse"      => {box: "opensuse/openSUSE-42.3-x86_64", bootstrap_os: "opensuse", use: "vagrant"},
   "opensuse-tumbleweed" => {box: "opensuse/openSUSE-Tumbleweed-x86_64", bootstrap_os: "opensuse", use: "vagrant"},
 }
@@ -43,6 +44,8 @@ $kube_node_instances = $num_instances
 $kube_node_instances_with_disks = false
 $kube_node_instances_with_disks_size = "20G"
 $kube_node_instances_with_disks_number = 2
+
+$playbook = "cluster.yml"
 
 $local_release_dir = "/vagrant/temp"
 
@@ -125,6 +128,10 @@ Vagrant.configure("2") do |config|
 
      config.vm.provider :libvirt do |lv|
        lv.memory = $vm_memory
+       # Fix kernel panic on fedora 28
+       if $os == "fedora"
+        lv.cpu_mode = "host-passthrough"
+       end
      end
 
       ip = "#{$subnet}.#{i+100}"
@@ -157,7 +164,7 @@ Vagrant.configure("2") do |config|
       # when all the machines are up and ready.
       if i == $num_instances
         config.vm.provision "ansible" do |ansible|
-          ansible.playbook = "cluster.yml"
+          ansible.playbook = $playbook
           if File.exist?(File.join(File.dirname($inventory), "hosts"))
             ansible.inventory_path = $inventory
           end

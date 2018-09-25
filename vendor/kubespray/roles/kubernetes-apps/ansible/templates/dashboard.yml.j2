@@ -140,6 +140,9 @@ spec:
       labels:
         k8s-app: kubernetes-dashboard
     spec:
+{% if kube_version|version_compare('v1.11.1', '>=') %}
+      priorityClassName: system-cluster-critical
+{% endif %}
       containers:
       - name: kubernetes-dashboard
         image: {{ dashboard_image_repo }}:{{ dashboard_image_tag }}
@@ -166,6 +169,7 @@ spec:
           # If not specified, Dashboard will attempt to auto discover the API server and connect
           # to it. Uncomment only if the default does not work.
           # - --apiserver-host=http://my-address:port
+          - --token-ttl={{ dashboard_token_ttl }}
         volumeMounts:
         - name: kubernetes-dashboard-certs
           mountPath: /certs

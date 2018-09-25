@@ -33,11 +33,12 @@
   roles:
     - { role: kubespray-defaults}
     - { role: kubernetes/preinstall, tags: preinstall }
-    - { role: docker, tags: docker, when: manage_docker|default(true) }
+    - { role: docker, tags: docker, when: container_manager == 'docker' }
+    - { role: cri-o, tags: crio, when: container_manager == 'crio' }
     - role: rkt
       tags: rkt
       when: "'rkt' in [etcd_deployment_type, kubelet_deployment_type, vault_deployment_type]"
-    - { role: download, tags: download, skip_downloads: false }
+    - { role: download, tags: download, when: "not skip_downloads" }
   environment: "{{proxy_env}}"
 
 - hosts: etcd:k8s-cluster:vault:calico-rr
@@ -93,6 +94,7 @@
   roles:
     - { role: kubespray-defaults}
     - { role: kubernetes-apps/rotate_tokens, tags: rotate_tokens, when: "secret_changed|default(false)" }
+    - { role: win_nodes/kubernetes_patch, tags: win_nodes, when: "kubeadm_enabled" }
 
 - hosts: kube-master
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
@@ -117,7 +119,7 @@
     - { role: kubernetes/preinstall, when: "dns_mode != 'none' and resolvconf_mode == 'host_resolvconf'", tags: resolvconf }
   environment: "{{proxy_env}}"
 
-- hosts: kube-master[0]
+- hosts: kube-master
   any_errors_fatal: "{{ any_errors_fatal | default(true) }}"
   roles:
     - { role: kubespray-defaults}
