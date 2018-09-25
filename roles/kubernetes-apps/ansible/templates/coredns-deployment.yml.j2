@@ -26,14 +26,31 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
-{% if rbac_enabled %}
-      serviceAccountName: coredns
+{% if kube_version|version_compare('v1.11.1', '>=') %}
+      priorityClassName: system-cluster-critical
 {% endif %}
+      serviceAccountName: coredns
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
         - key: "CriticalAddonsOnly"
           operator: "Exists"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                k8s-app: coredns{{ coredns_ordinal_suffix | default('') }}
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: In
+                values:
+                - "true"
       containers:
       - name: coredns
         image: "{{ coredns_image_repo }}:{{ coredns_image_tag }}"

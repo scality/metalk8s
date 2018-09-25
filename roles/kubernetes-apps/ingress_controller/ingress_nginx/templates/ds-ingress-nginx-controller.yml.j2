@@ -5,25 +5,23 @@ metadata:
   name: ingress-nginx-controller
   namespace: {{ ingress_nginx_namespace }}
   labels:
-    k8s-app: ingress-nginx
-    version: v{{ ingress_nginx_controller_image_tag }}
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
 spec:
   selector:
     matchLabels:
-      k8s-app: ingress-nginx
-      version: v{{ ingress_nginx_controller_image_tag }}
+      app.kubernetes.io/name: ingress-nginx
+      app.kubernetes.io/part-of: ingress-nginx
   template:
     metadata:
       labels:
-        k8s-app: ingress-nginx
-        version: v{{ ingress_nginx_controller_image_tag }}
+        app.kubernetes.io/name: ingress-nginx
+        app.kubernetes.io/part-of: ingress-nginx
       annotations:
         prometheus.io/port: '10254'
         prometheus.io/scrape: 'true'
     spec:
-{% if rbac_enabled %}
       serviceAccountName: ingress-nginx
-{% endif %}
 {% if ingress_nginx_host_network %}
       hostNetwork: true
 {% endif %}
@@ -31,6 +29,9 @@ spec:
       nodeSelector:
         {{ ingress_nginx_nodeselector | to_nice_yaml }}
 {%- endif %}
+{% if kube_version|version_compare('v1.11.1', '>=') %}
+      priorityClassName: {% if ingress_nginx_namespace == 'kube-system' %}system-node-critical{% else %}k8s-cluster-critical{% endif %}{{''}}
+{% endif %}
       containers:
         - name: ingress-nginx-controller
           image: {{ ingress_nginx_controller_image_repo }}:{{ ingress_nginx_controller_image_tag }}
@@ -41,7 +42,6 @@ spec:
             - --configmap=$(POD_NAMESPACE)/ingress-nginx
             - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
             - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
-            - --publish-service=$(POD_NAMESPACE)/ingress-nginx
             - --annotations-prefix=nginx.ingress.kubernetes.io
           securityContext:
             capabilities:
@@ -86,5 +86,3 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
-          securityContext:
-            runAsNonRoot: false

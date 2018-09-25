@@ -24,6 +24,35 @@ kube_apiserver_storage_backend: etcd3
 # By default, force back to etcd2. Set to true to force etcd3 (experimental!)
 force_etcd3: false
 
+# audit support
+kubernetes_audit: false
+# path to audit log file
+audit_log_path: /var/log/audit/kube-apiserver-audit.log
+# num days
+audit_log_maxage: 30
+# the num of audit logs to retain
+audit_log_maxbackups: 1
+# the max size in MB to retain
+audit_log_maxsize: 100
+# policy file
+audit_policy_file: "{{ kube_config_dir }}/audit-policy/apiserver-audit-policy.yaml"
+# custom audit policy rules (to replace the default ones)
+# audit_policy_custom_rules: |
+#   - level: None
+#     users: []
+#     verbs: []
+#     resources: []
+
+# audit log hostpath
+audit_log_name: audit-logs
+audit_log_hostpath: /var/log/kubernetes/audit
+audit_log_mountpath: "{{ audit_log_path | dirname }}"
+
+# audit policy hostpath
+audit_policy_name: audit-policy
+audit_policy_hostpath: "{{ audit_policy_file | dirname }}"
+audit_policy_mountpath: "{{ audit_policy_hostpath }}"
+
 # Limits for kube components
 kube_controller_memory_limit: 512M
 kube_controller_cpu_limit: 250m
@@ -32,6 +61,7 @@ kube_controller_cpu_requests: 100m
 kube_controller_node_monitor_grace_period: 40s
 kube_controller_node_monitor_period: 5s
 kube_controller_pod_eviction_timeout: 5m0s
+kube_controller_terminated_pod_gc_threshold: 12500
 kube_scheduler_memory_limit: 512M
 kube_scheduler_cpu_limit: 250m
 kube_scheduler_memory_requests: 170M
@@ -40,8 +70,9 @@ kube_apiserver_memory_limit: 2000M
 kube_apiserver_cpu_limit: 800m
 kube_apiserver_memory_requests: 256M
 kube_apiserver_cpu_requests: 100m
+kube_apiserver_request_timeout: "1m0s"
 
-# Admission control plug-ins
+# 1.9 and below Admission control plug-ins
 kube_apiserver_admission_control:
   - Initializers
   - NamespaceLifecycle
@@ -55,6 +86,12 @@ kube_apiserver_admission_control:
       MutatingAdmissionWebhook,ValidatingAdmissionWebhook
       {%- endif -%}
   - ResourceQuota
+
+# 1.10+ admission plugins
+kube_apiserver_enable_admission_plugins: []
+
+# 1.10+ list of disabled admission plugins
+kube_apiserver_disable_admission_plugins: []
 
 # extra runtime config
 kube_api_runtime_config:
@@ -97,7 +134,7 @@ volume_cross_zone_attachment: false
 
 ## Encrypting Secret Data at Rest
 kube_encrypt_secret_data: false
-kube_encrypt_token: "{{ lookup('password', inventory_dir + '/credentials/kube_encrypt_token.creds length=32 chars=ascii_letters,digits') }}"
+kube_encrypt_token: "{{ lookup('password', credentials_dir + '/kube_encrypt_token.creds length=32 chars=ascii_letters,digits') }}"
 # Must be either: aescbc, secretbox or aesgcm
 kube_encryption_algorithm: "aescbc"
 

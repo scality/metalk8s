@@ -4,8 +4,9 @@ Deploy a Production Ready Kubernetes Cluster
 ============================================
 
 If you have questions, join us on the [kubernetes slack](https://kubernetes.slack.com), channel **\#kubespray**.
+You can get your invite [here](http://slack.k8s.io/)
 
--   Can be deployed on **AWS, GCE, Azure, OpenStack, vSphere or Baremetal**
+-   Can be deployed on **AWS, GCE, Azure, OpenStack, vSphere, Oracle Cloud Infrastructure (Experimental), or Baremetal**
 -   **Highly available** cluster
 -   **Composable** (Choice of the network plugin for instance)
 -   Supports most popular **Linux distributions**
@@ -22,7 +23,7 @@ To deploy the cluster you can use :
     sudo pip install -r requirements.txt
 
     # Copy ``inventory/sample`` as ``inventory/mycluster``
-    cp -rfp inventory/sample inventory/mycluster
+    cp -rfp inventory/sample/* inventory/mycluster
 
     # Update Ansible inventory file with inventory builder
     declare -a IPS=(10.10.1.3 10.10.1.4 10.10.1.5)
@@ -34,6 +35,16 @@ To deploy the cluster you can use :
 
     # Deploy Kubespray with Ansible Playbook
     ansible-playbook -i inventory/mycluster/hosts.ini cluster.yml
+
+Note: When Ansible is already installed via system packages on the control machine, other python packages installed via `sudo pip install -r requirements.txt` will go to a different directory tree (e.g. `/usr/local/lib/python2.7/dist-packages` on Ubuntu) from Ansible's (e.g. `/usr/lib/python2.7/dist-packages/ansible` still on Ubuntu).
+As a consequence, `ansible-playbook` command will fail with:
+```
+ERROR! no action detected in task. This often indicates a misspelled module name, or incorrect module path.
+```
+probably pointing on a task depending on a module present in requirements.txt (i.e. "unseal vault").
+
+One way of solving this would be to uninstall the Ansible package and then, to install it via pip but it is not always possible.
+A workaround consists of setting `ANSIBLE_LIBRARY` and `ANSIBLE_MODULE_UTILS` environment variables respectively to the `ansible/modules` and `ansible/module_utils` subdirectories of pip packages installation location, which can be found in the Location field of the output of `pip show [package]` before executing `ansible-playbook`.
 
 ### Vagrant
 
@@ -79,8 +90,9 @@ Supported Linux Distributions
 
 -   **Container Linux by CoreOS**
 -   **Debian** Jessie, Stretch, Wheezy
--   **Ubuntu** 16.04
+-   **Ubuntu** 16.04, 18.04
 -   **CentOS/RHEL** 7
+-   **Fedora** 28
 -   **Fedora/CentOS** Atomic
 -   **openSUSE** Leap 42.3/Tumbleweed
 
@@ -90,23 +102,25 @@ Supported Components
 --------------------
 
 -   Core
-    -   [kubernetes](https://github.com/kubernetes/kubernetes) v1.10.4
+    -   [kubernetes](https://github.com/kubernetes/kubernetes) v1.11.3
     -   [etcd](https://github.com/coreos/etcd) v3.2.18
     -   [docker](https://www.docker.com/) v17.03 (see note)
     -   [rkt](https://github.com/rkt/rkt) v1.21.0 (see Note 2)
+    -   [cri-o](http://cri-o.io/) v1.11.5 (see [CRI-O Note](docs/cri-o.md))
 -   Network Plugin
-    -   [calico](https://github.com/projectcalico/calico) v2.6.8
+    -   [calico](https://github.com/projectcalico/calico) v3.1.3
     -   [canal](https://github.com/projectcalico/canal) (given calico/flannel versions)
-    -   [cilium](https://github.com/cilium/cilium) v1.0.0-rc8
+    -   [cilium](https://github.com/cilium/cilium) v1.2.0
     -   [contiv](https://github.com/contiv/install) v1.1.7
     -   [flanneld](https://github.com/coreos/flannel) v0.10.0
-    -   [weave](https://github.com/weaveworks/weave) v2.3.0
+    -   [weave](https://github.com/weaveworks/weave) v2.4.1
 -   Application
-    -   [cephfs-provisioner](https://github.com/kubernetes-incubator/external-storage) v1.1.0-k8s1.10
-    -   [cert-manager](https://github.com/jetstack/cert-manager) v0.3.2
-    -   [ingress-nginx](https://github.com/kubernetes/ingress-nginx) v0.16.2
+    -   [cephfs-provisioner](https://github.com/kubernetes-incubator/external-storage) v2.1.0-k8s1.11
+    -   [cert-manager](https://github.com/jetstack/cert-manager) v0.5.0
+    -   [coredns](https://github.com/coredns/coredns) v1.2.2
+    -   [ingress-nginx](https://github.com/kubernetes/ingress-nginx) v0.19.0
 
-Note: kubernetes doesn't support newer docker versions. Among other things kubelet currently breaks on docker's non-standard version numbering (it no longer uses semantic versioning). To ensure auto-updates don't break your cluster look into e.g. yum versionlock plugin or apt pin).
+Note: kubernetes doesn't support newer docker versions ("Version 17.03 is recommended... Versions 17.06+ might work, but have not yet been tested and verified by the Kubernetes node team" cf. [Bootstrapping Clusters with kubeadm](https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-docker)). Among other things kubelet currently breaks on docker's non-standard version numbering (it no longer uses semantic versioning). To ensure auto-updates don't break your cluster look into e.g. yum versionlock plugin or apt pin). 
 
 Note 2: rkt support as docker alternative is limited to control plane (etcd and
 kubelet). Docker is still used for Kubernetes cluster workloads and network
