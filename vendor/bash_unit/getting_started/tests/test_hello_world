@@ -1,3 +1,0 @@
-test_should_print_hello_world() {
-  assert_equals "Hello world!" "$(../hello_world)"
-}

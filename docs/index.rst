@@ -9,13 +9,9 @@
 
 Welcome to the MetalK8s documentation!
 ======================================
-MetalK8s_ is an opinionated Kubernetes_ distribution with a focus on long-term
-on-prem deployments. See :doc:`installation-guide/introduction` to learn more
-about the project, or :doc:`installation-guide/quickstart` to get started.
+.. include:: installation-guide/introduction.rst
 
-.. _MetalK8s: https://github.com/scality/metalk8s/
-.. _Kubernetes: https://kubernetes.io
-
+.. note: Keep this in sync with the toctree in `index-latex.rst`...
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
