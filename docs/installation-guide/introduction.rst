@@ -18,7 +18,7 @@ provisioning tool. This installation is further augmented with operational
 tools for monitoring and metering, including Prometheus_, Grafana_,
 ElasticSearch_ and Kibana_. Furthermore, an "ingress controller" is deployed
 by default, based on Nginx_. All of these are managed as Helm_ packages. See
-:doc:`architecture/cluster-services` for a whole listing.
+:doc:`/reference-guide/cluster-services` for a whole listing.
 
 .. _Kubespray: https://github.com/kubernetes-incubator/kubespray/
 .. _etcd: https://coreos.com/etcd/
@@ -34,14 +34,14 @@ Unlike hosted Kubernetes solutions, where network-attached storage is available
 and managed by the provider, we assume no such system to be available in
 environments where MetalK8s is deployed. As such, we focus on managing
 node-local storage, and exposing these volumes to containers managed in the
-cluster. See :doc:`architecture/storage` for more information.
+cluster. See :doc:`/reference-guide/storage` for more information.
 
 .. only:: not latex
 
    Getting started
    ---------------
-   See our :doc:`usage/quickstart` to deploy a cluster.
+   See our :doc:`/installation-guide/quickstart` to deploy a cluster.
 
    Advanced Configuration
    ----------------------
-   Then give a look at :doc:`usage/advanced_configuration`
+   Then give a look at :doc:`/operations-guide/advanced_configuration`

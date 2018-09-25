@@ -9,22 +9,16 @@
 
 Welcome to the MetalK8s documentation!
 ======================================
-.. include:: introduction.rst
+.. include:: installation-guide/introduction.rst
 
 .. note: Keep this in sync with the toctree in `index-latex.rst`...
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   usage/quickstart
-   usage/advanced_configuration
-   architecture/index
-
-   faq
-
-   changes
-
-   glossary
+   installation-guide/index
+   operations-guide/index
+   reference-guide/index
 
 Indices and tables
 ==================

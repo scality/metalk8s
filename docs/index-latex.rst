@@ -5,12 +5,6 @@
    :maxdepth: 2
    :caption: Contents:
 
-   introduction
-   usage/quickstart
-   architecture/index
-
-   faq
-
-   changes
-
-   glossary
+   installation-guide/index-latex
+   operations-guide/index
+   reference-guide/index

@@ -163,6 +163,8 @@ latex_documents = [
 
 latex_logo = '../artwork/generated/metalk8s-logo-wide-black.pdf'
 
+latex_toplevel_sectioning = 'part'
+
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
