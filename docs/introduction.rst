@@ -1,5 +1,8 @@
-Introduction
-============
+.. only:: latex
+
+   Introduction
+   ============
+
 MetalK8s_ is an opinionated Kubernetes_ distribution with a focus on long-term
 on-prem deployments, launched by Scality_ to deploy its Zenko_ solution in
 customer datacenters.
@@ -33,6 +36,12 @@ environments where MetalK8s is deployed. As such, we focus on managing
 node-local storage, and exposing these volumes to containers managed in the
 cluster. See :doc:`architecture/storage` for more information.
 
-Getting started
----------------
-See our :doc:`usage/quickstart` to deploy a cluster.
+.. only:: not latex
+
+   Getting started
+   ---------------
+   See our :doc:`usage/quickstart` to deploy a cluster.
+
+   Advanced Configuration
+   ----------------------
+   Then give a look at :doc:`usage/advanced_configuration`
