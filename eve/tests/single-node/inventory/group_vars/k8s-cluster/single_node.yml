@@ -1,4 +1,4 @@
-metalk8s_lvm_drives_vg_metalk8s: ['/dev/loop0']
+metalk8s_lvm_drives_vg_metalk8s: ['/dev/loop0', '/dev/loop1']
 
 metalk8s_elasticsearch_enabled: True
 
