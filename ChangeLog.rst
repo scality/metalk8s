@@ -31,6 +31,10 @@ Bugs fixed
 
 :ghissue:`424` - remove warning related to kube_nginx_ingress roles (:ghpull:`425`)
 
+:ghissue:`399` - check that the hostnames in the inventory don't use
+capital letters
+(:ghpull:`409`)
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
