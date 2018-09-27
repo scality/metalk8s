@@ -2,7 +2,7 @@ version: "0.2"
 
 branches:
   default:
-    stage: "pre-merge"
+    stage: "multi-node-test"
 
 stages:
   pre-merge:
@@ -83,6 +83,61 @@ stages:
           tox -e tests -- post -s --run-services
         env:
           ANSIBLE_INVENTORY: eve/tests/single-node/inventory/hosts
+
+  multi-node-test:
+    worker:
+      type: multi_vm
+      image: CentOS 7 (PVHVM)
+      flavor: general1-4
+      path: eve/workers/centos7_terraform
+    steps:
+    - Git: *git_pull
+    - ShellCommand:
+        name: "Init terraform"
+        command: "terraform init"
+        workdir: "build/contrib/terraform/openstack"
+    - ShellCommand:
+        name: "Spawn openstack virtual infra"
+        command: 'terraform apply -auto-approve'
+        workdir: "build/contrib/terraform/openstack"
+        env: &terraform_spawn_1
+          OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
+          OS_REGION_NAME: "%(secret:scality_cloud_region)s"
+          OS_USERNAME: "%(secret:scality_cloud_username)s"
+          OS_PASSWORD: "%(secret:scality_cloud_password)s"
+          OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
+          TF_VAR_name_prefix: "%(prop:multivm_prefix)s"
+          TF_VAR_ssh_key_name: "%(prop:multivm_prefix)s"
+    - ShellCommand:
+        name: 'Run the install test suite'
+        haltOnFailure: true
+        usePTY: true
+        command: |-
+          ANSIBLE_INVENTORY=$(cd ${TF_DIR}; terraform output inventory_file) \
+          tox -e tests -- install -s
+        env:
+          TF_DIR: "contrib/terraform/openstack"
+          ANSIBLE_HOST_KEY_CHECKING: "false"
+    - ShellCommand:
+        name: 'Run the post-install test suite'
+        haltOnFailure: true
+        usePTY: true
+        command: |-
+          ANSIBLE_INVENTORY=$(cd ${TF_DIR}; terraform output inventory_file) \
+          tox -e tests -- post -s --run-services
+        env:
+          TF_DIR: "contrib/terraform/openstack"
+          ANSIBLE_HOST_KEY_CHECKING: "false"
+    - ShellCommand:
+        name: "Destroy openstack virtual infra"
+        workdir: "build/contrib/terraform/openstack"
+        command: |-
+          for _ in $(seq 1 3); do
+             terraform destroy -auto-approve && break
+          done;
+        alwaysRun: true
+        env: *terraform_spawn_1
+
 
   build-doc:
     worker:
