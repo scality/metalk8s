@@ -3,7 +3,11 @@ auth-url="{{ openstack_auth_url }}"
 username="{{ openstack_username }}"
 password="{{ openstack_password }}"
 region="{{ openstack_region }}"
+{% if openstack_trust_id is defined and openstack_trust_id != "" %}
+trust-id="{{ openstack_trust_id }}"
+{% else %}
 tenant-id="{{ openstack_tenant_id }}"
+{% endif %}
 {% if openstack_tenant_name is defined and openstack_tenant_name != "" %}
 tenant-name="{{ openstack_tenant_name }}"
 {% endif %}
@@ -11,6 +15,9 @@ tenant-name="{{ openstack_tenant_name }}"
 domain-name="{{ openstack_domain_name }}"
 {% elif openstack_domain_id is defined and openstack_domain_id != "" %}
 domain-id ="{{ openstack_domain_id }}"
+{% endif %}
+{% if openstack_cacert is defined and openstack_cacert != "" %}
+ca-file="{{ kube_config_dir }}/openstack-cacert.pem"
 {% endif %}
 
 {% if openstack_blockstorage_version is defined %}

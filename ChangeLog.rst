@@ -22,6 +22,10 @@ Features added
 :ghpull:`373` - update third-party chart versions and use the `RollingUpdate`
 deployment strategy for Elasticsearch `data` and `master` daemons
 
+:ghpull:`403` - update vendored Kubespray version
+
+.. note:: This includes an upgrade to Kubernetes 1.11.
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
