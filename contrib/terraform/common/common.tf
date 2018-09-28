@@ -62,14 +62,14 @@ variable "masters_count" {
   default = 3
 }
 
-If false, etcd are colocated on nodes
-If true, gets is own VM
+# If false, etcd are colocated on nodes
+# If true, gets is own VM
 variable "etcd_dedicated" {
   default = true
 }
 
-If false, master are colocated on nodes
-If true, gets is own VM
+# If false, master are colocated on nodes
+# If true, gets is own VM
 variable "masters_dedicated" {
   default = false
 }
