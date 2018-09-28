@@ -26,6 +26,8 @@ deployment strategy for Elasticsearch `data` and `master` daemons
 
 .. note:: This includes an upgrade to Kubernetes 1.11.
 
+:ghpull:`417` - update Python package versions
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
