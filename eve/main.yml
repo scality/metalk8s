@@ -86,10 +86,15 @@ stages:
 
   multi-node-test:
     worker:
-      type: multi_vm
+      type: openstack
       image: CentOS 7 (PVHVM)
       flavor: general1-4
       path: eve/workers/centos7_terraform
+      resources:
+        memory: 80Gb
+        vcpus: 4
+        block_storage: 500Gb
+        storage: 100Gb
     steps:
     - Git: *git_pull
     - ShellCommand:
