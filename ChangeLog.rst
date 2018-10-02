@@ -27,6 +27,8 @@ Bugs fixed
 :ghissue:`381` - warn when Bash completion is not available in `make shell`
 (:ghpull:`382`)
 
+:ghissue:`192` - `make shell` failing to start on OS X (:ghpull:`418`)
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using

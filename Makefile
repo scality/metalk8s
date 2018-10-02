@@ -130,17 +130,17 @@ $(BASHRC): $(SHELL_ENV_EXISTS) hack/shell-bashrc
 
 shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC) ## Run a shell with `ansible-playbook`, `kubectl` and `helm` pre-installed
 	$(V)BASH_ENV="$(BASHRC)"; export BASH_ENV; if test -z "$(C)"; then \
-		# Interactive shell \
+		`# Interactive shell` \
 		echo "Launching MetalK8s shell environment. Run 'exit' to quit."; \
 		bash --rcfile $(BASHRC) ||:; \
 	elif test "x$(C)" = "x-"; then  \
-		# Semi-interactive shell, keeping exit-code \
+		`# Semi-interactive shell, keeping exit-code` \
 		bash --rcfile $(BASHRC); \
 	elif test -e "$(C)"; then \
-		# A script \
+		`# A script` \
 		bash --rcfile $(BASHRC) "$(C)"; \
 	else \
-		# A command \
+		`# A command` \
 		bash --rcfile $(BASHRC) -c "$(C)"; \
 	fi
 .PHONY: shell
