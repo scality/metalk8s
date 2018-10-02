@@ -97,9 +97,9 @@ $(KUBECTL_BIN): $(SHELL_ENV_EXISTS)
 	$(V)mv $@.tmp $@
 
 KUBECTL = $(VENV_BIN)/kubectl
-KUBECTL_REALPATH = realpath $(KUBECTL_BIN)
+KUBECTL_REALPATH = $(PWD)/$(KUBECTL_BIN)
 $(KUBECTL): $(KUBECTL_BIN) $(VENV_EXISTS)
-	$(V)ln -sf $(shell $(KUBECTL_REALPATH))$(KUBECTL_REALPATH:sh) $@
+	$(V)ln -sf $(KUBECTL_REALPATH)$(KUBECTL_REALPATH:sh) $@
 
 HELM_SRC_BASENAME = basename $(HELM_SRC)
 HELM_SRC_TAR = $(SHELL_ENV)/$(shell $(HELM_SRC_BASENAME))$(HELM_SRC_BASENAME:sh)
@@ -119,9 +119,9 @@ $(HELM_BIN): $(HELM_SRC_TAR) $(SHELL_ENV_EXISTS)
 	$(V)touch $@
 
 HELM = $(VENV_BIN)/helm
-HELM_REALPATH = realpath $(HELM_BIN)
+HELM_REALPATH = $(PWD)/$(HELM_BIN)
 $(HELM): $(HELM_BIN) $(VENV_EXISTS)
-	$(V)ln -sf $(shell $(HELM_REALPATH))$(HELM_REALPATH:sh) $@
+	$(V)ln -sf $(HELM_REALPATH)$(HELM_REALPATH:sh) $@
 
 BASHRC = $(SHELL_ENV)/bashrc
 $(BASHRC): $(SHELL_ENV_EXISTS) hack/shell-bashrc
@@ -130,17 +130,17 @@ $(BASHRC): $(SHELL_ENV_EXISTS) hack/shell-bashrc
 
 shell: $(VENV_EXISTS) $(REQUIREMENTS_INSTALLED) $(KUBECTL) $(HELM) $(BASHRC) ## Run a shell with `ansible-playbook`, `kubectl` and `helm` pre-installed
 	$(V)BASH_ENV="$(BASHRC)"; export BASH_ENV; if test -z "$(C)"; then \
-		# Interactive shell \
+		`# Interactive shell` \
 		echo "Launching MetalK8s shell environment. Run 'exit' to quit."; \
 		bash --rcfile $(BASHRC) ||:; \
 	elif test "x$(C)" = "x-"; then  \
-		# Semi-interactive shell, keeping exit-code \
+		`# Semi-interactive shell, keeping exit-code` \
 		bash --rcfile $(BASHRC); \
 	elif test -e "$(C)"; then \
-		# A script \
+		`# A script` \
 		bash --rcfile $(BASHRC) "$(C)"; \
 	else \
-		# A command \
+		`# A command` \
 		bash --rcfile $(BASHRC) -c "$(C)"; \
 	fi
 .PHONY: shell
