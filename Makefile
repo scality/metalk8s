@@ -97,7 +97,7 @@ $(KUBECTL_BIN): $(SHELL_ENV_EXISTS)
 	$(V)mv $@.tmp $@
 
 KUBECTL = $(VENV_BIN)/kubectl
-KUBECTL_REALPATH = realpath $(KUBECTL_BIN)
+KUBECTL_REALPATH = $(PYTHON) hack/realpath.py $(KUBECTL_BIN)
 $(KUBECTL): $(KUBECTL_BIN) $(VENV_EXISTS)
 	$(V)ln -sf $(shell $(KUBECTL_REALPATH))$(KUBECTL_REALPATH:sh) $@
 
@@ -119,7 +119,7 @@ $(HELM_BIN): $(HELM_SRC_TAR) $(SHELL_ENV_EXISTS)
 	$(V)touch $@
 
 HELM = $(VENV_BIN)/helm
-HELM_REALPATH = realpath $(HELM_BIN)
+HELM_REALPATH = $(PYTHON) hack/realpath.py $(HELM_BIN)
 $(HELM): $(HELM_BIN) $(VENV_EXISTS)
 	$(V)ln -sf $(shell $(HELM_REALPATH))$(HELM_REALPATH:sh) $@
 
