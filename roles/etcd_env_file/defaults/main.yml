@@ -1,0 +1,3 @@
+etcd_base_dir: /etc/ssl/etcd/ssl
+
+etcd_env_file_path: /etc/metalk8s/etcd.env.sh
