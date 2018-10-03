@@ -63,6 +63,12 @@ variable "masters_count" {
   default = 3
 }
 
+# Choose the number of proxy you want
+variable "proxies_count" {
+  type    = "string"
+  default = 0
+}
+
 # If false, etcd are colocated on nodes
 # If true, gets is own VM
 variable "etcd_dedicated" {
@@ -73,6 +79,22 @@ variable "etcd_dedicated" {
 # If true, gets is own VM
 variable "masters_dedicated" {
   default = false
+}
+
+# Select if egress should be block or not
+# By default this is disable if proxy_count = 0
+# and enable if proxy_count > 0.
+# You can override the default behaviour by setting the variable
+variable "egress_blocked" {
+  default = ""
+}
+
+# URL of proxy to proxyfied external http request
+# By default this is disable if proxy_count = 0
+# and set to the first proxy IP if proxy_count > 0.
+# You can override the default behaviour by setting the variable
+variable "proxy_url" {
+  default = ""
 }
 
 resource "random_string" "inventory_dir" {
@@ -118,6 +140,8 @@ locals {
   has_dedicated_masters = "${local.masters_server_count >= 1 ? 1 : 0}"
   masters_on_etcd       = "${var.masters_dedicated ?
         0 : min(var.masters_count, var.etcd_count)}"
+
+  egress_blocked = "${coalesce(var.egress_blocked, var.proxies_count > 0 ? 1 : 0)}"
 }
 
 output "nodes_server_count" {
@@ -130,4 +154,12 @@ output "etcd_server_count" {
 
 output "masters_server_count" {
   value = "${local.masters_server_count}"
+}
+
+output "proxies_server_count" {
+  value = "${var.proxies_count}"
+}
+
+output "egress_blocked" {
+  value = "${local.egress_blocked}"
 }

@@ -14,16 +14,28 @@ locals {
         slice(local.etcd_name, 0, local.masters_on_etcd)
   )}"]
 
+  proxies_name = ["${openstack_compute_instance_v2.proxies.*.name}"]
+
+  proxy_url = "${coalesce(
+        var.proxy_url, var.proxies_count == 0 ? "" :
+        element(coalescelist(
+          formatlist("http://%s:3128", openstack_compute_instance_v2.proxies.*.access_ip_v4),
+          list("dummy")
+        ),0)
+  )}"
+
   all_servers_name = ["${concat(
         openstack_compute_instance_v2.nodes.*.name,
         openstack_compute_instance_v2.etcd.*.name,
-        openstack_compute_instance_v2.masters.*.name
+        openstack_compute_instance_v2.masters.*.name,
+        openstack_compute_instance_v2.proxies.*.name
   )}"]
 
   all_servers_ip = ["${concat(
         openstack_compute_instance_v2.nodes.*.access_ip_v4,
         openstack_compute_instance_v2.etcd.*.access_ip_v4,
         openstack_compute_instance_v2.masters.*.access_ip_v4,
+        openstack_compute_instance_v2.proxies.*.access_ip_v4
   )}"]
 }
 
@@ -35,10 +47,13 @@ data "template_file" "inventory" {
                             local.all_servers_name,
                             local.all_servers_ip))}"
 
-    etcd_name    = "${join("\n", local.etcd_name)}"
-    masters_name = "${join("\n", local.masters_name)}"
-    nodes_name   = "${join("\n", openstack_compute_instance_v2.nodes.*.name)}"
-    ssh_user     = "${var.ssh_user}"
+    etcd_name      = "${join("\n", local.etcd_name)}"
+    masters_name   = "${join("\n", local.masters_name)}"
+    nodes_name     = "${join("\n", openstack_compute_instance_v2.nodes.*.name)}"
+    proxies_name   = "${join("\n", local.proxies_name)}"
+    proxy_url      = "${local.proxy_url}"
+    ssh_user       = "${var.ssh_user}"
+    all_servers_ip = "${join(",", local.all_servers_ip)}"
   }
 }
 

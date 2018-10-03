@@ -14,24 +14,20 @@ resource "openstack_compute_instance_v2" "masters" {
     group = "${openstack_compute_servergroup_v2.masters.id}"
   }
 
-  network         = ["${var.openstack_network}"]
-  security_groups = ["${openstack_networking_secgroup_v2.masters.name}"]
-  count           = "${local.masters_server_count}"
+  network = ["${var.openstack_network}"]
+
+  security_groups = ["${list(
+        openstack_networking_secgroup_v2.common.name,
+        openstack_networking_secgroup_v2.masters.name
+  )}"]
+
+  count = "${local.masters_server_count}"
 }
 
 resource "openstack_networking_secgroup_v2" "masters" {
-  name        = "${var.name_prefix}-masters"
-  description = "security group for kube-masters"
-}
-
-resource "openstack_networking_secgroup_rule_v2" "masters_ssh" {
-  direction         = "ingress"
-  ethertype         = "IPv4"
-  protocol          = "tcp"
-  port_range_min    = 22
-  port_range_max    = 22
-  remote_ip_prefix  = "0.0.0.0/0"
-  security_group_id = "${openstack_networking_secgroup_v2.masters.id}"
+  name                 = "${var.name_prefix}-masters"
+  description          = "security group for kube-masters"
+  delete_default_rules = true
 }
 
 resource "openstack_networking_secgroup_rule_v2" "master_apiserver" {
@@ -56,4 +52,21 @@ resource "openstack_networking_secgroup_rule_v2" "etcd_to_masters" {
   ethertype         = "IPv4"
   remote_group_id   = "${openstack_networking_secgroup_v2.etcd.id}"
   security_group_id = "${openstack_networking_secgroup_v2.masters.id}"
+}
+
+# egress when default egress rules are removed
+resource "openstack_networking_secgroup_rule_v2" "masters_to_etcd_egress" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  remote_group_id   = "${openstack_networking_secgroup_v2.etcd.id}"
+  security_group_id = "${openstack_networking_secgroup_v2.masters.id}"
+  count             = "${local.egress_blocked ? 1 : 0}"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "masters_to_nodes_egress" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  remote_group_id   = "${openstack_networking_secgroup_v2.nodes.id}"
+  security_group_id = "${openstack_networking_secgroup_v2.masters.id}"
+  count             = "${local.egress_blocked ? 1 : 0}"
 }
