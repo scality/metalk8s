@@ -139,6 +139,7 @@ stages:
         name: "Destroy openstack virtual infra"
         workdir: "build/contrib/terraform/openstack"
         command: |-
+          sleep 666
           for _ in $(seq 1 3); do
              terraform destroy -auto-approve && break
           done;
