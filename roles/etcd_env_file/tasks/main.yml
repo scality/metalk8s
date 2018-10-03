@@ -1,0 +1,11 @@
+---
+
+- name: create env file directory
+  file:
+    path: '{{ etcd_env_file_path | dirname }}'
+    state: directory
+
+- name: 'deploy env file'
+  template:
+    src: etcd.env.sh.j2
+    dest: '{{ etcd_env_file_path }}'
