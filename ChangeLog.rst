@@ -29,6 +29,8 @@ Bugs fixed
 
 :ghissue:`192` - `make shell` failing to start on OS X (:ghpull:`418`)
 
+:ghissue:`424` - remove warning related to kube_nginx_ingress roles (:ghpull:`425`)
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
