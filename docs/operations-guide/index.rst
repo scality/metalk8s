@@ -6,3 +6,5 @@ Operations Guide
    :caption: Contents:
 
    advanced_configuration
+   workload_storage
+
