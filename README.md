@@ -7,7 +7,7 @@ An opinionated Kubernetes distribution with a focus on long-term on-prem deploym
 ## Quickstart
 For the really impatient, there's a [quickstart] available.
 
-[quickstart]: https://metal-k8s.readthedocs.io/en/latest/usage/quickstart.html
+[quickstart]: https://metal-k8s.readthedocs.io/en/latest/installation-guide/quickstart.html
 
 ## Documentation
 The project documentation is available at https://metal-k8s.readthedocs.io.

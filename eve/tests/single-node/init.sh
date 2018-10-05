@@ -3,8 +3,10 @@ die() {
 }
 
 echo "Creating loopback block-device and configuring VM"
-truncate -s 256G /kube-lvm || die
-losetup /dev/loop0 /kube-lvm || die
+truncate -s 128G /kube-lvm1 || die
+losetup /dev/loop0 /kube-lvm1 || die
+truncate -s 128G /kube-lvm2 || die
+losetup /dev/loop1 /kube-lvm2 || die
 
 echo "Disabling iptables"
 if systemctl is-enabled --quiet iptables; then

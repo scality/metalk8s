@@ -253,7 +253,7 @@ access these dashboards:
    | `Kibana`_               | A search console for logs indexed in Elasticsearch      | http://localhost:8001/api/v1/namespaces/kube-ops/services/http:kibana:/proxy/                   |
    +-------------------------+---------------------------------------------------------+-------------------------------------------------------------------------------------------------+
 
-See :doc:`../architecture/cluster-services` for more information about these
+See :doc:`../reference-guide/cluster-services` for more information about these
 services and their configuration.
 
 .. _Kubernetes dashboard: https://github.com/kubernetes/dashboard
