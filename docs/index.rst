@@ -51,6 +51,7 @@ See our :doc:`usage/quickstart` to deploy a cluster.
    :caption: Contents:
 
    usage/quickstart
+   usage/workload_storage
    architecture/index
 
    faq
