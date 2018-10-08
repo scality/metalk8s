@@ -11,5 +11,6 @@ ansible.cfg
 /.kube/
 /.shell-env/
 /.pytest_cache/
+/.vscode/
 
 ansible-playbook.log
