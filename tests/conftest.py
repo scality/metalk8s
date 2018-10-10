@@ -15,7 +15,7 @@ from utils.helper import run_make_shell
 
 
 @pytest.fixture(scope="session")
-def inventory():
+def inventory(request):
     inventory_file = os.environ.get('ANSIBLE_INVENTORY')
     if not os.path.exists(inventory_file):
         pytest.fail(
@@ -26,7 +26,7 @@ def inventory():
 
 
 @pytest.fixture(scope="session")
-def kubeconfig(inventory):
+def kubeconfig(inventory, request):
     inventory_dir = os.path.dirname(inventory)
     kubeconfig = os.environ.get(
         'KUBECONFIG',
