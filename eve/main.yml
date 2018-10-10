@@ -98,6 +98,9 @@ stages:
         name: 'Build doc'
         haltOnFailure: true
         command: tox --workdir /tmp/tox -e docs -- html latexpdf
+        env:
+          # Fake we're building in a ReadTheDocs environment
+          READTHEDOCS: 'True'
 
   pep8:
     worker:
