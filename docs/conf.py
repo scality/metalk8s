@@ -11,12 +11,19 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
 
 import os
+import sys
+
+sys.path.insert(
+    0,
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            '_lib',
+        )
+    )
+)
 
 ON_RTD = os.environ.get('READTHEDOCS') == 'True'
 
@@ -52,7 +59,7 @@ extensions = [
 
 if ON_RTD:
     extensions.extend([
-        'sphinxcontrib.googleanalytics',
+        'metalk8s_sphinxext_googleanalytics',
     ])
 
 # Add any paths that contain templates here, relative to this directory.
@@ -199,8 +206,8 @@ todo_include_todos = True
 # See http://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
 spelling_word_list_filename = 'spelling-wordlist.txt'
 
-# -- Options for sphinxcontrib-googleanalytics -------------------------------
-# See https://pypi.org/project/sphinxcontrib-googleanalytics/
+# -- Options for metalk8s_sphinxext_googleanalytics --------------------------
+# See _lib/metalk8s_sphinxext_googleanalytics.py
 googleanalytics_id = 'UA-78443762-1'
 googleanalytics_enabled = ON_RTD
 
