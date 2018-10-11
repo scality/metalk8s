@@ -1,6 +1,7 @@
 '''Various inventory validation checks, and an Ansible `Action` to run them'''
 
 import inspect
+import re
 import sys
 
 from ansible.plugins.action import ActionBase
@@ -16,7 +17,7 @@ from ansible.plugins.action import ActionBase
 
 
 def check_etcd_ensemble_size(task_vars):
-    ensemble_size = len(task_vars['groups']['etcd'])
+    ensemble_size = len(task_vars['groups'].get('etcd', []))
 
     assert ensemble_size % 2 == 1, \
         'etcd ensemble size should be odd, currently {}'.format(ensemble_size)
@@ -25,13 +26,13 @@ def check_etcd_ensemble_size(task_vars):
 
 
 def check_at_least_one_master(task_vars):
-    masters = task_vars['groups']['kube-master']
+    masters = task_vars['groups'].get('kube-master', [])
 
     assert len(masters) >= 1, 'No `kube-master` node(s) defined'
 
 
 def check_at_least_one_node(task_vars):
-    nodes = task_vars['groups']['kube-node']
+    nodes = task_vars['groups'].get('kube-node', [])
 
     assert len(nodes) >= 1, 'No `kube-node` node(s) definend'
 
@@ -106,6 +107,40 @@ def check_ansible_user_is_not_root(task_vars):
                 "Using 'root' as 'ansible_user' for host '{host}'. "
                 "This is not permitted.").format(
                     host=host,
+            )
+
+
+def check_valid_fqdn_and_no_capital_letter_in_hostnames(task_vars):
+    '''Ensure there is only lower case hostnames in the inventory
+
+    Kubespray set the hostname with lower case based on the inventory content
+    but this breaks calico, therefore we should enforce the usage of lower
+    letter only in the hostnames defined in the inventory
+    Kubespray uses the `inventory_hostname` variable
+    We also check that the hostname matches the RFC described at
+    https://tools.ietf.org/html/rfc1035
+    '''
+
+    fqdn_regex = re.compile(
+        r'^((?!-)[-a-z\d]{1,62}(?<!-)\.)*(?!-)[-a-z\d]{1,62}(?<!-)$',
+        re.IGNORECASE
+    )
+    for host, hostvars in sorted(task_vars['hostvars'].items()):
+        if fqdn_regex.match(host) is None:
+            yield (
+                "The hostname {host} does not match a valid FQDN. "
+                "See https://tools.ietf.org/html/rfc1035#section-2.3.1 "
+                "for more details.".format(host=host)
+            )
+        if any([letter.isupper() for letter in host]):
+            yield (
+                "The hostname {host} contains capital letter. "
+                "Please rename it to {host_lower} in your "
+                "inventory {inventory}.".format(
+                    host=host,
+                    host_lower=host.lower(),
+                    inventory=hostvars.get('inventory_file', '')
+                )
             )
 
 
