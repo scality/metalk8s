@@ -2,14 +2,14 @@ Workload Storage
 ================
 
 Some workloads need different volumes with different storage capacities
-to fit its components needs. These volumes are stored in :term:`LVM Logical
-Volumes <LVM LV>`.
-
+to fit its components needs. These volumes are stored in LVM
+:term:`Logical Volumes <LVM LV>`.
 
 Volumes
 -------
 
-Based on all required storage volumes, create a configuration as below:
+Considering all storage volumes required for workloads running in the cluster,
+create a configuration as below:
 
 .. code-block:: yaml
 
@@ -32,6 +32,10 @@ Based on all required storage volumes, create a configuration as below:
         lv08:
             size: 5G
 
+This configuration can be set on a whole Ansible group of nodes (see
+:ref:`ansible:group_variables`), or on a specific host (see
+:ref:`ansible:host_variables`).
+
 Resize LVs
 ----------
 
@@ -40,7 +44,7 @@ size value to a higher one and run:
 
 .. code::
 
-  ansible-playbook -i <inventory>/hosts -t storage playbooks/deploy.yml
+  ansible-playbook -b -i <inventory>/hosts -t storage playbooks/deploy.yml
 
 Configuration layout
 --------------------
@@ -62,9 +66,8 @@ Add extra LVs
 
 It is possible to configure LVM drives and volumes for one node only.
 
-Exemplified below, a default storage configuration:
-
-:file:`group_vars/kube-node/storage.yml`
+Exemplified below, a default storage configuration
+(:file:`group_vars/kube-node/storage.yml`):
 
 .. code::
 
@@ -78,9 +81,7 @@ Exemplified below, a default storage configuration:
     lv03:
         size: 52G
 
-In :file:host_vars, create a new file with:
-
-:file:`host_vars/node_1.yml`
+In :file:`host_vars`, create a new file (:file:`host_vars/node_1.yml`):
 
 .. code::
 
@@ -93,11 +94,11 @@ In :file:host_vars, create a new file with:
      lv01:
         size: 1T
 
-Except ``node_1``, every machine has a single `vg_metalk8s` with six logical
-volumes (:term:`LVM LV`) (three specified, three default).
-On node_1, there are two volume groups (:term:`LVM VG`) (`vg_metalk8s` and
-`mynewvg`) with four logical volumes (:term:`LVM LV`) on `vg_metalk8s` (one
-specified, three default) and one logical volume (:term:`LVM LV`) on `mynewvg`.
+Except ``node_1``, every machine has a single `vg_metalk8s` with six
+:term:`logical volumes <LVM LV>` (three specified, three default).
+On ``node_1``, there are two :term:`volume groups <LVM VG>` (`vg_metalk8s` and
+`mynewvg`) with four logical volumes on `vg_metalk8s` (one
+specified, three default) and one logical volume on `mynewvg`.
 
 .. note::
    As the volume group name becomes a prefix, several LVs can have the same name.
