@@ -7,4 +7,4 @@ Operations Guide
 
    advanced_configuration
    workload_storage
-
+   managing-etcd

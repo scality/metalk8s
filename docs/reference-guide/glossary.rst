@@ -36,7 +36,17 @@ Common Environment Variables
    logging is disabled. See :ref:`ansible:DEFAULT_LOG_PATH` for more
    information.
 
+.. envvar:: ETCDCTL_API
+
+   Version of the :program:`etcd` protocol :command:`etcdctl` will use when
+   connecting to the cluster.
+
 .. envvar:: KUBECONFIG
 
    Path to a file used to configure access to a Kubernetes cluster when using
    :command:`kubectl` or other tools.
+
+.. envvar:: PATH
+
+   Variable specifying a set of directories where executable  programs are
+   located.
