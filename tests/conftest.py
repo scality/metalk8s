@@ -16,7 +16,7 @@ from utils.kube import get_kube_resources
 
 
 @pytest.fixture(scope="session")
-def inventory(request):
+def inventory():
     inventory_file = os.environ.get('ANSIBLE_INVENTORY')
     if not os.path.exists(inventory_file):
         pytest.fail(
@@ -27,7 +27,7 @@ def inventory(request):
 
 
 @pytest.fixture(scope="session")
-def kubeconfig(inventory, request):
+def kubeconfig(inventory):
     inventory_dir = os.path.dirname(inventory)
     kubeconfig = os.environ.get(
         'KUBECONFIG',
