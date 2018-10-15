@@ -1,7 +1,7 @@
 ansible.cfg
 
 *.pyc
-/*.retry
+*.retry
 /playbooks/*.retry
 /venv
 /host_vars
