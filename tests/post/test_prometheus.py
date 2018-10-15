@@ -43,9 +43,10 @@ def get_prometheus_endpoint(request, kubectl_proxy, prometheus_endpoints):
     return endpoints_list
 
 
-@then(parsers.parse('I should count as many endpoints as {group_name} hosts'))
-def count_prometheus_endpoint(request, group_name, inventory_obj):
+@then(parsers.parse('I should count as many endpoints as {groups_name} hosts'))
+def count_prometheus_endpoint(request, groups_name, inventory_obj):
     num_endpoints = len(request.prometheus_endpoints)
-    num_nodes = len(inventory_obj.get_groups_dict()[group_name])
-
-    assert num_endpoints == num_nodes
+    nodes = set()
+    for group_name in groups_name.split(":"):
+        nodes.update(inventory_obj.get_groups_dict()[group_name])
+    assert num_endpoints == len(nodes)
