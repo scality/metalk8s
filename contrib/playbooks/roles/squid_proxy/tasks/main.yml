@@ -1,0 +1,17 @@
+
+- name: 'install squid package'
+  package:
+    name: squid
+    state: present
+  register: squid_pkg_just_installed
+
+- name: 'enable squid on start'
+  service:
+    name: squid
+    enabled: true
+
+- name: 'start squid'
+  service:
+    name: squid
+    state: started
+  register: squid_just_started
