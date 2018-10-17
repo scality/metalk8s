@@ -1,20 +1,26 @@
 Network Ports
 =============
 
+In the cluster, each Ansible group need ports to be
+open to communicate with each other. 
+
 etcd Ports
 ----------
 
-etcd is a cluster of servers storing keys and values
-distributing a database.
+etcd is a distributed key value store. It provides a way
+to store data across a cluster of machines. It can be used
+by applications either to read or write data.
 
 +----------+-------------------+-------------------+
-|   Port   |  Service/daemon   |     Clients       |
+|   Port   |   Service/daemon  |     Clients       |
 +==========+===================+===================+
-|   2380   |     etcd peer     |    etcd peer      |
+|   2380   |  etcd/etcd peer   |    etcd peers     |
 +----------+-------------------+-------------------+
-|   2379   |      etcd         |  user, api server |
+|   2379   |      etcd         |  * userapi        |
+|          |                   |  * server         |
 +----------+-------------------+-------------------+
-|   9100   |   every server    | node exporter     |
+|   9100   | Prometheus        |  Prometheus       |
+|          | node-exporter     |                   |
 +----------+-------------------+-------------------+
 
 kubernetes-master Ports
@@ -27,10 +33,10 @@ such as tasking pods, listing nodes etc.
 +----------+-------------------+----------------------------+
 |   Port   |  Service/daemon   |  Clients                   |
 +==========+===================+============================+
-|   6443   |    api server     | users, control manager,    |
-|          |                   | scheduler                  |
+|   6443   |    API server     |  * control manager         |
+|          |                   |  * scheduler               |
 +----------+-------------------+----------------------------+
-|  10250   |    api server     | kubelet                    |
+|  10250   |    API server     | kubelet                    |
 +----------+-------------------+----------------------------+
 
 

@@ -22,6 +22,7 @@ def run_make_shell(args=None, basedir=None, tmpdir=None, **kwargs):
     logging.warning("Running: {}".format(full_command))
     make_process = subprocess.Popen(full_command, shell=True, **kwargs)
     make_process.wait()
+
     return make_process
 
 

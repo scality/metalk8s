@@ -1,3 +1,4 @@
 - name: 'validate inventory'
   action: validate_inventory
   become: false
+  run_once: true
