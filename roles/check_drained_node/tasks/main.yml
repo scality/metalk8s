@@ -1,0 +1,30 @@
+
+- name: 'get node status'
+  command: |-
+    {{ bin_dir }}/kubectl get nodes {{ item }} -o json
+  with_items: '{{ groups.selected_nodes }}'
+  check_mode: False
+  changed_when: False
+  run_once: True
+  register: node_status_cmd
+
+- debug:
+    var: node_status_cmd
+  when: debug|bool
+
+- set_fact:
+    node_status: >-
+      [ {%- for cmd_stdout in node_status_cmd.results|default([]) -%}
+          {{ (cmd_stdout.stdout|from_json).spec }},
+        {%- endfor -%} ]
+    run_once: True
+
+- debug:
+    var: node_status
+  when: debug|bool
+
+- assert:
+    that:
+      - "item.unschedulable|default(false)"
+  with_items: '{{ node_status }}'
+  run_once: True

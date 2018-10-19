@@ -1,0 +1,56 @@
+- hosts: localhost
+  gather_facts: False
+  any_errors_fatal: True
+  vars_prompt:
+    - name: selected_node
+      private: False
+      prompt: |-
+        Please provide the node name you want drive to be remove
+        {% for node in groups['kube-node']|default([])|sort %}
+          {{ node }}
+        {% endfor %}
+    - name: drive_to_remove
+      private: False
+      prompt: "Please provide a drive name (/dev/xxx or xxx format)"
+  roles:
+    - role: preflight_checks
+    - role: select_node
+
+- hosts: selected_nodes
+  gather_facts: True
+  any_errors_fatal: True
+  roles:
+    - role: from_drive_list_lv
+
+- hosts: kube-master
+  gather_facts: False
+  any_errors_fatal: True
+  roles:
+    - role: check_drained_node
+    - role: confirm_pv_pvc_deletion
+
+- hosts: selected_nodes
+  gather_facts: False
+  any_errors_fatal: True
+  tasks:
+    - name: 'stop kubelet before deleting pv'
+      service:
+        name: kubelet
+        state: stopped
+
+- hosts: kube-master
+  gather_facts: False
+  any_errors_fatal: True
+  roles:
+    - role: remove_kube_pvc_pv
+
+- hosts: selected_nodes
+  gather_facts: False
+  any_errors_fatal: True
+  roles:
+    - role: umount_remove_lv
+  tasks:
+    - name: 'restart kubelet after operation'
+      service:
+        name: kubelet
+        state: started

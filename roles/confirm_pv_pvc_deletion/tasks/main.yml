@@ -1,0 +1,27 @@
+- import_tasks: get_kube_pv.yml
+
+- debug:
+    msg: |-
+      { '! caution !': "You're about to remove (and erase) {{
+            hostvars[groups.selected_nodes|first]._drive_to_remove }} on {{
+            groups.selected_nodes }}",
+        'pv_list': {{ kube_pv_list }}
+      }
+  run_once: True
+
+- pause:
+    prompt: |-
+        ! caution ! You're about to replace {{
+        hostvars[groups.selected_nodes|first]._drive_to_remove }} on {{groups.selected_nodes }}
+        Please confirm (type 'yes') [NO/yes]
+  when: ask_user_confirmation|bool
+  register: user_confirmation
+  run_once: True
+
+- name: 'abort on user request'
+  fail:
+    msg: 'abort requested by user'
+  when:
+    - ask_user_confirmation|bool
+    - not user_confirmation.user_input|default(False)|bool
+  run_once: True
