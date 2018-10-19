@@ -1,0 +1,42 @@
+- name: 'Umount requested lv'
+  mount:
+    path: '{{ item }}'
+    state: absent
+  with_items: "{{ mountpoint_list|map(attribute='mount')|list }}"
+## mountpoint_list has the same format as ansible_mounts
+
+- name: 'remove lv'
+  lvol:
+    vg: '{{ vg_name }}'
+    lv: '{{ item.lv_name }}'
+    state: absent
+    force: True
+  with_items: '{{ lv_list }}'
+
+- debug:
+    var: ansible_lvm
+
+- name: 'remove pv'
+  lvg:
+    vg: '{{ vg_name }}'
+    pvs: '{{ remaining_pvs }}'
+    state: >-
+      {%- if remaining_pvs -%}
+        present
+      {%- else -%}
+        absent
+      {%- endif -%}
+    force: True
+  when: vg_name != ""
+  register: remove_pv
+  vars:
+    remaining_pvs: >-
+      [ {%- for device, pv in (ansible_lvm.pvs|default({})).items()
+             if device != _disk_to_replace
+             and pv.vg == vg_name -%}
+          '{{ device }}',
+      {%- endfor -%} ]
+
+- debug:
+    var: remove_pv
+  when: debug|bool

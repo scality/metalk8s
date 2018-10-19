@@ -1,0 +1,30 @@
+- name: 'list pv'
+  command: |-
+    {{ bin_dir }}/kubectl get pv
+    -o jsonpath='{range .items[?(@.spec.local.path=="{{ item }}")]}
+    pv_name: {@.metadata.name}
+    pvc_namespace: {@.spec.claimRef.namespace}
+    pvc_name: {@.spec.claimRef.name}
+    status: {@.status.phase}'
+  run_once: True
+  changed_when: False
+  check_mode: False
+  with_items: >-
+    {{ hostvars[groups.selected_nodes|first].mountpoint_list
+        |map(attribute='mount')|list }}
+  register: kube_pv_list_command
+
+- debug:
+    var: kube_pv_list_command
+  when: debug|bool
+
+- name: 'parse result'
+  set_fact:
+    kube_pv_list: >-
+      {{ kube_pv_list_command.results|default([])
+            |map(attribute='stdout')
+            |map('from_yaml')|select|list }}
+
+- debug:
+    var: kube_pv_list
+  when: debug|bool

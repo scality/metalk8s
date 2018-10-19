@@ -1,0 +1,76 @@
+
+- name: 'normalize disk name'
+  set_fact:
+    _disk_to_replace: >-
+      {%- if not disk_to_replace or disk_to_replace.startswith('/') -%}
+        {{ disk_to_replace }}
+      {%- else -%}
+        {{ '/dev/' ~ disk_to_replace }}
+      {%- endif -%}
+  # Reminder variable passed with -e has the higher priority.
+  # Thus using another variable name
+
+- debug:
+    var: _disk_to_replace
+  when: debug|bool
+
+- name: 'assert disk is used in pv'
+  assert:
+    that:
+    - "item in ansible_lvm.pvs"
+  with_items:
+    - '{{ _disk_to_replace }}'
+
+- name: 'list of lv associated with the drive'
+  command: >-
+    pvs {{ _disk_to_replace }}
+    -o lv_name -o+lv_dm_path
+    --noheadings
+  changed_when: False
+  check_mode: False
+  register: list_of_lv_command
+
+- debug:
+    var: list_of_lv_command
+  when: debug|bool
+
+- name: 'parse result'
+  set_fact:
+    lv_list: >-
+      [ {%- for lv_line in list_of_lv_command.stdout_lines|map('trim')|list -%}
+        {%- set line_split = lv_line.split(' ')|select|list -%}
+        {%- if line_split|length == 2 -%}
+            {%- set lv_name, dm_path = line_split -%}
+            {{ {'lv_name': lv_name, 'dev_path': dm_path} }},
+        {%- endif -%}
+      {%- endfor -%} ]
+    vg_name: >-
+      {{ ansible_lvm.pvs[_disk_to_replace].vg }}
+# TODO(jgirardi): Not sure we are safe with by removing the last items ([:-1])
+
+- debug:
+    var: lv_list
+  when: debug|bool
+
+- debug:
+    var: vg_name
+  when: debug|bool
+
+- debug:
+    var: ansible_mounts
+  when: debug|bool
+
+- name: 'find mountpoints'
+  set_fact:
+    mountpoint_list: >-
+      {%- set mountpoint_list = [] -%}
+      {%- for lv in lv_list|map(attribute='dev_path') -%}
+        {%- set _ = mountpoint_list.extend(
+            ansible_mounts|selectattr('device', 'equalto', lv)
+        ) -%}
+      {%- endfor -%}
+      {{ mountpoint_list }}
+
+- debug:
+    var: mountpoint_list
+  when: debug|bool

@@ -1,0 +1,3 @@
+debug: False
+
+ask_user_confirmation: True
