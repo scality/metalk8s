@@ -1,0 +1,49 @@
+- name: 'Umount requested lv'
+  mount:
+    path: '{{ item }}'
+    state: absent
+  with_items: "{{ mountpoint_list|map(attribute='mount')|list }}"
+
+- name: 'Sets lv as unactive'
+  lvol:
+    vg: '{{ vg_name }}'
+    lv: '{{ item.lv_name }}'
+    active: False
+    force: True
+  with_items: '{{ lv_list }}'
+
+- name: 'remove lv'
+  lvol:
+    vg: '{{ vg_name }}'
+    lv: '{{ item.lv_name }}'
+    state: absent
+    force: True
+  with_items: '{{ lv_list }}'
+
+- debug:
+    var: ansible_lvm
+  when: debug|bool
+
+- name: 'remove pv'
+  lvg:
+    vg: '{{ vg_name }}'
+    pvs: '{{ remaining_pvs }}'
+    state: >-
+      {%- if remaining_pvs -%}
+        present
+      {%- else -%}
+        absent
+      {%- endif -%}
+  when: vg_name != ""
+  register: remove_pv
+  vars:
+    remaining_pvs: >-
+      [ {%- for device, pv in (ansible_lvm.pvs|default({})).items()
+             if device != _drive_to_remove
+             and pv.vg == vg_name -%}
+          '{{ device }}',
+      {%- endfor -%} ]
+
+- debug:
+    var: remove_pv
+  when: debug|bool
