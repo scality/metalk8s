@@ -1,0 +1,14 @@
+- name: 'delete pvc'
+  command: >-
+    {{ bin_dir }}/kubectl delete pvc
+    -n {{ item.pvc_namespace }}
+    {{ item.pvc_name }}
+  with_items: >-
+    {{ kube_pv_list |selectattr('status', 'equalto', 'Bound') | list }}
+  run_once: True
+
+- name: 'delete pv'
+  command: >-
+    {{ bin_dir }}/kubectl delete pv {{ item.pv_name }}
+  with_items: '{{ kube_pv_list }}'
+  run_once: True
