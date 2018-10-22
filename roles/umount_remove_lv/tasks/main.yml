@@ -17,7 +17,7 @@
     var: ansible_lvm
 
 - name: 'remove pv'
-  lvg:
+  lvg_fix:
     vg: '{{ vg_name }}'
     pvs: '{{ remaining_pvs }}'
     state: >-
