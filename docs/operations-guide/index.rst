@@ -7,4 +7,5 @@ Operations Guide
 
    advanced_configuration
    workload_storage
+   replacing_a_disk
 

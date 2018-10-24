@@ -1,4 +1,4 @@
-Disk replacement
+Replacing a disk
 ================
 
 To change disk of a server you first need to put the node into maintenance (TODO: link to node maintenance)
