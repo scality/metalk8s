@@ -1,18 +1,23 @@
 Replacing a disk
 ================
 
-To change disk of a server you first need to put the node into maintenance (TODO: link to node maintenance)
-Before shutting the server it's advisable to remove any usage to the drive.
-Once your server is into maintenance you can run:
+To change the disk of a server, first put the node into a maintenance
+state. (TODO: link to node maintenance)
 
-.. code-block::
+.. note::
+
+  Before shutting the server, remove any usage to the drive.
+
+Once the server is on maintenance, run:
+
+.. code::
 
   (metalk8s) $ ansible-playbook -b -i <inventory>/hosts playbooks/unmount_drive.yml
 
 
-This will prompt you the required information interactivaly:
+This prompts the required information interactively:
 
-.. code-block::
+.. code::
 
   Please provide a node name affected by a disk failure
     metalk8s-node-0
@@ -24,26 +29,34 @@ This will prompt you the required information interactivaly:
   Please provide a disk name: <driver_path>
 
 
-You can also provide the required information via command line argument:
+The required information can also be provided via the command line argument:
 
-.. code-block::
+.. code::
 
    (metalk8s) $ ansible-playbook -b -i <inventory>/hosts playbooks/unmount_drive.yml -e selected_node=metalk8s-node-3 -e disk_to_replace=vdb
 
-The playbook will do:
+The playbook will:
 - remove pvc associated with a pv backed by the disk
 - remove those pv
-- umount lvm and remove the mount point
+- unmount lvm and remove the mount point
 - remove all lvm on the selected disk
 - remove the disk of it's volume group
 
-You can then shutdown your node, remove drive from it's enclosure and place a new drive.
-Start again your node, check the drive is detected correctly and change the inventory to match
-the new disk name. You can do storage provisionning (TODO: link storage provisionning)
+Then:
 
-.. code-block::
+1. Shutdown the node.
+#. Remove the drive from its enclosure.
+#. Place a new drive.
+#. Restart the node.
+#. Check the drive is detected correctly.
+#. Change the inventory to match the new disk name.
+
+You can do storage provisionning (TODO: link storage provisionning)
+
+.. code::
 
   (metalk8s) $ ansible-playbook -b -i <inventory>/hosts playbooks/deploy.yml -t storage
 
 
-Once done, you can put back the node into the cluster. (TODO: link to node maintenance)
+Once done, put back the node into the cluster. (TODO: link to node
+maintenance)
