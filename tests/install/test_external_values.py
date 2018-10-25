@@ -28,7 +28,7 @@ def test_elasticsearch_external_values():
 
 @then(parsers.parse("I can see the test annotation"))
 def look_at_annotation(request):
-    try_ = retry(10, msg='Cannot meet the assertion')
+    try_ = retry(60, msg='Cannot meet the assertion')
     while next(try_):
         kube_object = request.get_kube_object()
         if isinstance(kube_object, V1beta1CronJob):
@@ -42,7 +42,7 @@ def look_at_annotation(request):
 
 @then(parsers.parse("I can see the number of replicas '{count:d}'"))
 def look_at_replicas_number(request, count):
-    try_ = retry(10, msg='Cannot meet the assertion')
+    try_ = retry(60, msg='Cannot meet the assertion')
     while next(try_):
         kube_object = request.get_kube_object()
         if kube_object.spec.replicas == count:
@@ -51,7 +51,7 @@ def look_at_replicas_number(request, count):
 
 @then(parsers.parse("I can't see the test annotation"))
 def look_at_annotation_absence(request):
-    try_ = retry(10, msg='Cannot meet the assertion')
+    try_ = retry(60, msg='Cannot meet the assertion')
     while next(try_):
         kube_object = request.get_kube_object()
         if isinstance(kube_object, V1beta1CronJob):
