@@ -1,11 +1,9 @@
 ---
-
-custom_external_values:
-  client:
+elasticsearch_external_values:
+- client:
     replicas: 1
   master:
     replicas: 1
-    antiAffinity: "soft"
   data:
     replicas: 1
   cluster:
@@ -13,7 +11,3 @@ custom_external_values:
       MINIMUM_MASTER_NODES: 1
       EXPECTED_MASTER_NODES: 1
       RECOVER_AFTER_MASTER_NODES: 1
-
-elasticsearch_external_values:
-  - '{{ custom_external_values }}'
-  - '{{ test_elasticsearch_external_values | default({})}}'
