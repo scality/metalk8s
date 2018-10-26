@@ -3,13 +3,6 @@ import requests
 
 from pytest_bdd import when
 
-from utils.helper import Inventory
-
-
-@pytest.fixture(scope="session")
-def inventory_obj(inventory):
-    return Inventory(filename=inventory)
-
 
 @pytest.fixture(scope="session")
 def kubectl_proxy(request, run_services, watcher_getter, kubeconfig):

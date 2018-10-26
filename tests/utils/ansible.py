@@ -13,6 +13,7 @@ from ansible.parsing.dataloader import DataLoader
 from ansible.playbook.play import Play
 from ansible.plugins.callback.default import CallbackModule \
     as CallbackModule_default
+from ansible.vars.hostvars import HostVars
 from ansible.vars.manager import VariableManager
 from collections import namedtuple
 
@@ -183,3 +184,16 @@ class AnsibleHelper(object):
 
         # Return the result
         return result
+
+
+class InventoryHelper(object):
+    def __init__(self, filename):
+        self._loader = loader = DataLoader()
+        self._inventory = inventory = InventoryManager(
+            loader=loader, sources=filename)
+        self._variable_manager = variable_manager = VariableManager(
+            loader=loader, inventory=inventory)
+        self._hostvars = HostVars(inventory, variable_manager, loader)
+
+    def __getattr__(self, key):
+        return getattr(self._inventory, key)
