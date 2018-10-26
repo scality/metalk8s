@@ -1,7 +1,7 @@
-test_elasticsearch_external_values:
-  client:
-    podAnnotations:
-      metalk8s.io/test: 'true'
+elasticsearch_external_values:
+  - client:
+      podAnnotations:
+        metalk8s.io/test: 'true'
 
 elasticsearch_curator_external_values:
   - cronjob:

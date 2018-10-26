@@ -22,8 +22,10 @@ def test_nginx_ingress_external_values():
 
 @scenario('features/external_values.feature',
           'Change parameters of Elasticsearch')
-def test_elasticsearch_external_values():
-    pass
+def test_elasticsearch_external_values(inventory_obj):
+    node = inventory_obj.get_groups_dict()['kube-master'][0]
+    if 'elasticsearch_external_values' in inventory_obj._hostvars[node]:
+        pytest.skip("Variable 'elasticsearch_external_values' already set")
 
 
 @then(parsers.parse("I can see the test annotation"))
