@@ -82,7 +82,7 @@ def ansible_playbook_step(request, playbook):
 def redeploy_tag(request, tag):
     ansible_process = run_ansible_playbook(
         "deploy.yml",
-        skip_tags='always',
+        skip_tags='kubespray',
         tags=tag)
     assert ansible_process.returncode == 0
     return ansible_process
