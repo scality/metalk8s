@@ -3,9 +3,6 @@ import os
 import subprocess
 import time
 
-from ansible.inventory.manager import InventoryManager
-from ansible.parsing.dataloader import DataLoader
-
 
 def run_make_shell(args=None, basedir=None, tmpdir=None, **kwargs):
     make_args = []
@@ -46,16 +43,6 @@ def run_ansible_playbook(playbook, env=None, tags=None, skip_tags=None,
         basedir=basedir,
         tmpdir=tmpdir
     )
-
-
-class Inventory(object):
-    def __init__(self, filename):
-        self._loader = DataLoader()
-        self._inventory = InventoryManager(
-            loader=self._loader, sources=filename)
-
-    def __getattr__(self, key):
-        return getattr(self._inventory, key)
 
 
 class RetryCountExceededError(StopIteration):

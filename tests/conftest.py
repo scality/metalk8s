@@ -10,6 +10,7 @@ from pytest_bdd import parsers
 from pytest_bdd import then
 from pytest_bdd import when
 
+from utils.ansible import InventoryHelper
 from utils.helper import run_ansible_playbook
 from utils.helper import run_make_shell
 from utils.kube import get_kube_resources
@@ -45,6 +46,11 @@ def kubeconfig(inventory):
 @pytest.fixture(scope="session")
 def inventory_usage():
     return {}
+
+
+@pytest.fixture(scope="session")
+def inventory_obj(inventory):
+    return InventoryHelper(filename=inventory)
 
 
 @pytest.fixture
