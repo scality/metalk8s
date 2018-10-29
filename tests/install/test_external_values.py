@@ -4,7 +4,7 @@ from pytest_bdd import parsers
 from pytest_bdd import scenario
 from pytest_bdd import then
 
-from utils.helper import retry
+from utils.helper import Retry
 
 from kubernetes.client import V1beta1CronJob
 
@@ -28,8 +28,8 @@ def test_elasticsearch_external_values():
 
 @then(parsers.parse("I can see the test annotation"))
 def look_at_annotation(request):
-    try_ = retry(10, msg='Cannot meet the assertion')
-    while next(try_):
+    retry = Retry(10, msg='Cannot meet the assertion')
+    while next(iter(retry)):
         kube_object = request.get_kube_object()
         if isinstance(kube_object, V1beta1CronJob):
             metadata = kube_object.metadata
@@ -42,8 +42,8 @@ def look_at_annotation(request):
 
 @then(parsers.parse("I can see the number of replicas '{count:d}'"))
 def look_at_replicas_number(request, count):
-    try_ = retry(10, msg='Cannot meet the assertion')
-    while next(try_):
+    retry = Retry(10, msg='Cannot meet the assertion')
+    while next(iter(retry)):
         kube_object = request.get_kube_object()
         if kube_object.spec.replicas == count:
             break
@@ -51,8 +51,8 @@ def look_at_replicas_number(request, count):
 
 @then(parsers.parse("I can't see the test annotation"))
 def look_at_annotation_absence(request):
-    try_ = retry(10, msg='Cannot meet the assertion')
-    while next(try_):
+    retry = Retry(10, msg='Cannot meet the assertion')
+    while next(iter(retry)):
         kube_object = request.get_kube_object()
         if isinstance(kube_object, V1beta1CronJob):
             metadata = kube_object.metadata

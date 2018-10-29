@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 import subprocess
@@ -62,11 +63,30 @@ class RetryCountExceededError(StopIteration):
     "Exception to finish retry"
 
 
-def retry(count, wait=2, msg=None):
-    for _ in range(count):
-        yield True
-        time.sleep(wait)
-    raise RetryCountExceededError(msg)
+class Retry(object):
+
+    def __init__(self, count, wait=2, msg=None):
+        self.count = count
+        self.wait = wait
+        self.msg = msg
+
+    def __iter__(self):
+        for _ in range(self.count):
+            yield True
+            time.sleep(self.wait)
+        return self.msg
+
+    def __call__(self, func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for _ in iter(self):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as exc:
+                    logging.exception(str(exc))
+            else:
+                return func(*args, **kwargs)
+        return wrapper
 
 
 def create_version_archive(version, tmpdir):
