@@ -50,10 +50,10 @@ Some variables of note include:
 #### Cluster variables
 
 Kubernetes needs some parameters in order to get deployed. These are the
-following default cluster paramters:
+following default cluster parameters:
 
 * *cluster_name* - Name of cluster (default is cluster.local)
-* *domain_name* - Name of cluster DNS domain (default is cluster.local)
+* *dns_domain* - Name of cluster DNS domain (default is cluster.local)
 * *kube_network_plugin* - Plugin to use for container networking
 * *kube_service_addresses* - Subnet for cluster IPs (default is
   10.233.0.0/18). Must not overlap with kube_pods_subnet
@@ -136,7 +136,7 @@ node_labels:
   * `audit_log_maxsize`: 100
   * `audit_policy_file`: "{{ kube_config_dir }}/audit-policy/apiserver-audit-policy.yaml"
 
-  By default, the `audit_policy_file` contains [default rules](https://github.com/kubernetes-incubator/kubespray/blob/master/roles/kubernetes/master/templates/apiserver-audit-policy.yaml.j2) that can be overriden with the `audit_policy_custom_rules` variable.
+  By default, the `audit_policy_file` contains [default rules](https://github.com/kubernetes-incubator/kubespray/blob/master/roles/kubernetes/master/templates/apiserver-audit-policy.yaml.j2) that can be overridden with the `audit_policy_custom_rules` variable.
 
 ##### Custom flags for Kube Components
 For all kube components, custom flags can be passed in. This allows for edge cases where users need changes to the default deployment that may not be applicable to all deployments. This can be done by providing a list of flags. The `kubelet_node_custom_flags` apply kubelet settings only to nodes and not masters. Example:

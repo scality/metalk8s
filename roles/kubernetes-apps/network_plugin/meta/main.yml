@@ -29,3 +29,13 @@ dependencies:
     when: kube_network_plugin == 'weave'
     tags:
       - weave
+
+  - role: kubernetes-apps/network_plugin/kube-router
+    when: kube_network_plugin == 'kube-router'
+    tags:
+      - kube-router
+
+  - role: kubernetes-apps/network_plugin/multus
+    when: kube_network_plugin_multus
+    tags:
+      - multus

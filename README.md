@@ -19,11 +19,17 @@ To deploy the cluster you can use :
 
 ### Ansible
 
+#### Ansible version
+
+Ansible v2.7.0 is failing and/or produce unexpected results due to [ansible/ansible/issues/46600](https://github.com/ansible/ansible/issues/46600)
+
+#### Usage
+
     # Install dependencies from ``requirements.txt``
     sudo pip install -r requirements.txt
 
     # Copy ``inventory/sample`` as ``inventory/mycluster``
-    cp -rfp inventory/sample/* inventory/mycluster
+    cp -rfp inventory/sample inventory/mycluster
 
     # Update Ansible inventory file with inventory builder
     declare -a IPS=(10.10.1.3 10.10.1.4 10.10.1.5)
@@ -33,8 +39,11 @@ To deploy the cluster you can use :
     cat inventory/mycluster/group_vars/all/all.yml
     cat inventory/mycluster/group_vars/k8s-cluster/k8s-cluster.yml
 
-    # Deploy Kubespray with Ansible Playbook
-    ansible-playbook -i inventory/mycluster/hosts.ini cluster.yml
+    # Deploy Kubespray with Ansible Playbook - run the playbook as root
+    # The option `-b` is required, as for example writing SSL keys in /etc/,
+    # installing packages and interacting with various systemd daemons.
+    # Without -b the playbook will fail to run!
+    ansible-playbook -i inventory/mycluster/hosts.ini --become --become-user=root cluster.yml
 
 Note: When Ansible is already installed via system packages on the control machine, other python packages installed via `sudo pip install -r requirements.txt` will go to a different directory tree (e.g. `/usr/local/lib/python2.7/dist-packages` on Ubuntu) from Ansible's (e.g. `/usr/lib/python2.7/dist-packages/ansible` still on Ubuntu).
 As a consequence, `ansible-playbook` command will fail with:
@@ -89,7 +98,7 @@ Supported Linux Distributions
 -----------------------------
 
 -   **Container Linux by CoreOS**
--   **Debian** Jessie, Stretch, Wheezy
+-   **Debian** Buster, Jessie, Stretch, Wheezy
 -   **Ubuntu** 16.04, 18.04
 -   **CentOS/RHEL** 7
 -   **Fedora** 28
@@ -102,25 +111,27 @@ Supported Components
 --------------------
 
 -   Core
-    -   [kubernetes](https://github.com/kubernetes/kubernetes) v1.11.3
+    -   [kubernetes](https://github.com/kubernetes/kubernetes) v1.12.2
     -   [etcd](https://github.com/coreos/etcd) v3.2.18
-    -   [docker](https://www.docker.com/) v17.03 (see note)
+    -   [docker](https://www.docker.com/) v18.06 (see note)
     -   [rkt](https://github.com/rkt/rkt) v1.21.0 (see Note 2)
     -   [cri-o](http://cri-o.io/) v1.11.5 (experimental: see [CRI-O Note](docs/cri-o.md). Only on centos based OS)
 -   Network Plugin
     -   [calico](https://github.com/projectcalico/calico) v3.1.3
     -   [canal](https://github.com/projectcalico/canal) (given calico/flannel versions)
-    -   [cilium](https://github.com/cilium/cilium) v1.2.0
+    -   [cilium](https://github.com/cilium/cilium) v1.3.0
     -   [contiv](https://github.com/contiv/install) v1.1.7
     -   [flanneld](https://github.com/coreos/flannel) v0.10.0
     -   [weave](https://github.com/weaveworks/weave) v2.4.1
+    -   [kube-router](https://github.com/cloudnativelabs/kube-router) v0.2.1
+    -   [multus](https://github.com/intel/multus-cni) v3.1
 -   Application
     -   [cephfs-provisioner](https://github.com/kubernetes-incubator/external-storage) v2.1.0-k8s1.11
     -   [cert-manager](https://github.com/jetstack/cert-manager) v0.5.0
-    -   [coredns](https://github.com/coredns/coredns) v1.2.2
-    -   [ingress-nginx](https://github.com/kubernetes/ingress-nginx) v0.19.0
+    -   [coredns](https://github.com/coredns/coredns) v1.2.5
+    -   [ingress-nginx](https://github.com/kubernetes/ingress-nginx) v0.20.0
 
-Note: kubernetes doesn't support newer docker versions ("Version 17.03 is recommended... Versions 17.06+ might work, but have not yet been tested and verified by the Kubernetes node team" cf. [Bootstrapping Clusters with kubeadm](https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-docker)). Among other things kubelet currently breaks on docker's non-standard version numbering (it no longer uses semantic versioning). To ensure auto-updates don't break your cluster look into e.g. yum versionlock plugin or apt pin). 
+Note: The list of validated [docker versions](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.12.md) was updated to 1.11.1, 1.12.1, 1.13.1, 17.03, 17.06, 17.09, 18.06. The kubelet might break on docker's non-standard version numbering (it no longer uses semantic versioning). To ensure auto-updates don't break your cluster look into e.g. yum versionlock plugin or apt pin).
 
 Note 2: rkt support as docker alternative is limited to control plane (etcd and
 kubelet). Docker is still used for Kubernetes cluster workloads and network
@@ -130,7 +141,7 @@ plugins can be deployed for a given single cluster.
 Requirements
 ------------
 
--   **Ansible v2.4 (or newer) and python-netaddr is installed on the machine
+-   **Ansible v2.5 (or newer) and python-netaddr is installed on the machine
     that will run Ansible commands**
 -   **Jinja 2.9 (or newer) is required to run the Ansible Playbooks**
 -   The target servers must have **access to the Internet** in order to pull docker images. Otherwise, additional configuration is required (See [Offline Environment](https://github.com/kubernetes-incubator/kubespray/blob/master/docs/downloads.md#offline-environment))
@@ -160,6 +171,13 @@ You can choose between 6 network plugins. (default: `calico`, except Vagrant use
 
 -   [weave](docs/weave.md): Weave is a lightweight container overlay network that doesn't require an external K/V database cluster.
     (Please refer to `weave` [troubleshooting documentation](http://docs.weave.works/weave/latest_release/troubleshooting.html)).
+
+-   [kube-router](docs/kube-router.md): Kube-router is a L3 CNI for Kubernetes networking aiming to provide operational
+    simplicity and high performance: it uses IPVS to provide Kube Services Proxy (if setup to replace kube-proxy),
+    iptables for network policies, and BGP for ods L3 networking (with optionally BGP peering with out-of-cluster BGP peers).
+    It can also optionally advertise routes to Kubernetes cluster Pods CIDRs, ClusterIPs, ExternalIPs and LoadBalancerIPs.
+
+-   [multus](docs/multus.md): Multus is a meta CNI plugin that provides multiple network interface support to pods. For each interface Multus delegates CNI calls to secondary CNI plugins such as Calico, macvlan, etc.
 
 The choice is defined with the variable `kube_network_plugin`. There is also an
 option to leverage built-in cloud provider networking instead.
