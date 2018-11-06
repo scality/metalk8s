@@ -3,7 +3,7 @@ modules:
   source:
     type: git-subtree
     repository: https://github.com/kubernetes-incubator/kubespray.git
-    ref: master
+    ref: c818dc1ce884f77f6870bb4d81ba2e9a5f7f8729
   license: Apache-2.0
 - path: vendor/etcd
   source:
