@@ -1,5 +1,8 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
+Release 1.2.0 (in development)
+==============================
+
 Release 1.1.0 (in development)
 ==============================
 Features added
