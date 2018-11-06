@@ -387,9 +387,9 @@ requests-oauthlib==1.0.0 \
     --hash=sha256:8886bfec5ad7afb391ed5443b1f697c6f4ae98d0e5620839d8b4499c032ada3f \
     --hash=sha256:e21232e2465808c0e892e0e4dbb8c2faafec16ac6dc067dd546e9b466f3deac8 \
     # via kubernetes
-requests==2.19.1 \
-    --hash=sha256:63b52e3c866428a224f97cab011de738c36aec0185aa91cfacd418b5d58911d1 \
-    --hash=sha256:ec22d826a36ed72a7358ff3fe56cbd4ba69dd7a6718ffd450ff0e9df7a47ce6a
+requests==2.20.0 \
+    --hash=sha256:99dcfdaaeb17caf6e526f32b6a7b780461512ab3f1d992187801694cba42770c \
+    --hash=sha256:a84b8c9ab6239b578f22d1c21d51b696dcfe004032bb80ea832398d6909d7279
 rsa==3.4.2 \
     --hash=sha256:25df4e10c263fb88b5ace923dd84bf9aa7f5019687b5e55382ffcdb8bede9db5 \
     --hash=sha256:43f682fea81c452c98d09fc316aae12de6d30c4b5c84226642cf8f8fd1c93abd \

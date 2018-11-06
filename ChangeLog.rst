@@ -35,6 +35,8 @@ Bugs fixed
 capital letters
 (:ghpull:`409`)
 
+:ghpull:`472` - update Python `requests` library version
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
