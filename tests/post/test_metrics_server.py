@@ -17,7 +17,7 @@ def wait_until_initialized(kubeconfig):
     # It can take up to a minute before metrics-server scraped some stats, see
     # https://github.com/kubernetes-incubator/metrics-server/issues/134 and
     # https://github.com/kubernetes-incubator/metrics-server/issues/136
-    for _ in utils.helper.retry(90, wait=1):
+    for _ in utils.helper.Retry(90, wait=1):
         try:
             (_, response_code, _) = client.call_api(
                 '/api/v1/namespaces/kube-system/services'
@@ -47,6 +47,7 @@ def raw_request(request, kubeconfig, kind, path):
 
 @pytest_bdd.then(pytest_bdd.parsers.parse(
     'I should count as many nodes as {group_name} hosts'))
+@utils.helper.Retry(count=10)
 def node_count_match(request, inventory_obj, group_name):
     assert len(request.raw_response['items']) == \
         len(inventory_obj.get_groups_dict()[group_name])

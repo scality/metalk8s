@@ -9,7 +9,7 @@ from pytest_bdd import scenarios
 from pytest_bdd import then
 from pytest_bdd import when
 
-from utils.helper import retry
+from utils.helper import Retry
 from utils.helper import run_make_shell
 from utils.kube import get_kube_resources
 
@@ -36,7 +36,7 @@ def count_pv(pv_list):
 def check_quantity_storage_in_state(quantity, state, kubeconfig):
     assert quantity in ['No', 'Some']
     nb = ['No', 'Some'].index(quantity)
-    for _ in retry(5):
+    for _ in Retry(5):
         pv_count = count_pv(get_kubernetes_pv(kubeconfig))
         if bool(nb) == bool(pv_count[state]):
             break
@@ -80,8 +80,8 @@ def lauch_test_storage_pod(kubeconfig):
 
 @then("The result of test storage pod should be 'success'")
 def storage_pod_test_result(kubeconfig):
-    try_ = retry(5)
-    while next(try_):
+    retry = Retry(5)
+    while next(iter(retry)):
         test_pv = get_kube_resources(kubeconfig, 'pod', name='test-pv')
         if test_pv.status.phase in ['Succeeded', 'Failed']:
             break
