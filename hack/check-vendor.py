@@ -2,6 +2,7 @@
 
 import hashlib
 import os.path
+import re
 import subprocess
 import sys
 
@@ -34,9 +35,13 @@ def bold(s):
 
 def check_module_subtree(root, module):
     latest_commit = find_latest_squash(module['path'], root)
-    latest_remote = find_latest_remote(
-        module['source']['repository'], module['source']['ref']
-    ).decode('ascii')
+    # Check whether given ref is an actual SHA1
+    if re.match(r'[0-9a-z]{40}', module['source']['ref']):
+        latest_remote = module['source']['ref']
+    else:
+        latest_remote = find_latest_remote(
+            module['source']['repository'], module['source']['ref']
+        ).decode('ascii')
 
     if latest_commit[1] != latest_remote:
         yield ('.', latest_remote, latest_commit[1])
