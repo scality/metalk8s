@@ -47,7 +47,7 @@ def raw_request(request, kubeconfig, kind, path):
 
 @pytest_bdd.then(pytest_bdd.parsers.parse(
     'I should count as many nodes as {group_name} hosts'))
-@utils.helper.Retry(count=10)
+@utils.helper.Retry(count=360, wait=10)
 def node_count_match(request, inventory_obj, group_name):
     assert len(request.raw_response['items']) == \
         len(inventory_obj.get_groups_dict()[group_name])
