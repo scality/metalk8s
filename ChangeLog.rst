@@ -36,6 +36,8 @@ deployment strategy for Elasticsearch `data` and `master` daemons
 
 :ghpull:`417` - update Python package versions
 
+:ghpull:`457` - update vendored Kubespray version
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
