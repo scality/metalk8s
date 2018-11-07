@@ -1,4 +1,4 @@
-ci-metalk8s ansible_connection=local ansible_become=True
+ci-metalk8s ansible_connection=local ansible_become=True ansible_python_interpreter=/usr/bin/python
 
 [etcd]
 ci-metalk8s
