@@ -37,6 +37,9 @@ the index provisioning job (:ghpull:`233`).
 
 :ghpull:`251` - tag Grafana dashboards (:ghissue:`208`)
 
+:ghpull:`478` - metrics-server: ensure that missing pod/node data doesn't invalidate an entire node's results
+
+
 Release 1.0.1 (in development)
 ==============================
 Features added
