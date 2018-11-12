@@ -19,8 +19,3 @@ the 'bash-completion' package.
 EOF
     fi
 fi
-
-if [[ (-z "${ANSIBLE_STRATEGY_PLUGINS}") && (-z "${ANSIBLE_STRATEGY}") ]]; then
-    export ANSIBLE_STRATEGY_PLUGINS=$(python -c 'import ansible_mitogen.plugins, os.path; print(os.path.dirname(ansible_mitogen.plugins.__file__))')
-    export ANSIBLE_STRATEGY=mitogen
-fi
