@@ -2,6 +2,11 @@
 
 Release 1.2.0 (in development)
 ==============================
+Features added
+--------------
+:ghpull:`462` - update vendored Kubespray version
+
+.. note:: This includes an upgrade to Kubernetes 1.12.
 
 Release 1.1.0 (in development)
 ==============================
