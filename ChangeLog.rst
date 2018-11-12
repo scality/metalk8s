@@ -30,11 +30,6 @@ deployment strategy for Elasticsearch `data` and `master` daemons
 
 :ghpull:`457` - update vendored Kubespray version
 
-:ghpull:`463` - install Mitogen_ as part of `make shell` and use the `mitogen`
-Ansible strategy
-
-.. _Mitogen: https://mitogen.readthedocs.io
-
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in
