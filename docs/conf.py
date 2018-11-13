@@ -6,6 +6,12 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+import string
+import glob
+
+from pygments.formatters.latex import LatexFormatter
+from sphinx.highlighting import PygmentsBridge
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -135,47 +141,75 @@ htmlhelp_basename = 'MetalK8sdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
+latex_engine = 'xelatex'
+
+with open('_templates/preamble.tex', 'r') as fp:
+    preamble = string.Template(fp.read())
+
+latex_contents = r"""
+    \thispagestyle{empty}
+    \cleardoublepage
+    \sphinxtableofcontents
+"""
+
+latex_logo = '_static/footer_logo.png'
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    'papersize': 'a4paper',
+     'papersize': 'letterpaper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #
-    'pointsize': '10pt',
+     'pointsize': '12pt',
 
     # Additional stuff for the LaTeX preamble.
     #
-    'preamble': r'''
-        \usepackage{charter}
-        \usepackage[defaultsans]{lato}
-        \usepackage{inconsolata}
-    ''',
+    'preamble': preamble.substitute(
+        cover='cover.png',
+        logo=os.path.basename(latex_logo),
+        title=r'Documentation',
+        version=release,
+        copyright=copyright
+    ),
+
+    'tableofcontents': latex_contents,
 
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
 }
 
+latex_additional_files = [
+    '_static/cover.png',
+    '_static/footer_logo.png',
+]
+# Copy the fonts
+latex_additional_files.extend(glob.glob('_static/fonts/*/*.ttf'))
+
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index-latex', 'MetalK8s.tex', 'MetalK8s Documentation',
-     'Scality', 'manual', True),
+    (master_doc, 'MetalK8s_Documentation.tex', 'MetalK8s Documentation',
+     'Tech Pubs', 'manual'),
 ]
 
-latex_logo = '../artwork/generated/metalk8s-logo-wide-black.pdf'
+# Custom LaTeX formatter to customize the font size.
+class CustomLatexFormatter(LatexFormatter):
+    def __init__(self, **options):
+        super(CustomLatexFormatter, self).__init__(**options)
+        self.verboptions = r"formatcom=\scriptsize"
 
-latex_toplevel_sectioning = 'part'
+# Override the default formatter with our custom one.
+PygmentsBridge.latex_formatter = CustomLatexFormatter
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'metalk8s', 'MetalK8s Documentation',
+    (master_doc, 'metalk8sdocumentation', 'MetalK8s Documentation',
      [author], 1)
 ]
 
@@ -186,8 +220,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'MetalK8s', 'MetalK8s Documentation',
-     author, 'MetalK8s', 'One line description of project.',
+    (master_doc, 'metalk8sdocumentation', 'MetalK8s Documentation',
+     author, 'metalk8sdocumentation', 'One line description of project.',
      'Miscellaneous'),
 ]
 

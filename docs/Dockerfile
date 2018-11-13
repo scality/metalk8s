@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         texlive-fonts-recommended \
         texlive-latex-extra \
         texlive-latex-recommended \
+        texlive-xetex \
         tox \
         && \
     apt-get clean && \
