@@ -16,6 +16,10 @@ SPHINXAUTOBUILDOPTS = \
 	--re-ignore '4913$$' \
 	--re-ignore '\.git/'
 
+DOCKER        = docker
+DOCKERIMAGE   = metalk8s-docs:latest
+SED           = sed
+
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
@@ -24,6 +28,10 @@ help:
 
 livehtml:
 	@$(SPHINXAUTOBUILD) $(SPHINXAUTOBUILDOPTS) $(SPHINXOPTS) $(O) "$(SOURCEDIR)" "$(BUILDDIR)"
+
+docker-%:
+	cd $(SOURCEDIR)/.. && $(DOCKER) build -t $(DOCKERIMAGE) -f docs/Dockerfile .
+	$(DOCKER) run -v $(shell python $(SOURCEDIR)/../hack/realpath.py $(SOURCEDIR)/..):/usr/src/metalk8s --rm $(DOCKERIMAGE) -- $(shell echo "$@" | $(SED) s/^docker-//)
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
