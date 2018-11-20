@@ -65,6 +65,26 @@ resource "openstack_networking_secgroup_rule_v2" "node_ingress_https" {
   security_group_id = "${openstack_networking_secgroup_v2.nodes.id}"
 }
 
+resource "openstack_networking_secgroup_rule_v2" "node_ingress_nodeport_tcp" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 30000
+  port_range_max    = 32168
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = "${openstack_networking_secgroup_v2.nodes.id}"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "node_ingress_nodeport_udp" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "udp"
+  port_range_min    = 30000
+  port_range_max    = 32168
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = "${openstack_networking_secgroup_v2.nodes.id}"
+}
+
 resource "openstack_networking_secgroup_rule_v2" "masters_to_nodes" {
   direction         = "ingress"
   ethertype         = "IPv4"
