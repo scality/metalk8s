@@ -1,4 +1,0 @@
--rvendor/kubespray/requirements.txt
-# https://github.com/ansible/ansible/issues/46600
-ansible != 2.7.0
-mitogen >= 0.2.3
