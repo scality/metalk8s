@@ -185,11 +185,7 @@ latex_additional_files = [
     '_static/footer_logo.png',
 ]
 # Copy the fonts
-<<<<<<< HEAD
 latex_additional_files.extend(glob.glob('_static/*.ttf'))
-=======
-latex_additional_files.extend(glob.glob('_static/fonts/*/*.ttf'))
->>>>>>> fd40852657227574ac88407501732894dc128b61
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
