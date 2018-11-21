@@ -10,6 +10,10 @@ from pytest_bdd import parsers
 from pytest_bdd import then
 from pytest_bdd import when
 
+# Enable Ordering plugin
+from pytest_ordering_plugin import pytest_collection_modifyitems  # noqa: F401
+from pytest_ordering_plugin import pytest_configure  # noqa: F401
+
 from utils.ansible import InventoryHelper
 from utils.helper import run_ansible_playbook
 from utils.helper import run_make_shell
