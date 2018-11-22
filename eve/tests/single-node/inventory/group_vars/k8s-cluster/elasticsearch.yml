@@ -2,8 +2,12 @@
 elasticsearch_external_values:
 - client:
     replicas: 1
+    podDisruptionBudget:
+      enabled: False
   master:
     replicas: 1
+    podDisruptionBudget:
+      enabled: False
   data:
     replicas: 1
   cluster:
