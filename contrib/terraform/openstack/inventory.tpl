@@ -13,15 +13,29 @@ ${nodes_name}
 kube-master
 kube-node
 
-[k8s-cluster:vars]
-ansible_become=True
-ansible_become_method=sudo
-ansible_user=${ssh_user}
+[metalk8s:children]
+etcd
+k8s-cluster
 
-[etcd:vars]
+${ proxies_name != "" ?
+"[proxies]
+${proxies_name}
+
+[proxies:vars]
+ansible_become=True
+ansible_become_method=sudo
+ansible_user=${ssh_user}"
+: ""}
+
+[metalk8s:vars]
 ansible_become=True
 ansible_become_method=sudo
 ansible_user=${ssh_user}
+${proxy_url != "0" ?
+"http_proxy=${proxy_url}
+https_proxy=${proxy_url}
+no_proxy=localhost,127.0.0.1,${all_servers_ip}"
+: ""}
 
 [kube-node:vars]
 metalk8s_lvm_drives_vg_metalk8s=['/dev/vdb']
