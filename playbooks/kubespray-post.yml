@@ -1,0 +1,5 @@
+- hosts: etcd
+  any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
+  gather_facts: False
+  roles:
+  - role: etcd_env_file
