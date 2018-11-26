@@ -1,13 +1,26 @@
+---
+
 - name: 'install prometheus-operator'
-  command: >-
-    {{ bin_dir }}/helm upgrade prometheus-operator
-    --install {{ prometheus_operator_release_name }}
-    --repo {{ prometheus_operator_repo }}
-    --version {{ prometheus_operator_version }}
-    --namespace {{ prometheus_operator_namespace }}
-    --timeout {{ prometheus_operator_timeout }}
-  run_once: True
+  helm_cli:
+    release: '{{ prometheus_operator_release_name }}'
+    chart:
+      name: '{{ prometheus_operator_chart }}'
+      version: '{{ prometheus_operator_version }}'
+      repo: '{{ prometheus_operator_repo }}'
+    namespace: '{{ prometheus_operator_namespace }}'
+    binary: '{{ bin_dir }}/helm'
+    values: '{{ prometheus_operator_external_values }}'
+    timeout: '{{ prometheus_operator_timeout | int }}'
+    wait: '{{ helm_wait | bool }}'
+    state: '{{ helm_state }}'
+  register: prometheus_operator_helm_install
+  run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
+
+- debug:
+    var: prometheus_operator_helm_install
+  run_once: true
+  when: debug | bool
 
 - name: copy kube-prometheus additional dashboard manifests
   copy:

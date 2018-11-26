@@ -1,7 +1,10 @@
+---
+
 debug: False
 
 remove_metal_k8s_temporary_file: True
 
+prometheus_operator_chart: 'prometheus-operator'
 prometheus_operator_version: '0.0.29'
 prometheus_operator_namespace: 'kube-ops'
 prometheus_operator_repo: 'https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/'
@@ -9,6 +12,7 @@ prometheus_operator_release_name: 'prometheus-operator'
 # Helm default is 300, but can be too low, see
 # https://github.com/scality/metalk8s/issues/237
 prometheus_operator_timeout: 600
+prometheus_operator_external_values: []
 
 kube_prometheus_version: '0.0.105'
 kube_prometheus_namespace: 'kube-ops'
