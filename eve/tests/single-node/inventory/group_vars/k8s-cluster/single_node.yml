@@ -4,4 +4,12 @@ metalk8s_elasticsearch_enabled: True
 
 metalk8s_lvm_lvs_vg_metalk8s:
   lv01:
-    size: 2G
+    size: 5G
+  lv02:
+    size: 5G
+  lv03:
+    size: 5G
+  lv04:
+    size: 5G
+  lv05:
+    size: 5G
