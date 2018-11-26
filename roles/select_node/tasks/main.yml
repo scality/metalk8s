@@ -1,0 +1,15 @@
+- name: 'verify that selected node belong to node group'
+  assert:
+    that:
+    - "selected_node in groups['kube-node']"
+  run_once: True
+
+- name: 'add host to the list of selected_node'
+  add_host:
+    name: '{{ item }}'
+    group: selected_nodes
+    drive_to_remove: '{{ drive_to_remove }}'
+  run_once: True
+  changed_when: False
+  check_mode: False
+  with_items: "['{{ selected_node }}']"
