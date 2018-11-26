@@ -44,27 +44,6 @@
   run_once: true
   delegate_to: '{{ groups["kube-master"][0] }}'
 
-- name: 'create tempfile for kube-prometheus values'
-  tempfile:
-    state: file
-    suffix: yml
-  register: kube_prometheus_value_file
-  run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
-
-- debug:
-    var: kube_prometheus_value_file
-  when: debug|bool
-  run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
-
-- name: 'copy kube-prometheus values into temporary file'
-  template:
-    src: prometheus_values.yml
-    dest: '{{ kube_prometheus_value_file.path }}'
-  run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
-
 - name: 'remove old exporter-node objects (#113)'
   kube:
     kubectl: '{{ bin_dir }}/kubectl'
@@ -90,22 +69,25 @@
   retries: 10
 
 - name: 'install kube-prometheus'
-  command: >-
-    {{ bin_dir }}/helm upgrade kube-prometheus
-    --install {{ kube_prometheus_release_name }}
-    --repo {{ kube_prometheus_repo }}
-    --version {{ kube_prometheus_version }}
-    --namespace {{ kube_prometheus_namespace }}
-    -f {{ kube_prometheus_value_file.path }}
-  run_once: True
+  helm_cli:
+    release: '{{ kube_prometheus_release_name }}'
+    chart:
+      name: '{{ kube_prometheus_chart }}'
+      version: '{{ kube_prometheus_version }}'
+      repo: '{{ kube_prometheus_repo }}'
+    namespace: '{{ kube_prometheus_namespace }}'
+    binary: '{{ bin_dir }}/helm'
+    values: >-
+      {{ [
+        lookup('template', 'prometheus_values.yml')
+      ] + kube_prometheus_external_values }}
+    wait: '{{ helm_wait | bool }}'
+    state: '{{ helm_state }}'
+  register: kube_prometheus_helm_install
+  run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
-- name: 'remove unneeded kube-prometheus values file'
-  file:
-    dest: '{{ item }}'
-    state: absent
-  with_items: >-
-    {{ [kube_prometheus_value_file.path]|select|list }}
-  when: remove_metal_k8s_temporary_file|bool
-  run_once: True
-  delegate_to: "{{ groups['kube-master'][0] }}"
+- debug:
+    var: kube_prometheus_helm_install
+  run_once: true
+  when: debug | bool
