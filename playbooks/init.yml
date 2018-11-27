@@ -15,6 +15,8 @@
 - hosts: k8s-cluster:etcd
   roles:
     - role: check_os
+    - role: proxy_set
+      tags: ['proxy']
 
 - hosts: k8s-cluster:etcd
   any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
