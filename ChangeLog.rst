@@ -8,6 +8,11 @@ Features added
 
 .. note:: This includes an upgrade to Kubernetes 1.12.
 
+:ghpull:`498` - add timeout option to helm_cli Ansible custom module (:ghissue:`497`)
+
+:ghpull:`499` - use helm_cli to install prometheus (:ghissue:`496`)
+
+
 Release 1.1.0 (in development)
 ==============================
 Features added
@@ -84,6 +89,7 @@ capital letters
 (:ghpull:`409`)
 
 :ghpull:`472` - update Python `requests` library version
+
 
 Release 1.0.0
 =============
@@ -220,6 +226,7 @@ Bugs fixed
 playbook in isolation (:ghpull:`132`)
 
 :ghpull:`134` - fix `bash-completion` in the MetalK8s Docker image
+
 
 Release 0.1.0
 =============
