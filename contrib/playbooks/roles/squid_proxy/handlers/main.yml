@@ -1,0 +1,7 @@
+- name: 'restart squid'
+  service:
+    name: squid
+    state: restarted
+  when:
+    - not(squid_pkg_just_installed is changed and ansible_check_mode)
+    - not squid_just_started is changed

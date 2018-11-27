@@ -16,6 +16,7 @@ resource "openstack_compute_instance_v2" "nodes" {
   network = ["${var.openstack_network}"]
 
   security_groups = ["${compact(list(
+            openstack_networking_secgroup_v2.common.name,
             openstack_networking_secgroup_v2.nodes.name,
             var.masters_dedicated || var.etcd_dedicated
             ? "" : openstack_networking_secgroup_v2.masters.name,
@@ -39,18 +40,9 @@ resource "openstack_compute_volume_attach_v2" "nodes_attach" {
 }
 
 resource "openstack_networking_secgroup_v2" "nodes" {
-  name        = "${var.name_prefix}-nodes"
-  description = "security group for kube-nodes"
-}
-
-resource "openstack_networking_secgroup_rule_v2" "node_ssh" {
-  direction         = "ingress"
-  ethertype         = "IPv4"
-  protocol          = "tcp"
-  port_range_min    = 22
-  port_range_max    = 22
-  remote_ip_prefix  = "0.0.0.0/0"
-  security_group_id = "${openstack_networking_secgroup_v2.nodes.id}"
+  name                 = "${var.name_prefix}-nodes"
+  description          = "security group for kube-nodes"
+  delete_default_rules = true
 }
 
 resource "openstack_networking_secgroup_rule_v2" "node_ingress_http" {
@@ -85,4 +77,29 @@ resource "openstack_networking_secgroup_rule_v2" "etcd_to_nodes" {
   ethertype         = "IPv4"
   remote_group_id   = "${openstack_networking_secgroup_v2.etcd.id}"
   security_group_id = "${openstack_networking_secgroup_v2.nodes.id}"
+}
+
+# egress when default egress rules are removed
+resource "openstack_networking_secgroup_rule_v2" "nodes_to_etcd_egress" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  remote_group_id   = "${openstack_networking_secgroup_v2.etcd.id}"
+  security_group_id = "${openstack_networking_secgroup_v2.nodes.id}"
+  count             = "${local.egress_blocked ? 1 : 0}"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_to_masters_egress" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  remote_group_id   = "${openstack_networking_secgroup_v2.masters.id}"
+  security_group_id = "${openstack_networking_secgroup_v2.nodes.id}"
+  count             = "${local.egress_blocked ? 1 : 0}"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_to_nodes_egress" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  remote_group_id   = "${openstack_networking_secgroup_v2.nodes.id}"
+  security_group_id = "${openstack_networking_secgroup_v2.nodes.id}"
+  count             = "${local.egress_blocked ? 1 : 0}"
 }
