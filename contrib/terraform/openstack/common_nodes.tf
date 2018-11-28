@@ -48,14 +48,14 @@ data "openstack_images_image_v2" "centos7" {
 
 data "openstack_compute_flavor_v2" "large" {
   # m1.xlarge
-  vcpus = 8
-  ram   = 16384
+  vcpus = 4
+  ram   = 8192
   disk  = 40
 }
 
 data "openstack_compute_flavor_v2" "medium" {
-  vcpus = 4
-  ram   = 8192
+  vcpus = 2
+  ram   = 4096
   disk  = 40
 }
 
