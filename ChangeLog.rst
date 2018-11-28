@@ -43,6 +43,8 @@ deployment strategy for Elasticsearch `data` and `master` daemons
 
 :ghpull:`457` - update vendored Kubespray version
 
+:ghpull:`429` - Set proxy variable directly in /etc/environment
+
 Bugs Fixed
 ----------
 :ghissue:`224` - variabilize the Kibana index pattern and service name in

@@ -1,0 +1,27 @@
+- debug:
+    msg: >-
+     {{ dict(http_proxy=http_proxy|default(none),
+             https_proxy=https_proxy|default(none),
+             no_proxy=no_proxy|default(none)) }}
+  when: debug|bool
+
+- name: 'set proxy environment'
+  lineinfile:
+    dest: /etc/environment
+    line: >-
+      {%- if vars[item] is defined -%}
+        {{ item }}={{ vars[item] }}
+      {%- else -%}
+        {{ item }}=\g<1>
+      {%- endif -%}
+    regexp: '{{ item }}=(.*)'
+    state: >-
+      {%- if vars[item] is defined -%}
+        present
+      {%- else -%}
+        absent
+      {%- endif -%}
+  with_items:
+  - http_proxy
+  - https_proxy
+  - no_proxy

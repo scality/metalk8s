@@ -116,6 +116,19 @@ stages:
           TF_VAR_name_prefix: "%(prop:worker_uuid)s"
           TF_VAR_ssh_key_name: "%(prop:worker_uuid)s"
           TF_VAR_etcd_dedicated: "0"
+          TF_VAR_proxies_count: "1"
+    - ShellCommand:
+        name: 'install proxies'
+        haltOnFailure: true
+        usePTY: true
+        command: |-
+          ANSIBLE_INVENTORY=$(cd ${TF_DIR}; terraform output inventory_file) \
+          make shell C="ansible-playbook contrib/playbooks/proxies.yml"
+        env:
+          TF_DIR: "contrib/terraform/openstack"
+          ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/terraform
+          ANSIBLE_HOST_KEY_CHECKING: "false"
+          ANSIBLE_FORCE_COLOR: "true"
     - ShellCommand:
         name: 'Run the install test suite'
         haltOnFailure: true

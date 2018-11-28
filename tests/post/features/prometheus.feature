@@ -4,4 +4,4 @@ Feature: prometheus configured correctly
    Given an installed platform
    When I run 'kubectl proxy' in a supported shell
    And I list the prometheus 'node-exporter' job endpoints
-   Then I should count as many endpoints as all hosts
+   Then I should count as many endpoints as kube-master:kube-node:etcd hosts
