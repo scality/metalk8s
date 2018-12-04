@@ -2,6 +2,9 @@
 
 Release 1.1.0 (in development)
 ==============================
+This version updates the Kubernetes version to 1.11.5 to handle
+CVE-2018-100210.
+
 Features added
 --------------
 :ghpull:`346` - add Elasticsearch external values capability (:ghissue:`340`)
@@ -41,6 +44,7 @@ the index provisioning job (:ghpull:`233`).
 
 :ghpull:`478` - metrics-server: ensure that missing pod/node data doesn't invalidate an entire node's results
 
+:ghpull:`000` - update Kubernetes version to 1.11.5 to include a fix for CVE-2018-100210
 
 Release 1.0.1 (in development)
 ==============================
