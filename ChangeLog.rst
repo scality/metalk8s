@@ -2,6 +2,9 @@
 
 Release 1.0.1 (in development)
 ==============================
+This version updates the Kubernetes version to 1.10.11 to handle
+CVE-2018-100210.
+
 Features added
 --------------
 :ghpull:`232` - Add more storage checks regarding the device presence and the
@@ -36,6 +39,8 @@ capital letters
 (:ghpull:`409`)
 
 :ghpull:`472` - update Python `requests` library version
+
+:ghpull:`511` - update Kubernetes version to 1.10.11 to include a fix for CVE-2018-100210
 
 Release 1.0.0
 =============
