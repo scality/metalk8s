@@ -1,0 +1,2 @@
+-rvendor/kubespray/requirements.txt
+ansible >= 2.7.2
