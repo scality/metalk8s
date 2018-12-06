@@ -2,7 +2,7 @@
   command: '{{ bin_dir }}/helm version'
   register: helm_version
   until: not helm_version|failed
-  retries: 50000
+  retries: 50
   delay: 10
   changed_when: False
   check_mode: False

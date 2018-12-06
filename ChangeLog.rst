@@ -79,6 +79,8 @@ capital letters
 
 :ghpull:`472` - update Python `requests` library version
 
+:ghpull:`523` - reduce tiller wait timeout to reduce CI time to failure
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
