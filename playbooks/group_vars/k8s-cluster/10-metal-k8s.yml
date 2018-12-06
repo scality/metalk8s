@@ -5,6 +5,12 @@ kubeconfig_localhost: True
 dns_mode: 'coredns'
 kube_proxy_mode: 'ipvs'
 
+kube_version: 'v1.11.5'
+hyperkube_checksums:
+  v1.11.5: 88e17abcc821e4895184e64d4b136095263b147c6d679b6e5177b0f58a2629cc
+kubeadm_checksums:
+  v1.11.5: b28ec97875cad94ef9d554d9fb1170674e6588c97e1746f2026e0795aecabc40
+
 # Request usage of the `overlay2` storage driver, even on pre-18.03 Docker
 # installs.
 # Whilst this is not guaranteed to work on 'old' kernels, we check whether we're
