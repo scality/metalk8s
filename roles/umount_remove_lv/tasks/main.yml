@@ -26,22 +26,10 @@
 - name: 'remove pv'
   lvg:
     vg: '{{ vg_name }}'
-    pvs: '{{ remaining_pvs }}'
-    state: >-
-      {%- if remaining_pvs -%}
-        present
-      {%- else -%}
-        absent
-      {%- endif -%}
+    pvs: '{{ _drive_to_remove }}'
+    state: absent
   when: vg_name != ""
   register: remove_pv
-  vars:
-    remaining_pvs: >-
-      [ {%- for device, pv in (ansible_lvm.pvs|default({})).items()
-             if device != _drive_to_remove
-             and pv.vg == vg_name -%}
-          '{{ device }}',
-      {%- endfor -%} ]
 
 - debug:
     var: remove_pv
