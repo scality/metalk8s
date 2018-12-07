@@ -1,7 +1,7 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
-Release 1.0.1 (in development)
-==============================
+Release 1.0.1
+=============
 This version updates the Kubernetes version to 1.10.11 to handle
 CVE-2018-100210.
 
@@ -12,9 +12,9 @@ partition existence on specificied drives (:ghissue:`231`)
 
 :ghpull:`240` - update Python `cryptography` package to 2.3
 
-:ghpull:`274` - add support for python3.7
+:ghpull:`274` - add support for Python 3.7
 
-:ghpull:`305` - ensure that journald logs are persisted across reboot (:ghissue:`303`)
+:ghpull:`305` - ensure that `journald` logs are persisted across reboots (:ghissue:`303`)
 
 :ghpull:`337` - assert `ansible_user` is not `root` (:ghissue:`329`)
 
@@ -22,21 +22,17 @@ Bugs fixed
 ----------
 :ghissue:`50` - raise default `etcd` memory limits (:ghpull:`331`)
 
-:ghissue:`237` - increase timeout of `prometheus-operator` deployment
-(:ghpull:`244`)
+:ghissue:`237` - increase timeout of `prometheus-operator` deployment (:ghpull:`244`)
 
 :ghissue:`321` - retry until PV creation succeeds in `reclaim-storage` playbook (:ghpull:`319`)
 
-:ghissue:`381` - warn when Bash completion is not available in `make shell`
-(:ghpull:`382`)
+:ghissue:`381` - warn when Bash completion is not available in `make shell` (:ghpull:`382`)
 
 :ghissue:`192` - `make shell` failing to start on OS X (:ghpull:`418`)
 
-:ghissue:`424` - remove warning related to kube_nginx_ingress roles (:ghpull:`425`)
+:ghissue:`424` - remove warning related to `kube_nginx_ingress` roles (:ghpull:`425`)
 
-:ghissue:`399` - check that the hostnames in the inventory don't use
-capital letters
-(:ghpull:`409`)
+:ghissue:`399` - check that the hostnames in the inventory don't use capitals (:ghpull:`409`)
 
 :ghpull:`472` - update Python `requests` library version
 
