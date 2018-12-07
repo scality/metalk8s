@@ -97,6 +97,9 @@ capital letters
 
 :ghpull:`511` - update Kubernetes version to 1.10.11 to include a fix for CVE-2018-100210
 
+:ghpull:`523` - reduce Tiller wait timeout to reduce CI time to failure
+
+
 Release 1.0.0
 =============
 This marks the first production-ready release of `MetalK8s`_. Deployments using
