@@ -2,6 +2,9 @@
 
 Release 1.2.0 (in development)
 ==============================
+This version updates the Kubernetes version to 1.12.3 to handle
+CVE-2018-100210.
+
 Features added
 --------------
 :ghpull:`462` - update vendored Kubespray version
@@ -12,6 +15,9 @@ Features added
 
 :ghpull:`499` - use helm_cli to install prometheus (:ghissue:`496`)
 
+Bugs Fixed
+----------
+:ghpull:`517` - update Kubernetes version to 1.12.3 to include a fix for CVE-2018-100210
 
 Release 1.1.0 (in development)
 ==============================
