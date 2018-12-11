@@ -45,15 +45,12 @@ def run_ansible_playbook(playbook, env=None, tags=None, skip_tags=None,
     )
 
 
-class RetryCountExceededError(StopIteration):
-    "Exception to finish retry"
-
-
 def retry(count, wait=2, msg=None):
-    for _ in range(count):
-        yield True
+    for nb_call in range(1, count + 1, 1):
+        logging.warning('call retry {} time(s)'.format(nb_call))
+        yield nb_call
         time.sleep(wait)
-    raise RetryCountExceededError(msg)
+    return msg
 
 
 def create_version_archive(version, tmpdir):
