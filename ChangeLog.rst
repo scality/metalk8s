@@ -1,5 +1,8 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
+Release 1.0.2 (in development)
+==============================
+
 Release 1.0.1
 =============
 This version updates the Kubernetes version to 1.10.11 to handle
