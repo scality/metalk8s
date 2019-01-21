@@ -65,6 +65,11 @@ the index provisioning job (:ghpull:`233`).
 
 :ghpull:`514` - update Kubernetes version to 1.11.5 to include a fix for CVE-2018-100210
 
+
+Release 1.0.2 (in development)
+==============================
+
+
 Release 1.0.1
 =============
 This version updates the Kubernetes version to 1.10.11 to handle
@@ -102,6 +107,9 @@ Bugs fixed
 :ghpull:`472` - update Python `requests` library version
 
 :ghpull:`511` - update Kubernetes version to 1.10.11 to include a fix for CVE-2018-100210
+
+:ghpull:`523` - reduce Tiller wait timeout to reduce CI time to failure
+
 
 Release 1.0.0
 =============
