@@ -59,6 +59,24 @@ can vary from one installation to another:
   Note: we run `keepalived` in unicast mode, which is an extension of classic
   VRRP, but removes the need for multicast support on the network.
 
+Firewall
+--------
+We assume a host-based firewall is used, based on `firewalld`. As such, for any
+service we deploy which must be accessible from the outside, we must set up an
+appropriate rule.
+
+We assume SSH access is not blocked by the host-based firewall.
+
+These services include:
+
+- VRRP if `keepalived` is enabled on control-plane nodes
+- HTTPS on the bootstrap node, for `nginx` fronting the OCI registry and serving
+  the Yum repository
+- `salt-master` on the bootstrap node
+- `etcd` on control-plane / etcd nodes
+- `kube-apiserver` on control-plane nodes
+- `kubelet` on all cluster nodes
+
 @startuml
 
 actor user
