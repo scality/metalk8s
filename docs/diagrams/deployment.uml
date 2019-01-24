@@ -1,0 +1,134 @@
+Some notes
+==========
+- The intent is for this installer to deploy a system which looks exactly like
+one deployed using `kubeadm`, i.e. using the same (or at least highly similar)
+static manifests, cluster `ConfigMap`s, RBAC roles and bindings,...
+
+The rationale: at some point in time, once `kubeadm` gets easier to embed in
+larger deployment mechanisms, we want to be able to switch over without too much
+hassle.
+
+Also, `kubeadm` applies best-practices so why not follow them anyway.
+
+@startuml
+
+actor user
+entity bootstrap
+
+== Initialization ==
+
+user -> bootstrap : Upload installer
+user -> bootstrap : Run installer
+
+bootstrap -> bootstrap : Unpack installer static files and install script
+create control installer
+bootstrap -> installer : Run
+
+== Bootstrap ==
+
+installer -> bootstrap : Run pre-minion local checks (e.g. OS release)
+installer -> bootstrap : Disable salt-minion service || true
+installer -> bootstrap : Stop salt-minion service || true
+
+
+installer -> bootstrap : Install salt-minion and dependencies from unpacked RPMs
+installer -> bootstrap : Create salt-minion configuration file to run 'local'
+
+installer -> bootstrap : Run bootstrap node pre-checks (salt-call --local)
+
+group Initialize CRI/CNI/Kubelet environment
+installer -> bootstrap : Run CRI/CNI role using salt-call --local
+bootstrap -> bootstrap : Install container-selinux, runc, containerd, cri-tools
+bootstrap -> bootstrap : Create /etc/crictl.conf
+bootstrap -> bootstrap : Enable and start containerd
+bootstrap -> bootstrap : Install ebtables, socat, kubernetes-cni, kubelet
+bootstrap -> bootstrap : Create initial kubelet configuration file
+bootstrap -> bootstrap : Create kubelet systemd drop-in to set CRI endpoint and config file, enable CPU/memory accounting
+bootstrap -> bootstrap : Enable and start kubelet
+bootstrap --> installer : Done
+end
+
+group Set up Kubernetes control plane HA/failover
+note over bootstrap: TODO
+end
+
+group Set up salt-master
+installer -> bootstrap : Deploy salt-master using salt-call --local
+bootstrap -> bootstrap : Create salt-master static pod manifest
+note right of bootstrap: Can we do an upgrade of salt-master here? What about nodes with older minion versions?
+
+create control saltmaster
+
+bootstrap -> saltmaster : Wait to be ready
+saltmaster --> bootstrap : Ready
+
+bootstrap --> installer : Done
+end
+
+installer -> bootstrap : Remove salt-minion 'local' config
+installer -> bootstrap : Enable salt-minion service
+installer -> bootstrap : Start salt-minion service
+
+create control saltminion
+saltmaster <-> saltminion : Hello
+
+== Deploy bootstrap node ==
+
+saltmaster -> saltminion : Install bootstrap node
+
+saltminion -> saltminion : Inject OCI registry image
+
+alt if newer OCI registry version
+saltminion -> saltminion : Remove OCI registry manifest
+saltminion -> saltminion : Wait for OCI registry to be down
+saltminion -> saltminion : Create OCI registry manifest TODO CA
+note left: Bound to 127.0.0.1 only
+end
+
+saltminion -> saltminion : Wait for OCI registry to be up
+saltminion -> saltminion : Inject images in OCI registry
+
+saltminion -> saltminion : Drop nginx manifest in place
+
+saltminion --> saltmaster : Done
+
+note over bootstrap
+At this point, the bootstrap node hosts
+
+- salt-master
+- an nginx service serving a Yum repository
+- an OCI image registry (proxied by nginx)
+end note
+
+== Deploy control plane ==
+
+installer -> saltmaster : Deploy control plane on bootstrap unless one exists
+saltmaster -> saltminion : Go
+
+installer -> saltmaster : Deploy UI
+saltmaster -> saltminion : Go
+saltminion --> saltmaster : Done
+saltmaster --> installer : Done
+installer --> bootstrap : Done
+
+bootstrap --> user : UI ready at ...
+
+== Extend control plane ==
+
+user -> bootstrap : Add control-plane node
+
+create entity leader
+
+bootstrap -> leader : salt-ssh install salt-minion
+leader -> bootstrap : Done
+
+== Extend worker plane ==
+
+user -> bootstrap : Add worker node
+
+create entity node
+
+bootstrap -> node : salt-ssh install salt-minion
+node -> bootstrap : Done
+
+@enduml
