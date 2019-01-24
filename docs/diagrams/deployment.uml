@@ -10,6 +10,52 @@ hassle.
 
 Also, `kubeadm` applies best-practices so why not follow them anyway.
 
+Configuration
+-------------
+To launch the bootstrap process, some input from the end-user is required, which
+can vary from one installation to another:
+
+- CIDR (i.e. `x.y.z.w/n`) of the control plane networks to use
+
+  Given these CIDR, we can find the address on which to bind services like
+  `etcd`, `kube-apiserver`, `kubelet`, `salt-master` and others.
+
+  These should be existing networks in the infrastructure to which all hosts
+  are connected.
+
+  This is a list of CIDRs, which will be tried one after another, to find a
+  matching local interface (i.e. hosts comprising the cluster may reside in
+  different subnets, e.g. control plane in VMs, workload plane on physical
+  infrastructure).
+
+- CIDRs (i.e. `x.y.z.w/n`) of the workload plane networks to use
+
+  Given these CIDRs, we can find the address to be used by the CNI overlay
+  network (i.e. Calico) for inter-`Pod` routing.
+
+  This can be the same as the control plane network.
+
+- CIDR (i.e. `x.y.z.w/n`) of the `Pod` overlay network
+
+  Used to configure the Calico `IPPool`. This must be a non-existing network in
+  the infrastructure.
+
+  Default: `10.233.0.0/16`
+
+- CIDR (i.e. `x.y.z.w/n`) of the `Service` network
+
+  Default: `10.96.0.0/12`
+
+- VIP for the `kube-apiserver` and `keepalived` toggle
+
+  Used as the address of `kube-apiserver` where required. This can either be a
+  VIP managed by custom load-balancing/high-availability infrastructure, in
+  which case the `keepalived` toggle must be off, or one which our platform will
+  manage using `keepalived`.
+
+  If `keepalived` is enabled, this VIP must sit in a control plane CIDR shared
+  by all control plane nodes.
+
 @startuml
 
 actor user
