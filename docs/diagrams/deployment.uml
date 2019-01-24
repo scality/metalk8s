@@ -56,6 +56,9 @@ can vary from one installation to another:
   If `keepalived` is enabled, this VIP must sit in a control plane CIDR shared
   by all control plane nodes.
 
+  Note: we run `keepalived` in unicast mode, which is an extension of classic
+  VRRP, but removes the need for multicast support on the network.
+
 @startuml
 
 actor user
@@ -95,7 +98,7 @@ bootstrap --> installer : Done
 end
 
 group Set up Kubernetes control plane HA/failover
-note over bootstrap: TODO
+note over bootstrap: TODO running in container using static kubelet manifest
 end
 
 group Set up salt-master
