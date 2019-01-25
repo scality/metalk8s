@@ -1,0 +1,34 @@
+'Workflow of the bootstrap node installation/upgrade
+@startuml
+start
+:Upload ISO on the bootstrap node;
+:Extract the ISO on the bootstrap node;
+:Install the bootstrap package;
+:Install the scality metalk8s package;
+if (scality package is compatible with bootstrap version) then (yes)
+	:Unpack /srv/scality/<version>;
+	:Add Saltstack master configuration for <version>;
+	:Restart Saltstack Master;
+else (no)
+	:Upgrade boostrap package;
+	:Modify Saltstack Master configuration;
+	:Upgrade bootstrap tooling;
+	:Restart Saltstack Master;
+endif
+:Synchronize new version on the Saltstack minion;
+:Link to URL for further upgrade;
+@enduml
+
+@startuml
+package "Scality bootstrap package" {
+folder "/srv/scality/bootstrap/<version>/"
+===
+folder "/srv/scality/bootstrap/<version>/repository"
+This contains the package repository used by the bootstrap (salt-minion, k8s components, etc ...)
+===
+folder /srv/scality/bootstrap/<version>/registry
+===
+folder /srv/scality/bootstrap/<version>/tools
+}
+@enduml
+
