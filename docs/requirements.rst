@@ -17,7 +17,10 @@ Binaries
   only installing packages through `yum`, proper `entrypoint` defined
 - All processes running as non-root where possible, including those managed by
   Kubelet
-- Repackaged `runc` with `kmem` leak fix
+- Repackaged `runc` and `kubelet` with `kmem` leak fix
+  * https://github.com/kubernetes/kubernetes/issues/61937
+  * https://github.com/kubernetes/kubernetes/pull/72114#issuecomment-454953077
+  * https://github.com/kubernetes/kubernetes/pull/72998#issuecomment-455512443
 
 Networking
 ----------
