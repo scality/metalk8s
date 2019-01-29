@@ -14,7 +14,7 @@ Update container-selinux:
 
 Install containerd:
   pkg.installed:
-    - fromrepo: epel-testing
+    - fromrepo: epel
     - pkgs:
       - containerd
 
