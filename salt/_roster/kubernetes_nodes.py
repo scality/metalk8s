@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 log = logging.getLogger(__name__)
 
@@ -15,6 +16,10 @@ def __virtual__():
     return HAS_DEPS
 
 def targets(tgt, tgt_type='glob', **kwargs):
+    if tgt_type != 'glob':
+        log.error('Only "glob" lookups are supported for now')
+        return {}
+
     client = None
     try:
         client = kubernetes.config.new_client_from_config(
@@ -40,5 +45,7 @@ def targets(tgt, tgt_type='glob', **kwargs):
             'host': item.metadata.annotations.get('ssh-host', item.metadata.name),
             'port': int(item.metadata.annotations.get('ssh-port', 22)),
             'user': item.metadata.annotations.get('ssh-user', 'root'),
+            'sudo': True,
         } for item in nodes.items
+        if fnmatch.fnmatch(item.metadata.name, tgt)
     }
