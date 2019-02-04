@@ -1,24 +1,11 @@
-from __future__ import print_function
-
-import datetime
 import logging
 
 log = logging.getLogger(__name__)
 
-HAS_DEPS = False
-try:
-    import M2Crypto.X509
-    HAS_DEPS = True
-except ImportError:
-    logging.exception('Failed to load dependencies')
-
 __virtualname__ = 'certificate_ttl'
 
 def __virtual__():
-    if not HAS_DEPS:
-        return False
-    else:
-        return __virtualname__
+    return __virtualname__
 
 def validate(config):
     log.info('Validating beacon config')
@@ -45,26 +32,16 @@ def check_plain(certificate):
 
     log.debug('Checking %r has TTL of at least %r', path, ttl)
 
-    cert = M2Crypto.X509.load_cert(path)
-    not_after = cert.get_not_after().get_datetime()
+    result = __salt__['x509.will_expire'](certificate=path, days=ttl)
 
-    now = datetime.datetime.now(tz=not_after.tzinfo)
-
-    diff = int((not_after - now).total_seconds())
-
-    log.debug('"Not after" of %r is %r, now is %r, diff is %r',
-        path, not_after, now, diff)
-
-    if diff < ttl:
-        log.warning('Certificate %r has TTL %r, less than required %r',
-            path, diff, ttl)
+    if result['will_expire']:
+        log.warning('Certificate %r will expire within %d days', path, ttl)
 
         return {
             'kind': 'plain',
             'path': path,
-            'ttl': diff,
-            'expired': diff < 0,
             'tag': path,
+            'data': result,
         }
     else:
         return None
@@ -91,22 +68,3 @@ def beacon(config):
         log.debug('Beacon hit no results')
 
     return results
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
-    if not __virtual__():
-        raise Exception('Missing dependencies')
-
-    config = [
-        {
-            'kind': 'plain',
-            'path': '/dev/stdin',
-            'ttl': 7 * 24 * 60 * 60,  # One week
-        },
-    ]
-
-    if not validate(config)[0]:
-        raise Exception('Invalid configuration')
-
-    print(beacon(config))
