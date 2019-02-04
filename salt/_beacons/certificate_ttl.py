@@ -64,6 +64,7 @@ def check_plain(certificate):
             'path': path,
             'ttl': diff,
             'expired': diff < 0,
+            'tag': path,
         }
     else:
         return None
