@@ -1,0 +1,11 @@
+version: '0.2'
+
+branches:
+  default:
+    stage: pre-merge
+
+stages:
+  pre-merge:
+    worker:
+      type: local
+    steps: []
