@@ -34,3 +34,7 @@
     }
   }
 }, grain='init', merge=kubelet) %}
+
+{% set kubeadm_preflight = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('kubeadm_preflight')) %}

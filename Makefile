@@ -32,6 +32,10 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/files/service-kubelet-systemd.conf \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/init.sls \
 	\
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/preflight/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/preflight/mandatory.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/preflight/recommended.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
 	\

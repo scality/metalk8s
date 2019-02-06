@@ -1,3 +1,27 @@
+kubeadm_preflight:
+  mandatory:
+    packages:
+      - util-linux            # provides nsenter, mount
+      - iproute               # provides ip
+      - iptables              # provides iptables
+    ports:
+      - 10250
+      - 10251
+      - 10252
+      - 2379
+      - 2380
+    sysctl_values:
+      net.bridge.bridge-nf-call-ip6tables: 1
+      net.bridge.bridge-nf-call-iptables: 1
+      net.ipv4.ip_forward: 1
+  recommended:
+    packages:
+      - ebtables              # provides ebtables
+      - ethtool               # provides ethtool
+      - socat                 # provides socat
+      - iproute               # provides tc
+      - coreutils             # provides touch
+
 repo:
   online_mode: True
   runc:
@@ -26,3 +50,5 @@ kubelet:
         enabled: False
     authorization:
       mode: AlwaysAllow
+
+upgrade: False        # define if we're on an upgrade case
