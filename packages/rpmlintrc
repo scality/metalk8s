@@ -1,0 +1,6 @@
+addFilter("calico-cni-plugin.src: W: no-%build-section")
+
+addFilter("calico-cni-plugin.x86_64: E: statically-linked-binary /opt/cni/bin/calico")
+addFilter("calico-cni-plugin.x86_64: E: statically-linked-binary /opt/cni/bin/calico-ipam")
+addFilter("calico-cni-plugin.x86_64: E: dir-or-file-in-opt /opt/cni/bin/calico")
+addFilter("calico-cni-plugin.x86_64: E: dir-or-file-in-opt /opt/cni/bin/calico-ipam")
