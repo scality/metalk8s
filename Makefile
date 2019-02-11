@@ -6,11 +6,13 @@ MAKEFLAGS += -r
 .SUFFIXES:
 
 VERSION ?= 2.0
+FULL_VERSION ?= 2.0.0-dev
 
 PWD := $(shell pwd)
 
 BUILD_ROOT ?= $(PWD)/_build
 ISO_ROOT ?= $(BUILD_ROOT)/root
+ISO ?= $(BUILD_ROOT)/metalk8s.iso
 
 ALL = \
 	$(ISO_ROOT)/bootstrap.sh \
@@ -68,3 +70,22 @@ $(ISO_ROOT)/pillar/%: pillar/%
 clean:
 	rm -rf $(BUILD_ROOT)
 .PHONY: clean
+
+iso: $(ISO)
+.PHONY: iso
+
+$(ISO): all
+	mkisofs -output $@ \
+		-rock \
+		-joliet \
+		-joliet-long \
+		-full-iso9660-filenames \
+		-volid 'MetalK8s $(FULL_VERSION)' \
+		--iso-level 3 \
+		-gid 0 \
+		-uid 0 \
+		-input-charset utf-8 \
+		-output-charset utf-8 \
+		-checksum_algorithm_iso md5,sha1,sha256,sha512 \
+		$(ISO_ROOT)
+.PHONY: $(ISO)
