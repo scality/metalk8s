@@ -89,3 +89,92 @@ $(ISO): all
 		-checksum_algorithm_iso md5,sha1,sha256,sha512 \
 		$(ISO_ROOT)
 .PHONY: $(ISO)
+
+
+
+# Package building
+PACKAGES_DOCKER_IMAGE ?= metalk8s-build
+$(PACKAGES_DOCKER_IMAGE):
+	docker build -t $(PACKAGES_DOCKER_IMAGE) -f packages/Dockerfile packages/
+.PHONY: $(PACKAGES_DOCKER_IMAGE)
+
+MOCK_ROOT ?= $(BUILD_ROOT)/mock
+
+RPMBUILD_ROOT ?= $(BUILD_ROOT)/rpmbuild
+RPMBUILD_SOURCES := $(RPMBUILD_ROOT)/SOURCES
+RPMBUILD_SRPMS := $(RPMBUILD_ROOT)/SRPMS
+RPMBUILD_RPMS := $(RPMBUILD_ROOT)/RPMS
+
+$(RPMBUILD_SOURCES)/v3.4.0.tar.gz:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://github.com/projectcalico/cni-plugin/archive/$(notdir $@)
+
+$(RPMBUILD_SOURCES)/calico-amd64:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://github.com/projectcalico/cni-plugin/releases/download/v3.4.0/$(notdir $@)
+
+$(RPMBUILD_SOURCES)/calico-ipam-amd64:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://github.com/projectcalico/cni-plugin/releases/download/v3.4.0/$(notdir $@)
+
+CALICO_CNI_PLUGIN_SOURCES = \
+	$(RPMBUILD_SOURCES)/v3.4.0.tar.gz \
+	$(RPMBUILD_SOURCES)/calico-amd64 \
+	$(RPMBUILD_SOURCES)/calico-ipam-amd64
+
+calico-cni-plugin-sources: $(CALICO_CNI_PLUGIN_SOURCES)
+.PHONY: calico-cni-plugin-sources
+
+$(RPMBUILD_SRPMS)/calico-cni-plugin-3.4.0-1.el7.src.rpm: $(CALICO_CNI_PLUGIN_SOURCES) packages/calico-cni-plugin.spec
+	$(MAKE) $(PACKAGES_DOCKER_IMAGE)
+	mkdir -p $(MOCK_ROOT)/lib $(MOCK_ROOT)/cache
+	mkdir -p $(RPMBUILD_SRPMS)
+	docker run \
+		--cap-add SYS_ADMIN \
+		--hostname build \
+		--mount type=bind,source=$(MOCK_ROOT)/lib,destination=/var/lib/mock \
+		--mount type=bind,source=$(MOCK_ROOT)/cache,destination=/var/cache/mock \
+		--mount type=bind,source=$(PWD)/packages/calico-cni-plugin.spec,destination=/home/build/rpmbuild/SPECS/calico-cni-plugin.spec,ro \
+		--mount type=bind,source=$(RPMBUILD_SOURCES)/v3.4.0.tar.gz,destination=/home/build/rpmbuild/SOURCES/v3.4.0.tar.gz,ro \
+		--mount type=bind,source=$(RPMBUILD_SOURCES)/calico-amd64,destination=/home/build/rpmbuild/SOURCES/calico-amd64,ro \
+		--mount type=bind,source=$(RPMBUILD_SOURCES)/calico-ipam-amd64,destination=/home/build/rpmbuild/SOURCES/calico-ipam-amd64,ro \
+		--mount type=bind,source=$(RPMBUILD_SRPMS),destination=/home/build/rpmbuild/SRPMS \
+		--mount type=tmpfs,destination=/tmp \
+		--name metalk8s-build-calico-cni-plugin \
+		--rm \
+		$(PACKAGES_DOCKER_IMAGE) \
+		/usr/bin/mock \
+			--root centos-7-x86_64 \
+			--buildsrpm \
+			--spec=/home/build/rpmbuild/SPECS/calico-cni-plugin.spec \
+			--sources=/home/build/rpmbuild/SOURCES/ \
+			--resultdir=/home/build/rpmbuild/SRPMS \
+			--verbose
+
+$(RPMBUILD_RPMS)/calico-cni-plugin-3.4.0-1.el7.x86_64.rpm: $(RPMBUILD_SRPMS)/calico-cni-plugin-3.4.0-1.el7.src.rpm
+	$(MAKE) $(PACKAGES_DOCKER_IMAGE)
+	mkdir -p $(MOCK_ROOT)/lib $(MOCK_ROOT)/cache
+	mkdir -p $(RPMBUILD_RPMS)
+	docker run \
+		--cap-add SYS_ADMIN \
+		--hostname build \
+		--mount type=bind,source=$(MOCK_ROOT)/lib,destination=/var/lib/mock \
+		--mount type=bind,source=$(MOCK_ROOT)/cache,destination=/var/cache/mock \
+		--mount type=tmpfs,destination=/tmp \
+		--mount type=bind,source=$<,destination=/home/build/rpmbuild/SRPMS/$(notdir $<),ro \
+		--mount type=bind,source=$(RPMBUILD_RPMS),destination=/home/build/rpmbuild/RPMS \
+		--name metalk8s-build-calico-cni-plugin \
+		--rm \
+		$(PACKAGES_DOCKER_IMAGE) \
+		/usr/bin/mock \
+			--root centos-7-x86_64 \
+			--rebuild \
+			--resultdir=/home/build/rpmbuild/RPMS \
+			--verbose \
+			/home/build/rpmbuild/SRPMS/$(notdir $<)
+
+ALL_RPMS = \
+	   $(RPMBUILD_RPMS)/calico-cni-plugin-3.4.0-1.el7.x86_64.rpm \
+
+packages: $(ALL_RPMS)
+.PHONY: packages
