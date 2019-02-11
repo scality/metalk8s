@@ -105,27 +105,50 @@ RPMBUILD_SOURCES := $(RPMBUILD_ROOT)/SOURCES
 RPMBUILD_SRPMS := $(RPMBUILD_ROOT)/SRPMS
 RPMBUILD_RPMS := $(RPMBUILD_ROOT)/RPMS
 
-$(RPMBUILD_SOURCES)/v3.4.0.tar.gz:
-	mkdir -p $(shell dirname $@)
-	curl -L -o $@ https://github.com/projectcalico/cni-plugin/archive/$(notdir $@)
+# Either we 'generate' parts of the Makefile dynamically, or we generate parts
+# of it as files using some script(s), keep those in VCS and `include` them
+# here.
+SPECTOOL := $(shell command -v spectool 2>/dev/null)
 
-$(RPMBUILD_SOURCES)/calico-amd64:
-	mkdir -p $(shell dirname $@)
-	curl -L -o $@ https://github.com/projectcalico/cni-plugin/releases/download/v3.4.0/$(notdir $@)
+ifndef SPECTOOL
+CALICO_CNI_PLUGIN_SOURCES_LIST = $(shell \
+		docker run \
+			--hostname build \
+			--mount type=bind,source=$(PWD)/packages/calico-cni-plugin.spec,destination=/home/build/rpmbuild/SPECS/calico-cni-plugin.spec,ro \
+			--name metalk8s-build-calico-cni-plugin \
+			--rm \
+			$(PACKAGES_DOCKER_IMAGE) \
+			/usr/bin/spectool \
+				--list-files \
+				--sources \
+				/home/build/rpmbuild/SPECS/calico-cni-plugin.spec | awk '{ print $$2 }' | xargs -l basename)
+else
+CALICO_CNI_PLUGIN_SOURCES_LIST = $(shell \
+		$(SPECTOOL) \
+			--list-files \
+			--sources \
+			$(PWD)/packages/calico-cni-plugin.spec | awk '{ print $$2 }' | xargs -l basename)
+endif
 
-$(RPMBUILD_SOURCES)/calico-ipam-amd64:
-	mkdir -p $(shell dirname $@)
-	curl -L -o $@ https://github.com/projectcalico/cni-plugin/releases/download/v3.4.0/$(notdir $@)
+CALICO_CNI_PLUGIN_SOURCES = $(foreach src,$(CALICO_CNI_PLUGIN_SOURCES_LIST),$(RPMBUILD_SOURCES)/$(src))
 
-CALICO_CNI_PLUGIN_SOURCES = \
-	$(RPMBUILD_SOURCES)/v3.4.0.tar.gz \
-	$(RPMBUILD_SOURCES)/calico-amd64 \
-	$(RPMBUILD_SOURCES)/calico-ipam-amd64
+$(CALICO_CNI_PLUGIN_SOURCES): packages/calico-cni-plugin.spec
+	$(MAKE) $(PACKAGES_DOCKER_IMAGE)
+	mkdir -p $(notdir $@)
+	docker run \
+		--hostname build \
+		--mount type=bind,source=$(PWD)/$<,destination=/home/build/rpmbuild/SPECS/$(notdir $<),ro \
+		--mount type=bind,source=$(RPMBUILD_SOURCES),destination=/home/build/rpmbuild/SOURCES \
+		--name metalk8s-build-calico-cni-plugin \
+		--rm \
+		$(PACKAGES_DOCKER_IMAGE) \
+		/usr/bin/spectool \
+			--get-files \
+			--directory /home/build/rpmbuild/SOURCES \
+			/home/build/rpmbuild/SPECS/$(notdir $<)
+	touch $@
 
-calico-cni-plugin-sources: $(CALICO_CNI_PLUGIN_SOURCES)
-.PHONY: calico-cni-plugin-sources
-
-$(RPMBUILD_SRPMS)/calico-cni-plugin-3.4.0-1.el7.src.rpm: $(CALICO_CNI_PLUGIN_SOURCES) packages/calico-cni-plugin.spec
+$(RPMBUILD_SRPMS)/calico-cni-plugin-3.4.0-1.el7.src.rpm: packages/calico-cni-plugin.spec $(CALICO_CNI_PLUGIN_SOURCES)
 	$(MAKE) $(PACKAGES_DOCKER_IMAGE)
 	mkdir -p $(MOCK_ROOT)/lib $(MOCK_ROOT)/cache
 	mkdir -p $(RPMBUILD_SRPMS)
@@ -134,7 +157,7 @@ $(RPMBUILD_SRPMS)/calico-cni-plugin-3.4.0-1.el7.src.rpm: $(CALICO_CNI_PLUGIN_SOU
 		--hostname build \
 		--mount type=bind,source=$(MOCK_ROOT)/lib,destination=/var/lib/mock \
 		--mount type=bind,source=$(MOCK_ROOT)/cache,destination=/var/cache/mock \
-		--mount type=bind,source=$(PWD)/packages/calico-cni-plugin.spec,destination=/home/build/rpmbuild/SPECS/calico-cni-plugin.spec,ro \
+		--mount type=bind,source=$(PWD)/$<,destination=/home/build/rpmbuild/SPECS/$(notdir $<),ro \
 		--mount type=bind,source=$(RPMBUILD_SOURCES)/v3.4.0.tar.gz,destination=/home/build/rpmbuild/SOURCES/v3.4.0.tar.gz,ro \
 		--mount type=bind,source=$(RPMBUILD_SOURCES)/calico-amd64,destination=/home/build/rpmbuild/SOURCES/calico-amd64,ro \
 		--mount type=bind,source=$(RPMBUILD_SOURCES)/calico-ipam-amd64,destination=/home/build/rpmbuild/SOURCES/calico-ipam-amd64,ro \
@@ -146,7 +169,7 @@ $(RPMBUILD_SRPMS)/calico-cni-plugin-3.4.0-1.el7.src.rpm: $(CALICO_CNI_PLUGIN_SOU
 		/usr/bin/mock \
 			--root centos-7-x86_64 \
 			--buildsrpm \
-			--spec=/home/build/rpmbuild/SPECS/calico-cni-plugin.spec \
+			--spec=/home/build/rpmbuild/SPECS/$(notdir $<) \
 			--sources=/home/build/rpmbuild/SOURCES/ \
 			--resultdir=/home/build/rpmbuild/SRPMS \
 			--verbose
