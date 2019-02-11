@@ -1,0 +1,28 @@
+{% import_yaml 'metalk8s/defaults.yaml' as defaults with context %}
+
+{% set defaults = salt['grains.filter_by']({
+  'default': defaults
+}, merge=salt['pillar.items']()) %}
+
+{% set repo = salt['grains.filter_by']({
+  'RedHat': {
+    'containerd': {
+      'name': 'epel'
+    },
+    'kubernetes': {
+      'name': 'kubernetes'
+    }
+  }
+}, merge=defaults.get('repo')) %}
+
+{% set containerd = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('containerd')) %}
+
+{% set kubelet = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('kubelet')) %}
+
+{% set runc = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('runc')) %}

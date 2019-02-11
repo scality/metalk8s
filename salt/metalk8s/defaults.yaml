@@ -1,0 +1,8 @@
+repo:
+  online_mode: True
+  runc:
+    version: latest
+  containerd:
+    version: latest
+  kubernetes:
+    version: latest
