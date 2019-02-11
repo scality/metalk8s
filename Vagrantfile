@@ -9,11 +9,16 @@ set -eu -o pipefail
 
 RC=0
 
+die() {
+    echo 1>&2 $@
+    exit 1
+}
+
 echo "Installing build artifacts on the host"
 
-# This script is supposed to 'install' the build results on the system,
-# i.e. symlink something like `/vagrant/_build/root` to
-# `/srv/scality/metalk8s-$VERSION` or however we build this.
+mkdir -p /srv/scality || die "Failed to create /srv/scality"
+rm -f /srv/scality/metalk8s-dev || die "Failed to unlink symlink destination"
+ln -s /vagrant/_build/root /srv/scality/metalk8s-dev || die "Failed to create symlink"
 
 echo "Installed build artifacts on the host"
 
@@ -25,17 +30,14 @@ BOOTSTRAP = <<-SCRIPT
 
 set -eu -o pipefail
 
-RC=0
+if ! test -x /srv/scality/metalk8s-dev/bootstrap.sh; then
+    echo 1>&2 "Bootstrap script not found in build directory."
+    echo 1>&2 "Did you run 'make'?"
+    exit 1
+fi
 
 echo "Launching bootstrap"
-
-# This script is supposed to launch the bootstrap process. If this process is
-# already scripted in something provisioned in `/srv/scality/metalk8s-$VERSION`,
-# then we could just chain/`exec` into that one.
-
-echo "Bootstrap finished"
-
-exit $RC
+exec /srv/scality/metalk8s-dev/bootstrap.sh
 SCRIPT
 
 # To support VirtualBox linked clones
