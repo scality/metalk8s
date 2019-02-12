@@ -10,6 +10,95 @@ hassle.
 
 Also, `kubeadm` applies best-practices so why not follow them anyway.
 
+What the different components are
+---------------------------------
+
+How do we distribute this installer ?
+They should be gathered into a single archive of some sort, like an ISO
+
+First we need to distinguish the various component that might need to be
+brought together into this single archive:
+
+
+The platform layer itself (Metalk8s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Package repositories
+""""""""""""""""""""
+
+The platform layer will need some packages for the initial phase of the
+deployment (likely K8s ones like kubelet, etcd, etc ...) but also for the
+tools required for the whole bootstrap phase.
+Ideally, we will have a repository for each purpose to more easily
+maintain them in the future offline environment
+
+K8s component repository
+''''''''''''''''''''''''
+
+SPEC file located at
+https://github.com/kubernetes/release/blob/master/rpm/kubelet.spec
+can be used as a reference for building needed K8s system packages
+
+
+EPEL dependencies
+'''''''''''''''''
+
+All EPEL dependencies needed by the package we provide should be in
+this repository.
+
+
+Hardware specific related packages
+''''''''''''''''''''''''''''''''''
+
+Packages that we vendor related to specific hardware, like ssacli,
+perccli, storcli should be present here.
+
+
+CentOS minimal repository
+'''''''''''''''''''''''''
+
+A copy with at least the yum group "Infrastruture Server" should be
+present here to ensure an offline environment with the minimal set of
+packages required for the default installation.
+
+  .. code:: bash
+
+PACKAGES+=($(repoquery -g --grouppkgs=all --list -g base core))
+
+repotrack -n -t -p "$REPO" -a x86_64 "${PACKAGES[@]}"
+
+
+
+MetalK8s repository
+""""""""""""""""""""""""""
+
+This repository will contain all MetalK8s related packages, notably
+
+  * MetalK8s bootstrap package
+
+  A system package respecting SemVer will contain bootstrap related files
+  such as the initial bootstrap script.
+  This package will be the first thing installed onec the MetalK8s installer is
+  deployed and available on the bootstrap node.
+
+  .. code:: bash
+
+    yum localinstall /srv/scality/repositories/metalk8s/v2.0/metalk8s-2.0.0-1.el7.x86_64.rpm
+
+
+  * Possibly other MetalK8s related packages
+
+
+Docker registry
+"""""""""""""""
+
+A docker registry like service should be made available as part of the
+bootstrap.
+This will allow new solutions deployed to be made available to the
+orchestrator by pulling the images from this registry
+
+
+
 Configuration
 -------------
 To launch the bootstrap process, some input from the end-user is required, which

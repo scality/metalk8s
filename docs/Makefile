@@ -19,3 +19,6 @@ all-svg: $(patsubst %.uml,%.svg,$(SOURCES))
 %.svg: %.uml
 	@echo Rendering $< into $@
 	@plantuml -p -tsvg > $@ < $<
+
+clean:
+	rm -f *.png *.svg

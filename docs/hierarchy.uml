@@ -1,0 +1,31 @@
+@startuml
+
+node srv as "/srv"
+node scality as "/scality"
+node metalk8s_version as "/<metalk8s version>"
+srv -- scality
+scality -- metalk8s_version
+
+node epel as "/epel"
+node hardware as "/hardware"
+node k8s as "/k8s"
+node metalk8s_repo as "/metalk8s"
+node os as "/os"
+node repositories as "/repositories"
+
+metalk8s_version -- repositories
+repositories -- epel
+repositories -- hardware
+repositories -- k8s
+repositories -- metalk8s_repo
+repositories -- os
+
+node registry as "/registry"
+metalk8s_version -- registry
+
+node salt as "/salt"
+node metalk8s_salt as "/metalk8s"
+metalk8s_version -- salt
+salt -- metalk8s_salt
+
+@enduml
