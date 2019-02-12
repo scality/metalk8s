@@ -55,7 +55,7 @@ $(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in
 $(ISO_ROOT)/salt/%: salt/%
 	mkdir -p $(shell dirname $@)
 	rm -f $@
-	cp --archive $< $@
+	cp -a $< $@
 
 $(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in
 	mkdir -p $(shell dirname $@)
@@ -65,7 +65,7 @@ $(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in
 $(ISO_ROOT)/pillar/%: pillar/%
 	mkdir -p $(shell dirname $@)
 	rm -f $@
-	cp --archive $< $@
+	cp -a $< $@
 
 clean:
 	rm -rf $(BUILD_ROOT)
