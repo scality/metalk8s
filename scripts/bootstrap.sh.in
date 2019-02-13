@@ -75,6 +75,11 @@ install_kubelet() {
         ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubelet saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
+run_kubeadm_init() {
+        ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubeadm.init saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+
+}
+
 main() {
         pre_minion_checks
         disable_salt_minion_service
@@ -84,6 +89,7 @@ main() {
         configure_salt_minion_local_mode
         run_bootstrap_prechecks
         install_kubelet
+        run_kubeadm_init
 }
 
 main

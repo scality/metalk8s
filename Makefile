@@ -26,6 +26,12 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/metalk8s/defaults.yaml \
 	\
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/configured.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/files/kubeadm.env \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/files/service-kubelet-systemd.conf \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/init.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
 	\

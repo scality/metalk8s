@@ -15,6 +15,10 @@
   }
 }, merge=defaults.get('repo')) %}
 
+{% set runc = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('runc')) %}
+
 {% set containerd = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('containerd')) %}
@@ -22,7 +26,11 @@
 {% set kubelet = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('kubelet')) %}
-
-{% set runc = salt['grains.filter_by']({
-  'default': {}
-}, merge=defaults.get('runc')) %}
+{% set kubelet = salt['grains.filter_by']({
+  'systemd': {
+    'service': {
+      'config_path': '/etc/systemd/system/kubelet.service.d',
+      'config_name': '10-kubeadm.conf'
+    }
+  }
+}, grain='init', merge=kubelet) %}
