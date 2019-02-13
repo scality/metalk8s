@@ -5,8 +5,7 @@ MAKEFLAGS += -r
 .DELETE_ON_ERROR:
 .SUFFIXES:
 
-VERSION ?= 2.0
-FULL_VERSION ?= 2.0.0-dev
+include VERSION
 
 PWD := $(shell pwd)
 
@@ -38,21 +37,23 @@ ALL = \
 	\
 	$(ISO_ROOT)/pillar/repositories.sls \
 	$(ISO_ROOT)/pillar/top.sls \
+	\
+	$(ISO_ROOT)/product.txt \
 
 
 default: all
 .PHONY: default
 
-all: iso
+all: $(ISO)
 .PHONY: all
 
 all-local: $(ALL) ## Build all artifacts in the build tree
 .PHONY: all-local
 
-$(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in
+$(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in $(ISO_ROOT)/product.txt
 	mkdir -p $(shell dirname $@)
 	rm -f $@
-	sed s/@VERSION@/$(VERSION)/g < $< > $@ || rm -f $@
+	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 	chmod a+x $@
 
 $(ISO_ROOT)/salt/%: salt/%
@@ -60,15 +61,27 @@ $(ISO_ROOT)/salt/%: salt/%
 	rm -f $@
 	cp -a $< $@
 
-$(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in
+$(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in $(ISO_ROOT)/product.txt
 	mkdir -p $(shell dirname $@)
 	rm -f $@
-	sed s/@VERSION@/$(VERSION)/g < $< > $@ || rm -f $@
+	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 
 $(ISO_ROOT)/pillar/%: pillar/%
 	mkdir -p $(shell dirname $@)
 	rm -f $@
 	cp -a $< $@
+
+$(ISO_ROOT)/product.txt: scripts/product.sh VERSION FORCE
+	rm -f $@
+	mkdir -p $(shell dirname $@)
+	env \
+		VERSION_MAJOR=$(VERSION_MAJOR) \
+		VERSION_MINOR=$(VERSION_MINOR) \
+		VERSION_PATCH=$(VERSION_PATCH) \
+		VERSION_SUFFIX=$(VERSION_SUFFIX) \
+		$< > $@ || (rm -f $@; false)
+
+FORCE:
 
 clean: ## Clean the build tree
 	rm -rf $(BUILD_ROOT)
@@ -77,13 +90,14 @@ clean: ## Clean the build tree
 iso: $(ISO) ## Build the MetalK8s ISO image
 .PHONY: iso
 
-$(ISO): all-local
+$(ISO): $(ALL)
+	source $(ISO_ROOT)/product.txt && \
 	mkisofs -output $@ \
 		-rock \
 		-joliet \
 		-joliet-long \
 		-full-iso9660-filenames \
-		-volid 'MetalK8s $(FULL_VERSION)' \
+		-volid "$${NAME} $${VERSION}" \
 		--iso-level 3 \
 		-gid 0 \
 		-uid 0 \
@@ -96,7 +110,7 @@ VAGRANT ?= vagrant
 VAGRANT_DEFAULT_PROVIDER ?= virtualbox
 VAGRANT_UP_OPTS ?= --provision --no-destroy-on-error --parallel --provider=$(VAGRANT_DEFAULT_PROVIDER)
 
-vagrantup: all-local ## Run 'vagrant up' to (re-)provision a development environment
+vagrantup: $(ALL) ## Run 'vagrant up' to (re-)provision a development environment
 	$(VAGRANT) up $(VAGRANT_UP_OPTS)
 .PHONY: vagrantup
 
