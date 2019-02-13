@@ -1,7 +1,11 @@
 {%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/map.jinja" import kubelet with context %}
 
 include:
   - metalk8s.repo
+{%- if kubelet.container_engine %}
+  - metalk8s.{{ kubelet.container_engine }}
+{%- endif %}
 
 # TODO: Maybe not needed in offline because embedded in the kubernetes repository
 Install kubelet dependencies:

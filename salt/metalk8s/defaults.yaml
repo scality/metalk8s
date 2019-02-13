@@ -9,6 +9,7 @@ repo:
 
 kubelet:
   config_file: "/var/lib/kubelet/config.yaml"
+  container_engine: "containerd"
   service:
     environment_file: "/var/lib/kubelet/kubeadm-flags.env"
     options:

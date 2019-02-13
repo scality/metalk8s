@@ -71,7 +71,6 @@ run_bootstrap_prechecks() {
 }
 
 install_kubelet() {
-        ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.containerd saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
         ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubelet saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
