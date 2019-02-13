@@ -6,7 +6,8 @@ include:
 
 Install container-selinux:
   pkg.installed:
-    - name: container-selinux
+    - sources:
+      - container-selinux: ftp://ftp.pbone.net/mirror/ftp.scientificlinux.org/linux/scientific/7x/external_products/extras/x86_64/container-selinux-2.77-1.el7_6.noarch.rpm
 
 Install containerd:
   pkg.installed:
