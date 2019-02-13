@@ -86,6 +86,5 @@ $(ISO): all
 		-uid 0 \
 		-input-charset utf-8 \
 		-output-charset utf-8 \
-		-checksum_algorithm_iso md5,sha1,sha256,sha512 \
 		$(ISO_ROOT)
 .PHONY: $(ISO)
