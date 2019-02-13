@@ -58,7 +58,7 @@ $(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in
 $(ISO_ROOT)/salt/%: salt/%
 	mkdir -p $(shell dirname $@)
 	rm -f $@
-	cp --archive $< $@
+	cp -a $< $@
 
 $(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in
 	mkdir -p $(shell dirname $@)
@@ -68,7 +68,7 @@ $(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in
 $(ISO_ROOT)/pillar/%: pillar/%
 	mkdir -p $(shell dirname $@)
 	rm -f $@
-	cp --archive $< $@
+	cp -a $< $@
 
 clean: ## Clean the build tree
 	rm -rf $(BUILD_ROOT)
@@ -89,7 +89,6 @@ $(ISO): all-local
 		-uid 0 \
 		-input-charset utf-8 \
 		-output-charset utf-8 \
-		-checksum_algorithm_iso md5,sha1,sha256,sha512 \
 		$(ISO_ROOT)
 
 
