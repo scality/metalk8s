@@ -18,7 +18,7 @@ Summary:        Calico CNI plugin
 ExclusiveArch:  x86_64
 ExclusiveOS:    Linux
 
-License:        Apache-2
+License:        ASL 2.0
 URL:            https://%{provider_prefix}
 Source0:        https://%{provider_prefix}/archive/v%{version}.tar.gz
 Source1:        https://%{provider_prefix}/releases/download/v%{version}/calico-%{built_arch}
