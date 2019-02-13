@@ -43,8 +43,11 @@ ALL = \
 default: all
 .PHONY: default
 
-all: $(ALL)
+all: iso
 .PHONY: all
+
+all-local: $(ALL) ## Build all artifacts in the build tree
+.PHONY: all-local
 
 $(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in
 	mkdir -p $(shell dirname $@)
@@ -67,14 +70,14 @@ $(ISO_ROOT)/pillar/%: pillar/%
 	rm -f $@
 	cp --archive $< $@
 
-clean:
+clean: ## Clean the build tree
 	rm -rf $(BUILD_ROOT)
 .PHONY: clean
 
-iso: $(ISO)
+iso: $(ISO) ## Build the MetalK8s ISO image
 .PHONY: iso
 
-$(ISO): all
+$(ISO): all-local
 	mkisofs -output $@ \
 		-rock \
 		-joliet \
@@ -88,4 +91,19 @@ $(ISO): all
 		-output-charset utf-8 \
 		-checksum_algorithm_iso md5,sha1,sha256,sha512 \
 		$(ISO_ROOT)
-.PHONY: $(ISO)
+
+
+VAGRANT ?= vagrant
+VAGRANT_DEFAULT_PROVIDER ?= virtualbox
+VAGRANT_UP_OPTS ?= --provision --no-destroy-on-error --parallel --provider=$(VAGRANT_DEFAULT_PROVIDER)
+
+vagrantup: all-local ## Run 'vagrant up' to (re-)provision a development environment
+	$(VAGRANT) up $(VAGRANT_UP_OPTS)
+.PHONY: vagrantup
+
+
+help: ## Show this help message
+	@echo "The following targets are available:"
+	@echo
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+.PHONY: help
