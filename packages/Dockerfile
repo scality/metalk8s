@@ -14,6 +14,3 @@ RUN yum install -y \
     yum clean all
 
 RUN useradd -m build
-
-ADD entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]

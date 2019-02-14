@@ -8,6 +8,7 @@ MAKEFLAGS += -r
 include VERSION
 
 PWD := $(shell pwd)
+SHELL := /bin/bash
 
 BUILD_ROOT ?= $(PWD)/_build
 ISO_ROOT ?= $(BUILD_ROOT)/root
@@ -39,10 +40,13 @@ ALL = \
 	$(ISO_ROOT)/pillar/top.sls \
 	\
 	$(ISO_ROOT)/product.txt \
+	\
+    $(SCALITY_EL7_REPO) \
 
 
 PACKAGE_BUILD_CONTAINER := $(BUILD_ROOT)/package-build-container
 PACKAGE_BUILD_IMAGE ?= metalk8s-build:latest
+ENTRYPOINT_SH := "entrypoint.sh"
 
 CALICO_CNI_PLUGIN_VERSION = 3.5.1
 CALICO_CNI_PLUGIN_BUILD = 1
@@ -58,13 +62,14 @@ SCALITY_EL7_RPMS = \
 SCALITY_EL7_REPODATA = $(SCALITY_EL7_ROOT)/repodata/repomd.xml
 SCALITY_EL7_REPO = $(SCALITY_EL7_RPMS) $(SCALITY_EL7_REPODATA)
 
-ALL = \
-      $(SCALITY_EL7_REPO) \
+VAGRANT ?= vagrant
+VAGRANT_DEFAULT_PROVIDER ?= virtualbox
+VAGRANT_UP_OPTS ?= --provision --no-destroy-on-error --parallel --provider=$(VAGRANT_DEFAULT_PROVIDER)
 
 default: all
 .PHONY: default
 
-all: $(ISO)
+all: $(ISO) $(ALL)
 .PHONY: all
 
 all-local: $(ALL) ## Build all artifacts in the build tree
@@ -126,10 +131,6 @@ $(ISO): $(ALL)
 		$(ISO_ROOT)
 
 
-VAGRANT ?= vagrant
-VAGRANT_DEFAULT_PROVIDER ?= virtualbox
-VAGRANT_UP_OPTS ?= --provision --no-destroy-on-error --parallel --provider=$(VAGRANT_DEFAULT_PROVIDER)
-
 vagrantup: $(ALL) ## Run 'vagrant up' to (re-)provision a development environment
 	$(VAGRANT) up $(VAGRANT_UP_OPTS)
 .PHONY: vagrantup
@@ -140,8 +141,6 @@ help: ## Show this help message
 	@echo
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
-all: $(ALL)
-.PHONY: all
 
 
 $(BUILD_ROOT)/package-build-container: packages/Dockerfile packages/entrypoint.sh
@@ -186,10 +185,11 @@ $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_C
 		--mount type=bind,source=$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/calico-ipam-amd64,destination=/rpmbuild/SOURCES/calico-ipam-amd64,ro \
 		--mount type=bind,source=$(dir $@),destination=/rpmbuild/SRPMS \
 		--mount type=bind,source=$(PWD)/packages/rpmlintrc,destination=/rpmbuild/rpmlintrc,ro \
+		--mount type=bind,source=$(PWD)/packages/$(ENTRYPOINT_SH),destination=/entrypoint.sh,ro \
 		--read-only \
 		--rm \
 		$(PACKAGE_BUILD_IMAGE) \
-		buildsrpm
+		/entrypoint.sh buildsrpm
 
 $(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm: $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm
 $(SCALITY_EL7_ROOT_/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm: | $(PACKAGE_BUILD_CONTAINER)
@@ -208,9 +208,10 @@ $(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALI
 		--mount type=bind,source=$<,destination=/rpmbuild/SRPMS/$(notdir $<),ro \
 		--mount type=bind,source=$(dir $@),destination=/rpmbuild/RPMS \
 		--mount type=bind,source=$(PWD)/packages/rpmlintrc,destination=/rpmbuild/rpmlintrc,ro \
+		--mount type=bind,source=$(PWD)/packages/$(ENTRYPOINT_SH),destination=/entrypoint.sh,ro \
 		--rm \
 		$(PACKAGE_BUILD_IMAGE) \
-		buildrpm
+		/entrypoint.sh buildrpm
 
 $(SCALITY_EL7_REPODATA): $(SCALITY_EL7_RPMS) | $(PACKAGE_BUILD_CONTAINER)
 	mkdir -p $(dir $@)
@@ -221,7 +222,8 @@ $(SCALITY_EL7_REPODATA): $(SCALITY_EL7_RPMS) | $(PACKAGE_BUILD_CONTAINER)
 		--mount type=tmpfs,destination=/tmp \
 		--mount type=bind,source=$(SCALITY_EL7_ROOT),destination=/repository,ro \
 		--mount type=bind,source=$(dir $@),destination=/repository/repodata \
+		--mount type=bind,source=$(PWD)/packages/$(ENTRYPOINT_SH),destination=/entrypoint.sh,ro \
 		--read-only \
 		--rm \
 		$(PACKAGE_BUILD_IMAGE) \
-		buildrepo
+		/entrypoint.sh buildrepo
