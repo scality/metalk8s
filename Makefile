@@ -44,7 +44,7 @@ ALL = \
 	\
 	$(ISO_ROOT)/product.txt \
 	\
-	$(ISO_ROOT)/packages/scality/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm \
+	$(SCALITY_EL7_REPO) \
 
 PACKAGE_BUILD_CONTAINER := $(BUILD_ROOT)/package-build-container
 PACKAGE_BUILD_IMAGE ?= metalk8s-build:latest
@@ -53,6 +53,13 @@ CALICO_CNI_PLUGIN_SOURCES = \
 	v$(CALICO_CNI_PLUGIN_VERSION).tar.gz \
 	calico-amd64 \
 	calico-ipam-amd64 \
+
+SCALITY_EL7_ROOT = $(ISO_ROOT)/packages/scality-el7
+SCALITY_EL7_RPMS = \
+	$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm \
+
+SCALITY_EL7_REPODATA = $(SCALITY_EL7_ROOT)/repodata/repomd.xml
+SCALITY_EL7_REPO = $(SCALITY_EL7_RPMS) $(SCALITY_EL7_REPODATA)
 
 
 default: all
@@ -184,9 +191,9 @@ $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_C
 		$(PACKAGE_BUILD_IMAGE) \
 		/entrypoint.sh buildsrpm
 
-$(ISO_ROOT)/packages/scality/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm: $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm
-$(ISO_ROOT)/packages/scality/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm: | $(PACKAGE_BUILD_CONTAINER)
-$(ISO_ROOT)/packages/scality/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm:
+$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm: $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm
+$(SCALITY_EL7_ROOT_/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm: | $(PACKAGE_BUILD_CONTAINER)
+$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm:
 	mkdir -p $(dir $@)
 	# Note: because we use `yum-builddep`, this one can't be `--read-only`
 	docker run \
@@ -205,3 +212,18 @@ $(ISO_ROOT)/packages/scality/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CA
 		--rm \
 		$(PACKAGE_BUILD_IMAGE) \
 		/entrypoint.sh buildrpm
+
+$(SCALITY_EL7_REPODATA): $(SCALITY_EL7_RPMS) | $(PACKAGE_BUILD_CONTAINER)
+	mkdir -p $(dir $@)
+	docker run \
+		--env TARGET_UID=$(shell id -u) \
+		--env TARGET_GID=$(shell id -g) \
+		--hostname build \
+		--mount type=tmpfs,destination=/tmp \
+		--mount type=bind,source=$(SCALITY_EL7_ROOT),destination=/repository,ro \
+		--mount type=bind,source=$(dir $@),destination=/repository/repodata \
+		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
+		--read-only \
+		--rm \
+		$(PACKAGE_BUILD_IMAGE) \
+		/entrypoint.sh buildrepo
