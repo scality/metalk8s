@@ -5,6 +5,7 @@ ARG BUILD_IMAGE=docker.io/centos
 FROM ${BUILD_IMAGE}@sha256:${BUILD_IMAGE_SHA256} as build
 
 RUN yum install -y \
+        createrepo \
         rpm-build \
         rpmdevtools \
         rpmlint \

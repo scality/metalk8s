@@ -2,10 +2,10 @@
 
 set -e
 set -u
-set -x
 set -o pipefail
 
 buildsrpm() {
+    set -x
     chown build:build /home/build
     su -l build rpmdev-setuptree
     for src in ${SOURCES:-}; do
@@ -21,6 +21,7 @@ buildsrpm() {
 }
 
 buildrpm() {
+    set -x
     yum-builddep -y "/rpmbuild/SRPMS/${SRPM}"
     chown build:build /home/build
     su -l build rpmdev-setuptree
