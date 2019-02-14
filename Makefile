@@ -4,6 +4,7 @@ MAKEFLAGS += -r
 .DEFAULT_GOAL := default
 .DELETE_ON_ERROR:
 .SUFFIXES:
+SHELL := /bin/bash
 
 include VERSION
 
