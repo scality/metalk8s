@@ -15,7 +15,5 @@ RUN yum install -y \
 
 RUN useradd -m build
 
-VOLUME /home/build
-
 ADD entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
