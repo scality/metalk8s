@@ -35,12 +35,24 @@ buildrpm() {
     done
 }
 
+buildrepo() {
+    set -x
+    mkdir /tmp/repodata
+    chown build:build /tmp/repodata
+    createrepo --outputdir /tmp/repodata /repository
+    cp -a /tmp/repodata/repodata/. /repository/repodata/
+    chown -R "${TARGET_UID}:${TARGET_GID}" /repository/repodata/
+}
+
 case ${1:-''} in
     buildrpm)
         buildrpm
         ;;
     buildsrpm)
         buildsrpm
+        ;;
+    buildrepo)
+        buildrepo
         ;;
     '')
         exec /bin/bash
