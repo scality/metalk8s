@@ -7,5 +7,20 @@ branches:
 stages:
   pre-merge:
     worker:
-      type: local
-    steps: []
+      type: openstack
+      image: CentOS 7 (PVHVM)
+      flavor: m1.medium
+    steps:
+    - Git: &git_pull
+        name: git pull
+        repourl: "%(prop:git_reference)s"
+        mode: full
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: build everything
+        command: make
+    - Upload:
+        name: upload artifacts
+        source: build/_build/metalk8s.iso
