@@ -39,6 +39,11 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/runc/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/runc/installed.sls \
 	\
+	$(ISO_ROOT)/salt/_modules/containerd.py \
+	$(ISO_ROOT)/salt/_modules/cri.py \
+	\
+	$(ISO_ROOT)/salt/_states/containerd.py \
+	\
 	$(ISO_ROOT)/pillar/repositories.sls \
 	$(ISO_ROOT)/pillar/top.sls \
 	\
