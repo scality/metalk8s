@@ -2,6 +2,8 @@
 
 set -xue -o pipefail
 
+mkdir -p /etc/cni/net.d/
+
 cat > /etc/cni/net.d/98-containerd-test-bridge.conf << EOF
 {
     "cniVersion": "0.3.1",
