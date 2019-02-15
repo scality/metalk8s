@@ -57,8 +57,6 @@ cat > /tmp/container.json << EOF
 }
 EOF
 
-export CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock
-
 crictl version
 
 PODID=$(crictl runp /tmp/sandbox.json)
