@@ -7,5 +7,26 @@ branches:
 stages:
   pre-merge:
     worker:
-      type: local
-    steps: []
+      type: kube_pod
+      path: eve/workers/pod-builder/pod.yml
+      images:
+          docker-builder: eve/workers/pod-builder
+    steps:
+    - Git: &git_pull
+        name: git pull
+        repourl: "%(prop:git_reference)s"
+        mode: full
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: build everything
+        command: make
+    - ShellCommand:
+        name: Put the iso file in a separate folder
+        command: mkdir iso && cp _build/metalk8s.iso iso
+    - Upload:
+        name: upload artifacts
+        source: iso/
+        urls:
+          - "*.iso"
