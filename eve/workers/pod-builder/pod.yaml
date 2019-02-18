@@ -20,7 +20,7 @@ spec:
       volumeMounts:
         - name: worker-workspace
           mountPath: /home/eve/workspace
-    - name: dind-daemon
+    - name: platform-dind-daemon
       image: docker:18.09.2-dind
       resources:
         requests:

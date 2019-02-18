@@ -8,7 +8,7 @@ stages:
   pre-merge:
     worker:
       type: kube_pod
-      path: eve/workers/pod-builder/pod.yml
+      path: eve/workers/pod-builder/pod.yaml
       images:
           docker-builder: eve/workers/pod-builder
     steps:
@@ -24,9 +24,10 @@ stages:
         command: make
     - ShellCommand:
         name: Put the iso file in a separate folder
-        command: mkdir iso && cp _build/metalk8s.iso iso
+        command: mkdir iso && cp _build/metalk8s.iso _build/SHA256SUM iso
     - Upload:
         name: upload artifacts
         source: iso/
         urls:
           - "*.iso"
+          - "SHA256SUM"
