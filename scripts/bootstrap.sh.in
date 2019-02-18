@@ -13,6 +13,8 @@ YUM=${YUM:-$(command -v yum)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
 SALT_MINION_FILE_CLIENT_LOCAL_CONF=/etc/salt/minion.d/99-file-client-local.conf
+SALT_MASTER_FILE_CONF=/etc/salt/master.d/99-metalk8s.conf
+SALT_MINION_FILE_CONF=/etc/salt/minion.d/99-metalk8s.conf
 
 die() {
         echo 1>&2 "$@"
@@ -78,9 +80,55 @@ install_kubelet() {
         ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubelet saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
-run_kubeadm_init() {
-        ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubeadm.init saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+run_preflight() {
+        ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubeadm.init.preflight saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
 
+run_kubelet_start() {
+        ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubeadm.init.kubelet-start saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
+
+install_salt_master() {
+        # TODO: Create pod using kubelet with master image
+        ${YUM} install -y salt-master
+}
+
+configure_salt() {
+        # TODO: Use a salt state and maybe other stuff
+        cat > "${SALT_MINION_FILE_CONF}" << EOF
+master: localhost
+
+# use new module.run format
+use_superseded:
+  - module.run
+EOF
+        rm "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}"
+        cat > "${SALT_MASTER_FILE_CONF}" << EOF
+file_roots:
+  metalk8s-@VERSION@:
+    - /srv/scality/metalk8s-dev/salt
+pillar_roots:
+  metalk8s-@VERSION@:
+    - /srv/scality/metalk8s-dev/pillar
+peer:
+  .*:
+    - x509.sign_remote_certificate
+EOF
+        ${SYSTEMCTL} restart salt-master.service
+        ${SYSTEMCTL} enable salt-master.service
+        ${SYSTEMCTL} restart salt-minion.service
+        ${SYSTEMCTL} enable salt-minion.service
+        sleep 20
+        salt-key -A -y
+}
+
+sync_salt() {
+        ${SALT_CALL} --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@VERSION@
+}
+
+run_certs() {
+        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
 main() {
@@ -92,7 +140,12 @@ main() {
         configure_salt_minion_local_mode
         run_bootstrap_prechecks
         install_kubelet
-        run_kubeadm_init
+        run_preflight
+        run_kubelet_start
+        install_salt_master
+        configure_salt
+        sync_salt
+        run_certs
 }
 
 main

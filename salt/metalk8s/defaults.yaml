@@ -31,6 +31,8 @@ repo:
   kubernetes:
     version: latest
 
+networks: {}
+
 kubelet:
   config_file: "/var/lib/kubelet/config.yaml"
   container_engine: "containerd"
@@ -50,5 +52,18 @@ kubelet:
         enabled: False
     authorization:
       mode: AlwaysAllow
+
+ca:
+  cert:
+    private_key_size: 2048
+    days_valid: 3650
+  signing_policy:
+    days_valid: 365
+
+kube_api:
+  cert:
+    private_key_size: 2048
+    signing_policy: kube_apiserver_policy
+  service_ip: "10.96.0.1"
 
 upgrade: False        # define if we're on an upgrade case
