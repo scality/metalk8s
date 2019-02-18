@@ -2,9 +2,11 @@ Build salt-master image
 =======================
 
 ```
-docker build -t moonshot/salt-master metalk8s/salt-master
+# (from metalk8s/ directory)
 
-docker build -t moonshot/salt-master2016 --build-arg SALT_VERSION=2016.11 metalk8s/salt-master
+docker build -t moonshot/salt-master ./images/salt-master
+
+docker build -t moonshot/salt-master2016 --build-arg SALT_VERSION=2016.11.10 ./images/salt-master
 ```
 
 Run salt-master container

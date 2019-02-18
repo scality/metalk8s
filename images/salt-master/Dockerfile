@@ -3,7 +3,7 @@ FROM centos:7.6.1810
 MAINTAINER moonshot-platform <moonshot-platform@scality.com>
 
 # Versions to use
-ARG SALT_VERSION=2018.3-1
+ARG SALT_VERSION=2018.3.3
 ARG TINI_VERSION=v0.18.0
 
 # Install and check tini
@@ -14,7 +14,14 @@ RUN gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 595
  && gpg --batch --verify /tini.asc /tini
 
 # Install saltstack
-RUN yum install -y https://repo.saltstack.com/yum/redhat/salt-repo-${SALT_VERSION}.el7.noarch.rpm \
+RUN printf "[saltstack-repo]\n\
+name=SaltStack repo for RHEL/CentOS \$releasever\n\
+baseurl=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/%s\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/%s/SALTSTACK-GPG-KEY.pub\n" ${SALT_VERSION} ${SALT_VERSION} >/etc/yum.repos.d/saltstack.repo \
+ && rpm --import https://repo.saltstack.com/yum/redhat/7/x86_64/archive/${SALT_VERSION}/SALTSTACK-GPG-KEY.pub \
+ && yum clean expire-cache \
  && yum install -y salt-master salt-api \
  && yum clean all \
  && chmod +x /tini
