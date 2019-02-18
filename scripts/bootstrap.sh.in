@@ -63,6 +63,10 @@ file_roots:
 pillar_roots:
   metalk8s-@VERSION@:
     - /srv/scality/metalk8s-dev/pillar
+
+# use new module.run format
+use_superseded:
+  - module.run
 EOF
 }
 

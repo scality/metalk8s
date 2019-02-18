@@ -1,2 +1,3 @@
 include:
+  - .preflight
   - .kubelet-start
