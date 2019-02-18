@@ -7,6 +7,7 @@ MAKEFLAGS += -r
 SHELL := /bin/bash
 
 include VERSION
+include container_images.mk
 
 PWD := $(shell pwd)
 
@@ -50,6 +51,14 @@ ALL = \
 	$(ISO_ROOT)/product.txt \
 	\
 	$(SCALITY_EL7_REPO) \
+	\
+	$(ISO_ROOT)/images/coredns-$(COREDNS_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/etcd-$(ETCD_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/kube-apiserver-$(KUBE_APISERVER_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/kube-controller-manager-$(KUBE_CONTROLLER_MANAGER_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/kube-proxy-$(KUBE_PROXY_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/kube-scheduler-$(KUBE_SCHEDULER_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/nginx-$(NGINX_IMAGE_VERSION).tar.gz
 
 PACKAGE_BUILD_CONTAINER := $(BUILD_ROOT)/package-build-container
 PACKAGE_BUILD_IMAGE ?= metalk8s-build:latest
@@ -232,3 +241,23 @@ $(SCALITY_EL7_REPODATA): $(SCALITY_EL7_RPMS) | $(PACKAGE_BUILD_CONTAINER)
 		--rm \
 		$(PACKAGE_BUILD_IMAGE) \
 		/entrypoint.sh buildrepo
+
+
+$(ISO_ROOT)/images/coredns-$(COREDNS_IMAGE_VERSION).tar.gz: \
+	IMAGE=$(COREDNS_IMAGE)
+$(ISO_ROOT)/images/etcd-$(ETCD_IMAGE_VERSION).tar.gz: \
+	IMAGE=$(ETCD_IMAGE)
+$(ISO_ROOT)/images/kube-apiserver-$(KUBE_APISERVER_IMAGE_VERSION).tar.gz: \
+	IMAGE=$(KUBE_APISERVER_IMAGE)
+$(ISO_ROOT)/images/kube-controller-manager-$(KUBE_CONTROLLER_MANAGER_IMAGE_VERSION).tar.gz: \
+	IMAGE=$(KUBE_CONTROLLER_MANAGER_IMAGE)
+$(ISO_ROOT)/images/kube-proxy-$(KUBE_PROXY_IMAGE_VERSION).tar.gz: \
+	IMAGE=$(KUBE_PROXY_IMAGE)
+$(ISO_ROOT)/images/kube-scheduler-$(KUBE_SCHEDULER_IMAGE_VERSION).tar.gz: \
+	IMAGE=$(KUBE_SCHEDULER_IMAGE)
+$(ISO_ROOT)/images/nginx-$(NGINX_IMAGE_VERSION).tar.gz: \
+	IMAGE=$(NGINX_IMAGE)
+$(ISO_ROOT)/images/%.tar.gz:
+	mkdir -p $(@D)
+	docker pull $(IMAGE)
+	docker save $(IMAGE) | gzip > $@
