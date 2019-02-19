@@ -4,6 +4,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: ['@babel/polyfill', './src/index.js'],
+    resolve: {
+        extensions: ['.tsx', '.ts', '.js']
+    },
     module: {
         rules: [
             {
@@ -15,6 +18,11 @@ module.exports = {
                         presets: ['@babel/preset-env']
                     }
                 }
+            },
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
             }
         ]
     },
