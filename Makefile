@@ -74,9 +74,11 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/_modules/containerd.py \
 	$(ISO_ROOT)/salt/_modules/cri.py \
+	$(ISO_ROOT)/salt/_modules/docker_registry.py \
 	\
 	$(ISO_ROOT)/salt/_states/containerd.py \
 	$(ISO_ROOT)/salt/_states/kubeconfig.py \
+	$(ISO_ROOT)/salt/_states/docker_registry.py \
 	\
 	$(ISO_ROOT)/pillar/networks.sls \
 	$(ISO_ROOT)/pillar/repositories.sls \
