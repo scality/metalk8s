@@ -70,6 +70,7 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/salt/minion/running.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/registry/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/registry/populated.sls \
 	$(ISO_ROOT)/salt/metalk8s/registry/files/registry-pod.yaml.j2 \
 	\
 	$(ISO_ROOT)/salt/_modules/containerd.py \

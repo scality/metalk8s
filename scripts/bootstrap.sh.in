@@ -141,6 +141,10 @@ deploy_registry() {
         ${SALT_CALL} --retcode-passthrough state.apply metalk8s.registry saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
+populate_registry() {
+        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.registry.populated saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
+
 main() {
         pre_minion_checks
         disable_salt_minion_service
@@ -158,6 +162,7 @@ main() {
         run_certs
         run_kubeconfig
         deploy_registry
+        populate_registry
 }
 
 main
