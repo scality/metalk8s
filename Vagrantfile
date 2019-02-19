@@ -22,6 +22,10 @@ ln -s /vagrant/_build/root /srv/scality/metalk8s-dev || die "Failed to create sy
 
 echo "Installed build artifacts on the host"
 
+echo "Disabling swap"
+swapoff -a
+echo "Swap disabled"
+
 exit $RC
 SCRIPT
 
