@@ -26,6 +26,10 @@ NGINX_IMAGE = nginx@sha256:dd2d0ac3fff2f007d99e033b64854be0941e19a2ad51f174d9240
 NGINX_IMAGE_NAME = nginx
 NGINX_IMAGE_VERSION = 1.15.8
 
+PAUSE_IMAGE_NAME ?= k8s.gcr.io/pause
+PAUSE_IMAGE_TAG ?= 3.1
+PAUSE_IMAGE_DIGEST ?= sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea
+
 # Custom built images
 SALT_MASTER_IMAGE = ""
 # The build ID is to be augmented whenever we rebuild the `salt-master` image,

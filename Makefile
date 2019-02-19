@@ -24,6 +24,7 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/containerd/configured.sls \
 	$(ISO_ROOT)/salt/metalk8s/containerd/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/containerd/installed.sls \
+	$(ISO_ROOT)/salt/metalk8s/containerd/files/pause-$(PAUSE_IMAGE_TAG).tar \
 	\
 	$(ISO_ROOT)/salt/metalk8s/defaults.yaml \
 	\
@@ -275,6 +276,8 @@ $(SCALITY_EL7_REPODATA): $(SCALITY_EL7_RPMS) | $(PACKAGE_BUILD_CONTAINER)
 		/entrypoint.sh buildrepo
 
 
+DOCKER ?= docker
+
 $(ISO_ROOT)/images/$(COREDNS_IMAGE_NAME)-$(COREDNS_IMAGE_VERSION).tar.gz: \
 	IMAGE=$(COREDNS_IMAGE)
 $(ISO_ROOT)/images/$(COREDNS_IMAGE_NAME)-$(COREDNS_IMAGE_VERSION).tar.gz: \
@@ -312,10 +315,19 @@ $(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz
 	docker save $(SALT_MASTER_IMAGE_NAME):$(SALT_MASTER_IMAGE_VERSION) | gzip > $@
 $(ISO_ROOT)/images/%.tar.gz:
 	mkdir -p $(@D)
-	docker pull $(IMAGE)
-	docker tag $(IMAGE) $(IMAGE_TAG)
-	docker save $(IMAGE_TAG) | gzip > $@
+	$(DOCKER) pull $(IMAGE)
+	$(DOCKER) tag $(IMAGE) $(IMAGE_TAG)
+	$(DOCKER) save $(IMAGE_TAG) | gzip > $@
 
+$(ISO_ROOT)/salt/metalk8s/containerd/files/pause-$(PAUSE_IMAGE_TAG).tar: IMAGE_NAME=$(PAUSE_IMAGE_NAME)
+$(ISO_ROOT)/salt/metalk8s/containerd/files/pause-$(PAUSE_IMAGE_TAG).tar: IMAGE_TAG=$(PAUSE_IMAGE_TAG)
+$(ISO_ROOT)/salt/metalk8s/containerd/files/pause-$(PAUSE_IMAGE_TAG).tar: IMAGE_DIGEST=$(PAUSE_IMAGE_DIGEST)
+
+$(ISO_ROOT)/salt/metalk8s/containerd/files/%.tar:
+	mkdir -p $(dir $@)
+	$(DOCKER) pull $(IMAGE_NAME)@$(IMAGE_DIGEST)
+	$(DOCKER) tag $(IMAGE_NAME)@$(IMAGE_DIGEST) $(IMAGE_NAME):$(IMAGE_TAG)
+	$(DOCKER) save $(IMAGE_NAME):$(IMAGE_TAG) > $@ || (rm -f $@; false)
 
 #
 # Lint targets
