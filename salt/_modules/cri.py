@@ -15,17 +15,6 @@ __virtualname__ = 'cri'
 
 
 def __virtual__():
-    log.debug("Looking for 'crictl'")
-    if not salt.utils.path.which('crictl'):
-        return (False, "'crictl' command not found")
-
-    log.debug("Validating CRI connection / 'crictl' configuration")
-    # `ignore_retcode`, otherwise logs gets spammed for no good reason
-    result = __salt__['cmd.run_all'](
-        'crictl -t 250ms version', timeout=1, ignore_retcode=True)
-    if result['retcode'] != 0:
-        return (False, "'crictl' can't connect to CRI daemon")
-
     return __virtualname__
 
 

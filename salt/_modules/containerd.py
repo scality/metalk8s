@@ -14,9 +14,6 @@ __virtualname__ = 'containerd'
 
 
 def __virtual__():
-    if not salt.utils.path.which('ctr'):
-        return (False, "'ctr' command not found")
-
     return __virtualname__
 
 
