@@ -2,6 +2,8 @@ import 'whatwg-fetch'
 import { JWK, JWS } from 'node-jose';
 import { OIDC_PROVIDER, API_SERVER } from './config';
 
+import { Configuration, CoreV1Api } from './kubernetes';
+
 const UNSAFE_NONCE = 'abcde';
 
 async function renderLoginLink() {
@@ -53,8 +55,13 @@ async function doLogin() {
     p.innerHTML = 'Welcome, ' + payload['name'] + '!';
     document.body.append(p);
 
-    const nodes = await apiGetNodes(idToken);
+    const clientConfig = new Configuration({
+        apiKey: 'Bearer ' + idToken,
+        basePath: API_SERVER,
+    });
 
+    const coreV1 = new CoreV1Api(clientConfig);
+    const nodes = await coreV1.listCoreV1Node();
 
     let l = '<h1>Node list</h1><ul>';
     for(const node in nodes.items) {
@@ -67,18 +74,8 @@ async function doLogin() {
     document.body.append(d);
 }
 
-async function apiGetNodes(token) {
-    const url = API_SERVER + '/api/v1/nodes';
-    const result = await fetch(url, {
-        headers: {
-            'Authorization': 'Bearer ' + token,
-        },
-    });
-    return await result.json();
-}
-
-async function main() {
-    if(window.location.pathname == '/callback') {
+function main() {
+    if(window.location.pathname == '/callback' || window.location.pathname == '/callback/') {
         doLogin();
     }
     else {
