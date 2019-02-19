@@ -45,6 +45,13 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/preflight/mandatory.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/preflight/recommended.sls \
 	\
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/admin.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/controller-manager.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/kubelet.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/lib.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/scheduler.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
 	\
@@ -65,6 +72,7 @@ ALL = \
 	$(ISO_ROOT)/salt/_modules/cri.py \
 	\
 	$(ISO_ROOT)/salt/_states/containerd.py \
+	$(ISO_ROOT)/salt/_states/kubeconfig.py \
 	\
 	$(ISO_ROOT)/pillar/networks.sls \
 	$(ISO_ROOT)/pillar/repositories.sls \

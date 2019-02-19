@@ -50,3 +50,7 @@
 {% set kube_api = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('kube_api')) %}
+
+{% set kubeadm_kubeconfig = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('kubeadm_kubeconfig')) %}

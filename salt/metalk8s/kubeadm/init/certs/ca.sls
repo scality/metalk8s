@@ -42,7 +42,8 @@ Advertise CA in the mine:
   module.wait:
     - mine.send:
       - func: 'kubernetes_ca_server'
-      - mine_function: test.ping
+      - mine_function: hashutil.base64_encodefile
+      - /etc/kubernetes/pki/ca.crt
     - watch:
       - x509: Generate CA certificate
 

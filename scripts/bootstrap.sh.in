@@ -133,6 +133,10 @@ run_certs() {
         ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.sa saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
+run_kubeconfig() {
+        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.kubeconfig saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
+
 main() {
         pre_minion_checks
         disable_salt_minion_service
@@ -148,6 +152,7 @@ main() {
         configure_salt
         sync_salt
         run_certs
+        run_kubeconfig
 }
 
 main
