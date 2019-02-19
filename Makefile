@@ -69,6 +69,9 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/salt/minion/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/salt/minion/running.sls \
 	\
+	$(ISO_ROOT)/salt/metalk8s/registry/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/registry/files/registry-pod.yaml.j2 \
+	\
 	$(ISO_ROOT)/salt/_modules/containerd.py \
 	$(ISO_ROOT)/salt/_modules/cri.py \
 	\
@@ -90,7 +93,9 @@ ALL = \
 	$(ISO_ROOT)/images/$(KUBE_PROXY_IMAGE_NAME)-$(KUBE_PROXY_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(KUBE_SCHEDULER_IMAGE_NAME)-$(KUBE_SCHEDULER_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/registry-$(REGISTRY_IMAGE_TAG).tar \
 	$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz \
+
 
 PACKAGE_BUILD_CONTAINER := $(BUILD_ROOT)/package-build-container
 PACKAGE_BUILD_IMAGE ?= metalk8s-build:latest
@@ -323,7 +328,11 @@ $(ISO_ROOT)/salt/metalk8s/containerd/files/pause-$(PAUSE_IMAGE_TAG).tar: IMAGE_N
 $(ISO_ROOT)/salt/metalk8s/containerd/files/pause-$(PAUSE_IMAGE_TAG).tar: IMAGE_TAG=$(PAUSE_IMAGE_TAG)
 $(ISO_ROOT)/salt/metalk8s/containerd/files/pause-$(PAUSE_IMAGE_TAG).tar: IMAGE_DIGEST=$(PAUSE_IMAGE_DIGEST)
 
-$(ISO_ROOT)/salt/metalk8s/containerd/files/%.tar:
+$(ISO_ROOT)/images/registry-$(REGISTRY_IMAGE_TAG).tar: IMAGE_NAME=$(REGISTRY_IMAGE_NAME)
+$(ISO_ROOT)/images/registry-$(REGISTRY_IMAGE_TAG).tar: IMAGE_TAG=$(REGISTRY_IMAGE_TAG)
+$(ISO_ROOT)/images/registry-$(REGISTRY_IMAGE_TAG).tar: IMAGE_DIGEST=$(REGISTRY_IMAGE_DIGEST)
+
+$(ISO_ROOT)/images/%.tar $(ISO_ROOT)/salt/metalk8s/containerd/files/%.tar:
 	mkdir -p $(dir $@)
 	$(DOCKER) pull $(IMAGE_NAME)@$(IMAGE_DIGEST)
 	$(DOCKER) tag $(IMAGE_NAME)@$(IMAGE_DIGEST) $(IMAGE_NAME):$(IMAGE_TAG)
