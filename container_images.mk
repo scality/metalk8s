@@ -28,5 +28,12 @@ NGINX_IMAGE_VERSION = 1.15.8
 
 # Custom built images
 SALT_MASTER_IMAGE = ""
+# The build ID is to be augmented whenever we rebuild the `salt-master` image,
+# e.g. because the `Dockerfile` is changed, or one of the dependencies installed
+# in the image needs to be updated.
+# This should be reset to 1 when `SALT_MASTER_IMAGE_SALT_VERSION` is
+# changed.
+SALT_MASTER_BUILD = 1
 SALT_MASTER_IMAGE_NAME = salt-master
-SALT_MASTER_IMAGE_VERSION = 1.0.0
+SALT_MASTER_IMAGE_SALT_VERSION = 2018.3.3
+SALT_MASTER_IMAGE_VERSION = $(SALT_MASTER_IMAGE_SALT_VERSION)-$(SALT_MASTER_BUILD)

@@ -69,7 +69,7 @@ ALL = \
 	$(ISO_ROOT)/images/$(KUBE_PROXY_IMAGE_NAME)-$(KUBE_PROXY_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(KUBE_SCHEDULER_IMAGE_NAME)-$(KUBE_SCHEDULER_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz \
-	$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz
+	$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz \
 
 PACKAGE_BUILD_CONTAINER := $(BUILD_ROOT)/package-build-container
 PACKAGE_BUILD_IMAGE ?= metalk8s-build:latest
@@ -282,11 +282,13 @@ $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 	IMAGE=$(NGINX_IMAGE)
 $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 	IMAGE_TAG=$(NGINX_IMAGE_NAME):$(NGINX_IMAGE_VERSION)
-$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz:
+$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz: \
+	images/salt-master/Dockerfile
 	mkdir -p $(dir $@)
-	$(eval IMAGE_TAG=$(SALT_MASTER_IMAGE_NAME):$(SALT_MASTER_IMAGE_VERSION) )
-	docker build -t $(IMAGE_TAG) images/salt-master
-	docker save $(IMAGE_TAG) | gzip > $@
+	docker build -t $(SALT_MASTER_IMAGE_NAME):$(SALT_MASTER_IMAGE_VERSION) \
+		--build-arg SALT_VERSION=$(SALT_MASTER_IMAGE_SALT_VERSION) \
+		images/salt-master
+	docker save $(SALT_MASTER_IMAGE_NAME):$(SALT_MASTER_IMAGE_VERSION) | gzip > $@
 $(ISO_ROOT)/images/%.tar.gz:
 	mkdir -p $(@D)
 	docker pull $(IMAGE)
