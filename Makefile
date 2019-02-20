@@ -150,6 +150,7 @@ $(ISO): $(ALL)
 		-input-charset utf-8 \
 		-output-charset utf-8 \
 		$(ISO_ROOT)
+	cd $$(dirname $@) && sha256sum $(notdir $@) > SHA256SUM
 
 
 VAGRANT ?= vagrant
