@@ -2,11 +2,13 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: worker
+  name: build-pod
 spec:
   containers:
-    - name: worker
+    - name: build-worker
       image: {{ images['docker-builder'] }}
+      command: ["/bin/sh"]
+      args: ["-c", "buildbot-worker create-worker . ${BUILDMASTER}:${BUILDMASTER_PORT} ${WORKERNAME} ${WORKERPASS} && buildbot-worker start --nodaemon"]
       resources:
         requests:
           cpu: 500m

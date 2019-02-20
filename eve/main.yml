@@ -15,7 +15,6 @@ stages:
     - Git: &git_pull
         name: git pull
         repourl: "%(prop:git_reference)s"
-        mode: full
         method: clobber
         retryFetch: true
         haltOnFailure: true
