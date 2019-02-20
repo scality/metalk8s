@@ -295,3 +295,10 @@ $(ISO_ROOT)/images/%.tar.gz:
 	docker pull $(IMAGE)
 	docker tag $(IMAGE) $(IMAGE_TAG)
 	docker save $(IMAGE_TAG) | gzip > $@
+
+
+#
+# Lint targets
+#
+
+include make/lint.mk
