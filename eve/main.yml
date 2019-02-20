@@ -5,7 +5,17 @@ branches:
     stage: pre-merge
 
 stages:
+
   pre-merge:
+    worker:
+      type: local
+    steps:
+      - TriggerStages:
+          name: trigger build and lint stages simultaneously
+          stage_names:
+            - build
+
+  build:
     worker:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
