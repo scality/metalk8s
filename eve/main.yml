@@ -11,9 +11,10 @@ stages:
       type: local
     steps:
       - TriggerStages:
-          name: trigger build and lint stages simultaneously
+          name: Trigger build and lint stages simultaneously
           stage_names:
             - build
+            - lint
 
   build:
     worker:
@@ -40,3 +41,17 @@ stages:
         urls:
           - "*.iso"
           - "SHA256SUM"
+
+  lint:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-linter/pod.yaml
+      images:
+        docker-linter: eve/workers/pod-linter
+    steps:
+    - Git: *git_pull
+    - ShellCommand:
+        name: Run all linting targets
+        command: make lint
+        flunkOnFailure: false
+        haltOnFailure: false
