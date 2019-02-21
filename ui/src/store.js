@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware, compose } from "redux";
 import { connectRouter, routerMiddleware } from "connected-react-router";
 import createHistory from "history/createBrowserHistory";
-import { loadUser, createOidcMiddleware } from "redux-oidc";
+import { loadUser } from "redux-oidc";
 import reducer from "./reducer";
 import userManager from "./utils/userManager";
 

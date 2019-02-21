@@ -76,17 +76,26 @@
 
 import React from "react";
 import { connect } from "react-redux";
-import { Loader } from "scality-ui";
+import { CallbackComponent } from "redux-oidc";
+import { push } from "connected-react-router";
+import userManager from "./utils/userManager";
 
-class NodeList extends React.Component {
+class CallbackPage extends React.Component {
   render() {
-    return <Loader size="massive">Hello {this.props.user.name}!</Loader>;
+    // just redirect to '/' in both cases
+    return (
+      <CallbackComponent
+        userManager={userManager}
+        successCallback={() => this.props.dispatch(push("/"))}
+        errorCallback={error => {
+          this.props.dispatch(push("/"));
+          console.error(error);
+        }}
+      >
+        <div>Redirecting...</div>
+      </CallbackComponent>
+    );
   }
 }
-function mapStateToProps(state) {
-  return {
-    user: state.oidc.user.profile
-  };
-}
 
-export default connect(mapStateToProps)(NodeList);
+export default connect()(CallbackPage);

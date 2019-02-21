@@ -1,9 +1,11 @@
 import React, { Component } from "react";
-import { Route, Switch, Link } from "react-router-dom";
+import { connect } from "react-redux";
+import { withRouter, Route, Switch } from "react-router-dom";
 import "./App.css";
 import { Layout } from "scality-ui";
 import HomePage from "./HomePage";
-import CallbackPage from "./NodeList";
+import CallbackPage from "./LoginCallback";
+import { ThemeProvider } from "styled-components";
 
 class App extends Component {
   render() {
@@ -39,7 +41,10 @@ class App extends Component {
     ];
 
     const user = {
-      name: "Charles NGUYEN",
+      name:
+        this.props.user &&
+        this.props.user.profile &&
+        this.props.user.profile.name + " " + this.props.user.profile.email,
       actions: [{ label: "Log out" }]
     };
 
@@ -54,18 +59,32 @@ class App extends Component {
       productName: "Metalk8s Platform",
       applications,
       help,
-      user
+      user: this.props.user ? user : null
+    };
+
+    const theme = {
+      brand: {
+        primary: "#006F62"
+      }
     };
 
     return (
-      <Layout sidebar={sidebar} navbar={navbar}>
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route exact path="/callback" component={CallbackPage} />
-        </Switch>
-      </Layout>
+      <ThemeProvider theme={theme}>
+        <Layout sidebar={sidebar} navbar={navbar}>
+          <Switch>
+            <Route exact path="/" component={HomePage} />
+            <Route exact path="/callback" component={CallbackPage} />
+          </Switch>
+        </Layout>
+      </ThemeProvider>
     );
   }
 }
 
-export default App;
+function mapStateToProps(state) {
+  return {
+    user: state.oidc.user
+  };
+}
+
+export default withRouter(connect(mapStateToProps)(App));
