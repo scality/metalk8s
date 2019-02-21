@@ -1,0 +1,38 @@
+{
+  "name": "test",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.7.2",
+    "connected-react-router": "4.5.0",
+    "oidc-client": "^1.4.1",
+    "portable-fetch": "^3.0.0",
+    "node-jose": "^1.1.1",
+    "react": "^16.8.2",
+    "react-dom": "^16.8.2",
+    "react-redux": "5.1.1",
+    "react-router": "4.3.1",
+    "react-router-dom": "4.3.1",
+    "redux": "4.0.1",
+    "redux-oidc": "^3.1.0",
+    "redux-saga": "^0.10.4",
+    "react-scripts": "2.1.5",
+    "scality-ui": "git+ssh://git@bitbucket.org/scality/scality-ui.git",
+    "whatwg-fetch": "^3.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
