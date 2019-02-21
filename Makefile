@@ -15,6 +15,9 @@ BUILD_ROOT ?= $(PWD)/_build
 ISO_ROOT ?= $(BUILD_ROOT)/root
 ISO ?= $(BUILD_ROOT)/metalk8s.iso
 
+BASE_CENTOS_IMAGE_NAME := "docker.io/centos"
+BASE_CENTOS_IMAGE_SHA256 := "5d4f4e6051c7cc10f2e712f9dc3f86a2bd67e457bced7ca52a71c243099c0121"
+
 CALICO_CNI_PLUGIN_VERSION = 3.5.1
 CALICO_CNI_PLUGIN_BUILD = 1
 
@@ -166,16 +169,23 @@ vagrantup: $(ALL) ## Run 'vagrant up' to (re-)provision a development environmen
 help: ## Show this help message
 	@echo "The following targets are available:"
 	@echo
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -Eh '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
 
-packages/Dockerfile: $(BASE_CENTOS_IMAGE)
-images/salt-master/Dockerfile: $(BASE_CENTOS_IMAGE)
-$(BASE_CENTOS_IMAGE):
-	docker build -t base-centos-image images/base
-	touch $@
+.PHONY: basecentos-vars
+basecentos-vars:
+	@if [[ `cat $(BASE_CENTOS_IMAGE) 2>&1` != $(BASE_CENTOS_IMAGE_NAME)$(BASE_CENTOS_IMAGE_SHA256) ]]; then \
+        echo -n $(BASE_CENTOS_IMAGE_NAME)$(BASE_CENTOS_IMAGE_SHA256) > $(BASE_CENTOS_IMAGE) ; \
+    fi
 
-$(BUILD_ROOT)/package-build-container: packages/Dockerfile packages/entrypoint.sh
+$(BASE_CENTOS_IMAGE):
+	docker build \
+		-t base-centos-image \
+        --build-arg BUILD_IMAGE=$(BASE_CENTOS_IMAGE_NAME) \
+		--build-arg BUILD_IMAGE_SHA256=$(BASE_CENTOS_IMAGE_SHA256) \
+		images/base
+
+$(BUILD_ROOT)/package-build-container: packages/Dockerfile packages/entrypoint.sh $(BASE_CENTOS_IMAGE) | basecentos-vars
 	mkdir -p $(dir $@)
 	rm -f $@
 	docker build -t $(PACKAGE_BUILD_IMAGE) -f $< $(dir $<)
@@ -290,7 +300,9 @@ $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 	IMAGE_TAG=$(NGINX_IMAGE_NAME):$(NGINX_IMAGE_VERSION)
 $(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz: \
-	images/salt-master/Dockerfile
+	images/salt-master/Dockerfile \
+	$(BASE_CENTOS_IMAGE)
+$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz: | basecentos-vars
 	mkdir -p $(dir $@)
 	docker build -t $(SALT_MASTER_IMAGE_NAME):$(SALT_MASTER_IMAGE_VERSION) \
 		--build-arg SALT_VERSION=$(SALT_MASTER_IMAGE_SALT_VERSION) \
