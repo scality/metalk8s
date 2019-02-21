@@ -1,4 +1,4 @@
-FROM centos:7.6.1810
+FROM base-centos-image
 
 MAINTAINER moonshot-platform <moonshot-platform@scality.com>
 

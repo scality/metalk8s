@@ -72,6 +72,7 @@ ALL = \
 	$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz \
 
 PACKAGE_BUILD_CONTAINER := $(BUILD_ROOT)/package-build-container
+BASE_CENTOS_IMAGE := $(BUILD_ROOT)/base-centos-image
 PACKAGE_BUILD_IMAGE ?= metalk8s-build:latest
 
 CALICO_CNI_PLUGIN_SOURCES = \
@@ -168,6 +169,11 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
 
+packages/Dockerfile: $(BASE_CENTOS_IMAGE)
+images/salt-master/Dockerfile: $(BASE_CENTOS_IMAGE)
+$(BASE_CENTOS_IMAGE):
+	docker build -t base-centos-image images/base
+	touch $@
 
 $(BUILD_ROOT)/package-build-container: packages/Dockerfile packages/entrypoint.sh
 	mkdir -p $(dir $@)
