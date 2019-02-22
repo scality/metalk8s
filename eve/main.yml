@@ -5,7 +5,18 @@ branches:
     stage: pre-merge
 
 stages:
+
   pre-merge:
+    worker:
+      type: local
+    steps:
+      - TriggerStages:
+          name: Trigger build and lint stages simultaneously
+          stage_names:
+            - build
+            - lint
+
+  build:
     worker:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
@@ -30,3 +41,17 @@ stages:
         urls:
           - "*.iso"
           - "SHA256SUM"
+
+  lint:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-linter/pod.yaml
+      images:
+        docker-linter: eve/workers/pod-linter
+    steps:
+    - Git: *git_pull
+    - ShellCommand:
+        name: Run all linting targets
+        command: make lint
+        flunkOnFailure: false
+        haltOnFailure: false

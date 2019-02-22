@@ -1,6 +1,0 @@
- importlib==1.0.3; python_version < '2.7'
- pycrypto==2.6.1           # via secretstorage
- secretstorage==2.1.4
- six==1.10.0
- total-ordering==0.1.0
- twisted==16.4.0
