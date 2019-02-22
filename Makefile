@@ -58,6 +58,9 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/runc/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/runc/installed.sls \
 	\
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/running.sls \
+	\
 	$(ISO_ROOT)/salt/_modules/containerd.py \
 	$(ISO_ROOT)/salt/_modules/cri.py \
 	\

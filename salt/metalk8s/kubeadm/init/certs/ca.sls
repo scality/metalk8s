@@ -7,6 +7,7 @@
 
 include:
   - .installed
+  - metalk8s.salt.minion.running
 
 Create CA private key:
   x509.private_key_managed:
@@ -70,19 +71,7 @@ Create CA salt signing_policies:
             - keyUsage: "critical digitalSignature, keyEncipherment"
             - extendedKeyUsage: "clientAuth"
             - days_valid: {{ ca.signing_policy.days_valid }}
-
-Restart salt-minion:
-  cmd.run:
-    - name: 'salt-call --local service.restart salt-minion'
-    - bg: true
-    - onchanges:
-      - file: Create CA salt signing_policies
-
-Wait until salt-minion restarted:
-  module.wait:
-    - test.sleep:
-      - length: 5
-    - watch:
+    - watch_in:
       - cmd: Restart salt-minion
 
 {%- else %}
