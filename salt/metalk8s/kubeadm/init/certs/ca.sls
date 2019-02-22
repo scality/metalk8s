@@ -11,7 +11,7 @@ include:
 Create CA private key:
   x509.private_key_managed:
     - name: /etc/kubernetes/pki/ca.key
-    - bits: {{ ca.cert.private_key_size }}
+    - bits: 4096
     - user: root
     - group: root
     - mode: 600
@@ -56,12 +56,19 @@ Create CA salt signing_policies:
     - formatter: yaml
     - dataset:
         x509_signing_policies:
-          kube_apiserver_policy:
+          kube_apiserver_server_policy:
             - minions: '*'
             - signing_private_key: /etc/kubernetes/pki/ca.key
             - signing_cert: /etc/kubernetes/pki/ca.crt
             - keyUsage: "critical digitalSignature, keyEncipherment"
             - extendedKeyUsage: "serverAuth"
+            - days_valid: {{ ca.signing_policy.days_valid }}
+          kube_apiserver_client_policy:
+            - minions: '*'
+            - signing_private_key: /etc/kubernetes/pki/ca.key
+            - signing_cert: /etc/kubernetes/pki/ca.crt
+            - keyUsage: "critical digitalSignature, keyEncipherment"
+            - extendedKeyUsage: "clientAuth"
             - days_valid: {{ ca.signing_policy.days_valid }}
 
 Restart salt-minion:

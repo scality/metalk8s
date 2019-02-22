@@ -129,6 +129,8 @@ sync_salt() {
 run_certs() {
         ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
         ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-kubelet-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.sa saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
 main() {
