@@ -27,7 +27,13 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/metalk8s/defaults.yaml \
 	\
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/ca.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/installed.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/init.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/configured.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/files/kubeadm.env \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/files/service-kubelet-systemd.conf \
@@ -55,6 +61,7 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/_states/containerd.py \
 	\
+	$(ISO_ROOT)/pillar/networks.sls \
 	$(ISO_ROOT)/pillar/repositories.sls \
 	$(ISO_ROOT)/pillar/top.sls \
 	\

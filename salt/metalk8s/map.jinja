@@ -4,6 +4,10 @@
   'default': defaults
 }, merge=salt['pillar.items']()) %}
 
+{% set kubeadm_preflight = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('kubeadm_preflight')) %}
+
 {% set repo = salt['grains.filter_by']({
   'RedHat': {
     'containerd': {
@@ -14,6 +18,10 @@
     }
   }
 }, merge=defaults.get('repo')) %}
+
+{% set networks = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('networks')) %}
 
 {% set runc = salt['grains.filter_by']({
   'default': {}
@@ -35,6 +43,10 @@
   }
 }, grain='init', merge=kubelet) %}
 
-{% set kubeadm_preflight = salt['grains.filter_by']({
+{% set ca = salt['grains.filter_by']({
   'default': {}
-}, merge=defaults.get('kubeadm_preflight')) %}
+}, merge=defaults.get('ca')) %}
+
+{% set kube_api = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('kube_api')) %}

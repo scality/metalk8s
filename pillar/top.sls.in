@@ -1,3 +1,4 @@
 metalk8s-@VERSION@:
   '*':
+    - networks
     - repositories
