@@ -47,7 +47,7 @@ Advertise CA in the mine:
 
 Create CA salt signing_policies:
   file.serialize:
-    - name: /etc/salt/minion.d/30-metalk8s_ca_signing_policies.conf
+    - name: /etc/salt/minion.d/30-metalk8s-ca-signing-policies.conf
     - user: root
     - group: root
     - mode: 644
