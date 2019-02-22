@@ -27,6 +27,10 @@
         'name': 'nginx',
         'tag': '1.15.8',
     },
+    {
+        'name': 'salt-master',
+        'tag': '2018.3.3-1',
+    },
 ] %}
 {% set images_path = '/srv/scality/metalk8s-dev/images' %}
 
