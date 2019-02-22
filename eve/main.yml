@@ -11,11 +11,15 @@ stages:
     worker:
       type: local
     steps:
-      - TriggerStages:
-          name: Trigger build and lint stages simultaneously
-          stage_names:
-            - build
-            - lint
+    - TriggerStages:
+        name: Trigger build and lint stages simultaneously
+        stage_names:
+        - build
+        - lint
+    - TriggerStages:
+        name: Trigger single-node deployment with built ISO
+        stage_names:
+        - single-node
 
   build:
     worker:
@@ -67,3 +71,38 @@ stages:
           name: Run all linting targets
           command: make lint
           haltOnFailure: false
+
+  single-node:
+    worker:
+      type: openstack
+      image: CentOS 7 (PVHVM)
+      flavor: io1-30
+      path: eve/workers/openstack-single-node
+    steps:
+    - ShellCommand:
+        name: Retrieve ISO image
+        command: >
+          curl -XGET -o metalk8s.iso
+          "%(prop:artifacts_private_url)s/metalk8s.iso"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Retrieve ISO image checksum
+        command: >
+          curl -XGET -o SHA256SUM
+          "%(prop:artifacts_private_url)s/SHA256SUM"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check image with checksum
+        command: sha256sum -c SHA256SUM
+        haltOnFailure: true
+    - ShellCommand:
+        name: Mount ISO image
+        command: >
+          sudo mount -o loop metalk8s.iso
+          /srv/scality/metalk8s-%(prop:product_version)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Start the bootstrap process
+        command: >
+          bash /srv/scality/metalk8s-%(prop:product_version)s/bootstrap.sh
+        haltOnFailure: true
