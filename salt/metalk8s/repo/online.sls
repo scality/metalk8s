@@ -24,3 +24,12 @@ Configure Kubernetes repository:
     - repo_gpg_check: 1
     - gpgkey: "https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
     - enabled: 0
+
+Configure SaltStack repository:
+  pkgrepo.managed:
+    - name: "SaltStack"
+    - humanname: SaltStack
+    - baseurl: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.3"
+    - gpgcheck: 1
+    - gpgkey: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.3/SALTSTACK-GPG-KEY.pub"
+    - enabled: 1

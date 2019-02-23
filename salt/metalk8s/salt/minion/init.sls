@@ -12,4 +12,5 @@
 #
 
 include:
+  - .installed
   - .running

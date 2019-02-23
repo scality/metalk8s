@@ -66,12 +66,21 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/runc/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/runc/installed.sls \
 	\
-	$(ISO_ROOT)/salt/metalk8s/salt/minion/init.sls \
-	$(ISO_ROOT)/salt/metalk8s/salt/minion/running.sls \
-	\
 	$(ISO_ROOT)/salt/metalk8s/registry/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/registry/populated.sls \
 	$(ISO_ROOT)/salt/metalk8s/registry/files/registry-pod.yaml.j2 \
+	\
+	$(ISO_ROOT)/salt/metalk8s/salt/master/files/master_99-metalk8s.conf.j2 \
+	$(ISO_ROOT)/salt/metalk8s/salt/master/files/salt-master-pod.yaml.j2 \
+	$(ISO_ROOT)/salt/metalk8s/salt/master/configured.sls \
+	$(ISO_ROOT)/salt/metalk8s/salt/master/deployed.sls \
+	$(ISO_ROOT)/salt/metalk8s/salt/master/init.sls \
+	\
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/files/minion_99-metalk8s.conf.j2 \
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/configured.sls \
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/installed.sls \
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/running.sls \
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/init.sls \
 	\
 	$(ISO_ROOT)/salt/_modules/containerd.py \
 	$(ISO_ROOT)/salt/_modules/cri.py \

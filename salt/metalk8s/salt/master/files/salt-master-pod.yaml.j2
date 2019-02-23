@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: salt-master
+  namespace: kube-system
+  labels:
+    app: salt-master
+    app.kubernetes.io/name: salt-master
+    app.kubernetes.io/version: '{{ salt_master_version }}'
+    app.kubernetes.io/component: salt
+    heritage: metalk8s
+    app.kubernertes.io/part-of: metalk8s
+    app.kubernetes.io/managed-by: salt
+spec:
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  securityContext:
+    runAsUser: 0
+    fsGroup: 0
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  containers:
+    - name: salt-master
+      image: {{ registry_prefix }}{{salt_master_image}}:{{salt_master_version}}
+      ports:
+        - name: publisher
+          containerPort: 4505
+          protocol: TCP
+        - name: requestserver
+          containerPort: 4506
+          protocol: TCP
+      livenessProbe:
+        exec:
+          command:
+          - pgrep
+          - salt-master
+        periodSeconds: 10
+        initialDelaySeconds: 5
+      readinessProbe:
+        exec:
+          command:
+          - salt-run
+          - event.send
+          - test
+        periodSeconds: 20
+        timeoutSeconds: 2
+        initialDelaySeconds: 10
+      volumeMounts:
+        - name: config
+          mountPath: '/etc/salt'
+        - name: cache
+          mountPath: '/var/cache/salt'
+        - name: run
+          mountPath: '/var/run/salt'
+        - name: states
+          mountPath: '/srv/scality/metalk8s-{{ path_version }}/salt'
+          readOnly: true
+        - name: pillar
+          mountPath: '/srv/scality/metalk8s-{{ path_version }}/pillar'
+          readOnly: true
+  volumes:
+    - name: config
+      hostPath:
+        path: '/etc/salt'
+        type: Directory
+    - name: cache
+      hostPath:
+        path: '/var/cache/salt'
+        type: Directory
+    - name: run
+      hostPath:
+        path: '/var/run/salt'
+        type: Directory
+    - name: states
+      hostPath:
+        path: '/srv/scality/metalk8s-{{ path_version }}/salt'
+        type: Directory
+    - name: pillar
+      hostPath:
+        path: '/srv/scality/metalk8s-{{ path_version }}/pillar'
+        type: Directory

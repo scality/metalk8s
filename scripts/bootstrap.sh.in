@@ -88,49 +88,37 @@ run_kubelet_start() {
         ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubeadm.init.kubelet-start saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
-install_salt_master() {
-        # TODO: Create pod using kubelet with master image
-        ${YUM} install -y salt-master
+configure_salt() {
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.salt.minion.configured saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    rm -f "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}"
 }
 
-configure_salt() {
-        # TODO: Use a salt state and maybe other stuff
-        cat > "${SALT_MINION_FILE_CONF}" << EOF
-master: localhost
+deploy_salt_master() {
+    # Run deployment
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.salt.master saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    # Allow some time for the image to be pulled instead of looping later
+    sleep 5
+}
 
-# use new module.run format
-use_superseded:
-  - module.run
-EOF
-        rm "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}"
-        cat > "${SALT_MASTER_FILE_CONF}" << EOF
-file_roots:
-  metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-@VERSION@/salt
-pillar_roots:
-  metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-@VERSION@/pillar
-peer:
-  .*:
-    - x509.sign_remote_certificate
-EOF
-        ${SYSTEMCTL} restart salt-master.service
-        ${SYSTEMCTL} enable salt-master.service
-        ${SYSTEMCTL} restart salt-minion.service
-        ${SYSTEMCTL} enable salt-minion.service
-        sleep 20
-        salt-key -A -y
+accept_keys() {
+    echo "Accepting keys"
+    crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q)) salt-key -Ay
+}
+
+set_salt_command() {
+    echo "setting salt master command"
+    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master-bootstrap -q)) salt"
 }
 
 sync_salt() {
-        ${SALT_CALL} --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@VERSION@
+    ${SALT_MASTER_CALL} '*' saltutil.sync_all refresh=True saltenv=metalk8s-@VERSION@
 }
 
 run_certs() {
-        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-kubelet-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.sa saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-kubelet-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.sa saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
 run_kubeconfig() {
@@ -138,6 +126,7 @@ run_kubeconfig() {
 }
 
 deploy_registry() {
+        ${SALT_CALL} --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@VERSION@
         ${SALT_CALL} --retcode-passthrough state.apply metalk8s.registry saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
@@ -153,16 +142,23 @@ main() {
         install_salt_minion
         configure_salt_minion_local_mode
         run_bootstrap_prechecks
+
         install_kubelet
         run_preflight
         run_kubelet_start
-        install_salt_master
+
+        deploy_registry
+        populate_registry
+
+        deploy_salt_master
         configure_salt
+
+        set_salt_command
+        accept_keys
+
         sync_salt
         run_certs
         run_kubeconfig
-        deploy_registry
-        populate_registry
 }
 
 main
