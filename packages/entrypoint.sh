@@ -48,6 +48,29 @@ buildrepo() {
     chown -R "${TARGET_UID}:${TARGET_GID}" /repository/repodata/
 }
 
+download_packages() {
+    set -x
+    local -r releasever=${RELEASEVER:-7}
+    local -r repo_cache_root=/install_root/var/cache/yum/x86_64/$releasever
+    local -a packages=($@)
+    local -a yum_opts=(
+        --assumeyes
+        --downloadonly
+        --releasever="$releasever"
+        --installroot=/install_root
+    )
+
+    yum groups install "${yum_opts[@]}" base core
+    yum install "${yum_opts[@]}" "${packages[@]}"
+
+    chown -R "$TARGET_UID:$TARGET_GID" "/install_root/var"
+
+    while IFS=$'\n' read -r repo; do
+        cp -a "$repo/packages" "repositories/${repo##*/}-el$releasever"
+    done < <(find "$repo_cache_root" -maxdepth 1 -type d \
+        -not -path "$repo_cache_root")
+}
+
 case ${1:-''} in
     buildrpm)
         buildrpm
@@ -57,6 +80,10 @@ case ${1:-''} in
         ;;
     buildrepo)
         buildrepo
+        ;;
+    download_packages)
+        shift
+        download_packages "$@"
         ;;
     '')
         exec /bin/bash
