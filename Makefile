@@ -8,6 +8,7 @@ SHELL := /bin/bash
 
 include VERSION
 include container_images.mk
+include packages.mk
 
 PWD := $(shell pwd)
 
@@ -104,6 +105,13 @@ ALL = \
 	$(ISO_ROOT)/product.txt \
 	\
 	$(SCALITY_EL7_REPO) \
+	$(YUM_PACKAGES_CACHE) \
+	$(BASE_EL7_REPODATA) \
+	$(EXTRAS_EL7_REPODATA) \
+	$(UPDATES_EL7_REPODATA) \
+	$(EPEL_EL7_REPODATA) \
+	$(KUBERNETES_EL7_REPODATA) \
+	$(SALTSTACK_EL7_REPODATA) \
 	\
 	$(ISO_ROOT)/images/$(COREDNS_IMAGE_NAME)-$(COREDNS_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(ETCD_IMAGE_NAME)-$(ETCD_IMAGE_VERSION).tar.gz \
@@ -131,6 +139,25 @@ SCALITY_EL7_RPMS = \
 SCALITY_EL7_REPODATA = $(SCALITY_EL7_ROOT)/repodata/repomd.xml
 SCALITY_EL7_REPO = $(SCALITY_EL7_RPMS) $(SCALITY_EL7_REPODATA)
 
+YUM_PACKAGES_CACHE = $(BUILD_ROOT)/packages/var/cache/yum/x86_64/7
+
+BASE_EL7_ROOT = $(ISO_ROOT)/packages/base-el7
+BASE_EL7_REPODATA = $(BASE_EL7_ROOT)/repodata/repomd.xml
+
+EXTRAS_EL7_ROOT = $(ISO_ROOT)/packages/extras-el7
+EXTRAS_EL7_REPODATA = $(EXTRAS_EL7_ROOT)/repodata/repomd.xml
+
+UPDATES_EL7_ROOT = $(ISO_ROOT)/packages/updates-el7
+UPDATES_EL7_REPODATA = $(UPDATES_EL7_ROOT)/repodata/repomd.xml
+
+EPEL_EL7_ROOT = $(ISO_ROOT)/packages/epel-el7
+EPEL_EL7_REPODATA = $(EPEL_EL7_ROOT)/repodata/repomd.xml
+
+KUBERNETES_EL7_ROOT = $(ISO_ROOT)/packages/kubernetes-el7
+KUBERNETES_EL7_REPODATA = $(KUBERNETES_EL7_ROOT)/repodata/repomd.xml
+
+SALTSTACK_EL7_ROOT = $(ISO_ROOT)/packages/saltstack-el7
+SALTSTACK_EL7_REPODATA = $(SALTSTACK_EL7_ROOT)/repodata/repomd.xml
 
 default: all
 .PHONY: default
@@ -293,6 +320,42 @@ $(SCALITY_EL7_REPODATA): $(SCALITY_EL7_RPMS) | $(PACKAGE_BUILD_CONTAINER)
 		--mount type=tmpfs,destination=/tmp \
 		--mount type=bind,source=$(SCALITY_EL7_ROOT),destination=/repository,ro \
 		--mount type=bind,source=$(dir $@),destination=/repository/repodata \
+		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
+		--read-only \
+		--rm \
+		$(PACKAGE_BUILD_IMAGE) \
+		/entrypoint.sh buildrepo
+
+
+$(YUM_PACKAGES_CACHE): | $(PACKAGE_BUILD_CONTAINER)
+	docker run \
+		--env RELEASEVER=7 \
+		--env TARGET_UID=$(shell id -u) \
+		--env TARGET_GID=$(shell id -g) \
+		--hostname build \
+		--mount type=tmpfs,destination=/tmp \
+		--mount type=bind,source=$(BUILD_ROOT)/packages,destination=/install_root \
+		--mount type=bind,source=$(ISO_ROOT)/packages,destination=/repositories \
+		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
+		--rm \
+		$(PACKAGE_BUILD_IMAGE) \
+		/entrypoint.sh download_packages $(YUM_PACKAGES)
+
+$(BASE_EL7_REPODATA): REPOSITORY_ROOT = $(BASE_EL7_ROOT)
+$(EXTRAS_EL7_REPODATA): REPOSITORY_ROOT = $(EXTRAS_EL7_ROOT)
+$(UPDATES_EL7_REPODATA): REPOSITORY_ROOT = $(UPDATES_EL7_ROOT)
+$(EPEL_EL7_REPODATA): REPOSITORY_ROOT = $(EPEL_EL7_ROOT)
+$(KUBERNETES_EL7_REPODATA): REPOSITORY_ROOT = $(KUBERNETES_EL7_ROOT)
+$(SALTSTACK_EL7_REPODATA): REPOSITORY_ROOT = $(SALTSTACK_EL7_ROOT)
+$(BASE_EL7_REPODATA) $(EXTRAS_EL7_REPODATA) $(UPDATES_EL7_REPODATA) $(EPEL_EL7_REPODATA) $(KUBERNETES_EL7_REPODATA) $(SALTSTACK_EL7_REPODATA): | $(PACKAGE_BUILD_CONTAINER)
+	mkdir -p $(@D)
+	docker run \
+		--env TARGET_UID=$(shell id -u) \
+		--env TARGET_GID=$(shell id -g) \
+		--hostname build \
+		--mount type=tmpfs,destination=/tmp \
+		--mount type=bind,source=$(REPOSITORY_ROOT),destination=/repository,ro \
+		--mount type=bind,source=$(@D),destination=/repository/repodata \
 		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
 		--read-only \
 		--rm \
