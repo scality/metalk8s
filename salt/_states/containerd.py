@@ -115,4 +115,4 @@ def image_managed(name, archive_path=None):
         else:
             ret['comment'] = 'Failed to pull image'
 
-        return ret
+    return ret
