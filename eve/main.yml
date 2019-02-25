@@ -15,6 +15,12 @@ stages:
         stage_names:
         - build
         - lint
+    - SetPropertyFromCommand:
+        name: Set short version as property from built artifacts
+        property: metalk8s_short_version
+        command: >
+          bash -c '. <(curl -s "%(prop:artifacts_private_url)s/product.txt") &&
+          echo $SHORT_VERSION'
     - TriggerStages:
         name: Trigger single-node deployment with built ISO
         stage_names:
@@ -38,17 +44,16 @@ stages:
         command: make
     - ShellCommand:
         name: Put the iso file in a separate folder
-        command: mkdir iso && cp _build/metalk8s.iso _build/SHA256SUM iso
+        command: >
+          mkdir iso &&
+          cp _build/metalk8s.iso _build/SHA256SUM _build/root/product.txt iso
     - Upload:
         name: upload artifacts
         source: iso/
         urls:
           - "*.iso"
           - "SHA256SUM"
-    - SetPropertyFromCommand:
-        name: Set short version property
-        property: metalk8s-short-version
-        command: source _build/root/product.txt && echo $SHORT_VERSION
+          - "product.txt"
 
   lint:
     worker:
