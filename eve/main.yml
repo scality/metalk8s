@@ -106,6 +106,10 @@ stages:
           command: sha256sum -c SHA256SUM
           haltOnFailure: true
       - ShellCommand:
+          name: Create mountpoint
+          command: >
+            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+      - ShellCommand:
           name: Mount ISO image
           command: >
             sudo mount -o loop metalk8s.iso
