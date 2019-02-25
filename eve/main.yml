@@ -118,6 +118,6 @@ stages:
       - ShellCommand:
           name: Start the bootstrap process
           command: >
-            bash
+            sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
           haltOnFailure: true
