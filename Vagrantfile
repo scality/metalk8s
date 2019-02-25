@@ -9,6 +9,8 @@ set -eu -o pipefail
 
 RC=0
 
+source /vagrant/_build/root/product.txt
+
 die() {
     echo 1>&2 $@
     exit 1
@@ -17,8 +19,8 @@ die() {
 echo "Installing build artifacts on the host"
 
 mkdir -p /srv/scality || die "Failed to create /srv/scality"
-rm -f /srv/scality/metalk8s-dev || die "Failed to unlink symlink destination"
-ln -s /vagrant/_build/root /srv/scality/metalk8s-dev || die "Failed to create symlink"
+rm -f /srv/scality/metalk8s-${SHORT_VERSION} || die "Failed to unlink symlink destination"
+ln -s /vagrant/_build/root /srv/scality/metalk8s-${SHORT_VERSION} || die "Failed to create symlink"
 
 echo "Installed build artifacts on the host"
 
@@ -30,14 +32,16 @@ BOOTSTRAP = <<-SCRIPT
 
 set -eu -o pipefail
 
-if ! test -x /srv/scality/metalk8s-dev/bootstrap.sh; then
+source /vagrant/_build/root/product.txt
+
+if ! test -x /srv/scality/metalk8s-${SHORT_VERSION}/bootstrap.sh; then
     echo 1>&2 "Bootstrap script not found in build directory."
     echo 1>&2 "Did you run 'make'?"
     exit 1
 fi
 
 echo "Launching bootstrap"
-exec /srv/scality/metalk8s-dev/bootstrap.sh
+exec /srv/scality/metalk8s-${SHORT_VERSION}/bootstrap.sh
 SCRIPT
 
 # To support VirtualBox linked clones
