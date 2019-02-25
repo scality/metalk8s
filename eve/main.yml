@@ -45,6 +45,10 @@ stages:
         urls:
           - "*.iso"
           - "SHA256SUM"
+    - SetPropertyFromCommand:
+        name: Set short version property
+        property: metalk8s-short-version
+        command: source _build/root/product.txt && echo $SHORT_VERSION
 
   lint:
     worker:
@@ -87,10 +91,10 @@ stages:
         name: Mount ISO image
         command: >
           sudo mount -o loop metalk8s.iso
-          /srv/scality/metalk8s-%(prop:product_version)s
+          /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
         haltOnFailure: true
     - ShellCommand:
         name: Start the bootstrap process
         command: >
-          bash /srv/scality/metalk8s-%(prop:product_version)s/bootstrap.sh
+          bash /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
         haltOnFailure: true
