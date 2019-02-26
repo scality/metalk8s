@@ -5,5 +5,6 @@
 
 lint:
 	tox -e lint-yaml
+	tox -e lint-shell
 
 .PHONY: lint
