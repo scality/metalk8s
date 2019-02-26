@@ -1,3 +1,4 @@
+---
 cluster: kubernetes
 
 kubeadm_preflight:
@@ -25,7 +26,7 @@ kubeadm_preflight:
       - coreutils             # provides touch
 
 repo:
-  online_mode: True
+  online_mode: true
   runc:
     version: latest
   containerd:
@@ -49,9 +50,9 @@ kubelet:
     staticPodPath: /etc/kubernetes/manifests
     authentication:
       anonymous:
-        enabled: True
+        enabled: true
       webhook:
-        enabled: False
+        enabled: false
     authorization:
       mode: AlwaysAllow
 
@@ -76,4 +77,4 @@ front_proxy:
   cert:
     client_signing_policy: front_proxy_client_policy
 
-upgrade: False        # define if we're on an upgrade case
+upgrade: false        # define if we're on an upgrade case

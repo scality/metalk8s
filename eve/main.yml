@@ -1,3 +1,4 @@
+---
 version: '0.2'
 
 branches:
@@ -21,38 +22,38 @@ stages:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
-          docker-builder: eve/workers/pod-builder
+        docker-builder: eve/workers/pod-builder
     steps:
-    - ShellCommand:
-        name: Wait for Docker daemon to be ready
-        command: |
-          bash -c '
-          for i in {1..10}
-          do
-            docker --version &> /dev/null && exit
-            sleep 2
-          done
-          echo "Could not reach Docker daemon from buildbot worker" >&2
-          exit 1'
-        haltOnFailure: true
-    - Git: &git_pull
-        name: git pull
-        repourl: "%(prop:git_reference)s"
-        method: clobber
-        retryFetch: true
-        haltOnFailure: true
-    - ShellCommand:
-        name: build everything
-        command: make
-    - ShellCommand:
-        name: Put the iso file in a separate folder
-        command: mkdir iso && cp _build/metalk8s.iso _build/SHA256SUM iso
-    - Upload:
-        name: upload artifacts
-        source: iso/
-        urls:
-          - "*.iso"
-          - "SHA256SUM"
+      - ShellCommand:
+          name: Wait for Docker daemon to be ready
+          command: |
+            bash -c '
+            for i in {1..10}
+            do
+              docker --version &> /dev/null && exit
+              sleep 2
+            done
+            echo "Could not reach Docker daemon from buildbot worker" >&2
+            exit 1'
+          haltOnFailure: true
+      - Git: &git_pull
+          name: git pull
+          repourl: "%(prop:git_reference)s"
+          method: clobber
+          retryFetch: true
+          haltOnFailure: true
+      - ShellCommand:
+          name: build everything
+          command: make
+      - ShellCommand:
+          name: Put the iso file in a separate folder
+          command: mkdir iso && cp _build/metalk8s.iso _build/SHA256SUM iso
+      - Upload:
+          name: upload artifacts
+          source: iso/
+          urls:
+            - "*.iso"
+            - "SHA256SUM"
 
   lint:
     worker:
@@ -61,9 +62,9 @@ stages:
       images:
         docker-linter: eve/workers/pod-linter
     steps:
-    - Git: *git_pull
-    - ShellCommand:
-        name: Run all linting targets
-        command: make lint
-        flunkOnFailure: false
-        haltOnFailure: false
+      - Git: *git_pull
+      - ShellCommand:
+          name: Run all linting targets
+          command: make lint
+          haltOnFailure: false
+          flunkOnFailure: false
