@@ -4,6 +4,5 @@
 #    - tox
 
 lint:
-	tox -e lint-salt
 
-.PHONY: lint-local
+.PHONY: lint
