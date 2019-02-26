@@ -86,7 +86,7 @@ stages:
     worker:
       type: openstack
       image: CentOS 7 (PVHVM)
-      flavor: io1-30
+      flavor: m1.medium
       path: eve/workers/openstack-single-node
     steps:
       - ShellCommand:
