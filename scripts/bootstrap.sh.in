@@ -61,10 +61,10 @@ configure_salt_minion_local_mode() {
 file_client: local
 file_roots:
   metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-dev/salt
+    - /srv/scality/metalk8s-@VERSION@/salt
 pillar_roots:
   metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-dev/pillar
+    - /srv/scality/metalk8s-@VERSION@/pillar
 
 # use new module.run format
 use_superseded:
@@ -106,10 +106,10 @@ EOF
         cat > "${SALT_MASTER_FILE_CONF}" << EOF
 file_roots:
   metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-dev/salt
+    - /srv/scality/metalk8s-@VERSION@/salt
 pillar_roots:
   metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-dev/pillar
+    - /srv/scality/metalk8s-@VERSION@/pillar
 peer:
   .*:
     - x509.sign_remote_certificate
