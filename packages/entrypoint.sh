@@ -15,7 +15,8 @@ buildsrpm() {
     cp "/rpmbuild/SPECS/${SPEC}" "/home/build/rpmbuild/SPECS/${SPEC}"
     chown build:build "/home/build/rpmbuild/SPECS/${SPEC}"
     su -l build -c "rpmbuild -bs /home/build/rpmbuild/SPECS/${SPEC}"
-    su -l build -c "rpmlint -f /rpmbuild/rpmlintrc /home/build/rpmbuild/SRPMS/${SRPM}"
+    su -l build -c \
+       "rpmlint -f /rpmbuild/rpmlintrc /home/build/rpmbuild/SRPMS/${SRPM}"
     cp "/home/build/rpmbuild/SRPMS/${SRPM}" "/rpmbuild/SRPMS/${SRPM}"
     chown "${TARGET_UID}:${TARGET_GID}" "/rpmbuild/SRPMS/${SRPM}"
 }
@@ -27,11 +28,14 @@ buildrpm() {
     su -l build rpmdev-setuptree
     su -l build -c "rpmbuild --rebuild /rpmbuild/SRPMS/${SRPM}"
     for file in ${RPMS}; do
-        su -l build -c "rpmlint -f /rpmbuild/rpmlintrc /home/build/rpmbuild/RPMS/${file}"
+        su -l build -c \
+           "rpmlint -f /rpmbuild/rpmlintrc /home/build/rpmbuild/RPMS/${file}"
     done
     for file in ${RPMS}; do
-        cp "/home/build/rpmbuild/RPMS/${file}" "/rpmbuild/RPMS/$(basename "${file}")"
-        chown "${TARGET_UID}:${TARGET_GID}" "/rpmbuild/RPMS/$(basename "${file}")"
+        cp "/home/build/rpmbuild/RPMS/${file}" \
+           "/rpmbuild/RPMS/$(basename "${file}")"
+        chown "${TARGET_UID}:${TARGET_GID}" \
+              "/rpmbuild/RPMS/$(basename "${file}")"
     done
 }
 
