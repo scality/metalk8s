@@ -23,6 +23,18 @@ stages:
       images:
           docker-builder: eve/workers/pod-builder
     steps:
+    - ShellCommand:
+        name: Wait for Docker daemon to be ready
+        command: |
+          bash -c '
+          for i in {1..10}
+          do
+            docker --version &> /dev/null && exit
+            sleep 2
+          done
+          echo "Could not reach Docker daemon from buildbot worker" >&2
+          exit 1'
+        haltOnFailure: true
     - Git: &git_pull
         name: git pull
         repourl: "%(prop:git_reference)s"
