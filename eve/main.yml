@@ -67,4 +67,3 @@ stages:
           name: Run all linting targets
           command: make lint
           haltOnFailure: false
-          flunkOnFailure: false
