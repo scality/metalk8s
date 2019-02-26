@@ -1,12 +1,11 @@
 ---
-version: '0.2'
+version: "0.2"
 
 branches:
   default:
     stage: pre-merge
 
 stages:
-
   pre-merge:
     worker:
       type: local
@@ -20,8 +19,8 @@ stages:
           name: Set short version as property from built artifacts
           property: metalk8s_short_version
           command: >
-            bash -c
-            '. <(curl -s "%(prop:artifacts_private_url)s/product.txt") &&
+            bash -c '
+            . <(curl -s "%(prop:artifacts_private_url)s/product.txt") &&
             echo $SHORT_VERSION'
       - TriggerStages:
           name: Trigger single-node deployment with built ISO
