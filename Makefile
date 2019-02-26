@@ -29,8 +29,13 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/defaults.yaml \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver-etcd-client.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver-kubelet-client.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/ca.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/etcd-ca.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/etcd-healthcheck-client.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/etcd-peer.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/etcd-server.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/front-proxy-ca.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/front-proxy-client.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/init.sls \
