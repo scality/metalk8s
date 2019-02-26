@@ -3,3 +3,8 @@
 </h1>
 
 An opinionated Kubernetes distribution with a focus on long-term on-prem deployments
+
+## Contributing
+
+If you'd like to contribute, please review the 
+[Contributing Guidelines](CONTRIBUTING.md).
