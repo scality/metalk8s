@@ -31,6 +31,8 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver-kubelet-client.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/ca.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/front-proxy-ca.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/front-proxy-client.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/installed.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/sa.sls \

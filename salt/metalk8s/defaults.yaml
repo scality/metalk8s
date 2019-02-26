@@ -67,4 +67,13 @@ kube_api:
     client_signing_policy: kube_apiserver_client_policy
   service_ip: "10.96.0.1"
 
+front_proxy:
+  ca:
+    cert:
+      days_valid: 3650
+    signing_policy:
+      days_valid: 365
+  cert:
+    client_signing_policy: front_proxy_client_policy
+
 upgrade: False        # define if we're on an upgrade case
