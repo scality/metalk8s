@@ -28,9 +28,11 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/defaults.yaml \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver-kubelet-client.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/ca.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/installed.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/sa.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/init.sls \
 	\
@@ -55,6 +57,9 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/metalk8s/runc/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/runc/installed.sls \
+	\
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/salt/minion/running.sls \
 	\
 	$(ISO_ROOT)/salt/_modules/containerd.py \
 	$(ISO_ROOT)/salt/_modules/cri.py \

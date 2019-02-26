@@ -7,11 +7,12 @@
 
 include:
   - .installed
+  - metalk8s.salt.minion.running
 
 Create CA private key:
   x509.private_key_managed:
     - name: /etc/kubernetes/pki/ca.key
-    - bits: {{ ca.cert.private_key_size }}
+    - bits: 4096
     - user: root
     - group: root
     - mode: 600
@@ -47,7 +48,7 @@ Advertise CA in the mine:
 
 Create CA salt signing_policies:
   file.serialize:
-    - name: /etc/salt/minion.d/30-metalk8s_ca_signing_policies.conf
+    - name: /etc/salt/minion.d/30-metalk8s-ca-signing-policies.conf
     - user: root
     - group: root
     - mode: 644
@@ -56,26 +57,21 @@ Create CA salt signing_policies:
     - formatter: yaml
     - dataset:
         x509_signing_policies:
-          kube_apiserver_policy:
+          kube_apiserver_server_policy:
             - minions: '*'
             - signing_private_key: /etc/kubernetes/pki/ca.key
             - signing_cert: /etc/kubernetes/pki/ca.crt
             - keyUsage: "critical digitalSignature, keyEncipherment"
             - extendedKeyUsage: "serverAuth"
             - days_valid: {{ ca.signing_policy.days_valid }}
-
-Restart salt-minion:
-  cmd.run:
-    - name: 'salt-call --local service.restart salt-minion'
-    - bg: true
-    - onchanges:
-      - file: Create CA salt signing_policies
-
-Wait until salt-minion restarted:
-  module.wait:
-    - test.sleep:
-      - length: 5
-    - watch:
+          kube_apiserver_client_policy:
+            - minions: '*'
+            - signing_private_key: /etc/kubernetes/pki/ca.key
+            - signing_cert: /etc/kubernetes/pki/ca.crt
+            - keyUsage: "critical digitalSignature, keyEncipherment"
+            - extendedKeyUsage: "clientAuth"
+            - days_valid: {{ ca.signing_policy.days_valid }}
+    - watch_in:
       - cmd: Restart salt-minion
 
 {%- else %}
