@@ -68,6 +68,18 @@ kube_api:
     client_signing_policy: kube_apiserver_client_policy
   service_ip: "10.96.0.1"
 
+etcd:
+  ca:
+    cert:
+      days_valid: 3650
+    signing_policy:
+      days_valid: 365
+  cert:
+    apiserver_client_signing_policy: etcd_client_policy
+    healthcheck_client_signing_policy: etcd_client_policy
+    peer_signing_policy: etcd_server_client_policy
+    server_signing_policy: etcd_server_client_policy
+
 front_proxy:
   ca:
     cert:

@@ -51,6 +51,10 @@
   'default': {}
 }, merge=defaults.get('kube_api')) %}
 
+{% set etcd = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('etcd')) %}
+
 {% set front_proxy = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('front_proxy')) %}

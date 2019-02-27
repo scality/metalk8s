@@ -127,6 +127,11 @@ run_certs() {
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-kubelet-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.sa saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-healthcheck-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-peer saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-server saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-etcd-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.front-proxy-ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.front-proxy-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
