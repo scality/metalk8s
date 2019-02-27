@@ -6,7 +6,7 @@ Restart salt-minion:
 Wait until salt-minion restarted:
   module.wait:
     - test.sleep:
-      - length: 5
+      - length: 10
     - watch:
       - cmd: Restart salt-minion
 

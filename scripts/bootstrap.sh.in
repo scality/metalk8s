@@ -58,7 +58,6 @@ install_salt_minion() {
 
 configure_salt_minion_local_mode() {
         cat > "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}" << EOF
-file_client: local
 file_roots:
   metalk8s-@VERSION@:
     - /srv/scality/metalk8s-@VERSION@/salt
@@ -88,16 +87,25 @@ run_kubelet_start() {
         ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubeadm.init.kubelet-start saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
-configure_salt() {
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.salt.minion.configured saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    rm -f "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}"
+deploy_registry() {
+        ${SALT_CALL} --local --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@VERSION@
+        ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.registry saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
+
+populate_registry() {
+        ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.registry.populated saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
 deploy_salt_master() {
     # Run deployment
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.salt.master saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.salt.master saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     # Allow some time for the image to be pulled instead of looping later
     sleep 5
+}
+
+configure_salt() {
+    ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.salt.minion.configured saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    rm -f "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}"
 }
 
 accept_keys() {
@@ -127,14 +135,6 @@ run_kubeconfig() {
         ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.kubeconfig saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
-deploy_registry() {
-        ${SALT_CALL} --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@VERSION@
-        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.registry saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-}
-
-populate_registry() {
-        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.registry.populated saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-}
 
 main() {
         pre_minion_checks
