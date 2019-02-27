@@ -3,11 +3,17 @@ import { connect } from "react-redux";
 import { withRouter, Route, Switch } from "react-router-dom";
 import "./App.css";
 import { Layout } from "scality-ui";
-import HomePage from "./HomePage";
 import CallbackPage from "./LoginCallback";
+import LoadingPage from "./LoadingPage";
 import { ThemeProvider } from "styled-components";
-
+import userManager from "./utils/userManager";
+import PrivateRoute from "./PrivateRoute";
+import NodeList from "./NodeList";
 class App extends Component {
+  logout(event) {
+    event.preventDefault();
+    userManager.removeUser(); // removes the user data from sessionStorage
+  }
   render() {
     const sideBarActions = [
       {
@@ -45,7 +51,7 @@ class App extends Component {
         this.props.user &&
         this.props.user.profile &&
         this.props.user.profile.name + " " + this.props.user.profile.email,
-      actions: [{ label: "Log out" }]
+      actions: [{ label: "Log out", onClick: this.logout }]
     };
 
     const sidebar = {
@@ -72,7 +78,8 @@ class App extends Component {
       <ThemeProvider theme={theme}>
         <Layout sidebar={sidebar} navbar={navbar}>
           <Switch>
-            <Route exact path="/" component={HomePage} />
+            <PrivateRoute exact path="/" component={NodeList} />
+            <PrivateRoute exact path="/loading" component={LoadingPage} />
             <Route exact path="/callback" component={CallbackPage} />
           </Switch>
         </Layout>

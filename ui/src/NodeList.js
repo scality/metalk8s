@@ -1,91 +1,81 @@
-// import React, { Component } from "react";
-// import "whatwg-fetch";
-// import { JWK, JWS } from "node-jose";
-// import { OIDC_PROVIDER, API_SERVER } from "./config";
-
-// const UNSAFE_NONCE = "abcde";
-
-// class NodeList extends Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = { nodes: null };
-//   }
-
-//   componentDidMount() {
-//     async function login() {
-//       const idTokenEncoded = RegExp("[#&]id_token=([^&]*)").exec(
-//         window.location.hash
-//       );
-//       if (!idTokenEncoded) {
-//         throw "Blah";
-//       }
-//       const idToken = decodeURIComponent(idTokenEncoded[1].replace(/\+/g, " "));
-
-//       const response = await fetch(
-//         OIDC_PROVIDER + "/.well-known/openid-configuration"
-//       );
-//       const openidConfiguration = await response.json();
-//       const keysLocation = openidConfiguration["jwks_uri"];
-//       const keysResponse = await fetch(keysLocation);
-//       const keys = await keysResponse.json();
-//       const keystore = await JWK.asKeyStore(keys);
-
-//       const verifiedIdToken = await JWS.createVerify(keystore).verify(idToken);
-
-//       const payload = JSON.parse(verifiedIdToken.payload.toString());
-
-//       if (payload["nonce"] != UNSAFE_NONCE) {
-//         throw "Nonce mismatch";
-//       }
-//       if (payload["iss"] != OIDC_PROVIDER) {
-//         throw "Huh?!";
-//       }
-//       const p = document.createElement("p");
-//       // Yeah yeah HTML injection blah
-//       p.innerHTML = "Welcome, " + payload["name"] + "!";
-//       document.body.append(p);
-
-//       const url = API_SERVER + "/api/v1/nodes";
-//       const result = await fetch(url, {
-//         headers: {
-//           Authorization: "Bearer " + idToken
-//         }
-//       });
-//       const nodes = await result.json();
-//       this.setState({ nodes });
-//     }
-//     login.bind(this)();
-//   }
-
-//   render() {
-//     return (
-//       <div>
-//         <h1>Node list</h1>
-//         <ul>
-//           {this.state.nodes &&
-//             this.state.nodes.items.map(node => {
-//               return <li key={node.metadata.name}> {node.metadata.name} </li>;
-//             })}
-//         </ul>
-//       </div>
-//     );
-//   }
-// }
-
-// export default NodeList;
-
 import React from "react";
 import { connect } from "react-redux";
-import { Loader } from "scality-ui";
+import { Link } from "react-router-dom";
+import {
+  Config,
+  Core_v1Api,
+  watch
+} from "@kubernetes/client-node/dist/browser/bundle";
 
 class NodeList extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      nodes: null
+    };
+    this.getNodes = this.getNodes.bind(this);
+  }
+
+  componentDidMount() {
+    this.getNodes();
+  }
+  getNodes() {
+    const config = new Config(
+      process.env.REACT_APP_API_SERVER,
+      this.props.user.id_token,
+      this.props.user.token_type
+    );
+    const coreV1 = config.makeApiClient(Core_v1Api);
+
+    watch(
+      config,
+      "/api/v1/watch/events",
+      {},
+      function(type, object) {
+        console.log("New event", type, object);
+      },
+      function(e) {
+        console.log("Stream ended", e);
+      }
+    );
+
+    coreV1
+      .listNode()
+      .then(nodesResponse => {
+        this.setState({ nodes: nodesResponse.body.items });
+      })
+      .catch(error => {
+        console.error(
+          "Error retrieving nodes",
+          error.body ? error.body : error
+        );
+      });
+  }
   render() {
-    return <Loader size="massive">Hello {this.props.user.name}!</Loader>;
+    return (
+      <div>
+        <h2> Hello, {this.props.user.profile.name}!</h2>
+
+        {this.state.nodes && (
+          <React.Fragment>
+            <h3>
+              <Link to="/loading">Cluster nodes</Link>
+            </h3>
+            <ul>
+              {this.state.nodes.map(node => (
+                <li key={node.metadata.name}>{node.metadata.name}</li>
+              ))}
+            </ul>
+          </React.Fragment>
+        )}
+      </div>
+    );
   }
 }
 function mapStateToProps(state) {
   return {
-    user: state.oidc.user.profile
+    user: state.oidc.user
   };
 }
 
