@@ -146,6 +146,10 @@ run_kubeconfig() {
 }
 
 
+run_etcd() {
+        ${SALT_CALL} metalk8s.kubeadm.init.etcd saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
+
 main() {
         pre_minion_checks
         disable_salt_minion_service
@@ -171,6 +175,7 @@ main() {
         sync_salt
         run_certs
         run_kubeconfig
+        run_etcd
 }
 
 main

@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  creationTimestamp: null
+  labels:
+    component: {{ name }}
+    tier: "control-plane"
+  name: {{ name }}
+  namespace: "kube-system"
+spec:
+  containers:
+    - name: {{ name }}
+      image: {{ image_name }}
+      imagePullPolicy: IfNotPresent
+      command:
+      {%- for part in command %}
+        - {{ part }}
+      {%- endfor %}
+      livenessProbe:
+        exec:
+          command:
+            - /bin/sh
+            - -ec
+            - ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt
+              --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key
+              get foo
+        failureThreshold: 8
+        initialDelaySeconds: 15
+        timeoutSeconds: 15
+      resources: {}
+      volumeMounts:
+        {%- for volume in volumes %}
+        - mountPath: {{ volume.path }}
+          name: {{ volume.name }}
+        {%- endfor %}
+  hostNetwork: true
+  priorityClassName: "system-cluster-critical"
+  volumes:
+    {%- for volume in volumes %}
+    - hostPath:
+        path: {{ volume.path }}
+        type: {{ volume.get("type", "Directory") }}
+      name: {{ volume.name }}
+    {%- endfor %}
+status: {}
