@@ -1,10 +1,12 @@
 {%- from "metalk8s/map.jinja" import defaults with context %}
+{%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
 {% macro kubeconfig(name, cert_info) %}
 
 {%- set ca_server = salt['mine.get']('*', 'kubernetes_ca_server').keys() %}
-{%- set apiserver = 'https://' ~ salt['grains.get']('master') ~ ':6443' %}
+{#- TODO: Not always use local machine as apiserver #}
+{%- set apiserver = 'https://' ~ salt['network.ip_addrs'](cidr=networks.control_plane) ~ ':6443' %}
 
 {%- if ca_server %}
 
