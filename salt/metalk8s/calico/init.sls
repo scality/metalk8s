@@ -1,0 +1,4 @@
+include:
+  - .installed
+  - .configured
+  - .deployed

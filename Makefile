@@ -22,6 +22,11 @@ CALICO_CNI_PLUGIN_BUILD = 1
 ALL = \
 	$(ISO_ROOT)/bootstrap.sh \
 	\
+	$(ISO_ROOT)/salt/metalk8s/calico/configured.sls \
+	$(ISO_ROOT)/salt/metalk8s/calico/deployed.sls \
+	$(ISO_ROOT)/salt/metalk8s/calico/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/calico/installed.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/containerd/configured.sls \
 	$(ISO_ROOT)/salt/metalk8s/containerd/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/containerd/installed.sls \
@@ -136,6 +141,7 @@ ALL = \
 	$(ISO_ROOT)/images/$(KUBE_CONTROLLER_MANAGER_IMAGE_NAME)-$(KUBE_CONTROLLER_MANAGER_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(KUBE_PROXY_IMAGE_NAME)-$(KUBE_PROXY_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(KUBE_SCHEDULER_IMAGE_NAME)-$(KUBE_SCHEDULER_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/$(CALICO_NODE_IMAGE_NAME)-$(CALICO_NODE_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/registry-$(REGISTRY_IMAGE_TAG).tar \
 	$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz \
@@ -406,6 +412,10 @@ $(ISO_ROOT)/images/$(KUBE_SCHEDULER_IMAGE_NAME)-$(KUBE_SCHEDULER_IMAGE_VERSION).
 	IMAGE = $(KUBE_SCHEDULER_IMAGE)
 $(ISO_ROOT)/images/$(KUBE_SCHEDULER_IMAGE_NAME)-$(KUBE_SCHEDULER_IMAGE_VERSION).tar.gz: \
 	IMAGE_TAG = $(KUBE_SCHEDULER_IMAGE_NAME):$(KUBE_SCHEDULER_IMAGE_VERSION)
+$(ISO_ROOT)/images/$(CALICO_NODE_IMAGE_NAME)-$(CALICO_NODE_IMAGE_VERSION).tar.gz: \
+	IMAGE = $(CALICO_NODE_IMAGE)
+$(ISO_ROOT)/images/$(CALICO_NODE_IMAGE_NAME)-$(CALICO_NODE_IMAGE_VERSION).tar.gz: \
+	IMAGE_TAG = $(CALICO_NODE_IMAGE_NAME):$(CALICO_NODE_IMAGE_VERSION)
 $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 	IMAGE = $(NGINX_IMAGE)
 $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \

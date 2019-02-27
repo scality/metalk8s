@@ -158,6 +158,11 @@ install_addons() {
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.addons saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
+install_calico() {
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.calico saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
+
+
 main() {
     pre_minion_checks
     disable_salt_minion_service
@@ -187,6 +192,8 @@ main() {
     run_etcd
 
     install_addons
+
+    install_calico
 }
 
 main
