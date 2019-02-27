@@ -1,6 +1,6 @@
 {# One day this should be transferred from the fileserver #}
 {% set pause_image_archive =
-    '/srv/scality/metalk8s-dev/salt/metalk8s/containerd/files/pause-3.1.tar'
+    '/srv/scality/metalk8s-2.0/salt/metalk8s/containerd/files/pause-3.1.tar'
 %}
 
 include:

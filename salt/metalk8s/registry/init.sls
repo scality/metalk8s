@@ -6,7 +6,7 @@
 Inject OCI registry image:
   containerd.image_managed:
     - name: docker.io/library/registry:2.7.1
-    - archive_path: /srv/scality/metalk8s-dev/images/registry-2.7.1.tar
+    - archive_path: /srv/scality/metalk8s-2.0/images/registry-2.7.1.tar
 
 Create OCI registry user:
   group.present:
