@@ -43,6 +43,13 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/installed.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/sa.sls \
 	\
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/control-plane/apiserver.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/control-plane/controller-manager.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/control-plane/files/manifest.yaml \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/control-plane/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/control-plane/lib.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/control-plane/scheduler.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/init.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubelet-start/configured.sls \
