@@ -1,7 +1,7 @@
 {% set salt_master_image = 'salt-master' %}
 {% set salt_master_version = '2018.3.3-1' %}
 {% set registry_prefix = 'localhost:5000/metalk8s-2.0/' %}
-{% set version = 'dev' %}
+{% set version = '2.0' %}
 
 Create salt master directories:
   file.directory:
