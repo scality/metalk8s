@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.7.2",
-    "@kubernetes/client-node": "file:../../kubernetes-client-javascript",
+    "@kubernetes/client-node": "git://github.com/scality/kubernetes-client-javascript.git#browser",
     "connected-react-router": "4.5.0",
     "node-jose": "^1.1.1",
     "oidc-client": "^1.4.1",

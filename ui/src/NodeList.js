@@ -1,11 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import {
-  Config,
-  Core_v1Api,
-  watch
-} from "@kubernetes/client-node/dist/browser/bundle";
+import { Config, Core_v1Api, watch } from "@kubernetes/client-node";
 
 class NodeList extends React.Component {
   constructor(props) {
