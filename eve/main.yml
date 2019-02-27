@@ -15,6 +15,7 @@ stages:
           stage_names:
             - build
             - lint
+          haltOnFailure: true
       - SetPropertyFromCommand:
           name: Set short version as property from built artifacts
           property: metalk8s_short_version
