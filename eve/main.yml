@@ -120,5 +120,4 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
-          usePTY: true
           haltOnFailure: true
