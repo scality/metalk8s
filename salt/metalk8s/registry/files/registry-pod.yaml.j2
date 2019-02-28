@@ -36,12 +36,14 @@ spec:
           protocol: TCP
       livenessProbe:
         httpGet:
-          path: /
+          host: localhost
           port: registry
+          path: /
       readinessProbe:
         httpGet:
-          path: /
+          host: localhost
           port: registry
+          path: /
       env:
         - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
           value: '/var/lib/registry'
