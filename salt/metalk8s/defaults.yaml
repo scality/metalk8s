@@ -32,7 +32,7 @@ repo:
   containerd:
     version: latest
   kubernetes:
-    version: latest
+    version: 1.11.7
 
 networks: {}
 

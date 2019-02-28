@@ -23,9 +23,79 @@ Create kubelet config file:
     - dir_mode: 750
     - formatter: yaml
     - dataset:
+        address: 0.0.0.0
         kind: KubeletConfiguration
         apiVersion: kubelet.config.k8s.io/v1beta1
         staticPodPath: /etc/kubernetes/manifests
+        authentication:
+          anonymous:
+            enabled: false
+          webhook:
+            cacheTTL: 2m0s
+            enabled: true
+          x509:
+            clientCAFile: /etc/kubernetes/pki/ca.crt
+        authorization:
+          mode: Webhook
+          webhook:
+            cacheAuthorizedTTL: 5m0s
+            cacheUnauthorizedTTL: 30s
+        cgroupDriver: cgroupfs
+        cgroupsPerQOS: true
+        clusterDNS:
+          - 10.96.0.10
+        clusterDomain: cluster.local
+        configMapAndSecretChangeDetectionStrategy: Watch
+        containerLogMaxFiles: 5
+        containerLogMaxSize: 10Mi
+        contentType: application/vnd.kubernetes.protobuf
+        cpuCFSQuota: true
+        cpuCFSQuotaPeriod: 100ms
+        cpuManagerPolicy: none
+        cpuManagerReconcilePeriod: 10s
+        enableControllerAttachDetach: true
+        enableDebuggingHandlers: true
+        enforceNodeAllocatable:
+          - pods
+        eventBurst: 10
+        eventRecordQPS: 5
+        evictionHard:
+          imagefs.available: 15%
+          memory.available: 100Mi
+          nodefs.available: 10%
+          nodefs.inodesFree: 5%
+        evictionPressureTransitionPeriod: 5m0s
+        failSwapOn: true
+        fileCheckFrequency: 20s
+        hairpinMode: promiscuous-bridge
+        healthzBindAddress: 127.0.0.1
+        healthzPort: 10248
+        httpCheckFrequency: 20s
+        imageGCHighThresholdPercent: 85
+        imageGCLowThresholdPercent: 80
+        imageMinimumGCAge: 2m0s
+        iptablesDropBit: 15
+        iptablesMasqueradeBit: 14
+        kubeAPIBurst: 10
+        kubeAPIQPS: 5
+        makeIPTablesUtilChains: true
+        maxOpenFiles: 1000000
+        maxPods: 110
+        nodeLeaseDurationSeconds: 40
+        nodeStatusReportFrequency: 1m0s
+        nodeStatusUpdateFrequency: 10s
+        oomScoreAdj: -999
+        podPidsLimit: -1
+        port: 10250
+        registryBurst: 10
+        registryPullQPS: 5
+        resolvConf: /etc/resolv.conf
+        rotateCertificates: true
+        runtimeRequestTimeout: 2m0s
+        serializeImagePulls: true
+        streamingConnectionIdleTimeout: 4h0m0s
+        syncFrequency: 1m0s
+        volumeStatsAggPeriod: 1m0s
 
 Configure kubelet service as standalone:
   file.managed:
