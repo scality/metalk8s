@@ -111,6 +111,7 @@ configure_salt() {
 accept_keys() {
     echo "Accepting keys"
     crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q)) salt-key -Ay
+    sleep 5
 }
 
 set_salt_command() {

@@ -55,6 +55,7 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/admin.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/controller-manager.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/files/service-kubelet-systemd.conf \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/kubelet.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/lib.sls \

@@ -2,7 +2,7 @@
 
 Create kubelet service environment file:
   file.managed:
-    - name: {{ kubelet.service.environment_file }}
+    - name: "/var/lib/kubelet/kubeadm-flags.env"
     - source: salt://metalk8s/kubeadm/init/kubelet-start/files/kubeadm.env
     - template: jinja
     - user: root
@@ -15,21 +15,21 @@ Create kubelet service environment file:
 
 Create kubelet config file:
   file.serialize:
-    - name: {{ kubelet.config_file }}
+    - name: "/var/lib/kubelet/config.yaml"
     - user: root
     - group: root
     - mode: 644
     - makedirs: True
     - dir_mode: 750
     - formatter: yaml
-    - dataset: {{ kubelet.config }}       
+    - dataset:
+        kind: KubeletConfiguration
+        apiVersion: kubelet.config.k8s.io/v1beta1
+        staticPodPath: /etc/kubernetes/manifests
 
-{%- set kubelet_service_config = salt['file.join'](
-          kubelet.service.config_path,
-          kubelet.service.config_name) %}
-Configure kubelet service:
+Configure kubelet service as standalone:
   file.managed:
-    - name: {{ kubelet_service_config }}
+    - name: /etc/systemd/system/kubelet.service.d/09-standalone.conf
     - source: salt://metalk8s/kubeadm/init/kubelet-start/files/service-kubelet-{{ grains['init'] }}.conf
     - template: jinja
     - user: root
@@ -38,8 +38,8 @@ Configure kubelet service:
     - makedirs: True
     - dir_mode: 755
     - context:
-        env_file: {{ kubelet.service.environment_file }}
-        conf_file: {{ kubelet.config_file }}
+        env_file: "/var/lib/kubelet/kubeadm-flags.env"
+        manifest_path: "/etc/kubernetes/manifests"
     - require:
       - file: Create kubelet service environment file
       - file: Create kubelet config file
@@ -51,5 +51,5 @@ Start and enable kubelet:
     - watch:
       - file: Create kubelet service environment file
       - file: Create kubelet config file
-      - file: Configure kubelet service
+      - file: Configure kubelet service as standalone
 
