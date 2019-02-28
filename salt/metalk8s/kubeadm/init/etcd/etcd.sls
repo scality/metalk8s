@@ -1,6 +1,6 @@
 {% from "metalk8s/map.jinja" import networks with context %}
 
-{% set image_name="localhost:5000/metalk8s-2.0/etcd:3.2.18"}
+{% set image_name="localhost:5000/metalk8s-2.0/etcd:3.2.18" %}
 
 {% set host_name = salt.network.get_hostname() %}
 {% set ip_candidates = salt.network.ip_addrs(cidr=networks.control_plane) %}
@@ -27,7 +27,7 @@ Create local etcd Pod manifest:
           - --client-cert-auth=true
           - --data-dir=/var/lib/etcd
           - --initial-advertise-peer-urls=https://{{ host }}:2380
-          - --initial-cluster=master1=https://{{ host }}:2380
+          - --initial-cluster={{ host_name }}=https://{{ host }}:2380
           - --key-file=/etc/kubernetes/pki/etcd/server.key
           - --listen-client-urls=https://127.0.0.1:2379,https://{{ host }}:2379
           - --listen-peer-urls=https://{{ host }}:2380
@@ -43,6 +43,7 @@ Create local etcd Pod manifest:
             name: etcd-data
           - path: /etc/kubernetes/pki/etcd
             name: etcd-certs
+            readOnly: true
 
 {% else %}
 No available advertise IP for etcd:

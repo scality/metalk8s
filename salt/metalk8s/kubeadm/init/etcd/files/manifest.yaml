@@ -34,6 +34,7 @@ spec:
         {%- for volume in volumes %}
         - mountPath: {{ volume.path }}
           name: {{ volume.name }}
+          readOnly: {{ volume.get("readOnly", false) }}
         {%- endfor %}
   hostNetwork: true
   priorityClassName: "system-cluster-critical"
