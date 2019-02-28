@@ -51,6 +51,10 @@
   'default': {}
 }, merge=defaults.get('front_proxy')) %}
 
+{% set coredns = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('coredns')) %}
+
 {% set kubeadm_kubeconfig = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('kubeadm_kubeconfig')) %}

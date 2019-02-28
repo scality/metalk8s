@@ -76,4 +76,9 @@ front_proxy:
   cert:
     client_signing_policy: front_proxy_client_policy
 
-upgrade: false        # define if we're on an upgrade case
+coredns:
+  cluster_dns_ip: 10.96.0.10
+  cluster_domain: cluster.local
+  reverse_cidrs: in-addr.arpa ip6.arpa
+
+upgrade: False        # define if we're on an upgrade case
