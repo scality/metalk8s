@@ -15,6 +15,11 @@ To test:
 - rm -rf node_modules (in node_modules/scality-ui)
 Note: the 4 above steps will be built in the CI
 
+- Open browser, surf to REACT_APP_OIDC_PROVIDER url, accept TLS certificate
+- In same browser, surf to REACT_APP_API_SERVER url, accept TLS certificate
+Note: to solve self-signed certificate issue (known issue)
+
 - go back to ui
 - REACT_APP_OIDC_PROVIDER="TO_ADD" REACT_APP_API_SERVER="TO_ADD" npm run start (you need VPN up)
+
 
