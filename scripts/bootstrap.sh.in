@@ -114,6 +114,7 @@ accept_keys() {
     echo "Accepting keys"
     # shellcheck disable=SC2046
     crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q)) salt-key -Ay
+    sleep 5
 }
 
 set_salt_command() {

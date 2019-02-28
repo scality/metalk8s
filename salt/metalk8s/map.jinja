@@ -34,14 +34,6 @@
 {% set kubelet = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('kubelet')) %}
-{% set kubelet = salt['grains.filter_by']({
-  'systemd': {
-    'service': {
-      'config_path': '/etc/systemd/system/kubelet.service.d',
-      'config_name': '10-kubeadm.conf'
-    }
-  }
-}, grain='init', merge=kubelet) %}
 
 {% set ca = salt['grains.filter_by']({
   'default': {}
