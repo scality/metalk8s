@@ -145,37 +145,41 @@ run_kubeconfig() {
         ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.kubeconfig saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
+run_control_plane() {
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.control-plane saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
 
 run_etcd() {
-        ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.etcd saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.etcd saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
 main() {
-        pre_minion_checks
-        disable_salt_minion_service
-        stop_salt_minion_service
-        configure_salt_repository
-        install_salt_minion
-        configure_salt_minion_local_mode
-        run_bootstrap_prechecks
+    pre_minion_checks
+    disable_salt_minion_service
+    stop_salt_minion_service
+    configure_salt_repository
+    install_salt_minion
+    configure_salt_minion_local_mode
+    run_bootstrap_prechecks
 
-        install_kubelet
-        run_preflight
-        run_kubelet_start
+    install_kubelet
+    run_preflight
+    run_kubelet_start
 
-        deploy_registry
-        populate_registry
+    deploy_registry
+    populate_registry
 
-        deploy_salt_master
-        configure_salt
+    deploy_salt_master
+    configure_salt
 
-        set_salt_command
-        accept_keys
+    set_salt_command
+    accept_keys
 
-        sync_salt
-        run_certs
-        run_kubeconfig
-        run_etcd
+    sync_salt
+    run_certs
+    run_kubeconfig
+    run_control_plane
+    run_etcd
 }
 
 main
