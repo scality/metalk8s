@@ -15,6 +15,7 @@ RUN yum install -y epel-release \
   python-pip \
   python36 \
   python36-devel \
+  ShellCheck \
   && yum clean all \
   && adduser -u 1042 --home /home/eve eve \
   && chown eve:eve /home/eve/workspace \

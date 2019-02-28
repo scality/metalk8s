@@ -13,7 +13,9 @@ YUM=${YUM:-$(command -v yum)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
 SALT_MINION_FILE_CLIENT_LOCAL_CONF=/etc/salt/minion.d/99-file-client-local.conf
+# shellcheck disable=SC2034
 SALT_MASTER_FILE_CONF=/etc/salt/master.d/99-metalk8s.conf
+# shellcheck disable=SC2034
 SALT_MINION_FILE_CONF=/etc/salt/minion.d/99-metalk8s.conf
 
 die() {
@@ -110,11 +112,13 @@ configure_salt() {
 
 accept_keys() {
     echo "Accepting keys"
+    # shellcheck disable=SC2046
     crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q)) salt-key -Ay
 }
 
 set_salt_command() {
     echo "setting salt master command"
+    # shellcheck disable=SC2046
     SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master-bootstrap -q)) salt"
 }
 
