@@ -45,6 +45,11 @@ Create local etcd Pod manifest:
             name: etcd-certs
             readOnly: true
 
+Create etcd database directory:
+  file.directory:
+    - name: /var/lib/etcd
+    - dir_mode: 750
+
 {% else %}
 No available advertise IP for etcd:
   test.fail_without_changes:
