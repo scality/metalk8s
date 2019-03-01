@@ -153,6 +153,11 @@ run_etcd() {
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.etcd saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
+install_addons() {
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.addons.dependencies saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.addons saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
+
 main() {
     pre_minion_checks
     disable_salt_minion_service
@@ -180,6 +185,8 @@ main() {
     run_kubeconfig
     run_control_plane
     run_etcd
+
+    install_addons
 }
 
 main

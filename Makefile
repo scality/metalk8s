@@ -72,6 +72,9 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/kubelet.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/lib.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/scheduler.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/dependencies.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/kube-proxy.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
