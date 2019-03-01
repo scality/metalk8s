@@ -5,6 +5,7 @@ Create SA private key:
   x509.private_key_managed:
     - name: /etc/kubernetes/pki/sa.key
     - bits: 2048
+    - verbose: False
     - user: root
     - group: root
     - mode: 600

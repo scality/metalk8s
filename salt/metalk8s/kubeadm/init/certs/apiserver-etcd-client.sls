@@ -10,6 +10,7 @@ Create apiserver etcd client private key:
   x509.private_key_managed:
     - name: /etc/kubernetes/pki/apiserver-etcd-client.key
     - bits: 2048
+    - verbose: False
     - user: root
     - group: root
     - mode: 600

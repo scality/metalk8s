@@ -10,6 +10,7 @@ Create etcd healthcheck client private key:
   x509.private_key_managed:
     - name: /etc/kubernetes/pki/etcd/healthcheck-client.key
     - bits: 2048
+    - verbose: False
     - user: root
     - group: root
     - mode: 600

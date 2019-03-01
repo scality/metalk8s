@@ -13,6 +13,7 @@ Create etcd CA private key:
   x509.private_key_managed:
     - name: /etc/kubernetes/pki/etcd/ca.key
     - bits: 4096
+    - verbose: False
     - user: root
     - group: root
     - mode: 600

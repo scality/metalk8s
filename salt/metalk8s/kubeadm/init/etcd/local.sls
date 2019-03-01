@@ -7,6 +7,14 @@
 {% if ip_candidates %}
 {% set host = ip_candidates[0] %}
 
+Create etcd database directory:
+  file.directory:
+    - name: /var/lib/etcd
+    - dir_mode: 750
+    - user: root
+    - group: root
+    - makedirs: True
+
 Create local etcd Pod manifest:
   file.managed:
     - name: /etc/kubernetes/manifests/etcd.yaml
@@ -44,11 +52,10 @@ Create local etcd Pod manifest:
           - path: /etc/kubernetes/pki/etcd
             name: etcd-certs
             readOnly: true
+    - require:
+      - file: Create etcd database directory
 
-Create etcd database directory:
-  file.directory:
-    - name: /var/lib/etcd
-    - dir_mode: 750
+
 
 {% else %}
 No available advertise IP for etcd:

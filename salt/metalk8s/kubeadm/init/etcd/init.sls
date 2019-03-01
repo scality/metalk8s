@@ -6,8 +6,8 @@
 # Available states
 # ================
 #
-# * etcd               -> Generates the etcd static Pod manifest
+# * local               -> Generates the local etcd static Pod manifest
 #
 
 include:
-  - .etcd
+  - .local

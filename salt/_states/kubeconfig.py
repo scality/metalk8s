@@ -142,7 +142,9 @@ def managed(name,
         ret.update({'comment': 'kubeconfig file exists and is up-to-date'})
         return ret
 
-    client_priv_key = __salt__['x509.create_private_key'](text=True)
+    client_priv_key = __salt__['x509.create_private_key'](
+        text=True, verbose=False
+    )
 
     client_cert = __salt__['x509.create_certificate'](
         text=True,

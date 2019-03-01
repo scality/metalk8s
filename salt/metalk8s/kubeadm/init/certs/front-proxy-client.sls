@@ -10,6 +10,7 @@ Create front proxy client private key:
   x509.private_key_managed:
     - name: /etc/kubernetes/pki/front-proxy-client.key
     - bits: 2048
+    - verbose: False
     - user: root
     - group: root
     - mode: 600
