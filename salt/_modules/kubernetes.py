@@ -1620,7 +1620,7 @@ def create_serviceaccount(
         namespace,
         **kwargs):
     meta_obj = kubernetes.client.V1ObjectMeta(name=name, namespace=namespace)
-    body = kubernetes.client.V1Namespace(metadata=meta_obj)
+    body = kubernetes.client.V1ServiceAccount(metadata=meta_obj)
 
     cfg = _setup_conn(**kwargs)
 
@@ -1635,7 +1635,7 @@ def create_serviceaccount(
         else:
             log.exception(
                 'Exception when calling '
-                'CoreV1Api->create_serviceaccount'
+                'CoreV1Api->create_namespaced_service_account'
             )
             raise CommandExecutionError(exc)
     finally:
