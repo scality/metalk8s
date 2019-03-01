@@ -1240,3 +1240,49 @@ def daemonset_present(
             'new': res}
 
     return ret
+
+def clusterrole_present(
+        name,
+        rules,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    clusterrole = __salt__['kubernetes.show_clusterrole'](name, **kwargs)
+
+    if clusterrole is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The clusterrole is going to be created'
+            return ret
+
+        res = __salt__['kubernetes.create_clusterrole'](
+            name=name,
+            rules=rules,
+            **kwargs)
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The clusterrole is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the clusterrole')
+        ret['comment'] = 'The clusterrole is already present. Forcing recreation'
+        res = __salt__['kubernetes.replace_clusterrole'](
+            name=name,
+            rules=rules,
+            **kwargs)
+
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': role,
+            'new': res}
+
+    return ret
