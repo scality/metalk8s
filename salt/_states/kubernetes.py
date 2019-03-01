@@ -1038,3 +1038,52 @@ def serviceaccount_present(
         ret['comment'] = 'The serviceaccount already exists'
 
     return ret
+
+
+def clusterrolebinding_present(
+        name,
+        role_ref,
+        subjects,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    clusterrolebinding = __salt__['kubernetes.show_clusterrolebinding'](name, **kwargs)
+
+    if clusterrolebinding is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The clusterrolebinding is going to be created'
+            return ret
+
+        res = __salt__['kubernetes.create_clusterrolebinding'](name=name,
+                                                               role_ref=role_ref,
+                                                               subjects=subjects,
+                                                               **kwargs)
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The clusterrolebinding is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the clusterrolebinding')
+        ret['comment'] = 'The clusterrolebinding is already present. Forcing recreation'
+        res = __salt__['kubernetes.replace_clusterrolebinding'](
+            name=name,
+            role_ref=role_ref,
+            subjects=subjects,
+            **kwargs)
+
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': clusterrolebinding,
+            'new': res}
+
+    return ret

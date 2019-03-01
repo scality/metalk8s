@@ -1640,3 +1640,81 @@ def create_serviceaccount(
             raise CommandExecutionError(exc)
     finally:
         _cleanup(**cfg)
+
+
+def show_clusterrolebinding(name, **kwargs):
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.read_cluster_role_binding(name)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->read_cluster_role_binding'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_clusterrolebinding(
+        name,
+        role_ref,
+        subjects,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1ClusterRoleBinding(
+        metadata=meta_obj, role_ref=role_ref, subjects=subjects)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.create_cluster_role_binding(body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->create_cluster_role_binding'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_clusterrolebinding(
+        name,
+        role_ref,
+        subjects,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1ClusterRoleBinding(
+        metadata=meta_obj, role_ref=role_ref, subjects=subjects)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.replace_cluster_role_binding(name, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->replace_cluster_role_binding'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
