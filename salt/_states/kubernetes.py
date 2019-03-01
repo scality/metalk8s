@@ -1286,3 +1286,51 @@ def clusterrole_present(
             'new': res}
 
     return ret
+
+
+def customresourcedefinition_present(
+        name,
+        spec,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    customresourcedefinition = __salt__[
+        'kubernetes.show_customresourcedefinition'](name, **kwargs)
+
+    if customresourcedefinition is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The customresourcedefinition is going to be created'
+            return ret
+
+        res = __salt__['kubernetes.create_customresourcedefinition'](
+            name=name,
+            spec=spec,
+            **kwargs)
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The customresourcedefinition is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the customresourcedefinition')
+        ret['comment'] = 'The custonresourcedefinition is already present. Forcing recreation'
+        res = __salt__['kubernetes.replace_customresourcedefinition'](
+            name=name,
+            spec=spec,
+            **kwargs)
+
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': customresourcedefinition,
+            'new': res}
+
+    return ret
