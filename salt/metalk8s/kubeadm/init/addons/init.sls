@@ -1,0 +1,3 @@
+include:
+  - .dependencies
+  - .kube-proxy

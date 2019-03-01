@@ -5,3 +5,4 @@ YUM_PACKAGES = \
     kubernetes-cni \
     runc \
     salt-minion \
+    python2-kubernetes \
