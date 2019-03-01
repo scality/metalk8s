@@ -1282,7 +1282,7 @@ def clusterrole_present(
 
         ret['result'] = True
         ret['changes'][name] = {
-            'old': role,
+            'old': clusterrole,
             'new': res}
 
     return ret
