@@ -2093,6 +2093,55 @@ def show_customresourcedefinition(name, **kwargs):
         _cleanup(**cfg)
 
 
+def node_annotations(name, **kwargs):
+    '''
+    Return the annotations of the node identified by the specified name
+
+    CLI Examples::
+
+        salt '*' kubernetes.node_annotations name="minikube"
+    '''
+    match = node(name, **kwargs)
+
+    if match is not None:
+        return match['metadata']['annotations']
+
+    return {}
+
+
+def node_add_annotation(node_name, annotation_name, annotation_value, **kwargs):
+    '''
+    Set the value of the annotation identified by `annotation_name` to
+    `annotation_value` on the node identified by the name `node_name`.
+    Creates the annotation if not present.
+
+    CLI Examples::
+
+        salt '*' kubernetes.node_add_annotation node_name="minikube" \
+            annotation_name="foo" annotation_value="bar"
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.CoreV1Api()
+        body = {
+            'metadata': {
+                'annotations': {
+                    annotation_name: annotation_value
+                }
+            }
+        }
+        api_response = api_instance.patch_node(node_name, body)
+        return api_response
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception('Exception when calling CoreV1Api->patch_node')
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
 def create_customresourcedefinition(
         name,
         spec,
@@ -2148,6 +2197,38 @@ def replace_customresourcedefinition(
                 'Exception when calling '
                 'ExtensionsV1beta1Api->replace_custom_resource_definition'
             )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def node_remove_annotation(node_name, annotation_name, **kwargs):
+    '''
+    Removes the annotation identified by `annotation_name` from
+    the node identified by the name `node_name`.
+
+    CLI Examples::
+
+        salt '*' kubernetes.node_remove_annotation node_name="minikube" \
+            annotation_name="foo"
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.CoreV1Api()
+        body = {
+            'metadata': {
+                'annotations': {
+                    annotation_name: None}
+                }
+        }
+        api_response = api_instance.patch_node(node_name, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception('Exception when calling CoreV1Api->patch_node')
             raise CommandExecutionError(exc)
     finally:
         _cleanup(**cfg)

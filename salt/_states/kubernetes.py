@@ -1009,6 +1009,121 @@ def node_label_present(
     return ret
 
 
+def node_annotation_absent(name, node, **kwargs):
+    '''
+    Ensures that the named annotation is absent from the node.
+
+    name
+        The name of the annotation
+
+    node
+        The name of the node
+    '''
+
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    annotations = __salt__['kubernetes.node_annotations'](node, **kwargs)
+
+    if name not in annotations:
+        ret['result'] = True if not __opts__['test'] else None
+        ret['comment'] = 'The annotation does not exist'
+        return ret
+
+    if __opts__['test']:
+        ret['comment'] = 'The annotation is going to be deleted'
+        ret['result'] = None
+        return ret
+
+    __salt__['kubernetes.node_remove_annotation'](
+        node_name=node,
+        annotation_name=name,
+        **kwargs
+    )
+
+    ret['result'] = True
+    ret['changes'] = {
+        'kubernetes.node_annotation': {'new': 'absent', 'old': 'present'}
+    }
+    ret['comment'] = 'Annotation removed from node'
+
+    return ret
+
+
+def node_annotation_present(
+        name,
+        node,
+        value,
+        **kwargs):
+    '''
+    Ensures that the named annotation is set on the named node
+    with the given value.
+    If the annotation exists it will be replaced.
+
+    name
+        The name of the annotation.
+
+    value
+        Value of the annotation.
+
+    node
+        Node to change.
+    '''
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    annotations = __salt__['kubernetes.node_annotations'](node, **kwargs)
+
+    if name not in annotations:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The annotation is going to be set'
+            return ret
+
+        __salt__['kubernetes.node_add_annotation'](
+            annotation_name=name,
+            annotation_value=value,
+            node_name=node,
+            **kwargs
+        )
+
+    elif annotations[name] == value:
+        ret['result'] = True
+        ret['comment'] = (
+            'The annotation is already set and has the specified value'
+        )
+        return ret
+
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The annotation is going to be updated'
+            return ret
+
+        ret['comment'] = 'The annotation is already set, changing the value'
+
+        __salt__['kubernetes.node_add_annotation'](
+            node_name=node,
+            annotation_name=name,
+            annotation_value=value,
+            **kwargs
+        )
+
+    old_annotations = copy.copy(annotations)
+    annotations[name] = value
+
+    ret['changes']['{0}.{1}'.format(node, name)] = {
+        'old': old_annotations,
+        'new': annotations}
+    ret['result'] = True
+
+    return ret
+
+
 def serviceaccount_present(
         name,
         namespace='default',
