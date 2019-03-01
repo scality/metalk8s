@@ -1,5 +1,9 @@
 {%- from "metalk8s/map.jinja" import kubelet with context %}
+{% from "metalk8s/map.jinja" import networks with context %}
 
+{% set ip_candidates = salt.network.ip_addrs(cidr=networks.control_plane) %}
+{% if ip_candidates %}
+{% set bind_address = ip_candidates[0] %}
 Create kubelet service environment file:
   file.managed:
     - name: "/var/lib/kubelet/kubeadm-flags.env"
@@ -23,7 +27,7 @@ Create kubelet config file:
     - dir_mode: 750
     - formatter: yaml
     - dataset:
-        address: 0.0.0.0
+        address: {{ bind_address }}
         kind: KubeletConfiguration
         apiVersion: kubelet.config.k8s.io/v1beta1
         staticPodPath: /etc/kubernetes/manifests
@@ -122,4 +126,8 @@ Start and enable kubelet:
       - file: Create kubelet service environment file
       - file: Create kubelet config file
       - file: Configure kubelet service as standalone
-
+{% else %}
+No available advertise IP for kubelet:
+  test.fail_without_changes:
+    - msg: "Could not find available IP in {{ networks.control_plane }}"
+{% endif %}
