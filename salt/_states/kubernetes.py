@@ -1087,3 +1087,52 @@ def clusterrolebinding_present(
             'new': res}
 
     return ret
+
+
+def role_present(
+        name,
+        namespace,
+        rules,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    role = __salt__['kubernetes.show_role'](name, namespace, **kwargs)
+
+    if role is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The role is going to be created'
+            return ret
+
+        res = __salt__['kubernetes.create_role'](name=name,
+                                                 namespace=namespace,
+                                                 rules=rules,
+                                                 **kwargs)
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The role is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the role')
+        ret['comment'] = 'The role is already present. Forcing recreation'
+        res = __salt__['kubernetes.replace_role'](
+            name=name,
+            namespace=namespace,
+            rules=rules,
+            **kwargs)
+
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': role,
+            'new': res}
+
+    return ret
