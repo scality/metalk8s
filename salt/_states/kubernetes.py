@@ -1112,7 +1112,7 @@ def role_present(
                                                  rules=rules,
                                                  **kwargs)
         ret['result'] = True
-        ret['changes'][name] = {
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
             'old': {},
             'new': res}
     else:
@@ -1131,7 +1131,7 @@ def role_present(
             **kwargs)
 
         ret['result'] = True
-        ret['changes'][name] = {
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
             'old': role,
             'new': res}
 
