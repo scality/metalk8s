@@ -51,8 +51,8 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/control-plane/scheduler.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/etcd/init.sls \
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/etcd/etcd.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/etcd/files/manifest.yaml \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/etcd/local.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/init.sls \
 	\
