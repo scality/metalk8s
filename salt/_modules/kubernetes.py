@@ -1878,3 +1878,100 @@ def replace_rolebinding(
             raise CommandExecutionError(exc)
     finally:
         _cleanup(**cfg)
+
+
+def show_daemonset(name, namespace='default', **kwargs):
+    '''
+    Return the kubernetes deployment defined by name and namespace
+
+    CLI Examples::
+
+        salt '*' kubernetes.show_daemonset kube-proxy kube-system
+        salt '*' kubernetes.show_daemonset name=kube-proxy namespace=kube-system
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.read_namespaced_daemon_set(name, namespace)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->read_namespaced_daemonset'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_daemonset(
+        name,
+        namespace,
+        metadata,
+        spec,
+        **kwargs):
+    if not metadata:
+        metadata = {}
+    metadata['name'] = name
+    metadata['namespace'] = namespace
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    body = kubernetes.client.V1DaemonSet(
+        metadata=meta_obj, spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.create_namespaced_daemon_set(
+            namespace=namespace, body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->create_namespaced_daemon_set'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_daemonset(
+        name,
+        namespace,
+        metadata,
+        spec,
+        **kwargs):
+    if not metadata:
+        metadata = {}
+    metadata['name'] = name
+    metadata['namespace'] = namespace
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    body = kubernetes.client.V1DaemonSet(
+        metadata=meta_obj, spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.replace_namespaced_daemon_set(name, namespace, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->replace_namespaced_daemon_set'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)

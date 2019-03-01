@@ -1188,3 +1188,55 @@ def rolebinding_present(
             'new': res}
 
     return ret
+
+
+def daemonset_present(
+        name,
+        namespace,
+        metadata,
+        spec,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    daemonset = __salt__['kubernetes.show_daemonset'](name, namespace, **kwargs)
+
+    if daemonset is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The daemonset is going to be created'
+            return ret
+
+        res = __salt__['kubernetes.create_daemonset'](name=name,
+                                                      namespace=namespace,
+                                                      metadata=metadata,
+                                                      spec=spec,
+                                                      **kwargs)
+        ret['result'] = True
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The daemonset is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the daemonset')
+        ret['comment'] = 'The daemonset is already present. Forcing recreation'
+        res = __salt__['kubernetes.replace_daemonset'](
+            name=name,
+            namespace=namespace,
+            metadata=metadata,
+            spec=spec,
+            **kwargs)
+
+        ret['result'] = True
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
+            'old': daemonset,
+            'new': res}
+
+    return ret
