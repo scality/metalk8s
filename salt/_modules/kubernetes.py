@@ -1684,7 +1684,7 @@ def create_clusterrolebinding(
         else:
             log.exception(
                 'Exception when calling '
-                'RbasAuthorizationV1Api->create_cluster_role_binding'
+                'RbacAuthorizationV1Api->create_cluster_role_binding'
             )
             raise CommandExecutionError(exc)
     finally:
@@ -1713,7 +1713,7 @@ def replace_clusterrolebinding(
         else:
             log.exception(
                 'Exception when calling '
-                'RbasAuthorizationV1Api->create_cluster_role_binding'
+                'RbacAuthorizationV1Api->replace_cluster_role_binding'
             )
             raise CommandExecutionError(exc)
     finally:
