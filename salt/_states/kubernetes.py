@@ -1136,3 +1136,55 @@ def role_present(
             'new': res}
 
     return ret
+
+
+def rolebinding_present(
+        name,
+        namespace,
+        role_ref,
+        subjects,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    rolebinding = __salt__['kubernetes.show_rolebinding'](name, namespace, **kwargs)
+
+    if rolebinding is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The rolebinding is going to be created'
+            return ret
+
+        res = __salt__['kubernetes.create_rolebinding'](name=name,
+                                                        namespace=namespace,
+                                                        role_ref=role_ref,
+                                                        subjects=subjects,
+                                                        **kwargs)
+        ret['result'] = True
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The rolebinding is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the rolebinding')
+        ret['comment'] = 'The rolebinding is already present. Forcing recreation'
+        res = __salt__['kubernetes.replace_rolebinding'](
+            name=name,
+            namespace=namespace,
+            role_ref=role_ref,
+            subjects=subjects,
+            **kwargs)
+
+        ret['result'] = True
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
+            'old': rolebinding,
+            'new': res}
+
+    return ret

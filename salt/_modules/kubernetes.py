@@ -1797,3 +1797,84 @@ def replace_role(
             raise CommandExecutionError(exc)
     finally:
         _cleanup(**cfg)
+
+
+def show_rolebinding(name, namespace, **kwargs):
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.read_namespaced_role_binding(name, namespace)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->read_namespaced_role_binding'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_rolebinding(
+        name,
+        namespace,
+        role_ref,
+        subjects,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name, namespace=namespace)
+    body = kubernetes.client.V1RoleBinding(
+        metadata=meta_obj, role_ref=role_ref, subjects=subjects)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.create_namespaced_role_binding(
+            namespace=namespace, body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->create_namespaced_role_binding'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_rolebinding(
+        name,
+        namespace,
+        role_ref,
+        subjects,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name, namespace=namespace)
+    body = kubernetes.client.V1RoleBinding(
+        metadata=meta_obj, role_ref=role_ref, subjects=subjects)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.replace_namespaced_role_binding(name, namespace, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->replace_namespaced_role_binding'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
