@@ -1007,3 +1007,34 @@ def node_label_present(
     ret['result'] = True
 
     return ret
+
+
+def serviceaccount_present(
+        name,
+        namespace='default',
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    serviceaccount = __salt__['kubernetes.show_serviceaccount'](name, namespace, **kwargs)
+
+    if serviceaccount is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The serviceaccount is going to be created'
+            return ret
+
+        res = __salt__['kubernetes.create_serviceaccount'](name=name,
+                                                           namespace=namespace,
+                                                           **kwargs)
+        ret['result'] = True
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
+            'old': {},
+            'new': res}
+    else:
+        ret['result'] = True if not __opts__['test'] else None
+        ret['comment'] = 'The serviceaccount already exists'
+
+    return ret
