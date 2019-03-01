@@ -81,6 +81,9 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/dependencies.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/kube-proxy.sls \
 	\
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/mark-control-plane/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/mark-control-plane/configured.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
 	\
