@@ -1124,6 +1124,64 @@ def node_annotation_present(
     return ret
 
 
+def node_taints_present(name, taints, **kwargs):
+    '''
+    # TODO: describe and provide expls
+    '''
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    existing_taints = {
+        t['key']: t
+        for t in __salt__['kubernetes.node_taints'](name, **kwargs)
+    }
+
+    added = set()
+    updated = set()
+    ignored = set()
+
+    for taint in taints:
+        key = taint['key']
+        if key in existing_taints:
+            if taint['effect'] != existing_taints[key]['effect']:
+                updated.add(key)
+            else:
+                ignored.add(key)
+        else:
+            added.add(key)
+
+    new_taints = [
+        t for t in taints if t['key'] in (added | updated)
+    ]
+    new_taints.extend([
+        t for key, t in existing_taints.items()
+        if key not in (added | updated)
+    ])
+
+    ret['changes'] = {
+        'old': list(existing_taints.values()),
+        'new': new_taints,
+    }
+
+    if __opts__['test']:
+        ret['result'] = None
+        ret['comment'] = '{} will change'.format(
+            'Some taints' if (added | updated) else 'No taint'
+        )
+        return ret
+
+    __salt__['kubernetes.node_set_taints'](
+        node_name=name,
+        taints=new_taints,
+        **kwargs
+    )
+
+    ret['result'] = True
+    return ret
+
+
 def serviceaccount_present(
         name,
         namespace='default',

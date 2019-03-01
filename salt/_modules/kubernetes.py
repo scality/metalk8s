@@ -2232,3 +2232,46 @@ def node_remove_annotation(node_name, annotation_name, **kwargs):
             raise CommandExecutionError(exc)
     finally:
         _cleanup(**cfg)
+
+
+def node_taints(node_name, **kwargs):
+    match = node(node_name, **kwargs)
+
+    if match is not None:
+        return match['spec']['taints']
+
+    return []
+
+
+def node_set_taints(node_name, taints, **kwargs):
+    '''
+    Update the array of taints to the provided `taints` value for the node
+    identified by the name `node_name`.
+    Will overwrite any existing taints for this node.
+
+    CLI Examples::
+
+        # To remove all taints
+        salt '*' kubernetes.node_set_taints node_name="minikube" taints=[]
+
+        # To add some taints
+        salt '*' kubernetes.node_set_taints node_name="master1" \
+            taints='[ \
+                {"key": "node-role.kubernetes.io/master", \
+                 "effect" "NoSchedule" } \
+            ]'
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.CoreV1Api()
+        body = {'spec': {'taints': taints}}
+        api_response = api_instance.patch_node(node_name, body)
+        return api_response
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception('Exception when calling CoreV1Api->patch_node')
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
