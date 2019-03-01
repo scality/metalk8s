@@ -118,9 +118,9 @@ accept_keys() {
 }
 
 set_salt_command() {
-    echo "setting salt master command"
+    echo "Setting salt master command"
     # shellcheck disable=SC2046
-    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master-bootstrap -q)) salt"
+    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q)) salt"
 }
 
 sync_salt() {

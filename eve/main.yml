@@ -1,12 +1,11 @@
 ---
-version: '0.2'
+version: "0.2"
 
 branches:
   default:
     stage: pre-merge
 
 stages:
-
   pre-merge:
     worker:
       type: local
@@ -16,6 +15,18 @@ stages:
           stage_names:
             - build
             - lint
+          haltOnFailure: true
+      - SetPropertyFromCommand:
+          name: Set short version as property from built artifacts
+          property: metalk8s_short_version
+          command: >
+            bash -c '
+            . <(curl -s "%(prop:artifacts_private_url)s/product.txt") &&
+            echo $SHORT_VERSION'
+      - TriggerStages:
+          name: Trigger single-node deployment with built ISO
+          stage_names:
+            - single-node
 
   build:
     worker:
@@ -47,13 +58,16 @@ stages:
           command: make
       - ShellCommand:
           name: Put the iso file in a separate folder
-          command: mkdir iso && cp _build/metalk8s.iso _build/SHA256SUM iso
+          command: >
+            mkdir iso &&
+            cp _build/metalk8s.iso _build/SHA256SUM _build/root/product.txt iso
       - Upload:
           name: upload artifacts
           source: iso/
           urls:
             - "*.iso"
             - "SHA256SUM"
+            - "product.txt"
 
   lint:
     worker:
@@ -67,3 +81,43 @@ stages:
           name: Run all linting targets
           command: make lint
           haltOnFailure: false
+
+  single-node:
+    worker:
+      type: openstack
+      image: CentOS 7 (PVHVM)
+      flavor: m1.medium
+      path: eve/workers/openstack-single-node
+    steps:
+      - ShellCommand:
+          name: Retrieve ISO image
+          command: >
+            curl -XGET -o metalk8s.iso
+            "%(prop:artifacts_private_url)s/metalk8s.iso"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Retrieve ISO image checksum
+          command: >
+            curl -XGET -o SHA256SUM
+            "%(prop:artifacts_private_url)s/SHA256SUM"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Check image with checksum
+          command: sha256sum -c SHA256SUM
+          haltOnFailure: true
+      - ShellCommand:
+          name: Create mountpoint
+          command: >
+            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+      - ShellCommand:
+          name: Mount ISO image
+          command: >
+            sudo mount -o loop metalk8s.iso
+            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+          haltOnFailure: true
+      - ShellCommand:
+          name: Start the bootstrap process
+          command: >
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
+          haltOnFailure: true
