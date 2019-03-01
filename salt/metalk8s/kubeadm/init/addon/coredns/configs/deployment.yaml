@@ -74,6 +74,7 @@ spec:
             port: 8080
             scheme: HTTP
       dnsPolicy: Default
+      serviceAccountName: coredns
       volumes:
         - name: config-volume
           configMap:

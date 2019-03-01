@@ -3,10 +3,6 @@
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
 
-include:
-  - ..installed
-  - metalk8s.salt.minion.running
-
 Create coredns ConfigMap:
   kubernetes.configmap_present:
     - name: coredns
@@ -31,7 +27,7 @@ Create coredns ConfigMap:
               loadbalance
           }
   require:
-    - pkg: Install python2-kubernetes
+    - pkg: Install Python Kubernetes client
 
 Create coredns deployment:
   kubernetes.deployment_present:
@@ -42,6 +38,7 @@ Create coredns deployment:
     - source: salt://metalk8s/kubeadm/init/addon/coredns/configs/deployment.yaml
   require:
     - kubernetes: Create coredns ConfigMap
+    - pkg: Install Python Kubernetes client
 
 Create coredns service:
   kubernetes.service_present:
@@ -75,10 +72,55 @@ Create coredns service:
           protocol: TCP
   require:
     - kubernetes: Create coredns deployment
+    - pkg: Install Python Kubernetes client
 
-{%- else %}
+Create coredns service account:
+  kubernetes.serviceaccount_present:
+    - name: coredns
+    - namespace: kube-system
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - require:
+        - pkg: Install Python Kubernetes client
 
-Unable to get admin kubeconf data:
-  test.fail_without_changes: []
+Create coredns cluster role:
+  kubernetes.clusterrole_present:
+    - name: system:coredns
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - rules:
+      - apiGroups:
+        - ""
+        resources:
+        - endpoints
+        - services
+        - pods
+        - namespaces
+        verbs:
+        - list
+        - watch
+      - apiGroups:
+        - ""
+        resources:
+        - nodes
+        verbs:
+        - get
+  require:
+    - pkg: Install Python Kubernetes client
 
-{%- endif %}
+Create coredns cluster role binding:
+  kubernetes.clusterrolebinding_present:
+    - name: system:coredns
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - role_ref:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: system:coredns
+    - subjects:
+      - kind: ServiceAccount
+        name: coredns
+        namespace: kube-system
+  require:
+    - pkg: Install Python Kubernetes client
+
