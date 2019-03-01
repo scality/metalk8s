@@ -1763,7 +1763,7 @@ def create_role(
         else:
             log.exception(
                 'Exception when calling '
-                'RbasAuthorizationV1Api->create_namespaced_role'
+                'RbacAuthorizationV1Api->create_namespaced_role'
             )
             raise CommandExecutionError(exc)
     finally:
@@ -1792,7 +1792,7 @@ def replace_role(
         else:
             log.exception(
                 'Exception when calling '
-                'RbasAuthorizationV1Api->replace_namespaced_role'
+                'RbacAuthorizationV1Api->replace_namespaced_role'
             )
             raise CommandExecutionError(exc)
     finally:
