@@ -1593,3 +1593,50 @@ def __enforce_only_strings_dict(dictionary):
         ret[six.text_type(key)] = six.text_type(value)
 
     return ret
+
+
+def show_serviceaccount(name, namespace, **kwargs):
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.CoreV1Api()
+        api_response = api_instance.read_namespaced_service_account(name, namespace)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CoreV1Api->read_namespaced_service_account'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_serviceaccount(
+        name,
+        namespace,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name, namespace=namespace)
+    body = kubernetes.client.V1Namespace(metadata=meta_obj)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.CoreV1Api()
+        api_response = api_instance.create_namespaced_service_account(namespace, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CoreV1Api->create_serviceaccount'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
