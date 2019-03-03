@@ -3,6 +3,8 @@ YUM_PACKAGES = \
     cri-tools \
     kubelet \
     kubernetes-cni \
+    m2crypto \
+    python2-kubernetes \
     runc \
     salt-minion \
-    python2-kubernetes \
+    skopeo \
