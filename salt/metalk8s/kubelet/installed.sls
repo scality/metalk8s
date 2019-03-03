@@ -18,9 +18,10 @@ Install kubelet dependencies:
 Install and configure cri-tools:
   pkg.installed:
     - name: cri-tools
-    - fromrepo: {{ repo.kubernetes.name }}
+    - version: {{ repo.packages['cri-tools'].version }}
+    - fromrepo: {{ repo.packages['cri-tools'].repository }}
     - require:
-      - pkgrepo: Configure Kubernetes repository
+      - pkgrepo: Configure {{ repo.packages['cri-tools'].repository }} repository
   file.serialize:
     - name: /etc/crictl.yaml
     - dataset:
@@ -35,7 +36,7 @@ Install and configure cri-tools:
 Install kubelet:
   pkg.installed:
     - name: kubelet
-    - version: {{ repo.kubernetes.version }}
-    - fromrepo: {{ repo.kubernetes.name }}
+    - version: {{ repo.packages.kubelet.version }}
+    - fromrepo: {{ repo.packages.kubelet.repository }}
     - require:
-      - pkgrepo: Configure Kubernetes repository
+      - pkgrepo: Configure {{ repo.packages.kubelet.repository }} repository

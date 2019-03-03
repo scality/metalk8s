@@ -1,6 +1,6 @@
 {%- from "metalk8s/map.jinja" import repo with context %}
 
-Configure EPEL repository:
+Configure epel repository:
   pkg.installed:
   {%- if grains["os"] == "CentOS" %}
     - name: epel-release
@@ -15,9 +15,9 @@ check that the system is registered:
     - name: subscription-manager status
 {%- endif %}
 
-Configure Kubernetes repository:
+Configure kubernetes repository:
   pkgrepo.managed:
-    - name: {{ repo.kubernetes.name }}
+    - name: kubernetes
     - humanname: Kubernetes
     - baseurl: "https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64"
     - gpgcheck: 1
@@ -25,9 +25,9 @@ Configure Kubernetes repository:
     - gpgkey: "https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
     - enabled: 0
 
-Configure SaltStack repository:
+Configure saltstack repository:
   pkgrepo.managed:
-    - name: "SaltStack"
+    - name: saltstack
     - humanname: SaltStack
     - baseurl: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.3"
     - gpgcheck: 1

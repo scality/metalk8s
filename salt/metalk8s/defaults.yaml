@@ -27,12 +27,86 @@ kubeadm_preflight:
 
 repo:
   online_mode: true
-  runc:
-    version: latest
-  containerd:
-    version: latest
-  kubernetes:
-    version: 1.11.7
+  local_mode: false
+  base_path: /srv/scality/metalk8s-2.0/packages
+  host: 127.0.0.1
+  port: 8080
+  repositories:
+    base:
+      humanname: CentOS - Base
+      gpgcheck: 1
+      gpgkeys:
+        - RPM-GPG-KEY-base-7_1
+      repo_gpg_check: 0
+      enabled: 1
+
+    epel:
+      humanname: EPEL
+      gpgcheck: 1
+      gpgkeys:
+        - RPM-GPG-KEY-epel-7_1
+      repo_gpg_check: 0
+      enabled: 1
+
+    extras:
+      humanname: CentOS - Extras
+      gpgcheck: 1
+      gpgkeys:
+        - RPM-GPG-KEY-extras-7_1
+      repo_gpg_check: 0
+      enabled: 1
+
+    kubernetes:
+      humanname: Kubernetes
+      gpgcheck: 1
+      gpgkeys:
+        - RPM-GPG-KEY-kubernetes-7_1
+        - RPM-GPG-KEY-kubernetes-7_2
+      repo_gpg_check: 0
+      enabled: 1
+
+    saltstack:
+      humanname: SaltStack
+      gpgcheck: 1
+      gpgkeys:
+        - RPM-GPG-KEY-saltstack-7_1
+      repo_gpg_check: 0
+      enabled: 1
+
+    scality:
+      humanname: Scality
+      gpgcheck: 0
+      gpgkeys: []
+      repo_gpg_check: 0
+      enabled: 1
+
+    updates:
+      humanname: CentOS - Updates
+      gpgcheck: 1
+      gpgkeys:
+        - RPM-GPG-KEY-updates-7_1
+      repo_gpg_check: 0
+      enabled: 1
+
+  packages:
+    container-selinux:
+      version: latest
+      repository: extras
+    containerd:
+      version: latest
+      repository: epel
+    cri-tools:
+      version: latest
+      repository: kubernetes
+    criu:
+      version: latest
+      repository: base
+    runc:
+      version: latest
+      repository: extras
+    kubelet:
+      version: latest
+      repository: kubernetes
 
 networks: {}
 
