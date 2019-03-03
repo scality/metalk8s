@@ -85,7 +85,7 @@ download_packages() {
         "--releasever=$releasever"
         "--installroot=/install_root"
     )
-    local repo_name repo_dest
+    local repo_name repo_dest gpg_key
 
     get_rpm_gpg_keys
 
@@ -101,8 +101,10 @@ download_packages() {
         if [[ ${RPM_GPG_KEYS[$repo_name]+_} ]]; then
             read -ra gpg_keys <<< "${RPM_GPG_KEYS[$repo_name]}"
             for key_id in "${!gpg_keys[@]}"; do
-                curl -s "${gpg_keys[$key_id]}" > \
-                    "$repo_dest/RPM-GPG-KEY-$repo_name-${releasever}_$(( key_id + 1 ))"
+                gpg_key=$repo_dest/RPM-GPG-KEY-$repo_name-${releasever}_$((
+                    key_id + 1 ))
+                curl -s "${gpg_keys[$key_id]}" > "$gpg_key"
+                chown "$TARGET_UID:$TARGET_GID" "$gpg_key"
             done
         fi
     done < <(find "$repo_cache_root" -maxdepth 1 -type d \
