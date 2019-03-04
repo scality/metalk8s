@@ -6,5 +6,5 @@ YUM_PACKAGES = \
     m2crypto \
     python2-kubernetes \
     runc \
-    salt-minion \
+    salt-minion-2018.3.3-1.el7 \
     skopeo \
