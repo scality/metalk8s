@@ -201,7 +201,7 @@ Deploy bgppeers.crd.projectcalico.org (CustomResourceDefinition):
     - require_in:
       - kubernetes: Deploy calico-node (ClusterRole)
 
-Deploy bgpconfigurations.crd.proejctcalico.org (CustomResourceDefinition):
+Deploy bgpconfigurations.crd.projectcalico.org (CustomResourceDefinition):
   kubernetes.customresourcedefinition_present:
     - name: bgpconfigurations.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
@@ -217,7 +217,7 @@ Deploy bgpconfigurations.crd.proejctcalico.org (CustomResourceDefinition):
     - require_in:
       - kubernetes: Deploy calico-node (ClusterRole)
 
-Deploy ippools.crd.proejctcalico.org (CustomResourceDefinition):
+Deploy ippools.crd.projectcalico.org (CustomResourceDefinition):
   kubernetes.customresourcedefinition_present:
     - name: ippools.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
@@ -233,7 +233,7 @@ Deploy ippools.crd.proejctcalico.org (CustomResourceDefinition):
     - require_in:
       - kubernetes: Deploy calico-node (ClusterRole)
 
-Deploy hostendpoints.crd.proejctcalico.org (CustomResourceDefinition):
+Deploy hostendpoints.crd.projectcalico.org (CustomResourceDefinition):
   kubernetes.customresourcedefinition_present:
     - name: hostendpoints.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}

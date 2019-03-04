@@ -50,7 +50,7 @@ Create CNI calico configuration file:
 
 {%- else %}
 
-Unable to generate calico kubeconf file, no CA Server available:
+Unable to generate calico kubeconf file, no CA server available:
   test.fail_without_changes: []
 
 {%- endif %}
