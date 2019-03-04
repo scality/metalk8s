@@ -1079,9 +1079,9 @@ def node_annotation_present(
     annotations = __salt__['kubernetes.node_annotations'](node, **kwargs)
 
     if name not in annotations:
+        ret['comment'] = 'The annotation is going to be set'
         if __opts__['test']:
             ret['result'] = None
-            ret['comment'] = 'The annotation is going to be set'
             return ret
 
         __salt__['kubernetes.node_add_annotation'](
@@ -1125,30 +1125,22 @@ def node_annotation_present(
 
 
 def node_taints_present(name, taints, **kwargs):
-    '''
-    # TODO: describe and provide expls
-    '''
     ret = {'name': name,
            'changes': {},
            'result': False,
            'comment': ''}
 
-    existing_taints = {
-        t['key']: t
-        for t in __salt__['kubernetes.node_taints'](name, **kwargs)
-    }
+    all_node_taints = __salt__['kubernetes.node_taints'](name, **kwargs)
+    existing_taints = {t['key']: t for t in all_node_taints}
 
     added = set()
     updated = set()
-    ignored = set()
 
     for taint in taints:
         key = taint['key']
         if key in existing_taints:
             if taint['effect'] != existing_taints[key]['effect']:
                 updated.add(key)
-            else:
-                ignored.add(key)
         else:
             added.add(key)
 
@@ -1164,12 +1156,12 @@ def node_taints_present(name, taints, **kwargs):
         'old': list(existing_taints.values()),
         'new': new_taints,
     }
+    ret['comment'] = '{} will change'.format(
+        'Some taints' if (added | updated) else 'No taint'
+    )
 
     if __opts__['test']:
         ret['result'] = None
-        ret['comment'] = '{} will change'.format(
-            'Some taints' if (added | updated) else 'No taint'
-        )
         return ret
 
     __salt__['kubernetes.node_set_taints'](
