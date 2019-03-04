@@ -78,12 +78,12 @@ download_packages() {
     local -r releasever=${RELEASEVER:-7}
     local -r basearch=${BASEARCH:-x86_64}
     local -r repo_cache_root=/install_root/var/cache/yum/$basearch/$releasever
-    local -a packages=($@)
+    local -a packages=("$@")
     local -a yum_opts=(
-        --assumeyes
-        --downloadonly
-        --releasever="$releasever"
-        --installroot=/install_root
+        "--assumeyes"
+        "--downloadonly"
+        "--releasever=$releasever"
+        "--installroot=/install_root"
     )
     local repo_name repo_dest
 
