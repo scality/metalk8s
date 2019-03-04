@@ -1,22 +1,21 @@
-# CI lint container
-FROM centos:7
+# CI lint container - Fedora for recent ShellCheck version
+FROM fedora:29
 
 ARG BUILDBOT_VERSION=0.9.12
 
 WORKDIR /home/eve/workspace
 
-RUN yum install -y epel-release \
-  && yum install -y git \
+RUN dnf install -y git \
   gcc \
   make \
-  python-twisted-core \
+  python2-twisted \
   python \
   python-devel \
   python-pip \
-  python36 \
-  python36-devel \
+  python3 \
+  python3-devel \
   ShellCheck \
-  && yum clean all \
+  && dnf clean all \
   && adduser -u 1042 --home /home/eve eve \
   && chown eve:eve /home/eve/workspace \
   && pip install tox \
