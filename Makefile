@@ -96,6 +96,9 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/python-kubernetes/removed.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/repo/configured.sls \
+	$(ISO_ROOT)/salt/metalk8s/repo/deployed.sls \
+	$(ISO_ROOT)/salt/metalk8s/repo/files/nginx.conf.j2 \
+	$(ISO_ROOT)/salt/metalk8s/repo/files/package-repositories-pod.yaml.j2 \
 	$(ISO_ROOT)/salt/metalk8s/repo/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/repo/offline.sls \
 	$(ISO_ROOT)/salt/metalk8s/repo/online.sls \

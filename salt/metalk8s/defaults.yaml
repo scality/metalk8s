@@ -110,6 +110,9 @@ repo:
     salt-minion:
       version: 2018.3.3-1.el7
       repository: saltstack
+    skopeo:
+      version: latest
+      repository: extras
 
 networks: {}
 
