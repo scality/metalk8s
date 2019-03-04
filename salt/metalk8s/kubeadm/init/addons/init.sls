@@ -1,3 +1,3 @@
 include:
-  - .dependencies
+  - metalk8s.python-kubernetes
   - .kube-proxy

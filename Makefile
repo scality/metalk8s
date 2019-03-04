@@ -34,6 +34,9 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/metalk8s/defaults.yaml \
 	\
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/kube-proxy.sls \
+	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver-etcd-client.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver-kubelet-client.sls \
@@ -77,9 +80,6 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/kubelet.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/lib.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/kubeconfig/scheduler.sls \
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/init.sls \
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/dependencies.sls \
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/kube-proxy.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/mark-control-plane/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/mark-control-plane/configured.sls \
@@ -88,6 +88,10 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/map.jinja \
+	\
+	$(ISO_ROOT)/salt/metalk8s/python-kubernetes/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/python-kubernetes/installed.sls \
+	$(ISO_ROOT)/salt/metalk8s/python-kubernetes/removed.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/repo/configured.sls \
 	$(ISO_ROOT)/salt/metalk8s/repo/init.sls \

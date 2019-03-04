@@ -77,6 +77,10 @@ run_bootstrap_prechecks() {
         return
 }
 
+install_python_kubernetes_client() {
+    ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.python-kubernetes saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+}
+
 install_kubelet() {
         ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.kubelet saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
@@ -158,7 +162,6 @@ run_mark_control_plane() {
 }
 
 install_addons() {
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.addons.dependencies saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.addons saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
@@ -175,6 +178,7 @@ main() {
     install_salt_minion
     configure_salt_minion_local_mode
     run_bootstrap_prechecks
+    install_python_kubernetes_client
 
     install_kubelet
     run_preflight
