@@ -5,7 +5,7 @@
     },
     {
         'name': 'coredns',
-        'tag': '1.1.3',
+        'tag': '1.3.1',
     },
     {
         'name': 'kube-apiserver',

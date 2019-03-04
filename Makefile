@@ -34,9 +34,6 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/metalk8s/defaults.yaml \
 	\
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/init.sls \
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/kube-proxy.sls \
-	\
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver-etcd-client.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/certs/apiserver-kubelet-client.sls \
@@ -84,9 +81,10 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/mark-control-plane/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/mark-control-plane/configured.sls \
 	\
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addon/coredns/configs/deployment.yaml \
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addon/coredns/init.sls \
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addon/installed.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/init.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/kube-proxy.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/coredns.sls \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/files/coredns_deployment.yaml \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
