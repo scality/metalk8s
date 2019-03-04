@@ -104,6 +104,9 @@ repo:
     kubelet:
       version: 1.11.7-0
       repository: kubernetes
+    m2crypto:
+      version: latest
+      repository: saltstack
     runc:
       version: latest
       repository: extras
