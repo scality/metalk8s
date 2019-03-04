@@ -105,7 +105,7 @@ repo:
       version: latest
       repository: extras
     kubelet:
-      version: latest
+      version: 1.11.7-0
       repository: kubernetes
 
 networks: {}
