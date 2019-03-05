@@ -109,12 +109,12 @@ download_packages() {
 
     while IFS=$'\n' read -r repo; do
         repo_name=${repo##*/}
-        repo_dest=/repositories/$repo_name-el$releasever
+        repo_dest=/repositories/metalk8s-$repo_name-el$releasever
         cp -Ta "$repo/packages" "$repo_dest"
         if [[ ${RPM_GPG_KEYS[$repo_name]+_} ]]; then
             read -ra gpg_keys <<< "${RPM_GPG_KEYS[$repo_name]}"
             for key_id in "${!gpg_keys[@]}"; do
-                gpg_key=$repo_dest/RPM-GPG-KEY-$repo_name-${releasever}_$((
+                gpg_key=$repo_dest/RPM-GPG-KEY-metalk8s-$repo_name-${releasever}_$((
                     key_id + 1 ))
                 curl -s "${gpg_keys[$key_id]}" > "$gpg_key"
                 chown "$TARGET_UID:$TARGET_GID" "$gpg_key"

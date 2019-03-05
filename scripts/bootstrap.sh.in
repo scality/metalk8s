@@ -18,16 +18,15 @@ SALT_MASTER_FILE_CONF=/etc/salt/master.d/99-metalk8s.conf
 # shellcheck disable=SC2034
 SALT_MINION_FILE_CONF=/etc/salt/minion.d/99-metalk8s.conf
 
-# value is whether gpgheck must be enabled or not
 declare -A GPGCHECK_REPOSITORIES=(
-    [base]=1
-    [epel]=1
-    [external]=0
-    [extras]=1
-    [updates]=1
-    [kubernetes]=1
-    [saltstack]=1
-    [scality]=0
+    [metalk8s-base]=1
+    [metalk8s-epel]=1
+    [metalk8s-external]=0
+    [metalk8s-extras]=1
+    [metalk8s-updates]=1
+    [metalk8s-kubernetes]=1
+    [metalk8s-saltstack]=1
+    [metalk8s-scality]=0
 )
 
 die() {

@@ -32,97 +32,97 @@ repo:
   host: 127.0.0.1
   port: 8080
   repositories:
-    base:
+    metalk8s-base:
       humanname: CentOS - Base
       gpgcheck: 1
       gpgkeys:
-        - RPM-GPG-KEY-base-7_1
+        - RPM-GPG-KEY-metalk8s-base-7_1
       repo_gpg_check: 0
       enabled: 1
 
-    epel:
+    metalk8s-epel:
       humanname: EPEL
       gpgcheck: 1
       gpgkeys:
-        - RPM-GPG-KEY-epel-7_1
+        - RPM-GPG-KEY-metalk8s-epel-7_1
       repo_gpg_check: 0
       enabled: 1
 
-    external:
+    metalk8s-external:
       humanname: Scality - External resources
       gpgcheck: 0
       gpgkeys: []
       repo_gpg_check: 0
       enabled: 1
 
-    extras:
+    metalk8s-extras:
       humanname: CentOS - Extras
       gpgcheck: 1
       gpgkeys:
-        - RPM-GPG-KEY-extras-7_1
+        - RPM-GPG-KEY-metalk8s-extras-7_1
       repo_gpg_check: 0
       enabled: 1
 
-    kubernetes:
+    metalk8s-kubernetes:
       humanname: Kubernetes
       gpgcheck: 1
       gpgkeys:
-        - RPM-GPG-KEY-kubernetes-7_1
-        - RPM-GPG-KEY-kubernetes-7_2
+        - RPM-GPG-KEY-metalk8s-kubernetes-7_1
+        - RPM-GPG-KEY-metalk8s-kubernetes-7_2
       repo_gpg_check: 0
       enabled: 1
 
-    saltstack:
+    metalk8s-saltstack:
       humanname: SaltStack
       gpgcheck: 1
       gpgkeys:
-        - RPM-GPG-KEY-saltstack-7_1
+        - RPM-GPG-KEY-metalk8s-saltstack-7_1
       repo_gpg_check: 0
       enabled: 1
 
-    scality:
+    metalk8s-scality:
       humanname: Scality
       gpgcheck: 0
       gpgkeys: []
       repo_gpg_check: 0
       enabled: 1
 
-    updates:
+    metalk8s-updates:
       humanname: CentOS - Updates
       gpgcheck: 1
       gpgkeys:
-        - RPM-GPG-KEY-updates-7_1
+        - RPM-GPG-KEY-metalk8s-updates-7_1
       repo_gpg_check: 0
       enabled: 1
 
   packages:
     container-selinux:
       version: latest
-      repository: external
+      repository: metalk8s-external
     containerd:
       version: latest
-      repository: epel
+      repository: metalk8s-epel
     cri-tools:
       version: latest
-      repository: kubernetes
+      repository: metalk8s-kubernetes
     criu:
       version: latest
-      repository: base
+      repository: metalk8s-base
     kubelet:
       version: 1.11.7-0
-      repository: kubernetes
+      repository: metalk8s-kubernetes
     m2crypto:
       version: latest
-      repository: saltstack
+      repository: metalk8s-saltstack
     runc:
       version: latest
-      repository: extras
+      repository: metalk8s-extras
     salt-minion:
       version: 2018.3.3-1.el7
-      repository: saltstack
+      repository: metalk8s-saltstack
     skopeo:
       version: latest
-      repository: extras
+      repository: metalk8s-extras
 
 networks: {}
 

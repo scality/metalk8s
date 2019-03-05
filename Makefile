@@ -168,7 +168,9 @@ CALICO_CNI_PLUGIN_SOURCES = \
 	calico-amd64 \
 	calico-ipam-amd64 \
 
-SCALITY_EL7_ROOT = $(ISO_ROOT)/packages/scality-el7
+REPOSITORY_NAME_PREFIX = metalk8s-
+
+SCALITY_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)scality-el7
 SCALITY_EL7_RPMS = \
 	$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm \
 
@@ -177,25 +179,25 @@ SCALITY_EL7_REPO = $(SCALITY_EL7_RPMS) $(SCALITY_EL7_REPODATA)
 
 YUM_PACKAGES_CACHE = $(BUILD_ROOT)/packages/var/cache/yum/x86_64/7
 
-BASE_EL7_ROOT = $(ISO_ROOT)/packages/base-el7
+BASE_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)base-el7
 BASE_EL7_REPODATA = $(BASE_EL7_ROOT)/repodata/repomd.xml
 
-EXTERNAL_EL7_ROOT = $(ISO_ROOT)/packages/external-el7
+EXTERNAL_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)external-el7
 EXTERNAL_EL7_REPODATA = $(EXTERNAL_EL7_ROOT)/repodata/repomd.xml
 
-EXTRAS_EL7_ROOT = $(ISO_ROOT)/packages/extras-el7
+EXTRAS_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)extras-el7
 EXTRAS_EL7_REPODATA = $(EXTRAS_EL7_ROOT)/repodata/repomd.xml
 
-UPDATES_EL7_ROOT = $(ISO_ROOT)/packages/updates-el7
+UPDATES_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)updates-el7
 UPDATES_EL7_REPODATA = $(UPDATES_EL7_ROOT)/repodata/repomd.xml
 
-EPEL_EL7_ROOT = $(ISO_ROOT)/packages/epel-el7
+EPEL_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)epel-el7
 EPEL_EL7_REPODATA = $(EPEL_EL7_ROOT)/repodata/repomd.xml
 
-KUBERNETES_EL7_ROOT = $(ISO_ROOT)/packages/kubernetes-el7
+KUBERNETES_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)kubernetes-el7
 KUBERNETES_EL7_REPODATA = $(KUBERNETES_EL7_ROOT)/repodata/repomd.xml
 
-SALTSTACK_EL7_ROOT = $(ISO_ROOT)/packages/saltstack-el7
+SALTSTACK_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)saltstack-el7
 SALTSTACK_EL7_REPODATA = $(SALTSTACK_EL7_ROOT)/repodata/repomd.xml
 
 default: all
