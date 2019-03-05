@@ -1,5 +1,11 @@
-# TODO: Configure and use local repo
+{%- from "metalk8s/map.jinja" import repo with context %}
+
+include:
+  - metalk8s.repo
+
 Install calico-cni-plugin:
   pkg.installed:
-    - sources:
-      - calico-cni-plugin: /srv/scality/{{ saltenv }}/packages/scality-el7/x86_64/calico-cni-plugin-3.5.1-1.el7.x86_64.rpm
+    - name: calico-cni-plugin
+    - version: {{ repo.packages['calico-cni-plugin'].repository }}
+    - require:
+      - pkgrepo: Configure {{ repo.packages['calico-cni-plugin'].repository }}

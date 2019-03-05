@@ -96,6 +96,9 @@ repo:
       enabled: 1
 
   packages:
+    calico-cni-plugin:
+      version: latest
+      repository: metalk8s-scality
     container-selinux:
       version: latest
       repository: metalk8s-external
