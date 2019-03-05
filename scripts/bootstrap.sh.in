@@ -22,6 +22,7 @@ SALT_MINION_FILE_CONF=/etc/salt/minion.d/99-metalk8s.conf
 declare -A GPGCHECK_REPOSITORIES=(
     [base]=1
     [epel]=1
+    [external]=0
     [extras]=1
     [updates]=1
     [kubernetes]=1

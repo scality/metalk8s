@@ -48,6 +48,13 @@ repo:
       repo_gpg_check: 0
       enabled: 1
 
+    external:
+      humanname: Scality - External resources
+      gpgcheck: 0
+      gpgkeys: []
+      repo_gpg_check: 0
+      enabled: 1
+
     extras:
       humanname: CentOS - Extras
       gpgcheck: 1
@@ -91,7 +98,7 @@ repo:
   packages:
     container-selinux:
       version: latest
-      repository: extras
+      repository: external
     containerd:
       version: latest
       repository: epel
