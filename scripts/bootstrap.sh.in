@@ -53,23 +53,11 @@ stop_salt_minion_service() {
 }
 
 configure_yum_local_repositories() {
-    disable_all_yum_repositories
     for repository in "${!GPGCHECK_REPOSITORIES[@]}"; do
         configure_yum_local_repository "$repository" \
             "${GPGCHECK_REPOSITORIES[$repository]}"
     done
     "$YUM" clean all
-}
-
-disable_all_yum_repositories() {
-    local -r yum_repos_path=/etc/yum.repos.d
-    local -r yum_repos_backup_path=/var/lib/metalk8s/backup$yum_repos_path
-
-    if [ ! -d "$yum_repos_backup_path" ]; then
-        mkdir -p "$yum_repos_backup_path"
-        cp -Ta "$yum_repos_path" "$yum_repos_backup_path"
-        rm -rf "${yum_repos_path:?}"/*
-    fi
 }
 
 configure_yum_local_repository() {

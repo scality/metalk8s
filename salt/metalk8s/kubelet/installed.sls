@@ -7,19 +7,11 @@ include:
   - metalk8s.{{ kubelet.container_engine }}
 {%- endif %}
 
-# TODO: Maybe not needed in offline because embedded in the kubernetes repository
-Install kubelet dependencies:
-  pkg.installed:
-    - pkgs:
-      - ebtables
-      - socat
-      - conntrack-tools
-
 Install and configure cri-tools:
   pkg.installed:
     - name: cri-tools
     - version: {{ repo.packages['cri-tools'].version }}
-    - fromrepo: {{ repo.packages['cri-tools'].repository }}
+    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
     - require:
       - pkgrepo: Configure {{ repo.packages['cri-tools'].repository }} repository
   file.serialize:
@@ -37,6 +29,6 @@ Install kubelet:
   pkg.installed:
     - name: kubelet
     - version: {{ repo.packages.kubelet.version }}
-    - fromrepo: {{ repo.packages.kubelet.repository }}
+    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
     - require:
       - pkgrepo: Configure {{ repo.packages.kubelet.repository }} repository

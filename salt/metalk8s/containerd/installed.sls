@@ -8,18 +8,17 @@ Install container-selinux:
   pkg.installed:
     - name: container-selinux
     - version: {{ repo.packages['container-selinux'].version }}
+    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
     - require_in:
       - pkg: Install runc
-{%- if not repo.online_mode %}
     - require:
       - pkgrepo: Configure {{ repo.packages['container-selinux'].repository }} repository
-{%- endif %}
 
 Install containerd:
   pkg.installed:
     - name: containerd
     - version: {{ repo.packages.containerd.version }}
-    - fromrepo: {{ repo.packages.containerd.repository }}
+    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
     - require:
       - pkgrepo: Configure {{ repo.packages.containerd.repository }} repository
       - pkg: Install runc

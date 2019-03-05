@@ -47,6 +47,7 @@ Install skopeo:
   pkg.installed:
     - name: skopeo
     - version: {{ repo.packages.skopeo.version }}
+    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
     - require:
       - pkgrepo: Configure {{ repo.packages.skopeo.repository }} repository
 

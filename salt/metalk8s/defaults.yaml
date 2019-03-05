@@ -108,15 +108,15 @@ repo:
     cri-tools:
       version: latest
       repository: metalk8s-kubernetes
-    criu:
-      version: latest
-      repository: metalk8s-base
     kubelet:
       version: 1.11.7-0
       repository: metalk8s-kubernetes
     m2crypto:
       version: latest
       repository: metalk8s-saltstack
+    python2-kubernetes:
+      version: latest
+      repository: metalk8s-epel
     runc:
       version: latest
       repository: metalk8s-extras

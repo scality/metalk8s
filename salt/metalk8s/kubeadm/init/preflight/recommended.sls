@@ -1,8 +1,13 @@
 {%- from "metalk8s/map.jinja" import kubeadm_preflight with context %}
+{%- from "metalk8s/map.jinja" import repo with context %}
+
+include:
+  - metalk8s.repo
 
 Install recommended packages:
   pkg.installed:
     - pkgs: {{ kubeadm_preflight.recommended.packages }}
+    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
 
 {%- if salt.pkg.version('kubelet') %}
 Kubelet package is installed:
