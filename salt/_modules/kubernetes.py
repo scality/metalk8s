@@ -1586,13 +1586,14 @@ def __dict_to_service_spec(spec):
         if key == 'ports':
             spec_obj.ports = []
             for port in value:
-                kube_port = kubernetes.client.V1ServicePort(port=port)
+                port_kwargs = {}
                 if isinstance(port, dict):
                     for port_key, port_value in iteritems(port):
-                        if hasattr(kube_port, port_key):
-                            setattr(kube_port, port_key, port_value)
+                        if port_key in ("name", "port", "protocol"):
+                            port_kwargs[port_key] = port_value
                 else:
-                    kube_port.port = port
+                    port_kwargs = {"port": port}
+                kube_port = kubernetes.client.V1ServicePort(**port_kwargs)
                 spec_obj.ports.append(kube_port)
         elif hasattr(spec_obj, key):
             setattr(spec_obj, key, value)
