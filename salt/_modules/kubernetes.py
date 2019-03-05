@@ -80,6 +80,23 @@ try:
         from kubernetes.client import AppsV1beta1Deployment
         from kubernetes.client import AppsV1beta1DeploymentSpec
 
+    # Workaround for https://github.com/kubernetes-client/python/issues/376
+    from kubernetes.client.models.v1beta1_custom_resource_definition_status import V1beta1CustomResourceDefinitionStatus
+
+    def set_conditions(self, conditions):
+        if conditions is None:
+            conditions = []
+        self._conditions = conditions
+
+    setattr(
+        V1beta1CustomResourceDefinitionStatus, 'conditions',
+        property(
+            fget=V1beta1CustomResourceDefinitionStatus.conditions.fget,
+            fset=set_conditions
+        )
+    )
+    # End of workaround
+
     HAS_LIBS = True
 except ImportError:
     HAS_LIBS = False
@@ -1569,7 +1586,7 @@ def __dict_to_service_spec(spec):
         if key == 'ports':
             spec_obj.ports = []
             for port in value:
-                kube_port = kubernetes.client.V1ServicePort()
+                kube_port = kubernetes.client.V1ServicePort(port=port)
                 if isinstance(port, dict):
                     for port_key, port_value in iteritems(port):
                         if hasattr(kube_port, port_key):
@@ -1971,6 +1988,165 @@ def replace_daemonset(
             log.exception(
                 'Exception when calling '
                 'ExtensionsV1beta1Api->replace_namespaced_daemon_set'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def show_clusterrole(name, **kwargs):
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.read_cluster_role(name)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->read_cluster_role'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_clusterrole(
+        name,
+        rules,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1ClusterRole(
+        metadata=meta_obj,
+        rules=rules)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.create_cluster_role(
+            body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->create_cluster_role'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_clusterrole(
+        name,
+        rules,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1ClusterRole(
+        metadata=meta_obj,
+        rules=rules)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.replace_cluster_role(name, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->replace_cluster_role'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def show_customresourcedefinition(name, **kwargs):
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.ApiextensionsV1beta1Api()
+        api_response = api_instance.read_custom_resource_definition(name)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->read_custom_resource_definition'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_customresourcedefinition(
+        name,
+        spec,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1beta1CustomResourceDefinition(
+        metadata=meta_obj,
+        spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ApiextensionsV1beta1Api()
+        api_response = api_instance.create_custom_resource_definition(
+            body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->create_custom_resource_definition'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_customresourcedefinition(
+        name,
+        spec,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1beta1CustomResourceDefinition(
+        metadata=meta_obj,
+        spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ApiextensionsV1beta1Api()
+        api_response = api_instance.patch_custom_resource_definition(
+            name, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->replace_custom_resource_definition'
             )
             raise CommandExecutionError(exc)
     finally:
