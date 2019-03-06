@@ -1,20 +1,66 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
 import { Config, Core_v1Api, watch } from "@kubernetes/client-node";
+import { Table } from "core-ui";
+
+const columns = [
+  {
+    label: "Name",
+    dataKey: "name",
+    disableSort: false
+  },
+  {
+    label: "Capacity CPU",
+    dataKey: "cpu",
+    disableSort: false
+  },
+  {
+    label: "Memory",
+    dataKey: "memory",
+    disableSort: false
+  },
+  {
+    label: "Number of pods",
+    dataKey: "pods",
+    disableSort: true
+  }
+];
 
 class NodeList extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      nodes: null
+      nodes: [],
+      sortBy: "name",
+      sortDirection: "ASC"
     };
     this.getNodes = this.getNodes.bind(this);
+    this.onSort = this.onSort.bind(this);
   }
 
   componentDidMount() {
     this.getNodes();
+  }
+
+  onSort({ sortBy, sortDirection }) {
+    const sortedList = this.state.nodes.sort(function(a, b) {
+      var nameA = a[sortBy].toString().toUpperCase(); // ignore upper and lowercase
+      var nameB = b[sortBy].toString().toUpperCase(); // ignore upper and lowercase
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
+    });
+
+    if (sortDirection === "DESC") {
+      sortedList.reverse();
+    }
+
+    this.setState({ nodes: sortedList, sortBy, sortDirection });
   }
   getNodes() {
     const config = new Config(
@@ -39,7 +85,13 @@ class NodeList extends React.Component {
     coreV1
       .listNode()
       .then(nodesResponse => {
-        this.setState({ nodes: nodesResponse.body.items });
+        const items = nodesResponse.body.items.map(node => ({
+          name: node.metadata.name,
+          cpu: node.status.capacity.cpu,
+          memory: node.status.capacity.memory,
+          pods: node.status.capacity.pods
+        }));
+        this.setState({ nodes: items });
       })
       .catch(error => {
         console.error(
@@ -50,22 +102,17 @@ class NodeList extends React.Component {
   }
   render() {
     return (
-      <div>
-        <h2> Hello, {this.props.user.profile.name}!</h2>
-
-        {this.state.nodes && (
-          <React.Fragment>
-            <h3>
-              <Link to="/loading">Cluster nodes</Link>
-            </h3>
-            <ul>
-              {this.state.nodes.map(node => (
-                <li key={node.metadata.name}>{node.metadata.name}</li>
-              ))}
-            </ul>
-          </React.Fragment>
-        )}
-      </div>
+      <Table
+        list={this.state.nodes}
+        columns={columns}
+        disableHeader={false}
+        headerHeight={40}
+        rowHeight={40}
+        sortBy={this.state.sortBy}
+        sortDirection={this.state.sortDirection}
+        onSort={this.onSort}
+        onRowClick={() => {}}
+      />
     );
   }
 }

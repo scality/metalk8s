@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader } from "scality-ui";
+import { Loader } from "core-ui";
 
 class LoadingPage extends React.Component {
   render() {

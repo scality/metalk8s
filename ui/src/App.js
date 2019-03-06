@@ -2,13 +2,13 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { withRouter, Route, Switch } from "react-router-dom";
 import "./App.css";
-import { Layout } from "scality-ui";
+import { Layout } from "core-ui";
 import CallbackPage from "./LoginCallback";
-import LoadingPage from "./LoadingPage";
 import { ThemeProvider } from "styled-components";
 import userManager from "./utils/userManager";
 import PrivateRoute from "./PrivateRoute";
 import NodeList from "./NodeList";
+
 class App extends Component {
   logout(event) {
     event.preventDefault();
@@ -17,17 +17,12 @@ class App extends Component {
   render() {
     const sideBarActions = [
       {
-        label: "Dashboard",
-        icon: <i className="fas fa-tachometer-alt" />,
-
+        label: "Nodes",
+        icon: <i className="fas fa-server" />,
         active: true
       },
       {
-        label: "Servers",
-        icon: <i className="fas fa-server" />
-      },
-      {
-        label: "Disks",
+        label: "Pods",
         icon: <i className="fas fa-hdd" />
       }
     ];
@@ -79,7 +74,6 @@ class App extends Component {
         <Layout sidebar={sidebar} navbar={navbar}>
           <Switch>
             <PrivateRoute exact path="/" component={NodeList} />
-            <PrivateRoute exact path="/loading" component={LoadingPage} />
             <Route exact path="/callback" component={CallbackPage} />
           </Switch>
         </Layout>

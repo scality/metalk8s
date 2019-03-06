@@ -15,10 +15,11 @@
     "react-router": "4.3.1",
     "react-router-dom": "4.3.1",
     "react-scripts": "2.1.5",
+    "react-virtualized": "9.21.0",
     "redux": "4.0.1",
     "redux-oidc": "^3.1.0",
     "redux-saga": "^0.10.4",
-    "scality-ui": "git+ssh://git@bitbucket.org/scality/scality-ui.git",
+    "core-ui": "git://github.com/scality/core-ui.git",
     "styled-components": "^4.1.3",
     "whatwg-fetch": "^3.0.0"
   },
