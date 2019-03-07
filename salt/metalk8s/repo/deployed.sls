@@ -5,7 +5,7 @@
 {%- set package_repositories_image = 'localhost:5000/' ~ saltenv ~ '/' ~ 'nginx:1.15.8' %}
 {%- set nginx_configuration_path = '/var/lib/metalk8s/packages-repositories/nginx.conf' %}
 
-Generate package-repositories nginx configuration:
+Generate package repositories nginx configuration:
   file.managed:
     - name: {{ nginx_configuration_path }}
     - source: salt://metalk8s/repo/files/nginx.conf.j2
@@ -18,7 +18,7 @@ Generate package-repositories nginx configuration:
     - defaults:
         listening_port: {{ repo.port }}
 
-Install package-repositories manifest:
+Install package repositories manifest:
   file.managed:
     - name: /etc/kubernetes/manifests/package-repositories-pod.yaml
     - source: salt://metalk8s/repo/files/package-repositories-pod.yaml.j2
@@ -36,4 +36,14 @@ Install package-repositories manifest:
         packages_path: {{ repo.base_path }}
         nginx_configuration_path: {{ nginx_configuration_path }}
     - require:
-      - file: Generate package-repositories nginx configuration
+      - file: Generate {{ package_repositories_name }} nginx configuration
+
+Ensure package repositories container is up:
+  cmd.run:
+    - name: "[[ -n $(crictl ps --state RUNNING --label io.kubernetes.container.name='{{ package_repositories_name }}' -q) ]]"
+    - retry:
+        attempts: 10
+        interval: 3
+        until: True
+    - require:
+      - file: Install {{ packages_repositories_name }} manifest
