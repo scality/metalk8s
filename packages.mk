@@ -9,3 +9,4 @@ YUM_PACKAGES = \
     runc \
     salt-minion-2018.3.3-1.el7 \
     skopeo \
+    yum-plugin-versionlock \

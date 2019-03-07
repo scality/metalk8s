@@ -5,6 +5,13 @@ include:
   - .deployed
 {% endif %}
 
+Install yum-plugin-versionlock:
+  pkg.installed:
+    - name: yum-plugin-versionlock
+    - fromrepo: {{ repo.repositories.keys() | join(',') }}
+    - require:
+      - test: Repositories configured
+
 {%- for repo_name, repo_config in repo.repositories.items() %}
   {%- if repo.local_mode %}
     {%- set repo_base_url = "file://" ~ repo.base_path %}
