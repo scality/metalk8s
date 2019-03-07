@@ -9,6 +9,7 @@
     {%- if package.version | default(None) %}
     - version: {{ package.version }}
     - hold: True
+    - update_holds: True
     {%- endif %}
   {%- endif %}
 {%- endmacro -%}

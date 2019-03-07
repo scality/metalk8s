@@ -89,6 +89,7 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
 	\
+	$(ISO_ROOT)/salt/metalk8s/macro.sls \
 	$(ISO_ROOT)/salt/metalk8s/map.jinja \
 	\
 	$(ISO_ROOT)/salt/metalk8s/python-kubernetes/init.sls \

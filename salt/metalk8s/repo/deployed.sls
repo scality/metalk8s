@@ -3,7 +3,7 @@
 {%- set package_repositories_name = 'package-repositories' %}
 {%- set package_repositories_version = '1.0.0' %}
 {%- set package_repositories_image = 'localhost:5000/' ~ saltenv ~ '/' ~ 'nginx:1.15.8' %}
-{%- set nginx_configuration_path = '/var/lib/metalk8s/packages-repositories/nginx.conf' %}
+{%- set nginx_configuration_path = '/var/lib/metalk8s/package-repositories/nginx.conf' %}
 
 Generate package repositories nginx configuration:
   file.managed:
@@ -36,7 +36,7 @@ Install package repositories manifest:
         packages_path: {{ repo.base_path }}
         nginx_configuration_path: {{ nginx_configuration_path }}
     - require:
-      - file: Generate {{ package_repositories_name }} nginx configuration
+      - file: Generate package repositories nginx configuration
 
 Ensure package repositories container is up:
   cmd.run:
@@ -46,4 +46,4 @@ Ensure package repositories container is up:
         interval: 3
         until: True
     - require:
-      - file: Install {{ packages_repositories_name }} manifest
+      - file: Install package repositories manifest

@@ -1,13 +1,10 @@
-{%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/macro.sls" import pkg_installed with context %}
 
 include:
   - metalk8s.repo
 
 Install Python Kubernetes client:
-  pkg.installed:
-    - name: python2-kubernetes
-    - version: {{ repo.packages['python2-kubernetes'].version }}
-    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
+  {{ pkg_installed('python2-kubernetes') }}
     - reload_modules: true
     - require:
-      - pkgrepo: Configure {{ repo.packages['python2-kubernetes'].repository }} repository
+      - test: Repositories configured

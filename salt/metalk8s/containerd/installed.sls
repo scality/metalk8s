@@ -1,3 +1,4 @@
+{%- from "metalk8s/macro.sls" import pkg_installed with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 include:
@@ -5,21 +6,19 @@ include:
   - metalk8s.runc
 
 Install container-selinux:
-  pkg.installed:
-    - name: container-selinux
-    - version: {{ repo.packages['container-selinux'].version }}
-    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
+  {{ pkg_installed('container-selinux') }}
+{%- if repo.online_mode %}
+    - sources:
+      - container-selinux: ftp://ftp.scientificlinux.org/linux/scientific/7x/external_products/extras/x86_64/container-selinux-2.77-1.el7_6.noarch.rpm
+{%- endif %}
     - require_in:
       - pkg: Install runc
     - require:
-      - pkgrepo: Configure {{ repo.packages['container-selinux'].repository }} repository
+      - test: Repositories configured
 
 Install containerd:
-  pkg.installed:
-    - name: containerd
-    - version: {{ repo.packages.containerd.version }}
-    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
+  {{ pkg_installed('containerd') }}
     - require:
-      - pkgrepo: Configure {{ repo.packages.containerd.repository }} repository
+      - test: Repositories configured
       - pkg: Install runc
       - pkg: Install container-selinux

@@ -1,4 +1,4 @@
-{%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/macro.sls" import pkg_installed with context %}
 {%- from "metalk8s/map.jinja" import kubelet with context %}
 
 include:
@@ -8,12 +8,9 @@ include:
 {%- endif %}
 
 Install and configure cri-tools:
-  pkg.installed:
-    - name: cri-tools
-    - version: {{ repo.packages['cri-tools'].version }}
-    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
+  {{ pkg_installed('cri-tools') }}
     - require:
-      - pkgrepo: Configure {{ repo.packages['cri-tools'].repository }} repository
+      - test: Repositories configured
   file.serialize:
     - name: /etc/crictl.yaml
     - dataset:
@@ -26,9 +23,6 @@ Install and configure cri-tools:
     - formatter: yaml
 
 Install kubelet:
-  pkg.installed:
-    - name: kubelet
-    - version: {{ repo.packages.kubelet.version }}
-    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
+  {{ pkg_installed('kubelet') }}
     - require:
-      - pkgrepo: Configure {{ repo.packages.kubelet.repository }} repository
+      - test: Repositories configured

@@ -1,15 +1,16 @@
+{%- from "metalk8s/macro.sls" import pkg_installed with context %}
 {%- from "metalk8s/map.jinja" import defaults with context %}
 {%- from "metalk8s/map.jinja" import kubeadm_preflight with context %}
 {%- from "metalk8s/map.jinja" import kubelet with context %}
-{%- from "metalk8s/map.jinja" import repo with context %}
 
 include:
   - metalk8s.repo
 
 Install mandatory packages:
-  pkg.installed:
+  {{ pkg_installed() }}
     - pkgs: {{ kubeadm_preflight.mandatory.packages }}
-    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
+    - require:
+      - test: Repositories configured
 
 {%- if kubelet.container_engine %}
 Enable {{ kubelet.container_engine }} service:

@@ -23,7 +23,7 @@ Configure kubernetes repository:
     - gpgcheck: 1
     - repo_gpg_check: 1
     - gpgkey: "https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
-    - enabled: 0
+    - enabled: 1
 
 Configure saltstack repository:
   pkgrepo.managed:
@@ -33,3 +33,10 @@ Configure saltstack repository:
     - gpgcheck: 1
     - gpgkey: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.3/SALTSTACK-GPG-KEY.pub"
     - enabled: 1
+
+Repositories configured:
+  test.succeed_without_changes:
+    - require:
+      - pkg: Configure epel repository
+      - pkgrepo: Configure kubernetes repository
+      - pkgrepo: Configure saltstack repository

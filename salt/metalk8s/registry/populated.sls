@@ -1,4 +1,4 @@
-{%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/macro.sls" import pkg_installed with context %}
 
 {% set images = [
     {
@@ -44,12 +44,9 @@ include:
   - metalk8s.repo
 
 Install skopeo:
-  pkg.installed:
-    - name: skopeo
-    - version: {{ repo.packages.skopeo.version }}
-    - fromrepo: {{ repo.repositories.keys() | list | join(',') }}
+  {{ pkg_installed('skopeo') }}
     - require:
-      - pkgrepo: Configure {{ repo.packages.skopeo.repository }} repository
+      - test: Repositories configured
 
 {% for image in images %}
 Import {{ image.name }} image:
