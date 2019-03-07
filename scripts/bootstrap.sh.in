@@ -105,8 +105,6 @@ populate_registry() {
 deploy_salt_master() {
     # Run deployment
     ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.salt.master saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    # Allow some time for the image to be pulled instead of looping later
-    sleep 5
 }
 
 configure_salt() {

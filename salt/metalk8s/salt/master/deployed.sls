@@ -31,3 +31,14 @@ Install and start salt master manifest:
       salt_master_version: {{ salt_master_version }}
     - require:
       - file: Create salt master directories
+
+Make sure salt master container is up:
+  cmd.run:
+    - name: "[[ -n $(crictl ps --state RUNNING --label io.kubernetes.container.name=salt-master -q) ]]"
+    - retry:
+        attempts: 10
+        interval: 3
+        until: True
+    - require:
+      - file: Install and start salt master manifest
+
