@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ name }}
+  namespace: kube-system
+  labels:
+    app: {{ name }}
+    app.kubernetes.io/name: {{ name }}
+    app.kubernetes.io/version: {{ version }}
+    heritage: metalk8s
+    app.kubernertes.io/part-of: metalk8s
+    app.kubernetes.io/managed-by: salt
+spec:
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  securityContext:
+    runAsUser: 0
+    fsGroup: 0
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  containers:
+    - name: package-repositories
+      image: {{ image }}
+      ports:
+        - name: http
+          containerPort: {{ container_port }}
+          protocol: TCP
+      livenessProbe:
+        httpGet:
+          host: localhost
+          port: http
+          path: /
+      readinessProbe:
+        httpGet:
+          host: localhost
+          port: http
+          path: /
+      volumeMounts:
+        - name: repositories
+          mountPath: /var/www/repositories
+        - name: nginx-configuration
+          mountPath: /etc/nginx/conf.d/default.conf
+  volumes:
+    - name: repositories
+      hostPath:
+        path: {{ packages_path }}
+        type: Directory
+    - name: nginx-configuration
+      hostPath:
+        path: {{ nginx_configuration_path }}
+        type: File

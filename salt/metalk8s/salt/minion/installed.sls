@@ -1,8 +1,9 @@
-{% set salt_minion_version = '2018.3.3'%}
+{%- from "metalk8s/macro.sls" import pkg_installed with context %}
+
 include :
   - metalk8s.repo
 
 Install salt-minion:
-  pkg.installed:
-    - name: salt-minion
-    - version: {{ salt_minion_version }}
+  {{ pkg_installed('salt-minion') }}
+    - require:
+      - test: Repositories configured

@@ -78,6 +78,7 @@ download_packages() {
     local -r releasever=${RELEASEVER:-7}
     local -r basearch=${BASEARCH:-x86_64}
     local -r repo_cache_root=/install_root/var/cache/yum/$basearch/$releasever
+    local -r external_repo=$repo_cache_root/external/packages
     local -a packages=("$@")
     local -a yum_opts=(
         "--assumeyes"
@@ -85,24 +86,38 @@ download_packages() {
         "--releasever=$releasever"
         "--installroot=/install_root"
     )
-    local repo_name repo_dest
 
     get_rpm_gpg_keys
 
     yum groups install "${yum_opts[@]}" base core
     yum install "${yum_opts[@]}" "${packages[@]}"
 
+    local package_name
+
+    # Fetch packages from an URL and store them in the "external" repository.
+    mkdir -p "$external_repo"
+    for package in "${packages[@]}"; do
+        if [[ $package =~ ^(https?)|(ftp):// ]]; then
+            package_name=${package##*/}
+            curl "$package" --output "$external_repo/$package_name" --retry 3
+        fi
+    done
+
     chown -R "$TARGET_UID:$TARGET_GID" "/install_root/var"
+
+    local repo_name repo_dest gpg_key
 
     while IFS=$'\n' read -r repo; do
         repo_name=${repo##*/}
-        repo_dest=/repositories/$repo_name-el$releasever
+        repo_dest=/repositories/metalk8s-$repo_name-el$releasever
         cp -Ta "$repo/packages" "$repo_dest"
         if [[ ${RPM_GPG_KEYS[$repo_name]+_} ]]; then
             read -ra gpg_keys <<< "${RPM_GPG_KEYS[$repo_name]}"
             for key_id in "${!gpg_keys[@]}"; do
-                curl -s "${gpg_keys[$key_id]}" > \
-                    "$repo_dest/RPM-GPG-KEY-$repo_name-${releasever}_$(( key_id + 1 ))"
+                gpg_key=$repo_dest/RPM-GPG-KEY-metalk8s-$repo_name-${releasever}_$((
+                    key_id + 1 ))
+                curl -s "${gpg_keys[$key_id]}" > "$gpg_key"
+                chown "$TARGET_UID:$TARGET_GID" "$gpg_key"
             done
         fi
     done < <(find "$repo_cache_root" -maxdepth 1 -type d \

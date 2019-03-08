@@ -1,4 +1,4 @@
-{%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/macro.sls" import pkg_installed with context %}
 {%- from "metalk8s/map.jinja" import kubelet with context %}
 
 include:
@@ -7,20 +7,10 @@ include:
   - metalk8s.{{ kubelet.container_engine }}
 {%- endif %}
 
-# TODO: Maybe not needed in offline because embedded in the kubernetes repository
-Install kubelet dependencies:
-  pkg.installed:
-    - pkgs:
-      - ebtables
-      - socat
-      - conntrack-tools
-
 Install and configure cri-tools:
-  pkg.installed:
-    - name: cri-tools
-    - fromrepo: {{ repo.kubernetes.name }}
+  {{ pkg_installed('cri-tools') }}
     - require:
-      - pkgrepo: Configure Kubernetes repository
+      - test: Repositories configured
   file.serialize:
     - name: /etc/crictl.yaml
     - dataset:
@@ -33,9 +23,6 @@ Install and configure cri-tools:
     - formatter: yaml
 
 Install kubelet:
-  pkg.installed:
-    - name: kubelet
-    - version: {{ repo.kubernetes.version }}
-    - fromrepo: {{ repo.kubernetes.name }}
+  {{ pkg_installed('kubelet') }}
     - require:
-      - pkgrepo: Configure Kubernetes repository
+      - test: Repositories configured

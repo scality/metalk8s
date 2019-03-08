@@ -1,3 +1,5 @@
+{%- from "metalk8s/macro.sls" import pkg_installed with context %}
+
 {% set images = [
     {
         'name': 'etcd',
@@ -38,9 +40,13 @@
 ] %}
 {% set images_path = '/srv/scality/metalk8s-2.0/images' %}
 
+include:
+  - metalk8s.repo
+
 Install skopeo:
-  pkg.installed:
-    - name: skopeo
+  {{ pkg_installed('skopeo') }}
+    - require:
+      - test: Repositories configured
 
 {% for image in images %}
 Import {{ image.name }} image:

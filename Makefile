@@ -89,6 +89,7 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
 	\
+	$(ISO_ROOT)/salt/metalk8s/macro.sls \
 	$(ISO_ROOT)/salt/metalk8s/map.jinja \
 	\
 	$(ISO_ROOT)/salt/metalk8s/python-kubernetes/init.sls \
@@ -96,6 +97,9 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/python-kubernetes/removed.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/repo/configured.sls \
+	$(ISO_ROOT)/salt/metalk8s/repo/deployed.sls \
+	$(ISO_ROOT)/salt/metalk8s/repo/files/nginx.conf.j2 \
+	$(ISO_ROOT)/salt/metalk8s/repo/files/package-repositories-pod.yaml.j2 \
 	$(ISO_ROOT)/salt/metalk8s/repo/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/repo/offline.sls \
 	$(ISO_ROOT)/salt/metalk8s/repo/online.sls \
@@ -138,6 +142,7 @@ ALL = \
 	$(SCALITY_EL7_REPO) \
 	$(YUM_PACKAGES_CACHE) \
 	$(BASE_EL7_REPODATA) \
+	$(EXTERNAL_EL7_REPODATA) \
 	$(EXTRAS_EL7_REPODATA) \
 	$(UPDATES_EL7_REPODATA) \
 	$(EPEL_EL7_REPODATA) \
@@ -164,7 +169,9 @@ CALICO_CNI_PLUGIN_SOURCES = \
 	calico-amd64 \
 	calico-ipam-amd64 \
 
-SCALITY_EL7_ROOT = $(ISO_ROOT)/packages/scality-el7
+REPOSITORY_NAME_PREFIX = metalk8s-
+
+SCALITY_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)scality-el7
 SCALITY_EL7_RPMS = \
 	$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm \
 
@@ -173,22 +180,25 @@ SCALITY_EL7_REPO = $(SCALITY_EL7_RPMS) $(SCALITY_EL7_REPODATA)
 
 YUM_PACKAGES_CACHE = $(BUILD_ROOT)/packages/var/cache/yum/x86_64/7
 
-BASE_EL7_ROOT = $(ISO_ROOT)/packages/base-el7
+BASE_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)base-el7
 BASE_EL7_REPODATA = $(BASE_EL7_ROOT)/repodata/repomd.xml
 
-EXTRAS_EL7_ROOT = $(ISO_ROOT)/packages/extras-el7
+EXTERNAL_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)external-el7
+EXTERNAL_EL7_REPODATA = $(EXTERNAL_EL7_ROOT)/repodata/repomd.xml
+
+EXTRAS_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)extras-el7
 EXTRAS_EL7_REPODATA = $(EXTRAS_EL7_ROOT)/repodata/repomd.xml
 
-UPDATES_EL7_ROOT = $(ISO_ROOT)/packages/updates-el7
+UPDATES_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)updates-el7
 UPDATES_EL7_REPODATA = $(UPDATES_EL7_ROOT)/repodata/repomd.xml
 
-EPEL_EL7_ROOT = $(ISO_ROOT)/packages/epel-el7
+EPEL_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)epel-el7
 EPEL_EL7_REPODATA = $(EPEL_EL7_ROOT)/repodata/repomd.xml
 
-KUBERNETES_EL7_ROOT = $(ISO_ROOT)/packages/kubernetes-el7
+KUBERNETES_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)kubernetes-el7
 KUBERNETES_EL7_REPODATA = $(KUBERNETES_EL7_ROOT)/repodata/repomd.xml
 
-SALTSTACK_EL7_ROOT = $(ISO_ROOT)/packages/saltstack-el7
+SALTSTACK_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)saltstack-el7
 SALTSTACK_EL7_REPODATA = $(SALTSTACK_EL7_ROOT)/repodata/repomd.xml
 
 default: all
@@ -374,12 +384,13 @@ $(YUM_PACKAGES_CACHE): | $(PACKAGE_BUILD_CONTAINER)
 		/entrypoint.sh download_packages $(YUM_PACKAGES)
 
 $(BASE_EL7_REPODATA): REPOSITORY_ROOT = $(BASE_EL7_ROOT)
+$(EXTERNAL_EL7_REPODATA): REPOSITORY_ROOT = $(EXTERNAL_EL7_ROOT)
 $(EXTRAS_EL7_REPODATA): REPOSITORY_ROOT = $(EXTRAS_EL7_ROOT)
 $(UPDATES_EL7_REPODATA): REPOSITORY_ROOT = $(UPDATES_EL7_ROOT)
 $(EPEL_EL7_REPODATA): REPOSITORY_ROOT = $(EPEL_EL7_ROOT)
 $(KUBERNETES_EL7_REPODATA): REPOSITORY_ROOT = $(KUBERNETES_EL7_ROOT)
 $(SALTSTACK_EL7_REPODATA): REPOSITORY_ROOT = $(SALTSTACK_EL7_ROOT)
-$(BASE_EL7_REPODATA) $(EXTRAS_EL7_REPODATA) $(UPDATES_EL7_REPODATA) $(EPEL_EL7_REPODATA) $(KUBERNETES_EL7_REPODATA) $(SALTSTACK_EL7_REPODATA): | $(PACKAGE_BUILD_CONTAINER)
+$(BASE_EL7_REPODATA) $(EXTERNAL_EL7_REPODATA) $(EXTRAS_EL7_REPODATA) $(UPDATES_EL7_REPODATA) $(EPEL_EL7_REPODATA) $(KUBERNETES_EL7_REPODATA) $(SALTSTACK_EL7_REPODATA): | $(PACKAGE_BUILD_CONTAINER)
 	mkdir -p $(@D)
 	docker run \
 		--env TARGET_UID=$(shell id -u) \
