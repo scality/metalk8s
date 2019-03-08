@@ -130,7 +130,9 @@ run_bootstrap_prechecks() {
 }
 
 install_python_kubernetes_client() {
-    ${SALT_CALL} --local --retcode-passthrough state.apply metalk8s.python-kubernetes saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    "$SALT_CALL" --local --retcode-passthrough state.apply \
+        metalk8s.python-kubernetes saltenv=metalk8s-@VERSION@ \
+        pillarenv=metalk8s-@VERSION@ pillar='{"repo": {"local_mode": True}}'
 }
 
 install_kubelet() {
