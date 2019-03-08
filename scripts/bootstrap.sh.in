@@ -54,7 +54,7 @@ stop_salt_minion_service() {
 
 configure_yum_repositories() {
     local -r repositories_pillar_path=/srv/scality/metalk8s-@VERSION@/pillar/repositories.sls
-    local online_mode
+    local -g online_mode
 
     online_mode=$(awk '$1 == "online_mode:" { print $2 }' "$repositories_pillar_path")
 
@@ -100,14 +100,25 @@ configure_yum_local_repository() {
 [$repo_name]
 name=$repo_name
 baseurl=file://$repo_path
-enabled=1
+enabled=0
 gpgcheck=$gpgcheck
 ${gpg_keys:+gpgkey=${gpg_keys%?}}
 EOF
 }
 
 install_salt_minion() {
-    "$YUM" install -y salt-minion
+    local -a yum_opts=(
+        '--assumeyes'
+    )
+
+    if [[ ${online_mode,,} = false ]]; then
+        yum_opts+=(
+	    '--disablerepo=*'
+	    '--enablerepo=metalk8s-*'
+	)
+    fi
+
+    "$YUM" install "${yum_opts[@]}" salt-minion
 }
 
 configure_salt_minion_local_mode() {

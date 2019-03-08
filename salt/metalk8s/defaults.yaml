@@ -38,7 +38,7 @@ repo:
       gpgkeys:
         - RPM-GPG-KEY-metalk8s-base-7_1
       repo_gpg_check: 0
-      enabled: 1
+      enabled: 0
 
     metalk8s-epel:
       humanname: EPEL
@@ -46,14 +46,14 @@ repo:
       gpgkeys:
         - RPM-GPG-KEY-metalk8s-epel-7_1
       repo_gpg_check: 0
-      enabled: 1
+      enabled: 0
 
     metalk8s-external:
       humanname: Scality - External resources
       gpgcheck: 0
       gpgkeys: []
       repo_gpg_check: 0
-      enabled: 1
+      enabled: 0
 
     metalk8s-extras:
       humanname: CentOS - Extras
@@ -61,7 +61,7 @@ repo:
       gpgkeys:
         - RPM-GPG-KEY-metalk8s-extras-7_1
       repo_gpg_check: 0
-      enabled: 1
+      enabled: 0
 
     metalk8s-kubernetes:
       humanname: Kubernetes
@@ -70,7 +70,7 @@ repo:
         - RPM-GPG-KEY-metalk8s-kubernetes-7_1
         - RPM-GPG-KEY-metalk8s-kubernetes-7_2
       repo_gpg_check: 0
-      enabled: 1
+      enabled: 0
 
     metalk8s-saltstack:
       humanname: SaltStack
@@ -78,14 +78,14 @@ repo:
       gpgkeys:
         - RPM-GPG-KEY-metalk8s-saltstack-7_1
       repo_gpg_check: 0
-      enabled: 1
+      enabled: 0
 
     metalk8s-scality:
       humanname: Scality
       gpgcheck: 0
       gpgkeys: []
       repo_gpg_check: 0
-      enabled: 1
+      enabled: 0
 
     metalk8s-updates:
       humanname: CentOS - Updates
@@ -93,7 +93,7 @@ repo:
       gpgkeys:
         - RPM-GPG-KEY-metalk8s-updates-7_1
       repo_gpg_check: 0
-      enabled: 1
+      enabled: 0
 
   packages:
     calico-cni-plugin:
