@@ -2239,7 +2239,7 @@ def node_taints(node_name, **kwargs):
     match = node(node_name, **kwargs)
 
     if match is not None:
-        return match['spec']['taints']
+        return match['spec']['taints'] or []
 
     return []
 
