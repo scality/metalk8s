@@ -4,20 +4,17 @@ MAKEFLAGS += -r
 .DEFAULT_GOAL := default
 .DELETE_ON_ERROR:
 .SUFFIXES:
-SHELL := /bin/bash
+export SHELL := /bin/bash
 
 include VERSION
 include container_images.mk
-include packages.mk
 
 PWD := $(shell pwd)
 
-BUILD_ROOT ?= $(PWD)/_build
-ISO_ROOT ?= $(BUILD_ROOT)/root
+export BUILD_ROOT ?= $(PWD)/_build
+export ISO_ROOT ?= $(BUILD_ROOT)/root
 ISO ?= $(BUILD_ROOT)/metalk8s.iso
 
-CALICO_CNI_PLUGIN_VERSION = 3.5.1
-CALICO_CNI_PLUGIN_BUILD = 1
 
 ALL = \
 	$(ISO_ROOT)/bootstrap.sh \
@@ -139,16 +136,6 @@ ALL = \
 	\
 	$(ISO_ROOT)/product.txt \
 	\
-	$(SCALITY_EL7_REPO) \
-	$(YUM_PACKAGES_CACHE) \
-	$(BASE_EL7_REPODATA) \
-	$(EXTERNAL_EL7_REPODATA) \
-	$(EXTRAS_EL7_REPODATA) \
-	$(UPDATES_EL7_REPODATA) \
-	$(EPEL_EL7_REPODATA) \
-	$(KUBERNETES_EL7_REPODATA) \
-	$(SALTSTACK_EL7_REPODATA) \
-	\
 	$(ISO_ROOT)/images/$(COREDNS_IMAGE_NAME)-$(COREDNS_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(ETCD_IMAGE_NAME)-$(ETCD_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/$(KUBE_APISERVER_IMAGE_NAME)-$(KUBE_APISERVER_IMAGE_VERSION).tar.gz \
@@ -159,47 +146,8 @@ ALL = \
 	$(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/registry-$(REGISTRY_IMAGE_TAG).tar \
 	$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz \
-
-
-PACKAGE_BUILD_CONTAINER := $(BUILD_ROOT)/package-build-container
-PACKAGE_BUILD_IMAGE ?= metalk8s-build:latest
-
-CALICO_CNI_PLUGIN_SOURCES = \
-	v$(CALICO_CNI_PLUGIN_VERSION).tar.gz \
-	calico-amd64 \
-	calico-ipam-amd64 \
-
-REPOSITORY_NAME_PREFIX = metalk8s-
-
-SCALITY_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)scality-el7
-SCALITY_EL7_RPMS = \
-	$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm \
-
-SCALITY_EL7_REPODATA = $(SCALITY_EL7_ROOT)/repodata/repomd.xml
-SCALITY_EL7_REPO = $(SCALITY_EL7_RPMS) $(SCALITY_EL7_REPODATA)
-
-YUM_PACKAGES_CACHE = $(BUILD_ROOT)/packages/var/cache/yum/x86_64/7
-
-BASE_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)base-el7
-BASE_EL7_REPODATA = $(BASE_EL7_ROOT)/repodata/repomd.xml
-
-EXTERNAL_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)external-el7
-EXTERNAL_EL7_REPODATA = $(EXTERNAL_EL7_ROOT)/repodata/repomd.xml
-
-EXTRAS_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)extras-el7
-EXTRAS_EL7_REPODATA = $(EXTRAS_EL7_ROOT)/repodata/repomd.xml
-
-UPDATES_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)updates-el7
-UPDATES_EL7_REPODATA = $(UPDATES_EL7_ROOT)/repodata/repomd.xml
-
-EPEL_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)epel-el7
-EPEL_EL7_REPODATA = $(EPEL_EL7_ROOT)/repodata/repomd.xml
-
-KUBERNETES_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)kubernetes-el7
-KUBERNETES_EL7_REPODATA = $(KUBERNETES_EL7_ROOT)/repodata/repomd.xml
-
-SALTSTACK_EL7_ROOT = $(ISO_ROOT)/packages/$(REPOSITORY_NAME_PREFIX)saltstack-el7
-SALTSTACK_EL7_REPODATA = $(SALTSTACK_EL7_ROOT)/repodata/repomd.xml
+	\
+	build-packages \
 
 default: all
 .PHONY: default
@@ -209,6 +157,10 @@ all: $(ISO)
 
 all-local: $(ALL) ## Build all artifacts in the build tree
 .PHONY: all-local
+
+build-packages: ## Build all packages for offline repositories (see `make -C packages/ help`)
+	$(MAKE) -C packages/
+.PHONY: build-packages
 
 $(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in $(ISO_ROOT)/product.txt
 	mkdir -p $(shell dirname $@)
@@ -281,129 +233,6 @@ help: ## Show this help message
 	@echo
 	@grep -Eh '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
-
-
-$(BUILD_ROOT)/package-build-container: packages/Dockerfile packages/entrypoint.sh
-	mkdir -p $(dir $@)
-	rm -f $@
-	docker build -t $(PACKAGE_BUILD_IMAGE) -f $< $(dir $<)
-	touch $@
-
-$(BUILD_ROOT)/packages/calico-cni-plugin/calico-cni-plugin.meta: packages/calico-cni-plugin.spec | $(PACKAGE_BUILD_CONTAINER)
-	mkdir -p $(dir $@)
-	rm -f $@
-	docker run \
-		--hostname build \
-		--mount type=bind,source=$(PWD)/$<,destination=/rpmbuild/SPECS/$(notdir $<),ro \
-		--read-only \
-		--rm \
-		$(PACKAGE_BUILD_IMAGE) \
-		su -l build -c "rpmspec -P /rpmbuild/SPECS/$(notdir $<)" > $@ || (rm -f $@; false)
-
-$(foreach src,$(CALICO_CNI_PLUGIN_SOURCES),$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/$(src)): $(BUILD_ROOT)/packages/calico-cni-plugin/calico-cni-plugin.meta
-	mkdir -p $(dir $@)
-	curl -L -o "$@" "$(shell awk '/^Source[0-9]+:.*\/$(notdir $@)$$/ { print $$2 }' < $<)"
-
-$(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm: packages/calico-cni-plugin.spec
-$(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm: $(foreach src,$(CALICO_CNI_PLUGIN_SOURCES),$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/$(src))
-$(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm: | $(PACKAGE_BUILD_CONTAINER)
-$(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm:
-	mkdir -p $(dir $@)
-	docker run \
-		--env SPEC=$(notdir $<) \
-		--env SRPM=$(notdir $@) \
-		--env SOURCES="$(CALICO_CNI_PLUGIN_SOURCES)" \
-		--env TARGET_UID=$(shell id -u) \
-		--env TARGET_GID=$(shell id -g) \
-		--hostname build \
-		--mount type=tmpfs,destination=/home/build \
-		--mount type=tmpfs,destination=/var/tmp \
-		--mount type=tmpfs,destination=/tmp \
-		--mount type=bind,source=$(PWD)/$<,destination=/rpmbuild/SPECS/$(notdir $<),ro \
-		--mount type=bind,source=$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/v$(CALICO_CNI_PLUGIN_VERSION).tar.gz,destination=/rpmbuild/SOURCES/v$(CALICO_CNI_PLUGIN_VERSION).tar.gz,ro \
-		--mount type=bind,source=$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/calico-amd64,destination=/rpmbuild/SOURCES/calico-amd64,ro \
-		--mount type=bind,source=$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/calico-ipam-amd64,destination=/rpmbuild/SOURCES/calico-ipam-amd64,ro \
-		--mount type=bind,source=$(dir $@),destination=/rpmbuild/SRPMS \
-		--mount type=bind,source=$(PWD)/packages/rpmlintrc,destination=/rpmbuild/rpmlintrc,ro \
-		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
-		--read-only \
-		--rm \
-		$(PACKAGE_BUILD_IMAGE) \
-		/entrypoint.sh buildsrpm
-
-$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm: $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm
-$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm: | $(PACKAGE_BUILD_CONTAINER)
-$(SCALITY_EL7_ROOT)/x86_64/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.x86_64.rpm:
-	mkdir -p $(dir $@)
-	# Note: because we use `yum-builddep`, this one can't be `--read-only`
-	docker run \
-		--env RPMS="x86_64/$(notdir $@)" \
-		--env SRPM=$(notdir $<) \
-		--env TARGET_UID=$(shell id -u) \
-		--env TARGET_GID=$(shell id -g) \
-		--hostname build \
-		--mount type=tmpfs,destination=/home/build \
-		--mount type=tmpfs,destination=/var/tmp \
-		--mount type=tmpfs,destination=/tmp \
-		--mount type=bind,source=$<,destination=/rpmbuild/SRPMS/$(notdir $<),ro \
-		--mount type=bind,source=$(dir $@),destination=/rpmbuild/RPMS \
-		--mount type=bind,source=$(PWD)/packages/rpmlintrc,destination=/rpmbuild/rpmlintrc,ro \
-		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
-		--rm \
-		$(PACKAGE_BUILD_IMAGE) \
-		/entrypoint.sh buildrpm
-
-$(SCALITY_EL7_REPODATA): $(SCALITY_EL7_RPMS) | $(PACKAGE_BUILD_CONTAINER)
-	mkdir -p $(dir $@)
-	docker run \
-		--env TARGET_UID=$(shell id -u) \
-		--env TARGET_GID=$(shell id -g) \
-		--hostname build \
-		--mount type=tmpfs,destination=/tmp \
-		--mount type=bind,source=$(SCALITY_EL7_ROOT),destination=/repository,ro \
-		--mount type=bind,source=$(dir $@),destination=/repository/repodata \
-		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
-		--read-only \
-		--rm \
-		$(PACKAGE_BUILD_IMAGE) \
-		/entrypoint.sh buildrepo
-
-
-$(YUM_PACKAGES_CACHE): | $(PACKAGE_BUILD_CONTAINER)
-	docker run \
-		--env RELEASEVER=7 \
-		--env TARGET_UID=$(shell id -u) \
-		--env TARGET_GID=$(shell id -g) \
-		--hostname build \
-		--mount type=tmpfs,destination=/tmp \
-		--mount type=bind,source=$(BUILD_ROOT)/packages,destination=/install_root \
-		--mount type=bind,source=$(ISO_ROOT)/packages,destination=/repositories \
-		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
-		--rm \
-		$(PACKAGE_BUILD_IMAGE) \
-		/entrypoint.sh download_packages $(YUM_PACKAGES)
-
-$(BASE_EL7_REPODATA): REPOSITORY_ROOT = $(BASE_EL7_ROOT)
-$(EXTERNAL_EL7_REPODATA): REPOSITORY_ROOT = $(EXTERNAL_EL7_ROOT)
-$(EXTRAS_EL7_REPODATA): REPOSITORY_ROOT = $(EXTRAS_EL7_ROOT)
-$(UPDATES_EL7_REPODATA): REPOSITORY_ROOT = $(UPDATES_EL7_ROOT)
-$(EPEL_EL7_REPODATA): REPOSITORY_ROOT = $(EPEL_EL7_ROOT)
-$(KUBERNETES_EL7_REPODATA): REPOSITORY_ROOT = $(KUBERNETES_EL7_ROOT)
-$(SALTSTACK_EL7_REPODATA): REPOSITORY_ROOT = $(SALTSTACK_EL7_ROOT)
-$(BASE_EL7_REPODATA) $(EXTERNAL_EL7_REPODATA) $(EXTRAS_EL7_REPODATA) $(UPDATES_EL7_REPODATA) $(EPEL_EL7_REPODATA) $(KUBERNETES_EL7_REPODATA) $(SALTSTACK_EL7_REPODATA): | $(PACKAGE_BUILD_CONTAINER)
-	mkdir -p $(@D)
-	docker run \
-		--env TARGET_UID=$(shell id -u) \
-		--env TARGET_GID=$(shell id -g) \
-		--hostname build \
-		--mount type=tmpfs,destination=/tmp \
-		--mount type=bind,source=$(REPOSITORY_ROOT),destination=/repository,ro \
-		--mount type=bind,source=$(@D),destination=/repository/repodata \
-		--mount type=bind,source=$(PWD)/packages/entrypoint.sh,destination=/entrypoint.sh,ro \
-		--read-only \
-		--rm \
-		$(PACKAGE_BUILD_IMAGE) \
-		/entrypoint.sh buildrepo
 
 
 DOCKER ?= docker
