@@ -111,17 +111,53 @@ repo:
     kubelet:
       version: 1.11.7-0
       repository: metalk8s-kubernetes
-    m2crypto:
+    python34-adal:
       version: latest
-      repository: metalk8s-saltstack
-    python2-kubernetes:
+      repository: metalk8s-scality
+    python34-certifi:
       version: latest
       repository: metalk8s-epel
+    python34-dateutil:
+      version: latest
+      repository: metalk8s-epel
+    python34-google-auth:
+      version: latest
+      repository: metalk8s-scality
+    python34-jwt:
+      version: latest
+      repository: metalk8s-epel
+    python34-m2crypto:
+      version: latest
+      repository: metalk8s-saltstack
+    python34-oauthlib:
+      version: latest
+      repository: metalk8s-scality
+    python34-PyYAML:
+      version: latest
+      repository: metalk8s-epel
+    python34-requests:
+      version: latest
+      repository: metalk8s-epel
+    python34-requests-oauthlib:
+      version: latest
+      repository: metalk8s-scality
+    python34-six:
+      version: latest
+      repository: metalk8s-epel
+    python34-urllib3:
+      version: latest
+      repository: metalk8s-epel
+    python34-websocket-client:
+      version: latest
+      repository: metalk8s-epel
+    python34-kubernetes:
+      version: latest
+      repository: metalk8s-scality
     runc:
       version: latest
       repository: metalk8s-extras
     salt-minion:
-      version: 2018.3.3-1.el7
+      version: 2019.2.0-1.el7
       repository: metalk8s-saltstack
     skopeo:
       version: latest

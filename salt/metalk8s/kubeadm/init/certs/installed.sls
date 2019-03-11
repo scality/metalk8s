@@ -4,6 +4,6 @@ include:
   - metalk8s.repo
 
 Install m2crypto:
-  {{ pkg_installed('m2crypto') }}
+  {{ pkg_installed('python34-m2crypto') }}
     - require:
       - test: Repositories configured
