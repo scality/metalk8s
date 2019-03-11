@@ -10,7 +10,7 @@ Configure epel repository:
   {%- endif %}
 
 {%- if grains["os"] == "RedHat" %}
-check that the system is registered:
+Check that the system is registered:
   cmd.run:
     - name: subscription-manager status
 {%- endif %}
@@ -29,9 +29,9 @@ Configure saltstack repository:
   pkgrepo.managed:
     - name: saltstack
     - humanname: SaltStack
-    - baseurl: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.3"
+    - baseurl: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2019.2.0"
     - gpgcheck: 1
-    - gpgkey: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.3/SALTSTACK-GPG-KEY.pub"
+    - gpgkey: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2019.2.0/SALTSTACK-GPG-KEY.pub"
     - enabled: 1
 
 Repositories configured:

@@ -35,7 +35,7 @@
     },
     {
         'name': 'salt-master',
-        'tag': '2018.3.3-1',
+        'tag': '2019.2.0-1',
     },
 ] %}
 {% set images_path = '/srv/scality/metalk8s-2.0/images' %}

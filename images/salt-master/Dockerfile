@@ -3,7 +3,7 @@ FROM centos:7.6.1810
 MAINTAINER moonshot-platform <moonshot-platform@scality.com>
 
 # Versions to use
-ARG SALT_VERSION=2018.3.3
+ARG SALT_VERSION=2019.2.0
 ARG TINI_VERSION=v0.18.0
 
 # Install and check tini
