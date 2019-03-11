@@ -3,7 +3,7 @@
 #    - python3
 #    - tox
 
-lint:
+lint:  ## Lint source files (YAML and Shell for now)
 	tox -e lint-yaml
 	tox -e lint-shell
 
