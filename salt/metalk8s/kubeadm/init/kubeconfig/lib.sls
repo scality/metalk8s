@@ -4,7 +4,7 @@
 
 {% macro kubeconfig(name, cert_info) %}
 
-{%- set ca_server = salt['mine.get']('*', 'kubernetes_ca_server').keys() %}
+{%- set ca_server = salt['mine.get']('*', 'kubernetes_ca_server').keys() | list %}
 {#- TODO: Not always use local machine as apiserver #}
 {%- set apiserver = 'https://' ~ salt['network.ip_addrs'](cidr=networks.control_plane)[0] ~ ':6443' %}
 

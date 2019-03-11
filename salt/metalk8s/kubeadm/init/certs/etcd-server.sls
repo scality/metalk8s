@@ -1,7 +1,7 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
-{%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_server').keys() %}
+{%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_server').keys() | list %}
 {%- if etcd_ca_server %}
 
 include:

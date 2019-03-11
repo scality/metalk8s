@@ -181,8 +181,12 @@ def managed(name,
             {
                 'name': user,
                 'user': {
-                    'client-certificate-data': b64encode(client_cert),
-                    'client-key-data': b64encode(client_priv_key)
+                    'client-certificate-data': b64encode(
+                        client_cert.encode('ascii')
+                    ),
+                    'client-key-data': b64encode(
+                        client_priv_key.encode('ascii')
+                    ),
                 }
             }
         ]

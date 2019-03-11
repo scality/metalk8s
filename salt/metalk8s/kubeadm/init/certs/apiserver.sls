@@ -1,7 +1,7 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
-{%- set ca_server = salt['mine.get']('*', 'kubernetes_ca_server').keys() %}
+{%- set ca_server = salt['mine.get']('*', 'kubernetes_ca_server').keys() | list %}
 {%- if ca_server %}
 
 include:

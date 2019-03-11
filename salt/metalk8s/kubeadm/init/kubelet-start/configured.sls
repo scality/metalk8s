@@ -15,7 +15,7 @@ Create kubelet service environment file:
     - makedirs: True
     - dir_mode: 750
     - context:
-        options: {{ kubelet.service.options }}
+        options: {{ kubelet.service.options | tojson }}
 
 Create kubelet config file:
   file.serialize:

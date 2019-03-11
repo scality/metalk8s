@@ -3,7 +3,7 @@
 {%- set ca_server = salt['mine.get']('*', 'kubernetes_ca_server') %}
 
 {#- Check if we have no CA server or only current minion as CA #}
-{%- if not ca_server or ca_server.keys() == [grains['id']] %}
+{%- if not ca_server or ca_server.keys() | list == [grains['id']] %}
 
 include:
   - .installed

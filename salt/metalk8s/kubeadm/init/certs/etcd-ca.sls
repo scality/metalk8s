@@ -3,7 +3,7 @@
 {%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_server') %}
 
 {#- Check if we have no CA server or only current minion as CA #}
-{%- if not etcd_ca_server or etcd_ca_server.keys() == [grains['id']] %}
+{%- if not etcd_ca_server or etcd_ca_server.keys() | list == [grains['id']] %}
 
 include:
   - .installed

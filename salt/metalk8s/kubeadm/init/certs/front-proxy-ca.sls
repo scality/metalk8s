@@ -3,7 +3,7 @@
 {%- set front_proxy_ca_server = salt['mine.get']('*', 'kubernetes_front_proxy_ca_server') %}
 
 {#- Check if we have no CA server or only current minion as CA #}
-{%- if not front_proxy_ca_server or front_proxy_ca_server.keys() == [grains['id']] %}
+{%- if not front_proxy_ca_server or front_proxy_ca_server.keys() | list == [grains['id']] %}
 
 include:
   - .installed

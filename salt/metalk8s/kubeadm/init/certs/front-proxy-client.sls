@@ -1,6 +1,6 @@
 {%- from "metalk8s/map.jinja" import front_proxy with context %}
 
-{%- set front_proxy_ca_server = salt['mine.get']('*', 'kubernetes_front_proxy_ca_server').keys() %}
+{%- set front_proxy_ca_server = salt['mine.get']('*', 'kubernetes_front_proxy_ca_server').keys() | list %}
 {%- if front_proxy_ca_server %}
 
 include:
