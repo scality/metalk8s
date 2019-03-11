@@ -16,4 +16,12 @@ RUN yum install -y \
         && \
     yum clean all
 
+RUN yum install -y \
+        python34 \
+        python34-devel \
+        python34-setuptools \
+        python3-pkgversion-macros \
+        && \
+    yum clean all
+
 RUN useradd -m build

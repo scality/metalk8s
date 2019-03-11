@@ -4,3 +4,7 @@ addFilter("calico-cni-plugin.x86_64: E: statically-linked-binary /opt/cni/bin/ca
 addFilter("calico-cni-plugin.x86_64: E: statically-linked-binary /opt/cni/bin/calico-ipam")
 addFilter("calico-cni-plugin.x86_64: E: dir-or-file-in-opt /opt/cni/bin/calico")
 addFilter("calico-cni-plugin.x86_64: E: dir-or-file-in-opt /opt/cni/bin/calico-ipam")
+
+addFilter("python34-.*: E: python-bytecode-wrong-magic-value .*")
+addFilter("python34-.*: E: explicit-lib-dependency python34-.*")
+
