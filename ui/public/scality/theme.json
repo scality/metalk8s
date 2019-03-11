@@ -1,0 +1,11 @@
+{
+  "brand": {
+    "primary": "hotPink",
+    "secondary": "grayLight",
+    "success": "jade",
+    "info": "turquoise",
+    "warning": "yellowOrange",
+    "danger": "mediumOrange",
+    "base": "grayLight"
+  }
+}

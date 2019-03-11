@@ -1,0 +1,8 @@
+FROM node
+
+WORKDIR /home/node
+
+RUN apt update
+RUN apt install -y yarn
+
+ENTRYPOINT yarn && yarn build

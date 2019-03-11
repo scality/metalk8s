@@ -1,0 +1,15 @@
+FROM nginx
+
+ENV LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8
+
+RUN apt update
+RUN apt install -y vim
+
+RUN mkdir -p /usr/share/nginx/html/sup
+COPY build /usr/share/nginx/html/sup
+
+COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
+
+CMD service nginx start
+EXPOSE 80
