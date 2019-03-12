@@ -253,6 +253,7 @@ iso: $(ISO) ## Build the MetalK8s ISO image
 $(ISO): $(ALL)
 	source $(ISO_ROOT)/product.txt && \
 	mkisofs -output $@ \
+		-quiet \
 		-rock \
 		-joliet \
 		-joliet-long \
@@ -302,7 +303,7 @@ $(BUILD_ROOT)/packages/calico-cni-plugin/calico-cni-plugin.meta: packages/calico
 
 $(foreach src,$(CALICO_CNI_PLUGIN_SOURCES),$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/$(src)): $(BUILD_ROOT)/packages/calico-cni-plugin/calico-cni-plugin.meta
 	mkdir -p $(dir $@)
-	curl -L -o "$@" "$(shell awk '/^Source[0-9]+:.*\/$(notdir $@)$$/ { print $$2 }' < $<)"
+	curl -s -L -o "$@" "$(shell awk '/^Source[0-9]+:.*\/$(notdir $@)$$/ { print $$2 }' < $<)"
 
 $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm: packages/calico-cni-plugin.spec
 $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm: $(foreach src,$(CALICO_CNI_PLUGIN_SOURCES),$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/$(src))
