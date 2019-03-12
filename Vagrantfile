@@ -48,6 +48,9 @@ echo "Launching bootstrap"
 exec "/srv/scality/metalk8s-$SHORT_VERSION/bootstrap.sh"
 SCRIPT
 
+NETWORK_RANGE = "192.168.42."
+BOOTSTRAP_IP_OFFSET = 10
+
 # To support VirtualBox linked clones
 Vagrant.require_version(">= 1.8")
 
@@ -64,7 +67,13 @@ Vagrant.configure("2") do |config|
   config.vm.define :bootstrap, primary: true do |bootstrap|
     bootstrap.vm.hostname = "bootstrap"
 
-    bootstrap.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    bootstrap_ip = "#{NETWORK_RANGE}#{BOOTSTRAP_IP_OFFSET}"
+    bootstrap.vm.network "private_network", ip: bootstrap_ip
+
+    bootstrap.vm.provider "virtualbox" do |v|
+      v.memory = 4096
+      bootstrap.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    end
 
     bootstrap.vm.provision "import-release",
       type: "shell",
@@ -77,9 +86,12 @@ Vagrant.configure("2") do |config|
 
   (1..9).each do |i|
     node_name = "node#{i}"
+    node_ip = "#{NETWORK_RANGE}#{BOOTSTRAP_IP_OFFSET+i}"
 
     config.vm.define node_name, autostart: false do |node|
       node.vm.hostname = node_name
+
+      node.vm.network "private_network", ip: node_ip
 
       node.vm.synced_folder ".", "/vagrant", disabled: true
 
