@@ -61,7 +61,7 @@ Vagrant.configure("2") do |config|
     v.cpus = 2
   end
 
-  config.vm.define :bootstrap do |bootstrap|
+  config.vm.define :bootstrap, primary: true do |bootstrap|
     bootstrap.vm.hostname = "bootstrap"
 
     bootstrap.vm.synced_folder ".", "/vagrant", type: "virtualbox"
@@ -73,5 +73,18 @@ Vagrant.configure("2") do |config|
     bootstrap.vm.provision "bootstrap",
       type: "shell",
       inline: BOOTSTRAP
+  end
+
+  (1..9).each do |i|
+    node_name = "node#{i}"
+
+    config.vm.define node_name, autostart: false do |node|
+      node.vm.hostname = node_name
+
+      node.vm.synced_folder ".", "/vagrant", disabled: true
+
+      # No need for Guest Additions since there is no synced folder
+      node.vbguest.auto_update = false
+    end
   end
 end
