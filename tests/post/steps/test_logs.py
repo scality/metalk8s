@@ -15,12 +15,14 @@ def check_logs(host):
             '--no-headers -o custom-columns=":metadata.name"'
         )
         for pod_id in pods_list.split('\n'):
+            if 'salt-master' in pod_id:
+                continue
+
             pod_logs = host.check_output(
                 'kubectl --kubeconfig=/etc/kubernetes/admin.conf '
                 'logs %s --limit-bytes=1 -n kube-system',
                 pod_id,
             )
 
-            if 'salt-master' not in pod_id:
-                assert len(pod_logs.strip()) > 0, (
-                    'Error cannot retrieve logs for {}'.format(pod_id))
+            assert len(pod_logs.strip()) > 0, (
+                'Error cannot retrieve logs for {}'.format(pod_id))

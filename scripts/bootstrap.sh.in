@@ -147,7 +147,7 @@ EOF
 set_salt_command() {
     echo "Setting salt master command"
     # shellcheck disable=SC2046
-    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q))"
+    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --label io.kubernetes.container.name=salt-master --label io.kubernetes.pod.namespace=kube-system)"
 }
 
 sync_salt() {

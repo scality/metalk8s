@@ -10,3 +10,8 @@ roster_defaults:
   minion_opts:
     use_superseded:
       - module.run
+
+rest_cherrypy:
+  port: 4507
+  host: {{ salt_api_ip }}
+  disable_ssl: true
