@@ -6,7 +6,7 @@ import { ThemeProvider } from 'styled-components';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
 
-import { Layout } from 'scality-ui';
+import { Layout } from 'core-ui';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 import translations_en from '../translations/en';
@@ -15,6 +15,8 @@ import { fetchUsersAction } from '../ducks/users';
 
 import UserList from './UserList';
 import Welcome from '../components/Welcome';
+import Login from './Login';
+import PrivateRoute from './PrivateRoute';
 
 const messages = {
   en: translations_en,
@@ -37,7 +39,7 @@ class App extends Component {
   }
 
   render() {
-    const applications = [{ label: 'Platform UI', onClick: () => {} }];
+    const applications = [{ label: 'Hyperdrive UI', onClick: () => {} }];
 
     const help = [
       {
@@ -61,13 +63,20 @@ class App extends Component {
 
     const sidebar = {
       expanded: true,
-      actions: []
+      actions: [
+        {
+          label: 'Nodes',
+          icon: <i className="fas fa-server" />,
+          onClick: () => {},
+          active: true
+        }
+      ]
     };
 
     const navbar = {
       onToggleClick: () => {},
       toggleVisible: true,
-      productName: 'Template UI',
+      productName: 'MetalK8s Platform',
       applications,
       help,
       user
@@ -75,7 +84,7 @@ class App extends Component {
 
     const theme = {
       brand: {
-        primary: '#006F62'
+        primary: '#1A237E'
       }
     };
 
@@ -84,17 +93,18 @@ class App extends Component {
         locale={this.props.language}
         messages={messages[this.props.language]}
       >
-        <ThemeProvider theme={theme}>
-          <Layout sidebar={sidebar} navbar={navbar}>
-            <div>
-              <Switch>
-                <Route path="/users" component={UserList} />
-                <Route path="/about" component={Welcome} />
-                <Route path="/" component={Welcome} />
-              </Switch>
-            </div>
-          </Layout>
-        </ThemeProvider>
+        <Switch>
+          <Route path="/login" component={Login} />
+          <ThemeProvider theme={theme}>
+            <Layout sidebar={sidebar} navbar={navbar}>
+              <div>
+                <PrivateRoute exact path="/users" component={UserList} />
+                <PrivateRoute exact path="/about" component={Welcome} />
+                <PrivateRoute exact path="/" component={UserList} />
+              </div>
+            </Layout>
+          </ThemeProvider>
+        </Switch>
       </IntlProvider>
     );
   }
