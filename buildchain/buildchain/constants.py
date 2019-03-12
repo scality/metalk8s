@@ -55,7 +55,7 @@ BUILDER_BASIC_CMD : Tuple[str, ...] = (
 # Versions {{{
 
 K8S_VERSION  : str = '1.11.7'
-SALT_VERSION : str = '2018.3.3'
+SALT_VERSION : str = '2018.3.4'
 
 
 def load_version_information() -> None:
