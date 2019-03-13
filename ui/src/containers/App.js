@@ -16,6 +16,7 @@ import NodeList from './NodeList';
 import Welcome from '../components/Welcome';
 import Login from './Login';
 import PrivateRoute from './PrivateRoute';
+import { logoutAction } from '../ducks/login';
 
 const messages = {
   en: translations_en,
@@ -47,7 +48,7 @@ class App extends Component {
 
     const user = {
       name: this.props.user && this.props.user.username,
-      actions: [{ label: 'Log out', onClick: () => {} }]
+      actions: [{ label: 'Log out', onClick: this.props.logout }]
     };
 
     const sidebar = {
@@ -102,4 +103,15 @@ const mapStateToProps = state => ({
   user: state.login.user
 });
 
-export default withRouter(connect(mapStateToProps)(App));
+const mapDispatchToProps = dispatch => {
+  return {
+    logout: () => dispatch(logoutAction())
+  };
+};
+
+export default withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(App)
+);

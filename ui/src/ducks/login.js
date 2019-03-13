@@ -6,6 +6,7 @@ import history from '../history';
 const AUTHENTICATE = 'AUTHENTICATE';
 const AUTHENTICATION_SUCCESS = 'AUTHENTICATION_SUCCESS';
 const AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED';
+const LOGOUT = 'LOGOUT';
 
 // Reducer
 const defaultState = {
@@ -35,6 +36,10 @@ export const autheticateAction = payload => {
   return { type: AUTHENTICATE, payload };
 };
 
+export const logoutAction = () => {
+  return { type: LOGOUT };
+};
+
 // Sagas
 function* authenticate({ payload }) {
   try {
@@ -52,6 +57,12 @@ function* authenticate({ payload }) {
   }
 }
 
+function* logout() {
+  yield call(Api.logout);
+  yield call(history.push, '/login');
+}
+
 export function* authenticateSaga() {
   yield takeEvery(AUTHENTICATE, authenticate);
+  yield takeEvery(LOGOUT, logout);
 }
