@@ -1,13 +1,13 @@
 import { combineReducers } from 'redux';
 
 import language from './language';
-import users from './users';
+import nodes from './nodes';
 import login from './login';
 
 const rootReducer = combineReducers({
   language,
   login,
-  users
+  nodes
 });
 
 export default rootReducer;

@@ -4,9 +4,11 @@
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.7.2",
+    "@kubernetes/client-node": "git://github.com/scality/kubernetes-client-javascript.git#browser",
     "axios": "^0.18.0",
     "core-ui": "github:scality/core-ui.git",
     "formik": "1.5.1",
+    "memoize-one": "^4.0.2",
     "react": "^16.8.1",
     "react-debounce-input": "3.2.0",
     "react-dom": "^16.8.1",

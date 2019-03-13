@@ -11,9 +11,8 @@ import '@fortawesome/fontawesome-free/css/all.css';
 
 import translations_en from '../translations/en';
 import translations_fr from '../translations/fr';
-import { fetchUsersAction } from '../ducks/users';
 
-import UserList from './UserList';
+import NodeList from './NodeList';
 import Welcome from '../components/Welcome';
 import Login from './Login';
 import PrivateRoute from './PrivateRoute';
@@ -34,10 +33,6 @@ class App extends Component {
   //     });
   // };
 
-  componentDidMount() {
-    this.props.fetchUsers();
-  }
-
   render() {
     const applications = [{ label: 'Hyperdrive UI', onClick: () => {} }];
 
@@ -47,17 +42,11 @@ class App extends Component {
         onClick: () => {
           this.props.history.push('/about');
         }
-      },
-      {
-        label: 'Users',
-        onClick: () => {
-          this.props.history.push('/users');
-        }
       }
     ];
 
     const user = {
-      name: 'John Doe',
+      name: this.props.user && this.props.user.username,
       actions: [{ label: 'Log out', onClick: () => {} }]
     };
 
@@ -79,7 +68,7 @@ class App extends Component {
       productName: 'MetalK8s Platform',
       applications,
       help,
-      user
+      user: this.props.user && user
     };
 
     const theme = {
@@ -97,11 +86,9 @@ class App extends Component {
           <Route path="/login" component={Login} />
           <ThemeProvider theme={theme}>
             <Layout sidebar={sidebar} navbar={navbar}>
-              <div>
-                <PrivateRoute exact path="/users" component={UserList} />
-                <PrivateRoute exact path="/about" component={Welcome} />
-                <PrivateRoute exact path="/" component={UserList} />
-              </div>
+              <PrivateRoute exact path="/nodes" component={NodeList} />
+              <PrivateRoute exact path="/about" component={Welcome} />
+              <PrivateRoute exact path="/" component={NodeList} />
             </Layout>
           </ThemeProvider>
         </Switch>
@@ -111,18 +98,8 @@ class App extends Component {
 }
 
 const mapStateToProps = state => ({
-  language: state.language.lang
+  language: state.language.lang,
+  user: state.login.user
 });
 
-const mapDispatchToProps = dispatch => {
-  return {
-    fetchUsers: () => dispatch(fetchUsersAction())
-  };
-};
-
-export default withRouter(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(App)
-);
+export default withRouter(connect(mapStateToProps)(App));

@@ -38,7 +38,7 @@ const LoginFormContainer = styled.div`
     border-color: red;
   }
 
-  label {
+  .label {
     font-weight: bold;
     display: block;
     margin-bottom: 5px;
@@ -52,16 +52,45 @@ const LoginFormContainer = styled.div`
     font-size: 12px;
   }
 
-  button {
-    margin-top: 20px;
+  .input-group {
+    margin-bottom: 20px;
+  }
+
+  .animated {
+    animation-duration: 1s;
+    animation-fill-mode: both;
+  }
+
+  @keyframes shake {
+    from,
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+      transform: translate3d(-10px, 0, 0);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+      transform: translate3d(10px, 0, 0);
+    }
+  }
+
+  .shake {
+    animation-name: shake;
   }
 `;
 
 const formikEnhancer = withFormik({
   validationSchema: Yup.object().shape({
-    email: Yup.string()
-      .email()
-      .required('Required'),
+    username: Yup.string().required('Required'),
     password: Yup.string().required('Required')
   }),
 
@@ -135,11 +164,11 @@ const LoginForm = props => {
   return (
     <form onSubmit={handleSubmit}>
       <TextInput
-        name="email"
-        type="email"
-        label="Email"
-        error={touched.email && errors.email}
-        value={values.email}
+        name="username"
+        type="username"
+        label="Username"
+        error={touched.username && errors.username}
+        value={values.username}
         onChange={handleChange}
       />
       <TextInput
@@ -162,7 +191,7 @@ class Login extends React.Component {
     return (
       <LoginFormContainer>
         <EnhancedLoginForm
-          login={{ email: '', passord: '' }}
+          login={{ username: '', passord: '' }}
           authenticate={this.props.authenticate}
         />
       </LoginFormContainer>
