@@ -1,5 +1,4 @@
-import pytest
-from pytest_bdd import scenario, given, when, then, parsers
+from pytest_bdd import scenario, then, parsers
 
 # Scenarios
 @scenario('../features/pods_alive.feature', 'List Pods')
@@ -9,14 +8,6 @@ def test_list_pods(host):
 @scenario('../features/pods_alive.feature', 'Exec in Pods')
 def test_exec_in_pods(host):
     pass
-
-# Given
-
-@given("the Kubernetes API is available")
-def check_service(host):
-   with host.sudo():
-       cmd = "kubectl --kubeconfig=/etc/kubernetes/admin.conf cluster-info"
-       host.check_output(cmd)
 
 
 # Then
