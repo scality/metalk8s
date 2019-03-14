@@ -1,28 +1,26 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Table } from 'core-ui';
+import memoizeOne from 'memoize-one';
 import { fetchNodesAction } from '../ducks/nodes';
+import { sortBy as sortByArray } from 'lodash';
 
 const columns = [
   {
     label: 'Name',
-    dataKey: 'name',
-    disableSort: false
+    dataKey: 'name'
   },
   {
     label: 'Capacity CPU',
-    dataKey: 'cpu',
-    disableSort: false
+    dataKey: 'cpu'
   },
   {
     label: 'Memory',
-    dataKey: 'memory',
-    disableSort: false
+    dataKey: 'memory'
   },
   {
     label: 'Number of pods',
-    dataKey: 'pods',
-    disableSort: true
+    dataKey: 'pods'
   }
 ];
 
@@ -43,29 +41,35 @@ class NodeList extends React.Component {
   }
 
   onSort({ sortBy, sortDirection }) {
-    const sortedList = this.props.nodes.sort(function(a, b) {
-      var nameA = a[sortBy].toString().toUpperCase(); // ignore upper and lowercase
-      var nameB = b[sortBy].toString().toUpperCase(); // ignore upper and lowercase
-      if (nameA < nameB) {
-        return -1;
-      }
-      if (nameA > nameB) {
-        return 1;
-      }
-      return 0;
-    });
-
-    if (sortDirection === 'DESC') {
-      sortedList.reverse();
-    }
-
-    this.setState({ nodes: sortedList, sortBy, sortDirection });
+    this.setState({ sortBy, sortDirection });
   }
 
+  sortNodes(nodes, sortBy, sortDirection) {
+    return memoizeOne((nodes, sortBy, sortDirection) => {
+      const sortedList = sortByArray(nodes, [
+        node => {
+          return typeof node[sortBy] === 'string'
+            ? node[sortBy].toLowerCase()
+            : node[sortBy];
+        }
+      ]);
+
+      if (sortDirection === 'DESC') {
+        sortedList.reverse();
+      }
+      return sortedList;
+    })(nodes, sortBy, sortDirection);
+  }
   render() {
+    const nodesSortedList = this.sortNodes(
+      this.props.nodes,
+      this.state.sortBy,
+      this.state.sortDirection
+    );
+
     return (
       <Table
-        list={this.props.nodes}
+        list={nodesSortedList}
         columns={columns}
         disableHeader={false}
         headerHeight={40}
