@@ -92,13 +92,13 @@ stages:
       - ShellCommand:
           name: Retrieve ISO image
           command: >
-            curl -XGET -o metalk8s.iso
+            curl -s -XGET -o metalk8s.iso
             "%(prop:artifacts_private_url)s/metalk8s.iso"
           haltOnFailure: true
       - ShellCommand:
           name: Retrieve ISO image checksum
           command: >
-            curl -XGET -o SHA256SUM
+            curl -s -XGET -o SHA256SUM
             "%(prop:artifacts_private_url)s/SHA256SUM"
           haltOnFailure: true
       - ShellCommand:
