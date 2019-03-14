@@ -43,3 +43,10 @@ Make sure salt master container is up:
     - require:
       - file: Install and start salt master manifest
 
+#Wait salt master:
+#  module.wait:
+#    - cri.wait_container:
+#      - salt-master
+#      - running
+#    - watch:
+#      - file: Install and start salt master manifest
