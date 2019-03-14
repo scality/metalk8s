@@ -4,6 +4,7 @@ Various functions to interact with a CRI daemon (through :program:`crictl`).
 
 import re
 import logging
+import time
 
 import salt.utils.json
 
@@ -74,3 +75,76 @@ def pull_image(image):
             ret['digests'][digest] = re_match.group('digest')
 
     return ret
+
+
+def execute(name, command, *args):
+    '''
+    Run a command in a container.
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+
+    name
+        Name of the target container
+    command
+        Command to run
+    args
+        Command parameters
+    '''
+    log.info('Retrieving ID of container "%s"', name)
+    out = __salt__['cmd.run_all'](
+        'crictl ps -q --label io.kubernetes.container.name="{0}"'.format(name))
+
+    if out['retcode'] != 0:
+        log.error('Failed to find container "%s"', name)
+        return None
+
+    container_id = out['stdout']
+    cmd_opts = "{0} {1}".format(command, " ".join(args))
+
+    log.info('Executing command "%s"', cmd_opts)
+    out = __salt__['cmd.run_all'](
+        'crictl exec {0} {1}'.format(container_id, cmd_opts))
+
+    if out['retcode'] != 0:
+        log.error('Failed run command "%s"', cmd_opts)
+        return None
+
+    return out['stdout']
+
+
+def wait_container(name, state, timeout=60, delay=5):
+    '''
+    Wait for a containter be in given state.
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+
+    name
+        Name of the target container
+    state
+        State of container: one of created, running, exited or unknown
+    timeout
+        Maximum time in sec to wait for container to reach given state
+    delay
+        Interval in sec between 2 checks
+    '''
+    log.info('Waiting for container "%s" to be in state "%s"', name, state)
+
+    opts = '--label io.kubernetes.container.name="{0}"'.format(name)
+    if state is not None:
+        opts += " --state {0}".format(state)
+
+    for _ in range(0, timeout, delay):
+        out = __salt__['cmd.run_all']('crictl ps -q {0}'.format(opts))
+
+        if out['retcode'] == 0 and out['stdout']:
+            return True
+        time.sleep(delay)
+    else:
+        log.error('Failed to find container "%s" in state "%s"', name, state)
+        return False

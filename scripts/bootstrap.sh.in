@@ -209,6 +209,10 @@ sync_salt() {
         saltenv=metalk8s-@VERSION@
 }
 
+sync_local() {
+    ${SALT_CALL} --local --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@VERSION@
+}
+
 run_certs() {
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
@@ -256,6 +260,14 @@ install_calico() {
 }
 
 
+orchestrate_bootstrap() {
+    ${SALT_CALL} --local --retcode-passthrough state.orchestrate orchestrate.bootstrap_step1 saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    set_salt_command
+    # TODO: does not work...
+    # sync_salt
+    # ${SALT_MASTER_CALL} bootstrap state.orchestrate orchestrate.bootstrap_step2  saltenv=metalk8s-2.0
+}
+
 main() {
     pre_minion_checks
     disable_salt_minion_service
@@ -263,32 +275,37 @@ main() {
     configure_yum_repositories
     install_salt_minion
     configure_salt_minion_local_mode
-    run_bootstrap_prechecks
-    install_python_kubernetes_client
 
-    install_kubelet
-    run_preflight
-    run_kubelet_start
+    sync_local
 
-    deploy_registry
-    populate_registry
+    orchestrate_bootstrap
 
-    deploy_salt_master
-    configure_salt
-
-    set_salt_command
-    accept_keys
-
-    sync_salt
-    run_certs
-    run_kubeconfig
-    run_control_plane
-    run_etcd
-    run_mark_control_plane
-
-    install_addons
-
-    install_calico
+#    run_bootstrap_prechecks
+#    install_python_kubernetes_client
+#
+#    install_kubelet
+#    run_preflight
+#    run_kubelet_start
+#
+#    deploy_registry
+#    populate_registry
+#
+#    deploy_salt_master
+#    configure_salt
+#
+#    set_salt_command
+#    accept_keys
+#
+#    sync_salt
+#    run_certs
+#    run_kubeconfig
+#    run_control_plane
+#    run_etcd
+#    run_mark_control_plane
+#
+#    install_addons
+#
+#    install_calico
 }
 
 main
