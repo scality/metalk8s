@@ -24,7 +24,7 @@ export default function reducer(state = defaultState, action = {}) {
     case AUTHENTICATION_FAILED:
       return {
         ...state,
-        error: action.payload
+        errors: { authentication: action.payload.message }
       };
     default:
       return state;
@@ -42,19 +42,18 @@ export const logoutAction = () => {
 
 // Sagas
 function* authenticate({ payload }) {
-  try {
-    const response = yield call(Api.authenticate, payload);
+  const { response, errors } = yield call(Api.authenticate, payload);
+  if (response) {
     yield put({
       type: AUTHENTICATION_SUCCESS,
-      payload: response.data
+      payload: response
     });
     yield call(history.push, '/');
-  } catch (err) {
+  } else
     yield put({
       type: AUTHENTICATION_FAILED,
-      payload: err
+      payload: errors
     });
-  }
 }
 
 function* logout() {

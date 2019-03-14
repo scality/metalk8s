@@ -3,26 +3,30 @@ import { Config, Core_v1Api } from '@kubernetes/client-node';
 
 const api = axios.create({
   baseURL: 'https://localhost:8080/api/v1',
-  timeout: 1000,
-  headers: {
-    Authorization: 'Basic ' + localStorage.getItem('token')
-  }
+  timeout: 1000
 });
-export function callApi(type, endpoint, args) {
-  return api[type](endpoint, args);
-}
 
 //Basic Auth
 export const authenticate = ({ username, password }) => {
+  localStorage.removeItem('token');
   const token = btoa(username + ':' + password); //base64Encode
-  localStorage.setItem('token', token);
-  return Promise.resolve({
-    data: {
-      username,
-      password,
-      token
-    }
-  });
+  return api
+    .get('/', {
+      headers: {
+        Authorization: 'Basic ' + token
+      }
+    })
+    .then(() => {
+      localStorage.setItem('token', token);
+      return {
+        response: {
+          username,
+          password,
+          token
+        }
+      };
+    })
+    .catch(errors => ({ errors: errors.response.data }));
 };
 
 export const logout = () => {

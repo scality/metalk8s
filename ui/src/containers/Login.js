@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withFormik } from 'formik';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { DebounceInput } from 'react-debounce-input';
 import { Button } from 'core-ui';
@@ -34,7 +34,7 @@ const LoginFormContainer = styled.div`
     outline: none;
   }
 
-  input.error {
+  .error input {
     border-color: red;
   }
 
@@ -88,21 +88,10 @@ const LoginFormContainer = styled.div`
   }
 `;
 
-const formikEnhancer = withFormik({
-  validationSchema: Yup.object().shape({
-    username: Yup.string().required('Required'),
-    password: Yup.string().required('Required')
-  }),
-
-  mapPropsToValues: ({ login }) => ({
-    ...login
-  }),
-  handleSubmit: (values, { props, setSubmitting }) => {
-    props.authenticate(values);
-    setSubmitting(false);
-  },
-  displayName: 'LoginForm'
-});
+const Error = styled.span`
+  display: block;
+  color: red;
+`;
 
 const InputFeedback = ({ error }) =>
   error ? <div className="input-feedback">{error}</div> : null;
@@ -144,7 +133,7 @@ const TextInput = ({
         className="text-input"
         type={type}
         value={value}
-        onChange={onChange}
+        onChange={onChange ? onChange : null}
         {...props}
       />
       <InputFeedback error={error} />
@@ -153,19 +142,13 @@ const TextInput = ({
 };
 
 const LoginForm = props => {
-  const {
-    values,
-    touched,
-    errors,
-    handleChange,
-    handleSubmit,
-    isSubmitting
-  } = props;
+  const { values, touched, errors, handleChange, isSubmitting } = props;
   return (
-    <form onSubmit={handleSubmit}>
+    <Form autoComplete="off">
+      {errors.authentication && <Error>{errors.authentication}</Error>}
       <TextInput
         name="username"
-        type="username"
+        type="text"
         label="Username"
         error={touched.username && errors.username}
         value={values.username}
@@ -180,19 +163,37 @@ const LoginForm = props => {
         onChange={handleChange}
       />
       <Button type="submit" text="Submit" disabled={isSubmitting} />
-    </form>
+    </Form>
   );
 };
 
-const EnhancedLoginForm = formikEnhancer(LoginForm);
+const initialValues = {
+  username: '',
+  password: ''
+};
+
+const validationSchema = Yup.object().shape({
+  username: Yup.string().required(),
+  password: Yup.string().required()
+});
 
 class Login extends React.Component {
   render() {
     return (
       <LoginFormContainer>
-        <EnhancedLoginForm
-          login={{ username: '', passord: '' }}
-          authenticate={this.props.authenticate}
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          validateOnBlur={false}
+          validateOnChange={false}
+          onSubmit={this.props.authenticate}
+          render={props => {
+            const formikProps = {
+              ...props,
+              errors: { ...props.errors, ...this.props.errors }
+            };
+            return <LoginForm {...formikProps} />;
+          }}
         />
       </LoginFormContainer>
     );
@@ -200,7 +201,7 @@ class Login extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  login: state.login
+  errors: state.login.errors
 });
 
 const mapDispatchToProps = dispatch => {
