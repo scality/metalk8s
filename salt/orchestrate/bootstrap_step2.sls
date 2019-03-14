@@ -6,9 +6,16 @@
 #  install_addons
 #  install_calico
 
-Bootstrap node:
+Bootstrap CA:
   salt.state:
     - tgt: bootstrap
     - saltenv: metalk8s-2.0
     - sls:
-      - metalk8s.bootstrap.certificates
+      - metalk8s.bootstrap.certs.ca
+
+Bootstrap client certs:
+  salt.state:
+    - tgt: bootstrap
+    - saltenv: metalk8s-2.0
+    - sls:
+      - metalk8s.bootstrap.certs.clients

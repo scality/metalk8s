@@ -31,7 +31,8 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/preflight.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/registry.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/salt_master.sls \
-	$(ISO_ROOT)/salt/metalk8s/bootstrap/certificates.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/certs/ca.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/certs/clients.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/calico/configured.sls \
 	$(ISO_ROOT)/salt/metalk8s/calico/deployed.sls \
