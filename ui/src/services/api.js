@@ -37,13 +37,7 @@ export async function getNodes({ token }) {
   const config = new Config('https://localhost:8080', token, 'Basic');
   const coreV1 = config.makeApiClient(Core_v1Api);
   try {
-    const result = await coreV1.listNode();
-    return result.body.items.map(node => ({
-      name: node.metadata.name,
-      cpu: node.status.capacity.cpu,
-      memory: node.status.capacity.memory,
-      pods: node.status.capacity.pods
-    }));
+    return await coreV1.listNode();
   } catch (error) {
     console.error('Error retrieving nodes', error.body ? error.body : error);
   }

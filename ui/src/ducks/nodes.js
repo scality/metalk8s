@@ -31,7 +31,13 @@ export const setNodesAction = payload => {
 // Sagas
 function* fetchNodes(token) {
   try {
-    const nodes = yield call(Api.getNodes, token);
+    const result = yield call(Api.getNodes, token);
+    const nodes = result.body.items.map(node => ({
+      name: node.metadata.name,
+      cpu: node.status.capacity.cpu,
+      memory: node.status.capacity.memory,
+      pods: node.status.capacity.pods
+    }));
     yield put(setNodesAction(nodes));
   } catch (e) {}
 }
