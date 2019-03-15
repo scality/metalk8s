@@ -27,14 +27,6 @@ const messages = {
 addLocaleData([...locale_en, ...locale_fr]);
 
 class App extends Component {
-  // componentDidMount = () => {
-  //   fetch("/brand/theme.json")
-  //     .then(r => r.json())
-  //     .then(data => {
-  //       console.log("json", data);
-  //     });
-  // };
-
   render() {
     const intl = messages[this.props.language];
     const applications = [];
