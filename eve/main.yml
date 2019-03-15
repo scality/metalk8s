@@ -177,6 +177,7 @@ stages:
             OS_PASSWORD: "%(secret:scality_cloud_password)s"
             OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
             TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
+            TF_VAR_nodes_count: "2"
           haltOnFailure: true
       - ShellCommand:
           name: Configure SSH config for bootstrap node
