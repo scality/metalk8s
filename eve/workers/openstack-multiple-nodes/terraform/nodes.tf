@@ -6,6 +6,21 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   security_groups = ["${openstack_networking_secgroup_v2.nodes.name}"]
 
   network = ["${var.openstack_network}"]
+
+  network {
+    name = "${openstack_networking_network_v2.internal.name}"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo chattr +i /etc/resolv.conf &&",
+      "sudo dhclient eth1"
+    ]
+    connection {
+      user     = "centos"
+      private_key = "${file("/home/eve/.ssh/terraform")}"
+    }
+  }
 }
 
 output "bootstrap_ip" {
@@ -25,6 +40,21 @@ resource "openstack_compute_instance_v2" "nodes" {
   security_groups = ["${openstack_networking_secgroup_v2.nodes.name}"]
 
   network = ["${var.openstack_network}"]
+
+  network {
+    name = "${openstack_networking_network_v2.internal.name}"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo chattr +i /etc/resolv.conf &&",
+      "sudo dhclient eth1"
+    ]
+    connection {
+      user     = "centos"
+      private_key = "${file("/home/eve/.ssh/terraform")}"
+    }
+  }
 
   count = "${var.nodes_count}"
 }
