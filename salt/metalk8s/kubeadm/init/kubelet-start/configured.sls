@@ -16,6 +16,7 @@ Create kubelet service environment file:
     - dir_mode: 750
     - context:
         options: {{ kubelet.service.options }}
+        node_ip: {{ bind_address }}
 
 Create kubelet config file:
   file.serialize:

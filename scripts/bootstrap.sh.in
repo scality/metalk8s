@@ -133,7 +133,13 @@ pillar_roots:
 # use new module.run format
 use_superseded:
   - module.run
+
+ext_pillar:
+  - metalk8s: /etc/metalk8s/bootstrap.yaml
 EOF
+
+  "$SALT_CALL" --local --retcode-passthrough saltutil.sync_all \
+      saltenv=metalk8s-@VERSION@
 }
 
 run_bootstrap_prechecks() {
@@ -207,6 +213,14 @@ set_salt_command() {
 sync_salt() {
     $SALT_MASTER_CALL '*' saltutil.sync_all refresh=True \
         saltenv=metalk8s-@VERSION@
+    local SALT_CONTAINER
+    SALT_CONTAINER="$(crictl ps -q \
+            --label io.kubernetes.pod.namespace=kube-system \
+            --label io.kubernetes.container.name=salt-master \
+            --state Running)"
+    test -n "$SALT_CONTAINER"
+    crictl exec -i "$SALT_CONTAINER" \
+        salt-run saltutil.sync_all saltenv=metalk8s-@VERSION@
 }
 
 run_certs() {
