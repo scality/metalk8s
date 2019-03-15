@@ -442,7 +442,7 @@ $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 	IMAGE_TAG = $(NGINX_IMAGE_NAME):$(NGINX_IMAGE_VERSION)
 $(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz: \
-	images/salt-master/Dockerfile
+	images/salt-master/Dockerfile images/salt-master/source.key
 	mkdir -p $(dir $@)
 	docker build -t $(SALT_MASTER_IMAGE_NAME):$(SALT_MASTER_IMAGE_VERSION) \
 		--build-arg SALT_VERSION=$(SALT_MASTER_IMAGE_SALT_VERSION) \
