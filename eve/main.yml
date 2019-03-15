@@ -116,6 +116,19 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
           haltOnFailure: true
       - ShellCommand:
+          name: Create bootstrap configuration file
+          command: |
+            sudo bash << EOF
+            mkdir -p /etc/metalk8s
+            cat > /etc/metalk8s/bootstrap.yaml << END
+            apiVersion: metalk8s.scality.com/v1alpha1
+            kind: BootstrapConfiguration
+            networks:
+              controlPlane: 10.0.0.0/8
+              workloadPlane: 10.0.0.0/8
+            END
+            EOF
+      - ShellCommand:
           name: Start the bootstrap process
           command: >
             sudo bash

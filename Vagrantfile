@@ -44,6 +44,16 @@ if ! test -x "/srv/scality/metalk8s-$SHORT_VERSION/bootstrap.sh"; then
     exit 1
 fi
 
+echo "Creating bootstrap configuration"
+mkdir -p /etc/metalk8s
+cat > /etc/metalk8s/bootstrap.yaml << EOF
+apiVersion: metalk8s.scality.com/v1alpha1
+kind: BootstrapConfiguration
+networks:
+  controlPlane: 10.0.0.0/8
+  workloadPlane: 10.0.0.0/8
+EOF
+
 echo "Launching bootstrap"
 exec "/srv/scality/metalk8s-$SHORT_VERSION/bootstrap.sh"
 SCRIPT

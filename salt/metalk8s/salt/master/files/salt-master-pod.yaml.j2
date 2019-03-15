@@ -61,6 +61,9 @@ spec:
         - name: pillar
           mountPath: '/srv/scality/metalk8s-{{ path_version }}/pillar'
           readOnly: true
+        - name: metalk8s-config
+          mountPath: '/etc/metalk8s'
+          readOnly: true
   volumes:
     - name: config
       hostPath:
@@ -81,4 +84,8 @@ spec:
     - name: pillar
       hostPath:
         path: '/srv/scality/metalk8s-{{ path_version }}/pillar'
+        type: Directory
+    - name: metalk8s-config
+      hostPath:
+        path: '/etc/metalk8s'
         type: Directory
