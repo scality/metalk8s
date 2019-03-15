@@ -1,5 +1,5 @@
 {
-  "name": "scality-ui-template",
+  "name": "metalk8s-platform-ui",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

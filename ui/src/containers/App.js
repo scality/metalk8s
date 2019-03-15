@@ -37,7 +37,7 @@ class App extends Component {
 
   render() {
     const intl = messages[this.props.language];
-    const applications = [{ label: 'Hyperdrive UI', onClick: () => {} }];
+    const applications = [];
 
     const help = [
       {

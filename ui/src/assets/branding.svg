@@ -1,7 +1,4 @@
-import React from 'react';
-
-const Logo = () => (
-  <svg
+<svg
     xmlns="http://www.w3.org/2000/svg"
     width="186"
     height="49"
@@ -50,6 +47,3 @@ const Logo = () => (
     <path fill="#ee4642" d="M23.16 26L16 30.07l7.16 4.15z" />
     <path fill="#f79836" d="M24 26v8.22l7.25-4.15z" />
   </svg>
-);
-
-export default Logo;

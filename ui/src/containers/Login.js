@@ -7,9 +7,9 @@ import { Button } from 'core-ui';
 import styled from 'styled-components';
 import loginImage from '../assets/tech.jpg';
 import classnames from 'classnames';
-import { autheticateAction } from '../ducks/login';
+import { authenticateAction } from '../ducks/login';
 import { injectIntl } from 'react-intl';
-import Logo from '../assets/branding';
+import { ReactComponent as Logo } from '../assets/branding.svg';
 
 const LoginFormContainer = styled.div`
   height: 100vh;
@@ -227,7 +227,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => {
   return {
-    authenticate: values => dispatch(autheticateAction(values))
+    authenticate: values => dispatch(authenticateAction(values))
   };
 };
 

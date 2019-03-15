@@ -32,7 +32,7 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // Action Creators
-export const autheticateAction = payload => {
+export const authenticateAction = payload => {
   return { type: AUTHENTICATE, payload };
 };
 
