@@ -2,18 +2,21 @@ import pytest
 from pytest_bdd import scenario, given, when, then, parsers
 
 # Scenarios
-@scenario('../features/pods_alive.feature', 'get pods')
-def test_pods(host):
+@scenario('../features/pods_alive.feature', 'List Pods')
+def test_list_pods(host):
+    pass
+
+@scenario('../features/pods_alive.feature', 'Exec in Pods')
+def test_exec_in_pods(host):
     pass
 
 # Given
 
-@given("The kubernetes api is available")
+@given("the Kubernetes API is available")
 def check_service(host):
    with host.sudo():
        cmd = "kubectl --kubeconfig=/etc/kubernetes/admin.conf cluster-info"
-       retcode = host.run(cmd).rc
-       assert retcode == 0
+       host.check_output(cmd)
 
 
 # Then
@@ -25,3 +28,18 @@ def check_resource_list(host, resource, namespace):
         cmd_res = host.check_output(cmd.format(resource, namespace))
     assert len(cmd_res.strip()) > 0, 'No {0} found in namespace {1}'.format(
             resource, namespace)
+
+@then(parsers.parse(
+    "we can exec '{command}' in the '{pod}' pod in the '{namespace}' namespace"))
+def check_exec(host, command, pod, namespace):
+    cmd = ' '.join([
+        'kubectl',
+        '--kubeconfig=/etc/kubernetes/admin.conf',
+        'exec',
+        '--namespace {0}'.format(namespace),
+        pod,
+        command,
+    ])
+
+    with host.sudo():
+        host.check_output(cmd)
