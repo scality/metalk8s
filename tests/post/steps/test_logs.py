@@ -18,4 +18,5 @@ def check_logs(host):
                         ' logs {} --limit-bytes=1 -n kube-system'.format(
                             pod_id))
             res = host.check_output(cmd_logs)
-            assert len(res.strip()) > 0, 'Error cannot retrive pod logs'
+            if 'salt-master' not in pod_id:
+                assert len(res.strip()) > 0, 'Error cannot retrive logs for {}'.format(pod_id)
