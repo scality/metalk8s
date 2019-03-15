@@ -4,7 +4,7 @@ const GET_LANG = 'GET_LANG';
 
 // Reducer
 const defaultState = {
-  lang: 'en'
+  lang: 'fr'
 };
 
 export default function reducer(state = defaultState, action = {}) {

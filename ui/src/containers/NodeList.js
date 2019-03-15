@@ -2,27 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Table } from 'core-ui';
 import memoizeOne from 'memoize-one';
-import { fetchNodesAction } from '../ducks/nodes';
 import { sortBy as sortByArray } from 'lodash';
+import { injectIntl } from 'react-intl';
 
-const columns = [
-  {
-    label: 'Name',
-    dataKey: 'name'
-  },
-  {
-    label: 'Capacity CPU',
-    dataKey: 'cpu'
-  },
-  {
-    label: 'Memory',
-    dataKey: 'memory'
-  },
-  {
-    label: 'Number of pods',
-    dataKey: 'pods'
-  }
-];
+import { fetchNodesAction } from '../ducks/nodes';
 
 class NodeList extends React.Component {
   constructor(props) {
@@ -31,7 +14,25 @@ class NodeList extends React.Component {
     this.state = {
       nodes: [],
       sortBy: 'name',
-      sortDirection: 'ASC'
+      sortDirection: 'ASC',
+      columns: [
+        {
+          label: props.intl.messages.name,
+          dataKey: 'name'
+        },
+        {
+          label: props.intl.messages.cpu_capacity,
+          dataKey: 'cpu'
+        },
+        {
+          label: props.intl.messages.memory,
+          dataKey: 'memory'
+        },
+        {
+          label: props.intl.messages.pods_number,
+          dataKey: 'pods'
+        }
+      ]
     };
     this.onSort = this.onSort.bind(this);
   }
@@ -70,7 +71,7 @@ class NodeList extends React.Component {
     return (
       <Table
         list={nodesSortedList}
-        columns={columns}
+        columns={this.state.columns}
         disableHeader={false}
         headerHeight={40}
         rowHeight={40}
@@ -95,7 +96,9 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(NodeList);
+export default injectIntl(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(NodeList)
+);

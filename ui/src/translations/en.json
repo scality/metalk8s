@@ -1,3 +1,13 @@
 {
-  "TITLE": "Welcome to Metalk8s Platform UI"
+  "title": "Welcome to Metalk8s Platform UI",
+  "name": "Name",
+  "cpu_capacity": "CPU Capacity",
+  "memory": "Memory",
+  "pods_number": "Number of pods",
+  "username": "Username",
+  "password": "Password",
+  "submit": "Submit",
+  "about": "About",
+  "nodes": "Nodes",
+  "log_out": "Log out"
 }

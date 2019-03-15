@@ -5,23 +5,30 @@ import * as Yup from 'yup';
 import { DebounceInput } from 'react-debounce-input';
 import { Button } from 'core-ui';
 import styled from 'styled-components';
-import loginImage from '../assets/scality-login.jpg';
+import loginImage from '../assets/tech.jpg';
 import classnames from 'classnames';
 import { autheticateAction } from '../ducks/login';
+import { injectIntl } from 'react-intl';
+import Logo from '../assets/branding';
 
 const LoginFormContainer = styled.div`
   height: 100vh;
   background: url(${loginImage});
+  background-size: cover;
+  position: relative;
 
   form {
-    width: 350px;
-    padding: 50px;
+    padding: 200px 50px;
+    position: absolute;
+    background-color: rgba(70, 103, 127, 0.8);
+    top: 0;
+    bottom: 0;
   }
 
   input {
-    padding: 0.5rem;
+    padding: 10px;
     font-size: 16px;
-    width: 100%;
+    width: 250px;
     display: block;
     border-radius: 4px;
     border: 1px solid #ccc;
@@ -93,6 +100,11 @@ const Error = styled.span`
   color: red;
 `;
 
+const LogoContainer = styled.div`
+  position: absolute;
+  top: 45px;
+`;
+
 const InputFeedback = ({ error }) =>
   error ? <div className="input-feedback">{error}</div> : null;
 
@@ -142,14 +154,18 @@ const TextInput = ({
 };
 
 const LoginForm = props => {
-  const { values, touched, errors, handleChange, isSubmitting } = props;
+  const { values, touched, errors, handleChange, isSubmitting, intl } = props;
   return (
     <Form autoComplete="off">
+      <LogoContainer>
+        <Logo />
+      </LogoContainer>
+
       {errors.authentication && <Error>{errors.authentication}</Error>}
       <TextInput
         name="username"
         type="text"
-        label="Username"
+        label={intl.messages.username}
         error={touched.username && errors.username}
         value={values.username}
         onChange={handleChange}
@@ -157,12 +173,16 @@ const LoginForm = props => {
       <TextInput
         name="password"
         type="password"
-        label="Password"
+        label={intl.messages.password}
         error={touched.password && errors.password}
         value={values.password}
         onChange={handleChange}
       />
-      <Button type="submit" text="Submit" disabled={isSubmitting} />
+      <Button
+        type="submit"
+        text={intl.messages.submit}
+        disabled={isSubmitting}
+      />
     </Form>
   );
 };
@@ -190,6 +210,7 @@ class Login extends React.Component {
           render={props => {
             const formikProps = {
               ...props,
+              ...this.props,
               errors: { ...props.errors, ...this.props.errors }
             };
             return <LoginForm {...formikProps} />;
@@ -210,7 +231,9 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Login);
+export default injectIntl(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(Login)
+);

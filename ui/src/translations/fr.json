@@ -1,3 +1,13 @@
 {
-  "TITLE": "Bienvenu!"
+  "title": "Bienvenu",
+  "name": "Nom",
+  "cpu_capacity": "CPU Capacité",
+  "memory": "Mémoire",
+  "pods_number": "Nombre de pods",
+  "username": "Nom d'utilisateur",
+  "password": "Mot de passe",
+  "submit": "Se connecter",
+  "about": "À propos",
+  "nodes": "Nodes",
+  "log_out": "Se Déconnecter"
 }

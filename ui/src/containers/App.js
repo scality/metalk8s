@@ -36,11 +36,12 @@ class App extends Component {
   // };
 
   render() {
+    const intl = messages[this.props.language];
     const applications = [{ label: 'Hyperdrive UI', onClick: () => {} }];
 
     const help = [
       {
-        label: 'About',
+        label: intl.about,
         onClick: () => {
           this.props.history.push('/about');
         }
@@ -49,14 +50,14 @@ class App extends Component {
 
     const user = {
       name: this.props.user && this.props.user.username,
-      actions: [{ label: 'Log out', onClick: this.props.logout }]
+      actions: [{ label: intl.log_out, onClick: this.props.logout }]
     };
 
     const sidebar = {
       expanded: this.props.sidebar.expanded,
       actions: [
         {
-          label: 'Nodes',
+          label: intl.nodes,
           icon: <i className="fas fa-server" />,
           onClick: () => {
             this.props.history.push('/nodes');
@@ -79,7 +80,7 @@ class App extends Component {
     const navbar = {
       onToggleClick: this.props.toggleSidebar,
       toggleVisible: true,
-      productName: 'MetalK8s Platform',
+      productName: intl.product_name,
       applications,
       help,
       user: this.props.user && user
@@ -87,7 +88,7 @@ class App extends Component {
 
     const theme = {
       brand: {
-        primary: '#1A237E'
+        primary: '#283593'
       }
     };
 

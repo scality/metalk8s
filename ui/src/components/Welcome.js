@@ -9,7 +9,7 @@ const Title = styled.h3`
 
 const Welcome = () => (
   <Title>
-    <FormattedMessage id="TITLE" />
+    <FormattedMessage id="title" />
   </Title>
 );
 
