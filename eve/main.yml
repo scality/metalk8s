@@ -90,19 +90,19 @@ stages:
       flavor: m1.medium
       path: eve/workers/openstack-single-node
     steps:
-      - ShellCommand:
+      - ShellCommand: &retrieve_iso
           name: Retrieve ISO image
           command: >
             curl -s -XGET -o metalk8s.iso
             "%(prop:artifacts_private_url)s/metalk8s.iso"
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &retrieve_iso_checksum
           name: Retrieve ISO image checksum
           command: >
             curl -s -XGET -o SHA256SUM
             "%(prop:artifacts_private_url)s/SHA256SUM"
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &check_iso_checksum
           name: Check image with checksum
           command: sha256sum -c SHA256SUM
           haltOnFailure: true
@@ -153,6 +153,9 @@ stages:
       path: eve/workers/openstack-multiple-nodes
     steps:
       - Git: *git_pull
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
       - ShellCommand:
           name: Init terraform
           command: "terraform init"
@@ -189,6 +192,35 @@ stages:
               sleep 5
               ssh -F bootstrap_ssh_config bootstrap id && break
             done;
+          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Copy ISO to bootstrap node
+          command: >
+            scp -F bootstrap_ssh_config ../../../../metalk8s.iso bootstrap:
+          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Create mountpoint in bootstrap node
+          command: >
+            ssh -F bootstrap_ssh_config bootstrap
+            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Mount ISO image in bootstrap node
+          command: >
+            ssh -F bootstrap_ssh_config bootstrap
+            sudo mount -o loop metalk8s.iso
+            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Start the bootstrap process in bootstrap node
+          command: >
+            ssh -F bootstrap_ssh_config bootstrap
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
           workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
           haltOnFailure: true
       - ShellCommand:
