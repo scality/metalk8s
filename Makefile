@@ -24,15 +24,21 @@ ALL = \
 	\
 	$(ISO_ROOT)/salt/metalk8s/orchestrate/bootstrap_step1.sls \
 	$(ISO_ROOT)/salt/metalk8s/orchestrate/bootstrap_step2.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/addons.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/calico.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/certs/ca.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/certs/clients.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/control-plane.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/etcd.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/kubeconfig.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/kubelet_install.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/kubelet_start.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/kubernetes_client.sls \
+	$(ISO_ROOT)/salt/metalk8s/bootstrap/mark_control_plane.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/precheck.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/preflight.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/registry.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/salt_master.sls \
-	$(ISO_ROOT)/salt/metalk8s/bootstrap/certs/ca.sls \
-	$(ISO_ROOT)/salt/metalk8s/bootstrap/certs/clients.sls \
 	\
 	$(ISO_ROOT)/salt/metalk8s/calico/configured.sls \
 	$(ISO_ROOT)/salt/metalk8s/calico/deployed.sls \
