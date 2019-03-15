@@ -1,12 +1,12 @@
-import pytest
-from pytest_bdd import scenario, given, when, then, parsers
+from pytest_bdd import scenario, then
 
 # Scenarios
 @scenario('../features/log_accessible.feature', 'get logs')
 def test_logs(host):
     pass
 
-@then("The pods logs should not be empty")
+
+@then("the pods logs should not be empty")
 def check_logs(host):
     with host.sudo():
         cmd = ('kubectl --kubeconfig=/etc/kubernetes/admin.conf'
@@ -19,4 +19,5 @@ def check_logs(host):
                             pod_id))
             res = host.check_output(cmd_logs)
             if 'salt-master' not in pod_id:
-                assert len(res.strip()) > 0, 'Error cannot retrive logs for {}'.format(pod_id)
+                assert len(res.strip()) > 0, (
+                    'Error cannot retrieve logs for {}'.format(pod_id))

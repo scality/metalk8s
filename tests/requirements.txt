@@ -4,30 +4,47 @@
 #
 #    pip-compile --output-file tests/requirements.txt tests/requirements.in
 #
+adal==1.2.1               # via kubernetes
 asn1crypto==0.24.0        # via cryptography
 atomicwrites==1.3.0       # via pytest
 attrs==19.1.0             # via pytest
 bcrypt==3.1.6             # via paramiko
+cachetools==3.1.0         # via google-auth
+certifi==2019.3.9         # via kubernetes, requests
 cffi==1.12.2              # via bcrypt, cryptography, pynacl
+chardet==3.0.4            # via requests
 cryptography==2.6.1
 enum34==1.1.6             # via cryptography, parse-type
 funcsigs==1.0.2           # via pytest
 glob2==0.6                # via pytest-bdd
-ipaddress==1.0.22         # via cryptography
+google-auth==1.6.3        # via kubernetes
+idna==2.8                 # via requests
+ipaddress==1.0.22         # via cryptography, kubernetes
+kubernetes==8.0.1
 mako==1.0.7               # via pytest-bdd
 markupsafe==1.1.1         # via mako
 more-itertools==5.0.0     # via pytest
+oauthlib==3.0.1           # via requests-oauthlib
 paramiko==2.4.2
 parse-type==0.4.2         # via pytest-bdd
 parse==1.11.1             # via parse-type, pytest-bdd
 pathlib2==2.3.3           # via pytest
 pluggy==0.9.0             # via pytest
 py==1.8.0                 # via pytest, pytest-bdd
-pyasn1==0.4.5             # via paramiko
+pyasn1-modules==0.2.4     # via google-auth
+pyasn1==0.4.5             # via paramiko, pyasn1-modules, rsa
 pycparser==2.19           # via cffi
+pyjwt==1.7.1              # via adal
 pynacl==1.3.0             # via paramiko
 pytest-bdd==3.1.0
 pytest==4.3.1
+python-dateutil==2.8.0    # via adal, kubernetes
+pyyaml==5.1               # via kubernetes
+requests-oauthlib==1.2.0  # via kubernetes
+requests==2.21.0          # via adal, kubernetes, requests-oauthlib
+rsa==4.0                  # via google-auth
 scandir==1.10.0           # via pathlib2
-six==1.12.0               # via bcrypt, cryptography, more-itertools, parse-type, pathlib2, pynacl, pytest, pytest-bdd, testinfra
+six==1.12.0               # via bcrypt, cryptography, google-auth, kubernetes, more-itertools, parse-type, pathlib2, pynacl, pytest, pytest-bdd, python-dateutil, testinfra, websocket-client
 testinfra==2.0.0
+urllib3==1.24.1           # via kubernetes, requests
+websocket-client==0.55.0  # via kubernetes

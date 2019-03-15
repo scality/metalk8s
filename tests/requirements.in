@@ -3,3 +3,4 @@ pytest-bdd >=3.1.0
 testinfra >=2.0.0
 paramiko >=2.4.2 # testinfra backend
 cryptography >=2.4.2
+kubernetes >= 8.0.0
