@@ -164,6 +164,8 @@ sync_salt() {
         salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
     crictl exec -i "$SALT_CONTAINER" \
         salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
+    crictl exec -i "$SALT_CONTAINER" \
+        salt-run metalk8s_saltutil.sync_auth saltenv=metalk8s-@@VERSION
 }
 
 orchestrate_bootstrap() {

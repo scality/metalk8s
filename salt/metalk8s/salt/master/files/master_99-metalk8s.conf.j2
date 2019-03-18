@@ -15,3 +15,12 @@ rest_cherrypy:
   port: 4507
   host: {{ salt_api_ip }}
   disable_ssl: true
+
+external_auth:
+  kubernetes_rbac:
+    node_admin%:
+      - '*':
+        - '.*'
+      - '@wheel'
+      - '@runner'
+      - '@jobs'

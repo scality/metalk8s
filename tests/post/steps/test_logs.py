@@ -15,6 +15,17 @@ def check_logs(host):
             '--no-headers -o custom-columns=":metadata.name"'
         )
         for pod_id in pods_list.split('\n'):
+            # The `salt-master` Pod gets skipped for two reasons:
+            #
+            # - We run two containers in the Pod (`salt-master` and `salt-api`),
+            #   which breaks the fairly simple `kubectl logs` invocation below
+            # - More importantly, when running this test, there may be no logs
+            #   from either one of those containers:
+            #
+            #   * `salt-master` only logs above `INFO` level, so no lines may be
+            #     emitted.
+            #   $ `salt-api` may not have been called at all, and as such not
+            #     have logged anything.
             if 'salt-master' in pod_id:
                 continue
 
