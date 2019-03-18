@@ -7,5 +7,12 @@
 
 
 from buildchain.build import *
+from buildchain.iso import *
 from buildchain.lint import *
 from buildchain.vagrant import *
+
+
+DOIT_CONFIG = {
+    'default_tasks': ['iso'],
+    'cleandep': True,
+}
