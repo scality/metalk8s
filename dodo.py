@@ -6,5 +6,6 @@
 """Build entry point."""
 
 
+from buildchain.build import *
 from buildchain.lint import *
 from buildchain.vagrant import *
