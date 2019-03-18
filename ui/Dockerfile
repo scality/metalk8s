@@ -1,13 +1,13 @@
-FROM node AS build-step
-
 ARG NGINX_IMAGE_VERSION=1.15.8
+
+FROM node AS build-step
 
 WORKDIR /home/node
 COPY . /home/node/
-RUN yarn && yarn build
+RUN yarn cache clean && yarn && yarn build
 
 
-FROM nginx
+FROM nginx:${NGINX_IMAGE_VERSION}
 
 WORKDIR /usr/share/nginx/html/
 RUN rm -rf ./*
