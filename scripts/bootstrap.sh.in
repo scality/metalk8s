@@ -154,9 +154,7 @@ sync_local() {
 orchestrate_bootstrap() {
     ${SALT_CALL} --local --retcode-passthrough state.orchestrate metalk8s.orchestrate.bootstrap_step1 saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     set_salt_command
-    # NOTE: somehow the minion fails to respond when syncing...
     sync_salt
-    # NOTE: ... but the rest still works
     ${SALT_MASTER_CALL}-run state.orchestrate metalk8s.orchestrate.bootstrap_step2 saltenv=metalk8s-2.0
 }
 

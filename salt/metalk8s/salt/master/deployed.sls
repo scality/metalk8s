@@ -33,19 +33,9 @@ Install and start salt master manifest:
       - file: Create salt master directories
 
 Make sure salt master container is up:
-  cmd.run:
-    - name: "[[ -n $(crictl ps --state RUNNING --label io.kubernetes.container.name=salt-master -q) ]]"
-    - retry:
-        attempts: 10
-        interval: 3
-        until: True
-    - require:
+  module.wait:
+    - cri.wait_container:
+      - salt-master
+      - running
+    - watch:
       - file: Install and start salt master manifest
-
-#Wait salt master:
-#  module.wait:
-#    - cri.wait_container:
-#      - salt-master
-#      - running
-#    - watch:
-#      - file: Install and start salt master manifest
