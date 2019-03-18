@@ -1,3 +1,2 @@
 include:
-  - metalk8s.kubeadm.init.addons 
-
+  - metalk8s.kubeadm.init.addons
