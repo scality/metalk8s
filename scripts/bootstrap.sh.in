@@ -166,10 +166,10 @@ sync_local() {
 }
 
 orchestrate_bootstrap() {
-    ${SALT_CALL} --local --retcode-passthrough state.orchestrate metalk8s.orchestrate.bootstrap_step1 saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --local --retcode-passthrough state.orchestrate metalk8s.orchestrate.bootstrap_without_master saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
     set_salt_command
     sync_salt
-    ${SALT_MASTER_CALL}-run state.orchestrate metalk8s.orchestrate.bootstrap_step2 saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_MASTER_CALL}-run state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
 }
 
 main() {

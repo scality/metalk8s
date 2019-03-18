@@ -22,8 +22,8 @@ CALICO_CNI_PLUGIN_BUILD = 1
 ALL = \
 	$(ISO_ROOT)/bootstrap.sh \
 	\
-	$(ISO_ROOT)/salt/metalk8s/orchestrate/bootstrap_step1.sls \
-	$(ISO_ROOT)/salt/metalk8s/orchestrate/bootstrap_step2.sls \
+	$(ISO_ROOT)/salt/metalk8s/orchestrate/bootstrap_without_master.sls \
+	$(ISO_ROOT)/salt/metalk8s/orchestrate/bootstrap_with_master.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/addons.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/calico.sls \
 	$(ISO_ROOT)/salt/metalk8s/bootstrap/certs/ca.sls \
