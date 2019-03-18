@@ -38,7 +38,7 @@ class NodeList extends React.Component {
   }
 
   componentDidMount() {
-    this.props.fetchNodes(this.props.user.token);
+    this.props.fetchNodes();
   }
 
   onSort({ sortBy, sortDirection }) {
@@ -85,14 +85,13 @@ class NodeList extends React.Component {
 }
 function mapStateToProps(state) {
   return {
-    user: state.login.user,
     nodes: state.nodes.nodes
   };
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchNodes: token => dispatch(fetchNodesAction(token))
+    fetchNodes: () => dispatch(fetchNodesAction())
   };
 };
 

@@ -42,18 +42,27 @@ export const logoutAction = () => {
 
 // Sagas
 function* authenticate({ payload }) {
-  const { response, errors } = yield call(Api.authenticate, payload);
-  if (response) {
-    yield put({
-      type: AUTHENTICATION_SUCCESS,
-      payload: response
-    });
-    yield call(history.push, '/');
-  } else
+  const { username, password } = payload;
+  const token = btoa(username + ':' + password); //base64Encode
+
+  const result = yield call(Api.authenticate, token);
+  if (result.error) {
     yield put({
       type: AUTHENTICATION_FAILED,
-      payload: errors
+      payload: result.error.response.data
     });
+  } else {
+    localStorage.setItem('token', token);
+    yield put({
+      type: AUTHENTICATION_SUCCESS,
+      payload: {
+        username,
+        password,
+        token
+      }
+    });
+    yield call(history.push, '/');
+  }
 }
 
 function* logout() {

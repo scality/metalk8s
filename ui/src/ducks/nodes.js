@@ -1,4 +1,4 @@
-import { call, takeEvery, put } from 'redux-saga/effects';
+import { call, put, takeLatest } from 'redux-saga/effects';
 import * as Api from '../services/api';
 
 // Actions
@@ -20,8 +20,8 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // Action Creators
-export const fetchNodesAction = token => {
-  return { type: FETCH_NODES, token };
+export const fetchNodesAction = () => {
+  return { type: FETCH_NODES };
 };
 
 export const setNodesAction = payload => {
@@ -29,13 +29,19 @@ export const setNodesAction = payload => {
 };
 
 // Sagas
-function* fetchNodes(token) {
+function* fetchNodes() {
   try {
-    const nodes = yield call(Api.getNodes, token);
+    const result = yield call(Api.getNodes);
+    const nodes = result.body.items.map(node => ({
+      name: node.metadata.name,
+      cpu: node.status.capacity.cpu,
+      memory: node.status.capacity.memory,
+      pods: node.status.capacity.pods
+    }));
     yield put(setNodesAction(nodes));
   } catch (e) {}
 }
 
 export function* nodesSaga() {
-  yield takeEvery(FETCH_NODES, fetchNodes);
+  yield takeLatest(FETCH_NODES, fetchNodes);
 }
