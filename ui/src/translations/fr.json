@@ -1,0 +1,13 @@
+{
+  "title": "Platforme MetalK8s",
+  "name": "Nom",
+  "cpu_capacity": "Nombre de CPU",
+  "memory": "Mémoire",
+  "pods_number": "Nombre de pods",
+  "username": "Nom d'utilisateur",
+  "password": "Mot de passe",
+  "submit": "Connexion",
+  "about": "À propos",
+  "nodes": "Nodes",
+  "log_out": "Déconnexion"
+}
