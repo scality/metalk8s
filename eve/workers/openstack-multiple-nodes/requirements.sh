@@ -1,14 +1,19 @@
 #!/bin/bash
 
+yum install -y epel-release
+
 PACKAGES=(
     curl
     git
+    python34-pip
     unzip
 )
 
 yum install -y "${PACKAGES[@]}"
 
 yum clean all
+
+pip3 install tox
 
 TERRAFORM_VERSION=0.11.13
 
