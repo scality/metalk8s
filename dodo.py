@@ -7,3 +7,4 @@
 
 
 from buildchain.lint import *
+from buildchain.vagrant import *
