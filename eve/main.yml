@@ -90,6 +90,7 @@ stages:
       flavor: m1.medium
       path: eve/workers/openstack-single-node
     steps:
+      - Git: *git_pull
       - ShellCommand: &retrieve_iso
           name: Retrieve ISO image
           command: >

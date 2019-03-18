@@ -2,6 +2,7 @@
 
 PACKAGES=(
     curl
+    git
 )
 
 yum install -y "${PACKAGES[@]}"
