@@ -7,25 +7,16 @@ const api = axios.create({
 });
 
 //Basic Auth
-export async function authenticate({ username, password }) {
+export async function authenticate(token) {
   localStorage.removeItem('token');
-  const token = btoa(username + ':' + password); //base64Encode
   try {
-    await api.get('/', {
+    return await api.get('/', {
       headers: {
         Authorization: 'Basic ' + token
       }
     });
-    localStorage.setItem('token', token);
-    return {
-      response: {
-        username,
-        password,
-        token
-      }
-    };
-  } catch (errors) {
-    return { errors: errors.response.data };
+  } catch (error) {
+    return { error };
   }
 }
 

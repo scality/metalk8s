@@ -1,4 +1,4 @@
-import { call, takeEvery, put } from 'redux-saga/effects';
+import { call, put, takeLatest } from 'redux-saga/effects';
 import * as Api from '../services/api';
 
 // Actions
@@ -43,5 +43,5 @@ function* fetchNodes(token) {
 }
 
 export function* nodesSaga() {
-  yield takeEvery(FETCH_NODES, fetchNodes);
+  yield takeLatest(FETCH_NODES, fetchNodes);
 }
