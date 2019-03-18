@@ -704,9 +704,9 @@
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.7.2.tgz#1498c3eb78ee7c78c5488418707de90aaf58d5d7"
 
-"@kubernetes/client-node@scality/kubernetes-client-javascript.git#browser":
+"@kubernetes/client-node@git://github.com/scality/kubernetes-client-javascript.git#browser":
   version "0.8.2"
-  resolved "https://codeload.github.com/scality/kubernetes-client-javascript/tar.gz/0aec4e67576cb6823a6b635f881592b8ac853f29"
+  resolved "git://github.com/scality/kubernetes-client-javascript.git#0aec4e67576cb6823a6b635f881592b8ac853f29"
   dependencies:
     "@types/js-yaml" "^3.11.2"
     "@types/node" "^10.12.0"
@@ -2316,7 +2316,7 @@ core-js@^1.0.0:
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-1.2.7.tgz#652294c14651db28fa93bd2d5ff2983a4f08c636"
   integrity sha1-ZSKUwUZR2yj6k70tX/KYOk8IxjY=
 
-core-ui@scality/core-ui.git:
+"core-ui@github:scality/core-ui.git":
   version "0.1.0"
   resolved "https://codeload.github.com/scality/core-ui/tar.gz/943476825c06554627d41c1c31bcd07736d63277"
 
