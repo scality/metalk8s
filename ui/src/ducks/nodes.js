@@ -20,8 +20,8 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // Action Creators
-export const fetchNodesAction = token => {
-  return { type: FETCH_NODES, token };
+export const fetchNodesAction = () => {
+  return { type: FETCH_NODES };
 };
 
 export const setNodesAction = payload => {
@@ -29,9 +29,9 @@ export const setNodesAction = payload => {
 };
 
 // Sagas
-function* fetchNodes(token) {
+function* fetchNodes() {
   try {
-    const result = yield call(Api.getNodes, token);
+    const result = yield call(Api.getNodes);
     const nodes = result.body.items.map(node => ({
       name: node.metadata.name,
       cpu: node.status.capacity.cpu,
