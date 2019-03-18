@@ -159,6 +159,7 @@ ALL = \
 	$(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz \
 	$(ISO_ROOT)/images/registry-$(REGISTRY_IMAGE_TAG).tar \
 	$(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz \
+	$(ISO_ROOT)/images/$(PLATFORM_UI_IMAGE_NAME)-$(PLATFORM_UI_IMAGE_VERSION).tar.gz \
 
 
 PACKAGE_BUILD_CONTAINER := $(BUILD_ROOT)/package-build-container
@@ -447,6 +448,13 @@ $(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz
 		--build-arg SALT_VERSION=$(SALT_MASTER_IMAGE_SALT_VERSION) \
 		images/salt-master
 	docker save $(SALT_MASTER_IMAGE_NAME):$(SALT_MASTER_IMAGE_VERSION) | gzip > $@
+$(ISO_ROOT)/images/$(PLATFORM_UI_IMAGE_NAME)-$(PLATFORM_UI_IMAGE_VERSION).tar.gz: \
+	ui/Dockerfile
+	mkdir -p $(dir $@)
+	docker build -t $(PLATFORM_UI_IMAGE_NAME):$(PLATFORM_UI_IMAGE_VERSION) \
+	--build-arg NGINX_IMAGE_VERSION=$(NGINX_IMAGE_VERSION) \
+		ui/
+	docker save $(PLATFORM_UI_IMAGE_NAME):$(PLATFORM_UI_IMAGE_VERSION) | gzip > $@
 $(ISO_ROOT)/images/%.tar.gz:
 	mkdir -p $(@D)
 	$(DOCKER) pull $(IMAGE)
