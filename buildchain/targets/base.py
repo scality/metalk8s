@@ -7,7 +7,7 @@
 import abc
 import operator
 from pathlib import Path
-from typing import List, Optional, Sequence
+from typing import Any, List, Optional, Sequence
 
 from buildchain import types
 
@@ -88,3 +88,26 @@ class CompositeTarget(abc.ABC):
     @abc.abstractmethod
     def execution_plan(self) -> List[dict]:
         """List of tasks producing the target."""
+
+
+class FileTarget(Target, AtomicTarget):
+    """A task that produce an output file as target."""
+
+    def __init__(self, destination: Path, **kwargs: Any):
+        """Initialize the input/output of the target.
+
+        Arguments:
+            destination: path to the output file
+
+        Keyword Arguments:
+            They are passed to `Target` init method.
+        """
+        if not destination:
+            raise ValueError('`destination` cannot be empty')
+        kwargs['targets'] = [destination]
+        super().__init__(**kwargs)
+
+    @property
+    def destination(self) -> Path:
+        """Path to the output file."""
+        return Path(self.targets[0])
