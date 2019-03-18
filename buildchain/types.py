@@ -6,6 +6,8 @@
 
 from typing import Any, Callable, Dict, List, Tuple, Union
 
+import doit  # type: ignore
+
 
 # A doit action.
 Action = Union[
@@ -16,3 +18,6 @@ Action = Union[
     # A shell command (as a list of string).
     List[str],
 ]
+
+# A doit task.
+Task = doit.task.Task
