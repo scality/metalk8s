@@ -78,6 +78,7 @@ def task__iso_populate() -> dict:
             '_iso_mkdir_root',
             '_iso_render_bootstrap',
             '_iso_generate_product_txt',
+            'images',
         ],
     }
 
