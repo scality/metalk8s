@@ -12,6 +12,9 @@ include packages.mk
 
 PWD := $(shell pwd)
 
+METALK8S_VERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
+METALK8S_BUILD ?= 1
+
 BUILD_ROOT ?= $(PWD)/_build
 ISO_ROOT ?= $(BUILD_ROOT)/root
 ISO ?= $(BUILD_ROOT)/metalk8s.iso
@@ -19,7 +22,12 @@ ISO ?= $(BUILD_ROOT)/metalk8s.iso
 CALICO_CNI_PLUGIN_VERSION = 3.5.1
 CALICO_CNI_PLUGIN_BUILD = 1
 
+METALK8S_UI_CONTAINER_BUILD ?= 1
+METALK8S_UI_CONTAINER_TAG = $(METALK8S_VERSION)-$(METALK8S_BUILD)-$(METALK8S_UI_CONTAINER_BUILD)
+
 ALL = \
+	$(BUILD_ROOT)/images/metalk8s-ui-container \
+	\
 	$(ISO_ROOT)/bootstrap.sh \
 	\
 	$(ISO_ROOT)/salt/metalk8s/calico/configured.sls \
@@ -480,3 +488,5 @@ $(ISO_ROOT)/images/%.tar $(ISO_ROOT)/salt/metalk8s/containerd/files/%.tar:
 #
 
 include make/lint.mk
+
+include make/metalk8s-rpm.mk
