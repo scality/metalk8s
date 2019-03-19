@@ -20,7 +20,6 @@ PROJECT_NAME : str = 'MetalK8s'
 BUILD_ROOT : Path = ROOT/'_build'
 
 # Vagrant configuration.
-VAGRANT : str = 'vagrant'
 VAGRANT_PROVIDER : str = 'virtualbox'
 VAGRANT_UP_OPTS : Tuple[str, ...] = (
     '--provision',
@@ -28,3 +27,12 @@ VAGRANT_UP_OPTS : Tuple[str, ...] = (
     '--parallel',
     '--provider', VAGRANT_PROVIDER
 )
+
+# External commands {{{
+
+# Name of the command (if in the PATH) or path to the binary.
+
+GIT     : str = 'git'
+VAGRANT : str = 'vagrant'
+
+# }}}
