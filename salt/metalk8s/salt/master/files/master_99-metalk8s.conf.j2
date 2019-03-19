@@ -1,9 +1,9 @@
 file_roots:
   {{ saltenv }}:
-    - /srv/scality/{{ saltenv }}/salt
+    - {{ iso_root_path }}/salt
 pillar_roots:
   {{ saltenv }}:
-    - /srv/scality/{{ saltenv }}/pillar
+    - {{ iso_root_path }}/pillar
 peer:
   .*:
     - x509.sign_remote_certificate

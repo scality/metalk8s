@@ -135,6 +135,7 @@ ALL = \
 	$(ISO_ROOT)/salt/_states/docker_registry.py \
 	$(ISO_ROOT)/salt/_states/kubernetes.py \
 	\
+	$(ISO_ROOT)/pillar/metalk8s.sls \
 	$(ISO_ROOT)/pillar/repositories.sls \
 	$(ISO_ROOT)/pillar/top.sls \
 	\
@@ -221,6 +222,11 @@ $(ISO_ROOT)/salt/%: salt/%
 	mkdir -p $(shell dirname $@)
 	rm -f $@
 	cp -a $< $@
+
+$(ISO_ROOT)/pillar/metalk8s.sls: pillar/metalk8s.sls.in $(ISO_ROOT)/product.txt
+	mkdir -p $(@D)
+	rm -f $@
+	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 
 $(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in $(ISO_ROOT)/product.txt
 	mkdir -p $(shell dirname $@)

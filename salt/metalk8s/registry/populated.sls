@@ -1,4 +1,5 @@
 {%- from "metalk8s/macro.sls" import pkg_installed with context %}
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 
 {% set images = [
     {
@@ -51,7 +52,7 @@ Install skopeo:
 Import {{ image.name }} image:
   docker_registry.image_managed:
     - name: localhost:5000/{{ saltenv }}/{{ image.name }}:{{ image.tag }}
-    - archive_path: /srv/scality/{{ saltenv }}/images/{{ image.name }}-{{ image.tag }}.tar.gz
+    - archive_path: {{ metalk8s.iso_root_path }}/images/{{ image.name }}-{{ image.tag }}.tar.gz
     - tls_verify: false
     - require:
       - pkg: Install skopeo

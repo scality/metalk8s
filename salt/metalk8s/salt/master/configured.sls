@@ -1,4 +1,4 @@
-{% set metal_version = '2.0' %}
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 
 Configure salt master:
   file.managed:
@@ -11,4 +11,4 @@ Configure salt master:
     - makedirs: true
     - backup: false
     - defaults:
-      metal_version: {{ metal_version }}
+        iso_root_path: {{ metalk8s.iso_root_path }}

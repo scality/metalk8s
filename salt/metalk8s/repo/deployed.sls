@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set package_repositories_name = 'package-repositories' %}
@@ -33,7 +34,7 @@ Install package repositories manifest:
         image: {{ package_repositories_image }}
         name: {{ package_repositories_name }}
         version: {{ package_repositories_version }}
-        packages_path: {{ repo.base_path }}
+        packages_path: {{ metalk8s.iso_root_path }}/{{ repo.relative_path }}
         nginx_configuration_path: {{ nginx_configuration_path }}
     - require:
       - file: Generate package repositories nginx configuration

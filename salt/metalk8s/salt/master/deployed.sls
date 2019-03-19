@@ -1,3 +1,5 @@
+{% from "metalk8s/map.jinja" import metalk8s with context %}
+
 {% set salt_master_image = 'salt-master' %}
 {% set salt_master_version = '2018.3.3-1' %}
 {% set registry_url = 'localhost:5000' %}
@@ -25,8 +27,9 @@ Install and start salt master manifest:
     - backup: false
     - defaults:
         registry_url: {{ registry_url }}
-      salt_master_image: {{ salt_master_image }}
-      salt_master_version: {{ salt_master_version }}
+        salt_master_image: {{ salt_master_image }}
+        salt_master_version: {{ salt_master_version }}
+        iso_root_path: {{ metalk8s.iso_root_path }}
     - require:
       - file: Create salt master directories
 

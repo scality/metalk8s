@@ -56,10 +56,10 @@ spec:
         - name: run
           mountPath: '/var/run/salt'
         - name: states
-          mountPath: '/srv/scality/{{ saltenv }}/salt'
+          mountPath: '{{ iso_root_path }}/salt'
           readOnly: true
         - name: pillar
-          mountPath: '/srv/scality/{{ saltenv }}/pillar'
+          mountPath: '{{ iso_root_path }}/pillar'
           readOnly: true
         - name: metalk8s-config
           mountPath: '/etc/metalk8s'
@@ -79,11 +79,11 @@ spec:
         type: Directory
     - name: states
       hostPath:
-        path: '/srv/scality/{{ saltenv }}/salt'
+        path: '{{ iso_root_path }}/salt'
         type: Directory
     - name: pillar
       hostPath:
-        path: '/srv/scality/{{ saltenv }}/pillar'
+        path: '{{ iso_root_path }}/pillar'
         type: Directory
     - name: metalk8s-config
       hostPath:
