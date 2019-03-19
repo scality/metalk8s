@@ -3,10 +3,11 @@ from configparser import ConfigParser
 from itertools import chain
 
 import pytest
-from pytest_bdd import(
+from pytest_bdd import (
     given,
     then,
     when,
+    parsers,
 )
 
 
@@ -68,3 +69,13 @@ def rerun_bootstrap(host, version):
 @then("the Kubernetes API is available")
 def verify_kubeapi_service(host):
     _verify_kubeapi_service(host)
+
+
+@given(parsers.parse("Pods with app label '{app}' are '{state}'"))
+def check_pod_state(host, app, state):
+    with host.sudo():
+        cmd = ("kubectl --kubeconfig=/etc/kubernetes/admin.conf"
+               " get pods -n kube-system --field-selector=status.phase={state}"
+               " --selector=k8s-app={app} --no-headers")
+        res = host.check_output(cmd.format(app=app, state=state))
+        assert len(res.strip()) > 0, "No {} pod found".format(state.lower())
