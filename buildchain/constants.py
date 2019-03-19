@@ -22,6 +22,10 @@ DOCKER_REGISTRY : str = 'docker.io/library'
 
 # Root of the generated ISO.
 ISO_ROOT : Path = config.BUILD_ROOT/'root'
+# Root of the repositories on the ISO.
+REPO_ROOT : Path = ISO_ROOT/'packages'
+# Root for the packages that we build ourself.
+PKG_ROOT : Path = config.BUILD_ROOT/'packages'
 
 # }}}
 # Versions {{{
