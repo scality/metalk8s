@@ -236,7 +236,7 @@ all-local: $(ALL) ## Build all artifacts in the build tree
 $(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in $(ISO_ROOT)/product.txt
 	mkdir -p $(@D)
 	rm -f $@
-	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
+	sed s/@@VERSION/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 	chmod a+x $@
 
 $(ISO_ROOT)/salt/%: salt/%
