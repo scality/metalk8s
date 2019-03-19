@@ -28,14 +28,21 @@ Overview:
 
 
 import datetime as dt
+import os
 import socket
 import subprocess
-from typing import Sequence
+from pathlib import Path
+from typing import List, Sequence
+
+import doit  # type: ignore
 
 from buildchain import config
 from buildchain import constants
 from buildchain import targets as helper
 from buildchain import utils
+
+
+ISO_FILE : Path = config.BUILD_ROOT/'{}.iso'.format(config.PROJECT_NAME.lower())
 
 
 def task_iso() -> dict:
@@ -45,6 +52,7 @@ def task_iso() -> dict:
         'task_dep': [
             '_iso_mkdir_root',
             '_iso_populate',
+            '_iso_build',
         ],
     }
 
@@ -114,6 +122,41 @@ def task__iso_generate_product_txt() -> dict:
     }
 
 
+@doit.create_after(executed='_iso_populate')  # type: ignore
+def task__iso_build() -> dict:
+    """Create the ISO from the files in ISO_ROOT."""
+    mkisofs = [
+        config.MKISOFS, '-output',  ISO_FILE,
+        '-quiet',
+        '-rock',
+        '-joliet',
+        '-joliet-long',
+        '-full-iso9660-filenames',
+        '-volid', '{} {}'.format(config.PROJECT_NAME, constants.VERSION),
+        '--iso-level', '3',
+        '-gid', '0',
+        '-uid', '0',
+        '-input-charset', 'utf-8',
+        '-output-charset', 'utf-8',
+        constants.ISO_ROOT
+    ]
+    doc = 'Create the ISO from the files in {}.'.format(
+        utils.build_relpath(constants.ISO_ROOT)
+    )
+    # Every file used for the ISO is a dependency.
+    depends = list_iso_files()
+    depends.append(constants.VERSION_FILE)
+    return {
+        'title': lambda task: utils.title_with_target1('MKISOFS', task),
+        'doc': doc,
+        'actions': [mkisofs],
+        'targets': [ISO_FILE],
+        'file_dep': depends,
+        'task_dep': ['_build_root', '_iso_mkdir_root'],
+        'clean': True,
+    }
+
+
 def git_revision() -> str:
     """Return the current git revision.
 
@@ -127,6 +170,17 @@ def git_revision() -> str:
         return stdout.decode('utf-8').rstrip()
     except subprocess.CalledProcessError:
         return ''
+
+
+def list_iso_files() -> List[Path]:
+    """List all the files under the ISO root."""
+    res : List[Path] = []
+    for root, _, files in os.walk(constants.ISO_ROOT):
+        if not root.startswith(str(constants.ISO_ROOT)):
+            continue
+        root_path = Path(root)
+        res.extend(root_path/filename for filename in files)
+    return res
 
 
 __all__ = utils.export_only_tasks(__name__)
