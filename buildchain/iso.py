@@ -80,6 +80,7 @@ def task_populate_iso() -> dict:
             '_iso_generate_product_txt',
             'images',
             'salt_tree',
+            'packaging',
         ],
     }
 
