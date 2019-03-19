@@ -38,6 +38,7 @@ def task_iso() -> dict:
         'actions': None,
         'task_dep': [
             '_iso_mkdir_root',
+            'populate_iso',
         ],
     }
 
@@ -47,6 +48,23 @@ def task__iso_mkdir_root() -> dict:
     return helper.Mkdir(
         directory=constants.ISO_ROOT, task_dep=['_build_root']
     ).task
+
+
+def task_populate_iso() -> dict:
+    """Populate the ISO_ROOT with required files."""
+
+    doc = 'Populate {} with required files.'.format(
+        utils.build_relpath(constants.ISO_ROOT)
+    )
+    return {
+        'basename': 'populate_iso',
+        'actions': None,
+        'doc': doc,
+        # Aggregate here the tasks that put files into ISO_ROOT.
+        'task_dep': [
+            '_iso_mkdir_root',
+        ],
+    }
 
 
 __all__ = utils.export_only_tasks(__name__)
