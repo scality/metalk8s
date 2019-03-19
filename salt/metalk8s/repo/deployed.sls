@@ -2,7 +2,7 @@
 
 {%- set package_repositories_name = 'package-repositories' %}
 {%- set package_repositories_version = '1.0.0' %}
-{%- set package_repositories_image = 'localhost:5000/' ~ saltenv ~ '/' ~ 'nginx:1.15.8' %}
+{%- set package_repositories_image = 'localhost:5000/' ~ saltenv ~ '/nginx:1.15.8' %}
 {%- set nginx_configuration_path = '/var/lib/metalk8s/package-repositories/nginx.conf' %}
 
 Generate package repositories nginx configuration:

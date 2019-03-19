@@ -35,7 +35,8 @@ Create coredns deployment:
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - source: salt://metalk8s/kubeadm/init/addons/files/coredns_deployment.yaml
+    - source: salt://metalk8s/kubeadm/init/addons/files/coredns_deployment.yaml.j2
+    - template: jinja
   require:
     - kubernetes: Create coredns ConfigMap
     - pkg: Install Python Kubernetes client

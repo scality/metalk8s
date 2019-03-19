@@ -1,9 +1,9 @@
 file_roots:
-  metalk8s-{{ metal_version }}:
-    - /srv/scality/metalk8s-2.0/salt
+  {{ saltenv }}:
+    - /srv/scality/{{ saltenv }}/salt
 pillar_roots:
-  metalk8s-{{ metal_version }}:
-    - /srv/scality/metalk8s-2.0/pillar
+  {{ saltenv }}:
+    - /srv/scality/{{ saltenv }}/pillar
 peer:
   .*:
     - x509.sign_remote_certificate

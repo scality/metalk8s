@@ -38,7 +38,6 @@
         'tag': '2018.3.3-1',
     },
 ] %}
-{% set images_path = '/srv/scality/metalk8s-2.0/images' %}
 
 include:
   - metalk8s.repo
@@ -51,8 +50,8 @@ Install skopeo:
 {% for image in images %}
 Import {{ image.name }} image:
   docker_registry.image_managed:
-    - name: localhost:5000/metalk8s-2.0/{{ image.name }}:{{ image.tag }}
-    - archive_path: /srv/scality/metalk8s-2.0/images/{{ image.name }}-{{ image.tag }}.tar.gz
+    - name: localhost:5000/{{ saltenv }}/{{ image.name }}:{{ image.tag }}
+    - archive_path: /srv/scality/{{ saltenv }}/images/{{ image.name }}-{{ image.tag }}.tar.gz
     - tls_verify: false
     - require:
       - pkg: Install skopeo

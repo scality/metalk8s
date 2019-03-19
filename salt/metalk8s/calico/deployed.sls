@@ -1,6 +1,6 @@
 {%- from "metalk8s/map.jinja" import networks with context %}
 
-{%- set image = "localhost:5000/metalk8s-2.0/calico-node:3.5.1" -%}
+{%- set image = "localhost:5000/" ~ saltenv ~ "/calico-node:3.5.1" -%}
 
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
