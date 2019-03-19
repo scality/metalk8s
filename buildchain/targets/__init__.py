@@ -8,3 +8,4 @@ from buildchain.targets.base import (
     Target, AtomicTarget, CompositeTarget, FileTarget
 )
 from buildchain.targets.directory import Mkdir
+from buildchain.targets.template import TemplateFile
