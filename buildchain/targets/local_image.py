@@ -21,10 +21,11 @@ from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
 from buildchain import types
-from buildchain.targets.image import ContainerImage
+
+from . import image
 
 
-class LocalImage(ContainerImage):
+class LocalImage(image.ContainerImage):
     """A locally built container image."""
     def __init__(
         self,

@@ -8,14 +8,14 @@ import operator
 from typing import Any
 from pathlib import Path
 
-from buildchain.targets.base import FileTarget
+from . import base
 
 
 # File extension used by compressed images.
 COMPRESSED_FILEEXT = '.gz'
 
 
-class ContainerImage(FileTarget):
+class ContainerImage(base.FileTarget):
     """A container image."""
     def __init__(
         self,

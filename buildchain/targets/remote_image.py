@@ -20,10 +20,11 @@ from buildchain import config
 from buildchain import coreutils
 from buildchain import types
 from buildchain import utils
-from buildchain.targets.image import ContainerImage
+
+from . import image
 
 
-class RemoteImage(ContainerImage):
+class RemoteImage(image.ContainerImage):
     """A remote container image to download."""
 
     def __init__(

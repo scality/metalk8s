@@ -42,10 +42,11 @@ from buildchain import coreutils
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
-from buildchain.targets.directory import Mkdir
-from buildchain.targets.image import ContainerImage
-from buildchain.targets.package import Package
-import buildchain.targets.base as base
+
+from . import base
+from . import image
+from . import package
+from . import directory
 
 
 MKDIR_ROOT_TASK_NAME = 'mkdir_repo_root'
@@ -62,8 +63,8 @@ class Repository(base.Target, base.CompositeTarget):
         self,
         basename: str,
         name: str,
-        builder: ContainerImage,
-        packages: Optional[Sequence[Package]]=None,
+        builder: image.ContainerImage,
+        packages: Optional[Sequence[package.Package]]=None,
         **kwargs: Any
     ):
         """Initialize the repository.
@@ -120,7 +121,7 @@ class Repository(base.Target, base.CompositeTarget):
             """Delete the repository metadata directory and its contents."""
             coreutils.rm_rf(self.repodata)
 
-        mkdir = Mkdir(directory=self.repodata).task
+        mkdir = directory.Mkdir(directory=self.repodata).task
         actions = mkdir['actions']
         actions.append(self._buildrepo_cmd())
         targets = [self.repodata/'repomd.xml']
@@ -175,7 +176,7 @@ class Repository(base.Target, base.CompositeTarget):
     def _mkdir_repo_root(self) -> types.TaskDict:
         """Create the root directory for the repository."""
         task = self.basic_task
-        mkdir = Mkdir(directory=self.rootdir).task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
         task.update({
             'name': MKDIR_ROOT_TASK_NAME,
             'doc': 'Create root directory for the {} repository.'.format(
@@ -191,7 +192,7 @@ class Repository(base.Target, base.CompositeTarget):
     def _mkdir_repo_arch(self) -> types.TaskDict:
         """Create the CPU architecture directory for the repository."""
         task = self.basic_task
-        mkdir = Mkdir(directory=self.rootdir/self.ARCH).task
+        mkdir = directory.Mkdir(directory=self.rootdir/self.ARCH).task
         task.update({
             'name': MKDIR_ARCH_TASK_NAME,
             'doc': 'Create arch directory for the {} repository.'.format(
@@ -207,14 +208,14 @@ class Repository(base.Target, base.CompositeTarget):
         ))
         return task
 
-    def _get_rpm_path(self, pkg: Package) -> Path:
+    def _get_rpm_path(self, pkg: package.Package) -> Path:
         """Return the path of the RPM of a given package."""
         filename = pkg.srpm.name.replace(
             '.src.rpm', '.{}.rpm'.format(self.ARCH)
         )
         return self.rootdir/self.ARCH/filename
 
-    def _buildrpm_cmd(self, pkg: Package) -> List[str]:
+    def _buildrpm_cmd(self, pkg: package.Package) -> List[str]:
         """Return the command to run `buildsrpm` inside a container."""
         rpm = self._get_rpm_path(pkg)
         extra_env = {

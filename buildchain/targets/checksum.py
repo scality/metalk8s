@@ -11,10 +11,11 @@ from buildchain import constants
 from buildchain import coreutils
 from buildchain import types
 from buildchain import utils
-from buildchain.targets.base import FileTarget
+
+from . import base
 
 
-class Sha256Sum(FileTarget):
+class Sha256Sum(base.FileTarget):
     """Compute the sha256 digest of a list of files."""
 
     def __init__(

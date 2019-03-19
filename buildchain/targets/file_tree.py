@@ -38,7 +38,8 @@ from buildchain import constants
 from buildchain import coreutils
 from buildchain import types
 from buildchain import utils
-import buildchain.targets.base as base
+
+from . import base
 
 
 MAKE_TASK_NAME : str = 'make_tree'

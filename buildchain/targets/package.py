@@ -38,9 +38,10 @@ from buildchain import config
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
-from buildchain.targets.directory import Mkdir
-from buildchain.targets.image import ContainerImage
-import buildchain.targets.base as base
+
+from . import base
+from . import directory
+from . import image
 
 
 SOURCE_URL_PATTERN = re.compile(r'^Source\d+:\s+(?P<url>.+)$')
@@ -59,7 +60,7 @@ class Package(base.Target, base.CompositeTarget):
         version: str,
         build_id: int,
         sources: Sequence[Path],
-        builder: ContainerImage,
+        builder: image.ContainerImage,
         **kwargs: Any
     ):
         """Initialize the package.
@@ -131,7 +132,7 @@ class Package(base.Target, base.CompositeTarget):
     def make_package_directory(self) -> types.TaskDict:
         """Create the package's directory."""
         task = self.basic_task
-        mkdir = Mkdir(directory=self.rootdir).task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
         task.update({
             'name': self.MKDIR_TASK_NAME,
             'doc': 'Create directory for {}.'.format(self.name),
@@ -161,7 +162,7 @@ class Package(base.Target, base.CompositeTarget):
         """Download the source files to build the package."""
         targets = [self.srcdir]
         targets.extend(self.sources)
-        actions = Mkdir(directory=self.srcdir).task['actions']
+        actions = directory.Mkdir(directory=self.srcdir).task['actions']
         actions.append(self._download_sources)
         task = self.basic_task
         task.update({
