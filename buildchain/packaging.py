@@ -26,6 +26,9 @@ Overview;
 """
 
 
+from pathlib import Path
+from typing import Dict, Iterator, Tuple
+
 from buildchain import config
 from buildchain import constants
 from buildchain import targets
@@ -40,6 +43,7 @@ def task_packaging() -> dict:
             '_build_container',
             '_package_mkdir_root',
             '_package_mkdir_iso_root',
+            '_build_packages:*',
         ],
     }
 
@@ -65,6 +69,13 @@ def task__package_mkdir_iso_root() -> dict:
     ).task
 
 
+def task__build_packages() -> Iterator[dict]:
+    """Build a package."""
+    for repo_pkgs in PACKAGES.values():
+        for package in repo_pkgs:
+            yield from package.execution_plan
+
+
 # Image used to build the packages
 BUILDER : targets.LocalImage = targets.LocalImage(
     name='metalk8s-build',
@@ -75,6 +86,28 @@ BUILDER : targets.LocalImage = targets.LocalImage(
     task_dep=['_build_root'],
     file_dep=list(constants.ROOT.glob('packages/yum_repositories/*.repo')),
 )
+
+
+CALICO_CNI_PLUGIN_VERSION : str = '3.5.1'
+# Packages per repository.
+PACKAGES : Dict[str, Tuple[targets.Package, ...]] = {
+    'scality': (
+        # Calico CNI Plugin.
+        targets.Package(
+            basename='_build_packages',
+            name='calico-cni-plugin',
+            version=CALICO_CNI_PLUGIN_VERSION,
+            build_id=1,
+            sources=[
+                Path('calico-amd64'),
+                Path('calico-ipam-amd64'),
+                Path('v{}.tar.gz'.format(CALICO_CNI_PLUGIN_VERSION)),
+            ],
+            builder=BUILDER,
+            task_dep=['_package_mkdir_root'],
+        ),
+    ),
+}
 
 
 __all__ = utils.export_only_tasks(__name__)
