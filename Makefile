@@ -128,12 +128,13 @@ ALL = \
 	$(ISO_ROOT)/salt/_modules/docker_registry.py \
 	$(ISO_ROOT)/salt/_modules/kubernetes.py \
 	\
+	$(ISO_ROOT)/salt/_pillar/metalk8s.py \
+	\
 	$(ISO_ROOT)/salt/_states/containerd.py \
 	$(ISO_ROOT)/salt/_states/kubeconfig.py \
 	$(ISO_ROOT)/salt/_states/docker_registry.py \
 	$(ISO_ROOT)/salt/_states/kubernetes.py \
 	\
-	$(ISO_ROOT)/pillar/networks.sls \
 	$(ISO_ROOT)/pillar/repositories.sls \
 	$(ISO_ROOT)/pillar/top.sls \
 	\
@@ -254,6 +255,7 @@ iso: $(ISO) ## Build the MetalK8s ISO image
 $(ISO): $(ALL)
 	source $(ISO_ROOT)/product.txt && \
 	mkisofs -output $@ \
+		-quiet \
 		-rock \
 		-joliet \
 		-joliet-long \
@@ -303,7 +305,7 @@ $(BUILD_ROOT)/packages/calico-cni-plugin/calico-cni-plugin.meta: packages/calico
 
 $(foreach src,$(CALICO_CNI_PLUGIN_SOURCES),$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/$(src)): $(BUILD_ROOT)/packages/calico-cni-plugin/calico-cni-plugin.meta
 	mkdir -p $(dir $@)
-	curl -L -o "$@" "$(shell awk '/^Source[0-9]+:.*\/$(notdir $@)$$/ { print $$2 }' < $<)"
+	curl -s -L -o "$@" "$(shell awk '/^Source[0-9]+:.*\/$(notdir $@)$$/ { print $$2 }' < $<)"
 
 $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm: packages/calico-cni-plugin.spec
 $(BUILD_ROOT)/packages/calico-cni-plugin-$(CALICO_CNI_PLUGIN_VERSION)-$(CALICO_CNI_PLUGIN_BUILD).el7.src.rpm: $(foreach src,$(CALICO_CNI_PLUGIN_SOURCES),$(BUILD_ROOT)/packages/calico-cni-plugin/SOURCES/$(src))
@@ -442,7 +444,7 @@ $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 $(ISO_ROOT)/images/$(NGINX_IMAGE_NAME)-$(NGINX_IMAGE_VERSION).tar.gz: \
 	IMAGE_TAG = $(NGINX_IMAGE_NAME):$(NGINX_IMAGE_VERSION)
 $(ISO_ROOT)/images/$(SALT_MASTER_IMAGE_NAME)-$(SALT_MASTER_IMAGE_VERSION).tar.gz: \
-	images/salt-master/Dockerfile
+	images/salt-master/Dockerfile images/salt-master/source.key
 	mkdir -p $(dir $@)
 	docker build -t $(SALT_MASTER_IMAGE_NAME):$(SALT_MASTER_IMAGE_VERSION) \
 		--build-arg SALT_VERSION=$(SALT_MASTER_IMAGE_SALT_VERSION) \

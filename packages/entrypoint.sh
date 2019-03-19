@@ -99,7 +99,7 @@ download_packages() {
     for package in "${packages[@]}"; do
         if [[ $package =~ ^(https?)|(ftp):// ]]; then
             package_name=${package##*/}
-            curl "$package" --output "$external_repo/$package_name" --retry 3
+            curl -s "$package" --output "$external_repo/$package_name" --retry 3
         fi
     done
 
