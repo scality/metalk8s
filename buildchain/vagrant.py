@@ -22,6 +22,7 @@ def task_vagrantup() -> dict:
     vagrant.extend(map(shlex.quote, config.VAGRANT_UP_OPTS))
     return {
         'actions': [doit.tools.LongRunning(' '.join(vagrant))],
+        'task_dep': ['_iso_populate'],
         'uptodate': [False],
     }
 
