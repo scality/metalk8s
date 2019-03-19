@@ -64,6 +64,9 @@ spec:
         - name: metalk8s-config
           mountPath: '/etc/metalk8s'
           readOnly: true
+        - name: kubernetes-config
+          mountPath: '/etc/kubernetes'
+          readOnly: true
   volumes:
     - name: config
       hostPath:
@@ -88,4 +91,8 @@ spec:
     - name: metalk8s-config
       hostPath:
         path: '/etc/metalk8s'
+        type: Directory
+    - name: kubernetes-config
+      hostPath:
+        path: '/etc/kubernetes'
         type: Directory
