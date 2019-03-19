@@ -1,3 +1,7 @@
+provider "template" {
+    "version" = "~>1.0"
+}
+
 locals {
   # etcd_name are formed bt name of all dedicated etcd server and
   # In the case of shared group: a portion of the of the nodes name
