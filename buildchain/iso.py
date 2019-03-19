@@ -52,19 +52,29 @@ def task__iso_mkdir_root() -> dict:
 
 def task__iso_populate() -> dict:
     """Populate the ISO_ROOT with required files."""
-
-    doc = 'Populate {} with required files.'.format(
-        utils.build_relpath(constants.ISO_ROOT)
-    )
     return {
         'basename': '_iso_populate',
         'actions': None,
-        'doc': doc,
+        'doc': 'Populate {} with required files.'.format(
+            utils.build_relpath(constants.ISO_ROOT)
+        ),
         # Aggregate here the tasks that put files into ISO_ROOT.
         'task_dep': [
             '_iso_mkdir_root',
+            '_iso_render_bootstrap',
         ],
     }
+
+
+def task__iso_render_bootstrap() -> dict:
+    """Generate the bootstrap script."""
+    return helper.TemplateFile(
+        source=constants.ROOT/'scripts'/'bootstrap.sh.in',
+        destination=constants.ISO_ROOT/'bootstrap.sh',
+        context={'VERSION': constants.SHORT_VERSION},
+        file_dep=[constants.VERSION_FILE],
+        task_dep=['_iso_mkdir_root'],
+    ).task
 
 
 __all__ = utils.export_only_tasks(__name__)

@@ -53,7 +53,7 @@ stop_salt_minion_service() {
 }
 
 configure_yum_repositories() {
-    local -r repositories_pillar_path=/srv/scality/metalk8s-@VERSION@/pillar/repositories.sls
+    local -r repositories_pillar_path=/srv/scality/metalk8s-@@VERSION/pillar/repositories.sls
     local -g online_mode
 
     online_mode=$(awk '$1 == "online_mode:" { print $2 }' "$repositories_pillar_path")
@@ -88,7 +88,7 @@ configure_yum_local_repositories() {
 
 configure_yum_local_repository() {
     local -r repo_name=$1 gpgcheck=${2:-0}
-    local -r repo_path=/srv/scality/metalk8s-@VERSION@/packages/$repo_name-el7
+    local -r repo_path=/srv/scality/metalk8s-@@VERSION/packages/$repo_name-el7
     local gpg_keys
 
     gpg_keys=$(
@@ -124,11 +124,11 @@ install_salt_minion() {
 configure_salt_minion_local_mode() {
     cat > "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}" << EOF
 file_roots:
-  metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-@VERSION@/salt
+  metalk8s-@@VERSION:
+    - /srv/scality/metalk8s-@@VERSION/salt
 pillar_roots:
-  metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-@VERSION@/pillar
+  metalk8s-@@VERSION:
+    - /srv/scality/metalk8s-@@VERSION/pillar
 
 # use new module.run format
 use_superseded:
@@ -139,7 +139,7 @@ ext_pillar:
 EOF
 
   "$SALT_CALL" --local --retcode-passthrough saltutil.sync_all \
-      saltenv=metalk8s-@VERSION@
+      saltenv=metalk8s-@@VERSION
 }
 
 run_bootstrap_prechecks() {
@@ -148,52 +148,52 @@ run_bootstrap_prechecks() {
 
 install_python_kubernetes_client() {
     "$SALT_CALL" --local --retcode-passthrough state.apply \
-        metalk8s.python-kubernetes saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@ pillar='{"repo": {"local_mode": True}}'
+        metalk8s.python-kubernetes saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION pillar='{"repo": {"local_mode": True}}'
 }
 
 install_kubelet() {
     "$SALT_CALL" --local --retcode-passthrough state.apply metalk8s.kubelet \
-        saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@ \
+        saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION \
 	pillar='{"repo": {"local_mode": True}}'
 }
 
 run_preflight() {
     "$SALT_CALL" --local --retcode-passthrough state.apply \
-        metalk8s.kubeadm.init.preflight saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@ pillar='{"repo": {"local_mode": True}}'
+        metalk8s.kubeadm.init.preflight saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION pillar='{"repo": {"local_mode": True}}'
 }
 
 run_kubelet_start() {
     "$SALT_CALL" --local --retcode-passthrough state.apply \
-        metalk8s.kubeadm.init.kubelet-start saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@
+        metalk8s.kubeadm.init.kubelet-start saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
 }
 
 deploy_registry() {
     "$SALT_CALL" --local --retcode-passthrough saltutil.sync_all \
-        saltenv=metalk8s-@VERSION@
+        saltenv=metalk8s-@@VERSION
     "$SALT_CALL" --local --retcode-passthrough state.apply metalk8s.registry \
-        saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+        saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
 }
 
 populate_registry() {
     "$SALT_CALL" --local --retcode-passthrough state.apply \
-        metalk8s.registry.populated saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@ pillar='{"repo": {"local_mode": True}}'
+        metalk8s.registry.populated saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION pillar='{"repo": {"local_mode": True}}'
 }
 
 deploy_salt_master() {
     # Run deployment
     "$SALT_CALL" --local --retcode-passthrough state.apply \
-        metalk8s.salt.master saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@
+        metalk8s.salt.master saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
 }
 
 configure_salt() {
     "$SALT_CALL" --local --retcode-passthrough state.apply \
-        metalk8s.salt.minion.configured saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@
+        metalk8s.salt.minion.configured saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
     rm -f "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}"
 }
 
@@ -212,7 +212,7 @@ set_salt_command() {
 
 sync_salt() {
     $SALT_MASTER_CALL '*' saltutil.sync_all refresh=True \
-        saltenv=metalk8s-@VERSION@
+        saltenv=metalk8s-@@VERSION
     local SALT_CONTAINER
     SALT_CONTAINER="$(crictl ps -q \
             --label io.kubernetes.pod.namespace=kube-system \
@@ -220,53 +220,53 @@ sync_salt() {
             --state Running)"
     test -n "$SALT_CONTAINER"
     crictl exec -i "$SALT_CONTAINER" \
-        salt-run saltutil.sync_all saltenv=metalk8s-@VERSION@
+        salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
 }
 
 run_certs() {
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-kubelet-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.sa saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-healthcheck-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-peer saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-server saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-etcd-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.front-proxy-ca saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.front-proxy-client saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.ca saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-kubelet-client saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.sa saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-ca saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-healthcheck-client saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-peer saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.etcd-server saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.apiserver-etcd-client saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.front-proxy-ca saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.certs.front-proxy-client saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
 }
 
 run_kubeconfig() {
     "$SALT_CALL" --retcode-passthrough state.apply \
-        metalk8s.kubeadm.init.kubeconfig saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@
+        metalk8s.kubeadm.init.kubeconfig saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
 }
 
 run_control_plane() {
     "$SALT_CALL" --retcode-passthrough state.apply \
-        metalk8s.kubeadm.init.control-plane saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@
+        metalk8s.kubeadm.init.control-plane saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
 }
 
 run_etcd() {
     "$SALT_CALL" --retcode-passthrough state.apply \
-        metalk8s.kubeadm.init.etcd saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@
+        metalk8s.kubeadm.init.etcd saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
 }
 
 run_mark_control_plane() {
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.mark-control-plane saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.kubeadm.init.mark-control-plane saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
 }
 
 install_addons() {
     "$SALT_CALL" --retcode-passthrough state.apply \
-        metalk8s.kubeadm.init.addons saltenv=metalk8s-@VERSION@ \
-        pillarenv=metalk8s-@VERSION@
+        metalk8s.kubeadm.init.addons saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
 }
 
 install_calico() {
-    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.calico saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --retcode-passthrough state.apply metalk8s.calico saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
 }
 
 
