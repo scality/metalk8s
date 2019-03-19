@@ -1,19 +1,19 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import * as Api from '../services/api';
+import * as Api from '../../services/api';
 
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
-const SET_NODES = 'SET_NODES';
+export const SET_NODES = 'SET_NODES';
 
 // Reducer
 const defaultState = {
-  nodes: []
+  list: []
 };
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_NODES:
-      return { ...state, nodes: action.payload };
+      return { ...state, list: action.payload };
     default:
       return state;
   }
@@ -29,16 +29,19 @@ export const setNodesAction = payload => {
 };
 
 // Sagas
-function* fetchNodes() {
+export function* fetchNodes() {
   try {
     const result = yield call(Api.getNodes);
-    const nodes = result.body.items.map(node => ({
-      name: node.metadata.name,
-      cpu: node.status.capacity.cpu,
-      memory: node.status.capacity.memory,
-      pods: node.status.capacity.pods
-    }));
-    yield put(setNodesAction(nodes));
+    yield put(
+      setNodesAction(
+        result.body.items.map(node => ({
+          name: node.metadata.name,
+          cpu: node.status.capacity.cpu,
+          memory: node.status.capacity.memory,
+          pods: node.status.capacity.pods
+        }))
+      )
+    );
   } catch (e) {}
 }
 
