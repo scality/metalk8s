@@ -32,6 +32,7 @@ VAGRANT_UP_OPTS : Tuple[str, ...] = (
 
 # Name of the command (if in the PATH) or path to the binary.
 
+DOCKER  : str = 'docker'
 GIT     : str = 'git'
 MKISOFS : str = 'mkisofs'
 VAGRANT : str = 'vagrant'
