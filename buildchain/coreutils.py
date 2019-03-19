@@ -4,8 +4,10 @@
 """Pure Python implementation of some coreutils."""
 
 
+import gzip as gzip_module
 import functools
 import hashlib
+import os
 from pathlib import Path
 from typing import Sequence
 
@@ -35,3 +37,20 @@ def sha256sum(input_files: Sequence[Path], output_file: Path) -> None:
     with output_file.open('w', encoding='utf-8') as fp:
         for filepath, digest in zip(input_files, digests):
             fp.write('{}  {}\n'.format(digest, filepath.name))
+
+
+def gzip(input_file: Path, keep_input: bool=False, level: int=6) -> None:
+    """Compress the input file using Lempel-Ziv coding.
+
+    Arguments:
+        input_file: path to the file to compress
+        keep_input: if False, the original file is deleted after compression
+        level:      compression level
+    """
+    filename = input_file.with_suffix(input_file.suffix + '.gz')
+    with input_file.open('rb', buffering=BUFSIZE) as fp:
+        with gzip_module.open(filename, 'wb', compresslevel=level) as out:
+            for chunk in iter(functools.partial(fp.read, BUFSIZE), b''):
+                out.write(chunk)
+    if not keep_input:
+        os.unlink(input_file)
