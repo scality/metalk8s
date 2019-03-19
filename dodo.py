@@ -12,6 +12,7 @@ from buildchain.build import *
 from buildchain.image import *
 from buildchain.iso import *
 from buildchain.lint import *
+from buildchain.salt_tree import *
 from buildchain.vagrant import *
 
 

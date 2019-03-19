@@ -225,7 +225,7 @@ $(ISO_ROOT)/salt/%: salt/%
 $(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in $(ISO_ROOT)/product.txt
 	mkdir -p $(shell dirname $@)
 	rm -f $@
-	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
+	sed s/@@VERSION/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 
 $(ISO_ROOT)/pillar/%: pillar/%
 	mkdir -p $(shell dirname $@)
