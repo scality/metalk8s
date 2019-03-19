@@ -110,7 +110,7 @@ class FileTree(base.Target, base.CompositeTarget):
     def make_directories(self) -> dict:
         """Return a task that create a directory hierarchy."""
         def mkdirs(targets: Sequence[str]) -> None:
-            for directory in targets:
+            for directory in reversed(targets):
                 Path(directory).mkdir()
 
         task = self.basic_task
@@ -159,5 +159,5 @@ class FileTree(base.Target, base.CompositeTarget):
         for path in files:
             dirs.update(path.parents)
         dirs.discard(Path('.'))
-        # Sort by depth, from the root to the leaves.
-        return sorted(dirs, key=lambda path: str(path).count('/'))
+        # Sort by depth, from the leaves to the root.
+        return sorted(dirs, key=lambda path: -str(path).count('/'))
