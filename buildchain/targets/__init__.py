@@ -9,4 +9,5 @@ from buildchain.targets.base import (
 )
 from buildchain.targets.checksum import Sha256Sum
 from buildchain.targets.directory import Mkdir
+from buildchain.targets.remote_image import RemoteImage
 from buildchain.targets.template import TemplateFile
