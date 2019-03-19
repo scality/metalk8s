@@ -54,3 +54,12 @@ def gzip(input_file: Path, keep_input: bool=False, level: int=6) -> None:
                 out.write(chunk)
     if not keep_input:
         os.unlink(input_file)
+
+
+def touch(filepath: Path) -> None:
+    """Create a file at the given path.
+
+    Arguments:
+        filepath: path to the file to create
+    """
+    filepath.touch()
