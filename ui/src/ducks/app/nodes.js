@@ -1,5 +1,6 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import * as Api from '../../services/api';
+import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
 
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
@@ -37,7 +38,10 @@ export function* fetchNodes() {
         result.body.items.map(node => ({
           name: node.metadata.name,
           cpu: node.status.capacity.cpu,
-          memory: node.status.capacity.memory,
+          memory: prettifyBytes(
+            convertK8sMemoryToBytes(node.status.capacity.memory),
+            2
+          ).value,
           pods: node.status.capacity.pods
         }))
       )
