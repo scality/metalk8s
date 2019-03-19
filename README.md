@@ -22,7 +22,7 @@ If you'd like to contribute, please review the
 To run tests locally:
 ```shell
 # Bootstrap a platform on a vagrant environment using
-make vagrantup
+doit vagrantup
 # Generate an ssh-config file from vagrant
 vagrant ssh-config >bootstrap.ssh.config
 # Run tox with two environment variables
