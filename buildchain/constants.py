@@ -27,6 +27,7 @@ ISO_ROOT : Path = config.BUILD_ROOT/'root'
 # Versions {{{
 
 K8S_VERSION  : str = '1.11.7'
+SALT_VERSION : str = '2018.3.3'
 
 
 def load_version_information() -> None:

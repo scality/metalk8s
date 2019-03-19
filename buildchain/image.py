@@ -49,6 +49,7 @@ def task_images() -> dict:
         'task_dep': [
             '_image_mkdir_root',
             '_image_pull',
+            '_image_build',
         ],
     }
 
@@ -63,6 +64,12 @@ def task__image_mkdir_root() -> dict:
 def task__image_pull() -> Iterator[dict]:
     """Download the container images."""
     for image in TO_PULL:
+        yield image.task
+
+
+def task__image_build() -> Iterator[dict]:
+    """Download the container images."""
+    for image in TO_BUILD:
         yield image.task
 
 
@@ -152,6 +159,27 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         is_compressed=False,
         destination=ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
+    ),
+)
+
+
+# The build ID is to be augmented whenever we rebuild the `salt-master` image,
+# e.g. because the `Dockerfile` is changed, or one of the dependencies installed
+# in the image needs to be updated.
+# This should be reset to 1 when SALT_VERSION is changed.
+SALT_MASTER_BUILD_ID : int = 1
+
+# List of container images to build.
+TO_BUILD : Tuple[targets.LocalImage, ...] = (
+    targets.LocalImage(
+        name='salt-master',
+        version='{}-{}'.format(constants.SALT_VERSION, SALT_MASTER_BUILD_ID),
+        dockerfile=constants.ROOT/'images'/'salt-master'/'Dockerfile',
+        destination=ISO_IMAGE_ROOT,
+        save_on_disk=True,
+        build_args={'SALT_VERSION': constants.SALT_VERSION},
+        task_dep=['_image_mkdir_root'],
+        file_dep=[constants.ROOT/'images'/'salt-master'/'source.key'],
     ),
 )
 
