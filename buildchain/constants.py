@@ -14,6 +14,10 @@ from buildchain import config
 # (used in task display, for a nice aligned output).
 CMD_WIDTH : int = 12
 
+# URLs of the main container repositories.
+GOOGLE_REGISTRY : str = 'k8s.gcr.io'
+DOCKER_REGISTRY : str = 'docker.io/library'
+
 # Paths {{{
 
 # Root of the generated ISO.
@@ -21,6 +25,9 @@ ISO_ROOT : Path = config.BUILD_ROOT/'root'
 
 # }}}
 # Versions {{{
+
+K8S_VERSION  : str = '1.11.7'
+
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""

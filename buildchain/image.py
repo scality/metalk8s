@@ -31,6 +31,7 @@ Overview:
 
 
 from pathlib import Path
+from typing import Iterator, Tuple
 
 from buildchain import constants
 from buildchain import targets
@@ -47,6 +48,7 @@ def task_images() -> dict:
         'actions': None,
         'task_dep': [
             '_image_mkdir_root',
+            '_image_pull',
         ],
     }
 
@@ -56,6 +58,102 @@ def task__image_mkdir_root() -> dict:
     return targets.Mkdir(
         directory=ISO_IMAGE_ROOT, task_dep=['_iso_mkdir_root']
     ).task
+
+
+def task__image_pull() -> Iterator[dict]:
+    """Download the container images."""
+    for image in TO_PULL:
+        yield image.task
+
+
+# List of container images to pull.
+#
+# Digests are quite a mouthful, so:
+# pylint:disable=line-too-long
+TO_PULL : Tuple[targets.RemoteImage, ...] = (
+    targets.RemoteImage(
+        registry=constants.GOOGLE_REGISTRY,
+        name='coredns',
+        version='1.3.1',
+        digest='sha256:02382353821b12c21b062c59184e227e001079bb13ebd01f9d3270ba0fcbf1e4',
+        is_compressed=True,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.GOOGLE_REGISTRY,
+        name='etcd',
+        version='3.2.18',
+        digest='sha256:b960569ade5f37205a033dcdc3191fe99dc95b15c6795a6282859070ec2c6124',
+        is_compressed=True,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.GOOGLE_REGISTRY,
+        name='kube-apiserver',
+        version=constants.K8S_VERSION,
+        digest='sha256:79b197b6a7334d2ad01ee82a9be82a39bfb50e33bc03263c58c4dfc4e81f71bc',
+        is_compressed=True,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.GOOGLE_REGISTRY,
+        name='kube-controller-manager',
+        version=constants.K8S_VERSION,
+        digest='sha256:bbb51bf83c73dfe8a924fd5f9e58f92c3feec44b24936f10b0087e8ffcd55f69',
+        is_compressed=True,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.GOOGLE_REGISTRY,
+        name='kube-proxy',
+        version=constants.K8S_VERSION,
+        digest='sha256:8886e69a7946717a88cad9882e9b44927798d154088be19b5116a375c9923036',
+        is_compressed=True,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.GOOGLE_REGISTRY,
+        name='kube-scheduler',
+        version=constants.K8S_VERSION,
+        digest='sha256:7a2a2a54f26647a4d8642d9158122e6c80e19b2b79d5bf0c74445f2e26a83dfa',
+        is_compressed=True,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry='calico',
+        name='calico-node',
+        remote_name='node',
+        version='3.5.1',
+        digest='sha256:5baaa4795256e4f14c03fdccc534d46c2d7ff3ac84e748bacf88b1fa8c25d952',
+        is_compressed=True,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.DOCKER_REGISTRY,
+        name='nginx',
+        version='1.15.8',
+        digest='sha256:dd2d0ac3fff2f007d99e033b64854be0941e19a2ad51f174d9240dda20d9f534',
+        is_compressed=True,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.DOCKER_REGISTRY,
+        name='registry',
+        version='2.7.1',
+        digest='sha256:870474507964d8e7d8c3b53bcfa738e3356d2747a42adad26d0d81ef4479eb1b',
+        is_compressed=False,
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+)
 
 
 __all__ = utils.export_only_tasks(__name__)
