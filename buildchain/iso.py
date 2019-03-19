@@ -53,6 +53,7 @@ def task_iso() -> dict:
             '_iso_mkdir_root',
             'populate_iso',
             '_iso_build',
+            '_iso_digest',
         ],
     }
 
@@ -155,6 +156,15 @@ def task__iso_build() -> dict:
         'task_dep': ['_build_root', '_iso_mkdir_root'],
         'clean': True,
     }
+
+
+def task__iso_digest() -> dict:
+    """Compute the SHA256 digest of the ISO."""
+    return helper.Sha256Sum(
+        input_files=[ISO_FILE],
+        output_file=config.BUILD_ROOT/'SHA256SUM',
+        task_dep=['_iso_build']
+    ).task
 
 
 def git_revision() -> str:
