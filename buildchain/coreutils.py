@@ -8,6 +8,7 @@ import gzip as gzip_module
 import functools
 import hashlib
 import os
+import shutil
 from pathlib import Path
 from typing import Sequence
 
@@ -54,6 +55,18 @@ def gzip(input_file: Path, keep_input: bool=False, level: int=6) -> None:
                 out.write(chunk)
     if not keep_input:
         os.unlink(input_file)
+
+
+def cp_file(source: Path, destination: Path) -> None:
+    """Copy the source file to the destination, preserving metadata.
+
+    Symbolic link are copied as symbolic link (i.e. they're not resolved).
+
+    Arguments:
+        source: path to the file to copy
+        destination: path to the copy
+    """
+    shutil.copy2(source, destination, follow_symlinks=False)
 
 
 def touch(path: Path) -> None:
