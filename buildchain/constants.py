@@ -4,7 +4,9 @@
 """Useful global constants, used hither and yon."""
 
 
+import os
 from pathlib import Path
+from typing import Tuple
 
 from buildchain import ROOT  # Re-export ROOT through this module.
 from buildchain import config
@@ -26,6 +28,28 @@ ISO_ROOT : Path = config.BUILD_ROOT/'root'
 REPO_ROOT : Path = ISO_ROOT/'packages'
 # Root for the packages that we build ourself.
 PKG_ROOT : Path = config.BUILD_ROOT/'packages'
+
+# }}}
+# Container options {{{
+
+BIND_RO_MOUNT_FMT : str = 'type=bind,source={src},destination={dst},ro'
+BUILDER_RPMLINTRC_MOUNT : str = BIND_RO_MOUNT_FMT.format(
+    src=ROOT/'packages'/'rpmlintrc',
+    dst='/rpmbuild/rpmlintrc'
+)
+BUILDER_ENTRYPOINT_MOUNT : str = BIND_RO_MOUNT_FMT.format(
+    src=ROOT/'packages'/'entrypoint.sh',
+    dst='/entrypoint.sh'
+)
+BUILDER_BASIC_CMD : Tuple[str, ...] = (
+    config.DOCKER, 'run',
+    '--env', 'TARGET_UID={}'.format(os.geteuid()),
+    '--env', 'TARGET_GID={}'.format(os.getegid()),
+    '--hostname', 'build',
+    '--mount', 'type=tmpfs,destination=/tmp',
+    '--mount', BUILDER_ENTRYPOINT_MOUNT,
+    '--rm',
+)
 
 # }}}
 # Versions {{{
