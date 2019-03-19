@@ -40,6 +40,7 @@ import doit  # type: ignore
 from buildchain import config
 from buildchain import coreutils
 from buildchain import constants
+from buildchain import types
 from buildchain import utils
 from buildchain.targets.directory import Mkdir
 from buildchain.targets.image import ContainerImage
@@ -107,13 +108,13 @@ class Repository(base.Target, base.CompositeTarget):
         return self.rootdir/'repodata'
 
     @property
-    def execution_plan(self) -> List[dict]:
+    def execution_plan(self) -> List[types.TaskDict]:
         tasks = [self.build_repo()]
         if self._packages:
             tasks.extend(self.build_rpms())
         return tasks
 
-    def build_repo(self) -> dict:
+    def build_repo(self) -> types.TaskDict:
         """Build the repository."""
         def clean() -> None:
             """Delete the repodata directory and its contents."""
@@ -146,7 +147,7 @@ class Repository(base.Target, base.CompositeTarget):
             ])
         return task
 
-    def build_rpms(self) -> List[dict]:
+    def build_rpms(self) -> List[types.TaskDict]:
         """Build the RPMs from SRPMs."""
         tasks = [self._mkdir_repo_root(), self._mkdir_repo_arch()]
         for pkg in self.packages:
@@ -171,7 +172,7 @@ class Repository(base.Target, base.CompositeTarget):
             tasks.append(task)
         return tasks
 
-    def _mkdir_repo_root(self) -> dict:
+    def _mkdir_repo_root(self) -> types.TaskDict:
         """Create the root directory for the repository."""
         task = self.basic_task
         mkdir = Mkdir(directory=self.rootdir).task
@@ -187,7 +188,7 @@ class Repository(base.Target, base.CompositeTarget):
         })
         return task
 
-    def _mkdir_repo_arch(self) -> dict:
+    def _mkdir_repo_arch(self) -> types.TaskDict:
         """Create the CPU architecture directory for the repository."""
         task = self.basic_task
         mkdir = Mkdir(directory=self.rootdir/self.ARCH).task

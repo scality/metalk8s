@@ -35,6 +35,7 @@ from typing import Iterator, Tuple
 
 from buildchain import constants
 from buildchain import targets
+from buildchain import types
 from buildchain import utils
 
 
@@ -42,7 +43,7 @@ from buildchain import utils
 ISO_IMAGE_ROOT : Path = constants.ISO_ROOT/'images'
 
 
-def task_images() -> dict:
+def task_images() -> types.TaskDict:
     """Pull/Build the container images."""
     return {
         'actions': None,
@@ -54,20 +55,20 @@ def task_images() -> dict:
     }
 
 
-def task__image_mkdir_root() -> dict:
+def task__image_mkdir_root() -> types.TaskDict:
     """Create the images root directory."""
     return targets.Mkdir(
         directory=ISO_IMAGE_ROOT, task_dep=['_iso_mkdir_root']
     ).task
 
 
-def task__image_pull() -> Iterator[dict]:
+def task__image_pull() -> Iterator[types.TaskDict]:
     """Download the container images."""
     for image in TO_PULL:
         yield image.task
 
 
-def task__image_build() -> Iterator[dict]:
+def task__image_build() -> Iterator[types.TaskDict]:
     """Download the container images."""
     for image in TO_BUILD:
         yield image.task

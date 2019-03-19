@@ -51,7 +51,7 @@ class Target:
         return self._basename
 
     @property
-    def basic_task(self) -> dict:
+    def basic_task(self) -> types.TaskDict:
         """Minimal default task that can be build upon."""
         task = {
             'actions': self.actions.copy(),
@@ -75,7 +75,7 @@ class AtomicTarget(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def task(self) -> dict:
+    def task(self) -> types.TaskDict:
         """Task producing the target."""
 
 
@@ -86,7 +86,7 @@ class CompositeTarget(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def execution_plan(self) -> List[dict]:
+    def execution_plan(self) -> List[types.TaskDict]:
         """List of tasks producing the target."""
 
 

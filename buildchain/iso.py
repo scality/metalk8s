@@ -39,13 +39,14 @@ import doit  # type: ignore
 from buildchain import config
 from buildchain import constants
 from buildchain import targets as helper
+from buildchain import types
 from buildchain import utils
 
 
 ISO_FILE : Path = config.BUILD_ROOT/'{}.iso'.format(config.PROJECT_NAME.lower())
 
 
-def task_iso() -> dict:
+def task_iso() -> types.TaskDict:
     """Build the MetalK8s image."""
     return {
         'actions': None,
@@ -58,14 +59,14 @@ def task_iso() -> dict:
     }
 
 
-def task__iso_mkdir_root() -> dict:
+def task__iso_mkdir_root() -> types.TaskDict:
     """Create the ISO root directory."""
     return helper.Mkdir(
         directory=constants.ISO_ROOT, task_dep=['_build_root']
     ).task
 
 
-def task__iso_populate() -> dict:
+def task__iso_populate() -> types.TaskDict:
     """Populate the ISO_ROOT with required files."""
     return {
         'basename': '_iso_populate',
@@ -85,7 +86,7 @@ def task__iso_populate() -> dict:
     }
 
 
-def task__iso_render_bootstrap() -> dict:
+def task__iso_render_bootstrap() -> types.TaskDict:
     """Generate the bootstrap script."""
     return helper.TemplateFile(
         source=constants.ROOT/'scripts'/'bootstrap.sh.in',
@@ -96,7 +97,7 @@ def task__iso_render_bootstrap() -> dict:
     ).task
 
 
-def task__iso_generate_product_txt() -> dict:
+def task__iso_generate_product_txt() -> types.TaskDict:
     """Generate the product.txt file."""
     def action(targets: Sequence[str]) -> None:
         datefmt = "%Y-%m-%dT%H:%M:%SZ"
@@ -127,7 +128,7 @@ def task__iso_generate_product_txt() -> dict:
 
 
 @doit.create_after(executed='_iso_populate')  # type: ignore
-def task__iso_build() -> dict:
+def task__iso_build() -> types.TaskDict:
     """Create the ISO from the files in ISO_ROOT."""
     mkisofs = [
         config.MKISOFS, '-output',  ISO_FILE,
@@ -161,7 +162,7 @@ def task__iso_build() -> dict:
     }
 
 
-def task__iso_digest() -> dict:
+def task__iso_digest() -> types.TaskDict:
     """Compute the SHA256 digest of the ISO."""
     return helper.Sha256Sum(
         input_files=[ISO_FILE],

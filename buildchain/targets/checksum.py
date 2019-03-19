@@ -34,7 +34,7 @@ class Sha256Sum(FileTarget):
         super().__init__(destination=output_file, **kwargs)
 
     @property
-    def task(self) -> dict:
+    def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
             'title': self._show,

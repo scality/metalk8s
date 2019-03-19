@@ -13,10 +13,11 @@ import shlex
 import doit  # type: ignore
 
 from buildchain import config
+from buildchain import types
 from buildchain import utils
 
 
-def task_vagrantup() -> dict:
+def task_vagrantup() -> types.TaskDict:
     """Run `vagrant up` to (re-)provision a development environment."""
     vagrant = [config.VAGRANT, 'up']
     vagrant.extend(map(shlex.quote, config.VAGRANT_UP_OPTS))

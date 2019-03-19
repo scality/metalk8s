@@ -35,10 +35,11 @@ from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
 from buildchain import targets
+from buildchain import types
 from buildchain import utils
 
 
-def task_packaging() -> dict:
+def task_packaging() -> types.TaskDict:
     """Build the packages and repositories."""
     return {
         'actions': None,
@@ -53,28 +54,28 @@ def task_packaging() -> dict:
     }
 
 
-def task__build_container() -> dict:
+def task__build_container() -> types.TaskDict:
     """Build the container image used to build the packages/repositories."""
     task = BUILDER.task
     task.pop('name')  # `name` is only used for sub-task.
     return task
 
 
-def task__package_mkdir_root() -> dict:
+def task__package_mkdir_root() -> types.TaskDict:
     """Create the packages root directory."""
     return targets.Mkdir(
         directory=constants.PKG_ROOT, task_dep=['_build_root']
     ).task
 
 
-def task__package_mkdir_iso_root() -> dict:
+def task__package_mkdir_iso_root() -> types.TaskDict:
     """Create the packages root directory on the ISO."""
     return targets.Mkdir(
         directory=constants.REPO_ROOT, task_dep=['_iso_mkdir_root']
     ).task
 
 
-def task__download_packages() -> dict:
+def task__download_packages() -> types.TaskDict:
     """Download packages locally."""
     def clean() -> None:
         """Delete cache and repositories on the ISO."""
@@ -115,14 +116,14 @@ def task__download_packages() -> dict:
     }
 
 
-def task__build_packages() -> Iterator[dict]:
+def task__build_packages() -> Iterator[types.TaskDict]:
     """Build a package."""
     for repo_pkgs in PACKAGES.values():
         for package in repo_pkgs:
             yield from package.execution_plan
 
 
-def task__build_repositories() -> Iterator[dict]:
+def task__build_repositories() -> Iterator[types.TaskDict]:
     """Build a repository."""
     for repository in REPOSITORIES:
         yield from repository.execution_plan
