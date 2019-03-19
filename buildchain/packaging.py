@@ -27,10 +27,13 @@ Overview;
 
 
 from pathlib import Path
-from typing import Dict, Iterator, Tuple
+from typing import Dict, Iterator, List, Tuple
+
+import doit  # type: ignore
 
 from buildchain import config
 from buildchain import constants
+from buildchain import coreutils
 from buildchain import targets
 from buildchain import utils
 
@@ -43,6 +46,7 @@ def task_packaging() -> dict:
             '_build_container',
             '_package_mkdir_root',
             '_package_mkdir_iso_root',
+            '_download_packages',
             '_build_packages:*',
         ],
     }
@@ -67,6 +71,41 @@ def task__package_mkdir_iso_root() -> dict:
     return targets.Mkdir(
         directory=constants.REPO_ROOT, task_dep=['_iso_mkdir_root']
     ).task
+
+
+def task__download_packages() -> dict:
+    """Download packages locally."""
+    def clean() -> None:
+        """Delete cache and repositories on the ISO."""
+        coreutils.rm_rf(constants.PKG_ROOT/'var')
+        # TODO: clean repositories as well.
+
+    pkg_list = constants.ROOT/'packages/packages.list'
+    packages = _load_package_list(pkg_list)
+    cmd = list(constants.BUILDER_BASIC_CMD)
+    cmd.extend([
+        '--env', 'RELEASEVER=7', \
+        '--mount', 'type=bind,source={},destination=/install_root'.format(
+            constants.PKG_ROOT
+        ),
+        '--mount', 'type=bind,source={},destination=/repositories'.format(
+            constants.REPO_ROOT
+        ),
+        BUILDER.tag,
+        '/entrypoint.sh', 'download_packages'
+    ])
+    cmd.extend(packages)
+    return {
+        'title': lambda task: utils.title_with_target1('GET PKGS', task),
+        'actions': [cmd],
+        'targets': [constants.PKG_ROOT/'var'],
+        'file_dep': [BUILDER.destination, pkg_list],
+        'task_dep': ['_package_mkdir_root', '_package_mkdir_iso_root'],
+        'clean': [clean],
+        'uptodate': [doit.tools.run_once],
+        # Prevent Docker from polluting our output.
+        'verbosity': 0,
+    }
 
 
 def task__build_packages() -> Iterator[dict]:
@@ -108,6 +147,22 @@ PACKAGES : Dict[str, Tuple[targets.Package, ...]] = {
         ),
     ),
 }
+
+
+def _load_package_list(pkg_list: Path) -> List[str]:
+    """Load the list of packages to download.
+
+    Arguments:
+        pkg_list: path to the file that contains the package list
+
+    Returns:
+        A list of package names.
+    """
+    packages : List[str] = []
+    with pkg_list.open('r', encoding='utf-8') as fp:
+        for line in fp:
+            packages.append(line.strip())
+    return packages
 
 
 __all__ = utils.export_only_tasks(__name__)

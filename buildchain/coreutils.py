@@ -69,6 +69,17 @@ def cp_file(source: Path, destination: Path) -> None:
     shutil.copy2(source, destination, follow_symlinks=False)
 
 
+def rm_rf(directory: Path) -> None:
+    """Remove directory and its contents recursively.
+
+    Ignore errors (e.g. ignore nonexistent files).
+
+    Arguments:
+        directory: path to the directory to delete
+    """
+    shutil.rmtree(directory, ignore_errors=True)
+
+
 def touch(path: Path) -> None:
     """Create a file at the given path.
 
