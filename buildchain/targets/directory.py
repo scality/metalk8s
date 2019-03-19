@@ -11,7 +11,8 @@ import doit  # type: ignore
 
 from buildchain import types
 from buildchain import utils
-import buildchain.targets.base as base
+
+from . import base
 
 
 class Mkdir(base.Target, base.AtomicTarget):

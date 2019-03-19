@@ -11,8 +11,8 @@ from pathlib import Path
 
 from buildchain import types
 from buildchain import utils
-from buildchain.targets.base import FileTarget
 
+from . import base
 
 # In order to drastically reduce the escaping needs ($ is no fun in shell
 # script…), we create a custom Template class with a delimiter character rare
@@ -23,7 +23,7 @@ class CustomTemplate(string.Template):
     delimiter = '@@'
 
 
-class TemplateFile(FileTarget):
+class TemplateFile(base.FileTarget):
     """Create a new file from a template file."""
 
     def __init__(
