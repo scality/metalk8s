@@ -25,16 +25,17 @@ from pathlib import Path
 from typing import Callable, Iterator, List, Tuple
 
 from buildchain import constants
+from buildchain import types
 from buildchain import utils
 
 
-def task_lint() -> Iterator[dict]:
+def task_lint() -> Iterator[types.TaskDict]:
     """Run the linting tools."""
     for create_lint_task in LINTERS:
         yield create_lint_task()
 
 
-def lint_shell() -> dict:
+def lint_shell() -> types.TaskDict:
     """Run shell scripts linting."""
     shell_scripts : List[Path] = []
     for ext in ('.sh', '.sh.in'):
@@ -47,7 +48,7 @@ def lint_shell() -> dict:
     }
 
 
-def lint_yaml() -> dict:
+def lint_yaml() -> types.TaskDict:
     """Run YAML linting."""
     return {
         'name': 'yaml',
@@ -58,7 +59,7 @@ def lint_yaml() -> dict:
 
 
 # List of available linter task.
-LINTERS : Tuple[Callable[[], dict], ...] = (
+LINTERS : Tuple[Callable[[], types.TaskDict], ...] = (
     lint_shell,
     lint_yaml,
 )

@@ -51,7 +51,7 @@ class TemplateFile(FileTarget):
         self._ctx = context
 
     @property
-    def task(self) -> dict:
+    def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
             'title': self._show,

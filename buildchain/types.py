@@ -21,3 +21,6 @@ Action = Union[
 
 # A doit task.
 Task = doit.task.Task
+
+# A doit task (as dict)
+TaskDict = Dict[str, Any]

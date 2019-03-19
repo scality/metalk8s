@@ -36,6 +36,7 @@ from typing import Any, Dict, List, Sequence
 
 from buildchain import config
 from buildchain import constants
+from buildchain import types
 from buildchain import utils
 from buildchain.targets.directory import Mkdir
 from buildchain.targets.image import ContainerImage
@@ -119,7 +120,7 @@ class Package(base.Target, base.CompositeTarget):
         return constants.PKG_ROOT/fmt.format(pkg=self)
 
     @property
-    def execution_plan(self) -> List[dict]:
+    def execution_plan(self) -> List[types.TaskDict]:
         return [
             self.make_package_directory(),
             self.generate_meta(),
@@ -127,7 +128,7 @@ class Package(base.Target, base.CompositeTarget):
             self.build_srpm(),
         ]
 
-    def make_package_directory(self) -> dict:
+    def make_package_directory(self) -> types.TaskDict:
         """Create the package's directory."""
         task = self.basic_task
         mkdir = Mkdir(directory=self.rootdir).task
@@ -141,7 +142,7 @@ class Package(base.Target, base.CompositeTarget):
         })
         return task
 
-    def generate_meta(self) -> dict:
+    def generate_meta(self) -> types.TaskDict:
         """Generate the .meta file for the package."""
         task = self.basic_task
         task.update({
@@ -156,7 +157,7 @@ class Package(base.Target, base.CompositeTarget):
                                                self.MKDIR_TASK_NAME))
         return task
 
-    def get_source_files(self) -> dict:
+    def get_source_files(self) -> types.TaskDict:
         """Download the source files to build the package."""
         targets = [self.srcdir]
         targets.extend(self.sources)
@@ -175,7 +176,7 @@ class Package(base.Target, base.CompositeTarget):
                                                self.MKDIR_TASK_NAME))
         return task
 
-    def build_srpm(self) -> dict:
+    def build_srpm(self) -> types.TaskDict:
         """Build the SRPM for the package."""
         task = self.basic_task
         task.update({

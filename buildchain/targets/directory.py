@@ -9,6 +9,7 @@ from typing import Any
 
 import doit  # type: ignore
 
+from buildchain import types
 from buildchain import utils
 import buildchain.targets.base as base
 
@@ -29,7 +30,7 @@ class Mkdir(base.Target, base.AtomicTarget):
         super().__init__(**kwargs)
 
     @property
-    def task(self) -> dict:
+    def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
             'title': lambda task: utils.title_with_target1('MKDIR', task),

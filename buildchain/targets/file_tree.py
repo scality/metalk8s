@@ -91,7 +91,7 @@ class FileTree(base.Target, base.CompositeTarget):
         return paths
 
     @property
-    def execution_plan(self) -> List[dict]:
+    def execution_plan(self) -> List[types.TaskDict]:
         tasks = [
             self.make_directories(),
             self.copy_files(),
@@ -107,7 +107,7 @@ class FileTree(base.Target, base.CompositeTarget):
             tasks.append(task)
         return tasks
 
-    def make_directories(self) -> dict:
+    def make_directories(self) -> types.TaskDict:
         """Return a task that create a directory hierarchy."""
         def mkdirs(targets: Sequence[str]) -> None:
             for directory in reversed(targets):
@@ -124,7 +124,7 @@ class FileTree(base.Target, base.CompositeTarget):
         })
         return task
 
-    def copy_files(self) -> dict:
+    def copy_files(self) -> types.TaskDict:
         """Copy a list of files to their destination."""
         def show(_task: types.Task) -> str:
             return '{cmd: <{width}} {path}'.format(

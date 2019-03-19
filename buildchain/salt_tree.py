@@ -32,9 +32,10 @@ from typing import Iterator, Tuple, Union
 from buildchain import constants
 from buildchain import targets
 from buildchain import utils
+from buildchain import types
 
 
-def task_salt_tree() -> dict:
+def task_salt_tree() -> types.TaskDict:
     """Deploy the Salt tree in ISO_ROOT."""
     return {
         'actions': None,
@@ -44,7 +45,7 @@ def task_salt_tree() -> dict:
     }
 
 
-def task__deploy_salt_tree() -> Iterator[dict]:
+def task__deploy_salt_tree() -> Iterator[types.TaskDict]:
     """Deploy a Salt sub-tree"""
     for file_tree in FILE_TREES:
         yield from file_tree.execution_plan

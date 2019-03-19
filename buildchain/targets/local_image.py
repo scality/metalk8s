@@ -67,7 +67,7 @@ class LocalImage(ContainerImage):
     build_args   = property(operator.attrgetter('_build_args'))
 
     @property
-    def task(self) -> dict:
+    def task(self) -> types.TaskDict:
         def show(_task: types.Task) -> str:
             return '{cmd: <{width}} {image}'.format(
                 cmd='IMG BUILD', width=constants.CMD_WIDTH, image=self.tag,
