@@ -48,6 +48,7 @@ def task_packaging() -> dict:
             '_package_mkdir_iso_root',
             '_download_packages',
             '_build_packages:*',
+            '_build_repositories:*',
         ],
     }
 
@@ -78,7 +79,13 @@ def task__download_packages() -> dict:
     def clean() -> None:
         """Delete cache and repositories on the ISO."""
         coreutils.rm_rf(constants.PKG_ROOT/'var')
-        # TODO: clean repositories as well.
+        for repository in REPOSITORIES:
+            # Repository with an explicit list of packages are created by a
+            # dedicated task that will also handle their cleaning, so we skip
+            # them here.
+            if repository.packages:
+                continue
+            coreutils.rm_rf(repository.rootdir)
 
     pkg_list = constants.ROOT/'packages/packages.list'
     packages = _load_package_list(pkg_list)
@@ -115,6 +122,12 @@ def task__build_packages() -> Iterator[dict]:
             yield from package.execution_plan
 
 
+def task__build_repositories() -> Iterator[dict]:
+    """Build a repository."""
+    for repository in REPOSITORIES:
+        yield from repository.execution_plan
+
+
 # Image used to build the packages
 BUILDER : targets.LocalImage = targets.LocalImage(
     name='metalk8s-build',
@@ -147,6 +160,59 @@ PACKAGES : Dict[str, Tuple[targets.Package, ...]] = {
         ),
     ),
 }
+
+
+REPOSITORIES : Tuple[targets.Repository, ...] = (
+    targets.Repository(
+        basename='_build_repositories',
+        name='scality',
+        builder=BUILDER,
+        packages=PACKAGES['scality'],
+        task_dep=['_package_mkdir_iso_root'],
+    ),
+    targets.Repository(
+        basename='_build_repositories',
+        name='base',
+        builder=BUILDER,
+        task_dep=['_download_packages'],
+    ),
+    targets.Repository(
+        basename='_build_repositories',
+        name='external',
+        builder=BUILDER,
+        task_dep=['_download_packages'],
+    ),
+    targets.Repository(
+        basename='_build_repositories',
+        name='extras',
+        builder=BUILDER,
+        task_dep=['_download_packages'],
+    ),
+    targets.Repository(
+        basename='_build_repositories',
+        name='updates',
+        builder=BUILDER,
+        task_dep=['_download_packages'],
+    ),
+    targets.Repository(
+        basename='_build_repositories',
+        name='epel',
+        builder=BUILDER,
+        task_dep=['_download_packages'],
+    ),
+    targets.Repository(
+        basename='_build_repositories',
+        name='kubernetes',
+        builder=BUILDER,
+        task_dep=['_download_packages'],
+    ),
+    targets.Repository(
+        basename='_build_repositories',
+        name='saltstack',
+        builder=BUILDER,
+        task_dep=['_download_packages'],
+    ),
+)
 
 
 def _load_package_list(pkg_list: Path) -> List[str]:
