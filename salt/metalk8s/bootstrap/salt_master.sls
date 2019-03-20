@@ -11,4 +11,4 @@ Remove minion local conf:
     - require:
       - sls: metalk8s.salt.minion.configured
     - require_in:
-      - sls: metalk8s.salt.mater.accept_keys
+      - sls: metalk8s.salt.master.accept_keys
