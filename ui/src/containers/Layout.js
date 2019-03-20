@@ -62,7 +62,13 @@ class Layout extends Component {
       productName: this.props.intl.messages.product_name,
       applications,
       help,
-      user: this.props.user && user
+      user: this.props.user && user,
+      logo: (
+        <img
+          alt="logo"
+          src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
+        />
+      )
     };
 
     const theme = {
