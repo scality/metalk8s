@@ -1,10 +1,11 @@
 ARG NGINX_IMAGE_VERSION=1.15.8
 
-FROM node:lts-jessie AS build-step
+FROM node AS build-step
 
 WORKDIR /home/node
 COPY . /home/node/
-RUN yarn cache clean && yarn install && yarn build
+RUN npm install
+RUN npm run build
 
 FROM nginx:${NGINX_IMAGE_VERSION}
 
