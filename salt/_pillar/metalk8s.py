@@ -9,25 +9,37 @@ DEFAULT_POD_NETWORK = '10.233.0.0/16'
 DEFAULT_SERVICE_NETWORK = '10.96.0.0/12'
 
 
-def ext_pillar(minion_id, pillar, bootstrap_config):
-    log.debug('Loading MetalK8s configuration from {}'.format(bootstrap_config))
+def _load_config(path):
+    log.debug('Loading MetalK8s configuration from {}'.format(path))
 
-    obj = None
-    with salt.utils.files.fopen(bootstrap_config, 'rb') as fd:
-        obj = salt.utils.yaml.safe_load(fd)
+    config = None
+    with salt.utils.files.fopen(path, 'rb') as fd:
+        config = salt.utils.yaml.safe_load(fd)
 
-    assert obj.get('apiVersion') == 'metalk8s.scality.com/v1alpha1'
-    assert obj.get('kind') == 'BootstrapConfiguration'
+    assert config.get('apiVersion') == 'metalk8s.scality.com/v1alpha1'
+    assert config.get('kind') == 'BootstrapConfiguration'
 
-    assert 'networks' in obj
-    assert 'controlPlane' in obj['networks']
-    assert 'workloadPlane' in obj['networks']
+    return config
+
+
+def _load_networks(config_data):
+    assert 'networks' in config_data
+
+    networks_data = config_data['networks']
+    assert 'controlPlane' in config_data['networks']
+    assert 'workloadPlane' in config_data['networks']
 
     return {
-        'networks': {
-            'control_plane': obj['networks']['controlPlane'],
-            'workload_plane': obj['networks']['workloadPlane'],
-            'pod': obj['networks'].get('pods', DEFAULT_POD_NETWORK),
-            'service': obj['networks'].get('services', DEFAULT_SERVICE_NETWORK),
-        },
+        'control_plane': networks_data['controlPlane'],
+        'workload_plane': networks_data['workloadPlane'],
+        'pod': networks_data.get('pods', DEFAULT_POD_NETWORK),
+        'service': networks_data.get('services', DEFAULT_SERVICE_NETWORK),
+    }
+
+
+def ext_pillar(minion_id, pillar, bootstrap_config):
+    config = _load_config(bootstrap_config)
+
+    return {
+        'networks': _load_networks(config),
     }

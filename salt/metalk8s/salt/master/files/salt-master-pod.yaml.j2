@@ -24,7 +24,7 @@ spec:
         - ALL
   containers:
     - name: salt-master
-      image: {{ registry_prefix }}{{salt_master_image}}:{{salt_master_version}}
+      image: {{registry_url}}/{{saltenv}}/{{salt_master_image}}:{{salt_master_version}}
       ports:
         - name: publisher
           containerPort: 4505
@@ -56,10 +56,10 @@ spec:
         - name: run
           mountPath: '/var/run/salt'
         - name: states
-          mountPath: '/srv/scality/metalk8s-{{ path_version }}/salt'
+          mountPath: '{{ iso_root_path }}/salt'
           readOnly: true
         - name: pillar
-          mountPath: '/srv/scality/metalk8s-{{ path_version }}/pillar'
+          mountPath: '{{ iso_root_path }}/pillar'
           readOnly: true
         - name: metalk8s-config
           mountPath: '/etc/metalk8s'
@@ -79,11 +79,11 @@ spec:
         type: Directory
     - name: states
       hostPath:
-        path: '/srv/scality/metalk8s-{{ path_version }}/salt'
+        path: '{{ iso_root_path }}/salt'
         type: Directory
     - name: pillar
       hostPath:
-        path: '/srv/scality/metalk8s-{{ path_version }}/pillar'
+        path: '{{ iso_root_path }}/pillar'
         type: Directory
     - name: metalk8s-config
       hostPath:

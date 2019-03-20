@@ -84,7 +84,7 @@ ALL = \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/kube-proxy.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/coredns.sls \
-	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/files/coredns_deployment.yaml \
+	$(ISO_ROOT)/salt/metalk8s/kubeadm/init/addons/files/coredns_deployment.yaml.j2 \
 	\
 	$(ISO_ROOT)/salt/metalk8s/kubelet/init.sls \
 	$(ISO_ROOT)/salt/metalk8s/kubelet/installed.sls \
@@ -135,6 +135,7 @@ ALL = \
 	$(ISO_ROOT)/salt/_states/docker_registry.py \
 	$(ISO_ROOT)/salt/_states/kubernetes.py \
 	\
+	$(ISO_ROOT)/pillar/metalk8s.sls \
 	$(ISO_ROOT)/pillar/repositories.sls \
 	$(ISO_ROOT)/pillar/top.sls \
 	\
@@ -212,29 +213,34 @@ all-local: $(ALL) ## Build all artifacts in the build tree
 .PHONY: all-local
 
 $(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in $(ISO_ROOT)/product.txt
-	mkdir -p $(shell dirname $@)
+	mkdir -p $(@D)
 	rm -f $@
 	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 	chmod a+x $@
 
 $(ISO_ROOT)/salt/%: salt/%
-	mkdir -p $(shell dirname $@)
+	mkdir -p $(@D)
 	rm -f $@
 	cp -a $< $@
 
+$(ISO_ROOT)/pillar/metalk8s.sls: pillar/metalk8s.sls.in $(ISO_ROOT)/product.txt
+	mkdir -p $(@D)
+	rm -f $@
+	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
+
 $(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in $(ISO_ROOT)/product.txt
-	mkdir -p $(shell dirname $@)
+	mkdir -p $(@D)
 	rm -f $@
 	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 
 $(ISO_ROOT)/pillar/%: pillar/%
-	mkdir -p $(shell dirname $@)
+	mkdir -p $(@D)
 	rm -f $@
 	cp -a $< $@
 
 $(ISO_ROOT)/product.txt: scripts/product.sh VERSION FORCE
 	rm -f $@
-	mkdir -p $(shell dirname $@)
+	mkdir -p $(@D)
 	env \
 		VERSION_MAJOR=$(VERSION_MAJOR) \
 		VERSION_MINOR=$(VERSION_MINOR) \

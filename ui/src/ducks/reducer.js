@@ -1,15 +1,17 @@
 import { combineReducers } from 'redux';
 
 import language from './language';
-import nodes from './nodes';
+import nodes from './app/nodes';
 import login from './login';
-import app from './app';
+import layout from './app/layout';
 
 const rootReducer = combineReducers({
   language,
   login,
-  nodes,
-  app
+  app: combineReducers({
+    nodes,
+    layout
+  })
 });
 
 export default rootReducer;
