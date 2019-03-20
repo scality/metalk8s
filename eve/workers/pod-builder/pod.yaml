@@ -11,10 +11,10 @@ spec:
       args: ["-c", "buildbot-worker create-worker . ${BUILDMASTER}:${BUILDMASTER_PORT} ${WORKERNAME} ${WORKERPASS} && buildbot-worker start --nodaemon"]
       resources:
         requests:
-          cpu: 500m
+          cpu: "1"
           memory: 2Gi
         limits:
-          cpu: 500m
+          cpu: "2"
           memory: 2Gi
       env:
         - name: DOCKER_HOST
