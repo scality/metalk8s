@@ -36,7 +36,7 @@ Install and start salt master manifest:
 Make sure salt master container is up:
   module.wait:
     - cri.wait_container:
-      - salt-master
-      - running
+      - name: salt-master
+      - state: running
     - watch:
       - file: Install and start salt master manifest
