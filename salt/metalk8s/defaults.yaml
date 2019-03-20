@@ -1,6 +1,8 @@
 ---
 cluster: kubernetes
 
+metalk8s: {}
+
 kubeadm_preflight:
   mandatory:
     packages:
@@ -28,7 +30,7 @@ kubeadm_preflight:
 repo:
   online_mode: true
   local_mode: false
-  base_path: /srv/scality/metalk8s-2.0/packages
+  relative_path: packages     # relative to ISO root (configured in pillar)
   host: 127.0.0.1
   port: 8080
   repositories:

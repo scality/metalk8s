@@ -1,8 +1,9 @@
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set package_repositories_name = 'package-repositories' %}
 {%- set package_repositories_version = '1.0.0' %}
-{%- set package_repositories_image = 'localhost:5000/' ~ saltenv ~ '/' ~ 'nginx:1.15.8' %}
+{%- set package_repositories_image = 'localhost:5000/' ~ saltenv ~ '/nginx:1.15.8' %}
 {%- set nginx_configuration_path = '/var/lib/metalk8s/package-repositories/nginx.conf' %}
 
 Generate package repositories nginx configuration:
@@ -33,7 +34,7 @@ Install package repositories manifest:
         image: {{ package_repositories_image }}
         name: {{ package_repositories_name }}
         version: {{ package_repositories_version }}
-        packages_path: {{ repo.base_path }}
+        packages_path: {{ metalk8s.iso_root_path }}/{{ repo.relative_path }}
         nginx_configuration_path: {{ nginx_configuration_path }}
     - require:
       - file: Generate package repositories nginx configuration

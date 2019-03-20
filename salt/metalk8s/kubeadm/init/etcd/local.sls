@@ -1,6 +1,6 @@
 {% from "metalk8s/map.jinja" import networks with context %}
 
-{% set image_name="localhost:5000/metalk8s-2.0/etcd:3.2.18" %}
+{% set image_name="localhost:5000/" ~ saltenv ~ "/etcd:3.2.18" %}
 
 {% set host_name = salt.network.get_hostname() %}
 {% set ip_candidates = salt.network.ip_addrs(cidr=networks.control_plane) %}

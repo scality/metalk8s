@@ -1,6 +1,8 @@
+{% from "metalk8s/map.jinja" import metalk8s with context %}
+
 {# One day this should be transferred from the fileserver #}
 {% set pause_image_archive =
-    '/srv/scality/metalk8s-2.0/salt/metalk8s/containerd/files/pause-3.1.tar'
+    metalk8s.iso_root_path ~ '/salt/metalk8s/containerd/files/pause-3.1.tar'
 %}
 
 include:

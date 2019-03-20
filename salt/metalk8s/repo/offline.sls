@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- if not repo.local_mode %}
@@ -14,7 +15,8 @@ Install yum-plugin-versionlock:
 
 {%- for repo_name, repo_config in repo.repositories.items() %}
   {%- if repo.local_mode %}
-    {%- set repo_base_url = "file://" ~ repo.base_path %}
+    {%- set iso_root = metalk8s.iso_root_path %}
+    {%- set repo_base_url = "file://" ~ iso_root ~ "/" ~ repo.relative_path %}
   {%- else %}
     {%- set repo_base_url = "http://" ~ repo.host ~ ':' ~ repo.port %}
   {%- endif %}
