@@ -4,6 +4,7 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { DebounceInput } from 'react-debounce-input';
 import { Button } from 'core-ui';
+import { gray, warmRed, fontSize, padding } from 'core-ui/dist/style/theme';
 import styled from 'styled-components';
 import loginImage from '../assets/tech.jpg';
 import classnames from 'classnames';
@@ -26,12 +27,12 @@ const LoginFormContainer = styled.div`
   }
 
   input {
-    padding: 10px;
-    font-size: 16px;
+    padding: ${padding.small};
+    font-size: ${fontSize.large};
     width: 250px;
     display: block;
     border-radius: 4px;
-    border: 1px solid #ccc;
+    border: 1px solid ${gray};
   }
 
   input:focus {
@@ -42,25 +43,25 @@ const LoginFormContainer = styled.div`
   }
 
   .error input {
-    border-color: red;
+    border-color: ${warmRed};
   }
 
   .label {
     font-weight: bold;
     display: block;
-    margin-bottom: 5px;
-    margin-top: 20px;
+    margin-bottom: ${padding.smaller};
+    margin-top: ${padding.large};
     color: white;
   }
 
   .input-feedback {
-    color: red;
-    margin-top: 5px;
-    font-size: 12px;
+    color: ${warmRed};
+    margin-top: ${padding.smaller};
+    font-size: ${fontSize.small};
   }
 
   .input-group {
-    margin-bottom: 20px;
+    margin-bottom: ${padding.large};
   }
 
   .animated {
