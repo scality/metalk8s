@@ -27,6 +27,10 @@ const messages = {
 addLocaleData([...locale_en, ...locale_fr]);
 
 class App extends Component {
+  componentDidMount() {
+    document.title = messages[this.props.language].title;
+  }
+
   render() {
     const intl = messages[this.props.language];
     const applications = [];
@@ -75,7 +79,13 @@ class App extends Component {
       productName: intl.product_name,
       applications,
       help,
-      user: this.props.user && user
+      user: this.props.user && user,
+      logo: (
+        <img
+          alt="logo"
+          src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
+        />
+      )
     };
 
     const theme = {
