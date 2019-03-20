@@ -14,7 +14,7 @@ spec:
           cpu: "2"
           memory: 2Gi
         limits:
-          cpu: "4"
+          cpu: "3"
           memory: 2Gi
       env:
         - name: DOCKER_HOST
