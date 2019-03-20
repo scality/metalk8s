@@ -215,7 +215,7 @@ all-local: $(ALL) ## Build all artifacts in the build tree
 $(ISO_ROOT)/bootstrap.sh: scripts/bootstrap.sh.in $(ISO_ROOT)/product.txt
 	mkdir -p $(@D)
 	rm -f $@
-	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
+	sed s/@@VERSION/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 	chmod a+x $@
 
 $(ISO_ROOT)/salt/%: salt/%
@@ -231,7 +231,7 @@ $(ISO_ROOT)/pillar/metalk8s.sls: pillar/metalk8s.sls.in $(ISO_ROOT)/product.txt
 $(ISO_ROOT)/pillar/top.sls: pillar/top.sls.in $(ISO_ROOT)/product.txt
 	mkdir -p $(@D)
 	rm -f $@
-	sed s/@VERSION@/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
+	sed s/@@VERSION/$(shell source $(ISO_ROOT)/product.txt && echo $$SHORT_VERSION)/g < $< > $@ || (rm -f $@; false)
 
 $(ISO_ROOT)/pillar/%: pillar/%
 	mkdir -p $(@D)

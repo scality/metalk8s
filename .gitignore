@@ -1,5 +1,11 @@
 _build/
+__pycache__/
+buildenv/
 
+.mypy_cache/
 .vagrant/
 .tox/
+
+.doit.db
+
 *.pyc

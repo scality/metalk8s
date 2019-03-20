@@ -1,4 +1,4 @@
-metalk8s-@VERSION@:
+metalk8s-@@VERSION:
   '*':
     - metalk8s
     - repositories
