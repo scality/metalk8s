@@ -5,7 +5,7 @@ import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl } from 'react-intl';
 
-import { fetchNodesAction } from '../ducks/nodes';
+import { fetchNodesAction } from '../ducks/app/nodes';
 
 class NodeList extends React.Component {
   constructor(props) {
@@ -85,7 +85,7 @@ class NodeList extends React.Component {
 }
 function mapStateToProps(state) {
   return {
-    nodes: state.nodes.nodes
+    nodes: state.app.nodes.list
   };
 }
 
