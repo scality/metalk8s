@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { matchPath } from 'react-router';
 import { Layout as CoreUILayout } from 'core-ui';
+import { withRouter, Switch } from 'react-router-dom';
 
 import NodeList from './NodeList';
 import Welcome from '../components/Welcome';
@@ -74,9 +74,11 @@ class Layout extends Component {
     return (
       <ThemeProvider theme={theme}>
         <CoreUILayout sidebar={sidebar} navbar={navbar}>
-          <PrivateRoute exact path="/nodes" component={NodeList} />
-          <PrivateRoute exact path="/about" component={Welcome} />
-          <PrivateRoute exact path="/" component={NodeList} />
+          <Switch>
+            <PrivateRoute exact path="/nodes" component={NodeList} />
+            <PrivateRoute exact path="/about" component={Welcome} />
+            <PrivateRoute exact path="/" component={NodeList} />
+          </Switch>
         </CoreUILayout>
       </ThemeProvider>
     );

@@ -30,7 +30,7 @@ it('update the nodes state when fetchNodes', () => {
     {
       name: 'boostrap',
       cpu: '2',
-      memory: '1000ki',
+      memory: '1000 KiB',
       pods: '110'
     }
   ];

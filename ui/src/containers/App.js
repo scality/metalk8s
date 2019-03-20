@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Switch, Route } from 'react-router-dom';
+import { withRouter, Route, Switch } from 'react-router-dom';
 import { IntlProvider, addLocaleData } from 'react-intl';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
@@ -28,7 +28,7 @@ class App extends Component {
       >
         <Switch>
           <Route path="/login" component={Login} />
-          <Layout />
+          <Route component={Layout} />
         </Switch>
       </IntlProvider>
     );
