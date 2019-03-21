@@ -40,7 +40,7 @@ class App extends Component {
 }
 
 const mapStateToProps = state => ({
-  language: state.language.lang
+  language: state.config.language
 });
 
 export default withRouter(connect(mapStateToProps)(App));
