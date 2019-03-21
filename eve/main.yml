@@ -56,7 +56,7 @@ stages:
           haltOnFailure: true
       - ShellCommand:
           name: build everything
-          command: make
+          command: env NODE_OPTIONS=--max_old_space_size=2048 make
       - ShellCommand:
           name: Put the iso file in a separate folder
           command: >
