@@ -2,8 +2,8 @@ debug: False
 install_tiller: True
 
 helm_bin_dir: /usr/local/bin/
-helm_version: v2.9.1
+helm_version: v2.11.0
 
-helm_checksum_v2.9.1: sha256:56ae2d5d08c68d6e7400d462d6ed10c929effac929fedce18d2636a9b4e166ba
+helm_checksum_v2.11.0: sha256:02a4751586d6a80f6848b58e7f6bd6c973ffffadc52b4c06652db7def02773a1
 
 tiller_addon_dir: '{{ kube_config_dir }}/addons/tiller'
