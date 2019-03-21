@@ -145,12 +145,13 @@ class FileTree(base.Target, base.CompositeTarget):
         for path in self._files:
             if isinstance(path, base.FileTarget):
                 continue
+            source = constants.ROOT/path
             destination = self.destination/path
             task['actions'].append(
-                (coreutils.cp_file, [path, destination])
+                (coreutils.cp_file, [source, destination])
             )
             task['targets'].append(destination)
-            task['file_dep'].append(path)
+            task['file_dep'].append(source)
         return task
 
     @staticmethod

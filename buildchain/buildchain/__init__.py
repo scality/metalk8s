@@ -11,4 +11,4 @@ from pathlib import Path
 
 
 # Root of the repository.
-ROOT: Path = Path(__file__).resolve().parent.parent
+ROOT: Path = (Path(__file__)/'../../../').resolve()
