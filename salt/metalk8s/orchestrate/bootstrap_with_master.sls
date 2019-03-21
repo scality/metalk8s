@@ -1,13 +1,13 @@
 Bootstrap CA:
   salt.state:
-    - tgt: bootstrap
+    - tgt: {{ pillar['bootstrap_id'] }}
     - saltenv: {{ saltenv }}
     - sls:
       - metalk8s.bootstrap.certs.ca
 
 Bootstrap client certs:
   salt.state:
-    - tgt: bootstrap
+    - tgt: {{ pillar['bootstrap_id'] }}
     - saltenv: {{ saltenv }}
     - sls:
       - metalk8s.bootstrap.certs.clients
@@ -16,7 +16,7 @@ Bootstrap client certs:
 
 Bootstrap control plane:
   salt.state:
-    - tgt: bootstrap
+    - tgt: {{ pillar['bootstrap_id'] }}
     - saltenv: {{ saltenv }}
     - sls:
       - metalk8s.bootstrap.kubeconfig
@@ -27,7 +27,7 @@ Bootstrap control plane:
 
 Bootstrap node:
   salt.state:
-    - tgt: bootstrap
+    - tgt: {{ pillar['bootstrap_id'] }}
     - saltenv: {{ saltenv }}
     - sls:
       - metalk8s.bootstrap.mark_control_plane
