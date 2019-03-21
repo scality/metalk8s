@@ -10,6 +10,8 @@ BUILDENV="${BUILDCHAIN}/.venv"
 REQUIREMENTS="${BUILDCHAIN}/requirements.txt"
 # Dummy file to keep track of when the virtual environment was installed.
 WITNESS_FILE="${BUILDENV}/installed.tstamp"
+# File containing environment variables.
+DOTENV=./.env
 
 # Can't use `[ file1 -nt file2 ]` directly because it's not POSIX :'(
 REQ_TSTAMP=$(stat -c %Y "${REQUIREMENTS}")
@@ -22,6 +24,13 @@ then
     "${PYTHON_SYS}" -m venv --clear "${BUILDENV}"
     "${BUILDENV}/bin/pip" install -r "${REQUIREMENTS}"
     touch "${WITNESS_FILE}"
+fi
+
+# Load customized environment variables from dotenv file, if exists.
+if [ -f "${DOTENV}" ]
+then
+    # shellcheck source=/dev/null
+    . "${DOTENV}"
 fi
 
 "${BUILDENV}/bin/python" -m doit "$@"

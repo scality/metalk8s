@@ -20,7 +20,7 @@ from buildchain import utils
 def task_vagrantup() -> types.TaskDict:
     """Run `vagrant up` to (re-)provision a development environment."""
     vagrant = [config.VAGRANT, 'up']
-    vagrant.extend(map(shlex.quote, config.VAGRANT_UP_OPTS))
+    vagrant.extend(map(shlex.quote, config.VAGRANT_UP_ARGS))
     return {
         'actions': [doit.tools.LongRunning(' '.join(vagrant))],
         'task_dep': ['populate_iso'],
