@@ -4,8 +4,8 @@ FROM node AS build-step
 
 WORKDIR /home/node
 COPY . /home/node/
-RUN yarn cache clean && yarn && yarn build
-
+RUN npm install
+RUN npm run build
 
 FROM nginx:${NGINX_IMAGE_VERSION}
 
