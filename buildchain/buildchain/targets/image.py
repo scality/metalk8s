@@ -22,36 +22,36 @@ class ContainerImage(base.FileTarget):
         name: str,
         version: str,
         destination: Path,
-        is_compressed: bool=True,
+        for_containerd: bool=False,
         **kwargs: Any
     ):
         """Initialize a container image.
 
         Arguments:
-            name:          image name
-            version:       image version
-            destination:   save location for the image
-            is_compressed: compress the saved image?
+            name:           image name
+            version:        image version
+            destination:    save location for the image
+            for_containerd: image will be loaded in containerd
 
         Keyword Arguments:
             Unused.
         """
         self._name = name
         self._version = version
-        self._is_compressed = is_compressed
+        self._for_containerd = for_containerd
         self._dest = destination
         super().__init__(destination=self.filename, task_name=name, **kwargs)
 
-    name          = property(operator.attrgetter('_name'))
-    version       = property(operator.attrgetter('_version'))
-    is_compressed = property(operator.attrgetter('_is_compressed'))
-    dest_dir      = property(operator.attrgetter('_dest'))
+    name           = property(operator.attrgetter('_name'))
+    version        = property(operator.attrgetter('_version'))
+    for_containerd = property(operator.attrgetter('_for_containerd'))
+    dest_dir       = property(operator.attrgetter('_dest'))
 
     @property
     def filename(self) -> Path:
         """Name of the image on disk."""
         fileext = '.tar'
-        if self.is_compressed:
+        if not self.for_containerd:
             fileext += COMPRESSED_FILEEXT
         return self._dest/'{obj.name}-{obj.version}{ext}'.format(
             obj=self, ext=fileext

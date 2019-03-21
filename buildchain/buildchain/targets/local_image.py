@@ -57,8 +57,8 @@ class LocalImage(image.ContainerImage):
         super().__init__(
             name=name, version=version,
             destination=destination,
-            # We only build compressed images (until now…)
-            is_compressed=True,
+            # We never load locally built images into containerd (until now…).
+            for_containerd=False,
             **kwargs
         )
 

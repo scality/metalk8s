@@ -33,21 +33,21 @@ class RemoteImage(image.ContainerImage):
         name: str,
         version: str,
         digest: str,
-        is_compressed: bool,
         destination: Path,
         remote_name: Optional[str]=None,
+        for_containerd: bool=False,
         **kwargs: Any
     ):
         """Initialize a remote container image.
 
         Arguments:
-            registry:      registry where the image is
-            name:          image name
-            version:       image version
-            digest:        image digest
-            is_compressed: compress the saved image?
-            destination:   save location for the image
-            remote_name:   image name in the registry
+            registry:       registry where the image is
+            name:           image name
+            version:        image version
+            digest:         image digest
+            destination:    save location for the image
+            remote_name:    image name in the registry
+            for_containerd: image will be loaded in containerd
 
         Keyword Arguments:
             They are passed to `FileTarget` init method.
@@ -58,7 +58,7 @@ class RemoteImage(image.ContainerImage):
         super().__init__(
             name=name, version=version,
             destination=destination,
-            is_compressed=is_compressed,
+            for_containerd=for_containerd,
             **kwargs
         )
 
@@ -98,6 +98,15 @@ class RemoteImage(image.ContainerImage):
             [config.DOCKER, 'tag', self.fullname, self.tag],
             [config.DOCKER, 'save', self.tag, '-o', str(filepath)],
         ]
-        if self.is_compressed:
+        # containerd doesn't support compressed images.
+        if not self.for_containerd:
             actions.append((coreutils.gzip, [filepath], {}))
         return actions
+
+    @property
+    def tag(self) -> str:
+        """Image tag."""
+        if self.for_containerd:
+            # containerd expects this tag format.
+            return '{img.registry}/{img.name}:{img.version}'.format(img=self)
+        return super().tag
