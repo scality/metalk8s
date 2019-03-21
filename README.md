@@ -4,15 +4,21 @@
 
 An opinionated Kubernetes distribution with a focus on long-term on-prem deployments
 
+## Building
+
+To build a MetalK8s ISO, simply type `./doit.sh`.
+
+For more information, please refers to [BUILDING.md](BUILDING.md).
+
 ## Contributing
 
-If you'd like to contribute, please review the 
+If you'd like to contribute, please review the
 [Contributing Guidelines](CONTRIBUTING.md).
 
 ## End-to-End Testing
 ### Requirements
 
-- [Python3.4+](https://www.python.org/)
+- [Python3.6+](https://www.python.org/)
 - [tox](https://pypi.org/project/tox)
 - [Vagrant](https://www.vagrantup.com/)
 - [VirtualBox](https://www.virtualbox.org)
@@ -22,7 +28,7 @@ If you'd like to contribute, please review the
 To run tests locally:
 ```shell
 # Bootstrap a platform on a vagrant environment using
-doit vagrantup
+./doit.sh vagrantup
 # Generate an ssh-config file from vagrant
 vagrant ssh-config >bootstrap.ssh.config
 # Run tox with two environment variables

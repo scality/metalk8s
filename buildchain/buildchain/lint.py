@@ -37,7 +37,7 @@ def task_lint() -> Iterator[types.TaskDict]:
 
 def lint_shell() -> types.TaskDict:
     """Run shell scripts linting."""
-    shell_scripts : List[Path] = []
+    shell_scripts : List[Path] = [constants.ROOT/'doit.sh']
     for ext in ('.sh', '.sh.in'):
         shell_scripts.extend(constants.ROOT.glob('*/*{}'.format(ext)))
     return {

@@ -1,10 +1,11 @@
 _build/
 __pycache__/
-buildenv/
 
 .mypy_cache/
 .vagrant/
 .tox/
+
+buildchain/.venv/
 
 .doit.db
 
