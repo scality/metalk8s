@@ -5,9 +5,17 @@
 
 FROM alpine:3.8
 
-RUN apk add --no-cache git python python3 py2-pip py-twisted && \
+RUN apk add --no-cache \
+        gcc \
+        git \
+        musl-dev \
+        python \
+        python2-dev \
+        python3 \
+        py2-pip \
+        && \
     pip install tox && \
-    pip install buildbot-worker
+    pip install buildbot-worker==1.8.0
 
 WORKDIR /usr/src/metalk8s
 ARG USER_ID=1000
