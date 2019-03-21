@@ -3,7 +3,7 @@ import * as Api from '../services/api';
 
 // Actions
 const SET_LANG = 'SET_LANG';
-const SET_THEME = 'SET_THEME';
+export const SET_THEME = 'SET_THEME';
 const FETCH_THEME = 'FETCH_THEME';
 
 // Reducer
@@ -37,7 +37,7 @@ export function fetchThemeAction() {
 }
 
 // Sagas
-function* fetchTheme() {
+export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
   if (!result.error) {
     yield put(setThemeAction(result.data));
