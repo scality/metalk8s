@@ -8,7 +8,7 @@ Set up default basic auth htpasswd:
     - source: salt://metalk8s/kubeadm/init/control-plane/files/htpasswd
     - user: root
     - group: root
-    - mode: 644
+    - mode: 600
     - makedirs: True
     - dir_mode: 750
 
