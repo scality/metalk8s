@@ -35,6 +35,22 @@ def task_lint() -> Iterator[types.TaskDict]:
         yield create_lint_task()
 
 
+def lint_python() -> types.TaskDict:
+    """Run Python linting."""
+    buildchain = constants.ROOT/'buildchain'
+    python_sources : List[Path] = [
+        buildchain/'dodo.py',
+        *buildchain.glob('buildchain/*.py'),
+        *buildchain.glob('buildchain/targets/*.py'),
+    ]
+    return {
+        'name': 'python',
+        'doc': lint_python.__doc__,
+        'actions': [['tox', '-e', 'lint-python']],
+        'file_dep': python_sources,
+    }
+
+
 def lint_shell() -> types.TaskDict:
     """Run shell scripts linting."""
     shell_scripts : List[Path] = [constants.ROOT/'doit.sh']
@@ -60,6 +76,7 @@ def lint_yaml() -> types.TaskDict:
 
 # List of available linter task.
 LINTERS : Tuple[Callable[[], types.TaskDict], ...] = (
+    lint_python,
     lint_shell,
     lint_yaml,
 )

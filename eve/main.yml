@@ -83,6 +83,7 @@ stages:
       - ShellCommand:
           name: Run all linting targets
           command: ./doit.sh lint
+          usePTY: true
           haltOnFailure: false
 
   single-node:
