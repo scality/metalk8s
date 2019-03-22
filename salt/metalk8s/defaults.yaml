@@ -176,4 +176,4 @@ coredns:
   cluster_domain: cluster.local
   reverse_cidrs: in-addr.arpa ip6.arpa
 
-upgrade: False        # define if we're on an upgrade case
+upgrade: false        # define if we're on an upgrade case
