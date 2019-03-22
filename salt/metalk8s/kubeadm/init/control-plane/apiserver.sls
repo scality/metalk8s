@@ -71,6 +71,15 @@ Create kube-apiserver Pod manifest:
           - path: {{ htpasswd_path }}
             type: File
             name: htpasswd
+
+Make sure kube-apiserver container is up:
+  module.wait:
+    - cri.wait_container:
+      - name: kube-apiserver
+      - state: running
+    - watch:
+      - file: Create kube-apiserver Pod manifest
+
 {% else %}
 No available advertise IP for kube-apiserver:
   test.fail_without_changes:
