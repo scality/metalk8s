@@ -173,6 +173,13 @@ orchestrate_bootstrap() {
     ${SALT_MASTER_CALL}-run --state-output=mixed state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
 }
 
+deploy_metalk8s_ui() {
+    "$SALT_CALL" --retcode-passthrough state.apply \
+        metalk8s.metalk8s-ui saltenv=metalk8s-@VERSION@ \
+        pillarenv=metalk8s-@VERSION@
+}
+
+
 main() {
     pre_minion_checks
     disable_salt_minion_service
@@ -181,7 +188,10 @@ main() {
     install_salt_minion
     configure_salt_minion_local_mode
 
+    sync_local
+    
     orchestrate_bootstrap
+    deploy_metalk8s_ui
 }
 
 main

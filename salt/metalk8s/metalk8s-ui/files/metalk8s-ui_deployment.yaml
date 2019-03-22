@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: ui
+    kubernetes.io/name: "MetalK8sUI"
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      k8s-app: ui
+  template:
+    metadata:
+      labels:
+        k8s-app: ui
+    spec:
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+          effect: "NoSchedule"
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      containers:
+      - name: metalk8s-ui
+        image: localhost:5000/metalk8s-2.0/metalk8s-ui:0.2
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 70Mi
+        ports:
+        - containerPort: 80
+          name: nginx-ui
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP

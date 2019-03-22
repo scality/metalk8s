@@ -38,6 +38,10 @@
         'name': 'salt-master',
         'tag': '2018.3.4-1',
     },
+    {
+        'name': 'metalk8s-ui',
+        'tag': '0.2',
+    },
 ] %}
 
 include:
