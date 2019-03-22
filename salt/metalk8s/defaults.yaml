@@ -111,7 +111,7 @@ repo:
       version: latest
       repository: metalk8s-kubernetes
     kubelet:
-      version: 1.11.7-0
+      version: 1.12.6-0
       repository: metalk8s-kubernetes
     m2crypto:
       version: latest

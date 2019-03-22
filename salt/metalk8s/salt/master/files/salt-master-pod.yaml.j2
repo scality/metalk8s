@@ -12,6 +12,7 @@ metadata:
     app.kubernertes.io/part-of: metalk8s
     app.kubernetes.io/managed-by: salt
 spec:
+  shareProcessNamespace: true
   hostNetwork: true
   priorityClassName: system-cluster-critical
   securityContext:
