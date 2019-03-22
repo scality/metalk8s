@@ -40,6 +40,13 @@ export const logoutAction = () => {
   return { type: LOGOUT };
 };
 
+export const setAuthenticationSuccessAction = payload => {
+  return {
+    type: AUTHENTICATION_SUCCESS,
+    payload
+  };
+};
+
 // Sagas
 function* authenticate({ payload }) {
   const { username, password } = payload;
@@ -53,14 +60,13 @@ function* authenticate({ payload }) {
     });
   } else {
     localStorage.setItem('token', token);
-    yield put({
-      type: AUTHENTICATION_SUCCESS,
-      payload: {
+    yield put(
+      setAuthenticationSuccessAction({
         username,
         password,
         token
-      }
-    });
+      })
+    );
     yield call(history.push, '/');
   }
 }
