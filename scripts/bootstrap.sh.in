@@ -159,6 +159,8 @@ sync_salt() {
     test -n "$SALT_CONTAINER"
     crictl exec -i "$SALT_CONTAINER" \
         salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
+    crictl exec -i "$SALT_CONTAINER" \
+        salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
 }
 
 sync_local() {
