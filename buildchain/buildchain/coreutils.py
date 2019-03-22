@@ -10,7 +10,7 @@ import hashlib
 import os
 import shutil
 from pathlib import Path
-from typing import Sequence
+from typing import Iterator, Sequence
 
 
 # Buffer size (8 Mio).
@@ -87,3 +87,15 @@ def touch(path: Path) -> None:
         path: path to the file to create
     """
     path.touch()
+
+
+def ls_files_rec(root: Path) -> Iterator[Path]:
+    """List recursively all the files under the specified `root` directory.
+
+    Arguments:
+        path: path to the root directory
+
+    Returns:
+        an iterator over the file paths
+    """
+    return (path for path in root.rglob('*') if path.is_file())

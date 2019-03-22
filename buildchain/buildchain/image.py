@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Iterator, Tuple
 
 from buildchain import constants
+from buildchain import coreutils
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
@@ -72,6 +73,9 @@ def task__image_build() -> Iterator[types.TaskDict]:
     """Download the container images."""
     for image in TO_BUILD:
         yield image.task
+
+
+NGINX_IMAGE_VERSION : str = '1.15.8'
 
 
 # List of container images to pull.
@@ -139,7 +143,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
     targets.RemoteImage(
         registry=constants.DOCKER_REGISTRY,
         name='nginx',
-        version='1.15.8',
+        version=NGINX_IMAGE_VERSION,
         digest='sha256:dd2d0ac3fff2f007d99e033b64854be0941e19a2ad51f174d9240dda20d9f534',
         destination=ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
@@ -173,6 +177,16 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         build_args={'SALT_VERSION': constants.SALT_VERSION},
         task_dep=['_image_mkdir_root'],
         file_dep=[constants.ROOT/'images'/'salt-master'/'source.key'],
+    ),
+    targets.LocalImage(
+        name='metalk8s-ui',
+        version='0.2',
+        dockerfile=constants.ROOT/'ui'/'Dockerfile',
+        destination=ISO_IMAGE_ROOT,
+        save_on_disk=True,
+        build_args={'NGINX_IMAGE_VERSION': NGINX_IMAGE_VERSION},
+        task_dep=['_image_mkdir_root'],
+        file_dep=list(coreutils.ls_files_rec(constants.ROOT/'ui')),
     ),
 )
 

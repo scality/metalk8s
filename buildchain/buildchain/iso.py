@@ -28,16 +28,16 @@ Overview:
 
 
 import datetime as dt
-import os
 import socket
 import subprocess
 from pathlib import Path
-from typing import List, Sequence
+from typing import Sequence
 
 import doit  # type: ignore
 
 from buildchain import config
 from buildchain import constants
+from buildchain import coreutils
 from buildchain import targets as helper
 from buildchain import types
 from buildchain import utils
@@ -149,7 +149,7 @@ def task__iso_build() -> types.TaskDict:
         utils.build_relpath(constants.ISO_ROOT)
     )
     # Every file used for the ISO is a dependency.
-    depends = list_iso_files()
+    depends = list(coreutils.ls_files_rec(constants.ISO_ROOT))
     depends.append(constants.VERSION_FILE)
     return {
         'title': lambda task: utils.title_with_target1('MKISOFS', task),
@@ -184,17 +184,6 @@ def git_revision() -> str:
         return stdout.decode('utf-8').rstrip()
     except subprocess.CalledProcessError:
         return ''
-
-
-def list_iso_files() -> List[Path]:
-    """List all the files under the ISO root."""
-    res : List[Path] = []
-    for root, _, files in os.walk(constants.ISO_ROOT):
-        if not root.startswith(str(constants.ISO_ROOT)):
-            continue
-        root_path = Path(root)
-        res.extend(root_path/filename for filename in files)
-    return res
 
 
 __all__ = utils.export_only_tasks(__name__)
