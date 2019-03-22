@@ -31,8 +31,8 @@ export const setNodesAction = payload => {
 
 // Sagas
 export function* fetchNodes() {
-  try {
-    const result = yield call(Api.getNodes);
+  const result = yield call(Api.getNodes);
+  if (!result.error) {
     yield put(
       setNodesAction(
         result.body.items.map(node => ({
@@ -46,7 +46,7 @@ export function* fetchNodes() {
         }))
       )
     );
-  } catch (e) {}
+  }
 }
 
 export function* nodesSaga() {

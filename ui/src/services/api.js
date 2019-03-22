@@ -34,6 +34,14 @@ export async function getNodes() {
   try {
     return await coreV1.listNode();
   } catch (error) {
-    console.error('Error retrieving nodes', error.body ? error.body : error);
+    return { error };
+  }
+}
+
+export async function fetchTheme() {
+  try {
+    return await axios.get(process.env.PUBLIC_URL + '/brand/theme.json');
+  } catch (error) {
+    return { error };
   }
 }

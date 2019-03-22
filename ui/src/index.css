@@ -7,6 +7,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.sc-logo img{
+  height: 30px;
+}
 .main {
   overflow: hidden;
 }

@@ -6,15 +6,13 @@ import { DebounceInput } from 'react-debounce-input';
 import { Button } from 'core-ui';
 import { gray, warmRed, fontSize, padding } from 'core-ui/dist/style/theme';
 import styled from 'styled-components';
-import loginImage from '../assets/tech.jpg';
 import classnames from 'classnames';
 import { authenticateAction } from '../ducks/login';
 import { injectIntl } from 'react-intl';
-import { ReactComponent as Logo } from '../assets/branding.svg';
 
 const LoginFormContainer = styled.div`
   height: 100vh;
-  background: url(${loginImage});
+  background: url(${process.env.PUBLIC_URL + '/brand/assets/login.jpg'});
   background-size: cover;
   position: relative;
 
@@ -159,7 +157,10 @@ const LoginForm = props => {
   return (
     <Form autoComplete="off">
       <LogoContainer>
-        <Logo />
+        <img
+          alt="logo"
+          src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
+        />
       </LogoContainer>
 
       {errors.authentication && <Error>{errors.authentication}</Error>}

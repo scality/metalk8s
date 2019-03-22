@@ -11,8 +11,13 @@ import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
+import { fetchThemeAction } from '../ducks/config';
 
 class Layout extends Component {
+  componentDidMount() {
+    this.props.fetchTheme();
+  }
+
   render() {
     const applications = [];
 
@@ -62,17 +67,17 @@ class Layout extends Component {
       productName: this.props.intl.messages.product_name,
       applications,
       help,
-      user: this.props.user && user
-    };
-
-    const theme = {
-      brand: {
-        primary: '#283593'
-      }
+      user: this.props.user && user,
+      logo: (
+        <img
+          alt="logo"
+          src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
+        />
+      )
     };
 
     return (
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={this.props.theme}>
         <CoreUILayout sidebar={sidebar} navbar={navbar}>
           <Switch>
             <PrivateRoute exact path="/nodes" component={NodeList} />
@@ -87,13 +92,15 @@ class Layout extends Component {
 
 const mapStateToProps = state => ({
   user: state.login.user,
-  sidebar: state.app.layout.sidebar
+  sidebar: state.app.layout.sidebar,
+  theme: state.config.theme
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
-    toggleSidebar: () => dispatch(toggleSidebarAction())
+    toggleSidebar: () => dispatch(toggleSidebarAction()),
+    fetchTheme: () => dispatch(fetchThemeAction())
   };
 };
 

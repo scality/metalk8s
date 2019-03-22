@@ -20,6 +20,10 @@ const messages = {
 addLocaleData([...locale_en, ...locale_fr]);
 
 class App extends Component {
+  componentDidMount() {
+    document.title = messages[this.props.language].product_name;
+  }
+
   render() {
     return (
       <IntlProvider
@@ -36,7 +40,7 @@ class App extends Component {
 }
 
 const mapStateToProps = state => ({
-  language: state.language.lang
+  language: state.config.language
 });
 
 export default withRouter(connect(mapStateToProps)(App));
