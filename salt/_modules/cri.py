@@ -117,7 +117,7 @@ def execute(name, command, *args):
 
 def wait_container(name, state, timeout=60, delay=5):
     '''
-    Wait for a containter be in given state.
+    Wait for a container to be in given state.
 
     .. note::
 
@@ -127,7 +127,7 @@ def wait_container(name, state, timeout=60, delay=5):
     name
         Name of the target container
     state
-        State of container: one of created, running, exited or unknown
+        State of container, one of: created, running, exited or unknown
     timeout
         Maximum time in sec to wait for container to reach given state
     delay
