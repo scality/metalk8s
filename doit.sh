@@ -13,9 +13,16 @@ WITNESS_FILE="${BUILDENV}/installed.tstamp"
 # File containing environment variables.
 DOTENV=./.env
 
+if [ "$(uname -s)" = "Darwin" ]
+then
+    GET_FILE_STAMP='stat -f %m'
+else
+    GET_FILE_STAMP='stat -c %Y'
+fi
+
 # Can't use `[ file1 -nt file2 ]` directly because it's not POSIX :'(
-REQ_TSTAMP=$(stat -c %Y "${REQUIREMENTS}")
-WIT_TSTAMP=$(stat -c %Y "${WITNESS_FILE}" 2> /dev/null || echo '0')
+REQ_TSTAMP=$($GET_FILE_STAMP "${REQUIREMENTS}")
+WIT_TSTAMP=$($GET_FILE_STAMP "${WITNESS_FILE}" 2> /dev/null || echo '0')
 
 # Install/reinstall the virtual environment only if it either doesn't exist or
 # the requirements have changed since its creation.
