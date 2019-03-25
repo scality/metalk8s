@@ -130,6 +130,16 @@ echo "Launching bootstrap"
 exec "/srv/scality/metalk8s-$SHORT_VERSION/bootstrap.sh"
 SCRIPT
 
+DEPLOY_SSH_PUBLIC_KEY = <<-SCRIPT
+#!/bin/bash
+
+set -eu -o pipefail
+
+if ! grep -Fxq "$(cat .ssh/#{PRESHARED_SSH_KEY_NAME}.pub)" .ssh/authorized_keys ; then
+   cat .ssh/#{PRESHARED_SSH_KEY_NAME}.pub >> .ssh/authorized_keys
+fi
+SCRIPT
+
 # To support VirtualBox linked clones
 Vagrant.require_version(">= 1.8")
 
@@ -181,6 +191,15 @@ Vagrant.configure("2") do |config|
 
       # No need for Guest Additions since there is no synced folder
       node.vbguest.auto_update = false
+
+      node.vm.provision "copy-ssh-public-key",
+        type: "file",
+        source: ".vagrant/#{PRESHARED_SSH_KEY_NAME}.pub",
+        destination: ".ssh/#{PRESHARED_SSH_KEY_NAME}.pub"
+
+      node.vm.provision "add-ssh-public-key-to-authorized-keys",
+        type: "shell",
+        inline: DEPLOY_SSH_PUBLIC_KEY
     end
   end
 end
