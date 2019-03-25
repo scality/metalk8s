@@ -20,8 +20,8 @@ def __virtual__():
         return HAS_DEPS
     else:
         return False, 'Unable to load the kubernetes nodes roster: '\
-            'dependencies kubernetes.client and/or '\
-            'kubernetes.config are unavailable.'
+            'dependencies for Kubernetes Python client library '\
+            'are unavailable.'
 
 
 def targets(tgt, tgt_type='glob', **kwargs):
@@ -57,5 +57,6 @@ def targets(tgt, tgt_type='glob', **kwargs):
                 'user': annotations.get(prefix + 'user', 'root'),
                 'priv': annotations.get(prefix + 'key-path', 'salt-ssh.rsa'),
                 'sudo': bool(annotations.get(prefix + 'sudo', False)),
+                'minion_opts': {'use_superseded': ['module.run']},
             }
     return targets
