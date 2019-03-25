@@ -13,6 +13,9 @@ RUN yum install -y epel-release \
     make \
     python-devel \
     python-pip \
+    python36 \
+    python36-devel \
+    python36-pip \
     genisoimage \
     git \
     yum-utils \

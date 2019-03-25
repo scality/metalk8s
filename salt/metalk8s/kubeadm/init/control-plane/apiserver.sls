@@ -1,5 +1,16 @@
 {% from "metalk8s/map.jinja" import networks with context %}
 {% from "metalk8s/kubeadm/init/control-plane/lib.sls" import get_image_name with context %}
+{% set htpasswd_path = "/etc/kubernetes/htpasswd" %}
+
+Set up default basic auth htpasswd:
+  file.managed:
+    - name: {{ htpasswd_path }}
+    - source: salt://metalk8s/kubeadm/init/control-plane/files/htpasswd
+    - user: root
+    - group: root
+    - mode: 600
+    - makedirs: True
+    - dir_mode: 750
 
 {% set ip_candidates = salt.network.ip_addrs(cidr=networks.control_plane) %}
 {% if ip_candidates %}
@@ -25,6 +36,7 @@ Create kube-apiserver Pod manifest:
           - --authorization-mode=Node,RBAC
           - --advertise-address={{ host }}
           - --allow-privileged=true
+          - --basic-auth-file={{ htpasswd_path }}
           - --client-ca-file=/etc/kubernetes/pki/ca.crt
           - --enable-admission-plugins=NodeRestriction
           - --enable-bootstrap-token-auth=true
@@ -56,6 +68,18 @@ Create kube-apiserver Pod manifest:
             name: k8s-certs
           - path: /etc/ssl/certs
             name: ca-certs
+          - path: {{ htpasswd_path }}
+            type: File
+            name: htpasswd
+
+Make sure kube-apiserver container is up:
+  module.wait:
+    - cri.wait_container:
+      - name: kube-apiserver
+      - state: running
+    - watch:
+      - file: Create kube-apiserver Pod manifest
+
 {% else %}
 No available advertise IP for kube-apiserver:
   test.fail_without_changes:

@@ -56,7 +56,9 @@ stages:
           haltOnFailure: true
       - ShellCommand:
           name: build everything
-          command: make
+          env:
+            PYTHON_SYS: python36
+          command: ./doit.sh
       - ShellCommand:
           name: Put the iso file in a separate folder
           command: >
@@ -80,7 +82,8 @@ stages:
       - Git: *git_pull
       - ShellCommand:
           name: Run all linting targets
-          command: make lint
+          command: ./doit.sh lint
+          usePTY: true
           haltOnFailure: false
 
   single-node:
