@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from configparser import ConfigParser
-from itertools import chain
-
 import pytest
 from pytest_bdd import (
     given,
@@ -9,24 +6,6 @@ from pytest_bdd import (
     when,
     parsers,
 )
-
-
-# Pytest fixtures
-@pytest.fixture(scope="session")
-def version():
-    """Fixture that read metalk8s version.
-
-    Version is extracted from _build/root/product.txt
-    """
-    version_file = "_build/root/product.txt"
-    parser = ConfigParser()
-
-    with open(version_file) as stream:
-        # add a section header for configparser
-        stream = chain(("[top]",), stream)
-        parser.read_file(stream)
-
-    return dict(parser.items('top'))
 
 
 def _verify_kubeapi_service(host):
@@ -37,10 +16,11 @@ def _verify_kubeapi_service(host):
         assert retcode == 0
 
 
-def _run_bootstrap(host, version):
-    cmd = "/srv/scality/metalk8s-{0}/bootstrap.sh".format(
-        version['short_version']
-    )
+def _run_bootstrap(request, host):
+    # FIXME: this can only run on the bootstrap node, we'd need to skip such
+    #        test if the host fixture is not adapted
+    iso_root = request.config.getoption("--iso-root")
+    cmd = str(iso_root / "bootstrap.sh")
     with host.sudo():
         res = host.run(cmd)
         assert res.rc == 0, res.stdout
@@ -50,8 +30,8 @@ def _run_bootstrap(host, version):
 
 # Given
 @given('bootstrap was run once')
-def run_bootstrap(host, version):
-    _run_bootstrap(host, version)
+def run_bootstrap(request, host):
+    _run_bootstrap(request, host)
 
 
 @given("the Kubernetes API is available")
@@ -61,8 +41,8 @@ def check_service(host):
 
 # When
 @when('we run bootstrap a second time')
-def rerun_bootstrap(host, version):
-    _run_bootstrap(host, version)
+def rerun_bootstrap(request, host):
+    _run_bootstrap(request, host)
 
 
 # Then
