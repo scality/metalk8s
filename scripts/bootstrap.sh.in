@@ -113,9 +113,9 @@ install_salt_minion() {
 
     if [[ ${online_mode,,} = false ]]; then
         yum_opts+=(
-	    '--disablerepo=*'
-	    '--enablerepo=metalk8s-*'
-	)
+	          '--disablerepo=*'
+	          '--enablerepo=metalk8s-*'
+	      )
     fi
 
     "$YUM" install "${yum_opts[@]}" salt-minion
@@ -163,16 +163,12 @@ sync_salt() {
         salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
 }
 
-sync_local() {
-    ${SALT_CALL} --local --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@@VERSION
-}
-
 orchestrate_bootstrap() {
-    ${SALT_CALL} --local --retcode-passthrough state.orchestrate metalk8s.orchestrate.bootstrap_without_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    ${SALT_CALL} --local --retcode-passthrough --state-output=mixed state.orchestrate metalk8s.orchestrate.bootstrap_without_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
     set_salt_command
     sync_salt
     # shellcheck disable=SC2086
-    ${SALT_MASTER_CALL}-run state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
+    ${SALT_MASTER_CALL}-run --state-output=mixed state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
 }
 
 main() {
@@ -182,8 +178,6 @@ main() {
     configure_yum_repositories
     install_salt_minion
     configure_salt_minion_local_mode
-
-    sync_local
 
     orchestrate_bootstrap
 }
