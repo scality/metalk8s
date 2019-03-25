@@ -201,6 +201,11 @@ stages:
             # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
             TF_VAR_nodes_count: "2"
           haltOnFailure: true
+      - SetPropertyFromCommand:
+          name: Save spawned bootstrap IP
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          property: bootstrap_ip
+          command: terraform output bootstrap_ip
       - ShellCommand:
           name: Configure SSH config for bootstrap node
           command: >
@@ -255,6 +260,25 @@ stages:
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
           workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Install kubectl on the boostrap node
+          command: >
+            ssh -F bootstrap_ssh_config bootstrap
+            sudo yum install -y kubectl --disablerepo=*
+            --enablerepo=metalk8s-kubernetes
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      - ShellCommand:
+          name: Run tests on the bootstrap node
+          env:
+            SSH_CONFIG_FILE: >-
+              eve/workers/openstack-multiple-nodes/terraform/bootstrap_ssh_config
+            ISO_MOUNTPOINT: >-
+              /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+            TEST_HOSTS_LIST: bootstrap
+          command: >
+            tox -e tests --
+            --bootstrap-ip=%(prop:bootstrap_ip)s --skip-tls-verify
           haltOnFailure: true
       - ShellCommand:
           name: Destroy openstack virtual infra
