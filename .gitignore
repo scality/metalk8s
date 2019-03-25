@@ -1,5 +1,12 @@
 _build/
+__pycache__/
 
+.mypy_cache/
 .vagrant/
 .tox/
+
+buildchain/.venv/
+
+.doit.db
+
 *.pyc
