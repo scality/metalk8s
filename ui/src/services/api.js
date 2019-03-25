@@ -3,21 +3,16 @@ import { Config, Core_v1Api } from '@kubernetes/client-node';
 
 let config, coreV1;
 
-const api = axios.create({
-  baseURL: 'https://localhost:8080/api/v1',
-  timeout: 1000
-});
-
 //Basic Auth
-export async function authenticate(token) {
+export async function authenticate(token, api_server_url) {
   localStorage.removeItem('token');
   try {
-    const response = await api.get('/', {
+    const response = await axios.get(api_server_url + '/api/v1', {
       headers: {
         Authorization: 'Basic ' + token
       }
     });
-    config = new Config('https://localhost:8080', token, 'Basic');
+    config = new Config(api_server_url, token, 'Basic');
     coreV1 = config.makeApiClient(Core_v1Api);
 
     return response;
@@ -41,6 +36,14 @@ export async function getNodes() {
 export async function fetchTheme() {
   try {
     return await axios.get(process.env.PUBLIC_URL + '/brand/theme.json');
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function fetchConfig() {
+  try {
+    return await axios.get(process.env.PUBLIC_URL + '/config.json');
   } catch (error) {
     return { error };
   }

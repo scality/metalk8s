@@ -5,11 +5,14 @@ import * as Api from '../services/api';
 const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
 const FETCH_THEME = 'FETCH_THEME';
+const FETCH_API_CONFIG = 'FETCH_API_CONFIG';
+const SET_API_CONFIG = 'SET_API_CONFIG';
 
 // Reducer
 const defaultState = {
   language: 'en',
-  theme: {}
+  theme: {},
+  api: null
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -18,6 +21,8 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, language: action.payload };
     case SET_THEME:
       return { ...state, theme: action.payload };
+    case SET_API_CONFIG:
+      return { ...state, api: action.payload };
     default:
       return state;
   }
@@ -36,6 +41,14 @@ export function fetchThemeAction() {
   return { type: FETCH_THEME };
 }
 
+export function fetchApiConfigAction() {
+  return { type: FETCH_API_CONFIG };
+}
+
+export function setApiConfigAction(theme) {
+  return { type: SET_API_CONFIG, payload: theme };
+}
+
 // Sagas
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
@@ -44,6 +57,14 @@ export function* fetchTheme() {
   }
 }
 
+export function* fetchApiConfig() {
+  const result = yield call(Api.fetchConfig);
+  if (!result.error) {
+    yield put(setApiConfigAction(result.data));
+  }
+}
+
 export function* configSaga() {
   yield takeEvery(FETCH_THEME, fetchTheme);
+  yield takeEvery(FETCH_API_CONFIG, fetchApiConfig);
 }
