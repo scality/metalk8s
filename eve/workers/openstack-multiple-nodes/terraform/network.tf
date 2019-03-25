@@ -45,6 +45,7 @@ resource "openstack_networking_subnet_v2" "internal_main" {
   network_id = "${openstack_networking_network_v2.internal.id}"
   cidr       = "${var.internal_network_range}"
   ip_version = 4
+  no_gateway = true
 }
 
 resource "openstack_compute_secgroup_v2" "nodes_openbar" {
