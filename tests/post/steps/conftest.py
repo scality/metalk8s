@@ -6,6 +6,44 @@ from pytest_bdd import (
     when,
     parsers,
 )
+import yaml
+
+
+# Pytest fixtures
+@pytest.fixture(scope="module")
+def kubeconfig_data(request, host):
+    """Fixture to generate a kubeconfig file for remote usage."""
+    with host.sudo():
+        kubeconfig_file = host.file('/etc/kubernetes/admin.conf')
+        if not kubeconfig_file.exists:
+            pytest.skip(
+                "Must be run on bootstrap node, or have an existing file at "
+                "/etc/kubernetes/admin.conf"
+            )
+        data = yaml.safe_load(kubeconfig_file.content_string)
+
+    kube_cluster_section = next(
+        cluster_info["cluster"] for cluster_info in data["clusters"]
+        if cluster_info["name"] == "kubernetes"
+    )
+
+    # FIXME: this should not be necessary, we should run the tests from within
+    #        the control-plane network
+    bootstrap_ip = request.config.getoption("--bootstrap-ip")
+    if bootstrap_ip is not None:
+        kube_cluster_section["server"] = "https://{}:6443".format(bootstrap_ip)
+
+    if request.config.getoption("--skip-tls-verify"):
+        kube_cluster_section["insecure-skip-tls-verify"] = True
+
+    return data
+
+
+@pytest.fixture
+def kubeconfig(kubeconfig_data, tmp_path):
+    kubeconfig_path = tmp_path / "admin.conf"
+    kubeconfig_path.write_text(yaml.dump(kubeconfig_data))
+    return str(kubeconfig_path)  # Need Python 3.6 to open() a Path object
 
 
 def _verify_kubeapi_service(host):
