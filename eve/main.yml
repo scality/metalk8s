@@ -134,6 +134,11 @@ stages:
             END
             EOF
       - ShellCommand:
+          # This step is needed so Kubelet registration doesn't fail for DNS
+          # entries longer than 63 characters
+          name: Change hostname to a shorter value
+          command: sudo hostnamectl set-hostname bootstrap
+      - ShellCommand:
           name: Start the bootstrap process
           command: >
             sudo bash
@@ -180,7 +185,8 @@ stages:
             OS_USERNAME: "%(secret:scality_cloud_username)s"
             OS_PASSWORD: "%(secret:scality_cloud_password)s"
             OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
-            TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
+            # FIXME: this makes hostnames too long
+            # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
             TF_VAR_nodes_count: "2"
           haltOnFailure: true
       - ShellCommand:
