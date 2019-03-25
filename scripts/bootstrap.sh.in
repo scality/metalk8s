@@ -136,6 +136,8 @@ use_superseded:
 
 ext_pillar:
   - metalk8s: /etc/metalk8s/bootstrap.yaml
+
+retry_dns_count: 3
 EOF
 
   "$SALT_CALL" --local --retcode-passthrough saltutil.sync_all \
