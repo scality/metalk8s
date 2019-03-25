@@ -3,11 +3,14 @@ FROM fedora:29
 
 ARG BUILDBOT_VERSION=0.9.12
 
+ENV LANG=en_US.utf8
+
 WORKDIR /home/eve/workspace
 
 RUN dnf install -y git \
   gcc \
   make \
+  enchant \
   python2-twisted \
   python \
   python-devel \

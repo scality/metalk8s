@@ -53,7 +53,7 @@ stop_salt_minion_service() {
 }
 
 configure_yum_repositories() {
-    local -r repositories_pillar_path=/srv/scality/metalk8s-@VERSION@/pillar/repositories.sls
+    local -r repositories_pillar_path=/srv/scality/metalk8s-@@VERSION/pillar/repositories.sls
     local -g online_mode
 
     online_mode=$(awk '$1 == "online_mode:" { print $2 }' "$repositories_pillar_path")
@@ -88,7 +88,7 @@ configure_yum_local_repositories() {
 
 configure_yum_local_repository() {
     local -r repo_name=$1 gpgcheck=${2:-0}
-    local -r repo_path=/srv/scality/metalk8s-@VERSION@/packages/$repo_name-el7
+    local -r repo_path=/srv/scality/metalk8s-@@VERSION/packages/$repo_name-el7
     local gpg_keys
 
     gpg_keys=$(
@@ -124,11 +124,11 @@ install_salt_minion() {
 configure_salt_minion_local_mode() {
     cat > "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}" << EOF
 file_roots:
-  metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-@VERSION@/salt
+  metalk8s-@@VERSION:
+    - /srv/scality/metalk8s-@@VERSION/salt
 pillar_roots:
-  metalk8s-@VERSION@:
-    - /srv/scality/metalk8s-@VERSION@/pillar
+  metalk8s-@@VERSION:
+    - /srv/scality/metalk8s-@@VERSION/pillar
 
 # use new module.run format
 use_superseded:
@@ -139,7 +139,7 @@ ext_pillar:
 EOF
 
   "$SALT_CALL" --local --retcode-passthrough saltutil.sync_all \
-      saltenv=metalk8s-@VERSION@
+      saltenv=metalk8s-@@VERSION
 }
 
 set_salt_command() {
@@ -150,7 +150,7 @@ set_salt_command() {
 
 sync_salt() {
     $SALT_MASTER_CALL '*' saltutil.sync_all refresh=True \
-        saltenv=metalk8s-@VERSION@
+        saltenv=metalk8s-@@VERSION
     local SALT_CONTAINER
     SALT_CONTAINER="$(crictl ps -q \
             --label io.kubernetes.pod.namespace=kube-system \
@@ -158,19 +158,19 @@ sync_salt() {
             --state Running)"
     test -n "$SALT_CONTAINER"
     crictl exec -i "$SALT_CONTAINER" \
-        salt-run saltutil.sync_all saltenv=metalk8s-@VERSION@
+        salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
 }
 
 sync_local() {
-    ${SALT_CALL} --local --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@VERSION@
+    ${SALT_CALL} --local --retcode-passthrough saltutil.sync_all saltenv=metalk8s-@@VERSION
 }
 
 orchestrate_bootstrap() {
-    ${SALT_CALL} --local --retcode-passthrough state.orchestrate metalk8s.orchestrate.bootstrap_without_master saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@
+    ${SALT_CALL} --local --retcode-passthrough state.orchestrate metalk8s.orchestrate.bootstrap_without_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
     set_salt_command
     sync_salt
     # shellcheck disable=SC2086
-    ${SALT_MASTER_CALL}-run state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@VERSION@ pillarenv=metalk8s-@VERSION@ pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
+    ${SALT_MASTER_CALL}-run state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
 }
 
 main() {
