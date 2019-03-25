@@ -28,6 +28,13 @@ ISO_ROOT : Path = config.BUILD_ROOT/'root'
 REPO_ROOT : Path = ISO_ROOT/'packages'
 # Root for the packages that we build ourselves.
 PKG_ROOT : Path = config.BUILD_ROOT/'packages'
+# Root of the Vagrant environment folder
+VAGRANT_ROOT : Path = ROOT/'.vagrant'
+
+# }}}
+# Vagrant parameters {{{
+
+VAGRANT_SSH_KEY_PAIR : Path = VAGRANT_ROOT/'preshared_key_for_k8s_nodes'
 
 # }}}
 # Container options {{{
@@ -55,7 +62,7 @@ BUILDER_BASIC_CMD : Tuple[str, ...] = (
 # Versions {{{
 
 K8S_VERSION  : str = '1.12.6'
-SALT_VERSION : str = '2018.3.3'
+SALT_VERSION : str = '2018.3.4'
 
 
 def load_version_information() -> None:

@@ -68,14 +68,14 @@ configure_yum_repositories() {
 }
 
 configure_salt_repository() {
-    "$RPM" --import https://repo.saltstack.com/yum/redhat/7/x86_64/archive/2018.3.3/SALTSTACK-GPG-KEY.pub
+    "$RPM" --import https://repo.saltstack.com/yum/redhat/7/x86_64/archive/2018.3.4/SALTSTACK-GPG-KEY.pub
     cat > /etc/yum.repos.d/saltstack.repo << EOF
 [saltstack]
 name=SaltStack repo for RHEL/CentOS \$releasever
-baseurl=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/2018.3.3
+baseurl=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/2018.3.4
 enabled=1
 gpgcheck=1
-gpgkey=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/2018.3.3/SALTSTACK-GPG-KEY.pub
+gpgkey=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/2018.3.4/SALTSTACK-GPG-KEY.pub
 EOF
 }
 
@@ -159,6 +159,8 @@ sync_salt() {
     test -n "$SALT_CONTAINER"
     crictl exec -i "$SALT_CONTAINER" \
         salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
+    crictl exec -i "$SALT_CONTAINER" \
+        salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
 }
 
 sync_local() {

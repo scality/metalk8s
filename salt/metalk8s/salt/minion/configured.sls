@@ -1,7 +1,8 @@
+{%- from "metalk8s/map.jinja" import defaults with context %}
+
 include:
   - .installed
   - .running
-
 
 Configure salt minion:
   file.managed:
@@ -14,6 +15,6 @@ Configure salt minion:
     - makedirs: true
     - backup: false
     - defaults:
-      master_hostname: localhost
+      master_hostname: {{ defaults.salt.master.host }}
     - watch_in:
       - cmd: Restart salt-minion

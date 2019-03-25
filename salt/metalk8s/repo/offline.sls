@@ -1,11 +1,6 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
-{%- if not repo.local_mode %}
-include:
-  - .deployed
-{% endif %}
-
 Install yum-plugin-versionlock:
   pkg.installed:
     - name: yum-plugin-versionlock
@@ -41,9 +36,6 @@ Configure {{ repo_name }} repository:
 Repositories configured:
   test.succeed_without_changes:
     - require:
-{%- if not repo.local_mode %}
-      - cmd: Ensure package repositories container is up
-{%- endif %}
 {%- for repository_name in repo.repositories.keys() %}
       - pkgrepo: Configure {{ repository_name }} repository
 {%- endfor %}

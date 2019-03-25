@@ -7,6 +7,6 @@ kubernetes-cni
 m2crypto
 python2-kubernetes
 runc
-salt-minion-2018.3.3-1.el7
+salt-minion-2018.3.4-1.el7
 skopeo
 yum-plugin-versionlock

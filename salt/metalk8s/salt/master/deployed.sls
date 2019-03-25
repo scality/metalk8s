@@ -1,7 +1,7 @@
 {% from "metalk8s/map.jinja" import metalk8s with context %}
 
 {% set salt_master_image = 'salt-master' %}
-{% set salt_master_version = '2018.3.3-1' %}
+{% set salt_master_version = '2018.3.4-1' %}
 {% set registry_url = 'localhost:5000' %}
 
 Create salt master directories:
