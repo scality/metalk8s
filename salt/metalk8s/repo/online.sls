@@ -29,9 +29,9 @@ Configure saltstack repository:
   pkgrepo.managed:
     - name: saltstack
     - humanname: SaltStack
-    - baseurl: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.3"
+    - baseurl: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.4"
     - gpgcheck: 1
-    - gpgkey: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.3/SALTSTACK-GPG-KEY.pub"
+    - gpgkey: "https://repo.saltstack.com/yum/redhat/\\$releasever/\\$basearch/archive/2018.3.4/SALTSTACK-GPG-KEY.pub"
     - enabled: 1
 
 Repositories configured:

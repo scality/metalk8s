@@ -40,6 +40,14 @@ Run bootstrap registry:
         repo:
           local_mode: True
 
+Run bootstrap repo:
+  salt.state:
+    - tgt: local
+    - sls: metalk8s.repo.deployed
+    - pillar:
+        repo:
+          local_mode: True
+
 Run bootstrap salt_master:
   salt.state:
     - tgt: local

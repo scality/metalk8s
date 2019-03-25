@@ -74,6 +74,7 @@ PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/orchestrate/bootstrap_without_master.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap_with_master.sls'),
+    Path('salt/metalk8s/orchestrate/deploy_salt_minion_on_new_node.sls'),
     Path('salt/metalk8s/bootstrap/addons.sls'),
     Path('salt/metalk8s/bootstrap/calico.sls'),
     Path('salt/metalk8s/bootstrap/certs/ca.sls'),
@@ -161,6 +162,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/macro.sls'),
     Path('salt/metalk8s/map.jinja'),
 
+    Path('salt/metalk8s/mine/ips.sls'),
+
     Path('salt/metalk8s/python-kubernetes/init.sls'),
     Path('salt/metalk8s/python-kubernetes/installed.sls'),
     Path('salt/metalk8s/python-kubernetes/removed.sls'),
@@ -199,6 +202,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_modules/kubernetes.py'),
 
     Path('salt/_pillar/metalk8s.py'),
+
+    Path('salt/_roster/kubernetes_nodes.py'),
 
     Path('salt/_states/containerd.py'),
     Path('salt/_states/kubeconfig.py'),

@@ -1,3 +1,10 @@
+Update mine:
+  salt.state:
+    - tgt: {{ pillar['bootstrap_id'] }}
+    - saltenv: {{ saltenv }}
+    - sls:
+      - metalk8s.mine.ips
+
 Bootstrap CA:
   salt.state:
     - tgt: {{ pillar['bootstrap_id'] }}

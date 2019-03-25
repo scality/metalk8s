@@ -27,6 +27,10 @@ kubeadm_preflight:
       - iproute               # provides tc
       - coreutils             # provides touch
 
+salt:
+  master:
+    host: localhost
+
 repo:
   online_mode: true
   local_mode: false
@@ -123,7 +127,7 @@ repo:
       version: latest
       repository: metalk8s-extras
     salt-minion:
-      version: 2018.3.3-1.el7
+      version: 2018.3.4-1.el7
       repository: metalk8s-saltstack
     skopeo:
       version: latest
