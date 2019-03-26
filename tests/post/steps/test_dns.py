@@ -5,6 +5,8 @@ import os
 import time
 import yaml
 
+from tests import utils
+
 
 @contextmanager
 def run_inside_busybox(kubeconfig_file):
@@ -23,14 +25,16 @@ def run_inside_busybox(kubeconfig_file):
             body=pod_manifest_content, namespace="default")
 
     # Wait for the busybox to be ready
-    timeout = 10
-    while True:
-        timeout -= 1
-        resp = k8s_client.read_namespaced_pod(
-            name="busybox", namespace="default")
-        if resp.status.phase != "Pending" or timeout == 0:
-            break
-        time.sleep(1)
+    def _check_status():
+        pod_info = k8s_client.read_namespaced_pod(
+            name="busybox",
+            namespace="default",
+        )
+        assert pod_info.status.phase == "Running", (
+            "Wrong status for 'busybox' Pod - found {status}"
+        ).format(status=pod_info.status.phase)
+
+    utils.retry(_check_status, times=10)
 
     yield "busybox"
 

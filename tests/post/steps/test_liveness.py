@@ -4,6 +4,8 @@ import time
 import pytest
 from pytest_bdd import scenario, then, parsers
 
+from tests import utils
+
 
 # Scenarios
 @scenario('../features/pods_alive.feature', 'List Pods')
@@ -62,12 +64,7 @@ def check_exec(host, command, label, namespace):
 @then(parsers.parse(
     "we have at least {min_pods_count:d} running pod labeled '{label}'"))
 def count_running_pods(host, min_pods_count, label):
-    # Just after the deployment, the pods may not in running state yet
-    # so implement a timeout
-    interval = 3
-    attempts = 10
-
-    for _ in range(attempts):
+    def _check_pods_count():
         pods = _get_pods(
             host,
             label,
@@ -75,22 +72,9 @@ def count_running_pods(host, min_pods_count, label):
             status_phase="Running",
         )
 
-        if len(pods) < min_pods_count:
-            time.sleep(interval)
-        else:
-            # if nb pods is >= then it's ok
-            break
+        assert len(pods) >= min_pods_count
 
-    else:
-        assert len(pods) >= min_pods_count, (
-            "Expected at least {e} running pods labeled with {l} but "
-            "found only {f} after waiting {t} seconds"
-        ).format(
-            e=min_pods_count,
-            f=len(pods),
-            l=label,
-            t=str(interval * attempts)
-        )
+    utils.retry(_check_pods_count, times=10, wait=3)
 
 
 # Utilities
