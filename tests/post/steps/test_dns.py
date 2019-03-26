@@ -17,8 +17,8 @@ def run_inside_busybox(kubeconfig_file):
         "files",
         "busybox.yaml"
     )
-    with open(pod_manifest) as pod_fd:
-        pod_manifest_content = yaml.safe_load(pod_fd.read())
+    with open(pod_manifest, encoding='utf-8') as pod_fd:
+        pod_manifest_content = yaml.safe_load(pod_fd)
         k8s_client.create_namespaced_pod(
             body=pod_manifest_content, namespace="default")
 

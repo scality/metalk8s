@@ -42,7 +42,7 @@ def kubeconfig_data(request, host):
 @pytest.fixture
 def kubeconfig(kubeconfig_data, tmp_path):
     kubeconfig_path = tmp_path / "admin.conf"
-    kubeconfig_path.write_text(yaml.dump(kubeconfig_data))
+    kubeconfig_path.write_text(yaml.dump(kubeconfig_data), encoding='utf-8')
     return str(kubeconfig_path)  # Need Python 3.6 to open() a Path object
 
 
