@@ -1,16 +1,16 @@
-from pytest_bdd import scenario, then, parsers
-from contextlib import contextmanager
-from kubernetes import client, config
 import os
-import time
+
+from kubernetes import client, config
+import pytest
+from pytest_bdd import scenario, then, parsers
 import yaml
 
 from tests import utils
 
 
-@contextmanager
-def run_inside_busybox(kubeconfig_file):
-    config.load_kube_config(config_file=kubeconfig_file)
+@pytest.fixture
+def busybox_pod(kubeconfig):
+    config.load_kube_config(config_file=kubeconfig)
     k8s_client = client.CoreV1Api()
 
     # Create the busybox pod
@@ -21,8 +21,10 @@ def run_inside_busybox(kubeconfig_file):
     )
     with open(pod_manifest, encoding='utf-8') as pod_fd:
         pod_manifest_content = yaml.safe_load(pod_fd)
+
         k8s_client.create_namespaced_pod(
-            body=pod_manifest_content, namespace="default")
+        body=pod_manifest_content, namespace="default"
+    )
 
     # Wait for the busybox to be ready
     def _check_status():
@@ -45,15 +47,15 @@ def run_inside_busybox(kubeconfig_file):
         body=client.V1DeleteOptions(),
     )
 
+
 # Scenarios
-@scenario('../features/dns_resolution.feature', 'check dns')
+@scenario('../features/dns_resolution.feature', 'check DNS')
 def test_dns(host):
     pass
 
 
-@then(parsers.parse("The hostname '{hostname}' should be resolved"))
-def resolve_hostname(kubeconfig, host, hostname):
-    with run_inside_busybox(kubeconfig) as pod_name:
+@then(parsers.parse("the hostname '{hostname}' should be resolved"))
+def resolve_hostname(busybox_pod, host, hostname):
         with host.sudo():
             # test dns resolve
             cmd_nslookup = ("kubectl --kubeconfig=/etc/kubernetes/admin.conf"
