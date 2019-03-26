@@ -176,7 +176,8 @@ orchestrate_bootstrap() {
 deploy_metalk8s_ui() {
     "$SALT_CALL" --retcode-passthrough state.apply \
         metalk8s.metalk8s-ui saltenv=metalk8s-@@VERSION \
-        pillarenv=metalk8s-@@VERSION
+        pillarenv=metalk8s-@@VERSION \
+        pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
 }
 
 
