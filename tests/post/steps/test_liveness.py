@@ -30,10 +30,14 @@ def test_expected_pods(host):
     "empty in the '{namespace}' namespace"))
 def check_resource_list(host, resource, namespace):
     with host.sudo():
-        cmd = ("kubectl --kubeconfig=/etc/kubernetes/admin.conf"
-               " get {0} --namespace {1} -o custom-columns=:metadata.name")
-        cmd_res = host.check_output(cmd.format(resource, namespace))
-    assert len(cmd_res.strip()) > 0, 'No {0} found in namespace {1}'.format(
+        output = host.check_output(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            "get %s --namespace %s -o custom-columns=:metadata.name",
+            resource,
+            namespace,
+        )
+
+    assert len(output.strip()) > 0, 'No {0} found in namespace {1}'.format(
             resource, namespace)
 
 
@@ -49,17 +53,14 @@ def check_exec(host, command, label, namespace):
 
     pod = candidates[0]
 
-    cmd = ' '.join([
-        'kubectl',
-        '--kubeconfig=/etc/kubernetes/admin.conf',
-        'exec',
-        '--namespace {0}'.format(namespace),
+    with host.sudo():
+        host.check_output(
+            'kubectl --kubeconfig=/etc/kubernetes/admin.conf '
+            'exec --namespace %s %s %s',
+            namespace,
             pod['metadata']['name'],
             command,
-    ])
-
-    with host.sudo():
-        host.check_output(cmd)
+        )
 
 
 @then(parsers.parse(

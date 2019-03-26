@@ -22,7 +22,7 @@ def busybox_pod(kubeconfig):
     with open(pod_manifest, encoding='utf-8') as pod_fd:
         pod_manifest_content = yaml.safe_load(pod_fd)
 
-        k8s_client.create_namespaced_pod(
+    k8s_client.create_namespaced_pod(
         body=pod_manifest_content, namespace="default"
     )
 
@@ -56,11 +56,13 @@ def test_dns(host):
 
 @then(parsers.parse("the hostname '{hostname}' should be resolved"))
 def resolve_hostname(busybox_pod, host, hostname):
-        with host.sudo():
-            # test dns resolve
-            cmd_nslookup = ("kubectl --kubeconfig=/etc/kubernetes/admin.conf"
-                            " exec -ti {0} nslookup {1}".format(
-                                pod_name,
-                                hostname))
-            res = host.run(cmd_nslookup)
-            assert res.rc == 0, "Cannot resolve {}".format(hostname)
+    with host.sudo():
+        # test dns resolve
+        result = host.run(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            "exec -ti %s nslookup %s",
+            busybox_pod,
+            hostname,
+        )
+
+        assert result.rc == 0, "Cannot resolve {}".format(hostname)
