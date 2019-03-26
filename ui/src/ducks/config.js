@@ -6,7 +6,7 @@ const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
 const FETCH_THEME = 'FETCH_THEME';
 const FETCH_API_CONFIG = 'FETCH_API_CONFIG';
-const SET_API_CONFIG = 'SET_API_CONFIG';
+export const SET_API_CONFIG = 'SET_API_CONFIG';
 
 // Reducer
 const defaultState = {
