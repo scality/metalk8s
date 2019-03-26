@@ -5,6 +5,12 @@ metadata:
     k8s-app: ui
     kubernetes.io/name: "MetalK8sUI"
 spec:
+  tolerations:
+  - key: "node-role.kubernetes.io/master"
+    operator: "Exists"
+    effect: "NoSchedule"
+  nodeSelector:
+    beta.kubernetes.io/os: linux
   containers:
   - name: metalk8s-ui
     image: localhost:5000/metalk8s-2.0/metalk8s-ui:0.2

@@ -21,5 +21,13 @@ Create metalk8s-ui service:
         labels:
           run: metalk8s-ui
         name: metalk8s-ui
+    - spec:
+        ports:
+        - port: 80
+          protocol: TCP
+          targetPort: 80
+        selector:
+          k8s-app: ui
+        type: NodePort
   require:
     - pkg: Install Python Kubernetes client
