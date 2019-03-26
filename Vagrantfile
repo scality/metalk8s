@@ -90,6 +90,20 @@ echo "Swap disabled"
 exit $RC
 SCRIPT
 
+PRESHARED_SSH_KEY_NAME = 'preshared_key_for_k8s_nodes'
+IMPORT_SSH_PRIVATE_KEY = <<-SCRIPT
+#!/bin/bash
+
+set -eu -o pipefail
+
+echo "Deploying preshared SSH private key on the host"
+
+mkdir -p /etc/metalk8s/pki/
+cp /vagrant/.vagrant/#{PRESHARED_SSH_KEY_NAME} /etc/metalk8s/pki/
+
+echo "Deployed preshared SSH private key on the host"
+SCRIPT
+
 BOOTSTRAP = <<-SCRIPT
 #!/bin/bash
 
@@ -104,7 +118,6 @@ if ! test -x "/srv/scality/metalk8s-$SHORT_VERSION/bootstrap.sh"; then
 fi
 
 echo "Creating bootstrap configuration"
-mkdir -p /etc/metalk8s
 cat > /etc/metalk8s/bootstrap.yaml << EOF
 apiVersion: metalk8s.scality.com/v1alpha1
 kind: BootstrapConfiguration
@@ -115,6 +128,16 @@ EOF
 
 echo "Launching bootstrap"
 exec "/srv/scality/metalk8s-$SHORT_VERSION/bootstrap.sh"
+SCRIPT
+
+DEPLOY_SSH_PUBLIC_KEY = <<-SCRIPT
+#!/bin/bash
+
+set -eu -o pipefail
+
+if ! grep -Fxq "$(cat .ssh/#{PRESHARED_SSH_KEY_NAME}.pub)" .ssh/authorized_keys ; then
+   cat .ssh/#{PRESHARED_SSH_KEY_NAME}.pub >> .ssh/authorized_keys
+fi
 SCRIPT
 
 # To support VirtualBox linked clones
@@ -149,6 +172,10 @@ Vagrant.configure("2") do |config|
       type: "shell",
       inline: IMPORT_RELEASE
 
+    bootstrap.vm.provision "import-ssh-private-key",
+      type: "shell",
+      inline: IMPORT_SSH_PRIVATE_KEY
+
     bootstrap.vm.provision "bootstrap",
       type: "shell",
       inline: BOOTSTRAP
@@ -164,6 +191,15 @@ Vagrant.configure("2") do |config|
 
       # No need for Guest Additions since there is no synced folder
       node.vbguest.auto_update = false
+
+      node.vm.provision "copy-ssh-public-key",
+        type: "file",
+        source: ".vagrant/#{PRESHARED_SSH_KEY_NAME}.pub",
+        destination: ".ssh/#{PRESHARED_SSH_KEY_NAME}.pub"
+
+      node.vm.provision "add-ssh-public-key-to-authorized-keys",
+        type: "shell",
+        inline: DEPLOY_SSH_PUBLIC_KEY
     end
   end
 end
