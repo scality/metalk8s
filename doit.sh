@@ -1,5 +1,6 @@
 #!/bin/sh
 
+OSTYPE="$(uname -s)"
 # System-wide Python 3 command.
 PYTHON_SYS="${PYTHON_SYS:-python3}"
 # Buildchain location.
@@ -7,13 +8,13 @@ BUILDCHAIN=buildchain
 # Location of the virtual environment for the buildchain.
 BUILDENV="${BUILDCHAIN}/.venv"
 # requirements.txt for the buildchain.
-REQUIREMENTS="${BUILDCHAIN}/requirements.txt"
+REQUIREMENTS="${BUILDCHAIN}/requirements-$OSTYPE.txt"
 # Dummy file to keep track of when the virtual environment was installed.
 WITNESS_FILE="${BUILDENV}/installed.tstamp"
 # File containing environment variables.
 DOTENV=./.env
 
-if [ "$(uname -s)" = "Darwin" ]
+if [ "$OSTYPE" = "Darwin" ]
 then
     GET_FILE_STAMP='stat -f %m'
 else
