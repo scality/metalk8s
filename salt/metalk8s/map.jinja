@@ -2,7 +2,7 @@
 
 {% set defaults = salt['grains.filter_by']({
   'default': defaults
-}, merge=salt['pillar.items']()) %}
+}, merge=pillar) %}
 
 {% set metalk8s = salt['grains.filter_by']({
   'default': {}
