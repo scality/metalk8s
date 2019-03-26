@@ -45,8 +45,8 @@ export function fetchApiConfigAction() {
   return { type: FETCH_API_CONFIG };
 }
 
-export function setApiConfigAction(theme) {
-  return { type: SET_API_CONFIG, payload: theme };
+export function setApiConfigAction(conf) {
+  return { type: SET_API_CONFIG, payload: conf };
 }
 
 // Sagas

@@ -43,7 +43,7 @@ export async function fetchTheme() {
 
 export async function fetchConfig() {
   try {
-    return await axios.get(process.env.PUBLIC_URL + '/config.json');
+    return await axios.get(process.env.PUBLIC_URL + '/config/config.json');
   } catch (error) {
     return { error };
   }
