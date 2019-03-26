@@ -8,6 +8,8 @@ from pytest_bdd import (
 )
 import yaml
 
+from tests import kube_utils
+
 
 # Pytest fixtures
 @pytest.fixture(scope="module")
@@ -77,6 +79,17 @@ def check_service(host):
     _verify_kubeapi_service(host)
 
 
+@given(parsers.parse("pods with label '{label}' are '{state}'"))
+def check_pod_state(host, label, state):
+    pods = kube_utils.get_pods(
+        host, label, namespace="kube-system", status_phase="Running",
+    )
+
+    assert len(pods) > 0, "No {} pod with label '{}' found".format(
+        state.lower(), label
+    )
+
+
 # When
 @when('we run bootstrap a second time')
 def rerun_bootstrap(request, host):
@@ -87,13 +100,3 @@ def rerun_bootstrap(request, host):
 @then("the Kubernetes API is available")
 def verify_kubeapi_service(host):
     _verify_kubeapi_service(host)
-
-
-@given(parsers.parse("Pods with app label '{app}' are '{state}'"))
-def check_pod_state(host, app, state):
-    with host.sudo():
-        cmd = ("kubectl --kubeconfig=/etc/kubernetes/admin.conf"
-               " get pods -n kube-system --field-selector=status.phase={state}"
-               " --selector=k8s-app={app} --no-headers")
-        res = host.check_output(cmd.format(app=app, state=state))
-        assert len(res.strip()) > 0, "No {} pod found".format(state.lower())

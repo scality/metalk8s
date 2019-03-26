@@ -4,6 +4,7 @@ import time
 import pytest
 from pytest_bdd import scenario, then, parsers
 
+from tests import kube_utils
 from tests import utils
 
 
@@ -40,7 +41,7 @@ def check_resource_list(host, resource, namespace):
     "we can exec '{command}' in the pod labeled '{label}' "
     "in the '{namespace}' namespace"))
 def check_exec(host, command, label, namespace):
-    candidates = _get_pods(host, label, namespace)
+    candidates = kube_utils.get_pods(host, label, namespace)
 
     assert len(candidates) == 1, (
         "Expected one (and only one) pod with label {l}, found {f}"
@@ -53,8 +54,8 @@ def check_exec(host, command, label, namespace):
         '--kubeconfig=/etc/kubernetes/admin.conf',
         'exec',
         '--namespace {0}'.format(namespace),
-        pod['metadata']['name'],
-        command,
+            pod['metadata']['name'],
+            command,
     ])
 
     with host.sudo():
@@ -65,7 +66,7 @@ def check_exec(host, command, label, namespace):
     "we have at least {min_pods_count:d} running pod labeled '{label}'"))
 def count_running_pods(host, min_pods_count, label):
     def _check_pods_count():
-        pods = _get_pods(
+        pods = kube_utils.get_pods(
             host,
             label,
             namespace="kube-system",
@@ -75,18 +76,3 @@ def count_running_pods(host, min_pods_count, label):
         assert len(pods) >= min_pods_count
 
     utils.retry(_check_pods_count, times=10, wait=3)
-
-
-# Utilities
-def _get_pods(host, label, namespace='default', status_phase='Running'):
-    cmd = (
-        'kubectl --kubeconfig=/etc/kubernetes/admin.conf '
-        'get pods -l "{label}" --field-selector=status.phase={status_phase} '
-        '--namespace {namespace} -o json'
-    ).format(label=label, namespace=namespace, status_phase=status_phase)
-
-    with host.sudo():
-        result = host.run(cmd)
-        assert result.rc == 0, result.stdout
-
-        return json.loads(result.stdout)['items']
