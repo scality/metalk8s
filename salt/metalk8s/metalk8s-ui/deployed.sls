@@ -55,7 +55,7 @@ Create ui-api-configmap ConfigMap:
     - context: {{ context }} 
     - data:
         config.json: |
-          {"ip": "{{ control_plane_ip }}", port: "6443"}
+          {"ip": "{{ control_plane_ip }}", "port": "6443"}
   require:
     - pkg: Install Python Kubernetes client
     - file: Create metalk8s-ui directories
