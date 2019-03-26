@@ -39,14 +39,12 @@ def check_resource_list(host, resource, namespace):
     "in the '{namespace}' namespace"))
 def check_exec(host, command, label, namespace):
     candidates = _get_pods(host, label, namespace)
-    try:
-        pod, = candidates
-    except ValueError:
-        pytest.fail(
-            "Expected one (and only one) pod with label {l}, found {f}".format(
-                l=label, f=len(candidates)
-            )
-        )
+
+    assert len(candidates) == 1, (
+        "Expected one (and only one) pod with label {l}, found {f}"
+    ).format(l=label, f=len(candidates))
+
+    pod = candidates[0]
 
     cmd = ' '.join([
         'kubectl',
