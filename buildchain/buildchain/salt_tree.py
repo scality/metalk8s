@@ -196,6 +196,10 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/salt/minion/running.sls'),
     Path('salt/metalk8s/salt/minion/init.sls'),
 
+    Path('salt/metalk8s/metalk8s-ui/files/metalk8s-ui_deployment.yaml'),
+    Path('salt/metalk8s/metalk8s-ui/deployed.sls'),
+    Path('salt/metalk8s/metalk8s-ui/init.sls'),
+
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
     Path('salt/_modules/docker_registry.py'),
