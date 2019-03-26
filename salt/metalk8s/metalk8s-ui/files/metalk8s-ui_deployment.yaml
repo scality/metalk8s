@@ -5,32 +5,40 @@ metadata:
     k8s-app: ui
     kubernetes.io/name: "MetalK8sUI"
 spec:
-  tolerations:
-  - key: "node-role.kubernetes.io/master"
-    operator: "Exists"
-    effect: "NoSchedule"
-  nodeSelector:
-    beta.kubernetes.io/os: linux
-  containers:
-  - name: metalk8s-ui
-    image: localhost:5000/metalk8s-2.0/metalk8s-ui:0.2
-    resources:
-      limits:
-        memory: 170Mi
-      requests:
-        cpu: 100m
-        memory: 70Mi
-    ports:
-    - containerPort: 80
-      name: http
-      protocol: TCP
-    livenessProbe:
-      httpGet:
-        path: /
-        port: http
-        scheme: HTTP
-    readinessProbe:
-      httpGet:
-        path: /
-        port: http
-        scheme: HTTP
+  selector:
+    matchLabels:
+      k8s-app: ui
+  template:
+    metadata:
+      labels:
+        k8s-app: ui
+    spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      containers:
+        - name: metalk8s-ui
+          image: localhost:5000/metalk8s-2.0/metalk8s-ui:0.2
+          resources:
+            limits:
+              memory: 170Mi
+            requests:
+              cpu: 100m
+              memory: 70Mi
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP

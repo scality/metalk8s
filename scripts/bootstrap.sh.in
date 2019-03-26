@@ -187,8 +187,6 @@ main() {
     configure_yum_repositories
     install_salt_minion
     configure_salt_minion_local_mode
-
-    sync_local
     
     orchestrate_bootstrap
     deploy_metalk8s_ui
