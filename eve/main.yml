@@ -135,11 +135,6 @@ stages:
             END
             EOF
       - ShellCommand:
-          # This step is needed so Kubelet registration doesn't fail for DNS
-          # entries longer than 63 characters
-          name: Change hostname to a shorter value
-          command: sudo hostnamectl set-hostname bootstrap
-      - ShellCommand:
           name: Start the bootstrap process
           command: >
             sudo bash
