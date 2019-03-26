@@ -146,7 +146,7 @@ stages:
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
       - ShellCommand:
-          name: Run tests on the bootstrap node
+          name: Run tests locally
           env:
             ISO_MOUNTPOINT: >
               /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
