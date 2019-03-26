@@ -147,11 +147,11 @@ EOF
 set_salt_command() {
     echo "Setting salt master command"
     # shellcheck disable=SC2046
-    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q)) salt"
+    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q))"
 }
 
 sync_salt() {
-    $SALT_MASTER_CALL '*' saltutil.sync_all refresh=True \
+    $SALT_MASTER_CALL salt '*' saltutil.sync_all refresh=True \
         saltenv=metalk8s-@@VERSION
     local SALT_CONTAINER
     SALT_CONTAINER="$(crictl ps -q \
@@ -170,7 +170,7 @@ orchestrate_bootstrap() {
     set_salt_command
     sync_salt
     # shellcheck disable=SC2086
-    ${SALT_MASTER_CALL}-run --state-output=mixed state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
+    ${SALT_MASTER_CALL} salt-run state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
 }
 
 deploy_metalk8s_ui() {
