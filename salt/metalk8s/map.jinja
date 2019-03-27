@@ -8,6 +8,10 @@
   'default': {}
 }, merge=defaults.get('metalk8s')) %}
 
+{% set kubernetes = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('kubernetes')) %}
+
 {% set kubeadm_preflight = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('kubeadm_preflight')) %}
