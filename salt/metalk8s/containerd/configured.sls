@@ -9,6 +9,8 @@ Start and enable containerd:
     - enable: True
     - require:
       - pkg: Install containerd
+    - watch:
+      - file: Configure registry IP in containerd conf
 
 Inject pause image:
   # The `containerd` states require the `cri` module, which requires `crictl`

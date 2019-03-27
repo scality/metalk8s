@@ -184,3 +184,6 @@ coredns:
   reverse_cidrs: in-addr.arpa ip6.arpa
 
 upgrade: false        # define if we're on an upgrade case
+
+# TODO: Move it into mine
+registry_ip: localhost
