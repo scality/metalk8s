@@ -1,6 +1,7 @@
 import json
 import time
 
+import pytest
 from pytest_bdd import scenario, then, parsers
 
 
@@ -34,15 +35,25 @@ def check_resource_list(host, resource, namespace):
 
 
 @then(parsers.parse(
-    "we can exec '{command}' in the "
-    "'{pod}' pod in the '{namespace}' namespace"))
-def check_exec(host, command, pod, namespace):
+    "we can exec '{command}' in the pod labeled '{label}' "
+    "in the '{namespace}' namespace"))
+def check_exec(host, command, label, namespace):
+    candidates = _get_pods(host, label, namespace)
+    try:
+        pod, = candidates
+    except ValueError:
+        pytest.fail(
+            "Expected one (and only one) pod with label {l}, found {f}".format(
+                l=label, f=len(candidates)
+            )
+        )
+
     cmd = ' '.join([
         'kubectl',
         '--kubeconfig=/etc/kubernetes/admin.conf',
         'exec',
         '--namespace {0}'.format(namespace),
-        pod,
+        pod['metadata']['name'],
         command,
     ])
 
@@ -50,42 +61,50 @@ def check_exec(host, command, pod, namespace):
         host.check_output(cmd)
 
 
-@then(
-    parsers.parse(
-        "we have at least {min_pods_count:d} running pod labeled '{label}'"
-    )
-)
+@then(parsers.parse(
+    "we have at least {min_pods_count:d} running pod labeled '{label}'"))
 def count_running_pods(host, min_pods_count, label):
-    cmd = (
-        'kubectl --kubeconfig=/etc/kubernetes/admin.conf '
-        'get pod -l "{label}" --field-selector=status.phase=Running '
-        '--namespace kube-system -o json'
-    ).format(label=label)
-
     # Just after the deployment, the pods may not in running state yet
     # so implement a timeout
     interval = 3
     attempts = 10
 
-    with host.sudo():
-        for _ in range(attempts):
+    for _ in range(attempts):
+        pods = _get_pods(
+            host,
+            label,
+            namespace="kube-system",
+            status_phase="Running",
+        )
 
-            ret = host.run(cmd)
-            assert ret.rc == 0, ret.stdout
-
-            pods = json.loads(ret.stdout)
-
-            if len(pods['items']) < min_pods_count:
-                time.sleep(interval)
-            else:
-                # if nb pods is >= then it's ok
-                break
-
+        if len(pods) < min_pods_count:
+            time.sleep(interval)
         else:
-            assert len(pods['items']) == min_pods_count, \
-                ("Expected at least {e} running pods labeled with {l} but "
-                 "found only {f} after waiting {t} seconds").format(
-                     e=min_pods_count,
-                     f=len(pods['items']),
-                     l=label,
-                     t=str(interval * attempts))
+            # if nb pods is >= then it's ok
+            break
+
+    else:
+        assert len(pods) >= min_pods_count, (
+            "Expected at least {e} running pods labeled with {l} but "
+            "found only {f} after waiting {t} seconds"
+        ).format(
+            e=min_pods_count,
+            f=len(pods),
+            l=label,
+            t=str(interval * attempts)
+        )
+
+
+# Utilities
+def _get_pods(host, label, namespace='default', status_phase='Running'):
+    cmd = (
+        'kubectl --kubeconfig=/etc/kubernetes/admin.conf '
+        'get pods -l "{label}" --field-selector=status.phase={status_phase} '
+        '--namespace {namespace} -o json'
+    ).format(label=label, namespace=namespace, status_phase=status_phase)
+
+    with host.sudo():
+        result = host.run(cmd)
+        assert result.rc == 0, result.stdout
+
+        return json.loads(result.stdout)['items']
