@@ -7,8 +7,6 @@ let config, coreV1;
 export async function authenticate(token, api_server) {
   localStorage.removeItem('token');
   try {
-    console.log('api_server_ip ' + api_server.ip);
-    console.log('port ' + api_server.port);
     const url = 'https://' + api_server.ip + ':' + api_server.port;
     const response = await axios.get(url + '/api/v1', {
       headers: {
