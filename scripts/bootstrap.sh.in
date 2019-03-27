@@ -170,7 +170,7 @@ orchestrate_bootstrap() {
     set_salt_command
     sync_salt
     # shellcheck disable=SC2086
-    ${SALT_MASTER_CALL} salt-run state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
+    ${SALT_MASTER_CALL} salt-run state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}" -l debug
 }
 
 deploy_metalk8s_ui() {
