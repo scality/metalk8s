@@ -12,6 +12,8 @@ import translations_fr from '../translations/fr';
 import Layout from './Layout';
 import Login from './Login';
 
+import { fetchApiConfigAction } from '../ducks/config';
+
 const messages = {
   en: translations_en,
   fr: translations_fr
@@ -21,26 +23,36 @@ addLocaleData([...locale_en, ...locale_fr]);
 
 class App extends Component {
   componentDidMount() {
-    document.title = messages[this.props.language].product_name;
+    document.title = messages[this.props.config.language].product_name;
+    this.props.fetchApiConfig();
   }
 
   render() {
-    return (
-      <IntlProvider
-        locale={this.props.language}
-        messages={messages[this.props.language]}
-      >
+    const { language, api } = this.props.config;
+    return api ? (
+      <IntlProvider locale={language} messages={messages[language]}>
         <Switch>
           <Route path="/login" component={Login} />
           <Route component={Layout} />
         </Switch>
       </IntlProvider>
-    );
+    ) : null;
   }
 }
 
 const mapStateToProps = state => ({
-  language: state.config.language
+  config: state.config
 });
 
-export default withRouter(connect(mapStateToProps)(App));
+const mapDispatchToProps = dispatch => {
+  return {
+    fetchApiConfig: () => dispatch(fetchApiConfigAction())
+  };
+};
+
+export default withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(App)
+);
