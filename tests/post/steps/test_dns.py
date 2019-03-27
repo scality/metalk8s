@@ -7,28 +7,22 @@ import yaml
 
 
 @contextmanager
-def run_inside_busybox(tmp_path, host, *args, **kwd):
-    # Copy the admin.conf from the bootstrap
-    kubeconfig_file = str(tmp_path/"admin.conf")
-    with host.sudo():
-        admin_content = host.file(
-            "/etc/kubernetes/admin.conf"
-        ).content_string
-        with open(kubeconfig_file, "w") as fd:
-            fd.write(admin_content)
+def run_inside_busybox(kubeconfig_file):
+    config.load_kube_config(config_file=kubeconfig_file)
+    k8s_client = client.CoreV1Api()
 
+    # Create the busybox pod
     pod_manifest = os.path.join(
         os.path.realpath(os.path.dirname(__file__)),
         "files",
         "busybox.yaml"
     )
-    config.load_kube_config(config_file=kubeconfig_file)
-    k8s_client = client.CoreV1Api()
-    # Create the busybox pod
     with open(pod_manifest) as pod_fd:
         pod_manifest_content = yaml.safe_load(pod_fd.read())
         k8s_client.create_namespaced_pod(
             body=pod_manifest_content, namespace="default")
+
+    # Wait for the busybox to be ready
     timeout = 10
     while True:
         timeout -= 1
@@ -37,17 +31,15 @@ def run_inside_busybox(tmp_path, host, *args, **kwd):
         if resp.status.phase != "Pending" or timeout == 0:
             break
         time.sleep(1)
-    try:
-        yield "busybox"
-    finally:
-        # delete the busybox pod
-        core_v1 = client.CoreV1Api()
-        delete_options = client.V1DeleteOptions()
-        core_v1.delete_namespaced_pod(
-            name="busybox",
-            namespace="default",
-            body=delete_options
-        )
+
+    yield "busybox"
+
+    # Clean-up resources
+    k8s_client.delete_namespaced_pod(
+        name="busybox",
+        namespace="default",
+        body=client.V1DeleteOptions(),
+    )
 
 # Scenarios
 @scenario('../features/dns_resolution.feature', 'check dns')
@@ -56,8 +48,8 @@ def test_dns(host):
 
 
 @then(parsers.parse("The hostname '{hostname}' should be resolved"))
-def resolve_hostname(tmp_path, host, hostname):
-    with run_inside_busybox(tmp_path, host) as pod_name:
+def resolve_hostname(kubeconfig, host, hostname):
+    with run_inside_busybox(kubeconfig) as pod_name:
         with host.sudo():
             # test dns resolve
             cmd_nslookup = ("kubectl --kubeconfig=/etc/kubernetes/admin.conf"
