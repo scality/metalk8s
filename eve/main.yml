@@ -59,6 +59,7 @@ stages:
           env:
             PYTHON_SYS: python36
           command: ./doit.sh
+          usePTY: true
       - ShellCommand:
           name: Put the iso file in a separate folder
           command: >
