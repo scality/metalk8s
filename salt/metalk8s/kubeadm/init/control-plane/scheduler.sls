@@ -1,4 +1,4 @@
-{% from "metalk8s/kubeadm/init/control-plane/lib.sls" import get_image_name with context %}
+{% from "metalk8s/registry/macro.sls" import kubernetes_image with context %}
 
 Create kube-scheduler Pod manifest:
   file.managed:
@@ -12,7 +12,7 @@ Create kube-scheduler Pod manifest:
     - dir_mode: 750
     - context:
         name: kube-scheduler
-        image_name: {{ get_image_name("kube-scheduler") }}
+        image_name: {{ kubernetes_image("kube-scheduler") }}
         host: 127.0.0.1
         port: 10251
         scheme: HTTP

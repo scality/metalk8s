@@ -2,7 +2,6 @@
 
 {% set salt_master_image = 'salt-master' %}
 {% set salt_master_version = '2018.3.4-1' %}
-{% set registry_url = 'localhost:5000' %}
 
 Create salt master directories:
   file.directory:
@@ -26,7 +25,6 @@ Install and start salt master manifest:
     - makedirs: false
     - backup: false
     - defaults:
-        registry_url: {{ registry_url }}
         salt_master_image: {{ salt_master_image }}
         salt_master_version: {{ salt_master_version }}
         iso_root_path: {{ metalk8s.iso_root_path }}

@@ -8,6 +8,7 @@ Create metalk8s-ui deployment:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - source: salt://metalk8s/metalk8s-ui/files/metalk8s-ui_deployment.yaml
+    - template: jinja
   require:
     - pkg: Install Python Kubernetes client
 
