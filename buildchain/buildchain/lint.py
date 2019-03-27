@@ -21,8 +21,12 @@ Overview:
 """
 
 
+import os
+import shlex
 from pathlib import Path
 from typing import Callable, Iterator, List, Tuple
+
+import doit  # type: ignore
 
 from buildchain import constants
 from buildchain import types
@@ -43,10 +47,12 @@ def lint_python() -> types.TaskDict:
         *buildchain.glob('buildchain/*.py'),
         *buildchain.glob('buildchain/targets/*.py'),
     ]
+    cmd = ' '.join(map(shlex.quote, ['tox', '-e', 'lint-python']))
+    env = {'PATH': os.environ['PATH'], 'OSTYPE': os.uname().sysname}
     return {
         'name': 'python',
         'doc': lint_python.__doc__,
-        'actions': [['tox', '-e', 'lint-python']],
+        'actions': [doit.action.CmdAction(cmd, env=env)],
         'file_dep': python_sources,
     }
 
