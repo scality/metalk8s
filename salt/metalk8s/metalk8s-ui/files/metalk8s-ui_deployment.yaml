@@ -43,3 +43,11 @@ spec:
               path: /
               port: http
               scheme: HTTP
+          volumeMounts:
+          - name: ui-api-config-volume
+            mountPath: /etc/metalk8s/ui
+            readOnly: true
+      volumes:
+        - name: ui-api-config-volume
+          configMap:
+            name: ui-api-configmap

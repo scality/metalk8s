@@ -1,4 +1,4 @@
-import { call, takeEvery, put } from 'redux-saga/effects';
+import { call, takeEvery, put, select } from 'redux-saga/effects';
 import * as Api from '../services/api';
 import history from '../history';
 
@@ -51,8 +51,9 @@ export const setAuthenticationSuccessAction = payload => {
 function* authenticate({ payload }) {
   const { username, password } = payload;
   const token = btoa(username + ':' + password); //base64Encode
+  const api_server = yield select(state => state.config.api);
 
-  const result = yield call(Api.authenticate, token);
+  const result = yield call(Api.authenticate, token, api_server);
   if (result.error) {
     yield put({
       type: AUTHENTICATION_FAILED,

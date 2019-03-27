@@ -38,6 +38,7 @@ Create kube-apiserver Pod manifest:
           - --allow-privileged=true
           - --basic-auth-file={{ htpasswd_path }}
           - --client-ca-file=/etc/kubernetes/pki/ca.crt
+          - --cors-allowed-origins=.*
           - --enable-admission-plugins=NodeRestriction
           - --enable-bootstrap-token-auth=true
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
