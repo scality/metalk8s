@@ -1,5 +1,5 @@
+{% from "metalk8s/registry/macro.sls" import kubernetes_image with context %}
 {% from "metalk8s/map.jinja" import networks with context %}
-{% from "metalk8s/kubeadm/init/control-plane/lib.sls" import get_image_name with context %}
 
 Create kube-controller-manager Pod manifest:
   file.managed:
@@ -13,7 +13,7 @@ Create kube-controller-manager Pod manifest:
     - dir_mode: 750
     - context:
         name: kube-controller-manager
-        image_name: {{ get_image_name("kube-controller-manager") }}
+        image_name: {{ kubernetes_image("kube-controller-manager") }}
         host: 127.0.0.1
         port: 10252
         scheme: HTTP
