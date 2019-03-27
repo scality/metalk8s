@@ -147,7 +147,7 @@ stages:
             mkdir -p ~/.ssh &&
             echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys &&
             sleep 3600
-          doStepIf: false
+          doStepIf: true
 
   multiple-nodes:
     worker:
@@ -257,4 +257,4 @@ stages:
             echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys &&
             sleep 14400
           alwaysRun: true
-          doStepIf: false
+          doStepIf: true
