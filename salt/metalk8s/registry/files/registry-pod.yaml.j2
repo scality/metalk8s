@@ -36,19 +36,19 @@ spec:
           protocol: TCP
       livenessProbe:
         httpGet:
-          host: localhost
+          host: {{ registry_ip }}
           port: registry
           path: /
       readinessProbe:
         httpGet:
-          host: localhost
+          host: {{ registry_ip }}
           port: registry
           path: /
       env:
         - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
           value: '/var/lib/registry'
         - name: REGISTRY_HTTP_ADDR
-          value: 'localhost:5000'
+          value: '{{ registry_ip }}:5000'
         - name: REGISTRY_HEALTH_STORAGEDRIVER_ENABLED
           value: 'true'
       volumeMounts:

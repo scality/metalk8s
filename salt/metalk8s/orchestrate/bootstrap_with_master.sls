@@ -31,6 +31,8 @@ Bootstrap control plane:
       - metalk8s.bootstrap.etcd
     - require:
       - salt: Bootstrap client certs
+    - pillar:
+        registry_ip: {{ pillar.get('registry_ip') }}
 
 Bootstrap node:
   salt.state:
@@ -42,3 +44,5 @@ Bootstrap node:
       - metalk8s.bootstrap.calico
     - require:
       - salt: Bootstrap control plane
+    - pillar:
+        registry_ip: {{ pillar.get('registry_ip') }}

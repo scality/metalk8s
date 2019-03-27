@@ -1,10 +1,12 @@
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
+{%- from "metalk8s/map.jinja" import defaults with context %}
 
-{# FIXME: this won't work except on bootstrap node #}
-{%- set registry_host = "localhost:5000" %}
-
-{%- macro build_image_name(name='', tag='') -%}
-"{{ registry_host }}/{{ saltenv }}/{{ name }}:{{ tag }}"
+{%- macro build_image_name(name='', tag='', include_port=False) -%}
+{%- if include_port -%}
+"{{ defaults.registry_ip }}:5000/{{ saltenv }}/{{ name }}:{{ tag }}"
+{%- else -%}
+"{{ defaults.registry_ip }}/{{ saltenv }}/{{ name }}:{{ tag }}"
+{%- endif -%}
 {%- endmacro -%}
 
 {%- macro kubernetes_image(component) -%}
