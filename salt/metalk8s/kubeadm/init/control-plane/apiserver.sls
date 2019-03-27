@@ -1,5 +1,5 @@
+{%- from "metalk8s/registry/macro.sls" import kubernetes_image with context -%}
 {% from "metalk8s/map.jinja" import networks with context %}
-{% from "metalk8s/kubeadm/init/control-plane/lib.sls" import get_image_name with context %}
 {% set htpasswd_path = "/etc/kubernetes/htpasswd" %}
 
 Set up default basic auth htpasswd:
@@ -28,7 +28,7 @@ Create kube-apiserver Pod manifest:
     - context:
         name: kube-apiserver
         host: {{ host }}
-        image_name: {{ get_image_name("kube-apiserver") }}
+        image_name: {{ kubernetes_image("kube-apiserver") }}
         port: 6443
         scheme: HTTPS
         command:
