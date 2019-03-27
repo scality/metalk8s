@@ -12,19 +12,19 @@
     },
     {
         'name': 'kube-apiserver',
-        'tag': '1.12.6',
+        'tag': '1.13.5',
     },
     {
         'name': 'kube-controller-manager',
-        'tag': '1.12.6',
+        'tag': '1.13.5',
     },
     {
         'name': 'kube-proxy',
-        'tag': '1.12.6',
+        'tag': '1.13.5',
     },
     {
         'name': 'kube-scheduler',
-        'tag': '1.12.6',
+        'tag': '1.13.5',
     },
     {
         'name': 'calico-node',

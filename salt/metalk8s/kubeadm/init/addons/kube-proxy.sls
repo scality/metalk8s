@@ -1,6 +1,6 @@
 {%- from "metalk8s/map.jinja" import networks with context %}
 
-{%- set image = "localhost:5000/" ~ saltenv ~ "/kube-proxy:1.11.7" -%}
+{%- set image = "localhost:5000/" ~ saltenv ~ "/kube-proxy:1.13.5" -%}
 
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}

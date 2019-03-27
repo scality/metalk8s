@@ -61,7 +61,7 @@ BUILDER_BASIC_CMD : Tuple[str, ...] = (
 # }}}
 # Versions {{{
 
-K8S_VERSION  : str = '1.12.6'
+K8S_VERSION  : str = '1.13.5'
 SALT_VERSION : str = '2018.3.4'
 
 
