@@ -94,8 +94,8 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
     targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='etcd',
-        version='3.2.18',
-        digest='sha256:b960569ade5f37205a033dcdc3191fe99dc95b15c6795a6282859070ec2c6124',
+        version='3.2.24',
+        digest='sha256:905d7ca17fd02bc24c0eba9a062753aba15db3e31422390bc3238eb762339b20',
         destination=ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
