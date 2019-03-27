@@ -6,7 +6,7 @@
 {% set images = [
     {
         'name': 'etcd',
-        'tag': '3.2.18',
+        'tag': '3.2.24',
     },
     {
         'name': 'coredns',
