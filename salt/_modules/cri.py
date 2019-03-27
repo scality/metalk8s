@@ -148,3 +148,21 @@ def wait_container(name, state, timeout=60, delay=5):
     else:
         log.error('Failed to find container "%s" in state "%s"', name, state)
         return False
+
+
+def component_is_running(name):
+    '''Return true if the specified component is running.
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+    '''
+    log.info('Checking if compopent %s is running', name)
+    out = __salt__['cmd.run_all'](
+        'crictl pods --label component={} --state=ready -o json'.format(name)
+    )
+    if out['retcode'] != 0:
+        log.error('Failed to list pods')
+        return False
+    return len(salt.utils.json.loads(out['stdout'])['items']) != 0
