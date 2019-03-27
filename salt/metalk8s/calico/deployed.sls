@@ -1,6 +1,7 @@
+{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
-{%- set image = "localhost:5000/" ~ saltenv ~ "/calico-node:3.5.1" -%}
+{%- set image = build_image_name("calico-node", "3.5.1") -%}
 
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}

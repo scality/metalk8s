@@ -121,7 +121,6 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubeadm/init/control-plane/files/htpasswd'),
     Path('salt/metalk8s/kubeadm/init/control-plane/files/manifest.yaml'),
     Path('salt/metalk8s/kubeadm/init/control-plane/init.sls'),
-    Path('salt/metalk8s/kubeadm/init/control-plane/lib.sls'),
     Path('salt/metalk8s/kubeadm/init/control-plane/scheduler.sls'),
 
     Path('salt/metalk8s/kubeadm/init/etcd/init.sls'),
@@ -180,6 +179,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/runc/installed.sls'),
 
     Path('salt/metalk8s/registry/init.sls'),
+    Path('salt/metalk8s/registry/macro.sls'),
     Path('salt/metalk8s/registry/populated.sls'),
     Path('salt/metalk8s/registry/files/registry-pod.yaml.j2'),
 

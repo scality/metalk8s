@@ -1,6 +1,7 @@
+{% from "metalk8s/registry/macro.sls" import kubernetes_image with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
-{%- set image = "localhost:5000/" ~ saltenv ~ "/kube-proxy:1.13.5" -%}
+{%- set image = kubernetes_image("kube-proxy") -%}
 
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}

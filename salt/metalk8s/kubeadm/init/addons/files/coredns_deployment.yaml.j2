@@ -1,3 +1,4 @@
+{%- from "metalk8s/registry/macro.sls" import build_image_name with context -%}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,7 +30,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: localhost:5000/{{ saltenv }}/coredns:1.3.1
+        image: {{ build_image_name('coredns', '1.3.1') }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
