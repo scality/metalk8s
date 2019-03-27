@@ -1,4 +1,6 @@
 {%- from "metalk8s/macro.sls" import pkg_installed with context %}
+{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/map.jinja" import kubernetes with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 
 {% set images = [
@@ -12,19 +14,19 @@
     },
     {
         'name': 'kube-apiserver',
-        'tag': '1.12.6',
+        'tag': kubernetes.version,
     },
     {
         'name': 'kube-controller-manager',
-        'tag': '1.12.6',
+        'tag': kubernetes.version,
     },
     {
         'name': 'kube-proxy',
-        'tag': '1.12.6',
+        'tag': kubernetes.version,
     },
     {
         'name': 'kube-scheduler',
-        'tag': '1.12.6',
+        'tag': kubernetes.version,
     },
     {
         'name': 'calico-node',
@@ -55,7 +57,7 @@ Install skopeo:
 {% for image in images %}
 Import {{ image.name }} image:
   docker_registry.image_managed:
-    - name: localhost:5000/{{ saltenv }}/{{ image.name }}:{{ image.tag }}
+    - name: {{ build_image_name(image.name, image.tag) }}
     - archive_path: {{ metalk8s.iso_root_path }}/images/{{ image.name }}-{{ image.tag }}.tar.gz
     - tls_verify: false
     - require:

@@ -3,6 +3,9 @@ cluster: kubernetes
 
 metalk8s: {}
 
+kubernetes:
+  version: 1.12.6  # NOTE: remember to update kubelet version as well
+
 kubeadm_preflight:
   mandatory:
     packages:
