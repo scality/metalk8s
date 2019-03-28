@@ -8,6 +8,9 @@
 {% if ip_candidates %}
 {% set host = ip_candidates[0] %}
 
+{%- set ca_cert = salt['mine.get']('*', 'kubernetes_etcd_ca_b64').values()[0] %}
+{%- set ca_cert_b64 = salt['hashutil.base64_b64decode'](ca_cert) %}
+
 Create etcd database directory:
   file.directory:
     - name: /var/lib/etcd
@@ -15,6 +18,16 @@ Create etcd database directory:
     - user: root
     - group: root
     - makedirs: True
+
+Ensure etcd CA certificate is present:
+  file.managed:
+    - name: /etc/kubernetes/pki/etcd/ca.crt
+    - user: root
+    - group : root
+    - mode: 644
+    - makedirs: True
+    - dir_mode: 755
+    - contents: {{ ca_cert_b64.split('\n') }}
 
 Create local etcd Pod manifest:
   file.managed:
@@ -55,6 +68,7 @@ Create local etcd Pod manifest:
             readOnly: true
     - require:
       - file: Create etcd database directory
+      - file: Ensure etcd CA certificate is present
 
 
 
