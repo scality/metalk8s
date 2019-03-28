@@ -74,6 +74,7 @@ PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 # List of salt files to install.
 SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/orchestrate/bootstrap_without_master.sls'),
+    Path('salt/metalk8s/orchestrate/deploy_etcd_on_new_node.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap_with_master.sls'),
     Path('salt/metalk8s/orchestrate/deploy_salt_minion_on_new_node.sls'),
     Path('salt/metalk8s/orchestrate/control_plane.sls'),
