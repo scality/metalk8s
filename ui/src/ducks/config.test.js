@@ -32,7 +32,7 @@ it('update the config state when fetchApiConfig', () => {
 
   const result = {
     data: {
-      api_server_url: 'https://localhost:3333'
+      url: 'https://localhost:3333'
     }
   };
 

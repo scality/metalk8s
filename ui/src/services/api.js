@@ -7,13 +7,12 @@ let config, coreV1;
 export async function authenticate(token, api_server) {
   localStorage.removeItem('token');
   try {
-    const url = 'https://' + api_server.ip + ':' + api_server.port;
-    const response = await axios.get(url + '/api/v1', {
+    const response = await axios.get(api_server.url + '/api/v1', {
       headers: {
         Authorization: 'Basic ' + token
       }
     });
-    config = new Config(url, token, 'Basic');
+    config = new Config(api_server.url, token, 'Basic');
     coreV1 = config.makeApiClient(Core_v1Api);
 
     return response;
