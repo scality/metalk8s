@@ -11,19 +11,26 @@ def test_ui(host):
 
 
 @then("we can reach the UI")
-def reach_UI(host):
+def reach_UI(host, version):
     with host.sudo():
-        cmd_ip = ('salt-call --local network.ip_addrs cidr="172.21.254.32/27"'
-               ' --output=json')
+
+        cmd_cidr = ('salt-call pillar.get networks:workload_plane'
+                    ' saltenv=metalk8s-{version} --out json').format(version=version)
+        cidr_output = host.check_output(cmd_cidr)
+        cidr = json.loads(cidr_output)['local']
+
+        cmd_ip = ('salt-call --local network.ip_addrs cidr="{cidr}"'
+                  ' --out=json').format(cidr=cidr)
+
         output = host.check_output(cmd_ip)
-        ip = json.loads(output)["local"][0]
+        ip = json.loads(output)['local'][0]
 
         cmd_port = ('kubectl --kubeconfig=/etc/kubernetes/admin.conf'
                     ' get svc -n kube-system metalk8s-ui --no-headers'
                     ' -o custom-columns=":spec.ports[0].nodePort"')
         port = host.check_output(cmd_port)
 
-    response = requests.get("http://{ip}:{port}".format(ip=ip, port=port))
+    response = requests.get('http://{ip}:{port}'.format(ip=ip, port=port))
     
     assert response.status_code == 200, response.text
           
