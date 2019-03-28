@@ -82,7 +82,13 @@ Create local etcd Pod manifest:
       - file: Create etcd database directory
       - file: Ensure etcd CA certificate is present
 
-
+Advertise etcd node in the mine:
+  module.run:
+    - mine.send:
+      - func: 'etcd_endpoints'
+      - mine_function: metalk8s.get_etcd_endpoint
+    - watch:
+      - file: Create local etcd Pod manifest
 
 {% else %}
 No available advertise IP for etcd:
