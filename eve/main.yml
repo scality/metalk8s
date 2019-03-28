@@ -139,33 +139,34 @@ stages:
           # entries longer than 63 characters
           name: Change hostname to a shorter value
           command: sudo hostnamectl set-hostname bootstrap
-      - ShellCommand:
-          name: Start the bootstrap process
-          command: >
-            sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
-          haltOnFailure: true
-      - ShellCommand:
-          name: Install kubectl for running tests
-          command: >
-            sudo yum install -y kubectl --disablerepo=*
-            --enablerepo=metalk8s-kubernetes
-      - ShellCommand:
-          name: Run tests on the bootstrap node
-          env:
-            ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
-          command: tox -e tests-local
-          haltOnFailure: true
+      # - ShellCommand:
+      #     name: Start the bootstrap process
+      #     command: >
+      #       sudo bash
+      #       /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
+      #     haltOnFailure: true
+      # - ShellCommand:
+      #     name: Install kubectl for running tests
+      #     command: >
+      #       sudo yum install -y kubectl --disablerepo=*
+      #       --enablerepo=metalk8s-kubernetes
+      # - ShellCommand:
+      #     name: Run tests on the bootstrap node
+      #     env:
+      #       ISO_MOUNTPOINT: >
+      #         /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+      #     command: tox -e tests-local
+      #     haltOnFailure: true
       - ShellCommand:
           name: Debug step - report IPs, add SSH keys, wait 1 hour
-          timeout: 3600
+          timeout: 14400
           command: >
             ip a &&
             mkdir -p ~/.ssh &&
             echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys &&
-            sleep 3600
-          doStepIf: false
+            sleep 14400
+          alwaysRun: true
+          doStepIf: true
 
   multiple-nodes:
     worker:
