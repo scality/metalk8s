@@ -20,3 +20,8 @@ Generate etcd certificates on a new node:
           local_mode: false
           host: {{ bootstrap_ip }}
         registry_ip: {{ bootstrap_ip }}
+
+Refresh the list of etcd nodes:
+  salt.function:
+    - name: mine.update
+    - tgt: '*'
