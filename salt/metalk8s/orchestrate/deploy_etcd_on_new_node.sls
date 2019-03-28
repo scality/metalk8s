@@ -11,3 +11,13 @@ Refresh the list of etcd nodes:
   module.wait:
     - mine.update:
       - mine_functions: metalk8s.get_etcd_endpoint
+
+Deploy the new etcd node:
+  salt.state:
+    - tgt: {{ pillar['node_name'] }}
+    - saltenv: {{ saltenv }}
+    - sls:
+      - metalk8s.bootstrap.etcd
+    - require:
+      - salt: Generate etcd certificates on a new node
+      - module: Refresh the list of etcd nodes
