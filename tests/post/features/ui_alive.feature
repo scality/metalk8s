@@ -2,4 +2,4 @@
 Feature: The UI should be reachable
     Scenario: Reach the UI
         Given the Kubernetes API is available
-        Then we try to reach the UI
+        Then we can reach the UI
