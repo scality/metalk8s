@@ -3,6 +3,7 @@
 OSTYPE="$(uname -s)"
 # System-wide Python 3 command.
 PYTHON_SYS="${PYTHON_SYS:-python3}"
+MINIMUM_PYTHON_VERSION='(3, 6)'
 # Buildchain location.
 BUILDCHAIN=buildchain
 # Location of the virtual environment for the buildchain.
@@ -13,6 +14,21 @@ REQUIREMENTS="${BUILDCHAIN}/requirements-$OSTYPE.txt"
 WITNESS_FILE="${BUILDENV}/installed.tstamp"
 # File containing environment variables.
 DOTENV=./.env
+
+
+# Check Python version.
+"$PYTHON_SYS" -c "$(cat <<EOF
+import sys
+
+sys.exit(0 if sys.version_info >= $MINIMUM_PYTHON_VERSION else 1)
+EOF
+)"
+
+if [ "$?" -eq 1 ];
+then
+    echo "$($PYTHON_SYS -V) too old, 3.6 minimum is required" >&2
+    exit 1
+fi
 
 if [ "$OSTYPE" = "Darwin" ]
 then
