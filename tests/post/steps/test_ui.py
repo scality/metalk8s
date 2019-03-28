@@ -10,7 +10,7 @@ def test_ui(host):
     pass
 
 
-@then("we try to reach the UI")
+@then("we can reach the UI")
 def reach_UI(host):
     with host.sudo():
         cmd_ip = ('salt-call --local network.ip_addrs cidr="172.21.254.32/27"'
