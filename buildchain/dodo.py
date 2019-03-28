@@ -41,4 +41,5 @@ DOIT_CONFIG = {
     'default_tasks': ['iso'],
     'reporter': PrivateReporter,
     'cleandep': True,
+    'cleanforget': True,
 }
