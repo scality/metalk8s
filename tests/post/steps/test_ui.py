@@ -11,19 +11,26 @@ def test_ui(host):
 
 
 @then("we can reach the UI")
-def reach_UI(host, version):
+def reach_UI(host, version, request):
     with host.sudo():
 
-        cmd_cidr = ('salt-call pillar.get networks:workload_plane'
-                    ' saltenv=metalk8s-{version} --out json').format(version=version)
-        cidr_output = host.check_output(cmd_cidr)
-        cidr = json.loads(cidr_output)['local']
+        bootstrap_ip = request.config.getoption("--bootstrap-ip")
+        if bootstrap_ip is not None:
+            # multi nodes
+            ip = bootstrap_ip
+        else:
+            # single node or vagrant
+            cmd_cidr = ('salt-call pillar.get networks:workload_plane'
+                        ' saltenv=metalk8s-{version} --out json').format(version=version)
+            cidr_output = host.check_output(cmd_cidr)
+            cidr = json.loads(cidr_output)['local']
 
-        cmd_ip = ('salt-call --local network.ip_addrs cidr="{cidr}"'
-                  ' --out=json').format(cidr=cidr)
+            cmd_ip = ('salt-call --local network.ip_addrs cidr="{cidr}"'
+                    ' --out=json').format(cidr=cidr)
 
-        output = host.check_output(cmd_ip)
-        ip = json.loads(output)['local'][0]
+            output = host.check_output(cmd_ip)
+            # print(''output)
+            ip = json.loads(output)['local'][0]
 
         cmd_port = ('kubectl --kubeconfig=/etc/kubernetes/admin.conf'
                     ' get svc -n kube-system metalk8s-ui --no-headers'
