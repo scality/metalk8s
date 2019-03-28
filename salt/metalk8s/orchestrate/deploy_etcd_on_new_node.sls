@@ -25,3 +25,19 @@ Refresh the list of etcd nodes:
   salt.function:
     - name: mine.update
     - tgt: '*'
+
+Deploy the new etcd node:
+  salt.state:
+    - tgt: {{ pillar['node_name'] }}
+    - saltenv: {{ saltenv }}
+    - sls:
+      - metalk8s.bootstrap.etcd
+    - pillar:
+        repo:
+          online_mode: false
+          local_mode: false
+          host: {{ bootstrap_ip }}
+        registry_ip: {{ bootstrap_ip }}
+    - require:
+      - salt: Generate etcd certificates on a new node
+      - salt: Refresh the list of etcd nodes
