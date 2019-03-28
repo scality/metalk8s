@@ -70,8 +70,8 @@ stages:
           source: iso/
           urls:
             - "*.iso"
-            - "SHA256SUM"
-            - "product.txt"
+            - SHA256SUM
+            - product.txt
 
   lint:
     worker:
@@ -135,11 +135,6 @@ stages:
             END
             EOF
       - ShellCommand:
-          # This step is needed so Kubelet registration doesn't fail for DNS
-          # entries longer than 63 characters
-          name: Change hostname to a shorter value
-          command: sudo hostnamectl set-hostname bootstrap
-      - ShellCommand:
           name: Start the bootstrap process
           command: >
             sudo bash
@@ -151,7 +146,7 @@ stages:
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
       - ShellCommand:
-          name: Run tests on the bootstrap node
+          name: Run tests locally
           env:
             ISO_MOUNTPOINT: >
               /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
@@ -180,18 +175,18 @@ stages:
       - ShellCommand: *check_iso_checksum
       - ShellCommand:
           name: Init terraform
-          command: "terraform init"
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          command: terraform init
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Validate terraform definition
-          command: "terraform validate"
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          command: terraform validate
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Spawn openstack virtual infra
-          command: 'terraform apply -auto-approve'
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          command: terraform apply -auto-approve
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           env: &terraform_spawn_multiple_nodes
             OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
             OS_REGION_NAME: "%(secret:scality_cloud_region)s"
@@ -212,7 +207,7 @@ stages:
           command: >
             sed -i s/IP_ADDRESS/$(terraform output bootstrap_ip)/
             bootstrap_ssh_config
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Check SSH config for bootstrap node
@@ -221,20 +216,20 @@ stages:
               sleep 5
               ssh -F bootstrap_ssh_config bootstrap id && break
             done;
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Copy ISO to bootstrap node
           command: >
             scp -F bootstrap_ssh_config ../../../../metalk8s.iso bootstrap:
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Create mountpoint in bootstrap node
           command: >
             ssh -F bootstrap_ssh_config bootstrap
             sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Mount ISO image in bootstrap node
@@ -242,7 +237,7 @@ stages:
             ssh -F bootstrap_ssh_config bootstrap
             sudo mount -o loop metalk8s.iso
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Copy bootstrap configuration file in bootstrap node
@@ -252,7 +247,7 @@ stages:
             scp -F bootstrap_ssh_config bootstrap.yaml bootstrap: &&
             ssh -F bootstrap_ssh_config bootstrap
             sudo mv bootstrap.yaml /etc/metalk8s
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Start the bootstrap process in bootstrap node
@@ -260,7 +255,7 @@ stages:
             ssh -F bootstrap_ssh_config bootstrap
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Install kubectl on the boostrap node
@@ -287,7 +282,7 @@ stages:
             for _ in $(seq 1 3); do
                terraform destroy -auto-approve && break
             done;
-          workdir: "build/eve/workers/openstack-multiple-nodes/terraform/"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           env: *terraform_spawn_multiple_nodes
           alwaysRun: true
           sigtermTime: 600
