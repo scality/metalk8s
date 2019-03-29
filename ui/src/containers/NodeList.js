@@ -21,6 +21,10 @@ class NodeList extends React.Component {
           dataKey: 'name'
         },
         {
+          label: props.intl.messages.status,
+          dataKey: 'status'
+        },
+        {
           label: props.intl.messages.cpu_capacity,
           dataKey: 'cpu'
         },
@@ -29,8 +33,8 @@ class NodeList extends React.Component {
           dataKey: 'memory'
         },
         {
-          label: props.intl.messages.pods_number,
-          dataKey: 'pods'
+          label: props.intl.messages.creationDate,
+          dataKey: 'creationDate'
         }
       ]
     };

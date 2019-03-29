@@ -1,9 +1,10 @@
 {
   "product_name": "MetalK8s Platform",
   "name": "Name",
+  "status": "Status",
   "cpu_capacity": "CPU Capacity",
   "memory": "Memory",
-  "pods_number": "Number of pods",
+  "creationDate": "Creation Date",
   "username": "Username",
   "password": "Password",
   "submit": "Submit",

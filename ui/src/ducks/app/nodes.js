@@ -37,12 +37,17 @@ export function* fetchNodes() {
       setNodesAction(
         result.body.items.map(node => ({
           name: node.metadata.name,
+          status:
+            node.status.conditions.find(conditon => conditon.type === 'Ready')
+              .status === 'True'
+              ? 'Ready'
+              : 'Not Ready',
           cpu: node.status.capacity.cpu,
           memory: prettifyBytes(
             convertK8sMemoryToBytes(node.status.capacity.memory),
             2
           ).value,
-          pods: node.status.capacity.pods
+          creationDate: node.metadata.creationTimestamp
         }))
       )
     );
