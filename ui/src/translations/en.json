@@ -10,5 +10,9 @@
   "submit": "Submit",
   "about": "About",
   "nodes": "Nodes",
-  "log_out": "Log out"
+  "log_out": "Log out",
+  "namespace": "Namespace",
+  "start_time": "Start Time",
+  "restart": "Restart",
+  "information": "Information"
 }
