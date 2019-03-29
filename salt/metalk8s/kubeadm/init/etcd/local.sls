@@ -14,7 +14,7 @@
 {%- set ca_cert_b64 = salt['hashutil.base64_b64decode'](ca_cert) %}
 
 {#- Get the list of existing etcd node. #}
-{%- set etcd_endpoints = salt.saltutil.runner('mine.get', tgt='*', fun='etcd_endpoints').values() %}
+{%- set etcd_endpoints = salt['mine.get']('*', 'etcd_endpoints').values() %}
 
 {#- Compute the initial state according to the existing list of node. #}
 {%- set state = "existing" if etcd_endpoints else "new" -%}
