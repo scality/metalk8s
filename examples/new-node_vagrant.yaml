@@ -1,0 +1,19 @@
+# Use this manifest to announce the new node to the apiserver.
+# You need to fill the needed SSH connection information.
+# CMD: sudo kubectl --kubeconfig /etc/kubernetes/admin.conf create -n "kube-system" -f new-node_vagrant.yaml
+apiVersion: v1
+kind: Node
+metadata:
+  name: node1
+  annotations:
+    metalk8s.scality.com/ssh-user: vagrant 
+    metalk8s.scality.com/ssh-port: "22"
+    metalk8s.scality.com/ssh-host: <IP_ADDRESS>
+    metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/preshared_key_for_k8s_nodes
+    metalk8s.scality.com/ssh-sudo: "true" 
+  labels:
+    beta.kubernetes.io/os: linux
+spec:
+  taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
