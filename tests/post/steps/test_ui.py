@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from pytest_bdd import scenario, then
 import requests
 
@@ -13,11 +14,11 @@ def test_ui(host):
 @then("we can reach the UI")
 def reach_UI(host, version, request):
     with host.sudo():
-
         bootstrap_ip = request.config.getoption("--bootstrap-ip")
+
         if bootstrap_ip is not None:
             # multi nodes
-            ip = bootstrap_ip
+            pytest.skip("Cannot yet run this test on multi-nodes deployment.")
         else:
             # single node or vagrant
             cmd_cidr = ('salt-call pillar.get networks:workload_plane'
@@ -29,7 +30,6 @@ def reach_UI(host, version, request):
                     ' --out=json').format(cidr=cidr)
 
             output = host.check_output(cmd_ip)
-            # print(''output)
             ip = json.loads(output)['local'][0]
 
         cmd_port = ('kubectl --kubeconfig=/etc/kubernetes/admin.conf'
