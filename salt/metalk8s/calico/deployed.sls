@@ -77,7 +77,7 @@ Deploy calico-node (DaemonSet):
                   - name: IP_AUTODETECTION_METHOD
                     value: can-reach={{ networks.workload_plane.split('/')[0] }}
                   - name: CALICO_IPV4POOL_IPIP
-                    value: "Always"
+                    value: "CrossSubnet"
                   - name: FELIX_IPINIPMTU
                     valueFrom:
                       configMapKeyRef:
