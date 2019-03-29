@@ -40,12 +40,12 @@ Generate CA certificate:
 
 # TODO: Find a better way to advetise CA server
 Advertise CA in the mine:
-  module.wait:
+  module.run:
     - mine.send:
       - func: 'kubernetes_ca_server'
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/ca.crt
-    - watch:
+    - require:
       - x509: Generate CA certificate
 
 Create CA salt signing_policies:

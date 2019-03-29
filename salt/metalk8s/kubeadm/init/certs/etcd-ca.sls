@@ -40,12 +40,12 @@ Generate etcd CA certificate:
 
 # TODO: Find a better way to advertise CA server
 Advertise etcd CA in the mine:
-  module.wait:
+  module.run:
     - mine.send:
-      - func: 'kubernetes_etcd_ca_server'
+      - func: kubernetes_etcd_ca_server
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/etcd/ca.crt
-    - watch:
+    - require:
       - x509: Generate etcd CA certificate
 
 Create etcd CA salt signing policies:

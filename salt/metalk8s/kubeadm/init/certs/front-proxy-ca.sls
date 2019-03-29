@@ -40,12 +40,12 @@ Generate front proxy CA certificate:
 
 # TODO: Find a better way to advertise CA server
 Advertise front proxy CA in the mine:
-  module.wait:
+  module.run:
     - mine.send:
       - func: 'kubernetes_front_proxy_ca_server'
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/front-proxy-ca.crt
-    - watch:
+    - require:
       - x509: Generate front proxy CA certificate
 
 Create front proxy CA salt signing policies:
