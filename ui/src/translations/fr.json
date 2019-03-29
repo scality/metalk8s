@@ -10,5 +10,9 @@
   "submit": "Connexion",
   "about": "À propos",
   "nodes": "Nodes",
-  "log_out": "Déconnexion"
+  "log_out": "Déconnexion",
+  "namespace": "Namespace",
+  "start_time": "Date de début",
+  "restart": "Redémarrage",
+  "information": "Information"  
 }
