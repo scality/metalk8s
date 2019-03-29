@@ -58,3 +58,9 @@ Bootstrap node:
       - metalk8s.bootstrap.mark_control_plane
     - require:
       - salt: Bootstrap control plane
+    - pillar:
+        repo:
+          online_mode: false
+          local_mode: false
+          host: {{ control_plane_ip }}
+        registry_ip: {{ control_plane_ip }}

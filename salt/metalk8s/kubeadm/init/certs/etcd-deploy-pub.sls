@@ -5,7 +5,7 @@
 {%- set etcd_ca_pub_content_64 = etcd_ca_pub.values()[0] %}
 {%- set etcd_ca_pub_content = salt['hashutil.base64_b64decode'](etcd_ca_pub_content_64) %}
 
-Ensure SA pub key is present:
+Ensure etcd CA is present:
   file.managed:
     - name: /etc/kubernetes/pki/etcd/ca.crt
     - user: root
