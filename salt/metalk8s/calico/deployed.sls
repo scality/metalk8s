@@ -74,6 +74,8 @@ Deploy calico-node (DaemonSet):
                     value: "k8s,bgp"
                   - name: IP
                     value: "autodetect"
+                  - name: IP_AUTODETECTION_METHOD
+                    value: can-reach={{ networks.workload_plane.split('/')[0] }}
                   - name: CALICO_IPV4POOL_IPIP
                     value: "Always"
                   - name: FELIX_IPINIPMTU
