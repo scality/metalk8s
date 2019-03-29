@@ -11,6 +11,12 @@ import { fetchPodsAction } from '../ducks/app/pods';
 
 const NodeInformationContainer = styled.div`
   height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const PodsContainer = styled.div`
+  flex-grow: 1;
 `;
 
 const InformationTitle = styled.h3`
@@ -112,17 +118,19 @@ class NodeInformation extends React.Component {
         </InformationSpan>
 
         <InformationTitle>Pods</InformationTitle>
-        <Table
-          list={podsSortedList}
-          columns={this.state.columns}
-          disableHeader={false}
-          headerHeight={40}
-          rowHeight={40}
-          sortBy={this.state.sortBy}
-          sortDirection={this.state.sortDirection}
-          onSort={this.onSort}
-          onRowClick={() => {}}
-        />
+        <PodsContainer>
+          <Table
+            list={podsSortedList}
+            columns={this.state.columns}
+            disableHeader={false}
+            headerHeight={40}
+            rowHeight={40}
+            sortBy={this.state.sortBy}
+            sortDirection={this.state.sortDirection}
+            onSort={this.onSort}
+            onRowClick={() => {}}
+          />
+        </PodsContainer>
       </NodeInformationContainer>
     );
   }
