@@ -109,6 +109,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubeadm/init/certs/apiserver-kubelet-client.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/ca.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/etcd-ca.sls'),
+    Path('salt/metalk8s/kubeadm/init/certs/etcd-deploy-pub.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/etcd-healthcheck-client.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/etcd-peer.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/etcd-server.sls'),
@@ -117,6 +118,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubeadm/init/certs/init.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/installed.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/sa.sls'),
+    Path('salt/metalk8s/kubeadm/init/certs/sa-deploy-pub.sls'),
 
     Path('salt/metalk8s/kubeadm/init/control-plane/apiserver.sls'),
     Path('salt/metalk8s/kubeadm/init/control-plane/controller-manager.sls'),

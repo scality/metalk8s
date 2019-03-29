@@ -19,12 +19,20 @@ Bootstrap client certs:
     - tgt: {{ node }}
     - saltenv: {{ saltenv }}
     - sls:
+          - metalk8s.kubeadm.init.certs.etcd-deploy-pub
+          - metalk8s.kubeadm.init.certs.sa-deploy-pub
           - metalk8s.kubeadm.init.certs.apiserver
+          - metalk8s.kubeadm.init.certs.apiserver-etcd-client
           - metalk8s.kubeadm.init.certs.apiserver-kubelet-client
-          - metalk8s.kubeadm.init.certs.sa
           - metalk8s.kubeadm.init.certs.front-proxy-client
     - require:
       - salt: Update mine
+    - pillar:
+        repo:
+          online_mode: false
+          local_mode: false
+          host: {{ control_plane_ip }}
+        registry_ip: {{ control_plane_ip }}
 
 Bootstrap control plane:
   salt.state:
@@ -35,6 +43,12 @@ Bootstrap control plane:
       - metalk8s.bootstrap.control-plane
     - require:
       - salt: Bootstrap client certs
+    - pillar:
+        repo:
+          online_mode: false
+          local_mode: false
+          host: {{ control_plane_ip }}
+        registry_ip: {{ control_plane_ip }}
 
 Bootstrap node:
   salt.state:
@@ -42,7 +56,5 @@ Bootstrap node:
     - saltenv: {{ saltenv }}
     - sls:
       - metalk8s.bootstrap.mark_control_plane
-      - metalk8s.bootstrap.addons
-      - metalk8s.bootstrap.calico
     - require:
       - salt: Bootstrap control plane
