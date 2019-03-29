@@ -51,6 +51,21 @@ Deploy the new etcd node:
           host: {{ bootstrap_ip}}
         registry_ip: {{ bootstrap_ip}}
 
+Redeploy other manifests:
+  salt.state:
+    - tgt: '*'
+    - saltenv: {{ saltenv }}
+    - sls:
+      - metalk8s.bootstrap.etcd
+    - require:
+      - module: Register the node into etcd cluster
+    - pillar:
+        repo:
+          online_mode: false
+          local_mode: false
+          host: {{ bootstrap_ip}}
+        registry_ip: {{ bootstrap_ip}}
+
 Register the node into etcd cluster:
   module.wait:
     - metalk8s.add_etcd_node:
