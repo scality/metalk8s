@@ -15,6 +15,9 @@
 
 {%- if ca_server %}
 
+include:
+  - metalk8s.kubeadm.init.certs.installed
+
 Create kubeconf file for {{ name }}:
   metalk8s_kubeconfig.managed:
     - name: /etc/kubernetes/{{ name }}.conf
@@ -26,6 +29,8 @@ Create kubeconf file for {{ name }}:
         {%- endfor %}
     - apiserver: {{ apiserver }}
     - cluster: {{ defaults.cluster }}
+    - require:
+      - pkg: Install m2crypto
 
 {%- else %}
 
