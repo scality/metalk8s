@@ -49,6 +49,12 @@ class NodeList extends React.Component {
     this.setState({ sortBy, sortDirection });
   }
 
+  onRowClick(row) {
+    if (row.rowData && row.rowData.name) {
+      this.props.history.push(`/nodes/${row.rowData.name}`);
+    }
+  }
+
   sortNodes(nodes, sortBy, sortDirection) {
     return memoizeOne((nodes, sortBy, sortDirection) => {
       const sortedList = sortByArray(nodes, [
@@ -82,7 +88,7 @@ class NodeList extends React.Component {
         sortBy={this.state.sortBy}
         sortDirection={this.state.sortDirection}
         onSort={this.onSort}
-        onRowClick={() => {}}
+        onRowClick={item => this.onRowClick(item)}
       />
     );
   }
