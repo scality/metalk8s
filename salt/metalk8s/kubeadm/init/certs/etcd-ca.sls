@@ -1,8 +1,8 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
 
-{%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_server') %}
+{%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_b64') %}
 
-{#- Check if we have no CA server or only current minion as CA #}
+{#- Check if we have no etcd CA server or if it is the current minion #}
 {%- if not etcd_ca_server or etcd_ca_server.keys() == [grains['id']] %}
 
 include:
@@ -42,7 +42,7 @@ Generate etcd CA certificate:
 Advertise etcd CA in the mine:
   module.wait:
     - mine.send:
-      - func: 'kubernetes_etcd_ca_server'
+      - func: kubernetes_etcd_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/etcd/ca.crt
     - watch:
