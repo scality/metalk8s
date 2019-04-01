@@ -55,7 +55,7 @@ class Layout extends Component {
             }) ||
             matchPath(this.props.history.location.pathname, {
               path: '/nodes',
-              exact: true,
+              exact: false,
               strict: true
             })
         }

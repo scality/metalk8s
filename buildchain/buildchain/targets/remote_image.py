@@ -14,8 +14,6 @@ import operator
 from pathlib import Path
 from typing import Any, Optional, List
 
-import doit  # type: ignore
-
 from buildchain import config
 from buildchain import coreutils
 from buildchain import types
@@ -82,7 +80,7 @@ class RemoteImage(image.ContainerImage):
             'title': self._show,
             'doc': 'Download {} container image.'.format(self.name),
             'actions': self._build_actions(),
-            'uptodate': [doit.tools.run_once],
+            'uptodate': [True],
         })
         return task
 

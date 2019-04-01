@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Table } from 'core-ui';
 import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 
 import { fetchNodesAction } from '../ducks/app/nodes';
 
@@ -34,7 +34,12 @@ class NodeList extends React.Component {
         },
         {
           label: props.intl.messages.creationDate,
-          dataKey: 'creationDate'
+          dataKey: 'creationDate',
+          renderer: data => (
+            <span>
+              <FormattedDate value={data} /> <FormattedTime value={data} />
+            </span>
+          )
         }
       ]
     };
