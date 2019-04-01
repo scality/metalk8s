@@ -37,7 +37,7 @@ def task__vagrantkey() -> types.TaskDict:
     return {
         'actions': [mkdir_dot_vagrant, keygen],
         'targets': [constants.VAGRANT_SSH_KEY_PAIR],
-        'uptodate': [doit.tools.run_once]
+        'uptodate': [True],
     }
 
 def task_vagrantup() -> types.TaskDict:
