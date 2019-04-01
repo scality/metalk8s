@@ -32,8 +32,6 @@ import operator
 from pathlib import Path
 from typing import Any, List, Sequence, Set, Union
 
-import doit  # type: ignore
-
 from buildchain import constants
 from buildchain import coreutils
 from buildchain import types
@@ -121,7 +119,7 @@ class FileTree(base.Target, base.CompositeTarget):
             'title': lambda task: utils.title_with_target1('MKTREE', task),
             'actions': [mkdirs],
             'targets': self.directories,
-            'uptodate': [doit.tools.run_once],
+            'uptodate': [True],
         })
         return task
 

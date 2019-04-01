@@ -29,8 +29,6 @@ Overview;
 from pathlib import Path
 from typing import Dict, Iterator, List, Tuple
 
-import doit  # type: ignore
-
 from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
@@ -110,7 +108,7 @@ def task__download_packages() -> types.TaskDict:
         'file_dep': [BUILDER.destination, pkg_list],
         'task_dep': ['_package_mkdir_root', '_package_mkdir_iso_root'],
         'clean': [clean],
-        'uptodate': [doit.tools.run_once],
+        'uptodate': [True],
         # Prevent Docker from polluting our output.
         'verbosity': 0,
     }
