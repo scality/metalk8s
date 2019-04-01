@@ -186,4 +186,4 @@ coredns:
 upgrade: false        # define if we're on an upgrade case
 
 # TODO: Move it into mine
-registry_ip: localhost
+registry_ip: 127.0.0.1
