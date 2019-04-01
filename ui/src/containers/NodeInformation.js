@@ -1,12 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
 import { Table } from 'core-ui';
 import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import styled from 'styled-components';
-
 import { fetchPodsAction } from '../ducks/app/pods';
 
 const NodeInformationContainer = styled.div`
@@ -65,7 +64,12 @@ class NodeInformation extends React.Component {
         },
         {
           label: props.intl.messages.start_time,
-          dataKey: 'startTime'
+          dataKey: 'startTime',
+          renderer: data => (
+            <span>
+              <FormattedDate value={data} /> <FormattedTime value={data} />
+            </span>
+          )
         },
         {
           label: props.intl.messages.restart,
