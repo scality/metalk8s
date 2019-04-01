@@ -8,38 +8,40 @@ import { sortBy as sortByArray } from 'lodash';
 import styled from 'styled-components';
 import { fetchPodsAction } from '../ducks/app/pods';
 
+import { fontWeight, fontSize, padding } from 'core-ui/dist/style/theme';
+
 const NodeInformationContainer = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding: ${padding.larger};
 `;
 
 const PodsContainer = styled.div`
   flex-grow: 1;
-  margin: 0 30px;
+  padding: 0 ${padding.larger};
 `;
 
 const InformationTitle = styled.h3`
-  padding: 20px 30px 10px 30px;
+  padding: ${padding.small} ${padding.larger};
   margin: 0;
 `;
 
 const InformationSpan = styled.span`
-  padding: 10px 30px;
+  padding: 0 ${padding.larger} ${padding.small} ${padding.larger};
 `;
 
 const InformationLabel = styled.span`
-  font-size: 12px;
-  padding: 0 10px;
+  font-size: ${fontSize.small};
+  padding: 0 ${padding.base};
 `;
 
 const InformationValue = styled.span`
-  font-size: 14px;
-  padding: 0 10px;
+  font-size: ${fontSize.base};
 `;
 
 const InformationMainValue = styled(InformationValue)`
-  font-weight: bold;
+  font-weight: ${fontWeight.bold};
 `;
 class NodeInformation extends React.Component {
   constructor(props) {
