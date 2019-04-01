@@ -113,6 +113,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubeadm/init/certs/etcd-peer.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/etcd-server.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/front-proxy-ca.sls'),
+    Path('salt/metalk8s/kubeadm/init/certs/front-proxy-deploy-ca-cert.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/front-proxy-client.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/init.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/installed.sls'),

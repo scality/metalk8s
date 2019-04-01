@@ -5,6 +5,7 @@
 
 include:
   - metalk8s.kubeadm.init.certs.sa-deploy-pub-key
+  - metalk8s.kubeadm.init.certs.front-proxy-deploy-ca-cert
 
 Set up default basic auth htpasswd:
   file.managed:
@@ -78,6 +79,7 @@ Create kube-apiserver Pod manifest:
             name: htpasswd
     - require:
       - file: Ensure SA pub key is present
+      - file: Ensure front-proxy CA cert is present
 
 Make sure kube-apiserver container is up:
   module.wait:
