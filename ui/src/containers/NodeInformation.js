@@ -17,6 +17,7 @@ const NodeInformationContainer = styled.div`
 
 const PodsContainer = styled.div`
   flex-grow: 1;
+  margin: 0 30px;
 `;
 
 const InformationTitle = styled.h3`
