@@ -3,6 +3,9 @@
 {% from "metalk8s/map.jinja" import defaults with context %}
 {% set htpasswd_path = "/etc/kubernetes/htpasswd" %}
 
+include:
+  - metalk8s.kubeadm.init.certs.sa-deploy-pub-key
+
 Set up default basic auth htpasswd:
   file.managed:
     - name: {{ htpasswd_path }}
@@ -73,6 +76,8 @@ Create kube-apiserver Pod manifest:
           - path: {{ htpasswd_path }}
             type: File
             name: htpasswd
+    - require:
+      - file: Ensure SA pub key is present
 
 Make sure kube-apiserver container is up:
   module.wait:

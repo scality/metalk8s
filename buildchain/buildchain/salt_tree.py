@@ -117,6 +117,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubeadm/init/certs/init.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/installed.sls'),
     Path('salt/metalk8s/kubeadm/init/certs/sa.sls'),
+    Path('salt/metalk8s/kubeadm/init/certs/sa-deploy-pub-key.sls'),
 
     Path('salt/metalk8s/kubeadm/init/control-plane/apiserver.sls'),
     Path('salt/metalk8s/kubeadm/init/control-plane/controller-manager.sls'),
