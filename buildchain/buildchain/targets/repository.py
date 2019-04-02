@@ -35,8 +35,6 @@ import operator
 from pathlib import Path
 from typing import Any, List, Optional, Sequence
 
-import doit  # type: ignore
-
 from buildchain import config
 from buildchain import coreutils
 from buildchain import constants
@@ -134,7 +132,7 @@ class Repository(base.Target, base.CompositeTarget):
             'doc': 'Build the {} repository metadata.'.format(self.name),
             'title': lambda task: utils.title_with_target1('BUILD REPO', task),
             'targets': targets,
-            'uptodate': [doit.tools.run_once],
+            'uptodate': [True],
             'clean': [clean],
             # Prevent Docker from polluting our output.
             'verbosity': 0,
@@ -184,7 +182,7 @@ class Repository(base.Target, base.CompositeTarget):
             ),
             'title': mkdir['title'],
             'actions': mkdir['actions'],
-            'uptodate': [doit.tools.run_once],
+            'uptodate': [True],
             'targets': mkdir['targets'],
         })
         return task
@@ -200,7 +198,7 @@ class Repository(base.Target, base.CompositeTarget):
             ),
             'title': mkdir['title'],
             'actions': mkdir['actions'],
-            'uptodate': [doit.tools.run_once],
+            'uptodate': [True],
             'targets': mkdir['targets'],
         })
         task['task_dep'].append('{base}:{name}'.format(

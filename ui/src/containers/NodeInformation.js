@@ -122,7 +122,7 @@ class NodeInformation extends React.Component {
           <InformationMainValue>{this.props.node.name}</InformationMainValue>
         </InformationSpan>
 
-        <InformationTitle>Pods</InformationTitle>
+        <InformationTitle>{this.props.intl.messages.pods}</InformationTitle>
         <PodsContainer>
           <Table
             list={podsSortedList}

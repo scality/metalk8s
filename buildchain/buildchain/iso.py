@@ -78,12 +78,42 @@ def task_populate_iso() -> types.TaskDict:
         'task_dep': [
             '_iso_mkdir_root',
             '_iso_render_bootstrap',
+            '_iso_add_node_manifest',
             '_iso_generate_product_txt',
             'images',
             'salt_tree',
             'packaging',
         ],
     }
+
+def task__iso_mkdir_examples() -> types.TaskDict:
+    """Create ISO_ROOT/examples"""
+    return helper.Mkdir(
+        directory=constants.ISO_ROOT/"examples", task_dep=['_iso_mkdir_root']
+    ).task
+
+
+def task__iso_add_node_manifest() -> types.TaskDict:
+    """Copy the node announcement manifest to examples."""
+    dest_generic = constants.ISO_ROOT/'examples'/'new-node.yaml'
+    dest_vagrant = constants.ISO_ROOT/'examples'/'new-node_vagrant.yaml'
+    new_node_generic = [
+        constants.ROOT/'examples'/'new-node.yaml', dest_generic
+    ]
+    new_node_vagrant = [
+        constants.ROOT/'examples'/'new-node_vagrant.yaml', dest_vagrant
+    ]
+    return {
+         'title': lambda task: utils.title_with_target1('GENERATE', task),
+         'actions': [
+             (coreutils.cp_file, new_node_generic),
+             (coreutils.cp_file, new_node_vagrant)
+         ],
+         'targets': [dest_generic, dest_vagrant],
+         'task_dep': ['_iso_mkdir_examples'],
+         'uptodate': [True],
+         'clean': True,
+     }
 
 
 def task__iso_render_bootstrap() -> types.TaskDict:

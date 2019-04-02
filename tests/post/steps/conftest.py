@@ -48,6 +48,16 @@ def kubeconfig(kubeconfig_data, tmp_path):
     return str(kubeconfig_path)  # Need Python 3.6 to open() a Path object
 
 
+@pytest.fixture
+def version(request, host):
+    iso_root = request.config.getoption("--iso-root")
+    product_path = iso_root / "product.txt"
+    with host.sudo():
+        return host.check_output(
+            'source %s && echo $SHORT_VERSION', str(product_path)
+        )
+
+
 def _verify_kubeapi_service(host):
     """Verify that the kubeapi service answer"""
     with host.sudo():
