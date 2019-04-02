@@ -7,8 +7,6 @@
 from pathlib import Path
 from typing import Any
 
-import doit  # type: ignore
-
 from buildchain import types
 from buildchain import utils
 
@@ -36,7 +34,7 @@ class Mkdir(base.Target, base.AtomicTarget):
         task.update({
             'title': lambda task: utils.title_with_target1('MKDIR', task),
             'actions': [(self._run, [task['targets'][0]])],
-            'uptodate': [doit.tools.run_once],
+            'uptodate': [True],
         })
         return task
 
