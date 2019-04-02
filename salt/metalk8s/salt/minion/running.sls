@@ -1,6 +1,6 @@
 Restart salt-minion:
   cmd.wait:
-    - name: 'salt-call --local service.restart salt-minion'
+    - name: 'salt-call --local service.restart salt-minion > /dev/null'
     - bg: true
 
 Wait until salt-minion restarted:
