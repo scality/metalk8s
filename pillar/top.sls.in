@@ -2,3 +2,4 @@ metalk8s-@@VERSION:
   '*':
     - metalk8s
     - repositories
+    - mine_functions
