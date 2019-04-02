@@ -14,5 +14,6 @@
   "namespace": "Namespace",
   "start_time": "Date de début",
   "restart": "Redémarrage",
-  "information": "Information"  
+  "information": "Information",
+  "pods": "Pods"  
 }
