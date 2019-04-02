@@ -60,22 +60,21 @@ class NodeList extends React.Component {
     }
   }
 
-  sortNodes(nodes, sortBy, sortDirection) {
-    return memoizeOne((nodes, sortBy, sortDirection) => {
-      const sortedList = sortByArray(nodes, [
-        node => {
-          return typeof node[sortBy] === 'string'
-            ? node[sortBy].toLowerCase()
-            : node[sortBy];
-        }
-      ]);
-
-      if (sortDirection === 'DESC') {
-        sortedList.reverse();
+  sortNodes = memoizeOne((nodes, sortBy, sortDirection) => {
+    const sortedList = sortByArray(nodes, [
+      node => {
+        return typeof node[sortBy] === 'string'
+          ? node[sortBy].toLowerCase()
+          : node[sortBy];
       }
-      return sortedList;
-    })(nodes, sortBy, sortDirection);
-  }
+    ]);
+
+    if (sortDirection === 'DESC') {
+      sortedList.reverse();
+    }
+    return sortedList;
+  });
+
   render() {
     const nodesSortedList = this.sortNodes(
       this.props.nodes,
