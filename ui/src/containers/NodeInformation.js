@@ -90,22 +90,20 @@ class NodeInformation extends React.Component {
     this.setState({ sortBy, sortDirection });
   }
 
-  sortPods(pods, sortBy, sortDirection) {
-    return memoizeOne((pods, sortBy, sortDirection) => {
-      const sortedList = sortByArray(pods, [
-        pod => {
-          return typeof pod[sortBy] === 'string'
-            ? pod[sortBy].toLowerCase()
-            : pod[sortBy];
-        }
-      ]);
-
-      if (sortDirection === 'DESC') {
-        sortedList.reverse();
+  sortPods = memoizeOne((pods, sortBy, sortDirection) => {
+    const sortedList = sortByArray(pods, [
+      pod => {
+        return typeof pod[sortBy] === 'string'
+          ? pod[sortBy].toLowerCase()
+          : pod[sortBy];
       }
-      return sortedList;
-    })(pods, sortBy, sortDirection);
-  }
+    ]);
+
+    if (sortDirection === 'DESC') {
+      sortedList.reverse();
+    }
+    return sortedList;
+  });
 
   render() {
     const podsSortedList = this.sortPods(
@@ -166,9 +164,9 @@ const getNodeFromUrl = (state, props) => {
 const getPodsFromUrl = (state, props) => {
   const pods = state.app.pods.list || [];
   if (props && props.match && props.match.params && props.match.params.id) {
-    return pods.filter(pod => pod.nodeName === props.match.params.id) || {};
+    return pods.filter(pod => pod.nodeName === props.match.params.id) || [];
   } else {
-    return {};
+    return [];
   }
 };
 
