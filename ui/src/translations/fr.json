@@ -1,13 +1,19 @@
 {
   "product_name": "Plateforme MetalK8s",
   "name": "Nom",
+  "status": "Statut",
   "cpu_capacity": "Nombre de CPU",
   "memory": "Mémoire",
-  "pods_number": "Nombre de pods",
+  "creationDate": "Date de création",
   "username": "Nom d'utilisateur",
   "password": "Mot de passe",
   "submit": "Connexion",
   "about": "À propos",
   "nodes": "Nodes",
-  "log_out": "Déconnexion"
+  "log_out": "Déconnexion",
+  "namespace": "Namespace",
+  "start_time": "Date de début",
+  "restart": "Redémarrage",
+  "information": "Information",
+  "pods": "Pods"  
 }
