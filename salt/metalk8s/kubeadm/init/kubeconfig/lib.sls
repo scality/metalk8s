@@ -5,10 +5,18 @@
 {% macro kubeconfig(name, cert_info) %}
 
 {%- set ca_server = salt['mine.get']('*', 'kubernetes_ca_server').keys() %}
-{#- TODO: Not always use local machine as apiserver #}
+
+{%- set apiserver_addr = pillar.get('apiserver_addr') %}
+{%- if apiserver_addr %}
+{%- set apiserver = 'https://' ~ apiserver_addr ~ ':6443' %}
+{%- else %}
 {%- set apiserver = 'https://' ~ salt['network.ip_addrs'](cidr=networks.control_plane)[0] ~ ':6443' %}
+{%- endif %}
 
 {%- if ca_server %}
+
+include:
+  - metalk8s.kubeadm.init.certs.installed
 
 Create kubeconf file for {{ name }}:
   metalk8s_kubeconfig.managed:
@@ -21,6 +29,8 @@ Create kubeconf file for {{ name }}:
         {%- endfor %}
     - apiserver: {{ apiserver }}
     - cluster: {{ defaults.cluster }}
+    - require:
+      - pkg: Install m2crypto
 
 {%- else %}
 

@@ -167,18 +167,33 @@ sync_salt() {
 }
 
 orchestrate_bootstrap() {
-    ${SALT_CALL} --local --retcode-passthrough state.orchestrate metalk8s.orchestrate.bootstrap_without_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+    # TODO: FIX register IP
+    local cidr
+    local registry_ip
+    cidr=$(salt-call --local pillar.get networks:control_plane --out=txt | cut -f 2 -d ' ')
+    registry_ip=$(salt-call --local network.ip_addrs cidr="$cidr" --out=txt | sed "s/.*'\(\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\)'.*/\1/")
+    ${SALT_CALL} --local --retcode-passthrough state.orchestrate \
+        metalk8s.orchestrate.bootstrap_without_master \
+        saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION \
+        pillar="{'registry_ip': $registry_ip}"
     set_salt_command
     sync_salt
     # shellcheck disable=SC2086
-    ${SALT_MASTER_CALL} salt-run state.orchestrate metalk8s.orchestrate.bootstrap_with_master saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
+    ${SALT_MASTER_CALL} salt-run state.orchestrate \
+        metalk8s.orchestrate.bootstrap_with_master \
+        saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION \
+        pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)', 'registry_ip': $registry_ip}"
 }
 
 deploy_metalk8s_ui() {
+    bootstrap_id=$(cat /etc/salt/minion_id)
+    registry_ip=$(salt-call mine.get "$bootstrap_id" control_plane_ips --out txt | sed "s/.*'\(\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\)'.*/\1/")
     "$SALT_CALL" --retcode-passthrough state.apply \
         metalk8s.ui saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)'}"
+        pillar="{'bootstrap_id': $bootstrap_id, 'registry_ip': $registry_ip}"
 }
 
 
@@ -189,7 +204,7 @@ main() {
     configure_yum_repositories
     install_salt_minion
     configure_salt_minion_local_mode
-    
+
     orchestrate_bootstrap
     deploy_metalk8s_ui
 }

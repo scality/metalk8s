@@ -2,10 +2,8 @@
 Various functions to interact with :program:`containerd` using :command:`ctr`.
 '''
 
-import re
 import logging
-
-import salt.utils.path
+import re
 
 log = logging.getLogger(__name__)
 

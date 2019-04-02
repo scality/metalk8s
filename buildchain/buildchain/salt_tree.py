@@ -76,6 +76,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/orchestrate/bootstrap_without_master.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap_with_master.sls'),
     Path('salt/metalk8s/orchestrate/deploy_salt_minion_on_new_node.sls'),
+    Path('salt/metalk8s/orchestrate/worker_plane.sls'),
     Path('salt/metalk8s/bootstrap/addons.sls'),
     Path('salt/metalk8s/bootstrap/calico.sls'),
     Path('salt/metalk8s/bootstrap/certs/ca.sls'),
