@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Table } from 'core-ui';
 import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 
 import { fetchNodesAction } from '../ducks/app/nodes';
 
@@ -21,6 +21,10 @@ class NodeList extends React.Component {
           dataKey: 'name'
         },
         {
+          label: props.intl.messages.status,
+          dataKey: 'status'
+        },
+        {
           label: props.intl.messages.cpu_capacity,
           dataKey: 'cpu'
         },
@@ -29,8 +33,13 @@ class NodeList extends React.Component {
           dataKey: 'memory'
         },
         {
-          label: props.intl.messages.pods_number,
-          dataKey: 'pods'
+          label: props.intl.messages.creationDate,
+          dataKey: 'creationDate',
+          renderer: data => (
+            <span>
+              <FormattedDate value={data} /> <FormattedTime value={data} />
+            </span>
+          )
         }
       ]
     };
@@ -45,22 +54,27 @@ class NodeList extends React.Component {
     this.setState({ sortBy, sortDirection });
   }
 
-  sortNodes(nodes, sortBy, sortDirection) {
-    return memoizeOne((nodes, sortBy, sortDirection) => {
-      const sortedList = sortByArray(nodes, [
-        node => {
-          return typeof node[sortBy] === 'string'
-            ? node[sortBy].toLowerCase()
-            : node[sortBy];
-        }
-      ]);
-
-      if (sortDirection === 'DESC') {
-        sortedList.reverse();
-      }
-      return sortedList;
-    })(nodes, sortBy, sortDirection);
+  onRowClick(row) {
+    if (row.rowData && row.rowData.name) {
+      this.props.history.push(`/nodes/${row.rowData.name}`);
+    }
   }
+
+  sortNodes = memoizeOne((nodes, sortBy, sortDirection) => {
+    const sortedList = sortByArray(nodes, [
+      node => {
+        return typeof node[sortBy] === 'string'
+          ? node[sortBy].toLowerCase()
+          : node[sortBy];
+      }
+    ]);
+
+    if (sortDirection === 'DESC') {
+      sortedList.reverse();
+    }
+    return sortedList;
+  });
+
   render() {
     const nodesSortedList = this.sortNodes(
       this.props.nodes,
@@ -78,7 +92,7 @@ class NodeList extends React.Component {
         sortBy={this.state.sortBy}
         sortDirection={this.state.sortDirection}
         onSort={this.onSort}
-        onRowClick={() => {}}
+        onRowClick={item => this.onRowClick(item)}
       />
     );
   }
