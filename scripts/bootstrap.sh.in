@@ -153,6 +153,7 @@ set_salt_command() {
 sync_salt() {
     $SALT_MASTER_CALL salt '*' saltutil.sync_all refresh=True \
         saltenv=metalk8s-@@VERSION
+    $SALT_MASTER_CALL salt '*' mine.update
     local SALT_CONTAINER
     SALT_CONTAINER="$(crictl ps -q \
             --label io.kubernetes.pod.namespace=kube-system \
@@ -171,7 +172,7 @@ orchestrate_bootstrap() {
     local registry_ip
     cidr=$(salt-call --local pillar.get networks:control_plane --out=txt | cut -f 2 -d ' ')
     registry_ip=$(salt-call --local network.ip_addrs cidr="$cidr" --out=txt | sed "s/.*'\(\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\)'.*/\1/")
-    ${SALT_CALL} --local --retcode-passthrough --state-output=mixed state.orchestrate \
+    ${SALT_CALL} --local --retcode-passthrough state.orchestrate \
         metalk8s.orchestrate.bootstrap_without_master \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
