@@ -7,6 +7,7 @@ import { Layout as CoreUILayout } from 'core-ui';
 import { withRouter, Switch } from 'react-router-dom';
 
 import NodeList from './NodeList';
+import NodeInformation from './NodeInformation';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
@@ -54,7 +55,7 @@ class Layout extends Component {
             }) ||
             matchPath(this.props.history.location.pathname, {
               path: '/nodes',
-              exact: true,
+              exact: false,
               strict: true
             })
         }
@@ -80,6 +81,7 @@ class Layout extends Component {
       <ThemeProvider theme={this.props.theme}>
         <CoreUILayout sidebar={sidebar} navbar={navbar}>
           <Switch>
+            <PrivateRoute exact path="/nodes/:id" component={NodeInformation} />
             <PrivateRoute exact path="/nodes" component={NodeList} />
             <PrivateRoute exact path="/about" component={Welcome} />
             <PrivateRoute exact path="/" component={NodeList} />

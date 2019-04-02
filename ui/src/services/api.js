@@ -33,6 +33,14 @@ export async function getNodes() {
   }
 }
 
+export async function getPods() {
+  try {
+    return await coreV1.listPodForAllNamespaces();
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function fetchTheme() {
   try {
     return await axios.get(process.env.PUBLIC_URL + '/brand/theme.json');

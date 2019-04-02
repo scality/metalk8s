@@ -12,14 +12,20 @@ it('update the nodes state when fetchNodes', () => {
       items: [
         {
           metadata: {
-            name: 'boostrap'
+            name: 'boostrap',
+            creationTimestamp: '2019-29-03'
           },
           status: {
             capacity: {
               cpu: '2',
-              memory: '1000ki',
-              pods: '110'
-            }
+              memory: '1000ki'
+            },
+            conditions: [
+              {
+                type: 'Ready',
+                status: 'True'
+              }
+            ]
           }
         }
       ]
@@ -31,7 +37,8 @@ it('update the nodes state when fetchNodes', () => {
       name: 'boostrap',
       cpu: '2',
       memory: '1000 KiB',
-      pods: '110'
+      creationDate: '2019-29-03',
+      status: 'Ready'
     }
   ];
 
