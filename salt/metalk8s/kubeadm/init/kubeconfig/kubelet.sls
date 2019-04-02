@@ -2,9 +2,22 @@
 
 {%- set hostname = salt.network.get_hostname() %}
 
+{%- set ca_cert_b64 = salt['mine.get']('*', 'kubernetes_ca_server').values()[0] %}
+{%- set ca_cert = salt['hashutil.base64_b64decode'](ca_cert_b64) %}
+
 {%- set cert_info = {'CN': 'system:node:' ~ hostname, 'O': 'system:nodes'} %}
 
 {{ kubeconfig('kubelet', cert_info) }}
+
+Ensure CA cert is present:
+  file.managed:
+    - name: /etc/kubernetes/pki/ca.crt
+    - user: root
+    - group : root
+    - mode: 644
+    - makedirs: True
+    - dir_mode: 755
+    - contents: {{ ca_cert.splitlines() }}
 
 Configure kubelet service:
   file.managed:
@@ -28,3 +41,4 @@ Restart kubelet:
     - enable: True
     - watch:
       - file: Configure kubelet service
+      - file: Ensure CA cert is present
