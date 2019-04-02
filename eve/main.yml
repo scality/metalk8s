@@ -40,7 +40,7 @@ stages:
           name: Wait for Docker daemon to be ready
           command: |
             bash -c '
-            for i in {1..10}
+            for i in {1..150}
             do
               docker info &> /dev/null && exit
               sleep 2
