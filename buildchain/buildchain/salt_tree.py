@@ -52,6 +52,7 @@ def task__deploy_salt_tree() -> Iterator[types.TaskDict]:
 
 
 PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
+    Path('pillar/mine_functions.sls'),
     Path('pillar/repositories.sls'),
     targets.TemplateFile(
         task_name='top.sls',
@@ -161,8 +162,6 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/macro.sls'),
     Path('salt/metalk8s/map.jinja'),
 
-    Path('salt/metalk8s/mine/ips.sls'),
-
     Path('salt/metalk8s/python-kubernetes/init.sls'),
     Path('salt/metalk8s/python-kubernetes/installed.sls'),
     Path('salt/metalk8s/python-kubernetes/removed.sls'),
@@ -204,6 +203,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_modules/cri.py'),
     Path('salt/_modules/docker_registry.py'),
     Path('salt/_modules/kubernetes.py'),
+    Path('salt/_modules/metalk8s.py'),
 
     Path('salt/_pillar/metalk8s.py'),
 
