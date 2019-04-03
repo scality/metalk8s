@@ -1,6 +1,6 @@
 {%- from "metalk8s/map.jinja" import front_proxy with context %}
 
-{%- set front_proxy_ca_server = salt['mine.get']('*', 'kubernetes_front_proxy_ca_server') %}
+{%- set front_proxy_ca_server = salt['mine.get']('*', 'kubernetes_front_proxy_ca_b64') %}
 
 {#- Check if we have no CA server or only current minion as CA #}
 {%- if not front_proxy_ca_server or front_proxy_ca_server.keys() == [grains['id']] %}
@@ -42,7 +42,7 @@ Generate front proxy CA certificate:
 Advertise front proxy CA in the mine:
   module.wait:
     - mine.send:
-      - func: 'kubernetes_front_proxy_ca_server'
+      - func: kubernetes_front_proxy_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/front-proxy-ca.crt
     - watch:
