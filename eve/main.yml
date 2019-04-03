@@ -130,8 +130,8 @@ stages:
             apiVersion: metalk8s.scality.com/v1alpha1
             kind: BootstrapConfiguration
             networks:
-              controlPlane: 10.0.0.0/8
-              workloadPlane: 10.0.0.0/8
+              controlPlane: 10.100.0.0/16
+              workloadPlane: 10.100.0.0/16
             END
             EOF
       - ShellCommand:
