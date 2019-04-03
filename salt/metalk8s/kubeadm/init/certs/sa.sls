@@ -25,3 +25,12 @@ Store SA public key:
     - dir_mode: 755
     - require:
       - x509: Create SA private key
+
+Advertise SA pub key in the mine:
+  module.wait:
+    - mine.send:
+      - func: kubernetes_sa_pub_key_b64
+      - mine_function: hashutil.base64_encodefile
+      - /etc/kubernetes/pki/sa.pub
+    - watch:
+      - file: Store SA public key
