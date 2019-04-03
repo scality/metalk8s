@@ -1,4 +1,4 @@
-{% set hostname = salt['network.get_hostname']() %}
+{% set hostname = pillar.get('mark_control_plane_hostname', salt['network.get_hostname']()) %}
 
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
