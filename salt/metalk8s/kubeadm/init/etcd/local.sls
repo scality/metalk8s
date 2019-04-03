@@ -10,7 +10,7 @@
 
 {% set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
 
-{%- set ca_cert = salt['mine.get']('*', 'kubernetes_etcd_ca_b64').values()[0] %}
+{%- set ca_cert = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_etcd_ca_b64')[pillar['metalk8s']['ca']['minion']] %}
 {%- set ca_cert_b64 = salt['hashutil.base64_b64decode'](ca_cert) %}
 
 {#- Get the list of existing etcd node. #}
