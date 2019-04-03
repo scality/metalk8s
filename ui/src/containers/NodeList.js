@@ -1,9 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Table } from 'core-ui';
+import { withRouter } from 'react-router-dom';
 import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
+import { Table, Button } from 'core-ui';
 
 import { fetchNodesAction } from '../ducks/app/nodes';
 
@@ -83,17 +84,27 @@ class NodeList extends React.Component {
     );
 
     return (
-      <Table
-        list={nodesSortedList}
-        columns={this.state.columns}
-        disableHeader={false}
-        headerHeight={40}
-        rowHeight={40}
-        sortBy={this.state.sortBy}
-        sortDirection={this.state.sortDirection}
-        onSort={this.onSort}
-        onRowClick={item => this.onRowClick(item)}
-      />
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div>
+          <Button
+            text="Create New Node"
+            onClick={() => this.props.history.push('/nodes/create')}
+          />
+        </div>
+        <div style={{ flexGrow: 1 }}>
+          <Table
+            list={nodesSortedList}
+            columns={this.state.columns}
+            disableHeader={false}
+            headerHeight={40}
+            rowHeight={40}
+            sortBy={this.state.sortBy}
+            sortDirection={this.state.sortDirection}
+            onSort={this.onSort}
+            onRowClick={item => this.onRowClick(item)}
+          />
+        </div>
+      </div>
     );
   }
 }
@@ -110,8 +121,10 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(NodeList)
+  withRouter(
+    connect(
+      mapStateToProps,
+      mapDispatchToProps
+    )(NodeList)
+  )
 );
