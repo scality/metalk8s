@@ -1,6 +1,12 @@
 {%- from "metalk8s/registry/macro.sls" import kubernetes_image with context -%}
 {% from "metalk8s/map.jinja" import networks with context %}
+{% from "metalk8s/map.jinja" import defaults with context %}
 {% set htpasswd_path = "/etc/kubernetes/htpasswd" %}
+
+include:
+  - metalk8s.kubeadm.init.certs.sa-deploy-pub-key
+  - metalk8s.kubeadm.init.certs.front-proxy-deploy-ca-cert
+  - metalk8s.kubeadm.init.certs.etcd-deploy-ca-cert
 
 Set up default basic auth htpasswd:
   file.managed:
@@ -44,7 +50,7 @@ Create kube-apiserver Pod manifest:
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
           - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
-          - --etcd-servers=https://127.0.0.1:2379
+          - --etcd-servers=https://{{ defaults.registry_ip }}:2379
           - --insecure-port=0
           - --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt
           - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
@@ -72,6 +78,10 @@ Create kube-apiserver Pod manifest:
           - path: {{ htpasswd_path }}
             type: File
             name: htpasswd
+    - require:
+      - file: Ensure SA pub key is present
+      - file: Ensure front-proxy CA cert is present
+      - file: Ensure etcd CA cert is present
 
 Make sure kube-apiserver container is up:
   module.wait:
