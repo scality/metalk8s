@@ -14,6 +14,13 @@
   "namespace": "Namespace",
   "start_time": "Start Time",
   "restart": "Restart",
-  "information": "Information",
-  "pods": "Pods"
+  "node_information": "Node Information",
+  "node_configuration": "Node Configuration",
+  "node_configuration_step1": "Node Registered",
+  "node_configuration_step2": "Deploy Salt Minion on node",
+  "node_configuration_step3": "Add node to Workload Plane",
+  "node_configuration_step4": "Add node to Control Plane",
+  "node_configuration_step5": "Extend etcd cluster to node",
+  "pods": "Pods",
+  "apply": "Apply"
 }
