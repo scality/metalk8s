@@ -35,6 +35,7 @@ from buildchain import coreutils
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
+from buildchain.docker_command import DockerRun
 
 
 def task_packaging() -> types.TaskDict:
@@ -88,22 +89,24 @@ def task__download_packages() -> types.TaskDict:
 
     pkg_list = constants.ROOT/'packages/packages.list'
     packages = _load_package_list(pkg_list)
-    cmd = list(constants.BUILDER_BASIC_CMD)
-    cmd.extend([
-        '--env', 'RELEASEVER=7', \
-        '--mount', 'type=bind,source={},destination=/install_root'.format(
-            constants.PKG_ROOT
+
+    mounts = [
+        DockerRun.bind_mount(
+            source=constants.PKG_ROOT, target='/install_root'
         ),
-        '--mount', 'type=bind,source={},destination=/repositories'.format(
-            constants.REPO_ROOT
+        DockerRun.bind_mount(
+            source=constants.REPO_ROOT, target='/repositories'
         ),
-        BUILDER.tag,
-        '/entrypoint.sh', 'download_packages'
-    ])
-    cmd.extend(packages)
+    ]
+    dl_packages_callable = DockerRun(
+        command=['/entrypoint.sh', 'download_packages', *packages],
+        builder=BUILDER,
+        mounts=mounts,
+        environment={'RELEASEVER': 7}
+    )
     return {
         'title': lambda task: utils.title_with_target1('GET PKGS', task),
-        'actions': [cmd],
+        'actions': [dl_packages_callable],
         'targets': [constants.PKG_ROOT/'var'],
         'file_dep': [BUILDER.destination, pkg_list],
         'task_dep': ['_package_mkdir_root', '_package_mkdir_iso_root'],

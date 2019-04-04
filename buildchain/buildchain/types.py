@@ -28,3 +28,6 @@ TaskDict = Dict[str, Any]
 
 # A doit task error
 TaskError = doit.exceptions.TaskError
+
+# A docker mount
+Mount = docker.types.Mount

@@ -28,6 +28,7 @@ py
 readonly
 rpmspec
 repo
+rpmlint
 scality
 sls
 timestamp
