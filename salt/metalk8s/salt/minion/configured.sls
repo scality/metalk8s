@@ -16,5 +16,6 @@ Configure salt minion:
     - backup: false
     - defaults:
       master_hostname: {{ defaults.salt.master.host }}
+      minion_id: {{ grains.id }}
     - watch_in:
       - cmd: Restart salt-minion
