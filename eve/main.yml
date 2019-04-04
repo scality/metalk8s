@@ -161,6 +161,7 @@ stages:
             echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys &&
             sleep 3600
           doStepIf: false
+          alwaysRun: true
 
   multiple-nodes:
     worker:

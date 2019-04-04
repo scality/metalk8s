@@ -5,7 +5,7 @@ yum install -y epel-release
 PACKAGES=(
     curl
     git
-    python34-pip
+    python36-pip
     unzip
 )
 
@@ -13,7 +13,7 @@ yum install -y "${PACKAGES[@]}"
 
 yum clean all
 
-pip3 install tox
+sudo -u eve pip3.6 install --user tox
 
 TERRAFORM_VERSION=0.11.13
 
