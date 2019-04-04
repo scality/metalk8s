@@ -20,10 +20,10 @@ from typing import Any, Dict, List, Match, Optional, Union
 
 from doit.exceptions import TaskError # type: ignore
 
-from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
 from buildchain import types
+from buildchain.docker_command import DockerBuild
 
 from . import image
 
@@ -182,26 +182,23 @@ class LocalImage(image.ContainerImage):
 
     def _build_actions(self) -> List[types.Action]:
         """Build a container image locally."""
-        actions: List[types.Action] = []
+        actions: List[types.Action] = [self.check_dockerfile_dependencies]
 
-        actions.append((self.check_dockerfile_dependencies, [], {}))
-
-        build_cmd = [
-            config.DOCKER, 'build',
-            '--tag', self.tag,
-            '--file', self.dockerfile,
-        ]
-        for arg, value in self.build_args.items():
-            build_cmd.extend(['--build-arg', '{}={}'.format(arg, value)])
-        build_cmd.append(self.dockerfile.parent)
-        actions.append(build_cmd)
+        builder_callable = DockerBuild(
+            tag=self.tag,
+            path=self.dockerfile.parent,
+            dockerfile=self.dockerfile,
+            buildargs=self.build_args
+        )
+        actions.append(builder_callable)
 
         # If a destination is defined, let's save the image there.
         if self.save_on_disk:
             filepath = self.uncompressed_filename
-            actions.append([
-                config.DOCKER, 'save', self.tag, '-o', str(filepath)
-            ])
+            save_callable = docker_command.DockerSave(
+                tag=self.tag, save_path=filepath
+            )
+            actions.append(save_callable)
             actions.append((coreutils.gzip, [filepath], {}))
         else:
             # If we don't save the image, at least we touch a file
