@@ -4,6 +4,15 @@
 #
 #    pip-compile --output-file buildchain/requirements-Darwin.txt buildchain/requirements.in
 #
+certifi==2019.3.9         # via requests
+chardet==3.0.4            # via requests
 cloudpickle==0.8.0        # via doit
+docker-pycreds==0.4.0     # via docker
+docker==3.7.2
 doit==0.31.1
+idna==2.8                 # via requests
 macfsevents==0.8.1        # via doit
+requests==2.21.0          # via docker
+six==1.12.0               # via docker, docker-pycreds, websocket-client
+urllib3==1.24.1           # via requests
+websocket-client==0.56.0  # via docker
