@@ -122,6 +122,9 @@ install_salt_minion() {
 }
 
 configure_salt_minion_local_mode() {
+    "$SALT_CALL" --file-root=/srv/scality/metalk8s-@@VERSION/salt \
+        --local --retcode-passthrough saltutil.sync_all
+
     cat > "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}" << EOF
 file_roots:
   metalk8s-@@VERSION:
@@ -139,9 +142,6 @@ ext_pillar:
 
 retry_dns_count: 3
 EOF
-
-  "$SALT_CALL" --local --retcode-passthrough saltutil.sync_all \
-      saltenv=metalk8s-@@VERSION
 }
 
 set_salt_command() {
