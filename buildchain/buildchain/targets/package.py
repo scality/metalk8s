@@ -143,10 +143,36 @@ class Package(base.Target, base.CompositeTarget):
 
     def generate_meta(self) -> types.TaskDict:
         """Generate the .meta file for the package."""
+        container_spec = '/rpmbuild/SPECS/{}'.format(self.spec.name)
+        container_meta = '/rpmbuild/META/{}'.format(self.spec.name)
+        mounts = [
+            DockerRun.ENTRYPOINT_MOUNT,
+            DockerRun.bind_ro_mount(source=self.spec, target=container_spec),
+            DockerRun.bind_mount(
+                source=self.meta.parent, target=container_meta
+            )
+        ]
+        command = ['/entrypoint.sh', 'buildmeta']
+        rpmspec_config = {
+            'hostname': 'build',
+            'read_only': True,
+            'remove': True
+        }
+        buildmeta_callable = DockerRun(
+            command=command,
+            builder=self.builder,
+            environment={
+                'SPEC': container_spec,
+                'META_DIR': container_meta,
+                'META_NAME': self.meta.name
+            },
+            run_config=rpmspec_config,
+            mounts=mounts
+        )
         task = self.basic_task
         task.update({
             'name': 'pkg_rpmspec',
-            'actions': [self._rpmspec],
+            'actions': [buildmeta_callable],
             'doc': 'Generate {}.meta'.format(self.name),
             'title': lambda task: utils.title_with_target1('RPMSPEC', task),
             'targets': [self.meta],
@@ -207,45 +233,6 @@ class Package(base.Target, base.CompositeTarget):
         task['task_dep'].append('{}:{}'.format(self.basename,
                                                self.MKDIR_TASK_NAME))
         return task
-
-    def _rpmspec(self) -> None:
-        """Run the `rpmspec` command inside a container and save the output."""
-        container_spec = '/rpmbuild/SPECS/{}'.format(self.spec.name)
-        mount_string = 'type=bind,source={src},destination={dst},ro'.format(
-            src=self.spec, dst=container_spec
-        )
-        rpmspec_cmd = [
-            config.DOCKER, 'run',
-            '--hostname', 'build',
-            '--mount', mount_string,
-            '--read-only',
-            '--rm',
-            self.builder.tag,
-            'su', '-l', 'build', '-c',
-            'rpmspec -P {}'.format(shlex.quote(container_spec)),
-        ]
-        stdout = subprocess.check_output(rpmspec_cmd)
-        with open(self.meta, 'w', encoding='utf-8') as fp:
-            fp.write(stdout.decode('utf-8'))
-
-    def _buildsrpm_cmd(self) -> List[str]:
-        """Return the command to run `buildsrpm` inside a container."""
-        extra_env = {
-            'SPEC': self.spec.name,
-            'SRPM': self.srpm.name,
-            'SOURCES': ' '.join(map(operator.attrgetter('name'), self.sources)),
-        }
-        cmd = list(constants.BUILDER_BASIC_CMD)
-        for var, value in extra_env.items():
-            cmd.extend(['--env', '{}={}'.format(var, value)])
-        for mount_string in self._get_buildsrpm_mounts(self.srpm.parent):
-            cmd.extend(['--mount', mount_string])
-        cmd.extend([
-            '--read-only',
-            self.builder.tag,
-            '/entrypoint.sh', 'buildsrpm'
-        ])
-        return cmd
 
     def _download_sources(self) -> None:
         """Return a list of actions to download the source files."""
