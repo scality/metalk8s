@@ -5,15 +5,18 @@ Module for handling MetalK8s specific calls.
 import logging
 
 from salt.exceptions import CommandExecutionError
+from salt.utils.decorators import depends
+from salt.exceptions import CommandExecutionError
 
+KUBERNETES_PRESENT = False
 try:
     import kubernetes.client
     import kubernetes.config
     from kubernetes.client.rest import ApiException
     from kubernetes.stream import stream as k8s_stream
-    HAS_DEPS = True
+    KUBERNETES_PRESENT = True
 except ImportError:
-    HAS_DEPS = False
+    pass
 
 
 log = logging.getLogger(__name__)
@@ -22,14 +25,11 @@ __virtualname__ = 'metalk8s'
 
 
 def __virtual__():
-    '''
-    Check dependencies
-    '''
-    if HAS_DEPS:
-        return __virtualname__
-    else:
-        return False, 'Unable to load the MetalK8s module: '\
-            'Kubernetes Python client library is missing.'
+    return __virtualname__
+
+
+def deps_missing(*args, **kwargs):
+    raise CommandExecutionError("Kubernetes python client is not installed")
 
 
 def get_control_plane_ips():
@@ -70,6 +70,7 @@ def get_etcd_endpoint():
         )
 
 
+@depends('KUBERNETES_PRESENT', fallback_function=deps_missing)
 def add_etcd_node(host, endpoint):
     '''Add a new `etcd` node into the `etcd` cluster.
 
