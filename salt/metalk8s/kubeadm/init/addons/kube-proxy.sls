@@ -8,7 +8,6 @@
 
 {#- TODO: Not always use local machine as apiserver #}
 {%- set apiserver = 'https://' ~ salt['network.ip_addrs'](cidr=networks.control_plane)[0] ~ ':6443' %}
-{% set host_name = salt.network.get_hostname() %}
 
 Deploy kube-proxy (ServiceAccount):
   kubernetes.serviceaccount_present:
@@ -62,7 +61,7 @@ Deploy kube-proxy (ConfigMap):
             tcpEstablishedTimeout: 24h0m0s
           enableProfiling: false
           healthzBindAddress: 0.0.0.0:10256
-          hostnameOverride: {{ host_name }}
+          hostnameOverride: ""
           iptables:
             masqueradeAll: false
             masqueradeBit: 14
@@ -129,6 +128,13 @@ Deploy kube-proxy (DaemonSet):
             - command:
               - /usr/local/bin/kube-proxy
               - --config=/var/lib/kube-proxy/config.conf
+              - --hostname-override=$(NODE_NAME)
+              env:
+              - name: NODE_NAME
+                valueFrom:
+                  fieldRef:
+                    apiVersion: v1
+                    fieldPath: spec.nodeName
               image: {{ image }}
               imagePullPolicy: IfNotPresent
               name: kube-proxy
