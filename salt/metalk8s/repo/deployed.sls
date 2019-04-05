@@ -41,11 +41,9 @@ Install package repositories manifest:
       - file: Generate package repositories nginx configuration
 
 Ensure package repositories container is up:
-  cmd.run:
-    - name: "[[ -n $(crictl ps --state RUNNING --label io.kubernetes.container.name='{{ package_repositories_name }}' -q) ]]"
-    - retry:
-        attempts: 10
-        interval: 3
-        until: True
+  module.wait:
+    - cri.wait_container:
+      - name: {{ package_repositories_name }}
+      - state: running
     - require:
       - file: Install package repositories manifest
