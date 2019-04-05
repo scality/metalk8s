@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Table } from 'core-ui';
+import { Table, Button } from 'core-ui';
 import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
@@ -22,7 +22,25 @@ class NodeList extends React.Component {
         },
         {
           label: props.intl.messages.status,
-          dataKey: 'status'
+          dataKey: 'status',
+          renderer: data => {
+            if (data !== 'Ready') {
+              return (
+                <span>
+                  <span style={{ paddingRight: '5px' }}>{data}</span>
+                  <Button
+                    icon={<i className="fas fa-layer-group" />}
+                    size="smaller"
+                    onClick={event => {
+                      console.log('deploy');
+                      event.stopPropagation();
+                    }}
+                  />
+                </span>
+              );
+            }
+            return data;
+          }
         },
         {
           label: props.intl.messages.cpu_capacity,
