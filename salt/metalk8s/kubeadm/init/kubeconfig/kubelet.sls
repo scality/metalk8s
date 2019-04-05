@@ -42,3 +42,4 @@ Restart kubelet:
     - watch:
       - file: Configure kubelet service
       - file: Ensure CA cert is present
+      - metalk8s_kubeconfig: Create kubeconf file for kubelet
