@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Config, Core_v1Api } from '@kubernetes/client-node';
+import { pathToFileURL } from 'url';
 
 let config, coreV1;
 
@@ -52,6 +53,28 @@ export async function fetchTheme() {
 export async function fetchConfig() {
   try {
     return await axios.get(process.env.PUBLIC_URL + '/config.json');
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createNode(payload) {
+  const body = {
+    metadata: {
+      name: payload.name,
+      annotations: {
+        'metalk8s.scality.com/ssh-user': payload.ssh_user,
+        'metalk8s.scality.com/ssh-port': payload.ssh_port,
+        'metalk8s.scality.com/ssh-host': payload.hostName_ip,
+        'metalk8s.scality.com/ssh-key-path': payload.ssh_key_path,
+        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString(),
+        'metalk8s.scality.com/workload-plane': payload.workload_plane.toString(),
+        'metalk8s.scality.com/control-plane': payload.control_plane.toString()
+      }
+    }
+  };
+  try {
+    return await coreV1.createNode(body);
   } catch (error) {
     return { error };
   }

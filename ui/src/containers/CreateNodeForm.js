@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { DebounceInput } from 'react-debounce-input';
 import classnames from 'classnames';
 import styled from 'styled-components';
@@ -6,6 +7,7 @@ import { Formik, Form } from 'formik';
 import { Button } from 'core-ui';
 import { gray, fontSize, padding } from 'core-ui/dist/style/theme';
 import * as Yup from 'yup';
+import { createNodeAction } from '../ducks/app/nodes';
 
 const CreateNodeFormContainer = styled.div`
   input {
@@ -79,7 +81,9 @@ const initialValues = {
   hostName_ip: '',
   ssh_port: '',
   ssh_key_path: '',
-  checkbox: false
+  sudo_required: false,
+  workload_plane: true,
+  control_plane: false
 };
 
 const validationSchema = Yup.object().shape({
@@ -88,10 +92,19 @@ const validationSchema = Yup.object().shape({
   hostName_ip: Yup.string().required(),
   ssh_port: Yup.string().required(),
   ssh_key_path: Yup.string().required(),
-  checkbox: Yup.boolean().required()
+  sudo_required: Yup.boolean().required()
 });
 
 class CreateNodeForm extends React.Component {
+  constructor() {
+    super();
+
+    this.createNode = this.createNode.bind(this);
+  }
+  createNode(values, { setSubmitting }) {
+    this.props.createNode(values);
+  }
+
   render() {
     return (
       <div>
@@ -101,7 +114,7 @@ class CreateNodeForm extends React.Component {
           validationSchema={validationSchema}
           validateOnBlur={false}
           validateOnChange={false}
-          onSubmit={() => console.log('Creating Node Form')}
+          onSubmit={this.createNode}
         >
           {props => {
             const {
@@ -151,7 +164,22 @@ class CreateNodeForm extends React.Component {
                   value={values.sudo_required}
                   onChange={handleChange}
                 />
-                <Button text="Create" type="submit" disabled={isSubmitting} />
+                <TextInput
+                  name="workload_plane"
+                  label={'Workload Plane'}
+                  type="checkbox"
+                  checked={true}
+                  disabled
+                  onChange={handleChange}
+                />
+                <TextInput
+                  name="controle_plane"
+                  type="checkbox"
+                  label={'Control Plane'}
+                  value={values.control_plane}
+                  onChange={handleChange}
+                />
+                <Button text="Create" type="submit" />
               </Form>
             );
           }}
@@ -161,4 +189,13 @@ class CreateNodeForm extends React.Component {
   }
 }
 
-export default CreateNodeForm;
+const mapDispatchToProps = dispatch => {
+  return {
+    createNode: body => dispatch(createNodeAction(body))
+  };
+};
+
+export default connect(
+  null,
+  mapDispatchToProps
+)(CreateNodeForm);
