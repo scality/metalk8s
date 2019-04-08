@@ -46,5 +46,7 @@ Create metalk8s-ui ConfigMap:
     - data:
         config.json: |
           {"url": "https://{{ control_plane_ip }}:6443"}
+        theme.json: |
+          {"brand": {"primary": "#21157A"}}
   require:
     - pkg: Install Python Kubernetes client
