@@ -5,7 +5,7 @@ import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 
-import { fetchNodesAction } from '../ducks/app/nodes';
+import { fetchNodesAction, deleteNodeAction } from '../ducks/app/nodes';
 
 class NodeList extends React.Component {
   constructor(props) {
@@ -82,9 +82,24 @@ class NodeList extends React.Component {
       this.state.sortDirection
     );
 
+    const nodesWithActions = nodesSortedList.map(node => {
+      return {
+        ...node,
+        actions:
+          node.status === 'Unknown'
+            ? [
+                {
+                  label: this.props.intl.messages.remove,
+                  onClick: this.props.deleteNode
+                }
+              ]
+            : null
+      };
+    });
+
     return (
       <Table
-        list={nodesSortedList}
+        list={nodesWithActions}
         columns={this.state.columns}
         disableHeader={false}
         headerHeight={40}
@@ -105,7 +120,8 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchNodes: () => dispatch(fetchNodesAction())
+    fetchNodes: () => dispatch(fetchNodesAction()),
+    deleteNode: node => dispatch(deleteNodeAction(node))
   };
 };
 

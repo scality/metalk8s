@@ -33,6 +33,14 @@ export async function getNodes() {
   }
 }
 
+export async function deleteNode(node) {
+  try {
+    return await coreV1.deleteNode(node);
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function getPods() {
   try {
     return await coreV1.listPodForAllNamespaces();

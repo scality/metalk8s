@@ -15,5 +15,6 @@
   "start_time": "Start Time",
   "restart": "Restart",
   "information": "Information",
-  "pods": "Pods"
+  "pods": "Pods",
+  "remove": "Remove"
 }

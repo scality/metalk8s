@@ -15,5 +15,6 @@
   "start_time": "Date de début",
   "restart": "Redémarrage",
   "information": "Information",
-  "pods": "Pods"  
+  "pods": "Pods",
+  "remove": "Supprimer"
 }
