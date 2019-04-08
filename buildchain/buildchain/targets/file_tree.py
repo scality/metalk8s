@@ -110,7 +110,7 @@ class FileTree(base.Target, base.CompositeTarget):
         """Return a task that create a directory hierarchy."""
         def mkdirs(targets: Sequence[str]) -> None:
             for directory in reversed(targets):
-                Path(directory).mkdir()
+                Path(directory).mkdir(exist_ok=True)
 
         task = self.basic_task
         task.update({
