@@ -1589,7 +1589,7 @@ def __dict_to_service_spec(spec):
                 port_kwargs = {}
                 if isinstance(port, dict):
                     for port_key, port_value in iteritems(port):
-                        if port_key in ("name", "port", "protocol"):
+                        if port_key in ("name", "port", "protocol", "node_port", "target_port"):
                             port_kwargs[port_key] = port_value
                 else:
                     port_kwargs = {"port": port}
