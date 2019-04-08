@@ -86,7 +86,7 @@ class NodeList extends React.Component {
       return {
         ...node,
         actions:
-          node.status === 'Unknown'
+          !node.status || node.status === 'Unknown'
             ? [
                 {
                   label: this.props.intl.messages.remove,
