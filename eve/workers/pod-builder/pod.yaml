@@ -34,12 +34,8 @@ spec:
       securityContext:
         privileged: true
       volumeMounts:
-        - name: docker-storage
-          mountPath: /var/lib/docker
         - name: worker-workspace
           mountPath: /home/eve/workspace
   volumes:
-    - name: docker-storage
-      emptyDir: {}
     - name: worker-workspace
       emptyDir: {}
