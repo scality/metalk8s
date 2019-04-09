@@ -1,7 +1,7 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
 include:
-  - .installed
+  - metalk8s.internal.m2crypto
 
 Create kube-apiserver kubelet client private key:
   x509.private_key_managed:

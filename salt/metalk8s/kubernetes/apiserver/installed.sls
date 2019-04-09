@@ -1,15 +1,16 @@
-{%- from "metalk8s/registry/macro.sls" import kubernetes_image, build_image_name with context -%}
-{% from "metalk8s/map.jinja" import networks with context %}
-{% from "metalk8s/map.jinja" import defaults with context %}
-{% set htpasswd_path = "/etc/kubernetes/htpasswd" %}
+{%- from "metalk8s/registry/macro.sls" import kubernetes_image, build_image_name with context %}
+{%- from "metalk8s/map.jinja" import networks with context %}
+{%- from "metalk8s/map.jinja" import defaults with context %}
 
-{% set keepalived_image = "keepalived" %}
-{% set keepalived_version = "1.3.5-8.el7_6-1" %}
+{%- set htpasswd_path = "/etc/kubernetes/htpasswd" %}
+
+{%- set keepalived_image = "keepalived" %}
+{%- set keepalived_version = "1.3.5-8.el7_6-1" %}
 
 include:
-  - metalk8s.kubeadm.init.certs.sa-deploy-pub-key
-  - metalk8s.kubeadm.init.certs.front-proxy-deploy-ca-cert
-  - metalk8s.kubeadm.init.certs.etcd-deploy-ca-cert
+  - metalk8s.kubernetes.ca.advertised
+  - metalk8s.kubernetes.sa.advertised
+  - .certs
 
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
 Create keepalived check script:
@@ -70,18 +71,19 @@ Create keepalived configuration file generator:
 Set up default basic auth htpasswd:
   file.managed:
     - name: {{ htpasswd_path }}
-    - source: salt://metalk8s/kubeadm/init/control-plane/files/htpasswd
+    - source: salt://{{ slspath }}/files/htpasswd
     - user: root
     - group: root
     - mode: 600
     - makedirs: True
     - dir_mode: 750
 
-{% set host = grains['metalk8s']['control_plane_ip'] %}
+{%- set host = grains['metalk8s']['control_plane_ip'] %}
+
 Create kube-apiserver Pod manifest:
   file.managed:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
-    - source: salt://metalk8s/kubeadm/init/control-plane/files/manifest.yaml
+    - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
     - template: jinja
     - user: root
     - group: root
@@ -192,9 +194,11 @@ Create kube-apiserver Pod manifest:
               medium: Memory
 {%- endif %}
     - require:
-      - file: Ensure SA pub key is present
-      - file: Ensure front-proxy CA cert is present
+      - file: Ensure kubernetes CA cert is present
       - file: Ensure etcd CA cert is present
+      - file: Ensure front-proxy CA cert is present
+      - file: Ensure SA pub key is present
+      - file: Set up default basic auth htpasswd
 
 Make sure kube-apiserver container is up:
   module.wait:
