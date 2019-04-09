@@ -1,9 +1,12 @@
 {%- from "metalk8s/map.jinja" import kubelet with context %}
 
+include:
+  - .running
+
 Create kubelet service environment file:
   file.managed:
     - name: "/var/lib/kubelet/kubeadm-flags.env"
-    - source: salt://metalk8s/kubeadm/init/kubelet-start/files/kubeadm.env
+    - source: salt://{{ slspath }}/files/kubeadm.env
     - template: jinja
     - user: root
     - group: root
@@ -13,6 +16,10 @@ Create kubelet service environment file:
     - context:
         options: {{ kubelet.service.options }}
         node_ip: {{ grains['metalk8s']['control_plane_ip'] }}
+    - require:
+      - pkg: Install kubelet
+    - watch_in:
+      - service: Ensure kubelet running
 
 Create kubelet config file:
   file.serialize:
@@ -97,11 +104,15 @@ Create kubelet config file:
         streamingConnectionIdleTimeout: 4h0m0s
         syncFrequency: 1m0s
         volumeStatsAggPeriod: 1m0s
+    - require:
+      - pkg: Install kubelet
+    - watch_in:
+      - service: Ensure kubelet running
 
 Configure kubelet service as standalone:
   file.managed:
     - name: /etc/systemd/system/kubelet.service.d/09-standalone.conf
-    - source: salt://metalk8s/kubeadm/init/kubelet-start/files/service-kubelet-{{ grains['init'] }}.conf
+    - source: salt://{{ slspath }}/files/service-standalone-{{ grains['init'] }}.conf
     - template: jinja
     - user: root
     - group: root
@@ -114,12 +125,5 @@ Configure kubelet service as standalone:
     - require:
       - file: Create kubelet service environment file
       - file: Create kubelet config file
-
-Start and enable kubelet:
-  service.running:
-    - name: kubelet
-    - enable: True
-    - watch:
-      - file: Create kubelet service environment file
-      - file: Create kubelet config file
-      - file: Configure kubelet service as standalone
+    - watch_in:
+      - service: Ensure kubelet running

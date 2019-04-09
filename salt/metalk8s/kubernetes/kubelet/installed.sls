@@ -4,7 +4,7 @@
 include:
   - metalk8s.repo
 {%- if kubelet.container_engine %}
-  - metalk8s.{{ kubelet.container_engine }}
+  - metalk8s.container-engine.{{ kubelet.container_engine }}
 {%- endif %}
 
 Install and configure cri-tools:
