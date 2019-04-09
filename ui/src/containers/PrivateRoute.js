@@ -1,21 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Route } from 'react-router-dom';
+import { withRouter, Route, Redirect } from 'react-router-dom';
 
 class PrivateRoute extends Component {
-  state = {};
-  static getDerivedStateFromProps(props) {
-    if (!props.authenticated) {
-      props.history.push('/login');
-    }
-    return null;
-  }
   render() {
-    const { component: Component, authenticated, ...rest } = this.props;
-    if (authenticated) {
+    let { component: Component, ...rest } = this.props;
+    if (this.props.authenticated) {
       return <Route {...rest} render={props => <Component {...props} />} />;
+    } else {
+      return <Redirect to="/login" />;
     }
-    return null;
   }
 }
 
