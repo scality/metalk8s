@@ -1,10 +1,5 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
 
-{%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_b64') %}
-
-{#- Check if we have no etcd CA server or if it is the current minion #}
-{%- if not etcd_ca_server or etcd_ca_server.keys() == [grains['id']] %}
-
 include:
   - .installed
   - metalk8s.salt.minion.running
@@ -38,8 +33,7 @@ Generate etcd CA certificate:
     - require:
       - x509: Create etcd CA private key
 
-# TODO: Find a better way to advertise CA server
-Advertise etcd CA in the mine:
+Advertise etcd CA certificate in the mine:
   module.wait:
     - mine.send:
       - func: kubernetes_etcd_ca_b64
@@ -75,10 +69,3 @@ Create etcd CA salt signing policies:
             - days_valid: {{ etcd.ca.signing_policy.days_valid }}
     - watch_in:
       - cmd: Restart salt-minion
-
-{%- else %}
-
-{{ etcd_ca_server.keys()|join(', ') }} already configured as Kubernetes etcd CA server, only one can be declared:
-  test.fail_without_changes: []
-
-{%- endif %}

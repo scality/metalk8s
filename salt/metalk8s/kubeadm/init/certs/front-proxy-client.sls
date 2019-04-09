@@ -1,8 +1,5 @@
 {%- from "metalk8s/map.jinja" import front_proxy with context %}
 
-{%- set front_proxy_ca_server = salt['mine.get']('*', 'kubernetes_front_proxy_ca_b64').keys() %}
-{%- if front_proxy_ca_server %}
-
 include:
   - .installed
 
@@ -23,7 +20,7 @@ Generate front proxy client certificate:
   x509.certificate_managed:
     - name: /etc/kubernetes/pki/front-proxy-client.crt
     - public_key: /etc/kubernetes/pki/front-proxy-client.key
-    - ca_server: {{ front_proxy_ca_server[0] }}
+    - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ front_proxy.cert.client_signing_policy }}
     - CN: front-proxy-client
     - user: root
@@ -33,10 +30,3 @@ Generate front proxy client certificate:
     - dir_mode: 755
     - require:
       - x509: Create front proxy client private key
-
-{%- else %}
-
-Unable to generate front proxy client certificate, no CA server available:
-  test.fail_without_changes: []
-
-{%- endif %}
