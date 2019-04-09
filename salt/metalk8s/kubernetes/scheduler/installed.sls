@@ -1,9 +1,12 @@
 {% from "metalk8s/registry/macro.sls" import kubernetes_image with context %}
 
+include:
+  - .kubeconfig
+
 Create kube-scheduler Pod manifest:
   file.managed:
     - name: /etc/kubernetes/manifests/kube-scheduler.yaml
-    - source: salt://metalk8s/kubeadm/init/control-plane/files/manifest.yaml
+    - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
     - template: jinja
     - user: root
     - group: root
@@ -26,3 +29,5 @@ Create kube-scheduler Pod manifest:
           - path: /etc/kubernetes/scheduler.conf
             name: kubeconfig
             type: File
+    - require:
+      - metalk8s_kubeconfig: Create kubeconfig file for scheduler
