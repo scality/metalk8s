@@ -179,8 +179,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubeadm/init/mark-control-plane/init.sls'),
     targets.TemplateFile(
         task_name='configured.sls',
-        source=constants.ROOT/'salt'/'metalk8s'/'kubeadm'/'init'/'mark-control-plane'/'configured.sls.in',
-        destination=constants.ISO_ROOT/'salt'/'metalk8s'/'kubeadm'/'init'/'mark-control-plane'/'configured.sls',
+        source=constants.ROOT/'salt'/'metalk8s'/'kubernetes'/'mark-control-plane'/'deployed.sls.in',
+        destination=constants.ISO_ROOT/'salt'/'metalk8s'/'kubernetes'/'mark-control-plane'/'deployed.sls',
         context={'VERSION': constants.SHORT_VERSION},
         file_dep=[constants.VERSION_FILE],
     ),
