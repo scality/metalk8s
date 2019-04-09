@@ -1,7 +1,7 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
 
 include:
-  - .installed
+  - metalk8s.internal.m2crypto
   - metalk8s.salt.minion.running
 
 Create etcd CA private key:
