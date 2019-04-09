@@ -11,7 +11,7 @@
 Configure salt master:
   file.managed:
     - name: /etc/salt/master.d/99-metalk8s.conf
-    - source: salt://metalk8s/salt/master/files/master_99-metalk8s.conf.j2
+    - source: salt://metalk8s/salt/master/files/master-99-metalk8s.conf.j2
     - user: root
     - group: root
     - mode: '0644'

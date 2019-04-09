@@ -1,3 +1,3 @@
 include:
   - .configured
-  - .deployed
+  - .installed
