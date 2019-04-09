@@ -1,10 +1,10 @@
-{% from "metalk8s/registry/macro.sls" import kubernetes_image with context %}
+{%- from "metalk8s/registry/macro.sls" import kubernetes_image with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
 {%- set image = kubernetes_image("kube-proxy") -%}
 
-{% set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{% set context = "kubernetes-admin@kubernetes" %}
+{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
+{%- set context = "kubernetes-admin@kubernetes" %}
 
 {#- TODO: Not always use local machine as apiserver #}
 {%- set apiserver = 'https://' ~ grains['metalk8s']['control_plane_ip'] ~ ':6443' %}
@@ -29,7 +29,6 @@ Deploy kube-proxy (ClusterRoleBinding):
       - kind: ServiceAccount
         name: kube-proxy
         namespace: kube-system
-
     - require:
       - metalk8s_kubernetes: Deploy kube-proxy (ServiceAccount)
 
@@ -167,7 +166,6 @@ Deploy kube-proxy (DaemonSet):
               name: lib-modules
         updateStrategy:
           type: RollingUpdate
-
     - require:
       - metalk8s_kubernetes: Deploy kube-proxy (ServiceAccount)
       - metalk8s_kubernetes: Deploy kube-proxy (ClusterRoleBinding)
@@ -202,6 +200,5 @@ Deploy kube-proxy (RoleBinding):
     - subjects:
       - kind: Group
         name: system:bootstrappers:kubeadm:default-node-token
-
     - require:
       - metalk8s_kubernetes: Deploy kube-proxy (Role)
