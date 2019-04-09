@@ -1,9 +1,8 @@
 ---
-cluster: kubernetes
-
 metalk8s: {}
 
 kubernetes:
+  cluster: kubernetes
   version: 1.11.7  # NOTE: remember to update kubelet version as well
 
 kubeadm_preflight:
