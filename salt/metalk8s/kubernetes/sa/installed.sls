@@ -1,5 +1,5 @@
 include:
-  - .installed
+  - metalk8s.internal.m2crypto
 
 Create SA private key:
   x509.private_key_managed:
