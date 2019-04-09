@@ -1,5 +1,0 @@
-apiVersion: metalk8s.scality.com/v1alpha1
-kind: BootstrapConfiguration
-networks:
-  controlPlane: 192.168.42.0/24
-  workloadPlane: 192.168.42.0/24

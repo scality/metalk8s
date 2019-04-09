@@ -1,10 +1,5 @@
 {%- from "metalk8s/map.jinja" import front_proxy with context %}
 
-{%- set front_proxy_ca_server = salt['mine.get']('*', 'kubernetes_front_proxy_ca_b64') %}
-
-{#- Check if we have no CA server or only current minion as CA #}
-{%- if not front_proxy_ca_server or front_proxy_ca_server.keys() == [grains['id']] %}
-
 include:
   - .installed
   - metalk8s.salt.minion.running
@@ -38,8 +33,7 @@ Generate front proxy CA certificate:
     - require:
       - x509: Create front proxy CA private key
 
-# TODO: Find a better way to advertise CA server
-Advertise front proxy CA in the mine:
+Advertise front proxy CA certificate in the mine:
   module.wait:
     - mine.send:
       - func: kubernetes_front_proxy_ca_b64
@@ -68,10 +62,3 @@ Create front proxy CA salt signing policies:
             - days_valid: {{ front_proxy.ca.signing_policy.days_valid }}
     - watch_in:
       - cmd: Restart salt-minion
-
-{%- else %}
-
-{{ front_proxy_ca_server.keys()|join(', ') }} already configured as Kubernetes front proxy CA server, only one can be declared:
-  test.fail_without_changes: []
-
-{%- endif %}

@@ -127,11 +127,13 @@ stages:
             sudo bash << EOF
             mkdir -p /etc/metalk8s
             cat > /etc/metalk8s/bootstrap.yaml << END
-            apiVersion: metalk8s.scality.com/v1alpha1
+            apiVersion: metalk8s.scality.com/v1alpha2
             kind: BootstrapConfiguration
             networks:
               controlPlane: 10.100.0.0/16
               workloadPlane: 10.100.0.0/16
+            ca:
+              minion: $(hostname)
             END
             EOF
       - ShellCommand:
@@ -243,11 +245,8 @@ stages:
       - ShellCommand:
           name: Copy bootstrap configuration file in bootstrap node
           command: >
-            ssh -F bootstrap_ssh_config bootstrap
-            sudo mkdir -p /etc/metalk8s &&
-            scp -F bootstrap_ssh_config bootstrap.yaml bootstrap: &&
-            ssh -F bootstrap_ssh_config bootstrap
-            sudo mv bootstrap.yaml /etc/metalk8s
+            scp -F bootstrap_ssh_config bootstrap-config.sh bootstrap: &&
+            ssh -F bootstrap_ssh_config bootstrap sudo bash bootstrap-config.sh
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:

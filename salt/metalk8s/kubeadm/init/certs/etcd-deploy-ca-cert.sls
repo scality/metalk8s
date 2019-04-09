@@ -1,8 +1,6 @@
-{%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_b64') %}
+{%- set etcd_ca_server = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_etcd_ca_b64') %}
 
-{%- if etcd_ca_server %}
-
-{%- set etcd_ca_b64 = etcd_ca_server.values()[0] %}
+{%- set etcd_ca_b64 = etcd_ca_server[pillar['metalk8s']['ca']['minion']] %}
 {%- set etcd_ca = salt['hashutil.base64_b64decode'](etcd_ca_b64) %}
 
 Ensure etcd CA cert is present:
@@ -14,5 +12,3 @@ Ensure etcd CA cert is present:
     - makedirs: True
     - dir_mode: 755
     - contents: {{ etcd_ca.splitlines() }}
-
-{%- endif %}
