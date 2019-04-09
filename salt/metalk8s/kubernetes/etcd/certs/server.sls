@@ -1,11 +1,11 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
 
 include:
-  - .installed
+  - metalk8s.internal.m2crypto
 
-Create etcd peer private key:
+Create etcd server private key:
   x509.private_key_managed:
-    - name: /etc/kubernetes/pki/etcd/peer.key
+    - name: /etc/kubernetes/pki/etcd/server.key
     - bits: 2048
     - verbose: False
     - user: root
@@ -16,12 +16,12 @@ Create etcd peer private key:
     - require:
       - pkg: Install m2crypto
 
-Generate etcd peer certificate:
+Generate etcd server certificate:
   x509.certificate_managed:
-    - name: /etc/kubernetes/pki/etcd/peer.crt
-    - public_key: /etc/kubernetes/pki/etcd/peer.key
+    - name: /etc/kubernetes/pki/etcd/server.crt
+    - public_key: /etc/kubernetes/pki/etcd/server.key
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
-    - signing_policy: {{ etcd.cert.peer_signing_policy }}
+    - signing_policy: {{ etcd.cert.server_signing_policy }}
     - CN: "{{ grains['fqdn'] }}"
     - subjectAltName: "DNS:{{ grains['fqdn'] }}, DNS:localhost, IP:{{ grains['metalk8s']['control_plane_ip'] }}, IP:127.0.0.1"
     - user: root
@@ -30,4 +30,4 @@ Generate etcd peer certificate:
     - makedirs: True
     - dir_mode: 755
     - require:
-      - x509: Create etcd peer private key
+      - x509: Create etcd server private key

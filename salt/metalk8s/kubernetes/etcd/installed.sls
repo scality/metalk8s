@@ -1,22 +1,23 @@
-{% from "metalk8s/registry/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
 
-{% set image_name = build_image_name('etcd', '3.2.18') %}
+include:
+  - metalk8s.kubernetes.ca.etcd.advertised
+  - .certs
 
-{% set host_name = salt.network.get_hostname() %}
-{% set host = grains['metalk8s']['control_plane_ip'] %}
+{%- set host_name = grains['id'] %}
+{%- set host = grains['metalk8s']['control_plane_ip'] %}
 
-{% set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
+{%- set image_name = build_image_name('etcd', '3.2.18') %}
 
-{%- set ca_cert = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_etcd_ca_b64')[pillar['metalk8s']['ca']['minion']] %}
-{%- set ca_cert_b64 = salt['hashutil.base64_b64decode'](ca_cert) %}
+{%- set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
 
 {#- Get the list of existing etcd node. #}
 {%- set etcd_endpoints = salt['mine.get']('*', 'etcd_endpoints').values() %}
 
 {#- Compute the initial state according to the existing list of node. #}
-{%- set state = "existing" if etcd_endpoints else "new" -%}
+{%- set state = "existing" if etcd_endpoints else "new" %}
 
-{#- Add ourselves to the list #}
+{#- Add ourselves to the list. #}
 {%- do etcd_endpoints.append(endpoint) %}
 
 Create etcd database directory:
@@ -27,20 +28,10 @@ Create etcd database directory:
     - group: root
     - makedirs: True
 
-Ensure etcd CA certificate is present:
-  file.managed:
-    - name: /etc/kubernetes/pki/etcd/ca.crt
-    - user: root
-    - group : root
-    - mode: 644
-    - makedirs: True
-    - dir_mode: 755
-    - contents: {{ ca_cert_b64.split('\n') }}
-
 Create local etcd Pod manifest:
   file.managed:
     - name: /etc/kubernetes/manifests/etcd.yaml
-    - source: salt://metalk8s/kubeadm/init/etcd/files/manifest.yaml
+    - source: salt://{{ slspath }}/files/manifest.yaml
     - template: jinja
     - user: root
     - group: root
@@ -77,7 +68,7 @@ Create local etcd Pod manifest:
             readOnly: true
     - require:
       - file: Create etcd database directory
-      - file: Ensure etcd CA certificate is present
+      - file: Ensure etcd CA cert is present
 
 Advertise etcd node in the mine:
   module.run:
