@@ -8,12 +8,15 @@ const AUTHENTICATION_SUCCESS = 'AUTHENTICATION_SUCCESS';
 const AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED';
 const LOGOUT = 'LOGOUT';
 const FETCH_USER_INFO = 'FETCH_USER_INFO';
+const SET_USER_INFO_LOADED = 'SET_USER_INFO_LOADED';
+
+const HASH_KEY = 'token';
 
 // Reducer
 const defaultState = {
   user: null,
   error: null,
-  isUerInfoLoaded: false
+  isUserInfoLoaded: false
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -21,15 +24,19 @@ export default function reducer(state = defaultState, action = {}) {
     case AUTHENTICATION_SUCCESS:
       return {
         ...state,
-        user: action.payload,
-        isUerInfoLoaded: true
+        user: action.payload
       };
     case AUTHENTICATION_FAILED:
       return {
         ...state,
-        errors: { authentication: action.payload.message },
-        isUerInfoLoaded: true
+        errors: { authentication: action.payload.message }
       };
+    case SET_USER_INFO_LOADED:
+      return {
+        ...state,
+        isUserInfoLoaded: action.payload
+      };
+
     default:
       return state;
   }
@@ -46,6 +53,10 @@ export const logoutAction = () => {
 
 export const fetchUserInfoAction = () => {
   return { type: FETCH_USER_INFO };
+};
+
+export const setUserInfoLoadedAction = payload => {
+  return { type: SET_USER_INFO_LOADED, payload };
 };
 
 export const setAuthenticationSuccessAction = payload => {
@@ -68,7 +79,7 @@ function* authenticate({ payload }) {
       payload: result.error.response.data
     });
   } else {
-    localStorage.setItem('token', token);
+    localStorage.setItem(HASH_KEY, token);
     yield put(
       setAuthenticationSuccessAction({
         username,
@@ -78,30 +89,33 @@ function* authenticate({ payload }) {
     );
     yield call(history.push, '/');
   }
+  yield put(setUserInfoLoadedAction(true));
 }
 
 function* logout() {
-  yield call(Api.logout);
+  yield call(() => localStorage.removeItem(HASH_KEY));
   yield call(history.push, '/login');
 }
 
 function* fetchUserInfo() {
-  const token = localStorage.getItem('token');
-  const decryptedToken = atob(token);
-  const splits = decryptedToken.split(':');
+  const token = localStorage.getItem(HASH_KEY);
+  if (token) {
+    const api_server = yield select(state => state.config.api);
+    yield call(Api.updateApiServerConfig, api_server.url, token);
 
-  const username = splits.length > 1 ? splits[0] : null;
-  const password = splits.length > 1 ? splits[1] : null;
-
-  yield put(
-    setAuthenticationSuccessAction({
-      username,
-      password,
-      token
-    })
-  );
-  const api_server = yield select(state => state.config.api);
-  yield call(Api.updateApiServerConfig, api_server.url, token);
+    const decryptedToken = atob(token);
+    const splits = decryptedToken.split(':');
+    const username = splits.length > 1 ? splits[0] : null;
+    const password = splits.length > 1 ? splits[1] : null;
+    yield put(
+      setAuthenticationSuccessAction({
+        username,
+        password,
+        token
+      })
+    );
+  }
+  yield put(setUserInfoLoadedAction(true));
 }
 
 export function* authenticateSaga() {

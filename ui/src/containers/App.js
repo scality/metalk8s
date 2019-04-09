@@ -31,7 +31,7 @@ class App extends Component {
   render() {
     const { language, api, theme } = this.props.config;
 
-    return api && theme && this.props.isUerInfoLoaded ? (
+    return api && theme && this.props.isUserInfoLoaded ? (
       <IntlProvider locale={language} messages={messages[language]}>
         <Switch>
           <Route path="/login" component={Login} />
@@ -46,7 +46,7 @@ class App extends Component {
 
 const mapStateToProps = state => ({
   config: state.config,
-  isUerInfoLoaded: state.login.isUerInfoLoaded
+  isUserInfoLoaded: state.login.isUserInfoLoaded
 });
 
 const mapDispatchToProps = dispatch => {
