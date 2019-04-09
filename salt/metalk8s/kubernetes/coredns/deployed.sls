@@ -26,8 +26,6 @@ Create coredns ConfigMap:
               reload
               loadbalance
           }
-  require:
-    - pkg: Install Python Kubernetes client
 
 Create coredns deployment:
   metalk8s_kubernetes.deployment_present:
@@ -35,11 +33,10 @@ Create coredns deployment:
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - source: salt://metalk8s/kubeadm/init/addons/files/coredns_deployment.yaml.j2
+    - source: salt://{{ slspath }}/files/coredns-deployment.yaml.j2
     - template: jinja
   require:
     - metalk8s_kubernetes: Create coredns ConfigMap
-    - pkg: Install Python Kubernetes client
 
 Create coredns service:
   metalk8s_kubernetes.service_present:
@@ -71,7 +68,6 @@ Create coredns service:
           protocol: TCP
   require:
     - metalk8s_kubernetes: Create coredns deployment
-    - pkg: Install Python Kubernetes client
 
 Create coredns service account:
   metalk8s_kubernetes.serviceaccount_present:
@@ -79,8 +75,6 @@ Create coredns service account:
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - require:
-        - pkg: Install Python Kubernetes client
 
 Create coredns cluster role:
   metalk8s_kubernetes.clusterrole_present:
@@ -104,8 +98,6 @@ Create coredns cluster role:
         - nodes
         verbs:
         - get
-  require:
-    - pkg: Install Python Kubernetes client
 
 Create coredns cluster role binding:
   metalk8s_kubernetes.clusterrolebinding_present:
@@ -120,6 +112,3 @@ Create coredns cluster role binding:
       - kind: ServiceAccount
         name: coredns
         namespace: kube-system
-  require:
-    - pkg: Install Python Kubernetes client
-
