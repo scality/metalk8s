@@ -3,12 +3,27 @@
 Configure salt master:
   file.managed:
     - name: /etc/salt/master.d/99-metalk8s.conf
-    - source: salt://metalk8s/salt/master/files/master_99-metalk8s.conf.j2
-    - template: jinja
+    - source: salt://metalk8s/salt/master/files/master_99-metalk8s.conf
     - user: root
     - group: root
     - mode: '0644'
     - makedirs: true
     - backup: false
-    - defaults:
-        iso_root_path: {{ metalk8s.iso_root_path }}
+
+Configure salt master roots paths:
+  file.serialize:
+    - name: /etc/salt/master.d/99-metalk8s-roots.conf
+    - user: root
+    - group: root
+    - mode: '0644'
+    - formatter: yaml
+    - merge_if_exists: True
+    - makedirs: true
+    - backup: false
+    - dataset:
+        file_roots:
+          {{ saltenv }}:
+            - {{ metalk8s.iso_root_path }}/salt
+        pillar_roots:
+          {{ saltenv }}:
+            - {{ metalk8s.iso_root_path }}/pillar
