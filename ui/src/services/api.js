@@ -23,28 +23,8 @@ export const updateApiServerConfig = (url, token) => {
   coreV1 = config.makeApiClient(Core_v1Api);
 };
 
-export const logout = () => {
-  localStorage.removeItem('token');
-};
-
 export async function getNodes() {
   try {
-    // const body = {
-    //   metadata: {
-    //     name: 'carlito',
-    //     annotations: {
-    //       'metalk8s.scality.com/ssh-user': 'vagrant',
-    //       'metalk8s.scality.com/ssh-port': '22',
-    //       'metalk8s.scality.com/ssh-host': '172.21.254.7',
-    //       'metalk8s.scality.com/ssh-key-path':
-    //         '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-    //       'metalk8s.scality.com/ssh-sudo': 'true',
-    //       'metalk8s.scality.com/workload-plane': 'true',
-    //       'metalk8s.scality.com/control-plane': 'true'
-    //     }
-    //   }
-    // };
-    // coreV1.createNode(body);
     return await coreV1.listNode();
   } catch (error) {
     return { error };
