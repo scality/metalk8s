@@ -16,7 +16,7 @@ Inject pause image:
   # The `containerd` states require the `cri` module, which requires `crictl`
   file.managed:
     - name: /tmp/pause-3.1.tar
-    - source: salt://metalk8s/containerd/files/pause-3.1.tar
+    - source: salt://{{ slspath }}/files/pause-3.1.tar
     - unless: >-
         ctr -n k8s.io image ls -q | grep k8s.gcr.io/pause | grep 3\\.1
     - require:
