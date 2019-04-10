@@ -1,5 +1,5 @@
-{% set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{% set context = "kubernetes-admin@kubernetes" %}
+{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
+{%- set context = "kubernetes-admin@kubernetes" %}
 
 {%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
 
@@ -20,7 +20,7 @@ Create metalk8s-ui deployment:
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - source: salt://metalk8s/ui/files/metalk8s-ui_deployment.yaml
+    - source: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml
     - template: jinja
   require:
     - pkg: Install Python Kubernetes client
