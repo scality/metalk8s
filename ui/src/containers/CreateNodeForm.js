@@ -4,9 +4,11 @@ import { DebounceInput } from 'react-debounce-input';
 import classnames from 'classnames';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import { injectIntl } from 'react-intl';
+
 import { Button } from 'core-ui';
 import { gray, fontSize, padding } from 'core-ui/dist/style/theme';
-import * as Yup from 'yup';
 import { createNodeAction } from '../ducks/app/nodes';
 
 const CreateNodeLayout = styled.div`
@@ -118,7 +120,7 @@ const validationSchema = Yup.object().shape({
 
 class CreateNodeForm extends React.Component {
   render() {
-    console.log('errors', this.props.errors);
+    const { intl, errors } = this.props;
     return (
       <CreateNodeLayout>
         <PageHeader>Create a New Node</PageHeader>
@@ -135,25 +137,25 @@ class CreateNodeForm extends React.Component {
               <Form>
                 <TextInput
                   name="name"
-                  label={'Name'}
+                  label={intl.messages.name}
                   value={values.name}
                   onChange={handleChange}
                 />
                 <TextInput
                   name="ssh_user"
-                  label={'SSH User'}
+                  label={intl.messages.ssh_user}
                   value={values.ssh_user}
                   onChange={handleChange}
                 />
                 <TextInput
                   name="hostName_ip"
-                  label={'Hostname or IP'}
+                  label={intl.messages.hostName_ip}
                   value={values.hostName_ip}
                   onChange={handleChange}
                 />
                 <TextInput
                   name="ssh_port"
-                  label={'SSH Port'}
+                  label={intl.messages.ssh_port}
                   value={values.ssh_port}
                   onChange={handleChange}
                 />
@@ -189,8 +191,8 @@ class CreateNodeForm extends React.Component {
                   <Button text="Create" type="submit" />
                 </ActionContainer>
 
-                {this.props.errors && this.props.errors.create_node ? (
-                  <ErrorMessage>{this.props.errors.create_node}</ErrorMessage>
+                {errors && errors.create_node ? (
+                  <ErrorMessage>{errors.create_node}</ErrorMessage>
                 ) : null}
               </Form>
             );
@@ -211,7 +213,9 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CreateNodeForm);
+export default injectIntl(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(CreateNodeForm)
+);
