@@ -8,6 +8,7 @@ const FETCH_NODES = 'FETCH_NODES';
 export const SET_NODES = 'SET_NODES';
 const CREATE_NODE = 'CREATE_NODE';
 const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
+const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 
 // Reducer
 const defaultState = {
@@ -22,6 +23,11 @@ export default function reducer(state = defaultState, action = {}) {
       return {
         ...state,
         errors: { create_node: action.payload.message }
+      };
+    case CLEAR_CREATE_NODE_ERROR:
+      return {
+        ...state,
+        errors: { create_node: null }
       };
     default:
       return state;
@@ -39,6 +45,10 @@ export const setNodesAction = payload => {
 
 export const createNodeAction = payload => {
   return { type: CREATE_NODE, payload };
+};
+
+export const clearCreateNodeErrorAction = () => {
+  return { type: CLEAR_CREATE_NODE_ERROR };
 };
 
 // Sagas

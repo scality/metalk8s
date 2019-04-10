@@ -9,7 +9,10 @@ import { injectIntl } from 'react-intl';
 
 import { Button } from 'core-ui';
 import { gray, fontSize, padding } from 'core-ui/dist/style/theme';
-import { createNodeAction } from '../ducks/app/nodes';
+import {
+  createNodeAction,
+  clearCreateNodeErrorAction
+} from '../ducks/app/nodes';
 
 const CreateNodeLayout = styled.div`
   height: 100%;
@@ -119,6 +122,10 @@ const validationSchema = Yup.object().shape({
 });
 
 class CreateNodeForm extends React.Component {
+  componentWillUnmount() {
+    this.props.clearCreateNodeError();
+  }
+
   render() {
     const { intl, errors } = this.props;
     return (
@@ -209,7 +216,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => {
   return {
-    createNode: body => dispatch(createNodeAction(body))
+    createNode: body => dispatch(createNodeAction(body)),
+    clearCreateNodeError: () => dispatch(clearCreateNodeErrorAction())
   };
 };
 
