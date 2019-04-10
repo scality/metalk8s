@@ -115,6 +115,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/bootstrap/preflight.sls'),
     Path('salt/metalk8s/bootstrap/registry.sls'),
     Path('salt/metalk8s/bootstrap/salt_master.sls'),
+    Path('salt/metalk8s/bootstrap/services.sls'),
 
     Path('salt/metalk8s/calico/configured.sls'),
     Path('salt/metalk8s/calico/deployed.sls'),
@@ -221,6 +222,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/salt/master/files/salt-master-pod.yaml.j2'),
     Path('salt/metalk8s/salt/master/configured.sls'),
     Path('salt/metalk8s/salt/master/deployed.sls'),
+    Path('salt/metalk8s/salt/master/service_deployed.sls'),
     Path('salt/metalk8s/salt/master/init.sls'),
     Path('salt/metalk8s/salt/master/accept_keys.sls'),
 
