@@ -23,7 +23,7 @@ spec:
       tolerations:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
-        - key: "node-role.kubernetes.io/master"
+        - key: "node-role.kubernetes.io/bootstrap"
           operator: "Exists"
           effect: "NoSchedule"
       nodeSelector:
