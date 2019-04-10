@@ -639,6 +639,34 @@ def show_service(name, namespace='default', **kwargs):
         _cleanup(**cfg)
 
 
+def show_endpoint(name, namespace='default', **kwargs):
+    '''
+    Return the kubernetes endpoint defined by name and namespace
+
+    CLI Examples::
+
+        salt '*' kubernetes.show_endpoint my-nginx default
+        salt '*' kubernetes.show_endpoint name=my-nginx namespace=default
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.CoreV1Api()
+        api_response = api_instance.read_namespaced_endpoints(name, namespace)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CoreV1Api->read_namespaced_endpoints'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
 def show_pod(name, namespace='default', **kwargs):
     '''
     Return POD information for a given pod name defined in the namespace
