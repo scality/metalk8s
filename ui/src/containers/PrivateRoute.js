@@ -4,7 +4,7 @@ import { withRouter, Route, Redirect } from 'react-router-dom';
 
 class PrivateRoute extends Component {
   render() {
-    let { component: Component, ...rest } = this.props;
+    const { component: Component, ...rest } = this.props;
     if (this.props.authenticated) {
       return <Route {...rest} render={props => <Component {...props} />} />;
     } else {

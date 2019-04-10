@@ -18,7 +18,7 @@ def _load_config(path):
     with salt.utils.files.fopen(path, 'rb') as fd:
         config = salt.utils.yaml.safe_load(fd)
 
-    assert config.get('apiVersion') == 'metalk8s.scality.com/v1alpha1'
+    assert config.get('apiVersion') == 'metalk8s.scality.com/v1alpha2'
     assert config.get('kind') == 'BootstrapConfiguration'
 
     return config
@@ -61,10 +61,24 @@ def _get_labels(config="/etc/kubernetes/admin.conf",
     return labels
 
 
+def _load_ca(config_data):
+    assert 'ca' in config_data
+
+    ca_data = config_data['ca']
+    assert 'minion' in ca_data
+
+    return {
+        'minion': ca_data['minion'],
+    }
+
+
 def ext_pillar(minion_id, pillar, bootstrap_config):
     config = _load_config(bootstrap_config)
 
     return {
         'networks': _load_networks(config),
-        'k8s_labels': _get_labels()
+        'k8s_labels': _get_labels(),
+        'metalk8s': {
+            'ca': _load_ca(config),
+        },
     }
