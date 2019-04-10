@@ -4,6 +4,10 @@ Feature: SaltAPI
         Given the Kubernetes API is available
         When we login to SaltAPI as 'admin' using password 'admin'
         Then we can ping all minions
+        And we can invoke '.*' on '*'
+        And we have '@wheel' perms
+        And we have '@runner' perms
+        And we have '@jobs' perms
 
     Scenario: Login to SaltAPI using an incorrect password
         Given the Kubernetes API is available

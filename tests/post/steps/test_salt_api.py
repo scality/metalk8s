@@ -73,6 +73,7 @@ def login_salt_api(host, username, password, version, context, request):
     result = {
         'url': 'http://{ip}:{port}'.format(ip=ip, port=port),
         'token': None,
+        'perms': [],
         'login-status-code': response.status_code,
     }
 
@@ -80,6 +81,7 @@ def login_salt_api(host, username, password, version, context, request):
         json_data = response.json()
 
         result['token'] = json_data['return'][0]['token']
+        result['perms'] = json_data['return'][0]['perms']
 
     context['salt-api'] = result
 
@@ -108,3 +110,12 @@ def ping_all_minions(host, context):
 @then('authentication fails')
 def authentication_fails(host, context):
     assert context['salt-api']['login-status-code'] == 401
+
+@then(parsers.parse(
+    "we can invoke '{modules}' on '{targets}'"))
+def invoke_module_on_target(host, context, modules, targets):
+    assert { targets: [ modules ] } in context['salt-api']['perms']
+
+@then(parsers.parse("we have '{perms}' perms"))
+def have_perms(host, context, perms):
+    assert perms in context['salt-api']['perms']

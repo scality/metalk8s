@@ -81,9 +81,39 @@ def _auth_basic(kubeconfig, username, token):
 
 @_log_exceptions
 def _groups_basic(kubeconfig, username, token):
-    return [
-        'node_admin',
-    ]
+    kubeconfig.api_key = {
+        'authorization': token,
+    }
+    kubeconfig.api_key_prefix = {
+        'authorization': 'Basic',
+    }
+    kubeconfig.username = username
+    kubeconfig.password = None
+    kubeconfig.cert_file = None
+    kubeconfig.key_file = None
+
+    client = kubernetes.client.ApiClient(configuration=kubeconfig)
+
+    authz_api = kubernetes.client.AuthorizationV1Api(api_client=client)
+
+    groups = set()
+
+    result = authz_api.create_self_subject_access_review(
+        body=kubernetes.client.V1SelfSubjectAccessReview(
+            spec=kubernetes.client.V1SelfSubjectAccessReviewSpec(
+                resource_attributes=kubernetes.client.V1ResourceAttributes(
+                    resource='nodes',
+                    verb='*',
+                ),
+            ),
+        ),
+    )
+
+    if result.status.allowed:
+        groups.add('node-admins')
+
+    return list(groups)
+
 
 AUTH_HANDLERS['basic'] = {
     'auth': _auth_basic,
