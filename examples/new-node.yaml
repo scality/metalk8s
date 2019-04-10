@@ -12,8 +12,12 @@ metadata:
     metalk8s.scality.com/ssh-key-path: <PATH/TO/SSH/KEY>
     metalk8s.scality.com/ssh-sudo: <true if the user is not root>
   labels:
-    beta.kubernetes.io/os: linux
+    metalk8s.scality.com/version: '2.0'
+    node-role.kubernetes.io/master: ''
+    node-role.kubernetes.io/etcd: ''
 spec:
   taints:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/etcd

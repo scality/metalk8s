@@ -5,8 +5,6 @@ import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 
-import { fetchNodesAction } from '../ducks/app/nodes';
-
 class NodeList extends React.Component {
   constructor(props) {
     super(props);
@@ -44,10 +42,6 @@ class NodeList extends React.Component {
       ]
     };
     this.onSort = this.onSort.bind(this);
-  }
-
-  componentDidMount() {
-    this.props.fetchNodes();
   }
 
   onSort({ sortBy, sortDirection }) {
@@ -103,15 +97,4 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = dispatch => {
-  return {
-    fetchNodes: () => dispatch(fetchNodesAction())
-  };
-};
-
-export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(NodeList)
-);
+export default injectIntl(connect(mapStateToProps)(NodeList));
