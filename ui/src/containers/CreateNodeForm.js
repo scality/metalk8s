@@ -8,7 +8,7 @@ import * as Yup from 'yup';
 import { injectIntl } from 'react-intl';
 
 import { Button } from 'core-ui';
-import { gray, fontSize, padding } from 'core-ui/dist/style/theme';
+import { gray, fontSize, padding, brand } from 'core-ui/dist/style/theme';
 import {
   createNodeAction,
   clearCreateNodeErrorAction
@@ -18,6 +18,9 @@ const CreateNodeLayout = styled.div`
   height: 100%;
   overflow: auto;
   padding: ${padding.larger};
+  form {
+    width: 450px;
+  }
 `;
 
 const PageHeader = styled.h2`
@@ -26,12 +29,14 @@ const PageHeader = styled.h2`
 
 const CreateNodeFormContainer = styled.div`
   display: flex;
-  margin: ${padding.small} 0;
+  margin: ${padding.base} 0;
 
+  input[type='checkbox'] {
+    margin: 0;
+  }
   input {
     padding: ${padding.small};
     font-size: ${fontSize.large};
-    width: 250px;
     display: block;
     border-radius: 4px;
     border: 1px solid ${gray};
@@ -46,7 +51,28 @@ const CreateNodeFormContainer = styled.div`
 `;
 
 const LabelStyle = styled.div`
+  display: flex;
+  align-items: center;
   width: 200px;
+`;
+
+const ActionContainer = styled.div`
+  display: flex;
+  margin: ${padding.larger} 0;
+  justify-content: flex-end;
+
+  button {
+    margin-right: ${padding.larger};
+  }
+`;
+
+const ErrorMessage = styled.span`
+  margin-top: ${padding.base};
+  color: ${brand.danger};
+`;
+
+const FormTitle = styled.h3`
+  margin-top: ${padding.larger};
 `;
 
 const InputFeedback = ({ error }) =>
@@ -80,7 +106,7 @@ const TextInput = ({
   return (
     <CreateNodeFormContainer className={classes}>
       <Label htmlFor={id} error={error}>
-        {label}
+        <span>{label}</span>
       </Label>
       <DebounceInput
         minLength={1}
@@ -96,18 +122,6 @@ const TextInput = ({
     </CreateNodeFormContainer>
   );
 };
-
-const ActionContainer = styled.div`
-  display: flex;
-  width: 50%;
-  justify-content: space-between;
-  margin: ${padding.base} 0;
-`;
-
-const ErrorMessage = styled.span`
-  margin-top: ${padding.base};
-  color: red;
-`;
 
 const initialValues = {
   name: '',
@@ -189,8 +203,7 @@ class CreateNodeForm extends React.Component {
                   value={values.sudo_required}
                   onChange={handleChange}
                 />
-
-                <h3>{intl.messages.roles}</h3>
+                <FormTitle>{intl.messages.roles}</FormTitle>
                 <TextInput
                   type="checkbox"
                   name="workload_plane"
@@ -207,7 +220,12 @@ class CreateNodeForm extends React.Component {
                   onChange={handleChange}
                 />
                 <ActionContainer>
-                  <Button text="Cancel" type="button" outlined />
+                  <Button
+                    text="Cancel"
+                    type="button"
+                    outlined
+                    onClick={() => this.props.history.push('/nodes')}
+                  />
                   <Button text="Create" type="submit" />
                 </ActionContainer>
 
