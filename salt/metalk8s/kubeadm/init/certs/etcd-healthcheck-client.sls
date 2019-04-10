@@ -1,8 +1,5 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
 
-{%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_b64').keys() %}
-{%- if etcd_ca_server %}
-
 include:
   - .installed
 
@@ -23,7 +20,7 @@ Generate etcd healthcheck client certificate:
   x509.certificate_managed:
     - name: /etc/kubernetes/pki/etcd/healthcheck-client.crt
     - public_key: /etc/kubernetes/pki/etcd/healthcheck-client.key
-    - ca_server: {{ etcd_ca_server[0] }}
+    - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ etcd.cert.healthcheck_client_signing_policy }}
     - CN: kube-etcd-healthcheck-client
     - O: "system:masters"
@@ -34,10 +31,3 @@ Generate etcd healthcheck client certificate:
     - dir_mode: 755
     - require:
       - x509: Create etcd healthcheck client private key
-
-{%- else %}
-
-Unable to generate etcd healthcheck client certificate, no CA server available:
-  test.fail_without_changes: []
-
-{%- endif %}
