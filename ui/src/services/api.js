@@ -56,3 +56,26 @@ export async function fetchConfig() {
     return { error };
   }
 }
+
+export async function createNode(payload) {
+  const body = {
+    metadata: {
+      name: payload.name,
+      annotations: {
+        'metalk8s.scality.com/ssh-user': payload.ssh_user,
+        'metalk8s.scality.com/ssh-port': payload.ssh_port,
+        'metalk8s.scality.com/ssh-host': payload.hostName_ip,
+        'metalk8s.scality.com/ssh-key-path': payload.ssh_key_path,
+        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString(),
+        'metalk8s.scality.com/workload-plane': payload.workload_plane.toString(),
+        'metalk8s.scality.com/control-plane': payload.control_plane.toString()
+      }
+    }
+  };
+
+  try {
+    return await coreV1.createNode(body);
+  } catch (error) {
+    return { error };
+  }
+}
