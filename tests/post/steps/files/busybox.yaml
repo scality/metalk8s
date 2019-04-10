@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   tolerations:
-  - key: "node-role.kubernetes.io/master"
+  - key: "node-role.kubernetes.io/bootstrap"
     operator: "Equal"
     effect: "NoSchedule"
   containers:
