@@ -52,6 +52,7 @@
 
 include:
   - metalk8s.repo
+  - .installed
 
 Install skopeo:
   {{ pkg_installed('skopeo') }}
@@ -66,4 +67,5 @@ Import {{ image.name }} image:
     - tls_verify: false
     - require:
       - pkg: Install skopeo
+      - file: Install OCI registry manifest
 {% endfor %}
