@@ -1,4 +1,5 @@
 import logging
+
 import salt.utils.files
 import salt.utils.yaml
 
