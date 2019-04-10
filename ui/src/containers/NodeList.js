@@ -97,6 +97,8 @@ class NodeList extends React.Component {
   });
 
   render() {
+    const { intl } = this.props;
+
     const nodesSortedList = this.sortNodes(
       this.props.nodes,
       this.state.sortBy,
@@ -106,13 +108,22 @@ class NodeList extends React.Component {
     const nodesSortedListWithRoles = nodesSortedList.map(node => {
       let roles = [];
       if (node.control_plane) {
-        roles.push(this.props.intl.messages.control_plane);
+        roles.push(intl.messages.control_plane);
       }
       if (node.workload_plane) {
-        roles.push(this.props.intl.messages.workload_plane);
+        roles.push(intl.messages.workload_plane);
       }
-
       node.roles = roles.join(' / ');
+
+      let statusType = node.statusType;
+      let status = intl.messages.unknown;
+
+      if (statusType && statusType.status === 'True') {
+        status = intl.messages.ready;
+      } else if (statusType && statusType.status === 'False') {
+        status = intl.messages.not_ready;
+      }
+      node.status = status;
       return node;
     });
 
@@ -120,7 +131,7 @@ class NodeList extends React.Component {
       <PageContainer>
         <ActionContainer>
           <Button
-            text={this.props.intl.messages.create_new_node}
+            text={intl.messages.create_new_node}
             onClick={() => this.props.history.push('/nodes/create')}
           />
         </ActionContainer>
@@ -134,13 +145,23 @@ class NodeList extends React.Component {
             sortBy={this.state.sortBy}
             sortDirection={this.state.sortDirection}
             onSort={this.onSort}
-            onRowClick={item => this.onRowClick(item)}
+            onRowClick={item => {
+              // FIXME we will change that behavior later
+              // We want let the user click on the item only it's deployed.
+              if (
+                item.rowData.status !== intl.messages.unknown &&
+                item.rowData.status !== intl.messages.not_ready
+              ) {
+                this.onRowClick(item);
+              }
+            }}
           />
         </TableContainer>
       </PageContainer>
     );
   }
 }
+
 function mapStateToProps(state) {
   return {
     nodes: state.app.nodes.list

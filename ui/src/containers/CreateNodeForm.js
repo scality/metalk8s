@@ -5,6 +5,7 @@ import classnames from 'classnames';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 
 import { Button } from 'core-ui';
@@ -221,12 +222,12 @@ class CreateNodeForm extends React.Component {
                 />
                 <ActionContainer>
                   <Button
-                    text="Cancel"
+                    text={intl.messages.cancel}
                     type="button"
                     outlined
                     onClick={() => this.props.history.push('/nodes')}
                   />
-                  <Button text="Create" type="submit" />
+                  <Button text={intl.messages.create} type="submit" />
                 </ActionContainer>
 
                 {errors && errors.create_node ? (
@@ -253,8 +254,10 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(CreateNodeForm)
+  withRouter(
+    connect(
+      mapStateToProps,
+      mapDispatchToProps
+    )(CreateNodeForm)
+  )
 );

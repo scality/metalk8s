@@ -7,7 +7,7 @@ import history from '../../history';
 const FETCH_NODES = 'FETCH_NODES';
 export const SET_NODES = 'SET_NODES';
 const CREATE_NODE = 'CREATE_NODE';
-const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
+export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 
 // Reducer
@@ -22,7 +22,7 @@ export default function reducer(state = defaultState, action = {}) {
     case CREATE_NODE_FAILED:
       return {
         ...state,
-        errors: { create_node: action.payload.message }
+        errors: { create_node: action.payload }
       };
     case CLEAR_CREATE_NODE_ERROR:
       return {
@@ -62,16 +62,9 @@ export function* fetchNodes() {
             node.status.conditions &&
             node.status.conditions.find(conditon => conditon.type === 'Ready');
 
-          let status = 'Unknown';
-          if (statusType && statusType.status === 'True') {
-            status = 'Ready';
-          } else if (statusType && statusType.status === 'True') {
-            status = 'Not Ready';
-          }
-
           return {
             name: node.metadata.name,
-            status: status,
+            statusType: statusType,
             cpu: node.status.capacity && node.status.capacity.cpu,
             control_plane:
               node.metadata &&
@@ -107,7 +100,7 @@ export function* createNode({ payload }) {
   } else {
     yield put({
       type: CREATE_NODE_FAILED,
-      payload: result.error.body
+      payload: result.error.body.message
     });
   }
 }

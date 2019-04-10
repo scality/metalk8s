@@ -24,5 +24,10 @@
   "workload_plane": "Workload Plane",
   "control_plane": "Control Plane" ,
   "roles": "Roles",
-  "create_new_node": "Create a New Node"
+  "create_new_node": "Create a New Node",
+  "create": "Create",
+  "cancel": "Cancel",
+  "unknown": "Unknown",
+  "ready": "Ready",
+  "not_ready": "Not Ready"
 }
