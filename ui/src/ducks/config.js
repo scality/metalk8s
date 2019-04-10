@@ -1,6 +1,6 @@
 import { call, put, takeEvery } from 'redux-saga/effects';
 import * as Api from '../services/api';
-import { fetchUserInfoAction } from './login';
+import { fetchUserInfo } from './login';
 
 // Actions
 const SET_LANG = 'SET_LANG';
@@ -63,7 +63,7 @@ export function* fetchConfig() {
   if (!result.error) {
     yield call(fetchTheme);
     yield put(setApiConfigAction(result.data));
-    yield put(fetchUserInfoAction());
+    yield call(fetchUserInfo);
   }
 }
 

@@ -4,13 +4,13 @@ import history from '../history';
 
 // Actions
 const AUTHENTICATE = 'AUTHENTICATE';
-const AUTHENTICATION_SUCCESS = 'AUTHENTICATION_SUCCESS';
-const AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED';
+export const AUTHENTICATION_SUCCESS = 'AUTHENTICATION_SUCCESS';
+export const AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED';
 const LOGOUT = 'LOGOUT';
-const FETCH_USER_INFO = 'FETCH_USER_INFO';
-const SET_USER_INFO_LOADED = 'SET_USER_INFO_LOADED';
+export const FETCH_USER_INFO = 'FETCH_USER_INFO';
+export const SET_USER_INFO_LOADED = 'SET_USER_INFO_LOADED';
 
-const HASH_KEY = 'token';
+export const HASH_KEY = 'token';
 
 // Reducer
 const defaultState = {
@@ -67,7 +67,7 @@ export const setAuthenticationSuccessAction = payload => {
 };
 
 // Sagas
-function* authenticate({ payload }) {
+export function* authenticate({ payload }) {
   const { username, password } = payload;
   const token = btoa(username + ':' + password); //base64Encode
   const api_server = yield select(state => state.config.api);
@@ -92,12 +92,12 @@ function* authenticate({ payload }) {
   yield put(setUserInfoLoadedAction(true));
 }
 
-function* logout() {
+export function* logout() {
   yield call(() => localStorage.removeItem(HASH_KEY));
   yield call(history.push, '/login');
 }
 
-function* fetchUserInfo() {
+export function* fetchUserInfo() {
   const token = localStorage.getItem(HASH_KEY);
   if (token) {
     const api_server = yield select(state => state.config.api);
@@ -114,6 +114,8 @@ function* fetchUserInfo() {
         token
       })
     );
+  } else {
+    yield call(history.push, '/login');
   }
   yield put(setUserInfoLoadedAction(true));
 }
