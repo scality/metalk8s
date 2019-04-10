@@ -120,7 +120,7 @@ class NodeList extends React.Component {
       <PageContainer>
         <ActionContainer>
           <Button
-            text="Create New Node"
+            text={this.props.intl.messages.create_new_node}
             onClick={() => this.props.history.push('/nodes/create')}
           />
         </ActionContainer>

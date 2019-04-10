@@ -25,6 +25,9 @@ const PageHeader = styled.h2`
 `;
 
 const CreateNodeFormContainer = styled.div`
+  display: flex;
+  margin: ${padding.small} 0;
+
   input {
     padding: ${padding.small};
     font-size: ${fontSize.large};
@@ -42,14 +45,18 @@ const CreateNodeFormContainer = styled.div`
   }
 `;
 
+const LabelStyle = styled.div`
+  width: 200px;
+`;
+
 const InputFeedback = ({ error }) =>
   error ? <div className="input-feedback">{error}</div> : null;
 
 const Label = ({ error, className, children, ...props }) => {
   return (
-    <label className="label" {...props}>
+    <LabelStyle className="label" {...props}>
       {children}
-    </label>
+    </LabelStyle>
   );
 };
 
@@ -91,6 +98,9 @@ const TextInput = ({
 };
 
 const ActionContainer = styled.div`
+  display: flex;
+  width: 50%;
+  justify-content: space-between;
   margin: ${padding.base} 0;
 `;
 
@@ -130,7 +140,7 @@ class CreateNodeForm extends React.Component {
     const { intl, errors } = this.props;
     return (
       <CreateNodeLayout>
-        <PageHeader>Create a New Node</PageHeader>
+        <PageHeader>{intl.messages.create_new_node}</PageHeader>
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -168,21 +178,23 @@ class CreateNodeForm extends React.Component {
                 />
                 <TextInput
                   name="ssh_key_path"
-                  label={'SSH Key Path'}
+                  label={intl.messages.ssh_key_path}
                   value={values.ssh_key_path}
                   onChange={handleChange}
                 />
                 <TextInput
                   name="sudo_required"
                   type="checkbox"
-                  label={'Sudo required'}
+                  label={intl.messages.sudo_required}
                   value={values.sudo_required}
                   onChange={handleChange}
                 />
+
+                <h3>{intl.messages.roles}</h3>
                 <TextInput
                   type="checkbox"
                   name="workload_plane"
-                  label={'Workload Plane'}
+                  label={intl.messages.workload_plane}
                   checked={values.workload_plane}
                   value={values.workload_plane}
                   disabled
@@ -190,11 +202,12 @@ class CreateNodeForm extends React.Component {
                 <TextInput
                   type="checkbox"
                   name="control_plane"
-                  label={'Control Plane'}
+                  label={intl.messages.control_plane}
                   value={values.control_plane}
                   onChange={handleChange}
                 />
                 <ActionContainer>
+                  <Button text="Cancel" type="button" outlined />
                   <Button text="Create" type="submit" />
                 </ActionContainer>
 
