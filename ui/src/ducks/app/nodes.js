@@ -1,11 +1,13 @@
 import { call, put, takeLatest, takeEvery } from 'redux-saga/effects';
 import * as Api from '../../services/api';
 import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
+import history from '../../history';
 
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
 export const SET_NODES = 'SET_NODES';
 const CREATE_NODE = 'CREATE_NODE';
+const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 
 // Reducer
 const defaultState = {
@@ -16,6 +18,11 @@ export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_NODES:
       return { ...state, list: action.payload };
+    case CREATE_NODE_FAILED:
+      return {
+        ...state,
+        errors: { create_node: action.payload.message }
+      };
     default:
       return state;
   }
@@ -45,9 +52,7 @@ export function* fetchNodes() {
           status:
             node.status.conditions &&
             node.status.conditions.find(conditon => conditon.type === 'Ready')
-              .status === 'True'
-              ? 'Ready'
-              : 'Not Ready',
+              .status,
           cpu: node.status.capacity && node.status.capacity.cpu,
           memory:
             node.status.capacity &&
@@ -63,7 +68,16 @@ export function* fetchNodes() {
 }
 
 export function* createNode({ payload }) {
-  yield call(Api.createNode, payload);
+  const result = yield call(Api.createNode, payload);
+
+  if (!result.error) {
+    yield call(history.push, '/nodes');
+  } else {
+    yield put({
+      type: CREATE_NODE_FAILED,
+      payload: result.error.body
+    });
+  }
 }
 
 export function* nodesSaga() {

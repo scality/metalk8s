@@ -2,11 +2,27 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import memoizeOne from 'memoize-one';
+import styled from 'styled-components';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { Table, Button } from 'core-ui';
+import { padding } from 'core-ui/dist/style/theme';
 
 import { fetchNodesAction } from '../ducks/app/nodes';
+
+const PageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`;
+
+const ActionContainer = styled.div`
+  margin: ${padding.base};
+`;
+
+const TableContainer = styled.div`
+  flex-grow: 1;
+`;
 
 class NodeList extends React.Component {
   constructor(props) {
@@ -84,14 +100,14 @@ class NodeList extends React.Component {
     );
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div>
+      <PageContainer>
+        <ActionContainer>
           <Button
             text="Create New Node"
             onClick={() => this.props.history.push('/nodes/create')}
           />
-        </div>
-        <div style={{ flexGrow: 1 }}>
+        </ActionContainer>
+        <TableContainer>
           <Table
             list={nodesSortedList}
             columns={this.state.columns}
@@ -103,8 +119,8 @@ class NodeList extends React.Component {
             onSort={this.onSort}
             onRowClick={item => this.onRowClick(item)}
           />
-        </div>
-      </div>
+        </TableContainer>
+      </PageContainer>
     );
   }
 }

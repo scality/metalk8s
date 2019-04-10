@@ -9,6 +9,16 @@ import { gray, fontSize, padding } from 'core-ui/dist/style/theme';
 import * as Yup from 'yup';
 import { createNodeAction } from '../ducks/app/nodes';
 
+const CreateNodeLayout = styled.div`
+  height: 100%;
+  overflow: auto;
+  padding: ${padding.larger};
+`;
+
+const PageHeader = styled.h2`
+  margin-top: 0;
+`;
+
 const CreateNodeFormContainer = styled.div`
   input {
     padding: ${padding.small};
@@ -75,6 +85,15 @@ const TextInput = ({
   );
 };
 
+const ActionContainer = styled.div`
+  margin: ${padding.base} 0;
+`;
+
+const ErrorMessage = styled.span`
+  margin-top: ${padding.base};
+  color: red;
+`;
+
 const initialValues = {
   name: '',
   ssh_user: '',
@@ -92,39 +111,26 @@ const validationSchema = Yup.object().shape({
   hostName_ip: Yup.string().required(),
   ssh_port: Yup.string().required(),
   ssh_key_path: Yup.string().required(),
-  sudo_required: Yup.boolean().required()
+  sudo_required: Yup.boolean().required(),
+  workload_plane: Yup.boolean().required(),
+  control_plane: Yup.boolean().required()
 });
 
 class CreateNodeForm extends React.Component {
-  constructor() {
-    super();
-
-    this.createNode = this.createNode.bind(this);
-  }
-  createNode(values, { setSubmitting }) {
-    this.props.createNode(values);
-  }
-
   render() {
+    console.log('errors', this.props.errors);
     return (
-      <div>
-        <h2>Create a New Node</h2>
+      <CreateNodeLayout>
+        <PageHeader>Create a New Node</PageHeader>
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
           validateOnBlur={false}
           validateOnChange={false}
-          onSubmit={this.createNode}
+          onSubmit={this.props.createNode}
         >
           {props => {
-            const {
-              values,
-              // touched,
-              // errors,
-              handleChange,
-              isSubmitting
-              // intl
-            } = props;
+            const { values, handleChange } = props;
             return (
               <Form>
                 <TextInput
@@ -165,29 +171,39 @@ class CreateNodeForm extends React.Component {
                   onChange={handleChange}
                 />
                 <TextInput
+                  type="checkbox"
                   name="workload_plane"
                   label={'Workload Plane'}
-                  type="checkbox"
-                  checked={true}
+                  checked={values.workload_plane}
+                  value={values.workload_plane}
                   disabled
-                  onChange={handleChange}
                 />
                 <TextInput
-                  name="controle_plane"
                   type="checkbox"
+                  name="control_plane"
                   label={'Control Plane'}
                   value={values.control_plane}
                   onChange={handleChange}
                 />
-                <Button text="Create" type="submit" />
+                <ActionContainer>
+                  <Button text="Create" type="submit" />
+                </ActionContainer>
+
+                {this.props.errors && this.props.errors.create_node ? (
+                  <ErrorMessage>{this.props.errors.create_node}</ErrorMessage>
+                ) : null}
               </Form>
             );
           }}
         </Formik>
-      </div>
+      </CreateNodeLayout>
     );
   }
 }
+
+const mapStateToProps = state => ({
+  errors: state.app.nodes.errors
+});
 
 const mapDispatchToProps = dispatch => {
   return {
@@ -196,6 +212,6 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(CreateNodeForm);

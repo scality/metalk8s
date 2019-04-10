@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { Config, Core_v1Api } from '@kubernetes/client-node';
-import { pathToFileURL } from 'url';
 
 let config, coreV1;
 
@@ -73,6 +72,7 @@ export async function createNode(payload) {
       }
     }
   };
+
   try {
     return await coreV1.createNode(body);
   } catch (error) {
