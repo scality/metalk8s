@@ -91,11 +91,17 @@ from salt.ext import six
 log = logging.getLogger(__name__)
 
 
+__virtualname__ = 'kubernetes'
+
+
 def __virtual__():
     '''
     Only load if the kubernetes module is available in __salt__
     '''
-    return 'kubernetes.ping' in __salt__
+    if 'kubernetes.ping' not in __salt__:
+        return False, '`kubernetes.ping` not available'
+    else:
+        return __virtualname__
 
 
 def _error(ret, err_msg):
