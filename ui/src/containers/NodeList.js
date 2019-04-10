@@ -42,6 +42,10 @@ class NodeList extends React.Component {
           dataKey: 'status'
         },
         {
+          label: props.intl.messages.roles,
+          dataKey: 'roles'
+        },
+        {
           label: props.intl.messages.cpu_capacity,
           dataKey: 'cpu'
         },
@@ -99,6 +103,19 @@ class NodeList extends React.Component {
       this.state.sortDirection
     );
 
+    const nodesSortedListWithRoles = nodesSortedList.map(node => {
+      let roles = [];
+      if (node.control_plane) {
+        roles.push(this.props.intl.messages.control_plane);
+      }
+      if (node.workload_plane) {
+        roles.push(this.props.intl.messages.workload_plane);
+      }
+
+      node.roles = roles.join(' / ');
+      return node;
+    });
+
     return (
       <PageContainer>
         <ActionContainer>
@@ -109,7 +126,7 @@ class NodeList extends React.Component {
         </ActionContainer>
         <TableContainer>
           <Table
-            list={nodesSortedList}
+            list={nodesSortedListWithRoles}
             columns={this.state.columns}
             disableHeader={false}
             headerHeight={40}

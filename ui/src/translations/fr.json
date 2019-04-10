@@ -16,12 +16,12 @@
   "restart": "Redémarrage",
   "information": "Information",
   "pods": "Pods",
-
   "ssh_user": "SSH User",
   "hostName_ip": "Hostname or IP",
   "ssh_port": "SSH Port",
   "ssh_key_path": "SSH Key Path",
   "sudo_required": "Sudo requis",
   "workload_plane": "Workload Plane",
-  "control_plane": "Control Plane" 
+  "control_plane": "Control Plane" ,
+  "roles": "Rôles"
 }

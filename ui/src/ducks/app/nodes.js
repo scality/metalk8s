@@ -47,21 +47,43 @@ export function* fetchNodes() {
   if (!result.error) {
     yield put(
       setNodesAction(
-        result.body.items.map(node => ({
-          name: node.metadata.name,
-          status:
+        result.body.items.map(node => {
+          const statusType =
             node.status.conditions &&
-            node.status.conditions.find(conditon => conditon.type === 'Ready')
-              .status,
-          cpu: node.status.capacity && node.status.capacity.cpu,
-          memory:
-            node.status.capacity &&
-            prettifyBytes(
-              convertK8sMemoryToBytes(node.status.capacity.memory),
-              2
-            ).value,
-          creationDate: node.metadata.creationTimestamp
-        }))
+            node.status.conditions.find(conditon => conditon.type === 'Ready');
+
+          let status = 'Unknown';
+          if (statusType && statusType.status === 'True') {
+            status = 'Ready';
+          } else if (statusType && statusType.status === 'True') {
+            status = 'Not Ready';
+          }
+
+          return {
+            name: node.metadata.name,
+            status: status,
+            cpu: node.status.capacity && node.status.capacity.cpu,
+            control_plane:
+              node.metadata &&
+              node.metadata.annotations &&
+              node.metadata.annotations[
+                'metalk8s.scality.com/control-plane'
+              ] === 'true',
+            workload_plane:
+              node.metadata &&
+              node.metadata.annotations &&
+              node.metadata.annotations[
+                'metalk8s.scality.com/workload-plane'
+              ] === 'true',
+            memory:
+              node.status.capacity &&
+              prettifyBytes(
+                convertK8sMemoryToBytes(node.status.capacity.memory),
+                2
+              ).value,
+            creationDate: node.metadata.creationTimestamp
+          };
+        })
       )
     );
   }
