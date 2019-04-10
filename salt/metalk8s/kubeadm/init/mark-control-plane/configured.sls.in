@@ -3,7 +3,7 @@
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
 
-Apply control-plane role label:
+Apply control-plane master role label:
   kubernetes.node_label_present:
     - name: "node-role.kubernetes.io/master"
     - kubeconfig: {{ kubeconfig }}
@@ -11,14 +11,38 @@ Apply control-plane role label:
     - node: {{ hostname }}
     - value: ""
 
-Apply control-plane taints:
+Apply control-plane etcd role label:
+  kubernetes.node_label_present:
+    - name: "node-role.kubernetes.io/etcd"
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - node: {{ hostname }}
+    - value: ""
+
+Apply control-plane bootstrap role label:
+  kubernetes.node_label_present:
+    - name: "node-role.kubernetes.io/bootstrap"
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - node: {{ hostname }}
+    - value: ""
+
+Apply control-plane bootstrap taint:
   kubernetes.node_taints_present:
     - name: {{ hostname }}
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - taints:
-        - key: "node-role.kubernetes.io/master"
+        - key: "node-role.kubernetes.io/bootstrap"
           effect: "NoSchedule"
+
+Apply node version label:
+  kubernetes.node_label_present:
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - name: "metalk8s.scality.com/version"
+    - node: {{ hostname }}
+    - value: "@@VERSION"
 
 Annotate with CRI socket information:
   kubernetes.node_annotation_present:
