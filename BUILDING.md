@@ -43,6 +43,7 @@ Available options are:
   repository)
 - `VAGRANT_PROVIDER`: type of machine to spawn with Vagrant
 - `VAGRANT_UP_ARGS`: command line arguments to pass to `vagrant up`
+- `VAGRANT_SNAPSHOT_NAME`: name of auto generated Vagrant snapshot
 - `DOCKER_BIN`: Docker binary (name or path to the binary)
 - `GIT_BIN`: Git binary (name or path to the binary)
 - `MKISOFS_BIN`: mkisofs binary (name or path to the binary)

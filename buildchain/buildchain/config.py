@@ -37,6 +37,8 @@ _DEFAULT_VAGRANT_UP_ARGS : str = ' '.join((
     '--provider', VAGRANT_PROVIDER
 ))
 
+VAGRANT_SNAPSHOT_NAME: str = 'bootstrap.autosnapshot'
+
 VAGRANT_UP_ARGS : Tuple[str, ...] = tuple(shlex.split(
     os.getenv('VAGRANT_UP_ARGS', _DEFAULT_VAGRANT_UP_ARGS)
 ))
