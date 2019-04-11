@@ -216,6 +216,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/registry/init.sls'),
     Path('salt/metalk8s/registry/macro.sls'),
     Path('salt/metalk8s/registry/populated.sls'),
+    Path('salt/metalk8s/registry/service_deployed.sls'),
     Path('salt/metalk8s/registry/files/registry-pod.yaml.j2'),
 
     Path('salt/metalk8s/salt/master/files/master_99-metalk8s.conf.j2'),
