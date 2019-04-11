@@ -6,8 +6,19 @@ import requests
 import pytest
 from pytest_bdd import parsers, scenario, then, when
 
+
 @scenario('../features/salt_api.feature', 'Login to SaltAPI')
 def test_login_to_salt_api(host):
+    pass
+
+
+@scenario('../features/salt_api.feature', 'Login to SaltAPI using an incorrect password')
+def test_login_to_salt_api_using_an_incorrect_password(host, request):
+    pass
+
+
+@scenario('../features/salt_api.feature', 'Login to SaltAPI using an incorrect username')
+def test_login_to_salt_api_using_an_incorrect_username(host, request):
     pass
 
 
@@ -58,12 +69,21 @@ def login_salt_api(host, username, password, version, context, request):
             'token_type': 'Basic',
         },
     )
-    result = response.json()
 
-    context['salt-api'] = {
+    result = {
         'url': 'http://{ip}:{port}'.format(ip=ip, port=port),
-        'token': result['return'][0]['token'],
+        'token': None,
+        'perms': [],
+        'login-status-code': response.status_code,
     }
+
+    if response.status_code == 200:
+        json_data = response.json()
+
+        result['token'] = json_data['return'][0]['token']
+        result['perms'] = json_data['return'][0]['perms']
+
+    context['salt-api'] = result
 
 
 @then('we can ping all minions')
@@ -85,3 +105,17 @@ def ping_all_minions(host, context):
     result_data = result.json()
 
     assert result_data['return'][0] != []
+
+
+@then('authentication fails')
+def authentication_fails(host, context):
+    assert context['salt-api']['login-status-code'] == 401
+
+@then(parsers.parse(
+    "we can invoke '{modules}' on '{targets}'"))
+def invoke_module_on_target(host, context, modules, targets):
+    assert { targets: [ modules ] } in context['salt-api']['perms']
+
+@then(parsers.parse("we have '{perms}' perms"))
+def have_perms(host, context, perms):
+    assert perms in context['salt-api']['perms']

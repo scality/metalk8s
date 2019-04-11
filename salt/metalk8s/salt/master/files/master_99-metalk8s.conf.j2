@@ -18,7 +18,8 @@ rest_cherrypy:
 
 external_auth:
   kubernetes_rbac:
-    node_admin%:
+    ^kubeconfig: /etc/kubernetes/admin.conf
+    node-admins%:
       - '*':
         - '.*'
       - '@wheel'
