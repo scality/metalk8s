@@ -200,44 +200,36 @@ stages:
             # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
             TF_VAR_nodes_count: "2"
           haltOnFailure: true
-      - SetPropertyFromCommand:
-          name: Save spawned bootstrap IP
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          property: bootstrap_ip
-          command: terraform output bootstrap_ip
-      - ShellCommand:
-          name: Configure SSH config for bootstrap node
-          command: >
-            sed -i s/IP_ADDRESS/$(terraform output bootstrap_ip)/
-            bootstrap_ssh_config
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
       - ShellCommand:
           name: Check SSH config for bootstrap node
           command: |-
+            if [ ! -f ssh_config ]; then
+              echo "Missing SSH config file" >&2
+              exit 1
+            fi
             for _ in $(seq 1 12); do
               sleep 5
-              ssh -F bootstrap_ssh_config bootstrap id && break
+              ssh -F ssh_config bootstrap id && break
             done;
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Copy ISO to bootstrap node
           command: >
-            scp -F bootstrap_ssh_config ../../../../metalk8s.iso bootstrap:
+            scp -F ssh_config ../../../../metalk8s.iso bootstrap:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Create mountpoint in bootstrap node
           command: >
-            ssh -F bootstrap_ssh_config bootstrap
+            ssh -F ssh_config bootstrap
             sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Mount ISO image in bootstrap node
           command: >
-            ssh -F bootstrap_ssh_config bootstrap
+            ssh -F ssh_config bootstrap
             sudo mount -o loop metalk8s.iso
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
@@ -245,14 +237,14 @@ stages:
       - ShellCommand:
           name: Copy bootstrap configuration file in bootstrap node
           command: >
-            scp -F bootstrap_ssh_config bootstrap-config.sh bootstrap: &&
-            ssh -F bootstrap_ssh_config bootstrap sudo bash bootstrap-config.sh
+            scp -F ssh_config bootstrap-config.sh bootstrap: &&
+            ssh -F ssh_config bootstrap sudo bash bootstrap-config.sh
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Start the bootstrap process in bootstrap node
           command: >
-            ssh -F bootstrap_ssh_config bootstrap
+            ssh -F ssh_config bootstrap
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
@@ -260,7 +252,7 @@ stages:
       - ShellCommand:
           name: Install kubectl on the boostrap node
           command: >
-            ssh -F bootstrap_ssh_config bootstrap
+            ssh -F ssh_config bootstrap
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/

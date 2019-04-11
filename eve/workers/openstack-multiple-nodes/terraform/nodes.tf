@@ -71,7 +71,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
       "sudo dhclient -r eth1 eth2",  # Release first
       "sudo dhclient eth1 eth2",  # Then request new IPs
     ]
-}
+  }
 }
 
 variable "nodes_count" {
@@ -117,7 +117,7 @@ resource "openstack_compute_instance_v2" "nodes" {
   }
 
   count = "${var.nodes_count}"
-    }
+}
 
 locals {
   bastion_ip   = "${openstack_compute_instance_v2.bastion.network.0.fixed_ip_v4}"
@@ -127,7 +127,14 @@ locals {
   # see https://github.com/hashicorp/terraform/issues/17048
   # nodes = ["${openstack_compute_instance_v2.nodes.*.network.0.fixed_ip_v4}"]
 
-  }
+  all_instances = "${concat(
+    "${list(
+      "${openstack_compute_instance_v2.bastion.id}",
+      "${openstack_compute_instance_v2.bootstrap.id}"
+    )}",
+    "${openstack_compute_instance_v2.nodes.*.id}"
+  )}"
+}
 
 
 
