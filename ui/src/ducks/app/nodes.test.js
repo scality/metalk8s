@@ -67,7 +67,8 @@ it('create Node success', () => {
   const payload = { test: 'test' };
   const gen = createNode({ payload });
   expect(gen.next().value).toEqual(call(Api.createNode, payload));
-  expect(gen.next({ data: null }).value).toEqual(call(history.push, '/nodes'));
+  expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
+  expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
 
 it('create Node fail', () => {
