@@ -34,6 +34,13 @@ resource "openstack_compute_instance_v2" "bastion" {
       "sudo dhclient eth1 eth2",  # Then request new IPs
     ]
   }
+
+  # Generate Bastion SSH keypair
+  provisioner "remote-exec" {
+    inline = [
+      "ssh-keygen -t rsa -b 4096 -N '' -f /home/centos/.ssh/bastion"
+    ]
+  }
 }
 
 resource "openstack_compute_instance_v2" "bootstrap" {

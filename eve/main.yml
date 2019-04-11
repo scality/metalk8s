@@ -214,6 +214,15 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
+          # FIXME: find a way to share bastion public key to all spawned
+          # instances from Terraform
+          name: Send bastion public key to bootstrap
+          command: >
+            scp -F ssh_config -3 bastion:.ssh/bastion.pub bootstrap:.ssh/ &&
+            ssh -F ssh_config bootstrap
+            "cat .ssh/bastion.pub >> .ssh/authorized_keys"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      - ShellCommand:
           name: Copy ISO to bootstrap node
           command: >
             scp -F ssh_config ../../../../metalk8s.iso bootstrap:
