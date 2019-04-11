@@ -96,6 +96,7 @@ export function* createNode({ payload }) {
   const result = yield call(Api.createNode, payload);
 
   if (!result.error) {
+    yield call(fetchNodes);
     yield call(history.push, '/nodes');
   } else {
     yield put({

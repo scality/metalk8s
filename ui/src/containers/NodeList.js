@@ -8,8 +8,6 @@ import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { Table, Button } from 'core-ui';
 import { padding } from 'core-ui/dist/style/theme';
 
-import { fetchNodesAction } from '../ducks/app/nodes';
-
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -65,10 +63,6 @@ class NodeList extends React.Component {
       ]
     };
     this.onSort = this.onSort.bind(this);
-  }
-
-  componentDidMount() {
-    this.props.fetchNodes();
   }
 
   onSort({ sortBy, sortDirection }) {
@@ -168,17 +162,4 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = dispatch => {
-  return {
-    fetchNodes: () => dispatch(fetchNodesAction())
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(NodeList)
-  )
-);
+export default injectIntl(withRouter(connect(mapStateToProps)(NodeList)));
