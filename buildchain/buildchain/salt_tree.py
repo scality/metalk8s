@@ -73,6 +73,24 @@ PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
 # List of salt files to install.
 SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
+    targets.TemplateFile(
+        task_name='top.sls',
+        source=constants.ROOT/'salt'/'top.sls.in',
+        destination=constants.ISO_ROOT/'salt'/'top.sls',
+        context={'VERSION': constants.SHORT_VERSION},
+        file_dep=[constants.VERSION_FILE],
+    ),
+
+    Path('salt/metalk8s/roles/minion.sls'),
+    Path('salt/metalk8s/roles/bootstrap.sls'),
+    Path('salt/metalk8s/roles/salt-master.sls'),
+    Path('salt/metalk8s/roles/registry.sls'),
+    Path('salt/metalk8s/roles/repository.sls'),
+    Path('salt/metalk8s/roles/ca.sls'),
+    Path('salt/metalk8s/roles/etcd.sls'),
+    Path('salt/metalk8s/roles/master.sls'),
+    Path('salt/metalk8s/roles/node.sls'),
+
     Path('salt/metalk8s/orchestrate/bootstrap_without_master.sls'),
     Path('salt/metalk8s/orchestrate/deploy_etcd_on_new_node.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap_with_master.sls'),
@@ -156,7 +174,13 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubeadm/init/kubeconfig/scheduler.sls'),
 
     Path('salt/metalk8s/kubeadm/init/mark-control-plane/init.sls'),
-    Path('salt/metalk8s/kubeadm/init/mark-control-plane/configured.sls'),
+    targets.TemplateFile(
+        task_name='configured.sls',
+        source=constants.ROOT/'salt'/'metalk8s'/'kubeadm'/'init'/'mark-control-plane'/'configured.sls.in',
+        destination=constants.ISO_ROOT/'salt'/'metalk8s'/'kubeadm'/'init'/'mark-control-plane'/'configured.sls',
+        context={'VERSION': constants.SHORT_VERSION},
+        file_dep=[constants.VERSION_FILE],
+    ),
 
     Path('salt/metalk8s/kubeadm/init/addons/init.sls'),
     Path('salt/metalk8s/kubeadm/init/addons/kube-proxy.sls'),
@@ -206,6 +230,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/ui/deployed.sls'),
     Path('salt/metalk8s/ui/init.sls'),
 
+    Path('salt/_auth/kubernetes_rbac.py'),
+
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
     Path('salt/_modules/docker_registry.py'),
@@ -213,13 +239,16 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_modules/metalk8s.py'),
 
     Path('salt/_pillar/metalk8s.py'),
+    Path('salt/_pillar/metalk8s_nodes.py'),
 
     Path('salt/_roster/kubernetes_nodes.py'),
+
+    Path('salt/_runners/metalk8s_saltutil.py'),
 
     Path('salt/_states/containerd.py'),
     Path('salt/_states/kubeconfig.py'),
     Path('salt/_states/docker_registry.py'),
-    Path('salt/_states/kubernetes.py'),
+    Path('salt/_states/kubernetesmod.py'),
 
     targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,

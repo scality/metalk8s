@@ -1,8 +1,5 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
 
-{%- set etcd_ca_server = salt['mine.get']('*', 'kubernetes_etcd_ca_b64').keys() %}
-{%- if etcd_ca_server %}
-
 include:
   - .installed
 
@@ -23,7 +20,7 @@ Generate apiserver etcd client certificate:
   x509.certificate_managed:
     - name: /etc/kubernetes/pki/apiserver-etcd-client.crt
     - public_key: /etc/kubernetes/pki/apiserver-etcd-client.key
-    - ca_server: {{ etcd_ca_server[0] }}
+    - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ etcd.cert.apiserver_client_signing_policy }}
     - CN: kube-apiserver-etcd-client
     - O: "system:masters"
@@ -34,10 +31,3 @@ Generate apiserver etcd client certificate:
     - dir_mode: 755
     - require:
       - x509: Create apiserver etcd client private key
-
-{%- else %}
-
-Unable to generate apiserver etcd client certificate, no CA server available:
-  test.fail_without_changes: []
-
-{%- endif %}

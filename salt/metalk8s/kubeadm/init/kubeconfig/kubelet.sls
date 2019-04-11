@@ -2,7 +2,7 @@
 
 {%- set hostname = salt.network.get_hostname() %}
 
-{%- set ca_cert_b64 = salt['mine.get']('*', 'kubernetes_ca_server').values()[0] %}
+{%- set ca_cert_b64 = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_ca_server')[pillar['metalk8s']['ca']['minion']] %}
 {%- set ca_cert = salt['hashutil.base64_b64decode'](ca_cert_b64) %}
 
 {%- set cert_info = {'CN': 'system:node:' ~ hostname, 'O': 'system:nodes'} %}

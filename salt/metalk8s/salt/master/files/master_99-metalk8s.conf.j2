@@ -1,17 +1,26 @@
-file_roots:
-  {{ saltenv }}:
-    - {{ iso_root_path }}/salt
-pillar_roots:
-  {{ saltenv }}:
-    - {{ iso_root_path }}/pillar
 peer:
   .*:
     - x509.sign_remote_certificate
 
 ext_pillar:
   - metalk8s: /etc/metalk8s/bootstrap.yaml
+  - metalk8s_nodes: /etc/kubernetes/admin.conf
 
 roster_defaults:
   minion_opts:
     use_superseded:
       - module.run
+
+rest_cherrypy:
+  port: 4507
+  host: {{ salt_api_ip }}
+  disable_ssl: true
+
+external_auth:
+  kubernetes_rbac:
+    node_admin%:
+      - '*':
+        - '.*'
+      - '@wheel'
+      - '@runner'
+      - '@jobs'

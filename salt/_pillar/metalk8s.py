@@ -1,5 +1,4 @@
 import logging
-import os
 import salt.utils.files
 import salt.utils.yaml
 
@@ -18,7 +17,7 @@ def _load_config(path):
     with salt.utils.files.fopen(path, 'rb') as fd:
         config = salt.utils.yaml.safe_load(fd)
 
-    assert config.get('apiVersion') == 'metalk8s.scality.com/v1alpha1'
+    assert config.get('apiVersion') == 'metalk8s.scality.com/v1alpha2'
     assert config.get('kind') == 'BootstrapConfiguration'
 
     return config
@@ -39,26 +38,15 @@ def _load_networks(config_data):
     }
 
 
-def _get_labels(config="/etc/kubernetes/admin.conf",
-                context="kubernetes-admin@kubernetes"):
-    # TODO: Use the "master kubeconfig" instead of /etc/kubernetes/admin.conf
-    #       (Refs: #691)
-    labels = {}
+def _load_ca(config_data):
+    assert 'ca' in config_data
 
-    hostname = __grains__.get('localhost')
-    if not hostname or not os.path.isfile(config):
-        return labels
+    ca_data = config_data['ca']
+    assert 'minion' in ca_data
 
-    try:
-        labels = __salt__['kubernetes.node_labels'](
-            name=hostname,
-            kubeconfig=config,
-            context=context
-        )
-    except Exception as exc:  # pylint: disable=broad-except
-        log.error('Unable to get kubernetes labels for %s:\n%s', hostname, exc)
-
-    return labels
+    return {
+        'minion': ca_data['minion'],
+    }
 
 
 def ext_pillar(minion_id, pillar, bootstrap_config):
@@ -66,5 +54,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
 
     return {
         'networks': _load_networks(config),
-        'k8s_labels': _get_labels()
+        'metalk8s': {
+            'ca': _load_ca(config),
+        },
     }

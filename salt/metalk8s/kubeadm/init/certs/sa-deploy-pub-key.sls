@@ -1,8 +1,6 @@
-{%- set sa_pub_key_server = salt['mine.get']('*', 'kubernetes_sa_pub_key_b64') %}
+{%- set sa_pub_key_server = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_sa_pub_key_b64') %}
 
-{%- if sa_pub_key_server %}
-
-{%- set sa_pub_key_b64 = sa_pub_key_server.values()[0] %}
+{%- set sa_pub_key_b64 = sa_pub_key_server[pillar['metalk8s']['ca']['minion']] %}
 {%- set sa_pub_key = salt['hashutil.base64_b64decode'](sa_pub_key_b64) %}
 
 Ensure SA pub key is present:
@@ -14,5 +12,3 @@ Ensure SA pub key is present:
     - makedirs: True
     - dir_mode: 755
     - contents: {{ sa_pub_key.splitlines() }}
-
-{%- endif %}

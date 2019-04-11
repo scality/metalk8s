@@ -1,10 +1,5 @@
 {%- from "metalk8s/map.jinja" import ca with context %}
 
-{%- set ca_server = salt['mine.get']('*', 'kubernetes_ca_server') %}
-
-{#- Check if we have no CA server or only current minion as CA #}
-{%- if not ca_server or ca_server.keys() == [grains['id']] %}
-
 include:
   - .installed
   - metalk8s.salt.minion.running
@@ -38,8 +33,7 @@ Generate CA certificate:
     - require:
       - x509: Create CA private key
 
-# TODO: Find a better way to advetise CA server
-Advertise CA in the mine:
+Advertise CA certificate in the mine:
   module.wait:
     - mine.send:
       - func: 'kubernetes_ca_server'
@@ -75,10 +69,3 @@ Create CA salt signing_policies:
             - days_valid: {{ ca.signing_policy.days_valid }}
     - watch_in:
       - cmd: Restart salt-minion
-
-{%- else %}
-
-{{ ca_server.keys()|join(', ') }} already configured as Kubernetes CA server, only one can be declared:
-  test.fail_without_changes: []
-
-{%- endif %}

@@ -1,4 +1,5 @@
 {%- from "metalk8s/registry/macro.sls" import build_image_name with context -%}
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -10,7 +11,7 @@ metadata:
     app.kubernetes.io/version: '{{ salt_master_version }}'
     app.kubernetes.io/component: salt
     heritage: metalk8s
-    app.kubernertes.io/part-of: metalk8s
+    app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/managed-by: salt
 spec:
   hostNetwork: true
@@ -68,6 +69,30 @@ spec:
         - name: kubernetes-config
           mountPath: '/etc/kubernetes'
           readOnly: true
+    - name: salt-api
+      image: {{ build_image_name(salt_master_image, salt_master_version) }}
+      command: ['/tini']
+      args: ['salt-api', '--', '--log-level=info']
+      ports:
+        - name: api
+          containerPort: 4507
+          protocol: TCP
+      livenessProbe:
+        httpGet:
+          path: /
+          port: api
+          host: {{ salt_api_ip }}
+      readinessProbe:
+        httpGet:
+          path: /
+          port: api
+          host: {{ salt_api_ip }}
+      volumeMounts:
+        - name: config
+          mountPath: '/etc/salt'
+          readOnly: true
+        - name: run
+          mountPath: '/var/run/salt'
   volumes:
     - name: config
       hostPath:

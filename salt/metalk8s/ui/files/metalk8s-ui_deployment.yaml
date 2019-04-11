@@ -15,7 +15,7 @@ spec:
         k8s-app: ui
     spec:
       tolerations:
-      - key: "node-role.kubernetes.io/master"
+      - key: "node-role.kubernetes.io/bootstrap"
         operator: "Exists"
         effect: "NoSchedule"
       nodeSelector:
