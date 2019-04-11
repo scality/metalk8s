@@ -266,16 +266,27 @@ stages:
             --enablerepo=metalk8s-kubernetes
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       - ShellCommand:
-          name: Run tests on the bootstrap node
+          # FIXME: should find a cleaner way to do this (git clone may be
+          # cumbersome, unless we assume the repo is public and don't use
+          # authentication)
+          name: Copy test sources to the bastion
           env:
-            SSH_CONFIG_FILE: >-
-              eve/workers/openstack-multiple-nodes/terraform/bootstrap_ssh_config
-            ISO_MOUNTPOINT: >-
-              /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
-            TEST_HOSTS_LIST: bootstrap
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
-            tox -e tests --
-            --bootstrap-ip=%(prop:bootstrap_ip)s --skip-tls-verify
+            ssh -F $SSH_CONFIG bastion mkdir metalk8s &&
+            scp -F $SSH_CONFIG tox.ini bastion:metalk8s/ &&
+            scp -F $SSH_CONFIG -r tests bastion:metalk8s/
+      - ShellCommand:
+          name: Run tests on the bastion
+          command: >
+            ssh -F ssh_config bastion
+            "cd metalk8s &&
+            SSH_CONFIG_FILE=/home/centos/ssh_config
+            ISO_MOUNTPOINT=/srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+            TEST_HOSTS_LIST=bootstrap
+            tox -e tests"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Destroy openstack virtual infra

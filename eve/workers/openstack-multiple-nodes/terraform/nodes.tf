@@ -41,6 +41,15 @@ resource "openstack_compute_instance_v2" "bastion" {
       "ssh-keygen -t rsa -b 4096 -N '' -f /home/centos/.ssh/bastion"
     ]
   }
+
+  # Install basic dependencies for running end-to-end tests
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum install -y epel-release",
+      "sudo yum install -y python36-pip",
+      "sudo pip3.6 install tox",
+    ]
+  }
 }
 
 resource "openstack_compute_instance_v2" "bootstrap" {
