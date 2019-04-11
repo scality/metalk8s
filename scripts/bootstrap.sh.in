@@ -147,7 +147,7 @@ EOF
 set_salt_command() {
     echo "Setting salt master command"
     # shellcheck disable=SC2046
-    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --pod $(crictl pods --name salt-master\* -q))"
+    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --label io.kubernetes.container.name=salt-master --label io.kubernetes.pod.namespace=kube-system)"
 }
 
 sync_salt() {
@@ -164,6 +164,8 @@ sync_salt() {
         salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
     crictl exec -i "$SALT_CONTAINER" \
         salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
+    crictl exec -i "$SALT_CONTAINER" \
+        salt-run metalk8s_saltutil.sync_auth saltenv=metalk8s-@@VERSION
 }
 
 orchestrate_bootstrap() {

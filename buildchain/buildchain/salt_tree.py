@@ -213,7 +213,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/registry/populated.sls'),
     Path('salt/metalk8s/registry/files/registry-pod.yaml.j2'),
 
-    Path('salt/metalk8s/salt/master/files/master_99-metalk8s.conf'),
+    Path('salt/metalk8s/salt/master/files/master_99-metalk8s.conf.j2'),
     Path('salt/metalk8s/salt/master/files/salt-master-pod.yaml.j2'),
     Path('salt/metalk8s/salt/master/configured.sls'),
     Path('salt/metalk8s/salt/master/deployed.sls'),
@@ -230,6 +230,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/ui/deployed.sls'),
     Path('salt/metalk8s/ui/init.sls'),
 
+    Path('salt/_auth/kubernetes_rbac.py'),
+
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
     Path('salt/_modules/docker_registry.py'),
@@ -241,10 +243,12 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
     Path('salt/_roster/kubernetes_nodes.py'),
 
+    Path('salt/_runners/metalk8s_saltutil.py'),
+
     Path('salt/_states/containerd.py'),
     Path('salt/_states/kubeconfig.py'),
     Path('salt/_states/docker_registry.py'),
-    Path('salt/_states/kubernetes.py'),
+    Path('salt/_states/kubernetesmod.py'),
 
     targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
