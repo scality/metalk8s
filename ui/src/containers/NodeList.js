@@ -8,7 +8,7 @@ import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { Table, Button } from 'core-ui';
 import { padding } from 'core-ui/dist/style/theme';
 
-import { fetchNodesAction } from '../ducks/app/nodes';
+import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
 import { authenticateSaltApiAction } from '../ducks/login';
 
 const PageContainer = styled.div`
@@ -135,6 +135,21 @@ class NodeList extends React.Component {
       return node;
     });
 
+    const nodesWithActions = nodesSortedListWithRoles.map(node => {
+      return {
+        ...node,
+        actions:
+          !node.status || node.status === 'Unknown'
+            ? [
+                {
+                  label: this.props.intl.messages.deploy,
+                  onClick: this.props.deployNode
+                }
+              ]
+            : null
+      };
+    });
+
     return (
       <PageContainer>
         <ActionContainer>
@@ -146,7 +161,7 @@ class NodeList extends React.Component {
         </ActionContainer>
         <TableContainer>
           <Table
-            list={nodesSortedListWithRoles}
+            list={nodesWithActions}
             columns={this.state.columns}
             disableHeader={false}
             headerHeight={40}
@@ -180,6 +195,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = dispatch => {
   return {
     fetchNodes: () => dispatch(fetchNodesAction()),
+    deployNode: payload => dispatch(deployNodeAction(payload)),
     authenticateSalt: payload => dispatch(authenticateSaltApiAction(payload))
   };
 };
