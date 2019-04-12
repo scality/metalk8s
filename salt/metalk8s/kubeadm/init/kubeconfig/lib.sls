@@ -1,5 +1,4 @@
 {%- from "metalk8s/map.jinja" import defaults with context %}
-{%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
 {% macro kubeconfig(name, cert_info) %}
@@ -8,7 +7,7 @@
 {%- if apiserver_addr %}
 {%- set apiserver = 'https://' ~ apiserver_addr ~ ':6443' %}
 {%- else %}
-{%- set apiserver = 'https://' ~ salt['network.ip_addrs'](cidr=networks.control_plane)[0] ~ ':6443' %}
+{%- set apiserver = 'https://' ~ grains['metalk8s']['control_plane_ip'] ~ ':6443' %}
 {%- endif %}
 
 include:

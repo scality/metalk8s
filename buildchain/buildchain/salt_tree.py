@@ -190,6 +190,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubelet/init.sls'),
     Path('salt/metalk8s/kubelet/installed.sls'),
 
+    Path('salt/metalk8s/node/grains.sls'),
+
     Path('salt/metalk8s/macro.sls'),
     Path('salt/metalk8s/map.jinja'),
 

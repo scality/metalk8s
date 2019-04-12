@@ -1,7 +1,9 @@
 mine_functions:
-  control_plane_ips:
-    - mine_function: metalk8s.get_control_plane_ips
-  workload_plane_ips:
-    - mine_function: metalk8s.get_workload_plane_ips
+  control_plane_ip:
+    mine_function: grains.get
+    key: metalk8s:control_plane_ip
+  workload_plane_ip:
+    mine_function: grains.get
+    key: metalk8s:workload_plane_ip
   etcd_endpoints:
-    - mine_function: metalk8s.get_etcd_endpoint
+    mine_function: metalk8s.get_etcd_endpoint
