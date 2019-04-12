@@ -21,6 +21,7 @@ const CreateNodeLayout = styled.div`
   padding: ${padding.larger};
   form {
     width: 450px;
+    padding: 0 ${padding.larger};
   }
 `;
 
@@ -222,7 +223,7 @@ class NodeCreateForm extends React.Component {
                   label={intl.messages.workload_plane}
                   checked={values.workload_plane}
                   value={values.workload_plane}
-                  disabled
+                  onChange={handleChange}
                 />
                 <TextInput
                   type="checkbox"

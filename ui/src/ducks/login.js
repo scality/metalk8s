@@ -11,6 +11,7 @@ export const FETCH_USER_INFO = 'FETCH_USER_INFO';
 export const SET_USER_INFO_LOADED = 'SET_USER_INFO_LOADED';
 
 export const HASH_KEY = 'token';
+const AUTHENTICATE_SALT = 'AUTHENTICATE_SALT';
 
 // Reducer
 const defaultState = {
@@ -66,6 +67,10 @@ export const setAuthenticationSuccessAction = payload => {
   };
 };
 
+export const authenticateSaltApiAction = payload => {
+  return { type: AUTHENTICATE_SALT, payload };
+};
+
 // Sagas
 export function* authenticate({ payload }) {
   const { username, password } = payload;
@@ -90,6 +95,17 @@ export function* authenticate({ payload }) {
     yield call(history.push, '/');
   }
   yield put(setUserInfoLoadedAction(true));
+}
+
+function* authenticateSaltApi({ payload }) {
+  console.log('payload', payload);
+  const { username, password } = payload;
+  const token = btoa(username + ':' + password); //base64Encode
+  console.log('token', token);
+  const saltApi = yield select(state => state.config.api); // change a bit
+  const result = yield call(Api.authenticateSaltApi, token, saltApi);
+
+  console.log('authenticateSaltApi Saga', result);
 }
 
 export function* logout() {
@@ -124,4 +140,5 @@ export function* authenticateSaga() {
   yield takeEvery(AUTHENTICATE, authenticate);
   yield takeEvery(LOGOUT, logout);
   yield takeEvery(FETCH_USER_INFO, fetchUserInfo);
+  yield takeEvery(AUTHENTICATE_SALT, authenticateSaltApi);
 }
