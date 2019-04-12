@@ -6,6 +6,8 @@ import history from '../history';
 const AUTHENTICATE = 'AUTHENTICATE';
 export const AUTHENTICATION_SUCCESS = 'AUTHENTICATION_SUCCESS';
 export const AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED';
+export const SALT_AUTHENTICATION_SUCCESS = 'SALT_AUTHENTICATION_SUCCESS';
+export const SALT_AUTHENTICATION_FAILED = 'SALT_AUTHENTICATION_FAILED';
 const LOGOUT = 'LOGOUT';
 export const FETCH_USER_INFO = 'FETCH_USER_INFO';
 export const SET_USER_INFO_LOADED = 'SET_USER_INFO_LOADED';
@@ -26,6 +28,11 @@ export default function reducer(state = defaultState, action = {}) {
       return {
         ...state,
         user: action.payload
+      };
+    case SALT_AUTHENTICATION_SUCCESS:
+      return {
+        ...state,
+        salt: action.payload
       };
     case AUTHENTICATION_FAILED:
       return {
@@ -67,6 +74,13 @@ export const setAuthenticationSuccessAction = payload => {
   };
 };
 
+export const setSaltAuthenticationSuccessAction = payload => {
+  return {
+    type: SALT_AUTHENTICATION_SUCCESS,
+    payload
+  };
+};
+
 export const authenticateSaltApiAction = payload => {
   return { type: AUTHENTICATE_SALT, payload };
 };
@@ -98,14 +112,10 @@ export function* authenticate({ payload }) {
 }
 
 function* authenticateSaltApi({ payload }) {
-  console.log('payload', payload);
-  const { username, password } = payload;
-  const token = btoa(username + ':' + password); //base64Encode
-  console.log('token', token);
-  const saltApi = yield select(state => state.config.api); // change a bit
-  const result = yield call(Api.authenticateSaltApi, token, saltApi);
-
-  console.log('authenticateSaltApi Saga', result);
+  const api = yield select(state => state.config.api);
+  const user = yield select(state => state.login.user);
+  const result = yield call(Api.authenticateSaltApi, api.url_salt, user);
+  yield put(setSaltAuthenticationSuccessAction(result));
 }
 
 export function* logout() {

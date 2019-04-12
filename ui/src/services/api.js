@@ -6,7 +6,7 @@ export const ROLE_NODE = 'node-role.kubernetes.io/node';
 export const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
 export const ROLE_BOOTSTRAP = 'node-role.kubernetes.io/bootstrap';
 
-let config, coreV1, saltAPI;
+let config, coreV1;
 
 //Basic Auth
 export async function authenticate(token, api_server) {
@@ -28,36 +28,17 @@ export const updateApiServerConfig = (url, token) => {
   coreV1 = config.makeApiClient(Core_v1Api);
 };
 
-export async function authenticateSaltApi(token) {
-  // TODO
-
+export async function authenticateSaltApi(url, user) {
   try {
-    // const response = await axios.get(api_server.url + '/api/v1', {
-    //   headers: {
-    //     Authorization: 'Basic ' + token
-    //   }
-    // });
-    // config = new Config(api_server.url, token, 'Basic');
-    // coreV1 = config.makeApiClient(Core_v1Api);
-
-    // const url = api_server.url;
-    // const token = '';
-
-    const response = await axios.post('http://172.21.254.14:4507/login', {
-      headers: {
-        Authorization: 'Basic ' + token
-      },
+    return await axios.post(url + '/login', {
       eauth: 'kubernetes_rbac',
-      username: 'admin',
-      token: token,
+      username: user.username,
+      token: user.token,
       token_type: 'Basic'
     });
-
-    return response;
   } catch (error) {
     return { error };
   }
-  return true;
 }
 
 export async function getNodes() {
@@ -136,6 +117,24 @@ export async function createNode(payload) {
 
   try {
     return await coreV1.createNode(body);
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function deployNode(url, token, node) {
+  try {
+    return await axios.post(
+      url,
+      {
+        client: 'local',
+        tgt: node,
+        fun: 'test.ping'
+      },
+      {
+        headers: { 'X-Auth-Token': token }
+      }
+    );
   } catch (error) {
     return { error };
   }
