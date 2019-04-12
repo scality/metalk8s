@@ -8,7 +8,7 @@ import * as Yup from 'yup';
 import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 
-import { Button } from 'core-ui';
+import { Button, Checkbox } from 'core-ui';
 import { gray, fontSize, padding, brand } from 'core-ui/dist/style/theme';
 import {
   createNodeAction,
@@ -109,16 +109,26 @@ const TextInput = ({
       <Label htmlFor={id} error={error}>
         <span>{label}</span>
       </Label>
-      <DebounceInput
-        minLength={1}
-        debounceTimeout={300}
-        id={id}
-        className="text-input"
-        type={type}
-        value={value}
-        onChange={onChange ? onChange : null}
-        {...props}
-      />
+      {type === 'checkbox' ? (
+        <Checkbox
+          id={id}
+          type={type}
+          value={value}
+          onChange={onChange ? onChange : null}
+          {...props}
+        />
+      ) : (
+        <DebounceInput
+          minLength={1}
+          debounceTimeout={300}
+          id={id}
+          className="text-input"
+          type={type}
+          value={value}
+          onChange={onChange ? onChange : null}
+          {...props}
+        />
+      )}
       <InputFeedback error={error} />
     </CreateNodeFormContainer>
   );
@@ -146,7 +156,7 @@ const validationSchema = Yup.object().shape({
   control_plane: Yup.boolean().required()
 });
 
-class CreateNodeForm extends React.Component {
+class NodeCreateForm extends React.Component {
   componentWillUnmount() {
     this.props.clearCreateNodeError();
   }
@@ -202,6 +212,7 @@ class CreateNodeForm extends React.Component {
                   type="checkbox"
                   label={intl.messages.sudo_required}
                   value={values.sudo_required}
+                  checked={values.sudo_required}
                   onChange={handleChange}
                 />
                 <FormTitle>{intl.messages.roles}</FormTitle>
@@ -217,6 +228,7 @@ class CreateNodeForm extends React.Component {
                   type="checkbox"
                   name="control_plane"
                   label={intl.messages.control_plane}
+                  checked={values.control_plane}
                   value={values.control_plane}
                   onChange={handleChange}
                 />
@@ -258,6 +270,6 @@ export default injectIntl(
     connect(
       mapStateToProps,
       mapDispatchToProps
-    )(CreateNodeForm)
+    )(NodeCreateForm)
   )
 );
