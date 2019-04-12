@@ -2341,9 +2341,7 @@ def node_set_taints(node_name, taints, **kwargs):
 def node_unschedulable(node_name, **kwargs):
     '''
     Return unschedulable value of the node identified by the specified name
-
     CLI Examples::
-
         salt '*' kubernetes.node_unschedulable node_name="minikube"
     '''
     match = node(node_name, **kwargs)
@@ -2358,13 +2356,10 @@ def node_set_unschedulable(node_name, unschedulable, **kwargs):
     '''
     Update the unschedulable flag to the provided `unschedulable` value for the
     node identified by the name `node_name`.
-
     CLI Examples::
-
         # To cordon a node
         salt '*' kubernetes.node_set_unschedulable node_name="minikube" \
             unschedulable=True
-
         # To uncordon a node
         salt '*' kubernetes.node_set_unschedulable node_name="minikube" \
             unschedulable=False
@@ -2538,3 +2533,32 @@ def create_namespaced_custom_object(
             raise CommandExecutionError(exc)
     finally:
         _cleanup(**cfg)
+
+
+def node_drain(node_name, **kwargs):
+    '''
+    Drain the the node identified by the name `node_name`.
+
+    CLI Examples::
+
+        salt '*' kubernetes.node_drain node_name="minikube"
+    '''
+
+    '''
+    Data:
+        * List of namespaces
+        * List of pods to evict (for a given namespace)
+        * List of evicted pods to delete (for a given namespace)
+
+    Get list of all namespaces (need to handle continue parameter?)
+    For given node:
+        Get list of all pods in all namespaces (dict(namespace=>node list))
+
+        For each (pod, namespace): try to evict pod
+            success => add (pod, namespace) to list of pods to delete
+            error =>  bail out
+
+        For each (pod, namespace) evicted: try to delete pod
+            error =>  bail out
+    '''
+    return None
