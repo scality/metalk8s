@@ -1,5 +1,4 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
-{%- from "metalk8s/map.jinja" import networks with context %}
 
 include:
   - .installed
@@ -24,7 +23,7 @@ Generate kube-apiserver certificate:
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ kube_api.cert.server_signing_policy }}
     - CN: kube-apiserver
-    - subjectAltName: "DNS:{{ grains['fqdn'] }}, DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, IP:{{ kube_api.service_ip }}, IP:{{ salt['network.ip_addrs'](cidr=networks.control_plane) | join(', IP:') }}"
+    - subjectAltName: "DNS:{{ grains['fqdn'] }}, DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, IP:{{ kube_api.service_ip }}, IP:{{ grains['metalk8s']['control_plane_ip'] }}"
     - user: root
     - group: root
     - mode: 644

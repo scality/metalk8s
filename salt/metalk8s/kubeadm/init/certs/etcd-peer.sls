@@ -1,5 +1,4 @@
 {%- from "metalk8s/map.jinja" import etcd with context %}
-{%- from "metalk8s/map.jinja" import networks with context %}
 
 include:
   - .installed
@@ -24,7 +23,7 @@ Generate etcd peer certificate:
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ etcd.cert.peer_signing_policy }}
     - CN: "{{ grains['fqdn'] }}"
-    - subjectAltName: "DNS:{{ grains['fqdn'] }}, DNS:localhost, IP:{{ salt['network.ip_addrs'](cidr=networks.control_plane) | join(', IP:') }}, IP:127.0.0.1"
+    - subjectAltName: "DNS:{{ grains['fqdn'] }}, DNS:localhost, IP:{{ grains['metalk8s']['control_plane_ip'] }}, IP:127.0.0.1"
     - user: root
     - group: root
     - mode: 644

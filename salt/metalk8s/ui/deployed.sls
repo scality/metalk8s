@@ -1,9 +1,16 @@
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
-{%- set control_plane_ips = salt.saltutil.runner('mine.get', tgt='*', fun='control_plane_ips') %}
-{%- if pillar['bootstrap_id'] in control_plane_ips.keys() and control_plane_ips[pillar['bootstrap_id']] %}
-{%- set control_plane_ip = control_plane_ips[pillar['bootstrap_id']][0] %}
+
+{%- if pillar['bootstrap_id'] %}
+{%-   set control_plane_ips = salt.saltutil.runner('mine.get', tgt=pillar['bootstrap_id'], fun='control_plane_ip') %}
+{%- else %}
+{%-   set control_plane_ips = {} %}
 {%- endif %}
+
+{%- if pillar['bootstrap_id'] in control_plane_ips.keys() and control_plane_ips[pillar['bootstrap_id']] %}
+{%-   set control_plane_ip = control_plane_ips[pillar['bootstrap_id']] %}
+{%- endif %}
+
 
 Create metalk8s-ui deployment:
   kubernetes.deployment_present:
