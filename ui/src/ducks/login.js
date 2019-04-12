@@ -106,7 +106,7 @@ export function* authenticate({ payload }) {
   yield put(setUserInfoLoadedAction(true));
 }
 
-function* authenticateSaltApi() {
+export function* authenticateSaltApi() {
   const api = yield select(state => state.config.api);
   const user = yield select(state => state.login.user);
   const result = yield call(Api.authenticateSaltApi, api.url_salt, user);
