@@ -13,11 +13,12 @@ import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
-import { fetchThemeAction } from '../ducks/config';
+
+import { fetchNodesAction } from '../ducks/app/nodes';
 
 class Layout extends Component {
   componentDidMount() {
-    this.props.fetchTheme();
+    this.props.fetchNodes();
   }
 
   render() {
@@ -108,7 +109,7 @@ const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
-    fetchTheme: () => dispatch(fetchThemeAction())
+    fetchNodes: () => dispatch(fetchNodesAction())
   };
 };
 

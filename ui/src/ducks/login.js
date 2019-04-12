@@ -4,14 +4,19 @@ import history from '../history';
 
 // Actions
 const AUTHENTICATE = 'AUTHENTICATE';
-const AUTHENTICATION_SUCCESS = 'AUTHENTICATION_SUCCESS';
-const AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED';
+export const AUTHENTICATION_SUCCESS = 'AUTHENTICATION_SUCCESS';
+export const AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED';
 const LOGOUT = 'LOGOUT';
+export const FETCH_USER_INFO = 'FETCH_USER_INFO';
+export const SET_USER_INFO_LOADED = 'SET_USER_INFO_LOADED';
+
+export const HASH_KEY = 'token';
 
 // Reducer
 const defaultState = {
   user: null,
-  error: null
+  error: null,
+  isUserInfoLoaded: false
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -26,6 +31,12 @@ export default function reducer(state = defaultState, action = {}) {
         ...state,
         errors: { authentication: action.payload.message }
       };
+    case SET_USER_INFO_LOADED:
+      return {
+        ...state,
+        isUserInfoLoaded: action.payload
+      };
+
     default:
       return state;
   }
@@ -40,6 +51,14 @@ export const logoutAction = () => {
   return { type: LOGOUT };
 };
 
+export const fetchUserInfoAction = () => {
+  return { type: FETCH_USER_INFO };
+};
+
+export const setUserInfoLoadedAction = payload => {
+  return { type: SET_USER_INFO_LOADED, payload };
+};
+
 export const setAuthenticationSuccessAction = payload => {
   return {
     type: AUTHENTICATION_SUCCESS,
@@ -48,7 +67,7 @@ export const setAuthenticationSuccessAction = payload => {
 };
 
 // Sagas
-function* authenticate({ payload }) {
+export function* authenticate({ payload }) {
   const { username, password } = payload;
   const token = btoa(username + ':' + password); //base64Encode
   const api_server = yield select(state => state.config.api);
@@ -60,7 +79,7 @@ function* authenticate({ payload }) {
       payload: result.error.response.data
     });
   } else {
-    localStorage.setItem('token', token);
+    localStorage.setItem(HASH_KEY, token);
     yield put(
       setAuthenticationSuccessAction({
         username,
@@ -70,14 +89,39 @@ function* authenticate({ payload }) {
     );
     yield call(history.push, '/');
   }
+  yield put(setUserInfoLoadedAction(true));
 }
 
-function* logout() {
-  yield call(Api.logout);
+export function* logout() {
+  yield call(() => localStorage.removeItem(HASH_KEY));
   yield call(history.push, '/login');
+}
+
+export function* fetchUserInfo() {
+  const token = localStorage.getItem(HASH_KEY);
+  if (token) {
+    const api_server = yield select(state => state.config.api);
+    yield call(Api.updateApiServerConfig, api_server.url, token);
+
+    const decryptedToken = atob(token);
+    const splits = decryptedToken.split(':');
+    const username = splits.length > 1 ? splits[0] : null;
+    const password = splits.length > 1 ? splits[1] : null;
+    yield put(
+      setAuthenticationSuccessAction({
+        username,
+        password,
+        token
+      })
+    );
+  } else {
+    yield call(history.push, '/login');
+  }
+  yield put(setUserInfoLoadedAction(true));
 }
 
 export function* authenticateSaga() {
   yield takeEvery(AUTHENTICATE, authenticate);
   yield takeEvery(LOGOUT, logout);
+  yield takeEvery(FETCH_USER_INFO, fetchUserInfo);
 }
