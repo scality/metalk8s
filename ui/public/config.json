@@ -1,4 +1,4 @@
 {
-    "url": "https://localhost:8080",
-    "salt_url": "http://localhost:8081"
+    "url": "https://172.21.254.13:6443", 
+    "url_salt": "http://172.21.254.13:4507"
 }
