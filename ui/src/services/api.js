@@ -127,9 +127,14 @@ export async function deployNode(url, token, node) {
     return await axios.post(
       url,
       {
-        client: 'local',
-        tgt: node,
-        fun: 'test.ping'
+        client: 'runner',
+        fun: 'state.orch',
+        arg: ['metalk8s.orchestrate.deploy_salt_minion_on_new_node'],
+        kwarg: {
+          saltenv: 'metalk8s-2.0',
+          // FIXME We need to remove the hardcoded the boostrap id.
+          pillar: { bootstrap_id: 'boostrap', node_name: node }
+        }
       },
       {
         headers: { 'X-Auth-Token': token }

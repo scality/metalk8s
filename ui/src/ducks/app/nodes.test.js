@@ -21,10 +21,11 @@ it('update the nodes state when fetchNodes', () => {
               'metalk8s.scality.com/ssh-host': '172.21.254.7',
               'metalk8s.scality.com/ssh-key-path':
                 '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true',
-              'metalk8s.scality.com/workload-plane': 'true',
-              'metalk8s.scality.com/control-plane:': 'true'
+              'metalk8s.scality.com/ssh-sudo': 'true'
             }
+          },
+          label: {
+            'node-role.kubernetes.io/bootstrap': ''
           },
           status: {
             capacity: {
@@ -50,6 +51,7 @@ it('update the nodes state when fetchNodes', () => {
       memory: '1000 KiB',
       creationDate: '2019-29-03',
       control_plane: false,
+      bootstrap: '',
       statusType: {
         status: 'True',
         type: 'Ready'
