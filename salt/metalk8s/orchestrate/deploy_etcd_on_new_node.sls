@@ -1,16 +1,7 @@
-{%- set control_plane_ips = salt.saltutil.runner('mine.get', tgt='*', fun='control_plane_ips') %}
+{%- set control_plane_ips = salt.saltutil.runner('mine.get', tgt='*', fun='control_plane_ip') %}
 
-{%- if pillar['bootstrap_id'] in control_plane_ips.keys() and control_plane_ips[pillar['bootstrap_id']] %}
-{%- set bootstrap_ip = control_plane_ips[pillar['bootstrap_id']][0] %}
-{%- else %}
-{%- set bootstrap_ip = 'localhost' %}
-{%- endif %}
-
-{%- if pillar['node_name'] in control_plane_ips.keys() and control_plane_ips[pillar['node_name']] %}
-{%- set node_ip = control_plane_ips[pillar['node_name']][0] %}
-{%- else %}
-{%- set node_ip = 'localhost' %}
-{%- endif %}
+{% set control_plane_ip = control_plane_ips.get(pillar['bootstrap_id']) | default('localhost', true) %}
+{% set node_ip = grains['metalk8s']['control_plane_ip'] %}
 
 {#- etcd endpoint of the new node. #}
 {%- set endpoint  = 'https://' ~ node_ip ~ ':2380' %}

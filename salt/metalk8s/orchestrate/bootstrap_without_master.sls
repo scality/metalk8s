@@ -3,6 +3,11 @@ Run bootstrap prechecks:
     - tgt: local
     - sls: metalk8s.bootstrap.precheck
 
+Set grains:
+  salt.state:
+    - tgt: local
+    - sls: metalk8s.node.grains
+
 Run bootstrap kube client:
   salt.state:
     - tgt: local

@@ -18,9 +18,7 @@ Set up default basic auth htpasswd:
     - makedirs: True
     - dir_mode: 750
 
-{% set ip_candidates = salt.network.ip_addrs(cidr=networks.control_plane) %}
-{% if ip_candidates %}
-{% set host = ip_candidates[0] %}
+{% set host = grains['metalk8s']['control_plane_ip'] %}
 Create kube-apiserver Pod manifest:
   file.managed:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -90,9 +88,3 @@ Make sure kube-apiserver container is up:
       - state: running
     - watch:
       - file: Create kube-apiserver Pod manifest
-
-{% else %}
-No available advertise IP for kube-apiserver:
-  test.fail_without_changes:
-    - msg: "Could not find available IP in {{ networks.control_plane }}"
-{% endif %}
