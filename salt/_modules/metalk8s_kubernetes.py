@@ -2545,20 +2545,75 @@ def node_drain(node_name, **kwargs):
     '''
 
     '''
-    Data:
-        * List of namespaces
-        * List of pods to evict (for a given namespace)
-        * List of evicted pods to delete (for a given namespace)
 
-    Get list of all namespaces (need to handle continue parameter?)
-    For given node:
-        Get list of all pods in all namespaces (dict(namespace=>node list))
+    Cordon node (e).
 
-        For each (pod, namespace): try to evict pod
-            success => add (pod, namespace) to list of pods to delete
-            error =>  bail out
+    Get list of all pods to delete (e):
+        => Get all pods in all namespaces on given node (e).
+        => If pod cannot be deleted/evicted, raise error.
 
-        For each (pod, namespace) evicted: try to delete pod
-            error =>  bail out
+    For each pod to delete:
+        If pod supports eviction:
+            evict pod (e)
+        else:
+            delete pod (e)
+
+    If no error => success, node is drained...
+    else:
+        Get list of all pods to delete (e)
+        => Return this list as list of pending pods
+           (aka. not processed when error occured).
+
+    (e) if error, bail out...
     '''
-    return None
+    def getPodsForDeletion(node_name):
+        '''Get list of pods that can be deleted/evicted on
+        node identified by the name `node_name`.
+        '''
+        try:
+            api_instance = kubernetes.client.CoreV1Api()
+            api_response = api_instance.list_pod_for_all_namespaces(
+                field_selector='spec.nodeName={0}'.format(node_name)
+            )
+            # TODO: filter pods to delete/evict
+            # TODO: raise error if something else is found
+            pods = api_response.items
+
+            return pods
+        except (ApiException, HTTPError) as exc:
+            if isinstance(exc, ApiException) and exc.status == 404:
+                return None
+            else:
+                log.exception(
+                    'Exception when calling '
+                    'CoreV1Api->list_pod_for_all_namespaces')
+                raise CommandExecutionError(exc)
+
+    def deleteOrEvictPods(pods):
+        ''''Delete or evict all pods in given list'''
+        # raise ValueError("fake error")
+        pass
+
+    cfg = _setup_conn(**kwargs)
+    try:
+        # TODO: cordon node
+
+        pods = getPodsForDeletion(node_name)
+
+        try:
+            deleteOrEvictPods(pods)
+        except Exception as exc:  # TODO: be more specific...
+            remainingPods = getPodsForDeletion(node_name)
+            raise CommandExecutionError(
+                "There are pending pods when an error occurred: {0}"
+                .format(exc), [pod.metadata.name for pod in remainingPods])
+        else:
+            # TODO: (dev) remove this...
+            return ["{0} ({1})".format(
+                pod.metadata.name, pod.metadata.namespace) for pod in pods]
+
+    except CommandExecutionError as exc:
+        raise
+    finally:
+        _cleanup(**cfg)
+
