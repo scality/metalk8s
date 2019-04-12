@@ -9,7 +9,13 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 
 import { Button, Checkbox } from 'core-ui';
-import { gray, fontSize, padding, brand } from 'core-ui/dist/style/theme';
+import {
+  gray,
+  fontSize,
+  padding,
+  brand,
+  warmRed
+} from 'core-ui/dist/style/theme';
 import {
   createNodeAction,
   clearCreateNodeErrorAction
@@ -31,6 +37,7 @@ const PageHeader = styled.h2`
 
 const CreateNodeFormContainer = styled.div`
   display: flex;
+  flex-wrap: wrap;
   margin: ${padding.base} 0;
 
   input[type='checkbox'] {
@@ -49,6 +56,12 @@ const CreateNodeFormContainer = styled.div`
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075),
       0 0 0 3px rgba(0, 126, 255, 0.1);
     outline: none;
+  }
+
+  .input-feedback {
+    color: ${warmRed};
+    margin: ${padding.smaller} ${padding.base};
+    font-size: ${fontSize.small};
   }
 `;
 
@@ -147,7 +160,9 @@ const initialValues = {
 };
 
 const validationSchema = Yup.object().shape({
-  name: Yup.string().required(),
+  name: Yup.string()
+    .min(1)
+    .required(),
   ssh_user: Yup.string().required(),
   hostName_ip: Yup.string().required(),
   ssh_port: Yup.string().required(),
@@ -163,7 +178,7 @@ class NodeCreateForm extends React.Component {
   }
 
   render() {
-    const { intl, errors } = this.props;
+    const { intl, asyncErrors } = this.props;
     return (
       <CreateNodeLayout>
         <PageHeader>{intl.messages.create_new_node}</PageHeader>
@@ -175,7 +190,7 @@ class NodeCreateForm extends React.Component {
           onSubmit={this.props.createNode}
         >
           {props => {
-            const { values, handleChange } = props;
+            const { values, handleChange, isValid, touched, errors } = props;
             return (
               <Form>
                 <TextInput
@@ -183,30 +198,35 @@ class NodeCreateForm extends React.Component {
                   label={intl.messages.name}
                   value={values.name}
                   onChange={handleChange}
+                  error={touched.name && errors.name}
                 />
                 <TextInput
                   name="ssh_user"
                   label={intl.messages.ssh_user}
                   value={values.ssh_user}
                   onChange={handleChange}
+                  error={touched.ssh_user && errors.ssh_user}
                 />
                 <TextInput
                   name="hostName_ip"
                   label={intl.messages.hostName_ip}
                   value={values.hostName_ip}
                   onChange={handleChange}
+                  error={touched.hostName_ip && errors.hostName_ip}
                 />
                 <TextInput
                   name="ssh_port"
                   label={intl.messages.ssh_port}
                   value={values.ssh_port}
                   onChange={handleChange}
+                  error={touched.ssh_port && errors.ssh_port}
                 />
                 <TextInput
                   name="ssh_key_path"
                   label={intl.messages.ssh_key_path}
                   value={values.ssh_key_path}
                   onChange={handleChange}
+                  error={touched.ssh_key_path && errors.ssh_key_path}
                 />
                 <TextInput
                   name="sudo_required"
@@ -224,6 +244,11 @@ class NodeCreateForm extends React.Component {
                   checked={values.workload_plane}
                   value={values.workload_plane}
                   onChange={handleChange}
+                  error={
+                    values.workload_plane || values.control_plane
+                      ? ''
+                      : intl.messages.role_values_error
+                  }
                 />
                 <TextInput
                   type="checkbox"
@@ -232,6 +257,11 @@ class NodeCreateForm extends React.Component {
                   checked={values.control_plane}
                   value={values.control_plane}
                   onChange={handleChange}
+                  error={
+                    values.workload_plane || values.control_plane
+                      ? ''
+                      : intl.messages.role_values_error
+                  }
                 />
                 <ActionContainer>
                   <Button
@@ -240,11 +270,18 @@ class NodeCreateForm extends React.Component {
                     outlined
                     onClick={() => this.props.history.push('/nodes')}
                   />
-                  <Button text={intl.messages.create} type="submit" />
+                  <Button
+                    text={intl.messages.create}
+                    type="submit"
+                    disabled={
+                      !isValid ||
+                      !(values.workload_plane || values.control_plane) //TODO: TO BE IMPROVED
+                    }
+                  />
                 </ActionContainer>
 
-                {errors && errors.create_node ? (
-                  <ErrorMessage>{errors.create_node}</ErrorMessage>
+                {asyncErrors && asyncErrors.create_node ? (
+                  <ErrorMessage>{asyncErrors.create_node}</ErrorMessage>
                 ) : null}
               </Form>
             );
@@ -256,7 +293,7 @@ class NodeCreateForm extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  errors: state.app.nodes.errors
+  asyncErrors: state.app.nodes.errors
 });
 
 const mapDispatchToProps = dispatch => {
