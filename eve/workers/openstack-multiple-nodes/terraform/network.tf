@@ -11,12 +11,12 @@ variable "openstack_network" {
 # Default internal networks
 variable "control_plane_cidr" {
   type    = "string"
-  default = "172.21.254.0/28"
+  default = "172.42.254.0/28"
 }
 
 variable "workload_plane_cidr" {
   type    = "string"
-  default = "172.21.254.32/27"
+  default = "172.42.254.32/27"
 }
 
 
