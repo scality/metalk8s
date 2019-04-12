@@ -1,3 +1,4 @@
 {
-    "url": "https://localhost:8080"
+    "url": "https://localhost:8080",
+    "salt_url": "http://localhost:8081"
 }
