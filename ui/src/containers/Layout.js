@@ -6,7 +6,7 @@ import { matchPath } from 'react-router';
 import { Layout as CoreUILayout } from 'core-ui';
 import { withRouter, Switch } from 'react-router-dom';
 
-import CreateNodeForm from './CreateNodeForm';
+import NodeCreateForm from './NodeCreateForm';
 import NodeList from './NodeList';
 import NodeInformation from './NodeInformation';
 import Welcome from '../components/Welcome';
@@ -85,7 +85,7 @@ class Layout extends Component {
             <PrivateRoute
               exact
               path="/nodes/create"
-              component={CreateNodeForm}
+              component={NodeCreateForm}
             />
             <PrivateRoute exact path="/nodes/:id" component={NodeInformation} />
             <PrivateRoute exact path="/nodes" component={NodeList} />
