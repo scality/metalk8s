@@ -111,11 +111,15 @@ class NodeList extends React.Component {
 
     const nodesSortedListWithRoles = nodesSortedList.map(node => {
       let roles = [];
-      if (node.control_plane) {
-        roles.push(intl.messages.control_plane);
-      }
-      if (node.workload_plane) {
-        roles.push(intl.messages.workload_plane);
+      if (node.bootstrap) {
+        roles.push(intl.messages.bootstrap);
+      } else {
+        if (node.control_plane) {
+          roles.push(intl.messages.control_plane);
+        }
+        if (node.workload_plane) {
+          roles.push(intl.messages.workload_plane);
+        }
       }
       node.roles = roles.join(' / ');
 
