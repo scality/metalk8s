@@ -1,6 +1,10 @@
 import axios from 'axios';
 import { Config, Core_v1Api } from '@kubernetes/client-node';
 
+const ROLE_MASTER = 'node-role.kubernetes.io/master';
+const ROLE_NODE = 'node-role.kubernetes.io/node';
+const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
+
 let config, coreV1, saltAPI;
 
 //Basic Auth
@@ -91,17 +95,43 @@ export async function createNode(payload) {
   const body = {
     metadata: {
       name: payload.name,
+      labels: {
+        'metalk8s.scality.com/version': '2.0'
+      },
       annotations: {
         'metalk8s.scality.com/ssh-user': payload.ssh_user,
         'metalk8s.scality.com/ssh-port': payload.ssh_port,
         'metalk8s.scality.com/ssh-host': payload.hostName_ip,
         'metalk8s.scality.com/ssh-key-path': payload.ssh_key_path,
-        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString(),
-        'metalk8s.scality.com/workload-plane': payload.workload_plane.toString(),
-        'metalk8s.scality.com/control-plane': payload.control_plane.toString()
+        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString()
       }
+    },
+    spec: {
+      taints: []
     }
   };
+
+  if (payload.workload_plane && payload.control_plane) {
+    body.metadata.labels[ROLE_MASTER] = '';
+    body.metadata.labels[ROLE_NODE] = '';
+    body.metadata.labels[ROLE_ETCD] = '';
+  } else if (!payload.workload_plane && payload.control_plane) {
+    body.metadata.labels[ROLE_MASTER] = '';
+    body.metadata.labels[ROLE_ETCD] = '';
+
+    body.spec.taints = body.spec.taints.concat([
+      {
+        key: ROLE_MASTER,
+        effect: 'NoSchedule'
+      },
+      {
+        key: ROLE_ETCD,
+        effect: 'NoSchedule'
+      }
+    ]);
+  } else if (payload.workload_plane && !payload.control_plane) {
+    body.metadata.labels[ROLE_NODE] = '';
+  }
 
   try {
     return await coreV1.createNode(body);
