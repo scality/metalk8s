@@ -31,5 +31,6 @@
   "cancel": "Annuler",
   "unknown": "Inconnu",
   "ready": "Prêt",
-  "not_ready": "Pas prêt"
+  "not_ready": "Pas prêt",
+  "deploy": "Déployer"
 }

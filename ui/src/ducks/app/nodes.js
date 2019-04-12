@@ -1,4 +1,4 @@
-import { call, put, takeLatest, takeEvery } from 'redux-saga/effects';
+import { call, put, takeLatest, takeEvery, select } from 'redux-saga/effects';
 import * as Api from '../../services/api';
 import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
 import history from '../../history';
@@ -9,6 +9,7 @@ export const SET_NODES = 'SET_NODES';
 const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
+const DEPLOY_NODE = 'DEPLOY_NODE';
 
 // Reducer
 const defaultState = {
@@ -49,6 +50,10 @@ export const createNodeAction = payload => {
 
 export const clearCreateNodeErrorAction = () => {
   return { type: CLEAR_CREATE_NODE_ERROR };
+};
+
+export const deployNodeAction = payload => {
+  return { type: DEPLOY_NODE, payload };
 };
 
 // Sagas
@@ -106,7 +111,22 @@ export function* createNode({ payload }) {
   }
 }
 
+export function* deployNode({ payload }) {
+  const salt = yield select(state => state.login.salt);
+  const api = yield select(state => state.config.api);
+  const result = yield call(
+    Api.deployNode,
+    api.url_salt,
+    salt.data.return[0].token,
+    payload.name
+  );
+  if (!result.error) {
+    alert('PING SALT OK');
+  }
+}
+
 export function* nodesSaga() {
   yield takeLatest(FETCH_NODES, fetchNodes);
   yield takeEvery(CREATE_NODE, createNode);
+  yield takeEvery(DEPLOY_NODE, deployNode);
 }
