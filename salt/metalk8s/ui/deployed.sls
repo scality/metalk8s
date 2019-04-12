@@ -45,7 +45,7 @@ Create metalk8s-ui ConfigMap:
     - context: {{ context }} 
     - data:
         config.json: |
-          {"url": "https://{{ control_plane_ip }}:6443"}
+          {"url": "https://{{ control_plane_ip }}:6443", "url_salt": "http://{{ control_plane_ip }}:4507"}
         theme.json: |
           {"brand": {"primary": "#21157A"}}
   require:
