@@ -1,12 +1,9 @@
 {% from "metalk8s/registry/macro.sls" import build_image_name with context %}
-{% from "metalk8s/map.jinja" import networks with context %}
 
 {% set image_name = build_image_name('etcd', '3.2.18') %}
 
 {% set host_name = salt.network.get_hostname() %}
-{% set ip_candidates = salt.network.ip_addrs(cidr=networks.control_plane) %}
-{% if ip_candidates %}
-{% set host = ip_candidates[0] %}
+{% set host = grains['metalk8s']['control_plane_ip'] %}
 
 {% set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
 
@@ -89,9 +86,3 @@ Advertise etcd node in the mine:
       - mine_function: metalk8s.get_etcd_endpoint
     - watch:
       - file: Create local etcd Pod manifest
-
-{% else %}
-No available advertise IP for etcd:
-  test.fail_without_changes:
-    - msg: "Could not find available IP in {{ networks.control_plane }}"
-{% endif %}

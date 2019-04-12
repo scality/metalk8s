@@ -7,7 +7,7 @@
 {% set context = "kubernetes-admin@kubernetes" %}
 
 {#- TODO: Not always use local machine as apiserver #}
-{%- set apiserver = 'https://' ~ salt['network.ip_addrs'](cidr=networks.control_plane)[0] ~ ':6443' %}
+{%- set apiserver = 'https://' ~ grains['metalk8s']['control_plane_ip'] ~ ':6443' %}
 
 Deploy kube-proxy (ServiceAccount):
   kubernetes.serviceaccount_present:
@@ -76,9 +76,7 @@ Deploy kube-proxy (ConfigMap):
           metricsBindAddress: 127.0.0.1:10249
           mode: ""
           nodePortAddresses:
-{%- for address in salt['network.ip_addrs'](cidr=networks.workload_plane) %}
-          - {{ address }}/32
-{%- endfor %}
+          - {{ networks.workload_plane }}
           oomScoreAdj: -999
           portRange: ""
           resourceContainer: /kube-proxy

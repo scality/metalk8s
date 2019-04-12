@@ -32,30 +32,6 @@ def deps_missing(*args, **kwargs):
     raise CommandExecutionError("Kubernetes python client is not installed")
 
 
-def get_control_plane_ips():
-    '''
-    Get control plane IPs using CIDR from pillar
-    '''
-    cidr = __pillar__.get('networks', {}).get('control_plane')
-
-    if not cidr:
-        return
-
-    return __salt__['network.ip_addrs'](cidr=cidr)
-
-
-def get_workload_plane_ips():
-    '''
-    Get worload plane IPs using CIDR from pillar
-    '''
-    cidr = __pillar__.get('networks', {}).get('workload_plane')
-
-    if not cidr:
-        return
-
-    return __salt__['network.ip_addrs'](cidr=cidr)
-
-
 def get_etcd_endpoint():
     '''Get endpoint only if it's an etcd node.'''
     DEFAULT_ETCD_PORT = 2380
