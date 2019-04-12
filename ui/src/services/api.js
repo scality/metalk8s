@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { Config, Core_v1Api } from '@kubernetes/client-node';
 
-const ROLE_MASTER = 'node-role.kubernetes.io/master';
-const ROLE_NODE = 'node-role.kubernetes.io/node';
-const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
+export const ROLE_MASTER = 'node-role.kubernetes.io/master';
+export const ROLE_NODE = 'node-role.kubernetes.io/node';
+export const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
+export const ROLE_BOOTSTRAP = 'node-role.kubernetes.io/bootstrap';
 
 let config, coreV1, saltAPI;
 

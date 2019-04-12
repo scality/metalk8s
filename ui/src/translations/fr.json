@@ -23,6 +23,7 @@
   "sudo_required": "Sudo requis",
   "workload_plane": "Workload Plane",
   "control_plane": "Control Plane" ,
+  "bootstrap": "Bootstrap",
   "roles": "Rôles",
   "create_new_node": "Créer un nouveau node",
   "create": "Créer",

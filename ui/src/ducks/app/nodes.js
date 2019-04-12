@@ -68,16 +68,16 @@ export function* fetchNodes() {
             cpu: node.status.capacity && node.status.capacity.cpu,
             control_plane:
               node.metadata &&
-              node.metadata.annotations &&
-              node.metadata.annotations[
-                'metalk8s.scality.com/control-plane'
-              ] === 'true',
+              node.metadata.labels &&
+              node.metadata.labels[Api.ROLE_MASTER] !== undefined,
             workload_plane:
               node.metadata &&
-              node.metadata.annotations &&
-              node.metadata.annotations[
-                'metalk8s.scality.com/workload-plane'
-              ] === 'true',
+              node.metadata.labels &&
+              node.metadata.labels[Api.ROLE_NODE] !== undefined,
+            bootstrap:
+              node.metadata &&
+              node.metadata.labels &&
+              node.metadata.labels[Api.ROLE_BOOTSTRAP] !== undefined,
             memory:
               node.status.capacity &&
               prettifyBytes(
