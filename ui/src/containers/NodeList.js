@@ -9,7 +9,6 @@ import { Table, Button } from 'core-ui';
 import { padding } from 'core-ui/dist/style/theme';
 
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
-import { authenticateSaltApiAction } from '../ducks/login';
 
 const PageContainer = styled.div`
   display: flex;
@@ -93,13 +92,6 @@ class NodeList extends React.Component {
     return sortedList;
   });
 
-  testSaltApi() {
-    this.props.authenticateSalt({
-      username: 'admin',
-      password: 'admin'
-    });
-  }
-
   render() {
     const { intl } = this.props;
 
@@ -157,7 +149,6 @@ class NodeList extends React.Component {
             text={intl.messages.create_new_node}
             onClick={() => this.props.history.push('/nodes/create')}
           />
-          <Button text={'test'} onClick={() => this.testSaltApi()} />
         </ActionContainer>
         <TableContainer>
           <Table
@@ -195,8 +186,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = dispatch => {
   return {
     fetchNodes: () => dispatch(fetchNodesAction()),
-    deployNode: payload => dispatch(deployNodeAction(payload)),
-    authenticateSalt: payload => dispatch(authenticateSaltApiAction(payload))
+    deployNode: payload => dispatch(deployNodeAction(payload))
   };
 };
 
