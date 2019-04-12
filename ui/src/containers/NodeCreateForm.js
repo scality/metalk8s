@@ -160,9 +160,7 @@ const initialValues = {
 };
 
 const validationSchema = Yup.object().shape({
-  name: Yup.string()
-    .min(1)
-    .required(),
+  name: Yup.string().required(),
   ssh_user: Yup.string().required(),
   hostName_ip: Yup.string().required(),
   ssh_port: Yup.string().required(),
