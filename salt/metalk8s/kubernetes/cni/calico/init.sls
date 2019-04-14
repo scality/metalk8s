@@ -1,4 +1,3 @@
 include:
   - .installed
   - .configured
-  - .deployed

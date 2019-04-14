@@ -1,8 +1,8 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
-{%- from "metalk8s/map.jinja" import defaults with context %}
+{%- from "metalk8s/map.jinja" import kubernetes with context %}
 
 include:
-  - metalk8s.kubeadm.init.certs.installed
+  - metalk8s.internal.m2crypto
 
 Create kubeconf file for calico:
   metalk8s_kubeconfig.managed:
@@ -13,7 +13,7 @@ Create kubeconf file for calico:
         CN: {{ salt['network.get_hostname']() }}
         O: metalk8s:calico-node
     - apiserver: https://{{ kube_api.service_ip }}:443
-    - cluster: {{ defaults.cluster }}
+    - cluster: {{ kubernetes.cluster }}
     - require:
       - pkg: Install m2crypto
 
