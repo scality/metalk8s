@@ -34,8 +34,16 @@ spec:
       securityContext:
         privileged: true
       volumeMounts:
+        - name: docker-storage
+          mountPath: /var/lib/docker
         - name: worker-workspace
           mountPath: /home/eve/workspace
   volumes:
+    # The two volumes below are used to avoid intensive IO in the Docker overlay
+    # If extra performance is required, one could add `medium: Memory` to the
+    # `emptyDir` dicts.
+    # See https://docs.docker.com/storage/volumes/
+    - name: docker-storage
+      emptyDir: {}
     - name: worker-workspace
       emptyDir: {}
