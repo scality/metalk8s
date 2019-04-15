@@ -121,7 +121,7 @@ export function* deployNode({ payload }) {
     payload.name
   );
   if (!result.error) {
-    alert('PING SALT OK');
+    alert(JSON.stringify(result.data.return[0].data.bootstrap_master));
   }
 }
 
