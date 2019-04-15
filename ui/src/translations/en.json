@@ -23,11 +23,14 @@
   "sudo_required": "Sudo required",
   "workload_plane": "Workload Plane",
   "control_plane": "Control Plane" ,
+  "bootstrap": "Bootstrap",
   "roles": "Roles",
+  "role_values_error": "At least on role has to be selected!",
   "create_new_node": "Create a New Node",
   "create": "Create",
   "cancel": "Cancel",
   "unknown": "Unknown",
   "ready": "Ready",
-  "not_ready": "Not Ready"
+  "not_ready": "Not Ready",
+  "deploy": "Deploy"
 }

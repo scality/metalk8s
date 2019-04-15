@@ -1,4 +1,4 @@
-import { call, put, takeLatest, takeEvery } from 'redux-saga/effects';
+import { call, put, takeLatest, takeEvery, select } from 'redux-saga/effects';
 import * as Api from '../../services/api';
 import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
 import history from '../../history';
@@ -9,10 +9,19 @@ export const SET_NODES = 'SET_NODES';
 const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
+const DEPLOY_NODE = 'DEPLOY_NODE';
 
 // Reducer
 const defaultState = {
   list: []
+};
+
+const isRolePresentInLabels = (node, role) => {
+  return (
+    node.metadata &&
+    node.metadata.labels &&
+    node.metadata.labels[role] !== undefined
+  );
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -51,6 +60,10 @@ export const clearCreateNodeErrorAction = () => {
   return { type: CLEAR_CREATE_NODE_ERROR };
 };
 
+export const deployNodeAction = payload => {
+  return { type: DEPLOY_NODE, payload };
+};
+
 // Sagas
 export function* fetchNodes() {
   const result = yield call(Api.getNodes);
@@ -66,18 +79,9 @@ export function* fetchNodes() {
             name: node.metadata.name,
             statusType: statusType,
             cpu: node.status.capacity && node.status.capacity.cpu,
-            control_plane:
-              node.metadata &&
-              node.metadata.annotations &&
-              node.metadata.annotations[
-                'metalk8s.scality.com/control-plane'
-              ] === 'true',
-            workload_plane:
-              node.metadata &&
-              node.metadata.annotations &&
-              node.metadata.annotations[
-                'metalk8s.scality.com/workload-plane'
-              ] === 'true',
+            control_plane: isRolePresentInLabels(node, Api.ROLE_MASTER),
+            workload_plane: isRolePresentInLabels(node, Api.ROLE_NODE),
+            bootstrap: isRolePresentInLabels(node, Api.ROLE_BOOTSTRAP),
             memory:
               node.status.capacity &&
               prettifyBytes(
@@ -106,7 +110,22 @@ export function* createNode({ payload }) {
   }
 }
 
+export function* deployNode({ payload }) {
+  const salt = yield select(state => state.login.salt);
+  const api = yield select(state => state.config.api);
+  const result = yield call(
+    Api.deployNode,
+    api.url_salt,
+    salt.data.return[0].token,
+    payload.name
+  );
+  if (!result.error) {
+    alert(JSON.stringify(result.data.return[0].data.bootstrap_master));
+  }
+}
+
 export function* nodesSaga() {
   yield takeLatest(FETCH_NODES, fetchNodes);
   yield takeEvery(CREATE_NODE, createNode);
+  yield takeEvery(DEPLOY_NODE, deployNode);
 }

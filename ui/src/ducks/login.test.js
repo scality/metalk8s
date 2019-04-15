@@ -6,7 +6,8 @@ import {
   AUTHENTICATION_FAILED,
   AUTHENTICATION_SUCCESS,
   SET_USER_INFO_LOADED,
-  fetchUserInfo
+  fetchUserInfo,
+  authenticateSaltApi
 } from './login';
 import * as Api from '../services/api';
 
@@ -54,6 +55,7 @@ it('authentication success', () => {
   const result = {
     data: {}
   };
+
   expect(gen.next(result).value).toEqual(
     put({
       type: AUTHENTICATION_SUCCESS,
@@ -65,7 +67,7 @@ it('authentication success', () => {
     })
   );
 
-  expect(gen.next().value).toEqual(call(history.push, '/'));
+  expect(gen.next().value).toEqual(call(authenticateSaltApi));
 
   expect(gen.next(result).value).toEqual(
     put({
@@ -97,6 +99,8 @@ it('fetchUserInfo success', () => {
       }
     })
   );
+
+  expect(gen.next().value).toEqual(call(authenticateSaltApi));
 
   expect(gen.next(result).value).toEqual(
     put({

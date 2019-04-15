@@ -8,6 +8,8 @@ import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { Table, Button } from 'core-ui';
 import { padding } from 'core-ui/dist/style/theme';
 
+import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
+
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -101,6 +103,9 @@ class NodeList extends React.Component {
 
     const nodesSortedListWithRoles = nodesSortedList.map(node => {
       let roles = [];
+      if (node.bootstrap) {
+        roles.push(intl.messages.bootstrap);
+      }
       if (node.control_plane) {
         roles.push(intl.messages.control_plane);
       }
@@ -121,6 +126,21 @@ class NodeList extends React.Component {
       return node;
     });
 
+    const nodesWithActions = nodesSortedListWithRoles.map(node => {
+      return {
+        ...node,
+        actions:
+          !node.status || node.status === 'Unknown'
+            ? [
+                {
+                  label: this.props.intl.messages.deploy,
+                  onClick: this.props.deployNode
+                }
+              ]
+            : null
+      };
+    });
+
     return (
       <PageContainer>
         <ActionContainer>
@@ -131,7 +151,7 @@ class NodeList extends React.Component {
         </ActionContainer>
         <TableContainer>
           <Table
-            list={nodesSortedListWithRoles}
+            list={nodesWithActions}
             columns={this.state.columns}
             disableHeader={false}
             headerHeight={40}
@@ -162,4 +182,18 @@ function mapStateToProps(state) {
   };
 }
 
-export default injectIntl(withRouter(connect(mapStateToProps)(NodeList)));
+const mapDispatchToProps = dispatch => {
+  return {
+    fetchNodes: () => dispatch(fetchNodesAction()),
+    deployNode: payload => dispatch(deployNodeAction(payload))
+  };
+};
+
+export default injectIntl(
+  withRouter(
+    connect(
+      mapStateToProps,
+      mapDispatchToProps
+    )(NodeList)
+  )
+);

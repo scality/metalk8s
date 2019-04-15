@@ -6,6 +6,8 @@ import history from '../history';
 const AUTHENTICATE = 'AUTHENTICATE';
 export const AUTHENTICATION_SUCCESS = 'AUTHENTICATION_SUCCESS';
 export const AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED';
+export const SALT_AUTHENTICATION_SUCCESS = 'SALT_AUTHENTICATION_SUCCESS';
+export const SALT_AUTHENTICATION_FAILED = 'SALT_AUTHENTICATION_FAILED';
 const LOGOUT = 'LOGOUT';
 export const FETCH_USER_INFO = 'FETCH_USER_INFO';
 export const SET_USER_INFO_LOADED = 'SET_USER_INFO_LOADED';
@@ -25,6 +27,11 @@ export default function reducer(state = defaultState, action = {}) {
       return {
         ...state,
         user: action.payload
+      };
+    case SALT_AUTHENTICATION_SUCCESS:
+      return {
+        ...state,
+        salt: action.payload
       };
     case AUTHENTICATION_FAILED:
       return {
@@ -66,6 +73,13 @@ export const setAuthenticationSuccessAction = payload => {
   };
 };
 
+export const setSaltAuthenticationSuccessAction = payload => {
+  return {
+    type: SALT_AUTHENTICATION_SUCCESS,
+    payload
+  };
+};
+
 // Sagas
 export function* authenticate({ payload }) {
   const { username, password } = payload;
@@ -87,9 +101,21 @@ export function* authenticate({ payload }) {
         token
       })
     );
-    yield call(history.push, '/');
+    yield call(authenticateSaltApi);
   }
   yield put(setUserInfoLoadedAction(true));
+}
+
+export function* authenticateSaltApi() {
+  const api = yield select(state => state.config.api);
+  const user = yield select(state => state.login.user);
+  const result = yield call(Api.authenticateSaltApi, api.url_salt, user);
+  if (!result.error) {
+    yield put(setSaltAuthenticationSuccessAction(result));
+    yield call(history.push, '/');
+  } else {
+    yield call(logout);
+  }
 }
 
 export function* logout() {
@@ -114,6 +140,7 @@ export function* fetchUserInfo() {
         token
       })
     );
+    yield call(authenticateSaltApi);
   } else {
     yield call(history.push, '/login');
   }
