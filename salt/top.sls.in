@@ -1,22 +1,51 @@
-metalk8s-@@VERSION:
-  'metalk8s:node:version:@@VERSION':
-    - match: pillar
-    - metalk8s.roles.minion
-  'I@metalk8s:node:version:@@VERSION and I@metalk8s:node:roles:bootstrap':
-    - match: compound
-    - metalk8s.roles.bootstrap
-    - metalk8s.roles.salt-master
-    - metalk8s.roles.registry
-    - metalk8s.roles.repository
-  'I@metalk8s:node:version:@@VERSION and I@metalk8s:node:roles:ca':
-    - match: compound
-    - metalk8s.roles.ca
-  'I@metalk8s:node:version:@@VERSION and I@metalk8s:node:roles:etcd':
-    - match: compound
-    - metalk8s.roles.etcd
-  'I@metalk8s:node:version:@@VERSION and I@metalk8s:node:roles:master':
-    - match: compound
-    - metalk8s.roles.master
-  'I@metalk8s:node:version:@@VERSION and I@metalk8s:node:roles:node':
-    - match: compound
-    - metalk8s.roles.node
+{%- set version = "@@VERSION" %}
+
+{%- set version_match = "metalk8s:nodes:" ~ grains['id'] ~ ":version:" ~ version %}
+
+{% macro role_match(name) -%}
+metalk8s:nodes:{{ grains['id'] }}:roles:{{ name }}
+{%- endmacro %}
+
+{% macro role(name='', states=[]) -%}
+{%- if name %}
+  'I@{{ version_match }} and I@{{ role_match(name) }}':
+{%- else %}
+  'I@{{ version_match }}':
+{%- endif %}
+    {{ ([{ "match": "compound" }] + states) | yaml }}
+{%- endmacro %}
+
+metalk8s-{{ version }}:
+  # 'Default' role applicable to all nodes
+  {{ role(states=[
+       'metalk8s.roles.minion',
+     ])
+  }}
+
+  {{ role('bootstrap', [
+       'metalk8s.roles.bootstrap',
+       'metalk8s.roles.salt-master',
+       'metalk8s.roles.registry',
+       'metalk8s.roles.repository',
+     ])
+  }}
+
+  {{ role('ca', [
+       'metalk8s.roles.ca',
+     ])
+  }}
+
+  {{ role('etcd', [
+       'metalk8s.roles.etcd',
+     ])
+  }}
+
+  {{ role('master', [
+       'metalk8s.roles.master',
+     ])
+  }}
+
+  {{ role('node', [
+       'metalk8s.roles.node',
+     ])
+  }}
