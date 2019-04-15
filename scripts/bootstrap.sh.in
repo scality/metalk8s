@@ -30,26 +30,26 @@ declare -A GPGCHECK_REPOSITORIES=(
 )
 
 die() {
-        echo 1>&2 "$@"
-        exit 1
+    echo 1>&2 "$@"
+    exit 1
 }
 
 pre_minion_checks() {
-        test "x$(whoami)" = "xroot" || die "Script must run as root"
-        test -n "${RPM}" || die "rpm not found"
-        test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
-        test -n "${SYSTEMCTL}" || die "systemctl not found"
-        test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
-        test -n "${YUM}" || die "yum not found"
-        test -x "${YUM}" || die "yum at '${YUM}' is not executable"
+    test "x$(whoami)" = "xroot" || die "Script must run as root"
+    test -n "${RPM}" || die "rpm not found"
+    test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
+    test -n "${SYSTEMCTL}" || die "systemctl not found"
+    test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
+    test -n "${YUM}" || die "yum not found"
+    test -x "${YUM}" || die "yum at '${YUM}' is not executable"
 }
 
 disable_salt_minion_service() {
-        ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
+    ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
 }
 
 stop_salt_minion_service() {
-        ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
+    ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
 }
 
 configure_yum_repositories() {
@@ -93,7 +93,7 @@ configure_yum_local_repository() {
 
     gpg_keys=$(
         find "$repo_path" -maxdepth 1 -name "RPM-GPG-KEY-*" \
-	    -printf "file://%p "
+            -printf "file://%p "
     )
 
     cat > /etc/yum.repos.d/"$repo_name".repo << EOF
@@ -113,9 +113,9 @@ install_salt_minion() {
 
     if [[ ${online_mode,,} = false ]]; then
         yum_opts+=(
-	          '--disablerepo=*'
-	          '--enablerepo=metalk8s-*'
-	      )
+            '--disablerepo=*'
+            '--enablerepo=metalk8s-*'
+        )
     fi
 
     "$YUM" install "${yum_opts[@]}" salt-minion
