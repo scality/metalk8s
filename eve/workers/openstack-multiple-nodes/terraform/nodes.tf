@@ -26,13 +26,15 @@ resource "openstack_compute_instance_v2" "bastion" {
     private_key = "${file("~/.ssh/terraform")}"
   }
 
+  # Provision scripts for remote-execution
+  provisioner "file" {
+    source      = "${path.module}/scripts"
+    destination = "/home/centos/scripts"
+  }
+
   # Obtain IP addresses for both private networks
   provisioner "remote-exec" {
-    inline = [
-      "sudo chattr +i /etc/resolv.conf",
-      "sudo dhclient -r eth1 eth2",  # Release first
-      "sudo dhclient eth1 eth2",  # Then request new IPs
-    ]
+    inline = ["sudo bash scripts/get-ip-leases.sh"]
   }
 
   # Generate Bastion SSH keypair
@@ -80,13 +82,20 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     private_key = "${file("~/.ssh/terraform")}"
   }
 
+  # Provision scripts for remote-execution
+  provisioner "file" {
+    source      = "${path.module}/scripts"
+    destination = "/home/centos/scripts"
+  }
+
   # Obtain IP addresses for both private networks
   provisioner "remote-exec" {
-    inline = [
-      "sudo chattr +i /etc/resolv.conf",
-      "sudo dhclient -r eth1 eth2",  # Release first
-      "sudo dhclient eth1 eth2",  # Then request new IPs
-    ]
+    inline = ["sudo bash scripts/get-ip-leases.sh"]
+  }
+
+  # Generate BootstrapConfiguration
+  provisioner "remote-exec" {
+    inline = ["sudo bash scripts/bootstrap-config.sh"]
   }
 }
 
@@ -123,13 +132,15 @@ resource "openstack_compute_instance_v2" "nodes" {
     private_key = "${file("~/.ssh/terraform")}"
   }
 
+  # Provision scripts for remote-execution
+  provisioner "file" {
+    source      = "${path.module}/scripts"
+    destination = "/home/centos/scripts"
+  }
+
   # Obtain IP addresses for both private networks
   provisioner "remote-exec" {
-    inline = [
-      "sudo chattr +i /etc/resolv.conf",
-      "sudo dhclient -r eth1 eth2",  # Release first
-      "sudo dhclient eth1 eth2",  # Then request new IPs
-    ]
+    inline = ["sudo bash scripts/get-ip-leases.sh"]
   }
 
   count = "${var.nodes_count}"

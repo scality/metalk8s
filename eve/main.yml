@@ -244,13 +244,6 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
-          name: Copy bootstrap configuration file in bootstrap node
-          command: >
-            scp -F ssh_config bootstrap-config.sh bootstrap: &&
-            ssh -F ssh_config bootstrap sudo bash bootstrap-config.sh
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
-      - ShellCommand:
           name: Start the bootstrap process in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
