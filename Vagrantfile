@@ -128,6 +128,10 @@ networks:
   workloadPlane: #{WORKLOAD_PLANE_IP}/#{prefixlen(WORKLOAD_PLANE_NETMASK)}
 ca:
   minion: bootstrap
+apiServer:
+  host: #{IPAddr.new(CONTROL_PLANE_IP).mask(CONTROL_PLANE_NETMASK).to_range.last(2).first.to_s}
+  keepalived:
+    enabled: true
 EOF
 
 echo "Launching bootstrap"

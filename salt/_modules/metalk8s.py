@@ -3,6 +3,7 @@
 Module for handling MetalK8s specific calls.
 '''
 import logging
+import socket
 
 from salt.exceptions import CommandExecutionError
 from salt.utils.decorators import depends
@@ -86,3 +87,40 @@ def add_etcd_node(host, endpoint):
     except ApiException as exn:
         log.exception('failed to run etcdctl')
         raise exn
+
+
+def format_san(names):
+    '''Format a `subjectAlternativeName` section of a certificate.
+
+    Arguments:
+        names ([str]): List if SANs, either IP addresses or DNS names
+    '''
+    def format_name(name):
+        # First, try to parse as an IPv4/IPv6 address
+        for af_name in ['AF_INET', 'AF_INET6']:
+            try:
+                af = getattr(socket, af_name)
+            except AttributeError:
+                log.info('Unkown address family: %s', af_name)
+                continue
+
+            try:
+                # Parse
+                log.debug('Trying to parse %r as %s', name, af_name)
+                packed = socket.inet_pton(af, name)
+                # Unparse
+                log.debug('Trying to unparse %r as %s', packed, af_name)
+                unpacked = socket.inet_ntop(af, packed)
+
+                result = 'IP:{}'.format(unpacked)
+                log.debug('SAN field for %r is "%s"', name, result)
+                return result
+            except socket.error as exc:
+                log.debug('Failed to parse %r as %s: %s', name, af_name, exc)
+
+        # Fallback to assume it's a DNS name
+        result = 'DNS:{}'.format(name)
+        log.debug('SAN field for %r is "%s"', name, result)
+        return result
+
+    return ', '.join(sorted(format_name(name) for name in names))
