@@ -16,6 +16,14 @@ const defaultState = {
   list: []
 };
 
+const isRolePresentInLabels = (node, role) => {
+  return (
+    node.metadata &&
+    node.metadata.labels &&
+    node.metadata.labels[role] !== undefined
+  );
+};
+
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_NODES:
@@ -71,18 +79,9 @@ export function* fetchNodes() {
             name: node.metadata.name,
             statusType: statusType,
             cpu: node.status.capacity && node.status.capacity.cpu,
-            control_plane:
-              node.metadata &&
-              node.metadata.labels &&
-              node.metadata.labels[Api.ROLE_MASTER] !== undefined,
-            workload_plane:
-              node.metadata &&
-              node.metadata.labels &&
-              node.metadata.labels[Api.ROLE_NODE] !== undefined,
-            bootstrap:
-              node.metadata &&
-              node.metadata.labels &&
-              node.metadata.labels[Api.ROLE_BOOTSTRAP] !== undefined,
+            control_plane: isRolePresentInLabels(node, Api.ROLE_MASTER),
+            workload_plane: isRolePresentInLabels(node, Api.ROLE_NODE),
+            bootstrap: isRolePresentInLabels(node, Api.ROLE_BOOTSTRAP),
             memory:
               node.status.capacity &&
               prettifyBytes(
