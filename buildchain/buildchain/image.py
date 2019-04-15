@@ -30,6 +30,7 @@ Overview:
 """
 
 
+import datetime
 from pathlib import Path
 from typing import Iterator, Tuple
 
@@ -166,6 +167,11 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
 # This should be reset to 1 when SALT_VERSION is changed.
 SALT_MASTER_BUILD_ID : int = 1
 
+KEEPALIVED_IMAGE_TAG = '{}-{}'.format(
+    constants.KEEPALIVED_VERSION,
+    constants.KEEPALIVED_BUILD_ID,
+)
+
 # List of container images to build.
 TO_BUILD : Tuple[targets.LocalImage, ...] = (
     targets.LocalImage(
@@ -177,6 +183,26 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         build_args={'SALT_VERSION': constants.SALT_VERSION},
         task_dep=['_image_mkdir_root'],
         file_dep=[constants.ROOT/'images'/'salt-master'/'source.key'],
+    ),
+    targets.LocalImage(
+        name='keepalived',
+        version=KEEPALIVED_IMAGE_TAG,
+        dockerfile=constants.ROOT/'images'/'keepalived'/'Dockerfile',
+        destination=ISO_IMAGE_ROOT,
+        save_on_disk=True,
+        build_args={
+            'KEEPALIVED_IMAGE_SHA256': constants.CENTOS_BASE_IMAGE_SHA256,
+            'KEEPALIVED_IMAGE': constants.CENTOS_BASE_IMAGE,
+            'KEEPALIVED_VERSION': constants.KEEPALIVED_VERSION,
+            'BUILD_DATE': datetime.datetime.now(datetime.timezone.utc)
+                            .astimezone()
+                            .isoformat(),
+            'VCS_REF': constants.GIT_REF or '<unknown>',
+            'VERSION': KEEPALIVED_IMAGE_TAG,
+            'METALK8S_VERSION': constants.VERSION,
+        },
+        task_dep=['_image_mkdir_root'],
+        file_dep=[constants.ROOT/'images'/'keepalived'/'entrypoint.sh'],
     ),
     targets.LocalImage(
         name='metalk8s-ui',
