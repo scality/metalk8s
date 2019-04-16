@@ -1,2 +1,2 @@
-Deploy package repository:
+Uninstall CA:
   test.succeed_without_changes
