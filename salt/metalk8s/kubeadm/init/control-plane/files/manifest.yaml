@@ -36,6 +36,9 @@ spec:
           name: {{ volume.name }}
           readOnly: true
         {%- endfor %}
+{%- if sidecars is defined and sidecars %}
+    {{ sidecars | yaml(False) | indent(4, False) }}
+{%- endif %}
   priorityClassName: "system-cluster-critical"
   hostNetwork: true
   volumes:
@@ -45,4 +48,7 @@ spec:
         type: {{ volume.get("type", "Directory") }}
       name: {{ volume.name }}
     {%- endfor %}
+{%- if extra_volumes is defined and extra_volumes %}
+    {{ extra_volumes | yaml(False) | indent(4, False) }}
+{%- endif %}
 status: {}

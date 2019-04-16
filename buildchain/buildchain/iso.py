@@ -29,7 +29,6 @@ Overview:
 
 import datetime as dt
 import socket
-import subprocess
 from pathlib import Path
 from typing import Sequence
 
@@ -136,7 +135,7 @@ def task__iso_generate_product_txt() -> types.TaskDict:
             ('NAME', config.PROJECT_NAME),
             ('VERSION', constants.VERSION),
             ('SHORT_VERSION', constants.SHORT_VERSION),
-            ('GIT', git_revision()),
+            ('GIT', constants.GIT_REF or ''),
             ('DEVELOPMENT_RELEASE', dev_release),
             ('BUILD_TIMESTAMP', dt.datetime.utcnow().strftime(datefmt)),
             ('BUILD_HOST', socket.gethostname()),
@@ -199,21 +198,6 @@ def task__iso_digest() -> types.TaskDict:
         output_file=config.BUILD_ROOT/'SHA256SUM',
         task_dep=['_iso_build']
     ).task
-
-
-def git_revision() -> str:
-    """Return the current git revision.
-
-    Return an empty string if we can't get the information.
-    """
-    git_cmd = [
-        config.GIT, 'describe', '--long', '--always', '--tags', '--dirty'
-    ]
-    try:
-        stdout : bytes = subprocess.check_output(git_cmd)
-        return stdout.decode('utf-8').rstrip()
-    except subprocess.CalledProcessError:
-        return ''
 
 
 __all__ = utils.export_only_tasks(__name__)

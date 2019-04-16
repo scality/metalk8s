@@ -6,7 +6,8 @@
 
 import os
 from pathlib import Path
-from typing import Tuple
+import subprocess
+from typing import Optional, Tuple
 
 from buildchain import ROOT  # Re-export ROOT through this module.
 from buildchain import config
@@ -63,7 +64,12 @@ BUILDER_BASIC_CMD : Tuple[str, ...] = (
 
 K8S_VERSION  : str = '1.13.5'
 SALT_VERSION : str = '2018.3.4'
+KEEPALIVED_VERSION : str = '1.3.5-8.el7_6'
+KEEPALIVED_BUILD_ID : int = 1
 
+CENTOS_BASE_IMAGE : str = 'docker.io/centos'
+CENTOS_BASE_IMAGE_SHA256 : str = \
+    '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -92,5 +98,22 @@ load_version_information()
 
 SHORT_VERSION : str = '{}.{}'.format(VERSION_MAJOR, VERSION_MINOR)
 VERSION : str = '{}.{}{}'.format(SHORT_VERSION, VERSION_PATCH, VERSION_SUFFIX)
+
+
+def git_ref() -> Optional[str]:
+    """Load version information from Git."""
+
+    try:
+        ref : bytes = subprocess.check_output([
+            config.GIT, 'describe', '--always', '--long', '--tags',
+                '--dirty', '--broken',
+        ])
+
+        return ref.decode('utf-8').rstrip()
+    except subprocess.CalledProcessError:
+        return None
+
+
+GIT_REF = git_ref()
 
 # }}}

@@ -14,6 +14,8 @@ networks:
   workloadPlane: 172.42.254.32/27
 ca:
   minion: $(hostname)
+apiServer:
+  host: $(ip route get 172.42.254.0 | awk '/172.42.254.0/{ print $6 }')
 EOF
 
 ls "$(dirname $OUTPUT_FILE)"

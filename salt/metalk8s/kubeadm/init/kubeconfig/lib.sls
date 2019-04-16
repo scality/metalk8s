@@ -3,12 +3,7 @@
 
 {% macro kubeconfig(name, cert_info) %}
 
-{%- set apiserver_addr = pillar.get('apiserver_addr') %}
-{%- if apiserver_addr %}
-{%- set apiserver = 'https://' ~ apiserver_addr ~ ':6443' %}
-{%- else %}
-{%- set apiserver = 'https://' ~ grains['metalk8s']['control_plane_ip'] ~ ':6443' %}
-{%- endif %}
+{%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
 
 include:
   - metalk8s.kubeadm.init.certs.installed
