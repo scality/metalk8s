@@ -75,6 +75,5 @@ def ext_pillar(minion_id, pillar, kubeconfig):
     return {
         'metalk8s': {
             'nodes': pillar_nodes,
-            'node': pillar_nodes.get(minion_id, None),
         },
     }
