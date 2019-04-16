@@ -2535,7 +2535,201 @@ def create_namespaced_custom_object(
         _cleanup(**cfg)
 
 
+def mirrorPodFilter(pod):
+    MirrorPodAnnotationKey = "kubernetes.io/config.mirror"
+
+    annotations = pod.metadata.annotations
+    if annotations and MirrorPodAnnotationKey in annotations:
+        return False
+    return True
+
+def hasLocalStorage(pod):
+    for volume in pod.spec.volumes:
+        if volume.empty_dir is not None:
+            return True
+    return False
+
+def getControllerOf(pod):
+    # controller => pod.metadata.owner_references[n] /w controller==True ?
+    if pod.metadata.owner_references:
+        for owner_ref in pod.metadata.owner_references:
+            if owner.controller:
+                return owner_ref
+    return None
+
+
+# pod statuses
+POD_STATUS_SUCCEEDED = "Succeeded"
+POD_STATUS_FAILED = "Failed"
+
+class Drain(object):
+    def __init__(self,
+                 force=False,
+                 gracePeriodSeconds=1,
+                 ignoreDaemonSet=False,
+                 timeout=0,
+                 deleteLocalData=False):
+        self._force = force
+        self._gracePeriodSeconds = gracePeriodSeconds
+        self._ignoreDaemonSet = ignoreDaemonSet
+        self._timeout = timeout
+        self._deleteLocalData = deleteLocalData
+
+        self._warning = {
+            "daemonset" = "Ignoring DaemonSet-managed pods"
+            "localStorage" = "Deleting pods with local storage"
+            "unmanaged" = (
+                "Deleting pods not managed by ReplicationController, "
+                "ReplicaSet, Job, DaemonSet or StatefulSet")
+        }
+
+        self._fatal = {
+            "daemonset" = "DaemonSet-managed pods",
+            "localStorage" = "pods with local storage",
+            "unmanaged" = (
+                "pods not managed by ReplicationController, "
+                "ReplicaSet, Job, DaemonSet or StatefulSet")
+        }
+
+    @property
+    def force(self):
+        return self._force
+
+    @property
+    def gracePeriodSeconds(sefl):
+        return self._gracePeriodSeconds
+
+    @property
+    def ignoreDaemonSet(self):
+        return self._ignoreDaemonSet
+
+    @property
+    def timeout(self):
+        return self._timeout
+
+    @property
+    def deleteLocalData(self):
+        return self._deleteLocalData
+
+    def localStorageFilter(self, pod):
+        """Check if given pod can be elected for deletion,
+        regarding local storage
+
+        return: (deletable flag, warning msg, fatal msg)
+        """
+        if not hasLocalStorage(pod):
+            return True, None, None
+        if not self._deleteLocalData:
+            return False, None, self._error("localStorage")
+        return True, self._warning("localStorage"), None
+
+    def unreplicatedFilter(self, pod):
+        """Check if given pod can be elected for deletion,
+        regarding replication
+
+        return: (deletable flag, warning msg, fatal msg)
+        """
+        # finished pods can be removed
+        if pod.status.phase in (POD_STATUS_SUCCEEDED, POD_STATUS_FAILED):
+            return True, None, None
+
+        try:
+            controllerRef = self.getPodController(pod)
+        except CommandExecutionError as exc:
+            # TODO: How to check error is "not found" ???
+            #       (in kubernetes, they check error code...)
+            '''
+            if err != nil {
+                // if we're forcing, remove orphaned pods with a warning
+                if apierrors.IsNotFound(err) && o.Force {
+                    return true, &warning{err.Error()}, nil
+                }
+                return false, nil, &fatal{err.Error()}
+            }
+            '''
+            raise
+        if controllerRef is not None:
+            return True, None, None
+        if not self.force:
+            return False, None, self._fatal["unmanaged"]
+        return True, self._warning["unmanaged"], None
+
+    def getController(self, namespace, controllerRef):
+        try:
+            if controllerRef.kind == "ReplicationController":
+                api_call = "CoreV1Api->list_namespaced_replication_controller"
+                api_instance = kubernetes.client.CoreV1Api()
+                api_response = \
+                    api_instance.list_namespaced_replication_controller(
+                        namespace=namespace,
+                        field_selector='metadata.name={0}'
+                            .format(controllerRef.name)
+                    )
+                return api_response
+            elif controllerRef.kind == "DaemonSet":
+                api_call = "ExtensionsV1beta1Api->list_namespaced_daemon_set"
+                api_instance = kubernetes.client.ExtensionsV1beta1Api()
+                api_response = api_instance.list_namespaced_daemon_set(
+                    namespace=namespace,
+                    field_selector='metadata.name={0}'
+                                   .format(controllerRef.name)
+                )
+                return api_response
+            elif controllerRef.kind == "Job":
+                api_call = "BatchV1beta1Api->list_namespaced_cron_job"
+                api_instance = kubernetes.client.BatchV1beta1Api()
+                api_response = api_instance.list_namespaced_cron_job(
+                    namespace=namespace,
+                    field_selector='metadata.name={0}'
+                                   .format(controllerRef.name)
+                )
+                return api_response
+            elif controllerRef.kind == "ReplicaSet":
+                api_call = "ExtensionsV1beta1Api->list_namespaced_replica_set"
+                api_instance = kubernetes.client.ExtensionsV1beta1Api()
+                api_response = api_instance.list_namespaced_replica_set(
+                    namespace=namespace,
+                    field_selector='metadata.name={0}'
+                                   .format(controllerRef.name)
+                )
+                return api_response
+            elif controllerRef.kind == "StatefulSet":
+                api_call = "AppsV1beta1Api->list_namespaced_stateful_set"
+                api_instance = kubernetes.client.ExtensionsV1beta1Api()
+                api_response = api_instance.list_namespaced_stateful_set(
+                    namespace=namespace,
+                    field_selector='metadata.name={0}'
+                                   .format(controllerRef.name)
+                )
+                return api_response
+            else:
+                raise CommandExecutionError(
+                    "Unknown controller kind '{0}'".format(controlerRef.kind))
+
+    def getPodController(self, pod):
+        controllerRef = getControllerOf(pod)
+        if controllerRef is None:
+            return None
+        # Fire error if - and only if - controller is gone/missing...
+        # TODO: Is it done by api call that fires error when nothing is found,
+        #       or do we have to check err/warning message and take action?
+        _ = self.getController(pod.namespace, controllerRef)
+        return controllerRef
+
+    def daemonsetFilter(self, pod):
+        """Check if given pod can be elected for deletion,
+        regarding daemonset
+
+        return: (deletable flag, warning msg, fatal msg)
+        """
+        # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L328
+        pass
+
+
+
 def node_drain(node_name, **kwargs):
+    # TODO: add flags for draining (force, gracePeriodSeconds,
+    #                 ignoreDaemonSet, timeout, deleteLocalData) ?
     '''
     Drain the the node identified by the name `node_name`.
 
@@ -2551,6 +2745,8 @@ def node_drain(node_name, **kwargs):
     Get list of all pods to delete (e):
         => Get all pods in all namespaces on given node (e).
         => If pod cannot be deleted/evicted, raise error.
+            (aka: pod is either mirrorPod, localStorage,
+                unreplicated, daemonset)
 
     For each pod to delete:
         If pod supports eviction:
@@ -2576,7 +2772,9 @@ def node_drain(node_name, **kwargs):
                 field_selector='spec.nodeName={0}'.format(node_name)
             )
             # TODO: filter pods to delete/evict
+            #       => use filters (cf. Drain )
             # TODO: raise error if something else is found
+            # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L407
             pods = api_response.items
 
             return pods
@@ -2597,6 +2795,7 @@ def node_drain(node_name, **kwargs):
     cfg = _setup_conn(**kwargs)
     try:
         # TODO: cordon node
+        # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L621
 
         pods = getPodsForDeletion(node_name)
 
