@@ -78,8 +78,8 @@ die() {
 echo "Installing build artifacts on the host"
 
 mkdir -p /srv/scality || die "Failed to create /srv/scality"
-rm -f "/srv/scality/metalk8s-$SHORT_VERSION" || die "Failed to unlink symlink destination"
-ln -s /vagrant/_build/root "/srv/scality/metalk8s-$SHORT_VERSION" || die "Failed to create symlink"
+rm -f "/srv/scality/metalk8s-$VERSION" || die "Failed to unlink symlink destination"
+ln -s /vagrant/_build/root "/srv/scality/metalk8s-$VERSION" || die "Failed to create symlink"
 
 echo "Installed build artifacts on the host"
 
@@ -111,7 +111,7 @@ set -eu -o pipefail
 
 source /vagrant/_build/root/product.txt
 
-if ! test -x "/srv/scality/metalk8s-$SHORT_VERSION/bootstrap.sh"; then
+if ! test -x "/srv/scality/metalk8s-$VERSION/bootstrap.sh"; then
     echo 1>&2 "Bootstrap script not found in build directory."
     echo 1>&2 "Did you run 'make'?"
     exit 1
@@ -126,10 +126,13 @@ networks:
   workloadPlane: #{WORKLOAD_PLANE_IP}/#{prefixlen(WORKLOAD_PLANE_NETMASK)}
 ca:
   minion: bootstrap
+products:
+  metalk8s:
+  - /srv/scality/metalk8s-$VERSION
 EOF
 
 echo "Launching bootstrap"
-exec "/srv/scality/metalk8s-$SHORT_VERSION/bootstrap.sh"
+exec "/srv/scality/metalk8s-$VERSION/bootstrap.sh"
 SCRIPT
 
 DEPLOY_SSH_PUBLIC_KEY = <<-SCRIPT

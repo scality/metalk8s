@@ -100,6 +100,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/orchestrate/control_plane.sls'),
     Path('salt/metalk8s/orchestrate/worker_plane.sls'),
 
+    Path('salt/metalk8s/bootstrap/products.sls'),
     Path('salt/metalk8s/bootstrap/addons.sls'),
     Path('salt/metalk8s/bootstrap/calico.sls'),
     Path('salt/metalk8s/bootstrap/certs/ca.sls'),
