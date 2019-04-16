@@ -12,6 +12,7 @@ doit
 epel
 filename
 init
+io
 linter
 metadata
 mkdir

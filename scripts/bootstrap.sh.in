@@ -169,11 +169,6 @@ sync_salt() {
 }
 
 orchestrate_bootstrap() {
-    # TODO: FIX register IP
-    local cidr
-    local registry_ip
-    cidr=$(salt-call --local pillar.get networks:control_plane --out=txt | cut -f 2 -d ' ')
-    registry_ip=$(salt-call --local network.ip_addrs cidr="$cidr" --out=txt | sed "s/.*'\(\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\)'.*/\1/")
     # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
     # otherwise grains set during execution won't be taken into account
     # properly.
@@ -181,13 +176,19 @@ orchestrate_bootstrap() {
         metalk8s.node.grains \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION
+
+    # TODO: FIX register IP
+    local registry_ip
+    registry_ip=$(salt-call --local grains.get metalk8s:control_plane_ip --out txt | awk '/^local\: /{ print $2 }')
     ${SALT_CALL} --local --retcode-passthrough state.orchestrate \
         metalk8s.orchestrate.bootstrap_without_master \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
         pillar="{'registry_ip': $registry_ip}"
+
     set_salt_command
     sync_salt
+
     # shellcheck disable=SC2086
     ${SALT_MASTER_CALL} salt-run state.orchestrate \
         metalk8s.orchestrate.bootstrap_with_master \
@@ -198,7 +199,8 @@ orchestrate_bootstrap() {
 
 deploy_metalk8s_ui() {
     bootstrap_id=$(cat /etc/salt/minion_id)
-    registry_ip=$(salt-call mine.get "$bootstrap_id" control_plane_ip --out txt | sed "s/.*'\(\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\)'.*/\1/")
+    registry_ip=$(salt-call --local grains.get metalk8s:control_plane_ip --out txt | awk '/^local\: /{ print $2 }')
+
     "$SALT_CALL" --retcode-passthrough state.apply \
         metalk8s.ui saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \

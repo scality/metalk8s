@@ -1,12 +1,71 @@
-{%- from "metalk8s/registry/macro.sls" import kubernetes_image with context -%}
+{%- from "metalk8s/registry/macro.sls" import kubernetes_image, build_image_name with context -%}
 {% from "metalk8s/map.jinja" import networks with context %}
 {% from "metalk8s/map.jinja" import defaults with context %}
 {% set htpasswd_path = "/etc/kubernetes/htpasswd" %}
+
+{% set keepalived_image = "keepalived" %}
+{% set keepalived_version = "1.3.5-8.el7_6-1" %}
 
 include:
   - metalk8s.kubeadm.init.certs.sa-deploy-pub-key
   - metalk8s.kubeadm.init.certs.front-proxy-deploy-ca-cert
   - metalk8s.kubeadm.init.certs.etcd-deploy-ca-cert
+
+{%- if pillar.metalk8s.api_server.keepalived.enabled %}
+Create keepalived check script:
+  file.managed:
+    - name: /etc/keepalived/check-apiserver.sh
+    - mode: 0555
+    - makedirs: true
+    - dir_mode: 0755
+    - contents: |
+        #!/bin/bash
+        set -ue -o pipefail
+        test $(curl -k https://127.0.0.1:6443/healthz) = 'ok'
+
+Create keepalived configuration file generator:
+  file.managed:
+    - name: /etc/keepalived/keepalived.conf.sh
+    - mode: 0555
+    - makedirs: true
+    - dir_mode: 0755
+    - contents: |
+        #!/bin/bash
+        set -xue -o pipefail
+
+        IP=${IP:-ip}
+        AWK=${AWK:-awk}
+
+        INTERFACE=${INTERFACE:-$(${IP} route get ${INTERFACE_ADDRESS} | ${AWK} '/dev / { print $4 }')}
+
+        cat > "$1" << EOF
+        global_defs {
+          enable_script_security
+        }
+
+        vrrp_script check_apiserver {
+          script "/etc/keepalived/check-apiserver.sh"
+          interval 2
+          weight 2
+        }
+
+        vrrp_instance VI_1 {
+          state ${VRRP_STATE:-BACKUP}
+          virtual_router_id ${VRRP_VIRTUAL_ROUTER_ID:-1}
+          interface ${INTERFACE}
+          authentication {
+            auth_type PASS
+            auth_pass ${VRRP_PASSWORD}
+          }
+          virtual_ipaddress {
+            ${VIP}
+          }
+          track_script {
+            check_apiserver
+          }
+        }
+        EOF
+{%- endif %}
 
 Set up default basic auth htpasswd:
   file.managed:
@@ -76,6 +135,62 @@ Create kube-apiserver Pod manifest:
           - path: {{ htpasswd_path }}
             type: File
             name: htpasswd
+{%- if pillar.metalk8s.api_server.keepalived.enabled %}
+          - path: /etc/keepalived
+            name: keepalived-config
+{%- endif %}
+        sidecars:
+{%- if pillar.metalk8s.api_server.keepalived.enabled %}
+          - name: keepalived
+            image: {{ build_image_name(keepalived_image, keepalived_version) }}
+            args:
+              - --dont-fork
+              - --dump-conf
+              - --address-monitoring
+              - --log-console
+              - --log-detail
+              - --vrrp
+            env:
+              - name: INTERFACE_ADDRESS
+                value: {{ networks.control_plane.split('/')[0] }}
+              - name: VRRP_PASSWORD
+                value: {{ pillar.metalk8s.api_server.keepalived.authPassword }}
+              - name: VIP
+                value: {{ pillar.metalk8s.api_server.host }}
+            securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+                add:
+                  - NET_ADMIN
+                  - NET_BROADCAST
+                  - NET_RAW
+                  - SETGID
+                  - SETUID
+            resources:
+              requests:
+                cpu: 100m
+                memory: 64Mi
+            volumeMounts:
+              - name: keepalived-config
+                mountPath: /etc/keepalived
+                readOnly: true
+              - name: keepalived-varrun
+                mountPath: /var/run
+              - name: keepalived-tmp
+                mountPath: /tmp
+{%- endif %}
+        extra_volumes:
+{%- if pillar.metalk8s.api_server.keepalived.enabled %}
+          - name: keepalived-varrun
+            emptyDir:
+              medium: Memory
+          - name: keepalived-tmp
+            emptyDir:
+              medium: Memory
+{%- endif %}
     - require:
       - file: Ensure SA pub key is present
       - file: Ensure front-proxy CA cert is present

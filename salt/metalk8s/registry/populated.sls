@@ -44,6 +44,10 @@
         'name': 'metalk8s-ui',
         'tag': '0.2',
     },
+    {
+        'name': 'keepalived',
+        'tag': '1.3.5-8.el7_6-1',
+    },
 ] %}
 
 include:

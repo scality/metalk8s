@@ -49,6 +49,34 @@ def _load_ca(config_data):
     }
 
 
+def _load_apiserver(config_data):
+    assert 'apiServer' in config_data
+
+    as_data = config_data['apiServer']
+
+    result = {
+        'host': None,
+        'keepalived': {
+            'enabled': False,
+            'virtualRouterId': 1,
+            'authPassword': 'MeTaLk8s',
+        },
+    }
+
+    assert 'host' in as_data
+
+    result['host'] = as_data['host']
+
+    if 'keepalived' in as_data:
+        k_data = as_data['keepalived']
+        k_result = result['keepalived']
+
+        for (key, default) in k_result.items():
+            k_result[key] = k_data.get(key, default)
+
+    return result
+
+
 def ext_pillar(minion_id, pillar, bootstrap_config):
     config = _load_config(bootstrap_config)
 
@@ -56,5 +84,6 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
         'networks': _load_networks(config),
         'metalk8s': {
             'ca': _load_ca(config),
+            'api_server': _load_apiserver(config),
         },
     }
