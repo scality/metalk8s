@@ -144,28 +144,38 @@ retry_dns_count: 3
 EOF
 }
 
-set_salt_command() {
-    echo "Setting salt master command"
-    # shellcheck disable=SC2046
-    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --label io.kubernetes.container.name=salt-master --label io.kubernetes.pod.namespace=kube-system)"
-}
+get_salt_container() {
+    local -r max_retries=10
+    local salt_container='' attempts=0
 
-sync_salt() {
-    $SALT_MASTER_CALL salt '*' saltutil.sync_all refresh=True \
-        saltenv=metalk8s-@@VERSION
-    $SALT_MASTER_CALL salt '*' mine.update
-    local SALT_CONTAINER
-    SALT_CONTAINER="$(crictl ps -q \
+    while [ -z "$salt_container" ] && [ $attempts -lt $max_retries ]; do
+        salt_container="$(crictl ps -q \
             --label io.kubernetes.pod.namespace=kube-system \
             --label io.kubernetes.container.name=salt-master \
             --state Running)"
-    test -n "$SALT_CONTAINER"
-    crictl exec -i "$SALT_CONTAINER" \
-        salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
-    crictl exec -i "$SALT_CONTAINER" \
-        salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
-    crictl exec -i "$SALT_CONTAINER" \
-        salt-run metalk8s_saltutil.sync_auth saltenv=metalk8s-@@VERSION
+        (( attempts++ ))
+    done
+
+    if [ -z "$salt_container" ]; then
+        echo "Failed to find a running 'salt-master' container" >&2
+        exit 1
+    fi
+
+    echo "$salt_container"
+}
+
+sync_salt() {
+    local -r salt_master_call="crictl exec -i $(get_salt_container)"
+
+    $salt_master_call salt '*' saltutil.sync_all refresh=True \
+        saltenv=metalk8s-@@VERSION
+
+    $salt_master_call salt '*' mine.update
+
+    $salt_master_call salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
+    $salt_master_call salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
+    $salt_master_call salt-run metalk8s_saltutil.sync_auth \
+        saltenv=metalk8s-@@VERSION
 }
 
 orchestrate_bootstrap() {
@@ -177,34 +187,46 @@ orchestrate_bootstrap() {
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION
 
-    # TODO: FIX register IP
-    local registry_ip
-    registry_ip=$(salt-call --local grains.get metalk8s:control_plane_ip --out txt | awk '/^local\: /{ print $2 }')
+    # TODO: Registry IP should not need a pillar override here
+    local -r registry_ip=$(
+        ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
+        | awk '/^local\: /{ print $2 }'
+    )
+
     ${SALT_CALL} --local --retcode-passthrough state.orchestrate \
         metalk8s.orchestrate.bootstrap_without_master \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{'registry_ip': $registry_ip}"
+        pillar="{'registry_ip': '$registry_ip'}"
 
-    set_salt_command
     sync_salt
 
-    # shellcheck disable=SC2086
-    ${SALT_MASTER_CALL} salt-run state.orchestrate \
+    local -r salt_master_call="crictl exec -i $(get_salt_container)"
+
+    $salt_master_call salt-run state.orchestrate \
         metalk8s.orchestrate.bootstrap_with_master \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)', 'registry_ip': $registry_ip}"
+        pillar="{ \
+            'bootstrap_id': '$(cat /etc/salt/minion_id)', \
+            'registry_ip': '$registry_ip' \
+        }"
 }
 
 deploy_metalk8s_ui() {
-    bootstrap_id=$(cat /etc/salt/minion_id)
-    registry_ip=$(salt-call --local grains.get metalk8s:control_plane_ip --out txt | awk '/^local\: /{ print $2 }')
+    local -r bootstrap_id=$(cat /etc/salt/minion_id)
+    local -r registry_ip=$(
+        ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
+        | awk '/^local\: /{ print $2 }'
+    )
 
     "$SALT_CALL" --retcode-passthrough state.apply \
         metalk8s.ui saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{'bootstrap_id': $bootstrap_id, 'registry_ip': $registry_ip}"
+        pillar="{ \
+            'bootstrap_id': '$bootstrap_id', \
+            'registry_ip': '$registry_ip' \
+        }"
 }
 
 
