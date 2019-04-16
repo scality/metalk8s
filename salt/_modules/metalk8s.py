@@ -4,10 +4,10 @@ Module for handling MetalK8s specific calls.
 '''
 import logging
 import socket
+import time
 
 from salt.exceptions import CommandExecutionError
 from salt.utils.decorators import depends
-from salt.exceptions import CommandExecutionError
 
 KUBERNETES_PRESENT = False
 try:
@@ -31,6 +31,27 @@ def __virtual__():
 
 def deps_missing(*args, **kwargs):
     raise CommandExecutionError("Kubernetes python client is not installed")
+
+
+@depends('KUBERNETES_PRESENT', fallback_function=deps_missing)
+def wait_apiserver(retry=10, interval=1, **kwargs):
+    """Wait for kube-apiserver to respond.
+
+    Simple "retry" wrapper around the kubernetes.ping Salt execution function.
+    """
+    status = __salt__['metalk8s_kubernetes.ping'](**kwargs)
+    attempts = 1
+
+    while not status and attempts < retry:
+        time.sleep(interval)
+        status = __salt__['metalk8s_kubernetes.ping'](**kwargs)
+        attempts += 1
+
+    if not status:
+        log.error('Kubernetes apiserver failed to respond after %d attempts',
+                  retry)
+
+    return status
 
 
 def get_etcd_endpoint():
