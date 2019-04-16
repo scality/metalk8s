@@ -1,7 +1,0 @@
-Host bootstrap
-    User centos
-    Port 22
-    Hostname IP_ADDRESS
-    IdentityFile /home/eve/.ssh/terraform
-    IdentitiesOnly yes
-    StrictHostKeyChecking no
