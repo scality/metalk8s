@@ -1,51 +1,109 @@
-{%- set version = "@@VERSION" %}
+{%- set version = "@@VERSION" -%}
 
-{%- set version_match = "metalk8s:nodes:" ~ grains['id'] ~ ":version:" ~ version %}
+# How this works
+# --------------
+# In essence, the system is rather simple. The `metalk8s_nodes` `ext_pillar`
+# retrieves Kubernetes *Node* objects from the API server, and merges
+# information about them in the Salt Pillar. As an example, we'd get
+#
+# ```
+# metalk8s:
+#   nodes:
+#     bootstrap:
+#       roles:
+#         - ca
+#         - bootstrap
+#         - master
+#         - etcd
+#       version: '2.0'
+#
+# These *roles* are retrieved from *Node* labels, when prefixed with the
+# standard `node-role.kubernetes.io/` prefix, and the *version* is retrieved
+# from the `metalk8s.scality.com/version` label, i.e. the Pillar data above
+# would correspond to the following (abbreviated) *Node* object:
+#
+# ```
+# apiVersion: v1
+# kind: Node
+# metadata:
+#   name: bootstrap
+#   labels:
+#     metalk8s.scality.com/version: '2.0'
+#     node-role.kubernetes.io/bootstrap: ''
+#     node-role.kubernetes.io/master: ''
+#     node-role.kubernetes.io/etcd: ''
+#
+# The `ca` role is a special case, and is assigned to the node which is set as
+# `ca.minion` in the cluster *BootstrapConfiguration*.
+#
+# A couple of roles are 'well-known', as set in the `roles` variable below:
+#
+# - ca: Certificate Authority for the whole cluster
+# - bootstrap: the bootstrap node
+# - master: a Kubernetes control-plane node
+# - etcd: a member of the etcd ensemble used by the Kubernetes control-plane
+# - node: a Kubernetes workload-plane node
+#
+# All *roles* (in `salt/metalk8s/roles`) come with an `init.sls` file, which
+# brings a Salt minion to the correct state for said role, and an `absent.sls`,
+# which performs the inverse operation (i.e. remove certificates, remove *Pod*
+# manifests,...).
+#
+# Every minion in the cluster which is at the particular version of MetalK8s to
+# which this `top.sls` applies gets one standard role assigned:
+# `metalk8s.roles.minion`.
+#
+# On top of that, we dispatch (still taking the version into account) on the
+# various *roles*. If the minion/node has a particular role, it is applied.
+# Otherwise, its inverse (the `absent` state) is applied, which would then
+# either 'uninstall' a particular role from a node that was in said role
+# earlier, or have no effect at all.
+#
+# A special case here is the `node` role, which configures `kubelet` to be able
+# to access the Kubernetes API server. This configuration is, basically,
+# required by every single role, except for the `ca` one. As such, we only
+# *apply* the `node` role to minions/nodes that have this role enabled
+# explicitly (other roles should include the required states to configure
+# `kubelet` anyway), but we *don't* 'uninstall' the `node` role when this role
+# is *not* present, since this would break the `kubelet` configuration and as
+# such cause the node which may still be in e.g. `master` role not to function
+# properly.
+#
+# So, the `metalk8s.roles.node.absent` state is *only* applied when a
+# minion/node has no other known role but the `ca` one.
 
-{% macro role_match(name) -%}
-metalk8s:nodes:{{ grains['id'] }}:roles:{{ name }}
-{%- endmacro %}
+{%- set roles = ['bootstrap', 'ca', 'etcd', 'master', 'node'] -%}
+{%- set node_role = 'node' -%}
+{%- set node_roles = roles | difference(['ca']) -%}
 
-{% macro role(name='', states=[]) -%}
-{%- if name %}
-  'I@{{ version_match }} and I@{{ role_match(name) }}':
-{%- else %}
-  'I@{{ version_match }}':
-{%- endif %}
-    {{ ([{ "match": "compound" }] + states) | yaml }}
+{%- set version_match = "I@metalk8s:nodes:" ~ grains['id'] ~ ":version:" ~ version -%}
+
+{%- macro role_match(name) -%}
+I@metalk8s:nodes:{{ grains['id'] }}:roles:{{ name }}
 {%- endmacro %}
 
 metalk8s-{{ version }}:
   # 'Default' role applicable to all nodes
-  {{ role(states=[
-       'metalk8s.roles.minion',
-     ])
-  }}
+  # Note: no 'absent' for the basic infrastructure
+  {{ version_match }}:
+    - match: compound
+    - metalk8s.roles.minion
 
-  {{ role('bootstrap', [
-       'metalk8s.roles.bootstrap',
-       'metalk8s.roles.salt-master',
-       'metalk8s.roles.registry',
-       'metalk8s.roles.repository',
-     ])
-  }}
+  {% for role in roles %}
+  # {{ role }} role
+  {{ version_match }} and {{ role_match(role) }}:
+    - match: compound
+    - metalk8s.roles.{{ role }}
 
-  {{ role('ca', [
-       'metalk8s.roles.ca',
-     ])
-  }}
+  {# See comment on top #}
+  {%- if role != node_role %}
+  {{ version_match }} and not {{ role_match(role) }}:
+    - match: compound
+    - metalk8s.roles.{{ role }}.absent
+  {%- endif %}
+  {% endfor %}
 
-  {{ role('etcd', [
-       'metalk8s.roles.etcd',
-     ])
-  }}
-
-  {{ role('master', [
-       'metalk8s.roles.master',
-     ])
-  }}
-
-  {{ role('node', [
-       'metalk8s.roles.node',
-     ])
-  }}
+  # See comment on top
+  {{ version_match }} {% for role in node_roles %} and not {{ role_match(role) }} {% endfor %}:
+    - match: compound
+    - metalk8s.roles.node.absent
