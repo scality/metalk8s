@@ -10,14 +10,14 @@
 {%- set apiserver = 'https://' ~ grains['metalk8s']['control_plane_ip'] ~ ':6443' %}
 
 Deploy kube-proxy (ServiceAccount):
-  kubernetes.serviceaccount_present:
+  metalk8s_kubernetes.serviceaccount_present:
     - name: kube-proxy
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - namespace: kube-system
 
 Deploy kube-proxy (ClusterRoleBinding):
-  kubernetes.clusterrolebinding_present:
+  metalk8s_kubernetes.clusterrolebinding_present:
     - name: kubeadm:node-proxier
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -31,10 +31,10 @@ Deploy kube-proxy (ClusterRoleBinding):
         namespace: kube-system
 
     - require:
-      - kubernetes: Deploy kube-proxy (ServiceAccount)
+      - metalk8s_kubernetes: Deploy kube-proxy (ServiceAccount)
 
 Deploy kube-proxy (ConfigMap):
-  kubernetes.configmap_present:
+  metalk8s_kubernetes.configmap_present:
     - name: kube-proxy
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -102,7 +102,7 @@ Deploy kube-proxy (ConfigMap):
               tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 
 Deploy kube-proxy (DaemonSet):
-  kubernetes.daemonset_present:
+  metalk8s_kubernetes.daemonset_present:
     - name: kube-proxy
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -169,12 +169,12 @@ Deploy kube-proxy (DaemonSet):
           type: RollingUpdate
 
     - require:
-      - kubernetes: Deploy kube-proxy (ServiceAccount)
-      - kubernetes: Deploy kube-proxy (ClusterRoleBinding)
-      - kubernetes: Deploy kube-proxy (ConfigMap)
+      - metalk8s_kubernetes: Deploy kube-proxy (ServiceAccount)
+      - metalk8s_kubernetes: Deploy kube-proxy (ClusterRoleBinding)
+      - metalk8s_kubernetes: Deploy kube-proxy (ConfigMap)
 
 Deploy kube-proxy (Role):
-  kubernetes.role_present:
+  metalk8s_kubernetes.role_present:
     - name: kube-proxy
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -190,7 +190,7 @@ Deploy kube-proxy (Role):
         - get
 
 Deploy kube-proxy (RoleBinding):
-  kubernetes.rolebinding_present:
+  metalk8s_kubernetes.rolebinding_present:
     - name: kube-proxy
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -204,4 +204,4 @@ Deploy kube-proxy (RoleBinding):
         name: system:bootstrappers:kubeadm:default-node-token
 
     - require:
-      - kubernetes: Deploy kube-proxy (Role)
+      - metalk8s_kubernetes: Deploy kube-proxy (Role)

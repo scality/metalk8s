@@ -4,11 +4,11 @@
 {% set context = "kubernetes-admin@kubernetes" %}
 
 Create coredns ConfigMap:
-  kubernetes.configmap_present:
+  metalk8s_kubernetes.configmap_present:
     - name: coredns
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }} 
+    - context: {{ context }}
     - data:
         Corefile: |
           .:53 {
@@ -30,7 +30,7 @@ Create coredns ConfigMap:
     - pkg: Install Python Kubernetes client
 
 Create coredns deployment:
-  kubernetes.deployment_present:
+  metalk8s_kubernetes.deployment_present:
     - name: coredns
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
@@ -38,11 +38,11 @@ Create coredns deployment:
     - source: salt://metalk8s/kubeadm/init/addons/files/coredns_deployment.yaml.j2
     - template: jinja
   require:
-    - kubernetes: Create coredns ConfigMap
+    - metalk8s_kubernetes: Create coredns ConfigMap
     - pkg: Install Python Kubernetes client
 
 Create coredns service:
-  kubernetes.service_present:
+  metalk8s_kubernetes.service_present:
     - name: coredns
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
@@ -70,11 +70,11 @@ Create coredns service:
           port: 9153
           protocol: TCP
   require:
-    - kubernetes: Create coredns deployment
+    - metalk8s_kubernetes: Create coredns deployment
     - pkg: Install Python Kubernetes client
 
 Create coredns service account:
-  kubernetes.serviceaccount_present:
+  metalk8s_kubernetes.serviceaccount_present:
     - name: coredns
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
@@ -83,7 +83,7 @@ Create coredns service account:
         - pkg: Install Python Kubernetes client
 
 Create coredns cluster role:
-  kubernetes.clusterrole_present:
+  metalk8s_kubernetes.clusterrole_present:
     - name: system:coredns
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -108,7 +108,7 @@ Create coredns cluster role:
     - pkg: Install Python Kubernetes client
 
 Create coredns cluster role binding:
-  kubernetes.clusterrolebinding_present:
+  metalk8s_kubernetes.clusterrolebinding_present:
     - name: system:coredns
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
