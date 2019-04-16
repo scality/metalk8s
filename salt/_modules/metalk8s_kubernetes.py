@@ -212,14 +212,14 @@ def _setup_conn(**kwargs):
     '''
     kubeconfig = kwargs.get('kubeconfig') or __salt__['config.option']('kubernetes.kubeconfig')
     kubeconfig_data = kwargs.get('kubeconfig_data') or __salt__['config.option']('kubernetes.kubeconfig-data')
-    context = kwargs.get('context') or __salt__['config.option']('kubernetes.context')
+    context = kwargs.get('context') or __salt__['config.option']('kubernetes.context') or None
 
     if (kubeconfig_data and not kubeconfig) or (kubeconfig_data and kwargs.get('kubeconfig_data')):
         with tempfile.NamedTemporaryFile(prefix='salt-kubeconfig-', delete=False) as kcfg:
             kcfg.write(base64.b64decode(kubeconfig_data))
             kubeconfig = kcfg.name
 
-    if not (kubeconfig and context):
+    if not kubeconfig:
         if kwargs.get('api_url') or __salt__['config.option']('kubernetes.api_url'):
             salt.utils.versions.warn_until('Sodium',
                     'Kubernetes configuration via url, certificate, username and password will be removed in Sodiom. '
@@ -229,7 +229,7 @@ def _setup_conn(**kwargs):
             except Exception:
                 raise CommandExecutionError('Old style kubernetes configuration is only supported up to python-kubernetes 2.0.0')
         else:
-            raise CommandExecutionError('Invalid kubernetes configuration. Parameter \'kubeconfig\' and \'context\' are required.')
+            raise CommandExecutionError('Invalid kubernetes configuration. Parameter \'kubeconfig\' is required.')
     kubernetes.config.load_kube_config(config_file=kubeconfig, context=context)
 
     # The return makes unit testing easier
