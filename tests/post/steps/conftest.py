@@ -22,23 +22,7 @@ def kubeconfig_data(request, host):
                 "Must be run on bootstrap node, or have an existing file at "
                 "/etc/kubernetes/admin.conf"
             )
-        data = yaml.safe_load(kubeconfig_file.content_string)
-
-    kube_cluster_section = next(
-        cluster_info["cluster"] for cluster_info in data["clusters"]
-        if cluster_info["name"] == "kubernetes"
-    )
-
-    # FIXME: this should not be necessary, we should run the tests from within
-    #        the control-plane network
-    bootstrap_ip = request.config.getoption("--bootstrap-ip")
-    if bootstrap_ip is not None:
-        kube_cluster_section["server"] = "https://{}:6443".format(bootstrap_ip)
-
-    if request.config.getoption("--skip-tls-verify"):
-        kube_cluster_section["insecure-skip-tls-verify"] = True
-
-    return data
+        return yaml.safe_load(kubeconfig_file.content_string)
 
 
 @pytest.fixture
