@@ -164,18 +164,18 @@ get_salt_container() {
     echo "$salt_container"
 }
 
-sync_salt() {
+sync_salt_master() {
     local -r salt_master_call="crictl exec -i $(get_salt_container)"
-
-    $salt_master_call salt '*' saltutil.sync_all refresh=True \
-        saltenv=metalk8s-@@VERSION
-
-    $salt_master_call salt '*' mine.update
 
     $salt_master_call salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
     $salt_master_call salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
     $salt_master_call salt-run metalk8s_saltutil.sync_auth \
         saltenv=metalk8s-@@VERSION
+}
+
+sync_salt_minion() {
+    ${SALT_CALL} saltutil.sync_all refresh=True saltenv=metalk8s-@@VERSION
+    ${SALT_CALL} mine.update
 }
 
 orchestrate_bootstrap() {
@@ -199,16 +199,24 @@ orchestrate_bootstrap() {
         pillarenv=metalk8s-@@VERSION \
         pillar="{'registry_ip': '$registry_ip'}"
 
-    sync_salt
+    sync_salt_master
 
     local -r salt_master_call="crictl exec -i $(get_salt_container)"
+    local -r bootstrap_id=$(cat /etc/salt/minion_id)
+
+    # Wait for Salt minion to respond before proceeding (may not have completed
+    # handshake with the master yet)
+    $salt_master_call salt-run metalk8s_saltutil.wait_minions \
+        tgt="$bootstrap_id"
+
+    sync_salt_minion "$bootstrap_id"
 
     $salt_master_call salt-run state.orchestrate \
         metalk8s.orchestrate.bootstrap_with_master \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
         pillar="{ \
-            'bootstrap_id': '$(cat /etc/salt/minion_id)', \
+            'bootstrap_id': '$bootstrap_id', \
             'registry_ip': '$registry_ip' \
         }"
 }
