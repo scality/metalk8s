@@ -1,21 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { DebounceInput } from 'react-debounce-input';
-import classnames from 'classnames';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
-
-import { Button, Checkbox } from 'core-ui';
-import {
-  gray,
-  fontSize,
-  padding,
-  brand,
-  warmRed
-} from 'core-ui/dist/style/theme';
+import { Button, Input } from 'core-ui';
+import { padding, brand } from 'core-ui/dist/style/theme';
 import {
   createNodeAction,
   clearCreateNodeErrorAction
@@ -28,47 +19,17 @@ const CreateNodeLayout = styled.div`
   form {
     width: 450px;
     padding: 0 ${padding.larger};
+    .sc-input {
+      margin: ${padding.smaller} 0;
+      .sc-input-label {
+        width: 200px;
+      }
+    }
   }
 `;
 
 const PageHeader = styled.h2`
   margin-top: 0;
-`;
-
-const CreateNodeFormContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  margin: ${padding.base} 0;
-
-  input[type='checkbox'] {
-    margin: 0;
-  }
-  input {
-    padding: ${padding.small};
-    font-size: ${fontSize.large};
-    display: block;
-    border-radius: 4px;
-    border: 1px solid ${gray};
-  }
-
-  input:focus {
-    border-color: #007eff;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075),
-      0 0 0 3px rgba(0, 126, 255, 0.1);
-    outline: none;
-  }
-
-  .input-feedback {
-    color: ${warmRed};
-    margin: ${padding.smaller} ${padding.base};
-    font-size: ${fontSize.small};
-  }
-`;
-
-const LabelStyle = styled.div`
-  display: flex;
-  align-items: center;
-  width: 200px;
 `;
 
 const ActionContainer = styled.div`
@@ -89,64 +50,6 @@ const ErrorMessage = styled.span`
 const FormTitle = styled.h3`
   margin-top: ${padding.larger};
 `;
-
-const InputFeedback = ({ error }) =>
-  error ? <div className="input-feedback">{error}</div> : null;
-
-const Label = ({ error, className, children, ...props }) => {
-  return (
-    <LabelStyle className="label" {...props}>
-      {children}
-    </LabelStyle>
-  );
-};
-
-const TextInput = ({
-  type,
-  id,
-  label,
-  error,
-  value,
-  onChange,
-  className,
-  ...props
-}) => {
-  const classes = classnames(
-    'input-group',
-    {
-      'animated shake error': !!error
-    },
-    className
-  );
-  return (
-    <CreateNodeFormContainer className={classes}>
-      <Label htmlFor={id} error={error}>
-        <span>{label}</span>
-      </Label>
-      {type === 'checkbox' ? (
-        <Checkbox
-          id={id}
-          type={type}
-          value={value}
-          onChange={onChange ? onChange : null}
-          {...props}
-        />
-      ) : (
-        <DebounceInput
-          minLength={1}
-          debounceTimeout={300}
-          id={id}
-          className="text-input"
-          type={type}
-          value={value}
-          onChange={onChange ? onChange : null}
-          {...props}
-        />
-      )}
-      <InputFeedback error={error} />
-    </CreateNodeFormContainer>
-  );
-};
 
 const initialValues = {
   name: '',
@@ -191,42 +94,42 @@ class NodeCreateForm extends React.Component {
             const { values, handleChange, isValid, touched, errors } = props;
             return (
               <Form>
-                <TextInput
+                <Input
                   name="name"
                   label={intl.messages.name}
                   value={values.name}
                   onChange={handleChange}
                   error={touched.name && errors.name}
                 />
-                <TextInput
+                <Input
                   name="ssh_user"
                   label={intl.messages.ssh_user}
                   value={values.ssh_user}
                   onChange={handleChange}
                   error={touched.ssh_user && errors.ssh_user}
                 />
-                <TextInput
+                <Input
                   name="hostName_ip"
                   label={intl.messages.hostName_ip}
                   value={values.hostName_ip}
                   onChange={handleChange}
                   error={touched.hostName_ip && errors.hostName_ip}
                 />
-                <TextInput
+                <Input
                   name="ssh_port"
                   label={intl.messages.ssh_port}
                   value={values.ssh_port}
                   onChange={handleChange}
                   error={touched.ssh_port && errors.ssh_port}
                 />
-                <TextInput
+                <Input
                   name="ssh_key_path"
                   label={intl.messages.ssh_key_path}
                   value={values.ssh_key_path}
                   onChange={handleChange}
                   error={touched.ssh_key_path && errors.ssh_key_path}
                 />
-                <TextInput
+                <Input
                   name="sudo_required"
                   type="checkbox"
                   label={intl.messages.sudo_required}
@@ -235,7 +138,7 @@ class NodeCreateForm extends React.Component {
                   onChange={handleChange}
                 />
                 <FormTitle>{intl.messages.roles}</FormTitle>
-                <TextInput
+                <Input
                   type="checkbox"
                   name="workload_plane"
                   label={intl.messages.workload_plane}
@@ -248,7 +151,7 @@ class NodeCreateForm extends React.Component {
                       : intl.messages.role_values_error
                   }
                 />
-                <TextInput
+                <Input
                   type="checkbox"
                   name="control_plane"
                   label={intl.messages.control_plane}
