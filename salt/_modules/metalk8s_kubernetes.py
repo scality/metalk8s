@@ -103,7 +103,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-__virtualname__ = 'kubernetes'
+__virtualname__ = 'metalk8s_kubernetes'
 
 
 def __virtual__():
