@@ -258,6 +258,8 @@ orchestrate_bootstrap() {
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
         pillar="{'registry_ip': $registry_ip}"
+
+    ${SALT_CALL} --retcode-passthrough mine.update
 }
 
 deploy_metalk8s_ui() {
