@@ -4,7 +4,7 @@
 {% set context = "kubernetes-admin@kubernetes" %}
 
 Apply control-plane master role label:
-  kubernetes.node_label_present:
+  metalk8s_kubernetes.node_label_present:
     - name: "node-role.kubernetes.io/master"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -12,7 +12,7 @@ Apply control-plane master role label:
     - value: ""
 
 Apply control-plane etcd role label:
-  kubernetes.node_label_present:
+  metalk8s_kubernetes.node_label_present:
     - name: "node-role.kubernetes.io/etcd"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -20,7 +20,7 @@ Apply control-plane etcd role label:
     - value: ""
 
 Apply control-plane bootstrap role label:
-  kubernetes.node_label_present:
+  metalk8s_kubernetes.node_label_present:
     - name: "node-role.kubernetes.io/bootstrap"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -28,7 +28,7 @@ Apply control-plane bootstrap role label:
     - value: ""
 
 Apply control-plane bootstrap taint:
-  kubernetes.node_taints_present:
+  metalk8s_kubernetes.node_taints_present:
     - name: {{ hostname }}
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -37,7 +37,7 @@ Apply control-plane bootstrap taint:
           effect: "NoSchedule"
 
 Apply node version label:
-  kubernetes.node_label_present:
+  metalk8s_kubernetes.node_label_present:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - name: "metalk8s.scality.com/version"
@@ -45,7 +45,7 @@ Apply node version label:
     - value: "@@VERSION"
 
 Annotate with CRI socket information:
-  kubernetes.node_annotation_present:
+  metalk8s_kubernetes.node_annotation_present:
     - name: "kubeadm.alpha.kubernetes.io/cri-socket"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
