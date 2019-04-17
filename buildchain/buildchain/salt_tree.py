@@ -115,6 +115,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/bootstrap/preflight.sls'),
     Path('salt/metalk8s/bootstrap/registry.sls'),
     Path('salt/metalk8s/bootstrap/salt_master.sls'),
+    Path('salt/metalk8s/bootstrap/services.sls'),
 
     Path('salt/metalk8s/calico/configured.sls'),
     Path('salt/metalk8s/calico/deployed.sls'),
@@ -208,6 +209,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/repo/init.sls'),
     Path('salt/metalk8s/repo/offline.sls'),
     Path('salt/metalk8s/repo/online.sls'),
+    Path('salt/metalk8s/repo/service_deployed.sls'),
 
     Path('salt/metalk8s/runc/init.sls'),
     Path('salt/metalk8s/runc/installed.sls'),
@@ -215,12 +217,14 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/registry/init.sls'),
     Path('salt/metalk8s/registry/macro.sls'),
     Path('salt/metalk8s/registry/populated.sls'),
+    Path('salt/metalk8s/registry/service_deployed.sls'),
     Path('salt/metalk8s/registry/files/registry-pod.yaml.j2'),
 
     Path('salt/metalk8s/salt/master/files/master_99-metalk8s.conf.j2'),
     Path('salt/metalk8s/salt/master/files/salt-master-pod.yaml.j2'),
     Path('salt/metalk8s/salt/master/configured.sls'),
     Path('salt/metalk8s/salt/master/deployed.sls'),
+    Path('salt/metalk8s/salt/master/service_deployed.sls'),
     Path('salt/metalk8s/salt/master/init.sls'),
     Path('salt/metalk8s/salt/master/accept_keys.sls'),
 
@@ -243,6 +247,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_modules/metalk8s.py'),
 
     Path('salt/_pillar/metalk8s.py'),
+    Path('salt/_pillar/metalk8s_endpoints.py'),
     Path('salt/_pillar/metalk8s_nodes.py'),
 
     Path('salt/_roster/kubernetes_nodes.py'),

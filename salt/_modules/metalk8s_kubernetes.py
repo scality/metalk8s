@@ -212,14 +212,14 @@ def _setup_conn(**kwargs):
     '''
     kubeconfig = kwargs.get('kubeconfig') or __salt__['config.option']('kubernetes.kubeconfig')
     kubeconfig_data = kwargs.get('kubeconfig_data') or __salt__['config.option']('kubernetes.kubeconfig-data')
-    context = kwargs.get('context') or __salt__['config.option']('kubernetes.context')
+    context = kwargs.get('context') or __salt__['config.option']('kubernetes.context') or None
 
     if (kubeconfig_data and not kubeconfig) or (kubeconfig_data and kwargs.get('kubeconfig_data')):
         with tempfile.NamedTemporaryFile(prefix='salt-kubeconfig-', delete=False) as kcfg:
             kcfg.write(base64.b64decode(kubeconfig_data))
             kubeconfig = kcfg.name
 
-    if not (kubeconfig and context):
+    if not kubeconfig:
         if kwargs.get('api_url') or __salt__['config.option']('kubernetes.api_url'):
             salt.utils.versions.warn_until('Sodium',
                     'Kubernetes configuration via url, certificate, username and password will be removed in Sodiom. '
@@ -229,7 +229,7 @@ def _setup_conn(**kwargs):
             except Exception:
                 raise CommandExecutionError('Old style kubernetes configuration is only supported up to python-kubernetes 2.0.0')
         else:
-            raise CommandExecutionError('Invalid kubernetes configuration. Parameter \'kubeconfig\' and \'context\' are required.')
+            raise CommandExecutionError('Invalid kubernetes configuration. Parameter \'kubeconfig\' is required.')
     kubernetes.config.load_kube_config(config_file=kubeconfig, context=context)
 
     # The return makes unit testing easier
@@ -633,6 +633,34 @@ def show_service(name, namespace='default', **kwargs):
             log.exception(
                 'Exception when calling '
                 'CoreV1Api->read_namespaced_service'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def show_endpoint(name, namespace='default', **kwargs):
+    '''
+    Return the kubernetes endpoint defined by name and namespace
+
+    CLI Examples::
+
+        salt '*' kubernetes.show_endpoint my-nginx default
+        salt '*' kubernetes.show_endpoint name=my-nginx namespace=default
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.CoreV1Api()
+        api_response = api_instance.read_namespaced_endpoints(name, namespace)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CoreV1Api->read_namespaced_endpoints'
             )
             raise CommandExecutionError(exc)
     finally:
