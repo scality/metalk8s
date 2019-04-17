@@ -239,7 +239,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
     Path('salt/_modules/docker_registry.py'),
-    Path('salt/_modules/kubernetesmod.py'),
+    Path('salt/_modules/metalk8s_kubernetes.py'),
     Path('salt/_modules/metalk8s.py'),
 
     Path('salt/_pillar/metalk8s.py'),
@@ -252,7 +252,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_states/containerd.py'),
     Path('salt/_states/kubeconfig.py'),
     Path('salt/_states/docker_registry.py'),
-    Path('salt/_states/kubernetesmod.py'),
+    Path('salt/_states/metalk8s_kubernetes.py'),
 
     targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,

@@ -7,7 +7,7 @@
 {% set context = "kubernetes-admin@kubernetes" %}
 
 Deploy calico-config (ConfigMap):
-  kubernetes.configmap_present:
+  metalk8s_kubernetes.configmap_present:
     - name: calico-config
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -18,7 +18,7 @@ Deploy calico-config (ConfigMap):
         veth_mtu: 1440
 
 Deploy calico-node (DaemonSet):
-  kubernetes.daemonset_present:
+  metalk8s_kubernetes.daemonset_present:
     - name: calico-node
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -143,17 +143,17 @@ Deploy calico-node (DaemonSet):
                   path: /run/xtables.lock
                   type: FileOrCreate
     - require:
-        - kubernetes: Deploy calico-config (ConfigMap)
+        - metalk8s_kubernetes: Deploy calico-config (ConfigMap)
 
 Deploy calico-node (ServiceAccount):
-  kubernetes.serviceaccount_present:
+  metalk8s_kubernetes.serviceaccount_present:
     - name: calico-node
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - namespace: kube-system
 
 Deploy calico-node (ClusterRoleBinding):
-  kubernetes.clusterrolebinding_present:
+  metalk8s_kubernetes.clusterrolebinding_present:
     - name: calico-node
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -169,11 +169,11 @@ Deploy calico-node (ClusterRoleBinding):
         kind: Group
         name: metalk8s:calico-node
     - require:
-      - kubernetes: Deploy calico-node (ClusterRole)
-      - kubernetes: Deploy calico-node (ServiceAccount)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ServiceAccount)
 
 Deploy felixconfigurations.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: felixconfigurations.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -186,10 +186,10 @@ Deploy felixconfigurations.crd.projectcalico.org (CustomResourceDefinition):
           plural: felixconfigurations
           singular: felixconfiguration
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy bgppeers.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: bgppeers.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -202,10 +202,10 @@ Deploy bgppeers.crd.projectcalico.org (CustomResourceDefinition):
           plural: bgppeers
           singular: bgppeer
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy bgpconfigurations.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: bgpconfigurations.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -218,10 +218,10 @@ Deploy bgpconfigurations.crd.projectcalico.org (CustomResourceDefinition):
           plural: bgpconfigurations
           singular: bgpconfiguration
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy ippools.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: ippools.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -234,10 +234,10 @@ Deploy ippools.crd.projectcalico.org (CustomResourceDefinition):
           plural: ippools
           singular: ippool
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy hostendpoints.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: hostendpoints.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -250,10 +250,10 @@ Deploy hostendpoints.crd.projectcalico.org (CustomResourceDefinition):
           plural: hostendpoints
           singular: hostendpoint
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy clusterinformations.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: clusterinformations.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -266,10 +266,10 @@ Deploy clusterinformations.crd.projectcalico.org (CustomResourceDefinition):
           plural: clusterinformations
           singular: clusterinformation
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy globalnetworkpolicies.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: globalnetworkpolicies.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -282,10 +282,10 @@ Deploy globalnetworkpolicies.crd.projectcalico.org (CustomResourceDefinition):
           plural: globalnetworkpolicies
           singular: globalnetworkpolicy
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy globalnetworksets.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: globalnetworksets.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -298,10 +298,10 @@ Deploy globalnetworksets.crd.projectcalico.org (CustomResourceDefinition):
           plural: globalnetworksets
           singular: globalnetworkset
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy networkpolicies.crd.projectcalico.org (CustomResourceDefinition):
-  kubernetes.customresourcedefinition_present:
+  metalk8s_kubernetes.customresourcedefinition_present:
     - name: networkpolicies.crd.projectcalico.org
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -314,10 +314,10 @@ Deploy networkpolicies.crd.projectcalico.org (CustomResourceDefinition):
           plural: networkpolicies
           singular: networkpolicy
     - require_in:
-      - kubernetes: Deploy calico-node (ClusterRole)
+      - metalk8s_kubernetes: Deploy calico-node (ClusterRole)
 
 Deploy calico-node (ClusterRole):
-  kubernetes.clusterrole_present:
+  metalk8s_kubernetes.clusterrole_present:
     - name: calico-node
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
