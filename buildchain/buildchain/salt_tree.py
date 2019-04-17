@@ -52,19 +52,23 @@ def task__deploy_salt_tree() -> Iterator[types.TaskDict]:
 
 
 PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
-    Path('pillar/mine_functions.sls'),
-    Path('pillar/repositories.sls'),
+    Path('pillar/metalk8s/roles/minion.sls'),
+    targets.TemplateFile(
+        task_name='bootstrap.sls',
+        source=constants.ROOT/'pillar'/'metalk8s'/'roles'/'bootstrap.sls.in',
+        destination=
+            constants.ISO_ROOT/'pillar'/'metalk8s'/'roles'/'bootstrap.sls',
+        context={'VERSION': constants.SHORT_VERSION},
+        file_dep=[constants.VERSION_FILE],
+    ),
+    Path('pillar/metalk8s/roles/ca.sls'),
+    Path('pillar/metalk8s/roles/etcd.sls'),
+    Path('pillar/metalk8s/roles/master.sls'),
+    Path('pillar/metalk8s/roles/node.sls'),
     targets.TemplateFile(
         task_name='top.sls',
         source=constants.ROOT/'pillar'/'top.sls.in',
         destination=constants.ISO_ROOT/'pillar'/'top.sls',
-        context={'VERSION': constants.SHORT_VERSION},
-        file_dep=[constants.VERSION_FILE],
-    ),
-    targets.TemplateFile(
-        task_name='metalk8s.sls',
-        source=constants.ROOT/'pillar'/'metalk8s.sls.in',
-        destination=constants.ISO_ROOT/'pillar'/'metalk8s.sls',
         context={'VERSION': constants.SHORT_VERSION},
         file_dep=[constants.VERSION_FILE],
     ),
