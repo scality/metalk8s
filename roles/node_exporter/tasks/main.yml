@@ -34,16 +34,21 @@
     name: yum-plugin-versionlock
     state: present
 
-- name: 'lock version of node_exporter'
-  lineinfile:
-    dest: /etc/yum/pluginconf.d/versionlock.list
-    line: 0:node_exporter-{{ node_exporter_version }}
-    regexp: '0:node_exporter-.*'
+# Unlock before, in case the version of node_exporter has changed,
+# otherwise it will prevent the installation of the package,
+# even if the versionlock rule is replaced by the new version.
+- name: 'unlock version of node_exporter'
+  shell: yum versionlock delete node_exporter-*
+  failed_when: no
 
 - name: 'install Prometheus Node exporter'
   yum:
     name: node_exporter-{{ node_exporter_version }}
     state: present
+    allow_downgrade: yes
+
+- name: 'lock version of node_exporter'
+  command: yum versionlock add node_exporter-{{ node_exporter_version }}
 
 - name: 'Start and enable the node_exporter service'
   service:
