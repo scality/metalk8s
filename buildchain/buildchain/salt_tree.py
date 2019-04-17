@@ -205,7 +205,6 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/repo/init.sls'),
     Path('salt/metalk8s/repo/installed.sls'),
     Path('salt/metalk8s/repo/offline.sls'),
-    Path('salt/metalk8s/repo/online.sls'),
 
     Path('salt/metalk8s/roles/bootstrap/absent.sls'),
     Path('salt/metalk8s/roles/bootstrap/init.sls'),

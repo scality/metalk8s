@@ -1,7 +1,3 @@
-repo:
-  # Configue online repositories
-  online_mode: False
-
 mine_functions:
   control_plane_ip:
     mine_function: grains.get
