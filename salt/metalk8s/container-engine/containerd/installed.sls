@@ -1,6 +1,5 @@
 {%- from "metalk8s/macro.sls" import pkg_installed with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/map.jinja" import defaults with context %}
 
 include:
   - metalk8s.repo
@@ -36,7 +35,7 @@ Configure registry IP in containerd conf:
           [plugins.cri]
             [plugins.cri.registry]
               [plugins.cri.registry.mirrors]
-                [plugins.cri.registry.mirrors."{{ defaults.registry_ip }}"]
-                  endpoint = ["http://{{ defaults.registry_ip }}:5000"]
+                [plugins.cri.registry.mirrors."{{ pillar.registry_ip }}"]
+                  endpoint = ["http://{{ pillar.registry_ip }}:5000"]
     - require:
       - pkg: Install containerd
