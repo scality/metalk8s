@@ -27,6 +27,15 @@ Bootstrap control plane:
     - pillar:
         registry_ip: {{ pillar.get('registry_ip') }}
 
+Bootstrap services:
+  salt.state:
+    - tgt: {{ pillar['bootstrap_id'] }}
+    - saltenv: {{ saltenv }}
+    - sls:
+      - metalk8s.bootstrap.services
+    - require:
+      - salt: Bootstrap control plane
+
 Bootstrap node:
   salt.state:
     - tgt: {{ pillar['bootstrap_id'] }}
