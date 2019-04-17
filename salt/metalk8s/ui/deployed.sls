@@ -13,7 +13,7 @@
 
 
 Create metalk8s-ui deployment:
-  kubernetes.deployment_present:
+  metalk8s_kubernetes.deployment_present:
     - name: metalk8s-ui
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
@@ -24,7 +24,7 @@ Create metalk8s-ui deployment:
     - pkg: Install Python Kubernetes client
 
 Create metalk8s-ui service:
-  kubernetes.service_present:
+  metalk8s_kubernetes.service_present:
     - name: metalk8s-ui
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
@@ -45,11 +45,11 @@ Create metalk8s-ui service:
     - pkg: Install Python Kubernetes client
 
 Create metalk8s-ui ConfigMap:
-  kubernetes.configmap_present:
+  metalk8s_kubernetes.configmap_present:
     - name: metalk8s-ui
     - namespace: kube-system
     - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }} 
+    - context: {{ context }}
     - data:
         config.json: |
           {"url": "https://{{ control_plane_ip }}:6443", "url_salt": "http://{{ control_plane_ip }}:4507"}
