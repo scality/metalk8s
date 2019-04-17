@@ -11,10 +11,15 @@ spec:
       args: ["-c", "buildbot-worker create-worker . ${BUILDMASTER}:${BUILDMASTER_PORT} ${WORKERNAME} ${WORKERPASS} && buildbot-worker start --nodaemon"]
       resources:
         requests:
-          cpu: 500m
+          # Most of our build steps run in containers, hence to run concurrent
+          # builds, we need to allocate CPUs to the subsystem running Docker,
+          # rather than to the environment in which `doit` is merely executed.
+          # There's a limit of 4 CPUs, so we assign one to `doit`, and 3 to
+          # Docker.
+          cpu: "1"
           memory: 1Gi
         limits:
-          cpu: 500m
+          cpu: "1"
           memory: 1Gi
       env:
         - name: DOCKER_HOST
@@ -26,10 +31,10 @@ spec:
       image: docker:18.09.2-dind
       resources:
         requests:
-          cpu: "1"
+          cpu: "3"
           memory: 2Gi
         limits:
-          cpu: "2"
+          cpu: "3"
           memory: 2Gi
       securityContext:
         privileged: true
