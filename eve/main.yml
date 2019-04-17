@@ -58,7 +58,10 @@ stages:
           name: build everything
           env:
             PYTHON_SYS: python36
-          command: ./doit.sh
+          # There are 3 CPUs available for Docker, and 1 for `doit` in the Pod.
+          # Given the network IO-bound nature of some of the build steps, and
+          # most build steps running in Docker, set concurrency to 4.
+          command: ./doit.sh -n 4
           usePTY: true
       - ShellCommand:
           name: Put the iso file in a separate folder
