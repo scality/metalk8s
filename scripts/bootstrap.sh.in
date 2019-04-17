@@ -30,26 +30,26 @@ declare -A GPGCHECK_REPOSITORIES=(
 )
 
 die() {
-        echo 1>&2 "$@"
-        exit 1
+    echo 1>&2 "$@"
+    exit 1
 }
 
 pre_minion_checks() {
-        test "x$(whoami)" = "xroot" || die "Script must run as root"
-        test -n "${RPM}" || die "rpm not found"
-        test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
-        test -n "${SYSTEMCTL}" || die "systemctl not found"
-        test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
-        test -n "${YUM}" || die "yum not found"
-        test -x "${YUM}" || die "yum at '${YUM}' is not executable"
+    test "x$(whoami)" = "xroot" || die "Script must run as root"
+    test -n "${RPM}" || die "rpm not found"
+    test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
+    test -n "${SYSTEMCTL}" || die "systemctl not found"
+    test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
+    test -n "${YUM}" || die "yum not found"
+    test -x "${YUM}" || die "yum at '${YUM}' is not executable"
 }
 
 disable_salt_minion_service() {
-        ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
+    ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
 }
 
 stop_salt_minion_service() {
-        ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
+    ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
 }
 
 configure_yum_repositories() {
@@ -93,7 +93,7 @@ configure_yum_local_repository() {
 
     gpg_keys=$(
         find "$repo_path" -maxdepth 1 -name "RPM-GPG-KEY-*" \
-	    -printf "file://%p "
+            -printf "file://%p "
     )
 
     cat > /etc/yum.repos.d/"$repo_name".repo << EOF
@@ -113,9 +113,9 @@ install_salt_minion() {
 
     if [[ ${online_mode,,} = false ]]; then
         yum_opts+=(
-	          '--disablerepo=*'
-	          '--enablerepo=metalk8s-*'
-	      )
+            '--disablerepo=*'
+            '--enablerepo=metalk8s-*'
+        )
     fi
 
     "$YUM" install "${yum_opts[@]}" salt-minion
@@ -144,28 +144,38 @@ retry_dns_count: 3
 EOF
 }
 
-set_salt_command() {
-    echo "Setting salt master command"
-    # shellcheck disable=SC2046
-    SALT_MASTER_CALL="crictl exec -i $(crictl ps -q --label io.kubernetes.container.name=salt-master --label io.kubernetes.pod.namespace=kube-system)"
-}
+get_salt_container() {
+    local -r max_retries=10
+    local salt_container='' attempts=0
 
-sync_salt() {
-    $SALT_MASTER_CALL salt '*' saltutil.sync_all refresh=True \
-        saltenv=metalk8s-@@VERSION
-    $SALT_MASTER_CALL salt '*' mine.update
-    local SALT_CONTAINER
-    SALT_CONTAINER="$(crictl ps -q \
+    while [ -z "$salt_container" ] && [ $attempts -lt $max_retries ]; do
+        salt_container="$(crictl ps -q \
             --label io.kubernetes.pod.namespace=kube-system \
             --label io.kubernetes.container.name=salt-master \
             --state Running)"
-    test -n "$SALT_CONTAINER"
-    crictl exec -i "$SALT_CONTAINER" \
-        salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
-    crictl exec -i "$SALT_CONTAINER" \
-        salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
-    crictl exec -i "$SALT_CONTAINER" \
-        salt-run metalk8s_saltutil.sync_auth saltenv=metalk8s-@@VERSION
+        (( attempts++ ))
+    done
+
+    if [ -z "$salt_container" ]; then
+        echo "Failed to find a running 'salt-master' container" >&2
+        exit 1
+    fi
+
+    echo "$salt_container"
+}
+
+sync_salt_master() {
+    local -r salt_master_call="crictl exec -i $(get_salt_container)"
+
+    $salt_master_call salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
+    $salt_master_call salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
+    $salt_master_call salt-run metalk8s_saltutil.sync_auth \
+        saltenv=metalk8s-@@VERSION
+}
+
+sync_salt_minion() {
+    ${SALT_CALL} saltutil.sync_all refresh=True saltenv=metalk8s-@@VERSION
+    ${SALT_CALL} mine.update
 }
 
 orchestrate_bootstrap() {
@@ -177,34 +187,54 @@ orchestrate_bootstrap() {
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION
 
-    # TODO: FIX register IP
-    local registry_ip
-    registry_ip=$(salt-call --local grains.get metalk8s:control_plane_ip --out txt | awk '/^local\: /{ print $2 }')
+    # TODO: Registry IP should not need a pillar override here
+    local -r registry_ip=$(
+        ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
+        | awk '/^local\: /{ print $2 }'
+    )
+
     ${SALT_CALL} --local --retcode-passthrough state.orchestrate \
         metalk8s.orchestrate.bootstrap_without_master \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{'registry_ip': $registry_ip}"
+        pillar="{'registry_ip': '$registry_ip'}"
 
-    set_salt_command
-    sync_salt
+    sync_salt_master
 
-    # shellcheck disable=SC2086
-    ${SALT_MASTER_CALL} salt-run state.orchestrate \
+    local -r salt_master_call="crictl exec -i $(get_salt_container)"
+    local -r bootstrap_id=$(cat /etc/salt/minion_id)
+
+    # Wait for Salt minion to respond before proceeding (may not have completed
+    # handshake with the master yet)
+    $salt_master_call salt-run metalk8s_saltutil.wait_minions \
+        tgt="$bootstrap_id"
+
+    sync_salt_minion "$bootstrap_id"
+
+    $salt_master_call salt-run state.orchestrate \
         metalk8s.orchestrate.bootstrap_with_master \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{'bootstrap_id': '$(cat /etc/salt/minion_id)', 'registry_ip': $registry_ip}"
+        pillar="{ \
+            'bootstrap_id': '$bootstrap_id', \
+            'registry_ip': '$registry_ip' \
+        }"
 }
 
 deploy_metalk8s_ui() {
-    bootstrap_id=$(cat /etc/salt/minion_id)
-    registry_ip=$(salt-call --local grains.get metalk8s:control_plane_ip --out txt | awk '/^local\: /{ print $2 }')
+    local -r bootstrap_id=$(cat /etc/salt/minion_id)
+    local -r registry_ip=$(
+        ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
+        | awk '/^local\: /{ print $2 }'
+    )
 
     "$SALT_CALL" --retcode-passthrough state.apply \
         metalk8s.ui saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{'bootstrap_id': $bootstrap_id, 'registry_ip': $registry_ip}"
+        pillar="{ \
+            'bootstrap_id': '$bootstrap_id', \
+            'registry_ip': '$registry_ip' \
+        }"
 }
 
 
