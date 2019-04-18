@@ -27,6 +27,14 @@ Bootstrap control plane:
     - pillar:
         registry_ip: {{ pillar.get('registry_ip') }}
 
+Wait for kube-apiserver to be ready:
+  salt.runner:
+    - name: salt.cmd
+    - arg:
+      - fun: metalk8s.wait_apiserver
+    - require:
+      - salt: Bootstrap control plane
+
 Bootstrap services:
   salt.state:
     - tgt: {{ pillar['bootstrap_id'] }}
@@ -34,7 +42,7 @@ Bootstrap services:
     - sls:
       - metalk8s.bootstrap.services
     - require:
-      - salt: Bootstrap control plane
+      - salt: Wait for kube-apiserver to be ready
 
 Bootstrap node:
   salt.state:
@@ -45,6 +53,6 @@ Bootstrap node:
       - metalk8s.bootstrap.addons
       - metalk8s.bootstrap.calico
     - require:
-      - salt: Bootstrap control plane
+      - salt: Wait for kube-apiserver to be ready
     - pillar:
         registry_ip: {{ pillar.get('registry_ip') }}
