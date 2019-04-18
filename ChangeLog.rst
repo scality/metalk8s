@@ -78,6 +78,10 @@ the index provisioning job (:ghpull:`233`).
 Release 1.0.2 (in development)
 ==============================
 
+Bugs fixed
+----------
+:ghissue:`962` - Versionlocks `docker` & `node_exporter` packages
+
 
 Release 1.0.1
 =============
