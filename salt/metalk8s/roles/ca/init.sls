@@ -1,2 +1,3 @@
-Deploy CA:
-  test.succeed_without_changes
+include:
+  - metalk8s.kubernetes.ca
+  - metalk8s.kubernetes.sa

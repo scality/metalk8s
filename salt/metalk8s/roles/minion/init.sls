@@ -1,2 +1,2 @@
-Deploy Salt minion:
-  test.succeed_without_changes
+include:
+  - metalk8s.salt.minion.configured

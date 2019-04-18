@@ -1,2 +1,3 @@
-Deploy etcd member:
-  test.succeed_without_changes
+include:
+  - metalk8s.kubernetes.kubelet.standalone
+  - metalk8s.kubernetes.etcd

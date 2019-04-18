@@ -1,0 +1,3 @@
+include:
+  - .installed
+  - .configured

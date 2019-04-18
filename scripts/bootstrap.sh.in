@@ -182,7 +182,7 @@ orchestrate_bootstrap() {
     # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
     # otherwise grains set during execution won't be taken into account
     # properly.
-    ${SALT_CALL} --local --retcode-passthrough state.sls \
+    ${SALT_CALL} --local --state-output=mixed --retcode-passthrough state.sls \
         metalk8s.node.grains \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION
@@ -193,32 +193,70 @@ orchestrate_bootstrap() {
         | awk '/^local\: /{ print $2 }'
     )
 
-    ${SALT_CALL} --local --retcode-passthrough state.orchestrate \
-        metalk8s.orchestrate.bootstrap_without_master \
+    pillar=(
+      "{"
+      "  'repo': {'local_mode': True},"
+      "  'registry_ip': $registry_ip,"
+      "  'metalk8s': {"
+      "    'endpoints': {"
+      "      'salt-master': {'ip': $registry_ip}"
+      "    }"
+      "  }"
+      "}"
+    )
+
+    ${SALT_CALL} --local --state-output=mixed  --retcode-passthrough state.sls \
+        metalk8s.roles.bootstrap.no-master \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{'registry_ip': '$registry_ip'}"
+        pillar="${pillar[*]}"
 
     sync_salt_master
 
-    local -r salt_master_call="crictl exec -i $(get_salt_container)"
+    SALT_MASTER_CALL="crictl exec -i $(get_salt_container)"
     local -r bootstrap_id=$(cat /etc/salt/minion_id)
 
     # Wait for Salt minion to respond before proceeding (may not have completed
     # handshake with the master yet)
-    $salt_master_call salt-run metalk8s_saltutil.wait_minions \
+    ${SALT_MASTER_CALL} salt-run metalk8s_saltutil.wait_minions \
         tgt="$bootstrap_id"
 
-    sync_salt_minion "$bootstrap_id"
+    sync_salt_minion
 
-    $salt_master_call salt-run state.orchestrate \
-        metalk8s.orchestrate.bootstrap_with_master \
+    # Do CA only first to push informations to the mine
+    ${SALT_CALL} --state-output=mixed --retcode-passthrough state.sls \
+        metalk8s.roles.ca \
+        saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
+
+    pillar=(
+      "{"
+      "  'registry_ip': $registry_ip,"
+      "  'metalk8s': {"
+      "    'nodes': {"
+      "      '$bootstrap_id': {"
+      "        'roles': ['bootstrap', 'master', 'etcd','ca'],"
+      "        'version': '@@VERSION'"
+      "      }"
+      "    },"
+      "    'endpoints': {"
+      "      'salt-master': {'ip': $registry_ip}"
+      "    }"
+      "  }"
+      "}"
+    )
+    ${SALT_CALL} --state-output=mixed --retcode-passthrough state.highstate \
+        pillar="${pillar[*]}"
+
+    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.sls \
+        metalk8s.orchestrate.deploy_services \
+        saltenv=metalk8s-@@VERSION \
+        pillarenv=metalk8s-@@VERSION
+    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.sls \
+        metalk8s.orchestrate.deploy_bootstrap \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
-        pillar="{ \
-            'bootstrap_id': '$bootstrap_id', \
-            'registry_ip': '$registry_ip' \
-        }"
+        pillar="{'registry_ip': $registry_ip}"
 }
 
 deploy_metalk8s_ui() {
@@ -228,8 +266,9 @@ deploy_metalk8s_ui() {
         | awk '/^local\: /{ print $2 }'
     )
 
-    "$SALT_CALL" --retcode-passthrough state.apply \
-        metalk8s.ui saltenv=metalk8s-@@VERSION \
+    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.sls \
+        metalk8s.addons.ui.deployed \
+        saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
         pillar="{ \
             'bootstrap_id': '$bootstrap_id', \
