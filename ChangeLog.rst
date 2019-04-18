@@ -3,6 +3,11 @@
 Release 1.0.2 (in development)
 ==============================
 
+Bugs fixed
+----------
+:ghissue:`962` - Versionlocks `docker` & `node_exporter` packages
+
+
 Release 1.0.1
 =============
 This version updates the Kubernetes version to 1.10.11 to handle
