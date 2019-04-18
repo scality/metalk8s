@@ -24,6 +24,10 @@ def service_endpoints(service, kubeconfig):
             kubeconfig=kubeconfig,
         )
 
+        if not endpoint:
+            log.info('Endpoint not found: %s', service)
+            return {}
+
         # Extract hostname, ip and node_name
         res = {
             k: v
