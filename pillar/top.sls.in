@@ -1,5 +1,33 @@
-metalk8s-@@VERSION:
+{%- set version = "@@VERSION" -%}
+{%- set roles = ['bootstrap', 'ca', 'etcd', 'master', 'node'] -%}
+
+# The mechanics of this file are very similar to those of `salt/top.sls(.in)`.
+# Please refer to the comments in that file for more background.
+
+{%- set version_match = "I@metalk8s:nodes:*:version:" ~ version -%}
+
+{%- macro role_match(name) -%}
+I@metalk8s:nodes:*:roles:{{ name }}
+{%- endmacro %}
+
+metalk8s-{{ version }}:
+  # The 'bootstrap' node requires the value of `metalk8s.iso_root_path`, which
+  # is only set in the `metalk8s.roles.bootstrap` Pillar. However, the
+  # compound-match below which assigns that Pillar to a node based on its role
+  # only works when the roles are available, i.e. late in the deployment (when
+  # the API server and associated `ext_pillar`s are in place).
+  # To work-around this, we assign the 'bootstrap' role Pillar data to all nodes
+  # for now, until either a better solution is found, or we get rid of
+  # `iso_root_path` and instead use what comes out of #924.
   '*':
-    - metalk8s
-    - repositories
-    - mine_functions
+    - metalk8s.roles.bootstrap
+
+  {{ version_match }}:
+    - match: compound
+    - metalk8s.roles.minion
+
+{% for role in roles %}
+  {{ version_match }} and {{ role_match(role) }}:
+    - match: compound
+    - metalk8s.roles.{{ role }}
+{% endfor %}

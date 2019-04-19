@@ -1,5 +1,4 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
-{%- from "metalk8s/map.jinja" import defaults with context %}
 
 {%- set registry_image = 'docker.io/registry' %}
 {%- set registry_version = '2.7.1' %}
@@ -48,6 +47,6 @@ Install OCI registry manifest:
     - defaults:
         registry_image: {{ registry_image }}
         registry_version: {{ registry_version }}
-        registry_ip: {{ defaults.registry_ip }}
+        registry_ip: {{ pillar.registry_ip }}
         registry_user: {{ registry_user }}
         registry_group: {{ registry_group }}

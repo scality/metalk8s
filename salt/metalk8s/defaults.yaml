@@ -30,7 +30,6 @@ kubeadm_preflight:
       - coreutils             # provides touch
 
 repo:
-  online_mode: true
   local_mode: false
   relative_path: packages     # relative to ISO root (configured in pillar)
   host: 127.0.0.1
@@ -179,6 +178,3 @@ coredns:
   reverse_cidrs: in-addr.arpa ip6.arpa
 
 upgrade: false        # define if we're on an upgrade case
-
-# TODO: Move it into mine
-registry_ip: 127.0.0.1
