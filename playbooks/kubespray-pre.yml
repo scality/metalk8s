@@ -1,3 +1,5 @@
+---
+
 - hosts: k8s-cluster
   gather_facts: False
   tags:
@@ -5,3 +7,7 @@
   roles:
     - role: ../vendor/kubespray/roles/kubespray-defaults/
     - role: kubespray_var_patcher
+  tasks:
+    - include_role:
+        name: docker
+        tasks_from: version_unlock

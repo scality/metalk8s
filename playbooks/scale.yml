@@ -1,3 +1,5 @@
+---
+
 - import_playbook: 'init.yml'
   tags: ['init']
 
@@ -8,6 +10,9 @@
   tags: ['kubespray']
 
 - import_playbook: '../vendor/kubespray/scale.yml'
+  tags: ['kubespray']
+
+- import_playbook: 'kubespray-post.yml'
   tags: ['kubespray']
 
 - import_playbook: 'storage-post.yml'
