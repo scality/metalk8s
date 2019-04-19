@@ -7,6 +7,7 @@ import { brand, padding } from 'core-ui/dist/style/theme';
 import styled from 'styled-components';
 import { authenticateAction } from '../ducks/login';
 import { injectIntl } from 'react-intl';
+import { isEmpty } from 'lodash';
 
 const LoginFormContainer = styled.div`
   height: 100vh;
@@ -48,7 +49,23 @@ const LogoContainer = styled.div`
 `;
 
 const LoginForm = props => {
-  const { values, touched, errors, handleChange, isSubmitting, intl } = props;
+  const {
+    values,
+    touched,
+    errors,
+    dirty,
+    intl,
+    setFieldValue,
+    setFieldTouched
+  } = props;
+  //handleChange of the Formik props does not update 'values' when field value is empty
+  const handleChange = (e, field) => {
+    const { value, checked, type } = e.target;
+    setFieldValue(field, type === 'checkbox' ? checked : value, true);
+  };
+  //touched is not "always" correctly set
+  const handleOnBlur = e => setFieldTouched(e.target.name, true);
+
   return (
     <Form autoComplete="off">
       <LogoContainer>
@@ -65,7 +82,8 @@ const LoginForm = props => {
         label={intl.messages.username}
         error={touched.username && errors.username}
         value={values.username}
-        onChange={handleChange}
+        onChange={e => handleChange(e, 'username')}
+        onBlur={handleOnBlur}
       />
       <Input
         name="password"
@@ -73,12 +91,13 @@ const LoginForm = props => {
         label={intl.messages.password}
         error={touched.password && errors.password}
         value={values.password}
-        onChange={handleChange}
+        onChange={e => handleChange(e, 'password')}
+        onBlur={handleOnBlur}
       />
       <Button
         type="submit"
         text={intl.messages.submit}
-        disabled={isSubmitting}
+        disabled={!dirty || !isEmpty(errors)}
       />
     </Form>
   );
@@ -101,8 +120,6 @@ class Login extends React.Component {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          validateOnBlur={false}
-          validateOnChange={false}
           onSubmit={this.props.authenticate}
           render={props => {
             const formikProps = {
