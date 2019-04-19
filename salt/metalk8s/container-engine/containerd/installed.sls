@@ -1,16 +1,10 @@
 {%- from "metalk8s/macro.sls" import pkg_installed with context %}
-{%- from "metalk8s/map.jinja" import repo with context %}
-{%- from "metalk8s/map.jinja" import defaults with context %}
 
 include:
   - metalk8s.repo
 
 Install container-selinux:
   {{ pkg_installed('container-selinux') }}
-{%- if repo.online_mode %}
-    - sources:
-      - container-selinux: ftp://ftp.scientificlinux.org/linux/scientific/7x/external_products/extras/x86_64/container-selinux-2.77-1.el7_6.noarch.rpm
-{%- endif %}
     - require:
       - test: Repositories configured
 
@@ -36,7 +30,7 @@ Configure registry IP in containerd conf:
           [plugins.cri]
             [plugins.cri.registry]
               [plugins.cri.registry.mirrors]
-                [plugins.cri.registry.mirrors."{{ defaults.registry_ip }}"]
-                  endpoint = ["http://{{ defaults.registry_ip }}:5000"]
+                [plugins.cri.registry.mirrors."{{ pillar.registry_ip }}"]
+                  endpoint = ["http://{{ pillar.registry_ip }}:5000"]
     - require:
       - pkg: Install containerd

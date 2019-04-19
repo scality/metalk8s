@@ -2,6 +2,9 @@ peer:
   .*:
     - x509.sign_remote_certificate
 
+# We use information from the `metalk8s_node` ext_pillar to match in
+# `pillar/top.sls`, hence we need to load them first.
+ext_pillar_first: true
 ext_pillar:
   - metalk8s: /etc/metalk8s/bootstrap.yaml
   - metalk8s_endpoints: /etc/kubernetes/admin.conf
