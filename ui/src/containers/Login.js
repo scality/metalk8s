@@ -56,7 +56,8 @@ const LoginForm = props => {
     dirty,
     intl,
     setFieldValue,
-    setFieldTouched
+    setFieldTouched,
+    asyncErrors
   } = props;
   //handleChange of the Formik props does not update 'values' when field value is empty
   const handleChange = (e, field) => {
@@ -74,8 +75,6 @@ const LoginForm = props => {
           src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
         />
       </LogoContainer>
-
-      {errors.authentication && <Error>{errors.authentication}</Error>}
       <Input
         name="username"
         type="text"
@@ -99,6 +98,9 @@ const LoginForm = props => {
         text={intl.messages.submit}
         disabled={!dirty || !isEmpty(errors)}
       />
+      {asyncErrors && asyncErrors.authentication && (
+        <Error>{asyncErrors.authentication}</Error>
+      )}
     </Form>
   );
 };
@@ -125,7 +127,7 @@ class Login extends React.Component {
             const formikProps = {
               ...props,
               ...this.props,
-              errors: { ...props.errors, ...this.props.errors }
+              asyncErrors: this.props.asyncErrors
             };
             return <LoginForm {...formikProps} />;
           }}
@@ -136,7 +138,7 @@ class Login extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  errors: state.login.errors
+  asyncErrors: state.login.errors
 });
 
 const mapDispatchToProps = dispatch => {
