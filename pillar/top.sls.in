@@ -4,10 +4,10 @@
 # The mechanics of this file are very similar to those of `salt/top.sls(.in)`.
 # Please refer to the comments in that file for more background.
 
-{%- set version_match = "I@metalk8s:nodes:*:version:" ~ version -%}
+{%- set version_match = "I@metalk8s:nodes:" ~ grains.id ~ ":version:" ~ version -%}
 
 {%- macro role_match(name) -%}
-I@metalk8s:nodes:*:roles:{{ name }}
+I@metalk8s:nodes:{{ grains.id }}:roles:{{ name }}
 {%- endmacro %}
 
 metalk8s-{{ version }}:
