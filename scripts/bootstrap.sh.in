@@ -139,20 +139,6 @@ get_salt_container() {
     echo "$salt_container"
 }
 
-sync_salt_master() {
-    local -r salt_master_call="crictl exec -i $(get_salt_container)"
-
-    $salt_master_call salt-run saltutil.sync_all saltenv=metalk8s-@@VERSION
-    $salt_master_call salt-run saltutil.sync_roster saltenv=metalk8s-@@VERSION
-    $salt_master_call salt-run metalk8s_saltutil.sync_auth \
-        saltenv=metalk8s-@@VERSION
-}
-
-sync_salt_minion() {
-    ${SALT_CALL} saltutil.sync_all refresh=True saltenv=metalk8s-@@VERSION
-    ${SALT_CALL} mine.update
-}
-
 orchestrate_bootstrap() {
     # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
     # otherwise grains set during execution won't be taken into account
@@ -162,8 +148,7 @@ orchestrate_bootstrap() {
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION
 
-    # TODO: Registry IP should not need a pillar override here
-    local -r registry_ip=$(
+    local -r control_plane_ip=$(
         ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
         | awk '/^local\: /{ print $2 }'
     )
@@ -171,88 +156,49 @@ orchestrate_bootstrap() {
     pillar=(
       "{"
       "  'repo': {'local_mode': True},"
-      "  'registry_ip': $registry_ip,"
+      "  'registry_ip': $control_plane_ip,"
       "  'metalk8s': {"
       "    'endpoints': {"
-      "      'salt-master': {'ip': $registry_ip}"
+      "      'salt-master': {'ip': $control_plane_ip}"
       "    }"
       "  }"
       "}"
     )
 
-    ${SALT_CALL} --local --state-output=mixed  --retcode-passthrough state.sls \
-        metalk8s.roles.bootstrap.no-master \
+    ${SALT_CALL} --local --state-output=mixed --retcode-passthrough state.sls \
+        '["metalk8s.roles.minion", "metalk8s.roles.bootstrap"]' \
         saltenv=metalk8s-@@VERSION \
         pillarenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
-
-    sync_salt_master
 
     SALT_MASTER_CALL="crictl exec -i $(get_salt_container)"
-    local -r bootstrap_id=$(cat /etc/salt/minion_id)
 
-    # Wait for Salt minion to respond before proceeding (may not have completed
-    # handshake with the master yet)
-    ${SALT_MASTER_CALL} salt-run metalk8s_saltutil.wait_minions \
-        tgt="$bootstrap_id"
+    ${SALT_MASTER_CALL} salt-run --state-output=mixed saltutil.sync_pillar \
+        saltenv=metalk8s-@@VERSION
+    ${SALT_MASTER_CALL} salt-run --state-output=mixed saltutil.sync_runners \
+        saltenv=metalk8s-@@VERSION
 
-    sync_salt_minion
-
-    # Do CA only first to push informations to the mine
-    ${SALT_CALL} --state-output=mixed --retcode-passthrough state.sls \
-        metalk8s.roles.ca \
-        saltenv=metalk8s-@@VERSION \
-        pillarenv=metalk8s-@@VERSION
-
-    pillar=(
-      "{"
-      "  'registry_ip': $registry_ip,"
-      "  'metalk8s': {"
-      "    'nodes': {"
-      "      '$bootstrap_id': {"
-      "        'roles': ['bootstrap', 'master', 'etcd','ca'],"
-      "        'version': '@@VERSION'"
-      "      }"
-      "    },"
-      "    'endpoints': {"
-      "      'salt-master': {'ip': $registry_ip}"
-      "    }"
-      "  }"
-      "}"
-    )
-    ${SALT_CALL} --state-output=mixed --retcode-passthrough state.highstate \
-        pillar="${pillar[*]}"
-
-    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.sls \
-        metalk8s.orchestrate.deploy_services \
-        saltenv=metalk8s-@@VERSION \
-        pillarenv=metalk8s-@@VERSION
-    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.sls \
-        metalk8s.orchestrate.deploy_bootstrap \
-        saltenv=metalk8s-@@VERSION \
-        pillarenv=metalk8s-@@VERSION \
-        pillar="{'registry_ip': $registry_ip}"
-
-    ${SALT_CALL} --retcode-passthrough mine.update
-}
-
-deploy_metalk8s_ui() {
-    local -r bootstrap_id=$(cat /etc/salt/minion_id)
-    local -r registry_ip=$(
-        ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
+    local -r bootstrap_id=$(
+        ${SALT_CALL} --local --out txt grains.get id \
         | awk '/^local\: /{ print $2 }'
     )
 
-    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.sls \
-        metalk8s.addons.ui.deployed \
-        saltenv=metalk8s-@@VERSION \
-        pillarenv=metalk8s-@@VERSION \
-        pillar="{ \
-            'bootstrap_id': '$bootstrap_id', \
-            'registry_ip': '$registry_ip' \
-        }"
-}
+    pillar=(
+      "{"
+      "  'bootstrap_id': '$bootstrap_id'"
+      "}"
+    )
 
+    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.orchestrate \
+        metalk8s.orchestrate.bootstrap.accept-minion \
+        saltenv=metalk8s-@@VERSION \
+        pillar="${pillar[*]}"
+
+    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.orchestrate \
+        metalk8s.orchestrate.bootstrap \
+        saltenv=metalk8s-@@VERSION \
+        pillar="${pillar[*]}"
+}
 
 main() {
     pre_minion_checks
@@ -263,7 +209,6 @@ main() {
     configure_salt_minion_local_mode
 
     orchestrate_bootstrap
-    deploy_metalk8s_ui
 }
 
 main
