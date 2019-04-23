@@ -26,8 +26,12 @@ spec:
         - key: "node-role.kubernetes.io/bootstrap"
           operator: "Exists"
           effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/infra"
+          operator: "Exists"
+          effect: "NoSchedule"
       nodeSelector:
         beta.kubernetes.io/os: linux
+        node-role.kubernetes.io/infra: ''
       containers:
       - name: coredns
         image: {{ build_image_name('coredns', '1.3.1') }}
