@@ -1,0 +1,10 @@
+---
+
+- hosts: k8s-cluster
+  gather_facts: False
+  tags:
+    - kubespray
+  tasks:
+    - include_role:
+        name: docker
+        tasks_from: version_lock

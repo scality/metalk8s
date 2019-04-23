@@ -1,3 +1,5 @@
+---
+
 - hosts: k8s-cluster
   any_errors_fatal: '{{ any_errors_fatal | default(true) }}'
   gather_facts: False
@@ -6,3 +8,7 @@
   roles:
     - role: ../vendor/kubespray/roles/kubespray-defaults/
     - role: kubespray_var_patcher
+  tasks:
+    - include_role:
+        name: docker
+        tasks_from: version_unlock

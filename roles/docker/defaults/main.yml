@@ -1,0 +1,7 @@
+---
+
+docker_yum_versionlock_file: /etc/yum/pluginconf.d/versionlock.list
+
+docker_package_names:
+  - docker-ce
+  - docker-engine
