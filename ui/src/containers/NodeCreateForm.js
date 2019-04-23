@@ -100,7 +100,7 @@ class NodeCreateForm extends React.Component {
             } = props;
 
             //handleChange of the Formik props does not update 'values' when field value is empty
-            const handleChange = (e, field) => {
+            const handleChange = field => e => {
               const { value, checked, type } = e.target;
               setFieldValue(field, type === 'checkbox' ? checked : value, true);
             };
@@ -113,7 +113,7 @@ class NodeCreateForm extends React.Component {
                   name="name"
                   label={intl.messages.name}
                   value={values.name}
-                  onChange={e => handleChange(e, 'name')}
+                  onChange={handleChange('name')}
                   error={touched.name && errors.name}
                   onBlur={handleOnBlur}
                 />
@@ -121,7 +121,7 @@ class NodeCreateForm extends React.Component {
                   name="ssh_user"
                   label={intl.messages.ssh_user}
                   value={values.ssh_user}
-                  onChange={e => handleChange(e, 'ssh_user')}
+                  onChange={handleChange('ssh_user')}
                   error={touched.ssh_user && errors.ssh_user}
                   onBlur={handleOnBlur}
                 />
@@ -129,7 +129,7 @@ class NodeCreateForm extends React.Component {
                   name="hostName_ip"
                   label={intl.messages.hostName_ip}
                   value={values.hostName_ip}
-                  onChange={e => handleChange(e, 'hostName_ip')}
+                  onChange={handleChange('hostName_ip')}
                   error={touched.hostName_ip && errors.hostName_ip}
                   onBlur={handleOnBlur}
                 />
@@ -137,7 +137,7 @@ class NodeCreateForm extends React.Component {
                   name="ssh_port"
                   label={intl.messages.ssh_port}
                   value={values.ssh_port}
-                  onChange={e => handleChange(e, 'ssh_port')}
+                  onChange={handleChange('ssh_port')}
                   error={touched.ssh_port && errors.ssh_port}
                   onBlur={handleOnBlur}
                 />
@@ -145,7 +145,7 @@ class NodeCreateForm extends React.Component {
                   name="ssh_key_path"
                   label={intl.messages.ssh_key_path}
                   value={values.ssh_key_path}
-                  onChange={e => handleChange(e, 'ssh_key_path')}
+                  onChange={handleChange('ssh_key_path')}
                   error={touched.ssh_key_path && errors.ssh_key_path}
                   onBlur={handleOnBlur}
                 />
@@ -155,7 +155,7 @@ class NodeCreateForm extends React.Component {
                   label={intl.messages.sudo_required}
                   value={values.sudo_required}
                   checked={values.sudo_required}
-                  onChange={e => handleChange(e, 'sudo_required')}
+                  onChange={handleChange('sudo_required')}
                   onBlur={handleOnBlur}
                 />
                 <FormTitle>{intl.messages.roles}</FormTitle>
@@ -165,7 +165,7 @@ class NodeCreateForm extends React.Component {
                   label={intl.messages.workload_plane}
                   checked={values.workload_plane}
                   value={values.workload_plane}
-                  onChange={e => handleChange(e, 'workload_plane')}
+                  onChange={handleChange('workload_plane')}
                   onBlur={handleOnBlur}
                   error={
                     values.workload_plane || values.control_plane
@@ -179,7 +179,7 @@ class NodeCreateForm extends React.Component {
                   label={intl.messages.control_plane}
                   checked={values.control_plane}
                   value={values.control_plane}
-                  onChange={e => handleChange(e, 'control_plane')}
+                  onChange={handleChange('control_plane')}
                   onBlur={handleOnBlur}
                   error={
                     values.workload_plane || values.control_plane
