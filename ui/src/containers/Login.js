@@ -60,7 +60,7 @@ const LoginForm = props => {
     asyncErrors
   } = props;
   //handleChange of the Formik props does not update 'values' when field value is empty
-  const handleChange = (e, field) => {
+  const handleChange = field => e => {
     const { value, checked, type } = e.target;
     setFieldValue(field, type === 'checkbox' ? checked : value, true);
   };
@@ -81,7 +81,7 @@ const LoginForm = props => {
         label={intl.messages.username}
         error={touched.username && errors.username}
         value={values.username}
-        onChange={e => handleChange(e, 'username')}
+        onChange={handleChange('username')}
         onBlur={handleOnBlur}
       />
       <Input
@@ -90,7 +90,7 @@ const LoginForm = props => {
         label={intl.messages.password}
         error={touched.password && errors.password}
         value={values.password}
-        onChange={e => handleChange(e, 'password')}
+        onChange={handleChange('password')}
         onBlur={handleOnBlur}
       />
       <Button
