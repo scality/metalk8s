@@ -18,8 +18,12 @@ spec:
       - key: "node-role.kubernetes.io/bootstrap"
         operator: "Exists"
         effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/infra"
+        operator: "Exists"
+        effect: "NoSchedule"
       nodeSelector:
         beta.kubernetes.io/os: linux
+        node-role.kubernetes.io/infra: ''
       containers:
         - name: metalk8s-ui
           image: {{ build_image_name('metalk8s-ui', '0.2') }}

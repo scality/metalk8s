@@ -27,13 +27,23 @@ Apply control-plane bootstrap role label:
     - node: {{ hostname }}
     - value: ""
 
-Apply control-plane bootstrap taint:
+Apply control-plane infra role label:
+  metalk8s_kubernetes.node_label_present:
+    - name: "node-role.kubernetes.io/infra"
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - node: {{ hostname }}
+    - value: ""
+
+Apply control-plane taints:
   metalk8s_kubernetes.node_taints_present:
     - name: {{ hostname }}
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - taints:
         - key: "node-role.kubernetes.io/bootstrap"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/infra"
           effect: "NoSchedule"
 
 Apply node version label:

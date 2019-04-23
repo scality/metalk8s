@@ -8,6 +8,9 @@ spec:
   - key: "node-role.kubernetes.io/bootstrap"
     operator: "Equal"
     effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Equal"
+    effect: "NoSchedule"
   containers:
   - image: busybox
     command:

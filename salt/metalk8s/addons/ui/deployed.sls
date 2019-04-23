@@ -2,17 +2,7 @@
 {%- set context = "kubernetes-admin@kubernetes" %}
 
 {%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
-
-{%- if pillar['bootstrap_id'] %}
-{%-   set control_plane_ips = salt.saltutil.runner('mine.get', tgt=pillar['bootstrap_id'], fun='control_plane_ip') %}
-{%- else %}
-{%-   set control_plane_ips = {} %}
-{%- endif %}
-
-{%- if pillar['bootstrap_id'] in control_plane_ips.keys() and control_plane_ips[pillar['bootstrap_id']] %}
-{%-   set control_plane_ip = control_plane_ips[pillar['bootstrap_id']] %}
-{%- endif %}
-
+{%- set saltapi = 'http://' ~ pillar.metalk8s.endpoints['salt-master'].ip ~ ':' ~ pillar.metalk8s.endpoints['salt-master'].port %}
 
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.deployment_present:
@@ -54,7 +44,10 @@ Create metalk8s-ui ConfigMap:
     - context: {{ context }}
     - data:
         config.json: |
-          {"url": "{{ apiserver }}", "url_salt": "http://{{ control_plane_ip }}:4507"}
+          {
+            "url": "{{ apiserver }}",
+            "url_salt": "{{ saltapi }}"
+          }
         theme.json: |
           {"brand": {"primary": "#21157A"}}
   require:

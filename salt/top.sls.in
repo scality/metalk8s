@@ -72,7 +72,7 @@
 # So, the `metalk8s.roles.node.absent` state is *only* applied when a
 # minion/node has no other known role but the `ca` one.
 
-{%- set roles = ['bootstrap', 'ca', 'etcd', 'master', 'node'] -%}
+{%- set roles = ['bootstrap', 'ca', 'etcd', 'master', 'node', 'infra'] -%}
 {%- set node_role = 'node' -%}
 {%- set node_roles = roles | difference(['ca']) -%}
 

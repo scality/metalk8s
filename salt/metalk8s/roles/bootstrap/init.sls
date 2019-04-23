@@ -1,5 +1,6 @@
 include:
-  - .no-master
-  - metalk8s.roles.ca
-  - metalk8s.roles.master
-  - metalk8s.roles.etcd
+  - metalk8s.kubernetes.kubelet.standalone
+  - metalk8s.internal.preflight
+  - metalk8s.registry.populated
+  - metalk8s.repo.installed
+  - metalk8s.salt.master
