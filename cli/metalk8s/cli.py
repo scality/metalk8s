@@ -1,16 +1,64 @@
 import kubernetes.client
 import kubernetes.config
 
+import pepper
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 def main():
-    node_metadata = {
-        'name': 'node1',
-        'labels': {
-            'metalk8s.scality.com/version': '2.0',
-        },
-        'annotations': {
-            'metalk8s.scality.com/ssh-user': 'root',
-        },
+    client = kubernetes.config.new_client_from_config()
+    corev1 = kubernetes.client.CoreV1Api(api_client=client)
+
+    if False:
+        corev1.create_node(
+            body=kubernetes.client.V1Node(
+                metadata={
+                    'name': 'node1',
+                    'labels': {
+                        'metalk8s.scality.com/version': '2.0',
+                        'node-role.kubernetes.io/node': '',
+                        'node-role.kubernetes.io/infra': '',
+                    },
+                    'annotations': {
+                        'metalk8s.scality.com/ssh-user': 'vagrant',
+                        'metalk8s.scality.com/ssh-host': '172.21.254.11',
+                        'metalk8s.scality.com/ssh-key-path':
+                        '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
+                        'metalk8s.scality.com/ssh-sudo': 'true',
+                    },
+                },
+                spec=kubernetes.client.V1NodeSpec(
+                    taints=[
+                        kubernetes.client.V1Taint(
+                            key='metalk8s.scality.com/deployed',
+                            value='false',
+                            effect='NoExecute',
+                        ),
+                    ],
+                    unschedulable=True,
+                ),
+            ),
+        )
+
+    salt = pepper.Pepper('http://172.21.254.9:4507', debug_http=True)
+    result = salt.login(
+        username='admin',
+        token='YWRtaW46YWRtaW4=',
+        token_type='Basic',
+        eauth='kubernetes_rbac',
+    )
+    print(result)
+
+    pillar = {
+        'bootstrap_id': 'bootstrap',
+        'node_name': 'node1',
     }
-    node_spec = kubernetes.client.V1NodeSpec(taints=[], unschedulable=True)
-    node_body = kubernetes.client.V1Node(metadata=node_metadata, spec=node_spec)
-    corev1.create_node(body=node_body)
+
+    result = salt.runner(
+        fun='state.orchestrate',
+        arg=('metalk8s.orchestrate.deploy_new_node',),
+        saltenv='metalk8s-2.0',
+        pillar=pillar,
+    )
+    print(result)
