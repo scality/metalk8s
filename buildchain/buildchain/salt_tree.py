@@ -187,9 +187,9 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
     Path('salt/metalk8s/node/grains.sls'),
 
-    Path('salt/metalk8s/orchestrate/deploy_bootstrap.sls'),
+    Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
+    Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
     Path('salt/metalk8s/orchestrate/deploy_new_node.sls'),
-    Path('salt/metalk8s/orchestrate/deploy_services.sls'),
 
     Path('salt/metalk8s/registry/deployed.sls'),
     Path('salt/metalk8s/registry/files/registry-manifest.yaml.j2'),
@@ -208,18 +208,19 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
     Path('salt/metalk8s/roles/bootstrap/absent.sls'),
     Path('salt/metalk8s/roles/bootstrap/init.sls'),
-    Path('salt/metalk8s/roles/bootstrap/no-master.sls'),
     Path('salt/metalk8s/roles/ca/absent.sls'),
     Path('salt/metalk8s/roles/ca/init.sls'),
     Path('salt/metalk8s/roles/etcd/absent.sls'),
     Path('salt/metalk8s/roles/etcd/init.sls'),
+    Path('salt/metalk8s/roles/infra/init.sls'),
+    Path('salt/metalk8s/roles/infra/absent.sls'),
+    Path('salt/metalk8s/roles/internal/node-without-cni.sls'),
     Path('salt/metalk8s/roles/master/absent.sls'),
     Path('salt/metalk8s/roles/master/init.sls'),
     Path('salt/metalk8s/roles/minion/init.sls'),
     Path('salt/metalk8s/roles/node/absent.sls'),
     Path('salt/metalk8s/roles/node/init.sls'),
 
-    Path('salt/metalk8s/salt/master/accept_keys.sls'),
     Path('salt/metalk8s/salt/master/configured.sls'),
     Path('salt/metalk8s/salt/master/deployed.sls'),
     Path('salt/metalk8s/salt/master/files/master-99-metalk8s.conf.j2'),
