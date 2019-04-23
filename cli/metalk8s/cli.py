@@ -10,13 +10,13 @@ def main():
     client = kubernetes.config.new_client_from_config()
     corev1 = kubernetes.client.CoreV1Api(api_client=client)
 
-    if True:
+    if False:
         corev1.create_node(
             body=kubernetes.client.V1Node(
                 metadata={
                     'name': 'node1',
                     'labels': {
-                        'metalk8s.scality.com/version': '2.1',
+                        'metalk8s.scality.com/version': '2.0',
                         'node-role.kubernetes.io/node': '',
                         'node-role.kubernetes.io/infra': '',
                     },
@@ -29,13 +29,7 @@ def main():
                     },
                 },
                 spec=kubernetes.client.V1NodeSpec(
-                    taints=[
-                        kubernetes.client.V1Taint(
-                            key='metalk8s.scality.com/deployed',
-                            value='false',
-                            effect='NoExecute',
-                        ),
-                    ],
+                    taints=[],
                     unschedulable=True,
                 ),
             ),
@@ -59,7 +53,7 @@ def main():
         result = salt.runner(
             fun='state.orchestrate',
             arg=('metalk8s.orchestrate.deploy_new_node',),
-            saltenv='metalk8s-2.1',
+            saltenv='metalk8s-2.0',
             pillar=pillar,
         )
         print(result)
