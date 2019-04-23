@@ -1,47 +1,53 @@
-{%- if pillar['bootstrap_id'] %}
-{%-   set control_plane_ips = salt.saltutil.runner('mine.get', tgt=pillar['bootstrap_id'], fun='control_plane_ip') %}
-{%- else %}
-{%-   set control_plane_ips = {} %}
-{%- endif %}
+{%- set control_plane_ip = salt.saltutil.runner(
+    'mine.get',
+    tgt=pillar['bootstrap_id'],
+    fun='control_plane_ip'
+)[pillar['bootstrap_id']] %}
 
-{%- if pillar['bootstrap_id'] in control_plane_ips.keys() and control_plane_ips[pillar['bootstrap_id']] %}
-{%-   set control_plane_ip = control_plane_ips[pillar['bootstrap_id']] %}
-{%- else %}
-{%-   set control_plane_ip = 'localhost' %}
-{%- endif %}
+{%- set pillar_data = {
+    'repo': {
+        'host': control_plane_ip
+    },
+    'registry_ip': control_plane_ip
+} %}
 
+{%- set version = pillar.metalk8s.nodes[pillar.node_name].version %}
 
+{%- if pillar['node_name'] not in salt['saltutil.runner']('manage.up') %}
 Deploy salt-minion on a new node:
   salt.state:
     - ssh: true
     - roster: kubernetes
     - tgt: {{ pillar['node_name'] }}
-    - saltenv: {{ saltenv }}
+    - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.roles.minion
-    - pillar:
-        repo:
-          host: {{ control_plane_ip }}
-        salt:
-          master:
-            host: {{ control_plane_ip }}
+    - pillar: {{ pillar_data | tojson }}
 
 Accept key:
-  salt.state:
-    - tgt: {{ pillar['bootstrap_id'] }}
-    - saltenv: {{ saltenv }}
-    - sls:
-      - metalk8s.salt.master.accept_keys
+  module.run:
+    - saltutil.wheel:
+      - key.accept
+      - {{ pillar['node_name'] }}
     - require:
       - salt: Deploy salt-minion on a new node
+
+Wait minion available:
+  salt.runner:
+    - name: metalk8s_saltutil.wait_minions
+    - tgt: {{ pillar['node_name'] }}
+    - require:
+      - module: Accept key
+    - require_in:
+      - salt: Set grains
+{%- endif %}
 
 Set grains:
   salt.state:
     - tgt: {{ pillar['node_name'] }}
+    - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.node.grains
-    - require:
-      - salt: Accept key
 
 Refresh the mine:
   salt.function:
@@ -52,22 +58,17 @@ Run the highstate:
   salt.state:
     - tgt: {{ pillar['node_name'] }}
     - highstate: True
+    - pillar: {{ pillar_data | tojson }}
     - require:
       - salt: Set grains
       - salt: Refresh the mine
 
 {%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(pillar['node_name'], {}).get('roles', []) %}
 
-  {%- set node_ip = grains['metalk8s']['control_plane_ip'] %}
-
-  {#- etcd endpoint of the new node. #}
-  {%- set endpoint = 'https://' ~ node_ip ~ ':2380' %}
-
 Register the node into etcd cluster:
   module.run:
     - metalk8s.add_etcd_node:
       - host: {{ pillar['node_name'] }}
-      - endpoint: {{ endpoint }}
     - require:
       - salt: Run the highstate
 

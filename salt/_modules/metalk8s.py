@@ -69,7 +69,7 @@ def get_etcd_endpoint():
 
 
 @depends('KUBERNETES_PRESENT', fallback_function=deps_missing)
-def add_etcd_node(host, endpoint):
+def add_etcd_node(host, endpoint=None):
     '''Add a new `etcd` node into the `etcd` cluster.
 
     This module is only runnable from the salt-master on the bootstrap node.
@@ -78,6 +78,13 @@ def add_etcd_node(host, endpoint):
         host (str): hostname of the new etcd node
         endpoint (str): endpoint of the new etcd node
     '''
+    if not endpoint:
+        # If we have no endpoint get it from mine
+        node_ip = __salt__['saltutil.runner'](
+            'mine.get', tgt=host, fun='control_plane_ip'
+        )[host]
+        endpoint = 'https://{0}:2380'.format(node_ip)
+
     pod_name = 'etcd-{}'.format(__salt__['network.get_hostname']())
     try:
         client = kubernetes.config.new_client_from_config(
@@ -86,6 +93,7 @@ def add_etcd_node(host, endpoint):
     except:
         log.exception('failed to load kubeconfig')
         raise
+
     api = kubernetes.client.CoreV1Api(api_client=client)
     etcd_command = [
         'etcdctl',
