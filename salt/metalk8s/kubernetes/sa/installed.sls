@@ -20,7 +20,7 @@ Store SA public key:
     - contents: __slot__:salt:x509.get_public_key("/etc/kubernetes/pki/sa.key")
     - user: root
     - group: root
-    - mode: 600
+    - mode: 644
     - makedirs: True
     - dir_mode: 755
     - require:
