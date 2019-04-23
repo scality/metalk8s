@@ -1,0 +1,8 @@
+---
+
+- name: unlock docker package version
+  lineinfile:
+    state: absent
+    dest: '{{ docker_yum_versionlock_file }}'
+    regexp: '0:{{ item }}-.*'
+  with_items: '{{ docker_package_names }}'

@@ -1,0 +1,25 @@
+---
+
+- name: install yum-plugin-versionlock
+  yum:
+    name: yum-plugin-versionlock
+    state: present
+
+- name: retrieve installed docker package
+  command: rpm -qa "{{ item }}" --qf "0:%{NAME}-%{VERSION}-%{RELEASE}.*"
+  args:
+    warn: no
+  changed_when: no
+  register: installed_docker_package
+  with_items: '{{ docker_package_names }}'
+
+- name: lock docker package version
+  vars:
+    versionlock_rule: '{{
+      installed_docker_package.results |
+      selectattr("stdout") |
+      map(attribute="stdout") |
+      first }}'
+  lineinfile:
+    dest: '{{ docker_yum_versionlock_file }}'
+    line: '{{ versionlock_rule }}'
