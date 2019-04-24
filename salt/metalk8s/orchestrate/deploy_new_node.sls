@@ -63,6 +63,17 @@ Run the highstate:
       - salt: Set grains
       - salt: Refresh the mine
 
+# Work-around for https://github.com/scality/metalk8s/pull/1028
+Kill kube-controller-manager on all master nodes:
+  salt.function:
+    - name: ps.pkill
+    - tgt: "{{ salt['metalk8s.minions_by_role']('master') | join(',') }}"
+    - tgt_type: list
+    - kwarg:
+        pattern: kube-controller-manager
+    - require:
+      - salt: Run the highstate
+
 {%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(pillar['node_name'], {}).get('roles', []) %}
 
 Register the node into etcd cluster:
