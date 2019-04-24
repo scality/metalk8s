@@ -1,0 +1,12 @@
+# Required by Sphinx on Windows
+# Added here because `pip-compile` doesn't work cross-platform.
+colorama >= 0.3.9
+Sphinx >= 1.7
+sphinx_rtd_theme >= 0.3
+sphinxcontrib_github_alt >= 1.0
+sphinxcontrib-plantuml >= 0.15
+sphinxcontrib-spelling >= 4.1
+sphinxcontrib-googleanalytics >= 0.1
+sphinx-autobuild >= 0.7.1
+
+doc8 >= 0.8.0
