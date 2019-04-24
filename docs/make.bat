@@ -15,6 +15,7 @@ set SPHINXAUTOBUILDOPTS=--watch %SOURCEDIR%\.. --ignore "*~" --ignore "*.swp" --
 
 if "%1" == "" goto help
 if "%1" == "livehtml" goto livehtml
+if "%1" == "check-uml" goto check-uml
 
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
@@ -35,6 +36,10 @@ goto end
 :livehtml
 %SPHINXAUTOBUILD% %SPHINXAUTOBUILDOPTS% %SPHINXOPTS% %SOURCEDIR% %BUILDDIR%
 goto end
+
+:checkuml
+echo.Not implemented.
+exit /b 1
 
 :help
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%

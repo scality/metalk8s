@@ -24,6 +24,26 @@ help:
 livehtml:
 	@$(SPHINXAUTOBUILD) $(SPHINXAUTOBUILDOPTS) $(SPHINXOPTS) $(O) "$(SOURCEDIR)" "$(BUILDDIR)"
 
+# PlantUML diagrams
+SOURCES := $(wildcard *.uml)
+
+diagrams: diagrams-png diagrams-svg
+.PHONY: diagrams
+
+diagrams-png: $(patsubst %.uml,%.png,$(SOURCES))
+.PHONY: diagrams-png
+
+diagrams-svg: $(patsubst %.uml,%.svg,$(SOURCES))
+.PHONY: diagrams-svg
+
+%.png: %.uml
+	@echo Rendering $< into $@
+	@plantuml -p -tpng > $@ < $<
+
+%.svg: %.uml
+	@echo Rendering $< into $@
+	@plantuml -p -tsvg > $@ < $<
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
