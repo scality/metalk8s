@@ -153,3 +153,20 @@ def format_san(names):
         return result
 
     return ', '.join(sorted(format_name(name) for name in names))
+
+
+def minions_by_role(role, nodes=None):
+    '''Return a list of minion IDs in a specific role from Pillar data.
+
+    Arguments:
+        role (str): Role to match on
+        nodes (dict(str, dict)): Nodes to inspect
+            Defaults to `pillar.metalk8s.nodes`.
+    '''
+    nodes = nodes or __pillar__['metalk8s']['nodes']
+
+    return [
+        node
+        for (node, node_info) in nodes.items()
+        if role in node_info.get('roles', [])
+    ]
