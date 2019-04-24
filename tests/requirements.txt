@@ -245,9 +245,9 @@ six==1.12.0 \
 testinfra==2.1.0 \
     --hash=sha256:1148d2abd9869a264c92b37e20274f69a2f8af103df085f6888168f30106e298 \
     --hash=sha256:31ea4642cb4c6d8a8a8e6ad7c4bbdbebc8bf1ff8a9c8a79fcd00c7bd1aba891e
-urllib3==1.24.2 \
-    --hash=sha256:4c291ca23bbb55c76518905869ef34bdd5f0e46af7afe6861e8375643ffee1a0 \
-    --hash=sha256:9a247273df709c4fedb38c711e44292304f73f39ab01beda9f6b9fc375669ac3 \
+urllib3==1.24.3 \
+    --hash=sha256:2393a695cd12afedd0dcb26fe5d50d0cf248e5a66f75dbd89a3d4eb333a61af4 \
+    --hash=sha256:a637e5fae88995b256e3409dc4d52c2e2e0ba32c42a6365fee8bbd2238de3cfb \
     # via kubernetes, requests
 websocket-client==0.56.0 \
     --hash=sha256:1151d5fb3a62dc129164292e1227655e4bbc5dd5340a5165dfae61128ec50aa9 \
