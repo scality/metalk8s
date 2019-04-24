@@ -1,6 +1,9 @@
 # Minimal makefile for Sphinx documentation
 #
 
+default: help
+.PHONY: default
+
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
@@ -15,9 +18,15 @@ SPHINXAUTOBUILDOPTS = \
 	--re-ignore '4913$$' \
 	--re-ignore '\.git/'
 
-# Put it first so that "make" without argument is like "make help".
+# Helper variable to generate help messages in the same format as Sphinx
+_helpline = "  \033[1;34m$(shell printf '%-12s' $(1))\033[0m$(2)"
+
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@echo
+	@echo "Additional targets (not provided by Sphinx):"
+	@echo $(call _helpline,check-uml,to generate PNG/SVG from UML sources locally)
+	@echo $(call _helpline,livehtml,to automatically rebuild HTML files)
 
 .PHONY: help Makefile
 
