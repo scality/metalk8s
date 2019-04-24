@@ -3,11 +3,20 @@ import os.path
 import logging
 import argparse
 
+import kubernetes.client
+
+import pepper
+
+import metalk8s.kubernetes
+
 def _main():
+    import kubernetes.config
+    import pepper
+
     client = kubernetes.config.new_client_from_config()
     corev1 = kubernetes.client.CoreV1Api(api_client=client)
 
-    if False:
+    if True:
         corev1.create_node(
             body=kubernetes.client.V1Node(
                 metadata={
@@ -56,6 +65,76 @@ def _main():
         print(result)
 
 
+def _create_node(args):
+    roles = set(args.roles)
+    role_labels = metalk8s.kubernetes.calculate_labels(roles)
+
+    labels = {}
+    labels.update(metalk8s.kubernetes.calculate_labels(roles))
+    labels.update({
+        'metalk8s.scality.com/version': args.version,
+    })
+
+    annotations = {}
+    bool_ = lambda b: 'true' if b else 'false'
+    for (attr, annotation, fn) in [
+            ('ssh_host', 'ssh-host', str),
+            ('ssh_port', 'ssh-port', str),
+            ('ssh_user', 'ssh-user', str),
+            ('ssh_key_path', 'ssh-key-path', str),
+            ('ssh_sudo', 'ssh-sudo', bool_),
+            ]:
+        value = getattr(args, attr)
+        if value is not None:
+            annotations['metalk8s.scality.com/{}'.format(annotation)] = \
+                fn(value)
+
+    node = kubernetes.client.V1Node(
+        metadata={
+            'name': args.name,
+            'labels': labels,
+            'annotations': annotations,
+        },
+        spec=kubernetes.client.V1NodeSpec(
+            taints=metalk8s.kubernetes.calculate_taints(roles),
+            unschedulable=True,
+        ),
+    )
+
+    client = kubernetes.config.new_client_from_config()
+    corev1 = kubernetes.client.CoreV1Api(api_client=client)
+
+    corev1.create_node(node)
+
+
+def _deploy_node(args):
+    salt = pepper.Pepper('http://172.21.254.9:4507')
+    salt.login(
+        username='admin',
+        token='YWRtaW46YWRtaW4=',
+        token_type='Basic',
+        eauth='kubernetes_rbac',
+    )
+
+    pillar = {
+        'bootstrap_id': 'bootstrap',
+        'node_name': args.name,
+    }
+
+    sys.stderr.write('Deploying node, this can take a while\n')
+    sys.stderr.flush()
+
+    result = salt.runner(
+        fun='state.orchestrate',
+        arg=('metalk8s.orchestrate.deploy_new_node',),
+        saltenv='metalk8s-2.0',
+        pillar=pillar,
+    )
+
+    if result['return'][0]['retcode'] != 0:
+        raise Exception(repr(result))
+
+
 def _build_parser():
     if os.path.split(sys.argv[0])[1] == '__main__.py':
         prog = __name__.split('.', 1)[0]
@@ -75,14 +154,116 @@ Use "%(prog)s <command> --help" for more information about a given command.
         epilog=epilog,
     )
 
-    subparsers = parser.add_subparsers(title='subcommands')
+    subparsers = parser.add_subparsers(
+        description='The following subcommands are available',
+    )
 
-    get = subparsers.add_parser('get', help='get help')
-    get.add_argument('--foo')
 
-    create = subparsers.add_parser('create')
+    get = subparsers.add_parser(
+        'get',
+        help='display one of many resources',
+    )
 
-    deploy = subparsers.add_parser('deploy')
+    create = subparsers.add_parser(
+        'create',
+        help='create a resource',
+    )
+    create_subparsers = create.add_subparsers(
+        description='The following resources are available',
+    )
+    create_node = create_subparsers.add_parser(
+        'node',
+        help='create a node',
+    )
+    create_node.set_defaults(
+        handler=_create_node,
+    )
+    create_node.add_argument(
+        'name',
+        metavar='NAME',
+        help='name of the node, e.g. its hostname',
+    )
+    create_node.add_argument(
+        '--version',
+        metavar='VERSION',
+        help='version of MetalK8s to deploy on the node',
+        required=True,
+    )
+    create_node.add_argument(
+        '--role',
+        choices=[
+            metalk8s.kubernetes.ROLE_MASTER,
+            metalk8s.kubernetes.ROLE_NODE,
+            metalk8s.kubernetes.ROLE_INFRA,
+            metalk8s.kubernetes.ROLE_ETCD
+        ],
+        help=' '.join([
+            'role of the node in the cluster',
+            '(can be specified multiple times)',
+        ]),
+        action='append',
+        default=[],
+        dest='roles',
+    )
+
+    create_node_ssh = create_node.add_argument_group(
+        'ssh',
+        'SSH access configuration',
+    )
+    create_node_ssh.add_argument(
+        '--ssh-user',
+        help='username for SSH access',
+        metavar='USER',
+        default='root',
+    )
+    create_node_ssh.add_argument(
+        '--ssh-host',
+        metavar='ADDRESS',
+        help='host or address for SSH access, default node name',
+    )
+    create_node_ssh.add_argument(
+        '--ssh-port',
+        help='port for SSH access, default 22',
+        metavar='PORT',
+        default=22,
+        type=int,
+    )
+    create_node_ssh.add_argument(
+        '--ssh-sudo',
+        help='use sudo to gain root access',
+        action='store_true',
+    )
+    create_node_ssh.add_argument(
+        '--ssh-key-path',
+        help=' '.join([
+            'path to the SSH private key to access the server',
+            '(on the Salt master)',
+        ]),
+        metavar='FILE',
+        required=True,
+    )
+
+    deploy = subparsers.add_parser(
+        'deploy',
+        help='manage deployment of a resource',
+    )
+
+    deploy_subparsers = deploy.add_subparsers(
+        description='The following resources are available',
+    )
+    deploy_node = deploy_subparsers.add_parser(
+        'node',
+        help='deploy a node',
+    )
+    deploy_node.set_defaults(
+        handler=_deploy_node,
+    )
+    deploy_node.add_argument(
+        'name',
+        metavar='NAME',
+        help='name of the node',
+    )
+
 
 
     kubeconfig = parser.add_argument_group(
@@ -192,4 +373,5 @@ Use "%(prog)s <command> --help" for more information about a given command.
 def main(args=None):
     parser = _build_parser()
 
-    parser.parse_args(args)
+    result = parser.parse_args(args)
+    result.handler(result)
