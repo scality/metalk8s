@@ -7,6 +7,14 @@ set -u
 # support `-o pipefail` (though must support `-e` and `-u` per POSIX).
 if test -z "$(type -p)"; then set -o pipefail; fi
 
+TMPFILES=$(mktemp -d)
+
+cleanup() {
+    rm -rf "${TMPFILES}" || true
+}
+
+trap cleanup EXIT
+
 RPM=${RPM:-$(command -v rpm)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 YUM=${YUM:-$(command -v yum)}
@@ -29,9 +37,53 @@ declare -A GPGCHECK_REPOSITORIES=(
     [metalk8s-scality]=0
 )
 
+run() {
+    local name=$1
+    shift 1
+
+    echo -n "> ${name}..."
+    local start
+    start=$(date +%s)
+    set +e
+    "$@" > "${TMPFILES}/out" 2>&1
+    local RC=$?
+    set -e
+    local end
+    end=$(date +%s)
+
+    local duration=$(( end - start ))
+
+    if [ $RC -eq 0 ]; then
+        echo " done [${duration}s]"
+    else
+        echo " fail [${duration}s]"
+        cat >/dev/stderr << EOM
+
+Failure while running step '${name}'
+
+Command: $@
+
+Output:
+
+<< BEGIN >>
+EOM
+        cat "${TMPFILES}/out" > /dev/stderr
+
+        cat >/dev/stderr << EOM
+<< END >>
+
+This script will now exit
+
+EOM
+
+        exit 1
+    fi
+}
+
+
 die() {
     echo 1>&2 "$@"
-    exit 1
+    return 1
 }
 
 pre_minion_checks() {
@@ -143,10 +195,11 @@ orchestrate_bootstrap() {
     # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
     # otherwise grains set during execution won't be taken into account
     # properly.
-    ${SALT_CALL} --local --state-output=mixed --retcode-passthrough state.sls \
-        metalk8s.node.grains \
-        saltenv=metalk8s-@@VERSION \
-        pillarenv=metalk8s-@@VERSION
+    run "Calculating Salt grains in local mode" \
+        "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
+            metalk8s.node.grains \
+            saltenv=metalk8s-@@VERSION \
+            pillarenv=metalk8s-@@VERSION
 
     local -r control_plane_ip=$(
         ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
@@ -165,18 +218,21 @@ orchestrate_bootstrap() {
       "}"
     )
 
-    ${SALT_CALL} --local --state-output=mixed --retcode-passthrough state.sls \
-        '["metalk8s.roles.minion", "metalk8s.roles.bootstrap"]' \
-        saltenv=metalk8s-@@VERSION \
-        pillarenv=metalk8s-@@VERSION \
-        pillar="${pillar[*]}"
+    run "Deploying early-stage bootstrap node in local mode (this may take a while)" \
+        "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
+            '["metalk8s.roles.minion", "metalk8s.roles.bootstrap"]' \
+            saltenv=metalk8s-@@VERSION \
+            pillarenv=metalk8s-@@VERSION \
+            pillar="${pillar[*]}"
 
-    SALT_MASTER_CALL="crictl exec -i $(get_salt_container)"
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
-    ${SALT_MASTER_CALL} salt-run --state-output=mixed saltutil.sync_pillar \
-        saltenv=metalk8s-@@VERSION
-    ${SALT_MASTER_CALL} salt-run --state-output=mixed saltutil.sync_runners \
-        saltenv=metalk8s-@@VERSION
+    run "Syncing Pillar modules on Salt master" \
+        "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_pillar \
+            saltenv=metalk8s-@@VERSION
+    run "Syncing Runner modules on Salt master" \
+        "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_runners \
+            saltenv=metalk8s-@@VERSION
 
     local -r bootstrap_id=$(
         ${SALT_CALL} --local --out txt grains.get id \
@@ -189,24 +245,26 @@ orchestrate_bootstrap() {
       "}"
     )
 
-    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.orchestrate \
-        metalk8s.orchestrate.bootstrap.accept-minion \
-        saltenv=metalk8s-@@VERSION \
-        pillar="${pillar[*]}"
+    run "Accepting bootstrap minion key on Salt master" \
+        "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+            metalk8s.orchestrate.bootstrap.accept-minion \
+            saltenv=metalk8s-@@VERSION \
+            pillar="${pillar[*]}"
 
-    ${SALT_MASTER_CALL} salt-run --state-output=mixed state.orchestrate \
-        metalk8s.orchestrate.bootstrap \
-        saltenv=metalk8s-@@VERSION \
-        pillar="${pillar[*]}"
+    run "Deploying bootstrap node (this may take a while)" \
+        "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+            metalk8s.orchestrate.bootstrap \
+            saltenv=metalk8s-@@VERSION \
+            pillar="${pillar[*]}"
 }
 
 main() {
-    pre_minion_checks
-    disable_salt_minion_service
-    stop_salt_minion_service
-    configure_yum_repositories
-    install_salt_minion
-    configure_salt_minion_local_mode
+    run "Pre-minion system tests" pre_minion_checks
+    run "Disabling Salt minion service" disable_salt_minion_service
+    run "Stopping Salt minion service" stop_salt_minion_service
+    run "Configuring local YUM repositories" configure_yum_repositories
+    run "Installing Salt minion" install_salt_minion
+    run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
     orchestrate_bootstrap
 }
