@@ -128,12 +128,12 @@ export async function deployNode(url, token, node) {
       url,
       {
         client: 'runner',
-        fun: 'state.orch',
-        arg: ['metalk8s.orchestrate.deploy_salt_minion_on_new_node'],
+        fun: 'state.orchestrate',
+        arg: ['metalk8s.orchestrate.deploy_new_node'],
         kwarg: {
           saltenv: 'metalk8s-2.0',
           // FIXME We need to remove the hardcoded the boostrap id.
-          pillar: { bootstrap_id: 'boostrap', node_name: node }
+          pillar: { bootstrap_id: 'bootstrap', node_name: node }
         }
       },
       {
