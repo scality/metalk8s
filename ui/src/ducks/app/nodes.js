@@ -2,7 +2,7 @@ import { call, put, takeLatest, takeEvery, select } from 'redux-saga/effects';
 import * as Api from '../../services/api';
 import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
 import history from '../../history';
-
+import { layoutLoadingAction } from './layout';
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
 export const SET_NODES = 'SET_NODES';
@@ -111,6 +111,7 @@ export function* createNode({ payload }) {
 }
 
 export function* deployNode({ payload }) {
+  yield put(layoutLoadingAction(true));
   const salt = yield select(state => state.login.salt);
   const api = yield select(state => state.config.api);
   const result = yield call(
@@ -119,8 +120,13 @@ export function* deployNode({ payload }) {
     salt.data.return[0].token,
     payload.name
   );
-  if (!result.error) {
-    alert(JSON.stringify(result.data.return[0].data.bootstrap_master));
+  yield put(layoutLoadingAction(false));
+  if (result.error) {
+    alert('Deployement Error'); // TODO: to be removed when we have the notification component
+  } else if (result.data.return[0].retcode === 1) {
+    alert('Deployement Failed: retcode=1'); // TODO: to be removed when we have the notification component
+  } else {
+    yield call(fetchNodes);
   }
 }
 
