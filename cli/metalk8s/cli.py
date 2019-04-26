@@ -108,7 +108,7 @@ def _create_node(args):
 
 
 def _deploy_node(args):
-    salt = pepper.Pepper('http://172.21.254.9:4507')
+    salt = pepper.Pepper('http://172.21.254.13:4507')
     salt.login(
         username='admin',
         token='YWRtaW46YWRtaW4=',
