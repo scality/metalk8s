@@ -15,6 +15,9 @@ roster_defaults:
     use_superseded:
       - module.run
 
+# Globally disable SSH host key checks
+no_host_keys: true
+
 rest_cherrypy:
   port: 4507
   host: {{ salt_api_ip }}
