@@ -7,6 +7,7 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 import { Button, Input } from 'core-ui';
 import { padding, brand } from 'core-ui/dist/style/theme';
+import { isEmpty } from 'lodash';
 import {
   createNodeAction,
   clearCreateNodeErrorAction
@@ -86,48 +87,67 @@ class NodeCreateForm extends React.Component {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          validateOnBlur={false}
-          validateOnChange={false}
           onSubmit={this.props.createNode}
         >
           {props => {
-            const { values, handleChange, isValid, touched, errors } = props;
+            const {
+              values,
+              touched,
+              errors,
+              dirty,
+              setFieldTouched,
+              setFieldValue
+            } = props;
+
+            //handleChange of the Formik props does not update 'values' when field value is empty
+            const handleChange = field => e => {
+              const { value, checked, type } = e.target;
+              setFieldValue(field, type === 'checkbox' ? checked : value, true);
+            };
+            //touched is not "always" correctly set
+            const handleOnBlur = e => setFieldTouched(e.target.name, true);
+
             return (
               <Form>
                 <Input
                   name="name"
                   label={intl.messages.name}
                   value={values.name}
-                  onChange={handleChange}
+                  onChange={handleChange('name')}
                   error={touched.name && errors.name}
+                  onBlur={handleOnBlur}
                 />
                 <Input
                   name="ssh_user"
                   label={intl.messages.ssh_user}
                   value={values.ssh_user}
-                  onChange={handleChange}
+                  onChange={handleChange('ssh_user')}
                   error={touched.ssh_user && errors.ssh_user}
+                  onBlur={handleOnBlur}
                 />
                 <Input
                   name="hostName_ip"
                   label={intl.messages.hostName_ip}
                   value={values.hostName_ip}
-                  onChange={handleChange}
+                  onChange={handleChange('hostName_ip')}
                   error={touched.hostName_ip && errors.hostName_ip}
+                  onBlur={handleOnBlur}
                 />
                 <Input
                   name="ssh_port"
                   label={intl.messages.ssh_port}
                   value={values.ssh_port}
-                  onChange={handleChange}
+                  onChange={handleChange('ssh_port')}
                   error={touched.ssh_port && errors.ssh_port}
+                  onBlur={handleOnBlur}
                 />
                 <Input
                   name="ssh_key_path"
                   label={intl.messages.ssh_key_path}
                   value={values.ssh_key_path}
-                  onChange={handleChange}
+                  onChange={handleChange('ssh_key_path')}
                   error={touched.ssh_key_path && errors.ssh_key_path}
+                  onBlur={handleOnBlur}
                 />
                 <Input
                   name="sudo_required"
@@ -135,7 +155,8 @@ class NodeCreateForm extends React.Component {
                   label={intl.messages.sudo_required}
                   value={values.sudo_required}
                   checked={values.sudo_required}
-                  onChange={handleChange}
+                  onChange={handleChange('sudo_required')}
+                  onBlur={handleOnBlur}
                 />
                 <FormTitle>{intl.messages.roles}</FormTitle>
                 <Input
@@ -144,7 +165,8 @@ class NodeCreateForm extends React.Component {
                   label={intl.messages.workload_plane}
                   checked={values.workload_plane}
                   value={values.workload_plane}
-                  onChange={handleChange}
+                  onChange={handleChange('workload_plane')}
+                  onBlur={handleOnBlur}
                   error={
                     values.workload_plane || values.control_plane
                       ? ''
@@ -157,7 +179,8 @@ class NodeCreateForm extends React.Component {
                   label={intl.messages.control_plane}
                   checked={values.control_plane}
                   value={values.control_plane}
-                  onChange={handleChange}
+                  onChange={handleChange('control_plane')}
+                  onBlur={handleOnBlur}
                   error={
                     values.workload_plane || values.control_plane
                       ? ''
@@ -175,12 +198,12 @@ class NodeCreateForm extends React.Component {
                     text={intl.messages.create}
                     type="submit"
                     disabled={
-                      !isValid ||
-                      !(values.workload_plane || values.control_plane) //TODO: TO BE IMPROVED
+                      !dirty ||
+                      !isEmpty(errors) ||
+                      !(values.workload_plane || values.control_plane)
                     }
                   />
                 </ActionContainer>
-
                 {asyncErrors && asyncErrors.create_node ? (
                   <ErrorMessage>{asyncErrors.create_node}</ErrorMessage>
                 ) : null}
