@@ -25,7 +25,12 @@ check_ip() {
 
 # Main procedure
 
-# First, protect /etc/resolv.conf from being updated by the dhclient
+# Disable IPv6
+for iface in all default eth0 lo; do
+    sysctl -w net.ipv6.conf.$iface.disable_ipv6=1
+done
+
+# Protect /etc/resolv.conf from being updated by the dhclient
 chattr +i /etc/resolv.conf
 
 # Then, loop over interfaces and retry the dhclient call until an address is

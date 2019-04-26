@@ -7,6 +7,7 @@ import { brand, padding } from 'core-ui/dist/style/theme';
 import styled from 'styled-components';
 import { authenticateAction } from '../ducks/login';
 import { injectIntl } from 'react-intl';
+import { isEmpty } from 'lodash';
 
 const LoginFormContainer = styled.div`
   height: 100vh;
@@ -48,7 +49,24 @@ const LogoContainer = styled.div`
 `;
 
 const LoginForm = props => {
-  const { values, touched, errors, handleChange, isSubmitting, intl } = props;
+  const {
+    values,
+    touched,
+    errors,
+    dirty,
+    intl,
+    setFieldValue,
+    setFieldTouched,
+    asyncErrors
+  } = props;
+  //handleChange of the Formik props does not update 'values' when field value is empty
+  const handleChange = field => e => {
+    const { value, checked, type } = e.target;
+    setFieldValue(field, type === 'checkbox' ? checked : value, true);
+  };
+  //touched is not "always" correctly set
+  const handleOnBlur = e => setFieldTouched(e.target.name, true);
+
   return (
     <Form autoComplete="off">
       <LogoContainer>
@@ -57,15 +75,14 @@ const LoginForm = props => {
           src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
         />
       </LogoContainer>
-
-      {errors.authentication && <Error>{errors.authentication}</Error>}
       <Input
         name="username"
         type="text"
         label={intl.messages.username}
         error={touched.username && errors.username}
         value={values.username}
-        onChange={handleChange}
+        onChange={handleChange('username')}
+        onBlur={handleOnBlur}
       />
       <Input
         name="password"
@@ -73,13 +90,17 @@ const LoginForm = props => {
         label={intl.messages.password}
         error={touched.password && errors.password}
         value={values.password}
-        onChange={handleChange}
+        onChange={handleChange('password')}
+        onBlur={handleOnBlur}
       />
       <Button
         type="submit"
         text={intl.messages.submit}
-        disabled={isSubmitting}
+        disabled={!dirty || !isEmpty(errors)}
       />
+      {asyncErrors && asyncErrors.authentication && (
+        <Error>{asyncErrors.authentication}</Error>
+      )}
     </Form>
   );
 };
@@ -101,14 +122,12 @@ class Login extends React.Component {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          validateOnBlur={false}
-          validateOnChange={false}
           onSubmit={this.props.authenticate}
           render={props => {
             const formikProps = {
               ...props,
               ...this.props,
-              errors: { ...props.errors, ...this.props.errors }
+              asyncErrors: this.props.asyncErrors
             };
             return <LoginForm {...formikProps} />;
           }}
@@ -119,7 +138,7 @@ class Login extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  errors: state.login.errors
+  asyncErrors: state.login.errors
 });
 
 const mapDispatchToProps = dispatch => {
