@@ -1,5 +1,6 @@
 // Actions
 const TOGGLE_SIDEBAR = 'TOGGLE_SIDEBAR';
+const LAYOUT_LOADING = 'LAYOUT_LOADING';
 
 // Reducer
 const defaultState = {
@@ -18,6 +19,11 @@ export default function reducer(state = defaultState, action = {}) {
           expanded: !state.sidebar.expanded
         }
       };
+    case LAYOUT_LOADING:
+      return {
+        ...state,
+        loading: action.loading
+      };
     default:
       return state;
   }
@@ -26,4 +32,8 @@ export default function reducer(state = defaultState, action = {}) {
 // Action Creators
 export const toggleSidebarAction = () => {
   return { type: TOGGLE_SIDEBAR };
+};
+
+export const layoutLoadingAction = loading => {
+  return { type: LAYOUT_LOADING, loading };
 };
