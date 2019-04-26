@@ -53,7 +53,7 @@ import errno
 import logging
 import tempfile
 import signal
-from time import sleep
+import time
 from contextlib import contextmanager
 
 from salt.exceptions import CommandExecutionError
@@ -79,6 +79,10 @@ try:
     except ImportError:
         from kubernetes.client import AppsV1beta1Deployment
         from kubernetes.client import AppsV1beta1DeploymentSpec
+
+    from kubernetes.client.models.v1_delete_options import V1DeleteOptions
+    from kubernetes.client.models.v1_object_meta import V1ObjectMeta
+    from kubernetes.client.models.v1beta1_eviction import V1beta1Eviction
 
     # Workaround for https://github.com/kubernetes-client/python/issues/376
     from kubernetes.client.models.v1beta1_custom_resource_definition_status import V1beta1CustomResourceDefinitionStatus
@@ -811,7 +815,7 @@ def delete_deployment(name, namespace='default', **kwargs):
             try:
                 with _time_limit(POLLING_TIME_LIMIT):
                     while show_deployment(name, namespace) is not None:
-                        sleep(1)
+                        time.sleep(1)
                     else:  # pylint: disable=useless-else-on-loop
                         mutable_api_response['code'] = 200
             except TimeoutError:
@@ -824,7 +828,7 @@ def delete_deployment(name, namespace='default', **kwargs):
                     mutable_api_response['code'] = 200
                     break
                 else:
-                    sleep(1)
+                    time.sleep(1)
         if mutable_api_response['code'] != 200:
             log.warning('Reached polling time limit. Deployment is not yet '
                         'deleted, but we are backing off. Sorry, but you\'ll '
@@ -2543,17 +2547,19 @@ def mirrorPodFilter(pod):
         return False
     return True
 
+
 def hasLocalStorage(pod):
     for volume in pod.spec.volumes:
         if volume.empty_dir is not None:
             return True
     return False
 
+
 def getControllerOf(pod):
     # controller => pod.metadata.owner_references[n] /w controller==True ?
     if pod.metadata.owner_references:
         for owner_ref in pod.metadata.owner_references:
-            if owner.controller:
+            if owner_ref.controller:
                 return owner_ref
     return None
 
@@ -2562,13 +2568,16 @@ def getControllerOf(pod):
 POD_STATUS_SUCCEEDED = "Succeeded"
 POD_STATUS_FAILED = "Failed"
 
+
 class Drain(object):
     def __init__(self,
+                 node_name,
                  force=False,
                  gracePeriodSeconds=1,
                  ignoreDaemonSet=False,
                  timeout=0,
                  deleteLocalData=False):
+        self._node_name = node_name
         self._force = force
         self._gracePeriodSeconds = gracePeriodSeconds
         self._ignoreDaemonSet = ignoreDaemonSet
@@ -2576,27 +2585,31 @@ class Drain(object):
         self._deleteLocalData = deleteLocalData
 
         self._warning = {
-            "daemonset" = "Ignoring DaemonSet-managed pods"
-            "localStorage" = "Deleting pods with local storage"
-            "unmanaged" = (
+            "daemonset": "Ignoring DaemonSet-managed pods",
+            "localStorage": "Deleting pods with local storage",
+            "unmanaged": (
                 "Deleting pods not managed by ReplicationController, "
                 "ReplicaSet, Job, DaemonSet or StatefulSet")
         }
 
         self._fatal = {
-            "daemonset" = "DaemonSet-managed pods",
-            "localStorage" = "pods with local storage",
-            "unmanaged" = (
+            "daemonset": "DaemonSet-managed pods",
+            "localStorage": "pods with local storage",
+            "unmanaged": (
                 "pods not managed by ReplicationController, "
                 "ReplicaSet, Job, DaemonSet or StatefulSet")
         }
 
     @property
-    def force(self):
+    def node_name(self):
         return self._force
 
     @property
-    def gracePeriodSeconds(sefl):
+    def force(self):
+        return self._node_name
+
+    @property
+    def gracePeriodSeconds(self):
         return self._gracePeriodSeconds
 
     @property
@@ -2620,8 +2633,8 @@ class Drain(object):
         if not hasLocalStorage(pod):
             return True, None, None
         if not self._deleteLocalData:
-            return False, None, self._error("localStorage")
-        return True, self._warning("localStorage"), None
+            return False, None, self._fatal["localStorage"]
+        return True, self._warning["localStorage"], None
 
     def unreplicatedFilter(self, pod):
         """Check if given pod can be elected for deletion,
@@ -2663,7 +2676,7 @@ class Drain(object):
                     api_instance.list_namespaced_replication_controller(
                         namespace=namespace,
                         field_selector='metadata.name={0}'
-                            .format(controllerRef.name)
+                                       .format(controllerRef.name)
                     )
                 return api_response
             elif controllerRef.kind == "DaemonSet":
@@ -2704,27 +2717,299 @@ class Drain(object):
                 return api_response
             else:
                 raise CommandExecutionError(
-                    "Unknown controller kind '{0}'".format(controlerRef.kind))
+                    "Unknown controller kind '{0}'".format(controllerRef.kind))
+        except (ApiException, HTTPError) as exc:
+            if isinstance(exc, ApiException) and exc.status == 404:
+                return None
+            else:
+                log.exception('Exception when calling %s', api_call)
+                raise CommandExecutionError(exc)
 
     def getPodController(self, pod):
         controllerRef = getControllerOf(pod)
         if controllerRef is None:
-            return None
+            return None, None
         # Fire error if - and only if - controller is gone/missing...
-        # TODO: Is it done by api call that fires error when nothing is found,
-        #       or do we have to check err/warning message and take action?
-        _ = self.getController(pod.namespace, controllerRef)
-        return controllerRef
+        # TODO: Is it done
+        #   1) by api call that fires error when nothing is found,
+        #   2) by checking err/warning message and take action?
+        #   3) when reponse.items is empty?
+        #   Note: taking option 3...
+        response = self.getController(pod.metadata.namespace, controllerRef)
+        if self._notFound(response):
+            return None, "Missing pod controller for '{0}'".format(controllerRef.name)
+        return controllerRef, None
 
     def daemonsetFilter(self, pod):
         """Check if given pod can be elected for deletion,
         regarding daemonset
 
         return: (deletable flag, warning msg, fatal msg)
+        // Note that we return false in cases where the pod is DaemonSet managed,
+        // regardless of flags.  We never delete them, the only question is whether
+        // their presence constitutes an error.
+        //
+        // The exception is for pods that are orphaned (the referencing
+        // management resource - including DaemonSet - is not found).
+        // Such pods will be deleted if --force is used.
         """
         # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L328
-        pass
+        controllerRef, err = self.getPodController(pod)
+        # Not found and forcing: remove orphan pods with warning
+        if err:
+            if self._force:
+                # TODO: what error/warning messages?
+                return True, "Warning message", None
+            else:
+                return False, None, "Error message"
+        if controllerRef is None or controllerRef.kind != "DaemonSet":
+            return True, None, None
+        try:
+            api_call = "ExtensionsV1beta1Api->list_namespaced_daemon_set"
+            api_instance = kubernetes.client.ExtensionsV1beta1Api()
+            api_response = api_instance.list_namespaced_daemon_set(
+                namespace=pod.metadata.namespace,
+                field_selector='metadata.name={0}'.format(controllerRef.name)
+            )
+            if not self._ignoreDaemonSet:
+                return False, None, self._fatal["daemonset"]
+            return False, self._warning["daemonset"], None
+        except (ApiException, HTTPError) as exc:
+            if isinstance(exc, ApiException) and exc.status == 404:
+                return None
+            else:
+                log.exception('Exception when calling %s', api_call)
+                raise CommandExecutionError(exc)
 
+    def getPodsForDeletion(self):
+        '''Get list of pods that can be deleted/evicted on
+        node identified by the name `node_name`.
+        '''
+        ws = {}
+        fs = {}
+        pods = []
+
+        try:
+            api_instance = kubernetes.client.CoreV1Api()
+            api_response = api_instance.list_pod_for_all_namespaces(
+                field_selector='spec.nodeName={0}'.format(self._node_name)
+            )
+            # TODO: filter pods to delete/evict
+            #       => use filters (cf. Drain )
+            # TODO: raise error if something else is found
+            # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L407
+            for pod in api_response.items:
+                podOk = True
+                for filt in (mirrorPodFilter, self.localStorageFilter,
+                             self.unreplicatedFilter, self.daemonsetFilter):
+                    filterOk, w, f = filt(pod)
+                    podOk = podOk and filterOk
+                    if w:
+                        ws.setdefault(w, []).append(pod.metadata.name)
+                    if f:
+                        fs.setdefault(f, []).append(pod.metadata.name)
+                if podOk:
+                    pods.append(pod)
+
+            def message(errors):
+                msgs = []
+                for key, p in errors.items():
+                    msgs.append("{0}: {1}".format(key, ", ".join(p)))
+                return "; ".join(msgs)
+
+            if fs:
+                return [], message(fs)
+            if ws:
+                log.error("WARNING: %s", message(ws))
+            return pods, None
+        except (ApiException, HTTPError) as exc:
+            if isinstance(exc, ApiException) and exc.status == 404:
+                return None
+            else:
+                log.exception(
+                    'Exception when calling '
+                    'CoreV1Api->list_pod_for_all_namespaces')
+                raise CommandExecutionError(exc)
+
+    def _cordon_or_uncordon(self, desired):
+        """Runs either Cordon or Uncordon.  The desired value for
+        "Unschedulable" is passed as the first arg """
+        # TODO: cordon node
+        # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L621
+
+        raise NotImplementedError()
+
+    def Cordon(self):
+        self._cordon_or_uncordon(True)
+
+    def Uncordon(self):
+        self._cordon_or_uncordon(False)
+
+    def Drain(self):
+        self.Cordon()
+        self.deleteOrEvictPodsSimple()
+
+    def deleteOrEvictPodsSimple(self):
+        pods = self.getPodsForDeletion()
+        try:
+            self.deleteOrEvictPods(pods)
+        except Exception as exc:  # TODO: be more specific...
+            remainingPods = self.getPodsForDeletion()
+            raise CommandExecutionError(
+                "There are pending pods when an error occurred: {0}"
+                .format(exc), [pod.metadata.name for pod in remainingPods])
+
+    def deleteOrEvictPods(self, pods):
+        """Delete or evicts given pods on the api server"""
+        def getPod(namespace, name):
+            """Retrieve pod information"""
+            try:
+                api_instance = kubernetes.client.CoreV1Api()
+                api_response = api_instance.list_namespaced_pod(
+                    namespace=namespace,
+                    field_selector='metadata.name={0}'.format(name)
+                )
+                return api_response
+            except (ApiException, HTTPError) as exc:
+                if isinstance(exc, ApiException) and exc.status == 404:
+                    return None
+                else:
+                    log.exception(
+                        'Exception when calling '
+                        'CoreV1Api->list_namespaced_daemon_set')
+                    raise CommandExecutionError(exc)
+
+        if not pods:
+            return None
+
+        # TODO: o.client ???
+        # policyGroupVersion, err = SupportEviction(o.client)
+        policyGroupVersion, err = "", None  # TODO: remove me
+
+        getPodFn = getPod
+        if policyGroupVersion:
+            return self.evictPods(pods, policyGroupVersion, getPodFn)
+        else:
+            return self.deletePods(pods, getPodFn)
+
+    def evictPods(self, pods, policyGroupVersion, getPodFn):
+        """Evict pods"""
+        # https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L486
+        # TODO: ???
+        raise NotImplementedError()
+
+    def deletePods(self, pods, getPodFn):
+        """Delete pods"""
+        # https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L540
+        # TODO: ???
+
+        globalTimeout = self._timeout or (2 ** 64 - 1)
+        for pod in pods:
+            _ = self.deletePod(pod)  # TODO: do something with returned value ?
+
+        _ = self.waitForDelete(
+            pods,
+            10,     # TODO: kubectl.interval ???
+            globalTimeout,
+            False,
+            getPodFn)
+        return None  # TODO: ???
+
+    def _notFound(self, response):
+        return response is None or len(response.items) == 0
+
+    def waitForDelete(self, pods, interval, timeout, usingEviction, getPodFn):
+        """Wait for pods deletion"""
+        verb = "evicted" if usingEviction else "deleted"
+
+        total_t = 0
+        while total_t < timeout and pods:
+            pending = []
+            loop_s = time.time()    # For time processing pods
+            for pod in pods:
+                r = getPodFn(pod.metadata.namespace, pod.metadata.name)
+                if self._notFound(r) or (r.items[0].metadata.uid != pod.metadata.uid):
+                    log.info("%s %s", pod.metadata.name, verb)
+                else:
+                    pending.append(pod)
+            loop_d = time.time() - loop_s
+            pods = pending
+            if pods and loop_d < interval:
+                time.sleep(interval - loop_d)
+            total_t += time.time() - loop_s
+        return pods
+
+    def evictPod(self, pod, policyGroupVersion):
+        """Evict a pod"""
+        # TODO: what do we do with policyGroupVersion ???
+        #       looks like it's used to qualify metadata...
+        # => https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L450
+
+        deleteOptions = V1DeleteOptions()
+        if self._gracePeriodSeconds >= 0:
+            deleteOptions.grace_period_seconds = self._gracePeriodSeconds
+
+        objectMeta = V1ObjectMeta(
+            name=pod.metadata.name,
+            namespace=pod.metadata.namespace)
+
+        eviction = V1beta1Eviction(
+            delete_options=deleteOptions,
+            metadata=objectMeta,
+        )
+
+        try:
+            api_call = "CoreV1Api->create_namespaced_pod_eviction"
+            api_instance = kubernetes.client.CoreV1Api()
+            api_response = \
+                api_instance.create_namespaced_pod_eviction(
+                    # name=,          # TODO: name of the Eviction
+                    # namespace=,     # TODO: object name and auth scope, such as for teams and projects
+                    body=eviction,
+                )
+            return api_response
+        except (ApiException, HTTPError) as exc:
+            if isinstance(exc, ApiException) and exc.status == 404:
+                return None
+            else:
+                log.exception('Exception when calling %s', api_call)
+                raise CommandExecutionError(exc)
+
+    def deletePod(self, pod):
+        """Delete a pod"""
+        deleteOptions = V1DeleteOptions()
+        if self._gracePeriodSeconds >= 0:
+            deleteOptions.grace_period_seconds = self._gracePeriodSeconds
+
+        try:
+            api_call = "CoreV1Api->delete_namespaced_pod"
+            api_instance = kubernetes.client.CoreV1Api()
+            api_response = \
+                api_instance.delete_namespaced_pod(
+                    name=pod.metadata.name,
+                    namespace=pod.metadata.namespace,
+                    body=deleteOptions,
+                )
+            return api_response
+        except (ApiException, HTTPError) as exc:
+            if isinstance(exc, ApiException) and exc.status == 404:
+                return None
+            else:
+                log.exception('Exception when calling %s', api_call)
+                raise CommandExecutionError(exc)
+
+
+def SupportEviction(client):
+    '''
+    SupportEviction uses Discovery API to find out
+    if the server support eviction subresource
+    If support, it will return its groupVersion; Otherwise, it will return ""
+    '''
+    # https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L589
+
+    # TODO: No idea where to get this information from in python API...
+
+    return "", None
 
 
 def node_drain(node_name, **kwargs):
@@ -2762,57 +3047,14 @@ def node_drain(node_name, **kwargs):
 
     (e) if error, bail out...
     '''
-    def getPodsForDeletion(node_name):
-        '''Get list of pods that can be deleted/evicted on
-        node identified by the name `node_name`.
-        '''
-        try:
-            api_instance = kubernetes.client.CoreV1Api()
-            api_response = api_instance.list_pod_for_all_namespaces(
-                field_selector='spec.nodeName={0}'.format(node_name)
-            )
-            # TODO: filter pods to delete/evict
-            #       => use filters (cf. Drain )
-            # TODO: raise error if something else is found
-            # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L407
-            pods = api_response.items
-
-            return pods
-        except (ApiException, HTTPError) as exc:
-            if isinstance(exc, ApiException) and exc.status == 404:
-                return None
-            else:
-                log.exception(
-                    'Exception when calling '
-                    'CoreV1Api->list_pod_for_all_namespaces')
-                raise CommandExecutionError(exc)
-
-    def deleteOrEvictPods(pods):
-        ''''Delete or evict all pods in given list'''
-        # raise ValueError("fake error")
-        pass
+    # TODO: add a dry run ??
 
     cfg = _setup_conn(**kwargs)
     try:
-        # TODO: cordon node
-        # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L621
-
-        pods = getPodsForDeletion(node_name)
-
-        try:
-            deleteOrEvictPods(pods)
-        except Exception as exc:  # TODO: be more specific...
-            remainingPods = getPodsForDeletion(node_name)
-            raise CommandExecutionError(
-                "There are pending pods when an error occurred: {0}"
-                .format(exc), [pod.metadata.name for pod in remainingPods])
-        else:
-            # TODO: (dev) remove this...
-            return ["{0} ({1})".format(
-                pod.metadata.name, pod.metadata.namespace) for pod in pods]
+        drainer = Drain(node_name)
+        drainer.Drain()
 
     except CommandExecutionError as exc:
         raise
     finally:
         _cleanup(**cfg)
-
