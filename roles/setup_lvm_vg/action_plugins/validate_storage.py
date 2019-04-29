@@ -132,7 +132,7 @@ def is_drive_raw_device(device, ansible_devices):
     if device in ansible_devices:
         return True, ansible_devices[device]
 
-    return False
+    return False, None
 
 
 def get_drive_attributes(device, ansible_devices, unused=False):
