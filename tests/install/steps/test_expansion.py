@@ -57,6 +57,24 @@ def check_node_is_registered(k8s_client, hostname):
         pytest.fail(str(exn))
 
 
+@then(parsers.parse('node "{node_name}" has the role master'))
+def check_master_role(k8s_client, node_name):
+    """Check if the given node meet the criteria to have the master role."""
+    namespace = 'kube-system'
+    selector  = 'spec.nodeName={}'.format(node_name)
+    pods = k8s_client.list_namespaced_pod(namespace, field_selector=selector)
+    pods_to_check = [
+        'kube-scheduler', 'kube-controller-manager', 'kube-apiserver'
+    ]
+    for pod in pods.items:
+        component = pod.metadata.labels.get('component')
+        if component in pods_to_check:
+            if pod.status.phase == 'Running':
+                pods_to_check.remove(component)
+    assert not pods_to_check, '{} should be up and running'.format(
+        ', '.join(pods_to_check)
+    )
+
 # }}}
 # Helpers {{{
 
