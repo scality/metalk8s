@@ -7,19 +7,41 @@ The instantiated objects are callable and can be used as doit action directly.
 """
 
 import copy
+import functools
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Type
 
 import docker                            # type: ignore
 from docker.types import Mount           # type: ignore
-import doit                              # type: ignore
 from doit.exceptions import TaskError    # type: ignore
 
 from buildchain import constants
 from buildchain.targets import image
 
 DOCKER_CLIENT : docker.DockerClient = docker.from_env()
+
+
+def task_errors(*expected_exn: Type[Exception]) -> Callable[[Any], Any]:
+    """Wrap a callable to create a resilient `doit` task
+
+    This decorator wraps action functions in a try…except block that abstracts
+    the exceptions raised by the underlying actions (docker API calls, file
+    system actions…) and returns a result conforming to `doit`'s expectations
+    in order to have `doit` manage the trace-back display:
+     - None in case of successful task run
+     - a TaskError instance in case of error
+    """
+    def wrapped_task(task_func: Callable[..., Any]) -> Callable[..., Any]:
+        @functools.wraps(task_func)
+        def decorated_task(*args: Any, **kwargs: Any) -> Optional[TaskError]:
+            try:
+                task_func(*args, **kwargs)
+            except expected_exn as err:
+                return TaskError(err)
+            return None
+        return decorated_task
+    return wrapped_task
 
 
 # The call method is not counted as a public method
@@ -47,17 +69,14 @@ class DockerBuild:
         self.dockerfile = str(dockerfile)
         self.buildargs = buildargs
 
+    @task_errors(docker.errors.BuildError, docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
-        try:
-            DOCKER_CLIENT.images.build(
-                tag=self.tag,
-                path=self.path,
-                dockerfile=self.dockerfile,
-                buildargs=self.buildargs
-            )
-        except (docker.errors.BuildError, docker.errors.APIError) as err:
-            return TaskError(err)
-        return True
+        return DOCKER_CLIENT.images.build(
+            tag=self.tag,
+            path=self.path,
+            dockerfile=self.dockerfile,
+            buildargs=self.buildargs
+        )
 
 
 # The call method is not counted as a public method
@@ -77,13 +96,10 @@ class DockerTag:
         self.full_name = full_name
         self.version = version
 
+    @task_errors(docker.errors.BuildError, docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
-        try:
-            to_tag = DOCKER_CLIENT.images.get(self.full_name)
-            to_tag.tag(self.repository, tag=self.version)
-        except (docker.errors.BuildError, docker.errors.APIError) as err:
-            return doit.exceptions.TaskError(err)
-        return True
+        to_tag = DOCKER_CLIENT.images.get(self.full_name)
+        return to_tag.tag(self.repository, tag=self.version)
 
 
 # The call method is not counted as a public method
@@ -101,12 +117,9 @@ class DockerPull:
         self.repository = repository
         self.digest = digest
 
+    @task_errors(docker.errors.BuildError, docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
-        try:
-            DOCKER_CLIENT.images.pull(self.repository, tag=self.digest)
-        except (docker.errors.BuildError, docker.errors.APIError) as err:
-            return doit.exceptions.TaskError(err)
-        return True
+        return DOCKER_CLIENT.images.pull(self.repository, tag=self.digest)
 
 
 # The call method is not counted as a public method
@@ -124,15 +137,13 @@ class DockerSave:
         self.tag = tag
         self.save_path = save_path
 
+    @task_errors(docker.errors.APIError, OSError)
     def __call__(self) -> Optional[TaskError]:
-        try:
-            to_save = DOCKER_CLIENT.images.get(self.tag)
-            image_stream = to_save.save()
-            with self.save_path.open('wb') as image_file:
-                for chunk in image_stream:
-                    image_file.write(chunk)
-        except (docker.errors.APIError, IOError) as err:
-            return TaskError(err)
+        to_save = DOCKER_CLIENT.images.get(self.tag)
+        image_stream = to_save.save(named=True)
+        with self.save_path.open('wb') as image_file:
+            for chunk in image_stream:
+                image_file.write(chunk)
         return True
 
 
@@ -286,18 +297,15 @@ class DockerRun:
 
         return run_config
 
+    @task_errors(
+        docker.errors.ContainerError,
+        docker.errors.ImageNotFound,
+        docker.errors.APIError
+    )
     def __call__(self) -> Optional[TaskError]:
         run_config = self.expand_config()
-        try:
-            DOCKER_CLIENT.containers.run(
-                image=self.builder.tag,
-                command=self.command,
-                **run_config
-            )
-        except (
-            docker.errors.ContainerError,
-            docker.errors.ImageNotFound,
-            docker.errors.APIError
-        ) as err:
-            return TaskError(err)
-        return True
+        return DOCKER_CLIENT.containers.run(
+            image=self.builder.tag,
+            command=self.command,
+            **run_config
+        )
