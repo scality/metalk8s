@@ -75,6 +75,25 @@ def check_master_role(k8s_client, node_name):
         ', '.join(pods_to_check)
     )
 
+
+@then(parsers.parse('node "{node_name}" has the role etcd'))
+def check_etcd_role(k8s_client, node_name):
+    """Check if the given node meet the criteria to have the etcd role."""
+    namespace = 'kube-system'
+    field_selector = 'spec.nodeName={}'.format(node_name)
+    label_selector = 'component=etcd'
+    pods = k8s_client.list_namespaced_pod(
+        namespace, field_selector=field_selector, label_selector=label_selector
+    )
+    assert pods.items, 'etcd pod not found on node {}'.format(node_name)
+    assert pods.items[0].status.phase == 'Running', \
+        'etcd pod is not running on node {}'.format(node_name)
+
+    etcd_member_list = etcdctl(k8s_client, ['member', 'list'])
+    assert node_name in etcd_member_list, \
+        'node {} is not part of the etcd cluster'.format(node_name)
+
+
 # }}}
 # Helpers {{{
 
@@ -111,5 +130,22 @@ def run_salt_command(k8s_client, command):
         stderr=True, stdin=False, stdout=False, tty=False
     )
     assert not stderr, 'deploy failed with {}'.format(stderr)
+
+def etcdctl(k8s_client, command):
+    """Run an etcdctl command inside the etcd container."""
+    etcd_command = [
+        'etcdctl',
+        '--endpoints', 'https://localhost:2379',
+        '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
+        '--key-file', '/etc/kubernetes/pki/etcd/server.key',
+        '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
+    ] + command
+    output = k8s.stream.stream(
+        k8s_client.connect_get_namespaced_pod_exec,
+        name='etcd-bootstrap', namespace='kube-system',
+        command=etcd_command,
+        stderr=True, stdin=False, stdout=True, tty=False
+    )
+    return output
 
 # }}}
