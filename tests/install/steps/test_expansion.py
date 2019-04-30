@@ -19,9 +19,9 @@ def test_cluster_expansion(host):
 
 # When {{{
 
-@when(parsers.parse('we declare a new node on host "{hostname}"'))
+@when(parsers.parse('we declare a new "{node_type}" node on host "{hostname}"'))
 def declare_node(
-    request, version, k8s_client, hostname, bootstrap_config
+    request, version, k8s_client, node_type, hostname, bootstrap_config
 ):
     """Declare the given node in Kubernetes."""
     ssh_config = request.config.getoption('--ssh-config')
@@ -106,9 +106,10 @@ def get_node_ip(hostname, ssh_config, bootstrap_config):
     control_plane_cidr = bootstrap_config['networks']['controlPlane']
     return utils.get_ip_from_cidr(infra_node, control_plane_cidr)
 
-def get_node_manifest(metalk8s_version, node_ip):
+def get_node_manifest(node_type, metalk8s_version, node_ip):
     """Return the YAML to declare a node with the specified IP."""
-    filepath = (pathlib.Path(__file__)/'..'/'files'/'node.yaml.tpl').resolve()
+    filename = '{}-node.yaml.tpl'.format(node_type)
+    filepath = (pathlib.Path(__file__)/'..'/'files'/filename).resolve()
     manifest = filepath.read_text(encoding='utf-8')
     return string.Template(manifest).substitute(
         metalk8s_version=metalk8s_version, node_ip=node_ip
