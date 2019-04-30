@@ -2570,6 +2570,10 @@ POD_STATUS_FAILED = "Failed"
 
 
 class Drain(object):
+    # TODO: this is random value...
+    #       kubectl uses `kubectl.interval`, but cannot find it anywhere
+    KUBECTL_INTERVAL = 10
+
     def __init__(self,
                  node_name,
                  force=False,
@@ -2794,10 +2798,6 @@ class Drain(object):
             api_response = api_instance.list_pod_for_all_namespaces(
                 field_selector='spec.nodeName={0}'.format(self._node_name)
             )
-            # TODO: filter pods to delete/evict
-            #       => use filters (cf. Drain )
-            # TODO: raise error if something else is found
-            # TODO: cf. https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L407
             for pod in api_response.items:
                 podOk = True
                 for filt in (mirrorPodFilter, self.localStorageFilter,
@@ -2893,10 +2893,25 @@ class Drain(object):
             return self.deletePods(pods, getPodFn)
 
     def evictPods(self, pods, policyGroupVersion, getPodFn):
-        """Evict pods"""
+        """Evict all pods from list"""
         # https://github.com/kubernetes/kubernetes/blob/ca89308227abdf4f2c895118528c354c32aa3046/pkg/kubectl/cmd/drain.go#L486
-        # TODO: ???
-        raise NotImplementedError()
+
+        # TODO: there are a lot of shortcuts here, to be checked
+
+        globalTimeout = self._timeout or (2 ** 64 - 1)
+        for pod in pods:
+            # TODO: "too many requests" error not handled
+            _ = self.evictPod(pod, policyGroupVersion)  # TODO: do something with returned value ?
+
+        pending = self.waitForDelete(pods,
+                                     self.KUBECTL_INTERVAL,
+                                     globalTimeout,
+                                     True,
+                                     getPodFn)
+        if pending:
+            return "Drain did not complete within {0}".format(globalTimeout)
+        return None
+
 
     def deletePods(self, pods, getPodFn):
         """Delete pods"""
@@ -2907,12 +2922,11 @@ class Drain(object):
         for pod in pods:
             _ = self.deletePod(pod)  # TODO: do something with returned value ?
 
-        _ = self.waitForDelete(
-            pods,
-            10,     # TODO: kubectl.interval ???
-            globalTimeout,
-            False,
-            getPodFn)
+        _ = self.waitForDelete(pods,
+                               self.KUBECTL_INTERVAL,
+                               globalTimeout,
+                               False,
+                               getPodFn)
         return None  # TODO: ???
 
     def _notFound(self, response):
@@ -2965,6 +2979,8 @@ class Drain(object):
                 api_instance.create_namespaced_pod_eviction(
                     # name=,          # TODO: name of the Eviction
                     # namespace=,     # TODO: object name and auth scope, such as for teams and projects
+                    name=eviction.metadata.name,
+                    namespace=eviction.metadata.namespace,
                     body=eviction,
                 )
             return api_response
@@ -3012,9 +3028,13 @@ def SupportEviction(client):
     return "", None
 
 
-def node_drain(node_name, **kwargs):
-    # TODO: add flags for draining (force, gracePeriodSeconds,
-    #                 ignoreDaemonSet, timeout, deleteLocalData) ?
+def node_drain(node_name,
+               force=None,
+               gracePeriodSeconds=None,
+               ignoreDaemonSet=None,
+               timeout=None,
+               deleteLocalData=None,
+               **kwargs):
     '''
     Drain the the node identified by the name `node_name`.
 
@@ -3022,36 +3042,23 @@ def node_drain(node_name, **kwargs):
 
         salt '*' kubernetes.node_drain node_name="minikube"
     '''
-
-    '''
-
-    Cordon node (e).
-
-    Get list of all pods to delete (e):
-        => Get all pods in all namespaces on given node (e).
-        => If pod cannot be deleted/evicted, raise error.
-            (aka: pod is either mirrorPod, localStorage,
-                unreplicated, daemonset)
-
-    For each pod to delete:
-        If pod supports eviction:
-            evict pod (e)
-        else:
-            delete pod (e)
-
-    If no error => success, node is drained...
-    else:
-        Get list of all pods to delete (e)
-        => Return this list as list of pending pods
-           (aka. not processed when error occured).
-
-    (e) if error, bail out...
-    '''
     # TODO: add a dry run ??
+
+    opts = {}
+    if force is not None:
+        opts['force'] = force
+    if gracePeriodSeconds is not None:
+        opts['gracePeriodSeconds'] = gracePeriodSeconds
+    if ignoreDaemonSet is not None:
+        opts['ignoreDaemonSet'] = ignoreDaemonSet
+    if timeout is not None:
+        opts['timeout'] = timeout
+    if deleteLocalData is not None:
+        opts['deleteLocalData'] = deleteLocalData
 
     cfg = _setup_conn(**kwargs)
     try:
-        drainer = Drain(node_name)
+        drainer = Drain(node_name, **opts)
         drainer.Drain()
 
     except CommandExecutionError as exc:
