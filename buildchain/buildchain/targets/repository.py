@@ -40,7 +40,7 @@ from buildchain import coreutils
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
-from buildchain.docker_command import DockerRun
+from buildchain import docker_command
 
 from . import base
 from . import image
@@ -157,7 +157,7 @@ class Repository(base.Target, base.CompositeTarget):
                 'SRPM': pkg.srpm.name,
             }
 
-            buildrpm_callable = DockerRun(
+            buildrpm_callable = docker_command.DockerRun(
                 command=['/entrypoint.sh', 'buildrpm'],
                 builder=self.builder,
                 environment=env,
@@ -235,17 +235,17 @@ class Repository(base.Target, base.CompositeTarget):
         """Return the list of container mounts required by `buildrpm`."""
         mounts = [
             # SRPM directory.
-            DockerRun.bind_ro_mount(
+            docker_command.bind_ro_mount(
                 source=srpm_path,
-                target='/rpmbuild/SRPMS/{}'.format(srpm_path.name),
+                target=Path('/rpmbuild/SRPMS', srpm_path.name)
             ),
             # RPM directory.
-            DockerRun.bind_mount(
+            docker_command.bind_mount(
                 source=rpm_dir,
-                target='/rpmbuild/RPMS',
+                target=Path('/rpmbuild/RPMS'),
             ),
             # rpmlint configuration file
-            DockerRun.RPMLINTRC_MOUNT
+            docker_command.DockerRun.RPMLINTRC_MOUNT
         ]
 
         return mounts
@@ -253,12 +253,14 @@ class Repository(base.Target, base.CompositeTarget):
     def _buildrepo_action(self) -> types.Action:
         """Return the command to run `buildrepo` inside a container."""
         mounts = [
-            DockerRun.bind_ro_mount(source=self.rootdir, target='/repository'),
-            DockerRun.bind_mount(
-                source=self.repodata, target='/repository/repodata'
+            docker_command.bind_ro_mount(
+                source=self.rootdir, target=Path('/repository')
+            ),
+            docker_command.bind_mount(
+                source=self.repodata, target=Path('/repository/repodata')
             )
         ]
-        buildrepo_callable = DockerRun(
+        buildrepo_callable = docker_command.DockerRun(
             command=['/entrypoint.sh', 'buildrepo'],
             builder=self.builder,
             mounts=mounts,

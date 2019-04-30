@@ -35,7 +35,7 @@ from typing import Any, Dict, List, Sequence
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
-from buildchain.docker_command import DockerRun
+from buildchain import docker_command
 
 from . import base
 from . import directory
@@ -143,13 +143,15 @@ class Package(base.Target, base.CompositeTarget):
 
     def generate_meta(self) -> types.TaskDict:
         """Generate the .meta file for the package."""
-        container_spec = '/rpmbuild/SPECS/{}'.format(self.spec.name)
-        container_meta = '/rpmbuild/META/{}'.format(self.spec.name)
+        spec_guest_file = Path('/rpmbuild/SPECS', self.spec.name)
+        meta_guest_file = Path('/rpmbuild/META', self.meta.name)
         mounts = [
-            DockerRun.ENTRYPOINT_MOUNT,
-            DockerRun.bind_ro_mount(source=self.spec, target=container_spec),
-            DockerRun.bind_mount(
-                source=self.meta.parent, target=container_meta
+            docker_command.DockerRun.ENTRYPOINT_MOUNT,
+            docker_command.bind_ro_mount(
+                source=self.spec, target=spec_guest_file
+            ),
+            docker_command.bind_mount(
+                source=self.meta.parent, target=meta_guest_file.parent
             )
         ]
         command = ['/entrypoint.sh', 'buildmeta']
@@ -158,13 +160,12 @@ class Package(base.Target, base.CompositeTarget):
             'read_only': True,
             'remove': True
         }
-        buildmeta_callable = DockerRun(
+        buildmeta_callable = docker_command.DockerRun(
             command=command,
             builder=self.builder,
             environment={
-                'SPEC': container_spec,
-                'META_DIR': container_meta,
-                'META_NAME': self.meta.name
+                'SPEC': self.spec.name,
+                'META': self.meta.name
             },
             run_config=rpmspec_config,
             mounts=mounts
@@ -209,7 +210,7 @@ class Package(base.Target, base.CompositeTarget):
             'SOURCES': ' '.join(source.name for source in self.sources),
         }
 
-        buildsrpm_callable = DockerRun(
+        buildsrpm_callable = docker_command.DockerRun(
             command=['/entrypoint.sh', 'buildsrpm'],
             builder=self.builder,
             environment=env,
@@ -265,25 +266,25 @@ class Package(base.Target, base.CompositeTarget):
         """Return the list of container mounts required by `buildsrpm`."""
         mounts = [
             # .spec file
-            DockerRun.bind_ro_mount(
+            docker_command.bind_ro_mount(
                 source=self.spec,
-                target='/rpmbuild/SPECS/{}'.format(self.spec.name),
+                target=Path('/rpmbuild/SPECS', self.spec.name)
             ),
             # SRPM directory.
-            DockerRun.bind_mount(
+            docker_command.bind_mount(
                 source=srpm_dir,
-                target='/rpmbuild/SRPMS',
+                target=Path('/rpmbuild/SRPMS'),
             ),
             # rpmlint configuration file
-            DockerRun.RPMLINTRC_MOUNT
+            docker_command.DockerRun.RPMLINTRC_MOUNT
         ]
 
         # Source files.
         for source in self.sources:
             mounts.append(
-                DockerRun.bind_ro_mount(
+                docker_command.bind_ro_mount(
                     source=source,
-                    target='/rpmbuild/SOURCES/{}'.format(source.name)
+                    target=Path('/rpmbuild/SOURCES', source.name)
                 )
             )
         return mounts

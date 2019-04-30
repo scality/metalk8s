@@ -35,7 +35,7 @@ from buildchain import coreutils
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
-from buildchain.docker_command import DockerRun
+from buildchain import docker_command
 
 
 def task_packaging() -> types.TaskDict:
@@ -91,14 +91,14 @@ def task__download_packages() -> types.TaskDict:
     packages = _load_package_list(pkg_list)
 
     mounts = [
-        DockerRun.bind_mount(
-            source=constants.PKG_ROOT, target='/install_root'
+        docker_command.bind_mount(
+            source=constants.PKG_ROOT, target=Path('/install_root')
         ),
-        DockerRun.bind_mount(
-            source=constants.REPO_ROOT, target='/repositories'
+        docker_command.bind_mount(
+            source=constants.REPO_ROOT, target=Path('/repositories')
         ),
     ]
-    dl_packages_callable = DockerRun(
+    dl_packages_callable = docker_command.DockerRun(
         command=['/entrypoint.sh', 'download_packages', *packages],
         builder=BUILDER,
         mounts=mounts,

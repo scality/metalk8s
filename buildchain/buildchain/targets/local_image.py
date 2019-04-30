@@ -23,7 +23,7 @@ from doit.exceptions import TaskError # type: ignore
 from buildchain import constants
 from buildchain import coreutils
 from buildchain import types
-from buildchain.docker_command import DockerBuild
+from buildchain import docker_command
 
 from . import image
 
@@ -184,7 +184,7 @@ class LocalImage(image.ContainerImage):
         """Build a container image locally."""
         actions: List[types.Action] = [self.check_dockerfile_dependencies]
 
-        builder_callable = DockerBuild(
+        builder_callable = docker_command.DockerBuild(
             tag=self.tag,
             path=self.dockerfile.parent,
             dockerfile=self.dockerfile,

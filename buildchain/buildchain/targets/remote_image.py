@@ -17,7 +17,7 @@ from typing import Any, Optional, List
 from buildchain import coreutils
 from buildchain import types
 from buildchain import utils
-from buildchain.docker_command import DockerPull, DockerTag
+from buildchain import docker_command
 
 from . import image
 
@@ -92,12 +92,12 @@ class RemoteImage(image.ContainerImage):
     def _build_actions(self) -> List[types.Action]:
         """Compute actions for the image — pull, tag, save."""
         filepath = self.uncompressed_filename
-        pull_callable = DockerPull(
+        pull_callable = docker_command.DockerPull(
             repository=self.repository, digest=self.digest
         )
         # The local repository is the image 'tag' without version
         local_repository = self.tag[:self.tag.rfind(':')]
-        tag_callable = DockerTag(
+        tag_callable = docker_command.DockerTag(
             repository=local_repository,
             full_name=self.fullname,
             version=self.version

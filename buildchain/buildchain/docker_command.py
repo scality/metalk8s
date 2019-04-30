@@ -22,6 +22,39 @@ from buildchain.targets import image
 DOCKER_CLIENT : docker.DockerClient = docker.from_env()
 
 
+def bind_mount(source: Path, target: Path, **kwargs: Any) -> Mount:
+    """Helper for Docker mount objects.
+
+    Arguments:
+        source: the host path to be mounted
+        target: the container path the source should be mounted to
+
+    Keyword arguments:
+        Passed through to the underlying docker.services.Mount object
+        initialization
+    """
+    return Mount(
+        source=str(source),
+        target=str(target),
+        type='bind',
+        **kwargs
+    )
+
+
+def bind_ro_mount(source: Path, target: Path) -> Mount:
+    """Helper for Docker *read-only* mount objects.
+
+    Arguments:
+        source: the host path to be mounted
+        target: the container path the source should be mounted to
+    """
+    return bind_mount(
+        source=source,
+        target=target,
+        read_only=True
+    )
+
+
 def task_errors(*expected_exn: Type[Exception]) -> Callable[[Any], Any]:
     """Wrap a callable to create a resilient `doit` task
 
@@ -150,17 +183,13 @@ class DockerSave:
 class DockerRun:
     """A class to expose the `docker run` command through the API client."""
 
-    RPMLINTRC_MOUNT : Mount = Mount(
-        target='/rpmbuild/rpmlintrc',
-        source=str(constants.ROOT/'packages'/'rpmlintrc'),
-        type='bind',
-        read_only=True
+    RPMLINTRC_MOUNT : Mount = bind_ro_mount(
+        target=Path('/rpmbuild/rpmlintrc'),
+        source=constants.ROOT/'packages'/'rpmlintrc',
     )
-    ENTRYPOINT_MOUNT : Mount = Mount(
-        target='/entrypoint.sh',
-        source=str(constants.ROOT/'packages'/'entrypoint.sh'),
-        type='bind',
-        read_only=True
+    ENTRYPOINT_MOUNT : Mount = bind_ro_mount(
+        target=Path('/entrypoint.sh'),
+        source=constants.ROOT/'packages'/'entrypoint.sh',
     )
     _BASE_CONFIG = {
         'hostname': 'build',
@@ -202,40 +231,6 @@ class DockerRun:
         self.tmpfs = tmpfs or {}
         self.run_config = run_config or self.builder_config()
         self.read_only = read_only
-
-    @staticmethod
-    def bind_mount(source: Path, target: str, **kwargs: Any) -> Mount:
-        """Helper for Docker mount objects.
-
-        Arguments:
-            source: the host path to be mounted
-            target: the container path the source should be mounted to
-
-        Keyword arguments:
-            Passed through to the underlying docker.services.Mount object
-            initialization
-        """
-        return Mount(
-            source=str(source),
-            target=target,
-            type='bind',
-            **kwargs
-        )
-
-    @staticmethod
-    def bind_ro_mount(source: Path, target: str) -> Mount:
-        """Helper for Docker *read-only* mount objects.
-
-        Arguments:
-            source: the host path to be mounted
-            target: the container path the source should be mounted to
-        """
-        return Mount(
-            source=str(source),
-            target=target,
-            type='bind',
-            read_only=True
-        )
 
     @classmethod
     def builder_config(cls) -> Dict[str, Any]:
