@@ -35,3 +35,10 @@ vagrant ssh-config >bootstrap.ssh.config
 # The test command should be in that case
 SSH_CONFIG_FILE=bootstrap.ssh.config SSH_HOSTS_LIST=bootstrap tox -e tests
 ```
+
+---
+
+MetalK8s version 1 is still maintained in this repository. See the 
+`development/1.*` branches, e. g.
+[MetalK8s 1.3](github.com/scality/metalk8s/tree/development/1.3) in the same
+repository.
