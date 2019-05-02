@@ -146,6 +146,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
+            --verbose
           haltOnFailure: true
       - ShellCommand:
           name: Install kubectl for running tests
@@ -254,6 +255,7 @@ stages:
             ssh -F ssh_config bootstrap
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
+            --verbose
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
