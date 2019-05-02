@@ -23,7 +23,17 @@ def wait_minions(tgt='*', retry=10):
     minions = client.cmd(tgt, 'test.ping', timeout=2)
     attempts = 1
 
-    while not all(status for status in minions.values()) and attempts < retry:
+    def condition_reached(minions, attempts):
+        if attempts > retry:
+            return True
+
+        if minions and all(status for status in minions.values()):
+            return True
+
+        # Either `minions` is empty, or not all succeeded
+        return False
+
+    while not condition_reached(minions, attempts):
         log.info(
             "[Attempt %d/%d] Waiting for minions to respond: %s",
             attempts,
@@ -35,7 +45,7 @@ def wait_minions(tgt='*', retry=10):
         minions = client.cmd(tgt, 'test.ping', timeout=2)
         attempts += 1
 
-    if not all(status for status in minions.values()):
+    if not minions or not all(status for status in minions.values()):
         error_message = (
             'Minion{plural} failed to respond after {retry} retries: {minions}'
         ).format(
