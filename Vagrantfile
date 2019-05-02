@@ -159,13 +159,16 @@ Vagrant.configure("2") do |config|
     v.linked_clone = true
     v.memory = 2048
     v.cpus = 2
+    v.customize ["modifyvm", :id, "--chipset", "ich9"]
   end
 
   config.vm.network "private_network",
     type: :dhcp,
+    nic_type: 'virtio',
     **CONTROL_PLANE_NETWORK
   config.vm.network "private_network",
     type: :dhcp,
+    nic_type: 'virtio',
     **WORKLOAD_PLANE_NETWORK
 
   config.vm.define :bootstrap, primary: true do |bootstrap|
