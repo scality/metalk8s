@@ -27,7 +27,7 @@ spec:
   containers:
     - name: salt-master
       image: {{ build_image_name(salt_master_image, salt_master_version) }}
-      args: ['--log-level=info']
+      args: ['--log-level=debug']
       ports:
         - name: publisher
           containerPort: 4505
