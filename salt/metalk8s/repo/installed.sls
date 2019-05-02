@@ -18,7 +18,7 @@ Generate package repositories nginx configuration:
     - makedirs: true
     - backup: false
     - defaults:
-        listening_port: {{ repo.port }}
+        listening_port: {{ pillar.metalk8s.endpoints['package-repositories'].ports.http }}
 
 Install package repositories manifest:
   file.managed:
@@ -31,7 +31,7 @@ Install package repositories manifest:
     - makedirs: false
     - backup: false
     - defaults:
-        container_port: {{ repo.port }}
+        container_port: {{ pillar.metalk8s.endpoints['package-repositories'].ports.http }}
         image: {{ package_repositories_image }}
         name: {{ package_repositories_name }}
         version: {{ package_repositories_version }}

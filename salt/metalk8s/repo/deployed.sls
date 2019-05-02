@@ -1,5 +1,3 @@
-{%- from "metalk8s/map.jinja" import repo with context %}
-
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
 
@@ -22,7 +20,7 @@ Deploy repo service object:
         clusterIP: None
         ports:
         - name: http
-          port: {{ repo.port }}
+          port: {{ pillar.metalk8s.endpoints['package-repositories'].ports.http }}
           protocol: TCP
           targetPort: http
         selector:
