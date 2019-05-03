@@ -25,4 +25,4 @@ Remove minion local conf:
     - name: /etc/salt/minion.d/99-file-client-local.conf
     - require:
       - file: Configure salt minion
-      - service: Ensure salt-minion running
+      - module: Ensure salt-minion running
