@@ -11,9 +11,10 @@ stages:
       type: local
     steps:
       - TriggerStages:
-          name: Trigger build and lint stages simultaneously
+          name: Trigger build, docs and lint stages simultaneously
           stage_names:
             - build
+            - docs
             - lint
           haltOnFailure: true
       - SetPropertyFromCommand:
@@ -75,6 +76,24 @@ stages:
             - "*.iso"
             - SHA256SUM
             - product.txt
+
+  docs:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-docs-builder/pod.yaml
+      images:
+        doc-builder:
+          context: '.'
+          dockerfile: docs/Dockerfile
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          name: Build documentation
+          env:
+            # Fake that we are building in a ReadTheDocs environment
+            READTHEDOCS: 'True'
+          command: tox --workdir /tmp/tox -e docs -- html latexpdf
+          haltOnFailure: true
 
   lint:
     worker:
