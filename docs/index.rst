@@ -19,6 +19,8 @@ Welcome to MetalK8s's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   developer/index
+
 
 
 Indices and tables
