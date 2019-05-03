@@ -135,7 +135,10 @@ BUILDER : targets.LocalImage = targets.LocalImage(
     destination=config.BUILD_ROOT,
     save_on_disk=False,
     task_dep=['_build_root'],
-    file_dep=list(constants.ROOT.glob('packages/yum_repositories/*.repo')),
+    file_dep=[
+        constants.ROOT/'packages/yum_repositories/kubernetes.repo',
+        constants.ROOT/'packages/yum_repositories/saltstack.repo'
+    ],
 )
 
 
