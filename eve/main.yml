@@ -94,6 +94,11 @@ stages:
             READTHEDOCS: 'True'
           command: tox --workdir /tmp/tox -e docs -- html latexpdf
           haltOnFailure: true
+      - Upload:
+          name: Upload documentation artifacts
+          source: docs/_build
+          urls:
+            - ['docs/\1', '*']
 
   lint:
     worker:
