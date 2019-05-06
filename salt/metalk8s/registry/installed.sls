@@ -47,6 +47,6 @@ Install OCI registry manifest:
     - defaults:
         registry_image: {{ registry_image }}
         registry_version: {{ registry_version }}
-        registry_ip: {{ metalk8s.endpoints.registry.ip }}
+        registry_ip: {{ grains.metalk8s.control_plane_ip }}
         registry_user: {{ registry_user }}
         registry_group: {{ registry_group }}

@@ -32,6 +32,7 @@ kubeadm_preflight:
 repo:
   local_mode: false
   relative_path: packages     # relative to ISO root (configured in pillar)
+  port: 8080
   repositories:
     metalk8s-base:
       humanname: CentOS - Base
