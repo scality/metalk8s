@@ -224,8 +224,8 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
     targets.RemoteImage(
         registry=constants.COREOS_REGISTRY,
         name='prometheus-config-reloader',
-        version='v0.27.0',
-        digest='sha256:61b7969fd1336fd4bbac0622f9e4281f2a2b4ae02ad55748b6fdc65e2be69b73',
+        version='v0.28.0',
+        digest='sha256:5ea13d504f08ddd4d6568830e1ae104347532f316d62b1f3d338bd37e703cfba',
         destination=ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
