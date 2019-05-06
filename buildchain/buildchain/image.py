@@ -93,6 +93,14 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
+        registry=constants.PROMETHEUS_REGISTRY,
+        name='alertmanager',
+        version='v0.15.2',
+        digest='sha256:c16294ecb0b6dd77b8a0834c9d98fd9d1090c7ea904786bc37b58ebdb428851f',
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
         registry='calico',
         name='calico-node',
         remote_name='node',
