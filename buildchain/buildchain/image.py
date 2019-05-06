@@ -190,6 +190,14 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
+        registry=constants.PROMETHEUS_REGISTRY,
+        name='node-exporter',
+        version='v0.17.0',
+        digest='sha256:1b129a3801a0440f9c5b2afb20082dfdb31bf6092b561f5f249531130000cb83',
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
         registry=constants.DOCKER_REGISTRY,
         name='registry',
         version='2.7.1',
