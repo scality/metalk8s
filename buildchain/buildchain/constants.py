@@ -20,6 +20,9 @@ CMD_WIDTH : int = 12
 # URLs of the main container repositories.
 GOOGLE_REGISTRY : str = 'k8s.gcr.io'
 DOCKER_REGISTRY : str = 'docker.io/library'
+COREOS_REGISTRY : str = 'quay.io/coreos'
+PROMETHEUS_REGISTRY : str = 'quay.io/prometheus'
+GRAFANA_REGISTRY : str = 'docker.io/grafana'
 
 # Paths {{{
 
