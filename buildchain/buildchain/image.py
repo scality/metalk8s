@@ -85,6 +85,15 @@ NGINX_IMAGE_VERSION : str = '1.15.8'
 # pylint:disable=line-too-long
 TO_PULL : Tuple[targets.RemoteImage, ...] = (
     targets.RemoteImage(
+        registry='calico',
+        name='calico-node',
+        remote_name='node',
+        version='3.5.1',
+        digest='sha256:5baaa4795256e4f14c03fdccc534d46c2d7ff3ac84e748bacf88b1fa8c25d952',
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='coredns',
         version='1.3.1',
@@ -129,15 +138,6 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='kube-scheduler',
         version=constants.K8S_VERSION,
         digest='sha256:7a2a2a54f26647a4d8642d9158122e6c80e19b2b79d5bf0c74445f2e26a83dfa',
-        destination=ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry='calico',
-        name='calico-node',
-        remote_name='node',
-        version='3.5.1',
-        digest='sha256:5baaa4795256e4f14c03fdccc534d46c2d7ff3ac84e748bacf88b1fa8c25d952',
         destination=ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
