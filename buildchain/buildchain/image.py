@@ -110,6 +110,14 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
+        registry=constants.COREOS_REGISTRY,
+        name='configmap-reload',
+        version='v0.0.1',
+        digest='sha256:e2fd60ff0ae4500a75b80ebaa30e0e7deba9ad107833e8ca53f0047c42c5a057',
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='coredns',
         version='1.3.1',
