@@ -85,6 +85,14 @@ NGINX_IMAGE_VERSION : str = '1.15.8'
 # pylint:disable=line-too-long
 TO_PULL : Tuple[targets.RemoteImage, ...] = (
     targets.RemoteImage(
+        registry=constants.COREOS_REGISTRY,
+        name='addon-resizer',
+        version='1.0',
+        digest='sha256:f84cebb37aa907e3b34ca165d6258730fa8d15fa00d490c300bd04222a29e708',
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
         registry='calico',
         name='calico-node',
         remote_name='node',
