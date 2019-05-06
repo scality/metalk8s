@@ -161,6 +161,11 @@ stages:
           command: tox -e tests-local
           haltOnFailure: true
       - ShellCommand:
+          name: Cypress test
+          command: bash cypress.sh
+          workdir: build/ui
+          haltOnFailure: true
+      - ShellCommand:
           name: Debug step - report IPs, add SSH keys, wait 1 hour
           timeout: 3600
           command: >
