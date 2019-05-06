@@ -134,6 +134,14 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
+        registry=constants.GRAFANA_REGISTRY,
+        name='grafana',
+        version='5.2.4',
+        digest='sha256:aaf50da5faf2596bfb0caed81f08b5569110e7b5468b291fedad25d8cbc51f2b',
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='kube-apiserver',
         version=constants.K8S_VERSION,
