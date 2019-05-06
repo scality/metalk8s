@@ -136,8 +136,8 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
     targets.RemoteImage(
         registry=constants.GRAFANA_REGISTRY,
         name='grafana',
-        version='5.2.4',
-        digest='sha256:aaf50da5faf2596bfb0caed81f08b5569110e7b5468b291fedad25d8cbc51f2b',
+        version='6.0.0',
+        digest='sha256:b5098a06dc59d28b11120eab01d8d0147b526a175aa606f9978934b6b2224138',
         destination=ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
