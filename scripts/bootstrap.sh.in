@@ -304,6 +304,12 @@ orchestrate_bootstrap() {
             metalk8s.orchestrate.bootstrap \
             saltenv=metalk8s-@@VERSION \
             pillar="${pillar[*]}"
+
+    # The `mine.update` executed during `metalk8s.orchestrate.bootstrap` seems
+    # not always to actually update the mine with all `mine_functions` we
+    # expect. Forcing another update seems to resolve this somewhat.
+    run "Syncing mine" \
+        "${SALT_CALL}" mine.update
 }
 
 main() {
