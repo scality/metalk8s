@@ -184,8 +184,8 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
     targets.RemoteImage(
         registry=constants.COREOS_REGISTRY,
         name='kube-state-metrics',
-        version='v1.3.1',
-        digest='sha256:fa2e6d33183755f924f05744c282386f38e962160f66ad0b6a8a24a36884fb9a',
+        version='v1.5.0',
+        digest='sha256:b7a3143bd1eb7130759c9259073b9f239d0eeda09f5210f1cd31f1a530599ea1',
         destination=ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
