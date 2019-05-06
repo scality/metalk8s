@@ -142,6 +142,14 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
+        registry=constants.COREOS_REGISTRY,
+        name='k8s-prometheus-adapter-amd64',
+        version='v0.4.1',
+        digest='sha256:cd44106e853564873e6bf261a672f0ee2122cdbd70800dafce2c3c26d0b4be95',
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='kube-apiserver',
         version=constants.K8S_VERSION,
