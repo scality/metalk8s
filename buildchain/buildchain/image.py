@@ -158,6 +158,14 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
+        registry=constants.COREOS_REGISTRY,
+        name='kube-rbac-proxy',
+        version='v0.3.1',
+        digest='sha256:a578315f24e6fd01a65e187e4d1979678598a7d800d039ee5cfe4e11b0b1788d',
+        destination=ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='kube-scheduler',
         version=constants.K8S_VERSION,
