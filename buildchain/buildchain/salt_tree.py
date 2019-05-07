@@ -246,6 +246,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_pillar/metalk8s_endpoints.py'),
     Path('salt/_pillar/metalk8s_nodes.py'),
 
+    Path('salt/_renderers/metalk8s_kubernetes.py'),
+
     Path('salt/_roster/kubernetes_nodes.py'),
 
     Path('salt/_runners/metalk8s_saltutil.py'),
