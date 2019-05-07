@@ -1,10 +1,11 @@
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 
 {%- macro build_image_name(name='', tag='', include_port=False) -%}
 {%- if include_port -%}
-"{{ pillar.registry_ip }}:5000/{{ saltenv }}/{{ name }}:{{ tag }}"
+"{{ metalk8s.endpoints.registry.ip }}:{{ metalk8s.endpoints.registry.ports.registry }}/{{ saltenv }}/{{ name }}:{{ tag }}"
 {%- else -%}
-"{{ pillar.registry_ip }}/{{ saltenv }}/{{ name }}:{{ tag }}"
+"{{ metalk8s.endpoints.registry.ip }}/{{ saltenv }}/{{ name }}:{{ tag }}"
 {%- endif -%}
 {%- endmacro -%}
 
