@@ -108,7 +108,7 @@ Create kube-apiserver Pod manifest:
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
           - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
-          - --etcd-servers=https://{{ pillar.registry_ip }}:2379
+          - --etcd-servers=https://{{ grains.metalk8s.control_plane_ip }}:2379
           - --insecure-port=0
           - --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt
           - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key

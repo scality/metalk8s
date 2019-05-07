@@ -1,16 +1,3 @@
-{%- set control_plane_ip = salt.saltutil.runner(
-    'mine.get',
-    tgt=pillar['bootstrap_id'],
-    fun='control_plane_ip'
-)[pillar['bootstrap_id']] %}
-
-{%- set pillar_data = {
-    'repo': {
-        'host': control_plane_ip
-    },
-    'registry_ip': control_plane_ip
-} %}
-
 {%- set version = pillar.metalk8s.nodes[pillar.node_name].version %}
 
 {%- if pillar['node_name'] not in salt['saltutil.runner']('manage.up') %}
@@ -22,7 +9,6 @@ Deploy salt-minion on a new node:
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.roles.minion
-    - pillar: {{ pillar_data | tojson }}
 
 Accept key:
   module.run:
@@ -58,7 +44,6 @@ Run the highstate:
   salt.state:
     - tgt: {{ pillar['node_name'] }}
     - highstate: True
-    - pillar: {{ pillar_data | tojson }}
     - require:
       - salt: Set grains
       - salt: Refresh the mine
