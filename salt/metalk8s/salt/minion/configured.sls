@@ -15,7 +15,7 @@ Configure salt minion:
     - makedirs: true
     - backup: false
     - defaults:
-      master_hostname: {{ metalk8s.endpoints.get('salt-master', {}).ip }}
+      master_hostname: {{ metalk8s.endpoints['salt-master'].ip }}
       minion_id: {{ grains.id }}
     - watch_in:
       - cmd: Restart salt-minion
