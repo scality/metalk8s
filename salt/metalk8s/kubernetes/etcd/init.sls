@@ -5,6 +5,7 @@
 # ================
 #
 # * installed     -> deploy etcd manifest
+# * healthy       -> check health of etcd node
 #
 include:
   - .installed

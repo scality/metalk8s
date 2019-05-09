@@ -68,6 +68,40 @@ def get_etcd_endpoint():
         )
 
 
+def _execute_etcd_command(pod_name, cmd):
+    if isinstance(cmd, str):
+        cmd = [cmd]
+    try:
+        client = kubernetes.config.new_client_from_config(
+            config_file='/etc/kubernetes/admin.conf'
+        )
+    except:
+        log.exception('failed to load kubeconfig')
+        raise
+
+    api = kubernetes.client.CoreV1Api(api_client=client)
+    etcd_command = [
+        'etcdctl',
+        '--endpoints', 'https://localhost:2379',
+        '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
+        '--key-file', '/etc/kubernetes/pki/etcd/server.key',
+        '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
+    ] + cmd
+    try:
+        err = k8s_stream(
+            api.connect_get_namespaced_pod_exec,
+            name=pod_name, namespace='kube-system',
+            command=etcd_command,
+            stderr=True, stdin=False, stdout=False, tty=False
+        )
+        if err:
+            log.error('etcdctl error: %s', err)
+            raise CommandExecutionError('etcdctl: {}'.format(err))
+    except ApiException as exn:
+        log.exception('failed to run etcdctl')
+        raise exn
+
+
 @depends('KUBERNETES_PRESENT', fallback_function=deps_missing)
 def add_etcd_node(host, endpoint=None):
     '''Add a new `etcd` node into the `etcd` cluster.
@@ -86,36 +120,19 @@ def add_etcd_node(host, endpoint=None):
         endpoint = 'https://{0}:2380'.format(node_ip)
 
     pod_name = 'etcd-{}'.format(__salt__['network.get_hostname']())
-    try:
-        client = kubernetes.config.new_client_from_config(
-            config_file='/etc/kubernetes/admin.conf'
-        )
-    except:
-        log.exception('failed to load kubeconfig')
-        raise
+    _execute_etcd_command(pod_name, ['member', 'add', host, endpoint])
 
-    api = kubernetes.client.CoreV1Api(api_client=client)
-    etcd_command = [
-        'etcdctl',
-        '--endpoints', 'https://localhost:2379',
-        '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
-        '--key-file', '/etc/kubernetes/pki/etcd/server.key',
-        '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
-        'member', 'add', host, endpoint
-    ]
-    try:
-        err = k8s_stream(
-            api.connect_get_namespaced_pod_exec,
-            name=pod_name, namespace='kube-system',
-            command=etcd_command,
-            stderr=True, stdin=False, stdout=False, tty=False
-        )
-        if err:
-            log.error('etcdctl error: %s', err)
-            raise CommandExecutionError('etcdctl: {}'.format(err))
-    except ApiException as exn:
-        log.exception('failed to run etcdctl')
-        raise exn
+
+def check_etcd_health(hostname):
+    '''Check cluster-health of the `etcd` cluster.
+
+    This module is only runnable from the salt-master on the bootstrap node.
+
+    Arguments:
+        hostname (str): hostname of an etcd node
+    '''
+    pod_name = 'etcd-{}'.format(hostname)
+    _execute_etcd_command(pod_name, 'cluster-health')
 
 
 def format_san(names):
