@@ -275,6 +275,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
         destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
         for_containerd=True,
     ),
+
+    Path('salt/metalk8s/addons/metallb.sls'),
 )
 
 

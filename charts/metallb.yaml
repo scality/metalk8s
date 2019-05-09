@@ -1,0 +1,9 @@
+controller:
+  image:
+   repository: "{{ pillar.metalk8s.endpoints.registry.ip }}:{{ pillar.metalk8s.endpoints.registry.ports['registry'] }}"
+
+speaker:
+  image:
+    repository: "{{ pillar.metalk8s.endpoints.registry.ip }}:{{ pillar.metalk8s.endpoints.registry.ports['registry'] }}"
+  nodeSelector:
+    node-role.kubernetes.io/node: ''
