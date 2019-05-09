@@ -4,3 +4,4 @@ include:
   - metalk8s.registry.populated
   - metalk8s.repo.installed
   - metalk8s.salt.master
+  - metalk8s.kubectl
