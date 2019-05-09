@@ -2,7 +2,6 @@
 
 include:
   - metalk8s.internal.m2crypto
-  - metalk8s.salt.minion.running
 
 Create CA private key:
   x509.private_key_managed:
@@ -41,31 +40,3 @@ Advertise CA certificate in the mine:
       - /etc/kubernetes/pki/ca.crt
     - watch:
       - x509: Generate CA certificate
-
-Create CA salt signing_policies:
-  file.serialize:
-    - name: /etc/salt/minion.d/30-metalk8s-ca-signing-policies.conf
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
-    - dir_mode: 755
-    - formatter: yaml
-    - dataset:
-        x509_signing_policies:
-          kube_apiserver_server_policy:
-            - minions: '*'
-            - signing_private_key: /etc/kubernetes/pki/ca.key
-            - signing_cert: /etc/kubernetes/pki/ca.crt
-            - keyUsage: "critical digitalSignature, keyEncipherment"
-            - extendedKeyUsage: "serverAuth"
-            - days_valid: {{ ca.signing_policy.days_valid }}
-          kube_apiserver_client_policy:
-            - minions: '*'
-            - signing_private_key: /etc/kubernetes/pki/ca.key
-            - signing_cert: /etc/kubernetes/pki/ca.crt
-            - keyUsage: "critical digitalSignature, keyEncipherment"
-            - extendedKeyUsage: "clientAuth"
-            - days_valid: {{ ca.signing_policy.days_valid }}
-    - watch_in:
-      - cmd: Restart salt-minion
