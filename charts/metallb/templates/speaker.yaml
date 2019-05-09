@@ -33,7 +33,7 @@ spec:
       hostNetwork: true
       containers:
       - name: speaker
-        image: {{ .Values.speaker.image.repository }}:{{ .Values.speaker.image.tag }}
+        image: "{{ .Values.speaker.image.repository }}:{{ .Values.speaker.image.tag }}"
         imagePullPolicy: {{ .Values.speaker.image.pullPolicy }}
         args:
         - --port=7472
