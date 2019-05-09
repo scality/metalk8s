@@ -130,6 +130,10 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubernetes/cni/calico/deployed.sls'),
     Path('salt/metalk8s/kubernetes/cni/calico/init.sls'),
     Path('salt/metalk8s/kubernetes/cni/calico/installed.sls'),
+    Path('salt/metalk8s/kubernetes/cni/loopback/configured.sls'),
+    Path('salt/metalk8s/kubernetes/cni/loopback/init.sls'),
+    Path('salt/metalk8s/kubernetes/cni/loopback/installed.sls'),
+
 
     Path('salt/metalk8s/kubernetes/controller-manager/init.sls'),
     Path('salt/metalk8s/kubernetes/controller-manager/installed.sls'),
@@ -214,7 +218,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/roles/etcd/init.sls'),
     Path('salt/metalk8s/roles/infra/init.sls'),
     Path('salt/metalk8s/roles/infra/absent.sls'),
-    Path('salt/metalk8s/roles/internal/node-without-cni.sls'),
+    Path('salt/metalk8s/roles/internal/node-without-calico.sls'),
     Path('salt/metalk8s/roles/master/absent.sls'),
     Path('salt/metalk8s/roles/master/init.sls'),
     Path('salt/metalk8s/roles/minion/init.sls'),
