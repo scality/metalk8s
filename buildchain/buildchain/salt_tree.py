@@ -152,6 +152,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubernetes/etcd/certs/peer.sls'),
     Path('salt/metalk8s/kubernetes/etcd/certs/server.sls'),
     Path('salt/metalk8s/kubernetes/etcd/files/manifest.yaml'),
+    Path('salt/metalk8s/kubernetes/etcd/healthy.sls'),
     Path('salt/metalk8s/kubernetes/etcd/init.sls'),
     Path('salt/metalk8s/kubernetes/etcd/installed.sls'),
 
@@ -197,6 +198,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
     Path('salt/metalk8s/orchestrate/deploy_new_node.sls'),
+    Path('salt/metalk8s/orchestrate/upgrade/etcd.sls'),
 
     Path('salt/metalk8s/registry/deployed.sls'),
     Path('salt/metalk8s/registry/files/registry-manifest.yaml.j2'),
