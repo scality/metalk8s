@@ -104,6 +104,9 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/internal/preflight/mandatory.sls'),
     Path('salt/metalk8s/internal/preflight/recommended.sls'),
 
+    Path('salt/metalk8s/kubectl/init.sls'),
+    Path('salt/metalk8s/kubectl/installed.sls'),
+
     Path('salt/metalk8s/kubernetes/apiserver/certs/etcd-client.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/certs/front-proxy-client.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/certs/init.sls'),
