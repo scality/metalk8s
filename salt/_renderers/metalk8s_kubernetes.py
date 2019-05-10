@@ -70,6 +70,72 @@ def _handle_v1_serviceaccount(obj):
     }
 
 
+@handle('v1', 'ConfigMap')
+def _handle_v1_configmap(obj):
+    return {
+        'metalk8s_kubernetes.configmap_present': [
+            {'name': obj['metadata']['name']},
+            {'namespace': obj['metadata']['namespace']},
+            {'data': obj['data']},
+        ],
+    }
+
+
+@handle('apiextensions.k8s.io/v1beta1', 'CustomResourceDefinition')
+def _handle_apiextensions_v1beta1_customresourcedefinition(obj):
+    return {
+        'metalk8s_kubernetes.customresourcedefinition_present': [
+            {'name': obj['metadata']['name']},
+            {'spec': obj['spec']},
+        ],
+    }
+
+
+@handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRole')
+def _handle_rbac_v1beta1_clusterrole(obj):
+    return {
+        'metalk8s_kubernetes.clusterrole_present': [
+            {'name': obj['metadata']['name']},
+            {'rules': obj['rules']},
+        ],
+    }
+
+
+@handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRoleBinding')
+def _handle_rbac_v1beta1_clusterrolebinding(obj):
+    return {
+        'metalk8s_kubernetes.clusterrolebinding_present': [
+            {'name': obj['metadata']['name']},
+            {'role_ref': obj['roleRef']},
+            {'subjects': obj['subjects']},
+        ],
+    }
+
+
+@handle('extensions/v1beta1', 'DaemonSet')
+def _handle_extensions_v1beta1_daemonset(obj):
+    return {
+        'metalk8s_kubernetes.daemonset_present': [
+            {'name': obj['metadata']['name']},
+            {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+        ],
+    }
+
+
+@handle('extensions/v1beta1', 'Deployment')
+def _handle_extensions_v1beta1_deployment(obj):
+    return {
+        'metalk8s_kubernetes.deployment_present': [
+            {'name': obj['metadata']['name']},
+            {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+        ],
+    }
+
+
 del handle
 
 
