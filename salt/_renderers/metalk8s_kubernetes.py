@@ -61,11 +61,92 @@ def handle(api_version, kind):
 
 
 @handle('v1', 'ServiceAccount')
-def _handle_v1_serviceaccount(obj):
+def _handle_v1_serviceaccount(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.serviceaccount_present': [
             {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
             {'namespace': obj['metadata']['namespace']},
+        ],
+    }
+
+
+@handle('v1', 'ConfigMap')
+def _handle_v1_configmap(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.configmap_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+            {'data': obj['data']},
+        ],
+    }
+
+
+@handle('apiextensions.k8s.io/v1beta1', 'CustomResourceDefinition')
+def _handle_apiextensions_v1beta1_customresourcedefinition(
+        obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.customresourcedefinition_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'spec': obj['spec']},
+        ],
+    }
+
+
+@handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRole')
+def _handle_rbac_v1beta1_clusterrole(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.clusterrole_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'rules': obj['rules']},
+        ],
+    }
+
+
+@handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRoleBinding')
+def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.clusterrolebinding_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'role_ref': obj['roleRef']},
+            {'subjects': obj['subjects']},
+        ],
+    }
+
+
+@handle('extensions/v1beta1', 'DaemonSet')
+def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.daemonset_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+        ],
+    }
+
+
+@handle('extensions/v1beta1', 'Deployment')
+def _handle_extensions_v1beta1_deployment(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.deployment_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
         ],
     }
 
@@ -73,7 +154,7 @@ def _handle_v1_serviceaccount(obj):
 del handle
 
 
-def _step(obj):
+def _step(obj, kubeconfig=None, context=None):
     '''
     Handle a single Kubernetes object, rendering it into a state 'step'
     '''
@@ -85,15 +166,24 @@ def _step(obj):
     if not handler:
         raise ValueError('No handler for {}/{}'.format(api_version, kind))
 
-    state = handler(obj)
+    state = handler(obj, kubeconfig=kubeconfig, context=context)
 
     return (name, state)
 
 
 def render(yaml_data, saltenv='', sls='', **kwargs):
+    args = six.moves.urllib.parse.parse_qs(kwargs.get('argline', ''))
+
+    kubeconfig = args.get('kubeconfig', [None])[0]
+    context = args.get('context', [None])[0]
+
     if not isinstance(yaml_data, six.string_types):
         yaml_data = yaml_data.read()
 
     data = yaml.load_all(yaml_data, Loader=salt.utils.yaml.SaltYamlSafeLoader)
 
-    return OrderedDict(_step(obj) for obj in data if obj)
+    return OrderedDict(
+        _step(obj, kubeconfig=kubeconfig, context=context)
+        for obj in data
+        if obj
+    )

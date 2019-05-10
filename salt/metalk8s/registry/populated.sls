@@ -30,7 +30,11 @@
     },
     {
         'name': 'calico-node',
-        'tag': '3.5.1',
+        'tag': '3.7.2',
+    },
+    {
+        'name': 'calico-kube-controllers',
+        'tag': '3.7.2',
     },
     {
         'name': 'nginx',
