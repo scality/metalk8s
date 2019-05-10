@@ -33,7 +33,7 @@ def deps_missing(*args, **kwargs):
     raise CommandExecutionError("Kubernetes python client is not installed")
 
 
-@depends('KUBERNETES_PRESENT', fallback_function=deps_missing)
+@depends(KUBERNETES_PRESENT, fallback_function=deps_missing)
 def wait_apiserver(retry=10, interval=1, **kwargs):
     """Wait for kube-apiserver to respond.
 
@@ -102,7 +102,7 @@ def _execute_etcd_command(pod_name, cmd):
         raise exn
 
 
-@depends('KUBERNETES_PRESENT', fallback_function=deps_missing)
+@depends(KUBERNETES_PRESENT, fallback_function=deps_missing)
 def add_etcd_node(host, endpoint=None):
     '''Add a new `etcd` node into the `etcd` cluster.
 
