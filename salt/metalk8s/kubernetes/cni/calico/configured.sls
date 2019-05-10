@@ -33,7 +33,7 @@ Create CNI calico configuration file:
           - type: "calico"
             log_level: "info"
             datastore_type: "kubernetes"
-            nodename: {{ salt['network.get_hostname']() }}
+            nodename: {{ grains.id }}
             mtu: 1440
             ipam:
               type: "host-local"
