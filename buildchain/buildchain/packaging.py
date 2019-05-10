@@ -142,7 +142,7 @@ BUILDER : targets.LocalImage = targets.LocalImage(
 )
 
 
-CALICO_CNI_PLUGIN_VERSION : str = '3.5.1'
+CALICO_CNI_PLUGIN_VERSION : str = '3.7.2'
 # Packages per repository.
 PACKAGES : Dict[str, Tuple[targets.Package, ...]] = {
     'scality': (
