@@ -82,7 +82,7 @@ def _execute_etcd_command(pod_name, cmd):
     api = kubernetes.client.CoreV1Api(api_client=client)
     etcd_command = [
         'etcdctl',
-        '--endpoints', 'https://localhost:2379',
+        '--endpoints', 'https://127.0.0.1:2379',
         '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
         '--key-file', '/etc/kubernetes/pki/etcd/server.key',
         '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
