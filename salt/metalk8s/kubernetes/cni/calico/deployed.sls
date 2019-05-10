@@ -1,3 +1,13 @@
+#!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+
+{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/map.jinja" import networks with context %}
+
+# What's below is based on the deployment manifest provided by Calico upstream.
+# See a parent commit in which this file is imported as-is.
+# Various changes to the original are made, based on how we deploy Calico (and
+# its CNI plugins etc.) within MetalK8s.
+
 ---
 # Source: calico/templates/calico-config.yaml
 # This ConfigMap is used to configure a self-hosted Calico installation.
@@ -17,34 +27,36 @@ data:
 
   # The CNI network configuration to install on each node.  The special
   # values in this config will be automatically populated.
-  cni_network_config: |-
-    {
-      "name": "k8s-pod-network",
-      "cniVersion": "0.3.0",
-      "plugins": [
-        {
-          "type": "calico",
-          "log_level": "info",
-          "datastore_type": "kubernetes",
-          "nodename": "__KUBERNETES_NODE_NAME__",
-          "mtu": __CNI_MTU__,
-          "ipam": {
-              "type": "calico-ipam"
-          },
-          "policy": {
-              "type": "k8s"
-          },
-          "kubernetes": {
-              "kubeconfig": "__KUBECONFIG_FILEPATH__"
-          }
-        },
-        {
-          "type": "portmap",
-          "snat": true,
-          "capabilities": {"portMappings": true}
-        }
-      ]
-    }
+  # Note: in MetalK8s, this ConfigMap is not used. We deploy the configuration
+  # as part of the Calico state deployed on a node.
+  #cni_network_config: |-
+  #  {
+  #    "name": "k8s-pod-network",
+  #    "cniVersion": "0.3.0",
+  #    "plugins": [
+  #      {
+  #        "type": "calico",
+  #        "log_level": "info",
+  #        "datastore_type": "kubernetes",
+  #        "nodename": "__KUBERNETES_NODE_NAME__",
+  #        "mtu": __CNI_MTU__,
+  #        "ipam": {
+  #            "type": "calico-ipam"
+  #        },
+  #        "policy": {
+  #            "type": "k8s"
+  #        },
+  #        "kubernetes": {
+  #            "kubeconfig": "__KUBECONFIG_FILEPATH__"
+  #        }
+  #      },
+  #      {
+  #        "type": "portmap",
+  #        "snat": true,
+  #        "capabilities": {"portMappings": true}
+  #      }
+  #    ]
+  #  }
 
 ---
 # Source: calico/templates/kdd-crds.yaml
@@ -461,6 +473,11 @@ subjects:
 - kind: ServiceAccount
   name: calico-node
   namespace: kube-system
+# In MetalK8s, we create a kubeconfig file for Calico per node, with a
+# certificate of a user in the `metalk8s:calico-node` 'group'
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: metalk8s:calico-node
 ---
 
 ---
@@ -514,64 +531,65 @@ spec:
         # This container performs upgrade from host-local IPAM to calico-ipam.
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
-        - name: upgrade-ipam
-          image: calico/cni:v3.7.2
-          command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
-          env:
-            - name: KUBERNETES_NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            - name: CALICO_NETWORKING_BACKEND
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: calico_backend
-          volumeMounts:
-            - mountPath: /var/lib/cni/networks
-              name: host-local-net-dir
-            - mountPath: /host/opt/cni/bin
-              name: cni-bin-dir
+        #- name: upgrade-ipam
+        #  image: calico/cni:v3.7.2
+        #  command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
+        #  env:
+        #    - name: KUBERNETES_NODE_NAME
+        #      valueFrom:
+        #        fieldRef:
+        #          fieldPath: spec.nodeName
+        #    - name: CALICO_NETWORKING_BACKEND
+        #      valueFrom:
+        #        configMapKeyRef:
+        #          name: calico-config
+        #          key: calico_backend
+        #  volumeMounts:
+        #    - mountPath: /var/lib/cni/networks
+        #      name: host-local-net-dir
+        #    - mountPath: /host/opt/cni/bin
+        #      name: cni-bin-dir
         # This container installs the CNI binaries
         # and CNI network config file on each node.
-        - name: install-cni
-          image: calico/cni:v3.7.2
-          command: ["/install-cni.sh"]
-          env:
-            # Name of the CNI config file to create.
-            - name: CNI_CONF_NAME
-              value: "10-calico.conflist"
-            # The CNI network config to install on each node.
-            - name: CNI_NETWORK_CONFIG
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: cni_network_config
-            # Set the hostname based on the k8s node name.
-            - name: KUBERNETES_NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            # CNI MTU Config variable
-            - name: CNI_MTU
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: veth_mtu
-            # Prevents the container from sleeping forever.
-            - name: SLEEP
-              value: "false"
-          volumeMounts:
-            - mountPath: /host/opt/cni/bin
-              name: cni-bin-dir
-            - mountPath: /host/etc/cni/net.d
-              name: cni-net-dir
+        # Note: In MetalK8s, we handle this in the Calico state
+        #- name: install-cni
+        #  image: calico/cni:v3.7.2
+        #  command: ["/install-cni.sh"]
+        #  env:
+        #    # Name of the CNI config file to create.
+        #    - name: CNI_CONF_NAME
+        #      value: "10-calico.conflist"
+        #    # The CNI network config to install on each node.
+        #    - name: CNI_NETWORK_CONFIG
+        #      valueFrom:
+        #        configMapKeyRef:
+        #          name: calico-config
+        #          key: cni_network_config
+        #    # Set the hostname based on the k8s node name.
+        #    - name: KUBERNETES_NODE_NAME
+        #      valueFrom:
+        #        fieldRef:
+        #          fieldPath: spec.nodeName
+        #    # CNI MTU Config variable
+        #    - name: CNI_MTU
+        #      valueFrom:
+        #        configMapKeyRef:
+        #          name: calico-config
+        #          key: veth_mtu
+        #    # Prevents the container from sleeping forever.
+        #    - name: SLEEP
+        #      value: "false"
+        #  volumeMounts:
+        #    - mountPath: /host/opt/cni/bin
+        #      name: cni-bin-dir
+        #    - mountPath: /host/etc/cni/net.d
+        #      name: cni-net-dir
       containers:
         # Runs calico-node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v3.7.2
+          image: {{ build_image_name('calico-node', '3.7.2') }}
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -596,9 +614,11 @@ spec:
             # Auto-detect the BGP IP address.
             - name: IP
               value: "autodetect"
+            - name: IP_AUTODETECTION_METHOD
+              value: can-reach={{ networks.workload_plane.split('/')[0] }}
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
-              value: "Always"
+              value: "CrossSubnet"
             # Set MTU for tunnel device used if ipip is enabled
             - name: FELIX_IPINIPMTU
               valueFrom:
@@ -609,7 +629,7 @@ spec:
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
             - name: CALICO_IPV4POOL_CIDR
-              value: "192.168.0.0/16"
+              value: "{{ networks.pod }}"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -676,9 +696,10 @@ spec:
         - name: cni-bin-dir
           hostPath:
             path: /opt/cni/bin
-        - name: cni-net-dir
-          hostPath:
-            path: /etc/cni/net.d
+        # Note: Not used in MetalK8s
+        #- name: cni-net-dir
+        #  hostPath:
+        #    path: /etc/cni/net.d
         # Mount in the directory for host-local IPAM allocations. This is
         # used when upgrading from host-local to calico-ipam, and can be removed
         # if not using the upgrade-ipam init container.
@@ -725,10 +746,14 @@ spec:
           operator: Exists
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
+        - key: node-role.kubernetes.io/bootstrap
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/infra
+          effect: NoSchedule
       serviceAccountName: calico-kube-controllers
       containers:
         - name: calico-kube-controllers
-          image: calico/kube-controllers:v3.7.2
+          image: {{ build_image_name('calico-kube-controllers', '3.7.2') }}
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS

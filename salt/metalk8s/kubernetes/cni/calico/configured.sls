@@ -36,8 +36,7 @@ Create CNI calico configuration file:
             nodename: {{ grains.id }}
             mtu: 1440
             ipam:
-              type: "host-local"
-              subnet: "usePodCidr"
+              type: "calico-ipam"
             policy:
               type: "k8s"
             kubernetes:
