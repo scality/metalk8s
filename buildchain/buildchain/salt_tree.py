@@ -133,6 +133,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubernetes/cni/calico/deployed.sls'),
     Path('salt/metalk8s/kubernetes/cni/calico/init.sls'),
     Path('salt/metalk8s/kubernetes/cni/calico/installed.sls'),
+    Path('salt/metalk8s/kubernetes/cni/calico/upgraded.sls'),
     Path('salt/metalk8s/kubernetes/cni/loopback/configured.sls'),
     Path('salt/metalk8s/kubernetes/cni/loopback/init.sls'),
     Path('salt/metalk8s/kubernetes/cni/loopback/installed.sls'),
