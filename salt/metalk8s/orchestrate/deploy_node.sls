@@ -86,7 +86,7 @@ Kill kube-controller-manager on all master nodes:
 
 Register the node into etcd cluster:
   module.run:
-    - metalk8s.add_etcd_node:
+    - metalk8s_etcd.add_etcd_node:
       - host: {{ node_name }}
     - require:
       - salt: Run the highstate

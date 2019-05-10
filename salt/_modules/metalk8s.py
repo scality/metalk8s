@@ -102,27 +102,6 @@ def _execute_etcd_command(pod_name, cmd):
         raise exn
 
 
-@depends(KUBERNETES_PRESENT, fallback_function=deps_missing)
-def add_etcd_node(host, endpoint=None):
-    '''Add a new `etcd` node into the `etcd` cluster.
-
-    This module is only runnable from the salt-master on the bootstrap node.
-
-    Arguments:
-        host (str): hostname of the new etcd node
-        endpoint (str): endpoint of the new etcd node
-    '''
-    if not endpoint:
-        # If we have no endpoint get it from mine
-        node_ip = __salt__['saltutil.runner'](
-            'mine.get', tgt=host, fun='control_plane_ip'
-        )[host]
-        endpoint = 'https://{0}:2380'.format(node_ip)
-
-    pod_name = 'etcd-{}'.format(__salt__['network.get_hostname']())
-    _execute_etcd_command(pod_name, ['member', 'add', host, endpoint])
-
-
 def check_etcd_health(hostname):
     '''Check cluster-health of the `etcd` cluster.
 
