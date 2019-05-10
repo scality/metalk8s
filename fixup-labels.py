@@ -31,9 +31,16 @@ def fixup_doc(doc):
         return doc
 
 
+def fixup_metadata(doc):
+    if 'metadata' in doc and 'namespace' not in doc['metadata']:
+        doc['metadata']['namespace'] = 'metalk8s'
+
+    return doc
+
+
 def main(fd_in, fd_out):
     yaml.safe_dump_all(
-        (fixup_doc(doc) for doc in yaml.safe_load_all(fd_in) if doc),
+        (fixup_metadata(fixup_doc(doc)) for doc in yaml.safe_load_all(fd_in) if doc),
         fd_out,
     )
 

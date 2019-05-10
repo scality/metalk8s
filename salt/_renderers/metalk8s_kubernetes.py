@@ -99,6 +99,7 @@ def _handle_apiextensions_v1beta1_customresourcedefinition(
 
 
 @handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRole')
+@handle('rbac.authorization.k8s.io/v1', 'ClusterRole')
 def _handle_rbac_v1beta1_clusterrole(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.clusterrole_present': [
@@ -110,7 +111,21 @@ def _handle_rbac_v1beta1_clusterrole(obj, kubeconfig, context):
     }
 
 
+@handle('rbac.authorization.k8s.io/v1', 'Role')
+def _handle_rbac_v1beta1_role(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.role_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+            {'rules': obj['rules']},
+        ],
+    }
+
+
 @handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRoleBinding')
+@handle('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding')
 def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.clusterrolebinding_present': [
@@ -123,7 +138,24 @@ def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context):
     }
 
 
+@handle('rbac.authorization.k8s.io/v1', 'RoleBinding')
+def _handle_rbac_v1_role(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.rolebinding_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+            {'role_ref': obj['roleRef']},
+            {'subjects': obj['subjects']},
+        ],
+    }
+
+
+
+
 @handle('extensions/v1beta1', 'DaemonSet')
+@handle('apps/v1beta2', 'DaemonSet')
 def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.daemonset_present': [
@@ -138,9 +170,24 @@ def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
 
 
 @handle('extensions/v1beta1', 'Deployment')
+@handle('apps/v1beta2', 'Deployment')
 def _handle_extensions_v1beta1_deployment(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.deployment_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+        ],
+    }
+
+
+@handle('extensions/v1beta1', 'PodSecurityPolicy')
+def _handle_extensions_v1beta1_podsecuritypolicy(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.podsecuritypolicy_present': [
             {'name': obj['metadata']['name']},
             {'kubeconfig': kubeconfig},
             {'context': context},

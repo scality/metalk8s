@@ -1507,6 +1507,69 @@ def customresourcedefinition_present(
     return ret
 
 
+def podsecuritypolicy_present(
+        name,
+        namespace='default',
+        metadata=None,
+        spec=None,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    if metadata is None:
+        metatata = {}
+
+    if spec is None:
+        spec = {}
+
+    podsecuritypolicy = __salt__[
+        'metalk8s_kubernetes.show_podsecuritypolicy'](name, namespace, **kwargs)
+
+    if podsecuritypolicy is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The podsecuritypolicy is going to be created'
+            return ret
+
+        res = __salt__['metalk8s_kubernetes.create_podsecuritypolicy'](
+            name=name,
+            namespace=namespace,
+            metadata=metadata,
+            spec=spec,
+            **kwargs)
+        ret['result'] = True
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The podsecuritypolicy is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the podsecuritypolicy')
+        ret['comment'] = 'The podsecuritypolicy is already present. Forcing recreation'
+        res = __salt__['metalk8s_kubernetes.replace_podsecuritypolicy'](
+            name=name,
+            namespace=namespace,
+            metadata=metadata,
+            spec=spec,
+            **kwargs)
+
+        ret['changes'][name] = {
+            'metadata': metadata,
+            'spec': spec,
+        }
+        ret['result'] = True
+
+    return ret
+
+
+
+
 def _node_unschedulable(name, value, **kwargs):
     ret = {'name': name,
            'changes': {},
