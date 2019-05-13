@@ -2373,3 +2373,85 @@ def node_uncordon(node_name, **kwargs):
         salt '*' kubernetes.node_uncordon  node_name="minikube"
     '''
     return node_set_unschedulable(node_name, False, **kwargs)
+
+
+def show_podsecuritypolicy(name, **kwargs):
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.read_pod_security_policy(name)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->read_pod_security_policy'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_podsecuritypolicy(
+        name,
+        rules,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1ClusterRole(
+        metadata=meta_obj,
+        rules=rules)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.create_cluster_role(
+            body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->create_cluster_role'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_clusterrole(
+        name,
+        rules,
+        **kwargs):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1ClusterRole(
+        metadata=meta_obj,
+        rules=rules)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.replace_cluster_role(name, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->replace_cluster_role'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+

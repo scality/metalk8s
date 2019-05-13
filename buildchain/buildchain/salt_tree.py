@@ -276,7 +276,9 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
         for_containerd=True,
     ),
 
-    Path('salt/metalk8s/addons/metallb.sls'),
+    Path('salt/metalk8s/addons/namespace.sls'),
+    Path('salt/metalk8s/addons/metallb/chart.sls'),
+    Path('salt/metalk8s/addons/metallb/init.sls'),
 )
 
 
