@@ -1,11 +1,15 @@
-{%- set version = pillar.metalk8s.nodes[pillar.node_name].version %}
+{%- set node_name = pillar.orchestrate.node_name %}
+{%- set version = pillar.metalk8s.nodes[node_name].version %}
 
-{%- if pillar['node_name'] not in salt['saltutil.runner']('manage.up') %}
+{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
+{%- set context = "kubernetes-admin@kubernetes" %}
+
+{%- if node_name not in salt.saltutil.runner('manage.up') %}
 Deploy salt-minion on a new node:
   salt.state:
     - ssh: true
     - roster: kubernetes
-    - tgt: {{ pillar['node_name'] }}
+    - tgt: {{ node_name }}
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.roles.minion
@@ -14,23 +18,25 @@ Accept key:
   module.run:
     - saltutil.wheel:
       - key.accept
-      - {{ pillar['node_name'] }}
+      - {{ node_name }}
     - require:
       - salt: Deploy salt-minion on a new node
 
 Wait minion available:
   salt.runner:
     - name: metalk8s_saltutil.wait_minions
-    - tgt: {{ pillar['node_name'] }}
+    - tgt: {{ node_name }}
     - require:
       - module: Accept key
     - require_in:
       - salt: Set grains
+      - salt: Refresh the mine
+      - salt: Cordon the node
 {%- endif %}
 
 Set grains:
   salt.state:
-    - tgt: {{ pillar['node_name'] }}
+    - tgt: {{ node_name }}
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.node.grains
@@ -40,31 +46,48 @@ Refresh the mine:
     - name: mine.update
     - tgt: '*'
 
+Cordon the node:
+  metalk8s_kubernetes.node_cordoned:
+    - name: {{ node_name }}
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+
+# TODO: Call drain
+
 Run the highstate:
   salt.state:
-    - tgt: {{ pillar['node_name'] }}
+    - tgt: {{ node_name }}
     - highstate: True
     - require:
       - salt: Set grains
       - salt: Refresh the mine
+      - metalk8s_kubernetes: Cordon the node
+
+Uncordon the node:
+  metalk8s_kubernetes.node_uncordoned:
+    - name: {{ node_name }}
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - require:
+      - salt: Run the highstate
 
 # Work-around for https://github.com/scality/metalk8s/pull/1028
 Kill kube-controller-manager on all master nodes:
   salt.function:
     - name: ps.pkill
-    - tgt: "{{ salt['metalk8s.minions_by_role']('master') | join(',') }}"
+    - tgt: "{{ salt.metalk8s.minions_by_role('master') | join(',') }}"
     - tgt_type: list
     - kwarg:
         pattern: kube-controller-manager
     - require:
       - salt: Run the highstate
 
-{%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(pillar['node_name'], {}).get('roles', []) %}
+{%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
 
 Register the node into etcd cluster:
   module.run:
     - metalk8s.add_etcd_node:
-      - host: {{ pillar['node_name'] }}
+      - host: {{ node_name }}
     - require:
       - salt: Run the highstate
 
