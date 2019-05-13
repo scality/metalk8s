@@ -129,11 +129,10 @@ export async function deployNode(url, token, node) {
       {
         client: 'runner',
         fun: 'state.orchestrate',
-        arg: ['metalk8s.orchestrate.deploy_new_node'],
+        arg: ['metalk8s.orchestrate.deploy_node'],
         kwarg: {
           saltenv: 'metalk8s-2.0',
-          // FIXME We need to remove the hardcoded the boostrap id.
-          pillar: { bootstrap_id: 'bootstrap', node_name: node }
+          pillar: { orchestrate: { node_name: node }}
         }
       },
       {
