@@ -33,7 +33,6 @@ Install and start salt master manifest:
         salt_ip: "{{ salt_ip }}"
     - require:
       - file: Create salt master directories
-    - onchanges:
       - file: /etc/salt/master.d/99-metalk8s.conf
       - file: /etc/salt/master.d/99-metalk8s-roots.conf
 

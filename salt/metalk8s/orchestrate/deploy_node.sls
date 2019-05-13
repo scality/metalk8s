@@ -47,7 +47,7 @@ Refresh the mine:
     - tgt: '*'
 
 Cordon the node:
-  metalk8s_kubernetes.node_cordoned:
+  metalk8s_cordon.node_cordoned:
     - name: {{ node_name }}
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
@@ -60,6 +60,8 @@ Drain the node:
     - force: True
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
+    - require:
+      - metalk8s_cordon: Cordon the node
 
 Run the highstate:
   salt.state:
@@ -68,10 +70,10 @@ Run the highstate:
     - require:
       - salt: Set grains
       - salt: Refresh the mine
-      - metalk8s_kubernetes: Cordon the node
+      - metalk8s_drain: Drain the node
 
 Uncordon the node:
-  metalk8s_kubernetes.node_uncordoned:
+  metalk8s_cordon.node_uncordoned:
     - name: {{ node_name }}
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}

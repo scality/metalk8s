@@ -12,4 +12,4 @@ Waiting for etcd running:
     - status: 200
     - match: '{"health": "true"}'
     - require:
-      - file: Create local etcd Pod manifest
+      - metalk8s: Create local etcd Pod manifest
