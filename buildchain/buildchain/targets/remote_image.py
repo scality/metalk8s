@@ -14,12 +14,11 @@ import operator
 from pathlib import Path
 from typing import Any, Optional, List
 
-from buildchain import coreutils
-from buildchain import types
-from buildchain import utils
 from buildchain import docker_command
+from buildchain import config
+from buildchain import types
 
-from . import image
+from . import base, image
 
 
 class RemoteImage(image.ContainerImage):
@@ -33,7 +32,6 @@ class RemoteImage(image.ContainerImage):
         digest: str,
         destination: Path,
         remote_name: Optional[str]=None,
-        for_containerd: bool=False,
         **kwargs: Any
     ):
         """Initialize a remote container image.
@@ -45,10 +43,9 @@ class RemoteImage(image.ContainerImage):
             digest:         image digest
             destination:    save location for the image
             remote_name:    image name in the registry
-            for_containerd: image will be loaded in containerd
 
         Keyword Arguments:
-            They are passed to `FileTarget` init method.
+            They are passed to `Target` init method.
         """
         self._registry = registry
         self._digest = digest
@@ -56,7 +53,6 @@ class RemoteImage(image.ContainerImage):
         super().__init__(
             name=name, version=version,
             destination=destination,
-            for_containerd=for_containerd,
             **kwargs
         )
 
@@ -77,54 +73,94 @@ class RemoteImage(image.ContainerImage):
     def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
-            'title': self._show,
+            'title': lambda _: self.show('PULL IMG'),
             'doc': 'Download {} container image.'.format(self.name),
+            'targets': [self.dirname/'manifest.json'],
             'actions': self._build_actions(),
             'uptodate': [True],
+            'clean': [self.clean],
         })
         return task
 
-    @staticmethod
-    def _show(task: types.Task) -> str:
-        """Return a description of the task."""
-        return utils.title_with_target1('IMG PULL', task)
-
     def _build_actions(self) -> List[types.Action]:
-        """Compute actions for the image — pull, tag, save."""
-        filepath = self.uncompressed_filename
-        pull_callable = docker_command.DockerPull(
-            repository=self.repository, digest=self.digest
-        )
-        # The local repository is the image 'tag' without version
-        local_repository = self.tag[:self.tag.rfind(':')]
-        tag_callable = docker_command.DockerTag(
-            repository=local_repository,
-            full_name=self.fullname,
-            version=self.version
-        )
-        save_callable = docker_command.DockerSave(
-            tag=self.tag, save_path=filepath
-        )
-
-        actions : List[types.Action] = [
-            pull_callable,
-            tag_callable,
-            save_callable
+        return [
+            self.mkdirs,
+            [
+                config.SKOPEO, 'copy',
+                '--format', 'v2s2',
+                '--dest-compress',
+                'docker://{}'.format(self.fullname),
+                'dir:{}'.format(str(self.dirname))
+            ]
         ]
-        # containerd doesn't support compressed images.
-        if not self.for_containerd:
-            actions.append((coreutils.gzip, [filepath], {}))
-        return actions
+
+
+class RemoteTarImage(base.FileTarget):
+    """A remote container image to download, saved as a tar archive.
+
+    The image is saved as a single tar archive, not compressed and with a tag
+    usable by containerd.
+    """
+
+    def __init__(
+        self,
+        registry: str,
+        name: str,
+        version: str,
+        digest: str,
+        destination: Path,
+        remote_name: Optional[str]=None,
+        **kwargs: Any
+    ):
+        """Initialize the container image.
+
+            Arguments:
+                They are passed to `RemoteImage` init methods.
+
+            Keyword Arguments:
+                They are passed to `RemoteImage` and `FileTarget` init methods.
+        """
+        self._image = RemoteImage(
+            registry, name, version, digest, destination, remote_name, **kwargs
+        )
+        super().__init__(destination=self.filepath, **kwargs)
 
     @property
     def repository(self) -> str:
         """Image repository."""
-        return '{obj.registry}/{obj._remote_name}'.format(obj=self)
+        return '{obj.registry}/{obj._remote_name}'.format(obj=self._image)
 
     @property
-    def tag(self) -> str:
-        """Image tag."""
-        if self.for_containerd:
-            # containerd expects this tag format.
-            return '{img.registry}/{img.name}:{img.version}'.format(img=self)
-        return super().tag
+    def filepath(self) -> Path:
+        """Name of the image on disk."""
+        return self._image.dest_dir/'{obj.name}-{obj.version}{ext}'.format(
+            obj=self._image, ext='.tar'
+        )
+
+    @property
+    def task(self) -> types.TaskDict:
+        basic_task = self.basic_task
+        task = self._image.task
+        task.update({
+            'actions': self._build_actions(),
+            'targets': basic_task['targets'],
+            'clean':   basic_task['clean'],
+        })
+        return task
+
+    def _build_actions(self) -> List[types.Action]:
+        """Compute actions for the image — pull, tag, save."""
+        tag = '{img.registry}/{img.name}:{img.version}'.format(img=self._image)
+        docker_pull = docker_command.DockerPull(
+            repository=self.repository, digest=self._image.digest
+        )
+        docker_tag = docker_command.DockerTag(
+            # The local repository is the image 'tag' without version
+            repository=tag[:tag.rfind(':')],
+            full_name=self._image.fullname,
+            version=self._image.version
+        )
+        docker_save = docker_command.DockerSave(
+            tag=tag, save_path=self.filepath
+        )
+        return [docker_pull, docker_tag, docker_save]

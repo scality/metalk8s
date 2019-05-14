@@ -244,7 +244,6 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         version='2.7.1',
         digest='sha256:870474507964d8e7d8c3b53bcfa738e3356d2747a42adad26d0d81ef4479eb1b',
         destination=ISO_IMAGE_ROOT,
-        for_containerd=True,
         task_dep=['_image_mkdir_root'],
     ),
 )

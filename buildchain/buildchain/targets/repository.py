@@ -179,10 +179,11 @@ class Repository(base.Target, base.CompositeTarget):
                 # Prevent Docker from polluting our output.
                 'verbosity': 0,
             })
-            task['file_dep'].extend([pkg.srpm, self.builder.destination])
+            task['file_dep'].append(pkg.srpm)
             task['task_dep'].append('{base}:{name}'.format(
                 base=self.basename, name=MKDIR_ARCH_TASK_NAME,
             ))
+            task['task_dep'].append('_build_container')
             tasks.append(task)
         return tasks
 

@@ -30,6 +30,7 @@ rpmspec
 repo
 rpmlint
 scality
+skopeo
 sls
 timestamp
 tmp

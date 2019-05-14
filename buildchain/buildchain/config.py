@@ -50,6 +50,7 @@ VAGRANT_UP_ARGS : Tuple[str, ...] = tuple(shlex.split(
 DOCKER  : str = os.getenv('DOCKER_BIN',  'docker')
 GIT     : str = os.getenv('GIT_BIN',     'git')
 MKISOFS : str = os.getenv('MKISOFS_BIN', 'mkisofs')
+SKOPEO  : str = os.getenv('SKOPEO_BIN',  'skopeo')
 VAGRANT : str = os.getenv('VAGRANT_BIN', 'vagrant')
 
 # }}}

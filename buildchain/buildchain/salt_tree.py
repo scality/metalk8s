@@ -280,14 +280,13 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
 
-    targets.RemoteImage(
+    targets.RemoteTarImage(
         registry=constants.GOOGLE_REGISTRY,
         name='pause',
         version='3.1',
         # pylint:disable=line-too-long
         digest='sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea',
         destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
-        for_containerd=True,
     ),
 )
 

@@ -12,6 +12,6 @@ from buildchain.targets.directory import Mkdir
 from buildchain.targets.file_tree import FileTree
 from buildchain.targets.local_image import LocalImage
 from buildchain.targets.package import Package
-from buildchain.targets.remote_image import RemoteImage
+from buildchain.targets.remote_image import RemoteImage, RemoteTarImage
 from buildchain.targets.repository import Repository
 from buildchain.targets.template import TemplateFile

@@ -47,6 +47,7 @@ Available options are:
 - `DOCKER_BIN`: Docker binary (name or path to the binary)
 - `GIT_BIN`: Git binary (name or path to the binary)
 - `MKISOFS_BIN`: mkisofs binary (name or path to the binary)
+- `SKOPEO_BIN`: skopeo binary (name or path to the binary)
 - `VAGRANT_BIN`: Vagrant binary (name or path to the binary)
 
 Default settings are equivalent to the following `.env`:
@@ -59,6 +60,7 @@ export VAGRANT_UP_ARGS="--provision  --no-destroy-on-error --parallel --provider
 export DOCKER_BIN=docker
 export GIT_BIN=git
 export MKISOFS_BIN=mkisofs
+export SKOPEO_BIN=skopeo
 export VAGRANT_BIN=vagrant
 ```
 
