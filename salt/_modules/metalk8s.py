@@ -9,17 +9,6 @@ import time
 from salt.exceptions import CommandExecutionError
 from salt.utils.decorators import depends
 
-KUBERNETES_PRESENT = False
-try:
-    import kubernetes.client
-    import kubernetes.config
-    from kubernetes.client.rest import ApiException
-    from kubernetes.stream import stream as k8s_stream
-    KUBERNETES_PRESENT = True
-except ImportError:
-    pass
-
-
 log = logging.getLogger(__name__)
 
 __virtualname__ = 'metalk8s'
@@ -29,11 +18,6 @@ def __virtual__():
     return __virtualname__
 
 
-def deps_missing(*args, **kwargs):
-    raise CommandExecutionError("Kubernetes python client is not installed")
-
-
-@depends(KUBERNETES_PRESENT, fallback_function=deps_missing)
 def wait_apiserver(retry=10, interval=1, **kwargs):
     """Wait for kube-apiserver to respond.
 
@@ -66,52 +50,6 @@ def get_etcd_endpoint():
         return '{host}=https://{ip}:{port}'.format(
             host=hostname, ip=ips[0], port=DEFAULT_ETCD_PORT
         )
-
-
-def _execute_etcd_command(pod_name, cmd):
-    if isinstance(cmd, str):
-        cmd = [cmd]
-    try:
-        client = kubernetes.config.new_client_from_config(
-            config_file='/etc/kubernetes/admin.conf'
-        )
-    except:
-        log.exception('failed to load kubeconfig')
-        raise
-
-    api = kubernetes.client.CoreV1Api(api_client=client)
-    etcd_command = [
-        'etcdctl',
-        '--endpoints', 'https://127.0.0.1:2379',
-        '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
-        '--key-file', '/etc/kubernetes/pki/etcd/server.key',
-        '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
-    ] + cmd
-    try:
-        err = k8s_stream(
-            api.connect_get_namespaced_pod_exec,
-            name=pod_name, namespace='kube-system',
-            command=etcd_command,
-            stderr=True, stdin=False, stdout=False, tty=False
-        )
-        if err:
-            log.error('etcdctl error: %s', err)
-            raise CommandExecutionError('etcdctl: {}'.format(err))
-    except ApiException as exn:
-        log.exception('failed to run etcdctl')
-        raise exn
-
-
-def check_etcd_health(hostname):
-    '''Check cluster-health of the `etcd` cluster.
-
-    This module is only runnable from the salt-master on the bootstrap node.
-
-    Arguments:
-        hostname (str): hostname of an etcd node
-    '''
-    pod_name = 'etcd-{}'.format(hostname)
-    _execute_etcd_command(pod_name, 'cluster-health')
 
 
 def format_san(names):

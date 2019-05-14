@@ -3,7 +3,7 @@
 
 Check etcd cluster health:
   module.run:
-    - metalk8s.check_etcd_health:
+    - metalk8s_etcd.check_etcd_health:
       - hostname: {{ pillar.bootstrap_id }}
 
 {%- for node in etcd_nodes | sort %}
@@ -29,7 +29,7 @@ Upgrade etcd {{ node }} to {{ dest_version }}:
 
 Check etcd cluster health for {{ node }}:
   module.run:
-    - metalk8s.check_etcd_health:
+    - metalk8s_etcd.check_etcd_health:
       - hostname: {{ node }}
     # FIXME: Can't retry because of https://github.com/saltstack/salt/issues/44639
     # Should be ok for the moment as we check health in etcd.health state.
