@@ -104,7 +104,7 @@ def set_up_static_pod(host, hostname, k8s_client, transient_files):
 
     utils.retry(
         kube_utils.wait_for_pod(k8s_client, fullname),
-        times=3,
+        times=10,
         wait=5,
         name="wait for Pod '{}'".format(fullname),
     )
@@ -139,7 +139,7 @@ def check_static_pod_changed(host, hostname, k8s_client, static_pod_id):
     fullname = "{}-{}".format(DEFAULT_POD_NAME, hostname)
     utils.retry(
         kube_utils.wait_for_pod(k8s_client, fullname),
-        times=3,
+        times=10,
         wait=5,
         name="wait for Pod '{}'".format(fullname),
     )

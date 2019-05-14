@@ -33,6 +33,7 @@ def busybox_pod(kubeconfig):
             k8s_client, name="busybox", namespace="default", state="Running"
         ),
         times=10,
+        wait=5,
         name="wait for Pod 'busybox'",
     )
 
