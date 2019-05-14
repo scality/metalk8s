@@ -1,4 +1,4 @@
-@ci @local @post
+@ci @local @post @salt
 Feature: Static Pods management
     Scenario: Static Pods restart on configuration change
         Given the Kubernetes API is available

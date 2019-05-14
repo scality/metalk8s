@@ -1,4 +1,4 @@
-@post @ci @local
+@post @ci @local @slow
 Feature: Bootstrap
     Scenario: Re-run bootstrap
         Given the Kubernetes API is available
