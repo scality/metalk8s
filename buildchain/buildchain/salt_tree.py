@@ -200,6 +200,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
     Path('salt/metalk8s/orchestrate/deploy_node.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/etcd.sls'),
+    Path('salt/metalk8s/orchestrate/register_etcd.sls'),
 
     Path('salt/metalk8s/registry/deployed.sls'),
     Path('salt/metalk8s/registry/files/registry-manifest.yaml.j2'),
@@ -268,6 +269,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_states/containerd.py'),
     Path('salt/_states/kubeconfig.py'),
     Path('salt/_states/docker_registry.py'),
+    Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
 
     targets.RemoteImage(

@@ -93,6 +93,33 @@ def add_etcd_node(
     return node
 
 
+def urls_exist_in_cluster(
+        peer_urls,
+        endpoint=None,
+        ca_cert='/etc/kubernetes/pki/etcd/ca.crt',
+        cert_key='/etc/kubernetes/pki/etcd/salt-master-etcd-client.key',
+        cert_cert='/etc/kubernetes/pki/etcd/salt-master-etcd-client.crt'):
+    '''Verify if peer_urls exists in cluster.'''
+    if not endpoint:
+        # If we have no endpoint get it from mine
+        endpoint = _get_endpoint_up(
+            ca_cert=ca_cert,
+            cert_key=cert_key,
+            cert_cert=cert_cert
+        )
+
+    with etcd3.client(host=endpoint,
+                      ca_cert=ca_cert,
+                      cert_key=cert_key,
+                      cert_cert=cert_cert,
+                      timeout=TIMEOUT) as etcd:
+        all_urls = []
+        for member in etcd.members:
+            all_urls.extend(member.peer_urls)
+
+    return set(peer_urls).issubset(all_urls)
+
+
 def check_etcd_health(
         minion_id,
         ca_cert='/etc/kubernetes/pki/etcd/ca.crt',
