@@ -98,6 +98,7 @@ def _handle_apiextensions_v1beta1_customresourcedefinition(
     }
 
 
+@handle('rbac.authorization.k8s.io/v1', 'ClusterRole')
 @handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRole')
 def _handle_rbac_v1beta1_clusterrole(obj, kubeconfig, context):
     return {
@@ -110,6 +111,7 @@ def _handle_rbac_v1beta1_clusterrole(obj, kubeconfig, context):
     }
 
 
+@handle('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding')
 @handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRoleBinding')
 def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context):
     return {
@@ -137,6 +139,7 @@ def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
     }
 
 
+@handle('apps/v1beta2', 'Deployment')
 @handle('extensions/v1beta1', 'Deployment')
 def _handle_extensions_v1beta1_deployment(obj, kubeconfig, context):
     return {
