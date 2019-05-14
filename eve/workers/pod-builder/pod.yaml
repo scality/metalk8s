@@ -23,12 +23,12 @@ spec:
           memory: 1Gi
       env:
         - name: DOCKER_HOST
-          value: localhost
+          value: localhost:2375
       volumeMounts:
         - name: worker-workspace
           mountPath: /home/eve/workspace
     - name: platform-dind-daemon
-      image: docker:18.09.2-dind
+      image: docker:18.09.6-dind
       resources:
         requests:
           cpu: "3"
