@@ -1,6 +1,5 @@
 # coding: utf-8
 
-
 """Tasks to put container images on the ISO.
 
 This module provides two services:
@@ -13,18 +12,18 @@ ISO's root.
 Overview:
 
                                   ┌───────────┐
-                            ╱────>│pull:image1│
-                 ┌────────┐╱      └───────────┘
-                 │        │       ┌───────────┐
-             ───>│  pull  │──────>│pull:image2│
-            ╱    │        │       └───────────┘
-┌─────────┐╱     └────────┘╲      ┌───────────┐
-│         │                 ╲────>│pull:image3│
-│  mkdir  │                       └───────────┘
-│         │
-└─────────┘╲     ┌────────┐
-            ╲    │        │       ┌────────────┐
-             ───>│  build │──────>│build:image3│
+                            ╱────>│pull:image1│───────     ┌─────────┐
+                 ┌────────┐╱      └───────────┘       ╲    │         │
+                 │        │       ┌───────────┐        ╲   │  dedup  │
+             ───>│  pull  │──────>│pull:image2│───────────>│  layers │
+            ╱    │        │       └───────────┘        ╱   │         │
+┌─────────┐╱     └────────┘╲      ┌───────────┐       ╱    └─────────┘
+│         │                 ╲────>│pull:image3│───────      ╱
+│  mkdir  │                       └───────────┘            ╱
+│         │                                               ╱
+└─────────┘╲     ┌────────┐                              ╱
+            ╲    │        │       ┌────────────┐        ╱
+             ───>│  build │──────>│build:image3│───────╱
                  │        │       └────────────┘
                  └────────┘
 """
@@ -34,6 +33,7 @@ import datetime
 from pathlib import Path
 from typing import Iterator, Tuple
 
+from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
 from buildchain import targets
@@ -53,6 +53,7 @@ def task_images() -> types.TaskDict:
             '_image_mkdir_root',
             '_image_pull',
             '_image_build',
+            '_image_dedup_layers',
         ],
     }
 
@@ -74,6 +75,20 @@ def task__image_build() -> Iterator[types.TaskDict]:
     """Download the container images."""
     for image in TO_BUILD:
         yield image.task
+
+
+def task__image_dedup_layers() -> types.TaskDict:
+    """De-duplicate the images' layers with hard links."""
+    def show() -> str:
+        return '{cmd: <{width}} {path}'.format(
+            cmd='HARDLINK', width=constants.CMD_WIDTH,
+            path=utils.build_relpath(ISO_IMAGE_ROOT)
+        )
+
+    task = targets.Target(task_dep=['_image_pull', '_image_build']).basic_task
+    task['title']   = lambda _: show()
+    task['actions'] = [[config.HARDLINK, '-c', ISO_IMAGE_ROOT]]
+    return task
 
 
 NGINX_IMAGE_VERSION : str = '1.15.8'

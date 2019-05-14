@@ -13,6 +13,7 @@ checksums
 containerd
 dockerfile
 doit
+dedup
 env
 epel
 filename
