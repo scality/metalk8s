@@ -1,8 +1,4 @@
 ---
-## Required for bootstrap-os/preinstall/download roles and setting facts
-# Valid bootstrap options (required): ubuntu, coreos, centos, none
-bootstrap_os: none
-
 # Use proxycommand if bastion host is in group all
 # This change obseletes editing ansible.cfg file depending on bastion existance
 ansible_ssh_common_args: "{% if 'bastion' in groups['all'] %} -o ProxyCommand='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -W %h:%p {{ hostvars['bastion']['ansible_user'] }}@{{ hostvars['bastion']['ansible_host'] }} {% if ansible_ssh_private_key_file is defined %}-i {{ ansible_ssh_private_key_file }}{% endif %} ' {% endif %}"
@@ -16,7 +12,7 @@ is_atomic: false
 disable_swap: true
 
 ## Change this to use another Kubernetes version, e.g. a current beta release
-kube_version: v1.11.3
+kube_version: v1.12.2
 
 ## Kube Proxy mode One of ['iptables','ipvs']
 kube_proxy_mode: iptables
@@ -28,6 +24,9 @@ kube_proxy_nodeport_addresses: false
 
 # Set to true to allow pre-checks to fail and continue deployment
 ignore_assert_errors: false
+
+# nginx-proxy configure
+nginx_config_dir: "/etc/nginx"
 
 # Directory where the binaries will be installed
 bin_dir: /usr/local/bin
@@ -59,12 +58,20 @@ skydns_server: "{{ kube_service_addresses|ipaddr('net')|ipaddr(3)|ipaddr('addres
 skydns_server_secondary: "{{ kube_service_addresses|ipaddr('net')|ipaddr(4)|ipaddr('address') }}"
 dnsmasq_dns_server: "{{ kube_service_addresses|ipaddr('net')|ipaddr(2)|ipaddr('address') }}"
 dns_domain: "{{ cluster_name }}"
+kube_dns_servers:
+  kubedns: ["{{skydns_server}}"]
+  coredns: ["{{skydns_server}}"]
+  coredns_dual: "{{[skydns_server] + [ skydns_server_secondary ]}}"
+  manual: ["{{manual_dns_server}}"]
+  dnsmasq_kubedns: ["{{dnsmasq_dns_server}}"]
+
+dns_servers: "{{kube_dns_servers[dns_mode]}}"
 
 # Kubernetes configuration dirs and system namespace.
 # Those are where all the additional config stuff goes
-# the kubernetes normally puts in /srv/kubernets.
+# the kubernetes normally puts in /srv/kubernetes.
 # This puts them in a sane location and namespace.
-# Editting those values will almost surely break something.
+# Editing those values will almost surely break something.
 kube_config_dir: /etc/kubernetes
 kube_script_dir: "{{ bin_dir }}/kubernetes-scripts"
 kube_manifest_dir: "{{ kube_config_dir }}/manifests"
@@ -80,7 +87,7 @@ kube_users_dir: "{{ kube_config_dir }}/users"
 
 
 # This is the group that the cert creation scripts chgrp the
-# cert files to. Not really changable...
+# cert files to. Not really changeable...
 kube_cert_group: kube-cert
 
 # Cluster Loglevel configuration
@@ -96,6 +103,7 @@ kube_users:
 # Choose network plugin (cilium, calico, weave or flannel)
 # Can also be set to 'cloud', which lets the cloud provider setup appropriate routing
 kube_network_plugin: calico
+kube_network_plugin_multus: false
 
 # Determines if calico-rr group exists
 peer_with_calico_rr: "{{ 'calico-rr' in groups and groups['calico-rr']|length > 0 }}"
@@ -178,7 +186,7 @@ docker_iptables_enabled: "false"
 docker_log_opts: "--log-opt max-size=50m --log-opt max-file=5"
 
 ## An obvious use case is allowing insecure-registry access to self hosted registries.
-## Can be ipddress and domain_name.
+## Can be ipaddress and domain_name.
 ## example define 172.19.16.11 or mirror.registry.io
 # docker_insecure_registries:
 #   - mirror.registry.io
@@ -227,7 +235,7 @@ kubeconfig_localhost: false
 # Download kubectl onto the host that runs Ansible in {{ bin_dir }}
 kubectl_localhost: false
 
-# Define credentials_dir here so it can be overriden
+# Define credentials_dir here so it can be overridden
 credentials_dir: "{{ inventory_dir }}/credentials"
 
 # K8s image pull policy (imagePullPolicy)
@@ -263,6 +271,7 @@ openstack_lbaas_create_monitor: "yes"
 openstack_lbaas_monitor_delay: "1m"
 openstack_lbaas_monitor_timeout: "30s"
 openstack_lbaas_monitor_max_retries: "3"
+openstack_cacert: "{{ lookup('env','OS_CACERT') }}"
 
 ## List of authorization modes that must be configured for
 ## the k8s cluster. Only 'AlwaysAllow', 'AlwaysDeny', 'Node' and
@@ -276,12 +285,23 @@ kubelet_authentication_token_webhook: true
 # When enabled, access to the kubelet API requires authorization by delegation to the API server
 kubelet_authorization_mode_webhook: false
 
-## List of key=value pairs that describe feature gates for
-## the k8s cluster.
-kube_feature_gates:
+## v1.11 feature
+feature_gate_v1_11:
   - "PersistentLocalVolumes={{ local_volume_provisioner_enabled | string }}"
   - "VolumeScheduling={{ local_volume_provisioner_enabled | string }}"
   - "MountPropagation={{ local_volume_provisioner_enabled | string }}"
+
+## v1.12 feature
+feature_gate_v1_12: []
+
+## List of key=value pairs that describe feature gates for
+## the k8s cluster.
+kube_feature_gates: |-
+  {%- if kube_version is version('v1.12.0', '<') -%}
+  {{ feature_gate_v1_11 }}
+  {%- else -%}
+  {{ feature_gate_v1_12 }}
+  {%- endif %}
 
 # Vault data dirs.
 vault_base_dir: /etc/vault
@@ -290,9 +310,11 @@ vault_config_dir: "{{ vault_base_dir }}/config"
 vault_roles_dir: "{{ vault_base_dir }}/roles"
 vault_secrets_dir: "{{ vault_base_dir }}/secrets"
 
-# Local volume provisioner dirs
-local_volume_provisioner_base_dir: /mnt/disks
-local_volume_provisioner_mount_dir: /mnt/disks
+# Local volume provisioner storage classes
+local_volume_provisioner_storage_classes:
+  - name: "{{ local_volume_provisioner_storage_class | default('local-storage') }}"
+    host_dir: "{{ local_volume_provisioner_base_dir | default ('/mnt/disks') }}"
+    mount_dir: "{{ local_volume_provisioner_mount_dir | default('/mnt/disks') }}"
 
 # weave's network password for encryption
 # if null then no network encryption
@@ -404,10 +426,14 @@ etcd_access_addresses: |-
   {% for item in groups['etcd'] -%}
     https://{{ hostvars[item]['access_ip'] | default(hostvars[item]['ip'] | default(hostvars[item]['ansible_default_ipv4']['address'])) }}:2379{% if not loop.last %},{% endif %}
   {%- endfor %}
-etcd_events_access_addresses: |-
+etcd_events_access_addresses_list: |-
+  [
   {% for item in groups['etcd'] -%}
-    https://{{ hostvars[item]['access_ip'] | default(hostvars[item]['ip'] | default(hostvars[item]['ansible_default_ipv4']['address'])) }}:2381{% if not loop.last %},{% endif %}
+    'https://{{ hostvars[item]['access_ip'] | default(hostvars[item]['ip'] | default(hostvars[item]['ansible_default_ipv4']['address'])) }}:2381'{% if not loop.last %},{% endif %}
   {%- endfor %}
+  ]
+etcd_events_access_addresses: "{{etcd_events_access_addresses_list | join(',')}}"
+etcd_events_access_addresses_semicolon: "{{etcd_events_access_addresses_list | join(';')}}"
 # user should set etcd_member_name in inventory/mycluster/hosts.ini
 etcd_member_name: |-
   {% for host in groups['etcd'] %}
@@ -426,3 +452,16 @@ podsecuritypolicy_enabled: false
 etcd_heartbeat_interval: "250"
 etcd_election_timeout: "5000"
 etcd_snapshot_count: "10000"
+
+certificates_key_size: 2048
+certificates_duration: 36500
+
+pip_extra_args: |-
+  {%- set pip_extra_args_list = [] -%}
+  {%- if pyrepo_index is defined -%}
+  {%- set DO = pip_extra_args_list.append('--index-url %s' | format(pyrepo_index)) -%}
+  {%- if pyrepo_cert is defined -%}
+  {%- set DO = pip_extra_args_list.append('--cert %s' | format(pyrepo_cert)) -%}
+  {%- endif -%}
+  {%- endif -%}
+  {{ pip_extra_args_list|join(' ') }}

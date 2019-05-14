@@ -1,5 +1,24 @@
 .. The structure of this document is based on https://github.com/sphinx-doc/sphinx/blob/master/CHANGES
 
+Release 1.2.0 (in development)
+==============================
+This version updates the Kubernetes version to 1.12.3 to handle
+CVE-2018-100210.
+
+Features added
+--------------
+:ghpull:`462` - update vendored Kubespray version
+
+.. note:: This includes an upgrade to Kubernetes 1.12.
+
+:ghpull:`498` - add timeout option to helm_cli Ansible custom module (:ghissue:`497`)
+
+:ghpull:`499` - use helm_cli to install prometheus (:ghissue:`496`)
+
+Bugs Fixed
+----------
+:ghpull:`517` - update Kubernetes version to 1.12.3 to include a fix for CVE-2018-100210
+
 Release 1.1.0 (in development)
 ==============================
 This version updates the Kubernetes version to 1.11.5 to handle
@@ -231,6 +250,7 @@ Bugs fixed
 playbook in isolation (:ghpull:`132`)
 
 :ghpull:`134` - fix `bash-completion` in the MetalK8s Docker image
+
 
 Release 0.1.0
 =============

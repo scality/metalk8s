@@ -20,6 +20,7 @@ class Helm(AnsibleModule):
                 state=dict(default='present',
                            choice=['latest', 'present', 'absent', 'purged']),
                 values=dict(type='list'),
+                timeout=dict(type='int'),
             )
         )
         self._helm_bin = None
@@ -77,6 +78,9 @@ class Helm(AnsibleModule):
         namespace = self.params.get('namespace')
         if namespace:
             cmd.extend(['--namespace', namespace])
+        timeout = self.params.get('timeout')
+        if timeout is not None:
+            cmd.extend(['--timeout', str(timeout)])
         if self.params.get('wait'):
             cmd.extend(['--wait'])
         with self.write_values_files() as values_filenames:
@@ -141,6 +145,9 @@ class Helm(AnsibleModule):
             cmd = ['delete', release]
             if purge:
                 cmd.append('--purge')
+            timeout = self.params.get('timeout')
+            if timeout is not None:
+                cmd.extend(['--timeout', str(timeout)])
             self._run_helm(cmd)
             return {'changed': True,
                     'release': release_info}

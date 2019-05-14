@@ -1,5 +1,19 @@
 ---
 - hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: "Check ansible version !=2.7.0"
+      assert:
+        msg: "Ansible V2.7.0 can't be used until: https://github.com/ansible/ansible/issues/46600 is fixed"
+        that:
+          - ansible_version.string is version("2.7.0", "!=")
+          - ansible_version.string is version("2.5.0", ">=")
+      tags:
+        - check
+  vars:
+    ansible_connection: local
+
+- hosts: bastion[0]
   gather_facts: False
   roles:
     - { role: kubespray-defaults}
@@ -33,11 +47,7 @@
   roles:
     - { role: kubespray-defaults}
     - { role: kubernetes/preinstall, tags: preinstall }
-    - { role: docker, tags: docker, when: container_manager == 'docker' }
-    - { role: cri-o, tags: crio, when: container_manager == 'crio' }
-    - role: rkt
-      tags: rkt
-      when: "'rkt' in [etcd_deployment_type, kubelet_deployment_type, vault_deployment_type]"
+    - { role: "container-engine", tags: "container-engine" }
     - { role: download, tags: download, when: "not skip_downloads" }
   environment: "{{proxy_env}}"
 
@@ -116,7 +126,7 @@
   roles:
     - { role: kubespray-defaults}
     - { role: dnsmasq, when: "dns_mode == 'dnsmasq_kubedns'", tags: dnsmasq }
-    - { role: kubernetes/preinstall, when: "dns_mode != 'none' and resolvconf_mode == 'host_resolvconf'", tags: resolvconf }
+    - { role: kubernetes/preinstall, when: "dns_mode != 'none' and resolvconf_mode == 'host_resolvconf'", tags: resolvconf, dns_late: true }
   environment: "{{proxy_env}}"
 
 - hosts: kube-master
