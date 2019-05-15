@@ -127,18 +127,28 @@ export async function deployNode(url, token, node) {
     return await axios.post(
       url,
       {
-        client: 'runner',
+        client: 'runner_async',
         fun: 'state.orchestrate',
         arg: ['metalk8s.orchestrate.deploy_node'],
         kwarg: {
           saltenv: 'metalk8s-2.0',
-          pillar: { orchestrate: { node_name: node }}
+          pillar: { orchestrate: { node_name: node } }
         }
       },
       {
         headers: { 'X-Auth-Token': token }
       }
     );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function fetchJob(url, token, jib) {
+  try {
+    return await axios.get(url + '/jobs/' + jib, {
+      headers: { 'X-Auth-Token': token }
+    });
   } catch (error) {
     return { error };
   }
