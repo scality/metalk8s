@@ -19,7 +19,7 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="module")
-def version(request, host):
+def short_version(request, host):
     iso_root = request.config.getoption("--iso-root")
     product_path = iso_root / "product.txt"
     with host.sudo():
