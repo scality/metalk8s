@@ -3,6 +3,7 @@
 {%- from "metalk8s/map.jinja" import kubeadm_preflight with context %}
 {%- from "metalk8s/map.jinja" import kubelet with context %}
 
+{% if grains.os_family == 'RedHat' %}
 include:
   - metalk8s.repo
 
@@ -11,6 +12,11 @@ Install mandatory packages:
     - pkgs: {{ kubeadm_preflight.mandatory.packages }}
     - require:
       - test: Repositories configured
+{% elif grains.os == 'Ubuntu' %}
+Install mandatory packages:
+  pkg.installed:
+    - pkgs: ['util-linux', 'iptables', 'iproute2']
+{% endif %}
 
 {%- if kubelet.container_engine %}
 Enable {{ kubelet.container_engine }} service:

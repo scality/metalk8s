@@ -2,15 +2,22 @@
 {%- from "metalk8s/map.jinja" import kubelet with context %}
 
 include:
+{%- if grains.os_family == 'RedHat' %}
   - metalk8s.repo
+{% endif %}
 {%- if kubelet.container_engine %}
   - metalk8s.container-engine.{{ kubelet.container_engine }}
 {%- endif %}
 
 Install and configure cri-tools:
+{%- if grains.os_family == 'RedHat' %}
   {{ pkg_installed('cri-tools') }}
     - require:
       - test: Repositories configured
+{% else %}
+  pkg.installed:
+    - name: cri-tools
+{% endif %}
   file.serialize:
     - name: /etc/crictl.yaml
     - dataset:
@@ -23,6 +30,11 @@ Install and configure cri-tools:
     - formatter: yaml
 
 Install kubelet:
+{%- if grains.os_family == 'RedHat' %}
   {{ pkg_installed('kubelet') }}
     - require:
       - test: Repositories configured
+{%- elif grains.os == 'Ubuntu' %}
+  pkg.installed:
+    - name: kubelet=1.11.10-00
+{% endif %}

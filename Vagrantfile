@@ -196,6 +196,10 @@ Vagrant.configure("2") do |config|
     node_name = "node#{i}"
 
     config.vm.define node_name, autostart: false do |node|
+      if i > 5
+        node.vm.box = "ubuntu/disco64"
+        node.vm.box_version = "20190514.0.0"
+      end
       node.vm.hostname = node_name
 
       node.vm.synced_folder ".", "/vagrant", disabled: true

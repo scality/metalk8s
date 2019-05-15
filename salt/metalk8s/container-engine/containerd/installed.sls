@@ -4,6 +4,7 @@
 {%- set registry_ip = metalk8s.endpoints.registry.ip %}
 {%- set registry_port = metalk8s.endpoints.registry.ports.registry %}
 
+{%- if grains.os_family == 'RedHat' %}
 include:
   - metalk8s.repo
 
@@ -24,6 +25,11 @@ Install containerd:
       - test: Repositories configured
       - pkg: Install runc
       - pkg: Install container-selinux
+{%- elif grains.os == 'Ubuntu' %}
+Install containerd:
+  pkg.installed:
+    - name: containerd
+{%- endif %}
 
 Configure registry IP in containerd conf:
   file.managed:
