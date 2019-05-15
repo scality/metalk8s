@@ -8,10 +8,8 @@ import logging
 
 from salt.exceptions import CommandExecutionError
 
-import metalk8s_kubernetes
-
 try:
-    import kubernetes  # pylint: disable=import-self
+    import kubernetes
     import kubernetes.client
     from kubernetes.client.rest import ApiException
     from urllib3.exceptions import HTTPError
@@ -66,7 +64,7 @@ def node_set_unschedulable(node_name, unschedulable, **kwargs):
         salt '*' kubernetes.node_set_unschedulable node_name="minikube" \
             unschedulable=False
     '''
-    cfg = metalk8s_kubernetes._setup_conn(**kwargs)
+    cfg = __salt__['metalk8s_kubernetes.setup_conn'](**kwargs)
     try:
         api_instance = kubernetes.client.CoreV1Api()
         body = {'spec': {'unschedulable': unschedulable}}
@@ -79,7 +77,7 @@ def node_set_unschedulable(node_name, unschedulable, **kwargs):
             log.exception('Exception when calling CoreV1Api->patch_node')
             raise CommandExecutionError(exc)
     finally:
-        metalk8s_kubernetes._cleanup(**cfg)
+        __salt__['metalk8s_kubernetes.cleanup'](**cfg)
 
 
 def node_cordon(node_name, **kwargs):
@@ -102,5 +100,3 @@ def node_uncordon(node_name, **kwargs):
         salt '*' kubernetes.node_uncordon  node_name="minikube"
     '''
     return node_set_unschedulable(node_name, False, **kwargs)
-
-
