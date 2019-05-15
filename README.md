@@ -15,7 +15,7 @@ For more information, please refers to [BUILDING.md](BUILDING.md).
 If you'd like to contribute, please review the
 [Contributing Guidelines](CONTRIBUTING.md).
 
-## End-to-End Testing
+## Testing
 ### Requirements
 
 - [Python3.6+](https://www.python.org/)
@@ -23,12 +23,19 @@ If you'd like to contribute, please review the
 - [Vagrant](https://www.vagrantup.com/)
 - [VirtualBox](https://www.virtualbox.org)
 
-### Usage
+### Bootstrapping local environment
 
-To run tests locally:
-```shell
+```shell 
+# Install virtualbox guest addition plugin
+vagrant plugin install vagrant-vbguest
 # Bootstrap a platform on a vagrant environment using
-./doit.sh vagrantup
+./doit.sh vagrant_up
+```
+
+### End-to-End Testing
+
+To run tests locally: Complete the bootstrapping step above
+```shell 
 # Generate an ssh-config file from vagrant
 vagrant ssh-config >bootstrap.ssh.config
 # Run tox with two environment variables
