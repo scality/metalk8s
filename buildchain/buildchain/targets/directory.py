@@ -40,4 +40,4 @@ class Mkdir(base.Target, base.AtomicTarget):
 
     @staticmethod
     def _run(directory: Path) -> None:
-        directory.mkdir()
+        directory.mkdir(exist_ok=True)

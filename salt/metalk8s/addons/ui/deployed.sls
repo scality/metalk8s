@@ -2,7 +2,7 @@
 {%- set context = "kubernetes-admin@kubernetes" %}
 
 {%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
-{%- set saltapi = 'http://' ~ pillar.metalk8s.endpoints['salt-master'].ip ~ ':' ~ pillar.metalk8s.endpoints['salt-master'].port %}
+{%- set saltapi = 'http://' ~ pillar.metalk8s.endpoints['salt-master'].ip ~ ':' ~ pillar.metalk8s.endpoints['salt-master'].ports.api %}
 
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.deployment_present:

@@ -135,11 +135,14 @@ BUILDER : targets.LocalImage = targets.LocalImage(
     destination=config.BUILD_ROOT,
     save_on_disk=False,
     task_dep=['_build_root'],
-    file_dep=list(constants.ROOT.glob('packages/yum_repositories/*.repo')),
+    file_dep=[
+        constants.ROOT/'packages/yum_repositories/kubernetes.repo',
+        constants.ROOT/'packages/yum_repositories/saltstack.repo'
+    ],
 )
 
 
-CALICO_CNI_PLUGIN_VERSION : str = '3.5.1'
+CALICO_CNI_PLUGIN_VERSION : str = '3.7.2'
 # Packages per repository.
 PACKAGES : Dict[str, Tuple[targets.Package, ...]] = {
     'scality': (

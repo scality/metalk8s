@@ -11,9 +11,10 @@ stages:
       type: local
     steps:
       - TriggerStages:
-          name: Trigger build and lint stages simultaneously
+          name: Trigger build, docs and lint stages simultaneously
           stage_names:
             - build
+            - docs
             - lint
           haltOnFailure: true
       - SetPropertyFromCommand:
@@ -75,6 +76,29 @@ stages:
             - "*.iso"
             - SHA256SUM
             - product.txt
+
+  docs:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-docs-builder/pod.yaml
+      images:
+        doc-builder:
+          context: '.'
+          dockerfile: docs/Dockerfile
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          name: Build documentation
+          env:
+            # Fake that we are building in a ReadTheDocs environment
+            READTHEDOCS: 'True'
+          command: tox --workdir /tmp/tox -e docs -- html latexpdf
+          haltOnFailure: true
+      - Upload:
+          name: Upload documentation artifacts
+          source: docs/_build
+          urls:
+            - ['docs/\1', '*']
 
   lint:
     worker:
@@ -159,6 +183,11 @@ stages:
             ISO_MOUNTPOINT: >
               /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
           command: tox -e tests-local
+          haltOnFailure: true
+      - ShellCommand:
+          name: Cypress test
+          command: bash cypress.sh
+          workdir: build/ui
           haltOnFailure: true
       - ShellCommand:
           name: Debug step - report IPs, add SSH keys, wait 1 hour

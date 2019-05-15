@@ -104,6 +104,9 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/internal/preflight/mandatory.sls'),
     Path('salt/metalk8s/internal/preflight/recommended.sls'),
 
+    Path('salt/metalk8s/kubectl/init.sls'),
+    Path('salt/metalk8s/kubectl/installed.sls'),
+
     Path('salt/metalk8s/kubernetes/apiserver/certs/etcd-client.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/certs/front-proxy-client.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/certs/init.sls'),
@@ -130,6 +133,11 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubernetes/cni/calico/deployed.sls'),
     Path('salt/metalk8s/kubernetes/cni/calico/init.sls'),
     Path('salt/metalk8s/kubernetes/cni/calico/installed.sls'),
+    Path('salt/metalk8s/kubernetes/cni/calico/upgraded.sls'),
+    Path('salt/metalk8s/kubernetes/cni/loopback/configured.sls'),
+    Path('salt/metalk8s/kubernetes/cni/loopback/init.sls'),
+    Path('salt/metalk8s/kubernetes/cni/loopback/installed.sls'),
+
 
     Path('salt/metalk8s/kubernetes/controller-manager/init.sls'),
     Path('salt/metalk8s/kubernetes/controller-manager/installed.sls'),
@@ -145,6 +153,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/kubernetes/etcd/certs/peer.sls'),
     Path('salt/metalk8s/kubernetes/etcd/certs/server.sls'),
     Path('salt/metalk8s/kubernetes/etcd/files/manifest.yaml'),
+    Path('salt/metalk8s/kubernetes/etcd/healthy.sls'),
     Path('salt/metalk8s/kubernetes/etcd/init.sls'),
     Path('salt/metalk8s/kubernetes/etcd/installed.sls'),
 
@@ -189,7 +198,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
     Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
-    Path('salt/metalk8s/orchestrate/deploy_new_node.sls'),
+    Path('salt/metalk8s/orchestrate/deploy_node.sls'),
+    Path('salt/metalk8s/orchestrate/upgrade/etcd.sls'),
 
     Path('salt/metalk8s/registry/deployed.sls'),
     Path('salt/metalk8s/registry/files/registry-manifest.yaml.j2'),
@@ -214,7 +224,7 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/roles/etcd/init.sls'),
     Path('salt/metalk8s/roles/infra/init.sls'),
     Path('salt/metalk8s/roles/infra/absent.sls'),
-    Path('salt/metalk8s/roles/internal/node-without-cni.sls'),
+    Path('salt/metalk8s/roles/internal/node-without-calico.sls'),
     Path('salt/metalk8s/roles/master/absent.sls'),
     Path('salt/metalk8s/roles/master/init.sls'),
     Path('salt/metalk8s/roles/minion/init.sls'),
@@ -245,6 +255,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_pillar/metalk8s.py'),
     Path('salt/_pillar/metalk8s_endpoints.py'),
     Path('salt/_pillar/metalk8s_nodes.py'),
+
+    Path('salt/_renderers/metalk8s_kubernetes.py'),
 
     Path('salt/_roster/kubernetes_nodes.py'),
 

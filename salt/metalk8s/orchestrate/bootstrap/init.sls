@@ -19,8 +19,6 @@
 {% endif %}
 
 {%- set pillar_data = {
-        'bootstrap_id': pillar.bootstrap_id,
-        'registry_ip': bootstrap_control_plane_ip,
         'metalk8s': {
             'nodes': {
                 pillar.bootstrap_id: {
@@ -31,11 +29,21 @@
             'endpoints': {
                 'salt-master': {
                     'ip': bootstrap_control_plane_ip,
-                    'port': 4507,
+                    'ports': {
+                        'api': 4507,
+                    },
                 },
                 'registry': {
                     'ip': bootstrap_control_plane_ip,
-                    'port': 5000,
+                    'ports': {
+                        'registry': 5000,
+                    },
+                },
+                'package-repositories': {
+                    'ip': bootstrap_control_plane_ip,
+                    'ports': {
+                        'http': 8080,
+                    },
                 }
             },
         },
@@ -69,6 +77,7 @@ Deploy CA role on bootstrap minion:
   - sls:
     - metalk8s.roles.ca
   - saltenv: metalk8s-{{ version }}
+  - pillar: {{ pillar_data | tojson }}
   - require:
     - salt: Sync bootstrap minion
 

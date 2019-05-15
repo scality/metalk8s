@@ -20,6 +20,9 @@ CMD_WIDTH : int = 12
 # URLs of the main container repositories.
 GOOGLE_REGISTRY : str = 'k8s.gcr.io'
 DOCKER_REGISTRY : str = 'docker.io/library'
+COREOS_REGISTRY : str = 'quay.io/coreos'
+PROMETHEUS_REGISTRY : str = 'quay.io/prometheus'
+GRAFANA_REGISTRY : str = 'docker.io/grafana'
 
 # Paths {{{
 
@@ -106,7 +109,7 @@ def git_ref() -> Optional[str]:
     try:
         ref : bytes = subprocess.check_output([
             config.GIT, 'describe', '--always', '--long', '--tags',
-                '--dirty', '--broken',
+                '--dirty',
         ])
 
         return ref.decode('utf-8').rstrip()

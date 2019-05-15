@@ -2,7 +2,6 @@
 
 include:
   - metalk8s.internal.m2crypto
-  - metalk8s.salt.minion.running
 
 Create front proxy CA private key:
   x509.private_key_managed:
@@ -41,24 +40,3 @@ Advertise front proxy CA certificate in the mine:
       - /etc/kubernetes/pki/front-proxy-ca.crt
     - watch:
       - x509: Generate front proxy CA certificate
-
-Create front proxy CA salt signing policies:
-  file.serialize:
-    - name: /etc/salt/minion.d/30-metalk8s-front-proxy-ca-signing-policies.conf
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
-    - dir_mode: 755
-    - formatter: yaml
-    - dataset:
-        x509_signing_policies:
-          front_proxy_client_policy:
-            - minions: '*'
-            - signing_private_key: /etc/kubernetes/pki/front-proxy-ca.key
-            - signing_cert: /etc/kubernetes/pki/front-proxy-ca.crt
-            - keyUsage: "critical digitalSignature, keyEncipherment"
-            - extendedKeyUsage: "clientAuth"
-            - days_valid: {{ front_proxy.ca.signing_policy.days_valid }}
-    - watch_in:
-      - cmd: Restart salt-minion

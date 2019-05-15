@@ -1,11 +1,21 @@
 #!/bin/bash
 
 yum install -y epel-release
+curl -sL https://rpm.nodesource.com/setup_10.x | bash -
 
 PACKAGES=(
     curl
     git
     python36-pip
+    xorg-x11-server-Xvfb
+    gtk2
+    libXtst*
+    libXScrnSaver*
+    GConf2*
+    alsa-lib*
+    gcc-c++
+    make
+    nodejs
 )
 
 yum install -y "${PACKAGES[@]}"
