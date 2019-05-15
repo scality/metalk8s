@@ -154,6 +154,22 @@ def _handle_extensions_v1beta1_deployment(obj, kubeconfig, context):
     }
 
 
+@handle('monitoring.coreos.com/v1', 'Alertmanager')
+@handle('monitoring.coreos.com/v1', 'Prometheus')
+@handle('monitoring.coreos.com/v1', 'PrometheusRule')
+@handle('monitoring.coreos.com/v1', 'ServiceMonitor')
+def _handle_monitoring_coreos_com_v1_customresource(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.customresource_present': [
+            {'name': obj['metadata']['name']},
+            {'body': obj},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+        ],
+    }
+
+
 del handle
 
 
