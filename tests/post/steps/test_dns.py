@@ -5,6 +5,7 @@ import pytest
 from pytest_bdd import scenario, then, parsers
 import yaml
 
+from tests import kube_utils
 from tests import utils
 
 
@@ -27,16 +28,13 @@ def busybox_pod(kubeconfig):
     )
 
     # Wait for the busybox to be ready
-    def _check_status():
-        pod_info = k8s_client.read_namespaced_pod(
-            name="busybox",
-            namespace="default",
-        )
-        assert pod_info.status.phase == "Running", (
-            "Wrong status for 'busybox' Pod - found {status}"
-        ).format(status=pod_info.status.phase)
-
-    utils.retry(_check_status, times=10)
+    utils.retry(
+        kube_utils.wait_for_pod(
+            k8s_client, name="busybox", namespace="default", state="Running"
+        ),
+        times=10,
+        name="wait for Pod 'busybox'",
+    )
 
     yield "busybox"
 

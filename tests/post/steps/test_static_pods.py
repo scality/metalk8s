@@ -1,11 +1,10 @@
 import pathlib
 import string
-import time
 
-from kubernetes.client.rest import ApiException
 import pytest
 from pytest_bdd import given, scenario, then, when
 
+from tests import kube_utils
 from tests import utils
 
 # Constants {{{
@@ -103,19 +102,12 @@ def set_up_static_pod(host, hostname, k8s_client, transient_files):
 
     fullname = "{}-{}".format(DEFAULT_POD_NAME, hostname)
 
-    def _wait_for_pod():
-        try:
-            pod = k8s_client.read_namespaced_pod(
-                name=fullname, namespace="default"
-            )
-        except ApiException as err:
-            if err.status == 404:
-                raise AssertionError("Pod not yet created")
-            raise
-
-        assert pod.status.phase == "Running", "Pod not yet running"
-
-    utils.retry(_wait_for_pod, times=3, wait=5)
+    utils.retry(
+        kube_utils.wait_for_pod(k8s_client, fullname),
+        times=3,
+        wait=5,
+        name="wait for Pod '{}'".format(fullname),
+    )
 
     pod = k8s_client.read_namespaced_pod(name=fullname, namespace="default")
     return pod.metadata.uid
@@ -145,6 +137,12 @@ def manage_static_pod(host):
 @then("the static pod was changed")
 def check_static_pod_changed(host, hostname, k8s_client, static_pod_id):
     fullname = "{}-{}".format(DEFAULT_POD_NAME, hostname)
+    utils.retry(
+        kube_utils.wait_for_pod(k8s_client, fullname),
+        times=3,
+        wait=5,
+        name="wait for Pod '{}'".format(fullname),
+    )
     pod = k8s_client.read_namespaced_pod(name=fullname, namespace="default")
 
     assert pod.metadata.uid != static_pod_id
