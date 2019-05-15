@@ -2231,6 +2231,35 @@ def replace_customresourcedefinition(
         _cleanup(**cfg)
 
 
+def customresourcedefinition(**kwargs):
+    '''
+    Return the list of kubernetes CRD
+
+    CLI Examples::
+
+        salt '*' metalks8_kubernetes.customresourcedefinition
+    '''
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ApiextensionsV1beta1Api()
+        api_response = api_instance.list_custom_resource_definition()
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CustomObjectsApi->list_custom_resource_definition'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
 def node_remove_annotation(node_name, annotation_name, **kwargs):
     '''
     Removes the annotation identified by `annotation_name` from
@@ -2373,3 +2402,139 @@ def node_uncordon(node_name, **kwargs):
         salt '*' kubernetes.node_uncordon  node_name="minikube"
     '''
     return node_set_unschedulable(node_name, False, **kwargs)
+
+
+def get_crd_plural_from_kind(kind, **kwargs):
+    plural = None
+
+    crds = customresourcedefinition(**kwargs)
+
+    for crd in crds.get('items', []):
+        crd_names = crd.get('spec', {}).get('names', {})
+        if kind == crd_names.get('kind'):
+            plural = crd_names.get('plural')
+            break
+
+    return plural
+
+
+def replace_namespaced_custom_object(
+        group,
+        version,
+        namespace,
+        plural,
+        name,
+        body,
+        old_custom_object,
+        **kwargs):
+
+    cfg = _setup_conn(**kwargs)
+
+    body.setdefault('metadata', {})['resourceVersion'] = \
+        old_custom_object['metadata']['resourceVersion']
+
+    try:
+        api_instance = kubernetes.client.CustomObjectsApi()
+        api_response = api_instance.replace_namespaced_custom_object(
+            group, version, namespace, plural, name, body)
+
+        return api_response
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CustomObjectsApi->replace_namespaced_custom_object'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def delete_namespaced_custom_object(
+        group,
+        version,
+        namespace,
+        plural,
+        name,
+        **kwargs):
+
+    cfg = _setup_conn(**kwargs)
+    body = kubernetes.client.V1DeleteOptions(orphan_dependents=True)
+
+    try:
+        api_instance = kubernetes.client.CustomObjectsApi()
+        api_response = api_instance.delete_namespaced_custom_object(
+            group, version, namespace, plural, name, body)
+
+        return api_response
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CustomObjectsApi->delete_namespaced_custom_object'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def show_namespaced_custom_object(
+        group,
+        version,
+        namespace,
+        plural,
+        name,
+        **kwargs):
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.CustomObjectsApi()
+        api_response = api_instance.get_namespaced_custom_object(
+            group, version, namespace, plural, name)
+
+        return api_response
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CustomObjectsApi->get_namespaced_custom_object'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_namespaced_custom_object(
+        group,
+        version,
+        namespace,
+        plural,
+        body,
+        **kwargs):
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.CustomObjectsApi()
+        api_response = api_instance.create_namespaced_custom_object(
+           group, version, namespace, plural, body)
+
+        return api_response
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CustomObjectsApi->create_namespaced_custom_object'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
