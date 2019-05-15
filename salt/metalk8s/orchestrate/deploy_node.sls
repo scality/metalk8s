@@ -71,12 +71,15 @@ Uncordon the node:
     - require:
       - salt: Run the highstate
 
+{%- set master_minions = salt['metalk8s.minions_by_role']('master') %}
+
 # Work-around for https://github.com/scality/metalk8s/pull/1028
 Kill kube-controller-manager on all master nodes:
   salt.function:
     - name: ps.pkill
-    - tgt: "{{ salt.metalk8s.minions_by_role('master') | join(',') }}"
+    - tgt: "{{ master_minions | join(',') }}"
     - tgt_type: list
+    - fail_minions: "{{ master_minions | join(',') }}"
     - kwarg:
         pattern: kube-controller-manager
     - require:
