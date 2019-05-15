@@ -30,7 +30,6 @@ Overview:
 
 
 import datetime
-from pathlib import Path
 from typing import Iterator, Tuple
 
 from buildchain import config
@@ -39,10 +38,6 @@ from buildchain import coreutils
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
-
-
-# Root for the images on the ISO.
-ISO_IMAGE_ROOT : Path = constants.ISO_ROOT/'images'
 
 
 def task_images() -> types.TaskDict:
@@ -61,7 +56,7 @@ def task_images() -> types.TaskDict:
 def task__image_mkdir_root() -> types.TaskDict:
     """Create the images root directory."""
     return targets.Mkdir(
-        directory=ISO_IMAGE_ROOT, task_dep=['_iso_mkdir_root']
+        directory=constants.ISO_IMAGE_ROOT, task_dep=['_iso_mkdir_root']
     ).task
 
 
@@ -82,12 +77,12 @@ def task__image_dedup_layers() -> types.TaskDict:
     def show() -> str:
         return '{cmd: <{width}} {path}'.format(
             cmd='HARDLINK', width=constants.CMD_WIDTH,
-            path=utils.build_relpath(ISO_IMAGE_ROOT)
+            path=utils.build_relpath(constants.ISO_IMAGE_ROOT)
         )
 
     task = targets.Target(task_dep=['_image_pull', '_image_build']).basic_task
     task['title']   = lambda _: show()
-    task['actions'] = [[config.HARDLINK, '-c', ISO_IMAGE_ROOT]]
+    task['actions'] = [[config.HARDLINK, '-c', constants.ISO_IMAGE_ROOT]]
     return task
 
 
@@ -104,7 +99,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='addon-resizer',
         version='1.0',
         digest='sha256:f84cebb37aa907e3b34ca165d6258730fa8d15fa00d490c300bd04222a29e708',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -112,7 +107,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='alertmanager',
         version='v0.15.2',
         digest='sha256:c16294ecb0b6dd77b8a0834c9d98fd9d1090c7ea904786bc37b58ebdb428851f',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -121,7 +116,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         remote_name='node',
         version='3.7.2',
         digest='sha256:8b565422f4cabd9652e0e912f3ea8707734cbc69f5835642f094d1ed0a087d5b',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -130,7 +125,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         remote_name='kube-controllers',
         version='3.7.2',
         digest='sha256:d5533cb8df6150123cad26e369383a3e665c5e376f8c9dd7d80a8c86fa907e7c',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -138,7 +133,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='configmap-reload',
         version='v0.0.1',
         digest='sha256:e2fd60ff0ae4500a75b80ebaa30e0e7deba9ad107833e8ca53f0047c42c5a057',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -146,7 +141,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='coredns',
         version='1.3.1',
         digest='sha256:02382353821b12c21b062c59184e227e001079bb13ebd01f9d3270ba0fcbf1e4',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -154,7 +149,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='etcd',
         version='3.2.18',
         digest='sha256:b960569ade5f37205a033dcdc3191fe99dc95b15c6795a6282859070ec2c6124',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -162,7 +157,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='grafana',
         version='5.2.4',
         digest='sha256:aaf50da5faf2596bfb0caed81f08b5569110e7b5468b291fedad25d8cbc51f2b',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -170,7 +165,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='kube-apiserver',
         version=constants.K8S_VERSION,
         digest='sha256:79b197b6a7334d2ad01ee82a9be82a39bfb50e33bc03263c58c4dfc4e81f71bc',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -178,7 +173,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='kube-controller-manager',
         version=constants.K8S_VERSION,
         digest='sha256:bbb51bf83c73dfe8a924fd5f9e58f92c3feec44b24936f10b0087e8ffcd55f69',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -186,7 +181,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='kube-proxy',
         version=constants.K8S_VERSION,
         digest='sha256:8886e69a7946717a88cad9882e9b44927798d154088be19b5116a375c9923036',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -194,7 +189,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='kube-rbac-proxy',
         version='v0.3.1',
         digest='sha256:a578315f24e6fd01a65e187e4d1979678598a7d800d039ee5cfe4e11b0b1788d',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -202,7 +197,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='kube-scheduler',
         version=constants.K8S_VERSION,
         digest='sha256:7a2a2a54f26647a4d8642d9158122e6c80e19b2b79d5bf0c74445f2e26a83dfa',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -210,7 +205,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='kube-state-metrics',
         version='v1.3.1',
         digest='sha256:fa2e6d33183755f924f05744c282386f38e962160f66ad0b6a8a24a36884fb9a',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -218,7 +213,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='nginx',
         version=NGINX_IMAGE_VERSION,
         digest='sha256:dd2d0ac3fff2f007d99e033b64854be0941e19a2ad51f174d9240dda20d9f534',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -226,7 +221,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='node-exporter',
         version='v0.17.0',
         digest='sha256:1b129a3801a0440f9c5b2afb20082dfdb31bf6092b561f5f249531130000cb83',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -234,7 +229,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='prometheus',
         version='v2.4.3',
         digest='sha256:8e0e85af45fc2bcc18bd7221b8c92fe4bb180f6bd5e30aa2b226f988029c2085',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -242,7 +237,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='prometheus-config-reloader',
         version='v0.23.2',
         digest='sha256:df1453c7c69e4f2ab8a86fc18fe3b890ce2f80fed6d6519dc9d33927451b214d',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -250,7 +245,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='prometheus-operator',
         version='v0.23.2',
         digest='sha256:8211b3eb30cb8591ddf536f1cf62100f5c97659c14d18dd45001acf94dafd713',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(
@@ -258,7 +253,7 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         name='registry',
         version='2.7.1',
         digest='sha256:870474507964d8e7d8c3b53bcfa738e3356d2747a42adad26d0d81ef4479eb1b',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
 )
@@ -281,7 +276,7 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         name='salt-master',
         version='{}-{}'.format(constants.SALT_VERSION, SALT_MASTER_BUILD_ID),
         dockerfile=constants.ROOT/'images'/'salt-master'/'Dockerfile',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         save_on_disk=True,
         build_args={'SALT_VERSION': constants.SALT_VERSION},
         task_dep=['_image_mkdir_root'],
@@ -291,7 +286,7 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         name='keepalived',
         version=KEEPALIVED_IMAGE_TAG,
         dockerfile=constants.ROOT/'images'/'keepalived'/'Dockerfile',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         save_on_disk=True,
         build_args={
             'KEEPALIVED_IMAGE_SHA256': constants.CENTOS_BASE_IMAGE_SHA256,
@@ -311,7 +306,7 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         name='metalk8s-ui',
         version='0.2',
         dockerfile=constants.ROOT/'ui'/'Dockerfile',
-        destination=ISO_IMAGE_ROOT,
+        destination=constants.ISO_IMAGE_ROOT,
         save_on_disk=True,
         build_args={'NGINX_IMAGE_VERSION': NGINX_IMAGE_VERSION},
         task_dep=['_image_mkdir_root'],
