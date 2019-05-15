@@ -58,8 +58,39 @@ def kubeconfig(kubeconfig_data, tmp_path):
 
 
 @pytest.fixture
-def k8s_client(kubeconfig):
-    kubernetes.config.load_kube_config(config_file=kubeconfig)
-    return kubernetes.client.CoreV1Api()
+def k8s_apiclient(kubeconfig):
+    """Return an ApiClient to use for interacting with all K8s APIs."""
+    return kubernetes.config.new_client_from_config(
+        config_file=kubeconfig, persist_config=False
+    )
+
+
+@pytest.fixture
+def k8s_client(request, k8s_apiclient):
+    """Parametrized fixture to instantiate a client for a single K8s API.
+
+    By default, this will return a CoreV1Api client.
+    One can decorate a test function to use another API, like so:
+
+    ```
+    @pytest.mark.parametrize(
+        'k8s_client', ['AppsV1Api'], indirect=True
+    )
+    def test_something(k8s_client):
+        assert k8s_client.list_namespaced_deployment(namespace="default")
+    ```
+    """
+    api_name = getattr(request, "param", "CoreV1Api")
+    api_cls = getattr(kubernetes.client, api_name, None)
+
+    if api_cls is None:
+        pytest.fail(
+            "Unknown K8s API '{}' to use with `k8s_client` fixture.".format(
+                api_name
+            )
+        )
+
+    return api_cls(api_client=k8s_apiclient)
+
 
 # }}}

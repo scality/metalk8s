@@ -10,10 +10,7 @@ from tests import utils
 
 
 @pytest.fixture
-def busybox_pod(kubeconfig):
-    config.load_kube_config(config_file=kubeconfig)
-    k8s_client = client.CoreV1Api()
-
+def busybox_pod(k8s_client):
     # Create the busybox pod
     pod_manifest = os.path.join(
         os.path.realpath(os.path.dirname(__file__)),
