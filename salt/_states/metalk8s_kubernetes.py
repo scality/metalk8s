@@ -84,9 +84,12 @@ from __future__ import absolute_import
 
 import copy
 import logging
+import yaml
 
 # Import 3rd-party libs
 from salt.ext import six
+import salt.utils.dictdiffer
+import salt.exceptions
 
 log = logging.getLogger(__name__)
 
@@ -1572,3 +1575,205 @@ def node_uncordoned(name, **kwargs):
         the name of the node
     '''
     return _node_unschedulable(name, False, **kwargs)
+
+
+def _extract_custom_resource_data(name, namespace, body, source, **kwargs):
+    if body and source:
+        raise salt.exceptions.InvalidConfigError(
+            "'source' cannot be used in combination with 'body'"
+        )
+
+    if source:
+        try:
+            with open(source, 'r') as source_file:
+                body = yaml.safe_load(source_file)
+        except IOError as exc:
+            raise salt.exceptions.InvalidConfigError(
+                "no such '{0}' source file".format(source)
+            )
+
+    # TODO: handle kindlist
+    try:
+        kind = body['kind']
+    except KeyError:
+        raise salt.exceptions.InvalidConfigError(
+            "object 'kind' is missing in object definition"
+        )
+
+    try:
+        group, version = body.get('apiVersion', '').split('/')
+    except ValueError:
+        raise salt.exceptions.InvalidConfigError(
+            "malformed or undefined 'apiVersion' in object definition"
+        )
+
+    plural = __salt__['metalk8s_kubernetes.get_crd_plural_from_kind'](
+        kind, **kwargs)
+    if plural is None:
+        raise salt.exceptions.InvalidConfigError(
+            "'{0}' object kind not found in API".format(kind)
+        )
+
+    old_custom_resource = \
+        __salt__['metalk8s_kubernetes.show_namespaced_custom_object'](
+            group, version, namespace, plural, name, **kwargs
+        )
+
+    return {
+        'plural': plural,
+        'group': group,
+        'version': version,
+        'body': body,
+        'old': old_custom_resource,
+    }
+
+
+def customresource_present(
+        name,
+        namespace='default',
+        body=None,
+        source=None,
+        **kwargs):
+    '''
+    Ensures that the custom resource is present inside of the specified
+    namespace with the given body.
+    If the custom resource already exists, it will be updated.
+
+    name
+        The name of the custom resource.
+
+    namespace
+        The namespace holding the custom resource. The 'default' one is going
+        to be used, unless a different one is specified.
+
+    body
+        The definition of the custom resource as a python dict.
+
+    source
+        A file containing the definition of the custom resource in the official
+        kubernetes format.
+    '''
+
+    ret = {
+        'name': name,
+        'changes': {},
+        'result': False,
+        'comment': ''
+    }
+
+    try:
+        cr_data = _extract_custom_resource_data(
+            name, namespace, body, source, **kwargs
+        )
+    except salt.exceptions.InvalidConfigError as exc:
+        return _error(ret, exc.message)
+
+    cr_full_name = '{0}.{1}.{2}'.format(namespace, cr_data['plural'], name)
+
+    if cr_data['old'] is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The custom resource is going to be created'
+            return ret
+
+        res = __salt__['metalk8s_kubernetes.create_namespaced_custom_object'](
+            cr_data['group'], cr_data['version'], namespace,
+            cr_data['plural'], cr_data['body'], **kwargs
+        )
+
+        if res is None:
+            return ret
+
+        ret['changes'][cr_full_name] = {
+            'old': {},
+            'new': res,
+        }
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            return ret
+
+        ret['comment'] = \
+            'The custom resource is already present, updating resource.'
+        res = __salt__['metalk8s_kubernetes.replace_namespaced_custom_object'](
+            cr_data['group'], cr_data['version'], namespace, cr_data['plural'],
+            name, cr_data['body'], cr_data['old'], **kwargs
+        )
+
+        if res is None:
+            return ret
+
+        ret['changes'][cr_full_name] = \
+            salt.utils.dictdiffer.deep_diff(cr_data['old'], res)
+
+    ret['result'] = True
+    return ret
+
+
+def customresource_absent(
+        name,
+        namespace='default',
+        body=None,
+        source=None,
+        **kwargs):
+    '''
+    Ensures that the named custom resource is absent from the given namespace.
+
+    name
+        The name of the custom resource.
+
+    namespace
+        The namespace holding the custom resource. The 'default' one is going
+        to be used, unless a different one is specified.
+
+    body
+        The definition of the custom resource as a python dict.
+
+    source
+        A file containing the definition of the custom resource in the official
+        kubernetes format.
+    '''
+
+    ret = {
+        'name': name,
+        'changes': {},
+        'result': False,
+        'comment': ''
+    }
+
+    try:
+        cr_data = _extract_custom_resource_data(
+            name, namespace, body, source, **kwargs
+        )
+    except salt.exceptions.InvalidConfigError as exc:
+        return _error(ret, exc.message)
+
+    if cr_data['old'] is None:
+        ret['result'] = True if not __opts__['test'] else None
+        ret['comment'] = 'The custom resource does not exist'
+        return ret
+
+    if __opts__['test']:
+        ret['result'] = None
+        ret['comment'] = 'The custom resource is going to be deleted'
+        return ret
+
+    res = __salt__['metalk8s_kubernetes.delete_namespaced_custom_object'](
+        cr_data['group'], cr_data['version'], namespace,
+        cr_data['plural'], name, **kwargs
+    )
+
+    cr_full_name = '{0}.{1}.{2}'.format(namespace, cr_data['plural'], name)
+
+    if res is None:
+        return ret
+
+    ret['result'] = True
+    ret['changes'] = {
+        cr_full_name: {
+            'new': 'absent',
+            'old': 'present',
+        }
+    }
+
+    return ret
