@@ -24,6 +24,7 @@ metadata
 mkdir
 mkisofs
 mypy
+nginx
 prebuilt
 py
 readonly

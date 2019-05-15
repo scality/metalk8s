@@ -35,6 +35,10 @@ ISO_IMAGE_ROOT : Path = ISO_ROOT/'images'
 PKG_ROOT : Path = config.BUILD_ROOT/'packages'
 # Root of the Vagrant environment folder.
 VAGRANT_ROOT : Path = ROOT/'.vagrant'
+# Path to the static-container-registry module.
+STATIC_CONTAINER_REGISTRY : Path = Path(
+    ROOT, 'buildchain/static-container-registry'
+)
 
 # }}}
 # Vagrant parameters {{{

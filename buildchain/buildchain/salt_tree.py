@@ -26,13 +26,19 @@ Overview:
 """
 
 
+import importlib
+import sys
 from pathlib import Path
-from typing import Iterator, Tuple, Union
+from typing import Any, Iterator, Tuple, Union
 
+from buildchain import config
 from buildchain import constants
 from buildchain import targets
 from buildchain import utils
 from buildchain import types
+
+sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
+container_registry : Any = importlib.import_module('static-container-registry')
 
 
 def task_salt_tree() -> types.TaskDict:
@@ -49,6 +55,59 @@ def task__deploy_salt_tree() -> Iterator[types.TaskDict]:
     """Deploy a Salt sub-tree"""
     for file_tree in FILE_TREES:
         yield from file_tree.execution_plan
+
+
+class StaticContainerRegistry(targets.FileTarget):
+    """Generate a nginx configuration to serve a static container registry."""
+    def __init__(
+        self,
+        root: Path,
+        server_root: str,
+        name_prefix: str,
+        destination: Path,
+        **kwargs: Any
+    ):
+        """Configure the static-container-registry script.
+
+        Arguments:
+            root:        path to the image files
+            server_root: where the image files will be stored on the web server
+            context:     will prefix every container name
+            destination: path to the nginx configuration file to write
+
+        Keyword Arguments:
+            They are passed to `FileTarget` init method.
+        """
+        super().__init__(
+            destination=destination, task_name=destination.name, **kwargs
+        )
+        self._img_root = root
+        self._srv_root = server_root
+        self._name_pfx = name_prefix
+
+    @property
+    def task(self) -> types.TaskDict:
+        task = self.basic_task
+        task.update({
+            'title': self._show,
+            'doc': 'Generate the nginx config to serve a container registry.',
+            'actions': [self._run],
+        })
+        return task
+
+    @staticmethod
+    def _show(task: types.Task) -> str:
+        """Return a description of the task."""
+        return utils.title_with_target1('NGINX_CFG', task)
+
+    def _run(self) -> None:
+        """Generate the nginx configuration."""
+        with Path(self.destination).open('w', encoding='utf-8') as fp:
+            parts = container_registry.create_config(
+                self._img_root, self._srv_root, self._name_pfx
+            )
+            for part in parts:
+                fp.write(part)
 
 
 PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
@@ -287,6 +346,24 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
         # pylint:disable=line-too-long
         digest='sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea',
         destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
+    ),
+
+    StaticContainerRegistry(
+        root=constants.ISO_IMAGE_ROOT,
+        server_root='${}_{}_images'.format(
+            config.PROJECT_NAME.lower(), constants.SHORT_VERSION.replace('.', '_')
+        ),
+        name_prefix='{}-{}/'.format(
+            config.PROJECT_NAME.lower(), constants.SHORT_VERSION
+        ),
+        destination=Path(
+            constants.ISO_ROOT,
+            'salt/metalk8s/repo/files',
+            '99-{}-{}-registry.conf'.format(
+                config.PROJECT_NAME.lower(), constants.SHORT_VERSION
+            )
+        ),
+        task_dep=['images']
     ),
 )
 
