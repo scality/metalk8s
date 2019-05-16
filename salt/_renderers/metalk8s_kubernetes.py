@@ -60,6 +60,20 @@ def handle(api_version, kind):
     return register
 
 
+@handle('v1', 'Service')
+def _handle_v1_service(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.service_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+        ],
+    }
+
+
 @handle('v1', 'ServiceAccount')
 def _handle_v1_serviceaccount(obj, kubeconfig, context):
     return {
