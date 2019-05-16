@@ -4,10 +4,9 @@
 """Useful global constants, used hither and yon."""
 
 
-import os
 from pathlib import Path
 import subprocess
-from typing import Optional, Tuple
+from typing import Optional
 
 from buildchain import ROOT  # Re-export ROOT through this module.
 from buildchain import config
@@ -39,28 +38,6 @@ VAGRANT_ROOT : Path = ROOT/'.vagrant'
 # Vagrant parameters {{{
 
 VAGRANT_SSH_KEY_PAIR : Path = VAGRANT_ROOT/'preshared_key_for_k8s_nodes'
-
-# }}}
-# Container options {{{
-
-BIND_RO_MOUNT_FMT : str = 'type=bind,source={src},destination={dst},ro'
-BUILDER_RPMLINTRC_MOUNT : str = BIND_RO_MOUNT_FMT.format(
-    src=ROOT/'packages'/'rpmlintrc',
-    dst='/rpmbuild/rpmlintrc'
-)
-BUILDER_ENTRYPOINT_MOUNT : str = BIND_RO_MOUNT_FMT.format(
-    src=ROOT/'packages'/'entrypoint.sh',
-    dst='/entrypoint.sh'
-)
-BUILDER_BASIC_CMD : Tuple[str, ...] = (
-    config.DOCKER, 'run',
-    '--env', 'TARGET_UID={}'.format(os.geteuid()),
-    '--env', 'TARGET_GID={}'.format(os.getegid()),
-    '--hostname', 'build',
-    '--mount', 'type=tmpfs,destination=/tmp',
-    '--mount', BUILDER_ENTRYPOINT_MOUNT,
-    '--rm',
-)
 
 # }}}
 # Versions {{{
