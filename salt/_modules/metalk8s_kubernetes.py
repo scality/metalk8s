@@ -2204,6 +2204,7 @@ def create_customresourcedefinition(
 def replace_customresourcedefinition(
         name,
         spec,
+        old_crd,
         **kwargs):
     meta_obj = kubernetes.client.V1ObjectMeta(name=name)
     body = kubernetes.client.V1beta1CustomResourceDefinition(
@@ -2212,9 +2213,11 @@ def replace_customresourcedefinition(
 
     cfg = _setup_conn(**kwargs)
 
+    body.metadata.resource_version = old_crd['metadata']['resource_version']
+
     try:
         api_instance = kubernetes.client.ApiextensionsV1beta1Api()
-        api_response = api_instance.patch_custom_resource_definition(
+        api_response = api_instance.replace_custom_resource_definition(
             name, body)
 
         return api_response.to_dict()
