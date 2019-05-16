@@ -1500,6 +1500,7 @@ def customresourcedefinition_present(
         res = __salt__['metalk8s_kubernetes.replace_customresourcedefinition'](
             name=name,
             spec=spec,
+            old_crd=customresourcedefinition,
             **kwargs)
 
         ret['result'] = True
