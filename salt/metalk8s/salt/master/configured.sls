@@ -1,12 +1,6 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
-{%- from "metalk8s/map.jinja" import networks with context %}
 
-{%- set ip_candidates = salt.network.ip_addrs(cidr=networks.control_plane) %}
-{%- if ip_candidates %}
-    {%- set salt_api_ip = ip_candidates[0] %}
-{%- else %}
-    {%- set salt_api_ip = '127.0.0.1' %}
-{%- endif %}
+{%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
 
 Configure salt master:
   file.managed:
@@ -19,7 +13,7 @@ Configure salt master:
     - backup: false
     - template: jinja
     - defaults:
-        salt_api_ip: "{{ salt_api_ip }}"
+        salt_ip: "{{ salt_ip }}"
 
 Configure salt master roots paths:
   file.serialize:
