@@ -1,3 +1,15 @@
+#!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+
+{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
+
+# The content below has been generated from
+# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# with the following command:
+#   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
+#     -name "0*.yaml" | sort) > deployed.sls
+# In the following, only container image registries have been replaced.
+
+---
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -6196,9 +6208,9 @@ spec:
       - args:
         - --kubelet-service=kube-system/kubelet
         - --logtostderr=true
-        - --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
-        - --prometheus-config-reloader=quay.io/coreos/prometheus-config-reloader:v0.23.2
-        image: quay.io/coreos/prometheus-operator:v0.23.2
+        - --config-reloader-image={{ build_image_name('configmap-reload', 'v0.0.1') }}
+        - --prometheus-config-reloader={{ build_image_name('prometheus-config-reloader', 'v0.23.2') }}
+        image: {{ build_image_name('prometheus-operator', 'v0.23.2') }}
         name: prometheus-operator
         ports:
         - containerPort: 8080
