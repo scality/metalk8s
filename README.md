@@ -23,7 +23,7 @@ If you'd like to contribute, please review the
 - [Vagrant](https://www.vagrantup.com/)
 - [VirtualBox](https://www.virtualbox.org)
 
-### Bootstrapping local environment
+### Bootstrapping a local environment
 
 ```shell 
 # Install virtualbox guest addition plugin
@@ -34,11 +34,10 @@ vagrant plugin install vagrant-vbguest
 
 ### End-to-End Testing
 
-To run tests locally: Complete the bootstrapping step above
+To run the test-suite locally, first complete the bootstrap step as outline above
 ```shell 
-# Generate an ssh-config file from vagrant
-vagrant ssh-config >bootstrap.ssh.config
-# Run tox with two environment variables
+# Run tests with tox
+tox -e tests
 # The test command should be in that case
 SSH_CONFIG_FILE=bootstrap.ssh.config SSH_HOSTS_LIST=bootstrap tox -e tests
 ```
