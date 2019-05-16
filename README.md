@@ -38,8 +38,6 @@ To run the test-suite locally, first complete the bootstrap step as outline abov
 ```shell 
 # Run tests with tox
 tox -e tests
-# The test command should be in that case
-SSH_CONFIG_FILE=bootstrap.ssh.config SSH_HOSTS_LIST=bootstrap tox -e tests
 ```
 
 ---
