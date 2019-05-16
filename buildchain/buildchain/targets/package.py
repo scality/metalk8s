@@ -27,17 +27,15 @@ Overview;
 import os
 import operator
 import re
-import shlex
-import subprocess
 import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
-from buildchain import config
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
+from buildchain import docker_command
 
 from . import base
 from . import directory
@@ -145,10 +143,37 @@ class Package(base.Target, base.CompositeTarget):
 
     def generate_meta(self) -> types.TaskDict:
         """Generate the .meta file for the package."""
+        spec_guest_file = Path('/rpmbuild/SPECS', self.spec.name)
+        meta_guest_file = Path('/rpmbuild/META', self.meta.name)
+        mounts = [
+            docker_command.DockerRun.ENTRYPOINT_MOUNT,
+            docker_command.bind_ro_mount(
+                source=self.spec, target=spec_guest_file
+            ),
+            docker_command.bind_mount(
+                source=self.meta.parent, target=meta_guest_file.parent
+            )
+        ]
+        command = ['/entrypoint.sh', 'buildmeta']
+        rpmspec_config = {
+            'hostname': 'build',
+            'read_only': True,
+            'remove': True
+        }
+        buildmeta_callable = docker_command.DockerRun(
+            command=command,
+            builder=self.builder,
+            environment={
+                'SPEC': self.spec.name,
+                'META': self.meta.name
+            },
+            run_config=rpmspec_config,
+            mounts=mounts
+        )
         task = self.basic_task
         task.update({
             'name': 'pkg_rpmspec',
-            'actions': [self._rpmspec],
+            'actions': [buildmeta_callable],
             'doc': 'Generate {}.meta'.format(self.name),
             'title': lambda task: utils.title_with_target1('RPMSPEC', task),
             'targets': [self.meta],
@@ -179,10 +204,25 @@ class Package(base.Target, base.CompositeTarget):
 
     def build_srpm(self) -> types.TaskDict:
         """Build the SRPM for the package."""
+        env = {
+            'SPEC': self.spec.name,
+            'SRPM': self.srpm.name,
+            'SOURCES': ' '.join(source.name for source in self.sources),
+        }
+
+        buildsrpm_callable = docker_command.DockerRun(
+            command=['/entrypoint.sh', 'buildsrpm'],
+            builder=self.builder,
+            environment=env,
+            tmpfs={'/home/build': '', '/var/tmp': ''},
+            mounts=self._get_buildsrpm_mounts(self.srpm.parent),
+            read_only=True
+        )
+
         task = self.basic_task
         task.update({
             'name': 'pkg_srpm',
-            'actions': [self._buildsrpm_cmd()],
+            'actions': [buildsrpm_callable],
             'doc': 'Build {}'.format(self.srpm.name),
             'title': lambda task: utils.title_with_target1('BUILD SRPM', task),
             'targets': [self.srpm],
@@ -194,45 +234,6 @@ class Package(base.Target, base.CompositeTarget):
         task['task_dep'].append('{}:{}'.format(self.basename,
                                                self.MKDIR_TASK_NAME))
         return task
-
-    def _rpmspec(self) -> None:
-        """Run the `rpmspec` command inside a container and save the output."""
-        container_spec = '/rpmbuild/SPECS/{}'.format(self.spec.name)
-        mount_string = 'type=bind,source={src},destination={dst},ro'.format(
-            src=self.spec, dst=container_spec
-        )
-        rpmspec_cmd = [
-            config.DOCKER, 'run',
-            '--hostname', 'build',
-            '--mount', mount_string,
-            '--read-only',
-            '--rm',
-            self.builder.tag,
-            'su', '-l', 'build', '-c',
-            'rpmspec -P {}'.format(shlex.quote(container_spec)),
-        ]
-        stdout = subprocess.check_output(rpmspec_cmd)
-        with open(self.meta, 'w', encoding='utf-8') as fp:
-            fp.write(stdout.decode('utf-8'))
-
-    def _buildsrpm_cmd(self) -> List[str]:
-        """Return the command to run `buildsrpm` inside a container."""
-        extra_env = {
-            'SPEC': self.spec.name,
-            'SRPM': self.srpm.name,
-            'SOURCES': ' '.join(map(operator.attrgetter('name'), self.sources)),
-        }
-        cmd = list(constants.BUILDER_BASIC_CMD)
-        for var, value in extra_env.items():
-            cmd.extend(['--env', '{}={}'.format(var, value)])
-        for mount_string in self._get_buildsrpm_mounts(self.srpm.parent):
-            cmd.extend(['--mount', mount_string])
-        cmd.extend([
-            '--read-only',
-            self.builder.tag,
-            '/entrypoint.sh', 'buildsrpm'
-        ])
-        return cmd
 
     def _download_sources(self) -> None:
         """Return a list of actions to download the source files."""
@@ -261,27 +262,31 @@ class Package(base.Target, base.CompositeTarget):
             ))
         return urls
 
-    def _get_buildsrpm_mounts(self, srpm_dir: Path) -> List[str]:
+    def _get_buildsrpm_mounts(self, srpm_dir: Path) -> List[types.Mount]:
         """Return the list of container mounts required by `buildsrpm`."""
-        # TMPFS mounts.
         mounts = [
-            'type=tmpfs,destination=/home/build',
-            'type=tmpfs,destination=/var/tmp',
+            # .spec file
+            docker_command.bind_ro_mount(
+                source=self.spec,
+                target=Path('/rpmbuild/SPECS', self.spec.name)
+            ),
+            # SRPM directory.
+            docker_command.bind_mount(
+                source=srpm_dir,
+                target=Path('/rpmbuild/SRPMS'),
+            ),
+            # rpmlint configuration file
+            docker_command.DockerRun.RPMLINTRC_MOUNT
         ]
-        # .spec file
-        mounts.append(constants.BIND_RO_MOUNT_FMT.format(
-            src=self.spec, dst='/rpmbuild/SPECS/{}'.format(self.spec.name)
-        ))
-        # SRPM directory.
-        mounts.append('type=bind,source={src},destination={dst}'.format(
-                src=srpm_dir, dst='/rpmbuild/SRPMS',
-        ))
+
         # Source files.
         for source in self.sources:
-            mounts.append(constants.BIND_RO_MOUNT_FMT.format(
-                src=source, dst='/rpmbuild/SOURCES/{}'.format(source.name)
-            ))
-        mounts.append(constants.BUILDER_RPMLINTRC_MOUNT)
+            mounts.append(
+                docker_command.bind_ro_mount(
+                    source=source,
+                    target=Path('/rpmbuild/SOURCES', source.name)
+                )
+            )
         return mounts
 
 

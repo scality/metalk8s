@@ -6,7 +6,8 @@
 
 from typing import Any, Callable, Dict, List, Tuple, Union
 
-import doit  # type: ignore
+import docker  # type: ignore
+import doit    # type: ignore
 
 
 # A doit action.
@@ -24,3 +25,9 @@ Task = doit.task.Task
 
 # A doit task (as dict)
 TaskDict = Dict[str, Any]
+
+# A doit task error
+TaskError = doit.exceptions.TaskError
+
+# A docker mount
+Mount = docker.types.Mount
