@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Optional, Dict
 
 import pytest
 
@@ -27,3 +28,7 @@ def retry(operation, times=1, wait=1, error_msg=None, name="default"):
             ).format(name=name, attempts=times, total=times * wait)
 
         pytest.fail(error_msg)
+
+
+def write_string(host, dest, contents):
+    return host.run("cat > {} << EOF\n{}\nEOF".format(dest, contents))

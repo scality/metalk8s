@@ -3,6 +3,7 @@ kind: Pod
 metadata:
   annotations:
     scheduler.alpha.kubernetes.io/critical-pod: ""
+    metalk8s.scality.com/config-digest: "{{ config_digest }}"
   creationTimestamp: null
   name: {{ name }}
   namespace: "kube-system"
