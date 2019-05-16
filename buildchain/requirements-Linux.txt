@@ -4,13 +4,48 @@
 #
 #    tox -e pip-compile
 #
-cloudpickle==0.8.1 \
-    --hash=sha256:3ea6fd33b7521855a97819b3d645f92d51c8763d3ab5df35197cd8e96c19ba6f \
-    --hash=sha256:70b492d5e06b779707c00b334311abcd4ac144c56910068aeeda0079e6244ef0 \
+certifi==2019.3.9 \
+    --hash=sha256:59b7658e26ca9c7339e00f8f4636cdfe59d34fa37b9b04f6f9e9926b3cece1a5 \
+    --hash=sha256:b26104d6835d1f5e49452a26eb2ff87fe7090b89dfcaee5ea2212697e1e1d7ae \
+    # via requests
+chardet==3.0.4 \
+    --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
+    --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
+    # via requests
+cloudpickle==1.0.0 \
+    --hash=sha256:c5646e5deed598dc6281e721d8a85fff032b4bcfa3a3178ab9e9f125cc22e82a \
+    --hash=sha256:f1615ab5d1e29cc4b962a6452590e8c857c92d955e2c1172521fb3779d7feffa \
     # via doit
+docker-pycreds==0.4.0 \
+    --hash=sha256:6ce3270bcaf404cc4c3e27e4b6c70d3521deae82fb508767870fdbf772d584d4 \
+    --hash=sha256:7266112468627868005106ec19cd0d722702d2b7d5912a28e19b826c3d37af49 \
+    # via docker
+docker==3.7.2 \
+    --hash=sha256:2b1f48041cfdcc9f6b5da0e04e0e326ded225e736762ade2060000e708f4c9b7 \
+    --hash=sha256:c456ded5420af5860441219ff8e51cdec531d65f4a9e948ccd4133e063b72f50
 doit==0.31.1 \
     --hash=sha256:52b7ad1c0095425bd719c2fc9fb27af94fb0ee478762c50abf385faaf786d010 \
     --hash=sha256:bad01949effd537cade3aea286cc2cde074bdb7a4f442015557b1228dd46f5ea
+idna==2.8 \
+    --hash=sha256:c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407 \
+    --hash=sha256:ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c \
+    # via requests
 pyinotify==0.9.6 \
     --hash=sha256:9c998a5d7606ca835065cdabc013ae6c66eb9ea76a00a1e3bc6e0cfe2b4f71f4 \
     # via doit
+requests==2.21.0 \
+    --hash=sha256:502a824f31acdacb3a35b6690b5fbf0bc41d63a24a45c4004352b0242707598e \
+    --hash=sha256:7bf2a778576d825600030a110f3c0e3e8edc51dfaafe1c146e39a2027784957b \
+    # via docker
+six==1.12.0 \
+    --hash=sha256:3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c \
+    --hash=sha256:d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73 \
+    # via docker, docker-pycreds, websocket-client
+urllib3==1.24.3 \
+    --hash=sha256:2393a695cd12afedd0dcb26fe5d50d0cf248e5a66f75dbd89a3d4eb333a61af4 \
+    --hash=sha256:a637e5fae88995b256e3409dc4d52c2e2e0ba32c42a6365fee8bbd2238de3cfb \
+    # via requests
+websocket-client==0.56.0 \
+    --hash=sha256:1151d5fb3a62dc129164292e1227655e4bbc5dd5340a5165dfae61128ec50aa9 \
+    --hash=sha256:1fd5520878b68b84b5748bb30e592b10d0a91529d5383f74f4964e72b297fd3a \
+    # via docker
