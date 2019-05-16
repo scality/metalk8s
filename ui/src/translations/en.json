@@ -33,5 +33,5 @@
   "ready": "Ready",
   "not_ready": "Not Ready",
   "deploy": "Deploy",
-  "version": "Metalk8s Version"
+  "version": "MetalK8s Version"
 }
