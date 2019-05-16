@@ -88,9 +88,11 @@ Kill kube-controller-manager on all master nodes:
 {%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
 
 Register the node into etcd cluster:
-  module.run:
-    - metalk8s.add_etcd_node:
-      - host: {{ node_name }}
+  salt.runner:
+    - name: state.orchestrate
+    - pillar: {{ pillar | json  }}
+    - mods:
+      - metalk8s.orchestrate.register_etcd
     - require:
       - salt: Run the highstate
 
