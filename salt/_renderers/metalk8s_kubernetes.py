@@ -154,6 +154,18 @@ def _handle_extensions_v1beta1_deployment(obj, kubeconfig, context):
     }
 
 
+@handle('v1', 'Namespace')
+def _handle_v1_namespace(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.namespace_present': [
+            {'name': obj['metadata']['name']},
+            {'body': obj},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ],
+    }
+
+
 @handle('monitoring.coreos.com/v1', 'Alertmanager')
 @handle('monitoring.coreos.com/v1', 'Prometheus')
 @handle('monitoring.coreos.com/v1', 'PrometheusRule')
