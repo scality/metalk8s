@@ -21,7 +21,7 @@ The most important ones are:
 - `iso`:  build the MetalK8s ISO
 - `lint`: run the linting tools on the codebase
 - `populate_iso`: populate the ISO file tree
-- `vagrantup`: spawn a development environment using Vagrant
+- `vagrant_up`: spawn a development environment using Vagrant
 
 By default, i.e. if you only type `./doit.sh` with no arguments, the `iso` task is
 executed.
