@@ -194,6 +194,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/macro.sls'),
     Path('salt/metalk8s/map.jinja'),
 
+    Path('salt/metalk8s/monitoring/prometheus-operator/deployed.sls'),
+
     Path('salt/metalk8s/node/grains.sls'),
 
     Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
