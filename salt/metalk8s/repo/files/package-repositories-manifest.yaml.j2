@@ -10,6 +10,8 @@ metadata:
     heritage: metalk8s
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/managed-by: salt
+  annotations:
+    metalk8s.scality.com/config-digest: "{{ config_digest }}"
 spec:
   hostNetwork: true
   priorityClassName: system-cluster-critical
