@@ -3,7 +3,7 @@
 {%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.28.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.29.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
 #     -name "0*.yaml" | sort) > deployed.sls
@@ -3968,6 +3968,14 @@ spec:
                 required:
                 - name
               type: array
+            enableAdminAPI:
+              description: 'Enable access to prometheus web admin API. Defaults to
+                the value of `false`. WARNING: Enabling the admin APIs enables mutating
+                endpoints, to delete data, shutdown Prometheus, and more. Enabling
+                this should be done with care and the user is advised to add additional
+                authentication authorization via a proxy to ensure only clients authorized
+                to perform these actions can do so. For more information see https://prometheus.io/docs/prometheus/latest/querying/api/#tsdb-admin-apis'
+              type: boolean
             evaluationInterval:
               description: Interval between consecutive evaluations.
               type: string
@@ -4002,6 +4010,9 @@ spec:
               description: ListenLocal makes the Prometheus server listen on loopback,
                 so that it does not bind against the Pod IP.
               type: boolean
+            logFormat:
+              description: Log format for Prometheus to be configured with.
+              type: string
             logLevel:
               description: Log level for Prometheus to be configured with.
               type: string
@@ -4489,6 +4500,11 @@ spec:
                         description: MinBackoff is the initial retry delay. Gets doubled
                           for every retry.
                         type: string
+                      minShards:
+                        description: MinShards is the minimum number of shards, i.e.
+                          amount of concurrency.
+                        format: int32
+                        type: integer
                   remoteTimeout:
                     description: Timeout for requests to the remote write endpoint.
                     type: string
@@ -4673,6 +4689,25 @@ spec:
                     "In", and the values array contains only "value". The requirements
                     are ANDed.
                   type: object
+            rules:
+              description: /--rules.*/ command-line arguments
+              properties:
+                alert:
+                  description: /--rules.alert.*/ command-line arguments
+                  properties:
+                    forGracePeriod:
+                      description: Minimum duration between alert and restored 'for'
+                        state. This is maintained only for alerts with configured
+                        'for' time greater than grace period.
+                      type: string
+                    forOutageTolerance:
+                      description: Max time to tolerate prometheus outage for restoring
+                        'for' state of alert.
+                      type: string
+                    resendDelay:
+                      description: Minimum amount of time to wait before resending
+                        an alert to Alertmanager.
+                      type: string
             scrapeInterval:
               description: Interval between consecutive scrapes.
               type: string
@@ -5371,8 +5406,9 @@ spec:
                   description: Thanos base image if other than default.
                   type: string
                 gcs:
-                  description: ThanosGCSSpec defines parameters for use of Google
-                    Cloud Storage (GCS) with Thanos.
+                  description: 'Deprecated: ThanosGCSSpec should be configured with
+                    an ObjectStorageConfig secret starting with Thanos v0.2.0. ThanosGCSSpec
+                    will be removed.'
                   properties:
                     bucket:
                       description: Google Cloud Storage bucket name for stored blocks.
@@ -5400,6 +5436,22 @@ spec:
                     to ensure the Prometheus Operator knows what version of Thanos
                     is being configured.
                   type: string
+                objectStorageConfig:
+                  description: SecretKeySelector selects a key of a Secret.
+                  properties:
+                    key:
+                      description: The key of the secret to select from.  Must be
+                        a valid secret key.
+                      type: string
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                      type: string
+                    optional:
+                      description: Specify whether the Secret or it's key must be
+                        defined
+                      type: boolean
+                  required:
+                  - key
                 peers:
                   description: Peers is a DNS name for Thanos to discover peers through.
                   type: string
@@ -5418,8 +5470,9 @@ spec:
                         to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                       type: object
                 s3:
-                  description: ThanosS3Spec defines parameters for of AWS Simple Storage
-                    Service (S3) with Thanos. (S3 compatible services apply as well)
+                  description: 'Deprecated: ThanosS3Spec should be configured with
+                    an ObjectStorageConfig secret starting with Thanos v0.2.0. ThanosS3Spec
+                    will be removed.'
                   properties:
                     accessKey:
                       description: SecretKeySelector selects a key of a Secret.
@@ -6257,11 +6310,13 @@ rules:
   - ""
   resources:
   - services
+  - services/finalizers
   - endpoints
   verbs:
   - get
   - create
   - update
+  - delete
 - apiGroups:
   - ""
   resources:
@@ -6299,9 +6354,9 @@ spec:
       - args:
         - --kubelet-service=kube-system/kubelet
         - --logtostderr=true
-        - --config-reloader-image={{ build_image_name('configmap-reload', 'v0.0.1') }}
-        - --prometheus-config-reloader={{ build_image_name('prometheus-config-reloader', 'v0.27.0') }}
-        image: {{ build_image_name('prometheus-operator', 'v0.27.0') }}
+        - --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
+        - --prometheus-config-reloader={{ build_image_name('prometheus-config-reloader', 'v0.28.0') }}
+        image: {{ build_image_name('prometheus-operator', 'v0.28.0') }}
         name: prometheus-operator
         ports:
         - containerPort: 8080
