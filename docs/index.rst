@@ -19,6 +19,7 @@ Welcome to MetalK8s's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   installation-guide/index
    developer/index
 
 
