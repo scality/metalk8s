@@ -248,14 +248,6 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
-    targets.RemoteImage(
-        registry=constants.DOCKER_REGISTRY,
-        name='registry',
-        version='2.7.1',
-        digest='sha256:870474507964d8e7d8c3b53bcfa738e3356d2747a42adad26d0d81ef4479eb1b',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
 )
 
 

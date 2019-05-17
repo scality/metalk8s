@@ -33,12 +33,6 @@
                         'api': 4507,
                     },
                 },
-                'registry': {
-                    'ip': bootstrap_control_plane_ip,
-                    'ports': {
-                        'registry': 5000,
-                    },
-                },
                 'package-repositories': {
                     'ip': bootstrap_control_plane_ip,
                     'ports': {
@@ -144,7 +138,6 @@ Deploy Kubernetes objects:
     - metalk8s.kubernetes.cni.calico.deployed
     - metalk8s.kubernetes.coredns.deployed
     - metalk8s.repo.deployed
-    - metalk8s.registry.deployed
     - metalk8s.salt.master.deployed
     - metalk8s.addons.ui.deployed
     - metalk8s.addons.prometheus-operator.deployed

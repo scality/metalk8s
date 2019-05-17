@@ -1,4 +1,4 @@
-{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 

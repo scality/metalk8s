@@ -13,7 +13,6 @@ Feature: Pods should be alive
         And we have at least 1 running pod labeled 'k8s-app=kube-proxy'
         And we have at least 1 running pod labeled 'k8s-app=calico-node'
         And we have at least 2 running pod labeled 'k8s-app=kube-dns'
-        And we have at least 1 running pod labeled 'app=registry'
         And we have at least 1 running pod labeled 'app=salt-master'
         And we have at least 1 running pod labeled 'app=package-repositories'
 

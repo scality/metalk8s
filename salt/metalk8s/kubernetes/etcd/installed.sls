@@ -1,4 +1,4 @@
-{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 include:
   - metalk8s.kubernetes.ca.etcd.advertised

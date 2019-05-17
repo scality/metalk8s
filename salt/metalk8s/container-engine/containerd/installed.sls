@@ -1,8 +1,8 @@
 {%- from "metalk8s/macro.sls" import pkg_installed with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 
-{%- set registry_ip = metalk8s.endpoints.registry.ip %}
-{%- set registry_port = metalk8s.endpoints.registry.ports.registry %}
+{%- set registry_ip = metalk8s.endpoints['package-repositories'].ip %}
+{%- set registry_port = metalk8s.endpoints['package-repositories'].ports.http %}
 
 include:
   - metalk8s.repo
@@ -30,7 +30,7 @@ Configure registry IP in containerd conf:
     - name: /etc/containerd/config.toml
     - makedirs: true
     - contents: |
-        [plugins.cri.registry.mirrors."{{ registry_ip }}"]
+        [plugins.cri.registry.mirrors."{{ registry_ip }}:{{ registry_port }}"]
           endpoint = ["http://{{ registry_ip }}:{{ registry_port }}"]
     - require:
       - pkg: Install containerd
