@@ -54,11 +54,11 @@
     },
     {
         'name': 'prometheus-operator',
-        'tag': 'v0.23.2',
+        'tag': 'v0.27.0',
     },
     {
         'name': 'prometheus-config-reloader',
-        'tag': 'v0.23.2',
+        'tag': 'v0.27.0',
     },
     {
         'name': 'configmap-reload',

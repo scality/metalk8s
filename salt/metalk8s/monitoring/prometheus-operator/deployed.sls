@@ -3,7 +3,7 @@
 {%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.28.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
 #     -name "0*.yaml" | sort) > deployed.sls
@@ -43,6 +43,12 @@ spec:
           description: 'AlertmanagerSpec is a specification of the desired behavior
             of the Alertmanager cluster. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status'
           properties:
+            additionalPeers:
+              description: AdditionalPeers allows injecting a set of additional Alertmanagers
+                to peer with to form a highly available cluster.
+              items:
+                type: string
+              type: array
             affinity:
               description: Affinity is a group of affinity scheduling rules.
               properties:
@@ -604,6 +610,13 @@ spec:
             baseImage:
               description: Base image that is used to deploy pods, without tag.
               type: string
+            configMaps:
+              description: ConfigMaps is a list of ConfigMaps in the same namespace
+                as the Alertmanager object, which shall be mounted into the Alertmanager
+                Pods. The ConfigMaps are mounted into /etc/alertmanager/configmaps/<configmap-name>.
+              items:
+                type: string
+              type: array
             containers:
               description: Containers allows injecting additional containers. This
                 is meant to allow adding an authentication proxy to an Alertmanager
@@ -1068,8 +1081,8 @@ spec:
                             to by services.
                           type: string
                         protocol:
-                          description: Protocol for port. Must be UDP or TCP. Defaults
-                            to "TCP".
+                          description: Protocol for port. Must be UDP, TCP, or SCTP.
+                            Defaults to "TCP".
                           type: string
                       required:
                       - containerPort
@@ -1222,6 +1235,13 @@ spec:
                           privileged containers are essentially equivalent to root
                           on the host. Defaults to false.
                         type: boolean
+                      procMount:
+                        description: procMount denotes the type of proc mount to use
+                          for the containers. The default is DefaultProcMount which
+                          uses the container runtime defaults for readonly paths and
+                          masked paths. This requires the ProcMountType feature flag
+                          to be enabled.
+                        type: string
                       readOnlyRootFilesystem:
                         description: Whether this container has a read-only root filesystem.
                           Default is false.
@@ -1344,8 +1364,8 @@ spec:
                         mountPropagation:
                           description: mountPropagation determines how mounts are
                             propagated from the host to container and the other way
-                            around. When not set, MountPropagationHostToContainer
-                            is used. This field is beta in 1.10.
+                            around. When not set, MountPropagationNone is used. This
+                            field is beta in 1.10.
                           type: string
                         name:
                           description: This must match the Name of a Volume.
@@ -1374,6 +1394,12 @@ spec:
               description: The external URL the Alertmanager instances will be available
                 under. This is necessary to generate correct URLs. This is necessary
                 if Alertmanager is not served from root of a DNS name.
+              type: string
+            image:
+              description: Image if specified has precedence over baseImage, tag and
+                sha combinations. Specifying the version is still necessary to ensure
+                the Prometheus Operator knows what version of Alertmanager is being
+                configured.
               type: string
             imagePullSecrets:
               description: An optional list of references to secrets in the same namespace
@@ -1580,11 +1606,12 @@ spec:
                                 the server has more data available. The value is opaque
                                 and may be used to issue another request to the endpoint
                                 that served this list to retrieve the next set of
-                                available objects. Continuing a list may not be possible
-                                if the server configuration has changed or more than
-                                a few minutes have passed. The resourceVersion field
-                                returned when using this continue value will be identical
-                                to the value in the first response.
+                                available objects. Continuing a consistent list may
+                                not be possible if the server configuration has changed
+                                or more than a few minutes have passed. The resourceVersion
+                                field returned when using this continue value will
+                                be identical to the value in the first response, unless
+                                you have received this token from an error message.
                               type: string
                             resourceVersion:
                               description: 'String that identifies the server''s internal
@@ -1685,6 +1712,9 @@ spec:
 
                     Populated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids
                   type: string
+            priorityClassName:
+              description: Priority class assigned to the Pods
+              type: string
             replicas:
               description: Size is the expected size of the alertmanager cluster.
                 The controller will eventually make the size of the running cluster
@@ -1706,7 +1736,8 @@ spec:
                   type: object
             retention:
               description: Time duration Alertmanager shall retain data for. Default
-                is '120h'.
+                is '120h', and must match the regular expression `[0-9]+(ms|s|m|h)`
+                (milliseconds seconds minutes hours).
               type: string
             routePrefix:
               description: The route prefix Alertmanager registers HTTP handlers for.
@@ -1810,15 +1841,18 @@ spec:
               description: ServiceAccountName is the name of the ServiceAccount to
                 use to run the Prometheus Pods.
               type: string
+            sha:
+              description: SHA of Alertmanager container image to be deployed. Defaults
+                to the value of `version`. Similar to a tag, but the SHA explicitly
+                deploys an immutable container image. Version and Tag are ignored
+                if SHA is set.
+              type: string
             storage:
               description: StorageSpec defines the configured storage for a group
-                Prometheus servers.
+                Prometheus servers. If neither `emptyDir` nor `volumeClaimTemplate`
+                is specified, then by default an [EmptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir)
+                will be used.
               properties:
-                class:
-                  description: 'Name of the StorageClass to use when requesting storage
-                    provisioning. More info: https://kubernetes.io/docs/user-guide/persistent-volumes/#storageclasses
-                    DEPRECATED'
-                  type: string
                 emptyDir:
                   description: Represents an empty directory for a pod. Empty directory
                     volumes support ownership management and SELinux relabeling.
@@ -1829,63 +1863,6 @@ spec:
                         Must be an empty string (default) or Memory. More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir'
                       type: string
                     sizeLimit: {}
-                resources:
-                  description: ResourceRequirements describes the compute resource
-                    requirements.
-                  properties:
-                    limits:
-                      description: 'Limits describes the maximum amount of compute
-                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                      type: object
-                    requests:
-                      description: 'Requests describes the minimum amount of compute
-                        resources required. If Requests is omitted for a container,
-                        it defaults to Limits if that is explicitly specified, otherwise
-                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                      type: object
-                selector:
-                  description: A label selector is a label query over a set of resources.
-                    The result of matchLabels and matchExpressions are ANDed. An empty
-                    label selector matches all objects. A null label selector matches
-                    no objects.
-                  properties:
-                    matchExpressions:
-                      description: matchExpressions is a list of label selector requirements.
-                        The requirements are ANDed.
-                      items:
-                        description: A label selector requirement is a selector that
-                          contains values, a key, and an operator that relates the
-                          key and values.
-                        properties:
-                          key:
-                            description: key is the label key that the selector applies
-                              to.
-                            type: string
-                          operator:
-                            description: operator represents a key's relationship
-                              to a set of values. Valid operators are In, NotIn, Exists
-                              and DoesNotExist.
-                            type: string
-                          values:
-                            description: values is an array of string values. If the
-                              operator is In or NotIn, the values array must be non-empty.
-                              If the operator is Exists or DoesNotExist, the values
-                              array must be empty. This array is replaced during a
-                              strategic merge patch.
-                            items:
-                              type: string
-                            type: array
-                        required:
-                        - key
-                        - operator
-                      type: array
-                    matchLabels:
-                      description: matchLabels is a map of {key,value} pairs. A single
-                        {key,value} in the matchLabels map is equivalent to an element
-                        of matchExpressions, whose key field is "key", the operator
-                        is "In", and the values array contains only "value". The requirements
-                        are ANDed.
-                      type: object
                 volumeClaimTemplate:
                   description: PersistentVolumeClaim is a user's request for and claim
                     to a persistent volume
@@ -2092,12 +2069,14 @@ spec:
                                         available. The value is opaque and may be
                                         used to issue another request to the endpoint
                                         that served this list to retrieve the next
-                                        set of available objects. Continuing a list
-                                        may not be possible if the server configuration
+                                        set of available objects. Continuing a consistent
+                                        list may not be possible if the server configuration
                                         has changed or more than a few minutes have
                                         passed. The resourceVersion field returned
                                         when using this continue value will be identical
-                                        to the value in the first response.
+                                        to the value in the first response, unless
+                                        you have received this token from an error
+                                        message.
                                       type: string
                                     resourceVersion:
                                       description: 'String that identifies the server''s
@@ -2215,6 +2194,26 @@ spec:
                           items:
                             type: string
                           type: array
+                        dataSource:
+                          description: TypedLocalObjectReference contains enough information
+                            to let you locate the typed referenced object inside the
+                            same namespace.
+                          properties:
+                            apiGroup:
+                              description: APIGroup is the group for the resource
+                                being referenced. If APIGroup is not specified, the
+                                specified Kind must be in the core API group. For
+                                any other third-party types, APIGroup is required.
+                              type: string
+                            kind:
+                              description: Kind is the type of resource being referenced
+                              type: string
+                            name:
+                              description: Name is the name of resource being referenced
+                              type: string
+                          required:
+                          - kind
+                          - name
                         resources:
                           description: ResourceRequirements describes the compute
                             resource requirements.
@@ -2348,7 +2347,7 @@ spec:
                           type: string
             tag:
               description: Tag of Alertmanager container image to be deployed. Defaults
-                to the value of `version`.
+                to the value of `version`. Version is ignored if Tag is set.
               type: string
             tolerations:
               description: If specified, the pod's tolerations.
@@ -2458,6 +2457,21 @@ spec:
             of the Prometheus cluster. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status'
           properties:
             additionalAlertManagerConfigs:
+              description: SecretKeySelector selects a key of a Secret.
+              properties:
+                key:
+                  description: The key of the secret to select from.  Must be a valid
+                    secret key.
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                optional:
+                  description: Specify whether the Secret or it's key must be defined
+                  type: boolean
+              required:
+              - key
+            additionalAlertRelabelConfigs:
               description: SecretKeySelector selects a key of a Secret.
               properties:
                 key:
@@ -3175,6 +3189,13 @@ spec:
             baseImage:
               description: Base image to use for a Prometheus deployment.
               type: string
+            configMaps:
+              description: ConfigMaps is a list of ConfigMaps in the same namespace
+                as the Prometheus object, which shall be mounted into the Prometheus
+                Pods. The ConfigMaps are mounted into /etc/prometheus/configmaps/<configmap-name>.
+              items:
+                type: string
+              type: array
             containers:
               description: Containers allows injecting additional containers. This
                 is meant to allow adding an authentication proxy to a Prometheus pod.
@@ -3638,8 +3659,8 @@ spec:
                             to by services.
                           type: string
                         protocol:
-                          description: Protocol for port. Must be UDP or TCP. Defaults
-                            to "TCP".
+                          description: Protocol for port. Must be UDP, TCP, or SCTP.
+                            Defaults to "TCP".
                           type: string
                       required:
                       - containerPort
@@ -3792,6 +3813,13 @@ spec:
                           privileged containers are essentially equivalent to root
                           on the host. Defaults to false.
                         type: boolean
+                      procMount:
+                        description: procMount denotes the type of proc mount to use
+                          for the containers. The default is DefaultProcMount which
+                          uses the container runtime defaults for readonly paths and
+                          masked paths. This requires the ProcMountType feature flag
+                          to be enabled.
+                        type: string
                       readOnlyRootFilesystem:
                         description: Whether this container has a read-only root filesystem.
                           Default is false.
@@ -3914,8 +3942,8 @@ spec:
                         mountPropagation:
                           description: mountPropagation determines how mounts are
                             propagated from the host to container and the other way
-                            around. When not set, MountPropagationHostToContainer
-                            is used. This field is beta in 1.10.
+                            around. When not set, MountPropagationNone is used. This
+                            field is beta in 1.10.
                           type: string
                         name:
                           description: This must match the Name of a Volume.
@@ -3951,6 +3979,12 @@ spec:
               description: The external URL the Prometheus instances will be available
                 under. This is necessary to generate correct URLs. This is necessary
                 if Prometheus is not served from root of a DNS name.
+              type: string
+            image:
+              description: Image if specified has precedence over baseImage, tag and
+                sha combinations. Specifying the version is still necessary to ensure
+                the Prometheus Operator knows what version of Prometheus is being
+                configured.
               type: string
             imagePullSecrets:
               description: An optional list of references to secrets in the same namespace
@@ -4156,11 +4190,12 @@ spec:
                                 the server has more data available. The value is opaque
                                 and may be used to issue another request to the endpoint
                                 that served this list to retrieve the next set of
-                                available objects. Continuing a list may not be possible
-                                if the server configuration has changed or more than
-                                a few minutes have passed. The resourceVersion field
-                                returned when using this continue value will be identical
-                                to the value in the first response.
+                                available objects. Continuing a consistent list may
+                                not be possible if the server configuration has changed
+                                or more than a few minutes have passed. The resourceVersion
+                                field returned when using this continue value will
+                                be identical to the value in the first response, unless
+                                you have received this token from an error message.
                               type: string
                             resourceVersion:
                               description: 'String that identifies the server''s internal
@@ -4260,6 +4295,24 @@ spec:
                     UID is the unique in time and space value for this object. It is typically generated by the server on successful creation of a resource and is not allowed to change on PUT operations.
 
                     Populated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids
+                  type: string
+            priorityClassName:
+              description: Priority class assigned to the Pods
+              type: string
+            query:
+              description: QuerySpec defines the query command line flags when starting
+                Prometheus.
+              properties:
+                lookbackDelta:
+                  description: The delta difference allowed for retrieving metrics
+                    during expression evaluations.
+                  type: string
+                maxConcurrency:
+                  description: Number of concurrent queries that can be run at once.
+                  format: int32
+                  type: integer
+                timeout:
+                  description: Maximum time a query may take before being aborted.
                   type: string
             remoteRead:
               description: If specified, the remote_read spec. This is an experimental
@@ -4526,7 +4579,8 @@ spec:
                   type: object
             retention:
               description: Time duration Prometheus shall retain data for. Default
-                is '24h'.
+                is '24h', and must match the regular expression `[0-9]+(ms|s|m|h|d|w|y)`
+                (milliseconds seconds minutes hours days weeks years).
               type: string
             routePrefix:
               description: The route prefix Prometheus registers HTTP handlers for.
@@ -4626,10 +4680,6 @@ spec:
               description: Secrets is a list of Secrets in the same namespace as the
                 Prometheus object, which shall be mounted into the Prometheus Pods.
                 The Secrets are mounted into /etc/prometheus/secrets/<secret-name>.
-                Secrets changes after initial creation of a Prometheus object are
-                not reflected in the running Pods. To change the secrets mounted into
-                the Prometheus Pods, the object must be deleted and recreated with
-                the new list of secrets.
               items:
                 type: string
               type: array
@@ -4805,15 +4855,18 @@ spec:
                     "In", and the values array contains only "value". The requirements
                     are ANDed.
                   type: object
+            sha:
+              description: SHA of Prometheus container image to be deployed. Defaults
+                to the value of `version`. Similar to a tag, but the SHA explicitly
+                deploys an immutable container image. Version and Tag are ignored
+                if SHA is set.
+              type: string
             storage:
               description: StorageSpec defines the configured storage for a group
-                Prometheus servers.
+                Prometheus servers. If neither `emptyDir` nor `volumeClaimTemplate`
+                is specified, then by default an [EmptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir)
+                will be used.
               properties:
-                class:
-                  description: 'Name of the StorageClass to use when requesting storage
-                    provisioning. More info: https://kubernetes.io/docs/user-guide/persistent-volumes/#storageclasses
-                    DEPRECATED'
-                  type: string
                 emptyDir:
                   description: Represents an empty directory for a pod. Empty directory
                     volumes support ownership management and SELinux relabeling.
@@ -4824,63 +4877,6 @@ spec:
                         Must be an empty string (default) or Memory. More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir'
                       type: string
                     sizeLimit: {}
-                resources:
-                  description: ResourceRequirements describes the compute resource
-                    requirements.
-                  properties:
-                    limits:
-                      description: 'Limits describes the maximum amount of compute
-                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                      type: object
-                    requests:
-                      description: 'Requests describes the minimum amount of compute
-                        resources required. If Requests is omitted for a container,
-                        it defaults to Limits if that is explicitly specified, otherwise
-                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
-                      type: object
-                selector:
-                  description: A label selector is a label query over a set of resources.
-                    The result of matchLabels and matchExpressions are ANDed. An empty
-                    label selector matches all objects. A null label selector matches
-                    no objects.
-                  properties:
-                    matchExpressions:
-                      description: matchExpressions is a list of label selector requirements.
-                        The requirements are ANDed.
-                      items:
-                        description: A label selector requirement is a selector that
-                          contains values, a key, and an operator that relates the
-                          key and values.
-                        properties:
-                          key:
-                            description: key is the label key that the selector applies
-                              to.
-                            type: string
-                          operator:
-                            description: operator represents a key's relationship
-                              to a set of values. Valid operators are In, NotIn, Exists
-                              and DoesNotExist.
-                            type: string
-                          values:
-                            description: values is an array of string values. If the
-                              operator is In or NotIn, the values array must be non-empty.
-                              If the operator is Exists or DoesNotExist, the values
-                              array must be empty. This array is replaced during a
-                              strategic merge patch.
-                            items:
-                              type: string
-                            type: array
-                        required:
-                        - key
-                        - operator
-                      type: array
-                    matchLabels:
-                      description: matchLabels is a map of {key,value} pairs. A single
-                        {key,value} in the matchLabels map is equivalent to an element
-                        of matchExpressions, whose key field is "key", the operator
-                        is "In", and the values array contains only "value". The requirements
-                        are ANDed.
-                      type: object
                 volumeClaimTemplate:
                   description: PersistentVolumeClaim is a user's request for and claim
                     to a persistent volume
@@ -5087,12 +5083,14 @@ spec:
                                         available. The value is opaque and may be
                                         used to issue another request to the endpoint
                                         that served this list to retrieve the next
-                                        set of available objects. Continuing a list
-                                        may not be possible if the server configuration
+                                        set of available objects. Continuing a consistent
+                                        list may not be possible if the server configuration
                                         has changed or more than a few minutes have
                                         passed. The resourceVersion field returned
                                         when using this continue value will be identical
-                                        to the value in the first response.
+                                        to the value in the first response, unless
+                                        you have received this token from an error
+                                        message.
                                       type: string
                                     resourceVersion:
                                       description: 'String that identifies the server''s
@@ -5210,6 +5208,26 @@ spec:
                           items:
                             type: string
                           type: array
+                        dataSource:
+                          description: TypedLocalObjectReference contains enough information
+                            to let you locate the typed referenced object inside the
+                            same namespace.
+                          properties:
+                            apiGroup:
+                              description: APIGroup is the group for the resource
+                                being referenced. If APIGroup is not specified, the
+                                specified Kind must be in the core API group. For
+                                any other third-party types, APIGroup is required.
+                              type: string
+                            kind:
+                              description: Kind is the type of resource being referenced
+                              type: string
+                            name:
+                              description: Name is the name of resource being referenced
+                              type: string
+                          required:
+                          - kind
+                          - name
                         resources:
                           description: ResourceRequirements describes the compute
                             resource requirements.
@@ -5343,7 +5361,7 @@ spec:
                           type: string
             tag:
               description: Tag of Prometheus container image to be deployed. Defaults
-                to the value of `version`.
+                to the value of `version`. Version is ignored if Tag is set.
               type: string
             thanos:
               description: ThanosSpec defines parameters for a Prometheus server within
@@ -5376,6 +5394,12 @@ spec:
                           type: boolean
                       required:
                       - key
+                image:
+                  description: Image if specified has precedence over baseImage, tag
+                    and sha combinations. Specifying the version is still necessary
+                    to ensure the Prometheus Operator knows what version of Thanos
+                    is being configured.
+                  type: string
                 peers:
                   description: Peers is a DNS name for Thanos to discover peers through.
                   type: string
@@ -5446,9 +5470,16 @@ spec:
                       description: Whether to use S3 Signature Version 2; otherwise
                         Signature Version 4 will be used.
                       type: boolean
+                sha:
+                  description: SHA of Thanos container image to be deployed. Defaults
+                    to the value of `version`. Similar to a tag, but the SHA explicitly
+                    deploys an immutable container image. Version and Tag are ignored
+                    if SHA is set.
+                  type: string
                 tag:
                   description: Tag of Thanos sidecar container image to be deployed.
-                    Defaults to the value of `version`.
+                    Defaults to the value of `version`. Version is ignored if Tag
+                    is set.
                   type: string
                 version:
                   description: Version describes the version of Thanos to use.
@@ -5730,11 +5761,12 @@ spec:
                             server has more data available. The value is opaque and
                             may be used to issue another request to the endpoint that
                             served this list to retrieve the next set of available
-                            objects. Continuing a list may not be possible if the
-                            server configuration has changed or more than a few minutes
-                            have passed. The resourceVersion field returned when using
-                            this continue value will be identical to the value in
-                            the first response.
+                            objects. Continuing a consistent list may not be possible
+                            if the server configuration has changed or more than a
+                            few minutes have passed. The resourceVersion field returned
+                            when using this continue value will be identical to the
+                            value in the first response, unless you have received
+                            this token from an error message.
                           type: string
                         resourceVersion:
                           description: 'String that identifies the server''s internal
@@ -5856,7 +5888,9 @@ spec:
                         annotations:
                           type: object
                         expr:
-                          type: string
+                          anyOf:
+                          - type: string
+                          - type: integer
                         for:
                           type: string
                         labels:
@@ -6010,6 +6044,51 @@ spec:
                     description: ProxyURL eg http://proxyserver:2195 Directs scrapes
                       to proxy through this endpoint.
                     type: string
+                  relabelings:
+                    description: 'RelabelConfigs to apply to samples before ingestion.
+                      More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#<relabel_config>'
+                    items:
+                      description: 'RelabelConfig allows dynamic rewriting of the
+                        label set, being applied to samples before ingestion. It defines
+                        `<metric_relabel_configs>`-section of Prometheus configuration.
+                        More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
+                      properties:
+                        action:
+                          description: Action to perform based on regex matching.
+                            Default is 'replace'
+                          type: string
+                        modulus:
+                          description: Modulus to take of the hash of the source label
+                            values.
+                          format: int64
+                          type: integer
+                        regex:
+                          description: Regular expression against which the extracted
+                            value is matched. defailt is '(.*)'
+                          type: string
+                        replacement:
+                          description: Replacement value against which a regex replace
+                            is performed if the regular expression matches. Regex
+                            capture groups are available. Default is '$1'
+                          type: string
+                        separator:
+                          description: Separator placed between concatenated source
+                            label values. default is ';'.
+                          type: string
+                        sourceLabels:
+                          description: The source labels select values from existing
+                            labels. Their content is concatenated using the configured
+                            separator and matched against the configured regular expression
+                            for the replace, keep, and drop actions.
+                          items:
+                            type: string
+                          type: array
+                        targetLabel:
+                          description: Label to which the resulting value is written
+                            in a replace action. It is mandatory for replace actions.
+                            Regex capture groups are available.
+                          type: string
+                    type: array
                   scheme:
                     description: HTTP scheme to use for scraping.
                     type: string
@@ -6055,6 +6134,17 @@ spec:
                   items:
                     type: string
                   type: array
+            podTargetLabels:
+              description: PodTargetLabels transfers labels on the Kubernetes Pod
+                onto the target.
+              items:
+                type: string
+              type: array
+            sampleLimit:
+              description: SampleLimit defines per-scrape limit on number of scraped
+                samples that will be accepted.
+              format: int64
+              type: integer
             selector:
               description: A label selector is a label query over a set of resources.
                 The result of matchLabels and matchExpressions are ANDed. An empty
@@ -6184,6 +6274,7 @@ rules:
   resources:
   - namespaces
   verbs:
+  - get
   - list
   - watch
 ---
@@ -6209,8 +6300,8 @@ spec:
         - --kubelet-service=kube-system/kubelet
         - --logtostderr=true
         - --config-reloader-image={{ build_image_name('configmap-reload', 'v0.0.1') }}
-        - --prometheus-config-reloader={{ build_image_name('prometheus-config-reloader', 'v0.23.2') }}
-        image: {{ build_image_name('prometheus-operator', 'v0.23.2') }}
+        - --prometheus-config-reloader={{ build_image_name('prometheus-config-reloader', 'v0.27.0') }}
+        image: {{ build_image_name('prometheus-operator', 'v0.27.0') }}
         name: prometheus-operator
         ports:
         - containerPort: 8080
