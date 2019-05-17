@@ -31,22 +31,16 @@ Create OCI registry user:
     - mode: '0700'
 
 Install OCI registry manifest:
-  file.managed:
+  metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/registry.yaml
     - source: salt://{{ slspath }}/files/registry-manifest.yaml.j2
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: '0644'
-    - makedirs: false
-    - backup: false
-    - require:
-      - group: Create OCI registry user
-      - user: Create OCI registry user
-      - file: Create OCI registry user
-    - defaults:
+    - context:
         registry_image: {{ registry_image }}
         registry_version: {{ registry_version }}
         registry_ip: {{ grains.metalk8s.control_plane_ip }}
         registry_user: {{ registry_user }}
         registry_group: {{ registry_group }}
+    - require:
+      - group: Create OCI registry user
+      - user: Create OCI registry user
+      - file: Create OCI registry user

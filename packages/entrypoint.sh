@@ -4,6 +4,17 @@ set -e
 set -u
 set -o pipefail
 
+buildmeta() {
+    set -x
+    chown build:build /home/build
+    su -l build -c rpmdev-setuptree
+    cp "/rpmbuild/SPECS/${SPEC}" "/home/build/rpmbuild/SPECS/${SPEC}"
+    su -l build -c \
+       "rpmspec -P \"/home/build/rpmbuild/SPECS/${SPEC}\" \
+> \"/home/build/rpmbuild/${META}\""
+    cp "/home/build/rpmbuild/${META}" "/rpmbuild/META/${META}"
+}
+
 buildsrpm() {
     set -x
     chown build:build /home/build
@@ -125,6 +136,9 @@ download_packages() {
 }
 
 case ${1:-''} in
+    buildmeta)
+        buildmeta
+        ;;
     buildrpm)
         buildrpm
         ;;

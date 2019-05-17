@@ -1,18 +1,10 @@
-.. spelling::
-
-   Quickstart
-   subdirectory
-   Todo
-   usernames
-
-
 Quickstart Guide
 ================
-This guide describes how to set up a MetalK8s_ cluster. It offers general
-requirements and describes sizing, configuration, and deployment. With respect
-to installation procedures, the only significant difference between a test
-cluster and a full production environment is the amount of resources required
-to implement the design.
+This guide describes how to set up a MetalK8s_ cluster to play with. It
+offers general requirements and describes sizing, configuration, and
+deployment. With respect to installation procedures, the only significant
+difference between a test cluster and a full production environment is
+the amount of resources required to implement the design.
 
 .. _MetalK8s: https://github.com/scality/metalk8s/
 .. _CentOS: https://www.centos.org
@@ -24,8 +16,7 @@ Setting up a MetalK8s_ cluster quickly requires at least three machines
 running CentOS_ 7.6 or higher (these can be VMs) to which you have SSH access.
 Each machine acting as a Kubernetes_ node (all three in the present example)
 must also have at least one disk available to provision storage volumes.
-Since the version 2.x of MetalK8s_ you need to install first a bootstrap node
-and then the others nodes (2 in our case).
+You will need to install a bootstrap node then others nodes (2 in our case).
 
 Sizing
 ^^^^^^
@@ -93,8 +84,8 @@ Prepare the bootstap node
     $ ssh-keygen
     $ ssh-copy-id <IP-of-the-bootstrap-node>
 
-3. Copy the private key in the pki folder of MetalK8s. This will be use further for
-   adding new nodes on the cluster.
+3. Copy the private key in the pki folder of MetalK8s. This will be use further
+   for adding new nodes on the cluster.
 
    .. code-block:: shell
 
@@ -144,7 +135,7 @@ cluster by adding 2 nodes with etcd and master roles.
 Here is the procedure to add one, simply do it twice to have 3
 masters (bootstrap + 2 new master).
 
-1. Copy the ssh-key to the new node
+1. Copy the ssh-key to the new master node
 
    .. code-block:: shell
 
@@ -173,24 +164,24 @@ masters (bootstrap + 2 new master).
       - effect: NoSchedule
         key: node-role.kubernetes.io/etcd
 
-3. Declare the new master node into the cluster.
+3. Declare the new master node in K8s API.
 
    .. code-block:: shell
 
     $ kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f new-master-node.yaml
     node/new-master-node created
 
-4. Check that the new master node is correctly inserted into the cluster.
+4. Check that the new master node was added to the cluster.
 
    .. code-block:: shell
 
-    $ kubectl get node
+    $ kubectl get nodes
     NAME                   STATUS    ROLES                         AGE       VERSION
     bootstrap              Ready     bootstrap,etcd,infra,master   12d       v1.11.7
     new-master-node        Unknown   etcd,master                   29s
 
-5. The new master node now need to be installed to change its status from Unknown to Ready.
-   You go into the master-bootstrap pod ...
+5. The new master node now need to be installed to change its status from
+   Unknown to Ready. You go into the master-bootstrap pod ...
 
    .. code-block:: shell
 
@@ -208,8 +199,8 @@ masters (bootstrap + 2 new master).
 
    .. code-block:: shell
 
-    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_new_node saltenv=metalk8s-2.0 \
-      pillar="{'bootstrap_id': 'bootstrap', 'node_name': '<new-master-node-name>'}"
+    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
+      pillar="{'orchestrate:' {'node_name': '<new-master-node-name>'}"
 
       ... lots of output ...
       Summary for bootstrap_master
@@ -222,8 +213,8 @@ masters (bootstrap + 2 new master).
 
    .. warning::
 
-    In version 2.0 you need to trick cni on the new node to have the correct status.
-    In a nutshell having a empty cni on the loopback.
+    In version 2.0 you need to trick CNI on the new node to have the correct status.
+    In a nutshell having a empty CNI on the loopback.
 
     .. code-block:: shell
 
@@ -285,7 +276,7 @@ handle applications you will install on the cluster.
       name: <new-node-name>
       annotations:
         metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/id_rsa
-        metalk8s.scality.com/ssh-host: <IP-of-the-new-master-node>
+        metalk8s.scality.com/ssh-host: <IP-of-the-new-node>
         metalk8s.scality.com/ssh-sudo: 'false'
       labels:
         metalk8s.scality.com/version: '2.0'
@@ -295,26 +286,26 @@ handle applications you will install on the cluster.
       - effect: NoSchedule
         key: node-role.kubernetes.io/node
 
-3. Declare the new  node into the cluster.
+3. Declare the new node in K8s API.
 
    .. code-block:: shell
 
     $ kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f new-node.yaml
     node/new-node created
 
-4. Check that the new master node is correctly inserted into the cluster.
+4. Check that the new node was added to the cluster.
 
    .. code-block:: shell
 
-    $ kubectl get node
+    $ kubectl get nodes
     NAME                   STATUS    ROLES                         AGE       VERSION
     bootstrap              Ready     bootstrap,etcd,infra,master   1h        v1.11.7
     master-node-01         Ready     etcd,master                   1h        v1.11.7
     master-node-02         Ready     etcd,master                   1h        v1.11.7
     node-01                Unknown   node                          17s
 
-5. The new  node now need to be installed to change its status from Unknown to Ready.
-   You go into the master-bootstrap pod ...
+5. The new  node now need to be installed to change its status from Unknown
+   to Ready. You go into the master-bootstrap pod ...
 
    .. code-block:: shell
 
@@ -332,8 +323,8 @@ handle applications you will install on the cluster.
 
    .. code-block:: shell
 
-    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_new_node saltenv=metalk8s-2.0 \
-      pillar="{'bootstrap_id': 'bootstrap', 'node_name': '<new-node-name>'}"
+    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
+      pillar="{'orchestrate:' {'node_name': '<new-node-name>'}"
 
       ... lots of output ...
       Summary for bootstrap_master

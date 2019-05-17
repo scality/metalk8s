@@ -78,7 +78,7 @@ export async function createNode(payload) {
     metadata: {
       name: payload.name,
       labels: {
-        'metalk8s.scality.com/version': '2.0'
+        'metalk8s.scality.com/version': payload.version
       },
       annotations: {
         'metalk8s.scality.com/ssh-user': payload.ssh_user,
@@ -122,18 +122,17 @@ export async function createNode(payload) {
   }
 }
 
-export async function deployNode(url, token, node) {
+export async function deployNode(url, token, node, version) {
   try {
     return await axios.post(
       url,
       {
         client: 'runner',
         fun: 'state.orchestrate',
-        arg: ['metalk8s.orchestrate.deploy_new_node'],
+        arg: ['metalk8s.orchestrate.deploy_node'],
         kwarg: {
-          saltenv: 'metalk8s-2.0',
-          // FIXME We need to remove the hardcoded the boostrap id.
-          pillar: { bootstrap_id: 'bootstrap', node_name: node }
+          saltenv: `metalk8s-${version}`,
+          pillar: { orchestrate: { node_name: node } }
         }
       },
       {

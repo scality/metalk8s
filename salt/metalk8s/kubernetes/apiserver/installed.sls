@@ -80,15 +80,27 @@ Set up default basic auth htpasswd:
 {%- set host = grains['metalk8s']['control_plane_ip'] %}
 
 Create kube-apiserver Pod manifest:
-  file.managed:
+  metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
     - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
-    - dir_mode: 750
+    - config_files:
+        - /etc/kubernetes/pki/apiserver.crt
+        - /etc/kubernetes/pki/apiserver.key
+        - /etc/kubernetes/pki/apiserver-etcd-client.crt
+        - /etc/kubernetes/pki/apiserver-etcd-client.key
+        - /etc/kubernetes/pki/apiserver-kubelet-client.crt
+        - /etc/kubernetes/pki/apiserver-kubelet-client.key
+        - /etc/kubernetes/pki/ca.crt
+        - /etc/kubernetes/pki/etcd/ca.crt
+        - /etc/kubernetes/pki/front-proxy-ca.crt
+        - /etc/kubernetes/pki/front-proxy-client.crt
+        - /etc/kubernetes/pki/front-proxy-client.key
+        - /etc/kubernetes/pki/sa.pub
+        - {{ htpasswd_path }}
+{%- if pillar.metalk8s.api_server.keepalived.enabled %}
+        - /etc/keepalived/check-apiserver.sh
+        - /etc/keepalived/keepalived.conf.sh
+{%- endif %}
     - context:
         name: kube-apiserver
         host: {{ host }}
@@ -192,12 +204,16 @@ Create kube-apiserver Pod manifest:
             emptyDir:
               medium: Memory
 {%- endif %}
-    - require:
+    - onchanges:
       - file: Ensure kubernetes CA cert is present
       - file: Ensure etcd CA cert is present
       - file: Ensure front-proxy CA cert is present
       - file: Ensure SA pub key is present
       - file: Set up default basic auth htpasswd
+{%- if pillar.metalk8s.api_server.keepalived.enabled %}
+      - file: Create keepalived check script
+      - file: Create keepalived configuration file generator
+{%- endif %}
 
 Make sure kube-apiserver container is up:
   module.wait:
@@ -205,4 +221,4 @@ Make sure kube-apiserver container is up:
       - name: kube-apiserver
       - state: running
     - watch:
-      - file: Create kube-apiserver Pod manifest
+      - metalk8s: Create kube-apiserver Pod manifest
