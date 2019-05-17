@@ -2408,17 +2408,14 @@ def node_uncordon(node_name, **kwargs):
 
 
 def get_crd_plural_from_kind(kind, **kwargs):
-    plural = None
-
     crds = customresourcedefinition(**kwargs)
 
     for crd in crds.get('items', []):
         crd_names = crd.get('spec', {}).get('names', {})
         if kind == crd_names.get('kind'):
-            plural = crd_names.get('plural')
-            break
+            return crd_names.get('plural')
 
-    return plural
+    return None
 
 
 def replace_namespaced_custom_object(
