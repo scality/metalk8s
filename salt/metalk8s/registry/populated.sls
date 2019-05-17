@@ -52,6 +52,18 @@
         'name': 'keepalived',
         'tag': '1.3.5-8.el7_6-1',
     },
+    {
+        'name': 'prometheus-operator',
+        'tag': 'v0.28.0',
+    },
+    {
+        'name': 'prometheus-config-reloader',
+        'tag': 'v0.28.0',
+    },
+    {
+        'name': 'configmap-reload',
+        'tag': 'v0.0.1',
+    },
 ] %}
 
 include:
