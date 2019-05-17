@@ -85,6 +85,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
         file_dep=[constants.VERSION_FILE],
     ),
 
+    Path('salt/metalk8s/addons/prometheus-operator/deployed.sls'),
+
     Path('salt/metalk8s/addons/ui/deployed.sls'),
     Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
 
@@ -193,8 +195,6 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
     Path('salt/metalk8s/macro.sls'),
     Path('salt/metalk8s/map.jinja'),
-
-    Path('salt/metalk8s/monitoring/prometheus-operator/deployed.sls'),
 
     Path('salt/metalk8s/node/grains.sls'),
 
