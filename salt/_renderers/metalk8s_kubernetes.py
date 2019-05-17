@@ -60,6 +60,20 @@ def handle(api_version, kind):
     return register
 
 
+@handle('v1', 'Service')
+def _handle_v1_service(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.service_present': [
+            {'name': obj['metadata']['name']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+        ],
+    }
+
+
 @handle('v1', 'ServiceAccount')
 def _handle_v1_serviceaccount(obj, kubeconfig, context):
     return {
@@ -98,6 +112,7 @@ def _handle_apiextensions_v1beta1_customresourcedefinition(
     }
 
 
+@handle('rbac.authorization.k8s.io/v1', 'ClusterRole')
 @handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRole')
 def _handle_rbac_v1beta1_clusterrole(obj, kubeconfig, context):
     return {
@@ -110,6 +125,7 @@ def _handle_rbac_v1beta1_clusterrole(obj, kubeconfig, context):
     }
 
 
+@handle('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding')
 @handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRoleBinding')
 def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context):
     return {
@@ -137,6 +153,7 @@ def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
     }
 
 
+@handle('apps/v1beta2', 'Deployment')
 @handle('extensions/v1beta1', 'Deployment')
 def _handle_extensions_v1beta1_deployment(obj, kubeconfig, context):
     return {
@@ -147,6 +164,34 @@ def _handle_extensions_v1beta1_deployment(obj, kubeconfig, context):
             {'namespace': obj['metadata']['namespace']},
             {'metadata': obj['metadata']},
             {'spec': obj['spec']},
+        ],
+    }
+
+
+@handle('v1', 'Namespace')
+def _handle_v1_namespace(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.namespace_present': [
+            {'name': obj['metadata']['name']},
+            {'body': obj},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ],
+    }
+
+
+@handle('monitoring.coreos.com/v1', 'Alertmanager')
+@handle('monitoring.coreos.com/v1', 'Prometheus')
+@handle('monitoring.coreos.com/v1', 'PrometheusRule')
+@handle('monitoring.coreos.com/v1', 'ServiceMonitor')
+def _handle_monitoring_coreos_com_v1_customresource(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.customresource_present': [
+            {'name': obj['metadata']['name']},
+            {'body': obj},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
         ],
     }
 
