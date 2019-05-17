@@ -16,7 +16,7 @@ Setting up a MetalK8s_ cluster quickly requires at least three machines
 running CentOS_ 7.6 or higher (these can be VMs) to which you have SSH access.
 Each machine acting as a Kubernetes_ node (all three in the present example)
 must also have at least one disk available to provision storage volumes.
-You will need to install a bootstrap node then others nodes (2 in our case).
+You will need to install a bootstrap node then other nodes (2 in our case).
 
 Sizing
 ^^^^^^
@@ -46,15 +46,15 @@ server's :file:`/etc/environment` file:
 
 .. code-block:: shell
 
- http_proxy=http://user;pass@<HTTP proxy IP address>:<port>
- https_proxy=http://user;pass@<HTTPS proxy IP address>:<port>
- no_proxy=localhost,127.0.0.1,<local IP of each node>
+   http_proxy=http://user;pass@<HTTP proxy IP address>:<port>
+   https_proxy=http://user;pass@<HTTPS proxy IP address>:<port>
+   no_proxy=localhost,127.0.0.1,<local IP of each node>
 
 Mount MetalK8s ISO
 -------------------
 Get the ISO file and mount it on the bootstrap node at this specific path.
 
-  .. code-block:: shell
+.. code-block:: shell
 
    $ mkdir -p /srv/scality/metalk8s-2.0
    $ mount <path-to-iso> /srv/scality/metalk8s-2.0
@@ -63,195 +63,181 @@ Get the ISO file and mount it on the bootstrap node at this specific path.
 Prepare the bootstap node
 -------------------------
 1. Create the :file:`/etc/metalk8s/bootstrap.yaml` file. Change the netmask,
-   IP addresse, and name to conform to your infrastructure.
+   IP address, and name to conform to your infrastructure.
 
-   .. code-block:: yaml
+.. code-block:: yaml
 
-    apiVersion: metalk8s.scality.com/v1alpha2
-    kind: BootstrapConfiguration
-    networks:
-     controlPlane: <netmask>/24
-     workloadPlane: <netmask>/24
-    ca:
-     minion: <name-of-the-bootstrap-node>
-    apiServer:
-     host: <IP-of-the-bootstrap-node>
+   apiVersion: metalk8s.scality.com/v1alpha2
+   kind: BootstrapConfiguration
+   networks:
+    controlPlane: <netmask>/24
+    workloadPlane: <netmask>/24
+   ca:
+    minion: <name-of-the-bootstrap-node>
+   apiServer:
+    host: <IP-of-the-bootstrap-node>
 
-2. Generate the ssh key of the bootstrap and copy it.
+2. Generate the SSH key of the bootstrap and copy it.
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ ssh-keygen
-    $ ssh-copy-id <IP-of-the-bootstrap-node>
+   $ ssh-keygen
+   $ ssh-copy-id <IP-of-the-bootstrap-node>
 
 3. Copy the private key in the pki folder of MetalK8s. This will be use further
    for adding new nodes on the cluster.
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ mkdir -p /etc/metalk8s/pki/
-    $ cp /root/.ssh/id_rsa /etc/metalk8s/pki/id_rsa
+   $ mkdir -p /etc/metalk8s/pki/
+   $ cp /root/.ssh/id_rsa /etc/metalk8s/pki/id_rsa
 
 Install the bootstrap node
 --------------------------
 1. Run the script to install the bootstrap node.
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ /srv/scality/metalk8s-2.0/bootstrap.sh
+   $ /srv/scality/metalk8s-2.0/bootstrap.sh
 
-2. You need to install kubectl for the CLI and check if pods are running well.
+2. Check if pods are running well.
 
-   .. code-block:: shell
+You need to export the shell variable KUBECONFIG to avoid to specify it
+as a parameter with each kubectl command.
 
-    $ yum install —disablerepo=* —enablerepo=metalk8s-* kubectl
-    $ export KUBECONFIG=/etc/kubernetes/admin.conf
+.. code-block:: shell
 
-    $ kubectl get node
-    NAME                   STATUS    ROLES                         AGE       VERSION
-    bootstrap              Ready     bootstrap,etcd,infra,master   17m       v1.11.7
+   $ export KUBECONFIG=/etc/kubernetes/admin.conf
 
-    $ kubectl get pods --all-namespaces -o wide
-    NAMESPACE     NAME                                          READY     STATUS    RESTARTS   AGE       IP             NODE                  NOMINATED NODE
-    kube-system   calico-node-zw74v                             1/1       Running   0          18m       172.21.254.7   bootstrap.novalocal   <none>
-    kube-system   coredns-6b9cb79bf4-jbtxc                      1/1       Running   0          18m       10.233.0.2     bootstrap.novalocal   <none>
-    kube-system   coredns-6b9cb79bf4-tdmz8                      1/1       Running   0          18m       10.233.0.4     bootstrap.novalocal   <none>
-    kube-system   etcd-bootstrap                                1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
-    kube-system   kube-apiserver-bootstrap                      1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
-    kube-system   kube-controller-manager-bootstrap             1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
-    kube-system   kube-proxy-mwxhf                              1/1       Running   0          18m       172.21.254.7   bootstrap.novalocal   <none>
-    kube-system   kube-scheduler-bootstrap                      1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
-    kube-system   metalk8s-ui-656f6857b-cdt5p                   1/1       Running   0          18m       10.233.0.3     bootstrap.novalocal   <none>
-    kube-system   package-repositories-bootstrap                1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
-    kube-system   registry-bootstrap                            1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
-    kube-system   salt-master-bootstrap                         2/2       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
+   $ kubectl get node
+   NAME                   STATUS    ROLES                         AGE       VERSION
+   bootstrap              Ready     bootstrap,etcd,infra,master   17m       v1.11.7
 
+   $ kubectl get pods --all-namespaces -o wide
+   NAMESPACE     NAME                                          READY     STATUS    RESTARTS   AGE       IP             NODE                  NOMINATED NODE
+   kube-system   calico-node-zw74v                             1/1       Running   0          18m       172.21.254.7   bootstrap.novalocal   <none>
+   kube-system   coredns-6b9cb79bf4-jbtxc                      1/1       Running   0          18m       10.233.0.2     bootstrap.novalocal   <none>
+   kube-system   coredns-6b9cb79bf4-tdmz8                      1/1       Running   0          18m       10.233.0.4     bootstrap.novalocal   <none>
+   kube-system   etcd-bootstrap                                1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
+   kube-system   kube-apiserver-bootstrap                      1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
+   kube-system   kube-controller-manager-bootstrap             1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
+   kube-system   kube-proxy-mwxhf                              1/1       Running   0          18m       172.21.254.7   bootstrap.novalocal   <none>
+   kube-system   kube-scheduler-bootstrap                      1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
+   kube-system   metalk8s-ui-656f6857b-cdt5p                   1/1       Running   0          18m       10.233.0.3     bootstrap.novalocal   <none>
+   kube-system   package-repositories-bootstrap                1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
+   kube-system   registry-bootstrap                            1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
+   kube-system   salt-master-bootstrap                         2/2       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
 
 Adding a master to the cluster
 ------------------------------
 
-Now it's time to add more node to the cluster. First you need to secure the
-cluster by adding 2 nodes with etcd and master roles.
-Here is the procedure to add one, simply do it twice to have 3
-masters (bootstrap + 2 new master).
+Now it's time to add more nodes to the cluster. First you need to add
+2 nodes with etcd and master roles to improv redundancy of
+the control-plane. Here is the procedure to add one, simply do it
+twice to have 3 masters (bootstrap + 2 new master).
 
 1. Copy the ssh-key to the new master node
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ ssh-copy-id <IP-of-the-new-master-node>
+   $ ssh-copy-id -i /etc/metalk8s/pki/<key_name> <IP-of-the-new-master-node>
 
-2. Create a yaml config file for this new master.
+2. Create a YAML config file for this new master.
 
-   .. code-block:: yaml
+.. code-block:: yaml
 
-    apiVersion: v1
-    kind: Node
-    metadata:
-      name: <new-master-node-name>
-      annotations:
-        metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/id_rsa
-        metalk8s.scality.com/ssh-host: <IP-of-the-new-master-node>
-        metalk8s.scality.com/ssh-sudo: 'false'
-      labels:
-        metalk8s.scality.com/version: '2.0'
-        node-role.kubernetes.io/master: ''
-        node-role.kubernetes.io/etcd: ''
-    spec:
-      taints:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/etcd
+   apiVersion: v1
+   kind: Node
+   metadata:
+     name: <new-master-node-name>
+     annotations:
+       metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/id_rsa
+       metalk8s.scality.com/ssh-host: <IP-of-the-new-master-node>
+       metalk8s.scality.com/ssh-sudo: 'false'
+     labels:
+       metalk8s.scality.com/version: '2.0'
+       node-role.kubernetes.io/master: ''
+       node-role.kubernetes.io/etcd: ''
+   spec:
+     taints:
+     - effect: NoSchedule
+       key: node-role.kubernetes.io/master
+     - effect: NoSchedule
+       key: node-role.kubernetes.io/etcd
 
 3. Declare the new master node in K8s API.
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f new-master-node.yaml
-    node/new-master-node created
+   $ kubectl apply -f new-master-node.yaml
+   node/new-master-node created
 
 4. Check that the new master node was added to the cluster.
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ kubectl get nodes
-    NAME                   STATUS    ROLES                         AGE       VERSION
-    bootstrap              Ready     bootstrap,etcd,infra,master   12d       v1.11.7
-    new-master-node        Unknown   etcd,master                   29s
+   $ kubectl get nodes
+   NAME                   STATUS    ROLES                         AGE       VERSION
+   bootstrap              Ready     bootstrap,etcd,infra,master   12d       v1.11.7
+   new-master-node        Unknown   etcd,master                   29s
 
 5. The new master node now need to be installed to change its status from
    Unknown to Ready. You go into the master-bootstrap pod ...
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ kubectl -ti -n kube-system exec salt-master-bootstrap bash
+   $ kubectl exec salt-master-bootstrap -n kube-system -c salt-master -it bash
 
-   Try first to ping the new master node ...
+Try to ping the new master node:
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ salt-ssh -i --roster kubernetes <new-master-node-name> test.ping
-    <new-master-node-name>:
-        True
+   $ salt-ssh --roster kubernetes <new-master-node-name> test.ping
+   <new-master-node-name>:
+       True
 
-   Launch the command to perform the installation
+Launch the command to perform the installation
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
-      pillar="{'orchestrate:' {'node_name': '<new-master-node-name>'}"
+   $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
+     pillar="{'orchestrate:' {'node_name': '<new-master-node-name>'}"
 
-      ... lots of output ...
-      Summary for bootstrap_master
-      ------------
-      Succeeded: 7 (changed=7)
-      Failed:    0
-      ------------
-      Total states run:     7
-      Total run time: 121.468 s
+   ... lots of output ...
+   Summary for bootstrap_master
+   ------------
+   Succeeded: 7 (changed=7)
+   Failed:    0
+   ------------
+   Total states run:     7
+   Total run time: 121.468 s
 
-   .. warning::
+.. warning::
 
-    In version 2.0 you need to trick CNI on the new node to have the correct status.
-    In a nutshell having a empty CNI on the loopback.
+   In version 2.0 you need to add manually the new master in the etcd cluster.
 
-    .. code-block:: shell
+.. code-block:: shell
 
-     $ mkdir -p /etc/cni/net.d/
-     $ cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
-       {
-        "cniVersion": "0.3.1",
-        "type": "loopback"
-       }
-       EOF
+   $ kubectl -n kube-system exec -ti etcd-bootstrap sh
+   $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
+     --ca-file=/etc/kubernetes/pki/etcd/ca.crt \
+     --cert-file=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+     --key-file=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+     member add <new-master-node-name> https://<IP-of-the-new-master-node>:2380
 
-   .. warning::
+check if the cluster is healthy
 
-    In version 2.0 you need to add manually the new master in the etcd cluster.
+.. code-block:: shell
 
-    .. code-block:: shell
+   $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
+     --ca-file=/etc/kubernetes/pki/etcd/ca.crt \
+     --cert-file=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+     --key-file=/etc/kubernetes/pki/etcd/healthcheck-client.key cluster-health
 
-     $ kubectl -n kube-system exec -ti etcd-bootstrap sh
-     $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
-       --ca-file=/etc/kubernetes/pki/etcd/ca.crt \
-       --cert-file=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
-       --key-file=/etc/kubernetes/pki/etcd/healthcheck-client.key \
-       member add <new-master-node-name> https://<IP-of-the-new-master-node>:2380
-
-    check if the cluster is healthy
-
-    .. code-block:: shell
-
-     $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
-       --ca-file=/etc/kubernetes/pki/etcd/ca.crt \
-       --cert-file=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
-       --key-file=/etc/kubernetes/pki/etcd/healthcheck-client.key cluster-health
-
-       member 46af28ca4af6c465 is healthy: got healthy result from https://172.21.254.6:2379
-       member 81de403db853107e is healthy: got healthy result from https://172.21.254.7:2379
-       member 8878627efe0f46be is healthy: got healthy result from https://172.21.254.8:2379
-       cluster is healthy
+     member 46af28ca4af6c465 is healthy: got healthy result from https://172.21.254.6:2379
+     member 81de403db853107e is healthy: got healthy result from https://172.21.254.7:2379
+     member 8878627efe0f46be is healthy: got healthy result from https://172.21.254.8:2379
+     cluster is healthy
 
 
 
@@ -262,75 +248,75 @@ handle applications you will install on the cluster.
 
 1. Copy the ssh-key to the new node
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ ssh-copy-id <IP-of-the-new-node>
+   $ ssh-copy-id <IP-of-the-new-node>
 
 2. Create a yaml config file for this new node.
 
-   .. code-block:: yaml
+.. code-block:: yaml
 
-    apiVersion: v1
-    kind: Node
-    metadata:
-      name: <new-node-name>
-      annotations:
-        metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/id_rsa
-        metalk8s.scality.com/ssh-host: <IP-of-the-new-node>
-        metalk8s.scality.com/ssh-sudo: 'false'
-      labels:
-        metalk8s.scality.com/version: '2.0'
-        node-role.kubernetes.io/node: ''
-    spec:
-      taints:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/node
+   apiVersion: v1
+   kind: Node
+   metadata:
+     name: <new-node-name>
+     annotations:
+       metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/id_rsa
+       metalk8s.scality.com/ssh-host: <IP-of-the-new-node>
+       metalk8s.scality.com/ssh-sudo: 'false'
+     labels:
+       metalk8s.scality.com/version: '2.0'
+       node-role.kubernetes.io/node: ''
+   spec:
+     taints:
+     - effect: NoSchedule
+       key: node-role.kubernetes.io/node
 
 3. Declare the new node in K8s API.
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f new-node.yaml
-    node/new-node created
+   $ kubectl apply -f new-node.yaml
+   node/new-node created
 
 4. Check that the new node was added to the cluster.
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ kubectl get nodes
-    NAME                   STATUS    ROLES                         AGE       VERSION
-    bootstrap              Ready     bootstrap,etcd,infra,master   1h        v1.11.7
-    master-node-01         Ready     etcd,master                   1h        v1.11.7
-    master-node-02         Ready     etcd,master                   1h        v1.11.7
-    node-01                Unknown   node                          17s
+   $ kubectl get nodes
+   NAME                   STATUS    ROLES                         AGE       VERSION
+   bootstrap              Ready     bootstrap,etcd,infra,master   1h        v1.11.7
+   master-node-01         Ready     etcd,master                   1h        v1.11.7
+   master-node-02         Ready     etcd,master                   1h        v1.11.7
+   node-01                Unknown   node                          17s
 
 5. The new  node now need to be installed to change its status from Unknown
    to Ready. You go into the master-bootstrap pod ...
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ kubectl -ti -n kube-system exec salt-master-bootstrap bash
+   $ kubectl -ti -n kube-system exec salt-master-bootstrap bash
 
-   Try first to ping the new master node ...
+Try first to ping the new master node ...
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ salt-ssh -i --roster kubernetes <new-node-name> test.ping
-    <new-node-name>:
-        True
+   $ salt-ssh -i --roster kubernetes <new-node-name> test.ping
+   <new-node-name>:
+      True
 
-   Launch the command to perform the installation
+Launch the command to perform the installation
 
-   .. code-block:: shell
+.. code-block:: shell
 
-    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
-      pillar="{'orchestrate:' {'node_name': '<new-node-name>'}"
+   $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
+     pillar="{'orchestrate:' {'node_name': '<new-node-name>'}"
 
-      ... lots of output ...
-      Summary for bootstrap_master
-      ------------
-      Succeeded: 7 (changed=7)
-      Failed:    0
-      ------------
-      Total states run:     7
-      Total run time: 121.468 s
+   ... lots of output ...
+   Summary for bootstrap_master
+   ------------
+   Succeeded: 7 (changed=7)
+   Failed:    0
+   ------------
+   Total states run:     7
+   Total run time: 121.468 s
