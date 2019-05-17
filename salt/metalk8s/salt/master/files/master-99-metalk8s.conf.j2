@@ -1,3 +1,5 @@
+interface: {{ salt_ip }}
+
 peer:
   .*:
     - x509.sign_remote_certificate
@@ -20,7 +22,7 @@ no_host_keys: true
 
 rest_cherrypy:
   port: 4507
-  host: {{ salt_api_ip }}
+  host: {{ salt_ip }}
   disable_ssl: true
 
 external_auth:
