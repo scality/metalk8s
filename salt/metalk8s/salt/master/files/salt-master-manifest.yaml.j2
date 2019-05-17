@@ -85,12 +85,12 @@ spec:
         httpGet:
           path: /
           port: api
-          host: {{ salt_api_ip }}
+          host: {{ salt_ip }}
       readinessProbe:
         httpGet:
           path: /
           port: api
-          host: {{ salt_api_ip }}
+          host: {{ salt_ip }}
       volumeMounts:
         - name: config
           mountPath: '/etc/salt'
