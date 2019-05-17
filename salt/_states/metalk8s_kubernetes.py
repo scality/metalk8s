@@ -89,7 +89,6 @@ import yaml
 # Import 3rd-party libs
 from salt.ext import six
 import salt.utils.dictdiffer
-import salt.exceptions
 
 log = logging.getLogger(__name__)
 
@@ -1580,39 +1579,33 @@ def node_uncordoned(name, **kwargs):
 
 def _extract_custom_resource_data(name, namespace, body, source, **kwargs):
     if body and source:
-        raise salt.exceptions.InvalidConfigError(
-            "'source' cannot be used in combination with 'body'"
-        )
+        raise ValueError("'source' cannot be used in combination with 'body'")
 
     if source:
         try:
             with open(source, 'r') as source_file:
                 body = yaml.safe_load(source_file)
         except IOError as exc:
-            raise salt.exceptions.InvalidConfigError(
-                "no such '{0}' source file".format(source)
-            )
+            raise ValueError("no such '{0}' source file".format(source))
 
-    # TODO: handle kindlist
     try:
         kind = body['kind']
     except KeyError:
-        raise salt.exceptions.InvalidConfigError(
-            "object 'kind' is missing in object definition"
-        )
+        raise ValueError("object 'kind' is missing in object definition")
 
     try:
         group, version = body.get('apiVersion', '').split('/')
     except ValueError:
-        raise salt.exceptions.InvalidConfigError(
+        raise ValueError(
             "malformed or undefined 'apiVersion' in object definition"
         )
 
     plural = __salt__['metalk8s_kubernetes.get_crd_plural_from_kind'](
         kind, **kwargs)
     if plural is None:
-        raise salt.exceptions.InvalidConfigError(
-            "'{0}' object kind not found in API".format(kind)
+        raise ValueError(
+            "Unable to find plural of '{0}' kind, the associated custom "
+            "resource definition may not exist".format(kind)
         )
 
     old_custom_resource = \
@@ -1666,7 +1659,7 @@ def customresource_present(
         cr_data = _extract_custom_resource_data(
             name, namespace, body, source, **kwargs
         )
-    except salt.exceptions.InvalidConfigError as exc:
+    except ValueError as exc:
         return _error(ret, exc.message)
 
     cr_full_name = '{0}.{1}.{2}'.format(namespace, cr_data['plural'], name)
@@ -1746,7 +1739,7 @@ def customresource_absent(
         cr_data = _extract_custom_resource_data(
             name, namespace, body, source, **kwargs
         )
-    except salt.exceptions.InvalidConfigError as exc:
+    except ValueError as exc:
         return _error(ret, exc.message)
 
     if cr_data['old'] is None:

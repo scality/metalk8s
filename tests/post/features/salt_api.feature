@@ -1,4 +1,4 @@
-@popst @ci @local @salt
+@post @ci @local @salt
 Feature: SaltAPI
     Scenario: Login to SaltAPI
         Given the Kubernetes API is available
