@@ -21,23 +21,19 @@ Generate package repositories nginx configuration:
         listening_port: {{ repo.port }}
 
 Install package repositories manifest:
-  file.managed:
+  metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/package-repositories.yaml
     - source: salt://{{ slspath }}/files/package-repositories-manifest.yaml.j2
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: '0644'
-    - makedirs: false
-    - backup: false
-    - defaults:
+    - config_files:
+      - {{ nginx_configuration_path }}
+    - context:
         container_port: {{ repo.port }}
         image: {{ package_repositories_image }}
         name: {{ package_repositories_name }}
         version: {{ package_repositories_version }}
         packages_path: {{ metalk8s.iso_root_path }}/{{ repo.relative_path }}
         nginx_configuration_path: {{ nginx_configuration_path }}
-    - require:
+    - onchanges:
       - file: Generate package repositories nginx configuration
 
 Ensure package repositories container is up:
@@ -46,4 +42,4 @@ Ensure package repositories container is up:
       - name: {{ package_repositories_name }}
       - state: running
     - require:
-      - file: Install package repositories manifest
+      - metalk8s: Install package repositories manifest

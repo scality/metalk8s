@@ -40,6 +40,7 @@ from buildchain import coreutils
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
+from buildchain import docker_command
 
 from . import base
 from . import image
@@ -121,7 +122,7 @@ class Repository(base.Target, base.CompositeTarget):
 
         mkdir = directory.Mkdir(directory=self.repodata).task
         actions = mkdir['actions']
-        actions.append(self._buildrepo_cmd())
+        actions.append(self._buildrepo_action())
         targets = [self.repodata/'repomd.xml']
         targets.extend(mkdir['targets'])
 
@@ -150,10 +151,24 @@ class Repository(base.Target, base.CompositeTarget):
         """Build the RPMs from SRPMs."""
         tasks = [self._mkdir_repo_root(), self._mkdir_repo_arch()]
         for pkg in self.packages:
+            rpm = self._get_rpm_path(pkg)
+            env = {
+                'RPMS': '{arch}/{rpm}'.format(arch=self.ARCH, rpm=rpm.name),
+                'SRPM': pkg.srpm.name,
+            }
+
+            buildrpm_callable = docker_command.DockerRun(
+                command=['/entrypoint.sh', 'buildrpm'],
+                builder=self.builder,
+                environment=env,
+                mounts=self._get_buildrpm_mounts(pkg.srpm, rpm.parent),
+                tmpfs={'/home/build': '', '/var/tmp': ''},
+            )
+
             task = self.basic_task
             task.update({
                 'name': 'build_rpm:{}'.format(pkg.name),
-                'actions': [self._buildrpm_cmd(pkg)],
+                'actions': [buildrpm_callable],
                 'doc': 'Build {pkg} RPM for the {repo} repository.'.format(
                     pkg=pkg.name, repo=self.name
                 ),
@@ -213,61 +228,43 @@ class Repository(base.Target, base.CompositeTarget):
         )
         return self.rootdir/self.ARCH/filename
 
-    def _buildrpm_cmd(self, pkg: package.Package) -> List[str]:
-        """Return the command to run `buildsrpm` inside a container."""
-        rpm = self._get_rpm_path(pkg)
-        extra_env = {
-            'RPMS': '{arch}/{rpm}'.format(arch=self.ARCH, rpm=rpm.name),
-            'SRPM': pkg.srpm.name,
-        }
-        cmd = list(constants.BUILDER_BASIC_CMD)
-        for var, value in extra_env.items():
-            cmd.extend(['--env', '{}={}'.format(var, value)])
-        for mount_string in self._get_buildrpm_mounts(pkg.srpm, rpm.parent):
-            cmd.extend(['--mount', mount_string])
-        # Note: because we use `yum-builddep`, this one can't be `--read-only`.
-        cmd.extend([
-            self.builder.tag,
-            '/entrypoint.sh', 'buildrpm'
-        ])
-        return cmd
-
     @staticmethod
-    def _get_buildrpm_mounts(srpm_path: Path, rpm_dir: Path) -> List[str]:
+    def _get_buildrpm_mounts(
+        srpm_path: Path, rpm_dir: Path
+    ) -> List[types.Mount]:
         """Return the list of container mounts required by `buildrpm`."""
-        # TMPFS mounts.
         mounts = [
-            'type=tmpfs,destination=/home/build',
-            'type=tmpfs,destination=/var/tmp',
+            # SRPM directory.
+            docker_command.bind_ro_mount(
+                source=srpm_path,
+                target=Path('/rpmbuild/SRPMS', srpm_path.name)
+            ),
+            # RPM directory.
+            docker_command.bind_mount(
+                source=rpm_dir,
+                target=Path('/rpmbuild/RPMS'),
+            ),
+            # rpmlint configuration file
+            docker_command.DockerRun.RPMLINTRC_MOUNT
         ]
-        # SRPM directory.
-        mounts.append(constants.BIND_RO_MOUNT_FMT.format(
-            src=srpm_path,
-            dst='/rpmbuild/SRPMS/{}'.format(srpm_path.name),
-        ))
-        # RPM directory.
-        mounts.append('type=bind,source={src},destination={dst}'.format(
-            src=rpm_dir, dst='/rpmbuild/RPMS',
-        ))
-        mounts.append(constants.BUILDER_RPMLINTRC_MOUNT)
+
         return mounts
 
-    def _buildrepo_cmd(self) -> List[str]:
+    def _buildrepo_action(self) -> types.Action:
         """Return the command to run `buildrepo` inside a container."""
-        cmd = list(constants.BUILDER_BASIC_CMD)
-        extra_mounts = [
-            'type=bind,source={},destination=/repository,ro'.format(
-                self.rootdir
+        mounts = [
+            docker_command.bind_ro_mount(
+                source=self.rootdir, target=Path('/repository')
             ),
-            'type=bind,source={},destination=/repository/repodata'.format(
-                self.repodata
-            ),
+            docker_command.bind_mount(
+                source=self.repodata, target=Path('/repository/repodata')
+            )
         ]
-        for mount_string in extra_mounts:
-            cmd.extend(['--mount', mount_string])
-        cmd.extend([
-            '--read-only',
-            self.builder.tag,
-            '/entrypoint.sh', 'buildrepo'
-        ])
-        return cmd
+        buildrepo_callable = docker_command.DockerRun(
+            command=['/entrypoint.sh', 'buildrepo'],
+            builder=self.builder,
+            mounts=mounts,
+            read_only=True
+        )
+
+        return buildrepo_callable

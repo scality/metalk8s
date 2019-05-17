@@ -54,6 +54,7 @@ const FormTitle = styled.h3`
 
 const initialValues = {
   name: '',
+  version: '',
   ssh_user: '',
   hostName_ip: '',
   ssh_port: '',
@@ -65,6 +66,7 @@ const initialValues = {
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required(),
+  version: Yup.string().required(),
   ssh_user: Yup.string().required(),
   hostName_ip: Yup.string().required(),
   ssh_port: Yup.string().required(),
@@ -115,6 +117,14 @@ class NodeCreateForm extends React.Component {
                   value={values.name}
                   onChange={handleChange('name')}
                   error={touched.name && errors.name}
+                  onBlur={handleOnBlur}
+                />
+                <Input
+                  name="version"
+                  label={intl.messages.version}
+                  value={values.version}
+                  onChange={handleChange('version')}
+                  error={touched.version && errors.version}
                   onBlur={handleOnBlur}
                 />
                 <Input

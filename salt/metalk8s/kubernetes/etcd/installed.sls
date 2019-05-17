@@ -29,15 +29,15 @@ Create etcd database directory:
     - makedirs: True
 
 Create local etcd Pod manifest:
-  file.managed:
+  metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/etcd.yaml
     - source: salt://{{ slspath }}/files/manifest.yaml
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
-    - dir_mode: 750
+    - config_files:
+        - /etc/kubernetes/pki/etcd/ca.crt
+        - /etc/kubernetes/pki/etcd/peer.crt
+        - /etc/kubernetes/pki/etcd/peer.key
+        - /etc/kubernetes/pki/etcd/server.crt
+        - /etc/kubernetes/pki/etcd/server.key
     - context:
         name: etcd
         image_name: {{ image_name }}
@@ -76,4 +76,4 @@ Advertise etcd node in the mine:
       - func: 'etcd_endpoints'
       - mine_function: metalk8s.get_etcd_endpoint
     - watch:
-      - file: Create local etcd Pod manifest
+      - metalk8s: Create local etcd Pod manifest

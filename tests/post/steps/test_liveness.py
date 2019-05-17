@@ -45,10 +45,22 @@ def check_resource_list(host, resource, namespace):
     "we can exec '{command}' in the pod labeled '{label}' "
     "in the '{namespace}' namespace"))
 def check_exec(host, command, label, namespace):
+    # Just in case something is not ready yet, we make sure we can find
+    # candidates before trying further
+    def _wait_for_pods():
+         assert len(kube_utils.get_pods(host, label, namespace)) > 0
+
+    utils.retry(
+        _wait_for_pods,
+        times=10,
+        wait=3,
+        name="wait for pod labeled '{}'".format(label)
+    )
+
     candidates = kube_utils.get_pods(host, label, namespace)
 
     assert len(candidates) == 1, (
-        "Expected one (and only one) pod with label {l}, found {f}"
+        "Expected only one Pod with label {l}, found {f}"
     ).format(l=label, f=len(candidates))
 
     pod = candidates[0]

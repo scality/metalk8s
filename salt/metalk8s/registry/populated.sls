@@ -71,5 +71,5 @@ Import {{ image.name }} image:
     - tls_verify: false
     - require:
       - pkg: Install skopeo
-      - file: Install OCI registry manifest
+      - metalk8s: Install OCI registry manifest
 {% endfor %}
