@@ -1,12 +1,12 @@
 variable "ssh_key_path" {
-  type    = "string"
+  type    = string
   default = "~/.ssh/terraform.pub"
 }
 
 resource "openstack_compute_keypair_v2" "local_ssh_key" {
-  name       = "${local.prefix}"
-  public_key = "${file(var.ssh_key_path)}"
-}
+  name       = local.prefix
+  public_key = file(var.ssh_key_path)
+  }
 
 
 data "template_file" "local_ssh_config" {
@@ -24,7 +24,7 @@ data "template_file" "local_ssh_config" {
     #     ip   = node.network[0].fixed_ip_v4
     #   }
     # ]
-  }
+}
 }
 
 data "template_file" "bastion_ssh_config" {
@@ -39,8 +39,8 @@ data "template_file" "bastion_ssh_config" {
 }
 
 resource "null_resource" "ssh_config" {
-  triggers {
-    cluster_instance_ids = "${join(",", local.all_instances)}"
+  triggers = {
+    cluster_instance_ids = join(",", local.all_instances)
   }
 
   # Generate SSH config file for local usage
@@ -51,9 +51,9 @@ resource "null_resource" "ssh_config" {
   # Generate SSH config file for the Bastion
   provisioner "file" {
     connection {
-      host = "${local.bastion_ip}"
+      host        = local.bastion_ip
       user        = "centos"
-      private_key = "${file("~/.ssh/terraform")}"
+      private_key = file("~/.ssh/terraform")
     }
 
     content = "${data.template_file.bastion_ssh_config.rendered}"

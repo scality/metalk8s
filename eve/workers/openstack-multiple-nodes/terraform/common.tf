@@ -1,5 +1,5 @@
 variable "worker_uuid" {
-  type    = "string"
+  type    = string
   default = ""
 }
 
