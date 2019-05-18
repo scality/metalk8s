@@ -171,12 +171,12 @@ resource "openstack_compute_instance_v2" "nodes" {
 }
 
 locals {
-  bastion_ip   = openstack_compute_instance_v2.bastion.network.0.fixed_ip_v4
-  bootstrap_ip = openstack_compute_instance_v2.bootstrap.network.0.fixed_ip_v4
+  bastion_ip   = openstack_compute_instance_v2.bastion.access_ip_v4
+  bootstrap_ip = openstack_compute_instance_v2.bootstrap.access_ip_v4
 
   nodes = [
     for index, node in openstack_compute_instance_v2.nodes :
-    { name = "node${index + 1}", ip = node.network.0.fixed_ip_v4 }
+    { name = "node${index + 1}", ip = node.access_ip_v4 }
   ]
 
   all_instances = concat(
