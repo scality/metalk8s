@@ -174,9 +174,10 @@ locals {
   bastion_ip   = openstack_compute_instance_v2.bastion.network.0.fixed_ip_v4
   bootstrap_ip = openstack_compute_instance_v2.bootstrap.network.0.fixed_ip_v4
 
-  # FIXME: this syntax does not work (but will in v0.12)
-  # see https://github.com/hashicorp/terraform/issues/17048
-  # nodes = ["${openstack_compute_instance_v2.nodes.*.network.0.fixed_ip_v4}"]
+  nodes = [
+    for index, node in openstack_compute_instance_v2.nodes :
+    { name = "node${index + 1}", ip = node.network.0.fixed_ip_v4 }
+  ]
 
   all_instances = concat(
     [
@@ -192,5 +193,6 @@ output "ips" {
   value = {
     bastion   = local.bastion_ip
     bootstrap = local.bootstrap_ip
+    nodes     = [for node in local.nodes : node.ip]
   }
 }
