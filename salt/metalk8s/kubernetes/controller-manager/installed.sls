@@ -3,6 +3,8 @@
 
 include:
   - .kubeconfig
+  - metalk8s.kubernetes.ca.kubernetes.advertised
+  - metalk8s.kubernetes.sa.advertised
 
 Create kube-controller-manager Pod manifest:
   metalk8s.static_pod_managed:
@@ -23,8 +25,6 @@ Create kube-controller-manager Pod manifest:
           - --address=127.0.0.1
           - --allocate-node-cidrs=true
           - --cluster-cidr={{ networks.pod }}
-          - --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt
-          - --cluster-signing-key-file=/etc/kubernetes/pki/ca.key
           - --controllers=*,bootstrapsigner,tokencleaner
           - --kubeconfig=/etc/kubernetes/controller-manager.conf
           - --leader-elect=true
