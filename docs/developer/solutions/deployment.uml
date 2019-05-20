@@ -1,0 +1,95 @@
+@startuml
+
+actor user as "User"
+control ui as "MetalK8s UI"
+control saltmaster as "Salt Master"
+entity bootstrap as "Bootstrap node"
+control apiserver as "Kubernetes API"
+control registry as "MetalK8s registry"
+
+== Import a new Solution (version) ==
+
+user -> bootstrap : Upload Solution ISO
+user -> bootstrap : Add ISO path to the "SolutionsConfiguration" file
+user -> saltmaster ++ : Request Solutions import
+
+saltmaster <-> apiserver : Retrieve "metalk8s-solutions" ConfigMap
+
+loop For each ISO defined in "SolutionsConfiguration"
+
+    saltmaster -> bootstrap ++ : Check ISO file (against our standards/constraints)
+    |||
+    bootstrap --> saltmaster -- : Return status (valid or not) and metadata if any
+
+    alt ISO is invalid
+        |||
+        saltmaster -> saltmaster : Fail early
+        |||
+    else ISO is valid
+        |||
+        saltmaster -> bootstrap ++ : Run "import_solution_archive" formula
+        |||
+        bootstrap -> bootstrap : Mount ISO
+        bootstrap -> registry : Configure new ISO source
+        |||
+        bootstrap -> saltmaster -- : Solution imported successfully
+    end
+
+end
+
+loop For each latest version newly imported
+
+    saltmaster <-> apiserver : Replace CRDs
+
+    saltmaster <-> apiserver : Create/Update Deployment for the Solution UI
+
+end
+
+loop For each Solution version in "metalk8s-solutions" ConfigMap not in "SolutionsConfiguration"
+    |||
+    saltmaster -> bootstrap ++ : Run "remove_solution_archive" formula
+    |||
+    bootstrap -> registry : Remove configuration for this Solution version
+    bootstrap -> bootstrap : Unmount ISO
+    |||
+    bootstrap -> saltmaster -- : Solution removed successfully
+end
+
+saltmaster <-> apiserver : Update "metalk8s-solutions" ConfigMap
+
+saltmaster -> user -- : Solutions imported successfully
+
+|||
+
+== Confirmation ==
+
+user -> ui : Request Solutions listing page
+ui <-> apiserver : Retrieve "metalk8s-solutions" ConfigMap
+
+loop For each Solution configured
+
+    ui <-> apiserver : Retrieve Solution UI Service
+
+end
+
+ui -> user : Display Solutions with the versions deployed and their UI links
+
+|||
+
+== Deployment of the Operator ==
+
+note over user
+    Deployment of a Solution Operator should
+    be managed in the Solution UI, allowing
+    the user to see multiple instances of the
+    Operator at once (different namespaces).
+end note
+
+opt If the user wants to perform manual deployment
+
+    user -> apiserver : Create new Namespace for the Operator to manage
+    user -> apiserver : Apply the example Deployment from the mounted Solution ISO
+
+end
+
+@enduml

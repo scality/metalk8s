@@ -4,6 +4,14 @@
 
 An opinionated Kubernetes distribution with a focus on long-term on-prem deployments
 
+## Integrating
+
+MetalK8s offers a set of tools to deploy Kubernetes applications, given a set of
+standards for packaging such applications is respected.
+
+For more information, please refer to the
+[Integration Guidelines](docs/developer/solutions/index.rst).
+
 ## Building
 
 To build a MetalK8s ISO, simply type `./doit.sh`.
