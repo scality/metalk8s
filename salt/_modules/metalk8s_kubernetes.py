@@ -2373,3 +2373,52 @@ def node_uncordon(node_name, **kwargs):
         salt '*' kubernetes.node_uncordon  node_name="minikube"
     '''
     return node_set_unschedulable(node_name, False, **kwargs)
+
+
+# TODO: Attempt for a central point to call kubernets API,
+#       in order to have a centralized and consistent way
+#       of dealing with errors.
+def call_kube_api(api_instance, method_name, *args, **kwargs):
+    """Generic function to call Kubernetes API
+
+    api_instance:   Instance of API to call
+    method_name:    Name of method to call
+    args:           Positional arguments of method to call
+    kwargs:         Named parameters of method to call
+
+    returns: kubernetes API response
+
+    Example:
+        api_instance = kubernetes.client.CoreV1Api()
+        api_response = call_kube_api(api_instance, 'list_node',
+                                     field_selector="metadata.name=bootstrap")
+    """
+
+    # Find method
+    try:
+        method = api_instance.__getattribute__(method_name)
+    except AttributeError as exc:
+        raise CommandExecutionError(
+            'Method not found: {0}'.format(exc))
+
+    # Call method
+    try:
+        response = method(*args, **kwargs)
+
+        # Possibly handle special case(s) here
+        # (aka, empty response could raise some NotFound exception)
+
+        return response
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException):
+            if exc.status == 404:
+                # Page not found => Wrong call => Fatal error
+                raise
+            elif exc.status == 429:
+                # Too Many Requests => wait and try again
+                raise
+            else:
+                raise
+        else:
+            raise CommandExecutionError(exc)
+
