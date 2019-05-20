@@ -214,6 +214,11 @@ stages:
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
       - ShellCommand:
+          name: Set-up Terraform provider plugins for v0.12
+          command: bash scripts/setup-providers.sh
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
           name: Init terraform
           command: terraform init
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
