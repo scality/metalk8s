@@ -1,3 +1,13 @@
+'''
+Module for draining a Kubernetes node.
+
+This implementation is based on the go code of `kubectl`, for more details see
+https://github.com/kubernetes/kubernetes/blob/v1.11.10/pkg/kubectl/cmd/drain.go
+
+This module's functions are merged into the `metalk8s_kubernetes`
+module when called by salt by virtue of its `__virtualname__` attribute.
+'''
+
 import logging
 import operator
 import time
@@ -5,13 +15,13 @@ import time
 from salt.exceptions import CommandExecutionError
 
 try:
-    import kubernetes  # pylint: disable=import-self
+    import kubernetes
     import kubernetes.client
     from kubernetes.client.rest import ApiException
-    from urllib3.exceptions import HTTPError
     from kubernetes.client.models.v1_delete_options import V1DeleteOptions
     from kubernetes.client.models.v1_object_meta import V1ObjectMeta
     from kubernetes.client.models.v1beta1_eviction import V1beta1Eviction
+    from urllib3.exceptions import HTTPError
 
     HAS_LIBS = True
 except ImportError:
@@ -51,7 +61,12 @@ class DrainTimeoutException(DrainException):
 
 
 def _mirrorpod_filter(pod):
-    '''Check if a pod contains the mirror K8s annotation.'''
+    '''Check if a pod contains the mirror K8s annotation.
+
+    Args:
+      - pod: kubernetes pod object
+    Returns: True if the pod has the mirror annotation, False if not
+    '''
     mirror_annotation = "kubernetes.io/config.mirror"
 
     annotations = pod.metadata.annotations
@@ -61,7 +76,12 @@ def _mirrorpod_filter(pod):
 
 
 def _has_local_storage(pod):
-    '''Check if a pod has local storage.'''
+    '''Check if a pod has local storage.
+
+    Args:
+      - pod: kubernetes pod object
+    Returns: True if the pod uses local storage, False if not
+    '''
     for volume in pod.spec.volumes:
         if volume.empty_dir is not None:
             return True
@@ -69,7 +89,16 @@ def _has_local_storage(pod):
 
 
 def _get_controller_of(pod):
-    '''Get a pod's controller's reference.'''
+    '''Get a pod's controller's reference.
+
+    This uses the pod's metadata, so there is no guarantee that
+    the controller object reference returned actually corresponds to a
+    controller object in the Kubernetes API.
+
+    Args:
+      - pod: kubernetes pod object
+    Returns: the reference to a controller object
+    '''
     if pod.metadata.owner_references:
         for owner_ref in pod.metadata.owner_references:
             if owner_ref.controller:
@@ -129,9 +158,9 @@ class Drain(object):
     This object contains the options associated to a drain request on a
     given node, as well as the methods used to execute the drain.
     '''
-    # TODO: this is random value...
-    #       kubectl uses `kubectl.interval`, but cannot find it anywhere
-    KUBECTL_INTERVAL = 10
+
+    # According to `kubectl` code, this value should be 1 second by default
+    KUBECTL_INTERVAL = 1
     WARNING_MSG = {
         "daemonset": "Ignoring DaemonSet-managed pods",
         "localStorage": "Deleting pods with local storage",
@@ -170,11 +199,12 @@ class Drain(object):
     delete_local_data = property(operator.attrgetter('_delete_local_data'))
 
     def localstorage_filter(self, pod):
-        '''Check if given pod can be elected for deletion,
-        regarding local storage
+        '''Compute eviction status for the pod according to local storage.
 
-        return: (deletable: bool, warning: str)
-        raises: DrainException if deleting local data is not possible
+        Args:
+          - pod: the pod for which eviction is computed
+        Return: (is_deletable: bool, warning: str)
+        Raises: DrainException if deleting local data is not possible
         '''
         if not _has_local_storage(pod):
             return True, ""
@@ -183,10 +213,13 @@ class Drain(object):
         return True, self.WARNING_MSG["localStorage"]
 
     def unreplicated_filter(self, pod):
-        '''Check if given pod can be elected for deletion,
-        regarding replication
+        '''Compute eviction status for the pod according to replication.
 
-        return: (deletable flag, warning msg, fatal msg)
+        Args:
+          - pod: the pod for which eviction is computed
+        Returns: (is_deletable: bool, warning: str)
+        Raises: DrainException if the pod has no controller and the `force`
+                option was not provided.
         '''
         # finished pods can be removed
         if pod.status.phase in (POD_STATUS_SUCCEEDED, POD_STATUS_FAILED):
@@ -209,10 +242,13 @@ class Drain(object):
     def get_controller(namespace, controller_ref):
         '''Get the controller object from a reference to it
 
-        return:
+        Args:
+          - namespace: the queried controller's namespace
+          - controller_ref: the queried controller's reference
+        Returns:
           - the controller object if found
           - None if not found
-        raises: CommandExecutionError if API fails
+        Raises: CommandExecutionError if API fails
         '''
         API_CONTROLLERS = {
             "ReplicationController": {
@@ -268,18 +304,15 @@ class Drain(object):
     def get_pod_controller(self, pod):
         '''Get a pod's controller object reference
 
-        return: controller
-        raises: DrainException if controller not found
+        Args:
+          - pod: the pod for which we want the controller
+        Returns: the pod's controller reference if the controller exists
+        Raises: DrainException if the controller matching the referenct is
+                not found
         '''
         controller_ref = _get_controller_of(pod)
         if controller_ref is None:
             return None
-        # Fire error if - and only if - controller is gone/missing...
-        # TODO: Is it done
-        #   1) by api call that fires error when nothing is found,
-        #   2) by checking err/warning message and take action?
-        #   3) when reponse.items is empty?
-        #   Note: taking option 3...
         response = self.get_controller(pod.metadata.namespace, controller_ref)
         if self.not_found(response):
             raise DrainException(
@@ -288,7 +321,7 @@ class Drain(object):
         return controller_ref
 
     def daemonset_filter(self, pod):
-        '''Check if given pod can be elected for deletion daemonset-wise.
+        '''Compute eviction status for the pod according to DaemonSet kind.
 
         A daemonset will generally not be deleted, regardless of flags, but we
         can determine if their presence constitutes an error.
@@ -296,8 +329,9 @@ class Drain(object):
         The exception to this rule is when the pod is orphaned, meaning that
         the management resource is not found, and we have the `force` flag set.
 
-        return: (deletable: bool, warn: str)
-        raises: DrainException if daemonset is in unexpected state
+        Returns: (is_deletable: bool, warning: str)
+        Raises: DrainException if the DaemonSet is in unexpected state and the
+                `ignore_daemonset` option was not set
         '''
         controller_ref = _get_controller_of(pod)
 
@@ -324,9 +358,7 @@ class Drain(object):
         return False, self.WARNING_MSG["daemonset"]
 
     def get_pods_for_eviction(self):
-        '''Get list of pods that can be deleted/evicted on
-        node identified by the name `node_name`.
-        '''
+        '''Compute node drain status according to deletable pods.'''
         warnings = {}
         failures = {}
         pods = []
@@ -476,7 +508,13 @@ class Drain(object):
         return pods
 
     def evict_pod(self, pod):
-        '''Evict a pod.'''
+        '''Trigger the eviction process for a single pod.
+
+        Args:
+          - pod: the Kubernetes API pod object to evict
+        Returns: None
+        Raises: CommandExecutionError in case of API error
+        '''
         delete_options = V1DeleteOptions()
         if self.grace_period >= 0:
             delete_options.grace_period = self.grace_period
@@ -514,12 +552,20 @@ def node_drain(node_name,
                delete_local_data=False,
                dry_run=False,
                **kwargs):
-    '''
-    Drain the the node identified by the name `node_name`.
+    '''Trigger the drain process for a node.
 
-    CLI Examples::
+    Args:
+      - force             : ignore unreplicated pods (i.e. StaticPod pods)
+      - grace_period      : eviction grace period
+      - ignore_daemonset  : ignore daemonsets in eviction process
+      - timeout           : drain process timeout value
+      - delete_local_data : force deletion for pods with local storage
+      - dry_run           : only run pod selection process, not eviction
 
-        salt '*' kubernetes.node_drain node_name="minikube"
+    Keyword args: connection parameters, passed through to connection utility
+                  module.
+    Returns: None
+    Raises: CommandExecutionError if the drain process was unsuccessful/
     '''
 
     cfg = __salt__['metalk8s_kubernetes.setup_conn'](**kwargs)

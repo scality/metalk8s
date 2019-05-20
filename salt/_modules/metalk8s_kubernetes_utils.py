@@ -1,3 +1,10 @@
+'''
+Utility module for Kubernetes API connection management.
+
+This module's functions are merged into the `metalk8s_kubernetes`
+module when called by salt by virtue of its `__virtualname__` attribute.
+'''
+
 from __future__ import absolute_import, unicode_literals, print_function
 import base64
 import errno
@@ -15,12 +22,6 @@ import salt.utils.versions
 import salt.utils.yaml
 from salt.exceptions import TimeoutError
 from salt.ext.six.moves import range  # pylint: disable=import-error
-
-
-# from salt.exceptions import CommandExecutionError
-# import salt.utils.files
-# import salt.utils.versions
-# from salt.ext.six.moves import range  # pylint: disable=import-error
 
 
 try:
