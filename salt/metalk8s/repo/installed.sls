@@ -51,6 +51,11 @@ Generate container registry configuration:
         var_prefix: {{ saltenv | replace('.', '_') | replace('-', '_') }}
         images_path: {{ metalk8s.iso_root_path }}/images/
 
+Inject nginx image:
+  containerd.image_managed:
+    - name: docker.io/library/nginx:1.15.8
+    - archive_path: {{ metalk8s.iso_root_path }}/images/nginx-1.15.8.tar
+
 Install package repositories manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/package-repositories.yaml
@@ -61,12 +66,13 @@ Install package repositories manifest:
       - {{ nginx_registry_config_path }}
     - context:
         container_port: {{ repo.port }}
-        image: {{ package_repositories_image }}
+        image: docker.io/library/nginx:1.15.8
         name: {{ package_repositories_name }}
         version: {{ package_repositories_version }}
         packages_path: {{ metalk8s.iso_root_path }}/{{ repo.relative_path }}
         nginx_configuration_path: {{ nginx_main_conf }}
     - onchanges:
+      - containerd: Inject nginx image
       - file: Generate package repositories nginx configuration
       - file: Deploy container registry nginx configuration
       - file: Generate container registry configuration
