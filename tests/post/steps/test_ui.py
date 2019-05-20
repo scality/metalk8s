@@ -12,7 +12,7 @@ def test_ui(host):
 
 
 @then("we can reach the UI")
-def reach_UI(host, version, request):
+def reach_UI(host):
     with host.sudo():
         output = host.check_output(' '.join([
             'salt-call', '--local', '--out=json',

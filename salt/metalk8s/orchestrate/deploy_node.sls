@@ -71,12 +71,15 @@ Uncordon the node:
     - require:
       - salt: Run the highstate
 
+{%- set master_minions = salt['metalk8s.minions_by_role']('master') %}
+
 # Work-around for https://github.com/scality/metalk8s/pull/1028
 Kill kube-controller-manager on all master nodes:
   salt.function:
     - name: ps.pkill
-    - tgt: "{{ salt.metalk8s.minions_by_role('master') | join(',') }}"
+    - tgt: "{{ master_minions | join(',') }}"
     - tgt_type: list
+    - fail_minions: "{{ master_minions | join(',') }}"
     - kwarg:
         pattern: kube-controller-manager
     - require:
@@ -85,9 +88,11 @@ Kill kube-controller-manager on all master nodes:
 {%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
 
 Register the node into etcd cluster:
-  module.run:
-    - metalk8s.add_etcd_node:
-      - host: {{ node_name }}
+  salt.runner:
+    - name: state.orchestrate
+    - pillar: {{ pillar | json  }}
+    - mods:
+      - metalk8s.orchestrate.register_etcd
     - require:
       - salt: Run the highstate
 

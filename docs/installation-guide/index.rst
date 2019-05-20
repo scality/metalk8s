@@ -1,0 +1,6 @@
+Installation Guide
+==================
+
+.. toctree::
+
+   quickstart

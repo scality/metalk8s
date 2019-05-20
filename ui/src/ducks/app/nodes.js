@@ -102,6 +102,8 @@ export function* fetchNodes() {
 
           return {
             name: node.metadata.name,
+            metalk8s_version:
+              node.metadata.labels['metalk8s.scality.com/version'],
             statusType: statusType,
             cpu: node.status.capacity && node.status.capacity.cpu,
             control_plane: isRolePresentInLabels(node, Api.ROLE_MASTER),
@@ -143,7 +145,8 @@ export function* deployNode({ payload }) {
     Api.deployNode,
     api.url_salt,
     salt.data.return[0].token,
-    payload.name
+    payload.name,
+    payload.metalk8s_version
   );
   yield put(layoutLoadingAction(false));
   if (result.error) {

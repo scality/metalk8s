@@ -5,15 +5,13 @@ include:
   - .kubeconfig
 
 Create kube-controller-manager Pod manifest:
-  file.managed:
+  metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-controller-manager.yaml
     - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
-    - dir_mode: 750
+    - config_files:
+        - /etc/kubernetes/controller-manager.conf
+        - /etc/kubernetes/pki/ca.crt
+        - /etc/kubernetes/pki/sa.key
     - context:
         name: kube-controller-manager
         image_name: {{ kubernetes_image("kube-controller-manager") }}
@@ -45,5 +43,5 @@ Create kube-controller-manager Pod manifest:
           - path: /etc/kubernetes/controller-manager.conf
             name: kubeconfig
             type: File
-    - require:
+    - onchanges:
       - metalk8s_kubeconfig: Create kubeconfig file for controller-manager

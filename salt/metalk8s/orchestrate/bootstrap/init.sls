@@ -90,6 +90,16 @@ Bring bootstrap minion to highstate:
     - salt: Sync bootstrap minion
     - salt: Deploy CA role on bootstrap minion
 
+Generate etcd client certs for salt master:
+  salt.state:
+  - sls:
+    - metalk8s.salt.master.certs
+  - tgt: {{ pillar.bootstrap_id }}
+  - pillar: {{ pillar_data | tojson }}
+  - saltenv: {{ saltenv }}
+  - require:
+    - salt: Deploy CA role on bootstrap minion
+
 Wait for API server to be available:
   http.wait_for_successful_query:
   - name: https://{{ pillar.metalk8s.api_server.host }}:6443/healthz

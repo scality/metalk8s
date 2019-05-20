@@ -13,6 +13,8 @@ metadata:
     heritage: metalk8s
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/managed-by: salt
+  annotations:
+    metalk8s.scality.com/config-digest: '{{ config_digest }}'
 spec:
   hostNetwork: true
   priorityClassName: system-cluster-critical
@@ -82,12 +84,12 @@ spec:
         httpGet:
           path: /
           port: api
-          host: {{ salt_api_ip }}
+          host: {{ salt_ip }}
       readinessProbe:
         httpGet:
           path: /
           port: api
-          host: {{ salt_api_ip }}
+          host: {{ salt_ip }}
       volumeMounts:
         - name: config
           mountPath: '/etc/salt'

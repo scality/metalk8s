@@ -19,7 +19,7 @@ RUN yum install -y epel-release \
     genisoimage \
     git \
     yum-utils \
-    docker-ce-cli-18.09.2 \
+    docker-ce-cli-18.09.6 \
     && adduser -u 1042 --home /home/eve eve --groups docker \
     && chown eve:eve /home/eve/workspace \
     && pip install buildbot-worker==${BUILDBOT_VERSION}

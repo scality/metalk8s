@@ -32,5 +32,6 @@
   "unknown": "Unknown",
   "ready": "Ready",
   "not_ready": "Not Ready",
-  "deploy": "Deploy"
+  "deploy": "Deploy",
+  "version": "MetalK8s Version"
 }
