@@ -35,6 +35,10 @@ docutils==0.14 \
     --hash=sha256:51e64ef2ebfb29cae1faa133b3710143496eca21c530f3f71424d77687764274 \
     --hash=sha256:7a4bd47eaf6596e1295ecb11361139febe29b084a87bf005bf899f9a42edc3c6 \
     # via doc8, restructuredtext-lint, sphinx
+httplib2==0.12.3 \
+    --hash=sha256:23914b5487dfe8ef09db6656d6d63afb0cf3054ad9ebc50868ddc8e166b5f8e8 \
+    --hash=sha256:a18121c7c72a56689efbf1aef990139ad940fee1e64c6f2458831736cd593600 \
+    # via plantuml
 idna==2.8 \
     --hash=sha256:c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407 \
     --hash=sha256:ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c \
@@ -92,6 +96,8 @@ pbr==5.2.0 \
     --hash=sha256:6901995b9b686cb90cceba67a0f6d4d14ae003cd59bc12beb61549bdfbe3bc89 \
     --hash=sha256:d950c64aeea5456bbd147468382a5bb77fe692c13c9f00f0219814ce5b642755 \
     # via stevedore
+plantuml==0.2.1 \
+    --hash=sha256:a117593c4864fce120e659db44e7235c34e7b3930c0fed421d659cfebf2ddabf
 port_for==0.3.1 \
     --hash=sha256:b16a84bb29c2954db44c29be38b17c659c9c27e33918dec16b90d375cc596f1c \
     # via sphinx-autobuild
