@@ -5,3 +5,4 @@ Integrating with MetalK8s
 
    introduction
    archive
+   operator
