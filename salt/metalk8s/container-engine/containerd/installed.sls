@@ -1,8 +1,8 @@
 {%- from "metalk8s/macro.sls" import pkg_installed with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 
-{%- set registry_ip = metalk8s.endpoints['package-repositories'].ip %}
-{%- set registry_port = metalk8s.endpoints['package-repositories'].ports.http %}
+{%- set registry_ip = metalk8s.endpoints['repositories'].ip %}
+{%- set registry_port = metalk8s.endpoints['repositories'].ports.http %}
 
 include:
   - metalk8s.repo

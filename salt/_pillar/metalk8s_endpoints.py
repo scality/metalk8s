@@ -58,7 +58,7 @@ def ext_pillar(minion_id, pillar, kubeconfig):
             '%s: kubeconfig not found at %s', __virtualname__, kubeconfig)
         return endpoints
 
-    for service in ['salt-master', 'package-repositories']:
+    for service in ['salt-master', 'repositories']:
         endpoints.update({
             service: service_endpoints(service, kubeconfig)
         })

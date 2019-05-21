@@ -33,7 +33,7 @@
                         'api': 4507,
                     },
                 },
-                'package-repositories': {
+                'repositories': {
                     'ip': bootstrap_control_plane_ip,
                     'ports': {
                         'http': 8080,

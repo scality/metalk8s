@@ -259,7 +259,7 @@ orchestrate_bootstrap() {
       "  'repo': {'local_mode': True},"
       "  'metalk8s': {"
       "    'endpoints': {"
-      "      'package-repositories': {"
+      "      'repositories': {"
       "         'ip': $control_plane_ip,"
       "         'ports': {'http': 8080}"
       "      },"
