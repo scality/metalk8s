@@ -1,3 +1,15 @@
+#!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
+# The content below has been generated from
+# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# with the following command:
+#   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
+#     -name "grafana-*.yaml") > deployed.sls
+# In the following, only container image registries have been replaced.
+
+---
 apiVersion: v1
 data:
   prometheus.yaml: ewogICAgImFwaVZlcnNpb24iOiAxLAogICAgImRhdGFzb3VyY2VzIjogWwogICAgICAgIHsKICAgICAgICAgICAgImFjY2VzcyI6ICJwcm94eSIsCiAgICAgICAgICAgICJlZGl0YWJsZSI6IGZhbHNlLAogICAgICAgICAgICAibmFtZSI6ICJwcm9tZXRoZXVzIiwKICAgICAgICAgICAgIm9yZ0lkIjogMSwKICAgICAgICAgICAgInR5cGUiOiAicHJvbWV0aGV1cyIsCiAgICAgICAgICAgICJ1cmwiOiAiaHR0cDovL3Byb21ldGhldXMtazhzLm1vbml0b3Jpbmcuc3ZjOjkwOTAiLAogICAgICAgICAgICAidmVyc2lvbiI6IDEKICAgICAgICB9CiAgICBdCn0=
@@ -13,6 +25,7 @@ metadata:
   name: grafana
   namespace: monitoring
 ---
+{%- raw %}
 apiVersion: v1
 items:
 - apiVersion: v1
@@ -7360,6 +7373,7 @@ items:
     name: grafana-dashboard-statefulset
     namespace: monitoring
 kind: ConfigMapList
+{%- endraw %}
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
@@ -7379,7 +7393,7 @@ spec:
         app: grafana
     spec:
       containers:
-      - image: grafana/grafana:5.2.4
+      - image: {{ build_image_name('grafana', '5.2.4') }}
         name: grafana
         ports:
         - containerPort: 3000
