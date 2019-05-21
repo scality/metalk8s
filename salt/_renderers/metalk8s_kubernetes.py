@@ -267,8 +267,16 @@ def render(yaml_data, saltenv='', sls='', **kwargs):
 
     data = yaml.load_all(yaml_data, Loader=salt.utils.yaml.SaltYamlSafeLoader)
 
+    objects = []
+    for obj in data:
+        if not obj:
+            continue
+        if isinstance(obj.get('items'), list):
+            objects.extend(obj['items'])
+        else:
+            objects.append(obj)
+
     return OrderedDict(
         _step(obj, kubeconfig=kubeconfig, context=context)
-        for obj in data
-        if obj
+        for obj in objects
     )
