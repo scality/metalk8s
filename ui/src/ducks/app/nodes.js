@@ -11,6 +11,10 @@ import { eventChannel, END } from 'redux-saga';
 import * as Api from '../../services/api';
 import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
 import history from '../../history';
+import {
+  addNotificationSuccessAction,
+  addNotificationErrorAction
+} from './notifications';
 
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
@@ -141,11 +145,23 @@ export function* createNode({ payload }) {
   if (!result.error) {
     yield call(fetchNodes);
     yield call(history.push, '/nodes');
+    yield put(
+      addNotificationSuccessAction({
+        title: 'Node Creation',
+        message: `Node ${payload.name} has been created successfully.`
+      })
+    );
   } else {
     yield put({
       type: CREATE_NODE_FAILED,
       payload: result.error.body.message
     });
+    yield put(
+      addNotificationErrorAction({
+        title: 'Node Creation',
+        message: `Node ${payload.name} creation has failed.`
+      })
+    );
   }
 }
 
@@ -160,9 +176,12 @@ export function* deployNode({ payload }) {
     payload.metalk8s_version
   );
   if (result.error) {
-    alert('Deployement Error'); // TODO: to be removed when we have the notification component
-  } else if (result.data.return[0].retcode === 1) {
-    alert('Deployement Failed: retcode=1'); // TODO: to be removed when we have the notification component
+    yield put(
+      addNotificationErrorAction({
+        title: 'Node Deployment',
+        message: result.error
+      })
+    );
   } else {
     yield call(history.push, `/nodes/deploy/${result.data.return[0].jid}`);
   }

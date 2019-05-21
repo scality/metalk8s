@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { matchPath } from 'react-router';
-import { Layout as CoreUILayout } from 'core-ui';
+import { Layout as CoreUILayout, Notifications } from 'core-ui';
 import { withRouter, Switch } from 'react-router-dom';
 
 import NodeCreateForm from './NodeCreateForm';
@@ -16,6 +16,7 @@ import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
 
 import { fetchNodesAction } from '../ducks/app/nodes';
+import { removeNotificationAction } from '../ducks/app/notifications';
 
 class Layout extends Component {
   componentDidMount() {
@@ -83,6 +84,10 @@ class Layout extends Component {
     return (
       <ThemeProvider theme={this.props.theme}>
         <CoreUILayout sidebar={sidebar} navbar={navbar}>
+          <Notifications
+            notifications={this.props.notifications}
+            onDismiss={this.props.removeNotification}
+          />
           <Switch>
             <PrivateRoute
               exact
@@ -109,14 +114,16 @@ class Layout extends Component {
 const mapStateToProps = state => ({
   user: state.login.user,
   sidebar: state.app.layout.sidebar,
-  theme: state.config.theme
+  theme: state.config.theme,
+  notifications: state.app.notifications.list
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
-    fetchNodes: () => dispatch(fetchNodesAction())
+    fetchNodes: () => dispatch(fetchNodesAction()),
+    removeNotification: uid => dispatch(removeNotificationAction(uid))
   };
 };
 
