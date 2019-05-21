@@ -180,6 +180,19 @@ def _handle_v1_namespace(obj, kubeconfig, context):
     }
 
 
+@handle('v1', 'Secret')
+def _handle_v1_secret(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.secret_present': [
+            {'name': obj['metadata']['name']},
+            {'namespace': obj['metadata']['namespace']},
+            {'data': obj['data']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ],
+    }
+
+
 @handle('monitoring.coreos.com/v1', 'Alertmanager')
 @handle('monitoring.coreos.com/v1', 'Prometheus')
 @handle('monitoring.coreos.com/v1', 'PrometheusRule')
