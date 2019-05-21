@@ -1,3 +1,15 @@
+#!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
+# The content below has been generated from
+# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# with the following command:
+#   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
+#     -name "kube-state-metrics-*.yaml") > deployed.sls
+# In the following, only container image registries have been replaced.
+
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -171,7 +183,7 @@ spec:
       - args:
         - --secure-listen-address=:8443
         - --upstream=http://127.0.0.1:8081/
-        image: quay.io/coreos/kube-rbac-proxy:v0.3.1
+        image: {{ build_image_name('kube-rbac-proxy', 'v0.3.1') }}
         name: kube-rbac-proxy-main
         ports:
         - containerPort: 8443
@@ -186,7 +198,7 @@ spec:
       - args:
         - --secure-listen-address=:9443
         - --upstream=http://127.0.0.1:8082/
-        image: quay.io/coreos/kube-rbac-proxy:v0.3.1
+        image: {{ build_image_name('kube-rbac-proxy', 'v0.3.1') }}
         name: kube-rbac-proxy-self
         ports:
         - containerPort: 9443
@@ -203,7 +215,7 @@ spec:
         - --port=8081
         - --telemetry-host=127.0.0.1
         - --telemetry-port=8082
-        image: quay.io/coreos/kube-state-metrics:v1.3.1
+        image: {{ build_image_name('kube-state-metrics', 'v1.3.1') }}
         name: kube-state-metrics
         resources:
           limits:
@@ -232,7 +244,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: quay.io/coreos/addon-resizer:1.0
+        image: {{ build_image_name('addon-resizer', '1.0') }}
         name: addon-resizer
         resources:
           limits:
