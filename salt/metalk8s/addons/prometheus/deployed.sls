@@ -1,3 +1,15 @@
+#!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
+# The content below has been generated from
+# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# with the following command:
+#   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
+#     -name "prometheus-*.yaml") > deployed.sls
+# In the following, only container image registries have been replaced.
+
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -137,7 +149,7 @@ spec:
     - name: alertmanager-main
       namespace: monitoring
       port: web
-  baseImage: quay.io/prometheus/prometheus
+  baseImage: {{ build_image_name('prometheus') }}
   nodeSelector:
     beta.kubernetes.io/os: linux
   replicas: 2
@@ -169,6 +181,7 @@ rules:
   verbs:
   - get
 ---
+{%- raw %}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -1287,6 +1300,7 @@ spec:
       for: 10m
       labels:
         severity: warning
+{%- endraw %}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 items:
@@ -1462,3 +1476,39 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-scheduler-prometheus-discovery
+  labels:
+    k8s-app: kube-scheduler
+spec:
+  selector:
+    component: kube-scheduler
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 10251
+    targetPort: 10251
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-controller-manager-prometheus-discovery
+  labels:
+    k8s-app: kube-controller-manager
+spec:
+  selector:
+    component: kube-controller-manager
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 10252
+    targetPort: 10252
+    protocol: TCP
