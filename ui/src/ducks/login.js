@@ -119,7 +119,6 @@ export function* authenticateSaltApi() {
         token: result.data.return[0].token
       })
     );
-    yield call(history.push, '/');
   } else {
     yield call(logout);
   }

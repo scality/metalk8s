@@ -33,5 +33,6 @@
   "ready": "Ready",
   "not_ready": "Not Ready",
   "deploy": "Deploy",
-  "version": "MetalK8s Version"
+  "version": "MetalK8s Version",
+  "node_deployment": "Node Deployment"
 }

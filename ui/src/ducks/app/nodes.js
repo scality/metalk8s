@@ -11,7 +11,7 @@ import { eventChannel, END } from 'redux-saga';
 import * as Api from '../../services/api';
 import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
 import history from '../../history';
-import { layoutLoadingAction } from './layout';
+
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
 export const SET_NODES = 'SET_NODES';
@@ -21,11 +21,14 @@ const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
 const CONNECT_SALT_API = 'CONNECT_SALT_API';
 const UPDATE_EVENTS = 'UPDATE_EVENTS';
+const SUBSCRIBE_DEPLOY_EVENTS = 'SUBSCRIBE_DEPLOY_EVENTS';
+
+let eventSrc, channel;
 
 // Reducer
 const defaultState = {
   list: [],
-  events: []
+  events: {}
 };
 
 const isRolePresentInLabels = (node, role) => {
@@ -53,7 +56,12 @@ export default function reducer(state = defaultState, action = {}) {
     case UPDATE_EVENTS:
       return {
         ...state,
-        events: [...state.events, action.payload]
+        events: {
+          ...state.events,
+          [action.payload.jid]: state.events[action.payload.jid]
+            ? [...state.events[action.payload.jid], action.payload.msg]
+            : [action.payload.msg]
+        }
       };
     default:
       return state;
@@ -85,8 +93,12 @@ export const connectSaltApiAction = payload => {
   return { type: CONNECT_SALT_API, payload };
 };
 
-export const updateNodeEvents = payload => {
+export const updateDeployEventsAction = payload => {
   return { type: UPDATE_EVENTS, payload };
+};
+
+export const subscribeDeployEventsAction = jid => {
+  return { type: SUBSCRIBE_DEPLOY_EVENTS, jid };
 };
 
 // Sagas
@@ -138,7 +150,6 @@ export function* createNode({ payload }) {
 }
 
 export function* deployNode({ payload }) {
-  yield put(layoutLoadingAction(true));
   const salt = yield select(state => state.login.salt);
   const api = yield select(state => state.config.api);
   const result = yield call(
@@ -148,27 +159,16 @@ export function* deployNode({ payload }) {
     payload.name,
     payload.metalk8s_version
   );
-  yield put(layoutLoadingAction(false));
   if (result.error) {
     alert('Deployement Error'); // TODO: to be removed when we have the notification component
   } else if (result.data.return[0].retcode === 1) {
     alert('Deployement Failed: retcode=1'); // TODO: to be removed when we have the notification component
   } else {
-    console.log('jid');
-    console.log(result.data.return[0].jid);
-    const job = yield call(
-      Api.fetchJob,
-      api.url_salt,
-      salt.data.return[0].token,
-      result.data.return[0].jid
-    );
-    console.log('job');
-    console.log(job);
-    //yield call(fetchNodes);
+    yield call(history.push, `/nodes/deploy/${result.data.return[0].jid}`);
   }
 }
 
-export function subSSE(eventSrc) {
+export function subSSE(eventSrc, jid) {
   const subs = emitter => {
     eventSrc.onmessage = msg => {
       emitter(msg);
@@ -184,13 +184,17 @@ export function subSSE(eventSrc) {
 }
 
 export function* sseSagas({ payload }) {
-  const eventSrc = new EventSource(
-    `${payload.url}/events?token=${payload.token}`
-  );
-  const chan = yield call(subSSE, eventSrc);
+  eventSrc = new EventSource(`${payload.url}/events?token=${payload.token}`);
+  channel = yield call(subSSE, eventSrc);
+}
+
+export function* subscribeDeployEvents({ jid }) {
   while (true) {
-    const msg = yield take(chan);
-    //yield put(updateNodeEvents(msg));
+    const msg = yield take(channel);
+    const data = JSON.parse(msg.data);
+    if (data.tag.includes(jid)) {
+      yield put(updateDeployEventsAction({ jid, msg: data }));
+    }
   }
 }
 
@@ -199,4 +203,5 @@ export function* nodesSaga() {
   yield takeEvery(CREATE_NODE, createNode);
   yield takeEvery(DEPLOY_NODE, deployNode);
   yield takeEvery(CONNECT_SALT_API, sseSagas);
+  yield takeEvery(SUBSCRIBE_DEPLOY_EVENTS, subscribeDeployEvents);
 }

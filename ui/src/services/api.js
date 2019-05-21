@@ -143,13 +143,3 @@ export async function deployNode(url, token, node, version) {
     return { error };
   }
 }
-
-export async function fetchJob(url, token, jib) {
-  try {
-    return await axios.get(url + '/jobs/' + jib, {
-      headers: { 'X-Auth-Token': token }
-    });
-  } catch (error) {
-    return { error };
-  }
-}

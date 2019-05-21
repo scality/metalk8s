@@ -40,7 +40,10 @@ export function* fetchPods() {
           nodeName: pod.spec.nodeName,
           status: pod.status.phase,
           startTime: pod.status.startTime,
-          restartCount: pod.status.containerStatuses[0].restartCount
+          restartCount:
+            pod.status.containerStatuses && pod.status.containerStatuses.length
+              ? pod.status.containerStatuses[0].restartCount
+              : 0
         }))
       )
     );
