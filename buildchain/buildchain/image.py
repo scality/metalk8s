@@ -208,12 +208,13 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
-    targets.RemoteTarImage(
+    targets.RemoteImage(
         registry=constants.DOCKER_REGISTRY,
         name='nginx',
         version=NGINX_IMAGE_VERSION,
         digest='sha256:dd2d0ac3fff2f007d99e033b64854be0941e19a2ad51f174d9240dda20d9f534',
         destination=constants.ISO_IMAGE_ROOT,
+        save_as_tar=True,
         task_dep=['_image_mkdir_root'],
     ),
     targets.RemoteImage(

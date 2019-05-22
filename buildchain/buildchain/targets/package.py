@@ -45,7 +45,7 @@ from . import image
 SOURCE_URL_PATTERN = re.compile(r'^Source\d+:\s+(?P<url>.+)$')
 
 
-class Package(base.Target, base.CompositeTarget):
+class Package(base.CompositeTarget):
     """A RPM software package for CentOS 7."""
 
     MKDIR_TASK_NAME = 'pkg_mkdir'

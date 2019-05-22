@@ -14,7 +14,7 @@ from buildchain import coreutils
 from . import base
 
 
-class ContainerImage(base.Target, base.AtomicTarget):
+class ContainerImage(base.AtomicTarget):
     """A container image."""
     def __init__(
         self,

@@ -59,7 +59,7 @@ def task__deploy_salt_tree() -> Iterator[types.TaskDict]:
         yield from file_tree.execution_plan
 
 
-class StaticContainerRegistry(targets.FileTarget):
+class StaticContainerRegistry(targets.AtomicTarget):
     """Generate a nginx configuration to serve a static container registry."""
     def __init__(
         self,
@@ -78,11 +78,10 @@ class StaticContainerRegistry(targets.FileTarget):
             destination: path to the nginx configuration file to write
 
         Keyword Arguments:
-            They are passed to `FileTarget` init method.
+            They are passed to `Target` init method.
         """
-        super().__init__(
-            destination=destination, task_name=destination.name, **kwargs
-        )
+        kwargs['targets'] = [destination]
+        super().__init__(task_name=destination.name, **kwargs)
         self._img_root = root
         self._srv_root = server_root
         self._name_pfx = name_prefix
@@ -104,7 +103,7 @@ class StaticContainerRegistry(targets.FileTarget):
 
     def _run(self) -> None:
         """Generate the nginx configuration."""
-        with Path(self.destination).open('w', encoding='utf-8') as fp:
+        with Path(self.targets[0]).open('w', encoding='utf-8') as fp:
             parts = container_registry.create_config(
                 self._img_root, self._srv_root, self._name_pfx
             )
@@ -112,7 +111,7 @@ class StaticContainerRegistry(targets.FileTarget):
                 fp.write(part)
 
 
-PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
+PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('pillar/metalk8s/roles/minion.sls'),
     targets.TemplateFile(
         task_name='bootstrap.sls',
@@ -137,7 +136,7 @@ PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
 
 # List of salt files to install.
-SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
+SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     targets.TemplateFile(
         task_name='top.sls',
         source=constants.ROOT/'salt'/'top.sls.in',
@@ -334,13 +333,14 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
 
-    targets.RemoteTarImage(
+    targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='pause',
         version='3.1',
         # pylint:disable=line-too-long
         digest='sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea',
         destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
+        save_as_tar=True,
     ),
 
     StaticContainerRegistry(

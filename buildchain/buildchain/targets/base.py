@@ -7,7 +7,7 @@
 import abc
 import operator
 from pathlib import Path
-from typing import Any, List, Optional, Sequence
+from typing import List, Optional, Sequence
 
 from buildchain import types
 
@@ -68,9 +68,7 @@ class Target:
 
 
 
-# This one is a mix-in, hence the limited interface.
-# pylint: disable=too-few-public-methods
-class AtomicTarget(abc.ABC):
+class AtomicTarget(Target, abc.ABC):
     """Target that can be built with a single task."""
 
     @property
@@ -79,35 +77,10 @@ class AtomicTarget(abc.ABC):
         """Task producing the target."""
 
 
-# This one is a mix-in, hence the limited interface.
-# pylint: disable=too-few-public-methods
-class CompositeTarget(abc.ABC):
+class CompositeTarget(Target, abc.ABC):
     """Target whose build requires multiple tasks."""
 
     @property
     @abc.abstractmethod
     def execution_plan(self) -> List[types.TaskDict]:
         """List of tasks producing the target."""
-
-
-class FileTarget(Target, AtomicTarget):
-    """A task that produce an output file as target."""
-
-    def __init__(self, destination: Path, **kwargs: Any):
-        """Initialize the input/output of the target.
-
-        Arguments:
-            destination: path to the output file
-
-        Keyword Arguments:
-            They are passed to `Target` init method.
-        """
-        if not destination:
-            raise ValueError('`destination` cannot be empty')
-        kwargs['targets'] = [destination]
-        super().__init__(**kwargs)
-
-    @property
-    def destination(self) -> Path:
-        """Path to the output file."""
-        return Path(self.targets[0])

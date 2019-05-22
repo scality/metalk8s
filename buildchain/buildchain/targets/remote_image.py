@@ -17,7 +17,7 @@ from typing import Any, Optional, List
 from buildchain import config
 from buildchain import types
 
-from . import base, image
+from . import image
 
 
 class RemoteImage(image.ContainerImage):
@@ -30,6 +30,7 @@ class RemoteImage(image.ContainerImage):
         version: str,
         digest: str,
         destination: Path,
+        save_as_tar: bool=False,
         remote_name: Optional[str]=None,
         **kwargs: Any
     ):
@@ -41,6 +42,7 @@ class RemoteImage(image.ContainerImage):
             version:        image version
             digest:         image digest
             destination:    save location for the image
+            save_as_tar:    save the image as a tar archive?
             remote_name:    image name in the registry
 
         Keyword Arguments:
@@ -49,11 +51,13 @@ class RemoteImage(image.ContainerImage):
         self._registry = registry
         self._digest = digest
         self._remote_name = remote_name or name
+        self._use_tar = save_as_tar
         super().__init__(
             name=name, version=version,
             destination=destination,
             **kwargs
         )
+        self._targets = [self.filepath]
 
     registry = property(operator.attrgetter('_registry'))
     digest   = property(operator.attrgetter('_digest'))
@@ -69,91 +73,45 @@ class RemoteImage(image.ContainerImage):
         )
 
     @property
+    def filepath(self) -> Path:
+        """Path to the file tracked on disk."""
+        if self._use_tar:
+            return self.dest_dir/'{obj.name}-{obj.version}{ext}'.format(
+                obj=self, ext='.tar'
+            )
+        # Just to keep track of something on disk.
+        return self.dirname/'manifest.json'
+
+    @property
     def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
             'title': lambda _: self.show('PULL IMG'),
             'doc': 'Download {} container image.'.format(self.name),
-            'targets': [self.dirname/'manifest.json'],
-            'actions': self._build_actions(),
             'uptodate': [True],
-            'clean': [self.clean],
         })
+        if self._use_tar:
+            task.update({
+                'actions': [self._skopeo_copy()],
+            })
+        else:
+            task.update({
+                'actions': [self.mkdirs, self._skopeo_copy()],
+                'clean':   [self.clean],
+            })
         return task
 
-    def _build_actions(self) -> List[types.Action]:
-        return [
-            self.mkdirs,
-            [
-                config.SKOPEO, 'copy',
-                '--format', 'v2s2',
-                '--dest-compress',
-                'docker://{}'.format(self.fullname),
-                'dir:{}'.format(str(self.dirname))
-            ]
-        ]
+    def _skopeo_copy(self) -> List[str]:
+        """Return the command line to execute skopeo copy."""
+        cmd = [config.SKOPEO, 'copy', '--format', 'v2s2']
+        if not self._use_tar:
+            cmd.append('--dest-compress')
+        cmd.append('docker://{}'.format(self.fullname))
+        cmd.append(self._skopeo_dest())
+        return cmd
 
-
-class RemoteTarImage(base.FileTarget):
-    """A remote container image to download, saved as a tar archive.
-
-    The image is saved as a single tar archive, not compressed and with a tag
-    usable by containerd.
-    """
-
-    def __init__(
-        self,
-        registry: str,
-        name: str,
-        version: str,
-        digest: str,
-        destination: Path,
-        remote_name: Optional[str]=None,
-        **kwargs: Any
-    ):
-        """Initialize the container image.
-
-            Arguments:
-                They are passed to `RemoteImage` init methods.
-
-            Keyword Arguments:
-                They are passed to `RemoteImage` and `FileTarget` init methods.
-        """
-        self._image = RemoteImage(
-            registry, name, version, digest, destination, remote_name, **kwargs
-        )
-        super().__init__(destination=self.filepath, **kwargs)
-
-    @property
-    def repository(self) -> str:
-        """Image repository."""
-        return '{obj.registry}/{obj._remote_name}'.format(obj=self._image)
-
-    @property
-    def filepath(self) -> Path:
-        """Name of the image on disk."""
-        return self._image.dest_dir/'{obj.name}-{obj.version}{ext}'.format(
-            obj=self._image, ext='.tar'
-        )
-
-    @property
-    def task(self) -> types.TaskDict:
-        basic_task = self.basic_task
-        task = self._image.task
-        task.update({
-            'actions': self._build_actions(),
-            'targets': basic_task['targets'],
-            'clean':   basic_task['clean'],
-        })
-        return task
-
-    def _build_actions(self) -> List[types.Action]:
-        """Compute actions for the image — pull, tag, save."""
-        return [
-            [
-                config.SKOPEO, 'copy',
-                '--format', 'v2s2',
-                'docker://{}'.format(self._image.fullname),
-                'docker-archive:{}'.format(self.filepath)
-            ]
-        ]
+    def _skopeo_dest(self) -> str:
+        """Return the destination, formatted for skopeo copy."""
+        if self._use_tar:
+            return 'docker-archive:{}'.format(self.filepath)
+        return 'dir:{}'.format(self.dirname)
