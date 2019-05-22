@@ -254,8 +254,11 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
     Path('salt/_modules/docker_registry.py'),
+    Path('salt/_modules/metalk8s_cordon.py'),
+    Path('salt/_modules/metalk8s_drain.py'),
     Path('salt/_modules/metalk8s_kubernetes.py'),
     Path('salt/_modules/metalk8s_etcd.py'),
+    Path('salt/_modules/metalk8s_kubernetes_utils.py'),
     Path('salt/_modules/metalk8s.py'),
 
     Path('salt/_pillar/metalk8s.py'),
@@ -272,6 +275,8 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/_states/kubeconfig.py'),
     Path('salt/_states/docker_registry.py'),
     Path('salt/_states/metalk8s.py'),
+    Path('salt/_states/metalk8s_cordon.py'),
+    Path('salt/_states/metalk8s_drain.py'),
     Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
 

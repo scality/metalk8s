@@ -52,7 +52,14 @@ Cordon the node:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
 
-# TODO: Call drain
+Drain the node:
+  metalk8s_drain.node_drained:
+    - name: {{ node_name }}
+    - ignore_daemonset: True
+    - delete_local_data: True
+    - force: True
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
 
 Run the highstate:
   salt.state:
