@@ -14,6 +14,7 @@ All of these actions are done by a single task.
 
 
 import operator
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Match, Optional, Union
@@ -185,14 +186,20 @@ class LocalImage(image.ContainerImage):
 
         # If a destination is defined, let's save the image there.
         if self.save_on_disk:
-            task['actions'].append(self.mkdirs)
-            task['actions'].append([
+            cmd = [
                 config.SKOPEO,  'copy',
                 '--format', 'v2s2',
                 '--dest-compress',
-                'docker-daemon:{}'.format(self.tag),
-                'dir:{}'.format(str(self.dirname))
-            ])
+            ]
+            docker_host = os.getenv('DOCKER_HOST')
+            if docker_host is not None:
+                cmd.extend([
+                    '--src-daemon-host', 'http://{}'.format(docker_host)
+                ])
+            cmd.append('docker-daemon:{}'.format(self.tag))
+            cmd.append('dir:{}'.format(str(self.dirname)))
+            task['actions'].append(self.mkdirs)
+            task['actions'].append(cmd)
             task['targets'] = [self.dirname/'manifest.json']
             task['clean'] = [self.clean]
         else:
