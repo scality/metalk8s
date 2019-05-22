@@ -102,12 +102,12 @@ export function* authenticate({ payload }) {
         token
       })
     );
-    yield call(authenticateSaltApi);
+    yield call(authenticateSaltApi, true);
   }
   yield put(setUserInfoLoadedAction(true));
 }
 
-export function* authenticateSaltApi() {
+export function* authenticateSaltApi(redirect) {
   const api = yield select(state => state.config.api);
   const user = yield select(state => state.login.user);
   const result = yield call(Api.authenticateSaltApi, api.url_salt, user);
@@ -119,6 +119,9 @@ export function* authenticateSaltApi() {
         token: result.data.return[0].token
       })
     );
+    if (redirect) {
+      yield call(history.push, '/');
+    }
   } else {
     yield call(logout);
   }
