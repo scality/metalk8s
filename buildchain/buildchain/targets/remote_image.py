@@ -14,7 +14,6 @@ import operator
 from pathlib import Path
 from typing import Any, Optional, List
 
-from buildchain import docker_command
 from buildchain import config
 from buildchain import types
 
@@ -150,17 +149,11 @@ class RemoteTarImage(base.FileTarget):
 
     def _build_actions(self) -> List[types.Action]:
         """Compute actions for the image — pull, tag, save."""
-        tag = '{img.registry}/{img.name}:{img.version}'.format(img=self._image)
-        docker_pull = docker_command.DockerPull(
-            repository=self.repository, digest=self._image.digest
-        )
-        docker_tag = docker_command.DockerTag(
-            # The local repository is the image 'tag' without version
-            repository=tag[:tag.rfind(':')],
-            full_name=self._image.fullname,
-            version=self._image.version
-        )
-        docker_save = docker_command.DockerSave(
-            tag=tag, save_path=self.filepath
-        )
-        return [docker_pull, docker_tag, docker_save]
+        return [
+            [
+                config.SKOPEO, 'copy',
+                '--format', 'v2s2',
+                'docker://{}'.format(self._image.fullname),
+                'docker-archive:{}'.format(self.filepath)
+            ]
+        ]
