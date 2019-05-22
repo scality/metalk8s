@@ -1,4 +1,5 @@
 import {
+  all,
   take,
   call,
   put,
@@ -26,6 +27,8 @@ const DEPLOY_NODE = 'DEPLOY_NODE';
 const CONNECT_SALT_API = 'CONNECT_SALT_API';
 const UPDATE_EVENTS = 'UPDATE_EVENTS';
 const SUBSCRIBE_DEPLOY_EVENTS = 'SUBSCRIBE_DEPLOY_EVENTS';
+
+const JOBS = 'JOBS';
 
 let eventSrc, channel;
 
@@ -109,13 +112,17 @@ export const subscribeDeployEventsAction = jid => {
 export function* fetchNodes() {
   const result = yield call(Api.getNodes);
   if (!result.error) {
+    yield all(
+      result.body.items.map(node => {
+        return call(removeCompletedJobFromLocalStorage, node.metadata.name);
+      })
+    );
     yield put(
       setNodesAction(
         result.body.items.map(node => {
           const statusType =
             node.status.conditions &&
             node.status.conditions.find(conditon => conditon.type === 'Ready');
-
           return {
             name: node.metadata.name,
             metalk8s_version:
@@ -136,6 +143,23 @@ export function* fetchNodes() {
         })
       )
     );
+  }
+}
+
+function* removeCompletedJobFromLocalStorage(name) {
+  const jid = getJidFromNameLocalStorage(name);
+  if (jid) {
+    const salt = yield select(state => state.login.salt);
+    const api = yield select(state => state.config.api);
+    const result = yield call(
+      Api.lookupJid,
+      api.url_salt,
+      salt.data.return[0].token,
+      jid
+    );
+    if (isJobCompleted(result.data, jid)) {
+      removeJobLocalStorage(jid);
+    }
   }
 }
 
@@ -183,11 +207,54 @@ export function* deployNode({ payload }) {
       })
     );
   } else {
+    yield call(
+      Api.lookupJid,
+      api.url_salt,
+      salt.data.return[0].token,
+      result.data.return[0].jid
+    );
+    updateJobLocalStorage(result.data.return[0].jid, payload.name);
     yield call(history.push, `/nodes/deploy/${result.data.return[0].jid}`);
   }
 }
 
-export function subSSE(eventSrc, jid) {
+function isJobCompleted(result, jid) {
+  return (
+    result.return[0][jid] &&
+    Object.keys(result.return[0][jid]['Result']).length &&
+    Object.values(result.return[0][jid]['Result'])[0].return.success
+  );
+}
+
+function getJidFromNameLocalStorage(name) {
+  const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
+  const job = jobs.find(job => job.name === name);
+  return job && job.jid;
+}
+
+function getNameFromJidLocalStorage(jid) {
+  const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
+  const job = jobs.find(job => job.jid === jid);
+  return job && job.name;
+}
+
+function updateJobLocalStorage(jid, name) {
+  const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
+  jobs.push({ jid, name });
+  localStorage.setItem(JOBS, JSON.stringify(jobs));
+}
+
+function removeJobLocalStorage(jid) {
+  let jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
+  jobs = jobs.filter(job => job.jid !== jid);
+  if (jobs.length) {
+    localStorage.setItem(JOBS, JSON.stringify(jobs));
+  } else {
+    localStorage.removeItem(JOBS);
+  }
+}
+
+export function subSSE(eventSrc) {
   const subs = emitter => {
     eventSrc.onmessage = msg => {
       emitter(msg);

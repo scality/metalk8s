@@ -143,3 +143,21 @@ export async function deployNode(url, token, node, version) {
     return { error };
   }
 }
+
+export async function lookupJid(url, token, jid) {
+  try {
+    return await axios.post(
+      url,
+      {
+        client: 'runner',
+        fun: 'jobs.print_job',
+        arg: [jid]
+      },
+      {
+        headers: { 'X-Auth-Token': token }
+      }
+    );
+  } catch (error) {
+    return { error };
+  }
+}

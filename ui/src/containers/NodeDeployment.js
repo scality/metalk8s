@@ -4,8 +4,16 @@ import { injectIntl } from 'react-intl';
 import { createSelector } from 'reselect';
 import styled from 'styled-components';
 import ReactJson from 'react-json-view';
+import { Button } from 'core-ui';
+import { withRouter } from 'react-router-dom';
+
 import { subscribeDeployEventsAction } from '../ducks/app/nodes';
-import { fontWeight, grayLightest, padding } from 'core-ui/dist/style/theme';
+import {
+  fontWeight,
+  grayLightest,
+  padding,
+  fontSize
+} from 'core-ui/dist/style/theme';
 
 const NodeDeploymentContainer = styled.div`
   height: 100%;
@@ -17,6 +25,7 @@ const NodeDeploymentContainer = styled.div`
 
 const NodeDeploymentTitle = styled.div`
   font-weight: ${fontWeight.bold};
+  font-size: ${fontSize.large};
 `;
 
 const NodeDeploymentContent = styled.div`
@@ -24,6 +33,10 @@ const NodeDeploymentContent = styled.div`
   padding: ${padding.base};
   margin: ${padding.base};
   border-radius: 5px;
+`;
+
+const NodeDeploymentWrapper = styled.div`
+  padding: ${padding.base};
 `;
 
 function NodeDeployment(props) {
@@ -35,12 +48,23 @@ function NodeDeployment(props) {
 
   return (
     <NodeDeploymentContainer>
-      <NodeDeploymentTitle>
-        {props.intl.messages.node_deployment}
-      </NodeDeploymentTitle>
-      <NodeDeploymentContent>
-        <ReactJson src={props.events} name={props.match.params.id} />
-      </NodeDeploymentContent>
+      <div>
+        <Button
+          text={props.intl.messages.back_to_node_list}
+          type="button"
+          outlined
+          onClick={() => props.history.push('/nodes')}
+          icon={<i className="fas fa-arrow-left" />}
+        />
+      </div>
+      <NodeDeploymentWrapper>
+        <NodeDeploymentTitle>
+          {props.intl.messages.node_deployment}
+        </NodeDeploymentTitle>
+        <NodeDeploymentContent>
+          <ReactJson src={props.events} name={props.match.params.id} />
+        </NodeDeploymentContent>
+      </NodeDeploymentWrapper>
     </NodeDeploymentContainer>
   );
 }
@@ -70,8 +94,10 @@ const makegGetNodeDeploymentFromUrl = createSelector(
 );
 
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(NodeDeployment)
+  withRouter(
+    connect(
+      mapStateToProps,
+      mapDispatchToProps
+    )(NodeDeployment)
+  )
 );

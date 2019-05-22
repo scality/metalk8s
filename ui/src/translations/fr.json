@@ -34,5 +34,6 @@
   "not_ready": "Pas prêt",
   "deploy": "Déployer",
   "version": "MetalK8s Version",
-  "node_deployment": "Déployement du node"
+  "node_deployment": "Déployement du node",
+  "back_to_node_list": "Retour à la liste des nodes"
 }
