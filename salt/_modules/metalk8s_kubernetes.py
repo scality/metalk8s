@@ -53,7 +53,7 @@ import errno
 import logging
 import tempfile
 import signal
-from time import sleep
+import time
 from contextlib import contextmanager
 
 from salt.exceptions import CommandExecutionError
@@ -79,6 +79,10 @@ try:
     except ImportError:
         from kubernetes.client import AppsV1beta1Deployment
         from kubernetes.client import AppsV1beta1DeploymentSpec
+
+    from kubernetes.client.models.v1_delete_options import V1DeleteOptions
+    from kubernetes.client.models.v1_object_meta import V1ObjectMeta
+    from kubernetes.client.models.v1beta1_eviction import V1beta1Eviction
 
     # Workaround for https://github.com/kubernetes-client/python/issues/376
     from kubernetes.client.models.v1beta1_custom_resource_definition_status import V1beta1CustomResourceDefinitionStatus
@@ -811,7 +815,7 @@ def delete_deployment(name, namespace='default', **kwargs):
             try:
                 with _time_limit(POLLING_TIME_LIMIT):
                     while show_deployment(name, namespace) is not None:
-                        sleep(1)
+                        time.sleep(1)
                     else:  # pylint: disable=useless-else-on-loop
                         mutable_api_response['code'] = 200
             except TimeoutError:
@@ -824,7 +828,7 @@ def delete_deployment(name, namespace='default', **kwargs):
                     mutable_api_response['code'] = 200
                     break
                 else:
-                    sleep(1)
+                    time.sleep(1)
         if mutable_api_response['code'] != 200:
             log.warning('Reached polling time limit. Deployment is not yet '
                         'deleted, but we are backing off. Sorry, but you\'ll '
@@ -2341,9 +2345,7 @@ def node_set_taints(node_name, taints, **kwargs):
 def node_unschedulable(node_name, **kwargs):
     '''
     Return unschedulable value of the node identified by the specified name
-
     CLI Examples::
-
         salt '*' kubernetes.node_unschedulable node_name="minikube"
     '''
     match = node(node_name, **kwargs)
@@ -2358,13 +2360,10 @@ def node_set_unschedulable(node_name, unschedulable, **kwargs):
     '''
     Update the unschedulable flag to the provided `unschedulable` value for the
     node identified by the name `node_name`.
-
     CLI Examples::
-
         # To cordon a node
         salt '*' kubernetes.node_set_unschedulable node_name="minikube" \
             unschedulable=True
-
         # To uncordon a node
         salt '*' kubernetes.node_set_unschedulable node_name="minikube" \
             unschedulable=False
