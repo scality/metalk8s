@@ -1,6 +1,6 @@
 #!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
 
-{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
 # What's below is based on the deployment manifest provided by Calico upstream.

@@ -139,7 +139,7 @@ never-returning-functions=optparse.Values,sys.exit
 
 ignore-comments=yes    # Ignore comments when computing similarities?
 ignore-docstrings=yes  # Ignore docstrings when computing similarities?
-ignore-imports=no      # Ignore imports when computing similarities?
+ignore-imports=yes     # Ignore imports when computing similarities?
 min-similarity-lines=5 # Minimum lines number of a similarity.
 
 # }}}

@@ -6,15 +6,15 @@
 
 Deploy repo service object:
   metalk8s_kubernetes.service_present:
-    - name: package-repositories
+    - name: repositories
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - namespace: kube-system
     - metadata:
         namespace: kube-system
         labels:
-          app: package-repositories
-          app.kubernetes.io/name: package-repositories
+          app: repositories
+          app.kubernetes.io/name: repositories
           heritage: metalk8s
           app.kubernetes.io/part-of: metalk8s
           app.kubernetes.io/managed-by: salt
@@ -26,5 +26,5 @@ Deploy repo service object:
           protocol: TCP
           targetPort: http
         selector:
-          app.kubernetes.io/name: package-repositories
+          app.kubernetes.io/name: repositories
         type: ClusterIP
