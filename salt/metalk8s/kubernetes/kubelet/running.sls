@@ -5,5 +5,7 @@ Ensure kubelet running:
   service.running:
     - name: kubelet
     - enable: True
-    - require:
+    - watch:
       - pkg: Install kubelet
+    - require:
+      - module: Reload systemctl

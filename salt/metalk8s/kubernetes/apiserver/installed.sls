@@ -204,7 +204,7 @@ Create kube-apiserver Pod manifest:
             emptyDir:
               medium: Memory
 {%- endif %}
-    - onchanges:
+    - require:
       - file: Ensure kubernetes CA cert is present
       - file: Ensure etcd CA cert is present
       - file: Ensure front-proxy CA cert is present

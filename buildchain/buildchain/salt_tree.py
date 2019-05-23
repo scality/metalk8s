@@ -155,6 +155,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/container-engine/containerd/installed.sls'),
 
     Path('salt/metalk8s/defaults.yaml'),
+    Path('salt/metalk8s/deployed.sls'),
 
     Path('salt/metalk8s/internal/init.sls'),
 
@@ -262,6 +263,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
     Path('salt/metalk8s/orchestrate/deploy_node.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/etcd.sls'),
+    Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
+    Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/register_etcd.sls'),
 
     Path('salt/metalk8s/repo/configured.sls'),

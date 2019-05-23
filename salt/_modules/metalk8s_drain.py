@@ -579,9 +579,11 @@ def node_drain(node_name,
     )
     __salt__['metalk8s_kubernetes.node_cordon'](node_name, **kwargs)
     try:
-        result = drainer.run_drain(dry_run=dry_run, **kwargs)
+        result = drainer.run_drain(dry_run=dry_run)
     # CommandExecutionError should fall through, but we want cleanup regardless
     except CommandExecutionError:
         raise
     finally:
         __salt__['metalk8s_kubernetes.cleanup'](**cfg)
+
+    return result

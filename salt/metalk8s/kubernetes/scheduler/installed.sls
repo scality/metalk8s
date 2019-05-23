@@ -25,5 +25,5 @@ Create kube-scheduler Pod manifest:
           - path: /etc/kubernetes/scheduler.conf
             name: kubeconfig
             type: File
-    - onchanges:
+    - require:
       - metalk8s_kubeconfig: Create kubeconfig file for scheduler
