@@ -168,13 +168,18 @@ class LocalImage(image.ContainerImage):
         task.update({
             'title': lambda _: self.show('IMG BUILD'),
             'doc': 'Build {} container image.'.format(self.name),
+            'actions': self._build_actions(),
+            'targets': [
+                self.dirname/'manifest.json' if self.save_on_disk
+                else self.dest_dir/self.tag
+            ],
+            'clean': True if self.save_on_disk else [self.clean]
         })
-        self._build_actions(task)
         return task
 
-    def _build_actions(self, task: types.TaskDict) -> None:
+    def _build_actions(self) -> List[types.Action]:
         """Build a container image locally."""
-        task['actions'].append(self.check_dockerfile_dependencies)
+        actions: List[types.Action] = [self.check_dockerfile_dependencies]
 
         docker_build = docker_command.DockerBuild(
             tag=self.tag,
@@ -182,7 +187,7 @@ class LocalImage(image.ContainerImage):
             dockerfile=self.dockerfile,
             buildargs=self.build_args
         )
-        task['actions'].append(docker_build)
+        actions.append(docker_build)
 
         # If a destination is defined, let's save the image there.
         if self.save_on_disk:
@@ -198,13 +203,10 @@ class LocalImage(image.ContainerImage):
                 ])
             cmd.append('docker-daemon:{}'.format(self.tag))
             cmd.append('dir:{}'.format(str(self.dirname)))
-            task['actions'].append(self.mkdirs)
-            task['actions'].append(cmd)
-            task['targets'] = [self.dirname/'manifest.json']
-            task['clean'] = [self.clean]
+            actions.append(self.mkdirs)
+            actions.append(cmd)
         else:
             # If we don't save the image, at least we touch a file
             # (to keep track of the build).
-            filepath = self.dest_dir/self.tag
-            task['targets'].append(filepath)
-            task['actions'].append((coreutils.touch, [filepath], {}))
+            actions.append((coreutils.touch, [self.dest_dir/self.tag], {}))
+        return actions

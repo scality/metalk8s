@@ -49,7 +49,7 @@ class ContainerImage(base.AtomicTarget):
     @property
     def dirname(self) -> Path:
         """Directory where to store the image on disk."""
-        return self.dest_dir/self.tag.replace(':', '/')
+        return self.dest_dir.joinpath(self.name, self.version)
 
     @property
     def tag(self) -> str:
