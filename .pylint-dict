@@ -11,8 +11,10 @@ cp
 checksum
 checksums
 containerd
+de
 dockerfile
 doit
+dedup
 env
 epel
 filename
@@ -23,6 +25,7 @@ metadata
 mkdir
 mkisofs
 mypy
+nginx
 prebuilt
 py
 readonly
@@ -30,6 +33,7 @@ rpmspec
 repo
 rpmlint
 scality
+skopeo
 sls
 timestamp
 tmp
