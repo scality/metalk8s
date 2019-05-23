@@ -45,7 +45,7 @@ from . import image
 SOURCE_URL_PATTERN = re.compile(r'^Source\d+:\s+(?P<url>.+)$')
 
 
-class Package(base.Target, base.CompositeTarget):
+class Package(base.CompositeTarget):
     """A RPM software package for CentOS 7."""
 
     MKDIR_TASK_NAME = 'pkg_mkdir'
@@ -178,7 +178,7 @@ class Package(base.Target, base.CompositeTarget):
             'title': lambda task: utils.title_with_target1('RPMSPEC', task),
             'targets': [self.meta],
         })
-        task['file_dep'].extend([self.spec, self.builder.destination])
+        task['file_dep'].extend([self.spec])
         task['task_dep'].append('{}:{}'.format(self.basename,
                                                self.MKDIR_TASK_NAME))
         return task
@@ -229,7 +229,7 @@ class Package(base.Target, base.CompositeTarget):
             # Prevent Docker from polluting our output.
             'verbosity': 0,
         })
-        task['file_dep'].extend([self.spec, self.builder.destination])
+        task['file_dep'].extend([self.spec])
         task['file_dep'].extend(self.sources)
         task['task_dep'].append('{}:{}'.format(self.basename,
                                                self.MKDIR_TASK_NAME))

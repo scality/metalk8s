@@ -1,8 +1,8 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
-{%- set repo_host = pillar.metalk8s.endpoints['package-repositories'].ip %}
-{%- set repo_port = pillar.metalk8s.endpoints['package-repositories'].ports.http %}
+{%- set repo_host = pillar.metalk8s.endpoints['repositories'].ip %}
+{%- set repo_port = pillar.metalk8s.endpoints['repositories'].ports.http %}
 
 Install yum-plugin-versionlock:
   pkg.installed:
