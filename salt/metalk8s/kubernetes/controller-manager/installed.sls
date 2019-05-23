@@ -43,5 +43,5 @@ Create kube-controller-manager Pod manifest:
           - path: /etc/kubernetes/controller-manager.conf
             name: kubeconfig
             type: File
-    - onchanges:
+    - require:
       - metalk8s_kubeconfig: Create kubeconfig file for controller-manager
