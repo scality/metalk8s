@@ -13,7 +13,7 @@ from buildchain import utils
 from . import base
 
 
-class Mkdir(base.Target, base.AtomicTarget):
+class Mkdir(base.AtomicTarget):
     """Create a directory."""
 
     def __init__(self, directory: Path, **kwargs: Any):
@@ -23,7 +23,7 @@ class Mkdir(base.Target, base.AtomicTarget):
             directory: path to the directory to create
 
         Keyword Arguments:
-            They are passed to `FileTarget` init method.
+            They are passed to `Target` init method.
         """
         kwargs['targets'] = [directory]
         super().__init__(**kwargs)
