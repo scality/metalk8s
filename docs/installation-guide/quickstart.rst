@@ -65,6 +65,10 @@ Prepare the bootstap node
 1. Create the :file:`/etc/metalk8s/bootstrap.yaml` file. Change the netmask,
    IP address, and name to conform to your infrastructure.
 
+.. code-block:: shell
+
+   $ mkdir /etc/metalk8s
+
 .. code-block:: yaml
 
    apiVersion: metalk8s.scality.com/v1alpha2
@@ -140,9 +144,9 @@ twice to have 3 masters (bootstrap + 2 new master).
 
 .. code-block:: shell
 
-   $ ssh-copy-id -i /etc/metalk8s/pki/<key_name> <IP-of-the-new-master-node>
+   $ ssh-copy-id <IP-of-the-new-master-node>
 
-2. Create a YAML config file for this new master.
+2. Create a YAML config file :file:`new-master-node.yaml` for this new master.
 
 .. code-block:: yaml
 
@@ -201,7 +205,7 @@ Launch the command to perform the installation
 .. code-block:: shell
 
    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
-     pillar="{'orchestrate:' {'node_name': '<new-master-node-name>'}"
+     pillar="{'orchestrate': {'node_name': '<new-master-node-name>'}}"
 
    ... lots of output ...
    Summary for bootstrap_master
@@ -212,23 +216,12 @@ Launch the command to perform the installation
    Total states run:     7
    Total run time: 121.468 s
 
-.. warning::
 
-   In version 2.0 you need to add manually the new master in the etcd cluster.
+You can exit from the salt-master pod and check if the etcd cluster is healthy
 
 .. code-block:: shell
 
    $ kubectl -n kube-system exec -ti etcd-bootstrap sh
-   $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
-     --ca-file=/etc/kubernetes/pki/etcd/ca.crt \
-     --cert-file=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
-     --key-file=/etc/kubernetes/pki/etcd/healthcheck-client.key \
-     member add <new-master-node-name> https://<IP-of-the-new-master-node>:2380
-
-check if the cluster is healthy
-
-.. code-block:: shell
-
    $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
      --ca-file=/etc/kubernetes/pki/etcd/ca.crt \
      --cert-file=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
@@ -252,7 +245,7 @@ handle applications you will install on the cluster.
 
    $ ssh-copy-id <IP-of-the-new-node>
 
-2. Create a yaml config file for this new node.
+2. Create a yaml config file :file:`new-node.yaml` for this new node.
 
 .. code-block:: yaml
 
@@ -267,10 +260,6 @@ handle applications you will install on the cluster.
      labels:
        metalk8s.scality.com/version: '2.0'
        node-role.kubernetes.io/node: ''
-   spec:
-     taints:
-     - effect: NoSchedule
-       key: node-role.kubernetes.io/node
 
 3. Declare the new node in K8s API.
 
@@ -310,7 +299,7 @@ Launch the command to perform the installation
 .. code-block:: shell
 
    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
-     pillar="{'orchestrate:' {'node_name': '<new-node-name>'}"
+     pillar="{'orchestrate': {'node_name': '<new-node-name>'}}"
 
    ... lots of output ...
    Summary for bootstrap_master
