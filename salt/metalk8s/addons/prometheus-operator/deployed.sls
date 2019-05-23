@@ -1,6 +1,6 @@
 #!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
 
-{%- from "metalk8s/registry/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
 # https://github.com/coreos/prometheus-operator, v0.29.0 tag,

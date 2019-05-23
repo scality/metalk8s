@@ -23,7 +23,7 @@ class CustomTemplate(string.Template):
     delimiter = '@@'
 
 
-class TemplateFile(base.FileTarget):
+class TemplateFile(base.AtomicTarget):
     """Create a new file from a template file."""
 
     def __init__(
@@ -41,11 +41,12 @@ class TemplateFile(base.FileTarget):
             context:     values for the placeholders
 
         Keyword Arguments:
-            They are passed to `FileTarget` init method.
+            They are passed to `Target` init method.
         """
+        kwargs['targets'] = [destination]
         # Insert in front, to have an informative title.
         kwargs.setdefault('file_dep', []).insert(0, source)
-        super().__init__(destination=destination, **kwargs)
+        super().__init__(**kwargs)
         self._src = source
         self._dst = destination
         self._ctx = context

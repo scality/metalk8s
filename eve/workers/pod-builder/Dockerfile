@@ -10,6 +10,7 @@ RUN yum install -y epel-release \
     https://download.docker.com/linux/centos/docker-ce.repo \
     && yum install -y \
     gcc \
+    hardlinks \
     make \
     python-devel \
     python-pip \
@@ -18,6 +19,7 @@ RUN yum install -y epel-release \
     python36-pip \
     genisoimage \
     git \
+    skopeo \
     yum-utils \
     docker-ce-cli-18.09.6 \
     && adduser -u 1042 --home /home/eve eve --groups docker \
