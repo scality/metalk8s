@@ -117,6 +117,11 @@ export const subscribeDeployEventsAction = jid => {
 export function* fetchNodes() {
   const result = yield call(Api.getNodes);
   if (!result.error) {
+    yield all(
+      result.body.items.map(node => {
+        return call(removeCompletedJobFromLocalStorage, node.metadata.name);
+      })
+    );
     yield put(
       setNodesAction(
         result.body.items.map(node => {
@@ -138,15 +143,11 @@ export function* fetchNodes() {
                 convertK8sMemoryToBytes(node.status.capacity.memory),
                 2
               ).value,
-            creationDate: node.metadata.creationTimestamp
+            creationDate: node.metadata.creationTimestamp,
+            jid: getJidFromNameLocalStorage(node.metadata.name)
           };
         })
       )
-    );
-    yield all(
-      result.body.items.map(node => {
-        return call(removeCompletedJobFromLocalStorage, node.metadata.name);
-      })
     );
   }
 }
@@ -213,7 +214,7 @@ export function* deployNode({ payload }) {
     );
   } else {
     updateJobLocalStorage(result.data.return[0].jid, payload.name);
-    yield call(history.push, `/nodes/deploy/${result.data.return[0].jid}`);
+    yield call(fetchNodes);
   }
 }
 

@@ -31,9 +31,7 @@ export function convertK8sMemoryToBytes(memory) {
 
 export function isJobCompleted(result, jid) {
   return (
-    result.return[0][jid] &&
-    Object.keys(result.return[0][jid]['Result']).length &&
-    Object.values(result.return[0][jid]['Result'])[0].return.success
+    result.return[0][jid] && Object.keys(result.return[0][jid]['Result']).length
   );
 }
 
