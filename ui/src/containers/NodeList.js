@@ -67,6 +67,10 @@ class NodeList extends React.Component {
     this.onSort = this.onSort.bind(this);
   }
 
+  componentDidMount() {
+    this.props.fetchNodes();
+  }
+
   onSort({ sortBy, sortDirection }) {
     this.setState({ sortBy, sortDirection });
   }

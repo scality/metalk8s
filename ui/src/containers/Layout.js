@@ -15,14 +15,9 @@ import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
 
-import { fetchNodesAction } from '../ducks/app/nodes';
 import { removeNotificationAction } from '../ducks/app/notifications';
 
 class Layout extends Component {
-  componentDidMount() {
-    this.props.fetchNodes();
-  }
-
   render() {
     const applications = [];
 
@@ -122,7 +117,6 @@ const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
-    fetchNodes: () => dispatch(fetchNodesAction()),
     removeNotification: uid => dispatch(removeNotificationAction(uid))
   };
 };
