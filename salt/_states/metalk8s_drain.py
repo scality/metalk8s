@@ -24,9 +24,11 @@ def node_drained(
 
     res = __salt__['metalk8s_kubernetes.node_drain'](name, **kwargs)
 
+    ret['result'] = True
+    ret['comment'] = res
+
     ret['changes'][name] = {
-        'old': [],
-        'new': []
+        name: 'drained'
     }
 
     return ret

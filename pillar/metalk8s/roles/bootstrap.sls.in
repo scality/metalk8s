@@ -1,3 +1,4 @@
 metalk8s:
   # The mountpoint used for this environment's ISO
-  iso_root_path: /srv/scality/metalk8s-@@VERSION
+  iso_root_path:
+    metalk8s-@@VERSION: /srv/scality/metalk8s-@@VERSION
