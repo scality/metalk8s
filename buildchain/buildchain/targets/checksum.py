@@ -15,7 +15,7 @@ from buildchain import utils
 from . import base
 
 
-class Sha256Sum(base.FileTarget):
+class Sha256Sum(base.AtomicTarget):
     """Compute the sha256 digest of a list of files."""
 
     def __init__(
@@ -28,11 +28,12 @@ class Sha256Sum(base.FileTarget):
             output_file: path to the output file
 
         Keyword Arguments:
-            They are passed to `FileTarget` init method.
+            They are passed to `Target` init method.
         """
+        kwargs['targets'] = [output_file]
         # Insert in front, to have an informative title.
         kwargs['file_dep'] = input_files
-        super().__init__(destination=output_file, **kwargs)
+        super().__init__(**kwargs)
 
     @property
     def task(self) -> types.TaskDict:

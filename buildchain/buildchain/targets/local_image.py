@@ -14,16 +14,17 @@ All of these actions are done by a single task.
 
 
 import operator
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Match, Optional, Union
 
 from doit.exceptions import TaskError # type: ignore
 
-from buildchain import constants
+from buildchain import config
 from buildchain import coreutils
-from buildchain import types
 from buildchain import docker_command
+from buildchain import types
 
 from . import image
 
@@ -100,18 +101,14 @@ class LocalImage(image.ContainerImage):
             build_args:   build arguments
 
         Keyword Arguments:
-            They are passed to `FileTarget` init method.
+            They are passed to `Target` init method.
         """
         self._dockerfile = dockerfile
         self._save = save_on_disk
         self._build_args = build_args or {}
         kwargs.setdefault('file_dep', []).append(self.dockerfile)
         super().__init__(
-            name=name, version=version,
-            destination=destination,
-            # We never load locally built images into containerd (until now…).
-            for_containerd=False,
-            **kwargs
+            name=name, version=version, destination=destination, **kwargs
         )
 
     dockerfile   = property(operator.attrgetter('_dockerfile'))
@@ -167,16 +164,16 @@ class LocalImage(image.ContainerImage):
 
     @property
     def task(self) -> types.TaskDict:
-        def show(_task: types.Task) -> str:
-            return '{cmd: <{width}} {image}'.format(
-                cmd='IMG BUILD', width=constants.CMD_WIDTH, image=self.tag,
-            )
-
         task = self.basic_task
         task.update({
-            'title': show,
+            'title': lambda _: self.show('IMG BUILD'),
             'doc': 'Build {} container image.'.format(self.name),
             'actions': self._build_actions(),
+            'targets': [
+                self.dirname/'manifest.json' if self.save_on_disk
+                else self.dest_dir/self.tag
+            ],
+            'clean': True if self.save_on_disk else [self.clean]
         })
         return task
 
@@ -184,24 +181,32 @@ class LocalImage(image.ContainerImage):
         """Build a container image locally."""
         actions: List[types.Action] = [self.check_dockerfile_dependencies]
 
-        builder_callable = docker_command.DockerBuild(
+        docker_build = docker_command.DockerBuild(
             tag=self.tag,
             path=self.dockerfile.parent,
             dockerfile=self.dockerfile,
             buildargs=self.build_args
         )
-        actions.append(builder_callable)
+        actions.append(docker_build)
 
         # If a destination is defined, let's save the image there.
         if self.save_on_disk:
-            filepath = self.uncompressed_filename
-            save_callable = docker_command.DockerSave(
-                tag=self.tag, save_path=filepath
-            )
-            actions.append(save_callable)
-            actions.append((coreutils.gzip, [filepath], {}))
+            cmd = [
+                config.SKOPEO,  'copy',
+                '--format', 'v2s2',
+                '--dest-compress',
+            ]
+            docker_host = os.getenv('DOCKER_HOST')
+            if docker_host is not None:
+                cmd.extend([
+                    '--src-daemon-host', 'http://{}'.format(docker_host)
+                ])
+            cmd.append('docker-daemon:{}'.format(self.tag))
+            cmd.append('dir:{}'.format(str(self.dirname)))
+            actions.append(self.mkdirs)
+            actions.append(cmd)
         else:
             # If we don't save the image, at least we touch a file
             # (to keep track of the build).
-            actions.append((coreutils.touch, [self.destination], {}))
+            actions.append((coreutils.touch, [self.dest_dir/self.tag], {}))
         return actions

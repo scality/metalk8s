@@ -13,3 +13,14 @@ Host bootstrap
     IdentityFile ${identity_file}
     IdentitiesOnly yes
     StrictHostKeyChecking no
+
+%{ for node in nodes ~}
+Host ${node.name}
+    User centos
+    Port 22
+    Hostname ${node.ip}
+    IdentityFile ${identity_file}
+    IdentitiesOnly yes
+    StrictHostKeyChecking no
+
+%{ endfor }

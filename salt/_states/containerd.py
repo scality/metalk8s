@@ -3,6 +3,7 @@ States to manage the :program:`containerd` CRI runtime.
 '''
 
 import logging
+import os
 
 log = logging.getLogger(__name__)
 
@@ -74,18 +75,19 @@ def image_managed(name, archive_path=None):
             return ret
 
         result = __salt__['containerd.load_cri_image'](path=archive_path)
-        if result:
+        if result['retcode'] == 0:
             ret['changes'].update({
                 name: {
                     'old': {},
-                    'new': result,
+                    'new': os.path.basename(archive_path),
                 },
             })
             ret['comment'] = 'Imported archive'
             ret['result'] = True
         else:
-            ret['comment'] = 'Failed to import archive'
-
+            ret['comment'] = 'Failed to import archive: {}'.format(
+                result['stderr']
+            )
         return ret
     else:
         if __opts__['test']:

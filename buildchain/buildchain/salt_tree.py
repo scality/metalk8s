@@ -8,31 +8,39 @@ Some file are generated on the fly (container images, template files, …).
 
 Overview:
 
-                  ┌──────────────┐
-             ╱───>│render top.sls│
-┌──────────┐╱     └──────────────┘
-│  deploy  │
-│  salt/*  │╲     ┌──────────────┐
-└──────────┘ ╲───>│  copy files  │
-                  └──────────────┘
-
-                  ┌──────────────┐
-             ╱───>│  copy files  │
-┌──────────┐╱     └──────────────┘
+                  ┌─────────────────┐
+             ╱───>│render templates │
+┌──────────┐╱     └─────────────────┘
 │ deploy   │
-│ pillar/* │╲     ┌──────────────┐
-└──────────┘ ╲───>│pull pause.tar│
-                  └──────────────┘
+│ pillar/* │╲     ┌─────────────────┐
+└──────────┘ ╲───>│  copy files     │
+                  └─────────────────┘
+
+                   ┌─────────────────┐
+              ╱───>│render templates │
+             ╱     └─────────────────┘
+┌──────────┐╱      ┌─────────────────┐
+│  deploy  │──────>│  copy files     │
+│  salt/*  │╲      └─────────────────┘
+└──────────┘ ╲     ┌─────────────────┐
+              ╲───>│pull pause.tar   │
+                   └─────────────────┘
 """
 
 
+import importlib
+import sys
 from pathlib import Path
-from typing import Iterator, Tuple, Union
+from typing import Any, Iterator, Tuple, Union
 
+from buildchain import config
 from buildchain import constants
 from buildchain import targets
 from buildchain import utils
 from buildchain import types
+
+sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
+container_registry : Any = importlib.import_module('static-container-registry')
 
 
 def task_salt_tree() -> types.TaskDict:
@@ -51,7 +59,59 @@ def task__deploy_salt_tree() -> Iterator[types.TaskDict]:
         yield from file_tree.execution_plan
 
 
-PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
+class StaticContainerRegistry(targets.AtomicTarget):
+    """Generate a nginx configuration to serve a static container registry."""
+    def __init__(
+        self,
+        root: Path,
+        server_root: str,
+        name_prefix: str,
+        destination: Path,
+        **kwargs: Any
+    ):
+        """Configure the static-container-registry script.
+
+        Arguments:
+            root:        path to the image files
+            server_root: where the image files will be stored on the web server
+            context:     will prefix every container name
+            destination: path to the nginx configuration file to write
+
+        Keyword Arguments:
+            They are passed to `Target` init method.
+        """
+        kwargs['targets'] = [destination]
+        super().__init__(task_name=destination.name, **kwargs)
+        self._img_root = root
+        self._srv_root = server_root
+        self._name_pfx = name_prefix
+
+    @property
+    def task(self) -> types.TaskDict:
+        task = self.basic_task
+        task.update({
+            'title': self._show,
+            'doc': 'Generate the nginx config to serve a container registry.',
+            'actions': [self._run],
+        })
+        return task
+
+    @staticmethod
+    def _show(task: types.Task) -> str:
+        """Return a description of the task."""
+        return utils.title_with_target1('NGINX_CFG', task)
+
+    def _run(self) -> None:
+        """Generate the nginx configuration."""
+        with Path(self.targets[0]).open('w', encoding='utf-8') as fp:
+            parts = container_registry.create_config(
+                self._img_root, self._srv_root, self._name_pfx
+            )
+            for part in parts:
+                fp.write(part)
+
+
+PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('pillar/metalk8s/roles/minion.sls'),
     targets.TemplateFile(
         task_name='bootstrap.sls',
@@ -76,7 +136,7 @@ PILLAR_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
 
 # List of salt files to install.
-SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
+SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     targets.TemplateFile(
         task_name='top.sls',
         source=constants.ROOT/'salt'/'top.sls.in',
@@ -204,19 +264,14 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
     Path('salt/metalk8s/orchestrate/upgrade/etcd.sls'),
     Path('salt/metalk8s/orchestrate/register_etcd.sls'),
 
-    Path('salt/metalk8s/registry/deployed.sls'),
-    Path('salt/metalk8s/registry/files/registry-manifest.yaml.j2'),
-    Path('salt/metalk8s/registry/init.sls'),
-    Path('salt/metalk8s/registry/installed.sls'),
-    Path('salt/metalk8s/registry/macro.sls'),
-    Path('salt/metalk8s/registry/populated.sls'),
-
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
     Path('salt/metalk8s/repo/files/nginx.conf.j2'),
-    Path('salt/metalk8s/repo/files/package-repositories-manifest.yaml.j2'),
+    Path('salt/metalk8s/repo/files/90-metalk8s-registry-config.inc.j2'),
+    Path('salt/metalk8s/repo/files/repositories-manifest.yaml.j2'),
     Path('salt/metalk8s/repo/init.sls'),
     Path('salt/metalk8s/repo/installed.sls'),
+    Path('salt/metalk8s/repo/macro.sls'),
     Path('salt/metalk8s/repo/offline.sls'),
 
     Path('salt/metalk8s/roles/bootstrap/absent.sls'),
@@ -253,14 +308,17 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
-    Path('salt/_modules/docker_registry.py'),
+    Path('salt/_modules/metalk8s_cordon.py'),
+    Path('salt/_modules/metalk8s_drain.py'),
     Path('salt/_modules/metalk8s_kubernetes.py'),
     Path('salt/_modules/metalk8s_etcd.py'),
+    Path('salt/_modules/metalk8s_kubernetes_utils.py'),
     Path('salt/_modules/metalk8s.py'),
 
     Path('salt/_pillar/metalk8s.py'),
     Path('salt/_pillar/metalk8s_endpoints.py'),
     Path('salt/_pillar/metalk8s_nodes.py'),
+    Path('salt/_pillar/metalk8s_private.py'),
 
     Path('salt/_renderers/metalk8s_kubernetes.py'),
 
@@ -270,8 +328,9 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
 
     Path('salt/_states/containerd.py'),
     Path('salt/_states/kubeconfig.py'),
-    Path('salt/_states/docker_registry.py'),
     Path('salt/_states/metalk8s.py'),
+    Path('salt/_states/metalk8s_cordon.py'),
+    Path('salt/_states/metalk8s_drain.py'),
     Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
 
@@ -282,7 +341,25 @@ SALT_FILES : Tuple[Union[Path, targets.FileTarget], ...] = (
         # pylint:disable=line-too-long
         digest='sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea',
         destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
-        for_containerd=True,
+        save_as_tar=True,
+    ),
+
+    StaticContainerRegistry(
+        root=constants.ISO_IMAGE_ROOT,
+        server_root='${}_{}_images'.format(
+            config.PROJECT_NAME.lower(), constants.SHORT_VERSION.replace('.', '_')
+        ),
+        name_prefix='{}-{}/'.format(
+            config.PROJECT_NAME.lower(), constants.SHORT_VERSION
+        ),
+        destination=Path(
+            constants.ISO_ROOT,
+            'salt/metalk8s/repo/files',
+            '99-{}-{}-registry.inc'.format(
+                config.PROJECT_NAME.lower(), constants.SHORT_VERSION
+            )
+        ),
+        task_dep=['images']
     ),
 )
 

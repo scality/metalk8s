@@ -52,7 +52,7 @@ MKDIR_ROOT_TASK_NAME = 'mkdir_repo_root'
 MKDIR_ARCH_TASK_NAME = 'mkdir_repo_arch'
 
 
-class Repository(base.Target, base.CompositeTarget):
+class Repository(base.CompositeTarget):
     """A software repository for CentOS 7 x86_64."""
 
     SUFFIX = 'el7'
@@ -179,10 +179,11 @@ class Repository(base.Target, base.CompositeTarget):
                 # Prevent Docker from polluting our output.
                 'verbosity': 0,
             })
-            task['file_dep'].extend([pkg.srpm, self.builder.destination])
+            task['file_dep'].append(pkg.srpm)
             task['task_dep'].append('{base}:{name}'.format(
                 base=self.basename, name=MKDIR_ARCH_TASK_NAME,
             ))
+            task['task_dep'].append('_build_container')
             tasks.append(task)
         return tasks
 

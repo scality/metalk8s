@@ -1,4 +1,4 @@
-{% from "metalk8s/registry/macro.sls" import kubernetes_image with context %}
+{% from "metalk8s/repo/macro.sls" import kubernetes_image with context %}
 
 include:
   - .kubeconfig
