@@ -103,7 +103,10 @@ class RemoteImage(image.ContainerImage):
 
     def _skopeo_copy(self) -> List[str]:
         """Return the command line to execute skopeo copy."""
-        cmd = [config.SKOPEO, 'copy', '--format', 'v2s2']
+        cmd = [
+            config.SKOPEO, '--override-os', 'linux', '--insecure-policy',
+            'copy', '--format', 'v2s2'
+        ]
         if not self._use_tar:
             cmd.append('--dest-compress')
         cmd.append('docker://{}'.format(self.fullname))
