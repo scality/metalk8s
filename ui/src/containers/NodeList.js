@@ -5,7 +5,7 @@ import memoizeOne from 'memoize-one';
 import styled from 'styled-components';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
-import { Table, Button } from 'core-ui';
+import { Table, Button, Loader } from 'core-ui';
 import { padding } from 'core-ui/dist/style/theme';
 
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
@@ -22,6 +22,31 @@ const ActionContainer = styled.div`
 
 const TableContainer = styled.div`
   flex-grow: 1;
+  .status {
+    display: flex;
+    align-items: center;
+
+    .deploy-icon {
+      width: 12px;
+      height: 12px;
+    }
+    .sc-button {
+      margin: 0 5px;
+      padding: 7px;
+
+      .sc-button-text {
+        display: flex;
+        align-items: flex-start;
+      }
+    }
+    .sc-loader {
+      svg {
+        width: 12px;
+        height: 12px;
+        fill: white;
+      }
+    }
+  }
 `;
 
 class NodeList extends React.Component {
@@ -39,7 +64,41 @@ class NodeList extends React.Component {
         },
         {
           label: props.intl.messages.status,
-          dataKey: 'status'
+          dataKey: 'status',
+          renderer: (data, rowData) => {
+            if ((!data || data === 'Unknown') && !rowData.jid) {
+              return (
+                <span className="status">
+                  {data}
+                  <Button
+                    text={this.props.intl.messages.deploy}
+                    onClick={event => {
+                      event.stopPropagation();
+                      this.props.deployNode(rowData);
+                    }}
+                    size="smaller"
+                  />
+                </span>
+              );
+            }
+            if (rowData.jid) {
+              return (
+                <span className="status">
+                  {data}
+                  <Button
+                    text={this.props.intl.messages.deploying}
+                    onClick={event => {
+                      event.stopPropagation();
+                      this.props.history.push(`/nodes/deploy/${rowData.jid}`);
+                    }}
+                    icon={<Loader size="smaller" />}
+                    size="smaller"
+                  />
+                </span>
+              );
+            }
+            return data;
+          }
         },
         {
           label: props.intl.messages.roles,
@@ -65,6 +124,10 @@ class NodeList extends React.Component {
       ]
     };
     this.onSort = this.onSort.bind(this);
+  }
+
+  componentDidMount() {
+    this.props.fetchNodes();
   }
 
   onSort({ sortBy, sortDirection }) {
@@ -126,21 +189,6 @@ class NodeList extends React.Component {
       return node;
     });
 
-    const nodesWithActions = nodesSortedListWithRoles.map(node => {
-      return {
-        ...node,
-        actions:
-          !node.status || node.status === 'Unknown'
-            ? [
-                {
-                  label: this.props.intl.messages.deploy,
-                  onClick: this.props.deployNode
-                }
-              ]
-            : null
-      };
-    });
-
     return (
       <PageContainer>
         <ActionContainer>
@@ -151,7 +199,7 @@ class NodeList extends React.Component {
         </ActionContainer>
         <TableContainer>
           <Table
-            list={nodesWithActions}
+            list={nodesSortedListWithRoles}
             columns={this.state.columns}
             disableHeader={false}
             headerHeight={40}
