@@ -6,7 +6,7 @@
 {%- set repositories_version = '1.0.0' %}
 {%- set repositories_image = build_image_name('nginx', '1.15.8') %}
 
-{%- set images_path = metalk8s.iso_root_path ~ '/images/' %}
+{%- set images_path = metalk8s.iso_root_path[saltenv] ~ '/images/' %}
 
 {%- set nginx_confd  = '/var/lib/metalk8s/repositories/conf.d/' %}
 {%- set nginx_default_conf = nginx_confd ~ 'default.conf' %}
@@ -57,7 +57,7 @@ Generate container registry configuration:
 Inject nginx image:
   containerd.image_managed:
     - name: docker.io/library/nginx:1.15.8
-    - archive_path: {{ metalk8s.iso_root_path }}/images/nginx-1.15.8.tar
+    - archive_path: {{ metalk8s.iso_root_path[saltenv] }}/images/nginx-1.15.8.tar
 
 Install repositories manifest:
   metalk8s.static_pod_managed:
@@ -72,10 +72,10 @@ Install repositories manifest:
         image: docker.io/library/nginx:1.15.8
         name: {{ repositories_name }}
         version: {{ repositories_version }}
-        packages_path: {{ metalk8s.iso_root_path }}/{{ repo.relative_path }}
+        packages_path: {{ metalk8s.iso_root_path[saltenv] }}/{{ repo.relative_path }}
         nginx_confd_path: {{ nginx_confd }}
         images_path: {{ images_path }}
-    - onchanges:
+    - require:
       - containerd: Inject nginx image
       - file: Generate repositories nginx configuration
       - file: Deploy container registry nginx configuration

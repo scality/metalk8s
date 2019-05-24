@@ -26,3 +26,15 @@ Install kubelet:
   {{ pkg_installed('kubelet') }}
     - require:
       - test: Repositories configured
+
+# When upgrading kubelet on centos7 we have error when trying to restart or get
+# status of the kubelet service
+# $ systemctl status kubelet
+# Failed to get properties: Access denied
+# 
+# Workaround: Reload systemctl
+Reload systemctl:
+  module.wait:
+    - name: service.systemctl_reload
+    - watch:
+      - pkg: Install kubelet
