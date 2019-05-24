@@ -9,7 +9,7 @@ import {
   fetchUserInfo,
   authenticateSaltApi
 } from './login';
-import * as Api from '../services/api';
+import * as ApiK8s from '../services/k8s/api';
 
 it('authentication failed', () => {
   const payload = { username: 'admin', password: 'admin' };
@@ -18,7 +18,7 @@ it('authentication failed', () => {
 
   expect(gen.next().value.type).toEqual('SELECT');
   expect(gen.next('localhost:8080').value).toEqual(
-    call(Api.authenticate, token, 'localhost:8080')
+    call(ApiK8s.authenticate, token, 'localhost:8080')
   );
 
   const result = {
@@ -49,7 +49,7 @@ it('authentication success', () => {
 
   expect(gen.next().value.type).toEqual('SELECT');
   expect(gen.next('localhost:8080').value).toEqual(
-    call(Api.authenticate, token, 'localhost:8080')
+    call(ApiK8s.authenticate, token, 'localhost:8080')
   );
 
   const result = {
@@ -67,7 +67,7 @@ it('authentication success', () => {
     })
   );
 
-  expect(gen.next().value).toEqual(call(authenticateSaltApi));
+  expect(gen.next().value).toEqual(call(authenticateSaltApi, true));
 
   expect(gen.next(result).value).toEqual(
     put({
@@ -83,7 +83,7 @@ it('fetchUserInfo success', () => {
 
   expect(gen.next().value.type).toEqual('SELECT');
   expect(gen.next({ url: 'localhost:8080' }).value).toEqual(
-    call(Api.updateApiServerConfig, 'localhost:8080', 'dGVzdDp0ZXN0')
+    call(ApiK8s.updateApiServerConfig, 'localhost:8080', 'dGVzdDp0ZXN0')
   );
 
   const result = {

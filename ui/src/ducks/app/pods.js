@@ -1,5 +1,5 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import * as Api from '../../services/api';
+import * as ApiK8s from '../../services/k8s/api';
 
 // Actions
 const FETCH_PODS = 'FETCH_PODS';
@@ -30,7 +30,7 @@ export const setPodsAction = payload => {
 
 // Sagas
 export function* fetchPods() {
-  const result = yield call(Api.getPods);
+  const result = yield call(ApiK8s.getPods);
   if (!result.error) {
     yield put(
       setPodsAction(

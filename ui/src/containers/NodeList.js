@@ -71,20 +71,11 @@ class NodeList extends React.Component {
                 <span className="status">
                   {data}
                   <Button
-                    title={this.props.intl.messages.deploy}
+                    text={this.props.intl.messages.deploy}
                     onClick={event => {
                       event.stopPropagation();
                       this.props.deployNode(rowData);
                     }}
-                    icon={
-                      <img
-                        className="deploy-icon"
-                        alt={this.props.intl.messages.deploy}
-                        src={
-                          process.env.PUBLIC_URL + '/brand/assets/deploy.svg'
-                        }
-                      />
-                    }
                     size="smaller"
                   />
                 </span>

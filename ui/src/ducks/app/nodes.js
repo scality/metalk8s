@@ -9,7 +9,8 @@ import {
 } from 'redux-saga/effects';
 import { eventChannel, END } from 'redux-saga';
 
-import * as Api from '../../services/api';
+import * as ApiK8s from '../../services/k8s/api';
+import * as ApiSalt from '../../services/salt/api';
 import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
 import history from '../../history';
 import {
@@ -22,7 +23,7 @@ import {
   getJidFromNameLocalStorage,
   updateJobLocalStorage,
   removeJobLocalStorage
-} from '../../services/utils';
+} from '../../services/salt/utils';
 
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
@@ -115,7 +116,7 @@ export const subscribeDeployEventsAction = jid => {
 
 // Sagas
 export function* fetchNodes() {
-  const result = yield call(Api.getNodes);
+  const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
     yield all(
       result.body.items.map(node => {
@@ -134,9 +135,9 @@ export function* fetchNodes() {
               node.metadata.labels['metalk8s.scality.com/version'],
             statusType: statusType,
             cpu: node.status.capacity && node.status.capacity.cpu,
-            control_plane: isRolePresentInLabels(node, Api.ROLE_MASTER),
-            workload_plane: isRolePresentInLabels(node, Api.ROLE_NODE),
-            bootstrap: isRolePresentInLabels(node, Api.ROLE_BOOTSTRAP),
+            control_plane: isRolePresentInLabels(node, ApiK8s.ROLE_MASTER),
+            workload_plane: isRolePresentInLabels(node, ApiK8s.ROLE_NODE),
+            bootstrap: isRolePresentInLabels(node, ApiK8s.ROLE_BOOTSTRAP),
             memory:
               node.status.capacity &&
               prettifyBytes(
@@ -152,13 +153,13 @@ export function* fetchNodes() {
   }
 }
 
-function* removeCompletedJobFromLocalStorage(name) {
+export function* removeCompletedJobFromLocalStorage(name) {
   const jid = getJidFromNameLocalStorage(name);
   if (jid) {
     const salt = yield select(state => state.login.salt);
     const api = yield select(state => state.config.api);
     const result = yield call(
-      Api.lookupJid,
+      ApiSalt.printJob,
       api.url_salt,
       salt.data.return[0].token,
       jid
@@ -170,7 +171,7 @@ function* removeCompletedJobFromLocalStorage(name) {
 }
 
 export function* createNode({ payload }) {
-  const result = yield call(Api.createNode, payload);
+  const result = yield call(ApiK8s.createNode, payload);
 
   if (!result.error) {
     yield call(fetchNodes);
@@ -199,7 +200,7 @@ export function* deployNode({ payload }) {
   const salt = yield select(state => state.login.salt);
   const api = yield select(state => state.config.api);
   const result = yield call(
-    Api.deployNode,
+    ApiSalt.deployNode,
     api.url_salt,
     salt.data.return[0].token,
     payload.name,
