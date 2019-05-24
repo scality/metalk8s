@@ -27,8 +27,12 @@ Configure salt master roots paths:
     - backup: false
     - dataset:
         file_roots:
-          {{ saltenv }}:
-            - {{ metalk8s.iso_root_path }}/salt
+        {%- for version, path in metalk8s.iso_root_path.items() | sort(attribute='0') %}
+          {{ version }}:
+            - {{ path }}/salt
+        {%- endfor %}
         pillar_roots:
-          {{ saltenv }}:
-            - {{ metalk8s.iso_root_path }}/pillar
+        {%- for version, path in metalk8s.iso_root_path.items() | sort(attribute='0') %}
+          {{ version }}:
+            - {{ path }}/pillar
+        {%- endfor %}
