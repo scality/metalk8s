@@ -24,17 +24,14 @@ Upgrade etcd {{ node }} to {{ dest_version }}:
       - salt: Sync {{ node }} minion
       - module: Check etcd cluster health
   {%- if previous_node is defined %}
-      - module: Check etcd cluster health for {{ previous_node }}
+      - metalk8s: Check etcd cluster health for {{ previous_node }}
   {%- endif %}
 
 Check etcd cluster health for {{ node }}:
-  module.run:
+  metalk8s.module_run:
     - metalk8s_etcd.check_etcd_health:
       - minion_id: {{ node }}
-    # FIXME: Can't retry because of https://github.com/saltstack/salt/issues/44639
-    # Should be ok for the moment as we check health in etcd.health state.
-    #- retry:
-    #    attempts: 5
+    - attemps: 5
     - require:
       - salt: Upgrade etcd {{ node }} to {{ dest_version }}
 

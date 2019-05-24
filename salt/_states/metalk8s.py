@@ -1,5 +1,8 @@
 """Custom states for MetalK8s."""
 
+import time
+
+
 __virtualname__ = "metalk8s"
 
 
@@ -33,3 +36,28 @@ def static_pod_managed(name, source, config_files=None, context=None):
         backup=False,
         context=dict(context or {}, config_digest=config_digest),
     )
+
+
+def module_run(name, attemps=1, sleep_time=10, **kwargs):
+    """Classic module.run with a retry logic as it's buggy in salt version
+    https://github.com/saltstack/salt/issues/44639
+    """
+    retry = attemps
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+    while retry > 0 and not ret['result']:
+        try:
+            ret = __states__["module.run"](
+                name,
+                **kwargs
+            )
+        except Exception as exc:  # pylint: disable=broad-except
+            ret['comment'] = str(exc)
+
+        retry = retry - 1
+        if retry and not ret['result']:
+            time.sleep(sleep_time)
+
+    return ret
