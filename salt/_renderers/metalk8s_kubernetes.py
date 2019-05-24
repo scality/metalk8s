@@ -236,6 +236,20 @@ def _handle_monitoring_coreos_com_v1_customresource(obj, kubeconfig, context):
     }
 
 
+@handle('apiregistration.k8s.io/v1', 'APIService')
+@handle('apiregistration.k8s.io/v1beta1', 'APIService')
+def _handle_apiregistration_v1_apiservice(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.apiservice_present': [
+            {'name': obj['metadata']['name']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ]
+    }
+
+
 del handle
 
 

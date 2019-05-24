@@ -1704,3 +1704,113 @@ def customresource_absent(
     }
 
     return ret
+
+
+def apiservice_present(
+        name,
+        metadata=None,
+        spec=None,
+        **kwargs):
+    '''
+    Ensures that the named API service is present with the given
+    metadata and spec. If the API service exists it will be replaced.
+
+    name
+        The name of the API service.
+
+    metadata
+        The metadata of the API service object.
+
+    spec
+        The spec of the API service object.
+    '''
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    if metadata is None:
+        metadata = {}
+
+    if spec is None:
+        spec = {}
+
+    api_service = __salt__['metalk8s_kubernetes.show_api_service'](
+        name, **kwargs)
+
+    if api_service is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The API service is going to be created'
+            return ret
+
+        res = __salt__['metalk8s_kubernetes.create_api_service'](
+            metadata=metadata, spec=spec, **kwargs)
+
+        if res is None:
+            return ret
+
+        ret['changes'][name] = {'old': {}, 'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            return ret
+
+        ret['comment'] = 'The API service is already present, updating it.'
+        res = __salt__['metalk8s_kubernetes.replace_api_service'](
+            name=name,
+            metadata=metadata,
+            spec=spec,
+            **kwargs)
+
+        if res is None:
+            return ret
+
+        ret['changes'] = salt.utils.dictdiffer.deep_diff(api_service, res)
+
+    ret['result'] = True
+    return ret
+
+
+def apiservice_absent(name, **kwargs):
+    '''
+    Ensures that the API service is absent.
+
+    name
+        The name of the custom resource.
+    '''
+
+    ret = {
+        'name': name,
+        'changes': {},
+        'result': False,
+        'comment': ''
+    }
+
+    api_service = __salt__['metalk8s_kubernetes.show_api_service'](
+        name, **kwargs)
+
+    if api_service is None:
+        ret['result'] = True if not __opts__['test'] else None
+        ret['comment'] = 'The API service does not exist'
+        return ret
+
+    if __opts__['test']:
+        ret['result'] = None
+        ret['comment'] = 'The API service is going to be deleted'
+        return ret
+
+    res = __salt__['metalk8s_kubernetes.delete_api_service'](name, **kwargs)
+
+    if res is None:
+        return ret
+
+    ret['result'] = True
+    ret['changes'] = {
+        name: {
+            'new': 'absent',
+            'old': 'present',
+        }
+    }
+
+    return ret

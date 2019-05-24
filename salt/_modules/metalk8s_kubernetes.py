@@ -1633,6 +1633,23 @@ def __dict_to_service_spec(spec):
     return spec_obj
 
 
+def __dict_to_api_service_spec(spec):
+    '''
+    Converts a dictionary into kubernetes V1APIServiceSpec instance.
+    '''
+    service_ref = kubernetes.client.V1ServiceReference(**spec['service'])
+    spec_obj = kubernetes.client.V1APIServiceSpec(
+        group_priority_minimum=spec['groupPriorityMinimum'],
+        service=service_ref,
+        version_priority=spec['versionPriority'],
+    )
+    for key, value in iteritems(spec):
+        if hasattr(spec_obj, key):
+            setattr(spec_obj, key, value)
+
+    return spec_obj
+
+
 def __enforce_only_strings_dict(dictionary):
     '''
     Returns a dictionary that has string keys and values.
@@ -2533,6 +2550,127 @@ def create_namespaced_custom_object(
             log.exception(
                 'Exception when calling '
                 'CustomObjectsApi->create_namespaced_custom_object'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_api_service(metadata, spec, **kwargs):
+
+    cfg = _setup_conn(**kwargs)
+
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    spec_obj = __dict_to_api_service_spec(spec)
+    body = kubernetes.client.V1beta1APIService(
+        metadata=meta_obj, spec=spec_obj)
+
+    try:
+        api_instance = kubernetes.client.ApiregistrationV1Api()
+        api_response = api_instance.create_api_service(body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ApiregistrationV1Api->create_api_service'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_api_service(
+        name,
+        metadata,
+        spec,
+        old_api_service,
+        **kwargs):
+
+    cfg = _setup_conn(**kwargs)
+
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    spec_obj = __dict_to_api_service_spec(spec)
+    body = kubernetes.client.V1beta1APIService(
+        metadata=meta_obj, spec=spec_obj)
+    body.metadata.resource_version = \
+        old_api_service['metadata']['resource_version']
+
+    try:
+        api_instance = kubernetes.client.ApiregistrationV1Api()
+        api_response = api_instance.replace_api_service(name, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ApiregistrationV1Api->replace_api_service'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def delete_api_service(name, **kwargs):
+    '''
+    Delete the kubernetes API service defined by name
+
+    CLI Examples::
+
+        salt '*' metalk8s_kubernetes.delete_api_service my-api-service
+        salt '*' metalk8s_kubernetes.delete_api_service name=my-api-service
+    '''
+    cfg = _setup_conn(**kwargs)
+
+    body = kubernetes.client.V1DeleteOptions(orphan_dependents=True)
+
+    try:
+        api_instance = kubernetes.client.ApiregistrationV1Api()
+        api_response = api_instance.delete_api_service(
+            name=name, body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ApiregistrationV1Api->delete_api_service'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def show_api_service(name, **kwargs):
+    '''
+    Return the kubernetes API service defined by name
+
+    CLI Examples::
+
+        salt '*' metalk8s_kubernetes.show_api_service my-api-service
+        salt '*' metalk8s_kubernetes.show_api_service name=my-api-service
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.ApiregistrationV1Api()
+        api_response = api_instance.read_api_service(name)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ApiregistrationV1Api->read_api_service'
             )
             raise CommandExecutionError(exc)
     finally:
