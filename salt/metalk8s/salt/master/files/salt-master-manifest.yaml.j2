@@ -60,12 +60,14 @@ spec:
           mountPath: '/var/cache/salt'
         - name: run
           mountPath: '/var/run/salt'
-        - name: states
-          mountPath: '{{ iso_root_path }}/salt'
+        {%- for version, path in iso_root_path.items() | sort(attribute='0') %}
+        - name: states-{{ version | replace('.', '-') }}
+          mountPath: '{{ path }}/salt'
           readOnly: true
-        - name: pillar
-          mountPath: '{{ iso_root_path }}/pillar'
+        - name: pillar-{{ version | replace('.', '-') }}
+          mountPath: '{{ path }}/pillar'
           readOnly: true
+        {%- endfor %}
         - name: metalk8s-config
           mountPath: '/etc/metalk8s'
           readOnly: true
@@ -109,14 +111,16 @@ spec:
       hostPath:
         path: '/var/run/salt'
         type: Directory
-    - name: states
+    {%- for version, path in iso_root_path.items() | sort(attribute='0') %}
+    - name: states-{{ version | replace('.', '-') }}
       hostPath:
-        path: '{{ iso_root_path }}/salt'
+        path: '{{ path }}/salt'
         type: Directory
-    - name: pillar
+    - name: pillar-{{ version | replace('.', '-') }}
       hostPath:
-        path: '{{ iso_root_path }}/pillar'
+        path: '{{ path }}/pillar'
         type: Directory
+    {%- endfor %}
     - name: metalk8s-config
       hostPath:
         path: '/etc/metalk8s'
