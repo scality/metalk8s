@@ -2,18 +2,25 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { fetchAlertsAction } from '../ducks/app/alerts';
+import moment from 'moment';
 import styled from 'styled-components';
 
-import { Table, Button } from 'core-ui';
+import { Table } from 'core-ui';
+import { padding } from 'core-ui/dist/style/theme';
 
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding: ${padding.larger};
 `;
 
 const TableContainer = styled.div`
   flex-grow: 1;
+`;
+
+const PageTitle = styled.h2`
+  margin-top: 0;
 `;
 
 const CusterStatus = props => {
@@ -24,34 +31,41 @@ const CusterStatus = props => {
   const columns = [
     {
       label: 'Name',
-      dataKey: 'name'
+      dataKey: 'name',
+      width: 250
     },
     {
       label: 'Severity',
-      dataKey: 'severity'
+      dataKey: 'severity',
+      width: 100
     },
     {
       label: 'Message',
-      dataKey: 'message'
+      dataKey: 'message',
+      flexGrow: 1
     },
     {
       label: 'activeAt',
-      dataKey: 'activeAt'
+      dataKey: 'activeAt',
+      width: 230
     }
   ];
 
   const data = props.alerts.map(alert => {
+    const activeAtMoment = moment(alert.activeAt);
+    const alertActiveAt = activeAtMoment.format('YYYY-MM-DD HH:mm:ss Z');
+
     return {
       name: alert.labels.alertname,
       severity: alert.labels.severity,
       message: alert.annotations.message,
-      activeAt: alert.activeAt
+      activeAt: alertActiveAt
     };
   });
 
   return (
     <PageContainer>
-      ClusterStatus
+      <PageTitle>Cluster Status</PageTitle>
       <TableContainer>
         <Table list={data} columns={columns} headerHeight={40} rowHeight={40} />
       </TableContainer>
@@ -60,7 +74,6 @@ const CusterStatus = props => {
 };
 
 const mapStateToProps = state => {
-  console.log('state.app.alerts.alerts', state.app);
   return {
     alerts: state.app.alerts.list
   };

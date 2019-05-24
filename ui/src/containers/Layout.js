@@ -43,21 +43,27 @@ class Layout extends Component {
       actions: [
         {
           label: this.props.intl.messages.nodes,
+          icon: <i class="fas fa-desktop" />,
+          onClick: () => {
+            this.props.history.push('/');
+          },
+          active: matchPath(this.props.history.location.pathname, {
+            path: '/',
+            exact: true,
+            strict: true
+          })
+        },
+        {
+          label: this.props.intl.messages.nodes,
           icon: <i className="fas fa-server" />,
           onClick: () => {
             this.props.history.push('/nodes');
           },
-          active:
-            matchPath(this.props.history.location.pathname, {
-              path: '/',
-              exact: true,
-              strict: true
-            }) ||
-            matchPath(this.props.history.location.pathname, {
-              path: '/nodes',
-              exact: false,
-              strict: true
-            })
+          active: matchPath(this.props.history.location.pathname, {
+            path: '/nodes',
+            exact: false,
+            strict: true
+          })
         }
       ]
     };

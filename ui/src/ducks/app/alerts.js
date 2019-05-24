@@ -25,7 +25,6 @@ export const setAlertsAction = payload => {
 };
 
 export function* fetchAlerts() {
-  console.log('called ?');
   const alerts = {
     status: 'success',
     data: {
