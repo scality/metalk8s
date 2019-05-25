@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
+import memoizeOne from 'memoize-one';
+import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import {
   fetchAlertsAction,
@@ -46,6 +48,30 @@ const ClusterMonitoring = props => {
     props.fetchClusterStatus();
   }, []);
 
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDirection, setSortDirection] = useState('ASC');
+
+  const onSort = ({ sortBy, sortDirection }) => {
+    setSortBy(sortBy);
+    setSortDirection(sortDirection);
+  };
+
+  // It's a copy paste from NodeList, we may need to extract this code later.
+  const sortAlerts = memoizeOne((nodes, sortBy, sortDirection) => {
+    const sortedList = sortByArray(nodes, [
+      node => {
+        return typeof node[sortBy] === 'string'
+          ? node[sortBy].toLowerCase()
+          : node[sortBy];
+      }
+    ]);
+
+    if (sortDirection === 'DESC') {
+      sortedList.reverse();
+    }
+    return sortedList;
+  });
+
   const columns = [
     {
       label: props.intl.messages.name,
@@ -74,7 +100,7 @@ const ClusterMonitoring = props => {
     }
   ];
 
-  const data = props.alerts.map(alert => {
+  const alerts = props.alerts.map(alert => {
     return {
       name: alert.labels.alertname,
       severity: alert.labels.severity,
@@ -82,6 +108,8 @@ const ClusterMonitoring = props => {
       activeAt: alert.activeAt
     };
   });
+
+  const sortedAlerts = sortAlerts(alerts, sortBy, sortDirection);
 
   const isUp = props.clusterStatus && props.clusterStatus.length === 0;
 
@@ -99,7 +127,15 @@ const ClusterMonitoring = props => {
 
       <PageSubtitle>{props.intl.messages.alert_list + ' :'}</PageSubtitle>
       <TableContainer>
-        <Table list={data} columns={columns} headerHeight={40} rowHeight={40} />
+        <Table
+          list={sortedAlerts}
+          columns={columns}
+          headerHeight={40}
+          rowHeight={40}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSort={onSort}
+        />
       </TableContainer>
     </PageContainer>
   );
