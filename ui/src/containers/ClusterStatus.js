@@ -8,7 +8,7 @@ import {
 import styled from 'styled-components';
 
 import { Table } from 'core-ui';
-import { padding } from 'core-ui/dist/style/theme';
+import { brand, padding } from 'core-ui/dist/style/theme';
 
 const PageContainer = styled.div`
   display: flex;
@@ -19,6 +19,8 @@ const PageContainer = styled.div`
 
 const TableContainer = styled.div`
   flex-grow: 1;
+  /* FIXME We need to find a way to define the max-height */
+  max-height: 400px;
 `;
 
 const PageTitle = styled.h2`
@@ -26,6 +28,17 @@ const PageTitle = styled.h2`
 `;
 
 const PageSubtitle = styled.h3``;
+
+const ClusterStatusTitleContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const ClusterStatusValue = styled.span`
+  margin-left: ${padding.small};
+  font-weight: bold;
+  color: ${props => (props.isUp ? brand.success : brand.danger)};
+`;
 
 const CusterStatus = props => {
   useEffect(() => {
@@ -70,17 +83,19 @@ const CusterStatus = props => {
     };
   });
 
+  const isUp = props.clusterStatus && props.clusterStatus.length === 0;
+
   return (
     <PageContainer>
       <PageTitle>Cluster Monitoring</PageTitle>
-      <PageSubtitle>
-        Cluster :{' '}
-        {props.clusterStatus && props.clusterStatus.length === 0
-          ? 'UP'
-          : 'DOWN'}
-      </PageSubtitle>
+      <ClusterStatusTitleContainer>
+        <PageSubtitle>Cluster Status : </PageSubtitle>
+        <ClusterStatusValue isUp={isUp}>
+          {isUp ? 'Everything is up and running' : 'DOWN'}
+        </ClusterStatusValue>
+      </ClusterStatusTitleContainer>
 
-      <PageSubtitle>Alerts:</PageSubtitle>
+      <PageSubtitle>Alerts List:</PageSubtitle>
       <TableContainer>
         <Table list={data} columns={columns} headerHeight={40} rowHeight={40} />
       </TableContainer>

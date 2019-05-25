@@ -42,7 +42,7 @@ class Layout extends Component {
       expanded: this.props.sidebar.expanded,
       actions: [
         {
-          label: this.props.intl.messages.cluster_status,
+          label: this.props.intl.messages.cluster_monitoring,
           icon: <i className="fas fa-desktop" />,
           onClick: () => {
             this.props.history.push('/');
