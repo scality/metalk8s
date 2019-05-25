@@ -42,6 +42,9 @@
   "error": "Error",
   "completed": "Completed",
   "node_registered": "Node registered",
-  "deployment_started": "Deployment started"
-  
+  "deployment_started": "Deployment started",
+  "cluster_status": "Cluster Status",
+  "severity": "Severity",
+  "message": "Message",
+  "active_at": "Active at"
 }

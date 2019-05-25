@@ -30,22 +30,22 @@ const CusterStatus = props => {
 
   const columns = [
     {
-      label: 'Name',
+      label: props.intl.messages.name,
       dataKey: 'name',
       width: 250
     },
     {
-      label: 'Severity',
+      label: props.intl.messages.severity,
       dataKey: 'severity',
       width: 100
     },
     {
-      label: 'Message',
+      label: props.intl.messages.message,
       dataKey: 'message',
       flexGrow: 1
     },
     {
-      label: 'activeAt',
+      label: props.intl.messages.active_at,
       dataKey: 'activeAt',
       width: 230
     }

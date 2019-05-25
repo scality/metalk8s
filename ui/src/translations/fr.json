@@ -42,5 +42,9 @@
   "error": "Erreur",
   "completed": "Terminé",
   "node_registered": "Node enregistré",
-  "deployment_started": "Deploiement commencé"
+  "deployment_started": "Deploiement commencé",
+  "cluster_status": "Status de la grappe de serveurs",
+  "severity": "Sévérité",
+  "message": "Message",
+  "active_at": "Actif à"
 }
