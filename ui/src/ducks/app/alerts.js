@@ -9,7 +9,7 @@ const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';
 
 const defaultState = {
   list: [],
-  clusterStatus: {}
+  clusterStatus: []
 };
 
 export default function(state = defaultState, action = {}) {
@@ -48,7 +48,7 @@ export function* fetchAlerts() {
 export function* fetchClusterStatus() {
   const api = yield select(state => state.config.api);
   const clusterStatus = yield call(getClusterStatus, api.url_prometheus);
-  yield put(setClusterStatusAction(clusterStatus));
+  yield put(setClusterStatusAction(clusterStatus.data.data.result));
 }
 
 export function* alertsSaga() {

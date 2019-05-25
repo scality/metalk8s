@@ -30,13 +30,7 @@ export async function getClusterStatus(api) {
   try {
     const query =
       'sum(up{job=~"apiserver|kube-scheduler|kube-controller-manager"} == 0)';
-
-    axios.get(api + '/api/v1/query?query=' + query);
-
-    return Promise.resolve(() => ({
-      status: 'success',
-      data: { resultType: 'vector', result: [] }
-    }));
+    return axios.get(api + '/api/v1/query?query=' + query);
   } catch (error) {
     return { error };
   }

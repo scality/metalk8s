@@ -46,5 +46,5 @@
   "cluster_status": "Cluster Status",
   "severity": "Severity",
   "message": "Message",
-  "active_at": "Active at"
+  "active_at": "Active Since"
 }

@@ -25,6 +25,8 @@ const PageTitle = styled.h2`
   margin-top: 0;
 `;
 
+const PageSubtitle = styled.h3``;
+
 const CusterStatus = props => {
   useEffect(() => {
     props.fetchAlerts();
@@ -60,9 +62,6 @@ const CusterStatus = props => {
   ];
 
   const data = props.alerts.map(alert => {
-    // const activeAtMoment = moment(alert.activeAt);
-    // const alertActiveAt = activeAtMoment.format('YYYY-MM-DD HH:mm:ss Z');
-
     return {
       name: alert.labels.alertname,
       severity: alert.labels.severity,
@@ -73,7 +72,15 @@ const CusterStatus = props => {
 
   return (
     <PageContainer>
-      <PageTitle>Cluster Status</PageTitle>
+      <PageTitle>Cluster Monitoring</PageTitle>
+      <PageSubtitle>
+        Cluster :{' '}
+        {props.clusterStatus && props.clusterStatus.length === 0
+          ? 'UP'
+          : 'DOWN'}
+      </PageSubtitle>
+
+      <PageSubtitle>Alerts:</PageSubtitle>
       <TableContainer>
         <Table list={data} columns={columns} headerHeight={40} rowHeight={40} />
       </TableContainer>
@@ -83,7 +90,8 @@ const CusterStatus = props => {
 
 const mapStateToProps = state => {
   return {
-    alerts: state.app.alerts.list
+    alerts: state.app.alerts.list,
+    clusterStatus: state.app.alerts.clusterStatus
   };
 };
 
