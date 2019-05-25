@@ -42,8 +42,8 @@ class Layout extends Component {
       expanded: this.props.sidebar.expanded,
       actions: [
         {
-          label: this.props.intl.messages.nodes,
-          icon: <i class="fas fa-desktop" />,
+          label: this.props.intl.messages.cluster_status,
+          icon: <i className="fas fa-desktop" />,
           onClick: () => {
             this.props.history.push('/');
           },

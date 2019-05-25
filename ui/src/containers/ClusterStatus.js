@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
-import { fetchAlertsAction } from '../ducks/app/alerts';
-import moment from 'moment';
+import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
+import {
+  fetchAlertsAction,
+  fetchClusterStatusAction
+} from '../ducks/app/alerts';
 import styled from 'styled-components';
 
 import { Table } from 'core-ui';
@@ -26,6 +28,7 @@ const PageTitle = styled.h2`
 const CusterStatus = props => {
   useEffect(() => {
     props.fetchAlerts();
+    props.fetchClusterStatus();
   }, []);
 
   const columns = [
@@ -47,19 +50,24 @@ const CusterStatus = props => {
     {
       label: props.intl.messages.active_at,
       dataKey: 'activeAt',
-      width: 230
+      width: 230,
+      renderer: data => (
+        <span>
+          <FormattedDate value={data} /> <FormattedTime value={data} />
+        </span>
+      )
     }
   ];
 
   const data = props.alerts.map(alert => {
-    const activeAtMoment = moment(alert.activeAt);
-    const alertActiveAt = activeAtMoment.format('YYYY-MM-DD HH:mm:ss Z');
+    // const activeAtMoment = moment(alert.activeAt);
+    // const alertActiveAt = activeAtMoment.format('YYYY-MM-DD HH:mm:ss Z');
 
     return {
       name: alert.labels.alertname,
       severity: alert.labels.severity,
       message: alert.annotations.message,
-      activeAt: alertActiveAt
+      activeAt: alert.activeAt
     };
   });
 
@@ -81,7 +89,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchAlerts: () => dispatch(fetchAlertsAction())
+    fetchAlerts: () => dispatch(fetchAlertsAction()),
+    fetchClusterStatus: () => dispatch(fetchClusterStatusAction())
   };
 };
 
