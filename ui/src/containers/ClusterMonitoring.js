@@ -91,10 +91,16 @@ const ClusterMonitoring = props => {
     {
       label: props.intl.messages.active_at,
       dataKey: 'activeAt',
-      width: 230,
+      width: 200,
       renderer: data => (
         <span>
-          <FormattedDate value={data} /> <FormattedTime value={data} />
+          <FormattedDate value={data} />{' '}
+          <FormattedTime
+            hour="2-digit"
+            minute="2-digit"
+            second="2-digit"
+            value={data}
+          />
         </span>
       )
     }

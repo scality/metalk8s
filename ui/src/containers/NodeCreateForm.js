@@ -19,7 +19,6 @@ const CreateNodeLayout = styled.div`
   padding: ${padding.larger};
   form {
     width: 450px;
-    padding: 0 ${padding.larger};
     .sc-input {
       margin: ${padding.smaller} 0;
       .sc-input-label {
