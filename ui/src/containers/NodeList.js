@@ -14,10 +14,19 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding: ${padding.larger};
 `;
 
+const PageTitle = styled.h2`
+  margin-top: 0;
+`;
+
+const PageSubtitle = styled.h3``;
+
 const ActionContainer = styled.div`
-  margin: ${padding.base};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const TableContainer = styled.div`
@@ -194,7 +203,9 @@ class NodeList extends React.Component {
 
     return (
       <PageContainer>
+        <PageTitle>Node Management</PageTitle>
         <ActionContainer>
+          <PageSubtitle>Node List</PageSubtitle>
           <Button
             text={intl.messages.create_new_node}
             onClick={() => this.props.history.push('/nodes/create')}
