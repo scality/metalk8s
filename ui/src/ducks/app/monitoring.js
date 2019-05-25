@@ -8,14 +8,14 @@ const FETCH_CLUSTER_STATUS = 'FETCH_CLUSTER_STATUS';
 const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';
 
 const defaultState = {
-  list: [],
+  alertList: [],
   clusterStatus: []
 };
 
 export default function(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_ALERTS:
-      return { ...state, list: action.payload };
+      return { ...state, alertList: action.payload };
     case SET_CLUSTER_STATUS:
       return { ...state, clusterStatus: action.payload };
     default:
@@ -51,7 +51,7 @@ export function* fetchClusterStatus() {
   yield put(setClusterStatusAction(clusterStatus.data.data.result));
 }
 
-export function* alertsSaga() {
+export function* monitoringSaga() {
   yield takeEvery(FETCH_ALERTS, fetchAlerts);
   yield takeEvery(FETCH_CLUSTER_STATUS, fetchClusterStatus);
 }

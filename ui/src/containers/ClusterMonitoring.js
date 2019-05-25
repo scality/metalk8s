@@ -4,7 +4,7 @@ import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import {
   fetchAlertsAction,
   fetchClusterStatusAction
-} from '../ducks/app/alerts';
+} from '../ducks/app/monitoring';
 import styled from 'styled-components';
 
 import { Table } from 'core-ui';
@@ -40,7 +40,7 @@ const ClusterStatusValue = styled.span`
   color: ${props => (props.isUp ? brand.success : brand.danger)};
 `;
 
-const CusterStatus = props => {
+const ClusterMonitoring = props => {
   useEffect(() => {
     props.fetchAlerts();
     props.fetchClusterStatus();
@@ -87,15 +87,17 @@ const CusterStatus = props => {
 
   return (
     <PageContainer>
-      <PageTitle>Cluster Monitoring</PageTitle>
+      <PageTitle>{props.intl.messages.cluster_monitoring}</PageTitle>
       <ClusterStatusTitleContainer>
-        <PageSubtitle>Cluster Status : </PageSubtitle>
+        <PageSubtitle>{props.intl.messages.cluster_status + ' :'}</PageSubtitle>
         <ClusterStatusValue isUp={isUp}>
-          {isUp ? 'Everything is up and running' : 'DOWN'}
+          {isUp
+            ? props.intl.messages.cluster_up_and_running
+            : props.intl.messages.down}
         </ClusterStatusValue>
       </ClusterStatusTitleContainer>
 
-      <PageSubtitle>Alerts List:</PageSubtitle>
+      <PageSubtitle>{props.intl.messages.alert_list + ' :'}</PageSubtitle>
       <TableContainer>
         <Table list={data} columns={columns} headerHeight={40} rowHeight={40} />
       </TableContainer>
@@ -105,8 +107,8 @@ const CusterStatus = props => {
 
 const mapStateToProps = state => {
   return {
-    alerts: state.app.alerts.list,
-    clusterStatus: state.app.alerts.clusterStatus
+    alerts: state.app.monitoring.alertList,
+    clusterStatus: state.app.monitoring.clusterStatus
   };
 };
 
@@ -121,5 +123,5 @@ export default injectIntl(
   connect(
     mapStateToProps,
     mapDispatchToProps
-  )(CusterStatus)
+  )(ClusterMonitoring)
 );

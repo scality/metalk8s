@@ -44,7 +44,11 @@
   "node_registered": "Node enregistré",
   "deployment_started": "Deploiement commencé",
   "cluster_status": "Status de la grappe de serveurs",
+  "cluster_monitoring": "Surveillance de la grappe de serveurs",
   "severity": "Sévérité",
   "message": "Message",
-  "active_at": "Actif à"
+  "active_at": "Actif depuis",
+  "cluster_up_and_running": "Grappe de serveurs opérationnelle",
+  "down": "H.S",
+  "alert_list": "Liste d'alerte"
 }

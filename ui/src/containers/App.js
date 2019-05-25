@@ -39,8 +39,8 @@ class App extends Component {
         </Switch>
       </IntlProvider>
     ) : (
-        <Loader />
-      );
+      <Loader />
+    );
   }
 }
 

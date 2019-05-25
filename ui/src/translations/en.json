@@ -47,5 +47,8 @@
   "cluster_monitoring": "Cluster Monitoring",
   "severity": "Severity",
   "message": "Message",
-  "active_at": "Active Since"
+  "active_at": "Active Since",
+  "cluster_up_and_running": "Everything is up and running",
+  "down": "Down",
+  "alert_list": "Alert List"
 }
