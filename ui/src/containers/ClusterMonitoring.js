@@ -10,7 +10,7 @@ import {
 import styled from 'styled-components';
 
 import { Table } from 'core-ui';
-import { brand, padding } from 'core-ui/dist/style/theme';
+import { padding } from 'core-ui/dist/style/theme';
 
 const PageContainer = styled.div`
   display: flex;
@@ -39,7 +39,8 @@ const ClusterStatusTitleContainer = styled.div`
 const ClusterStatusValue = styled.span`
   margin-left: ${padding.small};
   font-weight: bold;
-  color: ${props => (props.isUp ? brand.success : brand.danger)};
+  color: ${props =>
+    props.isUp ? props.theme.brand.success : props.theme.brand.danger};
 `;
 
 const ClusterMonitoring = props => {
@@ -117,7 +118,7 @@ const ClusterMonitoring = props => {
 
   const sortedAlerts = sortAlerts(alerts, sortBy, sortDirection);
 
-  const isUp = props.clusterStatus && props.clusterStatus.length === 0;
+  const isUp = props.clusterStatus && props.clusterStatus.length;
 
   return (
     <PageContainer>

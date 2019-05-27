@@ -7,7 +7,6 @@ import login from './login';
 import layout from './app/layout';
 import notifications from './app/notifications';
 import salt from './app/salt';
-import alerts from './app/alerts';
 import monitoring from './app/monitoring';
 
 const rootReducer = combineReducers({
@@ -19,7 +18,6 @@ const rootReducer = combineReducers({
     pods,
     notifications,
     salt,
-    alerts,
     monitoring
   })
 });
