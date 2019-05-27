@@ -5,6 +5,10 @@
 "{{ metalk8s.endpoints['repositories'].ip }}:{{ metalk8s.endpoints['repositories'].ports.http }}/{{ saltenv }}/{{ name }}:{{ tag }}"
 {%- endmacro -%}
 
+{%- macro build_image_repo(name) -%}
+{{ metalk8s.endpoints['repositories'].ip }}:{{ metalk8s.endpoints['repositories'].ports.http }}/{{ saltenv }}/{{ name }}
+{%- endmacro -%}
+
 {%- macro kubernetes_image(component) -%}
 {{ build_image_name(component, kubernetes.version) }}
 {%- endmacro -%}
