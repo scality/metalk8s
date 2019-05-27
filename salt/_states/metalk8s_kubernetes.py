@@ -1761,6 +1761,7 @@ def apiservice_present(
             name=name,
             metadata=metadata,
             spec=spec,
+            old_api_service=api_service,
             **kwargs)
 
         if res is None:
