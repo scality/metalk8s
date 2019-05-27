@@ -33,7 +33,7 @@ def fixup_doc(doc):
 
 def fixup_metadata(doc):
     if 'metadata' in doc and 'namespace' not in doc['metadata']:
-        doc['metadata']['namespace'] = 'metallb-system'
+        doc['metadata']['namespace'] = 'nginx-ingress-system'
 
     return doc
 

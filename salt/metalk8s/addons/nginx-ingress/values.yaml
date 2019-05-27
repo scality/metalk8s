@@ -1,0 +1,28 @@
+controller:
+  image:
+    repository: '{{ build_image_repo("nginx-ingress-controller") }}'
+
+  publishService:
+    enabled: true
+
+  tolerations:
+    - key: node-role.kubernetes.io/infra
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/bootstrap
+      effect: NoSchedule
+
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''
+
+defaultBackend:
+  image:
+    repository: '{{ build_image_repo("nginx-ingress-defaultbackend-amd64") }}'
+
+  tolerations:
+    - key: node-role.kubernetes.io/infra
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/bootstrap
+      effect: NoSchedule
+
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''

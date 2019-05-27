@@ -249,6 +249,41 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
+    targets.RemoteImage(
+        registry=constants.METALLB_REGISTRY,
+        remote_name='controller',
+        name='metallb-controller',
+        version='v0.7.3',
+        digest='sha256:642e212a6e503609e69ac1728c9199b9833c3216b7ea0dcb0d78e7679b65b703',
+        destination=constants.ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.METALLB_REGISTRY,
+        remote_name='speaker',
+        name='metallb-speaker',
+        version='v0.7.3',
+        digest='sha256:dc13f9c56ca0282d7ea545d71a89fd98c2fa76a1e297d08fd2958821508435ed',
+        destination=constants.ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry='quay.io/kubernetes-ingress-controller',
+        name='nginx-ingress-controller',
+        version='0.24.1',
+        digest='sha256:76861d167e4e3db18f2672fd3435396aaa898ddf4d1128375d7c93b91c59f87f',
+        destination=constants.ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.GOOGLE_REGISTRY,
+        remote_name='defaultbackend-amd64',
+        name='nginx-ingress-defaultbackend-amd64',
+        version='1.5',
+        digest='sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7',
+        destination=constants.ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
 )
 
 

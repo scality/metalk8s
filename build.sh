@@ -5,8 +5,8 @@ cat << EOF
 EOF
 
 helm template \
-        --name metallb \
-        --namespace metallb-system \
-        --values salt/metalk8s/addons/metallb/values.yaml \
-        charts/metallb | \
+        --name nginx-ingress \
+        --namespace nginx-ingress-system \
+        --values salt/metalk8s/addons/nginx-ingress/values.yaml \
+        charts/nginx-ingress | \
         python fix-chart.py metallb-system

@@ -10,3 +10,5 @@ include:
   - metalk8s.addons.monitoring.prometheus.deployed
   - metalk8s.addons.monitoring.kube-state-metrics.deployed
   - metalk8s.addons.monitoring.grafana.deployed
+  - metalk8s.addons.metallb.deployed
+  - metalk8s.addons.nginx-ingress.deployed
