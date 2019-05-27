@@ -22,6 +22,7 @@ DOCKER_REGISTRY : str = 'docker.io/library'
 COREOS_REGISTRY : str = 'quay.io/coreos'
 PROMETHEUS_REGISTRY : str = 'quay.io/prometheus'
 GRAFANA_REGISTRY : str = 'docker.io/grafana'
+METALLB_REGISTRY : str = 'docker.io/metallb'
 
 # Paths {{{
 

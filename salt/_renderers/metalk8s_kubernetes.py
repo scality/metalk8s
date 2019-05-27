@@ -167,6 +167,7 @@ def _handle_rbac_v1beta1_rolebinding(obj, kubeconfig, context):
 
 
 @handle('extensions/v1beta1', 'DaemonSet')
+@handle('apps/v1beta2', 'DaemonSet')
 def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.daemonset_present': [

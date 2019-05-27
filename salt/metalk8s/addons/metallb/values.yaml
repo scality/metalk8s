@@ -1,0 +1,33 @@
+psp:
+  create: false
+
+prometheus:
+  scrapeAnnotations: true
+
+controller:
+  image:
+    repository: '{{ build_image_repo("metallb-controller") }}'
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''
+  tolerations:
+    - key: node-role.kubernetes.io/bootstrap
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/infra
+      effect: NoSchedule
+  resources:
+    limits:
+      cpu: 100m
+      memory: 100Mi
+
+speaker:
+  image:
+    repository: '{{ build_image_repo("metallb-speaker") }}'
+  tolerations:
+    - key: node-role.kubernetes.io/bootstrap
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/infra
+      effect: NoSchedule
+  resources:
+    limits:
+      cpu: 100m
+      memory: 100Mi
