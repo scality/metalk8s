@@ -63,6 +63,12 @@ MetalK8s does not handle the monitoring of a Solution application, which means:
 - Operators should create ``Service`` and ``ServiceMonitor`` objects for each
   deployed component they own
 
+The `Prometheus Operator`_ deployed by MetalK8s has cluster-scoped permissions,
+and is able to read the aforementioned ``ServiceMonitor`` objects
+to set up monitoring of your application services.
+
+.. _`Prometheus Operator`: https://github.com/coreos/prometheus-operator
+
 .. _solution-operator-recommendations:
 
 Recommendations

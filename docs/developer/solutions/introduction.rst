@@ -92,16 +92,19 @@ Solution
 - Handle monitoring of its own services (both Operator and application, except
   the UI)
 
-**MAY**:
+**SHOULD**:
 
 - Use MetalK8s monitoring services (Prometheus and Grafana)
 
 .. note::
 
-   Solutions can leverage the ``prometheus-operator`` CRs for setting up the
-   monitoring of their components.
+   Solutions can leverage the `Prometheus Operator`_ CRs for setting up the
+   monitoring of their components. For more information, see
+   :doc:`/developer/architecture/monitoring` and :doc:`./operator`.
 
 .. todo:: Define how Solutions can deploy Grafana dashboards.
+
+.. _`Prometheus Operator`: https://github.com/coreos/prometheus-operator
 
 Interaction diagrams
 --------------------
