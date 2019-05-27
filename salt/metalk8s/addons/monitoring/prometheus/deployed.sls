@@ -3,7 +3,7 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.29.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
 #     -name "prometheus-*.yaml") > deployed.sls
@@ -272,6 +272,13 @@ spec:
           node_namespace_pod:kube_pod_info:)
       record: node:node_cpu_utilisation:avg1m
     - expr: |
+        node:node_cpu_utilisation:avg1m
+          *
+        node:node_num_cpu:sum
+          /
+        scalar(sum(node:node_num_cpu:sum))
+      record: node:cluster_cpu_utilisation:ratio
+    - expr: |
         sum(node_load1{job="node-exporter"})
         /
         sum(node:node_num_cpu:sum)
@@ -314,8 +321,13 @@ spec:
     - expr: |
         (node:node_memory_bytes_total:sum - node:node_memory_bytes_available:sum)
         /
-        scalar(sum(node:node_memory_bytes_total:sum))
+        node:node_memory_bytes_total:sum
       record: node:node_memory_utilisation:ratio
+    - expr: |
+        (node:node_memory_bytes_total:sum - node:node_memory_bytes_available:sum)
+        /
+        scalar(sum(node:node_memory_bytes_total:sum))
+      record: node:cluster_memory_utilisation:ratio
     - expr: |
         1e3 * sum(
           (rate(node_vmstat_pgpgin{job="node-exporter"}[1m])
@@ -376,25 +388,25 @@ spec:
         max by (namespace, pod, device) (node_filesystem_avail_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"} / node_filesystem_size_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"})
       record: 'node:node_filesystem_avail:'
     - expr: |
-        sum(irate(node_network_receive_bytes_total{job="node-exporter",device="eth0"}[1m])) +
-        sum(irate(node_network_transmit_bytes_total{job="node-exporter",device="eth0"}[1m]))
+        sum(irate(node_network_receive_bytes_total{job="node-exporter",device!~"veth.+"}[1m])) +
+        sum(irate(node_network_transmit_bytes_total{job="node-exporter",device!~"veth.+"}[1m]))
       record: :node_net_utilisation:sum_irate
     - expr: |
         sum by (node) (
-          (irate(node_network_receive_bytes_total{job="node-exporter",device="eth0"}[1m]) +
-          irate(node_network_transmit_bytes_total{job="node-exporter",device="eth0"}[1m]))
+          (irate(node_network_receive_bytes_total{job="node-exporter",device!~"veth.+"}[1m]) +
+          irate(node_network_transmit_bytes_total{job="node-exporter",device!~"veth.+"}[1m]))
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         )
       record: node:node_net_utilisation:sum_irate
     - expr: |
-        sum(irate(node_network_receive_drop_total{job="node-exporter",device="eth0"}[1m])) +
-        sum(irate(node_network_transmit_drop_total{job="node-exporter",device="eth0"}[1m]))
+        sum(irate(node_network_receive_drop_total{job="node-exporter",device!~"veth.+"}[1m])) +
+        sum(irate(node_network_transmit_drop_total{job="node-exporter",device!~"veth.+"}[1m]))
       record: :node_net_saturation:sum_irate
     - expr: |
         sum by (node) (
-          (irate(node_network_receive_drop_total{job="node-exporter",device="eth0"}[1m]) +
-          irate(node_network_transmit_drop_total{job="node-exporter",device="eth0"}[1m]))
+          (irate(node_network_receive_drop_total{job="node-exporter",device!~"veth.+"}[1m]) +
+          irate(node_network_transmit_drop_total{job="node-exporter",device!~"veth.+"}[1m]))
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         )
@@ -449,7 +461,7 @@ spec:
         message: Alertmanager has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerdown
       expr: |
-        absent(up{job="alertmanager-main"} == 1)
+        absent(up{job="alertmanager-main",namespace="monitoring"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -521,7 +533,7 @@ spec:
         message: Prometheus has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusdown
       expr: |
-        absent(up{job="prometheus-k8s"} == 1)
+        absent(up{job="prometheus-k8s",namespace="monitoring"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -530,7 +542,7 @@ spec:
         message: PrometheusOperator has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatordown
       expr: |
-        absent(up{job="prometheus-operator"} == 1)
+        absent(up{job="prometheus-operator",namespace="monitoring"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -826,11 +838,11 @@ spec:
         severity: warning
     - alert: KubeVersionMismatch
       annotations:
-        message: There are {{ $value }} different versions of Kubernetes components
-          running.
+        message: There are {{ $value }} different semantic versions of Kubernetes
+          components running.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeversionmismatch
       expr: |
-        count(count(kubernetes_build_info{job!="kube-dns"}) by (gitVersion)) > 1
+        count(count by (gitVersion) (label_replace(kubernetes_build_info{job!="kube-dns"},"gitVersion","$1","gitVersion","(v[0-9]*.[0-9]*.[0-9]*).*"))) > 1
       for: 1h
       labels:
         severity: warning
@@ -934,7 +946,7 @@ spec:
         message: The configuration of the instances of the Alertmanager cluster `{{$labels.service}}`
           are out of sync.
       expr: |
-        count_values("config_hash", alertmanager_config_hash{job="alertmanager-main"}) BY (service) / ON(service) GROUP_LEFT() label_replace(prometheus_operator_spec_replicas{job="prometheus-operator",controller="alertmanager"}, "service", "alertmanager-$1", "name", "(.*)") != 1
+        count_values("config_hash", alertmanager_config_hash{job="alertmanager-main",namespace="monitoring"}) BY (service) / ON(service) GROUP_LEFT() label_replace(prometheus_operator_spec_replicas{job="prometheus-operator",namespace="monitoring",controller="alertmanager"}, "service", "alertmanager-$1", "name", "(.*)") != 1
       for: 5m
       labels:
         severity: critical
@@ -943,7 +955,7 @@ spec:
         message: Reloading Alertmanager's configuration has failed for {{ $labels.namespace
           }}/{{ $labels.pod}}.
       expr: |
-        alertmanager_config_last_reload_successful{job="alertmanager-main"} == 0
+        alertmanager_config_last_reload_successful{job="alertmanager-main",namespace="monitoring"} == 0
       for: 10m
       labels:
         severity: warning
@@ -951,9 +963,9 @@ spec:
       annotations:
         message: Alertmanager has not found all other members of the cluster.
       expr: |
-        alertmanager_cluster_members{job="alertmanager-main"}
+        alertmanager_cluster_members{job="alertmanager-main",namespace="monitoring"}
           != on (service) GROUP_LEFT()
-        count by (service) (alertmanager_cluster_members{job="alertmanager-main"})
+        count by (service) (alertmanager_cluster_members{job="alertmanager-main",namespace="monitoring"})
       for: 5m
       labels:
         severity: critical
@@ -966,10 +978,14 @@ spec:
       for: 10m
       labels:
         severity: warning
-    - alert: DeadMansSwitch
+    - alert: Watchdog
       annotations:
-        message: This is a DeadMansSwitch meant to ensure that the entire alerting
-          pipeline is functional.
+        message: |
+          This is an alert meant to ensure that the entire alerting pipeline is functional.
+          This alert is always firing, therefore it should always be firing in Alertmanager
+          and always fire against a receiver. There are integrations with various notification
+          mechanisms that send a notification when this alert is not firing. For example the
+          "DeadMansSnitch" integration in PagerDuty.
       expr: vector(1)
       labels:
         severity: none
@@ -1000,7 +1016,7 @@ spec:
         description: Reloading Prometheus' configuration has failed for {{$labels.namespace}}/{{$labels.pod}}
         summary: Reloading Prometheus' configuration failed
       expr: |
-        prometheus_config_last_reload_successful{job="prometheus-k8s"} == 0
+        prometheus_config_last_reload_successful{job="prometheus-k8s",namespace="monitoring"} == 0
       for: 10m
       labels:
         severity: warning
@@ -1010,7 +1026,7 @@ spec:
           $labels.pod}}
         summary: Prometheus' alert notification queue is running full
       expr: |
-        predict_linear(prometheus_notifications_queue_length{job="prometheus-k8s"}[5m], 60 * 30) > prometheus_notifications_queue_capacity{job="prometheus-k8s"}
+        predict_linear(prometheus_notifications_queue_length{job="prometheus-k8s",namespace="monitoring"}[5m], 60 * 30) > prometheus_notifications_queue_capacity{job="prometheus-k8s",namespace="monitoring"}
       for: 10m
       labels:
         severity: warning
@@ -1020,7 +1036,7 @@ spec:
           $labels.pod}} to Alertmanager {{$labels.Alertmanager}}
         summary: Errors while sending alert from Prometheus
       expr: |
-        rate(prometheus_notifications_errors_total{job="prometheus-k8s"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-k8s"}[5m]) > 0.01
+        rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="monitoring"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0.01
       for: 10m
       labels:
         severity: warning
@@ -1030,7 +1046,7 @@ spec:
           $labels.pod}} to Alertmanager {{$labels.Alertmanager}}
         summary: Errors while sending alerts from Prometheus
       expr: |
-        rate(prometheus_notifications_errors_total{job="prometheus-k8s"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-k8s"}[5m]) > 0.03
+        rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="monitoring"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0.03
       for: 10m
       labels:
         severity: critical
@@ -1040,7 +1056,7 @@ spec:
           to any Alertmanagers
         summary: Prometheus is not connected to any Alertmanagers
       expr: |
-        prometheus_notifications_alertmanagers_discovered{job="prometheus-k8s"} < 1
+        prometheus_notifications_alertmanagers_discovered{job="prometheus-k8s",namespace="monitoring"} < 1
       for: 10m
       labels:
         severity: warning
@@ -1050,7 +1066,7 @@ spec:
           reload failures over the last four hours.'
         summary: Prometheus has issues reloading data blocks from disk
       expr: |
-        increase(prometheus_tsdb_reloads_failures_total{job="prometheus-k8s"}[2h]) > 0
+        increase(prometheus_tsdb_reloads_failures_total{job="prometheus-k8s",namespace="monitoring"}[2h]) > 0
       for: 12h
       labels:
         severity: warning
@@ -1060,7 +1076,7 @@ spec:
           compaction failures over the last four hours.'
         summary: Prometheus has issues compacting sample blocks
       expr: |
-        increase(prometheus_tsdb_compactions_failed_total{job="prometheus-k8s"}[2h]) > 0
+        increase(prometheus_tsdb_compactions_failed_total{job="prometheus-k8s",namespace="monitoring"}[2h]) > 0
       for: 12h
       labels:
         severity: warning
@@ -1070,7 +1086,7 @@ spec:
           log (WAL).'
         summary: Prometheus write-ahead log is corrupted
       expr: |
-        tsdb_wal_corruptions_total{job="prometheus-k8s"} > 0
+        tsdb_wal_corruptions_total{job="prometheus-k8s",namespace="monitoring"} > 0
       for: 4h
       labels:
         severity: warning
@@ -1080,7 +1096,7 @@ spec:
           samples.
         summary: Prometheus isn't ingesting samples
       expr: |
-        rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-k8s"}[5m]) <= 0
+        rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-k8s",namespace="monitoring"}[5m]) <= 0
       for: 10m
       labels:
         severity: warning
@@ -1090,7 +1106,7 @@ spec:
           due to duplicate timestamps but different values'
         summary: Prometheus has many samples rejected
       expr: |
-        increase(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-k8s"}[5m]) > 0
+        increase(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0
       for: 10m
       labels:
         severity: warning
@@ -1101,7 +1117,7 @@ spec:
         message: Errors while reconciling {{ $labels.controller }} in {{ $labels.namespace
           }} Namespace.
       expr: |
-        rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator"}[5m]) > 0.1
+        rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator",namespace="monitoring"}[5m]) > 0.1
       for: 10m
       labels:
         severity: warning
@@ -1109,7 +1125,7 @@ spec:
       annotations:
         message: Errors while reconciling Prometheus in {{ $labels.namespace }} Namespace.
       expr: |
-        rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator"}[5m]) > 0.1
+        rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator",namespace="monitoring"}[5m]) > 0.1
       for: 10m
       labels:
         severity: warning
@@ -1470,6 +1486,16 @@ spec:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     honorLabels: true
     interval: 30s
+    metricRelabelings:
+    - action: drop
+      regex: container_([a-z_]+);
+      sourceLabels:
+      - __name__
+      - image
+    - action: drop
+      regex: container_(network_tcp_usage_total|network_udp_usage_total|tasks_state|cpu_load_average_10s)
+      sourceLabels:
+      - __name__
     path: /metrics/cadvisor
     port: https-metrics
     scheme: https
@@ -1497,6 +1523,14 @@ spec:
     metricRelabelings:
     - action: drop
       regex: etcd_(debugging|disk|request|server).*
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: apiserver_admission_controller_admission_latencies_seconds_.*
+      sourceLabels:
+      - __name__
+    - action: drop
+      regex: apiserver_admission_step_admission_latencies_seconds_.*
       sourceLabels:
       - __name__
     port: https
@@ -1531,39 +1565,3 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-scheduler
----
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: kube-system
-  name: kube-scheduler-prometheus-discovery
-  labels:
-    k8s-app: kube-scheduler
-spec:
-  selector:
-    component: kube-scheduler
-  type: ClusterIP
-  clusterIP: None
-  ports:
-  - name: http-metrics
-    port: 10251
-    targetPort: 10251
-    protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: kube-system
-  name: kube-controller-manager-prometheus-discovery
-  labels:
-    k8s-app: kube-controller-manager
-spec:
-  selector:
-    component: kube-controller-manager
-  type: ClusterIP
-  clusterIP: None
-  ports:
-  - name: http-metrics
-    port: 10252
-    targetPort: 10252
-    protocol: TCP

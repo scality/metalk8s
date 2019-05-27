@@ -3,7 +3,7 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.28.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.29.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
 #     -name "grafana-*.yaml") > deployed.sls
@@ -28,7 +28,7 @@ spec:
         app: grafana
     spec:
       containers:
-      - image: {{ build_image_name('grafana', '5.2.4') }}
+      - image: {{ build_image_name('grafana', '6.0.0') }}
         name: grafana
         ports:
         - containerPort: 3000
@@ -158,7 +158,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -187,7 +187,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "node:node_cpu_utilisation:avg1m * node:node_num_cpu:sum / scalar(sum(node:node_num_cpu:sum))",
+                                  "expr": "node:cluster_cpu_utilisation:ratio",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{node}}",
@@ -244,7 +244,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -342,7 +342,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -371,7 +371,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "node:node_memory_utilisation:ratio",
+                                  "expr": "node:cluster_memory_utilisation:ratio",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{node}}",
@@ -428,7 +428,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -526,7 +526,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 4,
+                          "id": 5,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -612,7 +612,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 5,
+                          "id": 6,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -710,7 +710,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 6,
+                          "id": 7,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -796,7 +796,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 7,
+                          "id": 8,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -894,7 +894,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 8,
+                          "id": 9,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -983,7 +983,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -1035,7 +1035,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / USE Method / Cluster",
+          "title": "Kubernetes / USE Method / Cluster",
           "uid": "a6e7d1362e1ddbb79db21d5bb40d7137",
           "version": 0
       }
@@ -1074,7 +1074,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1160,7 +1160,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1258,7 +1258,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1344,7 +1344,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1442,7 +1442,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 4,
+                          "id": 5,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1528,7 +1528,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 5,
+                          "id": 6,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1626,7 +1626,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 6,
+                          "id": 7,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1712,7 +1712,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 7,
+                          "id": 8,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1810,7 +1810,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 8,
+                          "id": 9,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1899,7 +1899,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -1978,7 +1978,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / USE Method / Node",
+          "title": "Kubernetes / USE Method / Node",
           "uid": "4ac4f123aae0ff6dbaf4f4f66120033b",
           "version": 0
       }
@@ -2018,7 +2018,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2102,7 +2102,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2186,7 +2186,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2270,7 +2270,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2354,7 +2354,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 4,
+                          "id": 5,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2438,7 +2438,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 5,
+                          "id": 6,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2533,7 +2533,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 6,
+                          "id": 7,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2631,7 +2631,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 7,
+                          "id": 8,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2898,7 +2898,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 8,
+                          "id": 9,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2996,7 +2996,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 9,
+                          "id": 10,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3254,7 +3254,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -3306,7 +3306,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / Compute Resources / Cluster",
+          "title": "Kubernetes / Compute Resources / Cluster",
           "uid": "efa86fd1d0c121a26444b636a3f509a8",
           "version": 0
       }
@@ -3345,7 +3345,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3443,7 +3443,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3710,7 +3710,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3808,7 +3808,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4066,7 +4066,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -4145,7 +4145,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / Compute Resources / Namespace",
+          "title": "Kubernetes / Compute Resources / Namespace",
           "uid": "85a562078cdf77779eaa1add43ccec1e",
           "version": 0
       }
@@ -4184,7 +4184,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4282,7 +4282,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4549,7 +4549,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4647,7 +4647,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4905,7 +4905,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -5011,7 +5011,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / Compute Resources / Pod",
+          "title": "Kubernetes / Compute Resources / Pod",
           "uid": "6581e46e4e5c7ba40a07646395ef7b23",
           "version": 0
       }
@@ -6251,7 +6251,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -6329,7 +6329,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "Nodes",
+          "title": "Kubernetes / Nodes",
           "uid": "fa49a4706d07a042595b664c87fb33ea",
           "version": 0
       }
@@ -6574,7 +6574,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -6678,7 +6678,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "Persistent Volumes",
+          "title": "Kubernetes / Persistent Volumes",
           "uid": "919b92a8e8041bd567af9edab12c840c",
           "version": 0
       }
@@ -7038,7 +7038,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -7168,7 +7168,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "Pods",
+          "title": "Kubernetes / Pods",
           "uid": "ab4f13a9892a76a4d21ce8c2445bf4ea",
           "version": 0
       }
@@ -7927,7 +7927,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -8031,7 +8031,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "StatefulSets",
+          "title": "Kubernetes / StatefulSets",
           "uid": "a31c1f46e6f727cb37c0d731a7245005",
           "version": 0
       }

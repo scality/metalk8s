@@ -3,7 +3,7 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.28.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.29.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
 #     -name "kube-state-metrics-*.yaml") > deployed.sls
@@ -270,7 +270,7 @@ spec:
         - --extra-cpu=2m
         - --memory=150Mi
         - --extra-memory=30Mi
-        - --threshold=5
+        - --acceptance-offset=5
         - --deployment=kube-state-metrics
         env:
         - name: MY_POD_NAME
@@ -283,7 +283,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: {{ build_image_name('addon-resizer', '1.0') }}
+        image: {{ build_image_name('addon-resizer-amd64', '2.1') }}
         name: addon-resizer
         resources:
           limits:

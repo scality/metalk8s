@@ -3,7 +3,7 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.28.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.29.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
 #     -name "alertmanager-*.yaml") > deployed.sls
