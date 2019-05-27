@@ -6,7 +6,9 @@ import { Table } from 'core-ui';
 import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import styled from 'styled-components';
+
 import { fetchPodsAction } from '../ducks/app/pods';
+import { fetchNodesAction } from '../ducks/app/nodes';
 
 import { fontWeight, fontSize, padding } from 'core-ui/dist/style/theme';
 
@@ -83,6 +85,7 @@ class NodeInformation extends React.Component {
   }
 
   componentDidMount() {
+    this.props.fetchNodes();
     this.props.fetchPods();
   }
 
@@ -148,7 +151,8 @@ const mapStateToProps = (state, ownProps) => ({
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchPods: () => dispatch(fetchPodsAction())
+    fetchPods: () => dispatch(fetchPodsAction()),
+    fetchNodes: () => dispatch(fetchNodesAction())
   };
 };
 

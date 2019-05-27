@@ -1,6 +1,9 @@
 import { call, takeEvery, put, select } from 'redux-saga/effects';
-import * as Api from '../services/api';
+import * as ApiK8s from '../services/k8s/api';
+import * as ApiSalt from '../services/salt/api';
+
 import history from '../history';
+import { connectSaltApiAction } from './app/nodes';
 
 // Actions
 const AUTHENTICATE = 'AUTHENTICATE';
@@ -86,7 +89,7 @@ export function* authenticate({ payload }) {
   const token = btoa(username + ':' + password); //base64Encode
   const api_server = yield select(state => state.config.api);
 
-  const result = yield call(Api.authenticate, token, api_server);
+  const result = yield call(ApiK8s.authenticate, token, api_server);
   if (result.error) {
     yield put({
       type: AUTHENTICATION_FAILED,
@@ -101,18 +104,26 @@ export function* authenticate({ payload }) {
         token
       })
     );
-    yield call(authenticateSaltApi);
+    yield call(authenticateSaltApi, true);
   }
   yield put(setUserInfoLoadedAction(true));
 }
 
-export function* authenticateSaltApi() {
+export function* authenticateSaltApi(redirect) {
   const api = yield select(state => state.config.api);
   const user = yield select(state => state.login.user);
-  const result = yield call(Api.authenticateSaltApi, api.url_salt, user);
+  const result = yield call(ApiSalt.authenticate, api.url_salt, user);
   if (!result.error) {
     yield put(setSaltAuthenticationSuccessAction(result));
-    yield call(history.push, '/');
+    yield put(
+      connectSaltApiAction({
+        url: api.url_salt,
+        token: result.data.return[0].token
+      })
+    );
+    if (redirect) {
+      yield call(history.push, '/');
+    }
   } else {
     yield call(logout);
   }
@@ -127,7 +138,7 @@ export function* fetchUserInfo() {
   const token = localStorage.getItem(HASH_KEY);
   if (token) {
     const api_server = yield select(state => state.config.api);
-    yield call(Api.updateApiServerConfig, api_server.url, token);
+    yield call(ApiK8s.updateApiServerConfig, api_server.url, token);
 
     const decryptedToken = atob(token);
     const splits = decryptedToken.split(':');
