@@ -3,43 +3,40 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.28.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
 #     -name "kube-state-metrics-*.yaml") > deployed.sls
 # In the following, only container image registries have been replaced.
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
 metadata:
+  labels:
+    k8s-app: kube-state-metrics
   name: kube-state-metrics
   namespace: monitoring
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-- apiGroups:
-  - extensions
-  resourceNames:
-  - kube-state-metrics
-  resources:
-  - deployments
-  verbs:
-  - get
-  - update
-- apiGroups:
-  - apps
-  resourceNames:
-  - kube-state-metrics
-  resources:
-  - deployments
-  verbs:
-  - get
-  - update
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    honorLabels: true
+    interval: 30s
+    port: https-main
+    scheme: https
+    scrapeTimeout: 30s
+    tlsConfig:
+      insecureSkipVerify: true
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    interval: 30s
+    port: https-self
+    scheme: https
+    tlsConfig:
+      insecureSkipVerify: true
+  jobLabel: k8s-app
+  selector:
+    matchLabels:
+      k8s-app: kube-state-metrics
 ---
 apiVersion: v1
 kind: Service
@@ -59,32 +56,6 @@ spec:
     targetPort: https-self
   selector:
     app: kube-state-metrics
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: kube-state-metrics
-  namespace: monitoring
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: kube-state-metrics
-subjects:
-- kind: ServiceAccount
-  name: kube-state-metrics
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kube-state-metrics
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: kube-state-metrics
-subjects:
-- kind: ServiceAccount
-  name: kube-state-metrics
-  namespace: monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -155,6 +126,70 @@ rules:
   - subjectaccessreviews
   verbs:
   - create
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  verbs:
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-state-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kube-state-metrics
+subjects:
+- kind: ServiceAccount
+  name: kube-state-metrics
+  namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kube-state-metrics
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kube-state-metrics
+subjects:
+- kind: ServiceAccount
+  name: kube-state-metrics
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kube-state-metrics
+  namespace: monitoring
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - extensions
+  resourceNames:
+  - kube-state-metrics
+  resources:
+  - deployments
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - apps
+  resourceNames:
+  - kube-state-metrics
+  resources:
+  - deployments
+  verbs:
+  - get
+  - update
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -181,9 +216,11 @@ spec:
     spec:
       containers:
       - args:
+        - --logtostderr
         - --secure-listen-address=:8443
+        - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
         - --upstream=http://127.0.0.1:8081/
-        image: {{ build_image_name('kube-rbac-proxy', 'v0.3.1') }}
+        image: {{ build_image_name('kube-rbac-proxy', 'v0.4.1') }}
         name: kube-rbac-proxy-main
         ports:
         - containerPort: 8443
@@ -196,9 +233,11 @@ spec:
             cpu: 10m
             memory: 20Mi
       - args:
+        - --logtostderr
         - --secure-listen-address=:9443
+        - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
         - --upstream=http://127.0.0.1:8082/
-        image: {{ build_image_name('kube-rbac-proxy', 'v0.3.1') }}
+        image: {{ build_image_name('kube-rbac-proxy', 'v0.4.1') }}
         name: kube-rbac-proxy-self
         ports:
         - containerPort: 9443
@@ -215,7 +254,7 @@ spec:
         - --port=8081
         - --telemetry-host=127.0.0.1
         - --telemetry-port=8082
-        image: {{ build_image_name('kube-state-metrics', 'v1.3.1') }}
+        image: {{ build_image_name('kube-state-metrics', 'v1.5.0') }}
         name: kube-state-metrics
         resources:
           limits:
@@ -248,7 +287,7 @@ spec:
         name: addon-resizer
         resources:
           limits:
-            cpu: 10m
+            cpu: 50m
             memory: 30Mi
           requests:
             cpu: 10m
@@ -259,31 +298,3 @@ spec:
         runAsNonRoot: true
         runAsUser: 65534
       serviceAccountName: kube-state-metrics
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    k8s-app: kube-state-metrics
-  name: kube-state-metrics
-  namespace: monitoring
-spec:
-  endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    honorLabels: true
-    interval: 30s
-    port: https-main
-    scheme: https
-    scrapeTimeout: 30s
-    tlsConfig:
-      insecureSkipVerify: true
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    interval: 30s
-    port: https-self
-    scheme: https
-    tlsConfig:
-      insecureSkipVerify: true
-  jobLabel: k8s-app
-  selector:
-    matchLabels:
-      k8s-app: kube-state-metrics

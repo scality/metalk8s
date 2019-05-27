@@ -11,59 +11,82 @@
 
 ---
 apiVersion: v1
-kind: ServiceAccount
+data:
+  config.yaml: |
+    resourceRules:
+      cpu:
+        containerQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>}[1m])) by (<<.GroupBy>>)
+        nodeQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>, id='/'}[1m])) by (<<.GroupBy>>)
+        resources:
+          overrides:
+            node:
+              resource: node
+            namespace:
+              resource: namespace
+            pod_name:
+              resource: pod
+        containerLabel: container_name
+      memory:
+        containerQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+        nodeQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>,id='/'}) by (<<.GroupBy>>)
+        resources:
+          overrides:
+            node:
+              resource: node
+            namespace:
+              resource: namespace
+            pod_name:
+              resource: pod
+        containerLabel: container_name
+      window: 1m
+kind: ConfigMap
 metadata:
-  name: prometheus-k8s
+  name: adapter-config
   namespace: monitoring
+---
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1beta1.metrics.k8s.io
+spec:
+  group: metrics.k8s.io
+  groupPriorityMinimum: 100
+  insecureSkipTLSVerify: true
+  service:
+    name: prometheus-adapter
+    namespace: monitoring
+  version: v1beta1
+  versionPriority: 100
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRole
 metadata:
-  name: prometheus-k8s-config
-  namespace: monitoring
+  name: prometheus-adapter
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - namespaces
+  - pods
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: resource-metrics:system:auth-delegator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: prometheus-k8s-config
+  kind: ClusterRole
+  name: system:auth-delegator
 subjects:
 - kind: ServiceAccount
-  name: prometheus-k8s
+  name: prometheus-adapter
   namespace: monitoring
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    prometheus: k8s
-  name: prometheus-k8s
-  namespace: monitoring
-spec:
-  ports:
-  - name: web
-    port: 9090
-    targetPort: web
-  selector:
-    app: prometheus
-    prometheus: k8s
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    k8s-app: kube-scheduler
-  name: kube-scheduler
-  namespace: monitoring
-spec:
-  endpoints:
-  - interval: 30s
-    port: http-metrics
-  jobLabel: k8s-app
-  namespaceSelector:
-    matchNames:
-    - kube-system
-  selector:
-    matchLabels:
-      k8s-app: kube-scheduler
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -92,78 +115,6 @@ subjects:
 - kind: ServiceAccount
   name: prometheus-k8s
   namespace: monitoring
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    k8s-app: apiserver
-  name: kube-apiserver
-  namespace: monitoring
-spec:
-  endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    interval: 30s
-    metricRelabelings:
-    - action: drop
-      regex: etcd_(debugging|disk|request|server).*
-      sourceLabels:
-      - __name__
-    port: https
-    scheme: https
-    tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      serverName: kubernetes
-  jobLabel: component
-  namespaceSelector:
-    matchNames:
-    - default
-  selector:
-    matchLabels:
-      component: apiserver
-      provider: kubernetes
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: prometheus-k8s-config
-  namespace: monitoring
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
----
-apiVersion: monitoring.coreos.com/v1
-kind: Prometheus
-metadata:
-  labels:
-    prometheus: k8s
-  name: k8s
-  namespace: monitoring
-spec:
-  alerting:
-    alertmanagers:
-    - name: alertmanager-main
-      namespace: monitoring
-      port: web
-  baseImage: {{ build_image_name('prometheus') }}
-  nodeSelector:
-    beta.kubernetes.io/os: linux
-  replicas: 2
-  resources:
-    requests:
-      memory: 400Mi
-  ruleSelector:
-    matchLabels:
-      prometheus: k8s
-      role: alert-rules
-  serviceAccountName: prometheus-k8s
-  serviceMonitorNamespaceSelector: {}
-  serviceMonitorSelector: {}
-  version: v2.4.3
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -306,17 +257,17 @@ spec:
       record: 'node_namespace_pod:kube_pod_info:'
     - expr: |
         count by (node) (sum by (node, cpu) (
-          node_cpu{job="node-exporter"}
+          node_cpu_seconds_total{job="node-exporter"}
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         ))
       record: node:node_num_cpu:sum
     - expr: |
-        1 - avg(rate(node_cpu{job="node-exporter",mode="idle"}[1m]))
+        1 - avg(rate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[1m]))
       record: :node_cpu_utilisation:avg1m
     - expr: |
         1 - avg by (node) (
-          rate(node_cpu{job="node-exporter",mode="idle"}[1m])
+          rate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[1m])
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:)
       record: node:node_cpu_utilisation:avg1m
@@ -336,26 +287,26 @@ spec:
       record: 'node:node_cpu_saturation_load1:'
     - expr: |
         1 -
-        sum(node_memory_MemFree{job="node-exporter"} + node_memory_Cached{job="node-exporter"} + node_memory_Buffers{job="node-exporter"})
+        sum(node_memory_MemFree_bytes{job="node-exporter"} + node_memory_Cached_bytes{job="node-exporter"} + node_memory_Buffers_bytes{job="node-exporter"})
         /
-        sum(node_memory_MemTotal{job="node-exporter"})
+        sum(node_memory_MemTotal_bytes{job="node-exporter"})
       record: ':node_memory_utilisation:'
     - expr: |
-        sum(node_memory_MemFree{job="node-exporter"} + node_memory_Cached{job="node-exporter"} + node_memory_Buffers{job="node-exporter"})
-      record: :node_memory_MemFreeCachedBuffers:sum
+        sum(node_memory_MemFree_bytes{job="node-exporter"} + node_memory_Cached_bytes{job="node-exporter"} + node_memory_Buffers_bytes{job="node-exporter"})
+      record: :node_memory_MemFreeCachedBuffers_bytes:sum
     - expr: |
-        sum(node_memory_MemTotal{job="node-exporter"})
-      record: :node_memory_MemTotal:sum
+        sum(node_memory_MemTotal_bytes{job="node-exporter"})
+      record: :node_memory_MemTotal_bytes:sum
     - expr: |
         sum by (node) (
-          (node_memory_MemFree{job="node-exporter"} + node_memory_Cached{job="node-exporter"} + node_memory_Buffers{job="node-exporter"})
+          (node_memory_MemFree_bytes{job="node-exporter"} + node_memory_Cached_bytes{job="node-exporter"} + node_memory_Buffers_bytes{job="node-exporter"})
           * on (namespace, pod) group_left(node)
             node_namespace_pod:kube_pod_info:
         )
       record: node:node_memory_bytes_available:sum
     - expr: |
         sum by (node) (
-          node_memory_MemTotal{job="node-exporter"}
+          node_memory_MemTotal_bytes{job="node-exporter"}
           * on (namespace, pod) group_left(node)
             node_namespace_pod:kube_pod_info:
         )
@@ -374,13 +325,13 @@ spec:
     - expr: |
         1 -
         sum by (node) (
-          (node_memory_MemFree{job="node-exporter"} + node_memory_Cached{job="node-exporter"} + node_memory_Buffers{job="node-exporter"})
+          (node_memory_MemFree_bytes{job="node-exporter"} + node_memory_Cached_bytes{job="node-exporter"} + node_memory_Buffers_bytes{job="node-exporter"})
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         )
         /
         sum by (node) (
-          node_memory_MemTotal{job="node-exporter"}
+          node_memory_MemTotal_bytes{job="node-exporter"}
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         )
@@ -397,270 +348,100 @@ spec:
         )
       record: node:node_memory_swap_io_bytes:sum_rate
     - expr: |
-        avg(irate(node_disk_io_time_ms{job="node-exporter",device=~"(sd|xvd|nvme).+"}[1m]) / 1e3)
+        avg(irate(node_disk_io_time_seconds_total{job="node-exporter",device=~"nvme.+|rbd.+|sd.+|vd.+|xvd.+"}[1m]))
       record: :node_disk_utilisation:avg_irate
     - expr: |
         avg by (node) (
-          irate(node_disk_io_time_ms{job="node-exporter",device=~"(sd|xvd|nvme).+"}[1m]) / 1e3
+          irate(node_disk_io_time_seconds_total{job="node-exporter",device=~"nvme.+|rbd.+|sd.+|vd.+|xvd.+"}[1m])
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         )
       record: node:node_disk_utilisation:avg_irate
     - expr: |
-        avg(irate(node_disk_io_time_weighted{job="node-exporter",device=~"(sd|xvd|nvme).+"}[1m]) / 1e3)
+        avg(irate(node_disk_io_time_weighted_seconds_total{job="node-exporter",device=~"nvme.+|rbd.+|sd.+|vd.+|xvd.+"}[1m]) / 1e3)
       record: :node_disk_saturation:avg_irate
     - expr: |
         avg by (node) (
-          irate(node_disk_io_time_weighted{job="node-exporter",device=~"(sd|xvd|nvme).+"}[1m]) / 1e3
+          irate(node_disk_io_time_weighted_seconds_total{job="node-exporter",device=~"nvme.+|rbd.+|sd.+|vd.+|xvd.+"}[1m]) / 1e3
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         )
       record: node:node_disk_saturation:avg_irate
     - expr: |
-        max by (namespace, pod, device) ((node_filesystem_size{fstype=~"ext[234]|btrfs|xfs|zfs"}
-        - node_filesystem_avail{fstype=~"ext[234]|btrfs|xfs|zfs"})
-        / node_filesystem_size{fstype=~"ext[234]|btrfs|xfs|zfs"})
+        max by (namespace, pod, device) ((node_filesystem_size_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"}
+        - node_filesystem_avail_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"})
+        / node_filesystem_size_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"})
       record: 'node:node_filesystem_usage:'
     - expr: |
-        max by (namespace, pod, device) (node_filesystem_avail{fstype=~"ext[234]|btrfs|xfs|zfs"} / node_filesystem_size{fstype=~"ext[234]|btrfs|xfs|zfs"})
+        max by (namespace, pod, device) (node_filesystem_avail_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"} / node_filesystem_size_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"})
       record: 'node:node_filesystem_avail:'
     - expr: |
-        sum(irate(node_network_receive_bytes{job="node-exporter",device="eth0"}[1m])) +
-        sum(irate(node_network_transmit_bytes{job="node-exporter",device="eth0"}[1m]))
+        sum(irate(node_network_receive_bytes_total{job="node-exporter",device="eth0"}[1m])) +
+        sum(irate(node_network_transmit_bytes_total{job="node-exporter",device="eth0"}[1m]))
       record: :node_net_utilisation:sum_irate
     - expr: |
         sum by (node) (
-          (irate(node_network_receive_bytes{job="node-exporter",device="eth0"}[1m]) +
-          irate(node_network_transmit_bytes{job="node-exporter",device="eth0"}[1m]))
+          (irate(node_network_receive_bytes_total{job="node-exporter",device="eth0"}[1m]) +
+          irate(node_network_transmit_bytes_total{job="node-exporter",device="eth0"}[1m]))
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         )
       record: node:node_net_utilisation:sum_irate
     - expr: |
-        sum(irate(node_network_receive_drop{job="node-exporter",device="eth0"}[1m])) +
-        sum(irate(node_network_transmit_drop{job="node-exporter",device="eth0"}[1m]))
+        sum(irate(node_network_receive_drop_total{job="node-exporter",device="eth0"}[1m])) +
+        sum(irate(node_network_transmit_drop_total{job="node-exporter",device="eth0"}[1m]))
       record: :node_net_saturation:sum_irate
     - expr: |
         sum by (node) (
-          (irate(node_network_receive_drop{job="node-exporter",device="eth0"}[1m]) +
-          irate(node_network_transmit_drop{job="node-exporter",device="eth0"}[1m]))
+          (irate(node_network_receive_drop_total{job="node-exporter",device="eth0"}[1m]) +
+          irate(node_network_transmit_drop_total{job="node-exporter",device="eth0"}[1m]))
         * on (namespace, pod) group_left(node)
           node_namespace_pod:kube_pod_info:
         )
       record: node:node_net_saturation:sum_irate
+    - expr: |
+        max(
+          max(
+            kube_pod_info{job="kube-state-metrics", host_ip!=""}
+          ) by (node, host_ip)
+          * on (host_ip) group_right (node)
+          label_replace(
+            (max(node_filesystem_files{job="node-exporter", mountpoint="/"}) by (instance)), "host_ip", "$1", "instance", "(.*):.*"
+          )
+        ) by (node)
+      record: 'node:node_inodes_total:'
+    - expr: |
+        max(
+          max(
+            kube_pod_info{job="kube-state-metrics", host_ip!=""}
+          ) by (node, host_ip)
+          * on (host_ip) group_right (node)
+          label_replace(
+            (max(node_filesystem_files_free{job="node-exporter", mountpoint="/"}) by (instance)), "host_ip", "$1", "instance", "(.*):.*"
+          )
+        ) by (node)
+      record: 'node:node_inodes_free:'
   - name: kube-prometheus-node-recording.rules
     rules:
-    - expr: sum(rate(node_cpu{mode!="idle",mode!="iowait"}[3m])) BY (instance)
+    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[3m])) BY
+        (instance)
       record: instance:node_cpu:rate:sum
-    - expr: sum((node_filesystem_size{mountpoint="/"} - node_filesystem_free{mountpoint="/"}))
+    - expr: sum((node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}))
         BY (instance)
       record: instance:node_filesystem_usage:sum
-    - expr: sum(rate(node_network_receive_bytes[3m])) BY (instance)
+    - expr: sum(rate(node_network_receive_bytes_total[3m])) BY (instance)
       record: instance:node_network_receive_bytes:rate:sum
-    - expr: sum(rate(node_network_transmit_bytes[3m])) BY (instance)
+    - expr: sum(rate(node_network_transmit_bytes_total[3m])) BY (instance)
       record: instance:node_network_transmit_bytes:rate:sum
-    - expr: sum(rate(node_cpu{mode!="idle",mode!="iowait"}[5m])) WITHOUT (cpu, mode)
-        / ON(instance) GROUP_LEFT() count(sum(node_cpu) BY (instance, cpu)) BY (instance)
+    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[5m])) WITHOUT
+        (cpu, mode) / ON(instance) GROUP_LEFT() count(sum(node_cpu_seconds_total)
+        BY (instance, cpu)) BY (instance)
       record: instance:node_cpu:ratio
-    - expr: sum(rate(node_cpu{mode!="idle",mode!="iowait"}[5m]))
+    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[5m]))
       record: cluster:node_cpu:sum_rate5m
-    - expr: cluster:node_cpu:rate5m / count(sum(node_cpu) BY (instance, cpu))
+    - expr: cluster:node_cpu_seconds_total:rate5m / count(sum(node_cpu_seconds_total)
+        BY (instance, cpu))
       record: cluster:node_cpu:ratio
-  - name: node_exporter-16-bcache
-    rules:
-    - expr: node_bcache_cache_read_races
-      record: node_bcache_cache_read_races_total
-  - name: node_exporter-16-buddyinfo
-    rules:
-    - expr: node_buddyinfo_blocks
-      record: node_buddyinfo_count
-  - name: node_exporter-16-stat
-    rules:
-    - expr: node_boot_time_seconds
-      record: node_boot_time
-    - expr: node_context_switches_total
-      record: node_context_switches
-    - expr: node_forks_total
-      record: node_forks
-    - expr: node_intr_total
-      record: node_intr
-  - name: node_exporter-16-cpu
-    rules:
-    - expr: label_replace(node_cpu_seconds_total, "cpu", "$1", "cpu", "cpu(.+)")
-      record: node_cpu
-  - name: node_exporter-16-diskstats
-    rules:
-    - expr: node_disk_read_bytes_total
-      record: node_disk_bytes_read
-    - expr: node_disk_written_bytes_total
-      record: node_disk_bytes_written
-    - expr: node_disk_io_time_seconds_total * 1000
-      record: node_disk_io_time_ms
-    - expr: node_disk_io_time_weighted_seconds_total
-      record: node_disk_io_time_weighted
-    - expr: node_disk_reads_completed_total
-      record: node_disk_reads_completed
-    - expr: node_disk_reads_merged_total
-      record: node_disk_reads_merged
-    - expr: node_disk_read_time_seconds_total * 1000
-      record: node_disk_read_time_ms
-    - expr: node_disk_writes_completed_total
-      record: node_disk_writes_completed
-    - expr: node_disk_writes_merged_total
-      record: node_disk_writes_merged
-    - expr: node_disk_write_time_seconds_total * 1000
-      record: node_disk_write_time_ms
-  - name: node_exporter-16-filesystem
-    rules:
-    - expr: node_filesystem_free_bytes
-      record: node_filesystem_free
-    - expr: node_filesystem_avail_bytes
-      record: node_filesystem_avail
-    - expr: node_filesystem_size_bytes
-      record: node_filesystem_size
-  - name: node_exporter-16-infiniband
-    rules:
-    - expr: node_infiniband_port_data_received_bytes_total
-      record: node_infiniband_port_data_received_bytes
-    - expr: node_infiniband_port_data_transmitted_bytes_total
-      record: node_infiniband_port_data_transmitted_bytes
-  - name: node_exporter-16-interrupts
-    rules:
-    - expr: node_interrupts_total
-      record: node_interrupts
-  - name: node_exporter-16-memory
-    rules:
-    - expr: node_memory_Active_bytes
-      record: node_memory_Active
-    - expr: node_memory_Active_anon_bytes
-      record: node_memory_Active_anon
-    - expr: node_memory_Active_file_bytes
-      record: node_memory_Active_file
-    - expr: node_memory_AnonHugePages_bytes
-      record: node_memory_AnonHugePages
-    - expr: node_memory_AnonPages_bytes
-      record: node_memory_AnonPages
-    - expr: node_memory_Bounce_bytes
-      record: node_memory_Bounce
-    - expr: node_memory_Buffers_bytes
-      record: node_memory_Buffers
-    - expr: node_memory_Cached_bytes
-      record: node_memory_Cached
-    - expr: node_memory_CommitLimit_bytes
-      record: node_memory_CommitLimit
-    - expr: node_memory_Committed_AS_bytes
-      record: node_memory_Committed_AS
-    - expr: node_memory_DirectMap2M_bytes
-      record: node_memory_DirectMap2M
-    - expr: node_memory_DirectMap4k_bytes
-      record: node_memory_DirectMap4k
-    - expr: node_memory_Dirty_bytes
-      record: node_memory_Dirty
-    - expr: node_memory_HardwareCorrupted_bytes
-      record: node_memory_HardwareCorrupted
-    - expr: node_memory_Hugepagesize_bytes
-      record: node_memory_Hugepagesize
-    - expr: node_memory_Inactive_bytes
-      record: node_memory_Inactive
-    - expr: node_memory_Inactive_anon_bytes
-      record: node_memory_Inactive_anon
-    - expr: node_memory_Inactive_file_bytes
-      record: node_memory_Inactive_file
-    - expr: node_memory_KernelStack_bytes
-      record: node_memory_KernelStack
-    - expr: node_memory_Mapped_bytes
-      record: node_memory_Mapped
-    - expr: node_memory_MemAvailable_bytes
-      record: node_memory_MemAvailable
-    - expr: node_memory_MemFree_bytes
-      record: node_memory_MemFree
-    - expr: node_memory_MemTotal_bytes
-      record: node_memory_MemTotal
-    - expr: node_memory_Mlocked_bytes
-      record: node_memory_Mlocked
-    - expr: node_memory_NFS_Unstable_bytes
-      record: node_memory_NFS_Unstable
-    - expr: node_memory_PageTables_bytes
-      record: node_memory_PageTables
-    - expr: node_memory_Shmem_bytes
-      record: node_memory_Shmem
-    - expr: node_memory_Slab_bytes
-      record: node_memory_Slab
-    - expr: node_memory_SReclaimable_bytes
-      record: node_memory_SReclaimable
-    - expr: node_memory_SUnreclaim_bytes
-      record: node_memory_SUnreclaim
-    - expr: node_memory_SwapCached_bytes
-      record: node_memory_SwapCached
-    - expr: node_memory_SwapFree_bytes
-      record: node_memory_SwapFree
-    - expr: node_memory_SwapTotal_bytes
-      record: node_memory_SwapTotal
-    - expr: node_memory_Unevictable_bytes
-      record: node_memory_Unevictable
-    - expr: node_memory_VmallocChunk_bytes
-      record: node_memory_VmallocChunk
-    - expr: node_memory_VmallocTotal_bytes
-      record: node_memory_VmallocTotal
-    - expr: node_memory_VmallocUsed_bytes
-      record: node_memory_VmallocUsed
-    - expr: node_memory_Writeback_bytes
-      record: node_memory_Writeback
-    - expr: node_memory_WritebackTmp_bytes
-      record: node_memory_WritebackTmp
-  - name: node_exporter-16-network
-    rules:
-    - expr: node_network_receive_bytes_total
-      record: node_network_receive_bytes
-    - expr: node_network_receive_compressed_total
-      record: node_network_receive_compressed
-    - expr: node_network_receive_drop_total
-      record: node_network_receive_drop
-    - expr: node_network_receive_errs_total
-      record: node_network_receive_errs
-    - expr: node_network_receive_fifo_total
-      record: node_network_receive_fifo
-    - expr: node_network_receive_frame_total
-      record: node_network_receive_frame
-    - expr: node_network_receive_multicast_total
-      record: node_network_receive_multicast
-    - expr: node_network_receive_packets_total
-      record: node_network_receive_packets
-    - expr: node_network_transmit_bytes_total
-      record: node_network_transmit_bytes
-    - expr: node_network_transmit_compressed_total
-      record: node_network_transmit_compressed
-    - expr: node_network_transmit_drop_total
-      record: node_network_transmit_drop
-    - expr: node_network_transmit_errs_total
-      record: node_network_transmit_errs
-    - expr: node_network_transmit_fifo_total
-      record: node_network_transmit_fifo
-    - expr: node_network_transmit_frame_total
-      record: node_network_transmit_frame
-    - expr: node_network_transmit_multicast_total
-      record: node_network_transmit_multicast
-    - expr: node_network_transmit_packets_total
-      record: node_network_transmit_packets
-  - name: node_exporter-16-nfs
-    rules:
-    - expr: node_nfs_connections_total
-      record: node_nfs_net_connections
-    - expr: node_nfs_packets_total
-      record: node_nfs_net_reads
-    - expr: label_replace(label_replace(node_nfs_requests_total, "proto", "$1", "version",
-        "(.+)"), "method", "$1", "procedure", "(.+)")
-      record: node_nfs_procedures
-    - expr: node_nfs_rpc_authentication_refreshes_total
-      record: node_nfs_rpc_authentication_refreshes
-    - expr: node_nfs_rpcs_total
-      record: node_nfs_rpc_operations
-    - expr: node_nfs_rpc_retransmissions_total
-      record: node_nfs_rpc_retransmissions
-  - name: node_exporter-16-textfile
-    rules:
-    - expr: node_textfile_mtime_seconds
-      record: node_textfile_mtime
   - name: kubernetes-absent
     rules:
     - alert: AlertmanagerDown
@@ -669,6 +450,15 @@ spec:
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerdown
       expr: |
         absent(up{job="alertmanager-main"} == 1)
+      for: 15m
+      labels:
+        severity: critical
+    - alert: CoreDNSDown
+      annotations:
+        message: CoreDNS has disappeared from Prometheus target discovery.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-corednsdown
+      expr: |
+        absent(up{job="kube-dns"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -872,8 +662,8 @@ spec:
         severity: warning
     - alert: KubeCronJobRunning
       annotations:
-        message: CronJob {{ $labels.namespaces }}/{{ $labels.cronjob }} is taking
-          more than 1h to complete.
+        message: CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is taking more
+          than 1h to complete.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecronjobrunning
       expr: |
         time() - kube_cronjob_next_schedule_time{job="kube-state-metrics"} > 3600
@@ -882,8 +672,8 @@ spec:
         severity: warning
     - alert: KubeJobCompletion
       annotations:
-        message: Job {{ $labels.namespaces }}/{{ $labels.job }} is taking more than
-          one hour to complete.
+        message: Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking more
+          than one hour to complete.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobcompletion
       expr: |
         kube_job_spec_completions{job="kube-state-metrics"} - kube_job_status_succeeded{job="kube-state-metrics"}  > 0
@@ -892,7 +682,7 @@ spec:
         severity: warning
     - alert: KubeJobFailed
       annotations:
-        message: Job {{ $labels.namespaces }}/{{ $labels.job }} failed to complete.
+        message: Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobfailed
       expr: |
         kube_job_status_failed{job="kube-state-metrics"}  > 0
@@ -923,7 +713,7 @@ spec:
       expr: |
         sum(namespace_name:kube_pod_container_resource_requests_memory_bytes:sum)
           /
-        sum(node_memory_MemTotal)
+        sum(node_memory_MemTotal_bytes)
           >
         (count(node:node_num_cpu:sum)-1)
           /
@@ -950,7 +740,7 @@ spec:
       expr: |
         sum(kube_resourcequota{job="kube-state-metrics", type="hard", resource="requests.memory"})
           /
-        sum(node_memory_MemTotal{job="node-exporter"})
+        sum(node_memory_MemTotal_bytes{job="node-exporter"})
           > 1.5
       for: 5m
       labels:
@@ -971,10 +761,11 @@ spec:
     - alert: CPUThrottlingHigh
       annotations:
         message: '{{ printf "%0.0f" $value }}% throttling of CPU in namespace {{ $labels.namespace
-          }} for {{ $labels.container_name }}.'
+          }} for container {{ $labels.container_name }} in pod {{ $labels.pod_name
+          }}.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-cputhrottlinghigh
-      expr: "100 * sum(increase(container_cpu_cfs_throttled_periods_total[5m])) by
-        (container_name, pod_name, namespace) \n  / \nsum(increase(container_cpu_cfs_periods_total[5m]))
+      expr: "100 * sum(increase(container_cpu_cfs_throttled_periods_total{container_name!=\"\",
+        }[5m])) by (container_name, pod_name, namespace)\n  /\nsum(increase(container_cpu_cfs_periods_total{}[5m]))
         by (container_name, pod_name, namespace)\n  > 25 \n"
       for: 15m
       labels:
@@ -984,7 +775,7 @@ spec:
     - alert: KubePersistentVolumeUsageCritical
       annotations:
         message: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim
-          }} in Namespace {{ $labels.namespace }} is only {{ printf "%0.0f" $value
+          }} in Namespace {{ $labels.namespace }} is only {{ printf "%0.2f" $value
           }}% free.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeusagecritical
       expr: |
@@ -999,16 +790,26 @@ spec:
       annotations:
         message: Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim
           }} in Namespace {{ $labels.namespace }} is expected to fill up within four
-          days. Currently {{ $value }} bytes are available.
+          days. Currently {{ printf "%0.2f" $value }}% is available.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefullinfourdays
       expr: |
-        (
-          kubelet_volume_stats_used_bytes{job="kubelet"}
+        100 * (
+          kubelet_volume_stats_available_bytes{job="kubelet"}
             /
           kubelet_volume_stats_capacity_bytes{job="kubelet"}
-        ) > 0.85
+        ) < 15
         and
         predict_linear(kubelet_volume_stats_available_bytes{job="kubelet"}[6h], 4 * 24 * 3600) < 0
+      for: 5m
+      labels:
+        severity: critical
+    - alert: KubePersistentVolumeErrors
+      annotations:
+        message: The persistent volume {{ $labels.persistentvolume }} has status {{
+          $labels.phase }}.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeerrors
+      expr: |
+        kube_persistentvolume_status_phase{phase=~"Failed|Pending",job="kube-state-metrics"} > 0
       for: 5m
       labels:
         severity: critical
@@ -1039,7 +840,7 @@ spec:
           }}' is experiencing {{ printf "%0.0f" $value }}% errors.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclienterrors
       expr: |
-        (sum(rate(rest_client_requests_total{code!~"2..|404"}[5m])) by (instance, job)
+        (sum(rate(rest_client_requests_total{code=~"5.."}[5m])) by (instance, job)
           /
         sum(rate(rest_client_requests_total[5m])) by (instance, job))
         * 100 > 1
@@ -1110,7 +911,8 @@ spec:
         severity: warning
     - alert: KubeClientCertificateExpiration
       annotations:
-        message: Kubernetes API certificate is expiring in less than 7 days.
+        message: A client certificate used to authenticate to the apiserver is expiring
+          in less than 7 days.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
       expr: |
         histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 604800
@@ -1118,7 +920,8 @@ spec:
         severity: warning
     - alert: KubeClientCertificateExpiration
       annotations:
-        message: Kubernetes API certificate is expiring in less than 24 hours.
+        message: A client certificate used to authenticate to the apiserver is expiring
+          in less than 24 hours.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
       expr: |
         histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 86400
@@ -1131,7 +934,7 @@ spec:
         message: The configuration of the instances of the Alertmanager cluster `{{$labels.service}}`
           are out of sync.
       expr: |
-        count_values("config_hash", alertmanager_config_hash{job="alertmanager-main"}) BY (service) / ON(service) GROUP_LEFT() label_replace(prometheus_operator_spec_replicas{job="prometheus-operator"}, "service", "alertmanager-$1", "alertmanager", "(.*)") != 1
+        count_values("config_hash", alertmanager_config_hash{job="alertmanager-main"}) BY (service) / ON(service) GROUP_LEFT() label_replace(prometheus_operator_spec_replicas{job="prometheus-operator",controller="alertmanager"}, "service", "alertmanager-$1", "name", "(.*)") != 1
       for: 5m
       labels:
         severity: critical
@@ -1144,6 +947,16 @@ spec:
       for: 10m
       labels:
         severity: warning
+    - alert: AlertmanagerMembersInconsistent
+      annotations:
+        message: Alertmanager has not found all other members of the cluster.
+      expr: |
+        alertmanager_cluster_members{job="alertmanager-main"}
+          != on (service) GROUP_LEFT()
+        count by (service) (alertmanager_cluster_members{job="alertmanager-main"})
+      for: 5m
+      labels:
+        severity: critical
   - name: general.rules
     rules:
     - alert: TargetDown
@@ -1185,7 +998,7 @@ spec:
     - alert: PrometheusConfigReloadFailed
       annotations:
         description: Reloading Prometheus' configuration has failed for {{$labels.namespace}}/{{$labels.pod}}
-        summary: Reloading Promehteus' configuration failed
+        summary: Reloading Prometheus' configuration failed
       expr: |
         prometheus_config_last_reload_successful{job="prometheus-k8s"} == 0
       for: 10m
@@ -1303,6 +1116,59 @@ spec:
 {%- endraw %}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-adapter
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-adapter
+subjects:
+- kind: ServiceAccount
+  name: prometheus-adapter
+  namespace: monitoring
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus-adapter
+  namespace: monitoring
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  labels:
+    prometheus: k8s
+  name: k8s
+  namespace: monitoring
+spec:
+  alerting:
+    alertmanagers:
+    - name: alertmanager-main
+      namespace: monitoring
+      port: web
+  baseImage: {{ build_image_name('prometheus') }}
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+  replicas: 2
+  resources:
+    requests:
+      memory: 400Mi
+  ruleSelector:
+    matchLabels:
+      prometheus: k8s
+      role: alert-rules
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: prometheus-k8s
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector: {}
+  version: v2.5.0
+---
+apiVersion: rbac.authorization.k8s.io/v1
 items:
 - apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
@@ -1349,13 +1215,17 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    k8s-app: coredns
-  name: coredns
+    k8s-app: kube-controller-manager
+  name: kube-controller-manager
   namespace: monitoring
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    interval: 15s
+  - interval: 30s
+    metricRelabelings:
+    - action: drop
+      regex: etcd_(debugging|disk|request|server).*
+      sourceLabels:
+      - __name__
     port: http-metrics
   jobLabel: k8s-app
   namespaceSelector:
@@ -1363,8 +1233,7 @@ spec:
     - kube-system
   selector:
     matchLabels:
-      component: metrics
-      k8s-app: coredns
+      k8s-app: kube-controller-manager
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 items:
@@ -1377,7 +1246,6 @@ items:
   - apiGroups:
     - ""
     resources:
-    - nodes
     - services
     - endpoints
     - pods
@@ -1394,7 +1262,6 @@ items:
   - apiGroups:
     - ""
     resources:
-    - nodes
     - services
     - endpoints
     - pods
@@ -1411,7 +1278,6 @@ items:
   - apiGroups:
     - ""
     resources:
-    - nodes
     - services
     - endpoints
     - pods
@@ -1420,6 +1286,170 @@ items:
     - list
     - watch
 kind: RoleList
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: prometheus-k8s-config
+  namespace: monitoring
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: resource-metrics-server-resources
+rules:
+- apiGroups:
+  - metrics.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: coredns
+  name: coredns
+  namespace: monitoring
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    interval: 15s
+    port: metrics
+  jobLabel: k8s-app
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus-k8s
+  namespace: monitoring
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: prometheus-adapter
+  name: prometheus-adapter
+  namespace: monitoring
+spec:
+  ports:
+  - name: https
+    port: 443
+    targetPort: 6443
+  selector:
+    name: prometheus-adapter
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: prometheus-adapter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: prometheus-adapter
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        name: prometheus-adapter
+    spec:
+      containers:
+      - args:
+        - --cert-dir=/var/run/serving-cert
+        - --config=/etc/adapter/config.yaml
+        - --logtostderr=true
+        - --metrics-relist-interval=1m
+        - --prometheus-url=http://prometheus-k8s.monitoring.svc:9090/
+        - --secure-port=6443
+        image: {{ build_image_name('k8s-prometheus-adapter-amd64', 'v0.4.1') }}
+        name: prometheus-adapter
+        ports:
+        - containerPort: 6443
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmpfs
+          readOnly: false
+        - mountPath: /var/run/serving-cert
+          name: volume-serving-cert
+          readOnly: false
+        - mountPath: /etc/adapter
+          name: config
+          readOnly: false
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+      serviceAccountName: prometheus-adapter
+      volumes:
+      - emptyDir: {}
+        name: tmpfs
+      - emptyDir: {}
+        name: volume-serving-cert
+      - configMap:
+          name: adapter-config
+        name: config
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: prometheus-k8s-config
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: prometheus-k8s-config
+subjects:
+- kind: ServiceAccount
+  name: prometheus-k8s
+  namespace: monitoring
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    prometheus: k8s
+  name: prometheus-k8s
+  namespace: monitoring
+spec:
+  ports:
+  - name: web
+    port: 9090
+    targetPort: web
+  selector:
+    app: prometheus
+    prometheus: k8s
+  sessionAffinity: ClientIP
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: resource-metrics-auth-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: prometheus-adapter
+  namespace: monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -1457,17 +1487,42 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    k8s-app: kube-controller-manager
-  name: kube-controller-manager
+    k8s-app: apiserver
+  name: kube-apiserver
   namespace: monitoring
 spec:
   endpoints:
-  - interval: 30s
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    interval: 30s
     metricRelabelings:
     - action: drop
       regex: etcd_(debugging|disk|request|server).*
       sourceLabels:
       - __name__
+    port: https
+    scheme: https
+    tlsConfig:
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      serverName: kubernetes
+  jobLabel: component
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      component: apiserver
+      provider: kubernetes
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: kube-scheduler
+  name: kube-scheduler
+  namespace: monitoring
+spec:
+  endpoints:
+  - interval: 30s
     port: http-metrics
   jobLabel: k8s-app
   namespaceSelector:
@@ -1475,7 +1530,7 @@ spec:
     - kube-system
   selector:
     matchLabels:
-      k8s-app: kube-controller-manager
+      k8s-app: kube-scheduler
 ---
 apiVersion: v1
 kind: Service
