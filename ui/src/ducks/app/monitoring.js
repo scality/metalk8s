@@ -1,5 +1,5 @@
 import { put, takeEvery, select, call } from 'redux-saga/effects';
-import { getAlerts, getClusterStatus } from '../../services/api';
+import { getAlerts, getClusterStatus } from '../../services/prometheus/api';
 
 const FETCH_ALERTS = 'FETCH_ALERTS';
 const SET_ALERTS = 'SET_ALERTS';
@@ -41,14 +41,18 @@ export const setClusterStatusAction = payload => {
 
 export function* fetchAlerts() {
   const api = yield select(state => state.config.api);
-  const alerts = yield call(getAlerts, api.url_prometheus);
-  yield put(setAlertsAction(alerts.data.data.alerts));
+  const result = yield call(getAlerts, api.url_prometheus);
+  if (!result.error) {
+    yield put(setAlertsAction(result.data.data.alerts));
+  }
 }
 
 export function* fetchClusterStatus() {
   const api = yield select(state => state.config.api);
-  const clusterStatus = yield call(getClusterStatus, api.url_prometheus);
-  yield put(setClusterStatusAction(clusterStatus.data.data.result));
+  const result = yield call(getClusterStatus, api.url_prometheus);
+  if (!result.error) {
+    yield put(setClusterStatusAction(result.data.data.result));
+  }
 }
 
 export function* monitoringSaga() {
