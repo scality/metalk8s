@@ -62,8 +62,11 @@ Here is the file tree expected by MetalK8s to exist in each Solution archive::
 
    .
    ├── images
-   │   ├── listing.yaml
-   │   └── some_image_name.tar.gz
+   │   └── some_image_name
+   │       └── 1.0.1
+   │           ├── <layer_digest>
+   │           ├── manifest.json
+   │           └── version
    ├── operator
    │   ├── crd
    │   │   └── some_crd_name.yaml
@@ -72,6 +75,7 @@ Here is the file tree expected by MetalK8s to exist in each Solution archive::
    └── ui
        └── deployment.yaml
 
+.. _solution-archive-product-info:
 
 Product information
 -------------------
@@ -100,50 +104,63 @@ should be statically replaced in the generated ``product.txt``)::
 OCI images
 ----------
 
-.. todo::
+MetalK8s exposes container images in the OCI_ format through a static
+read-only registry. This registry is built with nginx_, and relies on having
+a specific layout of image layers to then replicate the necessary parts of the
+Registry API that CRI clients (such as ``containerd`` or ``cri-o``) rely on.
 
-   With `#1049`_, we will have another standard way of serving OCI images with
-   a read-only registry directly exposing the ISO contents.
-   A specific process will be required to package these images, which we need
-   to document here.
+Using skopeo_, you can save images as a directory of layers::
 
-.. _`#1049`: https://github.com/scality/metalk8s/issues/1049
+   $ mkdir images/my_image
+   $ # from your local Docker daemon
+   $ skopeo copy --format v2s2 --dest-compress docker-daemon:my_image:1.0.0 dir:images/my_image/1.0.0
+   $ # from Docker Hub
+   $ skopeo copy --format v2s2 --dest-compress docker://docker.io/example/my_image:1.0.0 dir:images/my_image/1.0.0
 
-MetalK8s exposes container images in the OCI_ format through a registry.
-Solutions should thus provide their container images in a compatible format,
-for example using ``docker save``.
+Your ``images`` directory should now resemble this::
 
-For size concerns, we expect such images to be compressed using ``gzip``.
+   images
+   └── my_image
+       └── 1.0.0
+           ├── 53071b97a88426d4db86d0e8436ac5c869124d2c414caf4c9e4a4e48769c7f37
+           ├── 64f5d945efcc0f39ab11b3cd4ba403cc9fefe1fa3613123ca016cf3708e8cafb
+           ├── manifest.json
+           └── version
 
-Here is an example of how to build, save and compress an image with
-``docker``::
+Once all your images were stored this way, you can de-duplicate layers using
+hardlinks, using the tool hardlink_::
 
-   docker build --tag my-image:1.0.0 --file my_image.dockerfile
-   docker save my-image:1.0.0 -o my_image_1_0.tar
-   gzip -9 my_image_1_0.tar
+   $ hardlink -c images
 
-.. _OCI: https://github.com/opencontainers/image-spec/blob/master/spec.md
+A detailed procedure for generating the expected layout is available at
+`NicolasT/static-container-registry`_. You can use the script provided there
+to generate your own NGINX configuration and test this static registry for
+yourself. MetalK8s will generate its own configuration when importing the
+Solution archive.
+
+Each archive will be exposed as a single repository, where the name will be
+computed as ``<NAME>-<VERSION>`` from :ref:`solution-archive-product-info`.
+
+.. warning::
+
+   Operator Deployments should not rely on this naming pattern for finding
+   the images for their resources. Instead, the full repository prefix will be
+   stored in a ``ConfigMap``, that Deployments will be able to expose as
+   environment variables. See :doc:`./operator` for more details.
+
+The images names and tags will be inferred from the directory names chosen when
+using ``skopeo copy``. Using `hardlink` is highly recommended if one wants to
+define alias tags for a single image.
 
 MetalK8s also defines recommended standards for container images, described in
 :ref:`req-container-images`.
 
-In order for MetalK8s to populate its registry with accurate image tags,
-Solutions must provide a ``listing.yaml`` file under ``/images``, with the
-given format::
-
-   apiVersion: metalk8s.scality.com/v1alpha1
-   kind: ImagesList
-   solution: MySolution
-   images:
-     - archive: my_image_1_0.tar.gz
-       tag: my_image:1.0.0
-
-.. note::
-
-   Each Solution ISO will be made available to Pods as a single repository.
-   Operator Deployments will then be required to accept the repository prefix,
-   stored in a ``ConfigMap``, in order to properly configure the resources they
-   manage.
+.. _OCI: https://github.com/opencontainers/image-spec/blob/master/spec.md
+.. _nginx: https://www.nginx.com
+.. _skopeo: https://github.com/containers/skopeo
+.. _hardlink: http://man7.org/linux/man-pages//man1/hardlink.1.html
+.. _`NicolasT/static-container-registry`:
+   https://github.com/nicolast/static-container-registry
 
 Operator
 --------
