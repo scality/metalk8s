@@ -91,6 +91,13 @@ It must respect the following format (currently version 1, as specified by the
    REQUIRE_METALK8S=">=2.0"
    ARCHIVE_LAYOUT_VERSION=1
 
+.. note::
+
+   If a Solution can require specific versions of MetalK8s on which to be
+   deployed, requiring specific services (and their respective versions) to be
+   shipped with MetalK8s (e.g. Prometheus/Grafana) is not yet feasible.
+   It will probably be handled in the Operator declaration, maybe using a CR.
+
 It is recommended for inspection purposes to include information related to
 the build-time conditions, such as the following (where command invocations
 should be statically replaced in the generated ``product.txt``)::
