@@ -1,13 +1,13 @@
-import { call, put } from 'redux-saga/effects';
+import { call, put, all } from 'redux-saga/effects';
 import { fetchNodes, createNode, SET_NODES, CREATE_NODE_FAILED } from './nodes';
-import * as Api from '../../services/api';
+import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
+import { removeCompletedJobFromLocalStorage } from './nodes.js';
 
 it('update the control plane nodes state when fetchNodes', () => {
   const gen = fetchNodes();
 
-  expect(gen.next().value).toEqual(call(Api.getNodes));
-
+  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
   const result = {
     body: {
       items: [
@@ -74,6 +74,10 @@ it('update the control plane nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
+    all([call(removeCompletedJobFromLocalStorage, 'boostrap')])
+  );
+
+  expect(gen.next(result).value).toEqual(
     put({ type: SET_NODES, payload: nodes })
   );
 });
@@ -81,7 +85,7 @@ it('update the control plane nodes state when fetchNodes', () => {
 it('update the bootstrap nodes state when fetchNodes', () => {
   const gen = fetchNodes();
 
-  expect(gen.next().value).toEqual(call(Api.getNodes));
+  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
 
   const result = {
     body: {
@@ -138,6 +142,10 @@ it('update the bootstrap nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
+    all([call(removeCompletedJobFromLocalStorage, 'boostrap')])
+  );
+
+  expect(gen.next(result).value).toEqual(
     put({ type: SET_NODES, payload: nodes })
   );
 });
@@ -145,7 +153,7 @@ it('update the bootstrap nodes state when fetchNodes', () => {
 it('update the workload plane nodes state when fetchNodes', () => {
   const gen = fetchNodes();
 
-  expect(gen.next().value).toEqual(call(Api.getNodes));
+  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
 
   const result = {
     body: {
@@ -200,6 +208,10 @@ it('update the workload plane nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
+    all([call(removeCompletedJobFromLocalStorage, 'boostrap')])
+  );
+
+  expect(gen.next(result).value).toEqual(
     put({ type: SET_NODES, payload: nodes })
   );
 });
@@ -207,7 +219,7 @@ it('update the workload plane nodes state when fetchNodes', () => {
 it('update the control plane/workload plane nodes state when fetchNodes', () => {
   const gen = fetchNodes();
 
-  expect(gen.next().value).toEqual(call(Api.getNodes));
+  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
 
   const result = {
     body: {
@@ -264,6 +276,10 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
   ];
 
   expect(gen.next(result).value).toEqual(
+    all([call(removeCompletedJobFromLocalStorage, 'boostrap')])
+  );
+
+  expect(gen.next(result).value).toEqual(
     put({ type: SET_NODES, payload: nodes })
   );
 });
@@ -271,7 +287,7 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
 it('create Node success', () => {
   const payload = { test: 'test' };
   const gen = createNode({ payload });
-  expect(gen.next().value).toEqual(call(Api.createNode, payload));
+  expect(gen.next().value).toEqual(call(ApiK8s.createNode, payload));
   expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
   expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
@@ -279,7 +295,7 @@ it('create Node success', () => {
 it('create Node fail', () => {
   const payload = { test: 'test' };
   const gen = createNode({ payload });
-  expect(gen.next().value).toEqual(call(Api.createNode, payload));
+  expect(gen.next().value).toEqual(call(ApiK8s.createNode, payload));
   expect(gen.next({ error: { body: { message: 'error' } } }).value).toEqual(
     put({
       type: CREATE_NODE_FAILED,

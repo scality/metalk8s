@@ -3,32 +3,21 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { matchPath } from 'react-router';
-import { Layout as CoreUILayout, Loader as LoaderCoreUI } from 'core-ui';
+import { Layout as CoreUILayout, Notifications } from 'core-ui';
 import { withRouter, Switch } from 'react-router-dom';
-import styled from 'styled-components';
 
 import NodeCreateForm from './NodeCreateForm';
 import NodeList from './NodeList';
 import NodeInformation from './NodeInformation';
+import NodeDeployment from './NodeDeployment';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
 
-import { fetchNodesAction } from '../ducks/app/nodes';
-
-const LoaderContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-`;
+import { removeNotificationAction } from '../ducks/app/notifications';
 
 class Layout extends Component {
-  componentDidMount() {
-    this.props.fetchNodes();
-  }
-
   render() {
     const applications = [];
 
@@ -90,26 +79,26 @@ class Layout extends Component {
     return (
       <ThemeProvider theme={this.props.theme}>
         <CoreUILayout sidebar={sidebar} navbar={navbar}>
-          {this.props.loading ? (
-            <LoaderContainer>
-              <LoaderCoreUI size="massive" />
-            </LoaderContainer>
-          ) : (
-            <Switch>
-              <PrivateRoute
-                exact
-                path="/nodes/create"
-                component={NodeCreateForm}
-              />
-              <PrivateRoute
-                exact
-                path="/nodes/:id"
-                component={NodeInformation}
-              />
-              <PrivateRoute exact path="/nodes" component={NodeList} />
-              <PrivateRoute exact path="/about" component={Welcome} />
-              <PrivateRoute exact path="/" component={NodeList} />
-            </Switch>
+          <Notifications
+            notifications={this.props.notifications}
+            onDismiss={this.props.removeNotification}
+          />
+          <Switch>
+            <PrivateRoute
+              exact
+              path="/nodes/create"
+              component={NodeCreateForm}
+            />
+            <PrivateRoute
+              exact
+              path="/nodes/deploy/:id"
+              component={NodeDeployment}
+            />
+            <PrivateRoute exact path="/nodes/:id" component={NodeInformation} />
+            <PrivateRoute exact path="/nodes" component={NodeList} />
+            <PrivateRoute exact path="/about" component={Welcome} />
+            <PrivateRoute exact path="/" component={NodeList} />
+          </Switch>
           )}
         </CoreUILayout>
       </ThemeProvider>
@@ -121,14 +110,14 @@ const mapStateToProps = state => ({
   user: state.login.user,
   sidebar: state.app.layout.sidebar,
   theme: state.config.theme,
-  loading: state.app.layout.loading
+  notifications: state.app.notifications.list
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
-    fetchNodes: () => dispatch(fetchNodesAction())
+    removeNotification: uid => dispatch(removeNotificationAction(uid))
   };
 };
 

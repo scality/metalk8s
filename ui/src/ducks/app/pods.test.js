@@ -1,11 +1,11 @@
 import { call, put } from 'redux-saga/effects';
 import { fetchPods, SET_PODS } from './pods';
-import * as Api from '../../services/api';
+import * as ApiK8s from '../../services/k8s/api';
 
 it('update the pods state when fetchPods', () => {
   const gen = fetchPods();
 
-  expect(gen.next().value).toEqual(call(Api.getPods));
+  expect(gen.next().value).toEqual(call(ApiK8s.getPods));
 
   const result = {
     body: {
