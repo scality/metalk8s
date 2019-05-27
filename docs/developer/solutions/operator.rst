@@ -83,6 +83,10 @@ can have better control over which version runs where.
 The best-practice encouraged here is to use namespace-scoped permissions for
 the Operator, instead of cluster-scoped.
 
+This allows for better isolation between different application deployments from
+a single Solution, for instance when trying out a new version before affecting
+production machines, or when managing two independent application stacks.
+
 .. note::
 
    Future improvements to MetalK8s may include the addition of an "Operator for

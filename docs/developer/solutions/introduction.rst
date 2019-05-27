@@ -60,6 +60,18 @@ There would be no explicit information about what an archive contains.
 Instead, we want the archive itself to contain such information (more
 details in :doc:`./archive`), and to discover it at import time.
 
+Note that Solutions will be **imported** based on this file contents, i.e.
+the images they contain will be made available in the registry and the UI
+will be deployed, however **deploying** the Operator and subsequent
+application(s) is left to the user, through manual operations or the Solution
+UI.
+
+.. note::
+
+   Removing an archive path from the ``solutions`` list will effectively
+   remove the Solution images and UI when the "import solutions" playbook is
+   run.
+
 Responsibilities of each party
 ------------------------------
 
@@ -116,3 +128,10 @@ will handle user input when deploying / upgrading Solutions.
 
 .. uml:: deployment.uml
 
+.. todo::
+
+   A detailed diagram for Operator deployment would be useful (wait for
+   `#1060`_ to land). Also, add another diagram for specific operations in an
+   upgrade scenario using two Namespaces, for staging/testing the new version.
+
+.. _`#1060`: https://github.com/scality/metalk8s/issues/1060
