@@ -192,9 +192,8 @@ class LocalImage(image.ContainerImage):
         # If a destination is defined, let's save the image there.
         if self.save_on_disk:
             cmd = [
-                config.SKOPEO,  'copy',
-                '--format', 'v2s2',
-                '--dest-compress',
+                config.SKOPEO, '--override-os', 'linux', '--insecure-policy',
+                'copy', '--format', 'v2s2', '--dest-compress',
             ]
             docker_host = os.getenv('DOCKER_HOST')
             if docker_host is not None:
