@@ -139,6 +139,33 @@ def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context):
     }
 
 
+@handle('rbac.authorization.k8s.io/v1', 'Role')
+def _handle_rbac_v1beta1_role(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.role_present': [
+            {'name': obj['metadata']['name']},
+            {'namespace': obj['metadata']['namespace']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'rules': obj['rules']},
+        ],
+    }
+
+
+@handle('rbac.authorization.k8s.io/v1', 'RoleBinding')
+def _handle_rbac_v1beta1_rolebinding(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.rolebinding_present': [
+            {'name': obj['metadata']['name']},
+            {'namespace': obj['metadata']['namespace']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'role_ref': obj['roleRef']},
+            {'subjects': obj['subjects']},
+        ],
+    }
+
+
 @handle('extensions/v1beta1', 'DaemonSet')
 def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
     return {
@@ -180,6 +207,19 @@ def _handle_v1_namespace(obj, kubeconfig, context):
     }
 
 
+@handle('v1', 'Secret')
+def _handle_v1_secret(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.secret_present': [
+            {'name': obj['metadata']['name']},
+            {'namespace': obj['metadata']['namespace']},
+            {'data': obj['data']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ],
+    }
+
+
 @handle('monitoring.coreos.com/v1', 'Alertmanager')
 @handle('monitoring.coreos.com/v1', 'Prometheus')
 @handle('monitoring.coreos.com/v1', 'PrometheusRule')
@@ -193,6 +233,20 @@ def _handle_monitoring_coreos_com_v1_customresource(obj, kubeconfig, context):
             {'context': context},
             {'namespace': obj['metadata']['namespace']},
         ],
+    }
+
+
+@handle('apiregistration.k8s.io/v1', 'APIService')
+@handle('apiregistration.k8s.io/v1beta1', 'APIService')
+def _handle_apiregistration_v1_apiservice(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.apiservice_present': [
+            {'name': obj['metadata']['name']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ]
     }
 
 
@@ -227,8 +281,16 @@ def render(yaml_data, saltenv='', sls='', **kwargs):
 
     data = yaml.load_all(yaml_data, Loader=salt.utils.yaml.SaltYamlSafeLoader)
 
+    objects = []
+    for obj in data:
+        if not obj:
+            continue
+        if isinstance(obj.get('items'), list):
+            objects.extend(obj['items'])
+        else:
+            objects.append(obj)
+
     return OrderedDict(
         _step(obj, kubeconfig=kubeconfig, context=context)
-        for obj in data
-        if obj
+        for obj in objects
     )
