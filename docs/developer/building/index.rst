@@ -5,5 +5,6 @@ How to build MetalK8s
 
    requirements
    building
+   local_cluster
    configuration
    features
