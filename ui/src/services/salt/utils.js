@@ -1,11 +1,6 @@
 const JOBS = 'JOBS';
 
-export function isJobCompleted(result, jid) {
-  return (
-    result.return[0][jid] && Object.keys(result.return[0][jid]['Result']).length
-  );
-}
-
+//Parse only first error level
 export function getJobErrorStatus(returner, status) {
   const steps = Object.values(returner.return.data)[0];
   let firstFailedStepIndex = Infinity;

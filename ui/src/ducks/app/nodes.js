@@ -21,7 +21,7 @@ import {
 import { addJobAction, removeJobAction } from './salt.js';
 
 import {
-  isJobCompleted,
+  getJobStatusFromPrintJob,
   getJidFromNameLocalStorage,
   updateJobLocalStorage,
   removeJobLocalStorage
@@ -164,7 +164,7 @@ export function* removeCompletedJobFromLocalStorage(name) {
       salt.data.return[0].token,
       jid
     );
-    if (isJobCompleted(result.data, jid)) {
+    if (getJobStatusFromPrintJob(result.data, jid).completed) {
       yield put(removeJobAction(jid));
       removeJobLocalStorage(jid);
     }
@@ -251,6 +251,7 @@ export function* sseSagas({ payload }) {
         if (data.tag.includes(jid)) {
           return call(updateDeployEvents, jid, data);
         }
+        return data;
       })
     );
   }

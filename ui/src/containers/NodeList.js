@@ -128,6 +128,11 @@ class NodeList extends React.Component {
 
   componentDidMount() {
     this.props.fetchNodes();
+    this.interval = setInterval(() => this.props.fetchNodes(), 10000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   onSort({ sortBy, sortDirection }) {
