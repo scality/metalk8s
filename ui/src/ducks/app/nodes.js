@@ -18,6 +18,8 @@ import {
   addNotificationErrorAction
 } from './notifications';
 
+import { addJobAction, removeJobAction } from './salt.js';
+
 import {
   isJobCompleted,
   getJidFromNameLocalStorage,
@@ -35,8 +37,6 @@ const DEPLOY_NODE = 'DEPLOY_NODE';
 const CONNECT_SALT_API = 'CONNECT_SALT_API';
 const UPDATE_EVENTS = 'UPDATE_EVENTS';
 const SUBSCRIBE_DEPLOY_EVENTS = 'SUBSCRIBE_DEPLOY_EVENTS';
-
-let eventSrc, channel;
 
 // Reducer
 const defaultState = {
@@ -165,6 +165,7 @@ export function* removeCompletedJobFromLocalStorage(name) {
       jid
     );
     if (isJobCompleted(result.data, jid)) {
+      yield put(removeJobAction(jid));
       removeJobLocalStorage(jid);
     }
   }
@@ -214,6 +215,7 @@ export function* deployNode({ payload }) {
       })
     );
   } else {
+    yield call(subscribeDeployEvents, { jid: result.data.return[0].jid });
     updateJobLocalStorage(result.data.return[0].jid, payload.name);
     yield call(fetchNodes);
   }
@@ -235,24 +237,40 @@ export function subSSE(eventSrc) {
 }
 
 export function* sseSagas({ payload }) {
-  eventSrc = new EventSource(`${payload.url}/events?token=${payload.token}`);
-  channel = yield call(subSSE, eventSrc);
-}
-
-export function* subscribeDeployEvents({ jid }) {
+  const eventSrc = new EventSource(
+    `${payload.url}/events?token=${payload.token}`
+  );
+  const channel = yield call(subSSE, eventSrc);
   while (true) {
     const msg = yield take(channel);
     const data = JSON.parse(msg.data);
-    if (data.tag.includes(jid)) {
-      yield put(updateDeployEventsAction({ jid, msg: data }));
-    }
+    const jobs = yield select(state => state.app.salt.jobs);
+
+    yield all(
+      jobs.map(jid => {
+        if (data.tag.includes(jid)) {
+          return call(updateDeployEvents, jid, data);
+        }
+      })
+    );
+  }
+}
+
+export function* updateDeployEvents(jid, msg) {
+  yield put(updateDeployEventsAction({ jid, msg }));
+}
+
+export function* subscribeDeployEvents({ jid }) {
+  const jobs = yield select(state => state.app.salt.jobs);
+  if (!jobs.includes(jid)) {
+    yield put(addJobAction(jid));
   }
 }
 
 export function* nodesSaga() {
   yield takeLatest(FETCH_NODES, fetchNodes);
   yield takeEvery(CREATE_NODE, createNode);
-  yield takeEvery(DEPLOY_NODE, deployNode);
+  yield takeLatest(DEPLOY_NODE, deployNode);
   yield takeEvery(CONNECT_SALT_API, sseSagas);
   yield takeEvery(SUBSCRIBE_DEPLOY_EVENTS, subscribeDeployEvents);
 }
