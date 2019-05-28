@@ -297,6 +297,9 @@ orchestrate_bootstrap() {
     run "Syncing Runner modules on Salt master" \
         "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_runners \
             saltenv=metalk8s-@@VERSION
+    run "Syncing Execution modules on Salt master" \
+        "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_modules \
+            saltenv=metalk8s-@@VERSION
 
     local -r bootstrap_id=$(
         ${SALT_CALL} --local --out txt grains.get id \

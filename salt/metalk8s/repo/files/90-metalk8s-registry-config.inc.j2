@@ -1,1 +1,3 @@
-set ${{ var_prefix }}_images "{{ images_path }}";
+{%- for env in products.keys() %}
+set ${{ env | replace('.', '_') | replace('-', '_') }}_images "/srv/scality/{{ env }}/images/";
+{%- endfor %}

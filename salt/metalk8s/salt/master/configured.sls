@@ -1,6 +1,7 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 
 {%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
+{%- set products = salt.metalk8s.get_products() %}
 
 Configure salt master:
   file.managed:
@@ -27,12 +28,12 @@ Configure salt master roots paths:
     - backup: false
     - dataset:
         file_roots:
-        {%- for version, path in metalk8s.iso_root_path.items() | sort(attribute='0') %}
-          {{ version }}:
-            - {{ path }}/salt
+        {%- for env in products.keys() | sort(attribute='0') %}
+          {{ env }}:
+            - /srv/scality/{{ env }}/salt
         {%- endfor %}
         pillar_roots:
-        {%- for version, path in metalk8s.iso_root_path.items() | sort(attribute='0') %}
-          {{ version }}:
-            - {{ path }}/pillar
+        {%- for env in products.keys() | sort(attribute='0') %}
+          {{ env }}:
+            - /srv/scality/{{ env }}/pillar
         {%- endfor %}

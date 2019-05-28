@@ -41,22 +41,26 @@ spec:
           port: http
           path: /
       volumeMounts:
-        - name: repositories
-          mountPath: /var/www/repositories
         - name: nginx-configuration
           mountPath: /etc/nginx/conf.d
-        - name: registry
-          mountPath: {{ images_path }}
+        {%- for env, product in products.items() | sort(attribute='0') %}
+        - name: repositories-{{ env | replace('.', '-') }}
+          mountPath: /var/www/repositories/{{ env }}/
+        - name: registry-{{ env | replace('.', '-') }}
+          mountPath: /srv/scality/{{ env }}/images/
+        {%- endfor %}
   volumes:
-    - name: repositories
-      hostPath:
-        path: {{ packages_path }}
-        type: Directory
     - name: nginx-configuration
       hostPath:
         path: {{ nginx_confd_path }}
         type: Directory
-    - name: registry
+    {%- for env, product in products.items() | sort(attribute='0') %}
+    - name: repositories-{{ env | replace('.', '-') }}
       hostPath:
-        path: {{ images_path }}
+        path: {{ product.path ~ package_path }}
         type: Directory
+    - name: registry-{{ env | replace('.', '-') }}
+      hostPath:
+        path: {{ product.path ~ image_path }}
+        type: Directory
+    {%- endfor %}
