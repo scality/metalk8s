@@ -2679,3 +2679,100 @@ def show_api_service(name, **kwargs):
             raise CommandExecutionError(exc)
     finally:
         _cleanup(**cfg)
+
+
+def show_ingress(name, namespace='default', **kwargs):
+    '''
+    Return the kubernetes ingress defined by name and namespace
+
+    CLI Examples::
+
+        salt '*' kubernetes.show_ingress kube-proxy kube-system
+        salt '*' kubernetes.show_ingress name=kube-proxy namespace=kube-system
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.read_namespaced_ingress(name, namespace)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->read_namespaced_ingress'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_ingress(
+        name,
+        namespace,
+        metadata,
+        spec,
+        **kwargs):
+    if not metadata:
+        metadata = {}
+    metadata['name'] = name
+    metadata['namespace'] = namespace
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    body = kubernetes.client.V1beta1Ingress(
+        metadata=meta_obj, spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.create_namespaced_ingress(
+            namespace=namespace, body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->create_namespaced_ingress'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_ingress(
+        name,
+        namespace,
+        metadata,
+        spec,
+        **kwargs):
+    if not metadata:
+        metadata = {}
+    metadata['name'] = name
+    metadata['namespace'] = namespace
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    body = kubernetes.client.V1beta1Ingress(
+        metadata=meta_obj, spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.replace_namespaced_ingress(name, namespace, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->replace_namespaced_ingress'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)

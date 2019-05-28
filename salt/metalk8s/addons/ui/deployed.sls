@@ -32,9 +32,36 @@ Create metalk8s-ui service:
           targetPort: 80
         selector:
           k8s-app: ui
-        type: NodePort
+        type: ClusterIP
   require:
     - pkg: Install Python Kubernetes client
+
+Create metalk8s-ui Ingress:
+  metalk8s_kubernetes.ingress_present:
+    - name: metalk8s-ui
+    - namespace: kube-system
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - metadata:
+        name: metalk8s-ui
+        labels:
+          k8s-app: ui
+        annotations:
+          kubernetes.io/ingress.class: nginx
+          nginx.ingress.kubernetes.io/rewrite-target: /
+    - spec:
+        rules:
+          - host: metalk8s
+            http:
+              paths:
+                - path: /
+                  backend:
+                    serviceName: metalk8s-ui
+                    servicePort: 80
+
+  require:
+    - pkg: Install Python Kubernetes client
+    - metalk8s_kubernetes: Create metalk8s-ui service
 
 Create metalk8s-ui ConfigMap:
   metalk8s_kubernetes.configmap_present:

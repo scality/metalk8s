@@ -1815,3 +1815,57 @@ def apiservice_absent(name, **kwargs):
     }
 
     return ret
+
+
+def ingress_present(
+        name,
+        namespace,
+        metadata,
+        spec,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    ingress = __salt__['metalk8s_kubernetes.show_ingress'](name, namespace, **kwargs)
+
+    if ingress is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The ingress is going to be created'
+            return ret
+
+        res = __salt__['metalk8s_kubernetes.create_ingress'](
+                name=name,
+                namespace=namespace,
+                metadata=metadata,
+                spec=spec,
+                **kwargs
+        )
+        ret['result'] = True
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The ingress is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the ingress')
+        ret['comment'] = 'The ingress is already present. Forcing recreation'
+        res = __salt__['metalk8s_kubernetes.replace_ingress'](
+            name=name,
+            namespace=namespace,
+            metadata=metadata,
+            spec=spec,
+            **kwargs)
+
+        ret['result'] = True
+        ret['changes']['{0}.{1}'.format(namespace, name)] = {
+            'old': ingress,
+            'new': res}
+
+    return ret
