@@ -24,6 +24,7 @@ Welcome to MetalK8s's documentation!
    developer/index
    operation/index
    glossary
+   changenodehostname
 
 
 Indices and tables
