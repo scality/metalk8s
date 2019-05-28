@@ -1,4 +1,4 @@
-containerd
+http://rpmfind.net/linux/fedora/linux/releases/30/Everything/x86_64/os/Packages/c/containerd-1.2.4-1.fc30.x86_64.rpm
 cri-tools
 ftp://ftp.scientificlinux.org/linux/scientific/7x/external_products/extras/x86_64/container-selinux-2.77-1.el7_6.noarch.rpm
 kubectl-1.11.7-0
