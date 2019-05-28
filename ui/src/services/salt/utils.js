@@ -62,7 +62,7 @@ export function getNameFromJidLocalStorage(jid) {
   return job && job.name;
 }
 
-export function updateJobLocalStorage(jid, name) {
+export function addJobLocalStorage(jid, name) {
   const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
   jobs.push({ jid, name });
   localStorage.setItem(JOBS, JSON.stringify(jobs));

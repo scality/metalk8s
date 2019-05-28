@@ -23,7 +23,7 @@ import { addJobAction, removeJobAction } from './salt.js';
 import {
   getJobStatusFromPrintJob,
   getJidFromNameLocalStorage,
-  updateJobLocalStorage,
+  addJobLocalStorage,
   removeJobLocalStorage
 } from '../../services/salt/utils';
 
@@ -31,6 +31,7 @@ import {
 const FETCH_NODES = 'FETCH_NODES';
 export const SET_NODES = 'SET_NODES';
 const CREATE_NODE = 'CREATE_NODE';
+const UPDATE_NODE_DEPLOYMENT = 'UPDATE_NODE_DEPLOYMENT';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
@@ -56,6 +57,22 @@ export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_NODES:
       return { ...state, list: action.payload };
+    case UPDATE_NODE_DEPLOYMENT:
+      const index = state.list.findIndex(
+        node => node.name === action.payload.name
+      );
+      return {
+        ...state,
+        list: [
+          ...state.list.slice(0, index),
+          {
+            ...state.list[index],
+            deployment: action.payload
+          },
+          ...state.list.slice(index + 1)
+        ]
+      };
+
     case CREATE_NODE_FAILED:
       return {
         ...state,
@@ -90,6 +107,10 @@ export const setNodesAction = payload => {
   return { type: SET_NODES, payload };
 };
 
+export const updateNodeDeploymentAction = payload => {
+  return { type: UPDATE_NODE_DEPLOYMENT, payload };
+};
+
 export const createNodeAction = payload => {
   return { type: CREATE_NODE, payload };
 };
@@ -118,11 +139,6 @@ export const subscribeDeployEventsAction = jid => {
 export function* fetchNodes() {
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
-    yield all(
-      result.body.items.map(node => {
-        return call(removeCompletedJobFromLocalStorage, node.metadata.name);
-      })
-    );
     yield put(
       setNodesAction(
         result.body.items.map(node => {
@@ -150,10 +166,16 @@ export function* fetchNodes() {
         })
       )
     );
+
+    yield all(
+      result.body.items.map(node => {
+        return call(getJobStatus, node.metadata.name);
+      })
+    );
   }
 }
 
-export function* removeCompletedJobFromLocalStorage(name) {
+export function* getJobStatus(name) {
   const jid = getJidFromNameLocalStorage(name);
   if (jid) {
     const salt = yield select(state => state.login.salt);
@@ -164,9 +186,14 @@ export function* removeCompletedJobFromLocalStorage(name) {
       salt.data.return[0].token,
       jid
     );
-    if (getJobStatusFromPrintJob(result.data, jid).completed) {
+    const status = {
+      name,
+      ...getJobStatusFromPrintJob(result.data, jid)
+    };
+    if (status.completed) {
       yield put(removeJobAction(jid));
       removeJobLocalStorage(jid);
+      yield put(updateNodeDeploymentAction(status));
     }
   }
 }
@@ -216,7 +243,7 @@ export function* deployNode({ payload }) {
     );
   } else {
     yield call(subscribeDeployEvents, { jid: result.data.return[0].jid });
-    updateJobLocalStorage(result.data.return[0].jid, payload.name);
+    addJobLocalStorage(result.data.return[0].jid, payload.name);
     yield call(fetchNodes);
   }
 }

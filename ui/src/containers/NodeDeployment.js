@@ -4,15 +4,17 @@ import { injectIntl } from 'react-intl';
 import { createSelector } from 'reselect';
 import styled from 'styled-components';
 import ReactJson from 'react-json-view';
-import { Button } from 'core-ui';
+import { Button, Loader } from 'core-ui';
 import { withRouter } from 'react-router-dom';
 
 import { subscribeDeployEventsAction } from '../ducks/app/nodes';
+import { getJobStatusFromEventRet } from '../../src/services/salt/utils';
 import {
   fontWeight,
   grayLightest,
   padding,
-  fontSize
+  fontSize,
+  brand
 } from 'core-ui/dist/style/theme';
 
 const NodeDeploymentContainer = styled.div`
@@ -39,12 +41,48 @@ const NodeDeploymentWrapper = styled.div`
   padding: ${padding.base};
 `;
 
+const NodeDeploymentStatus = styled.div`
+  padding: ${padding.base};
+`;
+
+const SuccessLabel = styled.span`
+  color: ${brand.success};
+`;
+
+const ErrorLabel = styled.span`
+  color: ${brand.danger};
+`;
+
+function NodeDeploymentResult(props) {
+  return (
+    <span>
+      {props.intl.messages.status} :
+      {props.status.success ? (
+        <SuccessLabel>{props.intl.messages.success}</SuccessLabel>
+      ) : (
+        <ErrorLabel>
+          `{props.intl.messages.error}: ${props.status.step_id} - $
+          {props.status.comment}`
+        </ErrorLabel>
+      )}
+    </span>
+  );
+}
+
 function NodeDeployment(props) {
   useEffect(() => {
     if (props && props.match && props.match.params && props.match.params.id) {
       props.subscribeDeployEvents(props.match.params.id);
     }
   });
+
+  const getJobResult = () => {
+    const result = props.events.find(event => event.tag.includes('/ret'));
+    if (result) {
+      return getJobStatusFromEventRet(result.data);
+    }
+    return null;
+  };
 
   return (
     <NodeDeploymentContainer>
@@ -61,6 +99,14 @@ function NodeDeployment(props) {
         <NodeDeploymentTitle>
           {props.intl.messages.node_deployment}
         </NodeDeploymentTitle>
+        <NodeDeploymentStatus>
+          {getJobResult() ? (
+            <NodeDeploymentResult status={getJobResult()} />
+          ) : (
+            <Loader>{props.intl.messages.deploying}</Loader>
+          )}
+        </NodeDeploymentStatus>
+
         <NodeDeploymentContent>
           <ReactJson src={props.events} name={props.match.params.id} />
         </NodeDeploymentContent>

@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 import memoizeOne from 'memoize-one';
 import styled from 'styled-components';
 import { sortBy as sortByArray } from 'lodash';
-import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { Table, Button, Loader } from 'core-ui';
 import { padding } from 'core-ui/dist/style/theme';
 
@@ -64,12 +64,19 @@ class NodeList extends React.Component {
         },
         {
           label: props.intl.messages.status,
-          dataKey: 'status',
+          dataKey: 'status'
+        },
+        {
+          label: props.intl.messages.deployment,
+          dataKey: 'deployment',
+          flexGrow: 1,
           renderer: (data, rowData) => {
-            if ((!data || data === 'Unknown') && !rowData.jid) {
+            if (
+              (!rowData.status || rowData.status === 'Unknown') &&
+              !rowData.jid
+            ) {
               return (
                 <span className="status">
-                  {data}
                   <Button
                     text={this.props.intl.messages.deploy}
                     onClick={event => {
@@ -78,13 +85,19 @@ class NodeList extends React.Component {
                     }}
                     size="smaller"
                   />
+                  {data && (
+                    <span>
+                      {data.success
+                        ? props.intl.messages.success
+                        : `${data.step_id} : ${data.comment}`}
+                    </span>
+                  )}
                 </span>
               );
             }
             if (rowData.jid) {
               return (
                 <span className="status">
-                  {data}
                   <Button
                     text={this.props.intl.messages.deploying}
                     onClick={event => {
@@ -102,24 +115,13 @@ class NodeList extends React.Component {
         },
         {
           label: props.intl.messages.roles,
-          dataKey: 'roles'
+          dataKey: 'roles',
+          flexGrow: 1
         },
         {
-          label: props.intl.messages.cpu_capacity,
-          dataKey: 'cpu'
-        },
-        {
-          label: props.intl.messages.memory,
-          dataKey: 'memory'
-        },
-        {
-          label: props.intl.messages.creationDate,
-          dataKey: 'creationDate',
-          renderer: data => (
-            <span>
-              <FormattedDate value={data} /> <FormattedTime value={data} />
-            </span>
-          )
+          label: props.intl.messages.version,
+          dataKey: 'metalk8s_version',
+          width: 200
         }
       ]
     };
