@@ -195,6 +195,16 @@ install_salt_minion() {
     "$YUM" install "${yum_opts[@]}" salt-minion
 }
 
+install_genisoimage() {
+    local -a yum_opts=(
+        '--assumeyes'
+        '--disablerepo=*'
+        '--enablerepo=metalk8s-*'
+    )
+
+    "$YUM" install "${yum_opts[@]}" genisoimage
+}
+
 configure_salt_minion_local_mode() {
     "$SALT_CALL" --file-root=/srv/scality/metalk8s-@@VERSION/salt \
         --local --retcode-passthrough saltutil.sync_all
@@ -321,6 +331,7 @@ main() {
     run "Stopping Salt minion service" stop_salt_minion_service
     run "Configuring local YUM repositories" configure_yum_repositories
     run "Installing Salt minion" install_salt_minion
+    run "Installing genisoimage" install_genisoimage
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
     orchestrate_bootstrap
