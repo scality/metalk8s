@@ -2,7 +2,7 @@ import { call, put, all } from 'redux-saga/effects';
 import { fetchNodes, createNode, SET_NODES, CREATE_NODE_FAILED } from './nodes';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
-import { removeCompletedJobFromLocalStorage } from './nodes.js';
+import { getJobStatus } from './nodes.js';
 
 it('update the control plane nodes state when fetchNodes', () => {
   const gen = fetchNodes();
@@ -74,12 +74,9 @@ it('update the control plane nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
-    all([call(removeCompletedJobFromLocalStorage, 'boostrap')])
-  );
-
-  expect(gen.next(result).value).toEqual(
     put({ type: SET_NODES, payload: nodes })
   );
+  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
 });
 
 it('update the bootstrap nodes state when fetchNodes', () => {
@@ -142,12 +139,10 @@ it('update the bootstrap nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
-    all([call(removeCompletedJobFromLocalStorage, 'boostrap')])
-  );
-
-  expect(gen.next(result).value).toEqual(
     put({ type: SET_NODES, payload: nodes })
   );
+
+  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
 });
 
 it('update the workload plane nodes state when fetchNodes', () => {
@@ -208,12 +203,9 @@ it('update the workload plane nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
-    all([call(removeCompletedJobFromLocalStorage, 'boostrap')])
-  );
-
-  expect(gen.next(result).value).toEqual(
     put({ type: SET_NODES, payload: nodes })
   );
+  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
 });
 
 it('update the control plane/workload plane nodes state when fetchNodes', () => {
@@ -274,14 +266,11 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
       }
     }
   ];
-
-  expect(gen.next(result).value).toEqual(
-    all([call(removeCompletedJobFromLocalStorage, 'boostrap')])
-  );
-
   expect(gen.next(result).value).toEqual(
     put({ type: SET_NODES, payload: nodes })
   );
+
+  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
 });
 
 it('create Node success', () => {
