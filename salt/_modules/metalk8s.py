@@ -3,11 +3,13 @@
 Module for handling MetalK8s specific calls.
 '''
 import logging
+import os.path
+import re
 import socket
 import time
 
 from salt.exceptions import CommandExecutionError
-from salt.utils.decorators import depends
+import salt.utils.files
 
 log = logging.getLogger(__name__)
 
@@ -104,3 +106,47 @@ def minions_by_role(role, nodes=None):
         for (node, node_info) in nodes.items()
         if role in node_info.get('roles', [])
     ]
+
+
+def _get_product_version(info):
+    """Extract production version from info
+
+    Args:
+        info (str): content of metalk8s product.txt file
+    """
+    match = re.search(r'^SHORT_VERSION=(?P<version>.+)$', info, re.MULTILINE)
+    return match.group('version') if match else None
+
+
+def product_version_from_tree(path):
+    log.debug('Reading product version from %r', path)
+
+    product_txt = os.path.join(path, 'product.txt')
+
+    if not os.path.isfile(product_txt):
+        raise CommandExecutionError(
+            'Path {} has no "product.txt"'.format(path))
+
+    with salt.utils.files.fopen(os.path.join(path, 'product.txt')) as fd:
+        return _get_product_version(fd.read())
+
+
+def product_version_from_iso(path):
+    log.debug('Reading product version from %r', path)
+
+    cmd = ' '.join([
+        'isoinfo',
+        '-x', '/PRODUCT.TXT\;1',
+        '-i', '"{}"'.format(path),
+    ])
+    result = __salt__['cmd.run_all'](cmd=cmd)
+    log.debug('Result: %r', result)
+
+    if result['retcode'] != 0:
+        raise CommandExecutionError(
+            'Failed to run isoinfo: {}'.format(
+                result.get('stderr', result['stdout'])
+            )
+        )
+
+    return _get_product_version(result['stdout'])
