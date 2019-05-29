@@ -28,6 +28,16 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            nodeName:
+              description: Name of the node on which the volume is available
+              type: string
+            storageClassName:
+              description: Name of the StorageClass that gets assigned to the volume
+              type: string
+          required:
+          - nodeName
+          - storageClassName
           type: object
         status:
           type: object

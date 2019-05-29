@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -13,6 +14,12 @@ type VolumeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
+
+	// Name of the node on which the volume is available
+	NodeName types.NodeName `json:"nodeName"`
+
+	// Name of the StorageClass that gets assigned to the volume
+	StorageClassName string `json:"storageClassName"`
 }
 
 // VolumeStatus defines the observed state of Volume

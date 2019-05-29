@@ -6,9 +6,13 @@ import (
 	storagev1alpha1 "github.com/scality/metalk8s/storage-operator/pkg/apis/storage/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -17,11 +21,6 @@ import (
 )
 
 var log = logf.Log.WithName("controller_volume")
-
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
 
 // Add creates a new Volume Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -48,9 +47,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
 	// Watch for changes to secondary resource Pods and requeue the owner Volume
-	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
+	err = c.Watch(&source.Kind{Type: &corev1.PersistentVolume{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
 		OwnerType:    &storagev1alpha1.Volume{},
 	})
@@ -91,11 +89,92 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
+                        // TODO Remove the finalizer from the generated PV, if exists
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
 
+	pv := newPersistentVolumeForCR(instance)
+
+	// Set Volume instance as the owner and controller
+	if err := controllerutil.SetControllerReference(instance, pv, r.scheme); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Check if this PV already exists
+	found := &corev1.PersistentVolume{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Namespace: "", Name: pv.Name}, found)
+	if err != nil && errors.IsNotFound(err) {
+		reqLogger.Info("Creating a new PersistentVolume", "PersistentVolume.Name", pv.Name)
+		err = r.client.Create(context.TODO(), pv)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+
+		// PV created successfully - don't requeue
+		return reconcile.Result{}, nil
+	} else if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// PV already exists - don't requeue
+	reqLogger.Info("Skip reconcile: PersistentVolume already exists", "PersistentVolume.Name", found.Name)
+
 	return reconcile.Result{}, nil
+}
+
+func newPersistentVolumeForCR(cr *storagev1alpha1.Volume) *corev1.PersistentVolume {
+	return &corev1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   cr.Name,
+                        Labels: map[string]string{},
+                        Finalizers: []string{
+                                "storage.metalk8s.scality.com/volume-protection",
+                        },
+		},
+		Spec: corev1.PersistentVolumeSpec{
+			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+			Capacity: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceStorage: resource.MustParse("1Gi"),
+			},
+			PersistentVolumeSource: corev1.PersistentVolumeSource{
+				Local: &corev1.LocalVolumeSource{
+					Path: "/tmp/foo",
+				},
+			},
+			PersistentVolumeReclaimPolicy: "Retain",
+			StorageClassName:              cr.Spec.StorageClassName,
+                        NodeAffinity:                  nodeAffinity(cr.Spec.NodeName),
+		},
+	}
+}
+
+func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
+	selector := corev1.NodeSelector{
+		NodeSelectorTerms: []corev1.NodeSelectorTerm{
+			{
+                                MatchExpressions: []corev1.NodeSelectorRequirement{
+                                        {
+                                                Key: "kubernetes.io/hostname",
+                                                Operator: corev1.NodeSelectorOpIn,
+                                                Values: []string{string(node)},
+                                        },
+                                },
+				MatchFields: []corev1.NodeSelectorRequirement{
+					{
+						Key:      "metadata.name",
+						Operator: corev1.NodeSelectorOpIn,
+						Values:   []string{string(node)},
+					},
+				},
+			},
+		},
+	}
+	affinity := corev1.VolumeNodeAffinity{
+		Required: &selector,
+	}
+	return &affinity
+
 }
