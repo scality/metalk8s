@@ -8,7 +8,7 @@ An opinionated Kubernetes distribution with a focus on long-term on-prem deploym
 
 To build a MetalK8s ISO, simply type `./doit.sh`.
 
-For more information, please refers to [BUILDING.md](BUILDING.md).
+For more information, please refers to developer documentation.
 
 ## Contributing
 
