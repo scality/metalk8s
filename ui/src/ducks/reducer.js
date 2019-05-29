@@ -6,6 +6,7 @@ import pods from './app/pods';
 import login from './login';
 import layout from './app/layout';
 import notifications from './app/notifications';
+import salt from './app/salt';
 
 const rootReducer = combineReducers({
   config,
@@ -14,7 +15,8 @@ const rootReducer = combineReducers({
     nodes,
     layout,
     pods,
-    notifications
+    notifications,
+    salt
   })
 });
 
