@@ -1,3 +1,15 @@
+#!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
+# The content below has been generated from
+# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# with the following command:
+#   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
+#     -name "node-exporter-*.yaml") > deployed.sls
+# In the following, only container image registries have been replaced.
+
+---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -54,7 +66,7 @@ spec:
         - --path.sysfs=/host/sys
         - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
         - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
-        image: quay.io/prometheus/node-exporter:v0.16.0
+        image: {{ build_image_name('node-exporter', 'v0.17.0') }}
         name: node-exporter
         resources:
           limits:
@@ -77,7 +89,7 @@ spec:
       - args:
         - --secure-listen-address=:9100
         - --upstream=http://127.0.0.1:9101/
-        image: quay.io/coreos/kube-rbac-proxy:v0.3.1
+        image: {{ build_image_name('kube-rbac-proxy', 'v0.3.1') }}
         name: kube-rbac-proxy
         ports:
         - containerPort: 9100
