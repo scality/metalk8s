@@ -33,6 +33,13 @@ spec:
   replicas: 3
   serviceAccountName: alertmanager-main
   version: v0.15.2
+  tolerations:
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
 ---
 apiVersion: v1
 kind: Service
