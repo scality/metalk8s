@@ -24,14 +24,15 @@ import {
   getJobStatusFromPrintJob,
   getJidFromNameLocalStorage,
   addJobLocalStorage,
-  removeJobLocalStorage
+  removeJobLocalStorage,
+  getJobStatusFromEventRet,
+  getNameFromJidLocalStorage
 } from '../../services/salt/utils';
 
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
 export const SET_NODES = 'SET_NODES';
 const CREATE_NODE = 'CREATE_NODE';
-const UPDATE_NODE_DEPLOYMENT = 'UPDATE_NODE_DEPLOYMENT';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
@@ -57,22 +58,6 @@ export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_NODES:
       return { ...state, list: action.payload };
-    case UPDATE_NODE_DEPLOYMENT:
-      const index = state.list.findIndex(
-        node => node.name === action.payload.name
-      );
-      return {
-        ...state,
-        list: [
-          ...state.list.slice(0, index),
-          {
-            ...state.list[index],
-            deployment: action.payload
-          },
-          ...state.list.slice(index + 1)
-        ]
-      };
-
     case CREATE_NODE_FAILED:
       return {
         ...state,
@@ -105,10 +90,6 @@ export const fetchNodesAction = () => {
 
 export const setNodesAction = payload => {
   return { type: SET_NODES, payload };
-};
-
-export const updateNodeDeploymentAction = payload => {
-  return { type: UPDATE_NODE_DEPLOYMENT, payload };
 };
 
 export const createNodeAction = payload => {
@@ -193,7 +174,23 @@ export function* getJobStatus(name) {
     if (status.completed) {
       yield put(removeJobAction(jid));
       removeJobLocalStorage(jid);
-      yield put(updateNodeDeploymentAction(status));
+      if (status.success) {
+        yield put(
+          addNotificationSuccessAction({
+            title: 'Node Deployment',
+            message: `Node ${name} has been deployed successfully.`
+          })
+        );
+      } else {
+        yield put(
+          addNotificationErrorAction({
+            title: 'Node Deployment',
+            message: `Node ${name} deployment has failed. ${status.step_id} - ${
+              status.comment
+            }`
+          })
+        );
+      }
     }
   }
 }
@@ -285,6 +282,35 @@ export function* sseSagas({ payload }) {
 }
 
 export function* updateDeployEvents(jid, msg) {
+  if (msg.tag.includes('/ret')) {
+    const name = getNameFromJidLocalStorage(jid);
+    const status = {
+      name,
+      ...getJobStatusFromEventRet(msg.data)
+    };
+    if (status.completed) {
+      yield put(removeJobAction(jid));
+      removeJobLocalStorage(jid);
+      if (status.success) {
+        yield put(
+          addNotificationSuccessAction({
+            title: 'Node Deployment',
+            message: `Node ${name} has been deployed successfully.`
+          })
+        );
+      } else {
+        yield put(
+          addNotificationErrorAction({
+            title: 'Node Deployment',
+            message: `Node ${name} deployment has failed. ${status.step_id} - ${
+              status.comment
+            }`
+          })
+        );
+      }
+    }
+  }
+
   yield put(updateDeployEventsAction({ jid, msg }));
 }
 

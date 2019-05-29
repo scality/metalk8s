@@ -30,7 +30,7 @@
   "create": "Créer",
   "cancel": "Annuler",
   "unknown": "Inconnu",
-  "ready": "Prêt",
+  "ready": "Prêt", 
   "not_ready": "Pas prêt",
   "deploy": "Déployer",
   "deploying": "Déploiement en cours",

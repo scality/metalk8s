@@ -47,27 +47,13 @@ const NodeDeploymentStatus = styled.div`
 
 const SuccessLabel = styled.span`
   color: ${brand.success};
+  padding: 0 ${padding.base};
 `;
 
 const ErrorLabel = styled.span`
   color: ${brand.danger};
+  padding: 0 ${padding.base};
 `;
-
-function NodeDeploymentResult(props) {
-  return (
-    <span>
-      {props.intl.messages.status} :
-      {props.status.success ? (
-        <SuccessLabel>{props.intl.messages.success}</SuccessLabel>
-      ) : (
-        <ErrorLabel>
-          `{props.intl.messages.error}: ${props.status.step_id} - $
-          {props.status.comment}`
-        </ErrorLabel>
-      )}
-    </span>
-  );
-}
 
 function NodeDeployment(props) {
   useEffect(() => {
@@ -76,13 +62,11 @@ function NodeDeployment(props) {
     }
   });
 
-  const getJobResult = () => {
-    const result = props.events.find(event => event.tag.includes('/ret'));
-    if (result) {
-      return getJobStatusFromEventRet(result.data);
-    }
-    return null;
-  };
+  const result = props.events.find(event => event.tag.includes('/ret'));
+  let status = null;
+  if (result) {
+    status = getJobStatusFromEventRet(result.data);
+  }
 
   return (
     <NodeDeploymentContainer>
@@ -100,8 +84,19 @@ function NodeDeployment(props) {
           {props.intl.messages.node_deployment}
         </NodeDeploymentTitle>
         <NodeDeploymentStatus>
-          {getJobResult() ? (
-            <NodeDeploymentResult status={getJobResult()} />
+          {status ? (
+            <span>
+              {props.intl.messages.status}
+              {status.success ? (
+                <SuccessLabel>{props.intl.messages.success}</SuccessLabel>
+              ) : (
+                <ErrorLabel>
+                  {`${props.intl.messages.error}: ${status.step_id} - ${
+                    status.comment
+                  }`}
+                </ErrorLabel>
+              )}
+            </span>
           ) : (
             <Loader>{props.intl.messages.deploying}</Loader>
           )}

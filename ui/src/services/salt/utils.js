@@ -64,7 +64,12 @@ export function getNameFromJidLocalStorage(jid) {
 
 export function addJobLocalStorage(jid, name) {
   const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
-  jobs.push({ jid, name });
+  const job = jobs.find(item => item.name === name);
+  if (job) {
+    job.jid = jid;
+  } else {
+    jobs.push({ jid, name });
+  }
   localStorage.setItem(JOBS, JSON.stringify(jobs));
 }
 

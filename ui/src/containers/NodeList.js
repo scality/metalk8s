@@ -85,13 +85,6 @@ class NodeList extends React.Component {
                     }}
                     size="smaller"
                   />
-                  {data && (
-                    <span>
-                      {data.success
-                        ? props.intl.messages.success
-                        : `${data.step_id} : ${data.comment}`}
-                    </span>
-                  )}
                 </span>
               );
             }
