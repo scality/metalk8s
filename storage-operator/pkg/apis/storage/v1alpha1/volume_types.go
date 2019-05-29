@@ -28,6 +28,7 @@ type VolumeStatus struct {
 // Volume is the Schema for the volumes API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +genclient:nonNamespaced
 type Volume struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

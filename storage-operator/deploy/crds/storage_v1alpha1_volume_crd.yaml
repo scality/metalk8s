@@ -9,7 +9,7 @@ spec:
     listKind: VolumeList
     plural: volumes
     singular: volume
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:
