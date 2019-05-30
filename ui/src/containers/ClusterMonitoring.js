@@ -25,11 +25,9 @@ const TableContainer = styled.div`
   max-height: 400px;
 `;
 
-const PageTitle = styled.h2`
-  margin-top: 0;
+const PageSubtitle = styled.h3`
+  margin: ${padding.small} 0;
 `;
-
-const PageSubtitle = styled.h3``;
 
 const ClusterStatusTitleContainer = styled.div`
   display: flex;
@@ -122,7 +120,6 @@ const ClusterMonitoring = props => {
 
   return (
     <PageContainer>
-      <PageTitle>{props.intl.messages.cluster_monitoring}</PageTitle>
       <ClusterStatusTitleContainer>
         <PageSubtitle>{props.intl.messages.cluster_status + ' :'}</PageSubtitle>
         <ClusterStatusValue isUp={isUp}>
@@ -132,7 +129,7 @@ const ClusterMonitoring = props => {
         </ClusterStatusValue>
       </ClusterStatusTitleContainer>
 
-      <PageSubtitle>{props.intl.messages.alert_list + ' :'}</PageSubtitle>
+      <PageSubtitle>{props.intl.messages.alerts}</PageSubtitle>
       <TableContainer>
         <Table
           list={sortedAlerts}

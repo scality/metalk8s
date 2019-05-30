@@ -50,5 +50,5 @@
   "active_at": "Active Since",
   "cluster_up_and_running": "Everything is up and running",
   "down": "Down",
-  "alert_list": "Alert List"
+  "alerts": "Alerts"
 }

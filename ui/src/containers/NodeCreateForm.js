@@ -48,7 +48,7 @@ const ErrorMessage = styled.span`
 `;
 
 const FormTitle = styled.h3`
-  margin-top: ${padding.larger};
+  margin: ${padding.small};
 `;
 
 const initialValues = {

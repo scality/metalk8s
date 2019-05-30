@@ -50,5 +50,5 @@
   "active_at": "Actif depuis",
   "cluster_up_and_running": "Grappe de serveurs opérationnelle",
   "down": "H.S",
-  "alert_list": "Liste d'alerte"
+  "alerts": "Alertes"
 }
