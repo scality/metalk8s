@@ -7459,7 +7459,7 @@ spec:
       volumes:
       - emptyDir: {}
         name: grafana-storage
-      - ConfigMap:
+      - configMap:
           name: grafana-datasources
         name: grafana-datasources
       - configMap:
