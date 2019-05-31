@@ -69,7 +69,13 @@ function NodeDeployment(props) {
       props.subscribeDeployEvents(props.match.params.id);
     }
 
-    if (props.events.find(event => event.tag.includes('/new'))) {
+    if (
+      //To improve
+      !steps.find(
+        step => step.title === props.intl.messages.deployment_started
+      ) &&
+      props.events.find(event => event.tag.includes('/new'))
+    ) {
       const newSteps = steps;
       newSteps.splice(steps.length - 1, 0, {
         title: props.intl.messages.deployment_started
