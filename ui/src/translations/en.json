@@ -39,5 +39,9 @@
   "node_deployment": "Node Deployment",
   "back_to_node_list": "Back to nodes list",
   "success": "Success",
-  "error": "Error"
+  "error": "Error",
+  "completed": "Completed",
+  "node_registered": "Node registered",
+  "deployment_started": "Deployment started"
+  
 }
