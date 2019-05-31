@@ -2,7 +2,7 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 
 {%- macro build_image_name(name='', tag='') -%}
-"{{ metalk8s.endpoints['repositories'].ip }}:{{ metalk8s.endpoints['repositories'].ports.http }}/{{ saltenv }}/{{ name }}:{{ tag }}"
+{{ metalk8s.endpoints['repositories'].ip }}:{{ metalk8s.endpoints['repositories'].ports.http }}/{{ saltenv }}/{{ name }}{{ ':' ~ tag if tag else '' }}
 {%- endmacro -%}
 
 {%- macro kubernetes_image(component) -%}
