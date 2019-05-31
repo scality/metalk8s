@@ -166,6 +166,7 @@ def _handle_rbac_v1beta1_rolebinding(obj, kubeconfig, context):
     }
 
 
+@handle('apps/v1beta2', 'DaemonSet')
 @handle('extensions/v1beta1', 'DaemonSet')
 def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
     return {

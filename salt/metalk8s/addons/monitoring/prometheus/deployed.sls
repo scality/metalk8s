@@ -152,6 +152,7 @@ spec:
   baseImage: {{ build_image_name('prometheus') }}
   nodeSelector:
     beta.kubernetes.io/os: linux
+    node-role.kubernetes.io/infra: ''
   replicas: 2
   resources:
     requests:
@@ -164,6 +165,13 @@ spec:
   serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector: {}
   version: v2.4.3
+  tolerations:
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

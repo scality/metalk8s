@@ -30,9 +30,17 @@ spec:
   baseImage: {{ build_image_name('alertmanager') }}
   nodeSelector:
     beta.kubernetes.io/os: linux
+    node-role.kubernetes.io/infra: ''
   replicas: 3
   serviceAccountName: alertmanager-main
   version: v0.15.2
+  tolerations:
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
 ---
 apiVersion: v1
 kind: Service
