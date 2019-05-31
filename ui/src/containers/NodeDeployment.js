@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { createSelector } from 'reselect';
 import styled from 'styled-components';
 import ReactJson from 'react-json-view';
-import { Button, Loader } from 'core-ui';
+import { Button, Loader, Steppers } from 'core-ui';
 import { withRouter } from 'react-router-dom';
 
 import { subscribeDeployEventsAction } from '../ducks/app/nodes';
@@ -28,13 +28,20 @@ const NodeDeploymentContainer = styled.div`
 const NodeDeploymentTitle = styled.div`
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.large};
+  margin: ${padding.base};
 `;
 
-const NodeDeploymentContent = styled.div`
+const NodeDeploymentEvent = styled.div`
   background-color: ${grayLightest};
   padding: ${padding.base};
   margin: ${padding.base};
   border-radius: 5px;
+  display: flex;
+  flex-grow: 1;
+`;
+
+const NodeDeploymentContent = styled.div`
+  display: flex;
 `;
 
 const NodeDeploymentWrapper = styled.div`
@@ -42,31 +49,57 @@ const NodeDeploymentWrapper = styled.div`
 `;
 
 const NodeDeploymentStatus = styled.div`
-  padding: ${padding.base};
-`;
-
-const SuccessLabel = styled.span`
-  color: ${brand.success};
-  padding: 0 ${padding.base};
+  padding: ${padding.larger};
+  width: 400px;
 `;
 
 const ErrorLabel = styled.span`
   color: ${brand.danger};
-  padding: 0 ${padding.base};
 `;
 
 function NodeDeployment(props) {
+  const [activeStep, setActiveStep] = useState(1);
+  const [steps, setSteps] = useState([
+    { title: props.intl.messages.node_registered },
+    { title: props.intl.messages.deploying, content: <Loader size="larger" /> }
+  ]);
+
   useEffect(() => {
     if (props && props.match && props.match.params && props.match.params.id) {
       props.subscribeDeployEvents(props.match.params.id);
     }
-  });
 
-  const result = props.events.find(event => event.tag.includes('/ret'));
-  let status = null;
-  if (result) {
-    status = getJobStatusFromEventRet(result.data);
-  }
+    if (props.events.find(event => event.tag.includes('/new'))) {
+      const newSteps = steps;
+      newSteps.splice(steps.length - 1, 0, {
+        title: props.intl.messages.deployment_started
+      });
+      setSteps(newSteps);
+      setActiveStep(2);
+    }
+
+    const result = props.events.find(event => event.tag.includes('/ret'));
+    if (result) {
+      const status = getJobStatusFromEventRet(result.data);
+      const newSteps = steps;
+      newSteps.splice(steps.length - 1, 1, {
+        title: props.intl.messages.completed,
+        content: (
+          <span>
+            {!status.success && (
+              <ErrorLabel>
+                {`${props.intl.messages.error}: ${status.step_id} - ${
+                  status.comment
+                }`}
+              </ErrorLabel>
+            )}
+          </span>
+        )
+      });
+      setSteps(newSteps);
+      setActiveStep(status.success ? steps.length : steps.length - 1);
+    }
+  }, [props.events]);
 
   return (
     <NodeDeploymentContainer>
@@ -83,27 +116,17 @@ function NodeDeployment(props) {
         <NodeDeploymentTitle>
           {props.intl.messages.node_deployment}
         </NodeDeploymentTitle>
-        <NodeDeploymentStatus>
-          {status ? (
-            <span>
-              {props.intl.messages.status}
-              {status.success ? (
-                <SuccessLabel>{props.intl.messages.success}</SuccessLabel>
-              ) : (
-                <ErrorLabel>
-                  {`${props.intl.messages.error}: ${status.step_id} - ${
-                    status.comment
-                  }`}
-                </ErrorLabel>
-              )}
-            </span>
-          ) : (
-            <Loader>{props.intl.messages.deploying}</Loader>
-          )}
-        </NodeDeploymentStatus>
-
         <NodeDeploymentContent>
-          <ReactJson src={props.events} name={props.match.params.id} />
+          <NodeDeploymentStatus>
+            <Steppers steps={steps} activeStep={activeStep} />
+          </NodeDeploymentStatus>
+          <NodeDeploymentEvent>
+            <ReactJson
+              src={props.events}
+              name={props.match.params.id}
+              collapsed={true}
+            />
+          </NodeDeploymentEvent>
         </NodeDeploymentContent>
       </NodeDeploymentWrapper>
     </NodeDeploymentContainer>
