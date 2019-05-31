@@ -45,6 +45,9 @@ const TableContainer = styled.div`
         height: 12px;
         fill: white;
       }
+      svg + span {
+        padding: 0;
+      }
     }
   }
 `;
