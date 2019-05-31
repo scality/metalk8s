@@ -152,6 +152,7 @@ spec:
   baseImage: {{ build_image_name('prometheus') }}
   nodeSelector:
     beta.kubernetes.io/os: linux
+    node-role.kubernetes.io/infra: ''
   replicas: 2
   resources:
     requests:

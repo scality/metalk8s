@@ -7496,6 +7496,8 @@ spec:
       - key: "node-role.kubernetes.io/infra"
         operator: "Exists"
         effect: "NoSchedule"
+      nodeSelector:
+        node-role.kubernetes.io/infra: ''
 ---
 apiVersion: v1
 data:

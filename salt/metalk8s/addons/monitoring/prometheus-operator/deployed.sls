@@ -6227,6 +6227,7 @@ spec:
           readOnlyRootFilesystem: true
       nodeSelector:
         beta.kubernetes.io/os: linux
+        node-role.kubernetes.io/infra: ''
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534

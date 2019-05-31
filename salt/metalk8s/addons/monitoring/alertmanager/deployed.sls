@@ -30,6 +30,7 @@ spec:
   baseImage: {{ build_image_name('alertmanager') }}
   nodeSelector:
     beta.kubernetes.io/os: linux
+    node-role.kubernetes.io/infra: ''
   replicas: 3
   serviceAccountName: alertmanager-main
   version: v0.15.2
