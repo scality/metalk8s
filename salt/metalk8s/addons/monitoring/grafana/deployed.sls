@@ -83,6 +83,7 @@ spec:
           readOnly: false
       nodeSelector:
         beta.kubernetes.io/os: linux
+        node-role.kubernetes.io/infra: ''
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
@@ -90,9 +91,9 @@ spec:
       volumes:
       - emptyDir: {}
         name: grafana-storage
-      - name: grafana-datasources
-        secret:
-          secretName: grafana-datasources
+      - ConfigMap:
+          name: grafana-datasources
+        name: grafana-datasources
       - configMap:
           name: grafana-dashboards
         name: grafana-dashboards
@@ -123,6 +124,13 @@ spec:
       - configMap:
           name: grafana-dashboard-statefulset
         name: grafana-dashboard-statefulset
+      tolerations:
+      - key: "node-role.kubernetes.io/bootstrap"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/infra"
+        operator: "Exists"
+        effect: "NoSchedule"
 ---
 {%- raw %}
 apiVersion: v1
@@ -8057,8 +8065,22 @@ spec:
 ---
 apiVersion: v1
 data:
-  prometheus.yaml: ewogICAgImFwaVZlcnNpb24iOiAxLAogICAgImRhdGFzb3VyY2VzIjogWwogICAgICAgIHsKICAgICAgICAgICAgImFjY2VzcyI6ICJwcm94eSIsCiAgICAgICAgICAgICJlZGl0YWJsZSI6IGZhbHNlLAogICAgICAgICAgICAibmFtZSI6ICJwcm9tZXRoZXVzIiwKICAgICAgICAgICAgIm9yZ0lkIjogMSwKICAgICAgICAgICAgInR5cGUiOiAicHJvbWV0aGV1cyIsCiAgICAgICAgICAgICJ1cmwiOiAiaHR0cDovL3Byb21ldGhldXMtazhzLm1vbml0b3Jpbmcuc3ZjOjkwOTAiLAogICAgICAgICAgICAidmVyc2lvbiI6IDEKICAgICAgICB9CiAgICBdCn0=
-kind: Secret
+  prometheus.yaml: |-
+    {
+        "apiVersion": 1,
+        "datasources": [
+            {
+                "access": "proxy",
+                "editable": false,
+                "name": "prometheus",
+                "orgId": 1,
+                "type": "prometheus",
+                "url": "http://prometheus-k8s.monitoring.svc:9090",
+                "version": 1
+            }
+        ]
+    }
+kind: ConfigMap
 metadata:
   name: grafana-datasources
   namespace: monitoring

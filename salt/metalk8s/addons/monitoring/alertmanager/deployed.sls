@@ -36,6 +36,7 @@ spec:
   baseImage: {{ build_image_name('alertmanager') }}
   nodeSelector:
     beta.kubernetes.io/os: linux
+    node-role.kubernetes.io/infra: ''
   replicas: 3
   securityContext:
     fsGroup: 2000
@@ -43,6 +44,13 @@ spec:
     runAsUser: 1000
   serviceAccountName: alertmanager-main
   version: v0.16.0
+  tolerations:
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
