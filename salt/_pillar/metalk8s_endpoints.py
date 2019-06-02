@@ -98,8 +98,8 @@ def ext_pillar(minion_id, pillar, kubeconfig):
 
     services = {
         "kube-system": ['salt-master', 'repositories'],
-        "monitoring": ["prometheus"]
     }
+    nodeport_services = {"monitoring": ["prometheus"]}
 
     if not os.path.isfile(kubeconfig):
         log.warning(
@@ -109,6 +109,14 @@ def ext_pillar(minion_id, pillar, kubeconfig):
     for namespace, services in services.items():
         endpoints.update({
             service: service_endpoints(
+                service, namespace, kubeconfig
+            )
+            for service in services
+        })
+
+    for namespace, services in nodeport_services.items():
+        endpoints.update({
+            service: service_endpoints_nodeport(
                 service, namespace, kubeconfig
             )
             for service in services
