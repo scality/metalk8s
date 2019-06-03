@@ -1,6 +1,7 @@
 ARG NGINX_IMAGE_VERSION=1.15.8
+ARG NODE_IMAGE_VERSION=10.16.0
 
-FROM node AS build-step
+FROM node:${NODE_IMAGE_VERSION} AS build-step
 
 WORKDIR /home/node
 COPY package*.json /home/node/
