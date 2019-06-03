@@ -1,5 +1,6 @@
 Quickstart Guide
 ================
+
 This guide describes how to set up a MetalK8s_ cluster to play with. It
 offers general requirements and describes sizing, configuration, and
 deployment. With respect to installation procedures, the only significant
@@ -8,14 +9,15 @@ the amount of resources required to implement the design.
 
 .. _MetalK8s: https://github.com/scality/metalk8s/
 .. _CentOS: https://www.centos.org
-.. _Kubernetes: https://kubernetes.io
+
 
 General Cluster Requirements
 ----------------------------
 Setting up a MetalK8s_ cluster quickly requires at least three machines
 running CentOS_ 7.6 or higher (these can be VMs) to which you have SSH access.
-Each machine acting as a Kubernetes_ node (all three in the present example)
-must also have at least one disk available to provision storage volumes.
+Each machine acting as a :term:`Kubernetes node` (all three in the present
+example) must also have at least one disk available to provision storage
+volumes.
 You will need to install a bootstrap node then other nodes (2 in our case).
 
 Sizing
@@ -52,7 +54,8 @@ server's :file:`/etc/environment` file:
 
 Mount MetalK8s ISO
 -------------------
-Get the ISO file and mount it on the bootstrap node at this specific path.
+On your bootstrap node, download the ISO file. Mount this ISO file at the
+specific following path:
 
 .. code-block:: shell
 
@@ -81,15 +84,17 @@ Prepare the bootstap node
    apiServer:
     host: <IP-of-the-bootstrap-node>
 
-2. Generate the SSH key of the bootstrap and copy it.
+2. Generate an SSH key that will be used for authentication
+   to future new nodes.
 
 .. code-block:: shell
 
    $ ssh-keygen
    $ ssh-copy-id <IP-of-the-bootstrap-node>
 
-3. Copy the private key in the pki folder of MetalK8s. This will be use further
-   for adding new nodes on the cluster.
+3. Copy the private key in the pki folder of MetalK8s. This will be the
+   file path against which MetalK8s checks for the initial authentication to
+   the future new nodes.
 
 .. code-block:: shell
 
@@ -98,26 +103,36 @@ Prepare the bootstap node
 
 Install the bootstrap node
 --------------------------
-1. Run the script to install the bootstrap node.
+1. Run the bootstrap script to install binaries and services required on the
+   bootstrap node.
 
 .. code-block:: shell
 
    $ /srv/scality/metalk8s-2.0/bootstrap.sh
 
-2. Check if pods are running well.
+2. Check if all :term:`pods <Kubernetes pod>` on the bootstrap node are in the
+   ``Running`` state.
 
-You need to export the shell variable KUBECONFIG to avoid to specify it
-as a parameter with each kubectl command.
+.. note::
+   On all subsequent :term:`kubectl <kubectl>` commands, you may omit the
+   ``--kubeconfig`` argument if you have exported the ``KUBECONFIG``
+   environment variable with value the path to the administrator configuration
+   file for the cluster.
+
+   By default, this path is ``/etc/kubernetes/admin.conf``.
+
+   .. code-block:: shell
+
+      $ export KUBECONFIG=/etc/kubernetes/admin.conf
+
 
 .. code-block:: shell
 
-   $ export KUBECONFIG=/etc/kubernetes/admin.conf
-
-   $ kubectl get node
+   $ kubectl get node --kubeconfig /etc/kubernetes/admin.conf
    NAME                   STATUS    ROLES                         AGE       VERSION
    bootstrap              Ready     bootstrap,etcd,infra,master   17m       v1.11.7
 
-   $ kubectl get pods --all-namespaces -o wide
+   $ kubectl get pods --all-namespaces -o wide --kubeconfig /etc/kubernetes/admin.conf
    NAMESPACE     NAME                                          READY     STATUS    RESTARTS   AGE       IP             NODE                  NOMINATED NODE
    kube-system   calico-node-zw74v                             1/1       Running   0          18m       172.21.254.7   bootstrap.novalocal   <none>
    kube-system   coredns-6b9cb79bf4-jbtxc                      1/1       Running   0          18m       10.233.0.2     bootstrap.novalocal   <none>
@@ -132,28 +147,29 @@ as a parameter with each kubectl command.
    kube-system   registry-bootstrap                            1/1       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
    kube-system   salt-master-bootstrap                         2/2       Running   0          17m       172.21.254.7   bootstrap.novalocal   <none>
 
-Adding a master to the cluster
-------------------------------
+Add a master to the cluster
+---------------------------
 
 Now it's time to add more nodes to the cluster. First you need to add
-2 nodes with etcd and master roles to improv redundancy of
+2 nodes with etcd and master roles to improve redundancy of
 the control-plane. Here is the procedure to add one, simply do it
 twice to have 3 masters (bootstrap + 2 new master).
 
-1. Copy the ssh-key to the new master node
+1. Copy the ssh-key to the new control-plane node
 
 .. code-block:: shell
 
-   $ ssh-copy-id <IP-of-the-new-master-node>
+   $ ssh-copy-id <IP-of-the-new-control-plane-node>
 
-2. Create a YAML config file :file:`new-master-node.yaml` for this new master.
+2. Create a :term:`node manifest <Kubernetes node manifest>` for
+   this new control-plane node as :file:`new-control-plane-node.yaml`.
 
 .. code-block:: yaml
 
    apiVersion: v1
    kind: Node
    metadata:
-     name: <new-master-node-name>
+     name: new-cp-node
      annotations:
        metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/id_rsa
        metalk8s.scality.com/ssh-host: <IP-of-the-new-master-node>
@@ -173,31 +189,32 @@ twice to have 3 masters (bootstrap + 2 new master).
 
 .. code-block:: shell
 
-   $ kubectl apply -f new-master-node.yaml
-   node/new-master-node created
+   $ kubectl apply -f new-control-plane-node.yaml
+   node/new-cp-node created
 
-4. Check that the new master node was added to the cluster.
+4. Check that the new control-plane node was added to the cluster.
 
 .. code-block:: shell
 
-   $ kubectl get nodes
+   $ kubectl get nodes --kubeconfig /etc/kubernetes/admin.conf
    NAME                   STATUS    ROLES                         AGE       VERSION
    bootstrap              Ready     bootstrap,etcd,infra,master   12d       v1.11.7
-   new-master-node        Unknown   etcd,master                   29s
+   new-cp-node            Unknown   etcd,master                   29s
 
-5. The new master node now need to be installed to change its status from
-   Unknown to Ready. You go into the master-bootstrap pod ...
-
-.. code-block:: shell
-
-   $ kubectl exec salt-master-bootstrap -n kube-system -c salt-master -it bash
-
-Try to ping the new master node:
+5. The new control-plane node now need to be installed to change its
+   status from Unknown to Ready. Obtaining a shell into the
+   salt-master-bootstrap pod ...
 
 .. code-block:: shell
 
-   $ salt-ssh --roster kubernetes <new-master-node-name> test.ping
-   <new-master-node-name>:
+   $ kubectl exec salt-master-bootstrap -n kube-system -c salt-master -it bash --kubeconfig /etc/kubernetes/admin.conf
+
+Try to ping the new control-plane node:
+
+.. code-block:: shell
+
+   $ salt-ssh --roster kubernetes new-cp-node test.ping
+   new-cp-node:
        True
 
 Launch the command to perform the installation
@@ -205,7 +222,7 @@ Launch the command to perform the installation
 .. code-block:: shell
 
    $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node saltenv=metalk8s-2.0 \
-     pillar="{'orchestrate': {'node_name': '<new-master-node-name>'}}"
+     pillar="{'orchestrate': {'node_name': 'new-cp-node'}}"
 
    ... lots of output ...
    Summary for bootstrap_master
@@ -221,7 +238,7 @@ You can exit from the salt-master pod and check if the etcd cluster is healthy
 
 .. code-block:: shell
 
-   $ kubectl -n kube-system exec -ti etcd-bootstrap sh
+   $ kubectl -n kube-system exec -ti etcd-bootstrap sh --kubeconfig /etc/kubernetes/admin.conf
    $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
      --ca-file=/etc/kubernetes/pki/etcd/ca.crt \
      --cert-file=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
@@ -234,18 +251,20 @@ You can exit from the salt-master pod and check if the etcd cluster is healthy
 
 
 
-Adding a node to the cluster
-----------------------------
-You can now add more nodes without any backplane roles. These nodes are here to
-handle applications you will install on the cluster.
+Add a node to the cluster
+-------------------------
+You can now add more nodes without any control-plane roles. These nodes are
+workload-plane nodes, used to handle applications you will install on the cluster.
 
-1. Copy the ssh-key to the new node
+1. Add the SSH key used to access the new node to the new node's authorized
+   keys.
 
 .. code-block:: shell
 
    $ ssh-copy-id <IP-of-the-new-node>
 
-2. Create a yaml config file :file:`new-node.yaml` for this new node.
+2. Create a :term:`node manifest <Kubernetes node manifest>`
+   :file:`new-node.yaml` for this new node.
 
 .. code-block:: yaml
 
@@ -265,7 +284,7 @@ handle applications you will install on the cluster.
 
 .. code-block:: shell
 
-   $ kubectl apply -f new-node.yaml
+   $ kubectl apply -f new-node.yaml --kubeconfig /etc/kubernetes/admin.conf
    node/new-node created
 
 4. Check that the new node was added to the cluster.
@@ -279,14 +298,14 @@ handle applications you will install on the cluster.
    master-node-02         Ready     etcd,master                   1h        v1.11.7
    node-01                Unknown   node                          17s
 
-5. The new  node now need to be installed to change its status from Unknown
-   to Ready. You go into the master-bootstrap pod ...
+5. The new node now needs to be deployed to change its status from Unknown
+   to Ready. Obtaining a shell into the master-bootstrap pod ...
 
 .. code-block:: shell
 
-   $ kubectl -ti -n kube-system exec salt-master-bootstrap bash
+   $ kubectl -ti -n kube-system exec salt-master-bootstrap bash --kubeconfig /etc/kubernetes/admin.conf
 
-Try first to ping the new master node ...
+Try first to ping the new node
 
 .. code-block:: shell
 
@@ -294,7 +313,7 @@ Try first to ping the new master node ...
    <new-node-name>:
       True
 
-Launch the command to perform the installation
+Launch the command to perform the deployment
 
 .. code-block:: shell
 
