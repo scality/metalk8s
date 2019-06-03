@@ -21,8 +21,6 @@ const PageContainer = styled.div`
 
 const TableContainer = styled.div`
   flex-grow: 1;
-  /* FIXME We need to find a way to define the max-height */
-  max-height: 400px;
 `;
 
 const PageSubtitle = styled.h3`

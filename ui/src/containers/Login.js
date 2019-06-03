@@ -48,6 +48,11 @@ const LogoContainer = styled.div`
   top: 45px;
 `;
 
+const SSLCertificateContainer = styled.div`
+  position: absolute;
+  bottom: 50px;
+`;
+
 const LoginForm = props => {
   const {
     values,
@@ -66,6 +71,11 @@ const LoginForm = props => {
   };
   //touched is not "always" correctly set
   const handleOnBlur = e => setFieldTouched(e.target.name, true);
+
+  // FIXME This is a temporary solution.
+  // We should remove this when we will fix the SSL issue
+  const sslCertificateUrl =
+    props.config && props.config.url ? props.config.url + '/api/v1' : '';
 
   return (
     <Form autoComplete="off">
@@ -101,6 +111,13 @@ const LoginForm = props => {
       {asyncErrors && asyncErrors.authentication && (
         <Error>{asyncErrors.authentication}</Error>
       )}
+      {sslCertificateUrl !== '' ? (
+        <SSLCertificateContainer>
+          <a href={sslCertificateUrl} target="_blank" rel="noopener noreferrer">
+            Accept SSL certificate
+          </a>
+        </SSLCertificateContainer>
+      ) : null}
     </Form>
   );
 };
@@ -138,7 +155,8 @@ class Login extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  asyncErrors: state.login.errors
+  asyncErrors: state.login.errors,
+  config: state.config.api
 });
 
 const mapDispatchToProps = dispatch => {
