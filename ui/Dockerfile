@@ -3,8 +3,11 @@ ARG NGINX_IMAGE_VERSION=1.15.8
 FROM node AS build-step
 
 WORKDIR /home/node
-COPY . /home/node/
+COPY package*.json /home/node/
 RUN npm install
+
+COPY public /home/node/public
+COPY src /home/node/src
 RUN npm run build
 
 FROM nginx:${NGINX_IMAGE_VERSION}
