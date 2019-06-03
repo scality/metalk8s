@@ -16,7 +16,8 @@ For more information, please refer to the
 
 To build a MetalK8s ISO, simply type `./doit.sh`.
 
-For more information, please refers to developer documentation.
+For more information, please refer to the
+[Building Documentation](docs/developer/building/index.rst).
 
 ## Contributing
 
@@ -42,9 +43,10 @@ vagrant plugin install vagrant-vbguest
 
 ### End-to-End Testing
 
-To run the test-suite locally, first complete the bootstrap step as outline above
+To run the test-suite locally, first complete the bootstrap step as outlined
+above, then:
 
-```shell
+```shell 
 # Run tests with tox
 tox -e tests
 ```
@@ -68,5 +70,5 @@ tox -e docs
 
 MetalK8s version 1 is still maintained in this repository. See the
 `development/1.*` branches, e. g.
-[MetalK8s 1.3](https://github.com/scality/metalk8s/tree/development/1.3) in the same
-repository.
+[MetalK8s 1.3](https://github.com/scality/metalk8s/tree/development/1.3) in the
+same repository.
