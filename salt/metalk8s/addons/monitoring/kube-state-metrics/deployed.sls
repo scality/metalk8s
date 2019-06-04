@@ -219,11 +219,11 @@ spec:
         name: kube-state-metrics
         resources:
           limits:
-            cpu: 100m
-            memory: 150Mi
+            cpu: 102m
+            memory: 180Mi
           requests:
-            cpu: 100m
-            memory: 150Mi
+            cpu: 102m
+            memory: 180Mi
       - command:
         - /pod_nanny
         - --container=kube-state-metrics
