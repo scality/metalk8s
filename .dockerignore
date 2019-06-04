@@ -10,3 +10,6 @@ buildchain/.venv/
 .doit.db
 
 *.pyc
+
+node_modules
+npm-debug.log
