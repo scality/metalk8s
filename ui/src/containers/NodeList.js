@@ -11,6 +11,7 @@ import { padding } from 'core-ui/dist/style/theme';
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
 
 const PageContainer = styled.div`
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: 100%;
