@@ -38,6 +38,12 @@
                     'ports': {
                         'http': 8080,
                     },
+                },
+                'prometheus': {
+                    'ip': bootstrap_control_plane_ip,
+                    'ports': {
+                        'node_port': 30222
+                    }
                 }
             },
         },
