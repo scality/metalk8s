@@ -87,7 +87,7 @@ def task__image_dedup_layers() -> types.TaskDict:
 
 
 NGINX_IMAGE_VERSION : str = '1.15.8'
-
+NODE_IMAGE_VERSION : str = '10.16.0'
 
 # List of container images to pull.
 #
@@ -301,9 +301,20 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         dockerfile=constants.ROOT/'ui'/'Dockerfile',
         destination=constants.ISO_IMAGE_ROOT,
         save_on_disk=True,
-        build_args={'NGINX_IMAGE_VERSION': NGINX_IMAGE_VERSION},
+        build_args={
+            'NGINX_IMAGE_VERSION': NGINX_IMAGE_VERSION,
+            'NODE_IMAGE_VERSION': NODE_IMAGE_VERSION
+        },
         task_dep=['_image_mkdir_root'],
-        file_dep=list(coreutils.ls_files_rec(constants.ROOT/'ui')),
+        file_dep=(
+            list(coreutils.ls_files_rec(constants.ROOT/'ui'/'public')) +
+            list(coreutils.ls_files_rec(constants.ROOT/'ui'/'src')) +
+            [
+                constants.ROOT/'ui'/'package.json',
+                constants.ROOT/'ui'/'package-lock.json',
+                constants.ROOT/'ui'/'conf'/'nginx.conf'
+            ]
+        )
     ),
 )
 

@@ -99,7 +99,6 @@ class Layout extends Component {
             <PrivateRoute exact path="/about" component={Welcome} />
             <PrivateRoute exact path="/" component={NodeList} />
           </Switch>
-          )}
         </CoreUILayout>
       </ThemeProvider>
     );
