@@ -10,6 +10,7 @@ SLS file. Optionally, you can use rendering pipelines (if templating is
 required), e.g. `#!jinja | kubernetes`.
 '''
 
+import base64
 import yaml
 
 import salt.utils.yaml
@@ -210,11 +211,21 @@ def _handle_v1_namespace(obj, kubeconfig, context):
 
 @handle('v1', 'Secret')
 def _handle_v1_secret(obj, kubeconfig, context):
+    # FIXME #1183: this is a compatibility band-aid for the vendored salt module
+    if 'data' in obj:
+        data = {
+            key: base64.b64decode(value)
+            for key, value in obj['data'].items()
+        }
+    elif 'stringData' in obj:
+        data = obj['stringData']
+    else:
+        data = None
     return {
         'metalk8s_kubernetes.secret_present': [
             {'name': obj['metadata']['name']},
             {'namespace': obj['metadata']['namespace']},
-            {'data': obj['data']},
+            {'data': data},
             {'kubeconfig': kubeconfig},
             {'context': context},
         ],
