@@ -19,6 +19,9 @@ ca:
   minion: $(cat /etc/salt/minion_id)
 apiServer:
   host: $(ip route get 172.42.254.0 | awk '/172.42.254.0/{ print $6 }')
+products:
+  metalk8s:
+    - /var/tmp/metalk8s
 EOF
 
 ls "$(dirname $OUTPUT_FILE)"
