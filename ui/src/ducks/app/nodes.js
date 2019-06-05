@@ -127,22 +127,23 @@ export function* fetchNodes() {
           const statusType =
             node.status.conditions &&
             node.status.conditions.find(conditon => conditon.type === 'Ready');
+          let status;
+          if (statusType && statusType.status === 'True') {
+            status = intl.translate('ready');
+          } else if (statusType && statusType.status === 'False') {
+            status = intl.translate('not_ready');
+          } else {
+            status = intl.translate('unknown');
+          }
+
           return {
             name: node.metadata.name,
             metalk8s_version:
               node.metadata.labels['metalk8s.scality.com/version'],
-            statusType: statusType,
-            cpu: node.status.capacity && node.status.capacity.cpu,
+            status: status,
             control_plane: isRolePresentInLabels(node, ApiK8s.ROLE_MASTER),
             workload_plane: isRolePresentInLabels(node, ApiK8s.ROLE_NODE),
             bootstrap: isRolePresentInLabels(node, ApiK8s.ROLE_BOOTSTRAP),
-            memory:
-              node.status.capacity &&
-              prettifyBytes(
-                convertK8sMemoryToBytes(node.status.capacity.memory),
-                2
-              ).value,
-            creationDate: node.metadata.creationTimestamp,
             jid: getJidFromNameLocalStorage(node.metadata.name)
           };
         })
