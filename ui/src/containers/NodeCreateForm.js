@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 import { Button, Input } from 'core-ui';
-import { padding, brand } from 'core-ui/dist/style/theme';
+import { padding } from 'core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import {
   createNodeAction,
@@ -19,7 +19,6 @@ const CreateNodeLayout = styled.div`
   padding: ${padding.larger};
   form {
     width: 450px;
-    padding: 0 ${padding.larger};
     .sc-input {
       margin: ${padding.smaller} 0;
       .sc-input-label {
@@ -45,11 +44,11 @@ const ActionContainer = styled.div`
 
 const ErrorMessage = styled.span`
   margin-top: ${padding.base};
-  color: ${brand.danger};
+  color: ${props => props.theme.brand.danger};
 `;
 
 const FormTitle = styled.h3`
-  margin-top: ${padding.larger};
+  margin: ${padding.small};
 `;
 
 const initialValues = {
