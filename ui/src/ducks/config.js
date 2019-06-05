@@ -1,4 +1,6 @@
 import { call, put, takeEvery } from 'redux-saga/effects';
+import { mergeTheme } from 'core-ui/dist/utils';
+import * as defaultTheme from 'core-ui/dist/style/theme';
 import * as Api from '../services/api';
 import { fetchUserInfo } from './login';
 
@@ -54,7 +56,9 @@ export function setApiConfigAction(conf) {
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
   if (!result.error) {
-    yield put(setThemeAction(result.data));
+    const theme = result.data;
+    theme.brand = mergeTheme(result.data, defaultTheme);
+    yield put(setThemeAction(theme));
   }
 }
 

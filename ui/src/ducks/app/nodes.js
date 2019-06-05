@@ -282,6 +282,7 @@ export function* sseSagas({ payload }) {
 }
 
 export function* updateDeployEvents(jid, msg) {
+  yield put(updateDeployEventsAction({ jid, msg }));
   if (msg.tag.includes('/ret')) {
     const name = getNameFromJidLocalStorage(jid);
     const status = {
@@ -310,8 +311,6 @@ export function* updateDeployEvents(jid, msg) {
       }
     }
   }
-
-  yield put(updateDeployEventsAction({ jid, msg }));
 }
 
 export function* subscribeDeployEvents({ jid }) {

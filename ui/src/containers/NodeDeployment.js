@@ -13,8 +13,7 @@ import {
   fontWeight,
   grayLightest,
   padding,
-  fontSize,
-  brand
+  fontSize
 } from 'core-ui/dist/style/theme';
 
 const NodeDeploymentContainer = styled.div`
@@ -54,7 +53,7 @@ const NodeDeploymentStatus = styled.div`
 `;
 
 const ErrorLabel = styled.span`
-  color: ${brand.danger};
+  color: ${props => props.theme.brand.danger};
 `;
 
 function NodeDeployment(props) {

@@ -21,13 +21,14 @@ const NodeInformationContainer = styled.div`
 
 const PodsContainer = styled.div`
   flex-grow: 1;
-  padding: 0 ${padding.larger};
+  max-height: 400px;
 `;
 
-const InformationTitle = styled.h3`
-  padding: ${padding.small} ${padding.larger};
-  margin: 0;
+const PageTitle = styled.h2`
+  margin-top: 0;
 `;
+
+const InformationTitle = styled.h3``;
 
 const InformationSpan = styled.span`
   padding: 0 ${padding.larger} ${padding.small} ${padding.larger};
@@ -117,9 +118,7 @@ class NodeInformation extends React.Component {
 
     return (
       <NodeInformationContainer>
-        <InformationTitle>
-          {this.props.intl.messages.information}
-        </InformationTitle>
+        <PageTitle>{this.props.intl.messages.information}</PageTitle>
         <InformationSpan>
           <InformationLabel>{this.props.intl.messages.name}</InformationLabel>
           <InformationMainValue>{this.props.node.name}</InformationMainValue>
