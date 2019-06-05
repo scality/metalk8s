@@ -37,12 +37,14 @@
   "deployment": "Déploiement",
   "version": "MetalK8s Version",
   "node_deployment": "Déploiement du node",
+  "node_deployment_success": "Déploiement du node {name} a terminé avec succèss",
+  "node_deployment_failed": "Déploiement du node {name} a échoué. {step} - {reason}",
   "back_to_node_list": "Retour à la liste des nodes",
   "success": "Succès",
   "error": "Erreur",
   "completed": "Terminé",
   "node_registered": "Node enregistré",
-  "deployment_started": "Deploiement commencé",
+  "deployment_started": "Déploiement commencé",
   "cluster_status": "Status de la grappe de serveurs",
   "cluster_monitoring": "Surveillance de la grappe de serveurs",
   "severity": "Sévérité",
@@ -50,5 +52,8 @@
   "active_at": "Actif depuis",
   "cluster_up_and_running": "Grappe de serveurs opérationnelle",
   "down": "H.S",
-  "alerts": "Alertes"
+  "alerts": "Alertes",
+  "node_creation": "Création du node",
+  "node_creation_success": "Le node {name} a été créé avec succèss",
+  "node_creation_failed": "La création du node {name} a échoué."
 }

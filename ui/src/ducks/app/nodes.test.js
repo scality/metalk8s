@@ -25,7 +25,8 @@ it('update the control plane nodes state when fetchNodes', () => {
             },
             labels: {
               'node-role.kubernetes.io/etcd': '',
-              'node-role.kubernetes.io/master': ''
+              'node-role.kubernetes.io/master': '',
+              'metalk8s.scality.com/version': '2.0'
             }
           },
           status: {
@@ -60,16 +61,12 @@ it('update the control plane nodes state when fetchNodes', () => {
   const nodes = [
     {
       name: 'boostrap',
-      cpu: '2',
-      memory: '1000 KiB',
-      creationDate: '2019-29-03',
       workload_plane: false,
       control_plane: true,
       bootstrap: false,
-      statusType: {
-        status: 'True',
-        type: 'Ready'
-      }
+      status: 'Ready',
+      jid: undefined,
+      metalk8s_version: '2.0'
     }
   ];
 
@@ -102,7 +99,8 @@ it('update the bootstrap nodes state when fetchNodes', () => {
             labels: {
               'node-role.kubernetes.io/bootstrap': '',
               'node-role.kubernetes.io/etcd': '',
-              'node-role.kubernetes.io/master': ''
+              'node-role.kubernetes.io/master': '',
+              'metalk8s.scality.com/version': '2.0'
             }
           },
           status: {
@@ -125,16 +123,12 @@ it('update the bootstrap nodes state when fetchNodes', () => {
   const nodes = [
     {
       name: 'boostrap',
-      cpu: '2',
-      memory: '1000 KiB',
-      creationDate: '2019-29-03',
       workload_plane: false,
       control_plane: true,
       bootstrap: true,
-      statusType: {
-        status: 'True',
-        type: 'Ready'
-      }
+      status: 'Ready',
+      jid: undefined,
+      metalk8s_version: '2.0'
     }
   ];
 
@@ -166,7 +160,8 @@ it('update the workload plane nodes state when fetchNodes', () => {
               'metalk8s.scality.com/ssh-sudo': 'true'
             },
             labels: {
-              'node-role.kubernetes.io/node': ''
+              'node-role.kubernetes.io/node': '',
+              'metalk8s.scality.com/version': '2.0'
             }
           },
           status: {
@@ -189,16 +184,12 @@ it('update the workload plane nodes state when fetchNodes', () => {
   const nodes = [
     {
       name: 'boostrap',
-      cpu: '2',
-      memory: '1000 KiB',
-      creationDate: '2019-29-03',
       workload_plane: true,
       control_plane: false,
       bootstrap: false,
-      statusType: {
-        status: 'True',
-        type: 'Ready'
-      }
+      status: 'Ready',
+      jid: undefined,
+      metalk8s_version: '2.0'
     }
   ];
 
@@ -231,7 +222,8 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
             labels: {
               'node-role.kubernetes.io/node': '',
               'node-role.kubernetes.io/etcd': '',
-              'node-role.kubernetes.io/master': ''
+              'node-role.kubernetes.io/master': '',
+              'metalk8s.scality.com/version': '2.0'
             }
           },
           status: {
@@ -254,16 +246,12 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
   const nodes = [
     {
       name: 'boostrap',
-      cpu: '2',
-      memory: '1000 KiB',
-      creationDate: '2019-29-03',
       workload_plane: true,
       control_plane: true,
       bootstrap: false,
-      statusType: {
-        status: 'True',
-        type: 'Ready'
-      }
+      status: 'Ready',
+      jid: undefined,
+      metalk8s_version: '2.0'
     }
   ];
   expect(gen.next(result).value).toEqual(
