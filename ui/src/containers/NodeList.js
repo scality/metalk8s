@@ -178,16 +178,6 @@ class NodeList extends React.Component {
         roles.push(intl.messages.workload_plane);
       }
       node.roles = roles.join(' / ');
-
-      let statusType = node.statusType;
-      let status = intl.messages.unknown;
-
-      if (statusType && statusType.status === 'True') {
-        status = intl.messages.ready;
-      } else if (statusType && statusType.status === 'False') {
-        status = intl.messages.not_ready;
-      }
-      node.status = status;
       return node;
     });
 

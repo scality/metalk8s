@@ -18,6 +18,7 @@ import {
   addNotificationErrorAction
 } from './notifications';
 
+import { intl } from '../../translations/IntlGlobalProvider';
 import { addJobAction, removeJobAction } from './salt.js';
 
 import {
@@ -126,22 +127,23 @@ export function* fetchNodes() {
           const statusType =
             node.status.conditions &&
             node.status.conditions.find(conditon => conditon.type === 'Ready');
+          let status;
+          if (statusType && statusType.status === 'True') {
+            status = intl.translate('ready');
+          } else if (statusType && statusType.status === 'False') {
+            status = intl.translate('not_ready');
+          } else {
+            status = intl.translate('unknown');
+          }
+
           return {
             name: node.metadata.name,
             metalk8s_version:
               node.metadata.labels['metalk8s.scality.com/version'],
-            statusType: statusType,
-            cpu: node.status.capacity && node.status.capacity.cpu,
+            status: status,
             control_plane: isRolePresentInLabels(node, ApiK8s.ROLE_MASTER),
             workload_plane: isRolePresentInLabels(node, ApiK8s.ROLE_NODE),
             bootstrap: isRolePresentInLabels(node, ApiK8s.ROLE_BOOTSTRAP),
-            memory:
-              node.status.capacity &&
-              prettifyBytes(
-                convertK8sMemoryToBytes(node.status.capacity.memory),
-                2
-              ).value,
-            creationDate: node.metadata.creationTimestamp,
             jid: getJidFromNameLocalStorage(node.metadata.name)
           };
         })
@@ -177,17 +179,19 @@ export function* getJobStatus(name) {
       if (status.success) {
         yield put(
           addNotificationSuccessAction({
-            title: 'Node Deployment',
-            message: `Node ${name} has been deployed successfully.`
+            title: intl.translate('node_deployment'),
+            message: intl.translate('node_deployment_success', { name })
           })
         );
       } else {
         yield put(
           addNotificationErrorAction({
-            title: 'Node Deployment',
-            message: `Node ${name} deployment has failed. ${status.step_id} - ${
-              status.comment
-            }`
+            title: intl.translate('node_deployment'),
+            message: intl.translate('node_deployment_failed', {
+              name,
+              step: status.step_id,
+              reason: status.comment
+            })
           })
         );
       }
@@ -203,8 +207,8 @@ export function* createNode({ payload }) {
     yield call(history.push, '/nodes');
     yield put(
       addNotificationSuccessAction({
-        title: 'Node Creation',
-        message: `Node ${payload.name} has been created successfully.`
+        title: intl.translate('node_creation'),
+        message: intl.translate('node_creation_success', { name: payload.name })
       })
     );
   } else {
@@ -214,8 +218,8 @@ export function* createNode({ payload }) {
     });
     yield put(
       addNotificationErrorAction({
-        title: 'Node Creation',
-        message: `Node ${payload.name} creation has failed.`
+        title: intl.translate('node_creation'),
+        message: intl.translate('node_creation_failed', { name: payload.name })
       })
     );
   }
@@ -234,7 +238,7 @@ export function* deployNode({ payload }) {
   if (result.error) {
     yield put(
       addNotificationErrorAction({
-        title: 'Node Deployment',
+        title: intl.translate('node_deployment'),
         message: result.error
       })
     );
@@ -295,17 +299,19 @@ export function* updateDeployEvents(jid, msg) {
       if (status.success) {
         yield put(
           addNotificationSuccessAction({
-            title: 'Node Deployment',
-            message: `Node ${name} has been deployed successfully.`
+            title: intl.translate('node_deployment'),
+            message: intl.translate('node_deployment_success', { name })
           })
         );
       } else {
         yield put(
           addNotificationErrorAction({
-            title: 'Node Deployment',
-            message: `Node ${name} deployment has failed. ${status.step_id} - ${
-              status.comment
-            }`
+            title: intl.translate('node_deployment'),
+            message: intl.translate('node_deployment_failed', {
+              name,
+              step: status.step_id,
+              reason: status.comment
+            })
           })
         );
       }
