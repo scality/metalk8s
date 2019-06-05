@@ -11,13 +11,15 @@ import { padding } from 'core-ui/dist/style/theme';
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
 
 const PageContainer = styled.div`
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding: ${padding.larger};
 `;
 
 const ActionContainer = styled.div`
-  margin: ${padding.base};
+  margin-bottom: ${padding.base};
 `;
 
 const TableContainer = styled.div`
@@ -198,6 +200,7 @@ class NodeList extends React.Component {
           <Button
             text={intl.messages.create_new_node}
             onClick={() => this.props.history.push('/nodes/create')}
+            icon={<i className="fas fa-plus" />}
           />
         </ActionContainer>
         <TableContainer>

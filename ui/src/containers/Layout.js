@@ -10,6 +10,7 @@ import NodeCreateForm from './NodeCreateForm';
 import NodeList from './NodeList';
 import NodeInformation from './NodeInformation';
 import NodeDeployment from './NodeDeployment';
+import ClusterMonitoring from './ClusterMonitoring';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
@@ -41,22 +42,28 @@ class Layout extends Component {
       expanded: this.props.sidebar.expanded,
       actions: [
         {
+          label: this.props.intl.messages.cluster_monitoring,
+          icon: <i className="fas fa-desktop" />,
+          onClick: () => {
+            this.props.history.push('/');
+          },
+          active: matchPath(this.props.history.location.pathname, {
+            path: '/',
+            exact: true,
+            strict: true
+          })
+        },
+        {
           label: this.props.intl.messages.nodes,
           icon: <i className="fas fa-server" />,
           onClick: () => {
             this.props.history.push('/nodes');
           },
-          active:
-            matchPath(this.props.history.location.pathname, {
-              path: '/',
-              exact: true,
-              strict: true
-            }) ||
-            matchPath(this.props.history.location.pathname, {
-              path: '/nodes',
-              exact: false,
-              strict: true
-            })
+          active: matchPath(this.props.history.location.pathname, {
+            path: '/nodes',
+            exact: false,
+            strict: true
+          })
         }
       ]
     };
@@ -97,7 +104,7 @@ class Layout extends Component {
             <PrivateRoute exact path="/nodes/:id" component={NodeInformation} />
             <PrivateRoute exact path="/nodes" component={NodeList} />
             <PrivateRoute exact path="/about" component={Welcome} />
-            <PrivateRoute exact path="/" component={NodeList} />
+            <PrivateRoute exact path="/" component={ClusterMonitoring} />
           </Switch>
         </CoreUILayout>
       </ThemeProvider>

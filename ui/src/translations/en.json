@@ -42,6 +42,13 @@
   "error": "Error",
   "completed": "Completed",
   "node_registered": "Node registered",
-  "deployment_started": "Deployment started"
-  
+  "deployment_started": "Deployment started",
+  "cluster_status": "Cluster Status",
+  "cluster_monitoring": "Cluster Monitoring",
+  "severity": "Severity",
+  "message": "Message",
+  "active_at": "Active Since",
+  "cluster_up_and_running": "Everything is up and running",
+  "down": "Down",
+  "alerts": "Alerts"
 }
