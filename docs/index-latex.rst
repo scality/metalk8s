@@ -6,6 +6,7 @@
    :maxdepth: 2
    :caption: Contents:
 
+   quickstart/index
    installation-guide/index
    developer/index
    glossary

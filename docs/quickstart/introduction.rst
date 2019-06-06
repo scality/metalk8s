@@ -1,0 +1,115 @@
+Introduction
+============
+
+Concepts
+^^^^^^^^
+Although being familiar with
+`Kubernetes concepts <https://kubernetes.io/docs/concepts/>`_
+is recommended, the necessary concepts to grasp before installing a MetalK8s
+cluster are presented here.
+
+Nodes
+"""""
+:term:`Nodes <Node>` are Kubernetes worker machines, which allow running
+containers and can be managed by the cluster (control-plane services,
+described below).
+
+Control-plane and workload-plane
+""""""""""""""""""""""""""""""""
+This dichotomy is central to MetalK8s, and often referred to in other
+Kubernetes concepts.
+
+The **control-plane** is the set of machines (called :term:`nodes <Node>`) and
+the services running there that make up the essential Kubernetes functionality
+for running containerized applications, managing declarative objects, and
+providing authentication/authorization to end-users as well as services.
+The main components making up a Kubernetes control-plane are:
+
+- :term:`API Server`
+- :term:`Scheduler`
+- :term:`Controller Manager`
+
+The **workload-plane** indicates the set of nodes where applications
+will be deployed via Kubernetes objects, managed by services provided by the
+**control-plane**.
+
+.. note::
+
+   Nodes may belong to both planes, so that one can run applications
+   alongside the control-plane services.
+
+Control-plane nodes often are responsible for providing storage for
+:term:`API Server`, by running :term:`etcd`. This responsibility may be
+offloaded to other nodes from the workload-plane (without the ``etcd`` taint).
+
+Node roles
+""""""""""
+Determining a :term:`Node` responsibilities is achieved using **roles**.
+Roles are stored in :term:`Node manifests <Node manifest>` using labels, of the
+form ``node-role.kubernetes.io/<role-name>: ''``.
+
+MetalK8s uses five different **roles**, that may be combined freely:
+
+``node-role.kubernetes.io/master``
+  The ``master`` role marks a control-plane member. Control-plane services
+  (see above) can only be scheduled on ``master`` nodes.
+
+``node-role.kubernetes.io/etcd``
+  The ``etcd`` role marks a node running :term:`etcd` for storage of
+  :term:`API Server`.
+
+``node-role.kubernetes.io/node``
+  This role marks a workload-plane node. It is included implicitly by all
+  other roles.
+
+``node-role.kubernetes.io/infra``
+  The ``infra`` role is specific to MetalK8s. It serves for marking nodes where
+  non-critical services provided by the cluster (monitoring stack, UIs, etc.)
+  are running.
+
+``node-role.kubernetes.io/bootstrap``
+  This marks the :term:`Bootstrap node`. This node is unique in the cluster,
+  and is solely responsible for the following services:
+
+  - An RPM package repository used by cluster members
+  - An OCI registry for :term:`Pods <Pod>` images
+  - A :term:`Salt Master` and its associated :term:`SaltAPI`
+
+  In practice, this role will be used in conjunction with the ``master``
+  and ``etcd`` roles for bootstrapping the control-plane.
+
+Node taints
+"""""""""""
+
+.. todo:: Explain principle of taints, link to "creating Node manifest"
+
+
+.. _quickstart-intro-networks:
+
+Networks
+""""""""
+
+.. todo::
+
+   - need physical networks for control-plane and workload-plane (may be the
+     same)
+   - define how each node in the cluster needs an IP for each network
+   - mention virtual networks for Pods and Services, managed by the CNI
+
+
+Installation plan
+^^^^^^^^^^^^^^^^^
+
+In this guide, the depicted installation procedure is for a medium sized
+cluster, using three control-plane nodes and two worker nodes. Refer to
+the :doc:`/installation-guide/index` for extensive explanations of possible
+cluster architectures.
+
+The installation process can be broken down into the following steps:
+
+#. :doc:`Setup <./setup>` of the environment (with requirements and example
+   OpenStack deployment)
+#. :doc:`Deployment <./bootstrap>` of the :term:`Bootstrap node`
+#. :doc:`Expansion <./expansion>` of the cluster from the Bootstrap node
+
+.. todo:: Include a link to example Solution deployment?

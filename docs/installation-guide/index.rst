@@ -3,4 +3,4 @@ Installation Guide
 
 .. toctree::
 
-   quickstart
+   sizing
