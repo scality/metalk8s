@@ -208,8 +208,10 @@ stages:
             ISO_MOUNTPOINT: >
               /srv/scality/metalk8s-%(prop:metalk8s_version)s
           command: >
-            tox -e tests-local -- -m "ci and not slow" &&
-            tox -e tests-local -- -m "ci and slow"
+            tox -e tests-local --
+            -m "post and ci and not multinode and not slow" &&
+            tox -e tests-local --
+            -m "post and ci and not multinode and slow"
           haltOnFailure: true
       - ShellCommand:
           name: Cypress test
