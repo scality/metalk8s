@@ -23,6 +23,7 @@ Welcome to MetalK8s's documentation!
    developer/index
    metalk8s-ui
    grafana-ui
+   glossary
 
 
 Indices and tables

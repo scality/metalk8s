@@ -8,3 +8,4 @@
 
    installation-guide/index
    developer/index
+   glossary
