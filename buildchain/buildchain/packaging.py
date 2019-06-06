@@ -139,7 +139,6 @@ BUILDER : targets.LocalImage = targets.LocalImage(
     dockerfile=constants.ROOT/'packages'/'Dockerfile',
     destination=config.BUILD_ROOT,
     save_on_disk=False,
-    task_dep=['_build_root'],
     file_dep=[
         constants.ROOT/'packages/yum_repositories/kubernetes.repo',
         constants.ROOT/'packages/yum_repositories/saltstack.repo'

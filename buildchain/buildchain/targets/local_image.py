@@ -165,15 +165,21 @@ class LocalImage(image.ContainerImage):
     @property
     def task(self) -> types.TaskDict:
         task = self.basic_task
+
+        if self.save_on_disk:
+            targets = [self.dirname/'manifest.json']
+            clean = [self.clean]
+        else:
+            targets = []
+            clean = []
+
         task.update({
             'title': lambda _: self.show('IMG BUILD'),
             'doc': 'Build {} container image.'.format(self.name),
             'actions': self._build_actions(),
-            'targets': [
-                self.dirname/'manifest.json' if self.save_on_disk
-                else self.dest_dir/self.tag
-            ],
-            'clean': True if self.save_on_disk else [self.clean]
+            'targets': targets,
+            'uptodate': [docker_command.DockerExists(self.name, self.version)],
+            'clean': clean
         })
         return task
 
@@ -204,8 +210,4 @@ class LocalImage(image.ContainerImage):
             cmd.append('dir:{}'.format(str(self.dirname)))
             actions.append(self.mkdirs)
             actions.append(cmd)
-        else:
-            # If we don't save the image, at least we touch a file
-            # (to keep track of the build).
-            actions.append((coreutils.touch, [self.dest_dir/self.tag], {}))
         return actions
