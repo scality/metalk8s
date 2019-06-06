@@ -1,4 +1,6 @@
+import ipaddress
 import logging
+import re
 import time
 from typing import Optional, Dict
 
@@ -32,3 +34,18 @@ def retry(operation, times=1, wait=1, error_msg=None, name="default"):
 
 def write_string(host, dest, contents):
     return host.run("cat > {} << EOF\n{}\nEOF".format(dest, contents))
+
+
+def get_ip_from_cidr(host, cidr):
+    network = ipaddress.IPv4Network(cidr)
+    with host.sudo():
+        ip_info = host.check_output("ip a | grep 'inet '")
+    for line in ip_info.splitlines():
+        match = re.match(
+            r'inet (?P<ip>[0-9]+(?:\.[0-9]+){3})/[0-9]+ ', line.strip()
+        )
+        assert match is not None, 'Unexpected format: {}'.format(line.strip())
+        candidate = match.group('ip')
+        if ipaddress.IPv4Address(candidate) in network:
+            return candidate
+    return None

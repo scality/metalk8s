@@ -94,6 +94,15 @@ def k8s_client(request, k8s_apiclient):
     return api_cls(api_client=k8s_apiclient)
 
 
+@pytest.fixture(scope='module')
+def bootstrap_config(host):
+    with host.sudo():
+        config_file = host.file('/etc/metalk8s/bootstrap.yaml')
+        if not config_file.exists:
+            pytest.skip('Must be run on bootstrap node')
+        return yaml.safe_load(config_file.content_string)
+
+
 # }}}
 # Given {{{
 
