@@ -79,6 +79,22 @@ def task_errors(*expected_exn: Type[Exception]) -> Callable[[Any], Any]:
 
 # The call method is not counted as a public method
 # pylint: disable=too-few-public-methods
+class DockerExists:
+    """A class providing an image existence check through the API client."""
+    def __init__(self, name: str, version: str):
+        self.name = name
+        self.version = version
+
+    def __call__(self) -> bool:
+        try:
+            docker_image = DOCKER_CLIENT.images.get(
+                '{name}:{version}'.format(name=self.name, version=self.version)
+            )
+            return docker_image is not None
+        except docker.errors.ImageNotFound:
+            return False
+
+
 class DockerBuild:
     """A class to expose the `docker build` command through the API client."""
 
