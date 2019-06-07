@@ -117,7 +117,8 @@ def _verify_kubeapi_service(host):
     """Verify that the kubeapi service answer"""
     with host.sudo():
         cmd = 'kubectl --kubeconfig=/etc/kubernetes/admin.conf cluster-info'
-        retcode = host.run(cmd).rc
-        assert retcode == 0
+        res = host.run(cmd)
+        if res.rc != 0:
+            pytest.fail(res.stderr)
 
 # }}}
