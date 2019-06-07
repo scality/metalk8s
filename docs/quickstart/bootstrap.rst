@@ -11,8 +11,8 @@ Mount this ISO file at the specific following path:
 
 .. code-block:: shell
 
-   root@bootstrap $ mkdir -p /srv/scality/metalk8s-2.0
-   root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-2.0
+   root@bootstrap $ mkdir -p /srv/scality/metalk8s-|version|
+   root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|version|
 
 
 Configuration

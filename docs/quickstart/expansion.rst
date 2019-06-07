@@ -59,7 +59,7 @@ following the template below:
        metalk8s.scality.com/ssh-host: <node control-plane IP>
        metalk8s.scality.com/ssh-sudo: 'false'
      labels:
-       metalk8s.scality.com/version: '2.0'
+       metalk8s.scality.com/version: '|version|'
        <role labels>
    spec:
      taints: <taints>
