@@ -1,7 +1,3 @@
-import json
-import time
-
-import pytest
 from pytest_bdd import scenario, then, parsers
 
 from tests import kube_utils
@@ -44,11 +40,16 @@ def check_resource_list(host, resource, namespace):
 @then(parsers.parse(
     "we can exec '{command}' in the pod labeled '{label}' "
     "in the '{namespace}' namespace"))
-def check_exec(host, command, label, namespace):
+def check_exec(request, host, k8s_client, command, label, namespace):
+    ssh_config = request.config.getoption('--ssh-config')
+
     # Just in case something is not ready yet, we make sure we can find
     # candidates before trying further
     def _wait_for_pods():
-         assert len(kube_utils.get_pods(host, label, namespace)) > 0
+        pods = kube_utils.get_pods(
+            k8s_client, ssh_config, label, namespace=namespace
+        )
+        assert len(pods) > 0
 
     utils.retry(
         _wait_for_pods,
@@ -57,7 +58,9 @@ def check_exec(host, command, label, namespace):
         name="wait for pod labeled '{}'".format(label)
     )
 
-    candidates = kube_utils.get_pods(host, label, namespace)
+    candidates = kube_utils.get_pods(
+        k8s_client, ssh_config, label, namespace=namespace
+    )
 
     assert len(candidates) == 1, (
         "Expected only one Pod with label {l}, found {f}"
@@ -70,22 +73,6 @@ def check_exec(host, command, label, namespace):
             'kubectl --kubeconfig=/etc/kubernetes/admin.conf '
             'exec --namespace %s %s %s',
             namespace,
-            pod['metadata']['name'],
+            pod.metadata.name,
             command,
         )
-
-
-@then(parsers.parse(
-    "we have at least {min_pods_count:d} running pod labeled '{label}'"))
-def count_running_pods(host, min_pods_count, label):
-    def _check_pods_count():
-        pods = kube_utils.get_pods(
-            host,
-            label,
-            namespace="kube-system",
-            status_phase="Running",
-        )
-
-        assert len(pods) >= min_pods_count
-
-    utils.retry(_check_pods_count, times=10, wait=3)

@@ -57,38 +57,9 @@ def check_node_is_registered(k8s_client, hostname):
         pytest.fail(str(exn))
 
 
-@then(parsers.parse('node "{node_name}" has the role master'))
-def check_master_role(k8s_client, node_name):
-    """Check if the given node meet the criteria to have the master role."""
-    namespace = 'kube-system'
-    selector  = 'spec.nodeName={}'.format(node_name)
-    pods = k8s_client.list_namespaced_pod(namespace, field_selector=selector)
-    pods_to_check = [
-        'kube-scheduler', 'kube-controller-manager', 'kube-apiserver'
-    ]
-    for pod in pods.items:
-        component = pod.metadata.labels.get('component')
-        if component in pods_to_check:
-            if pod.status.phase == 'Running':
-                pods_to_check.remove(component)
-    assert not pods_to_check, '{} should be up and running'.format(
-        ', '.join(pods_to_check)
-    )
-
-
-@then(parsers.parse('node "{node_name}" has the role etcd'))
+@then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
 def check_etcd_role(k8s_client, node_name):
-    """Check if the given node meet the criteria to have the etcd role."""
-    namespace = 'kube-system'
-    field_selector = 'spec.nodeName={}'.format(node_name)
-    label_selector = 'component=etcd'
-    pods = k8s_client.list_namespaced_pod(
-        namespace, field_selector=field_selector, label_selector=label_selector
-    )
-    assert pods.items, 'etcd pod not found on node {}'.format(node_name)
-    assert pods.items[0].status.phase == 'Running', \
-        'etcd pod is not running on node {}'.format(node_name)
-
+    """Check if the given node is a member of the etcd cluster."""
     etcd_member_list = etcdctl(k8s_client, ['member', 'list'])
     assert node_name in etcd_member_list, \
         'node {} is not part of the etcd cluster'.format(node_name)

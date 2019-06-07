@@ -6,9 +6,10 @@ from tests import kube_utils
 # Given {{{
 
 @given(parsers.parse("pods with label '{label}' are '{state}'"))
-def check_pod_state(host, label, state):
+def check_pod_state(request, host, k8s_client, label, state):
+    ssh_config = request.config.getoption('--ssh-config')
     pods = kube_utils.get_pods(
-        host, label, namespace="kube-system", status_phase="Running",
+        k8s_client, ssh_config, label, namespace="kube-system", state="Running",
     )
 
     assert len(pods) > 0, "No {} pod with label '{}' found".format(
