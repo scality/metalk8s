@@ -11,6 +11,7 @@ import styled from 'styled-components';
 
 import { Table } from 'core-ui';
 import { padding } from 'core-ui/dist/style/theme';
+import CircleStatus from '../components/CircleStatus';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -22,6 +23,10 @@ const PageContainer = styled.div`
 
 const TableContainer = styled.div`
   flex-grow: 1;
+
+  .sc-table-column-cell-container-severity {
+    justify-content: center;
+  }
 `;
 
 const PageSubtitle = styled.h3`
@@ -79,7 +84,10 @@ const ClusterMonitoring = props => {
     {
       label: props.intl.messages.severity,
       dataKey: 'severity',
-      width: 100
+      width: 100,
+      renderer: data => {
+        return <CircleStatus className="fas fa-circle" status={data} />;
+      }
     },
     {
       label: props.intl.messages.message,
