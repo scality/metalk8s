@@ -88,7 +88,18 @@ def docker_image_exists(target_image: image.ContainerImage) -> bool:
         return False
 
 
-
+def docker_remove_image(
+    target_image: image.ContainerImage
+) -> Optional[TaskError]:
+    """
+    Run the `docker rmi` command on the given image through the API client.
+    """
+    try:
+        return DOCKER_CLIENT.images.remove(
+            target_image.tag, force=False, noprune=False
+        )
+    except docker.errors.ImageNotFound:
+        return None
 
 
 @task_errors(docker.errors.BuildError, docker.errors.APIError)

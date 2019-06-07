@@ -29,6 +29,7 @@ nginx
 prebuilt
 py
 readonly
+rmi
 rpmspec
 repo
 rpmlint

@@ -1,15 +1,16 @@
 # coding: utf-8
 
-"""Tasks to put container images on the ISO.
+"""Tasks to handle container images.
 
 This module provides two services:
 - building an image from a local Dockerfile
 - downloading a prebuilt image from a registry
+- cleaning MetalK8s-related images from the local registry
 
 In either cases, those images are saved in a specific directory under the
 ISO's root.
 
-Overview:
+Overview of the `images` task:
 
                                   ┌───────────┐
                             ╱────>│pull:image1│───────     ┌─────────┐
@@ -39,6 +40,9 @@ from buildchain import targets
 from buildchain import types
 from buildchain import utils
 
+from . import docker_command
+from . import packaging
+
 
 def task_images() -> types.TaskDict:
     """Pull/Build the container images."""
@@ -52,6 +56,14 @@ def task_images() -> types.TaskDict:
         ],
     }
 
+def task_clean_registry() -> types.TaskDict:
+    """Clean the registry of MetalK8s-related images."""
+    return {
+        'actions': [
+            (docker_command.docker_remove_image, [img], {})
+            for img in [*TO_BUILD, packaging.BUILDER]
+        ]
+    }
 
 def task__image_mkdir_root() -> types.TaskDict:
     """Create the images root directory."""
