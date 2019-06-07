@@ -57,6 +57,25 @@ def check_node_is_registered(k8s_client, hostname):
         pytest.fail(str(exn))
 
 
+@then(parsers.parse('node "{hostname}" status is "{expected_status}"'))
+def check_node_status(k8s_client, hostname, expected_status):
+    """Check if the given node has the expected status."""
+    try:
+        status = k8s_client.read_node_status(hostname).status
+    except k8s.client.rest.ApiException as exn:
+        pytest.fail(str(exn))
+    # If really not ready, status may not have been pushed yet.
+    if status.conditions is None:
+        assert expected_status == 'NotReady'
+        return
+    # See https://kubernetes.io/docs/concepts/architecture/nodes/#condition
+    MAP_STATUS = {'True': 'Ready', 'False': 'NotReady', 'Unknown': 'Unknown'}
+    for condition in status.conditions:
+        if condition.type == 'Ready':
+            break
+    assert MAP_STATUS[condition.status] == expected_status
+
+
 @then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
 def check_etcd_role(k8s_client, node_name):
     """Check if the given node is a member of the etcd cluster."""
