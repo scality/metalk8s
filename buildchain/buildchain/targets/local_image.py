@@ -178,7 +178,7 @@ class LocalImage(image.ContainerImage):
             'doc': 'Build {} container image.'.format(self.name),
             'actions': self._build_actions(),
             'targets': targets,
-            'uptodate': [docker_command.DockerExists(self.name, self.version)],
+            'uptodate': [(docker_command.docker_image_exists, [self], {})],
             'clean': clean
         })
         return task
@@ -187,13 +187,9 @@ class LocalImage(image.ContainerImage):
         """Build a container image locally."""
         actions: List[types.Action] = [self.check_dockerfile_dependencies]
 
-        docker_build = docker_command.DockerBuild(
-            tag=self.tag,
-            path=self.dockerfile.parent,
-            dockerfile=self.dockerfile,
-            buildargs=self.build_args
+        actions.append(
+            (docker_command.docker_build, [self], {})
         )
-        actions.append(docker_build)
 
         # If a destination is defined, let's save the image there.
         if self.save_on_disk:

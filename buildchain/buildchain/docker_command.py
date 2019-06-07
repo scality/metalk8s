@@ -77,56 +77,33 @@ def task_errors(*expected_exn: Type[Exception]) -> Callable[[Any], Any]:
     return wrapped_task
 
 
-# The call method is not counted as a public method
-# pylint: disable=too-few-public-methods
-class DockerExists:
-    """A class providing an image existence check through the API client."""
-    def __init__(self, name: str, version: str):
-        self.name = name
-        self.version = version
-
-    def __call__(self) -> bool:
-        try:
-            docker_image = DOCKER_CLIENT.images.get(
-                '{name}:{version}'.format(name=self.name, version=self.version)
-            )
-            return docker_image is not None
-        except docker.errors.ImageNotFound:
-            return False
+def docker_image_exists(target_image: image.ContainerImage) -> bool:
+    """
+    Verify image existence in the local registry through the API client.
+    """
+    try:
+        docker_image = DOCKER_CLIENT.images.get(target_image.tag)
+        return docker_image is not None
+    except docker.errors.ImageNotFound:
+        return False
 
 
-class DockerBuild:
-    """A class to expose the `docker build` command through the API client."""
 
-    def __init__(
-        self,
-        tag: str,
-        path: Path,
-        dockerfile: Path,
-        buildargs: Dict[str, Any]
-    ):
-        """Initialize a `docker tag` callable object.
 
-        Arguments:
-            tag:        the tag to add to the resulting image
-            path:       the build context path
-            dockerfile: the Dockerfile path
-            buildargs:  dict of CLI-equivalent `--build-arg` parameters
-        """
-        self.tag = tag
-        self.path = str(path)
-        self.dockerfile = str(dockerfile)
-        self.buildargs = buildargs
 
-    @task_errors(docker.errors.BuildError, docker.errors.APIError)
-    def __call__(self) -> Optional[TaskError]:
-        return DOCKER_CLIENT.images.build(
-            tag=self.tag,
-            path=self.path,
-            dockerfile=self.dockerfile,
-            buildargs=self.buildargs,
-            forcerm=True,
-        )
+@task_errors(docker.errors.BuildError, docker.errors.APIError)
+def docker_build(target_image: Any) -> Optional[TaskError]:
+    """
+    Run the `docker build` command on the given image through the API client.
+    """
+    docker_context = target_image.dockerfile.parent
+    return DOCKER_CLIENT.images.build(
+        tag=target_image.tag,
+        path=str(docker_context),
+        dockerfile=str(target_image.dockerfile),
+        buildargs=target_image.build_args,
+        forcerm=True,
+    )
 
 
 class DockerRun:
