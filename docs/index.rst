@@ -22,6 +22,7 @@ Welcome to MetalK8s's documentation!
    installation-guide/index
    developer/index
    metalk8s-ui
+   grafana-ui
 
 
 Indices and tables
