@@ -22,8 +22,6 @@ Welcome to MetalK8s's documentation!
    quickstart/index
    installation-guide/index
    developer/index
-   metalk8s-ui
-   grafana-ui
    glossary
 
 
