@@ -12,32 +12,25 @@ and can be used for operating, extending and upgrading a MetalK8s cluster.
 
 .. todo:: Include screenshots
 
-.. todo::
-
-  The following test has been realized on vagrant only - One should list
-  all requirements for reaching the UI using an operational cluster.
-
 
 Gather required information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Run all following commands as ``root`` on the bootstrap node.
-Get the workload plane IP of the bootstrap node.
-On a Vagrant environment (see :doc:`/developer/building/local_cluster`), you
-can obtain it with:
-.. code-block:: shell
+#. Get the workload plane IP of the bootstrap node.
 
-      $ ip a show eth1
+   .. code-block:: shell
 
-Please note the IP address, then let's get the port number:
+      root@bootstrap $ salt-call grains.get metalk8s:workload_plane_ip
+      local:
+          <the workload plane IP>
 
-.. code-block:: shell
+#. Retrieve the active ``NodePort`` number for the UI (here ``30923``):
 
-   $ kubectl --kubeconfig=/etc/kubernetes/admin.conf get svc metalk8s-ui -n kube-system
+   .. code-block:: shell
 
-   NAME                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-   metalk8s-ui           NodePort    10.104.61.208   <none>        80:30923/TCP     3h
+      root@boostrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf get svc metalk8s-ui -n kube-system
 
-Please note the port used by metalk8s-ui (here ``30923``)
+      NAME                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+      metalk8s-ui           NodePort    10.104.61.208   <none>        80:30923/TCP     3h
 
 
 Use MetalK8s UI
@@ -58,19 +51,13 @@ Go back on the first tab, then log in with the default login / password
 Grafana
 -------
 
-.. warning::
-
-   The following test has been realized on Vagrant only - One should list
-   all requirements for reaching the UI using an operational cluster.
-
-
 You will first need the latest ``kubectl`` version installed on your host.
 
 From the bootstrap node, get the port used by Grafana:
 
 .. code-block:: shell
 
-   [bootstrap]$ kubectl --kubeconfig=/etc/kubernetes/admin.conf get service grafana -n monitoring
+   root@bootstrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf get service grafana -n monitoring
 
    NAME      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
    grafana   ClusterIP   10.109.125.193   <none>        3000/TCP   1h
@@ -81,13 +68,13 @@ To authenticate with the cluster, retrieve the admin kubeconfig on your host:
 
 .. code-block:: shell
 
-   [host]$ scp root@bootstrap:/etc/kubernetes/admin.conf ./admin.conf
+   user@your-host $ scp root@bootstrap:/etc/kubernetes/admin.conf ./admin.conf
 
 Forward the port used by Grafana:
 
 .. code-block:: shell
 
-   [host]$ kubectl --namespace monitoring port-forward svc/grafana 3000
+   user@your-host $ kubectl --namespace monitoring port-forward svc/grafana 3000
 
 Then open your web browser and navigate to ``http://localhost:3000``
 
