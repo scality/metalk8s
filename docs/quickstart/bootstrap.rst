@@ -51,29 +51,39 @@ Configuration
 
 SSH identity
 ^^^^^^^^^^^^
+#. Prepare the MetalK8s PKI directory.
 
-.. todo::
+   .. code-block:: shell
 
-   review this procedure #1122
+      root@bootstrap $ mkdir -p /etc/metalk8s/pki
 
-1. Generate an SSH key that will be used for authentication
+#. Generate a passwordless SSH key that will be used for authentication
    to future new nodes.
 
-.. code-block:: shell
+   .. code-block:: shell
 
-   root@bootstrap $ ssh-keygen
-   root@bootstrap $ ssh-copy-id <IP-of-the-bootstrap-node>
+      root@bootstrap $ ssh-keygen -t rsa -b 4096 -N '' -f /etc/metalk8s/pki/salt-bootstrap
 
-2. Copy the private key in the PKI folder of MetalK8s. This will be the
-   file path against which MetalK8s checks for the initial authentication to
-   the future new nodes.
+   .. warning::
 
-.. warning:: It is mandatory for the key to be in this ``pki`` directory.
+      Although the key name is not critical (will be re-used afterwards, so
+      make sure to replace occurences of ``salt-bootstrap`` where relevant),
+      this key must exist in the ``/etc/metalk8s/pki`` directory.
 
-.. code-block:: shell
+#. Accept the new identity on future new nodes (run from your host).
+   First, retrieve the public key from the Bootstrap node.
 
-   root@bootstrap $ mkdir -p /etc/metalk8s/pki/
-   root@bootstrap $ cp /root/.ssh/id_rsa /etc/metalk8s/pki/id_rsa
+   .. code-block:: shell
+
+      user@host $ scp root@bootstrap:/etc/metalk8s/pki/salt-bootstrap.pub /tmp/salt-bootstrap.pub
+
+   Then, authorize this public key on each new node (this command assumes a
+   functional SSH access from your host to the target node). Repeat until all
+   nodes accept SSH connections from the Bootstrap node.
+
+   .. code-block:: shell
+
+      user@host $ ssh-copy-id -i /tmp/salt-bootstrap.pub root@<node_hostname>
 
 
 Installation
