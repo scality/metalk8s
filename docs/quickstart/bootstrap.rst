@@ -15,6 +15,8 @@ Mount this ISO file at the specific following path:
    root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|version|
 
 
+.. _quickstart-bootstrap-config:
+
 Configuration
 -------------
 

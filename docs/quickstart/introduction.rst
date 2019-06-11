@@ -92,13 +92,27 @@ dedicated to running control-plane services.
 
 Networks
 """"""""
+A MetalK8s cluster requires a physical network for both the control-plane and
+the workload-plane Nodes. Although these may be the same network, the
+distinction will still be made in further references to these networks, and
+when referring to a Node IP address. Each Node in the cluster **must** belong
+to these two networks.
 
-.. todo::
+The control-plane network will serve for cluster services to communicate with
+each other. The workload-plane network will serve for exposing applications,
+including the ones in ``infra`` Nodes, to the outside world.
 
-   - need physical networks for control-plane and workload-plane (may be the
-     same)
-   - define how each node in the cluster needs an IP for each network
-   - mention virtual networks for Pods and Services, managed by the CNI
+.. todo:: Reference Ingress
+
+MetalK8s also allows one to configure virtual networks used for internal
+communications:
+
+- A network for :term:`Pods <Pod>`, defaulting to ``10.233.0.0/16``
+- A network for :term:`Services <Service>`, defaulting to ``10.96.0.0/12``
+
+In case of conflicts with the existing infrastructure, make sure to choose
+other ranges during the
+:ref:`Bootstrap configuration <quickstart-bootstrap-config>`.
 
 
 Installation plan

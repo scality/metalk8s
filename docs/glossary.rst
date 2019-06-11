@@ -98,6 +98,13 @@ Glossary
      |see K8s docs|
      `kube-scheduler <https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/>`_.
 
+   Service
+     A Kubernetes Service is an abstract way to expose an application running
+     on a set of :term:`Pods <Pod>` as a network service.
+
+     |see K8s docs|
+     `Services <https://kubernetes.io/docs/concepts/services-networking/service/>`_.
+
    Taint
      Taints are a system for Kubernetes to mark :term:`Nodes <Node>` as
      reserved for a specific use-case. They are used in conjunction with
