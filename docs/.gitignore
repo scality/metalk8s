@@ -1,4 +1,8 @@
+# Ignore images generated from UML diagrams
 *.png
 *.svg
+
+# Don't ignore images to include in docs
+!/quickstart/img/**/*.png
 
 /_build/

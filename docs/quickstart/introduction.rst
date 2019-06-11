@@ -117,11 +117,22 @@ other ranges during the
 
 Installation plan
 ^^^^^^^^^^^^^^^^^
-
 In this guide, the depicted installation procedure is for a medium sized
 cluster, using three control-plane nodes and two worker nodes. Refer to
 the :doc:`/installation-guide/index` for extensive explanations of possible
 cluster architectures.
+
+.. note::
+
+   This image depicts the architecture deployed with this Quickstart guide.
+
+   .. image:: img/architecture.png
+      :width: 100%
+
+   .. todo::
+
+      - describe architecture schema, include legend
+      - improve architecture explanation and presentation
 
 The installation process can be broken down into the following steps:
 
