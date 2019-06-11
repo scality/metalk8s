@@ -80,8 +80,12 @@ MetalK8s uses five different **roles**, that may be combined freely:
 
 Node taints
 """""""""""
+:term:`Taints <Taint>` are complementary to roles. When a taint, or a set of
+taints, are applied to a :term:`Node`, only :term:`Pods <Pod>` with the
+corresponding :term:`tolerations <Toleration>` can be scheduled on that Node.
 
-.. todo:: Explain principle of taints, link to "creating Node manifest"
+Taints allow dedicating Nodes to specific use-cases, such as having Nodes
+dedicated to running control-plane services.
 
 
 .. _quickstart-intro-networks:

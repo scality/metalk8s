@@ -98,6 +98,22 @@ Glossary
      |see K8s docs|
      `kube-scheduler <https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/>`_.
 
+   Taint
+     Taints are a system for Kubernetes to mark :term:`Nodes <Node>` as
+     reserved for a specific use-case. They are used in conjunction with
+     :term:`tolerations <Toleration>`.
+
+     |see K8s docs|
+     `taints and tolerations <https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/>`_.
+
+   Toleration
+     Tolerations allow to mark :term:`Pods <Pod>` as schedulable for all
+     :term:`Nodes <Node>` matching some *filter*, described with
+     :term:`taints <Taint>`.
+
+     |see K8s docs|
+     `taints and tolerations <https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/>`_.
+
    ``kubectl``
      |kubectl| is a CLI interface for interacting with a Kubernetes cluster.
 
