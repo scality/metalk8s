@@ -49,8 +49,8 @@ Configuration
 
 .. _quickstart-bootstrap-ssh:
 
-SSH identity
-^^^^^^^^^^^^
+SSH provisioning
+^^^^^^^^^^^^^^^^
 #. Prepare the MetalK8s PKI directory.
 
    .. code-block:: shell

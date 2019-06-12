@@ -115,6 +115,8 @@ other ranges during the
 :ref:`Bootstrap configuration <quickstart-bootstrap-config>`.
 
 
+.. _quickstart-intro-install-plan:
+
 Installation plan
 ^^^^^^^^^^^^^^^^^
 In this guide, the depicted installation procedure is for a medium sized
