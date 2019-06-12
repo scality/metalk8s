@@ -16,6 +16,7 @@ stages:
             - build
             - docs
             - lint
+            - unit_tests
           haltOnFailure: true
       - SetPropertyFromCommand:
           name: Set short version as property from built artifacts
@@ -112,6 +113,27 @@ stages:
           name: Run all linting targets
           command: ./doit.sh lint
           usePTY: true
+          haltOnFailure: false
+
+  unit_tests:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests: eve/workers/pod-unit-tests
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          name: Run all UI unit tests
+          workdir: build/ui
+          command: >
+            npm install
+            --production
+            -no-cache
+            --no-save
+            -q
+            --no-update-notifier &&
+            npm run test:ci --no-update-notifier
           haltOnFailure: false
 
   single-node:
