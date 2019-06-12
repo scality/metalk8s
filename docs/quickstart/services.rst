@@ -10,9 +10,6 @@ MetalK8s GUI
 This GUI is deployed during the :doc:`Bootstrap installation <./bootstrap>`,
 and can be used for operating, extending and upgrading a MetalK8s cluster.
 
-.. todo:: Include screenshots
-
-
 Gather required information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #. Get the workload plane IP of the bootstrap node.
@@ -39,11 +36,26 @@ Once you have gathered the IP address and the port number, open your
 web browser and navigate to the URL ``http://<ip>:<port>``, replacing
 placeholders with the values retrieved before.
 
-The login page is loaded. At the bottom left on the page, click on the link
-``Accept SSL Certificate``. On the new tab, click on the button ``Advanced...``
-then on ``Accept the risk and continue``.
-Go back on the first tab, then log in with the default login / password
+The login page is loaded, and should resemble the following:
+
+.. image:: img/ui/login.png
+
+In the bottom left corner of the page, click the link
+``Accept SSL Certificate``. In the new tab, click the button ``Advanced...``,
+then select ``Accept the risk and continue``.
+
+Go back to the first tab, then log in with the default login / password
 (admin / admin).
+
+The landing page should look like this:
+
+.. image:: img/ui/monitoring.png
+
+This page displays two monitoring indicators:
+
+#. the Cluster Status, which evaluates if control-plane services are all up and
+   running
+#. the list of alerts stored in :term:`Alertmanager`
 
 
 .. _quickstart-services-grafana:

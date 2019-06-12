@@ -9,6 +9,13 @@ Glossary
 
 .. glossary::
 
+   Alertmanager
+     The Alertmanager is a service for handling alerts sent by client
+     applications, such as :term:`Prometheus`.
+
+     See also the official Prometheus documentation for
+     `Alertmanager <https://prometheus.io/docs/alerting/alertmanager/>`_.
+
    API Server
    ``kube-apiserver``
      The Kubernetes API Server validates and configures data for the Kubernetes
@@ -66,6 +73,13 @@ Glossary
 
      |see K8s docs|
      `Pods <https://kubernetes.io/docs/concepts/workloads/pods/pod/>`_.
+
+   Prometheus
+     Prometheus serves as a time-series database, and is used in MetalK8s as
+     the storage for all metrics exported by applications, whether being
+     provided by the cluster or installed afterwards.
+
+     For more details, see `prometheus.io <https://prometheus.io>`_.
 
    SaltAPI
      SaltAPI is an HTTP service for exposing operations to perform with a
