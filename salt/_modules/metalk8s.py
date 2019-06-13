@@ -3,11 +3,13 @@
 Module for handling MetalK8s specific calls.
 '''
 import logging
+import os.path
+import re
 import socket
 import time
 
 from salt.exceptions import CommandExecutionError
-from salt.utils.decorators import depends
+import salt.utils.files
 
 log = logging.getLogger(__name__)
 
@@ -104,3 +106,127 @@ def minions_by_role(role, nodes=None):
         for (node, node_info) in nodes.items()
         if role in node_info.get('roles', [])
     ]
+
+
+def _get_product_version(info):
+    """Extract product version from info
+
+    Arguments:
+        info (str): content of metalk8s product.txt file
+    """
+    match = re.search(r'^SHORT_VERSION=(?P<version>.+)$', info, re.MULTILINE)
+    return match.group('version') if match else None
+
+
+def _get_product_name(info):
+    """Extract product name from info
+
+    Arguments:
+        info (str): content of metalk8s product.txt file
+    """
+    match = re.search(r'^NAME=(?P<name>.+)$', info, re.MULTILINE)
+    return match.group('name') if match else None
+
+
+def _get_product_info(info):
+    """Extract product information from info
+
+    Arguments:
+        info (str): content of metalk8s product.txt file
+    """
+    return {
+        'version': _get_product_version(info),
+        'name': _get_product_name(info)
+    }
+
+
+def product_info_from_tree(path):
+    """Extract product information from a directory
+
+    Arguments:
+        path (str): path to a directory
+    """
+    log.debug('Reading product version from %r', path)
+
+    product_txt = os.path.join(path, 'product.txt')
+
+    if not os.path.isfile(product_txt):
+        raise CommandExecutionError(
+            'Path {} has no "product.txt"'.format(path))
+
+    with salt.utils.files.fopen(os.path.join(path, 'product.txt')) as fd:
+        return _get_product_info(fd.read())
+
+
+def product_info_from_iso(path):
+    """Extract product information from an iso
+
+    Arguments:
+        path (str): path to an iso
+    """
+    log.debug('Reading product version from %r', path)
+
+    cmd = ' '.join([
+        'isoinfo',
+        '-x', '/PRODUCT.TXT\;1',
+        '-i', '"{}"'.format(path),
+    ])
+    result = __salt__['cmd.run_all'](cmd=cmd)
+    log.debug('Result: %r', result)
+
+    if result['retcode'] != 0:
+        raise CommandExecutionError(
+            'Failed to run isoinfo: {}'.format(
+                result.get('stderr', result['stdout'])
+            )
+        )
+
+    return _get_product_info(result['stdout'])
+
+
+def get_products(products=None):
+    """Get a matching between version and path from products or
+    `metalk8s.products` from pillar if products is None
+
+    Arguments:
+        products (list): list of path to directory or iso
+    """
+    if not products:
+        products = __pillar__.get('metalk8s', {}).get('products', [])
+
+    if isinstance(products, str):
+        products = [products]
+    if not isinstance(products, list):
+        raise CommandExecutionError(
+            'Invalid products list or string expected and got: {0}'.format(
+                products
+            )
+        )
+
+    res = {}
+
+    for prod in products:
+        if os.path.isdir(prod):
+            iso = None
+            info = product_info_from_tree(prod)
+            path = prod
+            version = info['version']
+        elif os.path.isfile(prod):
+            iso = prod
+            info = product_info_from_iso(prod)
+            version = info['version']
+            path = '/srv/scality/metalk8s-{0}'.format(version)
+        else:
+            log.warning(
+                'Skip, invalid products path %s, should be an iso or a '
+                'directory.',
+                prod
+            )
+            continue
+
+        info.update({'path': path, 'iso': iso})
+        res.update(
+            {'metalk8s-{0}'.format(version): info}
+        )
+
+    return res

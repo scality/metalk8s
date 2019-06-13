@@ -167,7 +167,7 @@ configure_yum_local_repositories() {
 
 configure_yum_local_repository() {
     local -r repo_name=$1 gpgcheck=${2:-0}
-    local -r repo_path=/srv/scality/metalk8s-@@VERSION/packages/$repo_name-el7
+    local -r repo_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/packages/$repo_name-el7
     local gpg_keys
 
     gpg_keys=$(
@@ -195,17 +195,30 @@ install_salt_minion() {
     "$YUM" install "${yum_opts[@]}" salt-minion
 }
 
+install_genisoimage() {
+    local -a yum_opts=(
+        '--assumeyes'
+        '--disablerepo=*'
+        '--enablerepo=metalk8s-*'
+    )
+
+    "$YUM" install "${yum_opts[@]}" genisoimage
+}
+
 configure_salt_minion_local_mode() {
-    "$SALT_CALL" --file-root=/srv/scality/metalk8s-@@VERSION/salt \
+    local -r file_root=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/salt
+    local -r pillar_root=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/pillar
+
+    "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough saltutil.sync_all
 
     cat > "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}" << EOF
 file_roots:
   metalk8s-@@VERSION:
-    - /srv/scality/metalk8s-@@VERSION/salt
+    - $file_root
 pillar_roots:
   metalk8s-@@VERSION:
-    - /srv/scality/metalk8s-@@VERSION/pillar
+    - $pillar_root
 
 # use new module.run format
 use_superseded:
@@ -271,7 +284,7 @@ orchestrate_bootstrap() {
 
     run "Deploying early-stage bootstrap node in local mode (this may take a while)" \
         "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
-            '["metalk8s.roles.minion", "metalk8s.roles.bootstrap"]' \
+            '["metalk8s.roles.bootstrap", "metalk8s.roles.minion"]' \
             saltenv=metalk8s-@@VERSION \
             pillarenv=metalk8s-@@VERSION \
             pillar="${pillar[*]}"
@@ -283,6 +296,9 @@ orchestrate_bootstrap() {
             saltenv=metalk8s-@@VERSION
     run "Syncing Runner modules on Salt master" \
         "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_runners \
+            saltenv=metalk8s-@@VERSION
+    run "Syncing Execution modules on Salt master" \
+        "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_modules \
             saltenv=metalk8s-@@VERSION
 
     local -r bootstrap_id=$(
@@ -321,6 +337,7 @@ main() {
     run "Stopping Salt minion service" stop_salt_minion_service
     run "Configuring local YUM repositories" configure_yum_repositories
     run "Installing Salt minion" install_salt_minion
+    run "Installing genisoimage" install_genisoimage
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
     orchestrate_bootstrap

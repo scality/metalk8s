@@ -112,18 +112,11 @@ class StaticContainerRegistry(targets.AtomicTarget):
 
 
 PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
-    Path('pillar/metalk8s/roles/minion.sls'),
-    targets.TemplateFile(
-        task_name='bootstrap.sls',
-        source=constants.ROOT/'pillar'/'metalk8s'/'roles'/'bootstrap.sls.in',
-        destination=
-            constants.ISO_ROOT/'pillar'/'metalk8s'/'roles'/'bootstrap.sls',
-        context={'VERSION': constants.SHORT_VERSION},
-        file_dep=[constants.VERSION_FILE],
-    ),
+    Path('pillar/metalk8s/roles/bootstrap.sls'),
     Path('pillar/metalk8s/roles/ca.sls'),
     Path('pillar/metalk8s/roles/etcd.sls'),
     Path('pillar/metalk8s/roles/master.sls'),
+    Path('pillar/metalk8s/roles/minion.sls'),
     Path('pillar/metalk8s/roles/node.sls'),
     targets.TemplateFile(
         task_name='top.sls',
@@ -277,6 +270,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/register_etcd.sls'),
+
+    Path('salt/metalk8s/products/init.sls'),
+    Path('salt/metalk8s/products/mounted.sls'),
 
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),

@@ -32,7 +32,7 @@
         'metalk8s': {
             'nodes': {
                 pillar.bootstrap_id: {
-                    'roles': ['bootstrap', 'master', 'etcd','ca', 'infra'],
+                    'roles': ['bootstrap', 'master', 'etcd', 'ca', 'infra'],
                     'version': version,
                 },
             },
