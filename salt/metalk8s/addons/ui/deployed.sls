@@ -51,6 +51,6 @@ Create metalk8s-ui ConfigMap:
             "url_prometheus": "{{ prometheus }}"
           }
         theme.json: |
-          {"brand": {"primary": "#21157A"}}
+          {"brand": {"primary": "#403e40", "secondary": "#e99121"}}
   require:
     - pkg: Install Python Kubernetes client
