@@ -95,10 +95,10 @@ NODE_IMAGE_VERSION : str = '10.16.0'
 # pylint:disable=line-too-long
 TO_PULL : Tuple[targets.RemoteImage, ...] = (
     targets.RemoteImage(
-        registry=constants.COREOS_REGISTRY,
+        registry=constants.GOOGLE_REGISTRY,
         name='addon-resizer',
-        version='1.0',
-        digest='sha256:f84cebb37aa907e3b34ca165d6258730fa8d15fa00d490c300bd04222a29e708',
+        version='1.8.3',
+        digest='sha256:07353f7b26327f0d933515a22b1de587b040d3d85c464ea299c1b9f242529326',
         destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),

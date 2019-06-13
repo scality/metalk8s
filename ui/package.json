@@ -6,7 +6,7 @@
     "@fortawesome/fontawesome-free": "^5.7.2",
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-dist",
     "axios": "^0.18.0",
-    "core-ui": "github:scality/core-ui.git#7bff492",
+    "core-ui": "github:scality/core-ui.git#179dd7e",
     "formik": "1.5.1",
     "lodash": "4.17.11",
     "memoize-one": "^4.0.2",
@@ -31,7 +31,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:nowatch": "CI=true react-scripts test --env=jsdom"
   },
   "eslintConfig": {
     "extends": "react-app"

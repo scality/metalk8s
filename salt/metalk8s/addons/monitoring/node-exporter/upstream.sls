@@ -106,7 +106,6 @@ spec:
       hostPID: true
       nodeSelector:
         beta.kubernetes.io/os: linux
-        node-role.kubernetes.io/infra: ''
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
@@ -116,6 +115,12 @@ spec:
         operator: "Exists"
         effect: "NoSchedule"
       - key: "node-role.kubernetes.io/infra"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/etcd"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/master"
         operator: "Exists"
         effect: "NoSchedule"
       volumes:

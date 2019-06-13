@@ -17,6 +17,4 @@ customer datacenters.
    Adapt MetalK8s v1 introduction text to the new approach (i.e. replace
    "kubespray" with "kubeadm", "ansible" with "salt", ...)
 
-.. todo::
-
-   Reference the quickstart guide (see issue #1070)
+See the :doc:`/quickstart/index` to begin installing a MetalK8s_ cluster.

@@ -11,7 +11,6 @@ import { eventChannel, END } from 'redux-saga';
 
 import * as ApiK8s from '../../services/k8s/api';
 import * as ApiSalt from '../../services/salt/api';
-import { convertK8sMemoryToBytes, prettifyBytes } from '../../services/utils';
 import history from '../../history';
 import {
   addNotificationSuccessAction,
