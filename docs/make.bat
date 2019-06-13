@@ -11,7 +11,7 @@ set SOURCEDIR=.
 set BUILDDIR=_build
 set SPHINXPROJ=MetalK8s
 set SPHINXAUTOBUILD=sphinx-autobuild
-set SPHINXAUTOBUILDOPTS=--watch %SOURCEDIR%\.. --ignore "*~" --ignore "*.swp" --re-ignore "4913$" --re-ignore "\.git/"
+set SPHINXAUTOBUILDOPTS=--watch %SOURCEDIR% --ignore "*~" --ignore "*.swp" --re-ignore "4913$" --re-ignore "\.git/"
 
 if "%1" == "" goto help
 if "%1" == "livehtml" goto livehtml

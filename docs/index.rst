@@ -19,10 +19,10 @@ Welcome to MetalK8s's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   quickstart/index
    installation-guide/index
    developer/index
-   metalk8s-ui
-   grafana-ui
+   glossary
 
 
 Indices and tables
