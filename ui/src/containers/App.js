@@ -13,6 +13,7 @@ import translations_fr from '../translations/fr';
 import Layout from './Layout';
 import Login from './Login';
 
+import IntlGlobalProvider from '../translations/IntlGlobalProvider';
 import { fetchConfigAction } from '../ducks/config';
 
 const messages = {
@@ -33,10 +34,12 @@ class App extends Component {
 
     return api && theme && this.props.isUserInfoLoaded ? (
       <IntlProvider locale={language} messages={messages[language]}>
-        <Switch>
-          <Route path="/login" component={Login} />
-          <Route component={Layout} />
-        </Switch>
+        <IntlGlobalProvider>
+          <Switch>
+            <Route path="/login" component={Login} />
+            <Route component={Layout} />
+          </Switch>
+        </IntlGlobalProvider>
       </IntlProvider>
     ) : (
       <Loader />
