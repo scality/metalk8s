@@ -44,5 +44,5 @@ tox -e tests
 
 MetalK8s version 1 is still maintained in this repository. See the 
 `development/1.*` branches, e. g.
-[MetalK8s 1.3](github.com/scality/metalk8s/tree/development/1.3) in the same
+[MetalK8s 1.3](https://github.com/scality/metalk8s/tree/development/1.3) in the same
 repository.
