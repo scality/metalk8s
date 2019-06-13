@@ -12,6 +12,7 @@ RUN yum install -y epel-release \
     gcc \
     hardlinks \
     make \
+    iproute \
     python-devel \
     python-pip \
     python36 \
@@ -25,5 +26,3 @@ RUN yum install -y epel-release \
     && adduser -u 1042 --home /home/eve eve --groups docker \
     && chown eve:eve /home/eve/workspace \
     && pip install buildbot-worker==${BUILDBOT_VERSION}
-
-USER eve

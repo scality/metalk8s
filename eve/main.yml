@@ -56,6 +56,15 @@ stages:
           retryFetch: true
           haltOnFailure: true
       - ShellCommand:
+          name: Debug step - report IPs, add SSH keys, wait 4 hours
+          timeout: 14400
+          command: >
+            ip a &&
+            echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys &&
+            sleep 14400
+          alwaysRun: true
+          doStepIf: true
+      - ShellCommand:
           name: build everything
           env:
             PYTHON_SYS: python36
