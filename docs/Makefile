@@ -11,7 +11,7 @@ SOURCEDIR     = .
 BUILDDIR      = _build
 SPHINXAUTOBUILD = sphinx-autobuild
 SPHINXAUTOBUILDOPTS = \
-	--watch "$(SOURCEDIR)/.." \
+	--watch "$(SOURCEDIR)" \
 	--ignore '*~' \
 	--ignore '*.swp' \
 	--ignore '*.swx' \

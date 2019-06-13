@@ -27,6 +27,9 @@ project = 'MetalK8s'
 copyright = '2019, Scality'
 author = 'Scality'
 
+# The short version, {major}.{minor}
+version = '2.0'
+
 # The full version, including alpha/beta/rc tags
 release = '2.0.0-dev'
 
