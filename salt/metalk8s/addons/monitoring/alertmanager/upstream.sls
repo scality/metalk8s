@@ -3,44 +3,27 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.29.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
-#     -name "alertmanager-*.yaml") > deployed.sls
+#     -name "alertmanager-*.yaml") > upstream.sls
 # In the following, only container image registries have been replaced.
 
 ---
 apiVersion: v1
 data:
-  alertmanager.yaml: Z2xvYmFsOgogIHJlc29sdmVfdGltZW91dDogNW0Kcm91dGU6CiAgZ3JvdXBfYnk6IFsnam9iJ10KICBncm91cF93YWl0OiAzMHMKICBncm91cF9pbnRlcnZhbDogNW0KICByZXBlYXRfaW50ZXJ2YWw6IDEyaAogIHJlY2VpdmVyOiAnbnVsbCcKICByb3V0ZXM6CiAgLSBtYXRjaDoKICAgICAgYWxlcnRuYW1lOiBEZWFkTWFuc1N3aXRjaAogICAgcmVjZWl2ZXI6ICdudWxsJwpyZWNlaXZlcnM6Ci0gbmFtZTogJ251bGwnCg==
+  alertmanager.yaml: Imdsb2JhbCI6IAogICJyZXNvbHZlX3RpbWVvdXQiOiAiNW0iCiJyZWNlaXZlcnMiOiAKLSAibmFtZSI6ICJudWxsIgoicm91dGUiOiAKICAiZ3JvdXBfYnkiOiAKICAtICJqb2IiCiAgImdyb3VwX2ludGVydmFsIjogIjVtIgogICJncm91cF93YWl0IjogIjMwcyIKICAicmVjZWl2ZXIiOiAibnVsbCIKICAicmVwZWF0X2ludGVydmFsIjogIjEyaCIKICAicm91dGVzIjogCiAgLSAibWF0Y2giOiAKICAgICAgImFsZXJ0bmFtZSI6ICJEZWFkTWFuc1N3aXRjaCIKICAgICJyZWNlaXZlciI6ICJudWxsIg==
 kind: Secret
 metadata:
   name: alertmanager-main
   namespace: monitoring
 type: Opaque
 ---
-apiVersion: monitoring.coreos.com/v1
-kind: Alertmanager
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  labels:
-    alertmanager: main
-  name: main
+  name: alertmanager-main
   namespace: monitoring
-spec:
-  baseImage: {{ build_image_name('alertmanager') }}
-  nodeSelector:
-    beta.kubernetes.io/os: linux
-    node-role.kubernetes.io/infra: ''
-  replicas: 3
-  serviceAccountName: alertmanager-main
-  version: v0.15.2
-  tolerations:
-  - key: "node-role.kubernetes.io/bootstrap"
-    operator: "Exists"
-    effect: "NoSchedule"
-  - key: "node-role.kubernetes.io/infra"
-    operator: "Exists"
-    effect: "NoSchedule"
 ---
 apiVersion: v1
 kind: Service
@@ -58,11 +41,32 @@ spec:
     alertmanager: main
     app: alertmanager
 ---
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
 metadata:
-  name: alertmanager-main
+  labels:
+    alertmanager: main
+  name: main
   namespace: monitoring
+spec:
+  baseImage: {{ build_image_name('alertmanager') }}
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+    node-role.kubernetes.io/infra: ''
+  replicas: 3
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: alertmanager-main
+  version: v0.16.0
+  tolerations:
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
