@@ -29,7 +29,7 @@ Install and start salt master manifest:
     - context:
         salt_master_image: {{ salt_master_image }}
         salt_master_version: {{ salt_master_version }}
-        iso_root_path: {{ metalk8s.iso_root_path }}
+        products: {{ salt.metalk8s.get_products() }}
         salt_ip: "{{ salt_ip }}"
     - require:
       - file: Create salt master directories
