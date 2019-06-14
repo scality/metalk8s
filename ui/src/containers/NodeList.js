@@ -5,8 +5,8 @@ import memoizeOne from 'memoize-one';
 import styled from 'styled-components';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl } from 'react-intl';
-import { Table, Button, Loader } from 'core-ui';
-import { padding } from 'core-ui/dist/style/theme';
+import { Table, Button, Loader } from '@scality/core-ui';
+import { padding } from '@scality/core-ui/dist/style/theme';
 
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
 

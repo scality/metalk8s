@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@scality/core-ui": "github:scality/core-ui.git#c70c9a1",
     "@fortawesome/fontawesome-free": "^5.7.2",
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-dist",
     "axios": "^0.18.0",
-    "core-ui": "github:scality/core-ui.git#179dd7e",
     "formik": "1.5.1",
     "lodash": "4.17.11",
     "memoize-one": "^4.0.2",
