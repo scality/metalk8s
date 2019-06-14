@@ -310,8 +310,6 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
             list(coreutils.ls_files_rec(constants.ROOT/'ui'/'public')) +
             list(coreutils.ls_files_rec(constants.ROOT/'ui'/'src')) +
             [
-                constants.ROOT/'ui'/'package.json',
-                constants.ROOT/'ui'/'package-lock.json',
                 constants.ROOT/'ui'/'conf'/'nginx.conf'
             ]
         )
