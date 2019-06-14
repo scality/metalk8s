@@ -61,12 +61,12 @@ spec:
           mountPath: '/var/cache/salt'
         - name: run
           mountPath: '/var/run/salt'
-        {%- for version, path in iso_root_path.items() | sort(attribute='0') %}
-        - name: states-{{ version | replace('.', '-') }}
-          mountPath: '{{ path }}/salt'
+        {%- for env, product in products.items() | sort(attribute='0') %}
+        - name: states-{{ env | replace('.', '-') }}
+          mountPath: '/srv/scality/{{ env }}/salt'
           readOnly: true
-        - name: pillar-{{ version | replace('.', '-') }}
-          mountPath: '{{ path }}/pillar'
+        - name: pillar-{{ env | replace('.', '-') }}
+          mountPath: '/srv/scality/{{ env }}/pillar'
           readOnly: true
         {%- endfor %}
         - name: metalk8s-config
@@ -112,14 +112,14 @@ spec:
       hostPath:
         path: '/var/run/salt'
         type: Directory
-    {%- for version, path in iso_root_path.items() | sort(attribute='0') %}
-    - name: states-{{ version | replace('.', '-') }}
+    {%- for env, product in products.items() | sort(attribute='0') %}
+    - name: states-{{ env | replace('.', '-') }}
       hostPath:
-        path: '{{ path }}/salt'
+        path: '{{ product.path }}/salt'
         type: Directory
-    - name: pillar-{{ version | replace('.', '-') }}
+    - name: pillar-{{ env | replace('.', '-') }}
       hostPath:
-        path: '{{ path }}/pillar'
+        path: '{{ product.path }}/pillar'
         type: Directory
     {%- endfor %}
     - name: metalk8s-config

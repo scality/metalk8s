@@ -1,12 +1,10 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set repositories_name = 'repositories' %}
 {%- set repositories_version = '1.0.0' %}
-{%- set repositories_image = build_image_name('nginx', '1.15.8') %}
 
-{%- set images_path = metalk8s.iso_root_path[saltenv] ~ '/images/' %}
+{%- set products = salt.metalk8s.get_products() %}
 
 {%- set nginx_confd  = '/var/lib/metalk8s/repositories/conf.d/' %}
 {%- set nginx_default_conf = nginx_confd ~ 'default.conf' %}
@@ -27,8 +25,6 @@ Generate repositories nginx configuration:
     - backup: false
     - defaults:
         listening_port: {{ repo.port }}
-        nginx_registry_config: {{ nginx_registry_config }}
-        nginx_registry: {{ nginx_registry }}
 
 Deploy container registry nginx configuration:
   file.managed:
@@ -51,13 +47,12 @@ Generate container registry configuration:
     - makedirs: true
     - backup: false
     - defaults:
-        var_prefix: {{ saltenv | replace('.', '_') | replace('-', '_') }}
-        images_path: {{ images_path }}
+        products: {{ products }}
 
 Inject nginx image:
   containerd.image_managed:
     - name: docker.io/library/nginx:1.15.8
-    - archive_path: {{ metalk8s.iso_root_path[saltenv] }}/images/nginx-1.15.8.tar
+    - archive_path: {{ products[saltenv].path }}/images/nginx-1.15.8.tar
 
 Install repositories manifest:
   metalk8s.static_pod_managed:
@@ -72,9 +67,10 @@ Install repositories manifest:
         image: docker.io/library/nginx:1.15.8
         name: {{ repositories_name }}
         version: {{ repositories_version }}
-        packages_path: {{ metalk8s.iso_root_path[saltenv] }}/{{ repo.relative_path }}
+        products: {{ products }}
+        package_path: /{{ repo.relative_path }}
+        image_path: '/images/'
         nginx_confd_path: {{ nginx_confd }}
-        images_path: {{ images_path }}
     - require:
       - containerd: Inject nginx image
       - file: Generate repositories nginx configuration
@@ -86,5 +82,8 @@ Ensure repositories container is up:
     - cri.wait_container:
       - name: {{ repositories_name }}
       - state: running
-    - require:
+    - watch:
+      - file: Generate repositories nginx configuration
+      - file: Deploy container registry nginx configuration
+      - file: Generate container registry configuration
       - metalk8s: Install repositories manifest

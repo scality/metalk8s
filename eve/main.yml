@@ -185,6 +185,9 @@ stages:
               minion: $(hostname)
             apiServer:
               host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
+            products:
+              metalk8s:
+                - /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
             END
             EOF
       - ShellCommand:
@@ -296,15 +299,14 @@ stages:
           name: Create mountpoint in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
-            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+            sudo mkdir -p /var/tmp/metalk8s
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Mount ISO image in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
-            sudo mount -o loop metalk8s.iso
-            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+            sudo mount -o loop metalk8s.iso /var/tmp/metalk8s
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
@@ -312,8 +314,7 @@ stages:
           command: >
             ssh -F ssh_config bootstrap
             sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
-            --verbose
+            /var/tmp/metalk8s/bootstrap.sh --verbose
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
@@ -342,7 +343,7 @@ stages:
             ssh -F ssh_config bastion --
             'cd metalk8s &&
             export SSH_CONFIG_FILE=/home/centos/ssh_config &&
-            export ISO_MOUNTPOINT=/srv/scality/metalk8s-%(prop:metalk8s_short_version)s &&
+            export ISO_MOUNTPOINT=/var/tmp/metalk8s &&
             export TEST_HOSTS_LIST=bootstrap &&
             tox -e tests -- -m "ci and not slow" &&
             tox -e tests -- -m "ci and slow"'
