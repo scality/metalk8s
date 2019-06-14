@@ -9,8 +9,8 @@ import {
 } from '../ducks/app/monitoring';
 import styled from 'styled-components';
 
-import { Table } from 'core-ui';
-import { padding } from 'core-ui/dist/style/theme';
+import { Table } from '@scality/core-ui';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
 
 const PageContainer = styled.div`

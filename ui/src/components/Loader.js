@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Loader as LoaderCoreUI } from 'core-ui';
+import { Loader as LoaderCoreUI } from '@scality/core-ui';
 
 const LoaderContainer = styled.div`
   display: flex;
