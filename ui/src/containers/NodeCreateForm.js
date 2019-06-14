@@ -5,8 +5,8 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
-import { Button, Input } from 'core-ui';
-import { padding } from 'core-ui/dist/style/theme';
+import { Button, Input } from '@scality/core-ui';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import {
   createNodeAction,

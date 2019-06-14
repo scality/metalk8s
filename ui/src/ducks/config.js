@@ -1,6 +1,6 @@
 import { call, put, takeEvery } from 'redux-saga/effects';
-import { mergeTheme } from 'core-ui/dist/utils';
-import * as defaultTheme from 'core-ui/dist/style/theme';
+import { mergeTheme } from '@scality/core-ui/dist/utils';
+import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import * as Api from '../services/api';
 import { fetchUserInfo } from './login';
 

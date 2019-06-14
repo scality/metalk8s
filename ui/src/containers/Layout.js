@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { matchPath } from 'react-router';
-import { Layout as CoreUILayout, Notifications } from 'core-ui';
+import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 import { withRouter, Switch } from 'react-router-dom';
 
 import NodeCreateForm from './NodeCreateForm';

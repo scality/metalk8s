@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
-import { Table } from 'core-ui';
+import { Table } from '@scality/core-ui';
 import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import styled from 'styled-components';
@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { fetchNodesAction } from '../ducks/app/nodes';
 
-import { fontWeight, fontSize, padding } from 'core-ui/dist/style/theme';
+import { fontWeight, fontSize, padding } from '@scality/core-ui/dist/style/theme';
 
 const NodeInformationContainer = styled.div`
   height: 100%;

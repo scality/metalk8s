@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { createSelector } from 'reselect';
 import styled from 'styled-components';
 import ReactJson from 'react-json-view';
-import { Button, Loader, Steppers } from 'core-ui';
+import { Button, Loader, Steppers } from '@scality/core-ui';
 import { withRouter } from 'react-router-dom';
 
 import { subscribeDeployEventsAction } from '../ducks/app/nodes';
@@ -14,7 +14,7 @@ import {
   grayLightest,
   padding,
   fontSize
-} from 'core-ui/dist/style/theme';
+} from '@scality/core-ui/dist/style/theme';
 
 const NodeDeploymentContainer = styled.div`
   height: 100%;
