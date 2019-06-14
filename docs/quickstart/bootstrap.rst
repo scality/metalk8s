@@ -40,11 +40,15 @@ Configuration
         minion: <hostname-of-the-bootstrap-node>
       apiServer:
         host: <IP-of-the-bootstrap-node>
+      products:
+        metalk8s:
+          - <path-to-extracted-directory-or-iso>
 
 .. todo::
 
    - Explain the role of this config file and its values
    - Add a note about setting HA for ``apiServer``
+   - Explain the ``products`` list
 
 
 .. _quickstart-bootstrap-ssh:

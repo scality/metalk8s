@@ -20,6 +20,7 @@ def _load_config(path):
 
     assert config.get('apiVersion') == 'metalk8s.scality.com/v1alpha2'
     assert config.get('kind') == 'BootstrapConfiguration'
+    assert 'products' in config
 
     return config
 
@@ -78,12 +79,32 @@ def _load_apiserver(config_data):
     return result
 
 
+def _load_iso_path(config_data):
+    """Load iso path from BootstrapConfiguration
+
+    """
+    res = config_data['products']['metalk8s']
+
+    if isinstance(res, str):
+        res = [res]
+
+    if not isinstance(res, list):
+        return {"_errors": [
+            "Invalid products format in config file, list or string expected "
+            "got {1}."
+            .format(res)
+        ]}
+
+    return res
+
+
 def ext_pillar(minion_id, pillar, bootstrap_config):
     config = _load_config(bootstrap_config)
 
     return {
         'networks': _load_networks(config),
         'metalk8s': {
+            'products': _load_iso_path(config),
             'ca': _load_ca(config),
             'api_server': _load_apiserver(config),
         },
