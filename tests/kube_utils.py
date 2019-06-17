@@ -1,22 +1,15 @@
 import json
 
-import testinfra
 from kubernetes.client.rest import ApiException
 
+from tests import utils
 
 def get_pods(
     k8s_client, ssh_config, label,
     node='bootstrap', namespace='default', state='Running'
 ):
     """Return the pod `component` from the specified node"""
-    # Resolve a node name (from SSH config) to a real hostname.
-    if ssh_config is not None:
-        node = testinfra.get_host(node, ssh_config=ssh_config)
-        nodename = node.check_output('hostname')
-    else:
-        assert node == 'bootstrap'
-        nodename = node
-
+    nodename = utils.resolve_hostname(node, ssh_config)
     field_selector = 'spec.nodeName={},status.phase={}'.format(nodename, state)
     return k8s_client.list_namespaced_pod(
         namespace, field_selector=field_selector, label_selector=label

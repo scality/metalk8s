@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Node
 metadata:
-  name: node1
+  name: $node_name
   labels:
     metalk8s.scality.com/version: "$metalk8s_version"
     node-role.kubernetes.io/master: ''

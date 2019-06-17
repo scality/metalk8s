@@ -17,51 +17,63 @@ from tests import utils
 def test_cluster_expansion(host):
     pass
 
+# Fixtures {{{
+
+@pytest.fixture
+def ssh_config(request):
+    return request.config.getoption('--ssh-config')
+
+# }}}
 # When {{{
 
 @when(parsers.parse('we declare a new "{node_type}" node on host "{hostname}"'))
 def declare_node(
-    request, version, k8s_client, node_type, hostname, bootstrap_config
+    ssh_config, version, k8s_client, node_type, hostname, bootstrap_config
 ):
     """Declare the given node in Kubernetes."""
-    ssh_config = request.config.getoption('--ssh-config')
     node_ip = get_node_ip(hostname, ssh_config, bootstrap_config)
-    node_manifest = get_node_manifest(node_type, version, node_ip)
+    node_name = utils.resolve_hostname(hostname, ssh_config)
+    node_manifest = get_node_manifest(
+        node_type, version, node_ip, node_name
+    )
     k8s_client.create_node(body=node_from_manifest(node_manifest))
 
 
 @when(parsers.parse('we deploy the node "{name}"'))
-def deploy_node(version, k8s_client, name):
+def deploy_node(ssh_config, version, k8s_client, name):
+    node_name = utils.resolve_hostname(name, ssh_config)
     accept_ssh_key = [
-        'salt-ssh', '-i', name, 'test.ping', '--roster=kubernetes'
+        'salt-ssh', '-i', node_name, 'test.ping', '--roster=kubernetes'
     ]
-    pillar = {'orchestrate': {'node_name': name}}
+    pillar = {'orchestrate': {'node_name': node_name}}
     deploy = [
         'salt-run', 'state.orchestrate', 'metalk8s.orchestrate.deploy_node',
         'saltenv=metalk8s-{}'.format(version),
         'pillar={}'.format(json.dumps(pillar))
     ]
-    run_salt_command(k8s_client, accept_ssh_key)
-    run_salt_command(k8s_client, deploy)
+    run_salt_command(k8s_client, accept_ssh_key, ssh_config)
+    run_salt_command(k8s_client, deploy, ssh_config)
 
 
 # }}}
 # Then {{{
 
 @then(parsers.parse('node "{hostname}" is registered in Kubernetes'))
-def check_node_is_registered(k8s_client, hostname):
+def check_node_is_registered(ssh_config, k8s_client, hostname):
     """Check if the given node is registered in Kubernetes."""
+    node_name = utils.resolve_hostname(hostname, ssh_config)
     try:
-        k8s_client.read_node(hostname)
+        k8s_client.read_node(node_name)
     except k8s.client.rest.ApiException as exn:
         pytest.fail(str(exn))
 
 
 @then(parsers.parse('node "{hostname}" status is "{expected_status}"'))
-def check_node_status(k8s_client, hostname, expected_status):
+def check_node_status(ssh_config, k8s_client, hostname, expected_status):
     """Check if the given node has the expected status."""
+    node_name = utils.resolve_hostname(hostname, ssh_config)
     try:
-        status = k8s_client.read_node_status(hostname).status
+        status = k8s_client.read_node_status(node_name).status
     except k8s.client.rest.ApiException as exn:
         pytest.fail(str(exn))
     # If really not ready, status may not have been pushed yet.
@@ -77,9 +89,10 @@ def check_node_status(k8s_client, hostname, expected_status):
 
 
 @then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
-def check_etcd_role(k8s_client, node_name):
+def check_etcd_role(ssh_config, k8s_client, node_name):
     """Check if the given node is a member of the etcd cluster."""
-    etcd_member_list = etcdctl(k8s_client, ['member', 'list'])
+    node_name = utils.resolve_hostname(node_name, ssh_config)
+    etcd_member_list = etcdctl(k8s_client, ['member', 'list'], ssh_config)
     assert node_name in etcd_member_list, \
         'node {} is not part of the etcd cluster'.format(node_name)
 
@@ -96,13 +109,13 @@ def get_node_ip(hostname, ssh_config, bootstrap_config):
     control_plane_cidr = bootstrap_config['networks']['controlPlane']
     return utils.get_ip_from_cidr(infra_node, control_plane_cidr)
 
-def get_node_manifest(node_type, metalk8s_version, node_ip):
+def get_node_manifest(node_type, metalk8s_version, node_ip, node_name):
     """Return the YAML to declare a node with the specified IP."""
     filename = '{}-node.yaml.tpl'.format(node_type)
     filepath = (pathlib.Path(__file__)/'..'/'files'/filename).resolve()
     manifest = filepath.read_text(encoding='utf-8')
     return string.Template(manifest).substitute(
-        metalk8s_version=metalk8s_version, node_ip=node_ip
+        metalk8s_version=metalk8s_version, node_ip=node_ip, node_name=node_name
     )
 
 def node_from_manifest(manifest):
@@ -111,19 +124,24 @@ def node_from_manifest(manifest):
     manifest['api_version'] = manifest.pop('apiVersion')
     return k8s.client.V1Node(**manifest)
 
-def run_salt_command(k8s_client, command):
+def run_salt_command(k8s_client, command, ssh_config):
     """Run a command inside the salt-master container."""
+    name = 'salt-master-{}'.format(
+        utils.resolve_hostname('bootstrap', ssh_config)
+    )
     stderr = k8s.stream.stream(
         k8s_client.connect_get_namespaced_pod_exec,
-        name='salt-master-bootstrap', namespace='kube-system',
-        container='salt-master',
+        name=name, namespace='kube-system', container='salt-master',
         command=command,
         stderr=True, stdin=False, stdout=False, tty=False
     )
     assert not stderr, 'deploy failed with {}'.format(stderr)
 
-def etcdctl(k8s_client, command):
+def etcdctl(k8s_client, command, ssh_config):
     """Run an etcdctl command inside the etcd container."""
+    name = 'etcd-{}'.format(
+        utils.resolve_hostname('bootstrap', ssh_config)
+    )
     etcd_command = [
         'etcdctl',
         '--endpoints', 'https://localhost:2379',
@@ -133,7 +151,7 @@ def etcdctl(k8s_client, command):
     ] + command
     output = k8s.stream.stream(
         k8s_client.connect_get_namespaced_pod_exec,
-        name='etcd-bootstrap', namespace='kube-system',
+        name=name, namespace='kube-system',
         command=etcd_command,
         stderr=True, stdin=False, stdout=True, tty=False
     )

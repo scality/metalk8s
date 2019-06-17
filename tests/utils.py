@@ -1,6 +1,7 @@
 import ipaddress
 import logging
 import re
+import testinfra
 import time
 from typing import Optional, Dict
 
@@ -49,3 +50,13 @@ def get_ip_from_cidr(host, cidr):
         if ipaddress.IPv4Address(candidate) in network:
             return candidate
     return None
+
+
+def resolve_hostname(nodename, ssh_config):
+    """Resolve a node name (from SSH config) to a real hostname."""
+    if ssh_config is not None:
+        node = testinfra.get_host(nodename, ssh_config=ssh_config)
+        nodename = node.check_output('hostname')
+    else:
+        assert nodename == 'bootstrap'
+    return nodename
