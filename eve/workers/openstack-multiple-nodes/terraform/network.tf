@@ -64,30 +64,163 @@ locals {
 resource "openstack_networking_secgroup_v2" "nodes" {
   name        = "${local.prefix}-nodes"
   description = "Security group for reaching MetalK8s nodes from outside"
+  delete_default_rules = true
 }
 
-resource "openstack_networking_secgroup_rule_v2" "nodes_ssh" {
+#--- Offline mode ---#
+resource "openstack_networking_secgroup_rule_v2" "nodes_ingress_ssh_tcp_EUROPE" {
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "tcp"
   port_range_min    = 22
   port_range_max    = 22
-  remote_ip_prefix  = "0.0.0.0/0"
+  remote_ip_prefix  = "10.200.0.0/16"
   security_group_id = openstack_networking_secgroup_v2.nodes.id
 }
 
-resource "openstack_networking_secgroup_rule_v2" "nodes_icmp" {
+resource "openstack_networking_secgroup_rule_v2" "nodes_ingress_ssh_udp_EUROPE" {
+   direction         = "ingress"
+   ethertype         = "IPv4"
+   protocol          = "udp"
+   port_range_min    = 22
+   port_range_max    = 22
+   remote_ip_prefix  = "10.200.0.0/16"
+   security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_ingress_icmp_EUROPE" {
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "icmp"
-  remote_ip_prefix  = "0.0.0.0/0"
+  remote_ip_prefix  = "10.200.0.0/16"
   security_group_id = openstack_networking_secgroup_v2.nodes.id
 }
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_ingress_tcp_EUROPE" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  remote_ip_prefix  = "10.200.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+resource "openstack_networking_secgroup_rule_v2" "nodes_ingress_ssh_tcp_NA" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 22
+  port_range_max    = 22
+  remote_ip_prefix  = "10.100.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_ingress_ssh_udp_NA" {
+   direction         = "ingress"
+   ethertype         = "IPv4"
+   protocol          = "udp"
+   port_range_min    = 22
+   port_range_max    = 22
+   remote_ip_prefix  = "10.100.0.0/16"
+   security_group_id = openstack_networking_secgroup_v2.nodes.id
+ }
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_ingress_icmp_NA" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "icmp"
+  remote_ip_prefix  = "10.100.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_ingress_tcp_NA" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  remote_ip_prefix  = "10.100.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+##--- egress ---#
+resource "openstack_networking_secgroup_rule_v2" "nodes_egress_ssh_tcp_EUROPE" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 22
+  port_range_max    = 22
+  remote_ip_prefix  = "10.200.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_egress_ssh_udp_EUROPE" {
+   direction         = "egress"
+   ethertype         = "IPv4"
+   protocol          = "udp"
+   port_range_min    = 22
+   port_range_max    = 22
+   remote_ip_prefix  = "10.200.0.0/16"
+   security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_egress_icmp_EUROPE" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "icmp"
+  remote_ip_prefix  = "10.200.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_egress_tcp_EUROPE" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  remote_ip_prefix  = "10.200.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+resource "openstack_networking_secgroup_rule_v2" "nodes_egress_ssh_tcp_NA" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 22
+  port_range_max    = 22
+  remote_ip_prefix  = "10.100.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_egress_ssh_udp_NA" {
+   direction         = "egress"
+   ethertype         = "IPv4"
+   protocol          = "udp"
+   port_range_min    = 22
+   port_range_max    = 22
+   remote_ip_prefix  = "10.100.0.0/16"
+   security_group_id = openstack_networking_secgroup_v2.nodes.id
+ }
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_egress_icmp_NA" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "icmp"
+  remote_ip_prefix  = "10.100.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+
+resource "openstack_networking_secgroup_rule_v2" "nodes_egress_tcp_NA" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  remote_ip_prefix  = "10.100.0.0/16"
+  security_group_id = openstack_networking_secgroup_v2.nodes.id
+}
+
+
+#------------#
 
 # Second secgroup for traffic within the control/workload plane subnets
 resource "openstack_networking_secgroup_v2" "nodes_internal" {
   name        = "${local.prefix}-nodes-internal"
   description = "Security group for MetalK8s nodes communicating together"
+  delete_default_rules = true
 }
 
 resource "openstack_networking_secgroup_rule_v2" "nodes_internal_control" {

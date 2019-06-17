@@ -351,6 +351,16 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
+          name: Debug step - report IPs, add SSH keys, wait 4 hours
+          timeout: 14400
+          command: >
+            ip a &&
+            mkdir -p ~/.ssh &&
+            echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys &&
+            sleep 14400
+          alwaysRun: true
+          doStepIf: true
+      - ShellCommand:
           name: Destroy openstack virtual infra
           command: |-
             for _ in $(seq 1 3); do
@@ -360,13 +370,3 @@ stages:
           env: *terraform_spawn_multiple_nodes
           alwaysRun: true
           sigtermTime: 600
-      - ShellCommand:
-          name: Debug step - report IPs, add SSH keys, wait 4 hours
-          timeout: 14400
-          command: >
-            ip a &&
-            mkdir -p ~/.ssh &&
-            echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys &&
-            sleep 14400
-          alwaysRun: true
-          doStepIf: false
