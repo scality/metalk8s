@@ -17,12 +17,12 @@ Create kube-controller-manager Pod manifest:
     - context:
         name: kube-controller-manager
         image_name: {{ kubernetes_image("kube-controller-manager") }}
-        host: 127.0.0.1
+        host: {{ grains['metalk8s']['control_plane_ip'] }}
         port: 10252
         scheme: HTTP
         command:
           - kube-controller-manager
-          - --address=127.0.0.1
+          - --address={{ grains['metalk8s']['control_plane_ip'] }}
           - --allocate-node-cidrs=true
           - --cluster-cidr={{ networks.pod }}
           - --controllers=*,bootstrapsigner,tokencleaner
