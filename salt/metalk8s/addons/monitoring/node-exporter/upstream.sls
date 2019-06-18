@@ -3,10 +3,10 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.28.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
-#     -name "node-exporter-*.yaml") > deployed.sls
+#     -name "node-exporter-*.yaml") > upstream.sls
 # In the following, only container image registries have been replaced.
 
 ---
@@ -29,6 +29,22 @@ spec:
   selector:
     matchLabels:
       k8s-app: node-exporter
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: node-exporter
+  name: node-exporter
+  namespace: monitoring
+spec:
+  clusterIP: None
+  ports:
+  - name: https
+    port: 9100
+    targetPort: https
+  selector:
+    app: node-exporter
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -61,16 +77,17 @@ spec:
     spec:
       containers:
       - args:
-        - --web.listen-address=127.0.0.1:9101
+        - --web.listen-address=127.0.0.1:9100
         - --path.procfs=/host/proc
         - --path.sysfs=/host/sys
+        - --path.rootfs=/host/root
         - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
         - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
         image: {{ build_image_name('node-exporter', 'v0.17.0') }}
         name: node-exporter
         resources:
           limits:
-            cpu: 102m
+            cpu: 250m
             memory: 180Mi
           requests:
             cpu: 102m
@@ -87,9 +104,16 @@ spec:
           name: root
           readOnly: true
       - args:
-        - --secure-listen-address=:9100
-        - --upstream=http://127.0.0.1:9101/
-        image: {{ build_image_name('kube-rbac-proxy', 'v0.3.1') }}
+        - --logtostderr
+        - --secure-listen-address=$(IP):9100
+        - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        - --upstream=http://127.0.0.1:9100/
+        env:
+        - name: IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        image: {{ build_image_name('kube-rbac-proxy', 'v0.4.1') }}
         name: kube-rbac-proxy
         ports:
         - containerPort: 9100
@@ -134,6 +158,12 @@ spec:
           path: /
         name: root
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-exporter
+  namespace: monitoring
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -151,25 +181,3 @@ rules:
   - subjectaccessreviews
   verbs:
   - create
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: node-exporter
-  namespace: monitoring
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    k8s-app: node-exporter
-  name: node-exporter
-  namespace: monitoring
-spec:
-  clusterIP: None
-  ports:
-  - name: https
-    port: 9100
-    targetPort: https
-  selector:
-    app: node-exporter
