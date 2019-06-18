@@ -6,12 +6,12 @@ Feature: Monitoring is up and running
 
     Scenario: Expected Pods
         Given the Kubernetes API is available
-        Then we have 1 running pod labeled 'k8s-app=prometheus-operator' in the 'monitoring' namespace
-        And we have 2 running pod labeled 'prometheus=k8s' in the 'monitoring' namespace
-        And we have 3 running pod labeled 'alertmanager=main' in the 'monitoring' namespace
-        And we have 1 running pod labeled 'app=grafana' in the 'monitoring' namespace
-        And we have 1 running pod labeled 'app=kube-state-metrics' in the 'monitoring' namespace
-        And we have 1 running pod labeled 'app=node-exporter' in the 'monitoring' namespace
+        Then we have 1 running pod labeled 'k8s-app=prometheus-operator' in namespace 'monitoring' on node 'bootstrap'
+        And we have 2 running pod labeled 'prometheus=k8s' in namespace 'monitoring' on node 'bootstrap'
+        And we have 3 running pod labeled 'alertmanager=main' in namespace 'monitoring' on node 'bootstrap'
+        And we have 1 running pod labeled 'app=grafana' in namespace 'monitoring' on node 'bootstrap'
+        And we have 1 running pod labeled 'app=kube-state-metrics' in namespace 'monitoring' on node 'bootstrap'
+        And we have 1 running pod labeled 'app=node-exporter' in namespace 'monitoring' on node 'bootstrap'
 
     Scenario: Monitored components statuses
         Given the Kubernetes API is available

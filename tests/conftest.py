@@ -123,15 +123,17 @@ def verify_kubeapi_service(host):
 
 
 @then(parsers.parse(
-    "we have {pods_count:d} running pod labeled '{label}' on node '{node}'"
+    "we have {pods_count:d} running pod labeled '{label}' "
+    "in namespace '{namespace}' on node '{node}'"
 ))
-def count_running_pods(request, k8s_client, pods_count, label, node):
+def count_running_pods(
+        request, k8s_client, pods_count, label, namespace, node):
     ssh_config = request.config.getoption('--ssh-config')
 
     def _check_pods_count():
         pods = kube_utils.get_pods(
             k8s_client, ssh_config, label, node,
-            namespace="kube-system", state="Running",
+            namespace=namespace, state="Running",
         )
         assert len(pods) == pods_count
 
