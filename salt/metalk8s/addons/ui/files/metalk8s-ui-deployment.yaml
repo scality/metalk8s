@@ -26,7 +26,7 @@ spec:
         node-role.kubernetes.io/infra: ''
       containers:
         - name: metalk8s-ui
-          image: {{ build_image_name('metalk8s-ui', '0.2') }}
+          image: {{ build_image_name('metalk8s-ui', '2.0') }}
           imagePullPolicy: Always
           resources:
             limits:
