@@ -27,7 +27,6 @@ spec:
       containers:
         - name: metalk8s-ui
           image: {{ build_image_name('metalk8s-ui', '0.2') }}
-          imagePullPolicy: Always
           resources:
             limits:
               memory: 170Mi
