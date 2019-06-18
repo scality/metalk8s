@@ -304,7 +304,7 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
     ),
     targets.LocalImage(
         name='metalk8s-ui',
-        version='0.2',
+        version='2.0',
         dockerfile=constants.ROOT/'ui'/'Dockerfile',
         destination=constants.ISO_IMAGE_ROOT,
         save_on_disk=True,
