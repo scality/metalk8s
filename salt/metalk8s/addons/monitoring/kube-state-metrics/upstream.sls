@@ -6,56 +6,22 @@
 # https://github.com/coreos/prometheus-operator, v0.28.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
-#     -name "kube-state-metrics-*.yaml") > deployed.sls
+#     -name "kube-state-metrics-*.yaml") > upstream.sls
 # In the following, only container image registries have been replaced.
 
 ---
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
 metadata:
-  labels:
-    k8s-app: kube-state-metrics
+  name: kube-state-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kube-state-metrics
+subjects:
+- kind: ServiceAccount
   name: kube-state-metrics
   namespace: monitoring
-spec:
-  endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    honorLabels: true
-    interval: 30s
-    port: https-main
-    scheme: https
-    scrapeTimeout: 30s
-    tlsConfig:
-      insecureSkipVerify: true
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    interval: 30s
-    port: https-self
-    scheme: https
-    tlsConfig:
-      insecureSkipVerify: true
-  jobLabel: k8s-app
-  selector:
-    matchLabels:
-      k8s-app: kube-state-metrics
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    k8s-app: kube-state-metrics
-  name: kube-state-metrics
-  namespace: monitoring
-spec:
-  clusterIP: None
-  ports:
-  - name: https-main
-    port: 8443
-    targetPort: https-main
-  - name: https-self
-    port: 9443
-    targetPort: https-self
-  selector:
-    app: kube-state-metrics
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -135,19 +101,6 @@ rules:
   - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kube-state-metrics
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: kube-state-metrics
-subjects:
-- kind: ServiceAccount
-  name: kube-state-metrics
-  namespace: monitoring
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: kube-state-metrics
@@ -159,6 +112,25 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: kube-state-metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: kube-state-metrics
+  name: kube-state-metrics
+  namespace: monitoring
+spec:
+  clusterIP: None
+  ports:
+  - name: https-main
+    port: 8443
+    targetPort: https-main
+  - name: https-self
+    port: 9443
+    targetPort: https-self
+  selector:
+    app: kube-state-metrics
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -196,6 +168,34 @@ kind: ServiceAccount
 metadata:
   name: kube-state-metrics
   namespace: monitoring
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: kube-state-metrics
+  name: kube-state-metrics
+  namespace: monitoring
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    honorLabels: true
+    interval: 30s
+    port: https-main
+    scheme: https
+    scrapeTimeout: 30s
+    tlsConfig:
+      insecureSkipVerify: true
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    interval: 30s
+    port: https-self
+    scheme: https
+    tlsConfig:
+      insecureSkipVerify: true
+  jobLabel: k8s-app
+  selector:
+    matchLabels:
+      k8s-app: kube-state-metrics
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
