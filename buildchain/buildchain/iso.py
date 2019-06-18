@@ -120,7 +120,7 @@ def task__iso_render_bootstrap() -> types.TaskDict:
     return helper.TemplateFile(
         source=constants.ROOT/'scripts'/'bootstrap.sh.in',
         destination=constants.ISO_ROOT/'bootstrap.sh',
-        context={'VERSION': constants.SHORT_VERSION},
+        context={'VERSION': constants.VERSION},
         file_dep=[constants.VERSION_FILE],
         task_dep=['_iso_mkdir_root'],
     ).task

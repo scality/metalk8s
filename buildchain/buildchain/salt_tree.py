@@ -122,7 +122,7 @@ PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         task_name='top.sls',
         source=constants.ROOT/'pillar'/'top.sls.in',
         destination=constants.ISO_ROOT/'pillar'/'top.sls',
-        context={'VERSION': constants.SHORT_VERSION},
+        context={'VERSION': constants.VERSION},
         file_dep=[constants.VERSION_FILE],
     ),
 )
@@ -134,7 +134,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         task_name='top.sls',
         source=constants.ROOT/'salt'/'top.sls.in',
         destination=constants.ISO_ROOT/'salt'/'top.sls',
-        context={'VERSION': constants.SHORT_VERSION},
+        context={'VERSION': constants.VERSION},
         file_dep=[constants.VERSION_FILE],
     ),
 
@@ -152,7 +152,19 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/monitoring/prometheus-operator/upstream.sls'),
 
     Path('salt/metalk8s/addons/ui/deployed.sls'),
-    Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
+    targets.TemplateFile(
+        task_name='metalk8s-ui-deployment',
+        source=constants.ROOT.joinpath(
+            'salt', 'metalk8s', 'addons', 'ui', 'files',
+            'metalk8s-ui-deployment.yaml.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt', 'metalk8s', 'addons', 'ui', 'files',
+            'metalk8s-ui-deployment.yaml'
+        ),
+        context={'VERSION': constants.VERSION},
+        file_dep=[constants.VERSION_FILE],
+    ),
 
     Path('salt/metalk8s/container-engine/containerd/configured.sls'),
     Path('salt/metalk8s/container-engine/containerd/init.sls'),
@@ -246,7 +258,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'salt', 'metalk8s', 'kubernetes', 'mark-control-plane',
             'deployed.sls'
         ),
-        context={'VERSION': constants.SHORT_VERSION},
+        context={'VERSION': constants.VERSION},
         file_dep=[constants.VERSION_FILE],
     ),
 
@@ -277,7 +289,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
     Path('salt/metalk8s/repo/files/nginx.conf.j2'),
-    Path('salt/metalk8s/repo/files/90-metalk8s-registry-config.inc.j2'),
+    Path('salt/metalk8s/repo/files/metalk8s-registry-config.inc.j2'),
     Path('salt/metalk8s/repo/files/repositories-manifest.yaml.j2'),
     Path('salt/metalk8s/repo/init.sls'),
     Path('salt/metalk8s/repo/installed.sls'),
@@ -357,17 +369,16 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     StaticContainerRegistry(
         root=constants.ISO_IMAGE_ROOT,
         server_root='${}_{}_images'.format(
-            config.PROJECT_NAME.lower(), constants.SHORT_VERSION.replace('.', '_')
+            config.PROJECT_NAME.lower(),
+            constants.VERSION.replace('.', '_').replace('-', '_')
         ),
         name_prefix='{}-{}/'.format(
-            config.PROJECT_NAME.lower(), constants.SHORT_VERSION
+            config.PROJECT_NAME.lower(), constants.VERSION
         ),
         destination=Path(
             constants.ISO_ROOT,
             'salt/metalk8s/repo/files',
-            '99-{}-{}-registry.inc'.format(
-                config.PROJECT_NAME.lower(), constants.SHORT_VERSION
-            )
+            '{}-registry.inc'.format(config.PROJECT_NAME.lower())
         ),
         task_dep=['images']
     ),

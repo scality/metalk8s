@@ -29,7 +29,7 @@ Generate repositories nginx configuration:
 Deploy container registry nginx configuration:
   file.managed:
     - name: {{ nginx_registry_path }}
-    - source: salt://{{ slspath }}/files/{{ nginx_registry }}
+    - source: salt://{{ slspath }}/files/metalk8s-registry.inc
     - user: root
     - group: root
     - mode: '0644'
@@ -39,7 +39,7 @@ Deploy container registry nginx configuration:
 Generate container registry configuration:
   file.managed:
     - name: {{ nginx_registry_config_path }}
-    - source: salt://{{ slspath }}/files/90-metalk8s-registry-config.inc.j2
+    - source: salt://{{ slspath }}/files/metalk8s-registry-config.inc.j2
     - template: jinja
     - user: root
     - group: root

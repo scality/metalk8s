@@ -29,11 +29,11 @@ def context():
 
 @when(parsers.parse(
     "we login to SaltAPI as '{username}' using password '{password}'"))
-def login_salt_api(host, username, password, short_version, context, request):
+def login_salt_api(host, username, password, version, context, request):
     cmd_cidr = ' '.join([
         'salt-call pillar.get',
         'networks:control_plane',
-        'saltenv=metalk8s-{version}'.format(version=short_version),
+        'saltenv=metalk8s-{version}'.format(version=version),
         '--out json',
     ])
     with host.sudo():

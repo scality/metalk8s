@@ -59,7 +59,7 @@ The MetalK8s GUI provides a simple form for that purpose.
    done first):
 
    - **Name**: the hostname of the new Node
-   - **MetalK8s Version**: use "|version|"
+   - **MetalK8s Version**: use "|release|"
    - **SSH User**: the user for which the Bootstrap has SSH access
    - **Hostname or IP**: the address to use for SSH from the Bootstrap
    - **SSH Port**: the port to use for SSH from the Bootstrap
@@ -129,7 +129,7 @@ following the template below:
        metalk8s.scality.com/ssh-host: <node control-plane IP>
        metalk8s.scality.com/ssh-sudo: 'false'
      labels:
-       metalk8s.scality.com/version: '|version|'
+       metalk8s.scality.com/version: '|release|'
        <role labels>
    spec:
      taints: <taints>
@@ -210,10 +210,10 @@ configured (see :ref:`quickstart-bootstrap-ssh`).
 
 Start the node deployment.
 
-.. code-block:: shell
+.. parsed-literal::
 
    root@salt-master-bootstrap $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \
-                                saltenv=metalk8s-2.0 \
+                                saltenv=metalk8s-|release| \
                                 pillar='{"orchestrate": {"node_name": "<node-name>"}}'
 
    ... lots of output ...
