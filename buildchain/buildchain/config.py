@@ -47,7 +47,6 @@ VAGRANT_UP_ARGS : Tuple[str, ...] = tuple(shlex.split(
 
 # Name of the command (if in the PATH) or path to the binary.
 
-DOCKER   : str = os.getenv('DOCKER_BIN',   'docker')
 GIT      : str = os.getenv('GIT_BIN',      'git')
 HARDLINK : str = os.getenv('HARDLINK_BIN', 'hardlink')
 MKISOFS  : str = os.getenv('MKISOFS_BIN',  'mkisofs')
