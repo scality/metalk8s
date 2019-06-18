@@ -9,10 +9,10 @@ MetalK8s ISO
 On your bootstrap node, download the MetalK8s ISO file.
 Mount this ISO file at the specific following path:
 
-.. code-block:: shell
+.. parsed-literal::
 
-   root@bootstrap $ mkdir -p /srv/scality/metalk8s-|version|
-   root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|version|
+   root@bootstrap $ mkdir -p /srv/scality/metalk8s-|release|
+   root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|release|
 
 
 .. _quickstart-bootstrap-config:
@@ -98,9 +98,9 @@ Run the install
 Run the bootstrap script to install binaries and services required on the
 Bootstrap node.
 
-.. code-block:: shell
+.. parsed-literal::
 
-   root@bootstrap $ /srv/scality/metalk8s-2.0/bootstrap.sh
+   root@bootstrap $ /srv/scality/metalk8s-|release|/bootstrap.sh
 
 Validate the install
 ^^^^^^^^^^^^^^^^^^^^

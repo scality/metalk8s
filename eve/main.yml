@@ -19,12 +19,12 @@ stages:
             - unit_tests
           haltOnFailure: true
       - SetPropertyFromCommand:
-          name: Set short version as property from built artifacts
-          property: metalk8s_short_version
+          name: Set version as property from built artifacts
+          property: metalk8s_version
           command: >
             bash -c '
             . <(curl -s "%(prop:artifacts_private_url)s/product.txt") &&
-            echo $SHORT_VERSION'
+            echo $VERSION'
       - TriggerStages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
@@ -163,12 +163,12 @@ stages:
       - ShellCommand:
           name: Create mountpoint
           command: >
-            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_version)s
       - ShellCommand:
           name: Mount ISO image
           command: >
             sudo mount -o loop metalk8s.iso
-            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s
           haltOnFailure: true
       - ShellCommand:
           name: Create bootstrap configuration file
@@ -187,14 +187,14 @@ stages:
               host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
             products:
               metalk8s:
-                - /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+                - /srv/scality/metalk8s-%(prop:metalk8s_version)s
             END
             EOF
       - ShellCommand:
           name: Start the bootstrap process
           command: >
             sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_short_version)s/bootstrap.sh
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/bootstrap.sh
             --verbose
           haltOnFailure: true
       - ShellCommand:
@@ -206,7 +206,7 @@ stages:
           name: Run tests locally
           env:
             ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:metalk8s_short_version)s
+              /srv/scality/metalk8s-%(prop:metalk8s_version)s
           command: >
             tox -e tests-local -- -m "ci and not slow" &&
             tox -e tests-local -- -m "ci and slow"

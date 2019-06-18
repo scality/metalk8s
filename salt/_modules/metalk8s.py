@@ -114,7 +114,7 @@ def _get_product_version(info):
     Arguments:
         info (str): content of metalk8s product.txt file
     """
-    match = re.search(r'^SHORT_VERSION=(?P<version>.+)$', info, re.MULTILINE)
+    match = re.search(r'^VERSION=(?P<version>.+)$', info, re.MULTILINE)
     return match.group('version') if match else None
 
 
