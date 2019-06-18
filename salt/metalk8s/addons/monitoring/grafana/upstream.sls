@@ -3,10 +3,10 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 # The content below has been generated from
-# https://github.com/coreos/prometheus-operator, v0.24.0 tag,
+# https://github.com/coreos/prometheus-operator, v0.29.0 tag,
 # with the following command:
 #   hack/concat-kubernetes-manifests.sh $(find contrib/kube-prometheus/manifests/ \
-#     -name "grafana-*.yaml") > deployed.sls
+#     -name "grafana-*.yaml") > upstream.sls
 # In the following, only container image registries have been replaced.
 
 ---
@@ -20,10 +20,163 @@ metadata:
 type: Opaque
 ---
 apiVersion: v1
-kind: ServiceAccount
+data:
+  dashboards.yaml: |-
+    {
+        "apiVersion": 1,
+        "providers": [
+            {
+                "folder": "",
+                "name": "0",
+                "options": {
+                    "path": "/grafana-dashboard-definitions/0"
+                },
+                "orgId": 1,
+                "type": "file"
+            }
+        ]
+    }
+kind: ConfigMap
 metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
   name: grafana
   namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - image: {{ build_image_name('grafana', '6.0.0') }}
+        name: grafana
+        ports:
+        - containerPort: 3000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: grafana-storage
+          readOnly: false
+        - mountPath: /etc/grafana/provisioning/datasources
+          name: grafana-datasources
+          readOnly: false
+        - mountPath: /etc/grafana/provisioning/dashboards
+          name: grafana-dashboards
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/k8s-cluster-rsrc-use
+          name: grafana-dashboard-k8s-cluster-rsrc-use
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/k8s-node-rsrc-use
+          name: grafana-dashboard-k8s-node-rsrc-use
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-cluster
+          name: grafana-dashboard-k8s-resources-cluster
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-namespace
+          name: grafana-dashboard-k8s-resources-namespace
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-pod
+          name: grafana-dashboard-k8s-resources-pod
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/nodes
+          name: grafana-dashboard-nodes
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/persistentvolumesusage
+          name: grafana-dashboard-persistentvolumesusage
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/pods
+          name: grafana-dashboard-pods
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/statefulset
+          name: grafana-dashboard-statefulset
+          readOnly: false
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        node-role.kubernetes.io/infra: ''
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      serviceAccountName: grafana
+      volumes:
+      - emptyDir: {}
+        name: grafana-storage
+      - name: grafana-datasources
+        secret:
+          secretName: grafana-datasources
+      - configMap:
+          name: grafana-dashboards
+        name: grafana-dashboards
+      - configMap:
+          name: grafana-dashboard-k8s-cluster-rsrc-use
+        name: grafana-dashboard-k8s-cluster-rsrc-use
+      - configMap:
+          name: grafana-dashboard-k8s-node-rsrc-use
+        name: grafana-dashboard-k8s-node-rsrc-use
+      - configMap:
+          name: grafana-dashboard-k8s-resources-cluster
+        name: grafana-dashboard-k8s-resources-cluster
+      - configMap:
+          name: grafana-dashboard-k8s-resources-namespace
+        name: grafana-dashboard-k8s-resources-namespace
+      - configMap:
+          name: grafana-dashboard-k8s-resources-pod
+        name: grafana-dashboard-k8s-resources-pod
+      - configMap:
+          name: grafana-dashboard-nodes
+        name: grafana-dashboard-nodes
+      - configMap:
+          name: grafana-dashboard-persistentvolumesusage
+        name: grafana-dashboard-persistentvolumesusage
+      - configMap:
+          name: grafana-dashboard-pods
+        name: grafana-dashboard-pods
+      - configMap:
+          name: grafana-dashboard-statefulset
+        name: grafana-dashboard-statefulset
+      tolerations:
+      - key: "node-role.kubernetes.io/bootstrap"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/infra"
+        operator: "Exists"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: monitoring
+spec:
+  ports:
+  - name: http
+    port: 3000
+    targetPort: http
+  selector:
+    app: grafana
 ---
 {%- raw %}
 apiVersion: v1
@@ -59,7 +212,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -88,7 +241,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "node:node_cpu_utilisation:avg1m * node:node_num_cpu:sum / scalar(sum(node:node_num_cpu:sum))",
+                                  "expr": "node:cluster_cpu_utilisation:ratio",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{node}}",
@@ -145,7 +298,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -243,7 +396,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -272,7 +425,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "node:node_memory_utilisation:ratio",
+                                  "expr": "node:cluster_memory_utilisation:ratio",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{node}}",
@@ -329,7 +482,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -427,7 +580,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 4,
+                          "id": 5,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -513,7 +666,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 5,
+                          "id": 6,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -611,7 +764,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 6,
+                          "id": 7,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -697,7 +850,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 7,
+                          "id": 8,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -795,7 +948,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 8,
+                          "id": 9,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -824,7 +977,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "sum(max(node_filesystem_size{fstype=\u007e\"ext[234]|btrfs|xfs|zfs\"} - node_filesystem_avail{fstype=\u007e\"ext[234]|btrfs|xfs|zfs\"}) by (device,pod,namespace)) by (pod,namespace)\n/ scalar(sum(max(node_filesystem_size{fstype=\u007e\"ext[234]|btrfs|xfs|zfs\"}) by (device,pod,namespace)))\n* on (namespace, pod) group_left (node) node_namespace_pod:kube_pod_info:\n",
+                                  "expr": "sum(max(node_filesystem_size_bytes{fstype=\u007e\"ext[234]|btrfs|xfs|zfs\"} - node_filesystem_avail_bytes{fstype=\u007e\"ext[234]|btrfs|xfs|zfs\"}) by (device,pod,namespace)) by (pod,namespace)\n/ scalar(sum(max(node_filesystem_size_bytes{fstype=\u007e\"ext[234]|btrfs|xfs|zfs\"}) by (device,pod,namespace)))\n* on (namespace, pod) group_left (node) node_namespace_pod:kube_pod_info:\n",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{node}}",
@@ -884,7 +1037,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -936,7 +1089,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / USE Method / Cluster",
+          "title": "Kubernetes / USE Method / Cluster",
           "uid": "a6e7d1362e1ddbb79db21d5bb40d7137",
           "version": 0
       }
@@ -975,7 +1128,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1061,7 +1214,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1159,7 +1312,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1245,7 +1398,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1343,7 +1496,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 4,
+                          "id": 5,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1429,7 +1582,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 5,
+                          "id": 6,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1527,7 +1680,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 6,
+                          "id": 7,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1613,7 +1766,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 7,
+                          "id": 8,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1711,7 +1864,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 8,
+                          "id": 9,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1800,7 +1953,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -1879,7 +2032,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / USE Method / Node",
+          "title": "Kubernetes / USE Method / Node",
           "uid": "4ac4f123aae0ff6dbaf4f4f66120033b",
           "version": 0
       }
@@ -1919,7 +2072,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -1948,7 +2101,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "1 - avg(rate(node_cpu{mode=\"idle\"}[1m]))",
+                                  "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[1m]))",
                                   "format": "time_series",
                                   "instant": true,
                                   "intervalFactor": 2,
@@ -2003,7 +2156,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2087,7 +2240,7 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2171,90 +2324,6 @@ items:
                           "datasource": "$datasource",
                           "fill": 1,
                           "format": "percentunit",
-                          "id": 3,
-                          "legend": {
-                              "avg": false,
-                              "current": false,
-                              "max": false,
-                              "min": false,
-                              "show": true,
-                              "total": false,
-                              "values": false
-                          },
-                          "lines": true,
-                          "linewidth": 1,
-                          "links": [
-
-                          ],
-                          "nullPointMode": "null as zero",
-                          "percentage": false,
-                          "pointradius": 5,
-                          "points": false,
-                          "renderer": "flot",
-                          "seriesOverrides": [
-
-                          ],
-                          "spaceLength": 10,
-                          "span": 2,
-                          "stack": false,
-                          "steppedLine": false,
-                          "targets": [
-                              {
-                                  "expr": "1 - sum(:node_memory_MemFreeCachedBuffers:sum) / sum(:node_memory_MemTotal:sum)",
-                                  "format": "time_series",
-                                  "instant": true,
-                                  "intervalFactor": 2,
-                                  "refId": "A"
-                              }
-                          ],
-                          "thresholds": "70,80",
-                          "timeFrom": null,
-                          "timeShift": null,
-                          "title": "Memory Utilisation",
-                          "tooltip": {
-                              "shared": true,
-                              "sort": 0,
-                              "value_type": "individual"
-                          },
-                          "type": "singlestat",
-                          "xaxis": {
-                              "buckets": null,
-                              "mode": "time",
-                              "name": null,
-                              "show": true,
-                              "values": [
-
-                              ]
-                          },
-                          "yaxes": [
-                              {
-                                  "format": "short",
-                                  "label": null,
-                                  "logBase": 1,
-                                  "max": null,
-                                  "min": 0,
-                                  "show": true
-                              },
-                              {
-                                  "format": "short",
-                                  "label": null,
-                                  "logBase": 1,
-                                  "max": null,
-                                  "min": null,
-                                  "show": false
-                              }
-                          ]
-                      },
-                      {
-                          "aliasColors": {
-
-                          },
-                          "bars": false,
-                          "dashLength": 10,
-                          "dashes": false,
-                          "datasource": "$datasource",
-                          "fill": 1,
-                          "format": "percentunit",
                           "id": 4,
                           "legend": {
                               "avg": false,
@@ -2284,7 +2353,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "sum(kube_pod_container_resource_requests_memory_bytes) / sum(:node_memory_MemTotal:sum)",
+                                  "expr": "1 - sum(:node_memory_MemFreeCachedBuffers_bytes:sum) / sum(:node_memory_MemTotal_bytes:sum)",
                                   "format": "time_series",
                                   "instant": true,
                                   "intervalFactor": 2,
@@ -2294,7 +2363,7 @@ items:
                           "thresholds": "70,80",
                           "timeFrom": null,
                           "timeShift": null,
-                          "title": "Memory Requests Commitment",
+                          "title": "Memory Utilisation",
                           "tooltip": {
                               "shared": true,
                               "sort": 0,
@@ -2368,7 +2437,91 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "sum(kube_pod_container_resource_limits_memory_bytes) / sum(:node_memory_MemTotal:sum)",
+                                  "expr": "sum(kube_pod_container_resource_requests_memory_bytes) / sum(:node_memory_MemTotal_bytes:sum)",
+                                  "format": "time_series",
+                                  "instant": true,
+                                  "intervalFactor": 2,
+                                  "refId": "A"
+                              }
+                          ],
+                          "thresholds": "70,80",
+                          "timeFrom": null,
+                          "timeShift": null,
+                          "title": "Memory Requests Commitment",
+                          "tooltip": {
+                              "shared": true,
+                              "sort": 0,
+                              "value_type": "individual"
+                          },
+                          "type": "singlestat",
+                          "xaxis": {
+                              "buckets": null,
+                              "mode": "time",
+                              "name": null,
+                              "show": true,
+                              "values": [
+
+                              ]
+                          },
+                          "yaxes": [
+                              {
+                                  "format": "short",
+                                  "label": null,
+                                  "logBase": 1,
+                                  "max": null,
+                                  "min": 0,
+                                  "show": true
+                              },
+                              {
+                                  "format": "short",
+                                  "label": null,
+                                  "logBase": 1,
+                                  "max": null,
+                                  "min": null,
+                                  "show": false
+                              }
+                          ]
+                      },
+                      {
+                          "aliasColors": {
+
+                          },
+                          "bars": false,
+                          "dashLength": 10,
+                          "dashes": false,
+                          "datasource": "$datasource",
+                          "fill": 1,
+                          "format": "percentunit",
+                          "id": 6,
+                          "legend": {
+                              "avg": false,
+                              "current": false,
+                              "max": false,
+                              "min": false,
+                              "show": true,
+                              "total": false,
+                              "values": false
+                          },
+                          "lines": true,
+                          "linewidth": 1,
+                          "links": [
+
+                          ],
+                          "nullPointMode": "null as zero",
+                          "percentage": false,
+                          "pointradius": 5,
+                          "points": false,
+                          "renderer": "flot",
+                          "seriesOverrides": [
+
+                          ],
+                          "spaceLength": 10,
+                          "span": 2,
+                          "stack": false,
+                          "steppedLine": false,
+                          "targets": [
+                              {
+                                  "expr": "sum(kube_pod_container_resource_limits_memory_bytes) / sum(:node_memory_MemTotal_bytes:sum)",
                                   "format": "time_series",
                                   "instant": true,
                                   "intervalFactor": 2,
@@ -2434,7 +2587,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 6,
+                          "id": 7,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2532,7 +2685,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 7,
+                          "id": 8,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2799,7 +2952,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 8,
+                          "id": 9,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -2897,7 +3050,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 9,
+                          "id": 10,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3155,7 +3308,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -3207,7 +3360,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / Compute Resources / Cluster",
+          "title": "Kubernetes / Compute Resources / Cluster",
           "uid": "efa86fd1d0c121a26444b636a3f509a8",
           "version": 0
       }
@@ -3246,7 +3399,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3344,7 +3497,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3611,7 +3764,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3709,7 +3862,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -3967,7 +4120,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -4046,7 +4199,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / Compute Resources / Namespace",
+          "title": "Kubernetes / Compute Resources / Namespace",
           "uid": "85a562078cdf77779eaa1add43ccec1e",
           "version": 0
       }
@@ -4085,7 +4238,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 0,
+                          "id": 1,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4183,7 +4336,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 1,
+                          "id": 2,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4450,7 +4603,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 10,
-                          "id": 2,
+                          "id": 3,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4548,7 +4701,7 @@ items:
                           "dashes": false,
                           "datasource": "$datasource",
                           "fill": 1,
-                          "id": 3,
+                          "id": 4,
                           "legend": {
                               "avg": false,
                               "current": false,
@@ -4806,7 +4959,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -4912,7 +5065,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "K8s / Compute Resources / Pod",
+          "title": "Kubernetes / Compute Resources / Pod",
           "uid": "6581e46e4e5c7ba40a07646395ef7b23",
           "version": 0
       }
@@ -4924,6 +5077,12 @@ items:
   data:
     nodes.json: |-
       {
+          "__inputs": [
+
+          ],
+          "__requires": [
+
+          ],
           "annotations": {
               "list": [
 
@@ -5031,7 +5190,7 @@ items:
                           },
                           "yaxes": [
                               {
-                                  "format": "percentunit",
+                                  "format": "short",
                                   "label": null,
                                   "logBase": 1,
                                   "max": null,
@@ -5039,7 +5198,7 @@ items:
                                   "show": true
                               },
                               {
-                                  "format": "percentunit",
+                                  "format": "short",
                                   "label": null,
                                   "logBase": 1,
                                   "max": null,
@@ -5092,7 +5251,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "avg by (cpu) (irate(node_cpu{job=\"node-exporter\", mode!=\"idle\", instance=\"$instance\"}[5m])) * 100",
+                                  "expr": "sum by (cpu) (irate(node_cpu_seconds_total{job=\"node-exporter\", mode!=\"idle\", instance=\"$instance\"}[5m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{cpu}}",
@@ -5104,7 +5263,7 @@ items:
                           ],
                           "timeFrom": null,
                           "timeShift": null,
-                          "title": "System load",
+                          "title": "Usage Per Core",
                           "tooltip": {
                               "shared": true,
                               "sort": 0,
@@ -5196,7 +5355,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "avg (sum by (cpu) (irate(node_cpu{job=\"node-exporter\", mode!=\"idle\", instance=\"$instance\"}[2m])) ) * 100\n",
+                                  "expr": "max (sum by (cpu) (irate(node_cpu_seconds_total{job=\"node-exporter\", mode!=\"idle\", instance=\"$instance\"}[2m])) ) * 100\n",
                                   "format": "time_series",
                                   "intervalFactor": 10,
                                   "legendFormat": "{{ cpu }}",
@@ -5304,10 +5463,11 @@ items:
                           "tableColumn": "",
                           "targets": [
                               {
-                                  "expr": "avg(sum by (cpu) (irate(node_cpu{job=\"node-exporter\", mode!=\"idle\", instance=\"$instance\"}[2m]))) * 100\n",
+                                  "expr": "avg(sum by (cpu) (irate(node_cpu_seconds_total{job=\"node-exporter\", mode!=\"idle\", instance=\"$instance\"}[2m]))) * 100\n",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "80, 90",
@@ -5380,28 +5540,28 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "max(\n  node_memory_MemTotal{job=\"node-exporter\", instance=\"$instance\"}\n  - node_memory_MemFree{job=\"node-exporter\", instance=\"$instance\"}\n  - node_memory_Buffers{job=\"node-exporter\", instance=\"$instance\"}\n  - node_memory_Cached{job=\"node-exporter\", instance=\"$instance\"}\n)\n",
+                                  "expr": "max(\n  node_memory_MemTotal_bytes{job=\"node-exporter\", instance=\"$instance\"}\n  - node_memory_MemFree_bytes{job=\"node-exporter\", instance=\"$instance\"}\n  - node_memory_Buffers_bytes{job=\"node-exporter\", instance=\"$instance\"}\n  - node_memory_Cached_bytes{job=\"node-exporter\", instance=\"$instance\"}\n)\n",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "memory used",
                                   "refId": "A"
                               },
                               {
-                                  "expr": "max(node_memory_Buffers{job=\"node-exporter\", instance=\"$instance\"})",
+                                  "expr": "max(node_memory_Buffers_bytes{job=\"node-exporter\", instance=\"$instance\"})",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "memory buffers",
                                   "refId": "B"
                               },
                               {
-                                  "expr": "max(node_memory_Cached{job=\"node-exporter\", instance=\"$instance\"})",
+                                  "expr": "max(node_memory_Cached_bytes{job=\"node-exporter\", instance=\"$instance\"})",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "memory cached",
                                   "refId": "C"
                               },
                               {
-                                  "expr": "max(node_memory_MemFree{job=\"node-exporter\", instance=\"$instance\"})",
+                                  "expr": "max(node_memory_MemFree_bytes{job=\"node-exporter\", instance=\"$instance\"})",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "memory free",
@@ -5509,10 +5669,11 @@ items:
                           "tableColumn": "",
                           "targets": [
                               {
-                                  "expr": "max(\n  (\n    (\n      node_memory_MemTotal{job=\"node-exporter\", instance=\"$instance\"}\n    - node_memory_MemFree{job=\"node-exporter\", instance=\"$instance\"}\n    - node_memory_Buffers{job=\"node-exporter\", instance=\"$instance\"}\n    - node_memory_Cached{job=\"node-exporter\", instance=\"$instance\"}\n    )\n    / node_memory_MemTotal{job=\"node-exporter\", instance=\"$instance\"}\n  ) * 100)\n",
+                                  "expr": "max(\n  (\n    (\n      node_memory_MemTotal_bytes{job=\"node-exporter\", instance=\"$instance\"}\n    - node_memory_MemFree_bytes{job=\"node-exporter\", instance=\"$instance\"}\n    - node_memory_Buffers_bytes{job=\"node-exporter\", instance=\"$instance\"}\n    - node_memory_Cached_bytes{job=\"node-exporter\", instance=\"$instance\"}\n    )\n    / node_memory_MemTotal_bytes{job=\"node-exporter\", instance=\"$instance\"}\n  ) * 100)\n",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "80, 90",
@@ -5592,21 +5753,21 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "max(rate(node_disk_bytes_read{job=\"node-exporter\", instance=\"$instance\"}[2m]))",
+                                  "expr": "max(rate(node_disk_read_bytes_total{job=\"node-exporter\", instance=\"$instance\"}[2m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "read",
                                   "refId": "A"
                               },
                               {
-                                  "expr": "max(rate(node_disk_bytes_written{job=\"node-exporter\", instance=\"$instance\"}[2m]))",
+                                  "expr": "max(rate(node_disk_written_bytes_total{job=\"node-exporter\", instance=\"$instance\"}[2m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "written",
                                   "refId": "B"
                               },
                               {
-                                  "expr": "max(rate(node_disk_io_time_ms{job=\"node-exporter\",  instance=\"$instance\"}[2m]))",
+                                  "expr": "max(rate(node_disk_io_time_seconds_total{job=\"node-exporter\",  instance=\"$instance\"}[2m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "io time",
@@ -5801,7 +5962,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "max(rate(node_network_receive_bytes{job=\"node-exporter\", instance=\"$instance\", device!\u007e\"lo\"}[5m]))",
+                                  "expr": "max(rate(node_network_receive_bytes_total{job=\"node-exporter\", instance=\"$instance\", device!\u007e\"lo\"}[5m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{device}}",
@@ -5892,7 +6053,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "max(rate(node_network_transmit_bytes{job=\"node-exporter\", instance=\"$instance\", device!\u007e\"lo\"}[5m]))",
+                                  "expr": "max(rate(node_network_transmit_bytes_total{job=\"node-exporter\", instance=\"$instance\", device!\u007e\"lo\"}[5m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{device}}",
@@ -5947,12 +6108,204 @@ items:
                   "title": "Dashboard Row",
                   "titleSize": "h6",
                   "type": "row"
+              },
+              {
+                  "collapse": false,
+                  "collapsed": false,
+                  "panels": [
+                      {
+                          "aliasColors": {
+
+                          },
+                          "bars": false,
+                          "dashLength": 10,
+                          "dashes": false,
+                          "datasource": "$datasource",
+                          "fill": 1,
+                          "gridPos": {
+
+                          },
+                          "id": 12,
+                          "legend": {
+                              "alignAsTable": false,
+                              "avg": false,
+                              "current": false,
+                              "max": false,
+                              "min": false,
+                              "rightSide": false,
+                              "show": true,
+                              "total": false,
+                              "values": false
+                          },
+                          "lines": true,
+                          "linewidth": 1,
+                          "links": [
+
+                          ],
+                          "nullPointMode": "null",
+                          "percentage": false,
+                          "pointradius": 5,
+                          "points": false,
+                          "renderer": "flot",
+                          "repeat": null,
+                          "seriesOverrides": [
+
+                          ],
+                          "spaceLength": 10,
+                          "span": 9,
+                          "stack": false,
+                          "steppedLine": false,
+                          "targets": [
+                              {
+                                  "expr": "max(\n  node_filesystem_files{job=\"node-exporter\", instance=\"$instance\"}\n  - node_filesystem_files_free{job=\"node-exporter\", instance=\"$instance\"}\n)\n",
+                                  "format": "time_series",
+                                  "intervalFactor": 2,
+                                  "legendFormat": "inodes used",
+                                  "refId": "A"
+                              },
+                              {
+                                  "expr": "max(node_filesystem_files_free{job=\"node-exporter\", instance=\"$instance\"})",
+                                  "format": "time_series",
+                                  "intervalFactor": 2,
+                                  "legendFormat": "inodes free",
+                                  "refId": "B"
+                              }
+                          ],
+                          "thresholds": [
+
+                          ],
+                          "timeFrom": null,
+                          "timeShift": null,
+                          "title": "Inodes Usage",
+                          "tooltip": {
+                              "shared": true,
+                              "sort": 0,
+                              "value_type": "individual"
+                          },
+                          "type": "graph",
+                          "xaxis": {
+                              "buckets": null,
+                              "mode": "time",
+                              "name": null,
+                              "show": true,
+                              "values": [
+
+                              ]
+                          },
+                          "yaxes": [
+                              {
+                                  "format": "short",
+                                  "label": null,
+                                  "logBase": 1,
+                                  "max": null,
+                                  "min": null,
+                                  "show": true
+                              },
+                              {
+                                  "format": "short",
+                                  "label": null,
+                                  "logBase": 1,
+                                  "max": null,
+                                  "min": null,
+                                  "show": true
+                              }
+                          ]
+                      },
+                      {
+                          "cacheTimeout": null,
+                          "colorBackground": false,
+                          "colorValue": false,
+                          "colors": [
+                              "rgba(50, 172, 45, 0.97)",
+                              "rgba(237, 129, 40, 0.89)",
+                              "rgba(245, 54, 54, 0.9)"
+                          ],
+                          "datasource": "$datasource",
+                          "format": "percent",
+                          "gauge": {
+                              "maxValue": 100,
+                              "minValue": 0,
+                              "show": true,
+                              "thresholdLabels": false,
+                              "thresholdMarkers": true
+                          },
+                          "gridPos": {
+
+                          },
+                          "id": 13,
+                          "interval": null,
+                          "links": [
+
+                          ],
+                          "mappingType": 1,
+                          "mappingTypes": [
+                              {
+                                  "name": "value to text",
+                                  "value": 1
+                              },
+                              {
+                                  "name": "range to text",
+                                  "value": 2
+                              }
+                          ],
+                          "maxDataPoints": 100,
+                          "nullPointMode": "connected",
+                          "nullText": null,
+                          "postfix": "",
+                          "postfixFontSize": "50%",
+                          "prefix": "",
+                          "prefixFontSize": "50%",
+                          "rangeMaps": [
+                              {
+                                  "from": "null",
+                                  "text": "N/A",
+                                  "to": "null"
+                              }
+                          ],
+                          "span": 3,
+                          "sparkline": {
+                              "fillColor": "rgba(31, 118, 189, 0.18)",
+                              "full": false,
+                              "lineColor": "rgb(31, 120, 193)",
+                              "show": false
+                          },
+                          "tableColumn": "",
+                          "targets": [
+                              {
+                                  "expr": "max(\n  (\n    (\n      node_filesystem_files{job=\"node-exporter\", instance=\"$instance\"}\n    - node_filesystem_files_free{job=\"node-exporter\", instance=\"$instance\"}\n    )\n    / node_filesystem_files{job=\"node-exporter\", instance=\"$instance\"}\n  ) * 100)\n",
+                                  "format": "time_series",
+                                  "intervalFactor": 2,
+                                  "legendFormat": "",
+                                  "refId": "A"
+                              }
+                          ],
+                          "thresholds": "80, 90",
+                          "title": "Inodes Usage",
+                          "type": "singlestat",
+                          "valueFontSize": "80%",
+                          "valueMaps": [
+                              {
+                                  "op": "=",
+                                  "text": "N/A",
+                                  "value": "null"
+                              }
+                          ],
+                          "valueName": "current"
+                      }
+                  ],
+                  "repeat": null,
+                  "repeatIteration": null,
+                  "repeatRowId": null,
+                  "showTitle": false,
+                  "title": "Dashboard Row",
+                  "titleSize": "h6",
+                  "type": "row"
               }
           ],
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -5986,7 +6339,7 @@ items:
                       "options": [
 
                       ],
-                      "query": "label_values(node_boot_time{job=\"node-exporter\"}, instance)",
+                      "query": "label_values(node_boot_time_seconds{job=\"node-exporter\"}, instance)",
                       "refresh": 2,
                       "regex": "",
                       "sort": 0,
@@ -6030,7 +6383,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "Nodes",
+          "title": "Kubernetes / Nodes",
           "uid": "fa49a4706d07a042595b664c87fb33ea",
           "version": 0
       }
@@ -6040,8 +6393,363 @@ items:
     namespace: monitoring
 - apiVersion: v1
   data:
+    persistentvolumesusage.json: |-
+      {
+          "__inputs": [
+
+          ],
+          "__requires": [
+
+          ],
+          "annotations": {
+              "list": [
+
+              ]
+          },
+          "editable": false,
+          "gnetId": null,
+          "graphTooltip": 0,
+          "hideControls": false,
+          "id": null,
+          "links": [
+
+          ],
+          "refresh": "",
+          "rows": [
+              {
+                  "collapse": false,
+                  "collapsed": false,
+                  "panels": [
+                      {
+                          "aliasColors": {
+
+                          },
+                          "bars": false,
+                          "dashLength": 10,
+                          "dashes": false,
+                          "datasource": "$datasource",
+                          "fill": 1,
+                          "gridPos": {
+
+                          },
+                          "id": 2,
+                          "legend": {
+                              "alignAsTable": false,
+                              "avg": true,
+                              "current": true,
+                              "max": true,
+                              "min": true,
+                              "rightSide": false,
+                              "show": true,
+                              "total": false,
+                              "values": true
+                          },
+                          "lines": true,
+                          "linewidth": 1,
+                          "links": [
+
+                          ],
+                          "nullPointMode": "null",
+                          "percentage": false,
+                          "pointradius": 5,
+                          "points": false,
+                          "renderer": "flot",
+                          "repeat": null,
+                          "seriesOverrides": [
+
+                          ],
+                          "spaceLength": 10,
+                          "span": 12,
+                          "stack": false,
+                          "steppedLine": false,
+                          "targets": [
+                              {
+                                  "expr": "(kubelet_volume_stats_capacity_bytes{job=\"kubelet\", persistentvolumeclaim=\"$volume\"} - kubelet_volume_stats_available_bytes{job=\"kubelet\", persistentvolumeclaim=\"$volume\"}) / kubelet_volume_stats_capacity_bytes{job=\"kubelet\", persistentvolumeclaim=\"$volume\"} * 100\n",
+                                  "format": "time_series",
+                                  "intervalFactor": 1,
+                                  "legendFormat": "{{ Usage }}",
+                                  "refId": "A"
+                              }
+                          ],
+                          "thresholds": [
+
+                          ],
+                          "timeFrom": null,
+                          "timeShift": null,
+                          "title": "Volume Space Usage",
+                          "tooltip": {
+                              "shared": true,
+                              "sort": 0,
+                              "value_type": "individual"
+                          },
+                          "type": "graph",
+                          "xaxis": {
+                              "buckets": null,
+                              "mode": "time",
+                              "name": null,
+                              "show": true,
+                              "values": [
+
+                              ]
+                          },
+                          "yaxes": [
+                              {
+                                  "format": "percent",
+                                  "label": null,
+                                  "logBase": 1,
+                                  "max": 100,
+                                  "min": 0,
+                                  "show": true
+                              },
+                              {
+                                  "format": "percent",
+                                  "label": null,
+                                  "logBase": 1,
+                                  "max": 100,
+                                  "min": 0,
+                                  "show": true
+                              }
+                          ]
+                      }
+                  ],
+                  "repeat": null,
+                  "repeatIteration": null,
+                  "repeatRowId": null,
+                  "showTitle": false,
+                  "title": "Dashboard Row",
+                  "titleSize": "h6",
+                  "type": "row"
+              },
+              {
+                  "collapse": false,
+                  "collapsed": false,
+                  "panels": [
+                      {
+                          "aliasColors": {
+
+                          },
+                          "bars": false,
+                          "dashLength": 10,
+                          "dashes": false,
+                          "datasource": "$datasource",
+                          "fill": 1,
+                          "gridPos": {
+
+                          },
+                          "id": 3,
+                          "legend": {
+                              "alignAsTable": false,
+                              "avg": true,
+                              "current": true,
+                              "max": true,
+                              "min": true,
+                              "rightSide": false,
+                              "show": true,
+                              "total": false,
+                              "values": true
+                          },
+                          "lines": true,
+                          "linewidth": 1,
+                          "links": [
+
+                          ],
+                          "nullPointMode": "null",
+                          "percentage": false,
+                          "pointradius": 5,
+                          "points": false,
+                          "renderer": "flot",
+                          "repeat": null,
+                          "seriesOverrides": [
+
+                          ],
+                          "spaceLength": 10,
+                          "span": 12,
+                          "stack": false,
+                          "steppedLine": false,
+                          "targets": [
+                              {
+                                  "expr": "kubelet_volume_stats_inodes_used{job=\"kubelet\", persistentvolumeclaim=\"$volume\"} / kubelet_volume_stats_inodes{job=\"kubelet\", persistentvolumeclaim=\"$volume\"} * 100\n",
+                                  "format": "time_series",
+                                  "intervalFactor": 1,
+                                  "legendFormat": "{{ Usage }}",
+                                  "refId": "A"
+                              }
+                          ],
+                          "thresholds": [
+
+                          ],
+                          "timeFrom": null,
+                          "timeShift": null,
+                          "title": "Volume inodes Usage",
+                          "tooltip": {
+                              "shared": true,
+                              "sort": 0,
+                              "value_type": "individual"
+                          },
+                          "type": "graph",
+                          "xaxis": {
+                              "buckets": null,
+                              "mode": "time",
+                              "name": null,
+                              "show": true,
+                              "values": [
+
+                              ]
+                          },
+                          "yaxes": [
+                              {
+                                  "format": "percent",
+                                  "label": null,
+                                  "logBase": 1,
+                                  "max": 100,
+                                  "min": 0,
+                                  "show": true
+                              },
+                              {
+                                  "format": "percent",
+                                  "label": null,
+                                  "logBase": 1,
+                                  "max": 100,
+                                  "min": 0,
+                                  "show": true
+                              }
+                          ]
+                      }
+                  ],
+                  "repeat": null,
+                  "repeatIteration": null,
+                  "repeatRowId": null,
+                  "showTitle": false,
+                  "title": "Dashboard Row",
+                  "titleSize": "h6",
+                  "type": "row"
+              }
+          ],
+          "schemaVersion": 14,
+          "style": "dark",
+          "tags": [
+              "kubernetes-mixin"
+          ],
+          "templating": {
+              "list": [
+                  {
+                      "current": {
+                          "text": "Prometheus",
+                          "value": "Prometheus"
+                      },
+                      "hide": 0,
+                      "label": null,
+                      "name": "datasource",
+                      "options": [
+
+                      ],
+                      "query": "prometheus",
+                      "refresh": 1,
+                      "regex": "",
+                      "type": "datasource"
+                  },
+                  {
+                      "allValue": null,
+                      "current": {
+
+                      },
+                      "datasource": "$datasource",
+                      "hide": 0,
+                      "includeAll": false,
+                      "label": "Namespace",
+                      "multi": false,
+                      "name": "namespace",
+                      "options": [
+
+                      ],
+                      "query": "label_values(kubelet_volume_stats_capacity_bytes{job=\"kubelet\"}, exported_namespace)",
+                      "refresh": 2,
+                      "regex": "",
+                      "sort": 0,
+                      "tagValuesQuery": "",
+                      "tags": [
+
+                      ],
+                      "tagsQuery": "",
+                      "type": "query",
+                      "useTags": false
+                  },
+                  {
+                      "allValue": null,
+                      "current": {
+
+                      },
+                      "datasource": "$datasource",
+                      "hide": 0,
+                      "includeAll": false,
+                      "label": "PersistentVolumeClaim",
+                      "multi": false,
+                      "name": "volume",
+                      "options": [
+
+                      ],
+                      "query": "label_values(kubelet_volume_stats_capacity_bytes{job=\"kubelet\", exported_namespace=\"$namespace\"}, persistentvolumeclaim)",
+                      "refresh": 2,
+                      "regex": "",
+                      "sort": 0,
+                      "tagValuesQuery": "",
+                      "tags": [
+
+                      ],
+                      "tagsQuery": "",
+                      "type": "query",
+                      "useTags": false
+                  }
+              ]
+          },
+          "time": {
+              "from": "now-7d",
+              "to": "now"
+          },
+          "timepicker": {
+              "refresh_intervals": [
+                  "5s",
+                  "10s",
+                  "30s",
+                  "1m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "1d"
+              ],
+              "time_options": [
+                  "5m",
+                  "15m",
+                  "1h",
+                  "6h",
+                  "12h",
+                  "24h",
+                  "2d",
+                  "7d",
+                  "30d"
+              ]
+          },
+          "timezone": "",
+          "title": "Kubernetes / Persistent Volumes",
+          "uid": "919b92a8e8041bd567af9edab12c840c",
+          "version": 0
+      }
+  kind: ConfigMap
+  metadata:
+    name: grafana-dashboard-persistentvolumesusage
+    namespace: monitoring
+- apiVersion: v1
+  data:
     pods.json: |-
       {
+          "__inputs": [
+
+          ],
+          "__requires": [
+
+          ],
           "annotations": {
               "list": [
 
@@ -6221,7 +6929,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "sum by (container_name) (rate(container_cpu_usage_seconds_total{job=\"kubelet\", image!=\"\",container_name!=\"POD\",pod_name=\"$pod\"}[1m]))",
+                                  "expr": "sum by (container_name) (rate(container_cpu_usage_seconds_total{job=\"kubelet\", namespace=\"$namespace\", image!=\"\",container_name!=\"POD\",pod_name=\"$pod\"}[1m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{ container_name }}",
@@ -6324,7 +7032,7 @@ items:
                           "steppedLine": false,
                           "targets": [
                               {
-                                  "expr": "sort_desc(sum by (pod_name) (rate(container_network_receive_bytes_total{job=\"kubelet\", pod_name=\"$pod\"}[1m])))",
+                                  "expr": "sort_desc(sum by (pod_name) (rate(container_network_receive_bytes_total{job=\"kubelet\", namespace=\"$namespace\", pod_name=\"$pod\"}[1m])))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
                                   "legendFormat": "{{ pod_name }}",
@@ -6384,7 +7092,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -6514,7 +7222,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "Pods",
+          "title": "Kubernetes / Pods",
           "uid": "ab4f13a9892a76a4d21ce8c2445bf4ea",
           "version": 0
       }
@@ -6526,6 +7234,12 @@ items:
   data:
     statefulset.json: |-
       {
+          "__inputs": [
+
+          ],
+          "__requires": [
+
+          ],
           "annotations": {
               "list": [
 
@@ -6608,7 +7322,8 @@ items:
                                   "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"kubelet\", namespace=\"$namespace\", pod_name=\u007e\"$statefulset.*\"}[3m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "",
@@ -6687,7 +7402,8 @@ items:
                                   "expr": "sum(container_memory_usage_bytes{job=\"kubelet\", namespace=\"$namespace\", pod_name=\u007e\"$statefulset.*\"}) / 1024^3",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "",
@@ -6766,7 +7482,8 @@ items:
                                   "expr": "sum(rate(container_network_transmit_bytes_total{job=\"kubelet\", namespace=\"$namespace\", pod_name=\u007e\"$statefulset.*\"}[3m])) + sum(rate(container_network_receive_bytes_total{namespace=\"$namespace\",pod_name=\u007e\"$statefulset.*\"}[3m]))",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "",
@@ -6860,7 +7577,8 @@ items:
                                   "expr": "max(kube_statefulset_replicas{job=\"kube-state-metrics\", namespace=\"$namespace\", statefulset=\"$statefulset\"}) without (instance, pod)",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "",
@@ -6940,7 +7658,8 @@ items:
                                   "expr": "min(kube_statefulset_status_replicas_current{job=\"kube-state-metrics\", namespace=\"$namespace\", statefulset=\"$statefulset\"}) without (instance, pod)",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "",
@@ -7020,7 +7739,8 @@ items:
                                   "expr": "max(kube_statefulset_status_observed_generation{job=\"kube-state-metrics\",  namespace=\"$namespace\", statefulset=\"$statefulset\"}) without (instance, pod)",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "",
@@ -7100,7 +7820,8 @@ items:
                                   "expr": "max(kube_statefulset_metadata_generation{job=\"kube-state-metrics\", statefulset=\"$statefulset\", namespace=\"$namespace\"}) without (instance, pod)",
                                   "format": "time_series",
                                   "intervalFactor": 2,
-                                  "legendFormat": ""
+                                  "legendFormat": "",
+                                  "refId": "A"
                               }
                           ],
                           "thresholds": "",
@@ -7260,7 +7981,7 @@ items:
           "schemaVersion": 14,
           "style": "dark",
           "tags": [
-
+              "kubernetes-mixin"
           ],
           "templating": {
               "list": [
@@ -7364,7 +8085,7 @@ items:
               ]
           },
           "timezone": "",
-          "title": "StatefulSets",
+          "title": "Kubernetes / StatefulSets",
           "uid": "a31c1f46e6f727cb37c0d731a7245005",
           "version": 0
       }
@@ -7375,148 +8096,21 @@ items:
 kind: ConfigMapList
 {%- endraw %}
 ---
-apiVersion: apps/v1beta2
-kind: Deployment
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  labels:
-    app: grafana
+  name: grafana
+  namespace: monitoring
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
   name: grafana
   namespace: monitoring
 spec:
-  replicas: 1
+  endpoints:
+  - interval: 15s
+    port: http
   selector:
     matchLabels:
       app: grafana
-  template:
-    metadata:
-      labels:
-        app: grafana
-    spec:
-      containers:
-      - image: {{ build_image_name('grafana', '5.2.4') }}
-        name: grafana
-        ports:
-        - containerPort: 3000
-          name: http
-        resources:
-          limits:
-            cpu: 200m
-            memory: 200Mi
-          requests:
-            cpu: 100m
-            memory: 100Mi
-        volumeMounts:
-        - mountPath: /var/lib/grafana
-          name: grafana-storage
-          readOnly: false
-        - mountPath: /etc/grafana/provisioning/datasources
-          name: grafana-datasources
-          readOnly: false
-        - mountPath: /etc/grafana/provisioning/dashboards
-          name: grafana-dashboards
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/k8s-cluster-rsrc-use
-          name: grafana-dashboard-k8s-cluster-rsrc-use
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/k8s-node-rsrc-use
-          name: grafana-dashboard-k8s-node-rsrc-use
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-cluster
-          name: grafana-dashboard-k8s-resources-cluster
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-namespace
-          name: grafana-dashboard-k8s-resources-namespace
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/k8s-resources-pod
-          name: grafana-dashboard-k8s-resources-pod
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/nodes
-          name: grafana-dashboard-nodes
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/pods
-          name: grafana-dashboard-pods
-          readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/statefulset
-          name: grafana-dashboard-statefulset
-          readOnly: false
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
-      serviceAccountName: grafana
-      volumes:
-      - emptyDir: {}
-        name: grafana-storage
-      - name: grafana-datasources
-        secret:
-          secretName: grafana-datasources
-      - configMap:
-          name: grafana-dashboards
-        name: grafana-dashboards
-      - configMap:
-          name: grafana-dashboard-k8s-cluster-rsrc-use
-        name: grafana-dashboard-k8s-cluster-rsrc-use
-      - configMap:
-          name: grafana-dashboard-k8s-node-rsrc-use
-        name: grafana-dashboard-k8s-node-rsrc-use
-      - configMap:
-          name: grafana-dashboard-k8s-resources-cluster
-        name: grafana-dashboard-k8s-resources-cluster
-      - configMap:
-          name: grafana-dashboard-k8s-resources-namespace
-        name: grafana-dashboard-k8s-resources-namespace
-      - configMap:
-          name: grafana-dashboard-k8s-resources-pod
-        name: grafana-dashboard-k8s-resources-pod
-      - configMap:
-          name: grafana-dashboard-nodes
-        name: grafana-dashboard-nodes
-      - configMap:
-          name: grafana-dashboard-pods
-        name: grafana-dashboard-pods
-      - configMap:
-          name: grafana-dashboard-statefulset
-        name: grafana-dashboard-statefulset
-      tolerations:
-      - key: "node-role.kubernetes.io/bootstrap"
-        operator: "Exists"
-        effect: "NoSchedule"
-      - key: "node-role.kubernetes.io/infra"
-        operator: "Exists"
-        effect: "NoSchedule"
-      nodeSelector:
-        node-role.kubernetes.io/infra: ''
----
-apiVersion: v1
-data:
-  dashboards.yaml: |-
-    {
-        "apiVersion": 1,
-        "providers": [
-            {
-                "folder": "",
-                "name": "0",
-                "options": {
-                    "path": "/grafana-dashboard-definitions/0"
-                },
-                "orgId": 1,
-                "type": "file"
-            }
-        ]
-    }
-kind: ConfigMap
-metadata:
-  name: grafana-dashboards
-  namespace: monitoring
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: grafana
-  namespace: monitoring
-spec:
-  ports:
-  - name: http
-    port: 3000
-    targetPort: http
-  selector:
-    app: grafana
