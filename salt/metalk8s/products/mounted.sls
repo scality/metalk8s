@@ -24,8 +24,12 @@ Product {{ product.iso }} available at {{ product.path }}:
   - device: {{ product.iso }}
   - fstype: iso9660
   - mkmnt: false
-  - opts: ro
+  - opts:
+    - ro
+    - nofail
   - persist: true
+  - match_on:
+    - name
   - require:
     - file: Product path {{ product.path }} exists
   - require_in:
