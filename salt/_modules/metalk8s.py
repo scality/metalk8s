@@ -225,8 +225,15 @@ def get_products(products=None):
             continue
 
         info.update({'path': path, 'iso': iso})
-        res.update(
-            {'metalk8s-{0}'.format(version): info}
-        )
+        env_name = 'metalk8s-{0}'.format(version)
+
+        # Warn if we have 2 products with the same version
+        if env_name in res:
+            log.warning(
+                'Skip, product %s has the same version as %s: %s.',
+                res[env_name]['iso'] or res[env_name]['path'],
+                prod, version
+            )
+        res.update({env_name: info})
 
     return res
