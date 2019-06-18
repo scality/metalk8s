@@ -289,7 +289,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
     Path('salt/metalk8s/repo/files/nginx.conf.j2'),
-    Path('salt/metalk8s/repo/files/90-metalk8s-registry-config.inc.j2'),
+    Path('salt/metalk8s/repo/files/metalk8s-registry-config.inc.j2'),
     Path('salt/metalk8s/repo/files/repositories-manifest.yaml.j2'),
     Path('salt/metalk8s/repo/init.sls'),
     Path('salt/metalk8s/repo/installed.sls'),
@@ -378,9 +378,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         destination=Path(
             constants.ISO_ROOT,
             'salt/metalk8s/repo/files',
-            '99-{}-{}-registry.inc'.format(
-                config.PROJECT_NAME.lower(), constants.VERSION
-            )
+            '{}-registry.inc'.format(config.PROJECT_NAME.lower())
         ),
         task_dep=['images']
     ),
