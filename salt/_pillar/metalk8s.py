@@ -140,8 +140,10 @@ def _load_iso_path(config_data):
 
 def ext_pillar(minion_id, pillar, bootstrap_config):
     config = _load_config(bootstrap_config)
+    if config.get('_errors'):
+        return {'_errors': config['errors']}
 
-    return {
+    result = {
         'networks': _load_networks(config),
         'metalk8s': {
             'products': _load_iso_path(config),
@@ -149,3 +151,17 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
             'api_server': _load_apiserver(config),
         },
     }
+
+    if '_errors' in result['networks']:
+        result.setdefault('errors', []).append(
+            result['networks'].pop('_errors')
+        )
+
+    metal_result = result['metalk8s']
+    for key in ['ca', 'api_server']:
+        if '_errors' in metal_result[key]:
+            result.setdefault('errors', []).append(
+                metal_result[key].pop('_errors')
+            )
+
+    return result
