@@ -53,11 +53,6 @@ SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 YUM=${YUM:-$(command -v yum)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
-# shellcheck disable=SC2034
-SALT_MASTER_FILE_CONF=/etc/salt/master.d/99-metalk8s.conf
-# shellcheck disable=SC2034
-SALT_MINION_FILE_CONF=/etc/salt/minion.d/99-metalk8s.conf
-
 declare -A GPGCHECK_REPOSITORIES=(
     [metalk8s-base]=1
     [metalk8s-epel]=1
