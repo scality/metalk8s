@@ -160,7 +160,7 @@ def task__iso_generate_product_txt() -> types.TaskDict:
 def task__iso_build() -> types.TaskDict:
     """Create the ISO from the files in ISO_ROOT."""
     mkisofs = [
-        config.MKISOFS, '-output',  ISO_FILE,
+        config.ExtCommand.MKISOFS.value, '-output',  ISO_FILE,
         '-quiet',
         '-rock',
         '-joliet',
@@ -186,7 +186,7 @@ def task__iso_build() -> types.TaskDict:
         'actions': [mkisofs],
         'targets': [ISO_FILE],
         'file_dep': depends,
-        'task_dep': ['_build_root', '_iso_mkdir_root'],
+        'task_dep': ['check_for:mkisofs', '_build_root', '_iso_mkdir_root'],
         'clean': True,
     }
 

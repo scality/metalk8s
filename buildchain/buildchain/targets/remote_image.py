@@ -52,6 +52,7 @@ class RemoteImage(image.ContainerImage):
         self._digest = digest
         self._remote_name = remote_name or name
         self._use_tar = save_as_tar
+        kwargs.setdefault('task_dep', []).append('check_for:skopeo')
         super().__init__(
             name=name, version=version,
             destination=destination,
@@ -104,8 +105,8 @@ class RemoteImage(image.ContainerImage):
     def _skopeo_copy(self) -> List[str]:
         """Return the command line to execute skopeo copy."""
         cmd = [
-            config.SKOPEO, '--override-os', 'linux', '--insecure-policy',
-            'copy', '--format', 'v2s2'
+            config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
+            '--insecure-policy', 'copy', '--format', 'v2s2'
         ]
         if not self._use_tar:
             cmd.append('--dest-compress')
