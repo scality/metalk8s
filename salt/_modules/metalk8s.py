@@ -194,6 +194,8 @@ def get_products(products=None):
     if not products:
         products = __pillar__.get('metalk8s', {}).get('products', [])
 
+    if isinstance(products, unicode):
+        products = str(products)
     if isinstance(products, str):
         products = [products]
     if not isinstance(products, list):
