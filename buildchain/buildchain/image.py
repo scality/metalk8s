@@ -80,9 +80,13 @@ def task__image_dedup_layers() -> types.TaskDict:
             path=utils.build_relpath(constants.ISO_IMAGE_ROOT)
         )
 
-    task = targets.Target(task_dep=['_image_pull', '_image_build']).basic_task
+    task = targets.Target(
+        task_dep=['check_for:hardlink', '_image_pull', '_image_build']
+    ).basic_task
     task['title']   = lambda _: show()
-    task['actions'] = [[config.HARDLINK, '-c', constants.ISO_IMAGE_ROOT]]
+    task['actions'] = [
+        [config.ExtCommand.HARDLINK.value, '-c', constants.ISO_IMAGE_ROOT]
+    ]
     return task
 
 

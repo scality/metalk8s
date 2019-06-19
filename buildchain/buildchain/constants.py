@@ -91,8 +91,8 @@ def git_ref() -> Optional[str]:
 
     try:
         ref : bytes = subprocess.check_output([
-            config.GIT, 'describe', '--always', '--long', '--tags',
-                '--dirty',
+            config.ExtCommand.GIT.value, 'describe', '--always', '--long',
+            '--tags', '--dirty',
         ])
 
         return ref.decode('utf-8').rstrip()

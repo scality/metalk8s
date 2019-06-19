@@ -1,4 +1,3 @@
-
 """Dependency checker for skopeo, vagrant, git, mkisofs and hard-link."""
 
 

@@ -107,6 +107,7 @@ class LocalImage(image.ContainerImage):
         self._save = save_on_disk
         self._build_args = build_args or {}
         kwargs.setdefault('file_dep', []).append(self.dockerfile)
+        kwargs.setdefault('task_dep', []).append('check_for:skopeo')
         super().__init__(
             name=name, version=version, destination=destination, **kwargs
         )
@@ -192,8 +193,9 @@ class LocalImage(image.ContainerImage):
         # If a destination is defined, let's save the image there.
         if self.save_on_disk:
             cmd = [
-                config.SKOPEO, '--override-os', 'linux', '--insecure-policy',
-                'copy', '--format', 'v2s2', '--dest-compress',
+                config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
+                '--insecure-policy', 'copy', '--format', 'v2s2',
+                '--dest-compress',
             ]
             docker_host = os.getenv('DOCKER_HOST')
             if docker_host is not None:
