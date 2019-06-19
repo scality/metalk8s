@@ -21,12 +21,8 @@ Inject pause image:
         ctr -n k8s.io image ls -q | grep k8s.gcr.io/pause | grep 3\\.1
     - require:
       - service: Start and enable containerd
-  cmd.run:
-    - name: >-
-        ctr -n k8s.io image import \
-            --base-name k8s.gcr.io/pause \
-            /tmp/pause-3.1.tar
-    - unless: >-
-        ctr -n k8s.io image ls -q | grep k8s.gcr.io/pause | grep 3\\.1
+  containerd.image_managed:
+    - name: k8s.gcr.io/pause:3.1
+    - archive_path: /tmp/pause-3.1.tar
     - require:
       - file: Inject pause image

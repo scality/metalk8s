@@ -27,5 +27,5 @@ def load_cri_image(path):
     '''
     log.info('Importing image from "%s" into CRI cache', path)
     return __salt__['cmd.run_all'](
-        'ctr -n k8s.io image import "{0}"'.format(path)
+        'ctr --debug -n k8s.io image import "{0}"'.format(path)
     )
