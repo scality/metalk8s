@@ -1,3 +1,6 @@
+include:
+  - metalk8s.salt.minion.local
+
 {%- for _, product in salt.metalk8s.get_products().items() %}
   {%- if product.iso %}
     {%- if not product.version %}

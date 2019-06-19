@@ -53,7 +53,6 @@ SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 YUM=${YUM:-$(command -v yum)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
-SALT_MINION_FILE_CLIENT_LOCAL_CONF=/etc/salt/minion.d/99-file-client-local.conf
 # shellcheck disable=SC2034
 SALT_MASTER_FILE_CONF=/etc/salt/master.d/99-metalk8s.conf
 # shellcheck disable=SC2034
@@ -206,30 +205,14 @@ install_genisoimage() {
 }
 
 configure_salt_minion_local_mode() {
-    local -r file_root=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/salt
-    local -r pillar_root=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/pillar
+    local -r base_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+    local -r file_root="$base_dir/salt"
 
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough saltutil.sync_all
-
-    cat > "${SALT_MINION_FILE_CLIENT_LOCAL_CONF}" << EOF
-file_roots:
-  metalk8s-@@VERSION:
-    - $file_root
-pillar_roots:
-  metalk8s-@@VERSION:
-    - $pillar_root
-
-# use new module.run format
-use_superseded:
-  - module.run
-
-ext_pillar_first: true
-ext_pillar:
-  - metalk8s: /etc/metalk8s/bootstrap.yaml
-
-retry_dns_count: 3
-EOF
+    "$SALT_CALL" --file-root="$file_root" \
+        --local --retcode-passthrough state.sls metalk8s.salt.minion.local \
+        pillar="{'metalk8s': {'products': '$base_dir'}}"
 }
 
 get_salt_container() {

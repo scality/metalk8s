@@ -19,10 +19,3 @@ Configure salt minion:
       minion_id: {{ grains.id }}
     - watch_in:
       - cmd: Restart salt-minion
-
-Remove minion local conf:
-  file.absent:
-    - name: /etc/salt/minion.d/99-file-client-local.conf
-    - require:
-      - file: Configure salt minion
-      - module: Ensure salt-minion running
