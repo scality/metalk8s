@@ -51,9 +51,8 @@ def node_info(node, ca_minion):
 
 def ext_pillar(minion_id, pillar, kubeconfig):
     if not os.path.isfile(kubeconfig):
-        log.warning(
-            '%s: kubeconfig not found at %s', __virtualname__, kubeconfig)
-        return {}
+        error_tplt = '{}: kubeconfig not found at {}'
+        return {'_errors': error_tplt.format(__virtualname__, kubeconfig)}
 
     ca_minion = None
     if 'metalk8s' in pillar:
