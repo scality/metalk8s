@@ -41,52 +41,53 @@ def task__vagrantkey() -> types.TaskDict:
 
 def task__vagrant_up_noprov() -> types.TaskDict:
     """Run `vagrant up` without provisioning a development environment."""
-    cmd = [config.VAGRANT, 'up']
+    cmd = [config.ExtCommand.VAGRANT.value, 'up']
     cmd.extend(map(shlex.quote, config.VAGRANT_UP_ARGS))
     cmd.append('--no-provision')
 
     return {
         'actions': [doit.tools.LongRunning(' '.join(cmd))],
         'file_dep': [],
-        'task_dep': [],
+        'task_dep': ['check_for:vagrant'],
         'uptodate': [False],
     }
 
 def task__vagrant_snapshot() -> types.TaskDict:
     """Snapshot development environment."""
-    vagranthalt = [config.VAGRANT, 'halt', 'bootstrap']
-    vagrantsnap = [config.VAGRANT, 'snapshot', 'save', '--force', 'bootstrap',
-        config.VAGRANT_SNAPSHOT_NAME]
+    vagranthalt = [config.ExtCommand.VAGRANT.value, 'halt', 'bootstrap']
+    vagrantsnap = [config.ExtCommand.VAGRANT.value, 'snapshot', 'save',
+                   '--force', 'bootstrap', config.VAGRANT_SNAPSHOT_NAME]
 
     return {
         'actions': [vagranthalt, vagrantsnap],
-        'task_dep': ['_vagrant_up_noprov'],
+        'task_dep': ['_vagrant_up_noprov', 'check_for:vagrant'],
         'uptodate': [doit.tools.run_once],
         'verbosity': 2
     }
 
 def task_vagrant_restore() -> types.TaskDict:
     """Restore development environment snapshot."""
-    cmd = [config.VAGRANT, 'snapshot', 'restore', 'bootstrap',
+    cmd = [config.ExtCommand.VAGRANT.value, 'snapshot', 'restore', 'bootstrap',
         config.VAGRANT_SNAPSHOT_NAME]
 
     return {
         'actions': [cmd],
         'uptodate': [False],
-        'verbosity': 2
+        'verbosity': 2,
+        'task_dep': ['check_for:vagrant']
     }
 
 def task_vagrant_up() -> types.TaskDict:
     """Run `vagrant up` to (re-)provision a development environment."""
-    vagrantup = [config.VAGRANT, 'up']
+    vagrantup = [config.ExtCommand.VAGRANT.value, 'up']
     vagrantup.extend(map(shlex.quote, config.VAGRANT_UP_ARGS))
 
-    vagrantdestroy = [config.VAGRANT, 'destroy', '--force']
+    vagrantdestroy = [config.ExtCommand.VAGRANT.value, 'destroy', '--force']
 
     return {
         'actions': [doit.tools.LongRunning(' '.join(vagrantup))],
         'file_dep': [constants.VAGRANT_SSH_KEY_PAIR],
-        'task_dep': ['populate_iso', '_vagrant_snapshot'],
+        'task_dep': ['check_for:vagrant', 'populate_iso', '_vagrant_snapshot'],
         'uptodate': [False],
         'clean': [vagrantdestroy],
         'verbosity': 2
