@@ -21,8 +21,7 @@ def service_endpoints_nodeport(service, namespace, kubeconfig):
     node_name = endpoint.get('node_name')
 
     if not node_name:
-        log.error('Cannot get `node_name` from %s.', endpoint)
-        return {}
+        return {'_errors': 'Cannot get `node_name` from {}.'.format(endpoint)}
 
     try:
         node = __salt__['metalk8s_kubernetes.node'](
@@ -30,8 +29,8 @@ def service_endpoints_nodeport(service, namespace, kubeconfig):
             kubeconfig=kubeconfig,
         )
     except Exception as exc:  # pylint: disable=broad-except
-        log.exception('Unable to get kubernetes node %s:\n%s', node_name, exc)
-        return {}
+        error_tplt = 'Unable to get kubernetes node {}:\n{}'
+        return {'_errors': error_tplt.format(node_name, exc)}
 
     node_meta = node['metadata']
     host_net = node_meta['annotations']['projectcalico.org/IPv4Address']
@@ -44,10 +43,8 @@ def service_endpoints_nodeport(service, namespace, kubeconfig):
             kubeconfig=kubeconfig,
         )
     except Exception as exc:  # pylint: disable=broad-except
-        log.exception(
-            'Unable to get kubernetes service %s in namespace %s:\n%s',
-            service, namespace, exc)
-        return {}
+        error_tplt = 'Unable to get kubernetes service {} in namespace {}:\n{}'
+        return {'_errors': error_tplt.format(service, namespace, exc)}
 
     endpoint['ip'] = host_addr
     endpoint['ports'] = {
@@ -67,8 +64,7 @@ def service_endpoints(service, namespace, kubeconfig):
         )
 
         if not endpoint:
-            log.info('Endpoint not found: %s', service)
-            return {}
+            return {'_errors': 'Endpoint not found: {}'.format(service)}
 
         # Extract hostname, ip and node_name
         res = {
@@ -84,11 +80,11 @@ def service_endpoints(service, namespace, kubeconfig):
         }
         res['ports'] = ports
     except Exception as exc:  # pylint: disable=broad-except
-        log.exception(
-            'Unable to get kubernetes endpoints for %s in namespace %s:\n%s',
-            service, namespace, exc
+        error_tplt = (
+            'Unable to get kubernetes endpoints'
+            'for %s in namespace %s:\n%s'
         )
-        return {}
+        return {'_errors': error_tplt.format(service, namespace, exc)}
     else:
         return res
 
@@ -102,28 +98,37 @@ def ext_pillar(minion_id, pillar, kubeconfig):
     nodeport_services = {"monitoring": ["prometheus"]}
 
     if not os.path.isfile(kubeconfig):
-        log.warning(
-            '%s: kubeconfig not found at %s', __virtualname__, kubeconfig)
-        return endpoints
+        error_tplt = '{}: kubeconfig not found at {}'
+        return {'_errors': [error_tplt.format(__virtualname__, kubeconfig)]}
 
+    errors = []
     for namespace, services in services.items():
-        endpoints.update({
-            service: service_endpoints(
+        for service in services:
+            patch = service_endpoints(
                 service, namespace, kubeconfig
             )
-            for service in services
-        })
+            if '_errors' in patch:
+                errors.append(patch['_errors'])
+            else:
+                endpoints.update({service: patch})
 
     for namespace, services in nodeport_services.items():
-        endpoints.update({
-            service: service_endpoints_nodeport(
+        for service in services:
+            patch = service_endpoints_nodeport(
                 service, namespace, kubeconfig
             )
-            for service in services
-        })
+            if '_errors' in patch:
+                errors.append(patch['_errors'])
+            else:
+                endpoints.update({service: patch})
 
-    return {
+    result = {
         'metalk8s': {
             'endpoints': endpoints,
         },
     }
+
+    if errors:
+        result['_errors'] = errors
+
+    return result
