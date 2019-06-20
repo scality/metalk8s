@@ -77,9 +77,9 @@ def task_errors(*expected_exn: Type[Exception]) -> Callable[[Any], Any]:
     return wrapped_task
 
 
-# The call method is not counted as a public method
-# pylint: disable=too-few-public-methods
 class DockerBuild:
+    # The call method is not counted as a public method
+    # pylint: disable=too-few-public-methods
     """A class to expose the `docker build` command through the API client."""
 
     def __init__(
@@ -237,3 +237,68 @@ class DockerRun:
             command=self.command,
             **run_config
         )
+
+
+class DockerTag:
+    # The call method is not counted as a public method
+    # pylint: disable=too-few-public-methods
+    """A class to expose the `docker tag` command through the API client."""
+
+    def __init__(self, repository: str, full_name: str, version: str):
+        """Initialize a `docker tag` callable object.
+         Arguments:
+            repository: the repository to which the tag should be pushed
+            full_name:  the fully qualified image name
+            version:    the version to tag the image with
+        """
+        self.repository = repository
+        self.full_name = full_name
+        self.version = version
+
+    @task_errors(docker.errors.BuildError, docker.errors.APIError)
+    def __call__(self) -> Optional[TaskError]:
+        to_tag = DOCKER_CLIENT.images.get(self.full_name)
+        return to_tag.tag(self.repository, tag=self.version)
+
+
+class DockerPull:
+    # The call method is not counted as a public method
+    # pylint: disable=too-few-public-methods
+    """A class to expose the `docker pull` command through the API client."""
+
+    def __init__(self, repository: str, digest: str):
+        """Initialize a `docker pull` callable object.
+         Arguments:
+            repository: the repository to pull from
+            digest:     the digest to pull from the repository
+        """
+        self.repository = repository
+        self.digest = digest
+
+    @task_errors(docker.errors.BuildError, docker.errors.APIError)
+    def __call__(self) -> Optional[TaskError]:
+        return DOCKER_CLIENT.images.pull(self.repository, tag=self.digest)
+
+
+class DockerSave:
+    # The call method is not counted as a public method
+    # pylint: disable=too-few-public-methods
+    """A class to expose the `docker save` command through the API client."""
+
+    def __init__(self, tag: str, save_path: Path):
+        """Initialize a `docker save` callable object.
+         Arguments:
+            tag:        the image's repository and tag
+            save_path:  the resulting image save path
+        """
+        self.tag = tag
+        self.save_path = save_path
+
+    @task_errors(docker.errors.APIError, OSError)
+    def __call__(self) -> Optional[TaskError]:
+        to_save = DOCKER_CLIENT.images.get(self.tag)
+        image_stream = to_save.save(named=True)
+        with self.save_path.open('wb') as image_file:
+            for chunk in image_stream:
+                image_file.write(chunk)
+        return True
