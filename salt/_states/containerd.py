@@ -39,22 +39,8 @@ def image_managed(name, archive_path=None):
         'comment': '',
     }
 
-    images = __salt__['cri.list_images']()
-    if images is None:
-        ret['comment'] = 'Failed to list CRI images'
-        return ret
 
-    available = False
-
-    for image in images:
-        if name in image.get('repoTags', []):
-            available = True
-            break
-        if name in image.get('repoDigests', []):
-            available = True
-            break
-
-    if available:
+    if __salt__['cri.available'](name):
         ret['comment'] = 'Image already available'
         ret['result'] = True
         return ret
@@ -75,7 +61,8 @@ def image_managed(name, archive_path=None):
             return ret
 
         result = __salt__['containerd.load_cri_image'](path=archive_path)
-        if result['retcode'] == 0:
+        # ctr can fail to load the image and exit silently
+        if result['retcode'] == 0 and __salt__['cri.available'](name):
             ret['changes'].update({
                 name: {
                     'old': {},
@@ -86,7 +73,7 @@ def image_managed(name, archive_path=None):
             ret['result'] = True
         else:
             ret['comment'] = 'Failed to import archive: {}'.format(
-                result['stderr']
+                result['stderr'] or result['stdout']
             )
         return ret
     else:
