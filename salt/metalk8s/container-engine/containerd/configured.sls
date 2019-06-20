@@ -26,3 +26,4 @@ Inject pause image:
     - archive_path: /tmp/pause-3.1.tar
     - require:
       - file: Inject pause image
+      - pkg: Install and configure cri-tools
