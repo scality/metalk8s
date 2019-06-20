@@ -12,9 +12,10 @@ import os
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Type
 
-import docker                            # type: ignore
-from docker.types import Mount           # type: ignore
-from doit.exceptions import TaskError    # type: ignore
+import docker                                         # type: ignore
+from docker.errors import BuildError, ContainerError  # type: ignore
+from docker.types import Mount                        # type: ignore
+from doit.exceptions import TaskError                 # type: ignore
 
 from buildchain import constants
 from buildchain.targets import image
@@ -71,7 +72,21 @@ def task_errors(*expected_exn: Type[Exception]) -> Callable[[Any], Any]:
             try:
                 task_func(*args, **kwargs)
             except expected_exn as err:
-                return TaskError(err)
+                # Output container build log on BuildError
+                if isinstance(err, BuildError):
+                    output_lines = [
+                        item['stream']
+                        if 'stream' in item else item['error']
+                        for item in err.build_log
+                    ]
+                    log = ''.join(output_lines)
+                    err_msg = '{}. Build log:\n{}'.format(str(err), log)
+                # Output stderr on ContainerError (docker CMD error)
+                elif isinstance(err, ContainerError):
+                    err_msg = '{}:\n{}'.format(str(err), err.stderr)
+                else:
+                    err_msg = str(err)
+                return TaskError(err_msg)
             return None
         return decorated_task
     return wrapped_task
