@@ -11,9 +11,11 @@ All of these actions are done by a single task.
 
 
 import operator
+import os
 from pathlib import Path
 from typing import Any, Optional, List
 
+from buildchain import docker_command
 from buildchain import config
 from buildchain import types
 
@@ -74,6 +76,28 @@ class RemoteImage(image.ContainerImage):
         )
 
     @property
+    def basicname(self) -> str:
+        """Base image name (no digest).
+
+        Usable by `docker` commands.
+        """
+        return '{obj.registry}/{obj._remote_name}:{obj.version}'.format(
+            obj=self
+        )
+
+
+    @property
+    def repository(self) -> str:
+        """Base image name (no digest).
+
+        Usable by `docker` commands.
+        """
+        return '{obj.registry}/{obj._remote_name}'.format(
+            obj=self
+        )
+
+
+    @property
     def filepath(self) -> Path:
         """Path to the file tracked on disk."""
         if self._use_tar:
@@ -91,9 +115,25 @@ class RemoteImage(image.ContainerImage):
             'doc': 'Download {} container image.'.format(self.name),
             'uptodate': [True],
         })
+        docker_pull = docker_command.DockerPull(
+            self.repository,
+            self.digest
+        )
+        docker_tag = docker_command.DockerTag(
+                self.repository,
+                self.fullname,
+                self.version
+        )
+        docker_save = docker_command.DockerSave(
+            self.basicname,
+            Path(os.path.join(
+                self.dest_dir,
+                '{}-{}.tar'.format(self.name, self.version)
+            ))
+        )
         if self._use_tar:
             task.update({
-                'actions': [self._skopeo_copy()],
+                'actions': [docker_pull,  docker_tag, docker_save],
             })
         else:
             task.update({
