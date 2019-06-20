@@ -1,5 +1,6 @@
 import { put, takeEvery, select, call } from 'redux-saga/effects';
 import { getAlerts, getClusterStatus } from '../../services/prometheus/api';
+import { intl } from '../../translations/IntlGlobalProvider';
 
 const FETCH_ALERTS = 'FETCH_ALERTS';
 const SET_ALERTS = 'SET_ALERTS';
@@ -7,9 +8,16 @@ const SET_ALERTS = 'SET_ALERTS';
 const FETCH_CLUSTER_STATUS = 'FETCH_CLUSTER_STATUS';
 const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';
 
+export const CLUSTER_STATUS_UP = 'CLUSTER_STATUS_UP';
+const CLUSTER_STATUS_DOWN = 'CLUSTER_STATUS_DOWN';
+const CLUSTER_STATUS_ERROR = 'CLUSTER_STATUS_ERROR';
+
 const defaultState = {
   alertList: [],
-  clusterStatus: []
+  cluster: {
+    status: '',
+    statusLabel: ''
+  }
 };
 
 export default function(state = defaultState, action = {}) {
@@ -17,7 +25,7 @@ export default function(state = defaultState, action = {}) {
     case SET_ALERTS:
       return { ...state, alertList: action.payload };
     case SET_CLUSTER_STATUS:
-      return { ...state, clusterStatus: action.payload };
+      return { ...state, cluster: action.payload };
     default:
       return state;
   }
@@ -50,9 +58,31 @@ export function* fetchAlerts() {
 export function* fetchClusterStatus() {
   const api = yield select(state => state.config.api);
   const result = yield call(getClusterStatus, api.url_prometheus);
+  const clusterHealth = {
+    status: '',
+    label: ''
+  };
   if (!result.error) {
-    yield put(setClusterStatusAction(result.data.data.result));
+    if (result.data.data.result && result.data.data.result.length) {
+      clusterHealth.status = CLUSTER_STATUS_UP;
+      clusterHealth.statusLabel = intl.translate('cluster_up_and_running');
+    } else {
+      clusterHealth.status = CLUSTER_STATUS_DOWN;
+      clusterHealth.statusLabel = intl.translate('down');
+    }
+  } else {
+    clusterHealth.status = CLUSTER_STATUS_ERROR;
+    if (result.error.response) {
+      clusterHealth.statusLabel = `Prometheus - ${
+        result.error.response.statusText
+      }`;
+    } else {
+      clusterHealth.statusLabel = intl.translate(
+        'prometheus_connection_failed'
+      );
+    }
   }
+  yield put(setClusterStatusAction(clusterHealth));
 }
 
 export function* monitoringSaga() {

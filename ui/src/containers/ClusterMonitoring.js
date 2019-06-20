@@ -5,7 +5,8 @@ import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import {
   fetchAlertsAction,
-  fetchClusterStatusAction
+  fetchClusterStatusAction,
+  CLUSTER_STATUS_UP
 } from '../ducks/app/monitoring';
 import styled from 'styled-components';
 
@@ -123,16 +124,12 @@ const ClusterMonitoring = props => {
 
   const sortedAlerts = sortAlerts(alerts, sortBy, sortDirection);
 
-  const isUp = props.clusterStatus && props.clusterStatus.length;
-
   return (
     <PageContainer>
       <ClusterStatusTitleContainer>
         <PageSubtitle>{props.intl.messages.cluster_status + ' :'}</PageSubtitle>
-        <ClusterStatusValue isUp={isUp}>
-          {isUp
-            ? props.intl.messages.cluster_up_and_running
-            : props.intl.messages.down}
+        <ClusterStatusValue isUp={props.cluster.status === CLUSTER_STATUS_UP}>
+          {props.cluster.statusLabel}
         </ClusterStatusValue>
       </ClusterStatusTitleContainer>
 
@@ -155,7 +152,7 @@ const ClusterMonitoring = props => {
 const mapStateToProps = state => {
   return {
     alerts: state.app.monitoring.alertList,
-    clusterStatus: state.app.monitoring.clusterStatus
+    cluster: state.app.monitoring.cluster
   };
 };
 
