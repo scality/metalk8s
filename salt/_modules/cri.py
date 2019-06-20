@@ -37,6 +37,28 @@ def list_images():
     return salt.utils.json.loads(out['stdout'])['images']
 
 
+def available(name):
+    '''
+    Check if given image exists in the containerd namespace image list
+
+    name
+        Name of the container image
+    '''
+    images = list_images()
+    available = False
+    if not images:
+        return False
+
+    for image in images:
+        if name in image.get('repoTags', []):
+            available = True
+            break
+        if name in image.get('repoDigests', []):
+            available = True
+            break
+    return available
+
+
 _PULL_RES = {
     'sha256': re.compile(
         r'Image is up to date for sha256:(?P<digest>[a-fA-F0-9]{64})'),
