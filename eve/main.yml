@@ -338,6 +338,14 @@ stages:
             --enablerepo=metalk8s-kubernetes
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       - ShellCommand:
+          name: Enable IPIP
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          command: >
+            ssh -F $SSH_CONFIG bootstrap
+            'bash /home/centos/scripts/enable_ipip.sh'
+      - ShellCommand:
           # FIXME: should find a cleaner way to do this (git clone may be
           # cumbersome, unless we assume the repo is public and don't use
           # authentication)
