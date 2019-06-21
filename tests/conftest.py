@@ -2,8 +2,12 @@ import pathlib
 
 import kubernetes
 import pytest
+from pytest_bdd import given, parsers, then
+import testinfra
 import yaml
 
+from tests import kube_utils
+from tests import utils
 
 # Pytest command-line options
 def pytest_addoption(parser):
@@ -92,5 +96,57 @@ def k8s_client(request, k8s_apiclient):
 
     return api_cls(api_client=k8s_apiclient)
 
+
+@pytest.fixture(scope='module')
+def bootstrap_config(host):
+    with host.sudo():
+        config_file = host.file('/etc/metalk8s/bootstrap.yaml')
+        if not config_file.exists:
+            pytest.skip('Must be run on bootstrap node')
+        return yaml.safe_load(config_file.content_string)
+
+
+# }}}
+# Given {{{
+
+@given('the Kubernetes API is available')
+def check_service(host):
+    _verify_kubeapi_service(host)
+
+
+# }}}
+# Then {{{
+
+@then('the Kubernetes API is available')
+def verify_kubeapi_service(host):
+    _verify_kubeapi_service(host)
+
+
+@then(parsers.parse(
+    "we have {pods_count:d} running pod labeled '{label}' on node '{node}'"
+))
+def count_running_pods(request, k8s_client, pods_count, label, node):
+    ssh_config = request.config.getoption('--ssh-config')
+
+    def _check_pods_count():
+        pods = kube_utils.get_pods(
+            k8s_client, ssh_config, label, node,
+            namespace="kube-system", state="Running",
+        )
+        assert len(pods) == pods_count
+
+    utils.retry(_check_pods_count, times=10, wait=3)
+
+
+# }}}
+# Helpers {{{
+
+def _verify_kubeapi_service(host):
+    """Verify that the kubeapi service answer"""
+    with host.sudo():
+        cmd = 'kubectl --kubeconfig=/etc/kubernetes/admin.conf cluster-info'
+        res = host.run(cmd)
+        if res.rc != 0:
+            pytest.fail(res.stderr)
 
 # }}}

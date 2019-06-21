@@ -60,5 +60,5 @@ def resolve_hostname(busybox_pod, host, hostname):
             busybox_pod,
             hostname,
         )
-
-        assert result.rc == 0, "Cannot resolve {}".format(hostname)
+        if result.rc != 0:
+            pytest.fail("Cannot resolve {}: {}".format(hostname, result.stderr))

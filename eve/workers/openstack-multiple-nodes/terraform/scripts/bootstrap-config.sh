@@ -13,12 +13,12 @@ cat > "$OUTPUT_FILE" << EOF
 apiVersion: metalk8s.scality.com/v1alpha2
 kind: BootstrapConfiguration
 networks:
-  controlPlane: 172.42.254.0/28
-  workloadPlane: 172.42.254.32/27
+  controlPlane: 10.100.0.0/16
+  workloadPlane: 10.100.0.0/16
 ca:
   minion: $(cat /etc/salt/minion_id)
 apiServer:
-  host: $(ip route get 172.42.254.0 | awk '/172.42.254.0/{ print $6 }')
+  host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
 products:
   metalk8s:
     - /var/tmp/metalk8s
