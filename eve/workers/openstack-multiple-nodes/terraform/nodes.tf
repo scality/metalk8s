@@ -6,14 +6,11 @@ resource "openstack_compute_instance_v2" "bastion" {
 
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
-    openstack_networking_secgroup_v2.nodes_internal.name,
   ]
 
   dynamic "network" {
     for_each = [
       var.openstack_network,
-      local.control_plane_network,
-      local.workload_plane_network
     ]
 
     content {
@@ -23,8 +20,6 @@ resource "openstack_compute_instance_v2" "bastion" {
 
   # We need the subnets to be created before attempting to reach the DHCP server
   depends_on = [
-    openstack_networking_subnet_v2.control_plane_subnet,
-    openstack_networking_subnet_v2.workload_plane_subnet,
   ]
 
   connection {
@@ -38,11 +33,6 @@ resource "openstack_compute_instance_v2" "bastion" {
   provisioner "file" {
     source      = "${path.module}/scripts"
     destination = "/home/centos/scripts"
-  }
-
-  # Obtain IP addresses for both private networks
-  provisioner "remote-exec" {
-    inline = ["sudo bash scripts/get-ip-leases.sh"]
   }
 
   # Generate Bastion SSH keypair
@@ -70,14 +60,11 @@ resource "openstack_compute_instance_v2" "bootstrap" {
 
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
-    openstack_networking_secgroup_v2.nodes_internal.name,
   ]
 
   dynamic "network" {
     for_each = [
       var.openstack_network,
-      local.control_plane_network,
-      local.workload_plane_network
     ]
 
     content {
@@ -87,8 +74,6 @@ resource "openstack_compute_instance_v2" "bootstrap" {
 
   # We need the subnets before attempting to reach their DHCP servers
   depends_on = [
-    openstack_networking_subnet_v2.control_plane_subnet,
-    openstack_networking_subnet_v2.workload_plane_subnet,
   ]
 
   connection {
@@ -102,11 +87,6 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   provisioner "file" {
     source      = "${path.module}/scripts"
     destination = "/home/centos/scripts"
-  }
-
-  # Obtain IP addresses for both private networks
-  provisioner "remote-exec" {
-    inline = ["sudo bash scripts/get-ip-leases.sh"]
   }
 
   # Generate BootstrapConfiguration
@@ -128,14 +108,11 @@ resource "openstack_compute_instance_v2" "nodes" {
 
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
-    openstack_networking_secgroup_v2.nodes_internal.name,
   ]
 
   dynamic "network" {
     for_each = [
       var.openstack_network,
-      local.control_plane_network,
-      local.workload_plane_network
     ]
 
     content {
@@ -145,8 +122,6 @@ resource "openstack_compute_instance_v2" "nodes" {
 
   # We need the subnets to be created before attempting to reach the DHCP server
   depends_on = [
-    openstack_networking_subnet_v2.control_plane_subnet,
-    openstack_networking_subnet_v2.workload_plane_subnet,
   ]
 
   connection {
@@ -160,11 +135,6 @@ resource "openstack_compute_instance_v2" "nodes" {
   provisioner "file" {
     source      = "${path.module}/scripts"
     destination = "/home/centos/scripts"
-  }
-
-  # Obtain IP addresses for both private networks
-  provisioner "remote-exec" {
-    inline = ["sudo bash scripts/get-ip-leases.sh"]
   }
 
   count = var.nodes_count
