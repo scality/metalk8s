@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## Dependencies ##
+
 yum install -y epel-release
 curl -sL https://rpm.nodesource.com/setup_10.x | bash -
 
@@ -24,6 +26,15 @@ yum clean all
 
 sudo -u eve pip3.6 install --user tox
 
+
+## Configuration ##
+
+HOSTNAME=bootstrap
+
 # This step is needed so Kubelet registration doesn't fail for DNS entries
 # longer than 63 characters.
-hostnamectl set-hostname bootstrap
+hostnamectl set-hostname $HOSTNAME
+
+# Make sure Salt Minion ID is set to this same hostname
+mkdir -p /etc/salt
+echo $HOSTNAME > /etc/salt/minion_id
