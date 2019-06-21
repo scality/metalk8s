@@ -123,7 +123,7 @@ const ClusterMonitoring = props => {
 
   const sortedAlerts = sortAlerts(alerts, sortBy, sortDirection);
 
-  const isUp = props.clusterStatus && props.clusterStatus.length;
+  const isUp = props.cluster && props.cluster.status;
 
   return (
     <PageContainer>
@@ -155,7 +155,7 @@ const ClusterMonitoring = props => {
 const mapStateToProps = state => {
   return {
     alerts: state.app.monitoring.alertList,
-    clusterStatus: state.app.monitoring.clusterStatus
+    cluster: state.app.monitoring.cluster
   };
 };
 

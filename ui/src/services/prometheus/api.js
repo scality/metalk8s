@@ -17,3 +17,11 @@ export async function getClusterStatus(api) {
     return { error };
   }
 }
+
+export async function queryPrometheus(api, query) {
+  try {
+    return await axios.get(api + '/api/v1/query?query=' + query);
+  } catch (error) {
+    return { error };
+  }
+}
