@@ -8,6 +8,8 @@ try:
 except ImportError:
     HAS_DEPS = False
 
+from . import utils
+
 
 VERSION_LABEL = 'metalk8s.scality.com/version'
 ROLE_LABEL_PREFIX = 'node-role.kubernetes.io/'
@@ -52,7 +54,9 @@ def node_info(node, ca_minion):
 def ext_pillar(minion_id, pillar, kubeconfig):
     if not os.path.isfile(kubeconfig):
         error_tplt = '{}: kubeconfig not found at {}'
-        return {'_errors': error_tplt.format(__virtualname__, kubeconfig)}
+        return utils._errors_to_dict([
+            error_tplt.format(__virtualname__, kubeconfig)
+        ])
 
     ca_minion = None
     if 'metalk8s' in pillar:

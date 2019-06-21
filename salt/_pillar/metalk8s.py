@@ -3,6 +3,8 @@ import logging
 import salt.utils.files
 import salt.utils.yaml
 
+from . import utils
+
 
 log = logging.getLogger(__name__)
 
@@ -10,28 +12,6 @@ log = logging.getLogger(__name__)
 DEFAULT_POD_NETWORK = '10.233.0.0/16'
 DEFAULT_SERVICE_NETWORK = '10.96.0.0/12'
 
-
-def _assert_equals(source_dict, expected_dict):
-    error_tplt = "Expected value '{}' for key '{}', got '{}'"
-
-    errors = [
-        error_tplt.format(value, key, source_dict.get(key))
-        for key, value in expected_dict.items()
-        if source_dict.get(key) != value
-    ]
-
-    return errors
-
-
-def _assert_keys(source_dict, keys):
-    errors = []
-    errors_tplt = "Expected presence of key '{}' in data: {}"
-
-    for key in keys:
-        if key not in source_dict:
-            errors.append(errors_tplt.format(key, source_dict))
-
-    return errors
 
 
 def _load_config(path):
@@ -46,23 +26,26 @@ def _load_config(path):
         'kind': 'BootstrapConfiguration'
     }
 
-    errs = _assert_equals(config, expected) + _assert_keys(config, ['products'])
+    errors = (
+        utils._assert_equals(config, expected) +
+        utils._assert_keys(config, ['products'])
+    )
 
-    if errs:
-        return {'_errors': errs}
+    if errors:
+        return utils._errors_to_dict(errors)
 
     return config
 
 
 def _load_networks(config_data):
-    errors = _assert_keys(config_data, ['networks'])
+    errors = utils._assert_keys(config_data, ['networks'])
     if errors:
-        return {'_errors': errors}
+        return utils._errors_to_dict(errors)
 
     networks_data = config_data['networks']
-    errors = _assert_keys(config_data, ['controlPlane', 'workloadPlane'])
+    errors = utils._assert_keys(config_data, ['controlPlane', 'workloadPlane'])
     if errors:
-        return {'_errors': errors}
+        return utils._errors_to_dict(errors)
 
     return {
         'control_plane': networks_data['controlPlane'],
@@ -73,14 +56,14 @@ def _load_networks(config_data):
 
 
 def _load_ca(config_data):
-    errors = _assert_keys(config_data, ['ca'])
+    errors = utils._assert_keys(config_data, ['ca'])
     if errors:
-        return {'_errors': errors}
+        return utils._errors_to_dict(errors)
 
     ca_data = config_data['ca']
-    errors = _assert_keys(ca_data, ['minion'])
+    errors = utils._assert_keys(ca_data, ['minion'])
     if errors:
-        return {'_errors': errors}
+        return utils._errors_to_dict(errors)
 
     return {
         'minion': ca_data['minion'],
@@ -88,9 +71,9 @@ def _load_ca(config_data):
 
 
 def _load_apiserver(config_data):
-    errors = _assert_keys(config_data, ['apiServer'])
+    errors = utils._assert_keys(config_data, ['apiServer'])
     if errors:
-        return {'_errors': errors}
+        return utils._errors_to_dict(errors)
 
     as_data = config_data['apiServer']
 
@@ -103,9 +86,9 @@ def _load_apiserver(config_data):
         },
     }
 
-    errors = _assert_keys(as_data, ['host'])
+    errors = utils._assert_keys(as_data, ['host'])
     if errors:
-        return {'_errors': errors}
+        return utils._errors_to_dict(errors)
 
     result['host'] = as_data['host']
 
@@ -141,27 +124,22 @@ def _load_iso_path(config_data):
 def ext_pillar(minion_id, pillar, bootstrap_config):
     config = _load_config(bootstrap_config)
     if config.get('_errors'):
-        return {'_errors': config['errors']}
+        return utils._errors_to_dict(config['errors'])
 
     result = {
         'networks': _load_networks(config),
         'metalk8s': {
             'products': _load_iso_path(config),
             'ca': _load_ca(config),
-            'api_server': _load_apiserver(config),
+            'api_server': _load_apiserver(config)
         },
     }
 
-    if '_errors' in result['networks']:
-        result.setdefault('errors', []).append(
-            result['networks'].pop('_errors')
-        )
+    metal = result['metalk8s']
+    for key in ['ca', 'products', 'api_server']:
+        utils._promote_errors(metal, key)
 
-    metal_result = result['metalk8s']
-    for key in ['ca', 'api_server']:
-        if '_errors' in metal_result[key]:
-            result.setdefault('errors', []).append(
-                metal_result[key].pop('_errors')
-            )
+    for key in ['networks', 'metalk8s']:
+        utils._promote_errors(result, key)
 
     return result
