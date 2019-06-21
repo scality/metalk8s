@@ -8,6 +8,7 @@
 
 {%- set nginx_confd  = '/var/lib/metalk8s/repositories/conf.d/' %}
 {%- set nginx_default_conf = nginx_confd ~ 'default.conf' %}
+{%- set nginx_common_conf = nginx_confd ~ '99-registry-common.inc' %}
 {%- set nginx_registry        = '99-' ~ saltenv ~ '-registry.inc' %}
 {%- set nginx_registry_config = '90-' ~ saltenv ~ '-registry-config.inc' %}
 {%- set nginx_registry_path        = nginx_confd ~ nginx_registry %}
@@ -25,6 +26,16 @@ Generate repositories nginx configuration:
     - backup: false
     - defaults:
         listening_port: {{ repo.port }}
+
+Deploy common container registry nginx configuration:
+  file.managed:
+    - name: {{ nginx_common_conf}}
+    - source: salt://{{ slspath }}/files/metalk8s-registry-common.inc
+    - user: root
+    - group: root
+    - mode: '0644'
+    - makedirs: true
+    - backup: false
 
 Deploy container registry nginx configuration:
   file.managed:
