@@ -5,7 +5,7 @@ The utilities contained in this module have no external dependencies, so
 they may be imported as is in external pillar modules.
 """
 
-def _assert_equals(source_dict, expected_dict):
+def assert_equals(source_dict, expected_dict):
     """
     Check equality with expected values in dictionary keys.
 
@@ -29,7 +29,7 @@ def _assert_equals(source_dict, expected_dict):
     return errors
 
 
-def _assert_keys(source_dict, keys):
+def assert_keys(source_dict, keys):
     """
     Check key presence within a dict.
 
@@ -51,7 +51,7 @@ def _assert_keys(source_dict, keys):
     return errors
 
 
-def _promote_errors(source, key):
+def promote_errors(source, key):
     """
     Promote the error list of a dict's key up to toplevel
 
@@ -66,7 +66,7 @@ def _promote_errors(source, key):
         source.setdefault("_errors", []).extend(patch.get("_errors"))
 
 
-def _errors_to_dict(error_list):
+def errors_to_dict(error_list):
     """
     From an error list, return a dict with `_errors` key and list value.
 

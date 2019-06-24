@@ -8,8 +8,6 @@ try:
 except ImportError:
     HAS_DEPS = False
 
-from . import utils
-
 
 VERSION_LABEL = 'metalk8s.scality.com/version'
 ROLE_LABEL_PREFIX = 'node-role.kubernetes.io/'
@@ -18,6 +16,7 @@ ROLE_LABEL_PREFIX = 'node-role.kubernetes.io/'
 log = logging.getLogger(__name__)
 
 __virtualname__ = 'metalk8s_nodes'
+
 
 def __virtual__():
     if HAS_DEPS:
@@ -54,26 +53,28 @@ def node_info(node, ca_minion):
 def ext_pillar(minion_id, pillar, kubeconfig):
     if not os.path.isfile(kubeconfig):
         error_tplt = '{}: kubeconfig not found at {}'
-        return utils._errors_to_dict([
+        pillar_nodes = __utils__['pillar_utils.errors_to_dict']([
             error_tplt.format(__virtualname__, kubeconfig)
         ])
 
-    ca_minion = None
-    if 'metalk8s' in pillar:
-        if 'ca' in pillar['metalk8s']:
-            ca_minion = pillar['metalk8s']['ca'].get('minion', None)
+    else:
+        ca_minion = None
+        if 'metalk8s' in pillar:
+            if 'ca' in pillar['metalk8s']:
+                ca_minion = pillar['metalk8s']['ca'].get('minion', None)
 
-    client = kubernetes.config.new_client_from_config(
-        config_file=kubeconfig,
-    )
+        client = kubernetes.config.new_client_from_config(
+            config_file=kubeconfig,
+        )
 
-    coreV1 = kubernetes.client.CoreV1Api(api_client=client)
+        coreV1 = kubernetes.client.CoreV1Api(api_client=client)
 
-    node_list = coreV1.list_node()
+        node_list = coreV1.list_node()
 
-    pillar_nodes = dict(
-        (node.metadata.name, node_info(node, ca_minion))
-        for node in node_list.items)
+        pillar_nodes = dict(
+            (node.metadata.name, node_info(node, ca_minion))
+            for node in node_list.items
+        )
 
     return {
         'metalk8s': {

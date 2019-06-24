@@ -1,10 +1,8 @@
 import os.path
 import logging
 
-from . import utils
 
 SA_PRIVATE_KEY_PATH = "/etc/kubernetes/pki/sa.key"
-
 
 log = logging.getLogger(__name__)
 
@@ -31,8 +29,6 @@ def _read_sa_private_key():
 
 
 def ext_pillar(minion_id, pillar):
-    private_data = {'private': None}
-
     nodes_info = pillar.get("metalk8s", {}).get("nodes", {})
 
     if minion_id not in nodes_info:
@@ -43,15 +39,12 @@ def ext_pillar(minion_id, pillar):
 
     node_info = nodes_info[minion_id]
 
+    private_data = {'private': None}
+
     if "master" in node_info["roles"]:
-        utils._update_with_errors(
-            private_data,
-            'private',
-            _read_sa_private_key()
-        )
+        private_data['private'] = _read_sa_private_key()
+        __utils__['pillar_utils.promote_errors'](private_data, 'private')
 
-    result = {"metalk8s": None}
-
-    utils._update_with_errors(result, 'metalk8s', private_data)
+    result = {"metalk8s": private_data}
 
     return result
