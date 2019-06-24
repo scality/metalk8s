@@ -140,6 +140,22 @@ def count_running_pods(
     utils.retry(_check_pods_count, times=10, wait=3)
 
 
+@then(parsers.parse(
+    "the '{resource}' list should not be "
+    "empty in the '{namespace}' namespace"))
+def check_resource_list(host, resource, namespace):
+    with host.sudo():
+        output = host.check_output(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            "get %s --namespace %s -o custom-columns=:metadata.name",
+            resource,
+            namespace,
+        )
+
+    assert len(output.strip()) > 0, 'No {0} found in namespace {1}'.format(
+            resource, namespace)
+
+
 # }}}
 # Helpers {{{
 
