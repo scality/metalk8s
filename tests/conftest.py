@@ -137,7 +137,12 @@ def count_running_pods(
         )
         assert len(pods) == pods_count
 
-    utils.retry(_check_pods_count, times=10, wait=3)
+    error_msg = (
+        "There is less than '{count}' or no pods labeled '{label}' running"
+        "in namespace '{namespace}' on node '{node}'"
+        .format(count=pods_count, label=label, namespace=namespace, node=node)
+    )
+    utils.retry(_check_pods_count, times=10, wait=3, error_msg=error_msg)
 
 
 @then(parsers.parse(
