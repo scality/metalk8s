@@ -1,4 +1,4 @@
-import { put, takeEvery, select, call } from 'redux-saga/effects';
+import { put, takeEvery, call } from 'redux-saga/effects';
 import { getAlerts, getClusterStatus } from '../../services/prometheus/api';
 import { intl } from '../../translations/IntlGlobalProvider';
 
@@ -48,22 +48,20 @@ export const setClusterStatusAction = payload => {
 };
 
 export function* fetchAlerts() {
-  const api = yield select(state => state.config.api);
-  const result = yield call(getAlerts, api.url_prometheus);
+  const result = yield call(getAlerts);
   if (!result.error) {
-    yield put(setAlertsAction(result.data.data.alerts));
+    yield put(setAlertsAction(result.data.alerts));
   }
 }
 
 export function* fetchClusterStatus() {
-  const api = yield select(state => state.config.api);
-  const result = yield call(getClusterStatus, api.url_prometheus);
+  const result = yield call(getClusterStatus);
   const clusterHealth = {
     status: '',
     label: ''
   };
   if (!result.error) {
-    if (result.data.data.result && result.data.data.result.length) {
+    if (result.data.result && result.data.result.length) {
       clusterHealth.status = CLUSTER_STATUS_UP;
       clusterHealth.statusLabel = intl.translate('cluster_up_and_running');
     } else {

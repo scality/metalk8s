@@ -10,9 +10,14 @@ import styled from 'styled-components';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { fetchNodesAction } from '../ducks/app/nodes';
 
-import { fontWeight, fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import {
+  fontWeight,
+  fontSize,
+  padding
+} from '@scality/core-ui/dist/style/theme';
 
 const NodeInformationContainer = styled.div`
+  box-sizing: border-box;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -21,7 +26,6 @@ const NodeInformationContainer = styled.div`
 
 const PodsContainer = styled.div`
   flex-grow: 1;
-  max-height: 400px;
 `;
 
 const PageTitle = styled.h2`

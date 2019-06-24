@@ -2,6 +2,10 @@ import { call, put, takeEvery } from 'redux-saga/effects';
 import { mergeTheme } from '@scality/core-ui/dist/utils';
 import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import * as Api from '../services/api';
+import * as ApiK8s from '../services/k8s/api';
+import * as ApiSalt from '../services/salt/api';
+import * as ApiPrometheus from '../services/prometheus/api';
+
 import { fetchUserInfo } from './login';
 
 // Actions
@@ -56,17 +60,20 @@ export function setApiConfigAction(conf) {
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
   if (!result.error) {
-    const theme = result.data;
-    theme.brand = mergeTheme(result.data, defaultTheme);
-    yield put(setThemeAction(theme));
+    result.brand = mergeTheme(result, defaultTheme);
+    yield put(setThemeAction(result));
   }
 }
 
 export function* fetchConfig() {
+  yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error) {
     yield call(fetchTheme);
-    yield put(setApiConfigAction(result.data));
+    yield put(setApiConfigAction(result));
+    yield call(ApiK8s.initialize, result.url);
+    yield call(ApiSalt.initialize, result.url_salt);
+    yield call(ApiPrometheus.initialize, result.url_prometheus);
     yield call(fetchUserInfo);
   }
 }

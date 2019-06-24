@@ -87,15 +87,16 @@ export const setSaltAuthenticationSuccessAction = payload => {
 export function* authenticate({ payload }) {
   const { username, password } = payload;
   const token = btoa(username + ':' + password); //base64Encode
-  const api_server = yield select(state => state.config.api);
 
-  const result = yield call(ApiK8s.authenticate, token, api_server);
+  const result = yield call(ApiK8s.authenticate, token);
   if (result.error) {
     yield put({
       type: AUTHENTICATION_FAILED,
       payload: result.error.response.data
     });
   } else {
+    const api_server = yield select(state => state.config.api);
+    yield call(ApiK8s.updateApiServerConfig, api_server.url, token);
     localStorage.setItem(HASH_KEY, token);
     yield put(
       setAuthenticationSuccessAction({
@@ -112,13 +113,16 @@ export function* authenticate({ payload }) {
 export function* authenticateSaltApi(redirect) {
   const api = yield select(state => state.config.api);
   const user = yield select(state => state.login.user);
-  const result = yield call(ApiSalt.authenticate, api.url_salt, user);
+  const result = yield call(ApiSalt.authenticate, user);
   if (!result.error) {
+    yield call(ApiSalt.getClient().setHeaders, {
+      'X-Auth-Token': result.return[0].token
+    });
     yield put(setSaltAuthenticationSuccessAction(result));
     yield put(
       connectSaltApiAction({
         url: api.url_salt,
-        token: result.data.return[0].token
+        token: result.return[0].token
       })
     );
     if (redirect) {

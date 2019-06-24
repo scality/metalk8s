@@ -1,4 +1,4 @@
-import axios from 'axios';
+import ApiClient from '../ApiClient';
 import { Config, Core_v1Api } from '@kubernetes/client-node';
 
 export const ROLE_MASTER = 'node-role.kubernetes.io/master';
@@ -7,20 +7,19 @@ export const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
 export const ROLE_BOOTSTRAP = 'node-role.kubernetes.io/bootstrap';
 
 let config, coreV1;
+let k8sApiClient = null;
+
+export function initialize(apiUrl) {
+  k8sApiClient = new ApiClient({ apiUrl });
+}
 
 //Basic Auth
-export async function authenticate(token, api_server) {
-  try {
-    const response = await axios.get(api_server.url + '/api/v1', {
-      headers: {
-        Authorization: 'Basic ' + token
-      }
-    });
-    updateApiServerConfig(api_server.url, token);
-    return response;
-  } catch (error) {
-    return { error };
-  }
+export function authenticate(token) {
+  return k8sApiClient.get('/api/v1', {
+    headers: {
+      Authorization: 'Basic ' + token
+    }
+  });
 }
 
 export const updateApiServerConfig = (url, token) => {
