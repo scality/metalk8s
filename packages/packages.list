@@ -2,8 +2,13 @@ containerd
 cri-tools
 ftp://ftp.scientificlinux.org/linux/scientific/7x/external_products/extras/x86_64/container-selinux-2.77-1.el7_6.noarch.rpm
 genisoimage
+<<<<<<< HEAD
 kubectl-1.12.6-0
 kubelet-1.12.6-0
+=======
+kubectl-1.11.10
+kubelet-1.11.10
+>>>>>>> origin/improvement/902-bump-k8s_version-fixing-path-traversal-vulnerability
 m2crypto
 python2-kubernetes
 runc
