@@ -142,6 +142,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/monitoring/alertmanager/upstream.sls'),
     Path('salt/metalk8s/addons/monitoring/grafana/deployed.sls'),
     Path('salt/metalk8s/addons/monitoring/grafana/upstream.sls'),
+    Path('salt/metalk8s/addons/monitoring/kube-controller-manager/exposed.sls'),
+    Path('salt/metalk8s/addons/monitoring/kube-scheduler/exposed.sls'),
     Path('salt/metalk8s/addons/monitoring/kube-state-metrics/deployed.sls'),
     Path('salt/metalk8s/addons/monitoring/kube-state-metrics/upstream.sls'),
     Path('salt/metalk8s/addons/monitoring/node-exporter/deployed.sls'),
