@@ -3,7 +3,7 @@ metalk8s: {}
 
 kubernetes:
   cluster: kubernetes
-  version: 1.12.6  # NOTE: remember to update kubelet version as well
+  version: 1.12.9  # NOTE: remember to update kubelet version as well
 
 kubeadm_preflight:
   mandatory:
@@ -111,7 +111,7 @@ repo:
       version: latest
       repository: metalk8s-kubernetes
     kubelet:
-      version: 1.12.6-0
+      version: 1.12.9-0
       repository: metalk8s-kubernetes
     m2crypto:
       version: latest
