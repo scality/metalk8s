@@ -52,7 +52,9 @@
                 'prometheus': {
                     'ip': bootstrap_workload_plane_ip,
                     'ports': {
-                        'node_port': 30222
+                        'api': {
+                            'node_port': 30222
+                        }
                     }
                 }
             },
