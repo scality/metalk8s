@@ -35,8 +35,8 @@ Create coredns deployment:
     - context: {{ context }}
     - source: salt://{{ slspath }}/files/coredns-deployment.yaml.j2
     - template: jinja
-  require:
-    - metalk8s_kubernetes: Create coredns ConfigMap
+    - require:
+      - metalk8s_kubernetes: Create coredns ConfigMap
 
 Create coredns service:
   metalk8s_kubernetes.service_present:
@@ -66,8 +66,8 @@ Create coredns service:
         - name: metrics
           port: 9153
           protocol: TCP
-  require:
-    - metalk8s_kubernetes: Create coredns deployment
+    - require:
+      - metalk8s_kubernetes: Create coredns deployment
 
 Create coredns service account:
   metalk8s_kubernetes.serviceaccount_present:
