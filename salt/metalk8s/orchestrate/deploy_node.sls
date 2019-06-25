@@ -52,6 +52,8 @@ Cordon the node:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
 
+{%- if not pillar.orchestrate.get('skip_draining', True) %}
+
 Drain the node:
   metalk8s_drain.node_drained:
     - name: {{ node_name }}
@@ -62,6 +64,10 @@ Drain the node:
     - context: {{ context }}
     - require:
       - metalk8s_cordon: Cordon the node
+    - require_in:
+      - salt: Run the highstate
+
+{%- endif %}
 
 Run the highstate:
   salt.state:
@@ -70,7 +76,7 @@ Run the highstate:
     - require:
       - salt: Set grains
       - salt: Refresh the mine
-      - metalk8s_drain: Drain the node
+      - metalk8s_cordon: Cordon the node
 
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
