@@ -32,5 +32,3 @@ Expose Prometheus:
           app: prometheus
           prometheus: k8s
         type: NodePort
-  require:
-    - pkg: Install Python Kubernetes client
