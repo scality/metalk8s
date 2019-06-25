@@ -52,6 +52,10 @@ Deploy node {{ node }}:
     - pillar:
         orchestrate:
           node_name: {{ node }}
+          {%- if pillar.metalk8s.nodes|length == 1 %}
+          {#- Do not drain if we are in single node cluster #}
+          skip_draining: True
+          {%- endif %}
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
