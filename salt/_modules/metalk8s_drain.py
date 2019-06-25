@@ -272,8 +272,8 @@ class Drain(object):
                 "api_operation": "list_namespaced_replica_set"
             },
             "StatefulSet": {
-                "call": "CoreV1Api->list_namespaced_stateful_set",
-                "api_source": kubernetes.client.ExtensionsV1beta1Api,
+                "call": "AppsV1Api->list_namespaced_stateful_set",
+                "api_source": kubernetes.client.AppsV1Api,
                 "api_operation": "list_namespaced_stateful_set"
             }
         }
