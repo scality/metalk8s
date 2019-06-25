@@ -58,7 +58,7 @@ def check_job_health(host, job, namespace, health):
 
     utils.retry(
         _wait_job_status,
-        times=10,
+        times=20,
         wait=3,
         name="wait for job '{}' in namespace '{}' being '{}'".format(
             job, namespace, health)
