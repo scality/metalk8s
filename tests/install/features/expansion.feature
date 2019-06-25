@@ -7,10 +7,10 @@ Feature: Cluster expansion
         And node "node1" status is "NotReady"
         When we deploy the node "node1"
         Then node "node1" status is "Ready"
-        And we have 1 running pod labeled 'component=kube-controller-manager' on node 'node1'
-        And we have 1 running pod labeled 'component=kube-scheduler' on node 'node1'
-        And we have 1 running pod labeled 'component=kube-apiserver' on node 'node1'
-        And we have 1 running pod labeled 'k8s-app=calico-node' on node 'node1'
-        And we have 1 running pod labeled 'k8s-app=kube-proxy' on node 'node1'
-        And we have 1 running pod labeled 'component=etcd' on node 'node1'
+        And we have 1 running pod labeled 'component=kube-controller-manager' in namespace 'kube-system' on node 'node1'
+        And we have 1 running pod labeled 'component=kube-scheduler' in namespace 'kube-system' on node 'node1'
+        And we have 1 running pod labeled 'component=kube-apiserver' in namespace 'kube-system' on node 'node1'
+        And we have 1 running pod labeled 'k8s-app=calico-node' in namespace 'kube-system' on node 'node1'
+        And we have 1 running pod labeled 'k8s-app=kube-proxy' in namespace 'kube-system' on node 'node1'
+        And we have 1 running pod labeled 'component=etcd' in namespace 'kube-system' on node 'node1'
         And node "node1" is a member of etcd cluster

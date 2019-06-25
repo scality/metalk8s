@@ -123,19 +123,42 @@ def verify_kubeapi_service(host):
 
 
 @then(parsers.parse(
-    "we have {pods_count:d} running pod labeled '{label}' on node '{node}'"
+    "we have {pods_count:d} running pod labeled '{label}' "
+    "in namespace '{namespace}' on node '{node}'"
 ))
-def count_running_pods(request, k8s_client, pods_count, label, node):
+def count_running_pods(
+        request, k8s_client, pods_count, label, namespace, node):
     ssh_config = request.config.getoption('--ssh-config')
 
     def _check_pods_count():
         pods = kube_utils.get_pods(
             k8s_client, ssh_config, label, node,
-            namespace="kube-system", state="Running",
+            namespace=namespace, state="Running",
         )
         assert len(pods) == pods_count
 
-    utils.retry(_check_pods_count, times=10, wait=3)
+    error_msg = (
+        "There is less than '{count}' or no pods labeled '{label}' running"
+        "in namespace '{namespace}' on node '{node}'"
+        .format(count=pods_count, label=label, namespace=namespace, node=node)
+    )
+    utils.retry(_check_pods_count, times=10, wait=3, error_msg=error_msg)
+
+
+@then(parsers.parse(
+    "the '{resource}' list should not be "
+    "empty in the '{namespace}' namespace"))
+def check_resource_list(host, resource, namespace):
+    with host.sudo():
+        output = host.check_output(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            "get %s --namespace %s -o custom-columns=:metadata.name",
+            resource,
+            namespace,
+        )
+
+    assert len(output.strip()) > 0, 'No {0} found in namespace {1}'.format(
+            resource, namespace)
 
 
 # }}}
