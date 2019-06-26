@@ -1,4 +1,4 @@
-import { put, takeEvery, select, call } from 'redux-saga/effects';
+import { put, takeEvery, select, call, all } from 'redux-saga/effects';
 import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 
 const FETCH_ALERTS = 'FETCH_ALERTS';
@@ -12,8 +12,6 @@ const SET_KUBECONTROLLER_MANAGER_STATUS = 'SET_KUBECONTROLLER_MANAGER_STATUS';
 
 const defaultState = {
   alertList: [],
-  clusterStatus: [],
-
   cluster: {
     // Will be change with Carlito PR
     status: false,
@@ -27,6 +25,24 @@ export default function(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_ALERTS:
       return { ...state, alertList: action.payload };
+    case SET_APISERVER_STATUS:
+      return {
+        ...state,
+        cluster: { ...state.cluster, apiServerStatus: action.payload }
+      };
+    case SET_KUBESCHEDULER_STATUS:
+      return {
+        ...state,
+        cluster: { ...state.cluster, kubeSchedulerStatus: action.payload }
+      };
+    case SET_KUBECONTROLLER_MANAGER_STATUS:
+      return {
+        ...state,
+        cluster: {
+          ...state.cluster,
+          kubeControllerManagerStatus: action.payload
+        }
+      };
     case SET_CLUSTER_STATUS:
       return {
         ...state,
@@ -80,25 +96,19 @@ export function* fetchClusterStatus() {
   const kubeSchedulerQuery = 'sum(up{job="kube-scheduler"})';
   const kubeControllerManagerQuery = 'sum(up{job="kube-controller-manager"})';
 
-  const apiserver = yield call(
-    queryPrometheus,
-    api.url_prometheus,
-    apiserverQuery
-  );
+  const results = yield all([
+    call(queryPrometheus, api.url_prometheus, apiserverQuery),
+    call(queryPrometheus, api.url_prometheus, kubeSchedulerQuery),
+    call(queryPrometheus, api.url_prometheus, kubeControllerManagerQuery)
+  ]);
+
+  const apiserver = results[0];
   const apiServerValue = apiserver.data.data.result[0].value;
 
-  const kubeScheduler = yield call(
-    queryPrometheus,
-    api.url_prometheus,
-    kubeSchedulerQuery
-  );
+  const kubeScheduler = results[1];
   const kubeSchedulerValue = kubeScheduler.data.data.result[0].value;
 
-  const kubeControllerManager = yield call(
-    queryPrometheus,
-    api.url_prometheus,
-    kubeControllerManagerQuery
-  );
+  const kubeControllerManager = results[2];
   const kubeControllerManagerValue =
     kubeControllerManager.data.data.result[0].value;
 
@@ -124,9 +134,12 @@ export function* fetchClusterStatus() {
   }
 
   if (
-    apiServerValue.length > 0 &&
-    kubeSchedulerValue.length > 0 &&
-    kubeControllerManagerValue.length > 0
+    apiServerValue.length > 1 &&
+    parseInt(apiServerValue[1]) > 1 &&
+    kubeSchedulerValue.length > 1 &&
+    parseInt(kubeSchedulerValue[1]) > 1 &&
+    kubeControllerManagerValue.length > 1 &&
+    parseInt(kubeControllerManagerValue[1]) > 1
   ) {
     // There are a least one actif job for api-server, kube-scheduler and
     // kube-controller
