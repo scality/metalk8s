@@ -269,6 +269,10 @@ orchestrate_bootstrap() {
 
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
+    run "Syncing Utility modules on Salt master" \
+        "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_utils \
+            saltenv=metalk8s-@@VERSION
+
     run "Syncing Pillar modules on Salt master" \
         "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed saltutil.sync_pillar \
             saltenv=metalk8s-@@VERSION
@@ -295,6 +299,11 @@ orchestrate_bootstrap() {
             metalk8s.orchestrate.bootstrap.accept-minion \
             saltenv=metalk8s-@@VERSION \
             pillar="${pillar[*]}"
+
+    run "Refreshing all modules and data on bootstrap minion" \
+        salt-call --state-output=mixed saltutil.sync_all \
+            refresh=True \
+            saltenv=metalk8s-@@VERSION
 
     run "Deploying bootstrap node (this may take a while)" \
         "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
