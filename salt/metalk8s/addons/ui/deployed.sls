@@ -1,3 +1,6 @@
+include:
+  - .precheck
+
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}
 
