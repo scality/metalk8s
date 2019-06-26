@@ -366,8 +366,8 @@ stages:
             export SSH_CONFIG_FILE=/home/centos/ssh_config &&
             export ISO_MOUNTPOINT=/var/tmp/metalk8s &&
             export TEST_HOSTS_LIST=bootstrap &&
-            tox -e tests -- -m "ci and not slow" &&
-            tox -e tests -- -m "ci and slow"'
+            tox -e tests -- -m "ci and not slow and not monitoring" &&
+            tox -e tests -- -m "ci and slow and not monitoring"'
           # yamllint enable rule:line-length
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true

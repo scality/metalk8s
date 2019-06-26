@@ -12,12 +12,12 @@ Create kube-scheduler Pod manifest:
     - context:
         name: kube-scheduler
         image_name: {{ kubernetes_image("kube-scheduler") }}
-        host: 127.0.0.1
+        host: {{ grains['metalk8s']['control_plane_ip'] }}
         port: 10251
         scheme: HTTP
         command:
           - kube-scheduler
-          - --address=127.0.0.1
+          - --address={{ grains['metalk8s']['control_plane_ip'] }}
           - --kubeconfig=/etc/kubernetes/scheduler.conf
           - --leader-elect=true
         requested_cpu: 100m
