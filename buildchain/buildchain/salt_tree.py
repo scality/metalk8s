@@ -398,6 +398,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
 
+    Path('salt/_utils/pillar_utils.py'),
+
     targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='pause',
