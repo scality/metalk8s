@@ -18,19 +18,34 @@ def _load_config(path):
     with salt.utils.files.fopen(path, 'rb') as fd:
         config = salt.utils.yaml.safe_load(fd)
 
-    assert config.get('apiVersion') == 'metalk8s.scality.com/v1alpha2'
-    assert config.get('kind') == 'BootstrapConfiguration'
-    assert 'products' in config
+    expected = {
+        'apiVersion': 'metalk8s.scality.com/v1alpha2',
+        'kind': 'BootstrapConfiguration'
+    }
+
+    errors = (
+        __utils__['pillar_utils.assert_equals'](config, expected) +
+        __utils__['pillar_utils.assert_keys'](config, ['products'])
+    )
+
+    if errors:
+        return __utils__['pillar_utils.errors_to_dict'](errors)
 
     return config
 
 
 def _load_networks(config_data):
-    assert 'networks' in config_data
+    errors = __utils__['pillar_utils.assert_keys'](config_data, ['networks'])
+    if errors:
+        return __utils__['pillar_utils.errors_to_dict'](errors)
 
     networks_data = config_data['networks']
-    assert 'controlPlane' in config_data['networks']
-    assert 'workloadPlane' in config_data['networks']
+    errors = __utils__['pillar_utils.assert_keys'](
+        networks_data,
+        ['controlPlane', 'workloadPlane']
+    )
+    if errors:
+        return __utils__['pillar_utils.errors_to_dict'](errors)
 
     return {
         'control_plane': networks_data['controlPlane'],
@@ -41,10 +56,14 @@ def _load_networks(config_data):
 
 
 def _load_ca(config_data):
-    assert 'ca' in config_data
+    errors = __utils__['pillar_utils.assert_keys'](config_data, ['ca'])
+    if errors:
+        return __utils__['pillar_utils.errors_to_dict'](errors)
 
     ca_data = config_data['ca']
-    assert 'minion' in ca_data
+    errors = __utils__['pillar_utils.assert_keys'](ca_data, ['minion'])
+    if errors:
+        return __utils__['pillar_utils.errors_to_dict'](errors)
 
     return {
         'minion': ca_data['minion'],
@@ -52,7 +71,9 @@ def _load_ca(config_data):
 
 
 def _load_apiserver(config_data):
-    assert 'apiServer' in config_data
+    errors = __utils__['pillar_utils.assert_keys'](config_data, ['apiServer'])
+    if errors:
+        return __utils__['pillar_utils.errors_to_dict'](errors)
 
     as_data = config_data['apiServer']
 
@@ -65,7 +86,9 @@ def _load_apiserver(config_data):
         },
     }
 
-    assert 'host' in as_data
+    errors = __utils__['pillar_utils.assert_keys'](as_data, ['host'])
+    if errors:
+        return __utils__['pillar_utils.errors_to_dict'](errors)
 
     result['host'] = as_data['host']
 
@@ -89,23 +112,40 @@ def _load_iso_path(config_data):
         res = [res]
 
     if not isinstance(res, list):
-        return {"_errors": [
+        return __utils__['pillar_utils.errors_to_dict']([
             "Invalid products format in config file, list or string expected "
             "got {1}."
             .format(res)
-        ]}
+        ])
 
     return res
 
 
 def ext_pillar(minion_id, pillar, bootstrap_config):
     config = _load_config(bootstrap_config)
+    if config.get('_errors'):
+        metal_data = __utils__['pillar_utils.errors_to_dict'](
+            config['_errors']
+        )
 
-    return {
-        'networks': _load_networks(config),
-        'metalk8s': {
+    else:
+        metal_data = {
             'products': _load_iso_path(config),
             'ca': _load_ca(config),
-            'api_server': _load_apiserver(config),
-        },
+            'api_server': _load_apiserver(config)
+        }
+
+    result = {
+        'networks': _load_networks(config),
+        'metalk8s': metal_data
     }
+
+    if not isinstance(metal_data['products'], list):
+        # Special case for products in pillar
+        __utils__['pillar_utils.promote_errors'](metal_data, 'products')
+    for key in ['ca', 'api_server']:
+        __utils__['pillar_utils.promote_errors'](metal_data, key)
+    for key in ['networks', 'metalk8s']:
+        __utils__['pillar_utils.promote_errors'](result, key)
+
+    return result
