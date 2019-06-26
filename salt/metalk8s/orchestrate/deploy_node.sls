@@ -78,6 +78,13 @@ Run the highstate:
       - salt: Refresh the mine
       - metalk8s_cordon: Cordon the node
 
+Wait for API server to be available:
+  http.wait_for_successful_query:
+  - name: https://{{ pillar.metalk8s.api_server.host }}:6443/healthz
+  - match: 'ok'
+  - status: 200
+  - verify_ssl: false
+
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
     - name: {{ node_name }}
@@ -85,6 +92,7 @@ Uncordon the node:
     - context: {{ context }}
     - require:
       - salt: Run the highstate
+      - http: Wait for API server to be available
 
 {%- set master_minions = salt['metalk8s.minions_by_role']('master') %}
 
