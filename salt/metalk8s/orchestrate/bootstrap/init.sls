@@ -49,14 +49,6 @@
                         'http': 8080,
                     },
                 },
-                'prometheus': {
-                    'ip': bootstrap_workload_plane_ip,
-                    'ports': {
-                        'api': {
-                            'node_port': 30222
-                        }
-                    }
-                }
             },
         },
     }
@@ -157,3 +149,23 @@ Deploy Kubernetes objects:
   - pillar: {{ pillar_data | tojson }}
   - require:
     - http: Wait for API server to be available
+
+Precheck for MetalK8s UI:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.addons.ui.precheck
+    - saltenv: {{ saltenv }}
+    - retry:
+        attempts: 5
+    - require:
+      - salt: Deploy Kubernetes objects
+
+Deploy MetalK8s UI:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.addons.ui.deployed
+    - saltenv: {{ saltenv }}
+    - require:
+      - salt: Precheck for MetalK8s UI
