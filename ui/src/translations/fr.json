@@ -51,7 +51,7 @@
   "message": "Message",
   "active_at": "Actif depuis",
   "cluster_up_and_running": "Grappe de serveurs opérationnelle",
-  "prometheus_connection_failed": "Connexion à Prometheus échoue",
+  "prometheus_unavailable": "Prometheus n'est pas disponible",
   "down": "H.S",
   "alerts": "Alertes",
   "node_creation": "Création du node",

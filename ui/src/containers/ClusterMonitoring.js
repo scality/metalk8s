@@ -4,7 +4,6 @@ import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import {
-  fetchAlertsAction,
   fetchClusterStatusAction,
   CLUSTER_STATUS_UP
 } from '../ducks/app/monitoring';
@@ -48,7 +47,6 @@ const ClusterStatusValue = styled.span`
 
 const ClusterMonitoring = props => {
   useEffect(() => {
-    props.fetchAlerts();
     props.fetchClusterStatus();
   }, []);
 
@@ -158,7 +156,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchAlerts: () => dispatch(fetchAlertsAction()),
     fetchClusterStatus: () => dispatch(fetchClusterStatusAction())
   };
 };
