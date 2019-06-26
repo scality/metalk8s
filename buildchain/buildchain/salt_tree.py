@@ -206,6 +206,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         context={'VERSION': constants.VERSION},
         file_dep=[constants.VERSION_FILE],
     ),
+    Path('salt/metalk8s/addons/ui/precheck.sls'),
 
     Path('salt/metalk8s/container-engine/containerd/configured.sls'),
     Path('salt/metalk8s/container-engine/containerd/init.sls'),
