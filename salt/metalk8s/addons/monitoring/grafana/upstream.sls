@@ -7433,6 +7433,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/nodes
           name: grafana-dashboard-nodes
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/nodesfull
+          name: grafana-dashboard-nodesfull
+          readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/pods
           name: grafana-dashboard-pods
           readOnly: false
@@ -7470,6 +7473,9 @@ spec:
       - configMap:
           name: grafana-dashboard-nodes
         name: grafana-dashboard-nodes
+      - configMap:
+          name: grafana-dashboard-nodesfull
+        name: grafana-dashboard-nodesfull
       - configMap:
           name: grafana-dashboard-pods
         name: grafana-dashboard-pods
