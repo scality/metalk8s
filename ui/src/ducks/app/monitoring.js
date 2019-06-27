@@ -56,6 +56,18 @@ function getClusterQueryStatus(result) {
     ? parseInt(result.data.result[0].value[1])
     : 0;
 }
+
+function parseClusterQueryError(clusterHealth, result) {
+  clusterHealth.status = CLUSTER_STATUS_ERROR;
+  if (result.error.response) {
+    clusterHealth.statusLabel = `Prometheus - ${
+      result.error.response.statusText
+    }`;
+  } else {
+    clusterHealth.statusLabel = intl.translate('prometheus_unavailable');
+  }
+}
+
 export function* fetchClusterStatus() {
   const clusterHealth = {
     status: '',
@@ -79,8 +91,8 @@ export function* fetchClusterStatus() {
       call(queryPrometheus, kubeSchedulerQuery),
       call(queryPrometheus, kubeControllerManagerQuery)
     ]);
-
-    if (!results.error) {
+    const errorResult = results.find(result => result.error);
+    if (!errorResult) {
       clusterHealth.apiServerStatus = getClusterQueryStatus(results[0]);
       clusterHealth.kubeSchedulerStatus = getClusterQueryStatus(results[1]);
       clusterHealth.kubeControllerManagerStatus = getClusterQueryStatus(
@@ -98,16 +110,11 @@ export function* fetchClusterStatus() {
         clusterHealth.status = CLUSTER_STATUS_DOWN;
         clusterHealth.statusLabel = intl.translate('down');
       }
+    } else {
+      parseClusterQueryError(clusterHealth, errorResult);
     }
   } else {
-    clusterHealth.status = CLUSTER_STATUS_ERROR;
-    if (resultAlerts.error.response) {
-      clusterHealth.statusLabel = `Prometheus - ${
-        resultAlerts.error.response.statusText
-      }`;
-    } else {
-      clusterHealth.statusLabel = intl.translate('prometheus_unavailable');
-    }
+    parseClusterQueryError(clusterHealth, resultAlerts);
   }
   yield put(setClusterStatusAction(clusterHealth));
 }
