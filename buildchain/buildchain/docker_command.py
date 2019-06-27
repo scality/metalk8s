@@ -12,9 +12,10 @@ import os
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Type
 
-import docker                            # type: ignore
-from docker.types import Mount           # type: ignore
-from doit.exceptions import TaskError    # type: ignore
+import docker                                         # type: ignore
+from docker.errors import BuildError, ContainerError  # type: ignore
+from docker.types import Mount                        # type: ignore
+from doit.exceptions import TaskError                 # type: ignore
 
 from buildchain import constants
 from buildchain.targets import image
@@ -55,7 +56,31 @@ def bind_ro_mount(source: Path, target: Path) -> Mount:
     )
 
 
-def task_errors(*expected_exn: Type[Exception]) -> Callable[[Any], Any]:
+def default_error_handler(exc: Exception) -> str:
+    """Default string formatting exception handler."""
+    return str(exc)
+
+
+def build_error_handler(build_error: BuildError) -> str:
+    """String formatting exception handler for Docker API BuildError."""
+    output_lines = [
+        item['stream']
+        if 'stream' in item else item['error']
+        for item in build_error.build_log
+    ]
+    log = ''.join(output_lines)
+    return '{}:\n{}'.format(str(build_error), log)
+
+
+def container_error_handler(container_error: ContainerError) -> str:
+    """String formatting exception handler for Docker API ContainerError."""
+    return '{}:\n{}'.format(str(container_error), container_error.stderr)
+
+
+def task_error(
+    expected_exn: Type[Exception],
+    handler: Callable[[Exception], str] = default_error_handler
+) -> Callable[[Any], Any]:
     """Wrap a callable to create a resilient `doit` task
 
     This decorator wraps action functions in a try…except block that abstracts
@@ -71,7 +96,7 @@ def task_errors(*expected_exn: Type[Exception]) -> Callable[[Any], Any]:
             try:
                 task_func(*args, **kwargs)
             except expected_exn as err:
-                return TaskError(err)
+                return TaskError(handler(err))
             return None
         return decorated_task
     return wrapped_task
@@ -102,7 +127,8 @@ class DockerBuild:
         self.dockerfile = str(dockerfile)
         self.buildargs = buildargs
 
-    @task_errors(docker.errors.BuildError, docker.errors.APIError)
+    @task_error(docker.errors.BuildError, handler=build_error_handler)
+    @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
         return DOCKER_CLIENT.images.build(
             tag=self.tag,
@@ -225,11 +251,9 @@ class DockerRun:
 
         return run_config
 
-    @task_errors(
-        docker.errors.ContainerError,
-        docker.errors.ImageNotFound,
-        docker.errors.APIError
-    )
+    @task_error(docker.errors.ContainerError, handler=container_error_handler)
+    @task_error(docker.errors.ImageNotFound)
+    @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
         run_config = self.expand_config()
         return DOCKER_CLIENT.containers.run(
@@ -255,7 +279,8 @@ class DockerTag:
         self.full_name = full_name
         self.version = version
 
-    @task_errors(docker.errors.BuildError, docker.errors.APIError)
+    @task_error(docker.errors.BuildError, handler=build_error_handler)
+    @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
         to_tag = DOCKER_CLIENT.images.get(self.full_name)
         return to_tag.tag(self.repository, tag=self.version)
@@ -275,7 +300,8 @@ class DockerPull:
         self.repository = repository
         self.digest = digest
 
-    @task_errors(docker.errors.BuildError, docker.errors.APIError)
+    @task_error(docker.errors.BuildError, handler=build_error_handler)
+    @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
         return DOCKER_CLIENT.images.pull(self.repository, tag=self.digest)
 
@@ -294,7 +320,8 @@ class DockerSave:
         self.tag = tag
         self.save_path = save_path
 
-    @task_errors(docker.errors.APIError, OSError)
+    @task_error(docker.errors.APIError)
+    @task_error(OSError)
     def __call__(self) -> Optional[TaskError]:
         to_save = DOCKER_CLIENT.images.get(self.tag)
         image_stream = to_save.save(named=True)
