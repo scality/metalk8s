@@ -52,7 +52,7 @@ Cordon the node:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
 
-{%- if not pillar.orchestrate.get('skip_draining', True) %}
+{%- if not pillar.orchestrate.get('skip_draining', False) %}
 
 Drain the node:
   metalk8s_drain.node_drained:
