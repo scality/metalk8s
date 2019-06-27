@@ -59,6 +59,47 @@ def task__deploy_salt_tree() -> Iterator[types.TaskDict]:
         yield from file_tree.execution_plan
 
 
+class CommonStaticContainerRegistry(targets.AtomicTarget):
+    """Generate a nginx configuration to serve common static container
+    registry."""
+    def __init__(
+        self,
+        destination: Path,
+        **kwargs: Any
+    ):
+        """Set target destination.
+
+        Arguments:
+            destination: path to the nginx configuration file to write
+
+        Keyword Arguments:
+            They are passed to `Target` init method.
+        """
+        kwargs['targets'] = [destination]
+        super().__init__(task_name=destination.name, **kwargs)
+
+    @property
+    def task(self) -> types.TaskDict:
+        task = self.basic_task
+        task.update({
+            'title': self._show,
+            'doc': 'Generate the nginx config to serve a common static '
+                   'container registry.',
+            'actions': [self._run],
+        })
+        return task
+
+    @staticmethod
+    def _show(task: types.Task) -> str:
+        """Return a description of the task."""
+        return utils.title_with_target1('NGINX_CFG', task)
+
+    def _run(self) -> None:
+        """Generate the nginx configuration."""
+        with Path(self.targets[0]).open('w', encoding='utf-8') as fp:
+            fp.write(container_registry.CONSTANTS)
+
+
 class StaticContainerRegistry(targets.AtomicTarget):
     """Generate a nginx configuration to serve a static container registry."""
     def __init__(
@@ -105,7 +146,7 @@ class StaticContainerRegistry(targets.AtomicTarget):
         """Generate the nginx configuration."""
         with Path(self.targets[0]).open('w', encoding='utf-8') as fp:
             parts = container_registry.create_config(
-                self._img_root, self._srv_root, self._name_pfx
+                self._img_root, self._srv_root, self._name_pfx, False
             )
             for part in parts:
                 fp.write(part)
@@ -142,6 +183,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/monitoring/alertmanager/upstream.sls'),
     Path('salt/metalk8s/addons/monitoring/grafana/deployed.sls'),
     Path('salt/metalk8s/addons/monitoring/grafana/upstream.sls'),
+    Path('salt/metalk8s/addons/monitoring/kube-controller-manager/exposed.sls'),
+    Path('salt/metalk8s/addons/monitoring/kube-scheduler/exposed.sls'),
     Path('salt/metalk8s/addons/monitoring/kube-state-metrics/deployed.sls'),
     Path('salt/metalk8s/addons/monitoring/kube-state-metrics/upstream.sls'),
     Path('salt/metalk8s/addons/monitoring/node-exporter/deployed.sls'),
@@ -165,6 +208,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         context={'VERSION': constants.VERSION},
         file_dep=[constants.VERSION_FILE],
     ),
+    Path('salt/metalk8s/addons/ui/precheck.sls'),
 
     Path('salt/metalk8s/container-engine/containerd/configured.sls'),
     Path('salt/metalk8s/container-engine/containerd/init.sls'),
@@ -324,6 +368,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/minion/files/minion-99-metalk8s.conf.j2'),
     Path('salt/metalk8s/salt/minion/init.sls'),
     Path('salt/metalk8s/salt/minion/installed.sls'),
+    Path('salt/metalk8s/salt/minion/local.sls'),
     Path('salt/metalk8s/salt/minion/running.sls'),
 
     Path('salt/_auth/kubernetes_rbac.py'),
@@ -356,6 +401,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
 
+    Path('salt/_utils/pillar_utils.py'),
+
     targets.RemoteImage(
         registry=constants.GOOGLE_REGISTRY,
         name='pause',
@@ -366,6 +413,13 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         save_as_tar=True,
     ),
 
+    CommonStaticContainerRegistry(
+        destination=Path(
+            constants.ISO_ROOT,
+            'salt/metalk8s/repo/files',
+            '{}-registry-common.inc'.format(config.PROJECT_NAME.lower())
+        )
+    ),
     StaticContainerRegistry(
         root=constants.ISO_IMAGE_ROOT,
         server_root='${}_{}_images'.format(

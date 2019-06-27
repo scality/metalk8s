@@ -1,9 +1,12 @@
+include:
+  - .precheck
+
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}
 
 {%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
 {%- set saltapi = 'http://' ~ pillar.metalk8s.endpoints['salt-master'].ip ~ ':' ~ pillar.metalk8s.endpoints['salt-master'].ports.api %}
-{%- set prometheus = 'http://' ~ pillar.metalk8s.endpoints.prometheus.ip ~ ':' ~ pillar.metalk8s.endpoints.prometheus.ports.node_port  %}
+{%- set prometheus = 'http://' ~ pillar.metalk8s.endpoints.prometheus.ip ~ ':' ~ pillar.metalk8s.endpoints.prometheus.ports.api.node_port  %}
 
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.deployment_present:
@@ -13,8 +16,6 @@ Create metalk8s-ui deployment:
     - context: {{ context }}
     - source: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml
     - template: jinja
-  require:
-    - pkg: Install Python Kubernetes client
 
 Create metalk8s-ui service:
   metalk8s_kubernetes.service_present:
@@ -34,8 +35,6 @@ Create metalk8s-ui service:
         selector:
           k8s-app: ui
         type: NodePort
-  require:
-    - pkg: Install Python Kubernetes client
 
 Create metalk8s-ui ConfigMap:
   metalk8s_kubernetes.configmap_present:
@@ -52,5 +51,3 @@ Create metalk8s-ui ConfigMap:
           }
         theme.json: |
           {"brand": {"primary": "#403e40", "secondary": "#e99121"}}
-  require:
-    - pkg: Install Python Kubernetes client

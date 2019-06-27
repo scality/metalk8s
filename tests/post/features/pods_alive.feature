@@ -6,15 +6,15 @@ Feature: Pods should be alive
 
     Scenario: Expected Pods
         Given the Kubernetes API is available
-        Then we have at least 1 running pod labeled 'component=kube-controller-manager'
-        And we have at least 1 running pod labeled 'component=kube-scheduler'
-        And we have at least 1 running pod labeled 'component=kube-apiserver'
-        And we have at least 1 running pod labeled 'component=etcd'
-        And we have at least 1 running pod labeled 'k8s-app=kube-proxy'
-        And we have at least 1 running pod labeled 'k8s-app=calico-node'
-        And we have at least 2 running pod labeled 'k8s-app=kube-dns'
-        And we have at least 1 running pod labeled 'app=salt-master'
-        And we have at least 1 running pod labeled 'app=repositories'
+        Then we have 1 running pod labeled 'component=kube-controller-manager' in namespace 'kube-system' on node 'bootstrap'
+        And we have 1 running pod labeled 'component=kube-scheduler' in namespace 'kube-system' on node 'bootstrap'
+        And we have 1 running pod labeled 'component=kube-apiserver' in namespace 'kube-system' on node 'bootstrap'
+        And we have 1 running pod labeled 'component=etcd' in namespace 'kube-system' on node 'bootstrap'
+        And we have 1 running pod labeled 'k8s-app=kube-proxy' in namespace 'kube-system' on node 'bootstrap'
+        And we have 1 running pod labeled 'k8s-app=calico-node' in namespace 'kube-system' on node 'bootstrap'
+        And we have 2 running pod labeled 'k8s-app=kube-dns' in namespace 'kube-system' on node 'bootstrap'
+        And we have 1 running pod labeled 'app=salt-master' in namespace 'kube-system' on node 'bootstrap'
+        And we have 1 running pod labeled 'app=repositories' in namespace 'kube-system' on node 'bootstrap'
 
     Scenario: Exec in Pods
         Given the Kubernetes API is available

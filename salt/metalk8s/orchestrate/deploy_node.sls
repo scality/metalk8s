@@ -52,6 +52,8 @@ Cordon the node:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
 
+{%- if not pillar.orchestrate.get('skip_draining', False) %}
+
 Drain the node:
   metalk8s_drain.node_drained:
     - name: {{ node_name }}
@@ -62,6 +64,10 @@ Drain the node:
     - context: {{ context }}
     - require:
       - metalk8s_cordon: Cordon the node
+    - require_in:
+      - salt: Run the highstate
+
+{%- endif %}
 
 Run the highstate:
   salt.state:
@@ -70,7 +76,14 @@ Run the highstate:
     - require:
       - salt: Set grains
       - salt: Refresh the mine
-      - metalk8s_drain: Drain the node
+      - metalk8s_cordon: Cordon the node
+
+Wait for API server to be available:
+  http.wait_for_successful_query:
+  - name: https://{{ pillar.metalk8s.api_server.host }}:6443/healthz
+  - match: 'ok'
+  - status: 200
+  - verify_ssl: false
 
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
@@ -79,6 +92,7 @@ Uncordon the node:
     - context: {{ context }}
     - require:
       - salt: Run the highstate
+      - http: Wait for API server to be available
 
 {%- set master_minions = salt['metalk8s.minions_by_role']('master') %}
 

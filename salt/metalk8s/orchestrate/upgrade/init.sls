@@ -52,6 +52,10 @@ Deploy node {{ node }}:
     - pillar:
         orchestrate:
           node_name: {{ node }}
+          {%- if pillar.metalk8s.nodes|length == 1 %}
+          {#- Do not drain if we are in single node cluster #}
+          skip_draining: True
+          {%- endif %}
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
@@ -70,3 +74,23 @@ Deploy Kubernetes objects:
     - saltenv: {{ saltenv }}
     - require:
       - salt: Upgrade etcd cluster
+
+Precheck for MetalK8s UI:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.addons.ui.precheck
+    - saltenv: {{ saltenv }}
+    - retry:
+        attempts: 5
+    - require:
+      - salt: Deploy Kubernetes objects
+
+Deploy MetalK8s UI:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.addons.ui.deployed
+    - saltenv: {{ saltenv }}
+    - require:
+      - salt: Precheck for MetalK8s UI

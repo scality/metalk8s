@@ -212,8 +212,8 @@ Start the node deployment.
 
 .. parsed-literal::
 
-   root@salt-master-bootstrap $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \
-                                saltenv=metalk8s-|release| \
+   root@salt-master-bootstrap $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \\
+                                saltenv=metalk8s-|release| \\
                                 pillar='{"orchestrate": {"node_name": "<node-name>"}}'
 
    ... lots of output ...

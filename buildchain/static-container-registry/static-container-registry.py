@@ -88,8 +88,9 @@ def find_images(root):
             yield (name, tag)
 
 
-def create_config(root, server_root, name_prefix):
-    yield CONSTANTS
+def create_config(root, server_root, name_prefix, with_constants=True):
+    if with_constants:
+        yield CONSTANTS
 
     images = {}
     for (name, tag) in find_images(root):

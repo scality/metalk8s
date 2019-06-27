@@ -1,21 +1,25 @@
-import json
-
 from kubernetes.client.rest import ApiException
 
+from tests import utils
 
-def get_pods(host, label, namespace="default", status_phase="Running"):
-    with host.sudo():
-        result = host.run(
-            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
-            'get pods -l "%s" --field-selector=status.phase=%s '
-            "--namespace %s -o json",
-            label,
-            status_phase,
-            namespace,
-        )
-        assert result.rc == 0, result.stdout
 
-        return json.loads(result.stdout)["items"]
+def get_pods(
+    k8s_client, ssh_config, label,
+    node='bootstrap', namespace='default', state='Running'
+):
+    """Return the pod `component` from the specified node"""
+
+    field_selector = ['status.phase={}'.format(state)]
+
+    if node:
+        nodename = utils.resolve_hostname(node, ssh_config)
+        field_selector.append('spec.nodeName={}'.format(nodename))
+
+    return k8s_client.list_namespaced_pod(
+        namespace,
+        field_selector=','.join(field_selector),
+        label_selector=label
+    ).items
 
 
 def wait_for_pod(k8s_client, name, namespace="default", state="Running"):
