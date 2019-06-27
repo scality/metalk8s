@@ -49,6 +49,13 @@ export const setClusterStatusAction = payload => {
   return { type: SET_CLUSTER_STATUS, payload };
 };
 
+function getClusterQueryStatus(result) {
+  return result &&
+    result.status === 'success' &&
+    result.data.result[0].value.length
+    ? parseInt(result.data.result[0].value[1])
+    : 0;
+}
 export function* fetchClusterStatus() {
   const clusterHealth = {
     status: '',
@@ -74,32 +81,11 @@ export function* fetchClusterStatus() {
     ]);
 
     if (!results.error) {
-      const apiserver = results[0];
-      clusterHealth.apiServerStatus =
-        apiserver &&
-        apiserver.data &&
-        apiserver.data.status === 'success' &&
-        apiserver.data.data.result[0].value.length
-          ? parseInt(apiserver.data.data.result[0].value[1])
-          : 0;
-
-      const kubeScheduler = results[1];
-      clusterHealth.kubeSchedulerStatus =
-        kubeScheduler &&
-        kubeScheduler.data &&
-        kubeScheduler.data.status === 'success' &&
-        kubeScheduler.data.data.result[0].value.length
-          ? parseInt(kubeScheduler.data.data.result[0].value[1])
-          : 0;
-
-      const kubeControllerManager = results[2];
-      clusterHealth.kubeControllerManagerStatus =
-        kubeControllerManager &&
-        kubeControllerManager.data &&
-        kubeControllerManager.data.status === 'success' &&
-        kubeControllerManager.data.data.result[0].value.length
-          ? parseInt(kubeControllerManager.data.data.result[0].value[1])
-          : 0;
+      clusterHealth.apiServerStatus = getClusterQueryStatus(results[0]);
+      clusterHealth.kubeSchedulerStatus = getClusterQueryStatus(results[1]);
+      clusterHealth.kubeControllerManagerStatus = getClusterQueryStatus(
+        results[2]
+      );
 
       if (
         clusterHealth.apiServerStatus > 0 &&
@@ -123,7 +109,6 @@ export function* fetchClusterStatus() {
       clusterHealth.statusLabel = intl.translate('prometheus_unavailable');
     }
   }
-
   yield put(setClusterStatusAction(clusterHealth));
 }
 
