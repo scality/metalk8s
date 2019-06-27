@@ -127,7 +127,8 @@ const ClusterMonitoring = props => {
       <ClusterStatusTitleContainer>
         <PageSubtitle>{props.intl.messages.cluster_status + ' :'}</PageSubtitle>
         <ClusterStatusValue isUp={props.cluster.status === CLUSTER_STATUS_UP}>
-          {props.cluster.statusLabel}
+          {props.intl.messages[props.cluster.statusLabel] ||
+            props.cluster.statusLabel}
         </ClusterStatusValue>
       </ClusterStatusTitleContainer>
 

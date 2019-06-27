@@ -1,5 +1,4 @@
 import { put, takeEvery, call, all } from 'redux-saga/effects';
-import { intl } from '../../translations/IntlGlobalProvider';
 import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 
 export const SET_ALERTS = 'SET_ALERTS';
@@ -64,7 +63,7 @@ function parseClusterQueryError(clusterHealth, result) {
       result.error.response.statusText
     }`;
   } else {
-    clusterHealth.statusLabel = intl.translate('prometheus_unavailable');
+    clusterHealth.statusLabel = 'prometheus_unavailable';
   }
 }
 
@@ -105,10 +104,10 @@ export function* fetchClusterStatus() {
         clusterHealth.kubeControllerManagerStatus > 0
       ) {
         clusterHealth.status = CLUSTER_STATUS_UP;
-        clusterHealth.statusLabel = intl.translate('cluster_up_and_running');
+        clusterHealth.statusLabel = 'cluster_up_and_running';
       } else {
         clusterHealth.status = CLUSTER_STATUS_DOWN;
-        clusterHealth.statusLabel = intl.translate('down');
+        clusterHealth.statusLabel = 'down';
       }
     } else {
       parseClusterQueryError(clusterHealth, errorResult);

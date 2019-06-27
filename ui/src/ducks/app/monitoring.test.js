@@ -99,7 +99,7 @@ it('should set cluster status as UP', () => {
         kubeControllerManagerStatus: 1,
         kubeSchedulerStatus: 1,
         status: 'CLUSTER_STATUS_UP',
-        statusLabel: 'Everything is up and running'
+        statusLabel: 'cluster_up_and_running'
       }
     })
   );
@@ -167,7 +167,7 @@ it('should set cluster status as DOWN because there is no kube-controller-manage
         kubeControllerManagerStatus: 0,
         kubeSchedulerStatus: 1,
         status: 'CLUSTER_STATUS_DOWN',
-        statusLabel: 'Down'
+        statusLabel: 'down'
       }
     })
   );
@@ -236,7 +236,7 @@ it('should set cluster status as DOWN because api-server value is []', () => {
         kubeControllerManagerStatus: 1,
         kubeSchedulerStatus: 1,
         status: 'CLUSTER_STATUS_DOWN',
-        statusLabel: 'Down'
+        statusLabel: 'down'
       }
     })
   );
