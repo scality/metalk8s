@@ -30,6 +30,11 @@ Upgrade etcd cluster:
   {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
   {%- set context = "kubernetes-admin@kubernetes" %}
 
+Refresh the package repository for {{ node }}:
+  salt.function:
+    - tgt: {{ node }}
+    - name: pkg.refresh_db
+
 Set node {{ node }} version to {{ dest_version }}:
   metalk8s_kubernetes.node_label_present:
     - name: metalk8s.scality.com/version
@@ -39,6 +44,7 @@ Set node {{ node }} version to {{ dest_version }}:
     - context: {{ context }}
     - require:
       - salt: Upgrade etcd cluster
+      - salt: Refresh the package repository for {{ node }}
   {%- if previous_node is defined %}
       - salt: Deploy node {{ previous_node }}
   {%- endif %}
