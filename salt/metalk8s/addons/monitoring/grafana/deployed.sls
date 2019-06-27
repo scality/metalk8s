@@ -6,3 +6,4 @@
 
 include:
   - .upstream
+  - .metal1_node_dashboard
