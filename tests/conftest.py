@@ -122,10 +122,11 @@ def verify_kubeapi_service(host):
     _verify_kubeapi_service(host)
 
 
-@then(parsers.parse(
-    "we have {pods_count:d} running pod labeled '{label}' "
-    "in namespace '{namespace}' on node '{node}'"
-))
+@then(parsers.re(
+    r"we have (?P<pods_count>\d+) running pod labeled '(?P<label>[^']+)' "
+    r"in namespace '(?P<namespace>[^']+)'(?: on node '(?P<node>[^']+)')?"),
+    converters=dict(pods_count=int)
+)
 def count_running_pods(
         request, k8s_client, pods_count, label, namespace, node):
     ssh_config = request.config.getoption('--ssh-config')
@@ -138,11 +139,14 @@ def count_running_pods(
         assert len(pods) == pods_count
 
     error_msg = (
-        "There is less than '{count}' or no pods labeled '{label}' running"
-        "in namespace '{namespace}' on node '{node}'"
-        .format(count=pods_count, label=label, namespace=namespace, node=node)
+        "There is not exactly '{count}' pod(s) labeled '{label}' running "
+        "in namespace '{namespace}'"
+        .format(count=pods_count, label=label, namespace=namespace)
     )
-    utils.retry(_check_pods_count, times=10, wait=3, error_msg=error_msg)
+    if node:
+        error_msg += "on node '{node}'".format(node=node)
+
+    utils.retry(_check_pods_count, times=20, wait=3, error_msg=error_msg)
 
 
 @then(parsers.parse(
