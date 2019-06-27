@@ -41,8 +41,6 @@ def check_prometheus_api(host):
     "job '{job}' in namespace '{namespace}' is '{health}'"
 ))
 def check_job_health(host, job, namespace, health):
-    # Mostly for kube-state-metrics which is restarted when
-    # redoing the bootstrap and can take some time to become ready
     def _wait_job_status():
         response = _query_prometheus_api(host, 'targets')
         active_targets = response.json()['data']['activeTargets']
@@ -56,9 +54,11 @@ def check_job_health(host, job, namespace, health):
 
         assert job_found, 'Unable to find {} in Prometheus targets'.format(job)
 
+    # Here we do a lot of retries because some pods can be really slow to start
+    # e.g. kube-state-metrics
     utils.retry(
         _wait_job_status,
-        times=20,
+        times=30,
         wait=3,
         name="wait for job '{}' in namespace '{}' being '{}'".format(
             job, namespace, health)
