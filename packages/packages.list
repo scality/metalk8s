@@ -2,8 +2,8 @@ containerd
 cri-tools
 ftp://ftp.scientificlinux.org/linux/scientific/7x/external_products/extras/x86_64/container-selinux-2.77-1.el7_6.noarch.rpm
 genisoimage
-kubectl-1.12.6-0
-kubelet-1.12.6-0
+kubectl-1.12.9-0
+kubelet-1.12.9-0
 m2crypto
 python2-kubernetes
 runc
