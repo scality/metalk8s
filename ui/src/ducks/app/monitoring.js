@@ -2,7 +2,7 @@ import { put, takeEvery, call, all } from 'redux-saga/effects';
 import { intl } from '../../translations/IntlGlobalProvider';
 import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 
-const SET_ALERTS = 'SET_ALERTS';
+export const SET_ALERTS = 'SET_ALERTS';
 
 const FETCH_CLUSTER_STATUS = 'FETCH_CLUSTER_STATUS';
 export const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';

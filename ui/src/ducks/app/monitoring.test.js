@@ -1,96 +1,106 @@
 import { call, all, put } from 'redux-saga/effects';
 import {
   SET_CLUSTER_STATUS,
-  SET_APISERVER_STATUS,
-  SET_KUBESCHEDULER_STATUS,
-  SET_KUBECONTROLLER_MANAGER_STATUS,
+  SET_ALERTS,
   fetchClusterStatus
 } from './monitoring';
-import { queryPrometheus } from '../../services/prometheus/api';
+import { queryPrometheus, getAlerts } from '../../services/prometheus/api';
+
+const alertsResult = {
+  data: {
+    alerts: [
+      {
+        labels: {
+          alertname: 'KubeNodeNotReady',
+          condition: 'Ready',
+          endpoint: 'https-main',
+          instance: '10.233.132.80:8443',
+          job: 'kube-state-metrics',
+          namespace: 'monitoring',
+          node: 'node1',
+          pod: 'kube-state-metrics-6f76945b5b-g9mtf',
+          service: 'kube-state-metrics',
+          severity: 'warning',
+          status: 'true'
+        },
+        annotations: {
+          message: 'node1 has been unready for more than an hour.',
+          runbook_url:
+            'https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodenotready'
+        },
+        state: 'firing',
+        activeAt: '2019-06-27T06:10:17.588420806Z',
+        value: 0
+      }
+    ]
+  }
+};
 
 it('should set cluster status as UP', () => {
   const gen = fetchClusterStatus();
 
-  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(alertsResult).value).toEqual(call(getAlerts));
+  expect(gen.next(alertsResult).value).toEqual(
+    put({ type: SET_ALERTS, payload: alertsResult.data.alerts })
+  );
 
   const result = [
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: [1561562554.553, '1']
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: [1561562554.553, '1']
+          }
+        ]
+      }
     },
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: [1561562554.611, '1']
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: [1561562554.611, '1']
+          }
+        ]
+      }
     },
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: [1561562554.559, '1']
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: [1561562554.559, '1']
+          }
+        ]
+      }
     }
   ];
 
-  expect(gen.next({ url_prometheus: '/api' }).value).toEqual(
+  expect(gen.next().value).toEqual(
     all([
-      call(queryPrometheus, '/api', 'sum(up{job="apiserver"})'),
-      call(queryPrometheus, '/api', 'sum(up{job="kube-scheduler"})'),
-      call(queryPrometheus, '/api', 'sum(up{job="kube-controller-manager"})')
+      call(queryPrometheus, 'sum(up{job="apiserver"})'),
+      call(queryPrometheus, 'sum(up{job="kube-scheduler"})'),
+      call(queryPrometheus, 'sum(up{job="kube-controller-manager"})')
     ])
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: SET_APISERVER_STATUS, payload: [1561562554.553, '1'] })
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: SET_KUBESCHEDULER_STATUS, payload: [1561562554.611, '1'] })
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({
-      type: SET_KUBECONTROLLER_MANAGER_STATUS,
-      payload: [1561562554.559, '1']
-    })
   );
 
   expect(gen.next(result).value).toEqual(
     put({
       type: SET_CLUSTER_STATUS,
-      payload: true
+      payload: {
+        apiServerStatus: 1,
+        kubeControllerManagerStatus: 1,
+        kubeSchedulerStatus: 1,
+        status: 'CLUSTER_STATUS_UP',
+        statusLabel: 'Everything is up and running'
+      }
     })
   );
 });
@@ -98,86 +108,67 @@ it('should set cluster status as UP', () => {
 it('should set cluster status as DOWN because there is no kube-controller-manager job', () => {
   const gen = fetchClusterStatus();
 
-  expect(gen.next().value.type).toEqual('SELECT');
-
+  expect(gen.next(alertsResult).value).toEqual(call(getAlerts));
+  expect(gen.next(alertsResult).value).toEqual(
+    put({ type: SET_ALERTS, payload: alertsResult.data.alerts })
+  );
   const result = [
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: [1561562554.553, '1']
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: [1561562554.553, '1']
+          }
+        ]
+      }
     },
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: [1561562554.611, '1']
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: [1561562554.611, '1']
+          }
+        ]
+      }
     },
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: [1561562554.559, '0']
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: [1561562554.559, '0']
+          }
+        ]
+      }
     }
   ];
 
-  expect(gen.next({ url_prometheus: '/api' }).value).toEqual(
+  expect(gen.next().value).toEqual(
     all([
-      call(queryPrometheus, '/api', 'sum(up{job="apiserver"})'),
-      call(queryPrometheus, '/api', 'sum(up{job="kube-scheduler"})'),
-      call(queryPrometheus, '/api', 'sum(up{job="kube-controller-manager"})')
+      call(queryPrometheus, 'sum(up{job="apiserver"})'),
+      call(queryPrometheus, 'sum(up{job="kube-scheduler"})'),
+      call(queryPrometheus, 'sum(up{job="kube-controller-manager"})')
     ])
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: SET_APISERVER_STATUS, payload: [1561562554.553, '1'] })
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: SET_KUBESCHEDULER_STATUS, payload: [1561562554.611, '1'] })
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({
-      type: SET_KUBECONTROLLER_MANAGER_STATUS,
-      payload: [1561562554.559, '0']
-    })
   );
 
   expect(gen.next(result).value).toEqual(
     put({
       type: SET_CLUSTER_STATUS,
-      payload: false
+      payload: {
+        apiServerStatus: 1,
+        kubeControllerManagerStatus: 0,
+        kubeSchedulerStatus: 1,
+        status: 'CLUSTER_STATUS_DOWN',
+        statusLabel: 'Down'
+      }
     })
   );
 });
@@ -185,86 +176,68 @@ it('should set cluster status as DOWN because there is no kube-controller-manage
 it('should set cluster status as DOWN because api-server value is []', () => {
   const gen = fetchClusterStatus();
 
-  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(alertsResult).value).toEqual(call(getAlerts));
+  expect(gen.next(alertsResult).value).toEqual(
+    put({ type: SET_ALERTS, payload: alertsResult.data.alerts })
+  );
 
   const result = [
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: []
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: []
+          }
+        ]
+      }
     },
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: [1561562554.611, '1']
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: [1561562554.611, '1']
+          }
+        ]
+      }
     },
     {
+      status: 'success',
       data: {
-        status: 'success',
-        data: {
-          resultType: 'vector',
-          result: [
-            {
-              metric: {},
-              value: [1561562554.559, '1']
-            }
-          ]
-        }
-      },
-      status: 200,
-      statusText: 'OK'
+        resultType: 'vector',
+        result: [
+          {
+            metric: {},
+            value: [1561562554.559, '1']
+          }
+        ]
+      }
     }
   ];
 
-  expect(gen.next({ url_prometheus: '/api' }).value).toEqual(
+  expect(gen.next().value).toEqual(
     all([
-      call(queryPrometheus, '/api', 'sum(up{job="apiserver"})'),
-      call(queryPrometheus, '/api', 'sum(up{job="kube-scheduler"})'),
-      call(queryPrometheus, '/api', 'sum(up{job="kube-controller-manager"})')
+      call(queryPrometheus, 'sum(up{job="apiserver"})'),
+      call(queryPrometheus, 'sum(up{job="kube-scheduler"})'),
+      call(queryPrometheus, 'sum(up{job="kube-controller-manager"})')
     ])
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: SET_APISERVER_STATUS, payload: [] })
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: SET_KUBESCHEDULER_STATUS, payload: [1561562554.611, '1'] })
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({
-      type: SET_KUBECONTROLLER_MANAGER_STATUS,
-      payload: [1561562554.559, '1']
-    })
   );
 
   expect(gen.next(result).value).toEqual(
     put({
       type: SET_CLUSTER_STATUS,
-      payload: false
+      payload: {
+        apiServerStatus: 0,
+        kubeControllerManagerStatus: 1,
+        kubeSchedulerStatus: 1,
+        status: 'CLUSTER_STATUS_DOWN',
+        statusLabel: 'Down'
+      }
     })
   );
 });
