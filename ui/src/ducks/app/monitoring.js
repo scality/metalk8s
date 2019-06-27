@@ -1,11 +1,11 @@
-import { put, takeEvery, call } from 'redux-saga/effects';
-import { getAlerts, getClusterStatus } from '../../services/prometheus/api';
+import { put, takeEvery, call, all } from 'redux-saga/effects';
 import { intl } from '../../translations/IntlGlobalProvider';
+import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 
 const SET_ALERTS = 'SET_ALERTS';
 
 const FETCH_CLUSTER_STATUS = 'FETCH_CLUSTER_STATUS';
-const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';
+export const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';
 
 export const CLUSTER_STATUS_UP = 'CLUSTER_STATUS_UP';
 const CLUSTER_STATUS_DOWN = 'CLUSTER_STATUS_DOWN';
@@ -15,7 +15,10 @@ const defaultState = {
   alertList: [],
   cluster: {
     status: '',
-    statusLabel: ''
+    statusLabel: '',
+    apiServerStatus: 0,
+    kubeSchedulerStatus: 0,
+    kubeControllerManagerStatus: 0
   }
 };
 
@@ -23,8 +26,12 @@ export default function(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_ALERTS:
       return { ...state, alertList: action.payload };
+
     case SET_CLUSTER_STATUS:
-      return { ...state, cluster: action.payload };
+      return {
+        ...state,
+        cluster: action.payload
+      };
     default:
       return state;
   }
@@ -45,17 +52,60 @@ export const setClusterStatusAction = payload => {
 export function* fetchClusterStatus() {
   const clusterHealth = {
     status: '',
-    label: ''
+    statusLabel: '',
+    apiServerStatus: 0,
+    kubeSchedulerStatus: 0,
+    kubeControllerManagerStatus: 0
   };
+
+  const apiserverQuery = 'sum(up{job="apiserver"})';
+  const kubeSchedulerQuery = 'sum(up{job="kube-scheduler"})';
+  const kubeControllerManagerQuery = 'sum(up{job="kube-controller-manager"})';
+
   const resultAlerts = yield call(getAlerts); // Check if Prometheus API is available
 
   if (!resultAlerts.error) {
     yield put(setAlertsAction(resultAlerts.data.alerts));
 
-    const result = yield call(getClusterStatus);
+    const results = yield all([
+      call(queryPrometheus, apiserverQuery),
+      call(queryPrometheus, kubeSchedulerQuery),
+      call(queryPrometheus, kubeControllerManagerQuery)
+    ]);
 
-    if (!result.error) {
-      if (result.data.result && result.data.result.length) {
+    if (!results.error) {
+      const apiserver = results[0];
+      clusterHealth.apiServerStatus =
+        apiserver &&
+        apiserver.data &&
+        apiserver.data.status === 'success' &&
+        apiserver.data.data.result[0].value.length
+          ? parseInt(apiserver.data.data.result[0].value[1])
+          : 0;
+
+      const kubeScheduler = results[1];
+      clusterHealth.kubeSchedulerStatus =
+        kubeScheduler &&
+        kubeScheduler.data &&
+        kubeScheduler.data.status === 'success' &&
+        kubeScheduler.data.data.result[0].value.length
+          ? parseInt(kubeScheduler.data.data.result[0].value[1])
+          : 0;
+
+      const kubeControllerManager = results[2];
+      clusterHealth.kubeControllerManagerStatus =
+        kubeControllerManager &&
+        kubeControllerManager.data &&
+        kubeControllerManager.data.status === 'success' &&
+        kubeControllerManager.data.data.result[0].value.length
+          ? parseInt(kubeControllerManager.data.data.result[0].value[1])
+          : 0;
+
+      if (
+        clusterHealth.apiServerStatus > 0 &&
+        clusterHealth.kubeSchedulerStatus > 0 &&
+        clusterHealth.kubeControllerManagerStatus > 0
+      ) {
         clusterHealth.status = CLUSTER_STATUS_UP;
         clusterHealth.statusLabel = intl.translate('cluster_up_and_running');
       } else {
@@ -73,6 +123,7 @@ export function* fetchClusterStatus() {
       clusterHealth.statusLabel = intl.translate('prometheus_unavailable');
     }
   }
+
   yield put(setClusterStatusAction(clusterHealth));
 }
 

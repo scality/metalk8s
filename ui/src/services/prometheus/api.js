@@ -10,8 +10,6 @@ export function getAlerts() {
   return prometheusApiClient.get('/api/v1/alerts');
 }
 
-export function getClusterStatus() {
-  const query =
-    'sum(up{job=~"apiserver|kube-scheduler|kube-controller-manager"} == 0)';
+export function queryPrometheus(query) {
   return prometheusApiClient.get('/api/v1/query?query=' + query);
 }
