@@ -11,6 +11,7 @@ import yaml
 from tests import utils
 
 # Scenarios
+@pytest.mark.skip(reason="Flaky test, needs to be fixed (#1305)")
 @scenario('../features/expansion.feature',
           'Add one node to the cluster',
           strict_gherkin=False)
