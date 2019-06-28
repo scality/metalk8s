@@ -112,6 +112,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/pods
           name: grafana-dashboard-pods
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/coredns
+          name: grafana-dashboard-coredns
+          readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/statefulset
           name: grafana-dashboard-statefulset
           readOnly: false
@@ -158,6 +161,9 @@ spec:
       - configMap:
           name: grafana-dashboard-pods
         name: grafana-dashboard-pods
+      - configMap:
+          name: grafana-dashboard-coredns
+        name: grafana-dashboard-coredns
       - configMap:
           name: grafana-dashboard-statefulset
         name: grafana-dashboard-statefulset
