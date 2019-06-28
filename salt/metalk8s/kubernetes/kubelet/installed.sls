@@ -20,6 +20,6 @@ Install kubelet:
 # Workaround: Reload systemctl
 Reload systemctl:
   module.wait:
-    - name: service.systemctl_reload
+    - service.systemctl_reload: []
     - watch:
       - pkg: Install kubelet
