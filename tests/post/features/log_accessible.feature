@@ -1,5 +1,5 @@
 @ci @local @post
 Feature: logs should be accessible
-    Scenario: get logs
+    Scenario: check logs from all containers
         Given the Kubernetes API is available
-        Then the pods logs should not be empty
+        Then all Pod logs should be non-empty
