@@ -40,7 +40,9 @@ def busybox_pod(k8s_client):
     k8s_client.delete_namespaced_pod(
         name="busybox",
         namespace="default",
-        body=client.V1DeleteOptions(),
+        body=client.V1DeleteOptions(
+            grace_period_seconds=0,  # Force deletion instantly
+        ),
     )
 
 
