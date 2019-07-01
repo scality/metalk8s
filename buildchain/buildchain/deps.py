@@ -27,7 +27,7 @@ def task_check_for() -> Iterator[types.TaskDict]:
         """
         if binary_path:
             path = Path(binary_path)
-            cmd_path = shutil.which(path.name, path=path.parent)
+            cmd_path = shutil.which(path.name, path=str(path.parent))
         else:
             cmd_path = shutil.which(command_name)
         if cmd_path is None:
