@@ -10,6 +10,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
 import {
   fetchClusterStatusAction,
+  fetchAlertsAction,
   CLUSTER_STATUS_UP,
   CLUSTER_STATUS_DOWN
 } from '../ducks/app/monitoring';
@@ -47,6 +48,10 @@ const ClusterStatusValue = styled.span`
 `;
 
 const ClusterMonitoring = props => {
+  useEffect(() => {
+    props.fetchAlerts();
+  }, []);
+
   useEffect(() => {
     props.fetchClusterStatus();
   }, []);
@@ -152,7 +157,7 @@ const ClusterMonitoring = props => {
 
 const mapStateToProps = (state, props) => {
   return {
-    alerts: state.app.monitoring.alertList,
+    alerts: state.app.monitoring.alert.list,
     clusterStatus: makeClusterStatus(state, props)
   };
 };
@@ -181,7 +186,8 @@ const makeClusterStatus = (state, props) => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchClusterStatus: () => dispatch(fetchClusterStatusAction())
+    fetchClusterStatus: () => dispatch(fetchClusterStatusAction()),
+    fetchAlerts: () => dispatch(fetchAlertsAction())
   };
 };
 
