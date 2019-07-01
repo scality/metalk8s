@@ -7,17 +7,16 @@ const FETCH_CLUSTER_STATUS = 'FETCH_CLUSTER_STATUS';
 export const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';
 
 export const CLUSTER_STATUS_UP = 'CLUSTER_STATUS_UP';
-const CLUSTER_STATUS_DOWN = 'CLUSTER_STATUS_DOWN';
+export const CLUSTER_STATUS_DOWN = 'CLUSTER_STATUS_DOWN';
 const CLUSTER_STATUS_ERROR = 'CLUSTER_STATUS_ERROR';
 
 const defaultState = {
   alertList: [],
   cluster: {
-    status: '',
-    statusLabel: '',
     apiServerStatus: 0,
     kubeSchedulerStatus: 0,
-    kubeControllerManagerStatus: 0
+    kubeControllerManagerStatus: 0,
+    error: null
   }
 };
 
@@ -59,21 +58,18 @@ function getClusterQueryStatus(result) {
 function parseClusterQueryError(clusterHealth, result) {
   clusterHealth.status = CLUSTER_STATUS_ERROR;
   if (result.error.response) {
-    clusterHealth.statusLabel = `Prometheus - ${
-      result.error.response.statusText
-    }`;
+    clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
   } else {
-    clusterHealth.statusLabel = 'prometheus_unavailable';
+    clusterHealth.error = 'prometheus_unavailable';
   }
 }
 
 export function* fetchClusterStatus() {
   const clusterHealth = {
-    status: '',
-    statusLabel: '',
     apiServerStatus: 0,
     kubeSchedulerStatus: 0,
-    kubeControllerManagerStatus: 0
+    kubeControllerManagerStatus: 0,
+    error: null
   };
 
   const apiserverQuery = 'sum(up{job="apiserver"})';
@@ -97,18 +93,7 @@ export function* fetchClusterStatus() {
       clusterHealth.kubeControllerManagerStatus = getClusterQueryStatus(
         results[2]
       );
-
-      if (
-        clusterHealth.apiServerStatus > 0 &&
-        clusterHealth.kubeSchedulerStatus > 0 &&
-        clusterHealth.kubeControllerManagerStatus > 0
-      ) {
-        clusterHealth.status = CLUSTER_STATUS_UP;
-        clusterHealth.statusLabel = 'cluster_up_and_running';
-      } else {
-        clusterHealth.status = CLUSTER_STATUS_DOWN;
-        clusterHealth.statusLabel = 'down';
-      }
+      clusterHealth.error = null;
     } else {
       parseClusterQueryError(clusterHealth, errorResult);
     }
