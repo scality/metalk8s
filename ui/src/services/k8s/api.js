@@ -15,7 +15,7 @@ export function initialize(apiUrl) {
 
 //Basic Auth
 export function authenticate(token) {
-  return k8sApiClient.get('/api/v1', {
+  return k8sApiClient.get('/api/v1', null, {
     headers: {
       Authorization: 'Basic ' + token
     }
