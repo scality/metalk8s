@@ -36,7 +36,23 @@ Configure {{ repo_name }} repository:
   {%- endif %}
     - repo_gpg_check: {{ repo_config.repo_gpg_check }}
     - enabled: {{ repo_config.enabled }}
+    - refresh: false
+    - onchanges_in:
+      - cmd: Refresh yum cache
 {%- endfor %}
+
+# Refresh cache manually as we use the same repo name for all versions
+Refresh yum cache:
+  # Refresh_db not enough as it's only expire-cache
+  cmd.run:
+  - name: "yum clean all --disablerepo='*'
+           --enablerepo='{{ repo.repositories.keys() | join(',') }}'"
+  module.run:
+    - pkg.refresh_db:
+      - disablerepo: '*'
+      - enablerepo: {{ repo.repositories.keys() | tojson }}
+    - onchanges:
+      - cmd: Refresh yum cache
 
 Repositories configured:
   test.succeed_without_changes:
