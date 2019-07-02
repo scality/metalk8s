@@ -160,17 +160,10 @@ export function* fetchNodes() {
 export function* getJobStatus(name) {
   const jid = getJidFromNameLocalStorage(name);
   if (jid) {
-    const salt = yield select(state => state.login.salt);
-    const api = yield select(state => state.config.api);
-    const result = yield call(
-      ApiSalt.printJob,
-      api.url_salt,
-      salt.data.return[0].token,
-      jid
-    );
+    const result = yield call(ApiSalt.printJob, jid);
     const status = {
       name,
-      ...getJobStatusFromPrintJob(result.data, jid)
+      ...getJobStatusFromPrintJob(result, jid)
     };
     if (status.completed) {
       yield put(removeJobAction(jid));
@@ -225,12 +218,8 @@ export function* createNode({ payload }) {
 }
 
 export function* deployNode({ payload }) {
-  const salt = yield select(state => state.login.salt);
-  const api = yield select(state => state.config.api);
   const result = yield call(
     ApiSalt.deployNode,
-    api.url_salt,
-    salt.data.return[0].token,
     payload.name,
     payload.metalk8s_version
   );
@@ -242,8 +231,8 @@ export function* deployNode({ payload }) {
       })
     );
   } else {
-    yield call(subscribeDeployEvents, { jid: result.data.return[0].jid });
-    addJobLocalStorage(result.data.return[0].jid, payload.name);
+    yield call(subscribeDeployEvents, { jid: result.return[0].jid });
+    addJobLocalStorage(result.return[0].jid, payload.name);
     yield call(fetchNodes);
   }
 }

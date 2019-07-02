@@ -51,6 +51,7 @@
   "message": "Message",
   "active_at": "Active Since",
   "cluster_up_and_running": "Everything is up and running",
+  "prometheus_unavailable": "Prometheus is unavailable",
   "down": "Down",
   "alerts": "Alerts",
   "node_creation": "Node creation",
