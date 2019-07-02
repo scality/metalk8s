@@ -9,9 +9,8 @@ export const SET_ALERTS = 'SET_ALERTS';
 
 export const CLUSTER_STATUS_UP = 'CLUSTER_STATUS_UP';
 export const CLUSTER_STATUS_DOWN = 'CLUSTER_STATUS_DOWN';
-const CLUSTER_STATUS_ERROR = 'CLUSTER_STATUS_ERROR';
 
-const SET_PROMETHEUS_API_AVAILABLE = 'SET_PROMETHEUS_API_AVAILABLE';
+export const SET_PROMETHEUS_API_AVAILABLE = 'SET_PROMETHEUS_API_AVAILABLE';
 
 const defaultState = {
   alert: {
@@ -58,16 +57,18 @@ const setPrometheusApiAvailable = payload => {
 function getClusterQueryStatus(result) {
   return result &&
     result.status === 'success' &&
+    result.data.result.length &&
     result.data.result[0].value.length
     ? parseInt(result.data.result[0].value[1])
     : 0;
 }
 
-function parseClusterQueryError(clusterHealth, result) {
-  clusterHealth.status = CLUSTER_STATUS_ERROR;
+export function* handleClusterError(clusterHealth, result) {
   if (result.error.response) {
+    yield put(setPrometheusApiAvailable(true));
     clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
   } else {
+    yield put(setPrometheusApiAvailable(false));
     clusterHealth.error = 'prometheus_unavailable';
   }
 }
@@ -108,16 +109,14 @@ export function* fetchClusterStatus() {
     );
     yield put(setPrometheusApiAvailable(true));
   } else {
-    // API is not responding
-    yield put(setPrometheusApiAvailable(false));
-    parseClusterQueryError(clusterHealth, errorResult);
+    yield call(handleClusterError, clusterHealth, errorResult);
   }
 
   yield put(setClusterStatusAction(clusterHealth));
 }
 
 export function* fetchAlerts() {
-  const resultAlerts = yield call(getAlerts); // Check if Prometheus API is available
+  const resultAlerts = yield call(getAlerts);
   let alert = {
     list: [],
     error: null
@@ -127,13 +126,7 @@ export function* fetchAlerts() {
     yield put(setPrometheusApiAvailable(true));
     alert.list = resultAlerts.data.alerts;
   } else {
-    if (resultAlerts.error.response) {
-      alert.error = resultAlerts.error.response.statusText;
-    } else {
-      // API is not responding
-      yield put(setPrometheusApiAvailable(false));
-      alert.error = 'prometheus_unavailable';
-    }
+    yield call(handleClusterError, alert, resultAlerts);
   }
   yield put(setAlertsAction(alert));
 }

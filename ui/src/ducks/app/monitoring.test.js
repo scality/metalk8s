@@ -1,8 +1,10 @@
 import { call, all, put } from 'redux-saga/effects';
 import {
   SET_CLUSTER_STATUS,
+  SET_PROMETHEUS_API_AVAILABLE,
   SET_ALERTS,
-  fetchClusterStatus
+  fetchClusterStatus,
+  handleClusterError
 } from './monitoring';
 import { queryPrometheus, getAlerts } from '../../services/prometheus/api';
 
@@ -38,12 +40,6 @@ const alertsResult = {
 
 it('should set cluster status as UP', () => {
   const gen = fetchClusterStatus();
-
-  expect(gen.next(alertsResult).value).toEqual(call(getAlerts));
-  expect(gen.next(alertsResult).value).toEqual(
-    put({ type: SET_ALERTS, payload: alertsResult.data.alerts })
-  );
-
   const result = [
     {
       status: 'success',
@@ -90,7 +86,12 @@ it('should set cluster status as UP', () => {
       call(queryPrometheus, 'sum(up{job="kube-controller-manager"})')
     ])
   );
-
+  expect(gen.next(result).value).toEqual(
+    put({
+      type: SET_PROMETHEUS_API_AVAILABLE,
+      payload: true
+    })
+  );
   expect(gen.next(result).value).toEqual(
     put({
       type: SET_CLUSTER_STATUS,
@@ -98,8 +99,7 @@ it('should set cluster status as UP', () => {
         apiServerStatus: 1,
         kubeControllerManagerStatus: 1,
         kubeSchedulerStatus: 1,
-        status: 'CLUSTER_STATUS_UP',
-        statusLabel: 'cluster_up_and_running'
+        error: null
       }
     })
   );
@@ -107,11 +107,6 @@ it('should set cluster status as UP', () => {
 
 it('should set cluster status as DOWN because there is no kube-controller-manager job', () => {
   const gen = fetchClusterStatus();
-
-  expect(gen.next(alertsResult).value).toEqual(call(getAlerts));
-  expect(gen.next(alertsResult).value).toEqual(
-    put({ type: SET_ALERTS, payload: alertsResult.data.alerts })
-  );
   const result = [
     {
       status: 'success',
@@ -161,13 +156,19 @@ it('should set cluster status as DOWN because there is no kube-controller-manage
 
   expect(gen.next(result).value).toEqual(
     put({
+      type: SET_PROMETHEUS_API_AVAILABLE,
+      payload: true
+    })
+  );
+
+  expect(gen.next(result).value).toEqual(
+    put({
       type: SET_CLUSTER_STATUS,
       payload: {
         apiServerStatus: 1,
         kubeControllerManagerStatus: 0,
         kubeSchedulerStatus: 1,
-        status: 'CLUSTER_STATUS_DOWN',
-        statusLabel: 'down'
+        error: null
       }
     })
   );
@@ -175,12 +176,6 @@ it('should set cluster status as DOWN because there is no kube-controller-manage
 
 it('should set cluster status as DOWN because api-server value is []', () => {
   const gen = fetchClusterStatus();
-
-  expect(gen.next(alertsResult).value).toEqual(call(getAlerts));
-  expect(gen.next(alertsResult).value).toEqual(
-    put({ type: SET_ALERTS, payload: alertsResult.data.alerts })
-  );
-
   const result = [
     {
       status: 'success',
@@ -230,13 +225,19 @@ it('should set cluster status as DOWN because api-server value is []', () => {
 
   expect(gen.next(result).value).toEqual(
     put({
+      type: SET_PROMETHEUS_API_AVAILABLE,
+      payload: true
+    })
+  );
+
+  expect(gen.next(result).value).toEqual(
+    put({
       type: SET_CLUSTER_STATUS,
       payload: {
         apiServerStatus: 0,
         kubeControllerManagerStatus: 1,
         kubeSchedulerStatus: 1,
-        status: 'CLUSTER_STATUS_DOWN',
-        statusLabel: 'down'
+        error: null
       }
     })
   );
@@ -244,12 +245,6 @@ it('should set cluster status as DOWN because api-server value is []', () => {
 
 it('should set cluster error if a query failed', () => {
   const gen = fetchClusterStatus();
-
-  expect(gen.next(alertsResult).value).toEqual(call(getAlerts));
-  expect(gen.next(alertsResult).value).toEqual(
-    put({ type: SET_ALERTS, payload: alertsResult.data.alerts })
-  );
-
   const result = [
     {
       status: 'success',
@@ -293,15 +288,49 @@ it('should set cluster error if a query failed', () => {
   );
 
   expect(gen.next(result).value).toEqual(
+    call(
+      handleClusterError,
+      {
+        apiServerStatus: 0,
+        error: null,
+        kubeControllerManagerStatus: 0,
+        kubeSchedulerStatus: 0
+      },
+      { error: { response: { statusText: 'Bad Request' } } }
+    )
+  );
+
+  expect(gen.next(result).value).toEqual(
     put({
       type: SET_CLUSTER_STATUS,
       payload: {
         apiServerStatus: 0,
         kubeControllerManagerStatus: 0,
         kubeSchedulerStatus: 0,
-        status: 'CLUSTER_STATUS_ERROR',
-        statusLabel: 'Prometheus - Bad Request'
+        error: null
       }
+    })
+  );
+});
+
+it('should handleClusterError when prometheus is up', () => {
+  const result = { error: { response: { statusText: 'Bad Request' } } };
+  const gen = handleClusterError({}, result);
+  expect(gen.next().value).toEqual(
+    put({
+      type: SET_PROMETHEUS_API_AVAILABLE,
+      payload: true
+    })
+  );
+});
+
+it('should handleClusterError when prometheus is down', () => {
+  const result = { error: {} };
+  const gen = handleClusterError({}, result);
+  expect(gen.next().value).toEqual(
+    put({
+      type: SET_PROMETHEUS_API_AVAILABLE,
+      payload: false
     })
   );
 });
