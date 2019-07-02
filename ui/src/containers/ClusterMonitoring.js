@@ -3,15 +3,17 @@ import { connect } from 'react-redux';
 import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
-import {
-  fetchAlertsAction,
-  fetchClusterStatusAction
-} from '../ducks/app/monitoring';
 import styled from 'styled-components';
 
 import { Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
+import {
+  fetchClusterStatusAction,
+  fetchAlertsAction,
+  CLUSTER_STATUS_UP,
+  CLUSTER_STATUS_DOWN
+} from '../ducks/app/monitoring';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -48,6 +50,9 @@ const ClusterStatusValue = styled.span`
 const ClusterMonitoring = props => {
   useEffect(() => {
     props.fetchAlerts();
+  }, []);
+
+  useEffect(() => {
     props.fetchClusterStatus();
   }, []);
 
@@ -123,16 +128,14 @@ const ClusterMonitoring = props => {
 
   const sortedAlerts = sortAlerts(alerts, sortBy, sortDirection);
 
-  const isUp = props.clusterStatus && props.clusterStatus.length;
-
   return (
     <PageContainer>
       <ClusterStatusTitleContainer>
         <PageSubtitle>{props.intl.messages.cluster_status + ' :'}</PageSubtitle>
-        <ClusterStatusValue isUp={isUp}>
-          {isUp
-            ? props.intl.messages.cluster_up_and_running
-            : props.intl.messages.down}
+        <ClusterStatusValue
+          isUp={props.clusterStatus.value === CLUSTER_STATUS_UP}
+        >
+          {props.clusterStatus.label}
         </ClusterStatusValue>
       </ClusterStatusTitleContainer>
 
@@ -152,17 +155,39 @@ const ClusterMonitoring = props => {
   );
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, props) => {
   return {
-    alerts: state.app.monitoring.alertList,
-    clusterStatus: state.app.monitoring.clusterStatus
+    alerts: state.app.monitoring.alert.list,
+    clusterStatus: makeClusterStatus(state, props)
   };
+};
+
+const makeClusterStatus = (state, props) => {
+  const cluster = state.app.monitoring.cluster;
+  let label = props.intl.messages.down;
+  let value = CLUSTER_STATUS_DOWN;
+
+  if (
+    cluster.apiServerStatus > 0 &&
+    cluster.kubeSchedulerStatus > 0 &&
+    cluster.kubeControllerManagerStatus > 0
+  ) {
+    value = CLUSTER_STATUS_UP;
+    label = props.intl.messages.cluster_up_and_running;
+  }
+
+  if (cluster.error) {
+    value = CLUSTER_STATUS_DOWN;
+    label = props.intl.messages[cluster.error] || cluster.error;
+  }
+
+  return { value, label };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchAlerts: () => dispatch(fetchAlertsAction()),
-    fetchClusterStatus: () => dispatch(fetchClusterStatusAction())
+    fetchClusterStatus: () => dispatch(fetchClusterStatusAction()),
+    fetchAlerts: () => dispatch(fetchAlertsAction())
   };
 };
 
