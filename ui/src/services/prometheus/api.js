@@ -1,19 +1,15 @@
-import axios from 'axios';
+import ApiClient from '../ApiClient';
 
-export async function getAlerts(api) {
-  try {
-    return await axios.get(api + '/api/v1/alerts');
-  } catch (error) {
-    return { error };
-  }
+let prometheusApiClient = null;
+
+export function initialize(apiUrl) {
+  prometheusApiClient = new ApiClient({ apiUrl });
 }
 
-export async function getClusterStatus(api) {
-  try {
-    const query =
-      'sum(up{job=~"apiserver|kube-scheduler|kube-controller-manager"} == 0)';
-    return await axios.get(api + '/api/v1/query?query=' + query);
-  } catch (error) {
-    return { error };
-  }
+export function getAlerts() {
+  return prometheusApiClient.get('/api/v1/alerts');
+}
+
+export function queryPrometheus(query) {
+  return prometheusApiClient.get('/api/v1/query?query=' + query);
 }
