@@ -11,6 +11,7 @@ environment.
 
 
 import shlex
+import subprocess
 
 import doit  # type: ignore
 
@@ -54,6 +55,12 @@ def task__vagrant_up_noprov() -> types.TaskDict:
 
 def task__vagrant_snapshot() -> types.TaskDict:
     """Snapshot development environment."""
+    def check_snapshot_existence() -> bool:
+        snapshots : bytes = subprocess.check_output([
+            config.ExtCommand.VAGRANT.value, 'snapshot', 'list'
+        ])
+        return config.VAGRANT_SNAPSHOT_NAME in snapshots.decode('utf-8')
+
     vagranthalt = [config.ExtCommand.VAGRANT.value, 'halt', 'bootstrap']
     vagrantsnap = [config.ExtCommand.VAGRANT.value, 'snapshot', 'save',
                    '--force', 'bootstrap', config.VAGRANT_SNAPSHOT_NAME]
@@ -61,7 +68,7 @@ def task__vagrant_snapshot() -> types.TaskDict:
     return {
         'actions': [vagranthalt, vagrantsnap],
         'task_dep': ['_vagrant_up_noprov', 'check_for:vagrant'],
-        'uptodate': [doit.tools.run_once],
+        'uptodate': [check_snapshot_existence],
         'verbosity': 2
     }
 
