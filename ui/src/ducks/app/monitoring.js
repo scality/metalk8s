@@ -1,25 +1,75 @@
-import { put, takeEvery, select, call } from 'redux-saga/effects';
-import { getAlerts, getClusterStatus } from '../../services/prometheus/api';
-
-const FETCH_ALERTS = 'FETCH_ALERTS';
-const SET_ALERTS = 'SET_ALERTS';
+import { put, takeEvery, call, all } from 'redux-saga/effects';
+import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 
 const FETCH_CLUSTER_STATUS = 'FETCH_CLUSTER_STATUS';
-const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';
+export const SET_CLUSTER_STATUS = 'SET_CLUSTER_STATUS';
+
+const FETCH_ALERTS = 'FETCH_ALERTS';
+export const SET_ALERTS = 'SET_ALERTS';
+
+export const CLUSTER_STATUS_UP = 'CLUSTER_STATUS_UP';
+export const CLUSTER_STATUS_DOWN = 'CLUSTER_STATUS_DOWN';
+
+export const SET_PROMETHEUS_API_AVAILABLE = 'SET_PROMETHEUS_API_AVAILABLE';
 
 const defaultState = {
-  alertList: [],
-  clusterStatus: []
+  alert: {
+    list: [],
+    error: null
+  },
+  cluster: {
+    apiServerStatus: 0,
+    kubeSchedulerStatus: 0,
+    kubeControllerManagerStatus: 0,
+    error: null
+  },
+  isPrometheusApiUp: false
 };
 
 export default function(state = defaultState, action = {}) {
   switch (action.type) {
+    case SET_PROMETHEUS_API_AVAILABLE:
+      return { ...state, isPrometheusApiUp: action.payload };
     case SET_ALERTS:
-      return { ...state, alertList: action.payload };
+      return { ...state, alert: action.payload };
     case SET_CLUSTER_STATUS:
-      return { ...state, clusterStatus: action.payload };
+      return {
+        ...state,
+        cluster: action.payload
+      };
     default:
       return state;
+  }
+}
+
+export const fetchClusterStatusAction = () => {
+  return { type: FETCH_CLUSTER_STATUS };
+};
+
+export const setClusterStatusAction = payload => {
+  return { type: SET_CLUSTER_STATUS, payload };
+};
+
+const setPrometheusApiAvailable = payload => {
+  return { type: SET_PROMETHEUS_API_AVAILABLE, payload };
+};
+
+function getClusterQueryStatus(result) {
+  return result &&
+    result.status === 'success' &&
+    result.data.result.length &&
+    result.data.result[0].value.length
+    ? parseInt(result.data.result[0].value[1])
+    : 0;
+}
+
+export function* handleClusterError(clusterHealth, result) {
+  if (result.error.response) {
+    yield put(setPrometheusApiAvailable(true));
+    clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
+  } else {
+    yield put(setPrometheusApiAvailable(false));
+    clusterHealth.error = 'prometheus_unavailable';
   }
 }
 
@@ -31,31 +81,57 @@ export const setAlertsAction = payload => {
   return { type: SET_ALERTS, payload };
 };
 
-export const fetchClusterStatusAction = () => {
-  return { type: FETCH_CLUSTER_STATUS };
-};
+export function* fetchClusterStatus() {
+  const clusterHealth = {
+    apiServerStatus: 0,
+    kubeSchedulerStatus: 0,
+    kubeControllerManagerStatus: 0,
+    error: null
+  };
 
-export const setClusterStatusAction = payload => {
-  return { type: SET_CLUSTER_STATUS, payload };
-};
+  const apiserverQuery = 'sum(up{job="apiserver"})';
+  const kubeSchedulerQuery = 'sum(up{job="kube-scheduler"})';
+  const kubeControllerManagerQuery = 'sum(up{job="kube-controller-manager"})';
 
-export function* fetchAlerts() {
-  const api = yield select(state => state.config.api);
-  const result = yield call(getAlerts, api.url_prometheus);
-  if (!result.error) {
-    yield put(setAlertsAction(result.data.data.alerts));
+  const results = yield all([
+    call(queryPrometheus, apiserverQuery),
+    call(queryPrometheus, kubeSchedulerQuery),
+    call(queryPrometheus, kubeControllerManagerQuery)
+  ]);
+
+  const errorResult = results.find(result => result.error);
+
+  if (!errorResult) {
+    clusterHealth.apiServerStatus = getClusterQueryStatus(results[0]);
+    clusterHealth.kubeSchedulerStatus = getClusterQueryStatus(results[1]);
+    clusterHealth.kubeControllerManagerStatus = getClusterQueryStatus(
+      results[2]
+    );
+    yield put(setPrometheusApiAvailable(true));
+  } else {
+    yield call(handleClusterError, clusterHealth, errorResult);
   }
+
+  yield put(setClusterStatusAction(clusterHealth));
 }
 
-export function* fetchClusterStatus() {
-  const api = yield select(state => state.config.api);
-  const result = yield call(getClusterStatus, api.url_prometheus);
-  if (!result.error) {
-    yield put(setClusterStatusAction(result.data.data.result));
+export function* fetchAlerts() {
+  const resultAlerts = yield call(getAlerts);
+  let alert = {
+    list: [],
+    error: null
+  };
+
+  if (!resultAlerts.error) {
+    yield put(setPrometheusApiAvailable(true));
+    alert.list = resultAlerts.data.alerts;
+  } else {
+    yield call(handleClusterError, alert, resultAlerts);
   }
+  yield put(setAlertsAction(alert));
 }
 
 export function* monitoringSaga() {
-  yield takeEvery(FETCH_ALERTS, fetchAlerts);
   yield takeEvery(FETCH_CLUSTER_STATUS, fetchClusterStatus);
+  yield takeEvery(FETCH_ALERTS, fetchAlerts);
 }

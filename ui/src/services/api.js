@@ -1,17 +1,15 @@
-import axios from 'axios';
+import ApiClient from './ApiClient';
 
-export async function fetchTheme() {
-  try {
-    return await axios.get(process.env.PUBLIC_URL + '/brand/theme.json');
-  } catch (error) {
-    return { error };
-  }
+let apiClient = null;
+
+export function initialize(apiUrl) {
+  apiClient = new ApiClient({ apiUrl });
 }
 
-export async function fetchConfig() {
-  try {
-    return await axios.get(process.env.PUBLIC_URL + '/config.json');
-  } catch (error) {
-    return { error };
-  }
+export function fetchTheme() {
+  return apiClient.get('/brand/theme.json');
+}
+
+export function fetchConfig() {
+  return apiClient.get('/config.json');
 }

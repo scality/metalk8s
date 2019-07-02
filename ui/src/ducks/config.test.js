@@ -3,6 +3,9 @@ import { fetchTheme, SET_THEME, fetchConfig, SET_API_CONFIG } from './config';
 import { fetchUserInfo } from './login';
 
 import * as Api from '../services/api';
+import * as ApiK8s from '../services/k8s/api';
+import * as ApiSalt from '../services/salt/api';
+import * as ApiPrometheus from '../services/prometheus/api';
 
 it('update the theme state when fetchTheme', () => {
   const gen = fetchTheme();
@@ -18,26 +21,36 @@ it('update the theme state when fetchTheme', () => {
   };
 
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_THEME, payload: result.data })
+    put({ type: SET_THEME, payload: result })
   );
 });
 
 it('update the config state when fetchConfig', () => {
   const gen = fetchConfig();
 
+  expect(gen.next().value).toEqual(call(Api.initialize, ''));
   expect(gen.next().value).toEqual(call(Api.fetchConfig));
 
   const result = {
-    data: {
-      url: 'https://localhost:3333'
-    }
+    url: 'https://172.21.254.14:6443',
+    url_salt: 'http://172.21.254.13:4507',
+    url_prometheus: 'http://172.21.254.46:30222'
   };
 
   expect(gen.next(result).value).toEqual(call(fetchTheme));
 
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_API_CONFIG, payload: result.data })
+    put({ type: SET_API_CONFIG, payload: result })
   );
 
+  expect(gen.next(result).value).toEqual(
+    call(ApiK8s.initialize, 'https://172.21.254.14:6443')
+  );
+  expect(gen.next(result).value).toEqual(
+    call(ApiSalt.initialize, 'http://172.21.254.13:4507')
+  );
+  expect(gen.next(result).value).toEqual(
+    call(ApiPrometheus.initialize, 'http://172.21.254.46:30222')
+  );
   expect(gen.next().value).toEqual(call(fetchUserInfo));
 });
