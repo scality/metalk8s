@@ -30,6 +30,11 @@ kubeadm_preflight:
       - coreutils             # provides touch
 
 repo:
+  config:
+    directory: '/var/lib/metalk8s/repositories/conf.d'
+    default: 'default.conf'
+    registry: '90-registry-config.inc'
+    common_registry: '99-registry-common.inc'
   local_mode: false
   relative_path: packages     # relative to ISO root (configured in pillar)
   port: 8080

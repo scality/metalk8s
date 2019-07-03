@@ -6,59 +6,8 @@
 
 {%- set products = salt.metalk8s.get_products() %}
 
-{%- set nginx_confd  = '/var/lib/metalk8s/repositories/conf.d/' %}
-{%- set nginx_default_conf = nginx_confd ~ 'default.conf' %}
-{%- set nginx_common_conf = nginx_confd ~ '99-registry-common.inc' %}
-{%- set nginx_registry        = '99-' ~ saltenv ~ '-registry.inc' %}
-{%- set nginx_registry_config = '90-' ~ saltenv ~ '-registry-config.inc' %}
-{%- set nginx_registry_path        = nginx_confd ~ nginx_registry %}
-{%- set nginx_registry_config_path = nginx_confd ~ nginx_registry_config %}
-
-Generate repositories nginx configuration:
-  file.managed:
-    - name: {{ nginx_default_conf }}
-    - source: salt://{{ slspath }}/files/nginx.conf.j2
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: '0644'
-    - makedirs: true
-    - backup: false
-    - defaults:
-        listening_port: {{ repo.port }}
-
-Deploy common container registry nginx configuration:
-  file.managed:
-    - name: {{ nginx_common_conf}}
-    - source: salt://{{ slspath }}/files/metalk8s-registry-common.inc
-    - user: root
-    - group: root
-    - mode: '0644'
-    - makedirs: true
-    - backup: false
-
-Deploy container registry nginx configuration:
-  file.managed:
-    - name: {{ nginx_registry_path }}
-    - source: salt://{{ slspath }}/files/metalk8s-registry.inc
-    - user: root
-    - group: root
-    - mode: '0644'
-    - makedirs: true
-    - backup: false
-
-Generate container registry configuration:
-  file.managed:
-    - name: {{ nginx_registry_config_path }}
-    - source: salt://{{ slspath }}/files/metalk8s-registry-config.inc.j2
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: '0644'
-    - makedirs: true
-    - backup: false
-    - defaults:
-        products: {{ products }}
+include:
+  - .configured
 
 Inject nginx image:
   containerd.image_managed:
@@ -70,9 +19,16 @@ Install repositories manifest:
     - name: /etc/kubernetes/manifests/repositories.yaml
     - source: salt://{{ slspath }}/files/repositories-manifest.yaml.j2
     - config_files:
-      - {{ nginx_default_conf }}
-      - {{ nginx_registry_path }}
-      - {{ nginx_registry_config_path }}
+      - {{ salt.file.join(repo.config.directory, repo.config.default) }}
+      - {{ salt.file.join(repo.config.directory, repo.config.registry) }}
+      - {{ salt.file.join(repo.config.directory, repo.config.common_registry) }}
+      - {{ salt.file.join(repo.config.directory, '99-' ~ saltenv ~ '-registry.inc') }}
+    - config_files_opt:
+    {%- for env in products.keys() %}
+      {%- if env != saltenv %}
+      - {{ salt.file.join(repo.config.directory, '99-' ~ env ~ '-registry.inc') }}
+      {%- endif %}
+    {%- endfor %}
     - context:
         container_port: {{ repo.port }}
         image: docker.io/library/nginx:1.15.8
@@ -81,7 +37,7 @@ Install repositories manifest:
         products: {{ products }}
         package_path: /{{ repo.relative_path }}
         image_path: '/images/'
-        nginx_confd_path: {{ nginx_confd }}
+        nginx_confd_path: {{ repo.config.directory }}
     - require:
       - containerd: Inject nginx image
       - file: Generate repositories nginx configuration
