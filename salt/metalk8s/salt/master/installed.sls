@@ -19,27 +19,6 @@ Create salt master directories:
       - /var/cache/salt
       - /var/run/salt
 
-{%- if salt.pkg.version('kubelet').startswith('1.11.') %}
-{#- PodShareProcessNamespace disabled by default in 1.11, enable alpha mode
-    until upgrade of kubelet #}
-
-Enable kubelet feature gate PodShareProcessNamespace:
-  file.serialize:
-    - name: "/var/lib/kubelet/config.yaml"
-    - formatter: yaml
-    - merge_if_exists: True
-    - dataset:
-        featureGates:
-          PodShareProcessNamespace: true
-  service.running:
-    - name: kubelet
-    - watch:
-      - file: Enable kubelet feature gate PodShareProcessNamespace
-    - require_in:
-      - metalk8s: Install and start salt master manifest
-
-{%- endif %}
-
 Install and start salt master manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/salt-master.yaml
