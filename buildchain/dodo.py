@@ -5,6 +5,7 @@
 
 """Build entry point."""
 
+import sys
 
 import doit  # type: ignore
 
@@ -44,3 +45,12 @@ DOIT_CONFIG = {
     'cleandep': True,
     'cleanforget': True,
 }
+
+# Because some code (in `doit` or even below) seems to be using a dangerous mix
+# of threads and fork, the workers processes are killed by macOS (search for
+# OBJC_DISABLE_INITIALIZE_FORK_SAFETY for the details).
+#
+# Until the guilty code is properly fixed (if ever), let's force the use of
+# threads instead of forks on macOS to sidestep the issue.
+if sys.platform == 'darwin':
+    DOIT_CONFIG['par_type'] = 'thread'
