@@ -117,14 +117,16 @@ const ClusterMonitoring = props => {
     }
   ];
 
-  const alerts = props.alerts.map(alert => {
-    return {
-      name: alert.labels.alertname,
-      severity: alert.labels.severity,
-      message: alert.annotations.message,
-      activeAt: alert.activeAt
-    };
-  });
+  const alerts = props.alerts
+    .filter(alert => alert.state !== 'pending')
+    .map(alert => {
+      return {
+        name: alert.labels.alertname,
+        severity: alert.labels.severity,
+        message: alert.annotations.message,
+        activeAt: alert.activeAt
+      };
+    });
 
   const sortedAlerts = sortAlerts(alerts, sortBy, sortDirection);
 
