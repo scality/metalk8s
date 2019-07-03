@@ -6,6 +6,7 @@ resource "openstack_compute_instance_v2" "bastion" {
 
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
+    openstack_networking_secgroup_v2.bastion.name,
   ]
 
   dynamic "network" {
