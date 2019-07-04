@@ -22,6 +22,7 @@ Welcome to MetalK8s's documentation!
    quickstart/index
    installation-guide/index
    developer/index
+   operation/index
    glossary
 
 
