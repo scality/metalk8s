@@ -55,13 +55,6 @@ repo:
       repo_gpg_check: 0
       enabled: 0
 
-    metalk8s-external:
-      humanname: Scality - External resources
-      gpgcheck: 0
-      gpgkeys: []
-      repo_gpg_check: 0
-      enabled: 0
-
     metalk8s-extras:
       humanname: CentOS - Extras
       gpgcheck: 1
@@ -108,7 +101,7 @@ repo:
       repository: metalk8s-scality
     container-selinux:
       version: latest
-      repository: metalk8s-external
+      repository: metalk8s-extras
     containerd:
       version: latest
       repository: metalk8s-epel
