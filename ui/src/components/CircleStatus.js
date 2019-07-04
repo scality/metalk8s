@@ -1,10 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const STATUS_WARNING = 'warning';
-const STATUS_CRITICAL = 'critical';
-const STATUS_SUCCESS = 'success';
-const STATUS_NONE = 'none';
+import {
+  STATUS_WARNING,
+  STATUS_CRITICAL,
+  STATUS_SUCCESS,
+  STATUS_NONE
+} from './constants';
 
 const Circle = styled.i`
   color: ${props => {

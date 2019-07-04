@@ -15,6 +15,7 @@ import {
   CLUSTER_STATUS_UP,
   CLUSTER_STATUS_DOWN
 } from '../ducks/app/monitoring';
+import { STATUS_CRITICAL, STATUS_SUCCESS } from '../components/constants';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -145,7 +146,7 @@ const ClusterMonitoring = props => {
     });
 
   const checkControlPlaneStatus = jobCount =>
-    jobCount > 0 ? 'success' : 'critical';
+    jobCount > 0 ? STATUS_SUCCESS : STATUS_CRITICAL;
 
   const apiServerStatus = checkControlPlaneStatus(
     props.cluster.apiServerStatus
