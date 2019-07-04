@@ -28,7 +28,7 @@ Create CNI calico configuration file:
     - formatter: json
     - dataset:
         name: k8s-pod-network
-        cniVersion: "0.3.0"
+        cniVersion: "0.3.1"
         plugins:
           - type: "calico"
             log_level: "info"
