@@ -89,7 +89,6 @@ download_packages() {
     local -r releasever=${RELEASEVER:-7}
     local -r basearch=${BASEARCH:-x86_64}
     local -r repo_cache_root=/install_root/var/cache/yum/$basearch/$releasever
-    local -r external_repo=$repo_cache_root/external/packages
     local -a packages=("$@")
     local -a yum_opts=(
         "--assumeyes"
@@ -102,17 +101,6 @@ download_packages() {
 
     yum groups install "${yum_opts[@]}" base core
     yum install "${yum_opts[@]}" "${packages[@]}"
-
-    local package_name
-
-    # Fetch packages from an URL and store them in the "external" repository.
-    mkdir -p "$external_repo"
-    for package in "${packages[@]}"; do
-        if [[ $package =~ ^(https?)|(ftp):// ]]; then
-            package_name=${package##*/}
-            curl -s "$package" --output "$external_repo/$package_name" --retry 3
-        fi
-    done
 
     chown -R "$TARGET_UID:$TARGET_GID" "/install_root/var"
 
