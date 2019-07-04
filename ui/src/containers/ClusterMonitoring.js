@@ -6,14 +6,16 @@ import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
 import { Table } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
+import Tooltip from '../components/Tooltip';
 import {
   refreshClusterStatusAction,
   refreshAlertsAction,
   CLUSTER_STATUS_UP,
   CLUSTER_STATUS_DOWN
 } from '../ducks/app/monitoring';
+import { STATUS_CRITICAL, STATUS_SUCCESS } from '../components/constants';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -47,10 +49,23 @@ const ClusterStatusTitleContainer = styled.div`
 `;
 
 const ClusterStatusValue = styled.span`
-  margin-left: ${padding.small};
+  margin: 0 ${padding.small};
   font-weight: bold;
   color: ${props =>
     props.isUp ? props.theme.brand.success : props.theme.brand.danger};
+`;
+
+const QuestionMarkIcon = styled.i`
+  color: ${props => props.theme.brand.primary};
+`;
+
+const TooltipContent = styled.div`
+  color: ${props => props.theme.brand.secondary};
+  font-weight: ${fontWeight.bold};
+`;
+
+const ControlPlaneStatusLabel = styled.span`
+  margin-left: ${padding.smaller};
 `;
 
 const ClusterMonitoring = props => {
@@ -134,6 +149,19 @@ const ClusterMonitoring = props => {
       };
     });
 
+  const checkControlPlaneStatus = jobCount =>
+    jobCount > 0 ? STATUS_SUCCESS : STATUS_CRITICAL;
+
+  const apiServerStatus = checkControlPlaneStatus(
+    props.cluster.apiServerStatus
+  );
+  const kubeSchedulerStatus = checkControlPlaneStatus(
+    props.cluster.kubeSchedulerStatus
+  );
+  const kubeControllerManagerStatus = checkControlPlaneStatus(
+    props.cluster.kubeControllerManagerStatus
+  );
+
   const sortedAlerts = sortAlerts(alerts, sortBy, sortDirection);
 
   return (
@@ -145,6 +173,33 @@ const ClusterMonitoring = props => {
         >
           {props.clusterStatus.label}
         </ClusterStatusValue>
+        <Tooltip
+          placement="right"
+          overlay={
+            <TooltipContent>
+              <div>
+                <CircleStatus status={apiServerStatus} />
+                <ControlPlaneStatusLabel>
+                  {props.intl.messages.api_server}
+                </ControlPlaneStatusLabel>
+              </div>
+              <div>
+                <CircleStatus status={kubeSchedulerStatus} />
+                <ControlPlaneStatusLabel>
+                  {props.intl.messages.kube_scheduler}
+                </ControlPlaneStatusLabel>
+              </div>
+              <div>
+                <CircleStatus status={kubeControllerManagerStatus} />
+                <ControlPlaneStatusLabel>
+                  {props.intl.messages.kube_controller_manager}
+                </ControlPlaneStatusLabel>
+              </div>
+            </TooltipContent>
+          }
+        >
+          <QuestionMarkIcon className="fas fa-question-circle" />
+        </Tooltip>
         {props.clusterStatus.isLoading ? <LoaderCoreUI size="small" /> : null}
       </ClusterStatusTitleContainer>
 
@@ -170,7 +225,8 @@ const ClusterMonitoring = props => {
 const mapStateToProps = (state, props) => {
   return {
     alerts: state.app.monitoring.alert,
-    clusterStatus: makeClusterStatus(state, props)
+    clusterStatus: makeClusterStatus(state, props),
+    cluster: state.app.monitoring.cluster
   };
 };
 
