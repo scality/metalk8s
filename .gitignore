@@ -10,3 +10,4 @@ buildchain/.venv/
 .doit.db
 
 *.pyc
+*.log
