@@ -185,12 +185,6 @@ REPOSITORIES : Tuple[targets.Repository, ...] = (
     ),
     targets.Repository(
         basename='_build_repositories',
-        name='external',
-        builder=BUILDER,
-        task_dep=['_download_packages'],
-    ),
-    targets.Repository(
-        basename='_build_repositories',
         name='extras',
         builder=BUILDER,
         task_dep=['_download_packages'],

@@ -56,7 +56,6 @@ SALT_CALL=${SALT_CALL:-salt-call}
 declare -A GPGCHECK_REPOSITORIES=(
     [metalk8s-base]=1
     [metalk8s-epel]=1
-    [metalk8s-external]=0
     [metalk8s-extras]=1
     [metalk8s-updates]=1
     [metalk8s-kubernetes]=1
