@@ -4,13 +4,13 @@ import memoizeOne from 'memoize-one';
 import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
-
+import { Loader as LoaderCoreUI } from '@scality/core-ui';
 import { Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
 import {
-  fetchClusterStatusAction,
-  fetchAlertsAction,
+  refreshClusterStatusAction,
+  refreshAlertsAction,
   CLUSTER_STATUS_UP,
   CLUSTER_STATUS_DOWN
 } from '../ducks/app/monitoring';
@@ -21,6 +21,10 @@ const PageContainer = styled.div`
   flex-direction: column;
   height: 100%;
   padding: ${padding.larger};
+
+  .sc-loader {
+    padding: 0 ${padding.smaller};
+  }
 `;
 
 const TableContainer = styled.div`
@@ -33,6 +37,8 @@ const TableContainer = styled.div`
 
 const PageSubtitle = styled.h3`
   margin: ${padding.small} 0;
+  display: flex;
+  align-items: center;
 `;
 
 const ClusterStatusTitleContainer = styled.div`
@@ -49,11 +55,11 @@ const ClusterStatusValue = styled.span`
 
 const ClusterMonitoring = props => {
   useEffect(() => {
-    props.fetchAlerts();
+    props.refreshAlerts();
   }, []);
 
   useEffect(() => {
-    props.fetchClusterStatus();
+    props.refreshClusterStatus();
   }, []);
 
   const [sortBy, setSortBy] = useState('name');
@@ -117,7 +123,7 @@ const ClusterMonitoring = props => {
     }
   ];
 
-  const alerts = props.alerts
+  const alerts = props.alerts.list
     .filter(alert => alert.state !== 'pending')
     .map(alert => {
       return {
@@ -139,9 +145,13 @@ const ClusterMonitoring = props => {
         >
           {props.clusterStatus.label}
         </ClusterStatusValue>
+        {props.clusterStatus.isLoading ? <LoaderCoreUI size="small" /> : null}
       </ClusterStatusTitleContainer>
 
-      <PageSubtitle>{props.intl.messages.alerts}</PageSubtitle>
+      <PageSubtitle>
+        {props.intl.messages.alerts}
+        {props.alerts.isLoading ? <LoaderCoreUI size="small" /> : null}
+      </PageSubtitle>
       <TableContainer>
         <Table
           list={sortedAlerts}
@@ -159,7 +169,7 @@ const ClusterMonitoring = props => {
 
 const mapStateToProps = (state, props) => {
   return {
-    alerts: state.app.monitoring.alert.list,
+    alerts: state.app.monitoring.alert,
     clusterStatus: makeClusterStatus(state, props)
   };
 };
@@ -183,13 +193,13 @@ const makeClusterStatus = (state, props) => {
     label = props.intl.messages[cluster.error] || cluster.error;
   }
 
-  return { value, label };
+  return { value, label, isLoading: cluster.isLoading };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchClusterStatus: () => dispatch(fetchClusterStatusAction()),
-    fetchAlerts: () => dispatch(fetchAlertsAction())
+    refreshClusterStatus: () => dispatch(refreshClusterStatusAction()),
+    refreshAlerts: () => dispatch(refreshAlertsAction())
   };
 };
 
