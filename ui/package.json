@@ -11,6 +11,7 @@
     "lodash": "4.17.11",
     "memoize-one": "^4.0.2",
     "polished": "3.4.1",
+    "rc-tooltip": "^3.7.3",
     "react": "^16.8.1",
     "react-debounce-input": "3.2.0",
     "react-dom": "^16.8.1",
