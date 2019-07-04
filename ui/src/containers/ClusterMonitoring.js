@@ -64,6 +64,10 @@ const TooltipContent = styled.div`
   font-weight: ${fontWeight.bold};
 `;
 
+const ControlPlaneStatusLabel = styled.span`
+  margin-left: ${padding.smaller};
+`;
+
 const ClusterMonitoring = props => {
   useEffect(() => {
     props.refreshAlerts();
@@ -174,16 +178,22 @@ const ClusterMonitoring = props => {
           overlay={
             <TooltipContent>
               <div>
-                <CircleStatus status={apiServerStatus} />{' '}
-                {props.intl.messages.api_server}
+                <CircleStatus status={apiServerStatus} />
+                <ControlPlaneStatusLabel>
+                  {props.intl.messages.api_server}
+                </ControlPlaneStatusLabel>
               </div>
               <div>
-                <CircleStatus status={kubeSchedulerStatus} />{' '}
-                {props.intl.messages.kube_scheduler}
+                <CircleStatus status={kubeSchedulerStatus} />
+                <ControlPlaneStatusLabel>
+                  {props.intl.messages.kube_scheduler}
+                </ControlPlaneStatusLabel>
               </div>
               <div>
-                <CircleStatus status={kubeControllerManagerStatus} />{' '}
-                {props.intl.messages.kube_controller_manager}
+                <CircleStatus status={kubeControllerManagerStatus} />
+                <ControlPlaneStatusLabel>
+                  {props.intl.messages.kube_controller_manager}
+                </ControlPlaneStatusLabel>
               </div>
             </TooltipContent>
           }
@@ -214,14 +224,9 @@ const ClusterMonitoring = props => {
 
 const mapStateToProps = (state, props) => {
   return {
-<<<<<<< HEAD
     alerts: state.app.monitoring.alert,
-    clusterStatus: makeClusterStatus(state, props)
-=======
-    alerts: state.app.monitoring.alert.list,
     clusterStatus: makeClusterStatus(state, props),
     cluster: state.app.monitoring.cluster
->>>>>>> Add Cluster Status help tips
   };
 };
 
