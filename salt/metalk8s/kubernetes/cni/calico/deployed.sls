@@ -32,7 +32,7 @@ data:
   #cni_network_config: |-
   #  {
   #    "name": "k8s-pod-network",
-  #    "cniVersion": "0.3.0",
+  #    "cniVersion": "0.3.1",
   #    "plugins": [
   #      {
   #        "type": "calico",
@@ -272,7 +272,7 @@ spec:
 # Include a clusterrole for the kube-controllers component,
 # and bind it to the calico-kube-controllers serviceaccount.
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
 rules:
@@ -317,7 +317,7 @@ rules:
       - update
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-kube-controllers
 roleRef:
@@ -332,7 +332,7 @@ subjects:
 # Include a clusterrole for the calico-node DaemonSet,
 # and bind it to the calico-node serviceaccount.
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-node
 rules:
@@ -461,7 +461,7 @@ rules:
     verbs:
       - get
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: calico-node
@@ -479,14 +479,12 @@ subjects:
   kind: Group
   name: metalk8s:calico-node
 ---
-
----
 # Source: calico/templates/calico-node.yaml
 # This manifest installs the calico-node container, as well
 # as the CNI plugins and network config on
 # each master and worker node in a Kubernetes cluster.
 kind: DaemonSet
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 metadata:
   name: calico-node
   namespace: kube-system
@@ -527,12 +525,13 @@ spec:
       # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
+      priorityClassName: system-node-critical
       initContainers:
         # This container performs upgrade from host-local IPAM to calico-ipam.
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         #- name: upgrade-ipam
-        #  image: calico/cni:v3.7.2
+        #  image: calico/cni:v3.8.0
         #  command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
         #  env:
         #    - name: KUBERNETES_NODE_NAME
@@ -553,7 +552,7 @@ spec:
         # and CNI network config file on each node.
         # Note: In MetalK8s, we handle this in the Calico state
         #- name: install-cni
-        #  image: calico/cni:v3.7.2
+        #  image: calico/cni:v3.8.0
         #  command: ["/install-cni.sh"]
         #  env:
         #    # Name of the CNI config file to create.
@@ -584,12 +583,20 @@ spec:
         #      name: cni-bin-dir
         #    - mountPath: /host/etc/cni/net.d
         #      name: cni-net-dir
+        # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
+        # to communicate with Felix over the Policy Sync API.
+        # Note: In MetalK8s, we have no support for Dikastes (yet).
+        #- name: flexvol-driver
+        #  image: calico/pod2daemon-flexvol:v3.8.0
+        #  volumeMounts:
+        #  - name: flexvol-driver-host
+        #    mountPath: /host/driver
       containers:
         # Runs calico-node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: {{ build_image_name('calico-node', '3.7.2') }}
+          image: {{ build_image_name('calico-node', '3.8.0') }}
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -677,6 +684,9 @@ spec:
             - mountPath: /var/lib/calico
               name: var-lib-calico
               readOnly: false
+            # Note: Not used in MetalK8s
+            #- name: policysync
+            #  mountPath: /var/run/nodeagent
       volumes:
         # Used by calico-node.
         - name: lib-modules
@@ -706,6 +716,18 @@ spec:
         - name: host-local-net-dir
           hostPath:
             path: /var/lib/cni/networks
+        # Used to create per-pod Unix Domain Sockets
+        # Note: Not used in MetalK8s
+        #- name: policysync
+        #  hostPath:
+        #    type: DirectoryOrCreate
+        #    path: /var/run/nodeagent
+        # Used to install Flex Volume Driver
+        # Note: Not used in MetalK8s
+        #- name: flexvol-driver-host
+        #  hostPath:
+        #    type: DirectoryOrCreate
+        #    path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/nodeagent~uds
 ---
 
 apiVersion: v1
@@ -716,19 +738,21 @@ metadata:
 
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
+
 # See https://github.com/projectcalico/kube-controllers
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: calico-kube-controllers
   namespace: kube-system
   labels:
     k8s-app: calico-kube-controllers
-  annotations:
-    scheduler.alpha.kubernetes.io/critical-pod: ''
 spec:
-  # The controller can only have a single active instance.
+  # The controllers can only have a single active instance.
   replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: calico-kube-controllers
   strategy:
     type: Recreate
   template:
@@ -737,6 +761,8 @@ spec:
       namespace: kube-system
       labels:
         k8s-app: calico-kube-controllers
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       nodeSelector:
         beta.kubernetes.io/os: linux
@@ -751,9 +777,10 @@ spec:
         - key: node-role.kubernetes.io/infra
           effect: NoSchedule
       serviceAccountName: calico-kube-controllers
+      priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: {{ build_image_name('calico-kube-controllers', '3.7.2') }}
+          image: {{ build_image_name('calico-kube-controllers', '3.8.0') }}
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS
