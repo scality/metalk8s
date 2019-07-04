@@ -56,5 +56,8 @@
   "alerts": "Alertes",
   "node_creation": "Création du node",
   "node_creation_success": "Le node {name} a été créé avec succèss",
-  "node_creation_failed": "La création du node {name} a échoué."
+  "node_creation_failed": "La création du node {name} a échoué.",
+  "api_server": "API",
+  "kube_scheduler": "Ordonnanceur",
+  "kube_controller_manager": "Contrôleur"
 }
