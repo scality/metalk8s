@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 const STATUS_WARNING = 'warning';
 const STATUS_CRITICAL = 'critical';
+const STATUS_SUCCESS = 'success';
 const STATUS_NONE = 'none';
 
 const Circle = styled.i`
@@ -11,6 +12,9 @@ const Circle = styled.i`
     let color = theme.base;
 
     switch (props.status) {
+      case STATUS_SUCCESS:
+        color = theme.success;
+        break;
       case STATUS_WARNING:
         color = theme.warning;
         break;
