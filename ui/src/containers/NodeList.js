@@ -9,6 +9,7 @@ import { Table, Button, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
+import { REFRESH_TIMEOUT } from '../constants';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -125,7 +126,7 @@ class NodeList extends React.Component {
 
   componentDidMount() {
     this.props.fetchNodes();
-    this.interval = setInterval(() => this.props.fetchNodes(), 10000);
+    this.interval = setInterval(() => this.props.fetchNodes(), REFRESH_TIMEOUT);
   }
 
   componentWillUnmount() {
