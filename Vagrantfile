@@ -195,25 +195,41 @@ Vagrant.configure("2") do |config|
       inline: BOOTSTRAP
   end
 
-  (1..9).each do |i|
-    node_name = "node#{i}"
+  os_data = {
+    centos: {
+      name: 'centos/7',
+      version: '1811.02'
+    },
+    ubuntu: {
+      name: 'ubuntu/bionic64',
+      version: '20190514.0.0'
+    }
+  }
 
-    config.vm.define node_name, autostart: false do |node|
-      node.vm.hostname = node_name
+  os_data.each do |os, os_data|
+    (1..5).each do |i|
+      node_name = "#{os}#{i}"
+      config.vm.define node_name, autostart: false do |node|
 
-      node.vm.synced_folder ".", "/vagrant", disabled: true
+        node.vm.box = os_data[:name]
+        node.vm.box_version = os_data[:version]
 
-      # No need for Guest Additions since there is no synced folder
-      node.vbguest.auto_update = false
+        node.vm.hostname = node_name
 
-      node.vm.provision "copy-ssh-public-key",
-        type: "file",
-        source: ".vagrant/#{PRESHARED_SSH_KEY_NAME}.pub",
-        destination: ".ssh/#{PRESHARED_SSH_KEY_NAME}.pub"
+        node.vm.synced_folder ".", "/vagrant", disabled: true
 
-      node.vm.provision "add-ssh-public-key-to-authorized-keys",
-        type: "shell",
-        inline: DEPLOY_SSH_PUBLIC_KEY
+        # No need for Guest Additions since there is no synced folder
+        node.vbguest.auto_update = false
+
+        node.vm.provision "copy-ssh-public-key",
+          type: "file",
+          source: ".vagrant/#{PRESHARED_SSH_KEY_NAME}.pub",
+          destination: ".ssh/#{PRESHARED_SSH_KEY_NAME}.pub"
+
+        node.vm.provision "add-ssh-public-key-to-authorized-keys",
+          type: "shell",
+          inline: DEPLOY_SSH_PUBLIC_KEY
+      end
     end
   end
 end
