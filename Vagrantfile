@@ -206,6 +206,11 @@ Vagrant.configure("2") do |config|
     }
   }
 
+  INSTALL_PYTHON = <<-SCRIPT
+  #!/bin/bash
+  apt install python -y
+  SCRIPT
+
   os_data.each do |os, os_data|
     (1..5).each do |i|
       node_name = "#{os}#{i}"
@@ -229,6 +234,12 @@ Vagrant.configure("2") do |config|
         node.vm.provision "add-ssh-public-key-to-authorized-keys",
           type: "shell",
           inline: DEPLOY_SSH_PUBLIC_KEY
+
+        if os == "ubuntu"
+          node.vm.provision "install-python",
+            type: "shell",
+            inline: INSTALL_PYTHON
+        end
       end
     end
   end
