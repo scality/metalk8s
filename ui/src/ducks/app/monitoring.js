@@ -1,11 +1,13 @@
-import { put, takeEvery, call, all, delay } from 'redux-saga/effects';
+import { put, takeEvery, call, all, delay, select } from 'redux-saga/effects';
 import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 import { REFRESH_TIMEOUT } from '../../constants';
 
 const REFRESH_CLUSTER_STATUS = 'REFRESH_CLUSTER_STATUS';
+const STOP_REFRESH_CLUSTER_STATUS = 'STOP_REFRESH_CLUSTER_STATUS';
 export const UPDATE_CLUSTER_STATUS = 'UPDATE_CLUSTER_STATUS';
 
 const REFRESH_ALERTS = 'REFRESH_ALERTS';
+const STOP_REFRESH_ALERTS = 'STOP_REFRESH_ALERTS';
 export const UPDATE_ALERTS = 'UPDATE_ALERTS';
 
 export const CLUSTER_STATUS_UP = 'CLUSTER_STATUS_UP';
@@ -17,14 +19,16 @@ const defaultState = {
   alert: {
     list: [],
     error: null,
-    isLoading: false
+    isLoading: false,
+    isRefreshing: false
   },
   cluster: {
     apiServerStatus: 0,
     kubeSchedulerStatus: 0,
     kubeControllerManagerStatus: 0,
     error: null,
-    isLoading: false
+    isLoading: false,
+    isRefreshing: false
   },
   isPrometheusApiUp: false
 };
@@ -49,12 +53,28 @@ export const refreshClusterStatusAction = () => {
   return { type: REFRESH_CLUSTER_STATUS };
 };
 
+export const stopRefreshClusterStatusAction = () => {
+  return { type: STOP_REFRESH_CLUSTER_STATUS };
+};
+
 export const updateClusterStatusAction = payload => {
   return { type: UPDATE_CLUSTER_STATUS, payload };
 };
 
 const setPrometheusApiAvailable = payload => {
   return { type: SET_PROMETHEUS_API_AVAILABLE, payload };
+};
+
+export const refreshAlertsAction = () => {
+  return { type: REFRESH_ALERTS };
+};
+
+export const stopRefreshAlertsAction = () => {
+  return { type: STOP_REFRESH_ALERTS };
+};
+
+export const updateAlertsAction = payload => {
+  return { type: UPDATE_ALERTS, payload };
 };
 
 function getClusterQueryStatus(result) {
@@ -75,14 +95,6 @@ export function* handleClusterError(clusterHealth, result) {
     clusterHealth.error = 'prometheus_unavailable';
   }
 }
-
-export const refreshAlertsAction = () => {
-  return { type: REFRESH_ALERTS };
-};
-
-export const updateAlertsAction = payload => {
-  return { type: UPDATE_ALERTS, payload };
-};
 
 export function* fetchClusterStatus() {
   yield put(updateClusterStatusAction({ isLoading: true }));
@@ -142,22 +154,44 @@ export function* fetchAlerts() {
 }
 
 export function* refreshAlerts() {
+  yield put(updateAlertsAction({ isRefreshing: true }));
   const resultAlerts = yield call(fetchAlerts);
   if (!resultAlerts.error) {
     yield delay(REFRESH_TIMEOUT);
-    yield call(refreshAlerts);
+    const isRefreshing = yield select(
+      state => state.app.monitoring.alert.isRefreshing
+    );
+    if (isRefreshing) {
+      yield call(refreshAlerts);
+    }
   }
 }
 
+export function* stopRefreshAlerts() {
+  yield put(updateAlertsAction({ isRefreshing: false }));
+}
+
 export function* refreshClusterStatus() {
+  yield put(updateClusterStatusAction({ isRefreshing: true }));
   const errorResult = yield call(fetchClusterStatus);
   if (!errorResult) {
     yield delay(REFRESH_TIMEOUT);
-    yield call(refreshClusterStatus);
+    const isRefreshing = yield select(
+      state => state.app.monitoring.cluster.isRefreshing
+    );
+    if (isRefreshing) {
+      yield call(refreshClusterStatus);
+    }
   }
+}
+
+export function* stopRefreshClusterStatus() {
+  yield put(updateClusterStatusAction({ isRefreshing: false }));
 }
 
 export function* monitoringSaga() {
   yield takeEvery(REFRESH_CLUSTER_STATUS, refreshClusterStatus);
   yield takeEvery(REFRESH_ALERTS, refreshAlerts);
+  yield takeEvery(STOP_REFRESH_ALERTS, stopRefreshAlerts);
+  yield takeEvery(STOP_REFRESH_CLUSTER_STATUS, stopRefreshClusterStatus);
 }

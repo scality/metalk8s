@@ -12,6 +12,8 @@ import Tooltip from '../components/Tooltip';
 import {
   refreshClusterStatusAction,
   refreshAlertsAction,
+  stopRefreshAlertsAction,
+  stopRefreshClusterStatusAction,
   CLUSTER_STATUS_UP,
   CLUSTER_STATUS_DOWN
 } from '../ducks/app/monitoring';
@@ -71,10 +73,12 @@ const ControlPlaneStatusLabel = styled.span`
 const ClusterMonitoring = props => {
   useEffect(() => {
     props.refreshAlerts();
+    return () => props.stopRefreshAlerts();
   }, []);
 
   useEffect(() => {
     props.refreshClusterStatus();
+    return () => props.stopRefreshClusterStatus();
   }, []);
 
   const [sortBy, setSortBy] = useState('name');
@@ -255,7 +259,9 @@ const makeClusterStatus = (state, props) => {
 const mapDispatchToProps = dispatch => {
   return {
     refreshClusterStatus: () => dispatch(refreshClusterStatusAction()),
-    refreshAlerts: () => dispatch(refreshAlertsAction())
+    refreshAlerts: () => dispatch(refreshAlertsAction()),
+    stopRefreshAlerts: () => dispatch(stopRefreshAlertsAction()),
+    stopRefreshClusterStatus: () => dispatch(stopRefreshClusterStatusAction())
   };
 };
 
