@@ -320,6 +320,23 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
             ]
         )
     ),
+    targets.LocalImage(
+        name='metalk8s-utils',
+        version=constants.VERSION,
+        dockerfile=constants.ROOT/'images'/'metalk8s-utils'/'Dockerfile',
+        destination=constants.ISO_IMAGE_ROOT,
+        save_on_disk=True,
+        build_args={
+            'BASE_IMAGE': constants.CENTOS_BASE_IMAGE,
+            'BASE_IMAGE_SHA256': constants.CENTOS_BASE_IMAGE_SHA256,
+            'BUILD_DATE': datetime.datetime.now(datetime.timezone.utc)
+                            .astimezone()
+                            .isoformat(),
+            'VCS_REF': constants.GIT_REF or '<unknown>',
+            'METALK8S_VERSION': constants.VERSION,
+        },
+        task_dep=['_image_mkdir_root'],
+    ),
 )
 
 
