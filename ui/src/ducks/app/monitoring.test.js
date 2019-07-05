@@ -393,26 +393,80 @@ it('should handleClusterError when prometheus is down', () => {
 
 it('should refresh Alerts if no error', () => {
   const gen = refreshAlerts();
+  expect(gen.next().value).toEqual(
+    put({
+      type: UPDATE_ALERTS,
+      payload: { isRefreshing: true }
+    })
+  );
   expect(gen.next().value).toEqual(call(fetchAlerts));
   expect(gen.next({}).value).toEqual(delay(REFRESH_TIMEOUT));
-  expect(gen.next().value).toEqual(call(refreshAlerts));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(true).value).toEqual(call(refreshAlerts));
+});
+
+it('should stop refresh Alerts', () => {
+  const gen = refreshAlerts();
+  expect(gen.next().value).toEqual(
+    put({
+      type: UPDATE_ALERTS,
+      payload: { isRefreshing: true }
+    })
+  );
+  expect(gen.next().value).toEqual(call(fetchAlerts));
+  expect(gen.next({}).value).toEqual(delay(REFRESH_TIMEOUT));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(false).done).toEqual(true);
 });
 
 it('should not refresh Alerts if error', () => {
   const gen = refreshAlerts();
+  expect(gen.next().value).toEqual(
+    put({
+      type: UPDATE_ALERTS,
+      payload: { isRefreshing: true }
+    })
+  );
   expect(gen.next().value).toEqual(call(fetchAlerts));
   expect(gen.next({ error: '404' }).done).toEqual(true);
 });
 
 it('should refresh ClusterStatus if no error', () => {
   const gen = refreshClusterStatus();
+  expect(gen.next().value).toEqual(
+    put({
+      type: UPDATE_CLUSTER_STATUS,
+      payload: { isRefreshing: true }
+    })
+  );
   expect(gen.next().value).toEqual(call(fetchClusterStatus));
   expect(gen.next().value).toEqual(delay(REFRESH_TIMEOUT));
-  expect(gen.next().value).toEqual(call(refreshClusterStatus));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(true).value).toEqual(call(refreshClusterStatus));
+});
+
+it('should stop refresh ClusterStatus', () => {
+  const gen = refreshClusterStatus();
+  expect(gen.next().value).toEqual(
+    put({
+      type: UPDATE_CLUSTER_STATUS,
+      payload: { isRefreshing: true }
+    })
+  );
+  expect(gen.next().value).toEqual(call(fetchClusterStatus));
+  expect(gen.next().value).toEqual(delay(REFRESH_TIMEOUT));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(false).done).toEqual(true);
 });
 
 it('should not refresh ClusterStatus if error', () => {
   const gen = refreshClusterStatus();
+  expect(gen.next().value).toEqual(
+    put({
+      type: UPDATE_CLUSTER_STATUS,
+      payload: { isRefreshing: true }
+    })
+  );
   expect(gen.next().value).toEqual(call(fetchClusterStatus));
   expect(gen.next({ error: '404' }).done).toEqual(true);
 });
