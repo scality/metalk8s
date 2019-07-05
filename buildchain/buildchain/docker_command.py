@@ -63,11 +63,22 @@ def default_error_handler(exc: Exception) -> str:
 
 def build_error_handler(build_error: BuildError) -> str:
     """String formatting exception handler for Docker API BuildError."""
-    output_lines = [
-        item['stream']
-        if 'stream' in item else item['error']
-        for item in build_error.build_log
-    ]
+    output_lines = []
+    for item in build_error.build_log:
+        if 'stream' in item:
+            line = item['stream']
+        elif 'status' in item:
+            line = '{}: {}/{}'.format(
+                item['status'],
+                item['progressDetail']['current'],
+                item['progressDetail']['total']
+            )
+        elif 'error' in item:
+            line = item['error']
+        else:
+            line = 'buildchain: Unknown build log entry {}'.format(str(item))
+        output_lines.append(line)
+
     log = ''.join(output_lines)
     return '{}:\n{}'.format(str(build_error), log)
 
