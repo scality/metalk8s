@@ -174,7 +174,7 @@ class LocalImage(image.ContainerImage):
                 self.dirname/'manifest.json' if self.save_on_disk
                 else self.dest_dir/self.tag
             ],
-            'clean': True if self.save_on_disk else [self.clean]
+            'clean': [self.clean] if self.save_on_disk else True
         })
         return task
 
