@@ -17,6 +17,7 @@ import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
+import { setLanguageAction } from '../ducks/config';
 
 class Layout extends Component {
   render() {
@@ -68,6 +69,29 @@ class Layout extends Component {
       ]
     };
 
+    let currentLanguage = this.props.language === 'fr' ? 'FR' : 'EN';
+
+    const languages = [
+      {
+        label: 'Français',
+        name: 'FR',
+        onClick: () => {
+          currentLanguage = 'FR';
+          this.props.setLang('fr');
+          localStorage.setItem('language', 'fr');
+        }
+      },
+      {
+        label: 'English',
+        name: 'EN',
+        onClick: () => {
+          currentLanguage = 'EN';
+          this.props.setLang('en');
+          localStorage.setItem('language', 'en');
+        }
+      }
+    ];
+
     const navbar = {
       onToggleClick: this.props.toggleSidebar,
       toggleVisible: true,
@@ -75,6 +99,8 @@ class Layout extends Component {
       applications,
       help,
       user: this.props.user && user,
+      languages,
+      currentLanguage,
       logo: (
         <img
           alt="logo"
@@ -116,14 +142,16 @@ const mapStateToProps = state => ({
   user: state.login.user,
   sidebar: state.app.layout.sidebar,
   theme: state.config.theme,
-  notifications: state.app.notifications.list
+  notifications: state.app.notifications.list,
+  language: state.config.language
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
-    removeNotification: uid => dispatch(removeNotificationAction(uid))
+    removeNotification: uid => dispatch(removeNotificationAction(uid)),
+    setLang: language => dispatch(setLanguageAction(language))
   };
 };
 
