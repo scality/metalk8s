@@ -1,13 +1,14 @@
+import json
 import pathlib
 
 import kubernetes
 import pytest
 from pytest_bdd import given, parsers, then
-import testinfra
 import yaml
 
 from tests import kube_utils
 from tests import utils
+
 
 # Pytest command-line options
 def pytest_addoption(parser):
@@ -104,6 +105,26 @@ def bootstrap_config(host):
         if not config_file.exists:
             pytest.skip('Must be run on bootstrap node')
         return yaml.safe_load(config_file.content_string)
+
+
+@pytest.fixture
+def registry_address(host):
+    with host.sudo():
+        registry_json = host.check_output(
+            "salt-call pillar.get metalk8s:endpoints:repositories --out json"
+        )
+    registry = json.loads(registry_json)["local"]
+
+    return "{}:{}".format(registry["ip"], registry["ports"]["http"])
+
+
+@pytest.fixture
+def utils_image(registry_address, version):
+    return "{registry_address}/{repository}/{image}".format(
+        registry_address=registry_address,
+        repository="metalk8s-{}".format(version),
+        image="metalk8s-utils:{}".format(version)
+    )
 
 
 # }}}
