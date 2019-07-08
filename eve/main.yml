@@ -389,6 +389,34 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
+          name: Create sosreport directory on the bastion
+          command: mkdir -p sosreport/multi-node
+      - ShellCommand:
+          name: Generate sosreport on every machine
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          command: >
+            for host in bootstrap node1; do
+              ssh -F $SSH_CONFIG $host \
+              sosreport --all-logs -o metalk8s -o containerd \
+              -kmetalk8s.podlogs=True -kcontainerd.all=True  \
+              -kcontainerd.logs=True --batch --tmp-dir /var/tmp
+            done
+          alwaysRun: true
+      - ShellCommand:
+          name: Download every sosreport to the bastion
+          command: >
+            for host in (); do
+              scp -F $SSH_CONFIG
+              $host:/var/tmp/sosreport-*
+              sosreport/multi-node/$host-sosreport.tar.xz
+            done
+          alwaysRun: true
+      - Upload:
+          name: Upload sosreport tarballs
+          source: sosreport
+      - ShellCommand:
           name: Debug step - wait 4 hours before allowing resource destruction
           timeout: 14400
           command: sleep 14400
