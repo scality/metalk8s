@@ -25,6 +25,8 @@ buildsrpm() {
     done
     cp "/rpmbuild/SPECS/${SPEC}" "/home/build/rpmbuild/SPECS/${SPEC}"
     chown build:build "/home/build/rpmbuild/SPECS/${SPEC}"
+    # Overwrite version if supported
+    sed -i 's/_VERSION_/'"${VERSION}"'/g' "/home/build/rpmbuild/SPECS/${SPEC}"
     su -l build -c "rpmbuild -bs /home/build/rpmbuild/SPECS/${SPEC}"
     su -l build -c \
        "rpmlint -f /rpmbuild/rpmlintrc /home/build/rpmbuild/SRPMS/${SRPM}"
