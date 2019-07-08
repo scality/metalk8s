@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import memoizeOne from 'memoize-one';
-import { sortBy as sortByArray } from 'lodash';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
@@ -18,6 +16,7 @@ import {
   CLUSTER_STATUS_DOWN
 } from '../ducks/app/monitoring';
 import { STATUS_CRITICAL, STATUS_SUCCESS } from '../components/constants';
+import { sortSelector } from '../services/utils';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -89,22 +88,6 @@ const ClusterMonitoring = props => {
     setSortDirection(sortDirection);
   };
 
-  // It's a copy paste from NodeList, we may need to extract this code later.
-  const sortAlerts = memoizeOne((nodes, sortBy, sortDirection) => {
-    const sortedList = sortByArray(nodes, [
-      node => {
-        return typeof node[sortBy] === 'string'
-          ? node[sortBy].toLowerCase()
-          : node[sortBy];
-      }
-    ]);
-
-    if (sortDirection === 'DESC') {
-      sortedList.reverse();
-    }
-    return sortedList;
-  });
-
   const columns = [
     {
       label: props.intl.messages.name,
@@ -166,7 +149,7 @@ const ClusterMonitoring = props => {
     props.cluster.kubeControllerManagerStatus
   );
 
-  const sortedAlerts = sortAlerts(alerts, sortBy, sortDirection);
+  const sortedAlerts = sortSelector(alerts, sortBy, sortDirection);
 
   return (
     <PageContainer>

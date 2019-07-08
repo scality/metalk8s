@@ -1,3 +1,6 @@
+import { createSelector } from 'reselect';
+import { sortBy as sortByArray } from 'lodash';
+
 export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   var unit = 'B';
@@ -26,3 +29,21 @@ export function prettifyBytes(bytes, decimals) {
 export function convertK8sMemoryToBytes(memory) {
   return parseInt(memory.slice(0, -2), 10) * 1024;
 }
+
+export const sortSelector = createSelector(
+  (list, sortBy, sortDirection) => {
+    const sortedList = sortByArray(list, [
+      item => {
+        return typeof item[sortBy] === 'string'
+          ? item[sortBy].toLowerCase()
+          : item[sortBy];
+      }
+    ]);
+
+    if (sortDirection === 'DESC') {
+      sortedList.reverse();
+    }
+    return sortedList;
+  },
+  list => list
+);
