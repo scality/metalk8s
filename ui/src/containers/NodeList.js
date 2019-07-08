@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import memoizeOne from 'memoize-one';
@@ -52,98 +52,87 @@ const TableContainer = styled.div`
   }
 `;
 
-class NodeList extends React.Component {
-  constructor(props) {
-    super(props);
+const NodeList = props => {
+  useEffect(() => {
+    props.fetchNodes();
+    let interval = setInterval(() => props.fetchNodes(), REFRESH_TIMEOUT);
 
-    this.state = {
-      nodes: [],
-      sortBy: 'name',
-      sortDirection: 'ASC',
-      columns: [
-        {
-          label: props.intl.messages.name,
-          dataKey: 'name'
-        },
-        {
-          label: props.intl.messages.status,
-          dataKey: 'status'
-        },
-        {
-          label: props.intl.messages.deployment,
-          dataKey: 'deployment',
-          flexGrow: 1,
-          renderer: (data, rowData) => {
-            if (
-              (!rowData.status || rowData.status === 'Unknown') &&
-              !rowData.jid
-            ) {
-              return (
-                <span className="status">
-                  <Button
-                    text={this.props.intl.messages.deploy}
-                    onClick={event => {
-                      event.stopPropagation();
-                      this.props.deployNode(rowData);
-                    }}
-                    size="smaller"
-                  />
-                </span>
-              );
-            }
-            if (rowData.jid) {
-              return (
-                <span className="status">
-                  <Button
-                    text={this.props.intl.messages.deploying}
-                    onClick={event => {
-                      event.stopPropagation();
-                      this.props.history.push(`/nodes/deploy/${rowData.jid}`);
-                    }}
-                    icon={<Loader size="smaller" />}
-                    size="smaller"
-                  />
-                </span>
-              );
-            }
-            return data;
-          }
-        },
-        {
-          label: props.intl.messages.roles,
-          dataKey: 'roles',
-          flexGrow: 1
-        },
-        {
-          label: props.intl.messages.version,
-          dataKey: 'metalk8s_version',
-          width: 200
-        }
-      ]
+    return () => {
+      clearInterval(interval);
     };
-    this.onSort = this.onSort.bind(this);
-  }
+  }, []);
 
-  componentDidMount() {
-    this.props.fetchNodes();
-    this.interval = setInterval(() => this.props.fetchNodes(), REFRESH_TIMEOUT);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.interval);
-  }
-
-  onSort({ sortBy, sortDirection }) {
-    this.setState({ sortBy, sortDirection });
-  }
-
-  onRowClick(row) {
-    if (row.rowData && row.rowData.name) {
-      this.props.history.push(`/nodes/${row.rowData.name}`);
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDirection, setSortDirection] = useState('ASC');
+  const { intl } = props;
+  const columns = [
+    {
+      label: props.intl.messages.name,
+      dataKey: 'name'
+    },
+    {
+      label: props.intl.messages.status,
+      dataKey: 'status'
+    },
+    {
+      label: props.intl.messages.deployment,
+      dataKey: 'deployment',
+      flexGrow: 1,
+      renderer: (data, rowData) => {
+        if ((!rowData.status || rowData.status === 'Unknown') && !rowData.jid) {
+          return (
+            <span className="status">
+              <Button
+                text={props.intl.messages.deploy}
+                onClick={event => {
+                  event.stopPropagation();
+                  props.deployNode(rowData);
+                }}
+                size="smaller"
+              />
+            </span>
+          );
+        }
+        if (rowData.jid) {
+          return (
+            <span className="status">
+              <Button
+                text={props.intl.messages.deploying}
+                onClick={event => {
+                  event.stopPropagation();
+                  props.history.push(`/nodes/deploy/${rowData.jid}`);
+                }}
+                icon={<Loader size="smaller" />}
+                size="smaller"
+              />
+            </span>
+          );
+        }
+        return data;
+      }
+    },
+    {
+      label: props.intl.messages.roles,
+      dataKey: 'roles',
+      flexGrow: 1
+    },
+    {
+      label: props.intl.messages.version,
+      dataKey: 'metalk8s_version',
+      width: 200
     }
-  }
+  ];
 
-  sortNodes = memoizeOne((nodes, sortBy, sortDirection) => {
+  const onSort = ({ sortBy, sortDirection }) => {
+    setSortBy(sortBy);
+    setSortDirection(sortDirection);
+  };
+  const onRowClick = row => {
+    if (row.rowData && row.rowData.name) {
+      props.history.push(`/nodes/${row.rowData.name}`);
+    }
+  };
+  const sortNodes = memoizeOne((nodes, sortBy, sortDirection) => {
     const sortedList = sortByArray(nodes, [
       node => {
         return typeof node[sortBy] === 'string'
@@ -158,65 +147,57 @@ class NodeList extends React.Component {
     return sortedList;
   });
 
-  render() {
-    const { intl } = this.props;
+  const nodesSortedList = sortNodes(props.nodes, sortBy, sortDirection);
 
-    const nodesSortedList = this.sortNodes(
-      this.props.nodes,
-      this.state.sortBy,
-      this.state.sortDirection
-    );
+  const nodesSortedListWithRoles = nodesSortedList.map(node => {
+    let roles = [];
+    if (node.bootstrap) {
+      roles.push(intl.messages.bootstrap);
+    }
+    if (node.control_plane) {
+      roles.push(intl.messages.control_plane);
+    }
+    if (node.workload_plane) {
+      roles.push(intl.messages.workload_plane);
+    }
+    node.roles = roles.join(' / ');
+    return node;
+  });
 
-    const nodesSortedListWithRoles = nodesSortedList.map(node => {
-      let roles = [];
-      if (node.bootstrap) {
-        roles.push(intl.messages.bootstrap);
-      }
-      if (node.control_plane) {
-        roles.push(intl.messages.control_plane);
-      }
-      if (node.workload_plane) {
-        roles.push(intl.messages.workload_plane);
-      }
-      node.roles = roles.join(' / ');
-      return node;
-    });
-
-    return (
-      <PageContainer>
-        <ActionContainer>
-          <Button
-            text={intl.messages.create_new_node}
-            onClick={() => this.props.history.push('/nodes/create')}
-            icon={<i className="fas fa-plus" />}
-          />
-        </ActionContainer>
-        <TableContainer>
-          <Table
-            list={nodesSortedListWithRoles}
-            columns={this.state.columns}
-            disableHeader={false}
-            headerHeight={40}
-            rowHeight={40}
-            sortBy={this.state.sortBy}
-            sortDirection={this.state.sortDirection}
-            onSort={this.onSort}
-            onRowClick={item => {
-              // FIXME we will change that behavior later
-              // We want let the user click on the item only it's deployed.
-              if (
-                item.rowData.status !== intl.messages.unknown &&
-                item.rowData.status !== intl.messages.not_ready
-              ) {
-                this.onRowClick(item);
-              }
-            }}
-          />
-        </TableContainer>
-      </PageContainer>
-    );
-  }
-}
+  return (
+    <PageContainer>
+      <ActionContainer>
+        <Button
+          text={intl.messages.create_new_node}
+          onClick={() => props.history.push('/nodes/create')}
+          icon={<i className="fas fa-plus" />}
+        />
+      </ActionContainer>
+      <TableContainer>
+        <Table
+          list={nodesSortedListWithRoles}
+          columns={columns}
+          disableHeader={false}
+          headerHeight={40}
+          rowHeight={40}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSort={onSort}
+          onRowClick={item => {
+            // FIXME we will change that behavior later
+            // We want let the user click on the item only it's deployed.
+            if (
+              item.rowData.status !== intl.messages.unknown &&
+              item.rowData.status !== intl.messages.not_ready
+            ) {
+              onRowClick(item);
+            }
+          }}
+        />
+      </TableContainer>
+    </PageContainer>
+  );
+};
 
 function mapStateToProps(state) {
   return {

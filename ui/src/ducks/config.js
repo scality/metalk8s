@@ -14,6 +14,7 @@ export const SET_THEME = 'SET_THEME';
 const FETCH_THEME = 'FETCH_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
+const SET_INITIAL_LANGUAGE = 'SET_INITIAL_LANGUAGE';
 
 // Reducer
 const defaultState = {
@@ -56,6 +57,10 @@ export function setApiConfigAction(conf) {
   return { type: SET_API_CONFIG, payload: conf };
 }
 
+export function setInitialLanguageAction() {
+  return { type: SET_INITIAL_LANGUAGE };
+}
+
 // Sagas
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
@@ -78,7 +83,21 @@ export function* fetchConfig() {
   }
 }
 
+export function* setInitialLanguage() {
+  const languageLocalStorage = localStorage.getItem('language');
+  if (languageLocalStorage) {
+    languageLocalStorage === 'fr'
+      ? yield put(setLanguageAction('fr'))
+      : yield put(setLanguageAction('en'));
+  } else {
+    yield put(
+      setLanguageAction(navigator.language.startsWith('fr') ? 'fr' : 'en')
+    );
+  }
+}
+
 export function* configSaga() {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
+  yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
 }
