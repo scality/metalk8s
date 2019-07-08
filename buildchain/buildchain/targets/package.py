@@ -27,6 +27,7 @@ Overview;
 import os
 import operator
 import re
+import shutil
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -188,7 +189,7 @@ class Package(base.CompositeTarget):
         targets = [self.srcdir]
         targets.extend(self.sources)
         actions = directory.Mkdir(directory=self.srcdir).task['actions']
-        actions.append(self._download_sources)
+        actions.append(self._get_sources)
         task = self.basic_task
         task.update({
             'name': 'pkg_get_source',
@@ -208,6 +209,7 @@ class Package(base.CompositeTarget):
             'SPEC': self.spec.name,
             'SRPM': self.srpm.name,
             'SOURCES': ' '.join(source.name for source in self.sources),
+            'VERSION': self.version,
         }
 
         buildsrpm_callable = docker_command.DockerRun(
@@ -235,12 +237,16 @@ class Package(base.CompositeTarget):
                                                self.MKDIR_TASK_NAME))
         return task
 
-    def _download_sources(self) -> None:
-        """Return a list of actions to download the source files."""
+    def _get_sources(self) -> None:
+        """Gather the package resources."""
         for srcfile, url in self._get_source_files_urls().items():
-            with urllib.request.urlopen(url) as conn:
-                with open(srcfile, 'wb') as fp:
-                    fp.write(conn.read())
+            if urllib.parse.urlparse(url).scheme:
+                with urllib.request.urlopen(url) as conn:
+                    with open(srcfile, 'wb') as fp:
+                        fp.write(conn.read())
+            else:
+                url = os.path.join(constants.ROOT/'packages', url)
+                shutil.copyfile(url, srcfile)
 
     def _get_source_files_urls(self) -> Dict[Path, str]:
         """Extract source file URLs from .meta file."""
