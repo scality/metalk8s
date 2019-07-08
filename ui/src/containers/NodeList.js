@@ -1,15 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import memoizeOne from 'memoize-one';
 import styled from 'styled-components';
-import { sortBy as sortByArray } from 'lodash';
 import { injectIntl } from 'react-intl';
 import { Table, Button, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
 import { REFRESH_TIMEOUT } from '../constants';
+import { sortSelector } from '../services/utils';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -143,25 +142,10 @@ class NodeList extends React.Component {
     }
   }
 
-  sortNodes = memoizeOne((nodes, sortBy, sortDirection) => {
-    const sortedList = sortByArray(nodes, [
-      node => {
-        return typeof node[sortBy] === 'string'
-          ? node[sortBy].toLowerCase()
-          : node[sortBy];
-      }
-    ]);
-
-    if (sortDirection === 'DESC') {
-      sortedList.reverse();
-    }
-    return sortedList;
-  });
-
   render() {
     const { intl } = this.props;
 
-    const nodesSortedList = this.sortNodes(
+    const nodesSortedList = sortSelector(
       this.props.nodes,
       this.state.sortBy,
       this.state.sortDirection

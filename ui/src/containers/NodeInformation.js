@@ -3,13 +3,11 @@ import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
 import { Table } from '@scality/core-ui';
-import memoizeOne from 'memoize-one';
-import { sortBy as sortByArray } from 'lodash';
 import styled from 'styled-components';
 
 import { fetchPodsAction } from '../ducks/app/pods';
 import { fetchNodesAction } from '../ducks/app/nodes';
-
+import { sortSelector } from '../services/utils';
 import {
   fontWeight,
   fontSize,
@@ -98,23 +96,8 @@ class NodeInformation extends React.Component {
     this.setState({ sortBy, sortDirection });
   }
 
-  sortPods = memoizeOne((pods, sortBy, sortDirection) => {
-    const sortedList = sortByArray(pods, [
-      pod => {
-        return typeof pod[sortBy] === 'string'
-          ? pod[sortBy].toLowerCase()
-          : pod[sortBy];
-      }
-    ]);
-
-    if (sortDirection === 'DESC') {
-      sortedList.reverse();
-    }
-    return sortedList;
-  });
-
   render() {
-    const podsSortedList = this.sortPods(
+    const podsSortedList = sortSelector(
       this.props.pods,
       this.state.sortBy,
       this.state.sortDirection
