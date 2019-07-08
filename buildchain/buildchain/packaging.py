@@ -151,6 +151,19 @@ CALICO_CNI_PLUGIN_VERSION : str = '3.8.0'
 # Packages per repository.
 PACKAGES : Dict[str, Tuple[targets.Package, ...]] = {
     'scality': (
+        # SOS report custom plugins.
+        targets.Package(
+            basename='_build_packages',
+            name='metalk8s-sosreport',
+            version=constants.SHORT_VERSION,
+            build_id=1,
+            sources=[
+                Path('metalk8s.py'),
+                Path('containerd.py'),
+            ],
+            builder=BUILDER,
+            task_dep=['_package_mkdir_root', '_build_container'],
+        ),
         # Calico Container Network Interface Plugin.
         targets.Package(
             basename='_build_packages',

@@ -4,3 +4,7 @@ addFilter("calico-cni-plugin.x86_64: E: statically-linked-binary /opt/cni/bin/ca
 addFilter("calico-cni-plugin.x86_64: E: statically-linked-binary /opt/cni/bin/calico-ipam")
 addFilter("calico-cni-plugin.x86_64: E: dir-or-file-in-opt /opt/cni/bin/calico")
 addFilter("calico-cni-plugin.x86_64: E: dir-or-file-in-opt /opt/cni/bin/calico-ipam")
+
+addFilter("metalk8s-sosreport.x86_64: W: no-url-tag")
+addFilter("metalk8s-sosreport.x86_64: E: no-binary")
+addFilter("metalk8s-sosreport.x86_64: W: no-documentation")
