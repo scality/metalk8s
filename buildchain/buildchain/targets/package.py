@@ -209,6 +209,7 @@ class Package(base.CompositeTarget):
             'SPEC': self.spec.name,
             'SRPM': self.srpm.name,
             'SOURCES': ' '.join(source.name for source in self.sources),
+            'VERSION': self.version,
         }
 
         buildsrpm_callable = docker_command.DockerRun(
