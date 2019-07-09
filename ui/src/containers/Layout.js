@@ -14,7 +14,7 @@ import ClusterMonitoring from './ClusterMonitoring';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
-import { toggleSidebarAction } from '../ducks/app/layout';
+import { toggleSideBarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
 import { updateLanguageAction } from '../ducks/config';
@@ -146,9 +146,9 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
-    toggleSidebar: () => dispatch(toggleSidebarAction()),
     removeNotification: uid => dispatch(removeNotificationAction(uid)),
-    updateLanguage: language => dispatch(updateLanguageAction(language))
+    updateLanguage: language => dispatch(updateLanguageAction(language)),
+    toggleSidebar: () => dispatch(toggleSideBarAction())
   };
 };
 
