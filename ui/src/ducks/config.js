@@ -65,7 +65,7 @@ export function setInitialLanguageAction() {
   return { type: SET_INITIAL_LANGUAGE };
 }
 
-export function setLSLanguageAction(language) {
+export function updateLanguageAction(language) {
   return { type: UPDATE_LANGUAGE, payload: language };
 }
 
