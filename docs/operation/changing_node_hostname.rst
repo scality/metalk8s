@@ -15,8 +15,8 @@ Changing the hostname of a MetalK8s node
 
       $ hostnamectl status
 
-      Static hostname: controlplane2
-      Pretty hostname: ControlPlane2
+      Static hostname: <New hostname>
+      Pretty hostname: <New hostname>
         Icon name: computer-vm
          Chassis: vm
       Machine ID: 5003025f93c1a84914ea5ae66519c100
@@ -28,8 +28,8 @@ Changing the hostname of a MetalK8s node
          Architecture: x86-64
 
 
-#. On the bootstrap node, check the hostname edition allowed a change of status
-   on the bootstrap. The node must be in a **NotReady** status.
+#. On the bootstrap node, check the hostname edition incurred a change of
+   status on the bootstrap. The node must be in a **NotReady** status.
 
    .. code-block:: shell
 
@@ -38,7 +38,7 @@ Changing the hostname of a MetalK8s node
 
 #. Change the name of the node in the ``yaml`` file used to create it.
 
-   .. code-block:: yaml
+   .. parsed-literal::
 
       apiVersion: v1
       kind: Node
@@ -66,21 +66,21 @@ Changing the hostname of a MetalK8s node
 
       $ kubectl delete node node2
 
-#. Log on the salt master:
+#. Open a terminal into the :term:`Salt master` container:
 
    .. code-block:: shell
 
-      $ kubectl -it -n kube-system exec salt-master-bootstrap bash
+      $ kubectl -it exec salt-master-<bootstrap_node_name> -n kube-system -c salt-master bash
 
-#. Delete the old node key:
+#. Delete the now obsolete :term:`Salt minion` key for the changed Node:
 
    .. code-block:: shell
 
       $ salt-key -d <node_key_name>
 
-#. Run the new node name deployment:
+#. Re-run the deployment for the edited Node:
 
-   .. code-block:: shell
+   .. parsed-literal::
 
      $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \
        saltenv=metalk8s-|release| \
@@ -95,7 +95,7 @@ Changing the hostname of a MetalK8s node
           Total states run:     11
           Total run time:  132.435 s
 
-#. On the bootstrap node, restart the kubelet service:
+#. On the edited node, restart the :term:`kubelet` service:
 
    .. code-block:: shell
 
