@@ -5,5 +5,5 @@ variable "openstack_image_name" {
 
 variable "openstack_flavour_name" {
   type    = string
-  default = "m1.medium"
+  default = "m1.large"
 }

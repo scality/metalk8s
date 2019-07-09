@@ -235,7 +235,7 @@ stages:
     worker:
       type: openstack
       image: CentOS 7 (PVHVM)
-      flavor: m1.medium
+      flavor: m1.large
       path: eve/workers/openstack-multiple-nodes
     steps:
       - Git: *git_pull
