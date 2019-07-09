@@ -225,6 +225,25 @@ stages:
           workdir: build/ui
           haltOnFailure: true
       - ShellCommand:
+          name: Collect logs using sosreport
+          command: >
+            sudo sosreport --all-logs
+            -o metalk8s -kmetalk8s.podlogs=True
+            -o containerd -kcontainerd.all=True -kcontainerd.logs=True
+            --batch --tmp-dir /var/tmp &&
+            sudo chown eve:eve /var/tmp/sosreport*
+          alwaysRun: true
+      - ShellCommand:
+          name: Copy sosreport to correct directory structure
+          command: >
+            mkdir -p sosreport/sosreport/single-node &&
+            cp /var/tmp/sosreport* sosreport/sosreport/single-node
+          alwaysRun: true
+      - Upload:
+          name: upload artifacts
+          source: sosreport
+          alwaysRun: true
+      - ShellCommand:
           name: Debug step - wait 1 hour before allowing resource destruction
           timeout: 3600
           command: sleep 3600
