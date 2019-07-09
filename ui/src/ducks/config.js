@@ -7,6 +7,9 @@ import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
 
 import { fetchUserInfo } from './login';
+import { EN_LANG, FR_LANG } from '../constants';
+
+const LANGUAGE = 'language';
 
 // Actions
 const SET_LANG = 'SET_LANG';
@@ -15,11 +18,11 @@ const FETCH_THEME = 'FETCH_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
 const SET_INITIAL_LANGUAGE = 'SET_INITIAL_LANGUAGE';
-const SET_LS_LANGUAGE = 'SET_LS_LANGUAGE';
+const UPDATE_LANGUAGE = 'UPDATE_LANGUAGE';
 
 // Reducer
 const defaultState = {
-  language: 'en',
+  language: EN_LANG,
   theme: {},
   api: null
 };
@@ -27,7 +30,6 @@ const defaultState = {
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_LANG:
-    case SET_LS_LANGUAGE:
       return { ...state, language: action.payload };
     case SET_THEME:
       return { ...state, theme: action.payload };
@@ -64,7 +66,7 @@ export function setInitialLanguageAction() {
 }
 
 export function setLSLanguageAction(language) {
-  return { type: SET_LS_LANGUAGE, payload: language };
+  return { type: UPDATE_LANGUAGE, payload: language };
 }
 
 // Sagas
@@ -90,28 +92,28 @@ export function* fetchConfig() {
 }
 
 export function* setInitialLanguage() {
-  const languageLocalStorage = localStorage.getItem('language');
+  const languageLocalStorage = localStorage.getItem(LANGUAGE);
   if (languageLocalStorage) {
-    languageLocalStorage === 'fr'
-      ? yield put(setLanguageAction('fr'))
-      : yield put(setLanguageAction('en'));
+    languageLocalStorage === FR_LANG
+      ? yield put(setLanguageAction(FR_LANG))
+      : yield put(setLanguageAction(EN_LANG));
   } else {
     yield put(
-      setLanguageAction(navigator.language.startsWith('fr') ? 'fr' : 'en')
+      setLanguageAction(
+        navigator.language.startsWith(FR_LANG) ? FR_LANG : EN_LANG
+      )
     );
   }
 }
 
-export function* setLSLanguage() {
-  localStorage.setItem(
-    'language',
-    yield select(state => state.config.language)
-  );
+export function* updateLanguage(action) {
+  localStorage.setItem(LANGUAGE, yield select(state => state.config.language));
+  yield put(setLanguageAction(action.payload));
 }
 
 export function* configSaga() {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
   yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
-  yield takeEvery(SET_LS_LANGUAGE, setLSLanguage);
+  yield takeEvery(UPDATE_LANGUAGE, updateLanguage);
 }

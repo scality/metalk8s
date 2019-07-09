@@ -18,6 +18,7 @@ import { toggleSidebarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
 import { setLSLanguageAction } from '../ducks/config';
+import { FR_LANG, EN_LANG } from '../constants';
 
 class Layout extends Component {
   render() {
@@ -69,22 +70,23 @@ class Layout extends Component {
       ]
     };
 
+    // In this particular case, the label should not be translated
     const languages = [
       {
         label: 'Français',
         name: 'FR',
         onClick: () => {
-          this.props.setLSLanguage('fr');
+          this.props.setLSLanguage(FR_LANG);
         },
-        selected: this.props.language === 'fr'
+        selected: this.props.language === FR_LANG
       },
       {
         label: 'English',
         name: 'EN',
         onClick: () => {
-          this.props.setLSLanguage('en');
+          this.props.setLSLanguage(EN_LANG);
         },
-        selected: this.props.language === 'en'
+        selected: this.props.language === EN_LANG
       }
     ];
 
