@@ -225,6 +225,25 @@ stages:
           workdir: build/ui
           haltOnFailure: true
       - ShellCommand:
+          name: Collect logs using sosreport
+          command: >
+            sudo sosreport --all-logs
+            -o metalk8s -kmetalk8s.podlogs=True
+            -o containerd -kcontainerd.all=True -kcontainerd.logs=True
+            --batch --tmp-dir /var/tmp &&
+            sudo chown eve:eve /var/tmp/sosreport*
+          alwaysRun: true
+      - ShellCommand:
+          name: Copy sosreport to correct directory structure
+          command: >
+            mkdir -p sosreport/sosreport/single-node &&
+            cp /var/tmp/sosreport* sosreport/sosreport/single-node
+          alwaysRun: true
+      - Upload:
+          name: upload artifacts
+          source: sosreport
+          alwaysRun: true
+      - ShellCommand:
           name: Debug step - wait 1 hour before allowing resource destruction
           timeout: 3600
           command: sleep 3600
@@ -369,6 +388,39 @@ stages:
           # yamllint enable rule:line-length
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
+      - ShellCommand:
+          name: Create sosreport directory on the bastion
+          command: mkdir -p sosreport/sosreport/multi-node
+      - ShellCommand:
+          name: Generate sosreport on every machine
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          command: >
+            for host in bootstrap; do
+              ssh -F $SSH_CONFIG $host \
+              "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
+              -o containerd -kcontainerd.all=True -kcontainerd.logs=True\
+              --batch --tmp-dir /var/tmp && \
+              sudo chown centos:centos /var/tmp/sosreport*"
+            done
+          alwaysRun: true
+      - ShellCommand:
+          name: Download every sosreport to the bastion
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          command: >
+            for host in bootstrap; do
+              scp -F $SSH_CONFIG \
+              $host:/var/tmp/sosreport-* \
+              sosreport/sosreport/multi-node/$host-sosreport.tar.xz
+            done
+          alwaysRun: true
+      - Upload:
+          name: Upload sosreport tarballs
+          source: sosreport
+          alwaysRun: true
       - ShellCommand:
           name: Debug step - wait 4 hours before allowing resource destruction
           timeout: 14400
