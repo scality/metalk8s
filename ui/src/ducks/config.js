@@ -1,4 +1,4 @@
-import { call, put, takeEvery } from 'redux-saga/effects';
+import { call, put, takeEvery, select } from 'redux-saga/effects';
 import { mergeTheme } from '@scality/core-ui/dist/utils';
 import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import * as Api from '../services/api';
@@ -15,6 +15,7 @@ const FETCH_THEME = 'FETCH_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
 const SET_INITIAL_LANGUAGE = 'SET_INITIAL_LANGUAGE';
+const SET_LS_LANGUAGE = 'SET_LS_LANGUAGE';
 
 // Reducer
 const defaultState = {
@@ -26,6 +27,7 @@ const defaultState = {
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_LANG:
+    case SET_LS_LANGUAGE:
       return { ...state, language: action.payload };
     case SET_THEME:
       return { ...state, theme: action.payload };
@@ -59,6 +61,10 @@ export function setApiConfigAction(conf) {
 
 export function setInitialLanguageAction() {
   return { type: SET_INITIAL_LANGUAGE };
+}
+
+export function setLSLanguageAction(language) {
+  return { type: SET_LS_LANGUAGE, payload: language };
 }
 
 // Sagas
@@ -96,8 +102,16 @@ export function* setInitialLanguage() {
   }
 }
 
+export function* setLSLanguage() {
+  localStorage.setItem(
+    'language',
+    yield select(state => state.config.language)
+  );
+}
+
 export function* configSaga() {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
   yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
+  yield takeEvery(SET_LS_LANGUAGE, setLSLanguage);
 }

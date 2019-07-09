@@ -17,7 +17,7 @@ import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
-import { setLanguageAction } from '../ducks/config';
+import { setLSLanguageAction } from '../ducks/config';
 
 class Layout extends Component {
   render() {
@@ -69,26 +69,22 @@ class Layout extends Component {
       ]
     };
 
-    let currentLanguage = this.props.language === 'fr' ? 'FR' : 'EN';
-
     const languages = [
       {
         label: 'Français',
         name: 'FR',
         onClick: () => {
-          currentLanguage = 'FR';
-          this.props.setLang('fr');
-          localStorage.setItem('language', 'fr');
-        }
+          this.props.setLSLanguage('fr');
+        },
+        selected: this.props.language === 'fr'
       },
       {
         label: 'English',
         name: 'EN',
         onClick: () => {
-          currentLanguage = 'EN';
-          this.props.setLang('en');
-          localStorage.setItem('language', 'en');
-        }
+          this.props.setLSLanguage('en');
+        },
+        selected: this.props.language === 'en'
       }
     ];
 
@@ -100,7 +96,6 @@ class Layout extends Component {
       help,
       user: this.props.user && user,
       languages,
-      currentLanguage,
       logo: (
         <img
           alt="logo"
@@ -151,7 +146,7 @@ const mapDispatchToProps = dispatch => {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
     removeNotification: uid => dispatch(removeNotificationAction(uid)),
-    setLang: language => dispatch(setLanguageAction(language))
+    setLSLanguage: language => dispatch(setLSLanguageAction(language))
   };
 };
 
