@@ -90,7 +90,7 @@ def service_endpoints(service, namespace, kubeconfig):
     except Exception as exc:  # pylint: disable=broad-except
         error_tplt = (
             'Unable to get kubernetes endpoints'
-            'for %s in namespace %s:\n%s'
+            ' for {} in namespace {}:\n{}'
         )
         return __utils__['pillar_utils.errors_to_dict']([
             error_tplt.format(service, namespace, exc)
