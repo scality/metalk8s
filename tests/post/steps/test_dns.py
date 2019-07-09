@@ -1,6 +1,6 @@
 import os
 
-from kubernetes import client, config
+from kubernetes import client
 import pytest
 from pytest_bdd import scenario, then, parsers
 import yaml
@@ -10,35 +10,36 @@ from tests import utils
 
 
 @pytest.fixture
-def busybox_pod(k8s_client):
-    # Create the busybox pod
-    pod_manifest = os.path.join(
+def utils_pod(k8s_client, utils_image):
+    # Create the Pod
+    manifest_file = os.path.join(
         os.path.realpath(os.path.dirname(__file__)),
         "files",
-        "busybox.yaml"
+        "utils.yaml"
     )
-    with open(pod_manifest, encoding='utf-8') as pod_fd:
-        pod_manifest_content = yaml.safe_load(pod_fd)
+    with open(manifest_file, encoding='utf-8') as fd:
+        manifest = yaml.safe_load(fd)
 
-    k8s_client.create_namespaced_pod(
-        body=pod_manifest_content, namespace="default"
-    )
+    manifest["spec"]["containers"][0]["image"] = utils_image
+    pod_name = manifest["metadata"]["name"]
 
-    # Wait for the busybox to be ready
+    k8s_client.create_namespaced_pod(body=manifest, namespace="default")
+
+    # Wait for the Pod to be ready
     utils.retry(
         kube_utils.wait_for_pod(
-            k8s_client, name="busybox", namespace="default", state="Running"
+            k8s_client, name=pod_name, namespace="default", state="Running"
         ),
         times=10,
         wait=5,
-        name="wait for Pod 'busybox'",
+        name="wait for Pod '{}'".format(pod_name),
     )
 
-    yield "busybox"
+    yield pod_name
 
     # Clean-up resources
     k8s_client.delete_namespaced_pod(
-        name="busybox",
+        name=pod_name,
         namespace="default",
         body=client.V1DeleteOptions(
             grace_period_seconds=0,  # Force deletion instantly
@@ -53,13 +54,13 @@ def test_dns(host):
 
 
 @then(parsers.parse("the hostname '{hostname}' should be resolved"))
-def resolve_hostname(busybox_pod, host, hostname):
+def resolve_hostname(utils_pod, host, hostname):
     with host.sudo():
         # test dns resolve
         result = host.run(
             "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
             "exec -ti %s nslookup %s",
-            busybox_pod,
+            utils_pod,
             hostname,
         )
         if result.rc != 0:

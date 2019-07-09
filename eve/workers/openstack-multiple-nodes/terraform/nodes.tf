@@ -1,11 +1,21 @@
+resource "openstack_compute_servergroup_v2" "all" {
+  name     = "${local.prefix}-servergroup"
+  policies = []
+}
+
 resource "openstack_compute_instance_v2" "bastion" {
   name        = "${local.prefix}-bastion"
   image_name  = var.openstack_image_name
   flavor_name = var.openstack_flavour_name
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
+  scheduler_hints {
+    group = openstack_compute_servergroup_v2.all.id
+  }
+
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
+    openstack_networking_secgroup_v2.bastion.name,
   ]
 
   dynamic "network" {
@@ -58,6 +68,10 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   flavor_name = var.openstack_flavour_name
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
+  scheduler_hints {
+    group = openstack_compute_servergroup_v2.all.id
+  }
+
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
   ]
@@ -105,6 +119,10 @@ resource "openstack_compute_instance_v2" "nodes" {
   image_name  = var.openstack_image_name
   flavor_name = var.openstack_flavour_name
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
+
+  scheduler_hints {
+    group = openstack_compute_servergroup_v2.all.id
+  }
 
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
