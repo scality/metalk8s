@@ -34,9 +34,10 @@ Changing the hostname of a MetalK8s node
    .. code-block:: shell
 
       $ kubectl get <node_name>
-      node2    NotReady   etcd,master                   19h       v1.11.7
+      <node_name>    NotReady   etcd,master                   19h       v1.11.7
 
 #. Change the name of the node in the ``yaml`` file used to create it.
+   Refer to :ref:`quickstart-expansion-manifest` for more information.
 
    .. parsed-literal::
 
@@ -58,13 +59,13 @@ Changing the hostname of a MetalK8s node
 
    .. code-block:: shell
 
-      $ kubectl apply -f new-node-creation.yaml
+      $ kubectl apply -f <path to edited manifest>
 
-#. Delete the old node (here ``node2``):
+#. Delete the old node (here ``<node_name>``):
 
    .. code-block:: shell
 
-      $ kubectl delete node node2
+      $ kubectl delete node <node_name>
 
 #. Open a terminal into the :term:`Salt master` container:
 
@@ -76,7 +77,7 @@ Changing the hostname of a MetalK8s node
 
    .. code-block:: shell
 
-      $ salt-key -d <node_key_name>
+      $ salt-key -d <node_name>
 
 #. Re-run the deployment for the edited Node:
 
