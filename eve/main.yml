@@ -397,7 +397,7 @@ stages:
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
-            for host in bootstrap; do
+            for host in bootstrap node1; do
               ssh -F $SSH_CONFIG $host \
               "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
               -o containerd -kcontainerd.all=True -kcontainerd.logs=True\
@@ -411,7 +411,7 @@ stages:
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
-            for host in bootstrap; do
+            for host in bootstrap node1; do
               scp -F $SSH_CONFIG \
               $host:/var/tmp/sosreport-* \
               sosreport/sosreport/multi-node/$host-sosreport.tar.xz
