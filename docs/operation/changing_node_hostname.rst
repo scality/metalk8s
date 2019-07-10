@@ -29,11 +29,11 @@ Changing the hostname of a MetalK8s node
 
 
 #. On the bootstrap node, check the hostname edition incurred a change of
-   status on the bootstrap. The node must be in a **NotReady** status.
+   status on the bootstrap. The edited node must be in a **NotReady** status.
 
    .. code-block:: shell
 
-      $ kubectl get nodes
+      $ kubectl get <node_name>
       node2    NotReady   etcd,master                   19h       v1.11.7
 
 #. Change the name of the node in the ``yaml`` file used to create it.
