@@ -14,4 +14,4 @@ Create kubeconfig file for admin:
     - apiserver: {{ apiserver }}
     - cluster: {{ kubernetes.cluster }}
     - require:
-      - pkg: Install m2crypto
+      - metalk8s_package_manager: Install m2crypto

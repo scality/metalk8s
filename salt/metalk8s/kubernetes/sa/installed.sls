@@ -12,7 +12,7 @@ Create SA private key:
     - makedirs: True
     - dir_mode: 755
     - require:
-      - pkg: Install m2crypto
+      - metalk8s_package_manager: Install m2crypto
 
 Store SA public key:
   file.managed:

@@ -8,7 +8,7 @@ Start and enable containerd:
     - name: containerd
     - enable: True
     - require:
-      - pkg: Install containerd
+      - metalk8s_package_manager: Install containerd
     - watch:
       - file: Configure registry IP in containerd conf
 
@@ -26,4 +26,4 @@ Inject pause image:
     - archive_path: /tmp/pause-3.1.tar
     - require:
       - file: Inject pause image
-      - pkg: Install and configure cri-tools
+      - metalk8s_package_manager: Install and configure cri-tools

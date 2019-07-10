@@ -22,4 +22,4 @@ Reload systemctl:
   module.wait:
     - service.systemctl_reload: []
     - watch:
-      - pkg: Install kubelet
+      - metalk8s_package_manager: Install kubelet
