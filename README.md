@@ -22,7 +22,6 @@ If you'd like to contribute, please review the
 - [tox](https://pypi.org/project/tox)
 - [Vagrant](https://www.vagrantup.com/)
 - [VirtualBox](https://www.virtualbox.org)
-- [Plantuml](http://plantuml.com/starting)
 
 ### Bootstrapping a local environment
 
@@ -43,8 +42,12 @@ tox -e tests
 ```
 
 ### Documentation
+### Requirements
+- [Python3.6+](https://www.python.org/)
+- [tox](https://pypi.org/project/tox)
+- [Plantuml](http://plantuml.com/starting)
 
-To generate html documentation locally in `docs/_build/html`, run the following command
+To generate HTML documentation locally in `docs/_build/html`, run the following command:
 
 ```shell
 # Generate doc with tox
