@@ -30,10 +30,28 @@ spec:
         spec:
           properties:
             nodeName:
-              description: Name of the node on which the volume is available
+              description: Name of the node on which the volume is available.
               type: string
+            rawBlockDevice:
+              properties:
+                devicePath:
+                  description: Path of the block device on the node to back the PersistentVolume.
+                  type: string
+              required:
+              - devicePath
+              type: object
+            sparseLoopDevice:
+              properties:
+                size:
+                  description: Size of the generated sparse file backing the PersistentVolume.
+                  type: string
+              required:
+              - size
+              type: object
             storageClassName:
-              description: Name of the StorageClass that gets assigned to the volume
+              description: Name of the StorageClass that gets assigned to the volume.
+                Also, any mount options are copied from the StorageClass to the PersistentVolume
+                if present.
               type: string
           required:
           - nodeName

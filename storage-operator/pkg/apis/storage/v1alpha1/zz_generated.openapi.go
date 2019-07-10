@@ -68,23 +68,34 @@ func schema_pkg_apis_storage_v1alpha1_VolumeSpec(ref common.ReferenceCallback) c
 				Properties: map[string]spec.Schema{
 					"nodeName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Name of the node on which the volume is available",
+							Description: "Name of the node on which the volume is available.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
 					"storageClassName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Name of the StorageClass that gets assigned to the volume",
+							Description: "Name of the StorageClass that gets assigned to the volume. Also, any mount options are copied from the StorageClass to the PersistentVolume if present.",
 							Type:        []string{"string"},
 							Format:      "",
+						},
+					},
+					"sparseLoopDevice": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/storage/v1alpha1.SparseLoopDeviceVolumeSource"),
+						},
+					},
+					"rawBlockDevice": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/storage/v1alpha1.RawBlockDeviceVolumeSource"),
 						},
 					},
 				},
 				Required: []string{"nodeName", "storageClassName"},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"./pkg/apis/storage/v1alpha1.RawBlockDeviceVolumeSource", "./pkg/apis/storage/v1alpha1.SparseLoopDeviceVolumeSource"},
 	}
 }
 

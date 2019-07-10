@@ -5,3 +5,5 @@ metadata:
 spec:
   nodeName: bootstrap
   storageClassName: default
+  sparseLoopDevice:
+    size: 1Gi
