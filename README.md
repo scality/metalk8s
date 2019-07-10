@@ -41,11 +41,13 @@ To run the test-suite locally, first complete the bootstrap step as outline abov
 tox -e tests
 ```
 
-### Documentation
+## Documentation
 ### Requirements
 - [Python3.6+](https://www.python.org/)
 - [tox](https://pypi.org/project/tox)
 - [Plantuml](http://plantuml.com/starting)
+
+### Building
 
 To generate HTML documentation locally in `docs/_build/html`, run the following command:
 
