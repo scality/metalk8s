@@ -40,6 +40,14 @@ To run the test-suite locally, first complete the bootstrap step as outline abov
 tox -e tests
 ```
 
+### Documentation
+
+To generate html documentation locally in docs/_build/html, run the following command
+```shell 
+# Generate doc with tox
+tox -e docs
+```
+
 ---
 
 MetalK8s version 1 is still maintained in this repository. See the 
