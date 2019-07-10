@@ -14,7 +14,7 @@ Create kube-apiserver private key:
     - makedirs: True
     - dir_mode: 755
     - require:
-      - pkg: Install m2crypto
+      - metalk8s_package_manager: Install m2crypto
 
 {% set certSANs = [
     grains['fqdn'],

@@ -15,7 +15,7 @@ Create kubeconf file for calico:
     - apiserver: https://{{ kube_api.service_ip }}:443
     - cluster: {{ kubernetes.cluster }}
     - require:
-      - pkg: Install m2crypto
+      - metalk8s_package_manager: Install m2crypto
 
 Create CNI calico configuration file:
   file.serialize:

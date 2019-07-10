@@ -21,4 +21,4 @@ Expose Kubernetes Controller Manager to Prometheus:
         type: ClusterIP
         clusterIP: None
   require:
-    - pkg: Install Python Kubernetes client
+    - metalk8s_package_manager: Install Python Kubernetes client

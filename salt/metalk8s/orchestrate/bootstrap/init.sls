@@ -73,7 +73,8 @@ Sync bootstrap minion:
   salt.function:
   - name: saltutil.sync_all
   - tgt: {{ pillar.bootstrap_id }}
-  - saltenv: metalk8s-{{ version }}
+  - kwarg:
+      saltenv: metalk8s-{{ version }}
 
 Deploy CA role on bootstrap minion:
   salt.state:
