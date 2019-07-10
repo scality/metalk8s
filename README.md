@@ -25,7 +25,7 @@ If you'd like to contribute, please review the
 
 ### Bootstrapping a local environment
 
-```shell 
+```shell
 # Install virtualbox guest addition plugin
 vagrant plugin install vagrant-vbguest
 # Bootstrap a platform on a vagrant environment using
@@ -35,14 +35,30 @@ vagrant plugin install vagrant-vbguest
 ### End-to-End Testing
 
 To run the test-suite locally, first complete the bootstrap step as outline above
-```shell 
+
+```shell
 # Run tests with tox
 tox -e tests
 ```
 
+## Documentation
+### Requirements
+- [Python3.6+](https://www.python.org/)
+- [tox](https://pypi.org/project/tox)
+- [Plantuml](http://plantuml.com/starting)
+
+### Building
+
+To generate HTML documentation locally in `docs/_build/html`, run the following command:
+
+```shell
+# Generate doc with tox
+tox -e docs
+```
+
 ---
 
-MetalK8s version 1 is still maintained in this repository. See the 
+MetalK8s version 1 is still maintained in this repository. See the
 `development/1.*` branches, e. g.
 [MetalK8s 1.3](https://github.com/scality/metalk8s/tree/development/1.3) in the same
 repository.
