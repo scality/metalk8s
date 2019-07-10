@@ -56,6 +56,8 @@ type VolumeStatus struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +genclient:nonNamespaced
+// +kubebuilder:printcolumn:name="Node",type="string",JSONPath=".spec.nodeName",description="The node on which the volume is available"
+// +kubebuilder:printcolumn:name="StorageClass",type="string",JSONPath=".spec.storageClassName",description="The storage class of the volume"
 type Volume struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

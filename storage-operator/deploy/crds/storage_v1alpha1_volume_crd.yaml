@@ -3,6 +3,15 @@ kind: CustomResourceDefinition
 metadata:
   name: volumes.storage.metalk8s.scality.com
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.nodeName
+    description: The node on which the volume is available
+    name: Node
+    type: string
+  - JSONPath: .spec.storageClassName
+    description: The storage class of the volume
+    name: StorageClass
+    type: string
   group: storage.metalk8s.scality.com
   names:
     kind: Volume
