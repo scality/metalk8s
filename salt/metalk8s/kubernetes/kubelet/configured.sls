@@ -19,7 +19,7 @@ Create kubeconfig file for kubelet:
     - apiserver: {{ apiserver }}
     - cluster: {{ kubernetes.cluster }}
     - require:
-      - pkg: Install m2crypto
+      - metalk8s_package_manager: Install m2crypto
     - watch_in:
       - service: Ensure kubelet running
 
@@ -37,7 +37,7 @@ Configure kubelet service:
         env_file: "/var/lib/kubelet/kubeadm-flags.env"
         config_file: "/var/lib/kubelet/config.yaml"
     - require:
-      - pkg: Install kubelet
+      - metalk8s_package_manager: Install kubelet
       - metalk8s_kubeconfig: Create kubeconfig file for kubelet
     - watch_in:
       - service: Ensure kubelet running

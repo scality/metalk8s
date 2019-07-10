@@ -14,7 +14,7 @@ Create front proxy client private key:
     - makedirs: True
     - dir_mode: 755
     - require:
-      - pkg: Install m2crypto
+      - metalk8s_package_manager: Install m2crypto
 
 Generate front proxy client certificate:
   x509.certificate_managed:

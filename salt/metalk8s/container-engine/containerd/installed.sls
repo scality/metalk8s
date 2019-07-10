@@ -17,14 +17,14 @@ Install runc:
   {{ pkg_installed('runc') }}
     - require:
       - test: Repositories configured
-      - pkg: Install container-selinux
+      - metalk8s_package_manager: Install container-selinux
 
 Install containerd:
   {{ pkg_installed('containerd') }}
     - require:
       - test: Repositories configured
-      - pkg: Install runc
-      - pkg: Install container-selinux
+      - metalk8s_package_manager: Install runc
+      - metalk8s_package_manager: Install container-selinux
  
 Install and configure cri-tools:
   {{ pkg_installed('cri-tools') }}
@@ -49,4 +49,4 @@ Configure registry IP in containerd conf:
         [plugins.cri.registry.mirrors."{{ registry_ip }}:{{ registry_port }}"]
           endpoint = ["http://{{ registry_ip }}:{{ registry_port }}"]
     - require:
-      - pkg: Install containerd
+      - metalk8s_package_manager: Install containerd

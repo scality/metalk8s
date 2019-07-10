@@ -10,6 +10,6 @@ Upgrade Calico IPAM data:
         - CALICO_NETWORKING_BACKEND: 'bird'
         - KUBECONFIG: '/etc/kubernetes/calico.conf'
     - require:
-        - pkg: Install calico-cni-plugin
+        - metalk8s_package_manager: Install calico-cni-plugin
         - metalk8s_kubeconfig: Create kubeconf file for calico
         - file: Create CNI calico configuration file

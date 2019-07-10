@@ -2,7 +2,7 @@
 
 {%- macro pkg_installed(name='') -%}
   {%- set package = repo.packages[name] | default({}) %}
-  pkg.installed:
+  metalk8s_package_manager.installed:
     - name: {{ name }}
     - fromrepo: {{ repo.repositories.keys() | join(',') }}
     {%- if package.version | default(None) %}
@@ -10,4 +10,5 @@
     - hold: True
     - update_holds: True
     {%- endif %}
+    - reload_modules: True
 {%- endmacro -%}

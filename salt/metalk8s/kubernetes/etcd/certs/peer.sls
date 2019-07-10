@@ -14,7 +14,7 @@ Create etcd peer private key:
     - makedirs: True
     - dir_mode: 755
     - require:
-      - pkg: Install m2crypto
+      - metalk8s_package_manager: Install m2crypto
 
 Generate etcd peer certificate:
   x509.certificate_managed:

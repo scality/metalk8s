@@ -17,7 +17,7 @@ Create kubelet service environment file:
         options: {{ kubelet.service.options }}
         node_ip: {{ grains['metalk8s']['control_plane_ip'] }}
     - require:
-      - pkg: Install kubelet
+      - metalk8s_package_manager: Install kubelet
     - watch_in:
       - service: Ensure kubelet running
 
@@ -105,7 +105,7 @@ Create kubelet config file:
         syncFrequency: 1m0s
         volumeStatsAggPeriod: 1m0s
     - require:
-      - pkg: Install kubelet
+      - metalk8s_package_manager: Install kubelet
     - watch_in:
       - service: Ensure kubelet running
 
