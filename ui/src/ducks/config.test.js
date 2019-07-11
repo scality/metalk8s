@@ -1,7 +1,15 @@
-import { call, put } from 'redux-saga/effects';
-import { fetchTheme, SET_THEME, fetchConfig, SET_API_CONFIG } from './config';
+import { call, put, select } from 'redux-saga/effects';
+import {
+  fetchTheme,
+  SET_THEME,
+  fetchConfig,
+  SET_API_CONFIG,
+  updateLanguage,
+  SET_LANG,
+  setInitialLanguage
+} from './config';
 import { fetchUserInfo } from './login';
-
+import { LANGUAGE, FR_LANG, EN_LANG } from '../constants';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
@@ -53,4 +61,31 @@ it('update the config state when fetchConfig', () => {
     call(ApiPrometheus.initialize, 'http://172.21.254.46:30222')
   );
   expect(gen.next().value).toEqual(call(fetchUserInfo));
+});
+
+it('update the language when updateLanguage', () => {
+  const gen = updateLanguage({ payload: 'Chinese' });
+  expect(gen.next().value).toEqual(put({ type: SET_LANG, payload: 'Chinese' }));
+
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('Chinese').done).toEqual(true);
+
+  expect(localStorage.getItem(LANGUAGE)).toEqual('Chinese');
+  expect(localStorage.removeItem(LANGUAGE));
+});
+
+it('set initial language from localstorage', () => {
+  const gen = setInitialLanguage();
+  localStorage.setItem(LANGUAGE, FR_LANG);
+  expect(gen.next().value).toEqual(put({ type: SET_LANG, payload: FR_LANG }));
+  expect(gen.next().done).toEqual(true);
+});
+
+it('set initial language from browser', () => {
+  expect(localStorage.removeItem(LANGUAGE));
+  const gen = setInitialLanguage();
+
+  const language = navigator.language.startsWith(FR_LANG) ? FR_LANG : EN_LANG;
+  expect(gen.next().value).toEqual(put({ type: SET_LANG, payload: language }));
+  expect(gen.next().done).toEqual(true);
 });
