@@ -1,2 +1,2 @@
 include:
-  - .offline
+  - .redhat
