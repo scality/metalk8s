@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
-import { Table } from '@scality/core-ui';
+import { Table, Button } from '@scality/core-ui';
 import styled from 'styled-components';
 
 import { fetchPodsAction } from '../ducks/app/pods';
@@ -26,9 +26,7 @@ const PodsContainer = styled.div`
   flex-grow: 1;
 `;
 
-const PageTitle = styled.h2`
-  margin-top: 0;
-`;
+const PageTitle = styled.h2``;
 
 const InformationTitle = styled.h3``;
 
@@ -39,6 +37,8 @@ const InformationSpan = styled.span`
 const InformationLabel = styled.span`
   font-size: ${fontSize.small};
   padding: 0 ${padding.base};
+  min-width: 120px;
+  display: inline-block;
 `;
 
 const InformationValue = styled.span`
@@ -48,6 +48,7 @@ const InformationValue = styled.span`
 const InformationMainValue = styled(InformationValue)`
   font-weight: ${fontWeight.bold};
 `;
+
 class NodeInformation extends React.Component {
   constructor(props) {
     super(props);
@@ -59,7 +60,8 @@ class NodeInformation extends React.Component {
       columns: [
         {
           label: props.intl.messages.name,
-          dataKey: 'name'
+          dataKey: 'name',
+          flexGrow: 1
         },
         {
           label: props.intl.messages.status,
@@ -105,10 +107,35 @@ class NodeInformation extends React.Component {
 
     return (
       <NodeInformationContainer>
+        <div>
+          <Button
+            text={this.props.intl.messages.back_to_node_list}
+            type="button"
+            outlined
+            onClick={() => this.props.history.push('/nodes')}
+            icon={<i className="fas fa-arrow-left" />}
+          />
+        </div>
         <PageTitle>{this.props.intl.messages.information}</PageTitle>
         <InformationSpan>
           <InformationLabel>{this.props.intl.messages.name}</InformationLabel>
           <InformationMainValue>{this.props.node.name}</InformationMainValue>
+        </InformationSpan>
+        <InformationSpan>
+          <InformationLabel>{this.props.intl.messages.status}</InformationLabel>
+          <InformationValue>{this.props.node.status}</InformationValue>
+        </InformationSpan>
+        <InformationSpan>
+          <InformationLabel>{this.props.intl.messages.roles}</InformationLabel>
+          <InformationValue>{this.props.node.roles}</InformationValue>
+        </InformationSpan>
+        <InformationSpan>
+          <InformationLabel>
+            {this.props.intl.messages.version}
+          </InformationLabel>
+          <InformationValue>
+            {this.props.node.metalk8s_version}
+          </InformationValue>
         </InformationSpan>
 
         <InformationTitle>{this.props.intl.messages.pods}</InformationTitle>
