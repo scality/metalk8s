@@ -235,7 +235,7 @@ Vagrant.configure("2") do |config|
           type: "shell",
           inline: DEPLOY_SSH_PUBLIC_KEY
 
-        if os == "ubuntu"
+        if os == :ubuntu
           node.vm.provision "install-python",
             type: "shell",
             inline: INSTALL_PYTHON
