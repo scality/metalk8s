@@ -138,16 +138,12 @@ def check_etcd_health(
     )[minion_id]
 
     # Get all members
-    try:
-        with etcd3.client(host=endpoint,
-                          ca_cert=ca_cert,
-                          cert_key=cert_key,
-                          cert_cert=cert_cert,
-                          timeout=TIMEOUT) as etcd:
-            etcd_members = list(etcd.members)
-    except Exception:  # pylint: disable=broad-except
-        log.exception("cluster may be unhealthy: failed to list members")
-        raise
+    with etcd3.client(host=endpoint,
+                      ca_cert=ca_cert,
+                      cert_key=cert_key,
+                      cert_cert=cert_cert,
+                      timeout=TIMEOUT) as etcd:
+        etcd_members = list(etcd.members)
 
     unhealthy_member = 0
     for member in etcd_members:
@@ -161,7 +157,7 @@ def check_etcd_health(
                               timeout=TIMEOUT) as etcd:
                 etcd.status()
         except Exception:  # pylint: disable=broad-except
-            log.exception(
+            log.debug(
                 "failed to check the health of member %s", member.name
             )
             unhealthy_member += 1
