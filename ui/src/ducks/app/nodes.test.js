@@ -66,7 +66,8 @@ it('update the control plane nodes state when fetchNodes', () => {
       bootstrap: false,
       status: 'Ready',
       jid: undefined,
-      metalk8s_version: '2.0'
+      metalk8s_version: '2.0',
+      roles: 'Control Plane'
     }
   ];
 
@@ -128,7 +129,8 @@ it('update the bootstrap nodes state when fetchNodes', () => {
       bootstrap: true,
       status: 'Ready',
       jid: undefined,
-      metalk8s_version: '2.0'
+      metalk8s_version: '2.0',
+      roles: 'Bootstrap / Control Plane'
     }
   ];
 
@@ -189,7 +191,8 @@ it('update the workload plane nodes state when fetchNodes', () => {
       bootstrap: false,
       status: 'Ready',
       jid: undefined,
-      metalk8s_version: '2.0'
+      metalk8s_version: '2.0',
+      roles: 'Workload Plane'
     }
   ];
 
@@ -251,7 +254,8 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
       bootstrap: false,
       status: 'Ready',
       jid: undefined,
-      metalk8s_version: '2.0'
+      metalk8s_version: '2.0',
+      roles: 'Control Plane / Workload Plane'
     }
   ];
   expect(gen.next(result).value).toEqual(

@@ -135,6 +135,17 @@ export function* fetchNodes() {
             status = intl.translate('unknown');
           }
 
+          const roles = [];
+          if (isRolePresentInLabels(node, ApiK8s.ROLE_BOOTSTRAP)) {
+            roles.push(intl.translate('bootstrap'));
+          }
+          if (isRolePresentInLabels(node, ApiK8s.ROLE_MASTER)) {
+            roles.push(intl.translate('control_plane'));
+          }
+          if (isRolePresentInLabels(node, ApiK8s.ROLE_NODE)) {
+            roles.push(intl.translate('workload_plane'));
+          }
+
           return {
             name: node.metadata.name,
             metalk8s_version:
@@ -143,7 +154,8 @@ export function* fetchNodes() {
             control_plane: isRolePresentInLabels(node, ApiK8s.ROLE_MASTER),
             workload_plane: isRolePresentInLabels(node, ApiK8s.ROLE_NODE),
             bootstrap: isRolePresentInLabels(node, ApiK8s.ROLE_BOOTSTRAP),
-            jid: getJidFromNameLocalStorage(node.metadata.name)
+            jid: getJidFromNameLocalStorage(node.metadata.name),
+            roles: roles.join(' / ')
           };
         })
       )
