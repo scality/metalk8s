@@ -38,7 +38,6 @@ def transient_files(host):
 # }}}
 
 
-@pytest.mark.skip(reason="Flaky test, needs to be fixed (#1304)")
 @scenario(
     "../features/static_pods.feature",
     "Static Pods restart on configuration change",
