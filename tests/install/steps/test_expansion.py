@@ -11,7 +11,6 @@ import yaml
 from tests import utils
 
 # Scenarios
-@pytest.mark.skip(reason="Flaky test, needs to be fixed (#1305)")
 @scenario('../features/expansion.feature',
           'Add one node to the cluster',
           strict_gherkin=False)
@@ -41,7 +40,7 @@ def declare_node(
 
 
 @when(parsers.parse('we deploy the node "{name}"'))
-def deploy_node(ssh_config, version, k8s_client, name):
+def deploy_node(host, ssh_config, version, name):
     node_name = utils.resolve_hostname(name, ssh_config)
     accept_ssh_key = [
         'salt-ssh', '-i', node_name, 'test.ping', '--roster=kubernetes'
@@ -50,10 +49,10 @@ def deploy_node(ssh_config, version, k8s_client, name):
     deploy = [
         'salt-run', 'state.orchestrate', 'metalk8s.orchestrate.deploy_node',
         'saltenv=metalk8s-{}'.format(version),
-        'pillar={}'.format(json.dumps(pillar))
+        "pillar='{}'".format(json.dumps(pillar))
     ]
-    run_salt_command(k8s_client, accept_ssh_key, ssh_config)
-    run_salt_command(k8s_client, deploy, ssh_config)
+    run_salt_command(host, accept_ssh_key, ssh_config)
+    run_salt_command(host, deploy, ssh_config)
 
 
 # }}}
@@ -101,6 +100,33 @@ def check_etcd_role(ssh_config, k8s_client, node_name):
 # }}}
 # Helpers {{{
 
+def kubectl_exec(
+    host,
+    command,
+    pod,
+    kubeconfig='/etc/kubernetes/admin.conf',
+    **kwargs
+):
+    """Grab the return code from a `kubectl exec`"""
+    kube_args = ['--kubeconfig', kubeconfig]
+
+    if kwargs.get('container'):
+        kube_args.extend(['-c', kwargs.get('container')])
+    if kwargs.get('namespace'):
+        kube_args.extend(['-n', kwargs.get('namespace')])
+
+    kubectl_cmd_tplt = 'kubectl exec {} {} -- {}'
+
+    with host.sudo():
+        output = host.run(
+            kubectl_cmd_tplt.format(
+                pod,
+                ' '.join(kube_args),
+                ' '.join(command)
+            )
+        )
+        return output
+
 def get_node_ip(hostname, ssh_config, bootstrap_config):
     """Return the IP of the node `hostname`.
     We have to jump through hoops because `testinfra` does not provide a simple
@@ -125,18 +151,26 @@ def node_from_manifest(manifest):
     manifest['api_version'] = manifest.pop('apiVersion')
     return k8s.client.V1Node(**manifest)
 
-def run_salt_command(k8s_client, command, ssh_config):
+def run_salt_command(host, command, ssh_config):
     """Run a command inside the salt-master container."""
-    name = 'salt-master-{}'.format(
+
+    pod = 'salt-master-{}'.format(
         utils.resolve_hostname('bootstrap', ssh_config)
     )
-    stderr = k8s.stream.stream(
-        k8s_client.connect_get_namespaced_pod_exec,
-        name=name, namespace='kube-system', container='salt-master',
-        command=command,
-        stderr=True, stdin=False, stdout=False, tty=False
+
+    output = kubectl_exec(
+        host,
+        command,
+        pod,
+        container='salt-master',
+        namespace='kube-system'
     )
-    assert not stderr, 'deploy failed with {}'.format(stderr)
+
+    assert output.exit_status == 0, \
+        'deploy failed with: \nout: {}\nerr:'.format(
+            output.stdout,
+            output.stderr
+        )
 
 def etcdctl(k8s_client, command, ssh_config):
     """Run an etcdctl command inside the etcd container."""
