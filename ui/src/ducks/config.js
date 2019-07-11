@@ -7,12 +7,10 @@ import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
 
 import { fetchUserInfo } from './login';
-import { EN_LANG, FR_LANG } from '../constants';
-
-const LANGUAGE = 'language';
+import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 
 // Actions
-const SET_LANG = 'SET_LANG';
+export const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
 const FETCH_THEME = 'FETCH_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
@@ -107,8 +105,9 @@ export function* setInitialLanguage() {
 }
 
 export function* updateLanguage(action) {
-  localStorage.setItem(LANGUAGE, yield select(state => state.config.language));
   yield put(setLanguageAction(action.payload));
+  const language = yield select(state => state.config.language);
+  localStorage.setItem(LANGUAGE, language);
 }
 
 export function* configSaga() {
