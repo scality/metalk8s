@@ -27,7 +27,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 
 # NOTE: the tox package available is too old; we want tox >= 3.4, for the
 # `commands_pre` syntax
-RUN python3.6 -m pip install tox && \
+RUN python3.6 -m pip install tox==3.9.0 && \
     rm -rf ~/.cache/pip
 
 WORKDIR /usr/src/metalk8s
