@@ -89,7 +89,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
-                        // TODO Remove the finalizer from the generated PV, if exists
+			// TODO Remove the finalizer from the generated PV, if exists
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -129,10 +129,10 @@ func newPersistentVolumeForCR(cr *storagev1alpha1.Volume) *corev1.PersistentVolu
 	return &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   cr.Name,
-                        Labels: map[string]string{},
-                        Finalizers: []string{
-                                "storage.metalk8s.scality.com/volume-protection",
-                        },
+			Labels: map[string]string{},
+			Finalizers: []string{
+				"storage.metalk8s.scality.com/volume-protection",
+			},
 		},
 		Spec: corev1.PersistentVolumeSpec{
 			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
@@ -146,7 +146,7 @@ func newPersistentVolumeForCR(cr *storagev1alpha1.Volume) *corev1.PersistentVolu
 			},
 			PersistentVolumeReclaimPolicy: "Retain",
 			StorageClassName:              cr.Spec.StorageClassName,
-                        NodeAffinity:                  nodeAffinity(cr.Spec.NodeName),
+			NodeAffinity:                  nodeAffinity(cr.Spec.NodeName),
 		},
 	}
 }
@@ -155,13 +155,13 @@ func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
 	selector := corev1.NodeSelector{
 		NodeSelectorTerms: []corev1.NodeSelectorTerm{
 			{
-                                MatchExpressions: []corev1.NodeSelectorRequirement{
-                                        {
-                                                Key: "kubernetes.io/hostname",
-                                                Operator: corev1.NodeSelectorOpIn,
-                                                Values: []string{string(node)},
-                                        },
-                                },
+				MatchExpressions: []corev1.NodeSelectorRequirement{
+					{
+						Key:      "kubernetes.io/hostname",
+						Operator: corev1.NodeSelectorOpIn,
+						Values:   []string{string(node)},
+					},
+				},
 				MatchFields: []corev1.NodeSelectorRequirement{
 					{
 						Key:      "metadata.name",
