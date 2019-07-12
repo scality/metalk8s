@@ -99,4 +99,24 @@ def node_uncordon(node_name, **kwargs):
 
         salt '*' kubernetes.node_uncordon  node_name="minikube"
     '''
+    # k-c-m 1.12 adds taint `node.kubernetes.io/unschedulable` when cordonning
+    # a node but k-c-m 1.11 does not remove this taint when uncordonning so,
+    # we need to manually remove it when necessary by patching taints.
+
+    all_node_taints = __salt__['metalk8s_kubernetes.node_taints'](
+        node_name, **kwargs
+    )
+    key_to_remove = "node.kubernetes.io/unschedulable"
+
+    if key_to_remove in (taint['key'] for taint in all_node_taints):
+        new_taints = [
+            taint for taint in all_node_taints
+            if taint['key'] != key_to_remove
+        ]
+        __salt__['metalk8s_kubernetes.node_set_taints'](
+            node_name=node_name,
+            taints=new_taints,
+            **kwargs
+        )
+
     return node_set_unschedulable(node_name, False, **kwargs)

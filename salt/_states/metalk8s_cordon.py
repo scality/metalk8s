@@ -52,7 +52,6 @@ def _node_set_unschedulable(name, value, **kwargs):
     return ret
 
 
-
 def node_cordoned(name, **kwargs):
     '''
     Ensures that the named node is cordoned.
