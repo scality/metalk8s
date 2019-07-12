@@ -345,6 +345,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/repo/installed.sls'),
     Path('salt/metalk8s/repo/macro.sls'),
     Path('salt/metalk8s/repo/redhat.sls'),
+    Path('salt/metalk8s/repo/debian.sls'),
 
     Path('salt/metalk8s/roles/bootstrap/absent.sls'),
     Path('salt/metalk8s/roles/bootstrap/init.sls'),
