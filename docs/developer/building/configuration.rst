@@ -18,6 +18,8 @@ Available options are:
 - ``MKISOFS_BIN``: mkisofs binary (name or path to the binary)
 - ``SKOPEO_BIN``: skopeo binary (name or path to the binary)
 - ``VAGRANT_BIN``: Vagrant binary (name or path to the binary)
+- ``GOFMT_BIN``: gofmt binary (name or path to the binary)
+- ``OPERATOR_SDK_BIN``: the Operator SDK binary (name or path to the binary)
 
 Default settings are equivalent to the following ``.env``:
 
@@ -33,3 +35,5 @@ Default settings are equivalent to the following ``.env``:
    export MKISOFS_BIN=mkisofs
    export SKOPEO_BIN=skopeo
    export VAGRANT_BIN=vagrant
+   export GOFMT_BIN=gofmt
+   export OPERATOR_SDK_BIN=operator-sdk
