@@ -63,6 +63,8 @@ class ExtCommand(enum.Enum):
         """Return the name of the command."""
         if self is self.OPERATOR_SDK:
             return 'operator-sdk'
+        # See https://github.com/PyCQA/pylint/issues/2062
+        # pylint: disable=no-member
         return self.name.lower()
 
 # }}}
