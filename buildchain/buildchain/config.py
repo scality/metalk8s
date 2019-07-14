@@ -52,11 +52,12 @@ VAGRANT_UP_ARGS : Tuple[str, ...] = tuple(shlex.split(
 class ExtCommand(enum.Enum):
     """External commands used by the build chain."""
 
-    GIT      = os.getenv('GIT_BIN',      'git')
-    HARDLINK = os.getenv('HARDLINK_BIN', 'hardlink')
-    MKISOFS  = os.getenv('MKISOFS_BIN',  'mkisofs')
-    SKOPEO   = os.getenv('SKOPEO_BIN',   'skopeo')
-    VAGRANT  = os.getenv('VAGRANT_BIN',  'vagrant')
+    GIT          = os.getenv('GIT_BIN',          'git')
+    HARDLINK     = os.getenv('HARDLINK_BIN',     'hardlink')
+    MKISOFS      = os.getenv('MKISOFS_BIN',      'mkisofs')
+    SKOPEO       = os.getenv('SKOPEO_BIN',       'skopeo')
+    VAGRANT      = os.getenv('VAGRANT_BIN',      'vagrant')
+    OPERATOR_SDK = os.getenv('OPERATOR_SDK_BIN', 'operator-sdk')
 
     @property
     def command_name(self) -> str:

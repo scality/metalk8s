@@ -20,6 +20,7 @@ epel
 filename
 init
 io
+Kubernetes
 linter
 metadata
 mkdir
@@ -33,6 +34,7 @@ rpmspec
 repo
 rpmlint
 scality
+sdk
 skopeo
 sls
 timestamp
