@@ -38,7 +38,7 @@ def task_check_for() -> Iterator[types.TaskDict]:
         return None
 
     for ext_cmd in config.ExtCommand:
-        cmd_name = ext_cmd.name.lower()
+        cmd_name = ext_cmd.command_name
         cmd_path = ext_cmd.value if ext_cmd.value != cmd_name else None
 
         def show(name: str) -> str:
