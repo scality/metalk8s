@@ -181,33 +181,37 @@ class LocalImage(image.ContainerImage):
     def _build_actions(self) -> List[types.Action]:
         """Build a container image locally."""
         actions: List[types.Action] = [self.check_dockerfile_dependencies]
+        actions.extend(self._do_build())
+        actions.extend(self._do_save())
+        return actions
 
+    def _do_build(self) -> List[types.Action]:
+        """Return the actions used to build the image."""
         docker_build = docker_command.DockerBuild(
             tag=self.tag,
             path=self.dockerfile.parent,
             dockerfile=self.dockerfile,
             buildargs=self.build_args
         )
-        actions.append(docker_build)
+        return [docker_build]
 
-        # If a destination is defined, let's save the image there.
-        if self.save_on_disk:
-            cmd = [
-                config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
-                '--insecure-policy', 'copy', '--format', 'v2s2',
-                '--dest-compress',
-            ]
-            docker_host = os.getenv('DOCKER_HOST')
-            if docker_host is not None:
-                cmd.extend([
-                    '--src-daemon-host', 'http://{}'.format(docker_host)
-                ])
-            cmd.append('docker-daemon:{}'.format(self.tag))
-            cmd.append('dir:{}'.format(str(self.dirname)))
-            actions.append(self.mkdirs)
-            actions.append(cmd)
-        else:
+    def _do_save(self) -> List[types.Action]:
+        """Return the actions used to save the image."""
+        if not self.save_on_disk:
             # If we don't save the image, at least we touch a file
             # (to keep track of the build).
-            actions.append((coreutils.touch, [self.dest_dir/self.tag], {}))
-        return actions
+            return [(coreutils.touch, [self.dest_dir/self.tag], {})]
+        # If a destination is defined, let's save the image there.
+        cmd = [
+            config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
+            '--insecure-policy', 'copy', '--format', 'v2s2',
+            '--dest-compress',
+        ]
+        docker_host = os.getenv('DOCKER_HOST')
+        if docker_host is not None:
+            cmd.extend([
+                '--src-daemon-host', 'http://{}'.format(docker_host)
+            ])
+        cmd.append('docker-daemon:{}'.format(self.tag))
+        cmd.append('dir:{}'.format(str(self.dirname)))
+        return [self.mkdirs, cmd]
