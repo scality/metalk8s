@@ -344,6 +344,13 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         },
         task_dep=['_image_mkdir_root'],
     ),
+    targets.OperatorImage(
+        name='storage-operator',
+        version='latest',
+        destination=constants.ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+        file_dep=list(constants.STORAGE_OPERATOR_SOURCES)
+    ),
 )
 
 

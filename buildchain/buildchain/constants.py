@@ -6,7 +6,7 @@
 
 from pathlib import Path
 import subprocess
-from typing import Optional
+from typing import Optional, FrozenSet
 
 from buildchain import ROOT  # Re-export ROOT through this module.
 from buildchain import config
@@ -39,6 +39,8 @@ VAGRANT_ROOT : Path = ROOT/'.vagrant'
 STATIC_CONTAINER_REGISTRY : Path = Path(
     ROOT, 'buildchain/static-container-registry'
 )
+# Path to the storage-operator source directory.
+STORAGE_OPERATOR_ROOT : Path = ROOT/'storage-operator'
 
 # }}}
 # Vagrant parameters {{{
@@ -103,3 +105,8 @@ def git_ref() -> Optional[str]:
 GIT_REF = git_ref()
 
 # }}}
+
+STORAGE_OPERATOR_SOURCES : FrozenSet[Path] = frozenset([
+    filepath for filepath in STORAGE_OPERATOR_ROOT.rglob('*.go')
+    if 'vendor' not in str(filepath.parent)
+])
