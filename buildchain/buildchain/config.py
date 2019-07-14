@@ -58,4 +58,11 @@ class ExtCommand(enum.Enum):
     SKOPEO   = os.getenv('SKOPEO_BIN',   'skopeo')
     VAGRANT  = os.getenv('VAGRANT_BIN',  'vagrant')
 
+    @property
+    def command_name(self) -> str:
+        """Return the name of the command."""
+        if self is self.OPERATOR_SDK:
+            return 'operator-sdk'
+        return self.name.lower()
+
 # }}}
