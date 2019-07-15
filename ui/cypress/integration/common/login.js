@@ -3,7 +3,6 @@ import { Given } from 'cypress-cucumber-preprocessor/steps';
 Given('I log in', () => {
   const target_url = Cypress.env('target_url');
   cy.visit(target_url);
-
   cy.server();
   cy.route('GET', '/api/v1').as('getAPIResourceList');
   cy.route('GET', '**/alerts').as('getAlerts');

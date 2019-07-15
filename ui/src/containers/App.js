@@ -18,8 +18,8 @@ import { fetchConfigAction, setInitialLanguageAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
 
 const messages = {
-  en: translations_en,
-  fr: translations_fr
+  EN: translations_en,
+  FR: translations_fr
 };
 
 addLocaleData([...locale_en, ...locale_fr]);
