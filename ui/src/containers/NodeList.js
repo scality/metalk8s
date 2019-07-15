@@ -134,21 +134,6 @@ const NodeList = props => {
 
   const nodesSortedList = sortSelector(nodes, sortBy, sortDirection);
 
-  const nodesSortedListWithRoles = nodesSortedList.map(node => {
-    let roles = [];
-    if (node.bootstrap) {
-      roles.push(intl.messages.bootstrap);
-    }
-    if (node.control_plane) {
-      roles.push(intl.messages.control_plane);
-    }
-    if (node.workload_plane) {
-      roles.push(intl.messages.workload_plane);
-    }
-    node.roles = roles.join(' / ');
-    return node;
-  });
-
   return (
     <PageContainer>
       <ActionContainer>
@@ -160,7 +145,7 @@ const NodeList = props => {
       </ActionContainer>
       <TableContainer>
         <Table
-          list={nodesSortedListWithRoles}
+          list={nodesSortedList}
           columns={columns}
           disableHeader={false}
           headerHeight={40}
