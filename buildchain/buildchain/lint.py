@@ -91,15 +91,12 @@ def lint_yaml() -> types.TaskDict:
 
 def lint_go() -> types.TaskDict:
     """Run Go linting."""
-    # Only keep directories (except `vendor`) and top-level Go source files.
-    targets = [
-        path.name for path in constants.STORAGE_OPERATOR_ROOT.glob('*')
-        if (path.is_dir() and path.name != 'vendor') or path.suffix == '.go'
-    ]
-
     def check_go_fmt() -> Optional[doit.exceptions.TaskError]:
         cwd  = constants.STORAGE_OPERATOR_ROOT
-        cmd  = [config.ExtCommand.GOFMT.value, '-s', '-d', *targets]
+        cmd  = [
+            config.ExtCommand.GOFMT.value, '-s', '-d',
+            *tuple(constants.STORAGE_OPERATOR_FMT_ARGS)
+        ]
         diff = subprocess.check_output(cmd, cwd=cwd)
         if diff:
             return doit.exceptions.TaskError(

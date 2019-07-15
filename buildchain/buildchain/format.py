@@ -23,14 +23,10 @@ def task_format() -> Iterator[types.TaskDict]:
 
 def format_go() -> types.TaskDict:
     """Format Go code using gofmt."""
-    # Only keep directories (except `vendor`) and top-level Go source files.
-    targets = [
-        path.name for path in constants.STORAGE_OPERATOR_ROOT.glob('*')
-        if (path.is_dir() and path.name != 'vendor') or path.suffix == '.go'
-    ]
     cwd  = constants.STORAGE_OPERATOR_ROOT
     cmd = ' '.join(map(shlex.quote, [
-        config.ExtCommand.GOFMT.value, '-s', '-w', *targets
+        config.ExtCommand.GOFMT.value, '-s', '-w',
+        *tuple(constants.STORAGE_OPERATOR_FMT_ARGS)
     ]))
 
     return {
