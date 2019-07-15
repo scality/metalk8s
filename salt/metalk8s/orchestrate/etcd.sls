@@ -14,7 +14,7 @@ Sync {{ node }} minion:
     - tgt: {{ node }}
     - saltenv: metalk8s-{{ dest_version }}
 
-Upgrade etcd {{ node }} to {{ dest_version }}:
+Deploy etcd {{ node }} to {{ dest_version }}:
   salt.state:
     - tgt: {{ node }}
     - sls:
@@ -33,7 +33,7 @@ Check etcd cluster health for {{ node }}:
       - minion_id: {{ node }}
     - attemps: 5
     - require:
-      - salt: Upgrade etcd {{ node }} to {{ dest_version }}
+      - salt: Deploy etcd {{ node }} to {{ dest_version }}
 
   {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
   {%- set previous_node = node %}
