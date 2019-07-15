@@ -10,14 +10,19 @@ is run in its own sub-task (so that you can run a single one and/or run several
 linting tools in parallel).
 
 Overview:
-
-                ┌────────────┐
-            ───>│ lint:yaml  │
-┌────────┐╱     └────────────┘
+                ┌──────────────┐
+           ╱───>│ lint:python  │
+          ╱     └──────────────┘
+         ╱      ┌──────────────┐
+        ╱   ───>│ lint:yaml    │
+┌────────┐╱     └──────────────┘
 │  lint  │
-└────────┘╲     ┌────────────┐
-            ───>│ lint:shell │
-                └────────────┘
+└────────┘╲     ┌──────────────┐
+        ╲   ───>│ lint:shell   │
+         ╲      └──────────────┘
+          ╲     ┌──────────────┐
+           ╲───>│ lint:go      │
+                └──────────────┘
 """
 
 
