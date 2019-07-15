@@ -2,41 +2,34 @@
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}
 
-Execute the upgrade prechecks:
+Execute the downgrade prechecks:
   salt.runner:
     - name: state.orchestrate
     - mods:
-      - metalk8s.orchestrate.upgrade.precheck
+      - metalk8s.orchestrate.downgrade.precheck
     - saltenv: {{ saltenv }}
     - pillar:
         orchestrate:
           dest_version: {{ dest_version }}
-
-Upgrade etcd cluster:
-  salt.runner:
-    - name: state.orchestrate
-    - mods:
-      - metalk8s.orchestrate.etcd
-    - saltenv: {{ saltenv }}
-    - pillar:
-        orchestrate:
-          dest_version: {{ dest_version }}
-    - require:
-      - salt: Execute the upgrade prechecks
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
 
-{%- for node in cp_nodes + other_nodes %}
+{%- for node in other_nodes + cp_nodes %}
 
   {%- set node_version = pillar.metalk8s.nodes[node].version|string %}
   {%- set version_cmp = salt.pkg.version_cmp(dest_version, node_version) %}
-  {#- If dest_version = 2.1.0-dev and node_version = 2.1.0, version_cmp = 0
-      but we should not upgrade this node #}
-  {%- if version_cmp == -1
-      or (version_cmp == 0 and dest_version != node_version and '-' not in node_version) %}
+  {#- If dest_version = 2.1.0 and node_version = 2.1.0-dev, version_cmp = 0
+      but we should not downgrade this node #}
+  {%- if version_cmp == 1
+      or (version_cmp == 0 and dest_version != node_version and '-' not in dest_version) %}
 
-Skip node {{ node }}, already in {{ node_version }} newer than {{ dest_version }}:
+Skip node {{ node }}, already in {{ node_version }} older than {{ dest_version }}:
+  test.succeed_without_changes
+
+  {%- elif 'bootstrap' in pillar.metalk8s.nodes[node].roles %}
+
+Skip node {{ node }}, bootstrap node downgrade should be done later:
   test.succeed_without_changes
 
   {%- else %}
@@ -49,7 +42,7 @@ Set node {{ node }} version to {{ dest_version }}:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - require:
-      - salt: Upgrade etcd cluster
+      - salt: Execute the downgrade prechecks
     {%- if previous_node is defined %}
       - salt: Deploy node {{ previous_node }}
     {%- endif %}
@@ -70,7 +63,7 @@ Deploy node {{ node }}:
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
-      - salt: Deploy Kubernetes objects
+      - salt: Downgrade etcd cluster
 
     {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
     {%- set previous_node = node %}
@@ -79,6 +72,18 @@ Deploy node {{ node }}:
 
 {%- endfor %}
 
+Downgrade etcd cluster:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.orchestrate.etcd
+    - saltenv: {{ saltenv }}
+    - pillar:
+        orchestrate:
+          dest_version: {{ dest_version }}
+    - require:
+      - salt: Execute the downgrade prechecks
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate
@@ -86,7 +91,7 @@ Deploy Kubernetes objects:
       - metalk8s.deployed
     - saltenv: metalk8s-{{ dest_version }}
     - require:
-      - salt: Upgrade etcd cluster
+      - salt: Downgrade etcd cluster
 
 Precheck for MetalK8s UI:
   salt.runner:
