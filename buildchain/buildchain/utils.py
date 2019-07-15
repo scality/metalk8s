@@ -48,7 +48,7 @@ def build_relpath(path: Path) -> Path:
 
 
 def title_with_target1(command: str, task: types.Task) -> str:
-    """Return a title with the command prefixed with the first target.
+    """Return a title with the command suffixed with the first target.
 
     Arguments:
         command: name of the command
