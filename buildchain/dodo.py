@@ -13,6 +13,7 @@ from buildchain.build import *
 from buildchain.deps import *
 from buildchain.image import *
 from buildchain.iso import *
+from buildchain.format import *
 from buildchain.lint import *
 from buildchain.packaging import *
 from buildchain.salt_tree import *
