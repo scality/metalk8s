@@ -58,6 +58,7 @@ class ExtCommand(enum.Enum):
     SKOPEO       = os.getenv('SKOPEO_BIN',       'skopeo')
     VAGRANT      = os.getenv('VAGRANT_BIN',      'vagrant')
     OPERATOR_SDK = os.getenv('OPERATOR_SDK_BIN', 'operator-sdk')
+    GOFMT        = os.getenv('GOFMT_BIN',        'gofmt')
 
     @property
     def command_name(self) -> str:

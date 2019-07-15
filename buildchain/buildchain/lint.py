@@ -24,10 +24,12 @@ Overview:
 import os
 import shlex
 from pathlib import Path
-from typing import Callable, Iterator, List, Tuple
+import subprocess
+from typing import Callable, Iterator, List, Optional, Tuple
 
 import doit  # type: ignore
 
+from buildchain import config
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
@@ -79,12 +81,39 @@ def lint_yaml() -> types.TaskDict:
         'file_dep': list(constants.ROOT.glob('salt/**/*.yaml')),
     }
 
+def lint_go() -> types.TaskDict:
+    """Run Go linting."""
+    # Only keep directories (except `vendor`) and top-level Go source files.
+    targets = [
+        path.name for path in constants.STORAGE_OPERATOR_ROOT.glob('*')
+        if (path.is_dir() and path.name != 'vendor') or path.suffix == '.go'
+    ]
+
+    def check_go_fmt() -> Optional[doit.exceptions.TaskError]:
+        cwd  = constants.STORAGE_OPERATOR_ROOT
+        cmd  = [config.ExtCommand.GOFMT.value, '-s', '-d', *targets]
+        diff = subprocess.check_output(cmd, cwd=cwd)
+        if diff:
+            return doit.exceptions.TaskError(
+                msg='badly formatted Go code, please run `doit.sh format:go`'
+            )
+        return None
+
+    return {
+        'name': 'go',
+        'doc': lint_go.__doc__,
+        'actions': [check_go_fmt],
+        'task_dep': ['check_for:gofmt'],
+        'file_dep': list(constants.STORAGE_OPERATOR_SOURCES),
+    }
+
 
 # List of available linter task.
 LINTERS : Tuple[Callable[[], types.TaskDict], ...] = (
     lint_python,
     lint_shell,
     lint_yaml,
+    lint_go,
 )
 
 
