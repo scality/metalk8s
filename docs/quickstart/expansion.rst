@@ -31,7 +31,6 @@ control-plane to a total of three members), and twice for workload-plane Nodes.
    - explain architecture: 3 control-plane + etcd, 2 workers (one being
      dedicated for infra)
    - remind roles and taints from intro
-   - make sure the UI can set ``infra`` role/taint
 
 
 .. _quickstart-expansion-ui:
@@ -70,6 +69,8 @@ The MetalK8s GUI provides a simple form for that purpose.
      workload applications
    - **Roles/Control Plane**: check this box if the new Node should run
      control-plane services
+   - **Roles/Infra**: check this box if the new Node should run
+     infra services
 
 #. Click "Create". You will be redirected to the Node list page, and will be
    shown a notification to confirm the Node creation:

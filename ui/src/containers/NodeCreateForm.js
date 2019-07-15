@@ -60,7 +60,8 @@ const initialValues = {
   ssh_key_path: '',
   sudo_required: false,
   workload_plane: true,
-  control_plane: false
+  control_plane: false,
+  infra: false
 };
 
 const validationSchema = Yup.object().shape({
@@ -72,7 +73,8 @@ const validationSchema = Yup.object().shape({
   ssh_key_path: Yup.string().required(),
   sudo_required: Yup.boolean().required(),
   workload_plane: Yup.boolean().required(),
-  control_plane: Yup.boolean().required()
+  control_plane: Yup.boolean().required(),
+  infra: Yup.boolean().required()
 });
 
 class NodeCreateForm extends React.Component {
@@ -177,7 +179,9 @@ class NodeCreateForm extends React.Component {
                   onChange={handleChange('workload_plane')}
                   onBlur={handleOnBlur}
                   error={
-                    values.workload_plane || values.control_plane
+                    values.workload_plane ||
+                    values.control_plane ||
+                    values.infra
                       ? ''
                       : intl.messages.role_values_error
                   }
@@ -191,7 +195,25 @@ class NodeCreateForm extends React.Component {
                   onChange={handleChange('control_plane')}
                   onBlur={handleOnBlur}
                   error={
-                    values.workload_plane || values.control_plane
+                    values.workload_plane ||
+                    values.control_plane ||
+                    values.infra
+                      ? ''
+                      : intl.messages.role_values_error
+                  }
+                />
+                <Input
+                  type="checkbox"
+                  name="infra"
+                  label={intl.messages.infra}
+                  checked={values.infra}
+                  value={values.infra}
+                  onChange={handleChange('infra')}
+                  onBlur={handleOnBlur}
+                  error={
+                    values.workload_plane ||
+                    values.control_plane ||
+                    values.infra
                       ? ''
                       : intl.messages.role_values_error
                   }
@@ -209,7 +231,11 @@ class NodeCreateForm extends React.Component {
                     disabled={
                       !dirty ||
                       !isEmpty(errors) ||
-                      !(values.workload_plane || values.control_plane)
+                      !(
+                        values.workload_plane ||
+                        values.control_plane ||
+                        values.infra
+                      )
                     }
                   />
                 </ActionContainer>
