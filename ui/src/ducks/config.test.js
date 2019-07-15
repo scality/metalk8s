@@ -85,7 +85,7 @@ it('set initial language from browser', () => {
   expect(localStorage.removeItem(LANGUAGE));
   const gen = setInitialLanguage();
 
-  const language = navigator.language.startsWith(FR_LANG) ? FR_LANG : EN_LANG;
+  const language = navigator.language.startsWith('fr') ? FR_LANG : EN_LANG;
   expect(gen.next().value).toEqual(put({ type: SET_LANG, payload: language }));
   expect(gen.next().done).toEqual(true);
 });
