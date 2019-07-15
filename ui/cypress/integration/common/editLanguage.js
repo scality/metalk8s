@@ -7,5 +7,8 @@ Then('I change the language by click the dropdown in the narbar', () => {
     .click();
   cy.get('[data-cy=FR]').click();
 
-  cy.get('.sc-trigger-text').should('contain', 'FR');
+  cy.get('.sc-dropdown')
+    .eq(0)
+    .get('.sc-trigger-text')
+    .should('contain', 'FR');
 });
