@@ -45,6 +45,7 @@ def task_lint() -> Iterator[types.TaskDict]:
     for create_lint_task in LINTERS:
         yield create_lint_task()
 
+# Python {{{
 
 def lint_python() -> types.TaskDict:
     """Run Python linting."""
@@ -64,6 +65,8 @@ def lint_python() -> types.TaskDict:
         'file_dep': python_sources,
     }
 
+# }}}
+# Shell {{{
 
 def lint_shell() -> types.TaskDict:
     """Run shell scripts linting."""
@@ -78,6 +81,8 @@ def lint_shell() -> types.TaskDict:
         'file_dep': shell_scripts,
     }
 
+# }}}
+# YAML {{{
 
 def lint_yaml() -> types.TaskDict:
     """Run YAML linting."""
@@ -89,30 +94,56 @@ def lint_yaml() -> types.TaskDict:
         'file_dep': list(constants.ROOT.glob('salt/**/*.yaml')),
     }
 
+# }}}
+# Go {{{
+
+def check_go_fmt() -> Optional[doit.exceptions.TaskError]:
+    """Check if Go code is properly formatted."""
+    cwd  = constants.STORAGE_OPERATOR_ROOT
+    cmd  = [
+        config.ExtCommand.GOFMT.value, '-s', '-d',
+        *tuple(constants.STORAGE_OPERATOR_FMT_ARGS)
+    ]
+    diff = subprocess.check_output(cmd, cwd=cwd)
+    if diff:
+        return doit.exceptions.TaskError(
+            msg='badly formatted Go code, please run `doit.sh format:go`'
+        )
+    return None
+
+
+def check_go_codegen() -> Optional[doit.exceptions.TaskError]:
+    """Check if the generated files are up to date."""
+    cwd  = constants.STORAGE_OPERATOR_ROOT
+    git_diff = [config.ExtCommand.GIT.value, 'diff']
+    base = subprocess.check_output(git_diff)
+    for target in ('k8s', 'openapi'):
+        cmd = [config.ExtCommand.OPERATOR_SDK.value, 'generate', target]
+        subprocess.check_call(cmd, cwd=cwd)
+    current = subprocess.check_output(git_diff)
+    # If the diff changed after running the code generation that means that
+    # the generated files are not in sync with the "source" files.
+    if current != base:
+        return doit.exceptions.TaskError(
+            msg='outdated generated Go files, did you run `doit.sh codegen:go`?'
+        )
+    return None
+
+
 def lint_go() -> types.TaskDict:
     """Run Go linting."""
-    def check_go_fmt() -> Optional[doit.exceptions.TaskError]:
-        cwd  = constants.STORAGE_OPERATOR_ROOT
-        cmd  = [
-            config.ExtCommand.GOFMT.value, '-s', '-d',
-            *tuple(constants.STORAGE_OPERATOR_FMT_ARGS)
-        ]
-        diff = subprocess.check_output(cmd, cwd=cwd)
-        if diff:
-            return doit.exceptions.TaskError(
-                msg='badly formatted Go code, please run `doit.sh format:go`'
-            )
-        return None
-
     return {
         'name': 'go',
         'title': _title,
         'doc': lint_go.__doc__,
-        'actions': [check_go_fmt],
-        'task_dep': ['check_for:gofmt'],
+        'actions': [check_go_fmt, check_go_codegen],
+        'task_dep': [
+            'check_for:gofmt', 'check_for:operator-sdk', 'check_for:git'
+        ],
         'file_dep': list(constants.STORAGE_OPERATOR_SOURCES),
     }
 
+# }}}
 
 def _title(task: types.Task) -> str:
     return utils.title_with_subtask_name('LINT', task)
