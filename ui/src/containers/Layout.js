@@ -74,21 +74,21 @@ class Layout extends Component {
     const languages = [
       {
         label: 'Français',
-        name: 'FR',
+        name: FR_LANG,
         onClick: () => {
           this.props.updateLanguage(FR_LANG);
         },
         selected: this.props.language === FR_LANG,
-        'data-cy': 'fr'
+        'data-cy': FR_LANG
       },
       {
         label: 'English',
-        name: 'EN',
+        name: EN_LANG,
         onClick: () => {
           this.props.updateLanguage(EN_LANG);
         },
         selected: this.props.language === EN_LANG,
-        'data-cy': 'en'
+        'data-cy': EN_LANG
       }
     ];
 

@@ -1,14 +1,11 @@
 import { Given } from 'cypress-cucumber-preprocessor/steps';
 
 Given('I log in', () => {
-  window.localStorage.setItem('language', 'en');
   const target_url = Cypress.env('target_url');
   cy.visit(target_url);
-
   cy.server();
   cy.route('GET', '/api/v1').as('getAPIResourceList');
   cy.route('GET', '**/alerts').as('getAlerts');
-  const delayAfter = Cypress.env('delay_after');
 
   const userName = Cypress.env('username');
   const userPassword = Cypress.env('password');
@@ -21,5 +18,4 @@ Given('I log in', () => {
     'contain',
     userName
   );
-  cy.wait(delayAfter);
 });

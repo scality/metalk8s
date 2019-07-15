@@ -97,9 +97,7 @@ export function* setInitialLanguage() {
       : yield put(setLanguageAction(EN_LANG));
   } else {
     yield put(
-      setLanguageAction(
-        navigator.language.startsWith(FR_LANG) ? FR_LANG : EN_LANG
-      )
+      setLanguageAction(navigator.language.startsWith('fr') ? FR_LANG : EN_LANG)
     );
   }
 }
