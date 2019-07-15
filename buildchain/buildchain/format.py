@@ -31,20 +31,12 @@ def format_go() -> types.TaskDict:
 
     return {
         'name': 'go',
-        'title': format_task_title,
+        'title': lambda task: utils.title_with_subtask_name('FORMAT', task),
         'doc': format_go.__doc__,
         'actions': [doit.action.CmdAction(cmd, cwd=cwd)],
         'task_dep': ['check_for:gofmt'],
         'file_dep': list(constants.STORAGE_OPERATOR_SOURCES),
     }
-
-
-def format_task_title(task: types.Task) -> str:
-    """Display a nice title for format tasks."""
-    # Since format tasks are sub-tasks, we extract the sub-task name (after `:`)
-    return '{cmd: <{width}} {name}'.format(
-        cmd='FORMAT', width=constants.CMD_WIDTH, name=task.name.split(':')[1]
-    )
 
 
 # List of available formatting tasks.
