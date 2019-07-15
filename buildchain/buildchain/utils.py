@@ -61,3 +61,19 @@ def title_with_target1(command: str, task: types.Task) -> str:
         cmd=command, width=constants.CMD_WIDTH,
         path=build_relpath(Path(task.targets[0])),
     )
+
+
+def title_with_subtask_name(command: str, task: types.Task) -> str:
+    """Return a title with the command suffixed with the sub-task name.
+
+    Arguments:
+        command: name of the command
+        task: a doit task
+
+    Returns:
+        A string describing the task, with the command name properly padded.
+    """
+    # Extract the sub-task name (the part after `:`) from the task name.
+    return '{cmd: <{width}} {name}'.format(
+        cmd=command, width=constants.CMD_WIDTH, name=task.name.split(':')[1]
+    )

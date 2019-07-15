@@ -58,7 +58,7 @@ def lint_python() -> types.TaskDict:
     env = {'PATH': os.environ['PATH'], 'OSTYPE': os.uname().sysname}
     return {
         'name': 'python',
-        'title': lint_task_title,
+        'title': _title,
         'doc': lint_python.__doc__,
         'actions': [doit.action.CmdAction(cmd, env=env)],
         'file_dep': python_sources,
@@ -72,7 +72,7 @@ def lint_shell() -> types.TaskDict:
         shell_scripts.extend(constants.ROOT.glob('*/*{}'.format(ext)))
     return {
         'name': 'shell',
-        'title': lint_task_title,
+        'title': _title,
         'doc': lint_shell.__doc__,
         'actions': [['tox', '-e', 'lint-shell']],
         'file_dep': shell_scripts,
@@ -83,7 +83,7 @@ def lint_yaml() -> types.TaskDict:
     """Run YAML linting."""
     return {
         'name': 'yaml',
-        'title': lint_task_title,
+        'title': _title,
         'doc': lint_yaml.__doc__,
         'actions': [['tox', '-e', 'lint-yaml']],
         'file_dep': list(constants.ROOT.glob('salt/**/*.yaml')),
@@ -106,7 +106,7 @@ def lint_go() -> types.TaskDict:
 
     return {
         'name': 'go',
-        'title': lint_task_title,
+        'title': _title,
         'doc': lint_go.__doc__,
         'actions': [check_go_fmt],
         'task_dep': ['check_for:gofmt'],
@@ -114,12 +114,8 @@ def lint_go() -> types.TaskDict:
     }
 
 
-def lint_task_title(task: types.Task) -> str:
-    """Display a nice title for lint tasks."""
-    # Since lint tasks are sub-tasks, we extract the sub-task name (after `:`).
-    return '{cmd: <{width}} {name}'.format(
-        cmd='LINT', width=constants.CMD_WIDTH, name=task.name.split(':')[1]
-    )
+def _title(task: types.Task) -> str:
+    return utils.title_with_subtask_name('LINT', task)
 
 
 # List of available linter task.
