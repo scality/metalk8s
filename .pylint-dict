@@ -17,6 +17,7 @@ doit
 dedup
 env
 epel
+gofmt
 filename
 init
 io
