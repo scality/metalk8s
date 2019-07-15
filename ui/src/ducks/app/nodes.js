@@ -40,18 +40,108 @@ const CONNECT_SALT_API = 'CONNECT_SALT_API';
 const UPDATE_EVENTS = 'UPDATE_EVENTS';
 const SUBSCRIBE_DEPLOY_EVENTS = 'SUBSCRIBE_DEPLOY_EVENTS';
 
+export const ROLE_MASTER = 'node-role.kubernetes.io/master';
+export const ROLE_NODE = 'node-role.kubernetes.io/node';
+export const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
+export const ROLE_BOOTSTRAP = 'node-role.kubernetes.io/bootstrap';
+export const ROLE_INFRA = 'node-role.kubernetes.io/infra';
+export const ROLE_PREFIX = 'node-role.kubernetes.io';
+
+export const roleTaintMap = [
+  {
+    control_plane: false,
+    workload_plane: false,
+    bootstrap: true,
+    infra: false,
+    roles: [ROLE_BOOTSTRAP, ROLE_MASTER, ROLE_ETCD, ROLE_INFRA],
+    taints: [
+      {
+        key: ROLE_BOOTSTRAP,
+        effect: 'NoSchedule'
+      },
+      {
+        key: ROLE_INFRA,
+        effect: 'NoSchedule'
+      }
+    ]
+  },
+  {
+    control_plane: true,
+    workload_plane: false,
+    bootstrap: false,
+    infra: false,
+    roles: [ROLE_MASTER, ROLE_ETCD],
+    taints: [
+      {
+        key: ROLE_MASTER,
+        effect: 'NoSchedule'
+      },
+      {
+        key: ROLE_ETCD,
+        effect: 'NoSchedule'
+      }
+    ]
+  },
+  {
+    control_plane: false,
+    workload_plane: true,
+    bootstrap: false,
+    infra: false,
+    roles: [ROLE_NODE]
+  },
+  {
+    control_plane: false,
+    workload_plane: false,
+    bootstrap: false,
+    infra: true,
+    roles: [ROLE_INFRA],
+    taints: [
+      {
+        key: ROLE_INFRA,
+        effect: 'NoSchedule'
+      }
+    ]
+  },
+  {
+    control_plane: true,
+    workload_plane: true,
+    bootstrap: false,
+    infra: false,
+    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_NODE]
+  },
+  {
+    control_plane: true,
+    workload_plane: false,
+    bootstrap: false,
+    infra: true,
+    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_INFRA],
+    taints: [
+      {
+        key: ROLE_INFRA,
+        effect: 'NoSchedule'
+      }
+    ]
+  },
+  {
+    control_plane: false,
+    workload_plane: true,
+    bootstrap: false,
+    infra: true,
+    roles: [ROLE_INFRA]
+  },
+  {
+    control_plane: true,
+    workload_plane: true,
+    bootstrap: false,
+    infra: true,
+    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_INFRA]
+  }
+];
+
 // Reducer
 const defaultState = {
   list: [],
   events: {}
-};
-
-const isRolePresentInLabels = (node, role) => {
-  return (
-    node.metadata &&
-    node.metadata.labels &&
-    node.metadata.labels[role] !== undefined
-  );
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -135,15 +225,35 @@ export function* fetchNodes() {
             status = intl.translate('unknown');
           }
 
-          const roles = [];
-          if (isRolePresentInLabels(node, ApiK8s.ROLE_BOOTSTRAP)) {
-            roles.push(intl.translate('bootstrap'));
-          }
-          if (isRolePresentInLabels(node, ApiK8s.ROLE_MASTER)) {
-            roles.push(intl.translate('control_plane'));
-          }
-          if (isRolePresentInLabels(node, ApiK8s.ROLE_NODE)) {
-            roles.push(intl.translate('workload_plane'));
+          const roleTaintMatched = roleTaintMap.find(item => {
+            const nodeRoles = Object.keys(node.metadata.labels).filter(role =>
+              role.includes(ROLE_PREFIX)
+            );
+
+            return (
+              nodeRoles.length === item.roles.length &&
+              nodeRoles.every(role => item.roles.includes(role)) &&
+              (item.taints && node.spec.taints
+                ? node.spec.taints.every(taint =>
+                    item.taints.find(item => item.key === taint.key)
+                  )
+                : item.taints === node.spec.taints)
+            );
+          });
+          const rolesLabel = [];
+          if (roleTaintMatched) {
+            if (roleTaintMatched.bootstrap) {
+              rolesLabel.push(intl.translate('bootstrap'));
+            }
+            if (roleTaintMatched.control_plane) {
+              rolesLabel.push(intl.translate('control_plane'));
+            }
+            if (roleTaintMatched.workload_plane) {
+              rolesLabel.push(intl.translate('workload_plane'));
+            }
+            if (roleTaintMatched.infra) {
+              rolesLabel.push(intl.translate('infra'));
+            }
           }
 
           return {
@@ -151,11 +261,12 @@ export function* fetchNodes() {
             metalk8s_version:
               node.metadata.labels['metalk8s.scality.com/version'],
             status: status,
-            control_plane: isRolePresentInLabels(node, ApiK8s.ROLE_MASTER),
-            workload_plane: isRolePresentInLabels(node, ApiK8s.ROLE_NODE),
-            bootstrap: isRolePresentInLabels(node, ApiK8s.ROLE_BOOTSTRAP),
+            control_plane: roleTaintMatched && roleTaintMatched.control_plane,
+            workload_plane: roleTaintMatched && roleTaintMatched.workload_plane,
+            bootstrap: roleTaintMatched && roleTaintMatched.bootstrap,
+            infra: roleTaintMatched && roleTaintMatched.infra,
             jid: getJidFromNameLocalStorage(node.metadata.name),
-            roles: roles.join(' / ')
+            roles: rolesLabel.join(' / ')
           };
         })
       )
@@ -204,7 +315,36 @@ export function* getJobStatus(name) {
 }
 
 export function* createNode({ payload }) {
-  const result = yield call(ApiK8s.createNode, payload);
+  const body = {
+    metadata: {
+      name: payload.name,
+      labels: {
+        'metalk8s.scality.com/version': payload.version
+      },
+      annotations: {
+        'metalk8s.scality.com/ssh-user': payload.ssh_user,
+        'metalk8s.scality.com/ssh-port': payload.ssh_port,
+        'metalk8s.scality.com/ssh-host': payload.hostName_ip,
+        'metalk8s.scality.com/ssh-key-path': payload.ssh_key_path,
+        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString()
+      }
+    },
+    spec: {}
+  };
+
+  const roleTaintMatched = roleTaintMap.find(
+    role =>
+      role.control_plane === payload.control_plane &&
+      role.workload_plane === payload.workload_plane &&
+      role.infra === payload.infra
+  );
+
+  if (roleTaintMatched) {
+    body.spec.taints = roleTaintMatched.taints;
+    roleTaintMatched.roles.map(role => (body.metadata.labels[role] = ''));
+  }
+
+  const result = yield call(ApiK8s.createNode, body);
 
   if (!result.error) {
     yield call(fetchNodes);
