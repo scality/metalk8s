@@ -1,0 +1,9 @@
+apiVersion: storage.metalk8s.scality.com/v1alpha1
+kind: Volume
+metadata:
+  name: example-volume
+spec:
+  nodeName: bootstrap
+  storageClassName: default
+  sparseLoopDevice:
+    size: 1Gi

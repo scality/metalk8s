@@ -1,0 +1,75 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: volumes.storage.metalk8s.scality.com
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.nodeName
+    description: The node on which the volume is available
+    name: Node
+    type: string
+  - JSONPath: .spec.storageClassName
+    description: The storage class of the volume
+    name: StorageClass
+    type: string
+  group: storage.metalk8s.scality.com
+  names:
+    kind: Volume
+    listKind: VolumeList
+    plural: volumes
+    singular: volume
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            nodeName:
+              description: Name of the node on which the volume is available.
+              type: string
+            rawBlockDevice:
+              properties:
+                devicePath:
+                  description: Path of the block device on the node to back the PersistentVolume.
+                  type: string
+              required:
+              - devicePath
+              type: object
+            sparseLoopDevice:
+              properties:
+                size:
+                  description: Size of the generated sparse file backing the PersistentVolume.
+                  type: string
+              required:
+              - size
+              type: object
+            storageClassName:
+              description: Name of the StorageClass that gets assigned to the volume.
+                Also, any mount options are copied from the StorageClass to the PersistentVolume
+                if present.
+              type: string
+          required:
+          - nodeName
+          - storageClassName
+          type: object
+        status:
+          type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
