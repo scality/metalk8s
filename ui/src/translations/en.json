@@ -20,13 +20,13 @@
   "hostName_ip": "Hostname or IP",
   "ssh_port": "SSH Port",
   "ssh_key_path": "SSH Key Path",
-  "sudo_required": "Sudo required",
+  "sudo_required": "Sudo Required",
   "workload_plane": "Workload Plane",
   "control_plane": "Control Plane",
   "infra": "Infra" ,
   "bootstrap": "Bootstrap",
   "roles": "Roles",
-  "role_values_error": "At least on role has to be selected!",
+  "role_values_error": "At least one role has to be selected!",
   "create_new_node": "Create a New Node",
   "create": "Create",
   "cancel": "Cancel",
@@ -61,5 +61,7 @@
   "api_server": "API",
   "kube_scheduler": "Scheduler",
   "kube_controller_manager": "Controller",
-  "no_data_available": "No data available"
+  "no_data_available": "No data available",
+  "new_node_data": "New Node Data",
+  "new_node_access": "New Node Access"
 }
