@@ -86,7 +86,7 @@ const initialValues = {
   ssh_user: '',
   hostName_ip: '',
   ssh_port: '22',
-  ssh_key_path: '',
+  ssh_key_path: '/etc/metalk8s/pki/salt-bootstrap',
   sudo_required: false,
   workload_plane: true,
   control_plane: false,
