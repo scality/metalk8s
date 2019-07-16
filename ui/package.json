@@ -5,7 +5,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.7.2",
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-dist",
-    "@scality/core-ui": "github:scality/core-ui.git#cbd27f1",
+    "@scality/core-ui": "github:scality/core-ui.git#90d40ce",
     "axios": "^0.18.0",
     "formik": "1.5.1",
     "lodash": "4.17.11",
