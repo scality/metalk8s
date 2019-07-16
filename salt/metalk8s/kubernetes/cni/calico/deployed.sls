@@ -3712,6 +3712,10 @@ spec:
               value: "info"
             - name: FELIX_HEALTHENABLED
               value: "true"
+            # Note: We do not want to report about outgoing connections
+            #       in Metalk8s
+            - name: FELIX_USAGEREPORTINGENABLED
+              value: "false"
           securityContext:
             privileged: true
           resources:
