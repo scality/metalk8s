@@ -9,6 +9,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
 import { REFRESH_TIMEOUT } from '../constants';
 import { sortSelector } from '../services/utils';
+import NoRowsRenderer from '../components/NoRowsRenderer';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -163,6 +164,9 @@ const NodeList = props => {
               onRowClick(item);
             }
           }}
+          noRowsRenderer={() => (
+            <NoRowsRenderer content={intl.messages.no_data_available} />
+          )}
         />
       </TableContainer>
     </PageContainer>
