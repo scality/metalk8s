@@ -68,7 +68,8 @@ const NodeList = props => {
   const columns = [
     {
       label: intl.messages.name,
-      dataKey: 'name'
+      dataKey: 'name',
+      flexGrow: 1
     },
     {
       label: intl.messages.status,
@@ -77,7 +78,6 @@ const NodeList = props => {
     {
       label: intl.messages.deployment,
       dataKey: 'deployment',
-      flexGrow: 1,
       renderer: (data, rowData) => {
         if ((!rowData.status || rowData.status === 'Unknown') && !rowData.jid) {
           return (
@@ -118,8 +118,7 @@ const NodeList = props => {
     },
     {
       label: intl.messages.version,
-      dataKey: 'metalk8s_version',
-      width: 200
+      dataKey: 'metalk8s_version'
     }
   ];
 
