@@ -79,6 +79,7 @@ def task_populate_iso() -> types.TaskDict:
             '_iso_render_bootstrap',
             '_iso_add_node_manifest',
             '_iso_generate_product_txt',
+            '_iso_add_iso_manager',
             'images',
             'salt_tree',
             'packaging',
@@ -113,6 +114,21 @@ def task__iso_add_node_manifest() -> types.TaskDict:
          'uptodate': [True],
          'clean': True,
      }
+
+
+def task__iso_add_iso_manager() -> types.TaskDict:
+    """Copy the ISO manager script to scripts."""
+    src = constants.ROOT/'scripts'/'iso-manager.sh'
+    dest = constants.ISO_ROOT/'iso-manager.sh'
+    iso_manager = [src, dest]
+    return {
+            'title': lambda task: utils.title_with_target1('COPY', task),
+            'actions': [(coreutils.cp_file, iso_manager)],
+            'targets': [dest],
+            'task_dep': ['_iso_mkdir_root'],
+            'file_dep': [src],
+            'clean': True,
+            }
 
 
 def task__iso_render_bootstrap() -> types.TaskDict:
