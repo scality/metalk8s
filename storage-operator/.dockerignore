@@ -1,0 +1,5 @@
+cmd/
+deploy/
+pkg/
+tools.go
+version/

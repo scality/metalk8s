@@ -21,6 +21,7 @@ RUN yum install -y epel-release \
     python36-pip \
     genisoimage \
     git \
+    hg \
     skopeo \
     yum-utils \
     docker-ce-cli-18.09.6 \
@@ -43,3 +44,7 @@ RUN curl -ORL https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz      \
     && chmod +x /usr/bin/operator-sdk
 
 USER eve
+
+# Pre-download the Go dependencies.
+COPY go.mod go.sum ./
+RUN go mod download

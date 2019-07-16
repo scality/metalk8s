@@ -13,6 +13,7 @@ RUN dnf install -y git \
   gcc \
   make \
   enchant \
+  hg \
   python2-twisted \
   python \
   python-devel \
@@ -41,3 +42,7 @@ RUN curl -ORL https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz      \
     && chmod +x /usr/bin/operator-sdk
 
 USER eve
+
+# Pre-download the Go dependencies.
+COPY go.mod go.sum ./
+RUN go mod download
