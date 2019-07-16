@@ -36,7 +36,9 @@ stages:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
-        docker-builder: eve/workers/pod-builder
+        docker-builder:
+          context: '.'
+          dockerfile: eve/workers/pod-builder/Dockerfile
     steps:
       - ShellCommand:
           name: Wait for Docker daemon to be ready
