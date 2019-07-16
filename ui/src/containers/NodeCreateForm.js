@@ -98,7 +98,10 @@ const validationSchema = Yup.object().shape({
   version: Yup.string().required(),
   ssh_user: Yup.string().required(),
   hostName_ip: Yup.string().required(),
-  ssh_port: Yup.string().required(),
+  ssh_port: Yup.number()
+    .min(0)
+    .max(65535)
+    .required(),
   ssh_key_path: Yup.string().required(),
   sudo_required: Yup.boolean().required(),
   workload_plane: Yup.boolean().required(),
