@@ -43,10 +43,8 @@ RUN curl -ORL https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz      \
         https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu \
     && chmod +x /usr/bin/operator-sdk
 
+USER eve
+
 # Pre-download the Go dependencies.
 COPY storage-operator/go.mod storage-operator/go.sum ./
-RUN go mod download                \
-    && chown -R eve:eve ${GOPATH}  \
-    && chown -R eve:eve ${GOCACHE}
-
-USER eve
+RUN go mod download
