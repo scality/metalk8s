@@ -2,18 +2,21 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
-import { Table, Button } from '@scality/core-ui';
 import styled from 'styled-components';
 import { withRouter, Switch, Route } from 'react-router-dom';
-import { fetchPodsAction } from '../ducks/app/pods';
-import { fetchNodesAction } from '../ducks/app/nodes';
-import { sortSelector } from '../services/utils';
+import { Table, Button } from '@scality/core-ui';
 import {
   fontWeight,
   fontSize,
   padding
 } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
+
+import { fetchPodsAction } from '../ducks/app/pods';
+import { fetchNodesAction } from '../ducks/app/nodes';
+import { sortSelector } from '../services/utils';
+
+import Volumes from '../components/Volumes';
 
 const NodeInformationContainer = styled.div`
   box-sizing: border-box;
@@ -50,11 +53,11 @@ const InformationMainValue = styled(InformationValue)`
   font-weight: ${fontWeight.bold};
 `;
 const ButtonTabContainer = styled.div`
-  margin-top: 10px;
+  margin-top: ${padding.small};
 `;
 
 const TabButton = styled(Button)`
-  margin-right: 10px;
+  margin-right: ${padding.small};
 `;
 
 class NodeInformation extends React.Component {
@@ -196,6 +199,7 @@ class NodeInformation extends React.Component {
 
         <Switch>
           <Route path={`${match.url}/pods`} component={NodePods} />
+          <Route path={`${match.url}/volumes`} component={Volumes} />
           <Route path="/" component={NodeDetails} />
         </Switch>
       </NodeInformationContainer>
