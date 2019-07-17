@@ -13,6 +13,7 @@ import {
   fontSize,
   padding
 } from '@scality/core-ui/dist/style/theme';
+import NoRowsRenderer from '../components/NoRowsRenderer';
 
 const NodeInformationContainer = styled.div`
   box-sizing: border-box;
@@ -150,6 +151,11 @@ class NodeInformation extends React.Component {
             sortDirection={this.state.sortDirection}
             onSort={this.onSort}
             onRowClick={() => {}}
+            noRowsRenderer={() => (
+              <NoRowsRenderer
+                content={this.props.intl.messages.no_data_available}
+              />
+            )}
           />
         </PodsContainer>
       </NodeInformationContainer>

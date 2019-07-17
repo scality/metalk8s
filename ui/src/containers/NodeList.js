@@ -9,6 +9,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
 import { REFRESH_TIMEOUT } from '../constants';
 import { sortSelector } from '../services/utils';
+import NoRowsRenderer from '../components/NoRowsRenderer';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -67,7 +68,8 @@ const NodeList = props => {
   const columns = [
     {
       label: intl.messages.name,
-      dataKey: 'name'
+      dataKey: 'name',
+      flexGrow: 1
     },
     {
       label: intl.messages.status,
@@ -76,7 +78,6 @@ const NodeList = props => {
     {
       label: intl.messages.deployment,
       dataKey: 'deployment',
-      flexGrow: 1,
       renderer: (data, rowData) => {
         if ((!rowData.status || rowData.status === 'Unknown') && !rowData.jid) {
           return (
@@ -117,8 +118,7 @@ const NodeList = props => {
     },
     {
       label: intl.messages.version,
-      dataKey: 'metalk8s_version',
-      width: 200
+      dataKey: 'metalk8s_version'
     }
   ];
 
@@ -163,6 +163,9 @@ const NodeList = props => {
               onRowClick(item);
             }
           }}
+          noRowsRenderer={() => (
+            <NoRowsRenderer content={intl.messages.no_data_available} />
+          )}
         />
       </TableContainer>
     </PageContainer>
