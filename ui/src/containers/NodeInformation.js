@@ -223,7 +223,7 @@ class NodeInformation extends React.Component {
 const mapStateToProps = (state, ownProps) => ({
   node: makeGetNodeFromUrl(state, ownProps),
   pods: makeGetPodsFromUrl(state, ownProps),
-  volumes: state.app.volumes.list
+  volumes: makeGetVolumesFromUrl(state, ownProps)
 });
 
 const mapDispatchToProps = dispatch => {
@@ -252,6 +252,22 @@ const getPodsFromUrl = (state, props) => {
   }
 };
 
+const getNodeNameFromUrl = (state, props) => {
+  if (props && props.match && props.match.params && props.match.params.id) {
+    return props.match.params.id;
+  } else {
+    return '';
+  }
+};
+
+const getVolumes = state => {
+  if (state && state.app && state.app.volumes && state.app.volumes.list) {
+    return state.app.volumes.list;
+  } else {
+    return [];
+  }
+};
+
 const makeGetNodeFromUrl = createSelector(
   getNodeFromUrl,
   node => node
@@ -260,6 +276,14 @@ const makeGetNodeFromUrl = createSelector(
 const makeGetPodsFromUrl = createSelector(
   getPodsFromUrl,
   pods => pods
+);
+
+const makeGetVolumesFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getVolumes,
+  (nodeName, volumes) => {
+    return volumes.filter(v => v && v.spec && v.spec.nodeName === nodeName);
+  }
 );
 
 export default injectIntl(

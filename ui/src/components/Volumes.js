@@ -1,12 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
+import { FormattedDate, FormattedTime } from 'react-intl';
 import { Button, Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
-const VolumePageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+const ButtonContainer = styled.div`
   margin-top: ${padding.small};
 `;
 
@@ -36,15 +34,26 @@ const Volumes = props => {
     },
     {
       label: 'Creation Time',
-      dataKey: 'creationTime'
+      dataKey: 'creationTime',
+      renderer: data => (
+        <span>
+          <FormattedDate value={data} />{' '}
+          <FormattedTime
+            hour="2-digit"
+            minute="2-digit"
+            second="2-digit"
+            value={data}
+          />
+        </span>
+      )
     }
   ];
 
   return (
-    <VolumePageContainer>
-      <div>
+    <>
+      <ButtonContainer>
         <Button text={'Create New Volume'} type="button" />
-      </div>
+      </ButtonContainer>
       <VolumeTable>
         <Table
           list={props.data}
@@ -58,7 +67,7 @@ const Volumes = props => {
           onRowClick={() => {}}
         />
       </VolumeTable>
-    </VolumePageContainer>
+    </>
   );
 };
 
