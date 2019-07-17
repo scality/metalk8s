@@ -220,6 +220,42 @@ class NodeInformation extends React.Component {
   }
 }
 
+const getNodeNameFromUrl = (state, props) => {
+  if (props && props.match && props.match.params && props.match.params.id) {
+    return props.match.params.id;
+  } else {
+    return '';
+  }
+};
+
+const getNodes = state =>
+  (state && state.app && state.app.nodes && state.app.nodes.list) || [];
+
+const getPods = state =>
+  (state && state.app && state.app.pods && state.app.pods.list) || [];
+
+const getVolumes = state =>
+  (state && state.app && state.app.volumes && state.app.volumes.list) || [];
+
+const makeGetNodeFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getNodes,
+  (nodeName, nodes) => nodes.find(node => node.name === nodeName) || {}
+);
+
+const makeGetPodsFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getPods,
+  (nodeName, pods) => pods.filter(pod => pod.nodeName === nodeName) || []
+);
+
+const makeGetVolumesFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getVolumes,
+  (nodeName, volumes) =>
+    volumes.filter(v => v && v.spec && v.spec.nodeName === nodeName)
+);
+
 const mapStateToProps = (state, ownProps) => ({
   node: makeGetNodeFromUrl(state, ownProps),
   pods: makeGetPodsFromUrl(state, ownProps),
@@ -233,58 +269,6 @@ const mapDispatchToProps = dispatch => {
     fetchVolumes: () => dispatch(fetchVolumesAction())
   };
 };
-
-const getNodeFromUrl = (state, props) => {
-  const nodes = state.app.nodes.list || [];
-  if (props && props.match && props.match.params && props.match.params.id) {
-    return nodes.find(node => node.name === props.match.params.id) || {};
-  } else {
-    return {};
-  }
-};
-
-const getPodsFromUrl = (state, props) => {
-  const pods = state.app.pods.list || [];
-  if (props && props.match && props.match.params && props.match.params.id) {
-    return pods.filter(pod => pod.nodeName === props.match.params.id) || [];
-  } else {
-    return [];
-  }
-};
-
-const getNodeNameFromUrl = (state, props) => {
-  if (props && props.match && props.match.params && props.match.params.id) {
-    return props.match.params.id;
-  } else {
-    return '';
-  }
-};
-
-const getVolumes = state => {
-  if (state && state.app && state.app.volumes && state.app.volumes.list) {
-    return state.app.volumes.list;
-  } else {
-    return [];
-  }
-};
-
-const makeGetNodeFromUrl = createSelector(
-  getNodeFromUrl,
-  node => node
-);
-
-const makeGetPodsFromUrl = createSelector(
-  getPodsFromUrl,
-  pods => pods
-);
-
-const makeGetVolumesFromUrl = createSelector(
-  getNodeNameFromUrl,
-  getVolumes,
-  (nodeName, volumes) => {
-    return volumes.filter(v => v && v.spec && v.spec.nodeName === nodeName);
-  }
-);
 
 export default injectIntl(
   withRouter(
