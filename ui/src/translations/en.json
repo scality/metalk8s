@@ -47,7 +47,7 @@
   "node_registered": "Node registered",
   "deployment_started": "Deployment started",
   "cluster_status": "Cluster Status",
-  "cluster_monitoring": "Cluster Monitoring",
+  "monitoring": "Monitoring",
   "severity": "Severity",
   "message": "Message",
   "active_at": "Active Since",

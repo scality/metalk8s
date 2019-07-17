@@ -14,6 +14,7 @@ const VolumeTable = styled.div`
 `;
 
 const Volumes = props => {
+  // FIXME Add translation
   const columns = [
     {
       label: 'Name',

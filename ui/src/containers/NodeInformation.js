@@ -29,25 +29,28 @@ const NodeInformationContainer = styled.div`
 
 const PodsContainer = styled.div`
   flex-grow: 1;
+  margin-top: ${padding.base};
 `;
 
-const PageTitle = styled.h2``;
-
-const InformationTitle = styled.h3``;
+const DetailsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: ${padding.base};
+`;
 
 const InformationSpan = styled.span`
-  padding: 0 ${padding.larger} ${padding.small} ${padding.larger};
+  padding: 0 ${padding.larger} ${padding.small} 0;
 `;
 
 const InformationLabel = styled.span`
-  font-size: ${fontSize.small};
-  padding: 0 ${padding.base};
-  min-width: 120px;
+  font-size: ${fontSize.large};
+  padding-right: ${padding.base}
+  min-width: 150px;
   display: inline-block;
 `;
 
 const InformationValue = styled.span`
-  font-size: ${fontSize.base};
+  font-size: ${fontSize.large};
 `;
 
 const InformationMainValue = styled(InformationValue)`
@@ -112,7 +115,7 @@ class NodeInformation extends React.Component {
   }
 
   render() {
-    const { match, volumes, history, intl, node } = this.props;
+    const { match, history, location, volumes, intl, node } = this.props;
     const podsSortedList = sortSelector(
       this.props.pods,
       this.state.sortBy,
@@ -120,8 +123,7 @@ class NodeInformation extends React.Component {
     );
 
     const NodeDetails = () => (
-      <>
-        <PageTitle>{intl.messages.information}</PageTitle>
+      <DetailsContainer>
         <InformationSpan>
           <InformationLabel>{intl.messages.name}</InformationLabel>
           <InformationMainValue>{node.name}</InformationMainValue>
@@ -138,12 +140,11 @@ class NodeInformation extends React.Component {
           <InformationLabel>{intl.messages.version}</InformationLabel>
           <InformationValue>{node.metalk8s_version}</InformationValue>
         </InformationSpan>
-      </>
+      </DetailsContainer>
     );
 
     const NodePods = () => (
       <>
-        <InformationTitle>{intl.messages.pods}</InformationTitle>
         <PodsContainer>
           <Table
             list={podsSortedList}
@@ -177,6 +178,9 @@ class NodeInformation extends React.Component {
       };
     });
 
+    const isVolumesPage = location.pathname.endsWith('/volumes');
+    const isPodsPage = location.pathname.endsWith('/pods');
+
     return (
       <NodeInformationContainer>
         <div>
@@ -189,20 +193,27 @@ class NodeInformation extends React.Component {
           />
         </div>
 
+        {/**
+         * FIXME This is a temporary solution.
+         * We will replace this with a real tab soon
+         */}
         <ButtonTabContainer>
           <TabButton
             text="Details"
             type="button"
+            outlined={!isVolumesPage && !isPodsPage}
             onClick={() => history.push(match.url)}
           />
           <TabButton
             text="Volumes"
             type="button"
+            outlined={isVolumesPage}
             onClick={() => history.push(`${match.url}/volumes`)}
           />
           <TabButton
             text="Pods"
             type="button"
+            outlined={isPodsPage}
             onClick={() => history.push(`${match.url}/pods`)}
           />
         </ButtonTabContainer>
