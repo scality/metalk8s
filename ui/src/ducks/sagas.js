@@ -1,6 +1,7 @@
 import { all, fork } from 'redux-saga/effects';
 import { nodesSaga } from './app/nodes';
 import { podsSaga } from './app/pods';
+import { volumesSaga } from './app/volumes';
 import { authenticateSaga } from './login';
 import { configSaga } from './config';
 import { monitoringSaga } from './app/monitoring';
@@ -13,6 +14,7 @@ export default function* rootSaga() {
     fork(authenticateSaga),
     fork(configSaga),
     fork(monitoringSaga),
-    fork(layoutSaga)
+    fork(layoutSaga),
+    fork(volumesSaga)
   ]);
 }

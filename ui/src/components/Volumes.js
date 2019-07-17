@@ -41,7 +41,7 @@ const Volumes = () => {
 
   return (
     <VolumePageContainer>
-      <Button text={'Create New Volume'} type="button" />
+      {/* <Button text={'Create New Volume'} type="button" /> */}
       <VolumeTable>
         <Table
           list={volumes}

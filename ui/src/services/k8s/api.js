@@ -1,7 +1,9 @@
 import ApiClient from '../ApiClient';
-import { Config, Core_v1Api } from '@kubernetes/client-node';
+import { Config, Core_v1Api, Custom_objectsApi } from '@kubernetes/client-node';
 
-let config, coreV1;
+let config;
+let coreV1;
+let customObjects;
 let k8sApiClient = null;
 
 export function initialize(apiUrl) {
@@ -20,6 +22,7 @@ export function authenticate(token) {
 export const updateApiServerConfig = (url, token) => {
   config = new Config(url, token, 'Basic');
   coreV1 = config.makeApiClient(Core_v1Api);
+  customObjects = config.makeApiClient(Custom_objectsApi);
 };
 
 export async function getNodes() {
@@ -41,6 +44,19 @@ export async function getPods() {
 export async function createNode(payload) {
   try {
     return await coreV1.createNode(payload);
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getVolumes() {
+  try {
+    // We want to change this hardcoded data later
+    return await customObjects.listClusterCustomObject(
+      'storage.metalk8s.scality.com',
+      'v1alpha1',
+      'volumes'
+    );
   } catch (error) {
     return { error };
   }

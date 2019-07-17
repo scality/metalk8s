@@ -14,6 +14,7 @@ import NoRowsRenderer from '../components/NoRowsRenderer';
 
 import { fetchPodsAction } from '../ducks/app/pods';
 import { fetchNodesAction } from '../ducks/app/nodes';
+import { fetchVolumesAction } from '../ducks/app/volumes';
 import { sortSelector } from '../services/utils';
 
 import Volumes from '../components/Volumes';
@@ -103,6 +104,7 @@ class NodeInformation extends React.Component {
   componentDidMount() {
     this.props.fetchNodes();
     this.props.fetchPods();
+    this.props.fetchVolumes();
   }
 
   onSort({ sortBy, sortDirection }) {
@@ -215,7 +217,8 @@ const mapStateToProps = (state, ownProps) => ({
 const mapDispatchToProps = dispatch => {
   return {
     fetchPods: () => dispatch(fetchPodsAction()),
-    fetchNodes: () => dispatch(fetchNodesAction())
+    fetchNodes: () => dispatch(fetchNodesAction()),
+    fetchVolumes: () => dispatch(fetchVolumesAction())
   };
 };
 
