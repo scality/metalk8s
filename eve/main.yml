@@ -40,7 +40,7 @@ stages:
     steps:
       - ShellCommand:
           name: check go deps
-          command: stat /home/eve/workspace/witness
+          command: stat /tmp/witness
           haltOnFailure: true
       - ShellCommand:
           name: Wait for Docker daemon to be ready

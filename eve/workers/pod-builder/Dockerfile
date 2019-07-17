@@ -49,4 +49,4 @@ USER eve
 COPY go.mod go.sum ./
 RUN go mod download
 
-RUN touch /home/eve/workspace/witness
+RUN touch /tmp/witness
