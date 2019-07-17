@@ -48,3 +48,5 @@ USER eve
 # Pre-download the Go dependencies.
 COPY go.mod go.sum ./
 RUN go mod download
+
+RUN touch /home/eve/workspace/witness
