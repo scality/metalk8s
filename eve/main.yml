@@ -41,6 +41,10 @@ stages:
           dockerfile: eve/workers/pod-builder/Dockerfile
     steps:
       - ShellCommand:
+          name: check go deps
+          command: stat /home/eve/workspace/witness
+          haltOnFailure: true
+      - ShellCommand:
           name: Wait for Docker daemon to be ready
           command: |
             bash -c '

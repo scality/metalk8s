@@ -48,3 +48,5 @@ USER eve
 # Pre-download the Go dependencies.
 COPY storage-operator/go.mod storage-operator/go.sum ./
 RUN go mod download
+
+RUN touch /home/eve/workspace/witness
