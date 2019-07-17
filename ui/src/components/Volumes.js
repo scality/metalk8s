@@ -4,6 +4,9 @@ import { Button, Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
 const VolumePageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   margin-top: ${padding.small};
 `;
 
@@ -12,9 +15,7 @@ const VolumeTable = styled.div`
   margin-top: ${padding.small};
 `;
 
-const Volumes = () => {
-  const volumes = [];
-
+const Volumes = props => {
   const columns = [
     {
       label: 'Name',
@@ -27,24 +28,26 @@ const Volumes = () => {
     },
     {
       label: 'Size',
-      dataKey: 'namespace'
+      dataKey: 'size'
     },
     {
       label: 'StorageClass',
-      dataKey: 'startTime'
+      dataKey: 'storageClass'
     },
     {
       label: 'Creation Time',
-      dataKey: 'namespace'
+      dataKey: 'creationTime'
     }
   ];
 
   return (
     <VolumePageContainer>
-      {/* <Button text={'Create New Volume'} type="button" /> */}
+      <div>
+        <Button text={'Create New Volume'} type="button" />
+      </div>
       <VolumeTable>
         <Table
-          list={volumes}
+          list={props.data}
           columns={columns}
           disableHeader={false}
           headerHeight={40}

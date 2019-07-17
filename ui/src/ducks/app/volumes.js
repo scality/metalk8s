@@ -5,12 +5,12 @@ const FETCH_VOLUMES = 'FETCH_VOLUMES';
 const SET_VOLUMES = 'SET_VOLUMES';
 
 // Reducer
-const defaultState = { volumes: [] };
+const defaultState = { list: [] };
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_VOLUMES:
-      return { ...state, volumes: action.payload };
+      return { ...state, list: action.payload };
     default:
       return state;
   }

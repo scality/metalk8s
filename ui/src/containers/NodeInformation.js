@@ -112,7 +112,7 @@ class NodeInformation extends React.Component {
   }
 
   render() {
-    const { match } = this.props;
+    const { match, volumes, history, intl, node } = this.props;
     const podsSortedList = sortSelector(
       this.props.pods,
       this.state.sortBy,
@@ -121,33 +121,29 @@ class NodeInformation extends React.Component {
 
     const NodeDetails = () => (
       <>
-        <PageTitle>{this.props.intl.messages.information}</PageTitle>
+        <PageTitle>{intl.messages.information}</PageTitle>
         <InformationSpan>
-          <InformationLabel>{this.props.intl.messages.name}</InformationLabel>
-          <InformationMainValue>{this.props.node.name}</InformationMainValue>
+          <InformationLabel>{intl.messages.name}</InformationLabel>
+          <InformationMainValue>{node.name}</InformationMainValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{this.props.intl.messages.status}</InformationLabel>
-          <InformationValue>{this.props.node.status}</InformationValue>
+          <InformationLabel>{intl.messages.status}</InformationLabel>
+          <InformationValue>{node.status}</InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{this.props.intl.messages.roles}</InformationLabel>
-          <InformationValue>{this.props.node.roles}</InformationValue>
+          <InformationLabel>{intl.messages.roles}</InformationLabel>
+          <InformationValue>{node.roles}</InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>
-            {this.props.intl.messages.version}
-          </InformationLabel>
-          <InformationValue>
-            {this.props.node.metalk8s_version}
-          </InformationValue>
+          <InformationLabel>{intl.messages.version}</InformationLabel>
+          <InformationValue>{node.metalk8s_version}</InformationValue>
         </InformationSpan>
       </>
     );
 
     const NodePods = () => (
       <>
-        <InformationTitle>{this.props.intl.messages.pods}</InformationTitle>
+        <InformationTitle>{intl.messages.pods}</InformationTitle>
         <PodsContainer>
           <Table
             list={podsSortedList}
@@ -169,14 +165,26 @@ class NodeInformation extends React.Component {
       </>
     );
 
+    const volumeData = volumes.map(volume => {
+      return {
+        name: volume.metadata.name,
+        status:
+          (volume && volume.status && volume.status.phase) ||
+          intl.messages.unknown,
+        size: volume.spec.sparseLoopDevice.size,
+        storageClass: volume.spec.storageClassName,
+        creationTime: volume.metadata.creationTimestamp
+      };
+    });
+
     return (
       <NodeInformationContainer>
         <div>
           <Button
-            text={this.props.intl.messages.back_to_node_list}
+            text={intl.messages.back_to_node_list}
             type="button"
             outlined
-            onClick={() => this.props.history.push('/nodes')}
+            onClick={() => history.push('/nodes')}
             icon={<i className="fas fa-arrow-left" />}
           />
         </div>
@@ -185,23 +193,26 @@ class NodeInformation extends React.Component {
           <TabButton
             text="Details"
             type="button"
-            onClick={() => this.props.history.push(match.url)}
+            onClick={() => history.push(match.url)}
           />
           <TabButton
             text="Volumes"
             type="button"
-            onClick={() => this.props.history.push(`${match.url}/volumes`)}
+            onClick={() => history.push(`${match.url}/volumes`)}
           />
           <TabButton
             text="Pods"
             type="button"
-            onClick={() => this.props.history.push(`${match.url}/pods`)}
+            onClick={() => history.push(`${match.url}/pods`)}
           />
         </ButtonTabContainer>
 
         <Switch>
           <Route path={`${match.url}/pods`} component={NodePods} />
-          <Route path={`${match.url}/volumes`} component={Volumes} />
+          <Route
+            path={`${match.url}/volumes`}
+            component={() => <Volumes data={volumeData} />}
+          />
           <Route path="/" component={NodeDetails} />
         </Switch>
       </NodeInformationContainer>
@@ -211,7 +222,8 @@ class NodeInformation extends React.Component {
 
 const mapStateToProps = (state, ownProps) => ({
   node: makeGetNodeFromUrl(state, ownProps),
-  pods: makeGetPodsFromUrl(state, ownProps)
+  pods: makeGetPodsFromUrl(state, ownProps),
+  volumes: state.app.volumes.list
 });
 
 const mapDispatchToProps = dispatch => {
