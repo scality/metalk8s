@@ -651,6 +651,8 @@ spec:
               value: "info"
             - name: FELIX_HEALTHENABLED
               value: "true"
+            - name: FELIX_USAGEREPORTINGENABLED
+              value: "false"
           securityContext:
             privileged: true
           resources:
