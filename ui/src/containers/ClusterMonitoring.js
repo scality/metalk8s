@@ -17,6 +17,7 @@ import {
 } from '../ducks/app/monitoring';
 import { STATUS_CRITICAL, STATUS_SUCCESS } from '../components/constants';
 import { sortSelector } from '../services/utils';
+import NoRowsRenderer from '../components/NoRowsRenderer';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -203,6 +204,9 @@ const ClusterMonitoring = props => {
           sortBy={sortBy}
           sortDirection={sortDirection}
           onSort={onSort}
+          noRowsRenderer={() => (
+            <NoRowsRenderer content={props.intl.messages.no_data_available} />
+          )}
         />
       </TableContainer>
     </PageContainer>

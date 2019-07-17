@@ -60,5 +60,6 @@
   "node_creation_failed": "La création du node {name} a échoué.",
   "api_server": "API",
   "kube_scheduler": "Ordonnanceur",
-  "kube_controller_manager": "Contrôleur"
+  "kube_controller_manager": "Contrôleur",
+  "no_data_available": "Pas de données disponibles"
 }
