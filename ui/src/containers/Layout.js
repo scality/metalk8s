@@ -126,7 +126,7 @@ class Layout extends Component {
               path="/nodes/deploy/:id"
               component={NodeDeployment}
             />
-            <PrivateRoute exact path="/nodes/:id" component={NodeInformation} />
+            <PrivateRoute path="/nodes/:id" component={NodeInformation} />
             <PrivateRoute exact path="/nodes" component={NodeList} />
             <PrivateRoute exact path="/about" component={Welcome} />
             <PrivateRoute exact path="/" component={ClusterMonitoring} />

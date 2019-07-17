@@ -4,7 +4,7 @@ import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
 import { Table, Button } from '@scality/core-ui';
 import styled from 'styled-components';
-
+import { withRouter, Switch, Route } from 'react-router-dom';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import { sortSelector } from '../services/utils';
@@ -47,6 +47,13 @@ const InformationValue = styled.span`
 
 const InformationMainValue = styled(InformationValue)`
   font-weight: ${fontWeight.bold};
+`;
+const ButtonTabContainer = styled.div`
+  margin-top: 10px;
+`;
+
+const TabButton = styled(Button)`
+  margin-right: 10px;
 `;
 
 class NodeInformation extends React.Component {
@@ -99,23 +106,15 @@ class NodeInformation extends React.Component {
   }
 
   render() {
+    const { match } = this.props;
     const podsSortedList = sortSelector(
       this.props.pods,
       this.state.sortBy,
       this.state.sortDirection
     );
 
-    return (
-      <NodeInformationContainer>
-        <div>
-          <Button
-            text={this.props.intl.messages.back_to_node_list}
-            type="button"
-            outlined
-            onClick={() => this.props.history.push('/nodes')}
-            icon={<i className="fas fa-arrow-left" />}
-          />
-        </div>
+    const NodeDetails = () => (
+      <div>
         <PageTitle>{this.props.intl.messages.information}</PageTitle>
         <InformationSpan>
           <InformationLabel>{this.props.intl.messages.name}</InformationLabel>
@@ -137,7 +136,11 @@ class NodeInformation extends React.Component {
             {this.props.node.metalk8s_version}
           </InformationValue>
         </InformationSpan>
+      </div>
+    );
 
+    const NodePods = () => (
+      <div>
         <InformationTitle>{this.props.intl.messages.pods}</InformationTitle>
         <PodsContainer>
           <Table
@@ -152,6 +155,43 @@ class NodeInformation extends React.Component {
             onRowClick={() => {}}
           />
         </PodsContainer>
+      </div>
+    );
+
+    return (
+      <NodeInformationContainer>
+        <div>
+          <Button
+            text={this.props.intl.messages.back_to_node_list}
+            type="button"
+            outlined
+            onClick={() => this.props.history.push('/nodes')}
+            icon={<i className="fas fa-arrow-left" />}
+          />
+        </div>
+
+        <ButtonTabContainer>
+          <TabButton
+            text="Details"
+            type="button"
+            onClick={() => this.props.history.push(match.url)}
+          />
+          <TabButton
+            text="Volumes"
+            type="button"
+            onClick={() => this.props.history.push(`${match.url}/volumes`)}
+          />
+          <TabButton
+            text="Pods"
+            type="button"
+            onClick={() => this.props.history.push(`${match.url}/pods`)}
+          />
+        </ButtonTabContainer>
+
+        <Switch>
+          <Route path={`${match.url}/pods`} component={NodePods} />
+          <Route path="/" component={NodeDetails} />
+        </Switch>
       </NodeInformationContainer>
     );
   }
@@ -198,8 +238,10 @@ const makeGetPodsFromUrl = createSelector(
 );
 
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(NodeInformation)
+  withRouter(
+    connect(
+      mapStateToProps,
+      mapDispatchToProps
+    )(NodeInformation)
+  )
 );
