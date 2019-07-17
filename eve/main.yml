@@ -36,9 +36,7 @@ stages:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
-        docker-builder:
-          context: '.'
-          dockerfile: eve/workers/pod-builder/Dockerfile
+        docker-builder: eve/workers/pod-builder
     steps:
       - ShellCommand:
           name: check go deps
