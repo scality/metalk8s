@@ -63,5 +63,8 @@
   "kube_controller_manager": "Contrôleur",
   "no_data_available": "Pas de données disponibles",
   "new_node_data": "Donnée du nouveau node",
-  "new_node_access": "Accès au nouveau node"
+  "new_node_access": "Accès au nouveau node",
+  "storageCapacity": "Capacité",
+  "storageClass": "Storage Class",
+  "creationTime": "Créer à"
 }

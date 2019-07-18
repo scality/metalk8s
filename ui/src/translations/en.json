@@ -63,5 +63,8 @@
   "kube_controller_manager": "Controller",
   "no_data_available": "No data available",
   "new_node_data": "New Node Data",
-  "new_node_access": "New Node Access"
+  "new_node_access": "New Node Access",
+  "storageCapacity": "Storage Capacity",
+  "storageClass": "Storage Class",
+  "creationTime": "Created"
 }

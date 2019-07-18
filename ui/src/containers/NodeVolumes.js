@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { Button, Table } from '@scality/core-ui';
@@ -14,27 +15,34 @@ const VolumeTable = styled.div`
 `;
 
 const Volumes = props => {
-  // FIXME Add translation
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDirection, setSortDirection] = useState('ASC');
+
+  const onSort = ({ sortBy, sortDirection }) => {
+    setSortBy(sortBy);
+    setSortDirection(sortDirection);
+  };
+
   const columns = [
     {
-      label: 'Name',
+      label: props.intl.messages.name,
       dataKey: 'name',
       flexGrow: 1
     },
     {
-      label: 'Status',
+      label: props.intl.messages.status,
       dataKey: 'status'
     },
     {
-      label: 'Size',
-      dataKey: 'size'
+      label: props.intl.messages.storageCapacity,
+      dataKey: 'storageCapacity'
     },
     {
-      label: 'StorageClass',
+      label: props.intl.messages.storageClass,
       dataKey: 'storageClass'
     },
     {
-      label: 'Creation Time',
+      label: props.intl.messages.creationTime,
       dataKey: 'creationTime',
       renderer: data => (
         <span>
@@ -62,9 +70,9 @@ const Volumes = props => {
           disableHeader={false}
           headerHeight={40}
           rowHeight={40}
-          // sortBy={this.state.sortBy}
-          // sortDirection={this.state.sortDirection}
-          // onSort={this.onSort}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSort={onSort}
           onRowClick={() => {}}
         />
       </VolumeTable>
@@ -72,4 +80,4 @@ const Volumes = props => {
   );
 };
 
-export default Volumes;
+export default injectIntl(Volumes);

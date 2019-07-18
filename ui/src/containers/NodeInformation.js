@@ -17,7 +17,7 @@ import { fetchNodesAction } from '../ducks/app/nodes';
 import { fetchVolumesAction } from '../ducks/app/volumes';
 import { sortSelector } from '../services/utils';
 
-import Volumes from '../components/Volumes';
+import NodeVolumes from './NodeVolumes';
 
 const NodeInformationContainer = styled.div`
   box-sizing: border-box;
@@ -172,7 +172,7 @@ class NodeInformation extends React.Component {
         status:
           (volume && volume.status && volume.status.phase) ||
           intl.messages.unknown,
-        size: volume.spec.sparseLoopDevice.size,
+        storageCapacity: volume.spec.sparseLoopDevice.size,
         storageClass: volume.spec.storageClassName,
         creationTime: volume.metadata.creationTimestamp
       };
@@ -222,7 +222,7 @@ class NodeInformation extends React.Component {
           <Route path={`${match.url}/pods`} component={NodePods} />
           <Route
             path={`${match.url}/volumes`}
-            component={() => <Volumes data={volumeData} />}
+            component={() => <NodeVolumes data={volumeData} />}
           />
           <Route path="/" component={NodeDetails} />
         </Switch>
