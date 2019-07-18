@@ -48,7 +48,7 @@ VAGRANT_SSH_KEY_PAIR : Path = VAGRANT_ROOT/'preshared_key_for_k8s_nodes'
 # }}}
 # Versions {{{
 
-K8S_VERSION  : str = '1.14.4'
+K8S_VERSION  : str = '1.15.0'
 SALT_VERSION : str = '2018.3.4'
 KEEPALIVED_VERSION : str = '1.3.5-8.el7_6'
 KEEPALIVED_BUILD_ID : int = 1
