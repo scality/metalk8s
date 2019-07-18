@@ -7,7 +7,7 @@ include:
 {%- set host_name = grains['id'] %}
 {%- set host = grains['metalk8s']['control_plane_ip'] %}
 
-{%- set image_name = build_image_name('etcd', '3.2.24') %}
+{%- set image_name = build_image_name('etcd', '3.3.10') %}
 
 {%- set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
 
