@@ -131,7 +131,7 @@ class Repository(base.CompositeTarget):
             'name': 'build_repodata',
             'actions': actions,
             'doc': 'Build the {} repository metadata.'.format(self.name),
-            'title': lambda task: utils.title_with_target1('BUILD REPO', task),
+            'title': utils.title_with_target1('BUILD REPO'),
             'targets': targets,
             'uptodate': [True],
             'clean': [clean],
@@ -172,9 +172,7 @@ class Repository(base.CompositeTarget):
                 'doc': 'Build {pkg} RPM for the {repo} repository.'.format(
                     pkg=pkg.name, repo=self.name
                 ),
-                'title': lambda task: utils.title_with_target1(
-                    'BUILD RPM', task
-                ),
+                'title': utils.title_with_target1('BUILD RPM'),
                 'targets': [self._get_rpm_path(pkg)],
                 # Prevent Docker from polluting our output.
                 'verbosity': 0,

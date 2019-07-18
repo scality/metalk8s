@@ -55,16 +55,11 @@ class TemplateFile(base.AtomicTarget):
     def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
-            'title': self._show,
+            'title': utils.title_with_target1('RENDER'),
             'doc': 'Render template {}.'.format(self._src.name),
             'actions': [self._run],
         })
         return task
-
-    @staticmethod
-    def _show(task: types.Task) -> str:
-        """Return a description of the task."""
-        return utils.title_with_target1('RENDER', task)
 
     def _run(self) -> None:
         """Render the template."""

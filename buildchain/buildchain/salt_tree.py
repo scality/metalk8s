@@ -82,17 +82,12 @@ class CommonStaticContainerRegistry(targets.AtomicTarget):
     def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
-            'title': self._show,
+            'title': utils.title_with_target1('NGINX_CFG'),
             'doc': 'Generate the nginx config to serve a common static '
                    'container registry.',
             'actions': [self._run],
         })
         return task
-
-    @staticmethod
-    def _show(task: types.Task) -> str:
-        """Return a description of the task."""
-        return utils.title_with_target1('NGINX_CFG', task)
 
     def _run(self) -> None:
         """Generate the nginx configuration."""
@@ -131,16 +126,11 @@ class StaticContainerRegistry(targets.AtomicTarget):
     def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
-            'title': self._show,
+            'title': utils.title_with_target1('NGINX_CFG'),
             'doc': 'Generate the nginx config to serve a container registry.',
             'actions': [self._run],
         })
         return task
-
-    @staticmethod
-    def _show(task: types.Task) -> str:
-        """Return a description of the task."""
-        return utils.title_with_target1('NGINX_CFG', task)
 
     def _run(self) -> None:
         """Generate the nginx configuration."""

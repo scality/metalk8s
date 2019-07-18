@@ -176,7 +176,7 @@ class Package(base.CompositeTarget):
             'name': 'pkg_rpmspec',
             'actions': [buildmeta_callable],
             'doc': 'Generate {}.meta'.format(self.name),
-            'title': lambda task: utils.title_with_target1('RPMSPEC', task),
+            'title': utils.title_with_target1('RPMSPEC'),
             'targets': [self.meta],
         })
         task['file_dep'].extend([self.spec])
@@ -195,7 +195,7 @@ class Package(base.CompositeTarget):
             'name': 'pkg_get_source',
             'actions': actions,
             'doc': 'Download source files for {}.'.format(self.name),
-            'title': lambda task: utils.title_with_target1('GET_SRC', task),
+            'title': utils.title_with_target1('GET_SRC'),
             'targets': targets,
         })
         task['file_dep'].append(self.meta)
@@ -226,7 +226,7 @@ class Package(base.CompositeTarget):
             'name': 'pkg_srpm',
             'actions': [buildsrpm_callable],
             'doc': 'Build {}'.format(self.srpm.name),
-            'title': lambda task: utils.title_with_target1('BUILD SRPM', task),
+            'title': utils.title_with_target1('BUILD SRPM'),
             'targets': [self.srpm],
             # Prevent Docker from polluting our output.
             'verbosity': 0,

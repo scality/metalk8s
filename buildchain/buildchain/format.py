@@ -31,7 +31,7 @@ def format_go() -> types.TaskDict:
 
     return {
         'name': 'go',
-        'title': lambda task: utils.title_with_subtask_name('FORMAT', task),
+        'title': utils.title_with_subtask_name('FORMAT'),
         'doc': format_go.__doc__,
         'actions': [doit.action.CmdAction(cmd, cwd=cwd)],
         'task_dep': ['check_for:gofmt'],

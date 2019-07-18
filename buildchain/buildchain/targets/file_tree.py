@@ -116,7 +116,7 @@ class FileTree(base.CompositeTarget):
         task.update({
             'name': MAKE_TASK_NAME,
             'doc': 'Create directory hierarchy for {}.'.format(self._root),
-            'title': lambda task: utils.title_with_target1('MKTREE', task),
+            'title': utils.title_with_target1('MKTREE'),
             'actions': [mkdirs],
             'targets': self.directories,
             'uptodate': [True],

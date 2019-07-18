@@ -32,7 +32,7 @@ class Mkdir(base.AtomicTarget):
     def task(self) -> types.TaskDict:
         task = self.basic_task
         task.update({
-            'title': lambda task: utils.title_with_target1('MKDIR', task),
+            'title': utils.title_with_target1('MKDIR'),
             'actions': [(self._run, [task['targets'][0]])],
             'uptodate': [True],
         })

@@ -105,7 +105,7 @@ def task__download_packages() -> types.TaskDict:
         environment={'RELEASEVER': 7}
     )
     return {
-        'title': lambda task: utils.title_with_target1('GET PKGS', task),
+        'title': utils.title_with_target1('GET PKGS'),
         'actions': [dl_packages_callable],
         'targets': [constants.PKG_ROOT/'var'],
         'file_dep': [pkg_list],

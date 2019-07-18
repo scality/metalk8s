@@ -32,7 +32,7 @@ def codegen_go() -> types.TaskDict:
 
     return {
         'name': 'go',
-        'title': lambda task: utils.title_with_subtask_name('CODEGEN', task),
+        'title': utils.title_with_subtask_name('CODEGEN'),
         'doc': codegen_go.__doc__,
         'actions': actions,
         'task_dep': ['check_for:operator-sdk'],

@@ -104,7 +104,7 @@ def task__iso_add_node_manifest() -> types.TaskDict:
     dest_vagrant = constants.ISO_ROOT/'examples'/'new-node_vagrant.yaml'
     new_node_vagrant = [src_vagrant, dest_vagrant]
     return {
-         'title': lambda task: utils.title_with_target1('COPY', task),
+         'title': utils.title_with_target1('COPY'),
          'actions': [
              (coreutils.cp_file, new_node_generic),
              (coreutils.cp_file, new_node_vagrant)
@@ -122,7 +122,7 @@ def task__iso_add_iso_manager() -> types.TaskDict:
     dest = constants.ISO_ROOT/'iso-manager.sh'
     iso_manager = [src, dest]
     return {
-            'title': lambda task: utils.title_with_target1('COPY', task),
+            'title': utils.title_with_target1('COPY'),
             'actions': [(coreutils.cp_file, iso_manager)],
             'targets': [dest],
             'task_dep': ['_iso_mkdir_root'],
@@ -162,7 +162,7 @@ def task__iso_generate_product_txt() -> types.TaskDict:
             fp.write('\n')
 
     return {
-        'title': lambda task: utils.title_with_target1('GENERATE', task),
+        'title': utils.title_with_target1('GENERATE'),
         'actions': [action],
         'targets': [constants.ISO_ROOT/'product.txt'],
         'file_dep': [constants.VERSION_FILE],
@@ -197,7 +197,7 @@ def task__iso_build() -> types.TaskDict:
     depends = list(coreutils.ls_files_rec(constants.ISO_ROOT))
     depends.append(constants.VERSION_FILE)
     return {
-        'title': lambda task: utils.title_with_target1('MKISOFS', task),
+        'title': utils.title_with_target1('MKISOFS'),
         'doc': doc,
         'actions': [mkisofs],
         'targets': [ISO_FILE],
