@@ -1,9 +1,15 @@
 import ApiClient from '../ApiClient';
-import { Config, Core_v1Api, Custom_objectsApi } from '@kubernetes/client-node';
+import {
+  Config,
+  Core_v1Api,
+  Custom_objectsApi,
+  Storage_v1Api
+} from '@kubernetes/client-node';
 
 let config;
 let coreV1;
 let customObjects;
+let storage;
 let k8sApiClient = null;
 
 export function initialize(apiUrl) {
@@ -23,6 +29,7 @@ export const updateApiServerConfig = (url, token) => {
   config = new Config(url, token, 'Basic');
   coreV1 = config.makeApiClient(Core_v1Api);
   customObjects = config.makeApiClient(Custom_objectsApi);
+  storage = config.makeApiClient(Storage_v1Api);
 };
 
 export async function getNodes() {
@@ -56,6 +63,35 @@ export async function getVolumes() {
       'storage.metalk8s.scality.com',
       'v1alpha1',
       'volumes'
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getPersistentVolumes() {
+  try {
+    return await coreV1.listPersistentVolume();
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getStorageClass() {
+  try {
+    return await storage.listStorageClass();
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createVolume(body) {
+  try {
+    return await customObjects.createClusterCustomObject(
+      'storage.metalk8s.scality.com',
+      'v1alpha1',
+      'volumes',
+      body
     );
   } catch (error) {
     return { error };

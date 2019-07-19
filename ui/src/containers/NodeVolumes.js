@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
+import { withRouter } from 'react-router-dom';
 import { Button, Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
@@ -62,7 +63,13 @@ const NodeVolumes = props => {
   return (
     <>
       <ButtonContainer>
-        <Button text={props.intl.messages.create_new_volume} type="button" />
+        <Button
+          text={props.intl.messages.create_new_volume}
+          type="button"
+          onClick={() => {
+            props.history.push('createVolume');
+          }}
+        />
       </ButtonContainer>
       <VolumeTable>
         <Table
@@ -84,4 +91,4 @@ const NodeVolumes = props => {
   );
 };
 
-export default injectIntl(NodeVolumes);
+export default injectIntl(withRouter(NodeVolumes));

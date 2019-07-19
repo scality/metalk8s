@@ -14,7 +14,10 @@ import NoRowsRenderer from '../components/NoRowsRenderer';
 
 import { fetchPodsAction } from '../ducks/app/pods';
 import { fetchNodesAction } from '../ducks/app/nodes';
-import { fetchVolumesAction } from '../ducks/app/volumes';
+import {
+  fetchVolumesAction,
+  fetchPersistentVolumeAction
+} from '../ducks/app/volumes';
 import { sortSelector } from '../services/utils';
 
 import NodeVolumes from './NodeVolumes';
@@ -44,7 +47,7 @@ const InformationSpan = styled.span`
 
 const InformationLabel = styled.span`
   font-size: ${fontSize.large};
-  padding-right: ${padding.base}
+  padding-right: ${padding.base};
   min-width: 150px;
   display: inline-block;
 `;
@@ -108,6 +111,7 @@ class NodeInformation extends React.Component {
     this.props.fetchNodes();
     this.props.fetchPods();
     this.props.fetchVolumes();
+    this.props.fetchPersistentVolumes();
   }
 
   onSort({ sortBy, sortDirection }) {
@@ -172,7 +176,13 @@ class NodeInformation extends React.Component {
         status:
           (volume && volume.status && volume.status.phase) ||
           intl.messages.unknown,
-        storageCapacity: volume.spec.sparseLoopDevice.size,
+        //Find the good PV and show the capacity.
+        storageCapacity:
+          (volume &&
+            volume.spec &&
+            volume.spec.sparseLoopDevice &&
+            volume.spec.sparseLoopDevice.size) ||
+          intl.messages.unknown,
         storageClass: volume.spec.storageClassName,
         creationTime: volume.metadata.creationTimestamp
       };
@@ -181,6 +191,7 @@ class NodeInformation extends React.Component {
     const isVolumesPage = location.pathname.endsWith('/volumes');
     const isPodsPage = location.pathname.endsWith('/pods');
 
+    console.log('pVlist', this.props.pVList);
     return (
       <NodeInformationContainer>
         <div>
@@ -272,14 +283,16 @@ const makeGetVolumesFromUrl = createSelector(
 const mapStateToProps = (state, ownProps) => ({
   node: makeGetNodeFromUrl(state, ownProps),
   pods: makeGetPodsFromUrl(state, ownProps),
-  volumes: makeGetVolumesFromUrl(state, ownProps)
+  volumes: makeGetVolumesFromUrl(state, ownProps),
+  pVList: state.app.volumes.pVList
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     fetchPods: () => dispatch(fetchPodsAction()),
     fetchNodes: () => dispatch(fetchNodesAction()),
-    fetchVolumes: () => dispatch(fetchVolumesAction())
+    fetchVolumes: () => dispatch(fetchVolumesAction()),
+    fetchPersistentVolumes: () => dispatch(fetchPersistentVolumeAction())
   };
 };
 
