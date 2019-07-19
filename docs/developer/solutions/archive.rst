@@ -91,6 +91,13 @@ It must respect the following format (currently version 1, as specified by the
    REQUIRE_METALK8S=">=2.0"
    ARCHIVE_LAYOUT_VERSION=1
 
+It is recommended for inspection purposes to include information related to
+the build-time conditions, such as the following (where command invocations
+should be statically replaced in the generated ``product.txt``)::
+
+   GIT=$(git describe --always --long --tags --dirty)
+   BUILD_TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%SZ)
+
 .. note::
 
    If a Solution can require specific versions of MetalK8s on which to be
