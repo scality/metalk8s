@@ -6,8 +6,12 @@ import { injectIntl } from 'react-intl';
 import { Table, Button, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
-import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
-import { REFRESH_TIMEOUT } from '../constants';
+import {
+  refreshNodesAction,
+  stopRefreshNodesAction,
+  deployNodeAction
+} from '../ducks/app/nodes';
+
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 
@@ -54,11 +58,10 @@ const TableContainer = styled.div`
 
 const NodeList = props => {
   useEffect(() => {
-    props.fetchNodes();
-    let interval = setInterval(() => props.fetchNodes(), REFRESH_TIMEOUT);
+    props.refreshNodes();
 
     return () => {
-      clearInterval(interval);
+      props.stopRefreshNodes();
     };
   }, []);
 
@@ -180,7 +183,8 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchNodes: () => dispatch(fetchNodesAction()),
+    refreshNodes: () => dispatch(refreshNodesAction()),
+    stopRefreshNodes: () => dispatch(stopRefreshNodesAction()),
     deployNode: payload => dispatch(deployNodeAction(payload))
   };
 };
