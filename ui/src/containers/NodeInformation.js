@@ -264,7 +264,9 @@ const makeGetVolumesFromUrl = createSelector(
   getNodeNameFromUrl,
   getVolumes,
   (nodeName, volumes) =>
-    volumes.filter(v => v && v.spec && v.spec.nodeName === nodeName)
+    volumes.filter(
+      volume => volume && volume.spec && volume.spec.nodeName === nodeName
+    )
 );
 
 const mapStateToProps = (state, ownProps) => ({

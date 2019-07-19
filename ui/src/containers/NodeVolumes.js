@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { Button, Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
+import NoRowsRenderer from '../components/NoRowsRenderer';
 
 const ButtonContainer = styled.div`
   margin-top: ${padding.small};
@@ -14,7 +15,7 @@ const VolumeTable = styled.div`
   margin-top: ${padding.small};
 `;
 
-const Volumes = props => {
+const NodeVolumes = props => {
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
 
@@ -61,7 +62,7 @@ const Volumes = props => {
   return (
     <>
       <ButtonContainer>
-        <Button text={'Create New Volume'} type="button" />
+        <Button text={props.intl.messages.create_new_volume} type="button" />
       </ButtonContainer>
       <VolumeTable>
         <Table
@@ -74,10 +75,13 @@ const Volumes = props => {
           sortDirection={sortDirection}
           onSort={onSort}
           onRowClick={() => {}}
+          noRowsRenderer={() => (
+            <NoRowsRenderer content={props.intl.messages.no_volume_found} />
+          )}
         />
       </VolumeTable>
     </>
   );
 };
 
-export default injectIntl(Volumes);
+export default injectIntl(NodeVolumes);

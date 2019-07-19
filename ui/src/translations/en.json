@@ -66,5 +66,7 @@
   "new_node_access": "New Node Access",
   "storageCapacity": "Storage Capacity",
   "storageClass": "Storage Class",
-  "creationTime": "Created"
+  "creationTime": "Created",
+  "create_new_volume": "Create a New Volume",
+  "no_volume_found": "No volumes on this node"
 }
