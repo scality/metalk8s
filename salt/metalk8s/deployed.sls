@@ -12,3 +12,4 @@ include:
   - metalk8s.addons.monitoring.kube-state-metrics.deployed
   - metalk8s.addons.monitoring.node-exporter.deployed
   - metalk8s.addons.monitoring.grafana.deployed
+  - metalk8s.addons.nginx-ingress.deployed
