@@ -19,6 +19,7 @@ import { toggleSideBarAction } from '../ducks/app/layout';
 import { removeNotificationAction } from '../ducks/app/notifications';
 import { updateLanguageAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
+import CreateVolume from './CreateVolume';
 
 class Layout extends Component {
   render() {
@@ -126,7 +127,12 @@ class Layout extends Component {
               path="/nodes/deploy/:id"
               component={NodeDeployment}
             />
+            <PrivateRoute
+              path={`/nodes/:id/createVolume`}
+              component={CreateVolume}
+            />
             <PrivateRoute path="/nodes/:id" component={NodeInformation} />
+
             <PrivateRoute exact path="/nodes" component={NodeList} />
             <PrivateRoute exact path="/about" component={Welcome} />
             <PrivateRoute exact path="/" component={ClusterMonitoring} />
