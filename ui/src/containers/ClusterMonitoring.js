@@ -15,7 +15,7 @@ import {
   CLUSTER_STATUS_UP,
   CLUSTER_STATUS_DOWN
 } from '../ducks/app/monitoring';
-import { STATUS_CRITICAL, STATUS_SUCCESS } from '../components/constants';
+import { STATUS_CRITICAL, STATUS_SUCCESS } from '../constants';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 

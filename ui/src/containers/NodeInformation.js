@@ -124,7 +124,10 @@ class NodeInformation extends React.Component {
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{this.props.intl.messages.status}</InformationLabel>
-          <InformationValue>{this.props.node.status}</InformationValue>
+          <InformationValue>
+            {this.props.intl.messages[this.props.node.status] ||
+              this.props.node.status}
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{this.props.intl.messages.roles}</InformationLabel>
