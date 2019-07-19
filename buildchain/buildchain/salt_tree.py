@@ -163,8 +163,8 @@ PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         task_name='top.sls',
         source=constants.ROOT/'pillar'/'top.sls.in',
         destination=constants.ISO_ROOT/'pillar'/'top.sls',
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
     ),
 )
 
@@ -175,8 +175,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         task_name='top.sls',
         source=constants.ROOT/'salt'/'top.sls.in',
         destination=constants.ISO_ROOT/'salt'/'top.sls',
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
     ),
 
     Path('salt/metalk8s/addons/monitoring/alertmanager/deployed.sls'),
@@ -207,8 +207,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'salt', 'metalk8s', 'addons', 'ui', 'files',
             'metalk8s-ui-deployment.yaml'
         ),
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
     ),
     Path('salt/metalk8s/addons/ui/precheck.sls'),
 
@@ -312,8 +312,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'salt', 'metalk8s', 'kubernetes', 'mark-control-plane',
             'deployed.sls'
         ),
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
     ),
 
     Path('salt/metalk8s/kubernetes/sa/advertised.sls'),
@@ -440,10 +440,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         root=constants.ISO_IMAGE_ROOT,
         server_root='${}_{}_images'.format(
             config.PROJECT_NAME.lower(),
-            constants.VERSION.replace('.', '_').replace('-', '_')
+            versions.VERSION.replace('.', '_').replace('-', '_')
         ),
         name_prefix='{}-{}/'.format(
-            config.PROJECT_NAME.lower(), constants.VERSION
+            config.PROJECT_NAME.lower(), versions.VERSION
         ),
         destination=Path(
             constants.ISO_ROOT,
