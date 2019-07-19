@@ -69,9 +69,13 @@ Here is the file tree expected by MetalK8s to exist in each Solution archive::
    │           └── version
    ├── registry-config.inc
    ├── operator
-   │   ├── crd
-   │   │   └── some_crd_name.yaml
-   │   └── deployment.yaml
+   |   └── deploy
+   │       ├── crds
+   │       |   └── some_crd_name.yaml
+   │       ├── operator.yaml
+   │       ├── role.yaml
+   │       ├── role_binding.yaml
+   │       └── service_account.yaml
    ├── product.txt
    └── ui
        └── deployment.yaml

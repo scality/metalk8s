@@ -34,9 +34,9 @@ All Operator-related files except for the container images (see
 archive. Those files should be organized as follows::
 
    operator
-   ├── crd
-   │   └── some_crd_name.yaml
    └── deploy
+       ├── crds
+       │   └── some_crd_name.yaml
        ├── operator.yaml
        ├── role.yaml
        ├── role_binding.yaml
