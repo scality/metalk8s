@@ -16,6 +16,7 @@ SKIP_CONTAINERS = frozenset((
     'kube-rbac-proxy-main',
     'kube-rbac-proxy-self',
     'rules-configmap-reloader',
+    'nginx-ingress-default-backend',
 ))
 
 @then("all Pod logs should be non-empty")

@@ -45,5 +45,6 @@ Create CNI calico configuration file:
             snat: true
             capabilities:
               portMappings: true
+            conditionsV4: ["-d", "{{ grains.metalk8s.workload_plane_ip }}/32"]
     - require:
       - metalk8s_kubeconfig: Create kubeconf file for calico
