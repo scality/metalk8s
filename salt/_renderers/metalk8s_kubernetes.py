@@ -141,6 +141,7 @@ def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context):
 
 
 @handle('rbac.authorization.k8s.io/v1', 'Role')
+@handle('rbac.authorization.k8s.io/v1beta1', 'Role')
 def _handle_rbac_v1beta1_role(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.role_present': [
@@ -154,6 +155,7 @@ def _handle_rbac_v1beta1_role(obj, kubeconfig, context):
 
 
 @handle('rbac.authorization.k8s.io/v1', 'RoleBinding')
+@handle('rbac.authorization.k8s.io/v1beta1', 'RoleBinding')
 def _handle_rbac_v1beta1_rolebinding(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.rolebinding_present': [
