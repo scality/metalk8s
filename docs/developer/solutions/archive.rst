@@ -67,6 +67,7 @@ Here is the file tree expected by MetalK8s to exist in each Solution archive::
    │           ├── <layer_digest>
    │           ├── manifest.json
    │           └── version
+   ├── registry-config.inc
    ├── operator
    │   ├── crd
    │   │   └── some_crd_name.yaml
@@ -147,20 +148,30 @@ hardlinks, using the tool hardlink_::
    $ hardlink -c images
 
 A detailed procedure for generating the expected layout is available at
-`NicolasT/static-container-registry`_. You can use the script provided there
-to generate your own NGINX configuration and test this static registry for
-yourself. MetalK8s will generate its own configuration when importing the
-Solution archive.
+`NicolasT/static-container-registry`_. You can use the script provided there,
+or use the one vendored in this repository (located at
+``buildchain/buildchain/static-container-registry``) to generate the NGINX
+configuration to serve these image layers with the Docker Registry API.
+MetalK8s, when deploying the Solution, will include the ``registry-config.inc``
+file provided at the root of the archive. In order to let MetalK8s control
+the mountpoint of the ISO, the configuration **must** be generated using the
+following options::
+
+   $ ./static-container-registry.py \
+       --name-prefix '{{ repository }}' \
+       --server-root '{{ registry_root }}' \
+       /path/to/archive/images > /path/to/archive/registry-config.inc.j2
 
 Each archive will be exposed as a single repository, where the name will be
-computed as ``<NAME>-<VERSION>`` from :ref:`solution-archive-product-info`.
+computed as ``<NAME>-<VERSION>`` from :ref:`solution-archive-product-info`, and
+will be mounted at ``/srv/scality/<NAME>-<VERSION>``.
 
 .. warning::
 
-   Operator Deployments should not rely on this naming pattern for finding
-   the images for their resources. Instead, the full repository prefix will be
-   stored in a ``ConfigMap``, that Deployments will be able to expose as
-   environment variables. See :doc:`./operator` for more details.
+   Operators should not rely on this naming pattern for finding the images for
+   their resources. Instead, the full repository prefix will be exposed to
+   the Operator container as an environment variable when deployed with
+   MetalK8s. See :doc:`./operator` for more details.
 
 The images names and tags will be inferred from the directory names chosen when
 using ``skopeo copy``. Using `hardlink` is highly recommended if one wants to
