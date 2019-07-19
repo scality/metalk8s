@@ -261,6 +261,23 @@ TO_PULL : Tuple[targets.RemoteImage, ...] = (
         destination=constants.ISO_IMAGE_ROOT,
         task_dep=['_image_mkdir_root'],
     ),
+    targets.RemoteImage(
+        registry='quay.io/kubernetes-ingress-controller',
+        name='nginx-ingress-controller',
+        version='0.25.0',
+        digest='sha256:464db4880861bd9d1e74e67a4a9c975a6e74c1e9968776d8d4cc73492a56dfa5',
+        destination=constants.ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
+    targets.RemoteImage(
+        registry=constants.GOOGLE_REGISTRY,
+        remote_name='defaultbackend-amd64',
+        name='nginx-ingress-defaultbackend-amd64',
+        version='1.5',
+        digest='sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7',
+        destination=constants.ISO_IMAGE_ROOT,
+        task_dep=['_image_mkdir_root'],
+    ),
 )
 
 
