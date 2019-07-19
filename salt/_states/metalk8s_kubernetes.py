@@ -472,6 +472,78 @@ def namespace_present(name, **kwargs):
     return ret
 
 
+def namespace_annotation_present(
+        name,
+        annotation_key,
+        annotation_value,
+        **kwargs):
+    '''
+    Ensures that the namespace is patched.
+
+    name
+        The name of the namespace
+
+    annotation_key
+        Key of the annotation
+    annotation_value
+        Value of the annotation
+    '''
+
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    annotations = __salt__['metalk8s_kubernetes.namespace_annotations'](
+        name, **kwargs
+    ) or {}
+
+    if annotation_key not in annotations:
+        ret['comment'] = 'The annotation is going to be set'
+        if __opts__['test']:
+            ret['result'] = None
+            return ret
+
+        __salt__['metalk8s_kubernetes.namespace_add_annotation'](
+            name=name,
+            annotation_key=annotation_key,
+            annotation_value=annotation_value,
+            **kwargs
+        )
+
+    elif annotations[annotation_key] == annotation_value:
+        ret['result'] = True
+        ret['comment'] = (
+            'The annotation is already set and has the specified value'
+        )
+        return ret
+
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The annotation is going to be updated'
+            return ret
+
+        ret['comment'] = 'The annotation is already set, changing the value'
+
+        __salt__['metalk8s_kubernetes.namespace_add_annotation'](
+            name=name,
+            annotation_key=annotation_key,
+            annotation_value=annotation_value,
+            **kwargs
+        )
+
+    old_annotations = copy.copy(annotations)
+    annotations[annotation_key] = annotation_value
+
+    ret['changes']['{0}.{1}'.format(name, annotation_key)] = {
+        'old': old_annotations,
+        'new': annotations}
+    ret['result'] = True
+
+    return ret
+
+
 def secret_absent(name, namespace='default', **kwargs):
     '''
     Ensures that the named secret is absent from the given namespace.
