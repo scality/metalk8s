@@ -1,0 +1,34 @@
+controller:
+  image:
+    repository: '{{ build_image_name("nginx-ingress-controller") }}'
+
+  daemonset:
+    useHostPort: true
+
+  kind: DaemonSet
+
+  tolerations:
+    - key: "node-role.kubernetes.io/bootstrap"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/infra"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  service:
+    type: ClusterIP
+
+defaultBackend:
+  image:
+    repository: '{{ build_image_name("nginx-ingress-defaultbackend-amd64") }}'
+
+  tolerations:
+    - key: "node-role.kubernetes.io/bootstrap"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/infra"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''
