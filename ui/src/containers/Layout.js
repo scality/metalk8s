@@ -44,7 +44,7 @@ class Layout extends Component {
       expanded: this.props.sidebar.expanded,
       actions: [
         {
-          label: this.props.intl.messages.cluster_monitoring,
+          label: this.props.intl.messages.monitoring,
           icon: <i className="fas fa-desktop" />,
           onClick: () => {
             this.props.history.push('/');
@@ -126,7 +126,7 @@ class Layout extends Component {
               path="/nodes/deploy/:id"
               component={NodeDeployment}
             />
-            <PrivateRoute exact path="/nodes/:id" component={NodeInformation} />
+            <PrivateRoute path="/nodes/:id" component={NodeInformation} />
             <PrivateRoute exact path="/nodes" component={NodeList} />
             <PrivateRoute exact path="/about" component={Welcome} />
             <PrivateRoute exact path="/" component={ClusterMonitoring} />

@@ -47,7 +47,7 @@
   "node_registered": "Node enregistré",
   "deployment_started": "Déploiement commencé",
   "cluster_status": "Status de la grappe de serveurs",
-  "cluster_monitoring": "Surveillance de la grappe de serveurs",
+  "monitoring": "Monitoring",
   "severity": "Sévérité",
   "message": "Message",
   "active_at": "Actif depuis",
@@ -63,5 +63,10 @@
   "kube_controller_manager": "Contrôleur",
   "no_data_available": "Pas de données disponibles",
   "new_node_data": "Donnée du nouveau node",
-  "new_node_access": "Accès au nouveau node"
+  "new_node_access": "Accès au nouveau node",
+  "storageCapacity": "Capacité",
+  "storageClass": "Storage Class",
+  "creationTime": "Créer à",
+  "create_new_volume": "Créer un nouveau volume",
+  "no_volume_found": "Aucun volume sur ce node"
 }

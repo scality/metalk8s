@@ -2,18 +2,22 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
-import { Table, Button } from '@scality/core-ui';
 import styled from 'styled-components';
-
-import { fetchPodsAction } from '../ducks/app/pods';
-import { fetchNodesAction } from '../ducks/app/nodes';
-import { sortSelector } from '../services/utils';
+import { withRouter, Switch, Route } from 'react-router-dom';
+import { Table, Button } from '@scality/core-ui';
 import {
   fontWeight,
   fontSize,
   padding
 } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
+
+import { fetchPodsAction } from '../ducks/app/pods';
+import { fetchNodesAction } from '../ducks/app/nodes';
+import { fetchVolumesAction } from '../ducks/app/volumes';
+import { sortSelector } from '../services/utils';
+
+import NodeVolumes from './NodeVolumes';
 
 const NodeInformationContainer = styled.div`
   box-sizing: border-box;
@@ -25,29 +29,39 @@ const NodeInformationContainer = styled.div`
 
 const PodsContainer = styled.div`
   flex-grow: 1;
+  margin-top: ${padding.base};
 `;
 
-const PageTitle = styled.h2``;
-
-const InformationTitle = styled.h3``;
+const DetailsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-top: ${padding.base};
+`;
 
 const InformationSpan = styled.span`
-  padding: 0 ${padding.larger} ${padding.small} ${padding.larger};
+  padding: 0 ${padding.larger} ${padding.small} 0;
 `;
 
 const InformationLabel = styled.span`
-  font-size: ${fontSize.small};
-  padding: 0 ${padding.base};
-  min-width: 120px;
+  font-size: ${fontSize.large};
+  padding-right: ${padding.base}
+  min-width: 150px;
   display: inline-block;
 `;
 
 const InformationValue = styled.span`
-  font-size: ${fontSize.base};
+  font-size: ${fontSize.large};
 `;
 
 const InformationMainValue = styled(InformationValue)`
   font-weight: ${fontWeight.bold};
+`;
+const ButtonTabContainer = styled.div`
+  margin-top: ${padding.small};
+`;
+
+const TabButton = styled(Button)`
+  margin-right: ${padding.small};
 `;
 
 class NodeInformation extends React.Component {
@@ -93,6 +107,7 @@ class NodeInformation extends React.Component {
   componentDidMount() {
     this.props.fetchNodes();
     this.props.fetchPods();
+    this.props.fetchVolumes();
   }
 
   onSort({ sortBy, sortDirection }) {
@@ -100,49 +115,38 @@ class NodeInformation extends React.Component {
   }
 
   render() {
+    const { match, history, location, volumes, intl, node } = this.props;
     const podsSortedList = sortSelector(
       this.props.pods,
       this.state.sortBy,
       this.state.sortDirection
     );
 
-    return (
-      <NodeInformationContainer>
-        <div>
-          <Button
-            text={this.props.intl.messages.back_to_node_list}
-            type="button"
-            outlined
-            onClick={() => this.props.history.push('/nodes')}
-            icon={<i className="fas fa-arrow-left" />}
-          />
-        </div>
-        <PageTitle>{this.props.intl.messages.information}</PageTitle>
+    const NodeDetails = () => (
+      <DetailsContainer>
         <InformationSpan>
-          <InformationLabel>{this.props.intl.messages.name}</InformationLabel>
-          <InformationMainValue>{this.props.node.name}</InformationMainValue>
+          <InformationLabel>{intl.messages.name}</InformationLabel>
+          <InformationMainValue>{node.name}</InformationMainValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{this.props.intl.messages.status}</InformationLabel>
+          <InformationLabel>{intl.messages.status}</InformationLabel>
           <InformationValue>
-            {this.props.intl.messages[this.props.node.status] ||
-              this.props.node.status}
+            {intl.messages[node.status] || node.status}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{this.props.intl.messages.roles}</InformationLabel>
-          <InformationValue>{this.props.node.roles}</InformationValue>
+          <InformationLabel>{intl.messages.roles}</InformationLabel>
+          <InformationValue>{node.roles}</InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>
-            {this.props.intl.messages.version}
-          </InformationLabel>
-          <InformationValue>
-            {this.props.node.metalk8s_version}
-          </InformationValue>
+          <InformationLabel>{intl.messages.version}</InformationLabel>
+          <InformationValue>{node.metalk8s_version}</InformationValue>
         </InformationSpan>
+      </DetailsContainer>
+    );
 
-        <InformationTitle>{this.props.intl.messages.pods}</InformationTitle>
+    const NodePods = () => (
+      <>
         <PodsContainer>
           <Table
             list={podsSortedList}
@@ -161,54 +165,131 @@ class NodeInformation extends React.Component {
             )}
           />
         </PodsContainer>
+      </>
+    );
+
+    const volumeData = volumes.map(volume => {
+      return {
+        name: volume.metadata.name,
+        status:
+          (volume && volume.status && volume.status.phase) ||
+          intl.messages.unknown,
+        storageCapacity: volume.spec.sparseLoopDevice.size,
+        storageClass: volume.spec.storageClassName,
+        creationTime: volume.metadata.creationTimestamp
+      };
+    });
+
+    const isVolumesPage = location.pathname.endsWith('/volumes');
+    const isPodsPage = location.pathname.endsWith('/pods');
+
+    return (
+      <NodeInformationContainer>
+        <div>
+          <Button
+            text={intl.messages.back_to_node_list}
+            type="button"
+            outlined
+            onClick={() => history.push('/nodes')}
+            icon={<i className="fas fa-arrow-left" />}
+          />
+        </div>
+
+        {/**
+         * FIXME This is a temporary solution.
+         * We will replace this with a real tab soon
+         */}
+        <ButtonTabContainer>
+          <TabButton
+            text="Details"
+            type="button"
+            outlined={!isVolumesPage && !isPodsPage}
+            onClick={() => history.push(match.url)}
+          />
+          <TabButton
+            text="Volumes"
+            type="button"
+            outlined={isVolumesPage}
+            onClick={() => history.push(`${match.url}/volumes`)}
+          />
+          <TabButton
+            text="Pods"
+            type="button"
+            outlined={isPodsPage}
+            onClick={() => history.push(`${match.url}/pods`)}
+          />
+        </ButtonTabContainer>
+
+        <Switch>
+          <Route path={`${match.url}/pods`} component={NodePods} />
+          <Route
+            path={`${match.url}/volumes`}
+            component={() => <NodeVolumes data={volumeData} />}
+          />
+          <Route path="/" component={NodeDetails} />
+        </Switch>
       </NodeInformationContainer>
     );
   }
 }
 
+const getNodeNameFromUrl = (state, props) => {
+  if (props && props.match && props.match.params && props.match.params.id) {
+    return props.match.params.id;
+  } else {
+    return '';
+  }
+};
+
+const getNodes = state =>
+  (state && state.app && state.app.nodes && state.app.nodes.list) || [];
+
+const getPods = state =>
+  (state && state.app && state.app.pods && state.app.pods.list) || [];
+
+const getVolumes = state =>
+  (state && state.app && state.app.volumes && state.app.volumes.list) || [];
+
+const makeGetNodeFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getNodes,
+  (nodeName, nodes) => nodes.find(node => node.name === nodeName) || {}
+);
+
+const makeGetPodsFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getPods,
+  (nodeName, pods) => pods.filter(pod => pod.nodeName === nodeName) || []
+);
+
+const makeGetVolumesFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getVolumes,
+  (nodeName, volumes) =>
+    volumes.filter(
+      volume => volume && volume.spec && volume.spec.nodeName === nodeName
+    )
+);
+
 const mapStateToProps = (state, ownProps) => ({
   node: makeGetNodeFromUrl(state, ownProps),
-  pods: makeGetPodsFromUrl(state, ownProps)
+  pods: makeGetPodsFromUrl(state, ownProps),
+  volumes: makeGetVolumesFromUrl(state, ownProps)
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     fetchPods: () => dispatch(fetchPodsAction()),
-    fetchNodes: () => dispatch(fetchNodesAction())
+    fetchNodes: () => dispatch(fetchNodesAction()),
+    fetchVolumes: () => dispatch(fetchVolumesAction())
   };
 };
 
-const getNodeFromUrl = (state, props) => {
-  const nodes = state.app.nodes.list || [];
-  if (props && props.match && props.match.params && props.match.params.id) {
-    return nodes.find(node => node.name === props.match.params.id) || {};
-  } else {
-    return {};
-  }
-};
-
-const getPodsFromUrl = (state, props) => {
-  const pods = state.app.pods.list || [];
-  if (props && props.match && props.match.params && props.match.params.id) {
-    return pods.filter(pod => pod.nodeName === props.match.params.id) || [];
-  } else {
-    return [];
-  }
-};
-
-const makeGetNodeFromUrl = createSelector(
-  getNodeFromUrl,
-  node => node
-);
-
-const makeGetPodsFromUrl = createSelector(
-  getPodsFromUrl,
-  pods => pods
-);
-
 export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(NodeInformation)
+  withRouter(
+    connect(
+      mapStateToProps,
+      mapDispatchToProps
+    )(NodeInformation)
+  )
 );
