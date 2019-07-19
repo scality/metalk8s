@@ -125,15 +125,20 @@ def task__iso_add_utilities_scripts() -> types.TaskDict:
     downgrade_src = constants.ROOT/'scripts'/'downgrade.sh'
     downgrade_dest = constants.ISO_ROOT/'downgrade.sh'
     downgrade = [downgrade_src, downgrade_dest]
+
+    upgrade_src = constants.ROOT/'scripts'/'upgrade.sh'
+    upgrade_dest = constants.ISO_ROOT/'upgrade.sh'
+    upgrade = [upgrade_src, upgrade_dest]
     return {
             'title': lambda task: utils.title_with_target1('COPY', task),
             'actions': [
                     (coreutils.cp_file, iso_manager),
-                    (coreutils.cp_file, downgrade)
+                    (coreutils.cp_file, downgrade),
+                    (coreutils.cp_file, upgrade)
                 ],
-            'targets': [iso_manager_dest, downgrade_dest],
+            'targets': [iso_manager_dest, downgrade_dest, upgrade_dest],
             'task_dep': ['_iso_mkdir_root'],
-            'file_dep': [iso_manager_src, downgrade_src],
+            'file_dep': [iso_manager_src, downgrade_src, upgrade_src],
             'clean': True,
             }
 
