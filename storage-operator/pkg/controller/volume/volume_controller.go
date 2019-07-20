@@ -4,6 +4,7 @@ import (
 	"context"
 
 	storagev1alpha1 "github.com/scality/metalk8s/storage-operator/pkg/apis/storage/v1alpha1"
+	"github.com/scality/metalk8s/storage-operator/pkg/salt"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -30,7 +31,11 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileVolume{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileVolume{
+		client: mgr.GetClient(),
+		scheme: mgr.GetScheme(),
+		salt:   salt.NewClient(),
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -68,6 +73,7 @@ type ReconcileVolume struct {
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
+	salt   *salt.Client
 }
 
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
