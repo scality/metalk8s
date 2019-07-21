@@ -3,6 +3,7 @@ module github.com/scality/metalk8s/storage-operator
 require (
 	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/operator-framework/operator-sdk v0.9.1-0.20190712203509-e1d904fa80a4
+	github.com/pkg/errors v0.8.1
 	github.com/spf13/pflag v1.0.3
 	k8s.io/api v0.0.0-20190612125737-db0771252981
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad
