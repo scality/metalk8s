@@ -7,14 +7,18 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 // A Salt API client.
 type Client struct {
 	address string       // Address of the Salt API server.
 	client  *http.Client // HTTP client to query Salt API.
+	logger  logr.Logger  // Logger for the client's requests
 }
 
 // Create a new Salt API client.
@@ -29,6 +33,7 @@ func NewClient() *Client {
 	return &Client{
 		address: fmt.Sprintf("%s:%d", address, SALT_API_PORT),
 		client:  &http.Client{},
+		logger:  log.Log.WithName("salt_api"),
 	}
 }
 
@@ -44,8 +49,22 @@ func NewClient() *Client {
 func (self *Client) post(
 	endpoint string, payload map[string]string, headers map[string]string,
 ) (map[string]interface{}, error) {
+	var status int = 0
 	// Build target URL.
 	url := fmt.Sprintf("%s%s", self.address, endpoint)
+
+	// Setup the translog.
+	defer func(url string, start time.Time) {
+		elapsed := int64(time.Since(start) / time.Millisecond)
+		if status == 0 {
+			self.logger.Info("POST", "url", url, "duration", elapsed)
+		} else {
+			self.logger.Info(
+				"POST", "url", url, "StatusCode", status, "duration", elapsed,
+			)
+		}
+	}(url, time.Now())
+
 	// Encode the payload into JSON.
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -69,6 +88,7 @@ func (self *Client) post(
 	}
 	defer response.Body.Close()
 	// Check the return code before trying to decode the body.
+	status = response.StatusCode
 	if response.StatusCode != 200 {
 		errmsg := fmt.Sprintf(
 			"Salt API failed with code %d", response.StatusCode,
