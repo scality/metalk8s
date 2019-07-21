@@ -19,7 +19,7 @@ import (
 type Client struct {
 	address string       // Address of the Salt API server.
 	client  *http.Client // HTTP client to query Salt API.
-	token   string       // Salt API authentication token.
+	token   *authToken   // Salt API authentication token.
 	logger  logr.Logger  // Logger for the client's requests
 }
 
@@ -35,13 +35,19 @@ func NewClient() *Client {
 	return &Client{
 		address: fmt.Sprintf("%s:%d", address, SALT_API_PORT),
 		client:  &http.Client{},
-		token:   "",
+		token:   nil,
 		logger:  log.Log.WithName("salt_api"),
 	}
 }
 
 // Authenticate against the Salt API server.
 func (self *Client) Authenticate() error {
+	// Skip authentication if we already have a valid token.
+	if self.token != nil && !self.token.isExpired() {
+		self.logger.Info("skip authentication: reuse existing valid token")
+		return nil
+	}
+
 	payload := map[string]string{
 		"eauth":      "kubernetes_rbac",
 		"username":   "admin",
@@ -57,7 +63,9 @@ func (self *Client) Authenticate() error {
 	if err != nil {
 		return errors.Wrap(err, "Salt API authentication failed")
 	}
-	self.token = output["token"].(string)
+	self.token = newToken(
+		output["token"].(string), output["expire"].(float64),
+	)
 
 	return nil
 }
@@ -70,7 +78,7 @@ func (self *Client) TestPing() (map[string]interface{}, error) {
 		"fun":    "test.ping",
 	}
 	headers := map[string]string{
-		"X-Auth-Token": self.token,
+		"X-Auth-Token": self.token.value,
 	}
 
 	self.logger.Info("test.ping")
