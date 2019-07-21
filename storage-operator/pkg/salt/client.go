@@ -2,6 +2,7 @@ package salt
 
 import (
 	"bytes"
+	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +19,7 @@ import (
 type Client struct {
 	address string       // Address of the Salt API server.
 	client  *http.Client // HTTP client to query Salt API.
+	token   string       // Salt API authentication token.
 	logger  logr.Logger  // Logger for the client's requests
 }
 
@@ -33,8 +35,31 @@ func NewClient() *Client {
 	return &Client{
 		address: fmt.Sprintf("%s:%d", address, SALT_API_PORT),
 		client:  &http.Client{},
+		token:   "",
 		logger:  log.Log.WithName("salt_api"),
 	}
+}
+
+// Authenticate against the Salt API server.
+func (self *Client) Authenticate() error {
+	payload := map[string]string{
+		"eauth":      "kubernetes_rbac",
+		"username":   "admin",
+		"token":      b64.StdEncoding.EncodeToString([]byte("admin:admin")),
+		"token_type": "Basic",
+	}
+
+	self.logger.Info(
+		"Auth", "username", payload["username"], "type", payload["token_type"],
+	)
+
+	output, err := self.post("/login", payload, nil)
+	if err != nil {
+		return errors.Wrap(err, "Salt API authentication failed")
+	}
+	self.token = output["token"].(string)
+
+	return nil
 }
 
 // Send POST request to Salt API.

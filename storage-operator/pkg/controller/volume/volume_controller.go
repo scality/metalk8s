@@ -102,6 +102,11 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
+	if err = r.salt.Authenticate(); err != nil {
+		reqLogger.Error(err, "Salt API authentication failed")
+		return reconcile.Result{}, err
+	}
+
 	pv := newPersistentVolumeForCR(instance)
 
 	// Set Volume instance as the owner and controller
