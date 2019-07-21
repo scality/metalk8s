@@ -40,14 +40,70 @@ func NewClient() *Client {
 	}
 }
 
-// Authenticate against the Salt API server.
-func (self *Client) Authenticate() error {
-	// Skip authentication if we already have a valid token.
-	if self.token != nil && !self.token.isExpired() {
-		self.logger.Info("skip authentication: reuse existing valid token")
-		return nil
+// Test function, will be removed later…
+func (self *Client) TestPing() (map[string]interface{}, error) {
+	payload := map[string]string{
+		"client": "local",
+		"tgt":    "*",
+		"fun":    "test.ping",
 	}
 
+	self.logger.Info("test.ping")
+
+	ans, err := self.authenticatedPost("/", payload)
+	if err != nil {
+		return nil, errors.Wrap(err, "test.ping failed")
+	}
+	return ans, nil
+}
+
+// Send an authenticated POST request to Salt API.
+//
+// Automatically handle:
+// - missing token (authenticate)
+// - token expiration (re-authenticate)
+// - token invalidation (re-authenticate)
+//
+// Arguments
+//     endpoint: API endpoint.
+//     payload:  POST JSON payload.
+//
+// Returns
+//     The decoded response body.
+func (self *Client) authenticatedPost(
+	endpoint string, payload map[string]string,
+) (map[string]interface{}, error) {
+	// Authenticate if we don't have a valid token.
+	if self.token == nil || self.token.isExpired() {
+		if err := self.authenticate(); err != nil {
+			return nil, err
+		}
+	}
+
+	response, err := self.doPost(endpoint, payload, true)
+	if err != nil {
+		return nil, err
+	}
+	// Maybe the token got invalidated by a restart of the Salt API server.
+	// => Re-authenticate and retry.
+	if response.StatusCode == 401 {
+		self.logger.Info("valid token rejected: try to re-authenticate")
+
+		response.Body.Close() // Terminate this request before starting another.
+
+		self.token = nil
+		if err := self.authenticate(); err != nil {
+			return nil, err
+		}
+		response, err = self.doPost(endpoint, payload, true)
+	}
+	defer response.Body.Close()
+
+	return decodeApiResponse(response)
+}
+
+// Authenticate against the Salt API server.
+func (self *Client) authenticate() error {
 	payload := map[string]string{
 		"eauth":      "kubernetes_rbac",
 		"username":   "admin",
@@ -59,35 +115,24 @@ func (self *Client) Authenticate() error {
 		"Auth", "username", payload["username"], "type", payload["token_type"],
 	)
 
-	output, err := self.post("/login", payload, false)
+	response, err := self.doPost("/login", payload, false)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	output, err := decodeApiResponse(response)
 	if err != nil {
 		return errors.Wrap(err, "Salt API authentication failed")
 	}
+
 	self.token = newToken(
 		output["token"].(string), output["expire"].(float64),
 	)
-
 	return nil
 }
 
-// Test function, will be removed later…
-func (self *Client) TestPing() (map[string]interface{}, error) {
-	payload := map[string]string{
-		"client": "local",
-		"tgt":    "*",
-		"fun":    "test.ping",
-	}
-
-	self.logger.Info("test.ping")
-
-	ans, err := self.post("/", payload, true)
-	if err != nil {
-		return nil, errors.Wrap(err, "test.ping failed")
-	}
-	return ans, nil
-}
-
-// Send POST request to Salt API.
+// Send a POST request to Salt API.
 //
 // Arguments
 //     endpoint: API endpoint.
@@ -95,10 +140,10 @@ func (self *Client) TestPing() (map[string]interface{}, error) {
 //     is_auth:  Is the request authenticated?
 //
 // Returns
-//     The decoded response body.
-func (self *Client) post(
+//     The POST response.
+func (self *Client) doPost(
 	endpoint string, payload map[string]string, is_auth bool,
-) (map[string]interface{}, error) {
+) (*http.Response, error) {
 	var response *http.Response = nil
 
 	// Setup the translog.
@@ -117,9 +162,7 @@ func (self *Client) post(
 	if err != nil {
 		return nil, errors.Wrap(err, "POST failed on Salt API")
 	}
-	defer response.Body.Close()
-
-	return decodeApiResponse(response)
+	return response, nil
 }
 
 // Log an HTTP request.

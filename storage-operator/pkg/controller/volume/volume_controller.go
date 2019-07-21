@@ -102,10 +102,6 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	if err = r.salt.Authenticate(); err != nil {
-		reqLogger.Error(err, "Salt API authentication failed")
-		return reconcile.Result{}, err
-	}
 	result, err := r.salt.TestPing()
 	if err != nil {
 		reqLogger.Error(err, "test.ping failed")
