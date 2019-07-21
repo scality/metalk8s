@@ -106,6 +106,16 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		reqLogger.Error(err, "Salt API authentication failed")
 		return reconcile.Result{}, err
 	}
+	result, err := r.salt.TestPing()
+	if err != nil {
+		reqLogger.Error(err, "test.ping failed")
+		return reconcile.Result{}, err
+	}
+	for hostname := range result {
+		reqLogger.Info(
+			"ping", "hostname", hostname, "result", result[hostname].(bool),
+		)
+	}
 
 	pv := newPersistentVolumeForCR(instance)
 

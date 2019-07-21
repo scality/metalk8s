@@ -62,6 +62,26 @@ func (self *Client) Authenticate() error {
 	return nil
 }
 
+// Test function, will be removed later…
+func (self *Client) TestPing() (map[string]interface{}, error) {
+	payload := map[string]string{
+		"client": "local",
+		"tgt":    "*",
+		"fun":    "test.ping",
+	}
+	headers := map[string]string{
+		"X-Auth-Token": self.token,
+	}
+
+	self.logger.Info("test.ping")
+
+	ans, err := self.post("/", payload, headers)
+	if err != nil {
+		return nil, errors.Wrap(err, "test.ping failed")
+	}
+	return ans, nil
+}
+
 // Send POST request to Salt API.
 //
 // Arguments
