@@ -59,7 +59,7 @@ func (self *Client) Authenticate() error {
 		"Auth", "username", payload["username"], "type", payload["token_type"],
 	)
 
-	output, err := self.post("/login", payload, nil)
+	output, err := self.post("/login", payload, false)
 	if err != nil {
 		return errors.Wrap(err, "Salt API authentication failed")
 	}
@@ -77,13 +77,10 @@ func (self *Client) TestPing() (map[string]interface{}, error) {
 		"tgt":    "*",
 		"fun":    "test.ping",
 	}
-	headers := map[string]string{
-		"X-Auth-Token": self.token.value,
-	}
 
 	self.logger.Info("test.ping")
 
-	ans, err := self.post("/", payload, headers)
+	ans, err := self.post("/", payload, true)
 	if err != nil {
 		return nil, errors.Wrap(err, "test.ping failed")
 	}
@@ -95,28 +92,71 @@ func (self *Client) TestPing() (map[string]interface{}, error) {
 // Arguments
 //     endpoint: API endpoint.
 //     payload:  POST JSON payload.
-//     headers:  HTTP headers to add to the POST request.
+//     is_auth:  Is the request authenticated?
 //
 // Returns
 //     The decoded response body.
 func (self *Client) post(
-	endpoint string, payload map[string]string, headers map[string]string,
+	endpoint string, payload map[string]string, is_auth bool,
 ) (map[string]interface{}, error) {
-	var status int = 0
-	// Build target URL.
-	url := fmt.Sprintf("%s%s", self.address, endpoint)
+	var response *http.Response = nil
 
 	// Setup the translog.
-	defer func(url string, start time.Time) {
+	defer func(start time.Time) {
 		elapsed := int64(time.Since(start) / time.Millisecond)
-		if status == 0 {
-			self.logger.Info("POST", "url", url, "duration", elapsed)
-		} else {
-			self.logger.Info(
-				"POST", "url", url, "StatusCode", status, "duration", elapsed,
-			)
-		}
-	}(url, time.Now())
+		self.logRequest("POST", endpoint, response, elapsed)
+	}(time.Now())
+
+	request, err := self.newPostRequest(endpoint, payload, is_auth)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot create POST request")
+	}
+
+	// Send the POST request.
+	response, err = self.client.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "POST failed on Salt API")
+	}
+	defer response.Body.Close()
+
+	return decodeApiResponse(response)
+}
+
+// Log an HTTP request.
+//
+// Arguments
+//     verb:     HTTP verb used for the request
+//     endpoint: API endpoint.
+//     response: HTTP response (if any)
+//     elapsed:  response time (in ms)
+func (self *Client) logRequest(
+	verb string, endpoint string, response *http.Response, elapsed int64,
+) {
+	url := fmt.Sprintf("%s%s", self.address, endpoint)
+
+	if response != nil {
+		self.logger.Info(verb,
+			"url", url, "StatusCode", response.StatusCode, "duration", elapsed,
+		)
+	} else {
+		self.logger.Info(verb, "url", url, "duration", elapsed)
+	}
+}
+
+// Create a POST request for Salt API.
+//
+// Arguments
+//     endpoint: API endpoint.
+//     payload:  POST JSON payload.
+//     is_auth:  Is the request authenticated?
+//
+// Returns
+//     The POST request.
+func (self *Client) newPostRequest(
+	endpoint string, payload map[string]string, is_auth bool,
+) (*http.Request, error) {
+	// Build target URL.
+	url := fmt.Sprintf("%s%s", self.address, endpoint)
 
 	// Encode the payload into JSON.
 	body, err := json.Marshal(payload)
@@ -128,20 +168,24 @@ func (self *Client) post(
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot prepare POST query for Salt API")
 	}
-	// Set the HTTP headers.
+
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Content-Type", "application/json")
-	for hdr, value := range headers {
-		request.Header.Set(hdr, value)
+	if is_auth {
+		request.Header.Set("X-Auth-Token", self.token.value)
 	}
-	// Send the POST request.
-	response, err := self.client.Do(request)
-	if err != nil {
-		return nil, errors.Wrap(err, "POST failed on Salt API")
-	}
-	defer response.Body.Close()
+	return request, nil
+}
+
+// Decode the POST response payload.
+//
+// Arguments
+//     response: the POST response.
+//
+// Returns
+//     The decoded API response.
+func decodeApiResponse(response *http.Response) (map[string]interface{}, error) {
 	// Check the return code before trying to decode the body.
-	status = response.StatusCode
 	if response.StatusCode != 200 {
 		errmsg := fmt.Sprintf(
 			"Salt API failed with code %d", response.StatusCode,
@@ -155,10 +199,9 @@ func (self *Client) post(
 	}
 	// Decode the response body.
 	var result map[string]interface{}
-	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
 		return nil, errors.Wrap(err, "cannot decode Salt API response")
 	}
-
 	// The real result is in a single-item list stored in the `return` field.
 	return result["return"].([]interface{})[0].(map[string]interface{}), nil
 }
