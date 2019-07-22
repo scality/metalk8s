@@ -302,19 +302,34 @@ class DockerPull:
     # pylint: disable=too-few-public-methods
     """A class to expose the `docker pull` command through the API client."""
 
-    def __init__(self, repository: str, digest: str):
+    def __init__(
+        self, repository: str, tag: str, digest: str
+    ):
         """Initialize a `docker pull` callable object.
          Arguments:
             repository: the repository to pull from
-            digest:     the digest to pull from the repository
+            tag:        the image tag to pull from the repository
+            digest:     the expected digest of the image to pull
         """
         self.repository = repository
+        self.tag = tag
         self.digest = digest
 
     @task_error(docker.errors.BuildError, handler=build_error_handler)
     @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
-        return DOCKER_CLIENT.images.pull(self.repository, tag=self.digest)
+        pulled = DOCKER_CLIENT.images.pull(self.repository, tag=self.tag)
+        self.check_digest(pulled)
+        return pulled
+
+    def check_digest(self, pulled: docker.models.images.Image):
+        if pulled.id != self.digest:
+            raise TaskError(
+                "Image {} pulled from {} doesn't match expected digest: "
+                "expected {}, got {}".format(
+                    self.tag, self.repository, self.digest, pulled.id
+                )
+            )
 
 
 class DockerSave:
