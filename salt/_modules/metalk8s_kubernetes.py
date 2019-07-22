@@ -447,6 +447,46 @@ def namespaces(**kwargs):
         _cleanup(**cfg)
 
 
+def namespace_add_annotation(
+        name,
+        annotation_key,
+        annotation_value,
+        **kwargs):
+    '''
+    Patch a namespace as defined by the user
+        name
+            The name of the namespace
+        annotation_key
+            key of the annotation
+        annotation_value
+            value of the annotation
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        body = {
+            'metadata': {
+                'annotations': {
+                    annotation_key: annotation_value}
+                }
+        }
+
+        api_instance = kubernetes.client.CoreV1Api()
+        api_response = api_instance.patch_namespace(name, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CoreV1Api->patch_namespace'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
 def deployments(namespace='default', **kwargs):
     '''
     Return a list of kubernetes deployments defined in the namespace
@@ -2155,6 +2195,19 @@ def node_annotations(name, **kwargs):
 
     if match is not None:
         return match['metadata']['annotations']
+
+    return {}
+
+
+def namespace_annotations(name, **kwargs):
+    ''' Returns the annotations of a namespace
+        name
+            The namespace name
+    '''
+    namespace_information = show_namespace(name, **kwargs)
+
+    if namespace_information is not None:
+        return namespace_information['metadata']['annotations']
 
     return {}
 
