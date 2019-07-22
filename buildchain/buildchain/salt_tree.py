@@ -29,8 +29,8 @@ Overview:
 
 
 import importlib
-import sys
 from pathlib import Path
+import sys
 from typing import Any, Iterator, Tuple, Union
 
 from buildchain import config
@@ -39,6 +39,7 @@ from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
+from buildchain.targets.serialize import Renderer
 
 sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
 container_registry : Any = importlib.import_module('static-container-registry')
@@ -178,6 +179,24 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         destination=constants.ISO_ROOT/'salt'/'top.sls',
         context={'VERSION': versions.VERSION},
         file_dep=[versions.VERSION_FILE],
+    ),
+
+    targets.SerializedData(
+        task_name='versions.json',
+        destination=constants.ISO_ROOT/'salt'/'metalk8s'/'versions.json',
+        data={
+            'kubernetes': {'version': versions.K8S_VERSION},
+            'packages': {
+                pkg.name: {'version': "{}-{}".format(pkg.version, pkg.release)}
+                for pkg in versions.PACKAGES
+            },
+            'images': {
+                img.name: {'version': img.version}
+                for img in versions.CONTAINER_IMAGES
+            },
+            'metalk8s': {'version': versions.VERSION},
+        },
+        renderer=Renderer.JSON,
     ),
 
     Path('salt/metalk8s/addons/monitoring/alertmanager/deployed.sls'),
