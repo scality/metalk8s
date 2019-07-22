@@ -9,6 +9,8 @@ import {
 } from '../ducks/app/volumes';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 
+// We might want to do a factorization later for
+// form styled components
 const FormSection = styled.div`
   padding: 0 ${padding.larger};
   display: flex;
