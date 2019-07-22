@@ -29,6 +29,12 @@ import {
   getNameFromJidLocalStorage
 } from '../../services/salt/utils';
 
+import {
+  STATUS_READY,
+  STATUS_NOT_READY,
+  STATUS_UNKNOWN
+} from '../../constants.js';
+
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
 export const SET_NODES = 'SET_NODES';
@@ -218,11 +224,11 @@ export function* fetchNodes() {
             node.status.conditions.find(conditon => conditon.type === 'Ready');
           let status;
           if (statusType && statusType.status === 'True') {
-            status = intl.translate('ready');
+            status = STATUS_READY;
           } else if (statusType && statusType.status === 'False') {
-            status = intl.translate('not_ready');
+            status = STATUS_NOT_READY;
           } else {
-            status = intl.translate('unknown');
+            status = STATUS_UNKNOWN;
           }
 
           const roleTaintMatched = roleTaintMap.find(item => {

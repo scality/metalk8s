@@ -11,6 +11,8 @@ import { REFRESH_TIMEOUT } from '../constants';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 
+import { STATUS_NOT_READY, STATUS_UNKNOWN } from '../constants.js';
+
 const PageContainer = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -73,13 +75,17 @@ const NodeList = props => {
     },
     {
       label: intl.messages.status,
-      dataKey: 'status'
+      dataKey: 'status',
+      renderer: data => <span> {intl.messages[data] || data}</span>
     },
     {
       label: intl.messages.deployment,
       dataKey: 'deployment',
       renderer: (data, rowData) => {
-        if ((!rowData.status || rowData.status === 'Unknown') && !rowData.jid) {
+        if (
+          (!rowData.status || rowData.status === STATUS_UNKNOWN) &&
+          !rowData.jid
+        ) {
           return (
             <span className="status">
               <Button
@@ -157,8 +163,8 @@ const NodeList = props => {
             // FIXME we will change that behavior later
             // We want let the user click on the item only it's deployed.
             if (
-              item.rowData.status !== intl.messages.unknown &&
-              item.rowData.status !== intl.messages.not_ready
+              item.rowData.status !== STATUS_UNKNOWN &&
+              item.rowData.status !== STATUS_NOT_READY
             ) {
               onRowClick(item);
             }
