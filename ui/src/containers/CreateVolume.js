@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Formik, Form } from 'formik';
+import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { Input, Button } from '@scality/core-ui';
 import {
@@ -86,15 +87,15 @@ const CreateVolume = props => {
 
   return isFormReady ? (
     <CreateVolumeLayout>
-      <PageHeader>Create a New Volume</PageHeader>
+      <PageHeader>{props.intl.messages.create_new_volume}</PageHeader>
       <Formik
         initialValues={initialValues}
         onSubmit={values => {
           props.createVolume(values, nodeName);
         }}
       >
-        {props => {
-          const { values, handleChange } = props;
+        {formikProps => {
+          const { values, handleChange } = formikProps;
           return (
             <Form>
               <FormSection>
@@ -102,10 +103,10 @@ const CreateVolume = props => {
                   name="name"
                   value={values.name}
                   onChange={handleChange}
-                  label="Name"
+                  label={props.intl.messages.name}
                 />
                 <SelectField>
-                  <SelectLabel>Storage Class</SelectLabel>
+                  <SelectLabel>{props.intl.messages.storageClass}</SelectLabel>
                   <SelectFieldItem
                     name="storageClass"
                     onChange={handleChange}
@@ -119,7 +120,7 @@ const CreateVolume = props => {
                   </SelectFieldItem>
                 </SelectField>
                 <SelectField>
-                  <SelectLabel>Type</SelectLabel>
+                  <SelectLabel>{props.intl.messages.type}</SelectLabel>
                   <SelectFieldItem name="type" onChange={handleChange}>
                     {types.map((type, idx) => (
                       <option key={`type_${idx}`} value={type.value}>
@@ -134,14 +135,14 @@ const CreateVolume = props => {
                     name="size"
                     value={values.size}
                     onChange={handleChange}
-                    label="Size"
+                    label={props.intl.messages.volume_size}
                   />
                 ) : (
                   <Input
                     name="path"
                     value={values.path}
                     onChange={handleChange}
-                    label="Path"
+                    label={props.intl.messages.device_path}
                   />
                 )}
               </FormSection>
@@ -168,7 +169,9 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CreateVolume);
+export default injectIntl(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(CreateVolume)
+);
