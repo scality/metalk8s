@@ -19,6 +19,8 @@ Mandatory
   `operator-sdk <https://github.com/operator-framework/operator-sdk>`_ (0.9 or
   higher): to build the Kubernetes Operators
 - mkisofs: to create the MetalK8s ISO
+- `Mercurial <https://www.mercurial-scm.org/>`_: some Go dependencies are
+  downloaded from Mercurial repositories.
 
 Optional
 --------
