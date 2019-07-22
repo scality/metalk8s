@@ -6,8 +6,12 @@ import { injectIntl } from 'react-intl';
 import { Table, Button, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
-import { fetchNodesAction, deployNodeAction } from '../ducks/app/nodes';
-import { REFRESH_TIMEOUT } from '../constants';
+import {
+  refreshNodesAction,
+  stopRefreshNodesAction,
+  deployNodeAction
+} from '../ducks/app/nodes';
+
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 
@@ -23,6 +27,9 @@ const PageContainer = styled.div`
 
 const ActionContainer = styled.div`
   margin-bottom: ${padding.base};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const TableContainer = styled.div`
@@ -56,11 +63,10 @@ const TableContainer = styled.div`
 
 const NodeList = props => {
   useEffect(() => {
-    props.fetchNodes();
-    let interval = setInterval(() => props.fetchNodes(), REFRESH_TIMEOUT);
+    props.refreshNodes();
 
     return () => {
-      clearInterval(interval);
+      props.stopRefreshNodes();
     };
   }, []);
 
@@ -138,7 +144,7 @@ const NodeList = props => {
     }
   };
 
-  const nodesSortedList = sortSelector(nodes, sortBy, sortDirection);
+  const nodesSortedList = sortSelector(nodes.list, sortBy, sortDirection);
 
   return (
     <PageContainer>
@@ -148,6 +154,7 @@ const NodeList = props => {
           onClick={() => history.push('/nodes/create')}
           icon={<i className="fas fa-plus" />}
         />
+        {nodes.isLoading && <Loader size="small" />}
       </ActionContainer>
       <TableContainer>
         <Table
@@ -180,13 +187,14 @@ const NodeList = props => {
 
 function mapStateToProps(state) {
   return {
-    nodes: state.app.nodes.list
+    nodes: state.app.nodes
   };
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchNodes: () => dispatch(fetchNodesAction()),
+    refreshNodes: () => dispatch(refreshNodesAction()),
+    stopRefreshNodes: () => dispatch(stopRefreshNodesAction()),
     deployNode: payload => dispatch(deployNodeAction(payload))
   };
 };

@@ -5,7 +5,8 @@ import {
   put,
   takeLatest,
   takeEvery,
-  select
+  select,
+  delay
 } from 'redux-saga/effects';
 import { eventChannel, END } from 'redux-saga';
 
@@ -19,6 +20,7 @@ import {
 
 import { intl } from '../../translations/IntlGlobalProvider';
 import { addJobAction, removeJobAction } from './salt.js';
+import { REFRESH_TIMEOUT } from '../../constants';
 
 import {
   getJobStatusFromPrintJob,
@@ -37,7 +39,12 @@ import {
 
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
+const REFRESH_NODES = 'REFRESH_NODES';
+const STOP_REFRESH_NODES = 'STOP_REFRESH_NODES';
 export const SET_NODES = 'SET_NODES';
+export const UPDATE_NODES_REFRESHING = 'UPDATE_NODES_REFRESHING';
+export const UPDATE_NODES_LOADING = 'UPDATE_NODES_LOADING';
+
 const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
@@ -147,13 +154,19 @@ export const roleTaintMap = [
 // Reducer
 const defaultState = {
   list: [],
-  events: {}
+  events: {},
+  isRefreshing: false,
+  isLoading: false
 };
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_NODES:
       return { ...state, list: action.payload };
+    case UPDATE_NODES_REFRESHING:
+      return { ...state, isRefreshing: action.payload };
+    case UPDATE_NODES_LOADING:
+      return { ...state, isLoading: action.payload };
     case CREATE_NODE_FAILED:
       return {
         ...state,
@@ -192,6 +205,14 @@ export const createNodeAction = payload => {
   return { type: CREATE_NODE, payload };
 };
 
+export const updateNodesRefreshingAction = payload => {
+  return { type: UPDATE_NODES_REFRESHING, payload };
+};
+
+export const updateNodesLoadingAction = payload => {
+  return { type: UPDATE_NODES_LOADING, payload };
+};
+
 export const clearCreateNodeErrorAction = () => {
   return { type: CLEAR_CREATE_NODE_ERROR };
 };
@@ -212,8 +233,17 @@ export const subscribeDeployEventsAction = jid => {
   return { type: SUBSCRIBE_DEPLOY_EVENTS, jid };
 };
 
+export const refreshNodesAction = () => {
+  return { type: REFRESH_NODES };
+};
+
+export const stopRefreshNodesAction = () => {
+  return { type: STOP_REFRESH_NODES };
+};
+
 // Sagas
 export function* fetchNodes() {
+  yield put(updateNodesLoadingAction(true));
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
     yield put(
@@ -284,6 +314,9 @@ export function* fetchNodes() {
       })
     );
   }
+  yield delay(1000); // To make sur that the loader is visible for at least 1s
+  yield put(updateNodesLoadingAction(false));
+  return result;
 }
 
 export function* getJobStatus(name) {
@@ -472,10 +505,27 @@ export function* subscribeDeployEvents({ jid }) {
   }
 }
 
+export function* refreshNodes() {
+  yield put(updateNodesRefreshingAction(true));
+  const result = yield call(fetchNodes);
+  if (!result.error) {
+    yield delay(REFRESH_TIMEOUT);
+    const isRefreshing = yield select(state => state.app.nodes.isRefreshing);
+    if (isRefreshing) {
+      yield call(refreshNodes);
+    }
+  }
+}
+
+export function* stopRefreshNodes() {
+  yield put(updateNodesRefreshingAction(false));
+}
+
 export function* nodesSaga() {
-  yield takeLatest(FETCH_NODES, fetchNodes);
   yield takeEvery(CREATE_NODE, createNode);
   yield takeLatest(DEPLOY_NODE, deployNode);
   yield takeEvery(CONNECT_SALT_API, sseSagas);
   yield takeEvery(SUBSCRIBE_DEPLOY_EVENTS, subscribeDeployEvents);
+  yield takeEvery(REFRESH_NODES, refreshNodes);
+  yield takeEvery(STOP_REFRESH_NODES, stopRefreshNodes);
 }
