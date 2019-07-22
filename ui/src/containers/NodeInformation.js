@@ -119,7 +119,15 @@ class NodeInformation extends React.Component {
   }
 
   render() {
-    const { match, history, location, volumes, intl, node } = this.props;
+    const {
+      match,
+      history,
+      location,
+      volumes,
+      intl,
+      node,
+      pVList
+    } = this.props;
     const podsSortedList = sortSelector(
       this.props.pods,
       this.state.sortBy,
@@ -171,17 +179,20 @@ class NodeInformation extends React.Component {
     );
 
     const volumeData = volumes.map(volume => {
+      const volumePV = pVList.find(
+        pV => pV.metadata.name === volume.metadata.name
+      );
+
       return {
         name: volume.metadata.name,
         status:
           (volume && volume.status && volume.status.phase) ||
           intl.messages.unknown,
-        //Find the good PV and show the capacity.
         storageCapacity:
-          (volume &&
-            volume.spec &&
-            volume.spec.sparseLoopDevice &&
-            volume.spec.sparseLoopDevice.size) ||
+          (volumePV &&
+            volumePV.spec &&
+            volumePV.spec.capacity &&
+            volumePV.spec.capacity.storage) ||
           intl.messages.unknown,
         storageClass: volume.spec.storageClassName,
         creationTime: volume.metadata.creationTimestamp
@@ -191,7 +202,6 @@ class NodeInformation extends React.Component {
     const isVolumesPage = location.pathname.endsWith('/volumes');
     const isPodsPage = location.pathname.endsWith('/pods');
 
-    console.log('pVlist', this.props.pVList);
     return (
       <NodeInformationContainer>
         <div>
