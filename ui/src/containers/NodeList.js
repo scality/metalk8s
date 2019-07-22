@@ -25,6 +25,9 @@ const PageContainer = styled.div`
 
 const ActionContainer = styled.div`
   margin-bottom: ${padding.base};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const TableContainer = styled.div`
@@ -135,7 +138,7 @@ const NodeList = props => {
     }
   };
 
-  const nodesSortedList = sortSelector(nodes, sortBy, sortDirection);
+  const nodesSortedList = sortSelector(nodes.list, sortBy, sortDirection);
 
   return (
     <PageContainer>
@@ -145,6 +148,7 @@ const NodeList = props => {
           onClick={() => history.push('/nodes/create')}
           icon={<i className="fas fa-plus" />}
         />
+        {nodes.isLoading && <Loader size="small" />}
       </ActionContainer>
       <TableContainer>
         <Table
@@ -177,7 +181,7 @@ const NodeList = props => {
 
 function mapStateToProps(state) {
   return {
-    nodes: state.app.nodes.list
+    nodes: state.app.nodes
   };
 }
 

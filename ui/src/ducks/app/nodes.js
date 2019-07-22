@@ -36,7 +36,8 @@ const FETCH_NODES = 'FETCH_NODES';
 const REFRESH_NODES = 'REFRESH_NODES';
 const STOP_REFRESH_NODES = 'STOP_REFRESH_NODES';
 export const SET_NODES = 'SET_NODES';
-const UPDATE_NODES_REFRESHING = 'UPDATE_NODES_REFRESHING';
+export const UPDATE_NODES_REFRESHING = 'UPDATE_NODES_REFRESHING';
+export const UPDATE_NODES_LOADING = 'UPDATE_NODES_LOADING';
 
 const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
@@ -148,7 +149,8 @@ export const roleTaintMap = [
 const defaultState = {
   list: [],
   events: {},
-  isRefreshing: false
+  isRefreshing: false,
+  isLoading: false
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -157,6 +159,8 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, list: action.payload };
     case UPDATE_NODES_REFRESHING:
       return { ...state, isRefreshing: action.payload };
+    case UPDATE_NODES_LOADING:
+      return { ...state, isLoading: action.payload };
     case CREATE_NODE_FAILED:
       return {
         ...state,
@@ -199,6 +203,10 @@ export const updateNodesRefreshingAction = payload => {
   return { type: UPDATE_NODES_REFRESHING, payload };
 };
 
+export const updateNodesLoadingAction = payload => {
+  return { type: UPDATE_NODES_LOADING, payload };
+};
+
 export const clearCreateNodeErrorAction = () => {
   return { type: CLEAR_CREATE_NODE_ERROR };
 };
@@ -229,6 +237,7 @@ export const stopRefreshNodesAction = () => {
 
 // Sagas
 export function* fetchNodes() {
+  yield put(updateNodesLoadingAction(true));
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
     yield put(
@@ -299,6 +308,8 @@ export function* fetchNodes() {
       })
     );
   }
+  yield delay(1000); // To make sur that the loader is visible for at least 1s
+  yield put(updateNodesLoadingAction(false));
   return result;
 }
 
