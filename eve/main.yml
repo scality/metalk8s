@@ -141,6 +141,11 @@ stages:
             --no-update-notifier &&
             npm run test:nowatch --no-update-notifier
           haltOnFailure: false
+      - ShellCommand:
+          name: Run all storage-operator unit tests
+          workdir: build/storage-operator
+          command: go test -cover -v ./...
+          haltOnFailure: false
 
   single-node:
     worker:
