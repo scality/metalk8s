@@ -41,6 +41,23 @@ def _log_exceptions(f):
     return wrapped
 
 
+def _check_k8s_creds(kubeconfig, token):
+    """Check the provided credentials against /version."""
+    # Using the '/version/' endpoint which is unauthenticated by default but,
+    # when presented authentication data, will process this information and fail
+    # accordingly.
+    url = '{}/version/'.format(kubeconfig.host)
+    verify = kubeconfig.ssl_ca_cert if kubeconfig.verify_ssl else False
+    try:
+        response = requests.get(
+            url, headers={'Authorization': token}, verify=verify
+        )
+        return 200 <= response.status_code < 300
+    except:
+        log.exception('Error during request')
+        raise
+
+
 @_log_exceptions
 def _auth_basic(kubeconfig, username, token):
     decoded = base64.decodestring(token)
@@ -49,34 +66,11 @@ def _auth_basic(kubeconfig, username, token):
         return False
 
     (token_username, _) = decoded.split(':', 1)
-
     if token_username != username:
         log.warning('Invalid Basic token: username mismatch')
         return False
 
-    # Using the '/version/' endpoint which is unauthenticated by default but,
-    # when presented authentication data, will process this information and fail
-    # accordingly.
-    url = '{}/version/'.format(kubeconfig.host)
-    verify = kubeconfig.ssl_ca_cert if kubeconfig.verify_ssl else False
-    try:
-        response = requests.get(
-            url,
-            headers={
-                'Authorization': 'Basic {}'.format(token),
-            },
-            verify=verify,
-        )
-
-        if 200 <= response.status_code < 300:
-            return True
-        else:
-            return False
-    except:
-        log.exception('Error during request')
-        raise
-
-    return False
+    return _check_k8s_creds(kubeconfig, 'Basic {}'.format(token))
 
 
 @_log_exceptions
@@ -122,24 +116,7 @@ AUTH_HANDLERS['basic'] = {
 
 @_log_exceptions
 def _auth_bearer(kubeconfig, username, token):
-    # Using the '/version/' endpoint which is unauthenticated by default but,
-    # when presented authentication data, will process this information and fail
-    # accordingly.
-    url = '{}/version/'.format(kubeconfig.host)
-    verify = kubeconfig.ssl_ca_cert if kubeconfig.verify_ssl else False
-    try:
-        response = requests.get(
-            url,
-            headers={
-                'Authorization': 'Basic {}'.format(token),
-            },
-            verify=verify,
-        )
-        return 200 <= response.status_code < 300:
-    except:
-        log.exception('Error during request')
-        raise
-    return False
+    return _check_k8s_creds(kubeconfig, 'Bearer {}'.format(token))
 
 AUTH_HANDLERS['bearer'] = {
     'auth': _auth_bearer,
