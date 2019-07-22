@@ -120,6 +120,30 @@ AUTH_HANDLERS['basic'] = {
     'groups': _groups_basic,
 }
 
+@_log_exceptions
+def _auth_bearer(kubeconfig, username, token):
+    # Using the '/version/' endpoint which is unauthenticated by default but,
+    # when presented authentication data, will process this information and fail
+    # accordingly.
+    url = '{}/version/'.format(kubeconfig.host)
+    verify = kubeconfig.ssl_ca_cert if kubeconfig.verify_ssl else False
+    try:
+        response = requests.get(
+            url,
+            headers={
+                'Authorization': 'Basic {}'.format(token),
+            },
+            verify=verify,
+        )
+        return 200 <= response.status_code < 300:
+    except:
+        log.exception('Error during request')
+        raise
+    return False
+
+AUTH_HANDLERS['bearer'] = {
+    'auth': _auth_bearer,
+}
 
 @_log_exceptions
 def _load_kubeconfig(opts):
