@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
 import styled from 'styled-components';
-import { withRouter, Switch, Route } from 'react-router-dom';
-import { Table, Button } from '@scality/core-ui';
+import { withRouter, Switch, Route, Link } from 'react-router-dom';
+import { Table, Breadcrumb, Tabs } from '@scality/core-ui';
 import {
   fontWeight,
   fontSize,
@@ -27,12 +27,20 @@ const NodeInformationContainer = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: ${padding.larger};
+  padding: ${padding.small};
+  .sc-tabs {
+    height: 100%;
+    padding: 30px;
+  }
+  .sc-tabs-item-content {
+    height: 100%;
+  }
 `;
 
 const PodsContainer = styled.div`
   flex-grow: 1;
   margin-top: ${padding.base};
+  height: 100%;
 `;
 
 const DetailsContainer = styled.div`
@@ -59,12 +67,24 @@ const InformationValue = styled.span`
 const InformationMainValue = styled(InformationValue)`
   font-weight: ${fontWeight.bold};
 `;
-const ButtonTabContainer = styled.div`
-  margin-top: ${padding.small};
+
+const BreadcrumbContainer = styled.div`
+  margin: ${padding.small};
+  .sc-breadcrumb {
+    padding: 5px;
+  }
 `;
 
-const TabButton = styled(Button)`
-  margin-right: ${padding.small};
+const BreadcrumbLabel = styled.span`
+  font-size: ${fontSize.large};
+`;
+
+const StyledLink = styled(Link)`
+  font-size: ${fontSize.large};
+`;
+
+const TabContainer = styled.div`
+  height: 100%;
 `;
 
 class NodeInformation extends React.Component {
@@ -126,7 +146,8 @@ class NodeInformation extends React.Component {
       volumes,
       intl,
       node,
-      pVList
+      pVList,
+      theme
     } = this.props;
     const podsSortedList = sortSelector(
       this.props.pods,
@@ -206,49 +227,43 @@ class NodeInformation extends React.Component {
 
     return (
       <NodeInformationContainer>
-        <div>
-          <Button
-            text={intl.messages.back_to_node_list}
-            type="button"
-            outlined
-            onClick={() => history.push('/nodes')}
-            icon={<i className="fas fa-arrow-left" />}
+        <BreadcrumbContainer>
+          <Breadcrumb
+            activeColor={theme.brand.secondary}
+            paths={[
+              <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
+              <BreadcrumbLabel>{node.name}</BreadcrumbLabel>
+            ]}
           />
-        </div>
-
-        {/**
-         * FIXME This is a temporary solution.
-         * We will replace this with a real tab soon
-         */}
-        <ButtonTabContainer>
-          <TabButton
-            text="Details"
-            type="button"
-            outlined={!isVolumesPage && !isPodsPage}
-            onClick={() => history.push(match.url)}
-          />
-          <TabButton
-            text="Volumes"
-            type="button"
-            outlined={isVolumesPage}
-            onClick={() => history.push(`${match.url}/volumes`)}
-          />
-          <TabButton
-            text="Pods"
-            type="button"
-            outlined={isPodsPage}
-            onClick={() => history.push(`${match.url}/pods`)}
-          />
-        </ButtonTabContainer>
-
-        <Switch>
-          <Route path={`${match.url}/pods`} component={NodePods} />
-          <Route
-            path={`${match.url}/volumes`}
-            component={() => <NodeVolumes data={volumeData} />}
-          />
-          <Route path="/" component={NodeDetails} />
-        </Switch>
+        </BreadcrumbContainer>
+        <Tabs
+          items={[
+            {
+              selected: !isVolumesPage && !isPodsPage,
+              title: 'Detail',
+              onClick: () => history.push(match.url)
+            },
+            {
+              selected: isVolumesPage,
+              title: 'Volumes',
+              onClick: () => history.push(`${match.url}/volumes`)
+            },
+            {
+              selected: isPodsPage,
+              title: 'Pods',
+              onClick: () => history.push(`${match.url}/pods`)
+            }
+          ]}
+        >
+          <Switch>
+            <Route path={`${match.url}/pods`} component={NodePods} />
+            <Route
+              path={`${match.url}/volumes`}
+              component={() => <NodeVolumes data={volumeData} />}
+            />
+            <Route path="/" component={NodeDetails} />
+          </Switch>
+        </Tabs>
       </NodeInformationContainer>
     );
   }
@@ -293,6 +308,7 @@ const makeGetVolumesFromUrl = createSelector(
 );
 
 const mapStateToProps = (state, ownProps) => ({
+  theme: state.config.theme,
   node: makeGetNodeFromUrl(state, ownProps),
   pods: makeGetPodsFromUrl(state, ownProps),
   volumes: makeGetVolumesFromUrl(state, ownProps),
