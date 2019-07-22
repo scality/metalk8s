@@ -2,6 +2,8 @@ package volume
 
 import (
 	"context"
+	b64 "encoding/base64"
+	"fmt"
 
 	storagev1alpha1 "github.com/scality/metalk8s/storage-operator/pkg/apis/storage/v1alpha1"
 	"github.com/scality/metalk8s/storage-operator/pkg/salt"
@@ -11,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -34,7 +37,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return &ReconcileVolume{
 		client: mgr.GetClient(),
 		scheme: mgr.GetScheme(),
-		salt:   salt.NewClient(),
+		salt:   salt.NewClient(getAuthCredential(mgr.GetConfig())),
 	}
 }
 
@@ -194,4 +197,23 @@ func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
 	}
 	return &affinity
 
+}
+
+// Return the credential to use to authenticate with Salt API.
+func getAuthCredential(config *rest.Config) *salt.Credential {
+	if config.BearerToken != "" {
+		log.Info("using ServiceAccount bearer token")
+		return salt.NewCredential(
+			"storage-operator", config.BearerToken, "Bearer",
+		)
+	} else if config.Username != "" && config.Password != "" {
+		log.Info("using Basic HTTP authentication")
+		creds := fmt.Sprintf("%s:%s", config.Username, config.Password)
+		token := b64.StdEncoding.EncodeToString([]byte(creds))
+		return salt.NewCredential(config.Username, token, "Basic")
+	} else {
+		log.Info("using default Basic HTTP authentication")
+		token := b64.StdEncoding.EncodeToString([]byte("admin:admin"))
+		return salt.NewCredential("admin", token, "Basic")
+	}
 }

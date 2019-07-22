@@ -2,7 +2,6 @@ package salt
 
 import (
 	"bytes"
-	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,12 +18,13 @@ import (
 type Client struct {
 	address string       // Address of the Salt API server.
 	client  *http.Client // HTTP client to query Salt API.
+	creds   *Credential  // Salt API authentication credentials.
 	token   *authToken   // Salt API authentication token.
 	logger  logr.Logger  // Logger for the client's requests
 }
 
 // Create a new Salt API client.
-func NewClient() *Client {
+func NewClient(creds *Credential) *Client {
 	const SALT_API_PORT int = 4507 // As defined in master-99-metalk8s.conf
 
 	address := os.Getenv("METALK8S_SALT_MASTER_ADDRESS")
@@ -35,6 +35,7 @@ func NewClient() *Client {
 	return &Client{
 		address: fmt.Sprintf("%s:%d", address, SALT_API_PORT),
 		client:  &http.Client{},
+		creds:   creds,
 		token:   nil,
 		logger:  log.Log.WithName("salt_api"),
 	}
@@ -106,9 +107,9 @@ func (self *Client) authenticatedPost(
 func (self *Client) authenticate() error {
 	payload := map[string]string{
 		"eauth":      "kubernetes_rbac",
-		"username":   "admin",
-		"token":      b64.StdEncoding.EncodeToString([]byte("admin:admin")),
-		"token_type": "Basic",
+		"username":   self.creds.username,
+		"token":      self.creds.token,
+		"token_type": self.creds.kind,
 	}
 
 	self.logger.Info(
