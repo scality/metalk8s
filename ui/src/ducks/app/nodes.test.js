@@ -99,7 +99,7 @@ it('update the control plane nodes state when fetchNodes', () => {
       control_plane: true,
       bootstrap: false,
       infra: false,
-      status: 'Ready',
+      status: 'ready',
       jid: undefined,
       metalk8s_version: '2.0',
       roles: 'Control Plane'
@@ -176,7 +176,7 @@ it('update the bootstrap nodes state when fetchNodes', () => {
       control_plane: false,
       infra: false,
       bootstrap: true,
-      status: 'Ready',
+      status: 'ready',
       jid: undefined,
       metalk8s_version: '2.0',
       roles: 'Bootstrap'
@@ -240,7 +240,7 @@ it('update the workload plane nodes state when fetchNodes', () => {
       control_plane: false,
       bootstrap: false,
       infra: false,
-      status: 'Ready',
+      status: 'ready',
       jid: undefined,
       metalk8s_version: '2.0',
       roles: 'Workload Plane'
@@ -305,7 +305,7 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
       control_plane: true,
       infra: false,
       bootstrap: false,
-      status: 'Ready',
+      status: 'ready',
       jid: undefined,
       metalk8s_version: '2.0',
       roles: 'Control Plane / Workload Plane'
@@ -370,7 +370,7 @@ it('update the control plane/workload plane/ infra nodes state when fetchNodes',
       control_plane: true,
       infra: true,
       bootstrap: false,
-      status: 'Ready',
+      status: 'ready',
       jid: undefined,
       metalk8s_version: '2.0',
       roles: 'Control Plane / Workload Plane / Infra'
@@ -440,7 +440,7 @@ it('update the infra nodes state when fetchNodes', () => {
       control_plane: false,
       infra: true,
       bootstrap: false,
-      status: 'Ready',
+      status: 'ready',
       jid: undefined,
       metalk8s_version: '2.0',
       roles: 'Infra'
@@ -503,7 +503,7 @@ it('update the infra / Worload Plane  nodes state when fetchNodes', () => {
       control_plane: false,
       infra: true,
       bootstrap: false,
-      status: 'Ready',
+      status: 'ready',
       jid: undefined,
       metalk8s_version: '2.0',
       roles: 'Workload Plane / Infra'
@@ -575,7 +575,7 @@ it('update the infra / Controle Plane nodes state when fetchNodes', () => {
       control_plane: true,
       infra: true,
       bootstrap: false,
-      status: 'Ready',
+      status: 'ready',
       jid: undefined,
       metalk8s_version: '2.0',
       roles: 'Control Plane / Infra'

@@ -6,7 +6,7 @@ import {
   STATUS_CRITICAL,
   STATUS_SUCCESS,
   STATUS_NONE
-} from './constants';
+} from '../constants.js';
 
 const Circle = styled.i`
   color: ${props => {
