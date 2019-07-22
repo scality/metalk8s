@@ -36,8 +36,9 @@ from typing import Any, Iterator, Tuple, Union
 from buildchain import config
 from buildchain import constants
 from buildchain import targets
-from buildchain import utils
 from buildchain import types
+from buildchain import utils
+from buildchain import versions
 
 sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
 container_registry : Any = importlib.import_module('static-container-registry')
@@ -419,14 +420,16 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/_utils/pillar_utils.py'),
 
+    # This image is defined here and not in the `image` module since it is
+    # saved into the `salt/` tree.
     targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
         name='pause',
-        version='3.1',
-        # pylint:disable=line-too-long
-        digest='sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea',
-        destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
+        version=versions.CONTAINER_IMAGES_MAP['pause'].version,
+        digest=versions.CONTAINER_IMAGES_MAP['pause'].digest,
+        repository=constants.GOOGLE_REPOSITORY,
         save_as_tar=True,
+        # pylint:disable=line-too-long
+        destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
     ),
 
     CommonStaticContainerRegistry(
