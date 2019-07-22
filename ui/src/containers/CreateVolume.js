@@ -7,14 +7,52 @@ import {
   fetchStorageClassAction,
   createVolumeAction
 } from '../ducks/app/volumes';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 
-const FormContainer = styled.div`
+const FormSection = styled.div`
+  padding: 0 ${padding.larger};
   display: flex;
   flex-direction: column;
 `;
 
 const ActionContainer = styled.div`
-  margin-top: 10px;
+  display: flex;
+  margin: ${padding.large} 0;
+  justify-content: flex-end;
+`;
+
+const PageHeader = styled.h2`
+  margin-top: 0;
+`;
+
+const CreateVolumeLayout = styled.div`
+  height: 100%;
+  overflow: auto;
+  padding: ${padding.larger};
+  display: inline-block;
+  form {
+    .sc-input {
+      margin: ${padding.smaller} 0;
+      .sc-input-label {
+        width: 200px;
+      }
+    }
+  }
+`;
+
+const SelectLabel = styled.label`
+  width: 200px;
+  padding: 10px;
+  font-size: ${fontSize.base};
+`;
+
+const SelectField = styled.div`
+  display: inline-flex;
+  align-items: center;
+`;
+
+const SelectFieldItem = styled.select`
+  flex-grow: 1;
 `;
 
 const CreateVolume = props => {
@@ -45,7 +83,8 @@ const CreateVolume = props => {
   const isFormReady = storageClassesName.length > 0 && types.length > 0;
 
   return isFormReady ? (
-    <div>
+    <CreateVolumeLayout>
+      <PageHeader>Create a New Volume</PageHeader>
       <Formik
         initialValues={initialValues}
         onSubmit={values => {
@@ -56,15 +95,16 @@ const CreateVolume = props => {
           const { values, handleChange } = props;
           return (
             <Form>
-              <FormContainer>
+              <FormSection>
                 <Input
                   name="name"
                   value={values.name}
                   onChange={handleChange}
                   label="Name"
                 />
-                <div>
-                  <select
+                <SelectField>
+                  <SelectLabel>Storage Class</SelectLabel>
+                  <SelectFieldItem
                     name="storageClass"
                     onChange={handleChange}
                     value={values.storageClass}
@@ -74,17 +114,19 @@ const CreateVolume = props => {
                         {SCName}
                       </option>
                     ))}
-                  </select>
-                </div>
-                <div>
-                  <select name="type" onChange={handleChange}>
+                  </SelectFieldItem>
+                </SelectField>
+                <SelectField>
+                  <SelectLabel>Type</SelectLabel>
+                  <SelectFieldItem name="type" onChange={handleChange}>
                     {types.map((type, idx) => (
                       <option key={`type_${idx}`} value={type.value}>
                         {type.label}
                       </option>
                     ))}
-                  </select>
-                </div>
+                  </SelectFieldItem>
+                </SelectField>
+
                 {values.type === 'sparseLoopDevice' ? (
                   <Input
                     name="size"
@@ -100,15 +142,15 @@ const CreateVolume = props => {
                     label="Path"
                   />
                 )}
-                <ActionContainer>
-                  <Button text="submit" type="submit" />
-                </ActionContainer>
-              </FormContainer>
+              </FormSection>
+              <ActionContainer>
+                <Button text="Create" type="submit" />
+              </ActionContainer>
             </Form>
           );
         }}
       </Formik>
-    </div>
+    </CreateVolumeLayout>
   ) : null;
 };
 
