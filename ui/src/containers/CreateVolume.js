@@ -9,6 +9,7 @@ import {
   createVolumeAction
 } from '../ducks/app/volumes';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { SPARCE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 
 // We might want to do a factorization later for
 // form styled components
@@ -22,6 +23,9 @@ const ActionContainer = styled.div`
   display: flex;
   margin: ${padding.large} 0;
   justify-content: flex-end;
+  button {
+    margin-right: ${padding.large};
+  }
 `;
 
 const PageHeader = styled.h2`
@@ -59,11 +63,11 @@ const SelectFieldItem = styled.select`
 `;
 
 const CreateVolume = props => {
-  let nodeName = props.match.params.id;
-
   useEffect(() => {
     props.fetchStorageClass();
   }, []);
+
+  const nodeName = props.match.params.id;
 
   const storageClassesName = props.storageClass.map(
     storageClass => storageClass.metadata.name
@@ -71,8 +75,8 @@ const CreateVolume = props => {
 
   // Hardcoded
   const types = [
-    { label: 'RawBlockDevice', value: 'rawBlockDevice' },
-    { label: 'SparseLoopDevice', value: 'sparseLoopDevice' }
+    { label: 'RawBlockDevice', value: RAW_BLOCK_DEVICE },
+    { label: 'SparseLoopDevice', value: SPARCE_LOOP_DEVICE }
   ];
 
   const initialValues = {
@@ -130,7 +134,7 @@ const CreateVolume = props => {
                   </SelectFieldItem>
                 </SelectField>
 
-                {values.type === 'sparseLoopDevice' ? (
+                {values.type === SPARCE_LOOP_DEVICE ? (
                   <Input
                     name="size"
                     value={values.size}
@@ -147,7 +151,15 @@ const CreateVolume = props => {
                 )}
               </FormSection>
               <ActionContainer>
-                <Button text="Create" type="submit" />
+                <Button
+                  text={props.intl.messages.cancel}
+                  type="button"
+                  outlined
+                  onClick={() =>
+                    props.history.push(`/nodes/${props.match.params.id}`)
+                  }
+                />
+                <Button text={props.intl.messages.create} type="submit" />
               </ActionContainer>
             </Form>
           );

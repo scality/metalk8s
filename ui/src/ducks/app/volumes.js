@@ -1,6 +1,7 @@
 import { takeLatest, call, put } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
+import { SPARCE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../../constants';
 // Actions
 const FETCH_VOLUMES = 'FETCH_VOLUMES';
 const SET_VOLUMES = 'SET_VOLUMES';
@@ -9,6 +10,7 @@ const SET_PERSISTENT_VOLUMES = 'SET_PERSISTENT_VOLUMES';
 const FETCH_STORAGECLASS = 'FETCH_STORAGECLASS';
 const SET_STORAGECLASS = 'SET_STORAGECLASS';
 const CREATE_VOLUMES = 'CREATE_VOLUMES';
+
 // Reducer
 const defaultState = { list: [], storageClass: [], pVList: [] };
 
@@ -84,10 +86,10 @@ export function* createVolumes({ payload }) {
     }
   };
 
-  if (newVolume.type === 'sparseLoopDevice') {
+  if (newVolume.type === SPARCE_LOOP_DEVICE) {
     body.spec.sparseLoopDevice = { size: newVolume.size };
   }
-  if (newVolume.type === 'rawBlockDevice') {
+  if (newVolume.type === RAW_BLOCK_DEVICE) {
     body.spec.rawBlockDevice = { devicePath: newVolume.path };
   }
   const result = yield call(ApiK8s.createVolume, body);
