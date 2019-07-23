@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
-import { Table, Button, Loader } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 
 import {
   refreshNodesAction,
@@ -22,7 +22,7 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: ${padding.larger};
+  padding: ${padding.base};
 `;
 
 const ActionContainer = styled.div`
@@ -61,6 +61,16 @@ const TableContainer = styled.div`
   }
 `;
 
+const BreadcrumbLabel = styled.span`
+  font-size: ${fontSize.large};
+`;
+const BreadcrumbContainer = styled.div`
+  margin-left: ${padding.small};
+  .sc-breadcrumb {
+    padding: ${padding.smaller};
+  }
+`;
+
 const NodeList = props => {
   useEffect(() => {
     props.refreshNodes();
@@ -72,7 +82,7 @@ const NodeList = props => {
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
-  const { intl, history, nodes } = props;
+  const { intl, history, nodes, theme } = props;
   const columns = [
     {
       label: intl.messages.name,
@@ -148,6 +158,12 @@ const NodeList = props => {
 
   return (
     <PageContainer>
+      <BreadcrumbContainer>
+        <Breadcrumb
+          activeColor={theme.brand.secondary}
+          paths={[<BreadcrumbLabel>{intl.messages.nodes}</BreadcrumbLabel>]}
+        />
+      </BreadcrumbContainer>
       <ActionContainer>
         <Button
           text={intl.messages.create_new_node}
@@ -187,7 +203,8 @@ const NodeList = props => {
 
 function mapStateToProps(state) {
   return {
-    nodes: state.app.nodes
+    nodes: state.app.nodes,
+    theme: state.config.theme
   };
 }
 

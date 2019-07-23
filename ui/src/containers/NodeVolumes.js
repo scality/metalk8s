@@ -6,6 +6,7 @@ import { withRouter } from 'react-router-dom';
 import { Button, Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
+import { sortSelector } from '../services/utils';
 
 const ButtonContainer = styled.div`
   margin-top: ${padding.small};
@@ -59,7 +60,7 @@ const NodeVolumes = props => {
       )
     }
   ];
-
+  const volumeSortedList = sortSelector(props.data, sortBy, sortDirection);
   return (
     <>
       <ButtonContainer>
@@ -73,7 +74,7 @@ const NodeVolumes = props => {
       </ButtonContainer>
       <VolumeTable>
         <Table
-          list={props.data}
+          list={volumeSortedList}
           columns={columns}
           disableHeader={false}
           headerHeight={40}
