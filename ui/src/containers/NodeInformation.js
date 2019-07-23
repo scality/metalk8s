@@ -23,24 +23,36 @@ import { sortSelector } from '../services/utils';
 import NodeVolumes from './NodeVolumes';
 
 const NodeInformationContainer = styled.div`
-  box-sizing: border-box;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: ${padding.small};
+  box-sizing: border-box;
+  height: 100%;
+  padding: ${padding.base};
+
   .sc-tabs {
-    height: 100%;
-    padding: 30px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    margin: ${padding.smaller} ${padding.small} 0 ${padding.smaller};
   }
+
+  .sc-tabs-item {
+    /* We will change this logic later */
+    flex-basis: auto;
+    width: 100px;
+  }
+
   .sc-tabs-item-content {
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: ${padding.smaller};
   }
 `;
 
 const PodsContainer = styled.div`
   flex-grow: 1;
   margin-top: ${padding.base};
-  height: 100%;
 `;
 
 const DetailsContainer = styled.div`
@@ -69,9 +81,9 @@ const InformationMainValue = styled(InformationValue)`
 `;
 
 const BreadcrumbContainer = styled.div`
-  margin: ${padding.small};
+  margin-left: ${padding.small};
   .sc-breadcrumb {
-    padding: 5px;
+    padding: ${padding.smaller};
   }
 `;
 
@@ -81,10 +93,6 @@ const BreadcrumbLabel = styled.span`
 
 const StyledLink = styled(Link)`
   font-size: ${fontSize.large};
-`;
-
-const TabContainer = styled.div`
-  height: 100%;
 `;
 
 class NodeInformation extends React.Component {
@@ -237,6 +245,7 @@ class NodeInformation extends React.Component {
           />
         </BreadcrumbContainer>
         <Tabs
+          activeColor={theme.brand.secondary}
           items={[
             {
               selected: !isVolumesPage && !isPodsPage,
