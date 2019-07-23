@@ -96,6 +96,7 @@ export const useRefreshNodes = () => {
   const refreshNodes = useCallback(() => dispatch(refreshNodesAction()), [
     dispatch
   ]);
+
   const stopRefreshNodes = useCallback(
     () => dispatch(stopRefreshNodesAction()),
     [dispatch]

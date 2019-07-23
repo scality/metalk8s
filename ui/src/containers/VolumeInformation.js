@@ -14,7 +14,6 @@ import {
   makeGetVolumesFromUrl,
   useRefreshNodes
 } from '../services/utils';
-import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 
 const VolumeInformationContainer = styled.div`
   display: flex;
@@ -50,29 +49,36 @@ const BreadcrumbContainer = styled.div`
     padding: ${padding.smaller};
   }
 `;
+
 const StyledLink = styled(Link)`
   font-size: ${fontSize.large};
 `;
+
 const BreadcrumbLabel = styled.span`
   font-size: ${fontSize.large};
 `;
+
 const DetailsContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: ${padding.base};
 `;
+
 const InformationSpan = styled.span`
   padding: 0 ${padding.larger} ${padding.small} 0;
 `;
+
 const InformationLabel = styled.span`
   font-size: ${fontSize.large};
   padding-right: ${padding.base};
   min-width: 150px;
   display: inline-block;
 `;
+
 const InformationValue = styled.span`
   font-size: ${fontSize.large};
 `;
+
 const InformationMainValue = styled(InformationValue)`
   font-weight: ${fontWeight.bold};
 `;
@@ -150,18 +156,6 @@ const mapStateToProps = (state, ownProps) => ({
   pVList: state.app.volumes.pVList
 });
 
-const mapDispatchToProps = dispatch => {
-  return {
-    refreshNodes: () => dispatch(refreshNodesAction()),
-    stopRefreshNodes: () => dispatch(stopRefreshNodesAction())
-  };
-};
-
 export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(VolumeInformation)
-  )
+  withRouter(connect(mapStateToProps)(VolumeInformation))
 );

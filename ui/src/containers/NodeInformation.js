@@ -1,5 +1,5 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { withRouter, Switch, Route, Link } from 'react-router-dom';
@@ -12,7 +12,6 @@ import {
 import NoRowsRenderer from '../components/NoRowsRenderer';
 
 import { fetchPodsAction } from '../ducks/app/pods';
-import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   fetchVolumesAction,
   fetchPersistentVolumeAction
@@ -21,7 +20,8 @@ import {
   sortSelector,
   makeGetNodeFromUrl,
   makeGetPodsFromUrl,
-  makeGetVolumesFromUrl
+  makeGetVolumesFromUrl,
+  useRefreshNodes
 } from '../services/utils';
 
 import NodeVolumes from './NodeVolumes';
@@ -99,213 +99,173 @@ const StyledLink = styled(Link)`
   font-size: ${fontSize.large};
 `;
 
-class NodeInformation extends React.Component {
-  constructor(props) {
-    super(props);
+const NodeInformation = props => {
+  const dispatch = useDispatch();
 
-    this.state = {
-      pods: [],
-      sortBy: 'name',
-      sortDirection: 'ASC',
-      columns: [
-        {
-          label: props.intl.messages.name,
-          dataKey: 'name',
-          flexGrow: 1
-        },
-        {
-          label: props.intl.messages.status,
-          dataKey: 'status'
-        },
-        {
-          label: props.intl.messages.namespace,
-          dataKey: 'namespace'
-        },
-        {
-          label: props.intl.messages.start_time,
-          dataKey: 'startTime',
-          renderer: data => (
-            <span>
-              <FormattedDate value={data} /> <FormattedTime value={data} />
-            </span>
-          )
-        },
-        {
-          label: props.intl.messages.restart,
-          dataKey: 'restartCount'
-        }
-      ]
+  useRefreshNodes();
+
+  useEffect(() => {
+    dispatch(fetchPodsAction());
+    dispatch(fetchVolumesAction());
+    dispatch(fetchPersistentVolumeAction());
+  }, []);
+
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDirection, setsortDirection] = useState('ASC');
+  const [columns] = useState([
+    {
+      label: props.intl.messages.name,
+      dataKey: 'name',
+      flexGrow: 1
+    },
+    {
+      label: props.intl.messages.status,
+      dataKey: 'status'
+    },
+    {
+      label: props.intl.messages.namespace,
+      dataKey: 'namespace'
+    },
+    {
+      label: props.intl.messages.start_time,
+      dataKey: 'startTime',
+      renderer: data => (
+        <span>
+          <FormattedDate value={data} /> <FormattedTime value={data} />
+        </span>
+      )
+    },
+    {
+      label: props.intl.messages.restart,
+      dataKey: 'restartCount'
+    }
+  ]);
+
+  const node = useSelector(state => makeGetNodeFromUrl(state, props));
+  const theme = useSelector(state => state.config.theme);
+  const pods = useSelector(state => makeGetPodsFromUrl(state, props));
+  const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
+  const pVList = useSelector(state => state.app.volumes.pVList);
+
+  const { match, history, location, intl } = props;
+
+  const podsSortedList = sortSelector(pods, sortBy, sortDirection);
+
+  const onSort = ({ sortBy, sortDirection }) => {
+    setSortBy(sortBy);
+    setsortDirection(setsortDirection);
+  };
+
+  const NodeDetails = () => (
+    <DetailsContainer>
+      <InformationSpan>
+        <InformationLabel>{intl.messages.name}</InformationLabel>
+        <InformationMainValue>{node.name}</InformationMainValue>
+      </InformationSpan>
+      <InformationSpan>
+        <InformationLabel>{intl.messages.status}</InformationLabel>
+        <InformationValue>
+          {intl.messages[node.status] || node.status}
+        </InformationValue>
+      </InformationSpan>
+      <InformationSpan>
+        <InformationLabel>{intl.messages.roles}</InformationLabel>
+        <InformationValue>{node.roles}</InformationValue>
+      </InformationSpan>
+      <InformationSpan>
+        <InformationLabel>{intl.messages.version}</InformationLabel>
+        <InformationValue>{node.metalk8s_version}</InformationValue>
+      </InformationSpan>
+    </DetailsContainer>
+  );
+
+  const NodePods = () => (
+    <>
+      <PodsContainer>
+        <Table
+          list={podsSortedList}
+          columns={columns}
+          disableHeader={false}
+          headerHeight={40}
+          rowHeight={40}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSort={onSort}
+          onRowClick={() => {}}
+          noRowsRenderer={() => (
+            <NoRowsRenderer content={intl.messages.no_data_available} />
+          )}
+        />
+      </PodsContainer>
+    </>
+  );
+
+  const volumeData = volumes.map(volume => {
+    const volumePV = pVList.find(
+      pV => pV.metadata.name === volume.metadata.name
+    );
+
+    return {
+      name: volume.metadata.name,
+      status:
+        (volume && volume.status && volume.status.phase) ||
+        intl.messages.unknown,
+      storageCapacity:
+        (volumePV &&
+          volumePV.spec &&
+          volumePV.spec.capacity &&
+          volumePV.spec.capacity.storage) ||
+        intl.messages.unknown,
+      storageClass: volume.spec.storageClassName,
+      creationTime: volume.metadata.creationTimestamp
     };
-    this.onSort = this.onSort.bind(this);
-  }
+  });
 
-  componentDidMount() {
-    this.props.fetchNodes();
-    this.props.fetchPods();
-    this.props.fetchVolumes();
-    this.props.fetchPersistentVolumes();
-  }
+  const isVolumesPage = location.pathname.endsWith('/volumes');
+  const isPodsPage = location.pathname.endsWith('/pods');
 
-  onSort({ sortBy, sortDirection }) {
-    this.setState({ sortBy, sortDirection });
-  }
-
-  render() {
-    const {
-      match,
-      history,
-      location,
-      volumes,
-      intl,
-      node,
-      pVList,
-      theme
-    } = this.props;
-    const podsSortedList = sortSelector(
-      this.props.pods,
-      this.state.sortBy,
-      this.state.sortDirection
-    );
-
-    const NodeDetails = () => (
-      <DetailsContainer>
-        <InformationSpan>
-          <InformationLabel>{intl.messages.name}</InformationLabel>
-          <InformationMainValue>{node.name}</InformationMainValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.messages.status}</InformationLabel>
-          <InformationValue>
-            {intl.messages[node.status] || node.status}
-          </InformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.messages.roles}</InformationLabel>
-          <InformationValue>{node.roles}</InformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.messages.version}</InformationLabel>
-          <InformationValue>{node.metalk8s_version}</InformationValue>
-        </InformationSpan>
-      </DetailsContainer>
-    );
-
-    const NodePods = () => (
-      <>
-        <PodsContainer>
-          <Table
-            list={podsSortedList}
-            columns={this.state.columns}
-            disableHeader={false}
-            headerHeight={40}
-            rowHeight={40}
-            sortBy={this.state.sortBy}
-            sortDirection={this.state.sortDirection}
-            onSort={this.onSort}
-            onRowClick={() => {}}
-            noRowsRenderer={() => (
-              <NoRowsRenderer
-                content={this.props.intl.messages.no_data_available}
-              />
+  const items = [
+    {
+      selected: !isVolumesPage && !isPodsPage,
+      title: intl.messages.details,
+      onClick: () => history.push(match.url)
+    },
+    {
+      selected: isVolumesPage,
+      title: intl.messages.volumes,
+      onClick: () => history.push(`${match.url}/volumes`)
+    },
+    {
+      selected: isPodsPage,
+      title: intl.messages.pods,
+      onClick: () => history.push(`${match.url}/pods`)
+    }
+  ];
+  return (
+    <NodeInformationContainer>
+      <BreadcrumbContainer>
+        <Breadcrumb
+          activeColor={theme.brand.secondary}
+          paths={[
+            <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
+            <BreadcrumbLabel>{node.name}</BreadcrumbLabel>
+          ]}
+        />
+      </BreadcrumbContainer>
+      <Tabs activeColor={theme.brand.secondary} items={items}>
+        <Switch>
+          <Route path={`${match.url}/pods`} component={NodePods} />
+          <Route
+            path={`${match.url}/volumes`}
+            component={() => (
+              <NodeVolumes nodeName={match.params.id} data={volumeData} />
             )}
           />
-        </PodsContainer>
-      </>
-    );
-
-    const volumeData = volumes.map(volume => {
-      const volumePV = pVList.find(
-        pV => pV.metadata.name === volume.metadata.name
-      );
-
-      return {
-        name: volume.metadata.name,
-        status:
-          (volume && volume.status && volume.status.phase) ||
-          intl.messages.unknown,
-        storageCapacity:
-          (volumePV &&
-            volumePV.spec &&
-            volumePV.spec.capacity &&
-            volumePV.spec.capacity.storage) ||
-          intl.messages.unknown,
-        storageClass: volume.spec.storageClassName,
-        creationTime: volume.metadata.creationTimestamp
-      };
-    });
-
-    const isVolumesPage = location.pathname.endsWith('/volumes');
-    const isPodsPage = location.pathname.endsWith('/pods');
-
-    return (
-      <NodeInformationContainer>
-        <BreadcrumbContainer>
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-              <BreadcrumbLabel>{node.name}</BreadcrumbLabel>
-            ]}
-          />
-        </BreadcrumbContainer>
-        <Tabs
-          activeColor={theme.brand.secondary}
-          items={[
-            {
-              selected: !isVolumesPage && !isPodsPage,
-              title: intl.messages.details,
-              onClick: () => history.push(match.url)
-            },
-            {
-              selected: isVolumesPage,
-              title: intl.messages.volumes,
-              onClick: () => history.push(`${match.url}/volumes`)
-            },
-            {
-              selected: isPodsPage,
-              title: intl.messages.pods,
-              onClick: () => history.push(`${match.url}/pods`)
-            }
-          ]}
-        >
-          <Switch>
-            <Route path={`${match.url}/pods`} component={NodePods} />
-            <Route
-              path={`${match.url}/volumes`}
-              component={() => (
-                <NodeVolumes nodeName={match.params.id} data={volumeData} />
-              )}
-            />
-            <Route path="/" component={NodeDetails} />
-          </Switch>
-        </Tabs>
-      </NodeInformationContainer>
-    );
-  }
-}
-
-const mapStateToProps = (state, ownProps) => ({
-  theme: state.config.theme,
-  node: makeGetNodeFromUrl(state, ownProps),
-  pods: makeGetPodsFromUrl(state, ownProps),
-  volumes: makeGetVolumesFromUrl(state, ownProps),
-  pVList: state.app.volumes.pVList
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    fetchPods: () => dispatch(fetchPodsAction()),
-    fetchNodes: () => dispatch(fetchNodesAction()),
-    fetchVolumes: () => dispatch(fetchVolumesAction()),
-    fetchPersistentVolumes: () => dispatch(fetchPersistentVolumeAction())
-  };
+          <Route path="/" component={NodeDetails} />
+        </Switch>
+      </Tabs>
+    </NodeInformationContainer>
+  );
 };
 
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(NodeInformation)
-  )
-);
+export default injectIntl(withRouter(NodeInformation));
