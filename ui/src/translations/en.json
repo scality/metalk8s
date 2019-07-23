@@ -71,5 +71,7 @@
   "no_volume_found": "No volumes on this node",
   "type": "Type",
   "volume_size": "Volume Capacity",
-  "device_path": "Device path"
+  "device_path": "Device path",
+  "details": "Details",
+  "volumes": "Volumes"
 }

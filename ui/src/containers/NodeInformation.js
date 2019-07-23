@@ -249,17 +249,17 @@ class NodeInformation extends React.Component {
           items={[
             {
               selected: !isVolumesPage && !isPodsPage,
-              title: 'Detail',
+              title: intl.messages.details,
               onClick: () => history.push(match.url)
             },
             {
               selected: isVolumesPage,
-              title: 'Volumes',
+              title: intl.messages.volumes,
               onClick: () => history.push(`${match.url}/volumes`)
             },
             {
               selected: isPodsPage,
-              title: 'Pods',
+              title: intl.messages.pods,
               onClick: () => history.push(`${match.url}/pods`)
             }
           ]}

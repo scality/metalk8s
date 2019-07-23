@@ -71,5 +71,7 @@
   "no_volume_found": "Aucun volume sur ce nœud",
   "type": "Type",
   "volume_size": "Capacité du volume",
-  "device_path": "Chemin du disque"
+  "device_path": "Chemin du disque",
+  "details": "Détails",
+  "volumes": "Volumes"
 }
