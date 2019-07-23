@@ -127,6 +127,7 @@ func (self *Client) authenticate() error {
 		return errors.Wrap(err, "Salt API authentication failed")
 	}
 
+	// TODO(#1461): make this more robust.
 	self.token = newToken(
 		output["token"].(string), output["expire"].(float64),
 	)
@@ -247,5 +248,6 @@ func decodeApiResponse(response *http.Response) (map[string]interface{}, error) 
 		return nil, errors.Wrap(err, "cannot decode Salt API response")
 	}
 	// The real result is in a single-item list stored in the `return` field.
+	// TODO(#1461): make this more robust.
 	return result["return"].([]interface{})[0].(map[string]interface{}), nil
 }
