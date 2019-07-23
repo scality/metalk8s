@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import { createSelector } from 'reselect';
 import styled from 'styled-components';
-import { withRouter, Switch, Route } from 'react-router-dom';
-import { Table, Button } from '@scality/core-ui';
+import { withRouter, Switch, Route, Link } from 'react-router-dom';
+import { Table, Breadcrumb, Tabs } from '@scality/core-ui';
 import {
   fontWeight,
   fontSize,
@@ -14,17 +14,40 @@ import NoRowsRenderer from '../components/NoRowsRenderer';
 
 import { fetchPodsAction } from '../ducks/app/pods';
 import { fetchNodesAction } from '../ducks/app/nodes';
-import { fetchVolumesAction } from '../ducks/app/volumes';
+import {
+  fetchVolumesAction,
+  fetchPersistentVolumeAction
+} from '../ducks/app/volumes';
 import { sortSelector } from '../services/utils';
 
 import NodeVolumes from './NodeVolumes';
 
 const NodeInformationContainer = styled.div`
-  box-sizing: border-box;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: ${padding.larger};
+  box-sizing: border-box;
+  height: 100%;
+  padding: ${padding.base};
+
+  .sc-tabs {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    margin: ${padding.smaller} ${padding.small} 0 ${padding.smaller};
+  }
+
+  .sc-tabs-item {
+    /* We will change this logic later */
+    flex-basis: auto;
+    width: 100px;
+  }
+
+  .sc-tabs-item-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: ${padding.smaller};
+  }
 `;
 
 const PodsContainer = styled.div`
@@ -44,7 +67,7 @@ const InformationSpan = styled.span`
 
 const InformationLabel = styled.span`
   font-size: ${fontSize.large};
-  padding-right: ${padding.base}
+  padding-right: ${padding.base};
   min-width: 150px;
   display: inline-block;
 `;
@@ -56,12 +79,20 @@ const InformationValue = styled.span`
 const InformationMainValue = styled(InformationValue)`
   font-weight: ${fontWeight.bold};
 `;
-const ButtonTabContainer = styled.div`
-  margin-top: ${padding.small};
+
+const BreadcrumbContainer = styled.div`
+  margin-left: ${padding.small};
+  .sc-breadcrumb {
+    padding: ${padding.smaller};
+  }
 `;
 
-const TabButton = styled(Button)`
-  margin-right: ${padding.small};
+const BreadcrumbLabel = styled.span`
+  font-size: ${fontSize.large};
+`;
+
+const StyledLink = styled(Link)`
+  font-size: ${fontSize.large};
 `;
 
 class NodeInformation extends React.Component {
@@ -108,6 +139,7 @@ class NodeInformation extends React.Component {
     this.props.fetchNodes();
     this.props.fetchPods();
     this.props.fetchVolumes();
+    this.props.fetchPersistentVolumes();
   }
 
   onSort({ sortBy, sortDirection }) {
@@ -115,7 +147,16 @@ class NodeInformation extends React.Component {
   }
 
   render() {
-    const { match, history, location, volumes, intl, node } = this.props;
+    const {
+      match,
+      history,
+      location,
+      volumes,
+      intl,
+      node,
+      pVList,
+      theme
+    } = this.props;
     const podsSortedList = sortSelector(
       this.props.pods,
       this.state.sortBy,
@@ -169,12 +210,21 @@ class NodeInformation extends React.Component {
     );
 
     const volumeData = volumes.map(volume => {
+      const volumePV = pVList.find(
+        pV => pV.metadata.name === volume.metadata.name
+      );
+
       return {
         name: volume.metadata.name,
         status:
           (volume && volume.status && volume.status.phase) ||
           intl.messages.unknown,
-        storageCapacity: volume.spec.sparseLoopDevice.size,
+        storageCapacity:
+          (volumePV &&
+            volumePV.spec &&
+            volumePV.spec.capacity &&
+            volumePV.spec.capacity.storage) ||
+          intl.messages.unknown,
         storageClass: volume.spec.storageClassName,
         creationTime: volume.metadata.creationTimestamp
       };
@@ -185,49 +235,44 @@ class NodeInformation extends React.Component {
 
     return (
       <NodeInformationContainer>
-        <div>
-          <Button
-            text={intl.messages.back_to_node_list}
-            type="button"
-            outlined
-            onClick={() => history.push('/nodes')}
-            icon={<i className="fas fa-arrow-left" />}
+        <BreadcrumbContainer>
+          <Breadcrumb
+            activeColor={theme.brand.secondary}
+            paths={[
+              <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
+              <BreadcrumbLabel>{node.name}</BreadcrumbLabel>
+            ]}
           />
-        </div>
-
-        {/**
-         * FIXME This is a temporary solution.
-         * We will replace this with a real tab soon
-         */}
-        <ButtonTabContainer>
-          <TabButton
-            text="Details"
-            type="button"
-            outlined={!isVolumesPage && !isPodsPage}
-            onClick={() => history.push(match.url)}
-          />
-          <TabButton
-            text="Volumes"
-            type="button"
-            outlined={isVolumesPage}
-            onClick={() => history.push(`${match.url}/volumes`)}
-          />
-          <TabButton
-            text="Pods"
-            type="button"
-            outlined={isPodsPage}
-            onClick={() => history.push(`${match.url}/pods`)}
-          />
-        </ButtonTabContainer>
-
-        <Switch>
-          <Route path={`${match.url}/pods`} component={NodePods} />
-          <Route
-            path={`${match.url}/volumes`}
-            component={() => <NodeVolumes data={volumeData} />}
-          />
-          <Route path="/" component={NodeDetails} />
-        </Switch>
+        </BreadcrumbContainer>
+        <Tabs
+          activeColor={theme.brand.secondary}
+          items={[
+            {
+              selected: !isVolumesPage && !isPodsPage,
+              title: intl.messages.details,
+              onClick: () => history.push(match.url)
+            },
+            {
+              selected: isVolumesPage,
+              title: intl.messages.volumes,
+              onClick: () => history.push(`${match.url}/volumes`)
+            },
+            {
+              selected: isPodsPage,
+              title: intl.messages.pods,
+              onClick: () => history.push(`${match.url}/pods`)
+            }
+          ]}
+        >
+          <Switch>
+            <Route path={`${match.url}/pods`} component={NodePods} />
+            <Route
+              path={`${match.url}/volumes`}
+              component={() => <NodeVolumes data={volumeData} />}
+            />
+            <Route path="/" component={NodeDetails} />
+          </Switch>
+        </Tabs>
       </NodeInformationContainer>
     );
   }
@@ -272,16 +317,19 @@ const makeGetVolumesFromUrl = createSelector(
 );
 
 const mapStateToProps = (state, ownProps) => ({
+  theme: state.config.theme,
   node: makeGetNodeFromUrl(state, ownProps),
   pods: makeGetPodsFromUrl(state, ownProps),
-  volumes: makeGetVolumesFromUrl(state, ownProps)
+  volumes: makeGetVolumesFromUrl(state, ownProps),
+  pVList: state.app.volumes.pVList
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     fetchPods: () => dispatch(fetchPodsAction()),
     fetchNodes: () => dispatch(fetchNodesAction()),
-    fetchVolumes: () => dispatch(fetchVolumesAction())
+    fetchVolumes: () => dispatch(fetchVolumesAction()),
+    fetchPersistentVolumes: () => dispatch(fetchPersistentVolumeAction())
   };
 };
 
