@@ -47,6 +47,7 @@
   "node_registered": "Node enregistré",
   "deployment_started": "Déploiement commencé",
   "cluster_status": "Status de la grappe de serveurs",
+  "cluster_version": "Version de la grappe de serveurs",
   "monitoring": "Monitoring",
   "severity": "Sévérité",
   "message": "Message",

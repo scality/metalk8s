@@ -41,6 +41,19 @@ export async function getPods() {
   }
 }
 
+export async function getKubeSystemNamespace() {
+  try {
+    return await coreV1.listNamespace(
+      null,
+      null,
+      null,
+      'metadata.name=kube-system'
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function createNode(payload) {
   try {
     return await coreV1.createNode(payload);

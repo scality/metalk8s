@@ -41,9 +41,8 @@ import {
 const FETCH_NODES = 'FETCH_NODES';
 const REFRESH_NODES = 'REFRESH_NODES';
 const STOP_REFRESH_NODES = 'STOP_REFRESH_NODES';
-export const SET_NODES = 'SET_NODES';
-export const UPDATE_NODES_REFRESHING = 'UPDATE_NODES_REFRESHING';
-export const UPDATE_NODES_LOADING = 'UPDATE_NODES_LOADING';
+export const UPDATE_NODES = 'UPDATE_NODES';
+const FETCH_CLUSTER_VERSION = 'FETCH_CLUSTER_VERSION';
 
 const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
@@ -59,6 +58,9 @@ export const ROLE_ETCD = 'node-role.kubernetes.io/etcd';
 export const ROLE_BOOTSTRAP = 'node-role.kubernetes.io/bootstrap';
 export const ROLE_INFRA = 'node-role.kubernetes.io/infra';
 export const ROLE_PREFIX = 'node-role.kubernetes.io';
+
+export const CLUSTER_VERSION_ANNOTATION =
+  'metalk8s.scality.com/cluster-version';
 
 export const roleTaintMap = [
   {
@@ -153,6 +155,7 @@ export const roleTaintMap = [
 
 // Reducer
 const defaultState = {
+  clusterVersion: '',
   list: [],
   events: {},
   isRefreshing: false,
@@ -161,12 +164,8 @@ const defaultState = {
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
-    case SET_NODES:
-      return { ...state, list: action.payload };
-    case UPDATE_NODES_REFRESHING:
-      return { ...state, isRefreshing: action.payload };
-    case UPDATE_NODES_LOADING:
-      return { ...state, isLoading: action.payload };
+    case UPDATE_NODES:
+      return { ...state, ...action.payload };
     case CREATE_NODE_FAILED:
       return {
         ...state,
@@ -197,20 +196,16 @@ export const fetchNodesAction = () => {
   return { type: FETCH_NODES };
 };
 
-export const setNodesAction = payload => {
-  return { type: SET_NODES, payload };
+export const fetchClusterVersionAction = () => {
+  return { type: FETCH_CLUSTER_VERSION };
+};
+
+export const updateNodesAction = payload => {
+  return { type: UPDATE_NODES, payload };
 };
 
 export const createNodeAction = payload => {
   return { type: CREATE_NODE, payload };
-};
-
-export const updateNodesRefreshingAction = payload => {
-  return { type: UPDATE_NODES_REFRESHING, payload };
-};
-
-export const updateNodesLoadingAction = payload => {
-  return { type: UPDATE_NODES_LOADING, payload };
 };
 
 export const clearCreateNodeErrorAction = () => {
@@ -242,13 +237,32 @@ export const stopRefreshNodesAction = () => {
 };
 
 // Sagas
+export function* fetchClusterVersion() {
+  const result = yield call(ApiK8s.getKubeSystemNamespace);
+  if (!result.error) {
+    yield put(
+      updateNodesAction({
+        clusterVersion: result.body.items.length
+          ? result.body.items[0].metadata.annotations[
+              CLUSTER_VERSION_ANNOTATION
+            ]
+          : ''
+      })
+    );
+  }
+}
+
 export function* fetchNodes() {
-  yield put(updateNodesLoadingAction(true));
+  yield put(
+    updateNodesAction({
+      isLoading: true
+    })
+  );
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
     yield put(
-      setNodesAction(
-        result.body.items.map(node => {
+      updateNodesAction({
+        list: result.body.items.map(node => {
           const statusType =
             node.status.conditions &&
             node.status.conditions.find(conditon => conditon.type === 'Ready');
@@ -305,7 +319,7 @@ export function* fetchNodes() {
             roles: rolesLabel.join(' / ')
           };
         })
-      )
+      })
     );
 
     yield all(
@@ -315,7 +329,11 @@ export function* fetchNodes() {
     );
   }
   yield delay(1000); // To make sur that the loader is visible for at least 1s
-  yield put(updateNodesLoadingAction(false));
+  yield put(
+    updateNodesAction({
+      isLoading: false
+    })
+  );
   return result;
 }
 
@@ -354,11 +372,12 @@ export function* getJobStatus(name) {
 }
 
 export function* createNode({ payload }) {
+  const clusterVersion = yield select(state => state.app.nodes.clusterVersion);
   const body = {
     metadata: {
       name: payload.name,
       labels: {
-        'metalk8s.scality.com/version': payload.version
+        'metalk8s.scality.com/version': clusterVersion
       },
       annotations: {
         'metalk8s.scality.com/ssh-user': payload.ssh_user,
@@ -409,11 +428,8 @@ export function* createNode({ payload }) {
 }
 
 export function* deployNode({ payload }) {
-  const result = yield call(
-    ApiSalt.deployNode,
-    payload.name,
-    payload.metalk8s_version
-  );
+  const clusterVersion = yield select(state => state.app.nodes.clusterVersion);
+  const result = yield call(ApiSalt.deployNode, payload.name, clusterVersion);
   if (result.error) {
     yield put(
       addNotificationErrorAction({
@@ -506,7 +522,12 @@ export function* subscribeDeployEvents({ jid }) {
 }
 
 export function* refreshNodes() {
-  yield put(updateNodesRefreshingAction(true));
+  yield put(
+    updateNodesAction({
+      isRefreshing: true
+    })
+  );
+
   const result = yield call(fetchNodes);
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
@@ -518,7 +539,11 @@ export function* refreshNodes() {
 }
 
 export function* stopRefreshNodes() {
-  yield put(updateNodesRefreshingAction(false));
+  yield put(
+    updateNodesAction({
+      isRefreshing: false
+    })
+  );
 }
 
 export function* nodesSaga() {
@@ -528,4 +553,5 @@ export function* nodesSaga() {
   yield takeEvery(SUBSCRIBE_DEPLOY_EVENTS, subscribeDeployEvents);
   yield takeEvery(REFRESH_NODES, refreshNodes);
   yield takeEvery(STOP_REFRESH_NODES, stopRefreshNodes);
+  yield takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion);
 }
