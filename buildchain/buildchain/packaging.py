@@ -29,6 +29,8 @@ Overview;
 from pathlib import Path
 from typing import Dict, FrozenSet, Iterator, List, Tuple
 
+from doit.tools import config_changed  # type: ignore
+
 from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
@@ -110,7 +112,7 @@ def task__download_packages() -> types.TaskDict:
             '_package_mkdir_root', '_package_mkdir_iso_root', '_build_container'
         ],
         'clean': [clean],
-        'uptodate': [True],
+        'uptodate': [config_changed(_TO_DOWNLOAD_CONFIG)],
         # Prevent Docker from polluting our output.
         'verbosity': 0,
     }
@@ -200,6 +202,14 @@ TO_DOWNLOAD : FrozenSet[str] = frozenset(
     for package in versions.PACKAGES
     if package.name not in _TO_BUILD_PKG_NAMES
 )
+
+# Store these versions in a dict to use with doit.tools.config_changed
+_TO_DOWNLOAD_CONFIG : Dict[str, str] = {
+    pkg.name: "{p.version}-{p.release}".format(p=pkg)
+    for pkg in versions.PACKAGES
+    if pkg.name not in _TO_BUILD_PKG_NAMES
+}
+
 
 REPOSITORIES : Tuple[targets.Repository, ...] = (
     targets.Repository(
