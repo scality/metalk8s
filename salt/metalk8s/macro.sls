@@ -10,6 +10,7 @@
     - version: {{ package.version }}
     - hold: True
     - update_holds: True
+    - ignore_epoch: True
     {%- endif %}
     - reload_modules: True
   {%- else %}
