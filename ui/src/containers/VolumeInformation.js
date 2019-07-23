@@ -80,10 +80,7 @@ const InformationMainValue = styled(InformationValue)`
 const VolumeInformation = props => {
   const { intl, theme, node, match, volumes } = props;
 
-  useRefreshNodes({
-    refreshNodes: props.refreshNodes,
-    stopRefreshNodes: props.stopRefreshNodes
-  });
+  useRefreshNodes();
 
   console.log('volumes', volumes);
   console.log('node', node);

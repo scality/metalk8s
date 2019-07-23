@@ -6,11 +6,7 @@ import { injectIntl } from 'react-intl';
 import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 
-import {
-  refreshNodesAction,
-  stopRefreshNodesAction,
-  deployNodeAction
-} from '../ducks/app/nodes';
+import { deployNodeAction } from '../ducks/app/nodes';
 
 import { sortSelector, useRefreshNodes } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
@@ -72,18 +68,7 @@ const BreadcrumbContainer = styled.div`
 `;
 
 const NodeList = props => {
-  // useEffect(() => {
-  //   props.refreshNodes();
-
-  //   return () => {
-  //     props.stopRefreshNodes();
-  //   };
-  // }, []);
-
-  useRefreshNodes({
-    refreshNodes: props.refreshNodes,
-    stopRefreshNodes: props.stopRefreshNodes
-  });
+  useRefreshNodes();
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
@@ -153,6 +138,7 @@ const NodeList = props => {
     setSortBy(sortBy);
     setSortDirection(sortDirection);
   };
+
   const onRowClick = row => {
     if (row.rowData && row.rowData.name) {
       history.push(`/nodes/${row.rowData.name}`);
@@ -215,8 +201,6 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = dispatch => {
   return {
-    refreshNodes: () => dispatch(refreshNodesAction()),
-    stopRefreshNodes: () => dispatch(stopRefreshNodesAction()),
     deployNode: payload => dispatch(deployNodeAction(payload))
   };
 };
