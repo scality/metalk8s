@@ -13,7 +13,12 @@ Given('I log in', () => {
   cy.get('input[type=text]').type(userName);
   cy.get('input[type=password]').type(userPassword);
   cy.get('button').click();
-  cy.wait(['@getAPIResourceList', '@getAlerts']);
+  cy.wait(['@getAPIResourceList', '@getAlerts'], {
+    log: true,
+    requestTimeout: 20000,
+    responseTimeout: 20000
+  });
+
   cy.get('.sc-navbar .sc-dropdown > .trigger > .sc-trigger-text').should(
     'contain',
     userName
