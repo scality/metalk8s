@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
@@ -12,7 +12,7 @@ import {
   deployNodeAction
 } from '../ducks/app/nodes';
 
-import { sortSelector } from '../services/utils';
+import { sortSelector, useRefreshNodes } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 
 import { STATUS_NOT_READY, STATUS_UNKNOWN } from '../constants.js';
@@ -72,13 +72,18 @@ const BreadcrumbContainer = styled.div`
 `;
 
 const NodeList = props => {
-  useEffect(() => {
-    props.refreshNodes();
+  // useEffect(() => {
+  //   props.refreshNodes();
 
-    return () => {
-      props.stopRefreshNodes();
-    };
-  }, []);
+  //   return () => {
+  //     props.stopRefreshNodes();
+  //   };
+  // }, []);
+
+  useRefreshNodes({
+    refreshNodes: props.refreshNodes,
+    stopRefreshNodes: props.stopRefreshNodes
+  });
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');

@@ -60,6 +60,13 @@ const NodeVolumes = props => {
       )
     }
   ];
+  const onRowClick = row => {
+    if (row.rowData && row.rowData.name) {
+      props.history.push(
+        `/nodes/${props.nodeName}/volumes/${row.rowData.name}`
+      );
+    }
+  };
   const volumeSortedList = sortSelector(props.data, sortBy, sortDirection);
   return (
     <>
@@ -82,7 +89,9 @@ const NodeVolumes = props => {
           sortBy={sortBy}
           sortDirection={sortDirection}
           onSort={onSort}
-          onRowClick={() => {}}
+          onRowClick={item => {
+            onRowClick(item);
+          }}
           noRowsRenderer={() => (
             <NoRowsRenderer content={props.intl.messages.no_volume_found} />
           )}

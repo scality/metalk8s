@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
-import { createSelector } from 'reselect';
 import styled from 'styled-components';
 import { withRouter, Switch, Route, Link } from 'react-router-dom';
 import { Table, Breadcrumb, Tabs } from '@scality/core-ui';
@@ -18,7 +17,12 @@ import {
   fetchVolumesAction,
   fetchPersistentVolumeAction
 } from '../ducks/app/volumes';
-import { sortSelector } from '../services/utils';
+import {
+  sortSelector,
+  makeGetNodeFromUrl,
+  makeGetPodsFromUrl,
+  makeGetVolumesFromUrl
+} from '../services/utils';
 
 import NodeVolumes from './NodeVolumes';
 
@@ -268,7 +272,9 @@ class NodeInformation extends React.Component {
             <Route path={`${match.url}/pods`} component={NodePods} />
             <Route
               path={`${match.url}/volumes`}
-              component={() => <NodeVolumes data={volumeData} />}
+              component={() => (
+                <NodeVolumes nodeName={match.params.id} data={volumeData} />
+              )}
             />
             <Route path="/" component={NodeDetails} />
           </Switch>
@@ -277,44 +283,6 @@ class NodeInformation extends React.Component {
     );
   }
 }
-
-const getNodeNameFromUrl = (state, props) => {
-  if (props && props.match && props.match.params && props.match.params.id) {
-    return props.match.params.id;
-  } else {
-    return '';
-  }
-};
-
-const getNodes = state =>
-  (state && state.app && state.app.nodes && state.app.nodes.list) || [];
-
-const getPods = state =>
-  (state && state.app && state.app.pods && state.app.pods.list) || [];
-
-const getVolumes = state =>
-  (state && state.app && state.app.volumes && state.app.volumes.list) || [];
-
-const makeGetNodeFromUrl = createSelector(
-  getNodeNameFromUrl,
-  getNodes,
-  (nodeName, nodes) => nodes.find(node => node.name === nodeName) || {}
-);
-
-const makeGetPodsFromUrl = createSelector(
-  getNodeNameFromUrl,
-  getPods,
-  (nodeName, pods) => pods.filter(pod => pod.nodeName === nodeName) || []
-);
-
-const makeGetVolumesFromUrl = createSelector(
-  getNodeNameFromUrl,
-  getVolumes,
-  (nodeName, volumes) =>
-    volumes.filter(
-      volume => volume && volume.spec && volume.spec.nodeName === nodeName
-    )
-);
 
 const mapStateToProps = (state, ownProps) => ({
   theme: state.config.theme,

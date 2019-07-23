@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { createSelector } from 'reselect';
 import { sortBy as sortByArray } from 'lodash';
 
@@ -47,3 +48,50 @@ export const sortSelector = createSelector(
   },
   list => list
 );
+
+export const getNodeNameFromUrl = (state, props) => {
+  if (props && props.match && props.match.params && props.match.params.id) {
+    return props.match.params.id;
+  } else {
+    return '';
+  }
+};
+
+export const getNodes = state =>
+  (state && state.app && state.app.nodes && state.app.nodes.list) || [];
+
+export const getPods = state =>
+  (state && state.app && state.app.pods && state.app.pods.list) || [];
+
+export const getVolumes = state =>
+  (state && state.app && state.app.volumes && state.app.volumes.list) || [];
+
+export const makeGetNodeFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getNodes,
+  (nodeName, nodes) => nodes.find(node => node.name === nodeName) || {}
+);
+
+export const makeGetPodsFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getPods,
+  (nodeName, pods) => pods.filter(pod => pod.nodeName === nodeName) || []
+);
+
+export const makeGetVolumesFromUrl = createSelector(
+  getNodeNameFromUrl,
+  getVolumes,
+  (nodeName, volumes) =>
+    volumes.filter(
+      volume => volume && volume.spec && volume.spec.nodeName === nodeName
+    )
+);
+
+export const useRefreshNodes = ({ refreshNodes, stopRefreshNodes }) => {
+  useEffect(() => {
+    refreshNodes();
+    return () => {
+      stopRefreshNodes();
+    };
+  }, []);
+};
