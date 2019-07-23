@@ -236,6 +236,18 @@ stages:
           workdir: build/ui
           haltOnFailure: true
       - ShellCommand:
+          name: Create temporary folder to upload Cypress result
+          command: >
+            mkdir -p tmp/cypress &&
+            (cp -r cypress/screenshots tmp/cypress || true) &&
+            (cp -r cypress/videos tmp/cypress || true)
+          workdir: build/ui
+          alwaysRun: true
+      - Upload:
+          name: Upload Cypress videos and screenshots artifacts
+          source: ui/tmp
+          alwaysRun: true
+      - ShellCommand:
           name: Collect logs using sosreport
           command: >
             sudo sosreport --all-logs
