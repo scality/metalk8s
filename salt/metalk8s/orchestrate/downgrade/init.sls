@@ -1,4 +1,4 @@
-{%- set dest_version = pillar.orchestrate.dest_version %}
+{%- set dest_version = pillar.metalk8s.cluster_version %}
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}
 

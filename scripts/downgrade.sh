@@ -151,27 +151,20 @@ _check_salt_master() {
 }
 
 _init () {
-    if [ -z "$DESTINATION_VERSION" ] ; then
-        die "no destination version provided"
-    fi
     _set_env
     _check_salt_master
 }
 
 precheck_downgrade () {
-  if [ -z "$DESTINATION_VERSION" ]; then
-    echo "No destination version given"
-    exit 1
-  fi
   $SALT salt-run state.orchestrate metalk8s.orchestrate.downgrade.precheck \
       saltenv="$SALTENV" \
-      pillar="{'orchestrate': {'dest_version': '$DESTINATION_VERSION'}}"
+      pillar="{'metalk8s': {'cluster_version': '$DESTINATION_VERSION'}}"
+
 }
 
 launch_downgrade () {
   $SALT salt-run state.orchestrate metalk8s.orchestrate.downgrade \
-    saltenv="$SALTENV"\
-    pillar="{'orchestrate': {'dest_version': '$DESTINATION_VERSION'}}"
+    saltenv="$SALTENV"
 }
 
 downgrade_bootstrap () {
@@ -194,8 +187,33 @@ downgrade_bootstrap () {
     pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
 }
 
+# patch the kube-system namespace annotation with <destination-version> input
+patch_kubesystem_namespace() {
+  #update the annotation with the new destination value
+  $SALT salt-run state.orchestrate_single \
+      metalk8s_kubernetes.namespace_annotation_present \
+      "kube-system" \
+      kubeconfig="/etc/kubernetes/admin.conf" \
+      context="kubernetes-admin@kubernetes" \
+      annotation_key="metalk8s.scality.com/cluster-version" \
+      annotation_value="$DESTINATION_VERSION" \
+      test="$DRY_RUN"
+}
+
+get_cluster_version() {
+  DESTINATION_VERSION=$($SALT_CALL \
+      pillar.get metalk8s:cluster_version --out txt | cut -c 8-)
+}
+
 # Main
 _init
+if [ -n "$DESTINATION_VERSION" ]; then
+    run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
+else
+    get_cluster_version
+    run "Getting cluster version $DESTINATION_VERSION"
+fi
+
 run "Performing Pre-Downgrade checks" precheck_downgrade
 [ $DRY_RUN -eq 1 ] && exit 0
 run "Launching the downgrade" launch_downgrade
