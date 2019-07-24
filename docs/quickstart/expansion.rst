@@ -114,6 +114,8 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
 Adding a node from the command-line
 -----------------------------------
 
+.. _quickstart-expansion-manifest:
+
 Creating a manifest
 ^^^^^^^^^^^^^^^^^^^
 Adding a node requires the creation of a :term:`manifest <Node manifest>` file,

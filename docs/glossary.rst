@@ -54,6 +54,12 @@ Glossary
      |see K8s docs|
      `kubeconfig <https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/>`_.
 
+   Kubelet
+     The kubelet is the primary "node agent" that runs on each cluster node.
+
+     |see K8s docs|
+     `https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/`
+
    Node
      A Node is a Kubernetes worker machine - either virtual or physical.
      A Node contains the services required to run :term:`Pods <Pod>`.
