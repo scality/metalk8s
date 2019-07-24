@@ -56,6 +56,7 @@ def ext_pillar(minion_id, pillar, kubeconfig):
         pillar_nodes = __utils__['pillar_utils.errors_to_dict']([
             error_tplt.format(__virtualname__, kubeconfig)
         ])
+        cluster_version = pillar_nodes
 
     else:
         ca_minion = None
@@ -71,6 +72,21 @@ def ext_pillar(minion_id, pillar, kubeconfig):
 
         node_list = coreV1.list_node()
 
+        cluster_version = None
+        namespace_information = coreV1.read_namespace(name="kube-system")
+
+        if namespace_information:
+            ns_info_dict = namespace_information.to_dict()
+            annotation_info = ns_info_dict.get(
+                'metadata', {}).get('annotations')
+            if annotation_info:
+                cluster_version = annotation_info.get(
+                    'metalk8s.scality.com/cluster-version'
+                )
+        if not cluster_version:
+            cluster_version = __utils__['pillar_utils.errors_to_dict'](
+                'Unable to retrieve cluster version'
+            )
         pillar_nodes = dict(
             (node.metadata.name, node_info(node, ca_minion))
             for node in node_list.items
@@ -79,5 +95,6 @@ def ext_pillar(minion_id, pillar, kubeconfig):
     return {
         'metalk8s': {
             'nodes': pillar_nodes,
+            'cluster_version': cluster_version,
         },
     }
