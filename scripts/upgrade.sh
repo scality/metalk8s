@@ -151,27 +151,54 @@ get_salt_container() {
 }
 
 upgrade_bootstrap () {
-    "${SALT_CALL}" --local state.sls metalk8s.roles.bootstrap saltenv="metalk8s-$DESTINATION_VERSION" \
-        pillar="{'metalk8s': {'endpoints': $(salt-call --out txt pillar.get metalk8s:endpoints \
+    "${SALT_CALL}" --local state.sls metalk8s.roles.bootstrap \
+        saltenv="metalk8s-$DESTINATION_VERSION" \
+        pillar="{'metalk8s': {'endpoints': $(salt-call --out \
+        txt pillar.get metalk8s:endpoints \
         | cut -c 8-)}}"
 }
 
 launch_upgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
-    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate metalk8s.orchestrate.upgrade saltenv="metalk8s-$DESTINATION_VERSION" \
-        pillar="{'orchestrate': {'dest_version': '$DESTINATION_VERSION'}}"
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.upgrade saltenv="metalk8s-$DESTINATION_VERSION"
 }
 
 precheck_upgrade() {
-    if [ -z "$DESTINATION_VERSION" ]; then
-        die "No destination version given"
-    fi
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.upgrade.precheck \
+        saltenv="metalk8s-$DESTINATION_VERSION" \
+        pillar="{'metalk8s': {'cluster_version': '$DESTINATION_VERSION'}}"
+}
+
+# patch the kube-system namespace annotation with <destination-version> input
+patch_kubesystem_namespace() {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
-    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate metalk8s.orchestrate.upgrade.precheck saltenv="metalk8s-$DESTINATION_VERSION" \
-        pillar="{'orchestrate': {'dest_version': '$DESTINATION_VERSION'}}"
+    #update the annotation with the new destination value
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate_single \
+        metalk8s_kubernetes.namespace_annotation_present \
+        "kube-system" \
+        kubeconfig="/etc/kubernetes/admin.conf" \
+        context="kubernetes-admin@kubernetes" \
+        annotation_key="metalk8s.scality.com/cluster-version" \
+        annotation_value="$DESTINATION_VERSION" \
+        test="$DRY_RUN"
 }
+
+get_cluster_version() {
+    DESTINATION_VERSION=$("${SALT_CALL}" \
+        pillar.get metalk8s:cluster_version --out txt | cut -c 8-)
+}
+
+if [ -n "$DESTINATION_VERSION" ]; then
+    run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
+else
+    get_cluster_version
+    run "Getting cluster version $DESTINATION_VERSION"
+fi
 
 run "Performing Pre-Upgrade checks" precheck_upgrade
 [ $DRY_RUN -eq 1 ] && exit 0

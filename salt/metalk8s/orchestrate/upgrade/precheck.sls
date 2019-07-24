@@ -1,4 +1,4 @@
-{%- set dest_version = pillar.orchestrate.dest_version %}
+{%- set dest_version = pillar.metalk8s.cluster_version %}
 
 {#- When upgrading saltenv should be the destination version #}
 {%- if saltenv != 'metalk8s-' ~ dest_version %}

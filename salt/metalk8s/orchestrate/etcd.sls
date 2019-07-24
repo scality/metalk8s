@@ -1,4 +1,4 @@
-{%- set dest_version = pillar.orchestrate.dest_version %}
+{%- set dest_version = pillar.metalk8s.cluster_version %}
 {%- set etcd_nodes = salt.metalk8s.minions_by_role('etcd') %}
 
 Check etcd cluster health:
