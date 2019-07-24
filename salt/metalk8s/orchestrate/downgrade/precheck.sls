@@ -1,4 +1,4 @@
-{%- set dest_version = pillar.orchestrate.dest_version %}
+{%- set dest_version = pillar.metalk8s.cluster_version %}
 
 {#- When downgrading saltenv should be the newest version #}
 {%- set nodes_versions = pillar.metalk8s.nodes.values() | map(attribute='version') | list %}
