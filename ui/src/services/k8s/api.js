@@ -110,3 +110,11 @@ export async function createVolume(body) {
     return { error };
   }
 }
+
+export async function getPersistentVolumeClaims() {
+  try {
+    return await coreV1.listPersistentVolumeClaimForAllNamespaces();
+  } catch (error) {
+    return { error };
+  }
+}

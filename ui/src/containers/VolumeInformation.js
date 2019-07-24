@@ -1,6 +1,7 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { withRouter, Link } from 'react-router-dom';
+import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import {
   padding,
@@ -8,12 +9,14 @@ import {
   fontWeight
 } from '@scality/core-ui/dist/style/theme';
 import { Breadcrumb } from '@scality/core-ui';
-import { withRouter, Link } from 'react-router-dom';
+import { makeGetNodeFromUrl, makeGetVolumesFromUrl } from '../services/utils';
+import { SPARCE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
-  makeGetNodeFromUrl,
-  makeGetVolumesFromUrl,
-  useRefreshNodes
-} from '../services/utils';
+  fetchVolumesAction,
+  fetchPersistentVolumeAction,
+  fetchStorageClassAction
+} from '../ducks/app/volumes';
+import { fetchNodesAction } from '../ducks/app/nodes';
 
 const VolumeInformationContainer = styled.div`
   display: flex;
@@ -61,7 +64,7 @@ const BreadcrumbLabel = styled.span`
 const DetailsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: ${padding.base};
+  margin: ${padding.base};
 `;
 
 const InformationSpan = styled.span`
@@ -84,15 +87,27 @@ const InformationMainValue = styled(InformationValue)`
 `;
 
 const VolumeInformation = props => {
-  const { intl, theme, node, match, volumes } = props;
-
-  useRefreshNodes();
-
-  console.log('volumes', volumes);
-  console.log('node', node);
-
-  const volume = volumes.find(v => v.name === match.params.volumeName);
-  console.log(volume);
+  const { intl, match } = props;
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchNodesAction());
+    dispatch(fetchVolumesAction());
+    dispatch(fetchPersistentVolumeAction());
+    dispatch(fetchStorageClassAction());
+  }, []);
+  const theme = useSelector(state => state.config.theme);
+  const node = useSelector(state => makeGetNodeFromUrl(state, props));
+  const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
+  const pVList = useSelector(state => state.app.volumes.pVList);
+  const storageClasses = useSelector(state => state.app.volumes.storageClass);
+  const currentVolumeName = match.params.volumeName;
+  const volume = volumes.find(v => v.metadata.name === currentVolumeName);
+  const pV = pVList.find(pv => pv.metadata.name === currentVolumeName);
+  const storageClass = storageClasses.find(
+    SC =>
+      SC.metadata.name ===
+      (volume && volume.spec && volume.spec.storageClassName)
+  );
   return (
     <VolumeInformationContainer>
       <BreadcrumbContainer>
@@ -110,52 +125,65 @@ const VolumeInformation = props => {
       <DetailsContainer>
         <InformationSpan>
           <InformationLabel>{intl.messages.name}</InformationLabel>
-          <InformationMainValue>{node.name}</InformationMainValue>
+          <InformationMainValue>
+            {volume && volume.metadata && volume.metadata.name}
+          </InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.status}</InformationLabel>
-          <InformationMainValue />
+          <InformationMainValue>
+            {pV && pV.status && pV.status.phase}
+          </InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.type}</InformationLabel>
-          <InformationMainValue />
+          <InformationMainValue>
+            {volume && volume.spec && volume.spec.rawBlockDevice
+              ? RAW_BLOCK_DEVICE
+              : SPARCE_LOOP_DEVICE}
+          </InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{'Bounded'}</InformationLabel>
-          <InformationMainValue />
+          <InformationMainValue>
+            {pV && pV.status && pV.status.phase === 'Bounded'
+              ? 'True'
+              : 'False'}
+          </InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.storageClass}</InformationLabel>
-          <InformationMainValue />
+          <InformationMainValue>
+            {volume && volume.spec && volume.spec.storageClassName}
+          </InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{'Path'}</InformationLabel>
-          <InformationMainValue />
+          <InformationMainValue>
+            {pV && pV.spec && pV.spec.local && pV.spec.local.path}
+          </InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{'AccessMode'}</InformationLabel>
-          <InformationMainValue />
+          <InformationMainValue>
+            {pV && pV.spec && pV.spec.accessModes}
+          </InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{'MountOption'}</InformationLabel>
-          <InformationMainValue />
+          <InformationMainValue>
+            {storageClass && storageClass.mountOptions}
+          </InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.creationTime}</InformationLabel>
-          <InformationMainValue />
+          <InformationMainValue>
+            {volume && volume.metadata && volume.metadata.creationTimestamp}
+          </InformationMainValue>
         </InformationSpan>
       </DetailsContainer>
     </VolumeInformationContainer>
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  theme: state.config.theme,
-  node: makeGetNodeFromUrl(state, ownProps),
-  volumes: makeGetVolumesFromUrl(state, ownProps),
-  pVList: state.app.volumes.pVList
-});
-
-export default injectIntl(
-  withRouter(connect(mapStateToProps)(VolumeInformation))
-);
+export default injectIntl(withRouter(VolumeInformation));
