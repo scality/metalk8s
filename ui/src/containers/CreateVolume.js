@@ -16,7 +16,6 @@ import { SPARCE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 // form styled components
 const CreateVolumeContainer = styled.div`
   height: 100%;
-  overflow: auto;
   padding: ${padding.base};
   display: inline-block;
 `;

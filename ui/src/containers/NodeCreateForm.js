@@ -15,7 +15,6 @@ import {
 
 const CreateNodeContainter = styled.div`
   height: 100%;
-  overflow: auto;
   padding: ${padding.base};
   display: inline-block;
 `;
