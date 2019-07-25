@@ -10,7 +10,6 @@ import {
   padding
 } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-
 import { fetchPodsAction } from '../ducks/app/pods';
 import {
   fetchVolumesAction,
@@ -23,7 +22,6 @@ import {
   makeGetVolumesFromUrl,
   useRefreshNodes
 } from '../services/utils';
-
 import NodeVolumes from './NodeVolumes';
 
 const NodeInformationContainer = styled.div`
@@ -223,7 +221,6 @@ const NodeInformation = props => {
 
   const isVolumesPage = location.pathname.endsWith('/volumes');
   const isPodsPage = location.pathname.endsWith('/pods');
-
   const items = [
     {
       selected: !isVolumesPage && !isPodsPage,
