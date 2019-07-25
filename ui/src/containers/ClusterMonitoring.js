@@ -71,15 +71,22 @@ const ControlPlaneStatusLabel = styled.span`
 `;
 
 const ClusterMonitoring = props => {
-  useEffect(() => {
-    props.refreshAlerts();
-    return () => props.stopRefreshAlerts();
-  }, []);
+  const {
+    refreshAlerts,
+    stopRefreshAlerts,
+    refreshClusterStatus,
+    stopRefreshClusterStatus
+  } = props;
 
   useEffect(() => {
-    props.refreshClusterStatus();
-    return () => props.stopRefreshClusterStatus();
-  }, []);
+    refreshAlerts();
+    return () => stopRefreshAlerts();
+  }, [refreshAlerts, stopRefreshAlerts]);
+
+  useEffect(() => {
+    refreshClusterStatus();
+    return () => stopRefreshClusterStatus();
+  }, [refreshClusterStatus, stopRefreshClusterStatus]);
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
