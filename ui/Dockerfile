@@ -5,6 +5,7 @@ FROM node:${NODE_IMAGE_VERSION} AS build-step
 
 WORKDIR /home/node
 COPY package*.json /home/node/
+COPY config-overrides.js .babelrc /home/node/
 RUN npm install
 
 COPY public /home/node/public
