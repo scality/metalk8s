@@ -63,37 +63,38 @@ function NodeDeployment(props) {
     { title: props.intl.messages.deploying, content: <Loader size="larger" /> }
   ]);
 
+  const nodeId = props?.match?.params?.id;
+  const { subscribeDeployEvents, events, intl } = props;
+
   useEffect(() => {
-    if (props && props.match && props.match.params && props.match.params.id) {
-      props.subscribeDeployEvents(props.match.params.id);
+    if (nodeId) {
+      subscribeDeployEvents(nodeId);
     }
 
     if (
       //To improve
-      !steps.find(
-        step => step.title === props.intl.messages.deployment_started
-      ) &&
-      props.events.find(event => event.tag.includes('/new'))
+      !steps.find(step => step.title === intl.messages.deployment_started) &&
+      events.find(event => event.tag.includes('/new'))
     ) {
       const newSteps = steps;
       newSteps.splice(steps.length - 1, 0, {
-        title: props.intl.messages.deployment_started
+        title: intl.messages.deployment_started
       });
       setSteps(newSteps);
       setActiveStep(2);
     }
 
-    const result = props.events.find(event => event.tag.includes('/ret'));
+    const result = events.find(event => event.tag.includes('/ret'));
     if (result) {
       const status = getJobStatusFromEventRet(result.data);
       const newSteps = steps;
       newSteps.splice(steps.length - 1, 1, {
-        title: props.intl.messages.completed,
+        title: intl.messages.completed,
         content: (
           <span>
             {!status.success && (
               <ErrorLabel>
-                {`${props.intl.messages.error}: ${status.step_id} - ${
+                {`${intl.messages.error}: ${status.step_id} - ${
                   status.comment
                 }`}
               </ErrorLabel>
@@ -104,7 +105,15 @@ function NodeDeployment(props) {
       setSteps(newSteps);
       setActiveStep(status.success ? steps.length : steps.length - 1);
     }
-  }, [props.events]);
+  }, [
+    events,
+    intl.messages.completed,
+    intl.messages.deployment_started,
+    intl.messages.error,
+    nodeId,
+    steps,
+    subscribeDeployEvents
+  ]);
 
   return (
     <NodeDeploymentContainer>
