@@ -6,6 +6,7 @@
   metalk8s_package_manager.installed:
     - name: {{ name }}
     - fromrepo: {{ repo.repositories.keys() | join(',') }}
+    - pkgs_info: {{ repo.packages }}
     {%- if package.version | default(None) %}
     - version: {{ package.version }}
     - hold: True
