@@ -204,16 +204,16 @@ func getAuthCredential(config *rest.Config) *salt.Credential {
 	if config.BearerToken != "" {
 		log.Info("using ServiceAccount bearer token")
 		return salt.NewCredential(
-			"storage-operator", config.BearerToken, "Bearer",
+			"storage-operator", config.BearerToken, salt.BearerToken,
 		)
 	} else if config.Username != "" && config.Password != "" {
 		log.Info("using Basic HTTP authentication")
 		creds := fmt.Sprintf("%s:%s", config.Username, config.Password)
 		token := b64.StdEncoding.EncodeToString([]byte(creds))
-		return salt.NewCredential(config.Username, token, "Basic")
+		return salt.NewCredential(config.Username, token, salt.BasicToken)
 	} else {
 		log.Info("using default Basic HTTP authentication")
 		token := b64.StdEncoding.EncodeToString([]byte("admin:admin"))
-		return salt.NewCredential("admin", token, "Basic")
+		return salt.NewCredential("admin", token, salt.BasicToken)
 	}
 }

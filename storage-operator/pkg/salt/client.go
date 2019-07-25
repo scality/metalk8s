@@ -109,7 +109,7 @@ func (self *Client) authenticate() error {
 		"eauth":      "kubernetes_rbac",
 		"username":   self.creds.username,
 		"token":      self.creds.token,
-		"token_type": self.creds.kind,
+		"token_type": string(self.creds.kind),
 	}
 
 	self.logger.Info(
