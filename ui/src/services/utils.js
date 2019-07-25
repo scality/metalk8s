@@ -8,6 +8,7 @@ import {
   refreshVolumesAction,
   stopRefreshVolumesAction
 } from '../ducks/app/volumes';
+
 export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   var unit = 'B';

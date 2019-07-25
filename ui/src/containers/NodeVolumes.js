@@ -6,7 +6,7 @@ import { withRouter } from 'react-router-dom';
 import { Button, Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-import { sortSelector } from '../services/utils';
+import { sortSelector, useRefreshVolumes } from '../services/utils';
 
 const ButtonContainer = styled.div`
   margin-top: ${padding.small};
@@ -18,9 +18,9 @@ const VolumeTable = styled.div`
 `;
 
 const NodeVolumes = props => {
+  useRefreshVolumes();
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
-
   const onSort = ({ sortBy, sortDirection }) => {
     setSortBy(sortBy);
     setSortDirection(sortDirection);

@@ -5,12 +5,9 @@ import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-
 import { deployNodeAction } from '../ducks/app/nodes';
-
 import { sortSelector, useRefreshNodes } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-
 import { STATUS_NOT_READY, STATUS_UNKNOWN } from '../constants.js';
 
 const PageContainer = styled.div`
@@ -69,7 +66,6 @@ const BreadcrumbContainer = styled.div`
 
 const NodeList = props => {
   useRefreshNodes();
-
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const { intl, history, nodes, theme } = props;

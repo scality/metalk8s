@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import {
   padding,
@@ -177,9 +177,19 @@ const VolumeInformation = props => {
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.creationTime}</InformationLabel>
-          <InformationMainValue>
-            {volume && volume.metadata && volume.metadata.creationTimestamp}
-          </InformationMainValue>
+          {volume && volume.metadata && volume.metadata.creationTimestamp ? (
+            <InformationMainValue>
+              <FormattedDate value={volume.metadata.creationTimestamp} />
+              <FormattedTime
+                hour="2-digit"
+                minute="2-digit"
+                second="2-digit"
+                value={volume.metadata.creationTimestamp}
+              />
+            </InformationMainValue>
+          ) : (
+            ''
+          )}
         </InformationSpan>
       </DetailsContainer>
     </VolumeInformationContainer>

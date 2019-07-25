@@ -241,6 +241,7 @@ const NodeInformation = props => {
       onClick: () => history.push(`${match.url}/pods`)
     }
   ];
+
   return (
     <NodeInformationContainer>
       <BreadcrumbContainer>
@@ -257,7 +258,7 @@ const NodeInformation = props => {
           <Route path={`${match.url}/pods`} component={NodePods} />
           <Route
             path={`${match.url}/volumes`}
-            component={() => (
+            render={() => (
               <NodeVolumes nodeName={match.params.id} data={volumeData} />
             )}
           />

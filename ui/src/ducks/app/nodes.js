@@ -193,7 +193,6 @@ export default function reducer(state = defaultState, action = {}) {
 
 // Action Creators
 export const fetchNodesAction = () => {
-  console.log('fetchNodesAction');
   return { type: FETCH_NODES };
 };
 
