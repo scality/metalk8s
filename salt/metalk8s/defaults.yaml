@@ -3,7 +3,6 @@ metalk8s: {}
 
 kubernetes:
   cluster: kubernetes
-  version: 1.11.10  # NOTE: remember to update kubelet version as well
 
 kubeadm_preflight:
   mandatory:
@@ -94,38 +93,6 @@ repo:
         - RPM-GPG-KEY-metalk8s-updates-7_1
       repo_gpg_check: 0
       enabled: 0
-
-  packages:
-    calico-cni-plugin:
-      version: latest
-      repository: metalk8s-scality
-    container-selinux:
-      version: latest
-      repository: metalk8s-extras
-    containerd:
-      version: latest
-      repository: metalk8s-epel
-    cri-tools:
-      version: latest
-      repository: metalk8s-kubernetes
-    kubelet:
-      version: 1.11.10
-      repository: metalk8s-kubernetes
-    m2crypto:
-      version: latest
-      repository: metalk8s-saltstack
-    python2-kubernetes:
-      version: latest
-      repository: metalk8s-epel
-    runc:
-      version: latest
-      repository: metalk8s-extras
-    salt-minion:
-      version: 2018.3.4-1.el7
-      repository: metalk8s-saltstack
-    skopeo:
-      version: latest
-      repository: metalk8s-extras
 
 networks: {}
 
