@@ -3,10 +3,8 @@ import {
   fetchNodes,
   createNode,
   refreshNodes,
-  SET_NODES,
-  CREATE_NODE_FAILED,
-  UPDATE_NODES_LOADING,
-  UPDATE_NODES_REFRESHING
+  UPDATE_NODES,
+  CREATE_NODE_FAILED
 } from './nodes';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
@@ -51,8 +49,8 @@ it('update the control plane nodes state when fetchNodes', () => {
   const gen = fetchNodes();
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isLoading: true }
     })
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
@@ -121,14 +119,14 @@ it('update the control plane nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_NODES, payload: nodes })
+    put({ type: UPDATE_NODES, payload: { list: nodes } })
   );
   expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: false
+      type: UPDATE_NODES,
+      payload: { isLoading: false }
     })
   );
   expect(gen.next().done).toEqual(true);
@@ -138,8 +136,8 @@ it('update the bootstrap nodes state when fetchNodes', () => {
   const gen = fetchNodes();
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isLoading: true }
     })
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
@@ -211,15 +209,15 @@ it('update the bootstrap nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_NODES, payload: nodes })
+    put({ type: UPDATE_NODES, payload: { list: nodes } })
   );
 
   expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: false
+      type: UPDATE_NODES,
+      payload: { isLoading: false }
     })
   );
   expect(gen.next().done).toEqual(true);
@@ -230,8 +228,8 @@ it('update the workload plane nodes state when fetchNodes', () => {
 
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isLoading: true }
     })
   );
 
@@ -290,14 +288,14 @@ it('update the workload plane nodes state when fetchNodes', () => {
   ];
 
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_NODES, payload: nodes })
+    put({ type: UPDATE_NODES, payload: { list: nodes } })
   );
   expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: false
+      type: UPDATE_NODES,
+      payload: { isLoading: false }
     })
   );
   expect(gen.next().done).toEqual(true);
@@ -308,8 +306,8 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
 
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isLoading: true }
     })
   );
 
@@ -369,15 +367,15 @@ it('update the control plane/workload plane nodes state when fetchNodes', () => 
     }
   ];
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_NODES, payload: nodes })
+    put({ type: UPDATE_NODES, payload: { list: nodes } })
   );
 
   expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: false
+      type: UPDATE_NODES,
+      payload: { isLoading: false }
     })
   );
   expect(gen.next().done).toEqual(true);
@@ -388,8 +386,8 @@ it('update the control plane/workload plane/ infra nodes state when fetchNodes',
 
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isLoading: true }
     })
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
@@ -448,15 +446,15 @@ it('update the control plane/workload plane/ infra nodes state when fetchNodes',
     }
   ];
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_NODES, payload: nodes })
+    put({ type: UPDATE_NODES, payload: { list: nodes } })
   );
 
   expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: false
+      type: UPDATE_NODES,
+      payload: { isLoading: false }
     })
   );
   expect(gen.next().done).toEqual(true);
@@ -467,8 +465,8 @@ it('update the infra nodes state when fetchNodes', () => {
 
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isLoading: true }
     })
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
@@ -532,15 +530,15 @@ it('update the infra nodes state when fetchNodes', () => {
     }
   ];
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_NODES, payload: nodes })
+    put({ type: UPDATE_NODES, payload: { list: nodes } })
   );
 
   expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: false
+      type: UPDATE_NODES,
+      payload: { isLoading: false }
     })
   );
   expect(gen.next().done).toEqual(true);
@@ -550,8 +548,8 @@ it('update the infra / Worload Plane  nodes state when fetchNodes', () => {
   const gen = fetchNodes();
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isLoading: true }
     })
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
@@ -608,15 +606,15 @@ it('update the infra / Worload Plane  nodes state when fetchNodes', () => {
     }
   ];
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_NODES, payload: nodes })
+    put({ type: UPDATE_NODES, payload: { list: nodes } })
   );
 
   expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: false
+      type: UPDATE_NODES,
+      payload: { isLoading: false }
     })
   );
   expect(gen.next().done).toEqual(true);
@@ -627,8 +625,8 @@ it('update the infra / Controle Plane nodes state when fetchNodes', () => {
 
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isLoading: true }
     })
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
@@ -694,29 +692,31 @@ it('update the infra / Controle Plane nodes state when fetchNodes', () => {
     }
   ];
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_NODES, payload: nodes })
+    put({ type: UPDATE_NODES, payload: { list: nodes } })
   );
 
   expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_LOADING,
-      payload: false
+      type: UPDATE_NODES,
+      payload: { isLoading: false }
     })
   );
   expect(gen.next().done).toEqual(true);
 });
 it('create Node success - CP,WP,I', () => {
   const gen = createNode({ payload: formPayload });
-  expect(gen.next().value).toEqual(call(ApiK8s.createNode, bodyRequest));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, bodyRequest));
   expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
   expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
 
 it('create Node fail - CP,WP,I', () => {
   const gen = createNode({ payload: formPayload });
-  expect(gen.next().value).toEqual(call(ApiK8s.createNode, bodyRequest));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, bodyRequest));
   expect(gen.next({ error: { body: { message: 'error' } } }).value).toEqual(
     put({
       type: CREATE_NODE_FAILED,
@@ -760,7 +760,8 @@ it('create Node success - CP', () => {
   const gen = createNode({
     payload: { ...formPayload, workload_plane: false, infra: false }
   });
-  expect(gen.next().value).toEqual(call(ApiK8s.createNode, request));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
   expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
   expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
@@ -788,7 +789,8 @@ it('create Node success - WP', () => {
   const gen = createNode({
     payload: { ...formPayload, control_plane: false, infra: false }
   });
-  expect(gen.next().value).toEqual(call(ApiK8s.createNode, request));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
   expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
   expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
@@ -823,7 +825,8 @@ it('create Node success - Infra', () => {
   const gen = createNode({
     payload: { ...formPayload, control_plane: false, workload_plane: false }
   });
-  expect(gen.next().value).toEqual(call(ApiK8s.createNode, request));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
   expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
   expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
@@ -853,7 +856,8 @@ it('create Node success - CP,WP', () => {
   const gen = createNode({
     payload: { ...formPayload, infra: false }
   });
-  expect(gen.next().value).toEqual(call(ApiK8s.createNode, request));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
   expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
   expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
@@ -890,7 +894,8 @@ it('create Node success - CP,Infra', () => {
   const gen = createNode({
     payload: { ...formPayload, workload_plane: false }
   });
-  expect(gen.next().value).toEqual(call(ApiK8s.createNode, request));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
   expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
   expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
@@ -918,7 +923,8 @@ it('create Node success - WP,Infra', () => {
   const gen = createNode({
     payload: { ...formPayload, control_plane: false }
   });
-  expect(gen.next().value).toEqual(call(ApiK8s.createNode, request));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
   expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
   expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
@@ -927,8 +933,8 @@ it('should refresh nodes if no error', () => {
   const gen = refreshNodes();
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_REFRESHING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isRefreshing: true }
     })
   );
   expect(gen.next().value).toEqual(call(fetchNodes));
@@ -941,8 +947,8 @@ it('should stop refresh Nodes', () => {
   const gen = refreshNodes();
   expect(gen.next().value).toEqual(
     put({
-      type: UPDATE_NODES_REFRESHING,
-      payload: true
+      type: UPDATE_NODES,
+      payload: { isRefreshing: true }
     })
   );
   expect(gen.next().value).toEqual(call(fetchNodes));

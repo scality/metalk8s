@@ -80,9 +80,12 @@ const InputLabel = styled.label`
   font-size: ${fontSize.base};
 `;
 
+const InputValue = styled(InputLabel)`
+  padding: ${padding.small} 0;
+`;
+
 const initialValues = {
   name: '',
-  version: '',
   ssh_user: '',
   hostName_ip: '',
   ssh_port: '22',
@@ -95,7 +98,6 @@ const initialValues = {
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required(),
-  version: Yup.string().required(),
   ssh_user: Yup.string().required(),
   hostName_ip: Yup.string().required(),
   ssh_port: Yup.number()
@@ -156,14 +158,12 @@ class NodeCreateForm extends React.Component {
                     error={touched.name && errors.name}
                     onBlur={handleOnBlur}
                   />
-                  <Input
-                    name="version"
-                    label={intl.messages.version}
-                    value={values.version}
-                    onChange={handleChange('version')}
-                    error={touched.version && errors.version}
-                    onBlur={handleOnBlur}
-                  />
+                  <InputContainer className="sc-input">
+                    <InputLabel className="sc-input-label">
+                      {intl.messages.version}
+                    </InputLabel>
+                    <InputValue>{this.props.clusterVersion}</InputValue>
+                  </InputContainer>
                   <InputContainer className="sc-input">
                     <InputLabel className="sc-input-label">
                       {intl.messages.roles}
@@ -294,7 +294,8 @@ class NodeCreateForm extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  asyncErrors: state.app.nodes.errors
+  asyncErrors: state.app.nodes.errors,
+  clusterVersion: state.app.nodes.clusterVersion
 });
 
 const mapDispatchToProps = dispatch => {

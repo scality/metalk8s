@@ -11,7 +11,7 @@ import NodeList from './NodeList';
 import NodeInformation from './NodeInformation';
 import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
-import Welcome from '../components/Welcome';
+import About from './About';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
 import { toggleSideBarAction } from '../ducks/app/layout';
@@ -134,7 +134,7 @@ class Layout extends Component {
             <PrivateRoute path="/nodes/:id" component={NodeInformation} />
 
             <PrivateRoute exact path="/nodes" component={NodeList} />
-            <PrivateRoute exact path="/about" component={Welcome} />
+            <PrivateRoute exact path="/about" component={About} />
             <PrivateRoute exact path="/" component={ClusterMonitoring} />
           </Switch>
         </CoreUILayout>
