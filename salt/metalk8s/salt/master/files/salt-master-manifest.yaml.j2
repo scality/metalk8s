@@ -1,5 +1,3 @@
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context -%}
-
 apiVersion: v1
 kind: Pod
 metadata:
@@ -8,7 +6,7 @@ metadata:
   labels:
     app: salt-master
     app.kubernetes.io/name: salt-master
-    app.kubernetes.io/version: '{{ salt_master_version }}'
+    app.kubernetes.io/version: '{{ version }}'
     app.kubernetes.io/component: salt
     heritage: metalk8s
     app.kubernetes.io/part-of: metalk8s
@@ -28,7 +26,7 @@ spec:
         - ALL
   containers:
     - name: salt-master
-      image: {{ build_image_name(salt_master_image, salt_master_version) }}
+      image: {{ image }}
       args: ['--log-level=info']
       ports:
         - name: publisher
@@ -75,7 +73,7 @@ spec:
           mountPath: '/etc/kubernetes'
           readOnly: true
     - name: salt-api
-      image: {{ build_image_name(salt_master_image, salt_master_version) }}
+      image: {{ image }}
       command: ['/tini']
       args: ['salt-api', '--', '--log-level=info']
       ports:

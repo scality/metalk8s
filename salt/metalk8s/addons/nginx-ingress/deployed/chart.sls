@@ -311,7 +311,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: '{{ build_image_name("nginx-ingress-controller") }}:0.25.0'
+        image: '{{ build_image_name("nginx-ingress-controller") }}'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -391,7 +391,7 @@ spec:
     spec:
       containers:
       - args: null
-        image: '{{ build_image_name("nginx-ingress-defaultbackend-amd64") }}:1.5'
+        image: '{{ build_image_name("nginx-ingress-defaultbackend-amd64") }}'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

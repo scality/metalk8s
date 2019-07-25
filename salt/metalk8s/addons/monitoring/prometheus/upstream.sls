@@ -1,6 +1,12 @@
 #!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
 
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/repo/macro.sls" import metalk8s_repository with context %}
+{%- from "metalk8s/map.jinja" import repo with context %}
+
+{%- set prometheus_version = repo.images.get('prometheus', {}).get('version') %}
+{%- if not prometheus_version %}
+  {{ raise('Missing version information for "prometheus"') }}
+{%- endif %}
 
 # The content below has been generated from
 # https://github.com/coreos/prometheus-operator, v0.24.0 tag,
@@ -149,7 +155,7 @@ spec:
     - name: alertmanager-main
       namespace: monitoring
       port: web
-  baseImage: {{ build_image_name('prometheus') }}
+  baseImage: {{ metalk8s_repository }}/prometheus
   nodeSelector:
     beta.kubernetes.io/os: linux
     node-role.kubernetes.io/infra: ''
@@ -164,7 +170,7 @@ spec:
   serviceAccountName: prometheus-k8s
   serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector: {}
-  version: v2.4.3
+  version: {{ prometheus_version }}
   tolerations:
   - key: "node-role.kubernetes.io/bootstrap"
     operator: "Exists"

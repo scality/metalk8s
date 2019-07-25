@@ -7,8 +7,6 @@ include:
 {%- set host_name = grains['id'] %}
 {%- set host = grains['metalk8s']['control_plane_ip'] %}
 
-{%- set image_name = build_image_name('etcd', '3.2.18') %}
-
 {%- set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
 
 {#- Get the list of existing etcd node. #}
@@ -40,7 +38,7 @@ Create local etcd Pod manifest:
         - /etc/kubernetes/pki/etcd/server.key
     - context:
         name: etcd
-        image_name: {{ image_name }}
+        image_name: {{ build_image_name('etcd') }}
         command:
           - etcd
           - --advertise-client-urls=https://{{ host }}:2379

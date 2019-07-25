@@ -6208,9 +6208,9 @@ spec:
       - args:
         - --kubelet-service=kube-system/kubelet
         - --logtostderr=true
-        - --config-reloader-image={{ build_image_name('configmap-reload', 'v0.0.1') }}
-        - --prometheus-config-reloader={{ build_image_name('prometheus-config-reloader', 'v0.23.2') }}
-        image: {{ build_image_name('prometheus-operator', 'v0.23.2') }}
+        - --config-reloader-image={{ build_image_name('configmap-reload') }}
+        - --prometheus-config-reloader={{ build_image_name('prometheus-config-reloader') }}
+        image: {{ build_image_name('prometheus-operator') }}
         name: prometheus-operator
         ports:
         - containerPort: 8080

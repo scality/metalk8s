@@ -217,19 +217,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/monitoring/prometheus-operator/upstream.sls'),
 
     Path('salt/metalk8s/addons/ui/deployed.sls'),
-    targets.TemplateFile(
-        task_name='metalk8s-ui-deployment',
-        source=constants.ROOT.joinpath(
-            'salt', 'metalk8s', 'addons', 'ui', 'files',
-            'metalk8s-ui-deployment.yaml.in'
-        ),
-        destination=constants.ISO_ROOT.joinpath(
-            'salt', 'metalk8s', 'addons', 'ui', 'files',
-            'metalk8s-ui-deployment.yaml'
-        ),
-        context={'VERSION': versions.VERSION},
-        file_dep=[versions.VERSION_FILE],
-    ),
+    Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
     Path('salt/metalk8s/addons/ui/precheck.sls'),
 
 
