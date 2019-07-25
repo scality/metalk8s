@@ -141,8 +141,12 @@ BUILDER : targets.LocalImage = targets.LocalImage(
     task_dep=['_build_root'],
     file_dep=[
         constants.ROOT/'packages/yum_repositories/kubernetes.repo',
-        constants.ROOT/'packages/yum_repositories/saltstack.repo'  # TODO: template this with versions.SALT_VERSION
+        constants.ROOT/'packages/yum_repositories/saltstack.repo',
     ],
+    build_args={
+        # Used to template the SaltStack repository definition
+        'SALT_VERSION': versions.SALT_VERSION,
+    },
 )
 
 # Packages to build, per repository.
