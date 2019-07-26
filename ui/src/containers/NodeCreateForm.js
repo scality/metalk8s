@@ -130,7 +130,7 @@ class NodeCreateForm extends React.Component {
             activeColor={theme.brand.secondary}
             paths={[
               <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-              <BreadcrumbLabel>Create New Node</BreadcrumbLabel>
+              <BreadcrumbLabel>{intl.messages.create_new_node}</BreadcrumbLabel>
             ]}
           />
         </BreadcrumbContainer>

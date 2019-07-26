@@ -99,10 +99,10 @@ const CreateVolume = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-            <StyledLink to={`/nodes/${match.params.id}`}>
+            <StyledLink to={`/nodes/${match.params.id}/volumes`}>
               {match.params.id}
             </StyledLink>,
-            <BreadcrumbLabel>Create New Volume</BreadcrumbLabel>
+            <BreadcrumbLabel>{intl.messages.create_new_volume}</BreadcrumbLabel>
           ]}
         />
       </BreadcrumbContainer>
@@ -170,7 +170,9 @@ const CreateVolume = props => {
                     text={intl.messages.cancel}
                     type="button"
                     outlined
-                    onClick={() => history.push(`/nodes/${match.params.id}`)}
+                    onClick={() =>
+                      history.push(`/nodes/${match.params.id}/volumes`)
+                    }
                   />
                   <Button text={intl.messages.create} type="submit" />
                 </ActionContainer>
