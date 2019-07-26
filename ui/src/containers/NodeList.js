@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-
+import { padding } from '@scality/core-ui/dist/style/theme';
 import {
+  deployNodeAction,
   refreshNodesAction,
-  stopRefreshNodesAction,
-  deployNodeAction
+  stopRefreshNodesAction
 } from '../ducks/app/nodes';
-
-import { sortSelector } from '../services/utils';
+import { sortSelector, useRefreshEffect } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-
 import { STATUS_NOT_READY, STATUS_UNKNOWN } from '../constants.js';
-
+import {
+  BreadcrumbContainer,
+  BreadcrumbLabel
+} from '../components/BreadcrumbStyle';
 const PageContainer = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -61,24 +61,8 @@ const TableContainer = styled.div`
   }
 `;
 
-const BreadcrumbLabel = styled.span`
-  font-size: ${fontSize.large};
-`;
-const BreadcrumbContainer = styled.div`
-  margin-left: ${padding.small};
-  .sc-breadcrumb {
-    padding: ${padding.smaller};
-  }
-`;
-
 const NodeList = props => {
-  useEffect(() => {
-    props.refreshNodes();
-
-    return () => {
-      props.stopRefreshNodes();
-    };
-  }, []);
+  useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
@@ -148,6 +132,7 @@ const NodeList = props => {
     setSortBy(sortBy);
     setSortDirection(sortDirection);
   };
+
   const onRowClick = row => {
     if (row.rowData && row.rowData.name) {
       history.push(`/nodes/${row.rowData.name}`);
@@ -210,8 +195,6 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = dispatch => {
   return {
-    refreshNodes: () => dispatch(refreshNodesAction()),
-    stopRefreshNodes: () => dispatch(stopRefreshNodesAction()),
     deployNode: payload => dispatch(deployNodeAction(payload))
   };
 };

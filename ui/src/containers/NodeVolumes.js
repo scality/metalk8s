@@ -6,7 +6,11 @@ import { withRouter } from 'react-router-dom';
 import { Button, Table } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-import { sortSelector } from '../services/utils';
+import { sortSelector, useRefreshEffect } from '../services/utils';
+import {
+  refreshVolumesAction,
+  stopRefreshVolumesAction
+} from '../ducks/app/volumes';
 
 const ButtonContainer = styled.div`
   margin-top: ${padding.small};
@@ -18,9 +22,9 @@ const VolumeTable = styled.div`
 `;
 
 const NodeVolumes = props => {
+  useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
-
   const onSort = ({ sortBy, sortDirection }) => {
     setSortBy(sortBy);
     setSortDirection(sortDirection);
@@ -60,6 +64,13 @@ const NodeVolumes = props => {
       )
     }
   ];
+  const onRowClick = row => {
+    if (row.rowData && row.rowData.name) {
+      props.history.push(
+        `/nodes/${props.nodeName}/volumes/${row.rowData.name}`
+      );
+    }
+  };
   const volumeSortedList = sortSelector(props.data, sortBy, sortDirection);
   return (
     <>
@@ -82,7 +93,9 @@ const NodeVolumes = props => {
           sortBy={sortBy}
           sortDirection={sortDirection}
           onSort={onSort}
-          onRowClick={() => {}}
+          onRowClick={item => {
+            onRowClick(item);
+          }}
           noRowsRenderer={() => (
             <NoRowsRenderer content={props.intl.messages.no_volume_found} />
           )}

@@ -20,6 +20,7 @@ import { removeNotificationAction } from '../ducks/app/notifications';
 import { updateLanguageAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
+import VolumeInformation from './VolumeInformation';
 
 class Layout extends Component {
   render() {
@@ -130,6 +131,10 @@ class Layout extends Component {
             <PrivateRoute
               path={`/nodes/:id/createVolume`}
               component={CreateVolume}
+            />
+            <PrivateRoute
+              path="/nodes/:id/volumes/:volumeName"
+              component={VolumeInformation}
             />
             <PrivateRoute path="/nodes/:id" component={NodeInformation} />
 

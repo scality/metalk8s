@@ -11,6 +11,7 @@ export const STATUS_NONE = 'none';
 export const STATUS_READY = 'ready';
 export const STATUS_NOT_READY = 'not_ready';
 export const STATUS_UNKNOWN = 'unknown';
+export const STATUS_BOUND = 'Bound';
 
 export const SPARCE_LOOP_DEVICE = 'sparseLoopDevice';
 export const RAW_BLOCK_DEVICE = 'rawBlockDevice';

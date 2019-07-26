@@ -547,6 +547,7 @@ export function* stopRefreshNodes() {
 }
 
 export function* nodesSaga() {
+  yield takeEvery(FETCH_NODES, fetchNodes);
   yield takeEvery(CREATE_NODE, createNode);
   yield takeLatest(DEPLOY_NODE, deployNode);
   yield takeEvery(CONNECT_SALT_API, sseSagas);
