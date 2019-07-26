@@ -79,7 +79,7 @@
   "bound": "Associé",
   "path": "Chemin",
   "access_mode": "Mode d'accès",
-  "mount_option":"Option de montage",
+  "mount_option":"Options de montage",
   "yes": "Oui",
   "no": "Non"
 }

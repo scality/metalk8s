@@ -79,7 +79,7 @@
   "bound": "Bound",
   "path": "Path",
   "access_mode": "Access Mode",
-  "mount_option": "Mount Option",
+  "mount_option": "Mount Options",
   "yes": "Yes",
   "no": "No"
 }
