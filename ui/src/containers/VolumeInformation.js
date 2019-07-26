@@ -1,7 +1,12 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
-import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
+import { withRouter } from 'react-router-dom';
+import {
+  injectIntl,
+  FormattedDate,
+  FormattedTime,
+  intlShape
+} from 'react-intl';
 import styled from 'styled-components';
 import {
   padding,
@@ -10,13 +15,24 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import { Breadcrumb } from '@scality/core-ui';
 import { makeGetNodeFromUrl, makeGetVolumesFromUrl } from '../services/utils';
-import { SPARCE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
+import {
+  SPARCE_LOOP_DEVICE,
+  RAW_BLOCK_DEVICE,
+  STATUS_BOUND,
+  STATUS_BOUND_TRUE,
+  STATUS_BOUND_FALSE
+} from '../constants';
 import {
   fetchVolumesAction,
   fetchPersistentVolumeAction,
   fetchStorageClassAction
 } from '../ducks/app/volumes';
 import { fetchNodesAction } from '../ducks/app/nodes';
+import {
+  BreadcrumbContainer,
+  BreadcrumbLabel,
+  StyledLink
+} from '../components/BreadcrumbStyle';
 
 const VolumeInformationContainer = styled.div`
   display: flex;
@@ -46,25 +62,11 @@ const VolumeInformationContainer = styled.div`
   }
 `;
 
-const BreadcrumbContainer = styled.div`
-  margin-left: ${padding.small};
-  .sc-breadcrumb {
-    padding: ${padding.smaller};
-  }
-`;
-
-const StyledLink = styled(Link)`
-  font-size: ${fontSize.large};
-`;
-
-const BreadcrumbLabel = styled.span`
-  font-size: ${fontSize.large};
-`;
-
 const DetailsContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin: ${padding.base};
+  margin-left: ${padding.larger};
 `;
 
 const InformationSpan = styled.span`
@@ -89,19 +91,23 @@ const InformationMainValue = styled(InformationValue)`
 const VolumeInformation = props => {
   const { intl, match } = props;
   const dispatch = useDispatch();
+
   useEffect(() => {
     dispatch(fetchNodesAction());
     dispatch(fetchVolumesAction());
     dispatch(fetchPersistentVolumeAction());
     dispatch(fetchStorageClassAction());
   }, []);
+
   const theme = useSelector(state => state.config.theme);
   const node = useSelector(state => makeGetNodeFromUrl(state, props));
   const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
   const pVList = useSelector(state => state.app.volumes.pVList);
   const storageClasses = useSelector(state => state.app.volumes.storageClass);
   const currentVolumeName = match.params.volumeName;
-  const volume = volumes.find(v => v.metadata.name === currentVolumeName);
+  const volume = volumes.find(
+    volume => volume.metadata.name === currentVolumeName
+  );
   const pV = pVList.find(pv => pv.metadata.name === currentVolumeName);
   const storageClass = storageClasses.find(
     SC =>
@@ -125,60 +131,67 @@ const VolumeInformation = props => {
       <DetailsContainer>
         <InformationSpan>
           <InformationLabel>{intl.messages.name}</InformationLabel>
-          <InformationMainValue>
+          <InformationValue>
             {volume && volume.metadata && volume.metadata.name}
-          </InformationMainValue>
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.status}</InformationLabel>
-          <InformationMainValue>
-            {pV && pV.status && pV.status.phase}
-          </InformationMainValue>
+          <InformationValue>
+            {(volume && volume.status && volume.status.phase) ||
+              intl.messages.unknown}
+          </InformationValue>
+        </InformationSpan>
+        <InformationSpan>
+          <InformationLabel>{intl.messages.size}</InformationLabel>
+          <InformationValue>
+            {pV && pV.spec && pV.spec.capacity && pV.spec.capacity.storage}
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.type}</InformationLabel>
-          <InformationMainValue>
+          <InformationValue>
             {volume && volume.spec && volume.spec.rawBlockDevice
               ? RAW_BLOCK_DEVICE
               : SPARCE_LOOP_DEVICE}
-          </InformationMainValue>
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{'Bounded'}</InformationLabel>
-          <InformationMainValue>
-            {pV && pV.status && pV.status.phase === 'Bounded'
-              ? 'True'
-              : 'False'}
-          </InformationMainValue>
+          <InformationLabel>{intl.messages.bound}</InformationLabel>
+          <InformationValue>
+            {pV && pV.status && pV.status.phase === STATUS_BOUND
+              ? STATUS_BOUND_TRUE
+              : STATUS_BOUND_FALSE}
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.storageClass}</InformationLabel>
-          <InformationMainValue>
+          <InformationValue>
             {volume && volume.spec && volume.spec.storageClassName}
-          </InformationMainValue>
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{'Path'}</InformationLabel>
-          <InformationMainValue>
+          <InformationLabel>{intl.messages.path}</InformationLabel>
+          <InformationValue>
             {pV && pV.spec && pV.spec.local && pV.spec.local.path}
-          </InformationMainValue>
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{'AccessMode'}</InformationLabel>
-          <InformationMainValue>
+          <InformationLabel>{intl.messages.access_mode}</InformationLabel>
+          <InformationValue>
             {pV && pV.spec && pV.spec.accessModes}
-          </InformationMainValue>
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{'MountOption'}</InformationLabel>
-          <InformationMainValue>
-            {storageClass && storageClass.mountOptions}
-          </InformationMainValue>
+          <InformationLabel>{intl.messages.mount_option}</InformationLabel>
+          <InformationValue>
+            {storageClass && storageClass.mountOptions.join(', ')}
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.creationTime}</InformationLabel>
           {volume && volume.metadata && volume.metadata.creationTimestamp ? (
-            <InformationMainValue>
+            <InformationValue>
               <FormattedDate value={volume.metadata.creationTimestamp} />
               <FormattedTime
                 hour="2-digit"
@@ -186,7 +199,7 @@ const VolumeInformation = props => {
                 second="2-digit"
                 value={volume.metadata.creationTimestamp}
               />
-            </InformationMainValue>
+            </InformationValue>
           ) : (
             ''
           )}

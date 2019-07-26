@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
-import { withRouter, Switch, Route, Link } from 'react-router-dom';
+import { withRouter, Switch, Route } from 'react-router-dom';
 import { Table, Breadcrumb, Tabs } from '@scality/core-ui';
 import {
   fontWeight,
@@ -11,6 +11,7 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { fetchPodsAction } from '../ducks/app/pods';
+import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import {
   fetchVolumesAction,
   fetchPersistentVolumeAction
@@ -20,10 +21,14 @@ import {
   makeGetNodeFromUrl,
   makeGetPodsFromUrl,
   makeGetVolumesFromUrl,
-  useRefreshNodes
+  useRefreshEffect
 } from '../services/utils';
 import NodeVolumes from './NodeVolumes';
-
+import {
+  BreadcrumbContainer,
+  BreadcrumbLabel,
+  StyledLink
+} from '../components/BreadcrumbStyle';
 const NodeInformationContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -60,7 +65,7 @@ const PodsContainer = styled.div`
 const DetailsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: ${padding.base};
+  margin: ${padding.large};
 `;
 
 const InformationSpan = styled.span`
@@ -82,25 +87,9 @@ const InformationMainValue = styled(InformationValue)`
   font-weight: ${fontWeight.bold};
 `;
 
-const BreadcrumbContainer = styled.div`
-  margin-left: ${padding.small};
-  .sc-breadcrumb {
-    padding: ${padding.smaller};
-  }
-`;
-
-const BreadcrumbLabel = styled.span`
-  font-size: ${fontSize.large};
-`;
-
-const StyledLink = styled(Link)`
-  font-size: ${fontSize.large};
-`;
-
 const NodeInformation = props => {
   const dispatch = useDispatch();
-
-  useRefreshNodes();
+  useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   useEffect(() => {
     dispatch(fetchPodsAction());
@@ -197,7 +186,6 @@ const NodeInformation = props => {
       </PodsContainer>
     </>
   );
-
   const volumeData = volumes.map(volume => {
     const volumePV = pVList.find(
       pV => pV.metadata.name === volume.metadata.name

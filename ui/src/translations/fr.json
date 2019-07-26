@@ -74,5 +74,10 @@
   "volume_size": "Capacité du volume",
   "device_path": "Chemin du disque",
   "details": "Détails",
-  "volumes": "Volumes"
+  "volumes": "Volumes",
+  "size": "Size",
+  "bound": "Bound",
+  "path": "Path",
+  "access_mode": "AccessMode",
+  "mount_option":"MountOption"
 }

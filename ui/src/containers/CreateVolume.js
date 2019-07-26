@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { Formik, Form } from 'formik';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 import { Input, Button, Breadcrumb } from '@scality/core-ui';
 import {
   fetchStorageClassAction,
@@ -11,7 +10,11 @@ import {
 } from '../ducks/app/volumes';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { SPARCE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
-
+import {
+  BreadcrumbContainer,
+  BreadcrumbLabel,
+  StyledLink
+} from '../components/BreadcrumbStyle';
 // We might want to do a factorization later for
 // form styled components
 const CreateVolumeContainer = styled.div`
@@ -63,21 +66,6 @@ const SelectField = styled.div`
 
 const SelectFieldItem = styled.select`
   flex-grow: 1;
-`;
-
-const BreadcrumbContainer = styled.div`
-  margin-left: ${padding.small};
-  .sc-breadcrumb {
-    padding: ${padding.smaller};
-  }
-`;
-
-const BreadcrumbLabel = styled.span`
-  font-size: ${fontSize.large};
-`;
-
-const StyledLink = styled(Link)`
-  font-size: ${fontSize.large};
 `;
 
 const CreateVolume = props => {

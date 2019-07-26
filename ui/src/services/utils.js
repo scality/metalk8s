@@ -3,12 +3,6 @@ import { useDispatch } from 'react-redux';
 import { createSelector } from 'reselect';
 import { sortBy as sortByArray } from 'lodash';
 
-import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
-import {
-  refreshVolumesAction,
-  stopRefreshVolumesAction
-} from '../ducks/app/volumes';
-
 export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   var unit = 'B';
@@ -94,22 +88,32 @@ export const makeGetVolumesFromUrl = createSelector(
     )
 );
 
-export const useRefreshNodes = () => {
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(refreshNodesAction());
-    return () => {
-      dispatch(stopRefreshNodesAction());
-    };
-  }, []);
-};
+// export const useRefreshNodes = () => {
+//   const dispatch = useDispatch();
+//   useEffect(() => {
+//     dispatch(refreshNodesAction());
+//     return () => {
+//       dispatch(stopRefreshNodesAction());
+//     };
+//   }, []);
+// };
 
-export const useRefreshVolumes = () => {
+// export const useRefreshVolumes = () => {
+//   const dispatch = useDispatch();
+//   useEffect(() => {
+//     dispatch(refreshVolumesAction());
+//     return () => {
+//       dispatch(stopRefreshVolumesAction());
+//     };
+//   }, []);
+// };
+
+export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(refreshVolumesAction());
+    dispatch(refreshAction());
     return () => {
-      dispatch(stopRefreshVolumesAction());
+      dispatch(stopRefreshAction());
     };
   }, []);
 };

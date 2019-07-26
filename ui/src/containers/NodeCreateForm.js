@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Checkbox, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize, gray } from '@scality/core-ui/dist/style/theme';
@@ -12,7 +12,11 @@ import {
   createNodeAction,
   clearCreateNodeErrorAction
 } from '../ducks/app/nodes';
-
+import {
+  BreadcrumbContainer,
+  BreadcrumbLabel,
+  StyledLink
+} from '../components/BreadcrumbStyle';
 const CreateNodeContainter = styled.div`
   height: 100%;
   padding: ${padding.base};
@@ -83,21 +87,6 @@ const InputLabel = styled.label`
 
 const InputValue = styled(InputLabel)`
   padding: ${padding.small} 0;
-`;
-
-const BreadcrumbContainer = styled.div`
-  margin-left: ${padding.small};
-  .sc-breadcrumb {
-    padding: ${padding.smaller};
-  }
-`;
-
-const BreadcrumbLabel = styled.span`
-  font-size: ${fontSize.large};
-`;
-
-const StyledLink = styled(Link)`
-  font-size: ${fontSize.large};
 `;
 
 const initialValues = {

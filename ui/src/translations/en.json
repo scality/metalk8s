@@ -74,5 +74,10 @@
   "volume_size": "Volume Capacity",
   "device_path": "Device path",
   "details": "Details",
-  "volumes": "Volumes"
+  "volumes": "Volumes",
+  "size": "Size",
+  "bound": "Bound",
+  "path": "Path",
+  "access_mode": "AccessMode",
+  "mount_option": "MountOption"
 }

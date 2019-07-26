@@ -5,11 +5,18 @@ import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-import { deployNodeAction } from '../ducks/app/nodes';
-import { sortSelector, useRefreshNodes } from '../services/utils';
+import {
+  deployNodeAction,
+  refreshNodesAction,
+  stopRefreshNodesAction
+} from '../ducks/app/nodes';
+import { sortSelector, useRefreshEffect } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { STATUS_NOT_READY, STATUS_UNKNOWN } from '../constants.js';
-
+import {
+  BreadcrumbContainer,
+  BreadcrumbLabel
+} from '../components/BreadcrumbStyle';
 const PageContainer = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -54,18 +61,9 @@ const TableContainer = styled.div`
   }
 `;
 
-const BreadcrumbLabel = styled.span`
-  font-size: ${fontSize.large};
-`;
-const BreadcrumbContainer = styled.div`
-  margin-left: ${padding.small};
-  .sc-breadcrumb {
-    padding: ${padding.smaller};
-  }
-`;
-
 const NodeList = props => {
-  useRefreshNodes();
+  useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
+
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const { intl, history, nodes, theme } = props;
