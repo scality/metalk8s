@@ -9,9 +9,9 @@
   "password": "Mot de passe",
   "submit": "Connexion",
   "about": "À propos",
-  "nodes": "Nœud",
+  "nodes": "Nœuds",
   "log_out": "Déconnexion",
-  "namespace": "Namespace",
+  "namespace": "Espace de noms",
   "start_time": "Date de début",
   "restart": "Redémarrage",
   "information": "Information",
@@ -75,9 +75,11 @@
   "device_path": "Chemin du disque",
   "details": "Détails",
   "volumes": "Volumes",
-  "size": "Size",
-  "bound": "Bound",
-  "path": "Path",
-  "access_mode": "AccessMode",
-  "mount_option":"MountOption"
+  "size": "Capacité",
+  "bound": "Associé",
+  "path": "Chemin",
+  "access_mode": "Mode d'accès",
+  "mount_option":"Option de montage",
+  "yes": "Oui",
+  "no": "Non"
 }

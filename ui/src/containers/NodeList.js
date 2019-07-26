@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   deployNodeAction,
   refreshNodesAction,

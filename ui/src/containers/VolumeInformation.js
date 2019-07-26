@@ -1,26 +1,15 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import {
-  injectIntl,
-  FormattedDate,
-  FormattedTime,
-  intlShape
-} from 'react-intl';
+import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
-import {
-  padding,
-  fontSize,
-  fontWeight
-} from '@scality/core-ui/dist/style/theme';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import { Breadcrumb } from '@scality/core-ui';
 import { makeGetNodeFromUrl, makeGetVolumesFromUrl } from '../services/utils';
 import {
   SPARCE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
-  STATUS_BOUND,
-  STATUS_BOUND_TRUE,
-  STATUS_BOUND_FALSE
+  STATUS_BOUND
 } from '../constants';
 import {
   fetchVolumesAction,
@@ -33,59 +22,22 @@ import {
   BreadcrumbLabel,
   StyledLink
 } from '../components/BreadcrumbStyle';
+import {
+  InformationListContainer,
+  InformationSpan,
+  InformationLabel,
+  InformationValue
+} from '../components/InformationList';
+
+const VolumeInformationListContainer = styled(InformationListContainer)`
+  margin-left: ${padding.larger};
+`;
 
 const VolumeInformationContainer = styled.div`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  height: 100%;
   padding: ${padding.base};
-
-  .sc-tabs {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    margin: ${padding.smaller} ${padding.small} 0 ${padding.smaller};
-  }
-
-  .sc-tabs-item {
-    /* We will change this logic later */
-    flex-basis: auto;
-    width: 100px;
-  }
-
-  .sc-tabs-item-content {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    padding: ${padding.smaller};
-  }
-`;
-
-const DetailsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: ${padding.base};
-  margin-left: ${padding.larger};
-`;
-
-const InformationSpan = styled.span`
-  padding: 0 ${padding.larger} ${padding.small} 0;
-`;
-
-const InformationLabel = styled.span`
-  font-size: ${fontSize.large};
-  padding-right: ${padding.base};
-  min-width: 150px;
-  display: inline-block;
-`;
-
-const InformationValue = styled.span`
-  font-size: ${fontSize.large};
-`;
-
-const InformationMainValue = styled(InformationValue)`
-  font-weight: ${fontWeight.bold};
 `;
 
 const VolumeInformation = props => {
@@ -128,7 +80,7 @@ const VolumeInformation = props => {
           ]}
         />
       </BreadcrumbContainer>
-      <DetailsContainer>
+      <VolumeInformationListContainer>
         <InformationSpan>
           <InformationLabel>{intl.messages.name}</InformationLabel>
           <InformationValue>
@@ -160,8 +112,8 @@ const VolumeInformation = props => {
           <InformationLabel>{intl.messages.bound}</InformationLabel>
           <InformationValue>
             {pV && pV.status && pV.status.phase === STATUS_BOUND
-              ? STATUS_BOUND_TRUE
-              : STATUS_BOUND_FALSE}
+              ? intl.messages.yes
+              : intl.messages.no}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
@@ -192,7 +144,7 @@ const VolumeInformation = props => {
           <InformationLabel>{intl.messages.creationTime}</InformationLabel>
           {volume && volume.metadata && volume.metadata.creationTimestamp ? (
             <InformationValue>
-              <FormattedDate value={volume.metadata.creationTimestamp} />
+              <FormattedDate value={volume.metadata.creationTimestamp} />{' '}
               <FormattedTime
                 hour="2-digit"
                 minute="2-digit"
@@ -204,7 +156,7 @@ const VolumeInformation = props => {
             ''
           )}
         </InformationSpan>
-      </DetailsContainer>
+      </VolumeInformationListContainer>
     </VolumeInformationContainer>
   );
 };

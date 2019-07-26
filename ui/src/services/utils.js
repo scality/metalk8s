@@ -27,6 +27,7 @@ export function prettifyBytes(bytes, decimals) {
     number: num
   };
 }
+
 //memory = '1882148Ki'
 export function convertK8sMemoryToBytes(memory) {
   return parseInt(memory.slice(0, -2), 10) * 1024;
@@ -87,26 +88,6 @@ export const makeGetVolumesFromUrl = createSelector(
       volume => volume && volume.spec && volume.spec.nodeName === nodeName
     )
 );
-
-// export const useRefreshNodes = () => {
-//   const dispatch = useDispatch();
-//   useEffect(() => {
-//     dispatch(refreshNodesAction());
-//     return () => {
-//       dispatch(stopRefreshNodesAction());
-//     };
-//   }, []);
-// };
-
-// export const useRefreshVolumes = () => {
-//   const dispatch = useDispatch();
-//   useEffect(() => {
-//     dispatch(refreshVolumesAction());
-//     return () => {
-//       dispatch(stopRefreshVolumesAction());
-//     };
-//   }, []);
-// };
 
 export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
   const dispatch = useDispatch();

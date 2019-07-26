@@ -4,11 +4,7 @@ import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { withRouter, Switch, Route } from 'react-router-dom';
 import { Table, Breadcrumb, Tabs } from '@scality/core-ui';
-import {
-  fontWeight,
-  fontSize,
-  padding
-} from '@scality/core-ui/dist/style/theme';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
@@ -29,6 +25,14 @@ import {
   BreadcrumbLabel,
   StyledLink
 } from '../components/BreadcrumbStyle';
+import {
+  InformationListContainer,
+  InformationSpan,
+  InformationLabel,
+  InformationValue,
+  InformationMainValue
+} from '../components/InformationList';
+
 const NodeInformationContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -62,32 +66,9 @@ const PodsContainer = styled.div`
   margin-top: ${padding.base};
 `;
 
-const DetailsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: ${padding.large};
-`;
-
-const InformationSpan = styled.span`
-  padding: 0 ${padding.larger} ${padding.small} 0;
-`;
-
-const InformationLabel = styled.span`
-  font-size: ${fontSize.large};
-  padding-right: ${padding.base};
-  min-width: 150px;
-  display: inline-block;
-`;
-
-const InformationValue = styled.span`
-  font-size: ${fontSize.large};
-`;
-
-const InformationMainValue = styled(InformationValue)`
-  font-weight: ${fontWeight.bold};
-`;
-
 const NodeInformation = props => {
+  const { match, history, location, intl } = props;
+
   const dispatch = useDispatch();
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
@@ -99,7 +80,14 @@ const NodeInformation = props => {
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setsortDirection] = useState('ASC');
-  const [columns] = useState([
+
+  const node = useSelector(state => makeGetNodeFromUrl(state, props));
+  const theme = useSelector(state => state.config.theme);
+  const pods = useSelector(state => makeGetPodsFromUrl(state, props));
+  const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
+  const pVList = useSelector(state => state.app.volumes.pVList);
+
+  const columns = [
     {
       label: props.intl.messages.name,
       dataKey: 'name',
@@ -126,15 +114,7 @@ const NodeInformation = props => {
       label: props.intl.messages.restart,
       dataKey: 'restartCount'
     }
-  ]);
-
-  const node = useSelector(state => makeGetNodeFromUrl(state, props));
-  const theme = useSelector(state => state.config.theme);
-  const pods = useSelector(state => makeGetPodsFromUrl(state, props));
-  const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
-  const pVList = useSelector(state => state.app.volumes.pVList);
-
-  const { match, history, location, intl } = props;
+  ];
 
   const podsSortedList = sortSelector(pods, sortBy, sortDirection);
 
@@ -144,7 +124,7 @@ const NodeInformation = props => {
   };
 
   const NodeDetails = () => (
-    <DetailsContainer>
+    <InformationListContainer>
       <InformationSpan>
         <InformationLabel>{intl.messages.name}</InformationLabel>
         <InformationMainValue>{node.name}</InformationMainValue>
@@ -163,7 +143,7 @@ const NodeInformation = props => {
         <InformationLabel>{intl.messages.version}</InformationLabel>
         <InformationValue>{node.metalk8s_version}</InformationValue>
       </InformationSpan>
-    </DetailsContainer>
+    </InformationListContainer>
   );
 
   const NodePods = () => (
