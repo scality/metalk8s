@@ -136,10 +136,13 @@ class RemoteImage(image.ContainerImage):
                 'actions': [docker_pull,  docker_tag, docker_save],
             })
         else:
+            # Use Skopeo to directly copy the remote image into a directory
+            # of image layers
             task.update({
                 'actions': [self.mkdirs, self._skopeo_copy()],
                 'clean':   [self.clean],
             })
+
         return task
 
     def _skopeo_copy(self) -> List[str]:
@@ -148,14 +151,7 @@ class RemoteImage(image.ContainerImage):
             config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
             '--insecure-policy', 'copy', '--format', 'v2s2'
         ]
-        if not self._use_tar:
-            cmd.append('--dest-compress')
-        cmd.append('docker://{}'.format(self.fullname))
-        cmd.append(self._skopeo_dest())
+        cmd.append('docker://{}'.format(self.remote_fullname))
+        cmd.append('dir:{}'.format(self.dirname))
         return cmd
 
-    def _skopeo_dest(self) -> str:
-        """Return the destination, formatted for skopeo copy."""
-        if self._use_tar:
-            return 'docker-archive:{}'.format(self.filepath)
-        return 'dir:{}'.format(self.dirname)
