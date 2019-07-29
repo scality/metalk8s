@@ -1,31 +1,31 @@
-import {
-  takeLatest,
-  call,
-  put,
-  delay,
-  takeEvery,
-  select
-} from 'redux-saga/effects';
+import { takeLatest, call, put, delay, select } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
+import { intl } from '../../translations/IntlGlobalProvider';
 import {
-  SPARCE_LOOP_DEVICE,
+  addNotificationErrorAction,
+  addNotificationSuccessAction
+} from './notifications';
+import {
+  SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
   REFRESH_TIMEOUT
 } from '../../constants';
+
 // Actions
 const FETCH_VOLUMES = 'FETCH_VOLUMES';
 const SET_VOLUMES = 'SET_VOLUMES';
 const FETCH_PERSISTENT_VOLUMES = 'FETCH_PERSISTENT_VOLUMES';
 const SET_PERSISTENT_VOLUMES = 'SET_PERSISTENT_VOLUMES';
 const FETCH_STORAGECLASS = 'FETCH_STORAGECLASS';
-const SET_STORAGECLASS = 'SET_STORAGECLASS';
+export const SET_STORAGECLASS = 'SET_STORAGECLASS';
 const CREATE_VOLUMES = 'CREATE_VOLUMES';
 const REFRESH_VOLUMES = 'REFRESH_VOLUMES';
 const STOP_REFRESH_VOLUMES = 'STOP_REFRESH_VOLUMES';
 const UPDATE_VOLUMES_REFRESHING = 'UPDATE_VOLUMES_REFRESHING';
 const FETCH_PERSISTENT_VOLUME_CLAIMS = 'FETCH_PERSISTENT_VOLUME_CLAIMS';
 const SET_PERSISTENT_VOLUME_CLAIMS = 'SET_PERSISTENT_VOLUME_CLAIMS';
+
 // Reducer
 const defaultState = {
   list: [],
@@ -99,11 +99,12 @@ export const updateVolumesRefreshingAction = payload => {
 export const stopRefreshVolumesAction = () => {
   return { type: STOP_REFRESH_VOLUMES };
 };
+
 // Sagas
 export function* fetchVolumes() {
   const result = yield call(ApiK8s.getVolumes);
   if (!result.error) {
-    yield put(setVolumesAction(result.body.items));
+    yield put(setVolumesAction(result?.body?.items ?? []));
   }
   return result;
 }
@@ -111,17 +112,41 @@ export function* fetchVolumes() {
 export function* fetchPersistentVolumes() {
   const result = yield call(ApiK8s.getPersistentVolumes);
   if (!result.error) {
-    yield put(setPersistentVolumesAction(result.body.items));
+    yield put(setPersistentVolumesAction(result?.body?.items ?? []));
   }
 }
 
 export function* fetchStorageClass() {
   const result = yield call(ApiK8s.getStorageClass);
   if (!result.error) {
-    yield put(setStorageClassAction(result.body.items));
+    yield put(setStorageClassAction(result?.body?.items ?? []));
   }
 }
 
+/**
+ * This function construct the body that is needed to create a volume.
+ * Then it calls K8s API to create it.
+ *
+ * @param {object} newVolume - fields of the createVolume form
+ * @param {string} nodeName
+ *
+ * More examples in volumes.test.js
+ * @example
+ *
+ * const action = {
+ *  payload: {
+ *    newVolume: {
+ *      name: 'volume1',
+ *      storageClass: 'metalk8s-default',
+ *      type: 'sparseLoopDevice',
+ *      size: '1Gi'
+ *    },
+ *    nodeName: 'bootstrap'
+ *  }
+ * };
+ *
+ * createVolumes(action)
+ */
 export function* createVolumes({ payload }) {
   const { newVolume, nodeName } = payload;
 
@@ -137,15 +162,53 @@ export function* createVolumes({ payload }) {
     }
   };
 
-  if (newVolume.type === SPARCE_LOOP_DEVICE) {
-    body.spec.sparseLoopDevice = { size: newVolume.size };
-  }
-  if (newVolume.type === RAW_BLOCK_DEVICE) {
-    body.spec.rawBlockDevice = { devicePath: newVolume.path };
-  }
-  const result = yield call(ApiK8s.createVolume, body);
-  if (!result.error) {
-    yield call(history.push, `/nodes/${nodeName}/volumes`);
+  /**
+   * Size should be set for SPARSE_LOOP_DEVICE
+   * Path should be set for RAW_BLOCK_DEVICE
+   */
+  let isNewVolumeValid =
+    newVolume &&
+    newVolume.name &&
+    newVolume.storageClass &&
+    ((newVolume.type === SPARSE_LOOP_DEVICE && newVolume.size) ||
+      (newVolume.type === RAW_BLOCK_DEVICE && newVolume.path));
+
+  if (isNewVolumeValid && nodeName) {
+    if (newVolume.type === SPARSE_LOOP_DEVICE) {
+      body.spec.sparseLoopDevice = { size: newVolume.size };
+    } else {
+      body.spec.rawBlockDevice = { devicePath: newVolume.path };
+    }
+
+    const result = yield call(ApiK8s.createVolume, body);
+    if (!result.error) {
+      yield call(history.push, `/nodes/${nodeName}/volumes`);
+      yield put(
+        addNotificationSuccessAction({
+          title: intl.translate('volume_creation'),
+          message: intl.translate('volume_creation_success', {
+            name: newVolume.name
+          })
+        })
+      );
+    } else {
+      yield put(
+        addNotificationErrorAction({
+          title: intl.translate('volume_creation'),
+          message: intl.translate('volume_creation_failed', {
+            name: newVolume.name
+          })
+        })
+      );
+    }
+  } else {
+    // We might want to change this behavior later
+    yield put(
+      addNotificationErrorAction({
+        title: 'Volume Form Error',
+        message: 'Volume not created, some fields are missing.'
+      })
+    );
   }
 }
 
@@ -177,7 +240,7 @@ export function* volumesSaga() {
   yield takeLatest(FETCH_STORAGECLASS, fetchStorageClass);
   yield takeLatest(CREATE_VOLUMES, createVolumes);
   yield takeLatest(FETCH_PERSISTENT_VOLUMES, fetchPersistentVolumes);
-  yield takeEvery(REFRESH_VOLUMES, refreshVolumes);
-  yield takeEvery(STOP_REFRESH_VOLUMES, stopRefreshVolumes);
-  yield takeEvery(FETCH_PERSISTENT_VOLUME_CLAIMS, fetchPersistentVolumeClaims);
+  yield takeLatest(REFRESH_VOLUMES, refreshVolumes);
+  yield takeLatest(STOP_REFRESH_VOLUMES, stopRefreshVolumes);
+  yield takeLatest(FETCH_PERSISTENT_VOLUME_CLAIMS, fetchPersistentVolumeClaims);
 }

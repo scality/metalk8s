@@ -81,5 +81,8 @@
   "access_mode": "Access Mode",
   "mount_option": "Mount Options",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "volume_creation": "Volume creation",
+  "volume_creation_success": "Volume {name} has been created successfully.",
+  "volume_creation_failed": "Volume {name} creation has failed."
 }

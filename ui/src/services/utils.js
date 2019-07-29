@@ -96,5 +96,5 @@ export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
     return () => {
       dispatch(stopRefreshAction());
     };
-  }, []);
+  }, [dispatch, refreshAction, stopRefreshAction]);
 };

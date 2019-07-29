@@ -81,5 +81,8 @@
   "access_mode": "Mode d'accès",
   "mount_option":"Options de montage",
   "yes": "Oui",
-  "no": "Non"
+  "no": "Non",
+  "volume_creation": "Création du volume",
+  "volume_creation_success": "Le volume {name} a été créé avec succèss",
+  "volume_creation_failed": "La création du volume {name} a échoué."
 }
