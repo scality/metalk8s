@@ -130,7 +130,7 @@ export function* fetchStorageClass() {
  * @param {object} newVolume - fields of the createVolume form
  * @param {string} nodeName
  *
- * More examplessrc/constants.js in volumes.test.js
+ * More examples in volumes.test.js
  * @example
  *
  * const action = {
@@ -212,7 +212,6 @@ export function* createVolumes({ payload }) {
   }
 }
 
-// TO TEST
 export function* refreshVolumes() {
   yield put(updateVolumesRefreshingAction(true));
   const result = yield call(fetchVolumes);
@@ -225,12 +224,10 @@ export function* refreshVolumes() {
   }
 }
 
-// TO TEST
 export function* stopRefreshVolumes() {
   yield put(updateVolumesRefreshingAction(false));
 }
 
-// TO TEST
 export function* fetchPersistentVolumeClaims() {
   const result = yield call(ApiK8s.getPersistentVolumeClaims);
   if (!result.error) {

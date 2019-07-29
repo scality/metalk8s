@@ -1,4 +1,4 @@
-import { call, put } from 'redux-saga/effects';
+import { call, put, delay } from 'redux-saga/effects';
 import history from '../../history';
 import {
   ADD_NOTIFICATION_ERROR,
@@ -10,10 +10,14 @@ import {
   fetchStorageClass,
   fetchPersistentVolumes,
   setPersistentVolumesAction,
-  createVolumes
+  createVolumes,
+  refreshVolumes,
+  updateVolumesRefreshingAction,
+  stopRefreshVolumes
 } from './volumes';
 import * as ApiK8s from '../../services/k8s/api';
 import { SET_STORAGECLASS } from './volumes.js';
+import { REFRESH_TIMEOUT } from '../../constants';
 
 it('update the volume', () => {
   const gen = fetchVolumes();
@@ -400,5 +404,42 @@ it('does not create a volume when there is an error', () => {
     ADD_NOTIFICATION_ERROR
   );
 
+  expect(gen.next().done).toEqual(true);
+});
+
+it('should refresh volume', () => {
+  const gen = refreshVolumes();
+  expect(gen.next().value).toEqual(put(updateVolumesRefreshingAction(true)));
+  expect(gen.next().value).toEqual(call(fetchVolumes));
+
+  const result = {};
+  expect(gen.next(result).value).toEqual(delay(REFRESH_TIMEOUT));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(true).value).toEqual(call(refreshVolumes));
+  expect(gen.next().done).toEqual(true);
+});
+
+it('should not refresh volume if you leave the page', () => {
+  const gen = refreshVolumes();
+  expect(gen.next().value).toEqual(put(updateVolumesRefreshingAction(true)));
+  expect(gen.next().value).toEqual(call(fetchVolumes));
+  const result = {};
+  expect(gen.next(result).value).toEqual(delay(REFRESH_TIMEOUT));
+  expect(gen.next().value.type).toEqual('SELECT');
+
+  expect(gen.next(false).done).toEqual(true);
+});
+
+it('should not refresh volume if volume have an error', () => {
+  const gen = refreshVolumes();
+  expect(gen.next().value).toEqual(put(updateVolumesRefreshingAction(true)));
+  expect(gen.next().value).toEqual(call(fetchVolumes));
+  const result = { error: {} };
+  expect(gen.next(result).done).toEqual(true);
+});
+
+it('should stop refresh volume', () => {
+  const gen = stopRefreshVolumes();
+  expect(gen.next().value).toEqual(put(updateVolumesRefreshingAction(false)));
   expect(gen.next().done).toEqual(true);
 });
