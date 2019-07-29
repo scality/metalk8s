@@ -134,7 +134,6 @@ stages:
           workdir: build/ui
           command: >
             npm install
-            --production
             --no-cache
             --no-save
             -q
