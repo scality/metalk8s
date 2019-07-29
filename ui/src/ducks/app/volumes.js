@@ -1,11 +1,4 @@
-import {
-  takeLatest,
-  call,
-  put,
-  delay,
-  takeEvery,
-  select
-} from 'redux-saga/effects';
+import { takeLatest, call, put, delay, select } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
 import {
@@ -13,19 +6,21 @@ import {
   RAW_BLOCK_DEVICE,
   REFRESH_TIMEOUT
 } from '../../constants';
+
 // Actions
 const FETCH_VOLUMES = 'FETCH_VOLUMES';
 const SET_VOLUMES = 'SET_VOLUMES';
 const FETCH_PERSISTENT_VOLUMES = 'FETCH_PERSISTENT_VOLUMES';
 const SET_PERSISTENT_VOLUMES = 'SET_PERSISTENT_VOLUMES';
 const FETCH_STORAGECLASS = 'FETCH_STORAGECLASS';
-const SET_STORAGECLASS = 'SET_STORAGECLASS';
+export const SET_STORAGECLASS = 'SET_STORAGECLASS';
 const CREATE_VOLUMES = 'CREATE_VOLUMES';
 const REFRESH_VOLUMES = 'REFRESH_VOLUMES';
 const STOP_REFRESH_VOLUMES = 'STOP_REFRESH_VOLUMES';
 const UPDATE_VOLUMES_REFRESHING = 'UPDATE_VOLUMES_REFRESHING';
 const FETCH_PERSISTENT_VOLUME_CLAIMS = 'FETCH_PERSISTENT_VOLUME_CLAIMS';
 const SET_PERSISTENT_VOLUME_CLAIMS = 'SET_PERSISTENT_VOLUME_CLAIMS';
+
 // Reducer
 const defaultState = {
   list: [],
@@ -99,6 +94,7 @@ export const updateVolumesRefreshingAction = payload => {
 export const stopRefreshVolumesAction = () => {
   return { type: STOP_REFRESH_VOLUMES };
 };
+
 // Sagas
 export function* fetchVolumes() {
   const result = yield call(ApiK8s.getVolumes);
@@ -108,10 +104,11 @@ export function* fetchVolumes() {
   return result;
 }
 
+// TO TEST
 export function* fetchPersistentVolumes() {
   const result = yield call(ApiK8s.getPersistentVolumes);
   if (!result.error) {
-    yield put(setPersistentVolumesAction(result.body.items));
+    yield put(setPersistentVolumesAction(result?.body?.items ?? []));
   }
 }
 
@@ -122,6 +119,7 @@ export function* fetchStorageClass() {
   }
 }
 
+// TO TEST
 export function* createVolumes({ payload }) {
   const { newVolume, nodeName } = payload;
 
@@ -149,6 +147,7 @@ export function* createVolumes({ payload }) {
   }
 }
 
+// TO TEST
 export function* refreshVolumes() {
   yield put(updateVolumesRefreshingAction(true));
   const result = yield call(fetchVolumes);
@@ -161,10 +160,12 @@ export function* refreshVolumes() {
   }
 }
 
+// TO TEST
 export function* stopRefreshVolumes() {
   yield put(updateVolumesRefreshingAction(false));
 }
 
+// TO TEST
 export function* fetchPersistentVolumeClaims() {
   const result = yield call(ApiK8s.getPersistentVolumeClaims);
   if (!result.error) {
@@ -177,7 +178,7 @@ export function* volumesSaga() {
   yield takeLatest(FETCH_STORAGECLASS, fetchStorageClass);
   yield takeLatest(CREATE_VOLUMES, createVolumes);
   yield takeLatest(FETCH_PERSISTENT_VOLUMES, fetchPersistentVolumes);
-  yield takeEvery(REFRESH_VOLUMES, refreshVolumes);
-  yield takeEvery(STOP_REFRESH_VOLUMES, stopRefreshVolumes);
-  yield takeEvery(FETCH_PERSISTENT_VOLUME_CLAIMS, fetchPersistentVolumeClaims);
+  yield takeLatest(REFRESH_VOLUMES, refreshVolumes);
+  yield takeLatest(STOP_REFRESH_VOLUMES, stopRefreshVolumes);
+  yield takeLatest(FETCH_PERSISTENT_VOLUME_CLAIMS, fetchPersistentVolumeClaims);
 }
