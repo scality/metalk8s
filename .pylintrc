@@ -42,11 +42,12 @@ confidence=
 enable=all
 
 # Disable the message, report, category or checker with the given ID(s).
-disable=abstract-method,    # Too many false positive :/
-        bad-whitespace,     # Alignment is a good thing.
-        bad-continuation,   # I kindly disagree :)
-        locally-disabled,   # Sometime we need to disable a warning locally.
-        suppressed-message  # Don't pollute the output with useless info.
+disable=abstract-method,     # Too many false positive :/
+        bad-whitespace,      # Alignment is a good thing.
+        bad-continuation,    # I kindly disagree :)
+        locally-disabled,    # Sometime we need to disable a warning locally.
+        suppressed-message,  # Don't pollute the output with useless info.
+        useless-return       # Disagreement with mypy, see https://github.com/python/mypy/issues/3974
 
 # }}}
 # Basic {{{
