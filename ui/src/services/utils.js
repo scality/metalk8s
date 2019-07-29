@@ -68,18 +68,21 @@ export const getPods = state =>
 export const getVolumes = state =>
   (state && state.app && state.app.volumes && state.app.volumes.list) || [];
 
+// TO TEST
 export const makeGetNodeFromUrl = createSelector(
   getNodeNameFromUrl,
   getNodes,
   (nodeName, nodes) => nodes.find(node => node.name === nodeName) || {}
 );
 
+// TO TEST
 export const makeGetPodsFromUrl = createSelector(
   getNodeNameFromUrl,
   getPods,
   (nodeName, pods) => pods.filter(pod => pod.nodeName === nodeName) || []
 );
 
+// TO TEST
 export const makeGetVolumesFromUrl = createSelector(
   getNodeNameFromUrl,
   getVolumes,
@@ -89,6 +92,7 @@ export const makeGetVolumesFromUrl = createSelector(
     )
 );
 
+// TO TEST
 export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -96,5 +100,5 @@ export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
     return () => {
       dispatch(stopRefreshAction());
     };
-  }, []);
+  }, [dispatch, refreshAction, stopRefreshAction]);
 };
