@@ -49,6 +49,29 @@ it('update the volume', () => {
   expect(finalGen.done).toEqual(true);
 });
 
+it('does not update volume if there is an error', () => {
+  const gen = fetchVolumes();
+  expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
+
+  const result = { error: {} };
+
+  const finalGen = gen.next(result);
+  expect(finalGen.done).toEqual(true);
+  expect(finalGen.value).toEqual(result);
+});
+
+it('should put a empty array if Volumes is not correct', () => {
+  const gen = fetchVolumes();
+  expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
+
+  const result = { it: 'should not work' };
+  expect(gen.next(result).value).toEqual(put(setVolumesAction([])));
+
+  const finalGen = gen.next();
+  expect(finalGen.done).toEqual(true);
+  expect(finalGen.value).toEqual(result);
+});
+
 it('update the storage class', () => {
   // Working case
   const gen = fetchStorageClass();
