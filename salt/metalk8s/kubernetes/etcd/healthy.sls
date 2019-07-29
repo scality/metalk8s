@@ -10,6 +10,6 @@ Waiting for etcd running:
       - /etc/kubernetes/pki/etcd/server.crt
       - /etc/kubernetes/pki/etcd/server.key
     - status: 200
-    - match: '{"health": "true"}'
+    - match: '{"health":"true"}'
     - require:
       - metalk8s: Create local etcd Pod manifest
