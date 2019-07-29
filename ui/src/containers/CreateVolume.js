@@ -9,7 +9,7 @@ import {
   createVolumeAction
 } from '../ducks/app/volumes';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
-import { SPARCE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
+import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
@@ -81,7 +81,7 @@ const CreateVolume = props => {
   // Hardcoded
   const types = [
     { label: 'RawBlockDevice', value: RAW_BLOCK_DEVICE },
-    { label: 'SparseLoopDevice', value: SPARCE_LOOP_DEVICE }
+    { label: 'SparseLoopDevice', value: SPARSE_LOOP_DEVICE }
   ];
   const initialValues = {
     name: '',
@@ -149,7 +149,7 @@ const CreateVolume = props => {
                     </SelectFieldItem>
                   </SelectField>
 
-                  {values.type === SPARCE_LOOP_DEVICE ? (
+                  {values.type === SPARSE_LOOP_DEVICE ? (
                     <Input
                       name="size"
                       value={values.size}

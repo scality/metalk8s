@@ -7,7 +7,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import { Breadcrumb } from '@scality/core-ui';
 import { makeGetNodeFromUrl, makeGetVolumesFromUrl } from '../services/utils';
 import {
-  SPARCE_LOOP_DEVICE,
+  SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
   STATUS_BOUND
 } from '../constants';
@@ -105,7 +105,7 @@ const VolumeInformation = props => {
           <InformationValue>
             {volume && volume.spec && volume.spec.rawBlockDevice
               ? RAW_BLOCK_DEVICE
-              : SPARCE_LOOP_DEVICE}
+              : SPARSE_LOOP_DEVICE}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
