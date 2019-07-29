@@ -99,12 +99,11 @@ export const stopRefreshVolumesAction = () => {
 export function* fetchVolumes() {
   const result = yield call(ApiK8s.getVolumes);
   if (!result.error) {
-    yield put(setVolumesAction(result.body.items));
+    yield put(setVolumesAction(result?.body?.items ?? []));
   }
   return result;
 }
 
-// TO TEST
 export function* fetchPersistentVolumes() {
   const result = yield call(ApiK8s.getPersistentVolumes);
   if (!result.error) {
@@ -115,7 +114,7 @@ export function* fetchPersistentVolumes() {
 export function* fetchStorageClass() {
   const result = yield call(ApiK8s.getStorageClass);
   if (!result.error) {
-    yield put(setStorageClassAction(result.body.items));
+    yield put(setStorageClassAction(result?.body?.items ?? []));
   }
 }
 
