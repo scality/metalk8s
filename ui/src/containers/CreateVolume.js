@@ -29,16 +29,15 @@ const FormSection = styled.div`
   display: flex;
   flex-direction: column;
 
-  .input_item {
-    width: 147px;
+  .sc-input-wrapper {
+    width: 200px;
   }
 `;
 
 const ActionContainer = styled.div`
   display: flex;
   margin: ${padding.large} 0;
-  margin-left:300px
-  justify-content: flex-start;
+  justify-content: flex-end;
   button {
     margin-right: ${padding.large};
   }
@@ -51,6 +50,7 @@ const CreateVolumeLayout = styled.div`
     .sc-input {
       display: inline-flex;
       margin: ${padding.smaller} 0;
+
       .sc-input-label {
         width: 200px;
       }
@@ -70,7 +70,7 @@ const SelectField = styled.div`
 `;
 
 const SelectFieldItem = styled.select`
-  width: 169px;
+  width: 200px;
 `;
 
 const CreateVolume = props => {
@@ -95,11 +95,10 @@ const CreateVolume = props => {
     size: '',
     path: ''
   };
-
   const validationSchema = Yup.object().shape({
     name: Yup.string()
       .matches(
-        /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/,
+        /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/,
         intl.messages.volume_name_error
       )
       .required(),
@@ -155,6 +154,8 @@ const CreateVolume = props => {
               setFieldTouched,
               dirty
             } = formikProps;
+
+            console.log('errors', errors);
 
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
