@@ -49,6 +49,10 @@ spec:
         - name: registry-{{ env | replace('.', '-') }}
           mountPath: /srv/scality/{{ env }}/images/
         {%- endfor %}
+        {%- for name, solution in solutions.items() | sort(attribute='0') %}
+        - name: registry-{{ name | lower | replace('.', '-') }}
+          mountPath: /srv/scality/{{ name }}-{{ solution.version }}/images/
+        {%- endfor %}
   volumes:
     - name: nginx-configuration
       hostPath:
@@ -62,5 +66,11 @@ spec:
     - name: registry-{{ env | replace('.', '-') }}
       hostPath:
         path: {{ product.path ~ image_path }}
+        type: Directory
+    {%- endfor %}
+    {%- for name, solution in solutions.items() | sort(attribute='0') %}
+    - name: registry-{{ name | lower | replace('.', '-') }}
+      hostPath:
+        path: /srv/scality/{{ name }}-{{ solution.version }}/images/
         type: Directory
     {%- endfor %}
