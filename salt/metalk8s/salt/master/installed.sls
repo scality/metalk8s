@@ -1,7 +1,9 @@
 {% from "metalk8s/map.jinja" import metalk8s with context %}
+{% from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context -%}
 
-{% set salt_master_image = 'salt-master' %}
-{% set salt_master_version = '2018.3.4-1' %}
+{% set image_name = build_image_name('salt-master') %}
+{% set image_version = repo.images['salt-master'].version %}
 
 {%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
 
@@ -27,8 +29,8 @@ Install and start salt master manifest:
       - /etc/salt/master.d/99-metalk8s.conf
       - /etc/salt/master.d/99-metalk8s-roots.conf
     - context:
-        salt_master_image: {{ salt_master_image }}
-        salt_master_version: {{ salt_master_version }}
+        image: {{ image_name }}
+        version: {{ image_version }}
         products: {{ salt.metalk8s.get_products() }}
         salt_ip: "{{ salt_ip }}"
     - require:

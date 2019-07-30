@@ -3,7 +3,7 @@
 
 """Provides container image retrieval.
 
-The images are downloaded from a registry.
+The images are downloaded from a repository.
 Then, they are tagged, saved on the disk and optionally compressed.
 
 All of these actions are done by a single task.
@@ -11,7 +11,6 @@ All of these actions are done by a single task.
 
 
 import operator
-import os
 from pathlib import Path
 from typing import Any, Optional, List
 
@@ -27,7 +26,7 @@ class RemoteImage(image.ContainerImage):
 
     def __init__(
         self,
-        registry: str,
+        repository: str,
         name: str,
         version: str,
         digest: str,
@@ -39,7 +38,7 @@ class RemoteImage(image.ContainerImage):
         """Initialize a remote container image.
 
         Arguments:
-            registry:       registry where the image is
+            repository:     repository where the image is stored
             name:           image name
             version:        image version
             digest:         image digest
@@ -50,7 +49,7 @@ class RemoteImage(image.ContainerImage):
         Keyword Arguments:
             They are passed to `Target` init method.
         """
-        self._registry = registry
+        self._repository = repository
         self._digest = digest
         self._remote_name = remote_name or name
         self._use_tar = save_as_tar
@@ -62,47 +61,28 @@ class RemoteImage(image.ContainerImage):
         )
         self._targets = [self.filepath]
 
-    registry = property(operator.attrgetter('_registry'))
+    repository = property(operator.attrgetter('_repository'))
     digest   = property(operator.attrgetter('_digest'))
 
     @property
+    def remote_fullname(self) -> str:
+        """Complete image name retrieved from the remote repository."""
+        return (
+            "{img.repository}/{img._remote_name}:{img.version}"
+        ).format(img=self)
+
+    @property
     def fullname(self) -> str:
-        """Complete image name.
-
-        Usable by `docker` commands.
-        """
-        return '{obj.registry}/{obj._remote_name}@{obj.digest}'.format(
-            obj=self
-        )
-
-    @property
-    def basicname(self) -> str:
-        """Base image name (no digest).
-
-        Usable by `docker` commands.
-        """
-        return '{obj.registry}/{obj._remote_name}:{obj.version}'.format(
-            obj=self
-        )
-
-
-    @property
-    def repository(self) -> str:
-        """Base image name (no digest).
-
-        Usable by `docker` commands.
-        """
-        return '{obj.registry}/{obj._remote_name}'.format(
-            obj=self
-        )
+        """Complete image name to use as a tag before saving with Docker."""
+        return "{img.repository}/{img.tag}".format(img=self)
 
 
     @property
     def filepath(self) -> Path:
         """Path to the file tracked on disk."""
         if self._use_tar:
-            return self.dest_dir/'{obj.name}-{obj.version}{ext}'.format(
-                obj=self, ext='.tar'
+            return self.dest_dir/'{img.name}-{img.version}{ext}'.format(
+                img=self, ext='.tar'
             )
         # Just to keep track of something on disk.
         return self.dirname/'manifest.json'
@@ -115,31 +95,34 @@ class RemoteImage(image.ContainerImage):
             'doc': 'Download {} container image.'.format(self.name),
             'uptodate': [True],
         })
-        docker_pull = docker_command.DockerPull(
-            self.repository,
-            self.digest
-        )
-        docker_tag = docker_command.DockerTag(
-                self.repository,
-                self.fullname,
-                self.version
-        )
-        docker_save = docker_command.DockerSave(
-            self.basicname,
-            Path(os.path.join(
-                self.dest_dir,
-                '{}-{}.tar'.format(self.name, self.version)
-            ))
-        )
+
         if self._use_tar:
-            task.update({
-                'actions': [docker_pull,  docker_tag, docker_save],
-            })
+            # Use Docker to pull, tag, then save the image
+            task['actions'] = [
+                docker_command.DockerPull(
+                    self.repository,
+                    self._remote_name,
+                    self.version,
+                    self.digest,
+                ),
+                docker_command.DockerTag(
+                    '{img.repository}/{img.name}'.format(img=self),
+                    self.remote_fullname,
+                    self.version,
+                ),
+                docker_command.DockerSave(
+                    self.fullname,
+                    self.filepath,
+                )
+            ]
         else:
+            # Use Skopeo to directly copy the remote image into a directory
+            # of image layers
             task.update({
                 'actions': [self.mkdirs, self._skopeo_copy()],
                 'clean':   [self.clean],
             })
+
         return task
 
     def _skopeo_copy(self) -> List[str]:
@@ -148,14 +131,6 @@ class RemoteImage(image.ContainerImage):
             config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
             '--insecure-policy', 'copy', '--format', 'v2s2'
         ]
-        if not self._use_tar:
-            cmd.append('--dest-compress')
-        cmd.append('docker://{}'.format(self.fullname))
-        cmd.append(self._skopeo_dest())
+        cmd.append('docker://{}'.format(self.remote_fullname))
+        cmd.append('dir:{}'.format(self.dirname))
         return cmd
-
-    def _skopeo_dest(self) -> str:
-        """Return the destination, formatted for skopeo copy."""
-        if self._use_tar:
-            return 'docker-archive:{}'.format(self.filepath)
-        return 'dir:{}'.format(self.dirname)

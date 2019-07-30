@@ -6,11 +6,12 @@
 include:
   - metalk8s.repo
 
-Install mandatory packages:
-  {{ pkg_installed() }}
-    - pkgs: {{ kubeadm_preflight.mandatory.packages }}
+{%- for pkg_name in kubeadm_preflight.mandatory.packages %}
+Install mandatory package "{{ pkg_name }}":
+  {{ pkg_installed(pkg_name) }}
     - require:
       - test: Repositories configured
+{%- endfor %}
 
 {%- if kubelet.container_engine %}
 Enable {{ kubelet.container_engine }} service:

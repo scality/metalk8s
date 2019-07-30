@@ -141,13 +141,14 @@ class DockerBuild:
     @task_error(docker.errors.BuildError, handler=build_error_handler)
     @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
-        return DOCKER_CLIENT.images.build(
+        DOCKER_CLIENT.images.build(
             tag=self.tag,
             path=self.path,
             dockerfile=self.dockerfile,
             buildargs=self.buildargs,
             forcerm=True,
         )
+        return None
 
 
 class DockerRun:
@@ -267,11 +268,12 @@ class DockerRun:
     @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
         run_config = self.expand_config()
-        return DOCKER_CLIENT.containers.run(
+        DOCKER_CLIENT.containers.run(
             image=self.builder.tag,
             command=self.command,
             **run_config
         )
+        return None
 
 
 class DockerTag:
@@ -294,7 +296,8 @@ class DockerTag:
     @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
         to_tag = DOCKER_CLIENT.images.get(self.full_name)
-        return to_tag.tag(self.repository, tag=self.version)
+        to_tag.tag(self.repository, tag=self.version)
+        return None
 
 
 class DockerPull:
@@ -302,19 +305,41 @@ class DockerPull:
     # pylint: disable=too-few-public-methods
     """A class to expose the `docker pull` command through the API client."""
 
-    def __init__(self, repository: str, digest: str):
+    def __init__(
+        self, repository: str, name: str, version: str, digest: str
+    ):
         """Initialize a `docker pull` callable object.
+
          Arguments:
             repository: the repository to pull from
-            digest:     the digest to pull from the repository
+            name:       the image name to pull from the repository
+            version:    the version of the image to pull
+            digest:     the expected digest of the image to pull
         """
         self.repository = repository
+        self.name = name
+        self.version = version
         self.digest = digest
 
     @task_error(docker.errors.BuildError, handler=build_error_handler)
     @task_error(docker.errors.APIError)
     def __call__(self) -> Optional[TaskError]:
-        return DOCKER_CLIENT.images.pull(self.repository, tag=self.digest)
+        pulled = DOCKER_CLIENT.images.pull(
+            # For some reason, the repository must include the image name
+            '{}/{}'.format(self.repository, self.name),
+            tag=self.version,
+        )
+
+        if pulled.id != self.digest:
+            return TaskError(
+                "Image {s.name}:{s.version} pulled from {s.repository} "
+                "doesn't match expected digest: "
+                "expected {s.digest}, got {observed_digest}".format(
+                    s=self, observed_digest=pulled.id
+                )
+            )
+
+        return None
 
 
 class DockerSave:
@@ -336,7 +361,9 @@ class DockerSave:
     def __call__(self) -> Optional[TaskError]:
         to_save = DOCKER_CLIENT.images.get(self.tag)
         image_stream = to_save.save(named=True)
+
         with self.save_path.open('wb') as image_file:
             for chunk in image_stream:
                 image_file.write(chunk)
-        return True
+
+        return None

@@ -1,7 +1,7 @@
-{%- from "metalk8s/repo/macro.sls" import kubernetes_image with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
-{%- set image = kubernetes_image("kube-proxy") -%}
+{%- set image = build_image_name("kube-proxy") -%}
 
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}

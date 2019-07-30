@@ -30,7 +30,7 @@ Overview:
 
 
 import datetime
-from typing import Iterator, Tuple
+from typing import Any, Dict, FrozenSet, Iterator, List, Tuple
 
 from buildchain import config
 from buildchain import constants
@@ -38,6 +38,7 @@ from buildchain import coreutils
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
+from buildchain import versions
 
 
 def task_images() -> types.TaskDict:
@@ -89,251 +90,141 @@ def task__image_dedup_layers() -> types.TaskDict:
     ]
     return task
 
+# Helpers {{{
+def _get_image_info(name: str) -> versions.Image:
+    """Retrieve an `Image` information by name from the versions listing."""
+    try:
+        return versions.CONTAINER_IMAGES_MAP[name]
+    except KeyError:
+        raise ValueError(
+            'Missing version for container image "{}"'.format(name)
+        )
 
-NGINX_IMAGE_VERSION : str = '1.15.8'
-NODE_IMAGE_VERSION : str = '10.16.0'
+def _remote_image(
+    name: str, repository: str, **overrides: Any
+) -> targets.RemoteImage:
+    """Build a `RemoteImage` from a name and a repository.
 
-# List of container images to pull.
-#
-# Digests are quite a mouthful, so:
-# pylint:disable=line-too-long
-TO_PULL : Tuple[targets.RemoteImage, ...] = (
-    targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
-        name='addon-resizer-amd64',
-        version='2.1',
-        digest='sha256:d00afd42fc267fa3275a541083cfe67d160f966c788174b44597434760e1e1eb',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.PROMETHEUS_REGISTRY,
-        name='alertmanager',
-        version='v0.16.0',
-        digest='sha256:ba7f0a57348774f46d4476b71a2033914c1f1437920b5188eec54b145a5b7433',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry='calico',
-        name='calico-node',
-        remote_name='node',
-        version='3.8.0',
-        digest='sha256:6679ccc9f19dba3eb084db991c788dc9661ad3b5d5bafaa3379644229dca6b05',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry='calico',
-        name='calico-kube-controllers',
-        remote_name='kube-controllers',
-        version='3.8.0',
-        digest='sha256:cf461efd25ee74d1855e1ee26db98fe87de00293f7d039212adb03c91fececcd',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.COREOS_REGISTRY,
-        name='configmap-reload',
-        version='v0.0.1',
-        digest='sha256:e2fd60ff0ae4500a75b80ebaa30e0e7deba9ad107833e8ca53f0047c42c5a057',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
-        name='coredns',
-        version='1.3.1',
-        digest='sha256:02382353821b12c21b062c59184e227e001079bb13ebd01f9d3270ba0fcbf1e4',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
-        name='etcd',
-        version='3.3.10',
-        digest='sha256:17da501f5d2a675be46040422a27b7cc21b8a43895ac998b171db1c346f361f7',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.GRAFANA_REGISTRY,
-        name='grafana',
-        version='6.0.0',
-        digest='sha256:b5098a06dc59d28b11120eab01d8d0147b526a175aa606f9978934b6b2224138',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.COREOS_REGISTRY,
-        name='k8s-prometheus-adapter-amd64',
-        version='v0.4.1',
-        digest='sha256:cd44106e853564873e6bf261a672f0ee2122cdbd70800dafce2c3c26d0b4be95',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
-        name='kube-apiserver',
-        version=constants.K8S_VERSION,
-        digest='sha256:a58eb8e7e770455ead52b7fcb9b5c3b32d020486ef1242dbaa976968295fc520',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
-        name='kube-controller-manager',
-        version=constants.K8S_VERSION,
-        digest='sha256:3a940331dca0facd15feaa030aa0bde147c268def1cd0f8d7429147314e76866',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
-        name='kube-proxy',
-        version=constants.K8S_VERSION,
-        digest='sha256:3f86b2fb55f1cc1c785d567ca86958bae440bd1b73280bac776a7339c5ad33eb',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.COREOS_REGISTRY,
-        name='kube-rbac-proxy',
-        version='v0.4.1',
-        digest='sha256:9d07c391aeb1a9d02eb4343c113ed01825227c70c32b3cae861711f90191b0fd',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
-        name='kube-scheduler',
-        version=constants.K8S_VERSION,
-        digest='sha256:da5e0acbedf36d538dd3cfbc81033cefba4305994e3e8462114c3febfc8e10eb',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.COREOS_REGISTRY,
-        name='kube-state-metrics',
-        version='v1.5.0',
-        digest='sha256:b7a3143bd1eb7130759c9259073b9f239d0eeda09f5210f1cd31f1a530599ea1',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.DOCKER_REGISTRY,
-        name='nginx',
-        version=NGINX_IMAGE_VERSION,
-        digest='sha256:dd2d0ac3fff2f007d99e033b64854be0941e19a2ad51f174d9240dda20d9f534',
-        destination=constants.ISO_IMAGE_ROOT,
-        save_as_tar=True,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.PROMETHEUS_REGISTRY,
-        name='node-exporter',
-        version='v0.17.0',
-        digest='sha256:1b129a3801a0440f9c5b2afb20082dfdb31bf6092b561f5f249531130000cb83',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.PROMETHEUS_REGISTRY,
-        name='prometheus',
-        version='v2.5.0',
-        digest='sha256:478d0b68432ea289a2e8455cbc30ee38b7ade6d13b4f73877203184c64914d9b',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.COREOS_REGISTRY,
-        name='prometheus-config-reloader',
-        version='v0.28.0',
-        digest='sha256:5ea13d504f08ddd4d6568830e1ae104347532f316d62b1f3d338bd37e703cfba',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.COREOS_REGISTRY,
-        name='prometheus-operator',
-        version='v0.28.0',
-        digest='sha256:db8575085bba268f79bba7f6f934b552dfe8de8e32048a554702b55d7b3f8888',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry='quay.io/kubernetes-ingress-controller',
-        name='nginx-ingress-controller',
-        version='0.25.0',
-        digest='sha256:464db4880861bd9d1e74e67a4a9c975a6e74c1e9968776d8d4cc73492a56dfa5',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-    targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
-        remote_name='defaultbackend-amd64',
-        name='nginx-ingress-defaultbackend-amd64',
-        version='1.5',
-        digest='sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
-    ),
-)
+    Provides sane defaults, relies on the `REMOTE_NAMES` and `SAVE_AS_TAR`
+    constants to add some arguments.
+    """
+    overrides.setdefault('destination', constants.ISO_IMAGE_ROOT)
+    overrides.setdefault('task_dep', ['_image_mkdir_root'])
 
+    image_info = _get_image_info(name)
+    kwargs = dict(image_info._asdict(), repository=repository, **overrides)
 
-# The build ID is to be augmented whenever we rebuild the `salt-master` image,
-# e.g. because the `Dockerfile` is changed, or one of the dependencies installed
-# in the image needs to be updated.
-# This should be reset to 1 when SALT_VERSION is changed.
-SALT_MASTER_BUILD_ID : int = 1
+    if name in REMOTE_NAMES:
+        kwargs['remote_name'] = REMOTE_NAMES[name]
 
-KEEPALIVED_IMAGE_TAG = '{}-{}'.format(
-    constants.KEEPALIVED_VERSION,
-    constants.KEEPALIVED_BUILD_ID,
-)
+    if name in SAVE_AS_TAR:
+        kwargs['save_as_tar'] = True
 
-# List of container images to build.
+    return targets.RemoteImage(**kwargs)
+
+def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
+    """Build a `LocalImage` from its name, with sane defaults.
+
+    Build-specific information is left to the caller, as each image will
+    require its own set of particularities.
+    """
+    image_info = _get_image_info(name)
+
+    kwargs.setdefault('destination', constants.ISO_IMAGE_ROOT)
+    kwargs.setdefault('dockerfile', constants.ROOT/'images'/name/'Dockerfile')
+    kwargs.setdefault('save_on_disk', True)
+    kwargs.setdefault('task_dep', ['_image_mkdir_root'])
+
+    return targets.LocalImage(
+        name=name,
+        version=image_info.version,
+        **kwargs,
+    )
+
+# }}}
+# Container images to pull {{{
+TO_PULL : List[targets.RemoteImage] = []
+
+IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
+    constants.CALICO_REPOSITORY: [
+        'calico-node',
+        'calico-kube-controllers',
+    ],
+    constants.COREOS_REPOSITORY: [
+        'configmap-reload',
+        'k8s-prometheus-adapter-amd64',
+        'kube-rbac-proxy',
+        'kube-state-metrics',
+        'prometheus-config-reloader',
+        'prometheus-operator',
+    ],
+    constants.DOCKER_REPOSITORY: [
+        'nginx',
+    ],
+    constants.GOOGLE_REPOSITORY: [
+        'addon-resizer-amd64',
+        'coredns',
+        'etcd',
+        'kube-apiserver',
+        'kube-controller-manager',
+        'kube-proxy',
+        'kube-scheduler',
+        'nginx-ingress-defaultbackend-amd64',
+    ],
+    constants.GRAFANA_REPOSITORY: [
+        'grafana',
+    ],
+    constants.INGRESS_REPOSITORY: [
+        'nginx-ingress-controller',
+    ],
+    constants.PROMETHEUS_REPOSITORY: [
+        'alertmanager',
+        'node-exporter',
+        'prometheus',
+    ],
+}
+
+REMOTE_NAMES : Dict[str, str] = {
+    'calico-node': 'node',
+    'calico-kube-controllers': 'kube-controllers',
+    'nginx-ingress-defaultbackend-amd64': 'defaultbackend-amd64',
+}
+
+SAVE_AS_TAR : FrozenSet[str] = frozenset(('nginx', 'pause'))
+
+for repo, images in IMGS_PER_REPOSITORY.items():
+    for image_name in images:
+        TO_PULL.append(_remote_image(image_name, repo))
+
+# }}}
+# Container images to build {{{
 TO_BUILD : Tuple[targets.LocalImage, ...] = (
-    targets.LocalImage(
+    _local_image(
         name='salt-master',
-        version='{}-{}'.format(constants.SALT_VERSION, SALT_MASTER_BUILD_ID),
-        dockerfile=constants.ROOT/'images'/'salt-master'/'Dockerfile',
-        destination=constants.ISO_IMAGE_ROOT,
-        save_on_disk=True,
-        build_args={'SALT_VERSION': constants.SALT_VERSION},
-        task_dep=['_image_mkdir_root'],
+        build_args={'SALT_VERSION': versions.SALT_VERSION},
     ),
-    targets.LocalImage(
+    _local_image(
         name='keepalived',
-        version=KEEPALIVED_IMAGE_TAG,
-        dockerfile=constants.ROOT/'images'/'keepalived'/'Dockerfile',
-        destination=constants.ISO_IMAGE_ROOT,
-        save_on_disk=True,
         build_args={
-            'KEEPALIVED_IMAGE_SHA256': constants.CENTOS_BASE_IMAGE_SHA256,
-            'KEEPALIVED_IMAGE': constants.CENTOS_BASE_IMAGE,
-            'KEEPALIVED_VERSION': constants.KEEPALIVED_VERSION,
+            'KEEPALIVED_IMAGE': versions.CENTOS_BASE_IMAGE,
+            'KEEPALIVED_IMAGE_SHA256': versions.CENTOS_BASE_IMAGE_SHA256,
+            'KEEPALIVED_VERSION': versions.KEEPALIVED_VERSION,
             'BUILD_DATE': datetime.datetime.now(datetime.timezone.utc)
                             .astimezone()
                             .isoformat(),
             'VCS_REF': constants.GIT_REF or '<unknown>',
-            'VERSION': KEEPALIVED_IMAGE_TAG,
-            'METALK8S_VERSION': constants.VERSION,
+            'VERSION': versions.CONTAINER_IMAGES_MAP['keepalived'].version,
+            'METALK8S_VERSION': versions.VERSION,
         },
-        task_dep=['_image_mkdir_root'],
         file_dep=[constants.ROOT/'images'/'keepalived'/'entrypoint.sh'],
     ),
-    targets.LocalImage(
+    _local_image(
         name='metalk8s-ui',
-        version=constants.VERSION,
         dockerfile=constants.ROOT/'ui'/'Dockerfile',
-        destination=constants.ISO_IMAGE_ROOT,
-        save_on_disk=True,
         build_args={
-            'NGINX_IMAGE_VERSION': NGINX_IMAGE_VERSION,
-            'NODE_IMAGE_VERSION': NODE_IMAGE_VERSION
+            'NGINX_IMAGE_VERSION': versions.NGINX_IMAGE_VERSION,
+            'NODE_IMAGE_VERSION': versions.NODEJS_IMAGE_VERSION,
         },
-        task_dep=['_image_mkdir_root'],
         file_dep=(
             list(coreutils.ls_files_rec(constants.ROOT/'ui'/'public')) +
             list(coreutils.ls_files_rec(constants.ROOT/'ui'/'src')) +
@@ -344,24 +235,20 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
             ]
         )
     ),
-    targets.LocalImage(
+    _local_image(
         name='metalk8s-utils',
-        version=constants.VERSION,
-        dockerfile=constants.ROOT/'images'/'metalk8s-utils'/'Dockerfile',
-        destination=constants.ISO_IMAGE_ROOT,
-        save_on_disk=True,
         build_args={
-            'BASE_IMAGE': constants.CENTOS_BASE_IMAGE,
-            'BASE_IMAGE_SHA256': constants.CENTOS_BASE_IMAGE_SHA256,
+            'BASE_IMAGE': versions.CENTOS_BASE_IMAGE,
+            'BASE_IMAGE_SHA256': versions.CENTOS_BASE_IMAGE_SHA256,
             'BUILD_DATE': datetime.datetime.now(datetime.timezone.utc)
                             .astimezone()
                             .isoformat(),
             'VCS_REF': constants.GIT_REF or '<unknown>',
-            'METALK8S_VERSION': constants.VERSION,
+            'METALK8S_VERSION': versions.VERSION,
         },
-        task_dep=['_image_mkdir_root'],
     ),
 )
+# }}}
 
 
 __all__ = utils.export_only_tasks(__name__)

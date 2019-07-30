@@ -220,7 +220,7 @@ spec:
         - --secure-listen-address=:8443
         - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
         - --upstream=http://127.0.0.1:8081/
-        image: {{ build_image_name('kube-rbac-proxy', 'v0.4.1') }}
+        image: {{ build_image_name('kube-rbac-proxy') }}
         name: kube-rbac-proxy-main
         ports:
         - containerPort: 8443
@@ -237,7 +237,7 @@ spec:
         - --secure-listen-address=:9443
         - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
         - --upstream=http://127.0.0.1:8082/
-        image: {{ build_image_name('kube-rbac-proxy', 'v0.4.1') }}
+        image: {{ build_image_name('kube-rbac-proxy') }}
         name: kube-rbac-proxy-self
         ports:
         - containerPort: 9443
@@ -254,7 +254,7 @@ spec:
         - --port=8081
         - --telemetry-host=127.0.0.1
         - --telemetry-port=8082
-        image: {{ build_image_name('kube-state-metrics', 'v1.5.0') }}
+        image: {{ build_image_name('kube-state-metrics') }}
         name: kube-state-metrics
         resources:
           limits:
@@ -283,7 +283,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: {{ build_image_name('addon-resizer-amd64', '2.1') }}
+        image: {{ build_image_name('addon-resizer-amd64') }}
         name: addon-resizer
         resources:
           limits:
