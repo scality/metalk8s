@@ -83,7 +83,7 @@ spec:
         - --path.rootfs=/host/root
         - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
         - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
-        image: {{ build_image_name('node-exporter', 'v0.17.0') }}
+        image: {{ build_image_name('node-exporter') }}
         name: node-exporter
         resources:
           limits:
@@ -113,7 +113,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        image: {{ build_image_name('kube-rbac-proxy', 'v0.4.1') }}
+        image: {{ build_image_name('kube-rbac-proxy') }}
         name: kube-rbac-proxy
         ports:
         - containerPort: 9100

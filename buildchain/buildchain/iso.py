@@ -40,6 +40,7 @@ from buildchain import coreutils
 from buildchain import targets as helper
 from buildchain import types
 from buildchain import utils
+from buildchain import versions
 
 
 ISO_FILE : Path = config.BUILD_ROOT/'{}.iso'.format(config.PROJECT_NAME.lower())
@@ -148,8 +149,8 @@ def task__iso_render_bootstrap() -> types.TaskDict:
     return helper.TemplateFile(
         source=constants.ROOT/'scripts'/'bootstrap.sh.in',
         destination=constants.ISO_ROOT/'bootstrap.sh',
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
         task_dep=['_iso_mkdir_root'],
     ).task
 
@@ -158,11 +159,11 @@ def task__iso_generate_product_txt() -> types.TaskDict:
     """Generate the product.txt file."""
     def action(targets: Sequence[str]) -> None:
         datefmt = "%Y-%m-%dT%H:%M:%SZ"
-        dev_release = '1' if constants.VERSION_SUFFIX == '-dev' else '0'
+        dev_release = '1' if versions.VERSION_SUFFIX == '-dev' else '0'
         info = (
             ('NAME', config.PROJECT_NAME),
-            ('VERSION', constants.VERSION),
-            ('SHORT_VERSION', constants.SHORT_VERSION),
+            ('VERSION', versions.VERSION),
+            ('SHORT_VERSION', versions.SHORT_VERSION),
             ('GIT', constants.GIT_REF or ''),
             ('DEVELOPMENT_RELEASE', dev_release),
             ('BUILD_TIMESTAMP', dt.datetime.utcnow().strftime(datefmt)),
@@ -177,7 +178,7 @@ def task__iso_generate_product_txt() -> types.TaskDict:
         'title': lambda task: utils.title_with_target1('GENERATE', task),
         'actions': [action],
         'targets': [constants.ISO_ROOT/'product.txt'],
-        'file_dep': [constants.VERSION_FILE],
+        'file_dep': [versions.VERSION_FILE],
         'task_dep': ['_iso_mkdir_root'],
         'uptodate': [False],  # False because we include the build timestamp.
         'clean': True,
@@ -194,7 +195,7 @@ def task__iso_build() -> types.TaskDict:
         '-joliet',
         '-joliet-long',
         '-full-iso9660-filenames',
-        '-volid', '{} {}'.format(config.PROJECT_NAME, constants.VERSION),
+        '-volid', '{} {}'.format(config.PROJECT_NAME, versions.VERSION),
         '--iso-level', '3',
         '-gid', '0',
         '-uid', '0',
@@ -207,7 +208,7 @@ def task__iso_build() -> types.TaskDict:
     )
     # Every file used for the ISO is a dependency.
     depends = list(coreutils.ls_files_rec(constants.ISO_ROOT))
-    depends.append(constants.VERSION_FILE)
+    depends.append(versions.VERSION_FILE)
     return {
         'title': lambda task: utils.title_with_target1('MKISOFS', task),
         'doc': doc,

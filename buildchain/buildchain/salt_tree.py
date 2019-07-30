@@ -29,15 +29,17 @@ Overview:
 
 
 import importlib
-import sys
 from pathlib import Path
+import sys
 from typing import Any, Iterator, Tuple, Union
 
 from buildchain import config
 from buildchain import constants
 from buildchain import targets
-from buildchain import utils
 from buildchain import types
+from buildchain import utils
+from buildchain import versions
+from buildchain.targets.serialize import Renderer
 
 sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
 container_registry : Any = importlib.import_module('static-container-registry')
@@ -163,8 +165,8 @@ PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         task_name='top.sls',
         source=constants.ROOT/'pillar'/'top.sls.in',
         destination=constants.ISO_ROOT/'pillar'/'top.sls',
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
     ),
 )
 
@@ -175,8 +177,26 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         task_name='top.sls',
         source=constants.ROOT/'salt'/'top.sls.in',
         destination=constants.ISO_ROOT/'salt'/'top.sls',
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
+    ),
+
+    targets.SerializedData(
+        task_name='versions.json',
+        destination=constants.ISO_ROOT/'salt'/'metalk8s'/'versions.json',
+        data={
+            'kubernetes': {'version': versions.K8S_VERSION},
+            'packages': {
+                pkg.name: {'version': "{}-{}".format(pkg.version, pkg.release)}
+                for pkg in versions.PACKAGES
+            },
+            'images': {
+                img.name: {'version': img.version}
+                for img in versions.CONTAINER_IMAGES
+            },
+            'metalk8s': {'version': versions.VERSION},
+        },
+        renderer=Renderer.JSON,
     ),
 
     Path('salt/metalk8s/addons/monitoring/alertmanager/deployed.sls'),
@@ -197,19 +217,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/monitoring/prometheus-operator/upstream.sls'),
 
     Path('salt/metalk8s/addons/ui/deployed.sls'),
-    targets.TemplateFile(
-        task_name='metalk8s-ui-deployment',
-        source=constants.ROOT.joinpath(
-            'salt', 'metalk8s', 'addons', 'ui', 'files',
-            'metalk8s-ui-deployment.yaml.in'
-        ),
-        destination=constants.ISO_ROOT.joinpath(
-            'salt', 'metalk8s', 'addons', 'ui', 'files',
-            'metalk8s-ui-deployment.yaml'
-        ),
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
-    ),
+    Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
     Path('salt/metalk8s/addons/ui/precheck.sls'),
 
 
@@ -312,8 +320,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'salt', 'metalk8s', 'kubernetes', 'mark-control-plane',
             'deployed.sls'
         ),
-        context={'VERSION': constants.VERSION},
-        file_dep=[constants.VERSION_FILE],
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
     ),
 
     Path('salt/metalk8s/kubernetes/sa/advertised.sls'),
@@ -419,14 +427,16 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/_utils/pillar_utils.py'),
 
+    # This image is defined here and not in the `image` module since it is
+    # saved into the `salt/` tree.
     targets.RemoteImage(
-        registry=constants.GOOGLE_REGISTRY,
         name='pause',
-        version='3.1',
-        # pylint:disable=line-too-long
-        digest='sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea',
-        destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
+        version=versions.CONTAINER_IMAGES_MAP['pause'].version,
+        digest=versions.CONTAINER_IMAGES_MAP['pause'].digest,
+        repository=constants.GOOGLE_REPOSITORY,
         save_as_tar=True,
+        # pylint:disable=line-too-long
+        destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
     ),
 
     CommonStaticContainerRegistry(
@@ -440,10 +450,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         root=constants.ISO_IMAGE_ROOT,
         server_root='${}_{}_images'.format(
             config.PROJECT_NAME.lower(),
-            constants.VERSION.replace('.', '_').replace('-', '_')
+            versions.VERSION.replace('.', '_').replace('-', '_')
         ),
         name_prefix='{}-{}/'.format(
-            config.PROJECT_NAME.lower(), constants.VERSION
+            config.PROJECT_NAME.lower(), versions.VERSION
         ),
         destination=Path(
             constants.ISO_ROOT,

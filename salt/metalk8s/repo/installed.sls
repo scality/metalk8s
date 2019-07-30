@@ -1,4 +1,3 @@
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set repositories_name = 'repositories' %}
@@ -6,13 +5,23 @@
 
 {%- set products = salt.metalk8s.get_products() %}
 
+{%- set docker_repository = 'docker.io/library' %}
+{%- set image_name = 'nginx' %}
+
+{%- set image_version = repo.images.get(image_name, {}).get('version') %}
+{%- if not image_version %}
+  {{ raise('Missing version information for "nginx"') }}
+{%- endif %}
+
+{%- set image_fullname = docker_repository ~ '/' ~ image_name ~ ':' ~ image_version %}
+
 include:
   - .configured
 
 Inject nginx image:
   containerd.image_managed:
-    - name: docker.io/library/nginx:1.15.8
-    - archive_path: {{ products[saltenv].path }}/images/nginx-1.15.8.tar
+    - name: {{ image_fullname }}
+    - archive_path: {{ products[saltenv].path }}/images/{{ image_name }}-{{ image_version }}.tar
 
 Install repositories manifest:
   metalk8s.static_pod_managed:
@@ -31,7 +40,7 @@ Install repositories manifest:
     {%- endfor %}
     - context:
         container_port: {{ repo.port }}
-        image: docker.io/library/nginx:1.15.8
+        image: {{ image_fullname }}
         name: {{ repositories_name }}
         version: {{ repositories_version }}
         products: {{ products }}

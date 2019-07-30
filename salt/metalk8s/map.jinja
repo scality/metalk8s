@@ -1,5 +1,20 @@
 {% import_yaml 'metalk8s/defaults.yaml' as defaults with context %}
+{% import_json 'metalk8s/versions.json' as versions with context %}
 
+{# First merge the basic defaults with versions information #}
+{% set version_defaults = {
+  'kubernetes': versions.kubernetes,
+  'repo': {
+    'packages': versions.packages,
+    'images': versions.images,
+  },
+} %}
+
+{% set defaults = salt['grains.filter_by']({
+  'default': defaults,
+}, merge=version_defaults) %}
+
+{# Then merge with pillar overrides #}
 {% set defaults = salt['grains.filter_by']({
   'default': defaults
 }, merge=pillar) %}
@@ -24,7 +39,7 @@
     'kubernetes': {
       'name': 'kubernetes'
     }
-  }
+  },
 }, merge=defaults.get('repo')) %}
 
 {% set networks = salt['grains.filter_by']({

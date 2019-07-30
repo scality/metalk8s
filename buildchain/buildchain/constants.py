@@ -17,11 +17,13 @@ from buildchain import config
 CMD_WIDTH : int = 12
 
 # URLs of the main container repositories.
-GOOGLE_REGISTRY : str = 'k8s.gcr.io'
-DOCKER_REGISTRY : str = 'docker.io/library'
-COREOS_REGISTRY : str = 'quay.io/coreos'
-PROMETHEUS_REGISTRY : str = 'quay.io/prometheus'
-GRAFANA_REGISTRY : str = 'docker.io/grafana'
+CALICO_REPOSITORY     : str = 'quay.io/calico'
+COREOS_REPOSITORY     : str = 'quay.io/coreos'
+DOCKER_REPOSITORY     : str = 'docker.io/library'
+GOOGLE_REPOSITORY     : str = 'k8s.gcr.io'
+GRAFANA_REPOSITORY    : str = 'docker.io/grafana'
+INGRESS_REPOSITORY    : str = 'quay.io/kubernetes-ingress-controller'
+PROMETHEUS_REPOSITORY : str = 'quay.io/prometheus'
 
 # Paths {{{
 
@@ -46,44 +48,7 @@ STATIC_CONTAINER_REGISTRY : Path = Path(
 VAGRANT_SSH_KEY_PAIR : Path = VAGRANT_ROOT/'preshared_key_for_k8s_nodes'
 
 # }}}
-# Versions {{{
-
-K8S_VERSION  : str = '1.12.9'
-SALT_VERSION : str = '2018.3.4'
-KEEPALIVED_VERSION : str = '1.3.5-8.el7_6'
-KEEPALIVED_BUILD_ID : int = 1
-
-CENTOS_BASE_IMAGE : str = 'docker.io/centos'
-CENTOS_BASE_IMAGE_SHA256 : str = \
-    '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
-
-def load_version_information() -> None:
-    """Load version information from `VERSION`."""
-    to_update = {
-        'VERSION_MAJOR', 'VERSION_MINOR', 'VERSION_PATCH', 'VERSION_SUFFIX'
-    }
-    with VERSION_FILE.open('r', encoding='utf-8') as fp:
-        for line in fp:
-            name, _, value = line.strip().partition('=')
-            # Don't overwrite random variables by trusting an external file.
-            var = name.strip()
-            if var in to_update:
-                globals()[var] = value.strip()
-
-
-VERSION_FILE : Path= ROOT/'VERSION'
-
-# Metalk8s version.
-# (Those declarations are not mandatory, but they help pylint and mypy).
-VERSION_MAJOR  : str
-VERSION_MINOR  : str
-VERSION_PATCH  : str
-VERSION_SUFFIX : str
-
-load_version_information()
-
-SHORT_VERSION : str = '{}.{}'.format(VERSION_MAJOR, VERSION_MINOR)
-VERSION : str = '{}.{}{}'.format(SHORT_VERSION, VERSION_PATCH, VERSION_SUFFIX)
+# Git project information {{{
 
 
 def git_ref() -> Optional[str]:

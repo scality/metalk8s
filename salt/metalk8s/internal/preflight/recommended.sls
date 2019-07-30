@@ -4,8 +4,9 @@
 include:
   - metalk8s.repo
 
-Install recommended packages:
-  {{ pkg_installed() }}
-    - pkgs: {{ kubeadm_preflight.recommended.packages }}
+{%- for pkg_name in kubeadm_preflight.mandatory.packages %}
+Install recommended package "{{ pkg_name }}":
+  {{ pkg_installed(pkg_name) }}
     - require:
       - test: Repositories configured
+{%- endfor %}
