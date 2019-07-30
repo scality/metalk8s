@@ -1,4 +1,4 @@
-{% from "metalk8s/repo/macro.sls" import kubernetes_image with context %}
+{% from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 include:
   - .kubeconfig
@@ -11,7 +11,7 @@ Create kube-scheduler Pod manifest:
       - /etc/kubernetes/scheduler.conf
     - context:
         name: kube-scheduler
-        image_name: {{ kubernetes_image("kube-scheduler") }}
+        image_name: {{ build_image_name("kube-scheduler") }}
         host: {{ grains['metalk8s']['control_plane_ip'] }}
         port: 10251
         scheme: HTTP

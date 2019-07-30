@@ -383,9 +383,8 @@ stages:
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
-            ssh -F $SSH_CONFIG bastion mkdir metalk8s &&
-            scp -F $SSH_CONFIG tox.ini bastion:metalk8s/ &&
-            scp -F $SSH_CONFIG -r tests bastion:metalk8s/
+            tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
+            | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
       - ShellCommand:
           name: Run tests on the bastion
           # yamllint disable rule:line-length

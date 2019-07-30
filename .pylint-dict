@@ -29,9 +29,10 @@ nginx
 prebuilt
 py
 readonly
-rpmspec
+renderer
 repo
 rpmlint
+rpmspec
 scality
 skopeo
 sls

@@ -27,15 +27,18 @@ Overview;
 
 
 from pathlib import Path
-from typing import Dict, Iterator, List, Tuple
+from typing import Dict, FrozenSet, Iterator, List, Tuple
+
+from doit.tools import config_changed  # type: ignore
 
 from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
+from buildchain import docker_command
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
-from buildchain import docker_command
+from buildchain import versions
 
 
 def task_packaging() -> types.TaskDict:
@@ -87,9 +90,6 @@ def task__download_packages() -> types.TaskDict:
                 continue
             coreutils.rm_rf(repository.rootdir)
 
-    pkg_list = constants.ROOT/'packages/packages.list'
-    packages = _load_package_list(pkg_list)
-
     mounts = [
         docker_command.bind_mount(
             source=constants.PKG_ROOT, target=Path('/install_root')
@@ -99,7 +99,7 @@ def task__download_packages() -> types.TaskDict:
         ),
     ]
     dl_packages_callable = docker_command.DockerRun(
-        command=['/entrypoint.sh', 'download_packages', *packages],
+        command=['/entrypoint.sh', 'download_packages', *TO_DOWNLOAD],
         builder=BUILDER,
         mounts=mounts,
         environment={'RELEASEVER': 7}
@@ -108,12 +108,11 @@ def task__download_packages() -> types.TaskDict:
         'title': lambda task: utils.title_with_target1('GET PKGS', task),
         'actions': [dl_packages_callable],
         'targets': [constants.PKG_ROOT/'var'],
-        'file_dep': [pkg_list],
         'task_dep': [
             '_package_mkdir_root', '_package_mkdir_iso_root', '_build_container'
         ],
         'clean': [clean],
-        'uptodate': [True],
+        'uptodate': [config_changed(_TO_DOWNLOAD_CONFIG)],
         # Prevent Docker from polluting our output.
         'verbosity': 0,
     }
@@ -121,7 +120,7 @@ def task__download_packages() -> types.TaskDict:
 
 def task__build_packages() -> Iterator[types.TaskDict]:
     """Build a package."""
-    for repo_pkgs in PACKAGES.values():
+    for repo_pkgs in TO_BUILD.values():
         for package in repo_pkgs:
             yield from package.execution_plan
 
@@ -142,43 +141,77 @@ BUILDER : targets.LocalImage = targets.LocalImage(
     task_dep=['_build_root'],
     file_dep=[
         constants.ROOT/'packages/yum_repositories/kubernetes.repo',
-        constants.ROOT/'packages/yum_repositories/saltstack.repo'
+        constants.ROOT/'packages/yum_repositories/saltstack.repo',
     ],
+    build_args={
+        # Used to template the SaltStack repository definition
+        'SALT_VERSION': versions.SALT_VERSION,
+    },
 )
 
+# Packages to build, per repository.
+def _package(name: str, sources: List[Path]) -> targets.Package:
+    try:
+        pkg_info = versions.PACKAGES_MAP[name]
+    except KeyError:
+        raise ValueError(
+            'Missing version for package "{}"'.format(name)
+        )
 
-CALICO_CNI_PLUGIN_VERSION : str = '3.8.0'
-# Packages per repository.
-PACKAGES : Dict[str, Tuple[targets.Package, ...]] = {
+    # In case the `release` is of form "{build_id}.{os}", which is standard
+    build_id_str, _, _ = pkg_info.release.partition('.')
+
+    return targets.Package(
+        basename='_build_packages',
+        name=name,
+        version=pkg_info.version,
+        build_id=int(build_id_str),
+        sources=sources,
+        builder=BUILDER,
+        task_dep=['_package_mkdir_root', '_build_container'],
+    )
+
+TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
     'scality': (
         # SOS report custom plugins.
-        targets.Package(
-            basename='_build_packages',
+        _package(
             name='metalk8s-sosreport',
-            version=constants.SHORT_VERSION,
-            build_id=1,
             sources=[
                 Path('metalk8s.py'),
                 Path('containerd.py'),
             ],
-            builder=BUILDER,
-            task_dep=['_package_mkdir_root', '_build_container'],
         ),
         # Calico Container Network Interface Plugin.
-        targets.Package(
-            basename='_build_packages',
+        _package(
             name='calico-cni-plugin',
-            version=CALICO_CNI_PLUGIN_VERSION,
-            build_id=1,
             sources=[
                 Path('calico-amd64'),
                 Path('calico-ipam-amd64'),
-                Path('v{}.tar.gz'.format(CALICO_CNI_PLUGIN_VERSION)),
+                Path('v{}.tar.gz'.format(versions.CALICO_VERSION)),
             ],
-            builder=BUILDER,
-            task_dep=['_package_mkdir_root', '_build_container'],
         ),
     ),
+}
+
+_TO_BUILD_PKG_NAMES : List[str] = []
+
+for pkgs in TO_BUILD.values():
+    for pkg in pkgs:
+        _TO_BUILD_PKG_NAMES.append(pkg.name)
+
+# All packages not referenced in `TO_BUILD` but listed in `versions.PACKAGES`
+# are supposed to be downloaded.
+TO_DOWNLOAD : FrozenSet[str] = frozenset(
+    "{p.name}-{p.version}-{p.release}".format(p=package)
+    for package in versions.PACKAGES
+    if package.name not in _TO_BUILD_PKG_NAMES
+)
+
+# Store these versions in a dict to use with doit.tools.config_changed
+_TO_DOWNLOAD_CONFIG : Dict[str, str] = {
+    pkg.name: "{p.version}-{p.release}".format(p=pkg)
+    for pkg in versions.PACKAGES
+    if pkg.name not in _TO_BUILD_PKG_NAMES
 }
 
 
@@ -187,7 +220,7 @@ REPOSITORIES : Tuple[targets.Repository, ...] = (
         basename='_build_repositories',
         name='scality',
         builder=BUILDER,
-        packages=PACKAGES['scality'],
+        packages=TO_BUILD['scality'],
         task_dep=['_package_mkdir_iso_root'],
     ),
     targets.Repository(
@@ -227,22 +260,6 @@ REPOSITORIES : Tuple[targets.Repository, ...] = (
         task_dep=['_download_packages'],
     ),
 )
-
-
-def _load_package_list(pkg_list: Path) -> List[str]:
-    """Load the list of packages to download.
-
-    Arguments:
-        pkg_list: path to the file that contains the package list
-
-    Returns:
-        A list of package names.
-    """
-    packages : List[str] = []
-    with pkg_list.open('r', encoding='utf-8') as fp:
-        for line in fp:
-            packages.append(line.strip())
-    return packages
 
 
 __all__ = utils.export_only_tasks(__name__)
