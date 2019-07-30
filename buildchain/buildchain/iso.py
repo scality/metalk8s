@@ -130,16 +130,31 @@ def task__iso_add_utilities_scripts() -> types.TaskDict:
     upgrade_src = constants.ROOT/'scripts'/'upgrade.sh'
     upgrade_dest = constants.ISO_ROOT/'upgrade.sh'
     upgrade = [upgrade_src, upgrade_dest]
+
+    solution_src = constants.ROOT/'scripts'/'solution-manager.sh'
+    solution_dest = constants.ISO_ROOT/'solution-manager.sh'
+    solution = [solution_src, solution_dest]
     return {
             'title': utils.title_with_target1('COPY'),
             'actions': [
                     (coreutils.cp_file, iso_manager),
                     (coreutils.cp_file, downgrade),
-                    (coreutils.cp_file, upgrade)
+                    (coreutils.cp_file, upgrade),
+                    (coreutils.cp_file, solution)
                 ],
-            'targets': [iso_manager_dest, downgrade_dest, upgrade_dest],
+            'targets': [
+                iso_manager_dest,
+                downgrade_dest,
+                upgrade_dest,
+                solution_dest,
+            ],
             'task_dep': ['_iso_mkdir_root'],
-            'file_dep': [iso_manager_src, downgrade_src, upgrade_src],
+            'file_dep': [
+                iso_manager_src,
+                downgrade_src,
+                upgrade_src,
+                solution_src,
+            ],
             'clean': True,
             }
 

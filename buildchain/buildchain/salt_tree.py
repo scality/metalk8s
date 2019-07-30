@@ -380,6 +380,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/deploy_node.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
+    Path('salt/metalk8s/orchestrate/solutions/init.sls'),
     Path('salt/metalk8s/orchestrate/etcd.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
@@ -388,6 +389,12 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/products/configured.sls'),
     Path('salt/metalk8s/products/init.sls'),
     Path('salt/metalk8s/products/mounted.sls'),
+
+    Path('salt/metalk8s/solutions/configured.sls'),
+    Path('salt/metalk8s/solutions/mounted.sls'),
+    Path('salt/metalk8s/solutions/unconfigured.sls'),
+    Path('salt/metalk8s/solutions/unmounted.sls'),
+    Path('salt/metalk8s/solutions/init.sls'),
 
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
@@ -447,6 +454,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s.py'),
     Path('salt/_modules/metalk8s_package_manager.py'),
     Path('salt/_modules/metalk8s_volumes.py'),
+    Path('salt/_modules/metalk8s_solutions.py'),
 
 
     Path('salt/_pillar/metalk8s.py'),
