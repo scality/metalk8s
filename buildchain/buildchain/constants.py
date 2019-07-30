@@ -32,10 +32,14 @@ PROMETHEUS_REPOSITORY : str = 'quay.io/prometheus'
 ISO_ROOT : Path = config.BUILD_ROOT/'root'
 # Root of the repositories on the ISO.
 REPO_ROOT : Path = ISO_ROOT/'packages'
+# Root of the RedHat repositories on the ISO.
+REPO_RPM_ROOT : Path = REPO_ROOT/'redhat'
 # Root for the images on the ISO.
 ISO_IMAGE_ROOT : Path = ISO_ROOT/'images'
 # Root for the packages that we build ourselves.
 PKG_ROOT : Path = config.BUILD_ROOT/'packages'
+# Root for the RPM packages that we build ourselves.
+PKG_RPM_ROOT : Path = PKG_ROOT/'redhat'
 # Root of the Vagrant environment folder.
 VAGRANT_ROOT : Path = ROOT/'.vagrant'
 # Path to the static-container-registry module.
