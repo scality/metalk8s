@@ -2,7 +2,6 @@
 Describes our custom way to deal with yum packages
 so that we can support downgrade in metalk8s
 '''
-
 import logging
 
 log = logging.getLogger(__name__)
@@ -15,10 +14,62 @@ def __virtual__():
     return __virtualname__
 
 
-def list_pkg_deps(pkg_name, version=None, fromrepo=None):
+def _list_dependents(
+    name, version, fromrepo=None, allowed_versions=None
+):
+    '''List and filter all packages requiring package `{name}-{version}`.
+
+    Filter based on the `allowed_versions` provided, within the provided
+    `fromrepo` repositories.
     '''
-    Check dependencies related to the packages installed so that we can pass
-    this information to pkg.installed
+    log.info(
+        'Listing packages depending on "%s" with version "%s"',
+        str(name),
+        str(version)
+    )
+
+    allowed_versions = allowed_versions or {}
+
+    command = [
+        'repoquery', '--whatrequires', '--recursive',
+        '--qf', '%{NAME} %{VERSION}-%{RELEASE}',
+        '{}-{}'.format(name, version)
+    ]
+
+    if fromrepo:
+        command.extend(['--disablerepo', '*', '--enablerepo', fromrepo])
+
+    ret = __salt__['cmd.run_all'](command)
+
+    if ret['retcode'] != 0:
+        log.error(
+            'Failed to list packages requiring "%s": %s',
+            '{}-{}'.format(name, version),
+            ret['stderr'] or ret['stdout']
+        )
+        return None
+
+    dependents = {}
+    for line in ret['stdout'].splitlines():
+        req_name, req_version = line.strip().split()
+
+        # NOTE: The following test filters out unknown packages and versions
+        #       not referenced in `allowed_versions` (there can be only one)
+        if req_version == allowed_versions.get(req_name):
+            dependents[req_name] = req_version
+
+    return dependents
+
+
+def list_pkg_dependents(
+    name, version=None, fromrepo=None, pkgs_info=None
+):
+    '''
+    Check dependents of the package `name`-`version` to install, to add in a
+    later `pkg.installed` state along with the original package.
+
+    Ensure all selected versions are compliant with those listed in `pkgs_info`
+    if provided.
 
     name
         Name of the package installed
@@ -26,53 +77,68 @@ def list_pkg_deps(pkg_name, version=None, fromrepo=None):
     version
         Version number of the package
 
-        Use : salt '*' metalk8s_package_manager.list_pkg_deps kubelet 1.11.9
+    pkgs_info
+        Value of pillar key `repo:packages` to consider for the requiring
+        packages to update (format {"<name>": {"version": "<version>"}, ...})
+
+    Usage :
+        salt '*' metalk8s_package_manager.list_pkg_dependents kubelet 1.11.10
     '''
-    log.info(
-        'Listing deps for "%s" with version "%s"',
-        str(pkg_name),
-        str(version)
-    )
-    pkgs_dict = {pkg_name: version}
+    if pkgs_info:
+        versions_dict = {
+            p_name: p_info['version']
+            for p_name, p_info in pkgs_info.items()
+        }
+    else:
+        versions_dict = {}
 
-    if not version:
-        return pkgs_dict
-
-    command_all = [
-        'repoquery', '--whatrequires', '--recursive', '--qf',
-        '%{NAME} %{VERSION}-%{RELEASE}',
-        '{}-{}'.format(str(pkg_name), str(version))
-    ]
-
-    if fromrepo:
-        command_all.extend(['--disablerepo', '*', '--enablerepo', fromrepo])
-
-    deps_list = __salt__['cmd.run_all'](command_all)
-
-    if deps_list['retcode'] != 0:
+    if pkgs_info and name not in versions_dict:
         log.error(
-            'Failed to list package dependencies: %s',
-            deps_list['stderr'] or deps_list['stdout']
+            'Trying to list dependents for "%s", which is not referenced in '
+            'the packages information provided',
+            name
         )
         return None
 
-    out = deps_list['stdout'].splitlines()
-    for line in out:
-        name, version = line.strip().split()
-        pkgs_dict[name] = version
+    all_pkgs = {name: version}
 
-    for key in pkgs_dict.keys():
-        package_query = __salt__['cmd.run_all'](
-            ['rpm', '-qa', key]
+    if not version:
+        return all_pkgs
+
+    if pkgs_info and versions_dict[name] != version:
+        log.error(
+            'Trying to list dependents for "%s" with version "%s", '
+            'while version configured is "%s"',
+            name,
+            version,
+            versions_dict[name]
         )
+        return None
 
-        if package_query['retcode'] == 1:
-            pkgs_dict.pop(key)
-        elif package_query['retcode'] != 0:
+    dependents = _list_dependents(
+        name,
+        version,
+        fromrepo=fromrepo,
+        allowed_versions=versions_dict,
+    )
+
+    all_pkgs.update(dependents)
+
+    for pkg_name, desired_version in all_pkgs.items():
+        ret = __salt__['cmd.run_all'](['rpm', '-qa', pkg_name])
+
+        if ret['retcode'] != 0:
             log.error(
-                'Failed to check if package is installed: %s',
-                deps_list['stderr'] or deps_list['stdout']
+                'Failed to check if package "%s" is installed: %s',
+                pkg_name,
+                ret['stderr'] or ret['stdout']
             )
             return None
 
-    return pkgs_dict
+        is_installed = bool(ret['stdout'].strip())
+        if not is_installed and pkg_name != name:
+            # Any package requiring the target `name` that is not yet installed
+            # should not be installed
+            del all_pkgs[pkg_name]
+
+    return all_pkgs

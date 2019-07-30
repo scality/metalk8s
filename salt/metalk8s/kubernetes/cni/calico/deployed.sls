@@ -596,7 +596,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: {{ build_image_name('calico-node', '3.8.0') }}
+          image: {{ build_image_name('calico-node') }}
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -782,7 +782,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: {{ build_image_name('calico-kube-controllers', '3.8.0') }}
+          image: {{ build_image_name('calico-kube-controllers') }}
           env:
             # Choose which controllers to run.
             - name: ENABLED_CONTROLLERS

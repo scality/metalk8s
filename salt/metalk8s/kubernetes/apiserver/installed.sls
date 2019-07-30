@@ -1,10 +1,7 @@
-{%- from "metalk8s/repo/macro.sls" import kubernetes_image, build_image_name with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
 {%- set htpasswd_path = "/etc/kubernetes/htpasswd" %}
-
-{%- set keepalived_image = "keepalived" %}
-{%- set keepalived_version = "1.3.5-8.el7_6-1" %}
 
 include:
   - metalk8s.kubernetes.ca.advertised
@@ -104,7 +101,7 @@ Create kube-apiserver Pod manifest:
     - context:
         name: kube-apiserver
         host: {{ host }}
-        image_name: {{ kubernetes_image("kube-apiserver") }}
+        image_name: {{ build_image_name("kube-apiserver") }}
         port: 6443
         scheme: HTTPS
         command:
@@ -155,7 +152,7 @@ Create kube-apiserver Pod manifest:
         sidecars:
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
           - name: keepalived
-            image: {{ build_image_name(keepalived_image, keepalived_version) }}
+            image: {{ build_image_name("keepalived") }}
             args:
               - --dont-fork
               - --dump-conf

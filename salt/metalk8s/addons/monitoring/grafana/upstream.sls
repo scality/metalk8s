@@ -59,7 +59,7 @@ spec:
         app: grafana
     spec:
       containers:
-      - image: {{ build_image_name('grafana', '6.0.0') }}
+      - image: {{ build_image_name('grafana') }}
         name: grafana
         ports:
         - containerPort: 3000

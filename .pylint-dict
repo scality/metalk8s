@@ -31,9 +31,10 @@ nginx
 prebuilt
 py
 readonly
-rpmspec
+renderer
 repo
 rpmlint
+rpmspec
 scality
 sdk
 skopeo

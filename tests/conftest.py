@@ -84,6 +84,10 @@ def k8s_client(request, k8s_apiclient):
     def test_something(k8s_client):
         assert k8s_client.list_namespaced_deployment(namespace="default")
     ```
+
+    FIXME: this is not working as of right now, since `pytest-bdd` manipulates
+    fixtures in its own way through the various scenario/when/then/given
+    decorators.
     """
     api_name = getattr(request, "param", "CoreV1Api")
     api_cls = getattr(kubernetes.client, api_name, None)
