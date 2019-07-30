@@ -49,7 +49,7 @@ const VolumeInformation = props => {
     dispatch(fetchVolumesAction());
     dispatch(fetchPersistentVolumeAction());
     dispatch(fetchStorageClassAction());
-  }, []);
+  }, [dispatch]);
 
   const theme = useSelector(state => state.config.theme);
   const node = useSelector(state => makeGetNodeFromUrl(state, props));

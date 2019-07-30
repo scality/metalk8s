@@ -76,7 +76,7 @@ const NodeInformation = props => {
     dispatch(fetchPodsAction());
     dispatch(fetchVolumesAction());
     dispatch(fetchPersistentVolumeAction());
-  }, []);
+  }, [dispatch]);
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setsortDirection] = useState('ASC');
