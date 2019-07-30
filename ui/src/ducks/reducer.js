@@ -1,4 +1,5 @@
 import { combineReducers } from 'redux';
+import { reducer as oidcReducer } from 'redux-oidc';
 
 import config from './config';
 import nodes from './app/nodes';
@@ -21,7 +22,8 @@ const rootReducer = combineReducers({
     salt,
     monitoring,
     volumes
-  })
+  }),
+  oidc: oidcReducer
 });
 
 export default rootReducer;

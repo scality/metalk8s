@@ -1,12 +1,14 @@
 import { call, put, takeEvery, select } from 'redux-saga/effects';
 import { mergeTheme } from '@scality/core-ui/dist/utils';
 import * as defaultTheme from '@scality/core-ui/dist/style/theme';
+import { loadUser, createUserManager } from 'redux-oidc';
+
+import { store } from '../index';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
 import { fetchClusterVersion } from './app/nodes';
-import { fetchUserInfo } from './login';
 import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 
 // Actions
@@ -17,12 +19,25 @@ const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
 const SET_INITIAL_LANGUAGE = 'SET_INITIAL_LANGUAGE';
 const UPDATE_LANGUAGE = 'UPDATE_LANGUAGE';
+const SET_USER_MANAGER_CONFIG = 'SET_USER_MANAGER_CONFIG';
+const SET_USER_MANAGER = 'SET_USER_MANAGER';
+export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 
 // Reducer
 const defaultState = {
   language: EN_LANG,
   theme: {},
-  api: null
+  api: null,
+  userManagerConfig: {
+    client_id: 'kubernetes',
+    redirect_uri: 'http://localhost:8000/callback',
+    response_type: 'id_token',
+    scope: 'openid profile email offline_access',
+    authority: '',
+    loadUserInfo: false,
+    post_logout_redirect_uri: '/'
+  },
+  userManager: null
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -33,6 +48,16 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, theme: action.payload };
     case SET_API_CONFIG:
       return { ...state, api: action.payload };
+    case SET_USER_MANAGER_CONFIG:
+      return {
+        ...state,
+        userManagerConfig: {
+          ...state.userManagerConfig,
+          authority: action.payload
+        }
+      };
+    case SET_USER_MANAGER:
+      return { ...state, userManager: action.payload };
     default:
       return state;
   }
@@ -67,6 +92,18 @@ export function updateLanguageAction(language) {
   return { type: UPDATE_LANGUAGE, payload: language };
 }
 
+export function setUserManagerConfigAction(conf) {
+  return { type: SET_USER_MANAGER_CONFIG, payload: conf };
+}
+
+export function setUserManagerAction(conf) {
+  return { type: SET_USER_MANAGER, payload: conf };
+}
+
+export function updateAPIConfigAction(payload) {
+  return { type: UPDATE_API_CONFIG, payload };
+}
+
 // Sagas
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
@@ -79,13 +116,18 @@ export function* fetchTheme() {
 export function* fetchConfig() {
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
-  if (!result.error) {
+  if (!result.error && result.oidc_provider_url) {
+    yield put(setUserManagerConfigAction(result.oidc_provider_url));
+    const userManagerConfig = yield select(
+      state => state.config.userManagerConfig
+    );
+    yield put(setUserManagerAction(createUserManager(userManagerConfig)));
+    const userManager = yield select(state => state.config.userManager);
+    yield call(loadUser, store, userManager);
     yield call(fetchTheme);
     yield put(setApiConfigAction(result));
-    yield call(ApiK8s.initialize, result.url);
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
-    yield call(fetchUserInfo);
     yield call(fetchClusterVersion);
   }
 }
@@ -109,9 +151,20 @@ export function* updateLanguage(action) {
   localStorage.setItem(LANGUAGE, language);
 }
 
+export function* updateApiServerConfig({ payload }) {
+  const api = yield select(state => state.config.api);
+  yield call(
+    ApiK8s.updateApiServerConfig,
+    api.url,
+    payload.id_token,
+    payload.token_type
+  );
+}
+
 export function* configSaga() {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
   yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
   yield takeEvery(UPDATE_LANGUAGE, updateLanguage);
+  yield takeEvery(UPDATE_API_CONFIG, updateApiServerConfig);
 }

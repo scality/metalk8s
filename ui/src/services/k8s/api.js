@@ -1,4 +1,3 @@
-import ApiClient from '../ApiClient';
 import {
   Config,
   Core_v1Api,
@@ -10,23 +9,9 @@ let config;
 let coreV1;
 let customObjects;
 let storage;
-let k8sApiClient = null;
 
-export function initialize(apiUrl) {
-  k8sApiClient = new ApiClient({ apiUrl });
-}
-
-//Basic Auth
-export function authenticate(token) {
-  return k8sApiClient.get('/api/v1', null, {
-    headers: {
-      Authorization: 'Basic ' + token
-    }
-  });
-}
-
-export const updateApiServerConfig = (url, token) => {
-  config = new Config(url, token, 'Basic');
+export const updateApiServerConfig = (url, id_token, token_type) => {
+  config = new Config(url, id_token, token_type);
   coreV1 = config.makeApiClient(Core_v1Api);
   customObjects = config.makeApiClient(Custom_objectsApi);
   storage = config.makeApiClient(Storage_v1Api);

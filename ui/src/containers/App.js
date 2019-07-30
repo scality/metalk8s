@@ -1,21 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Route, Switch } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { IntlProvider, addLocaleData } from 'react-intl';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
 import '@fortawesome/fontawesome-free/css/all.css';
-import Loader from '../components/Loader';
+import { OidcProvider } from 'redux-oidc';
 
+import Loader from '../components/Loader';
 import translations_en from '../translations/en';
 import translations_fr from '../translations/fr';
-
 import Layout from './Layout';
-import Login from './Login';
-
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
 import { fetchConfigAction, setInitialLanguageAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
+import { store } from '../index';
 
 const messages = {
   EN: translations_en,
@@ -33,17 +32,16 @@ class App extends Component {
   }
 
   render() {
-    const { language, api, theme } = this.props.config;
+    const { language, api, theme, userManager } = this.props.config;
 
-    return api && theme && this.props.isUserInfoLoaded ? (
-      <IntlProvider locale={language} messages={messages[language]}>
-        <IntlGlobalProvider>
-          <Switch>
-            <Route path="/login" component={Login} />
-            <Route component={Layout} />
-          </Switch>
-        </IntlGlobalProvider>
-      </IntlProvider>
+    return api && theme && userManager ? (
+      <OidcProvider store={store} userManager={userManager}>
+        <IntlProvider locale={language} messages={messages[language]}>
+          <IntlGlobalProvider>
+            <Layout />
+          </IntlGlobalProvider>
+        </IntlProvider>
+      </OidcProvider>
     ) : (
       <Loader />
     );
@@ -51,8 +49,7 @@ class App extends Component {
 }
 
 const mapStateToProps = state => ({
-  config: state.config,
-  isUserInfoLoaded: state.login.isUserInfoLoaded
+  config: state.config
 });
 
 const mapDispatchToProps = dispatch => {

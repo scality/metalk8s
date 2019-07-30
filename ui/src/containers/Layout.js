@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { matchPath } from 'react-router';
 import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
-import { withRouter, Switch } from 'react-router-dom';
+import { withRouter, Switch, Route } from 'react-router-dom';
 
 import NodeCreateForm from './NodeCreateForm';
 import NodeList from './NodeList';
@@ -13,7 +13,6 @@ import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
 import About from './About';
 import PrivateRoute from './PrivateRoute';
-import { logoutAction } from '../ducks/login';
 import { toggleSideBarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
@@ -21,8 +20,14 @@ import { updateLanguageAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import VolumeInformation from './VolumeInformation';
+import CallbackPage from './LoginCallback';
 
 class Layout extends Component {
+  logout(event) {
+    event.preventDefault();
+    this.props.userManager.removeUser(); // removes the user data from sessionStorage
+  }
+
   render() {
     const applications = [];
 
@@ -36,9 +41,12 @@ class Layout extends Component {
     ];
 
     const user = {
-      name: this.props.user && this.props.user.username,
+      name:
+        this.props.user &&
+        this.props.user.profile &&
+        this.props.user.profile.name + ' ' + this.props.user.profile.email,
       actions: [
-        { label: this.props.intl.messages.log_out, onClick: this.props.logout }
+        { label: this.props.intl.messages.log_out, onClick: this.logout }
       ]
     };
 
@@ -100,7 +108,7 @@ class Layout extends Component {
       productName: this.props.intl.messages.product_name,
       applications,
       help,
-      user: this.props.user && user,
+      user: this.props.user ? user : null,
       languages,
       logo: (
         <img
@@ -141,6 +149,7 @@ class Layout extends Component {
             <PrivateRoute exact path="/nodes" component={NodeList} />
             <PrivateRoute exact path="/about" component={About} />
             <PrivateRoute exact path="/" component={ClusterMonitoring} />
+            <Route exact path="/callback" component={() => <CallbackPage />} />
           </Switch>
         </CoreUILayout>
       </ThemeProvider>
@@ -149,16 +158,15 @@ class Layout extends Component {
 }
 
 const mapStateToProps = state => ({
-  user: state.login.user,
   sidebar: state.app.layout.sidebar,
   theme: state.config.theme,
   notifications: state.app.notifications.list,
-  language: state.config.language
+  language: state.config.language,
+  userManager: state.config.userManager
 });
 
 const mapDispatchToProps = dispatch => {
   return {
-    logout: () => dispatch(logoutAction()),
     removeNotification: uid => dispatch(removeNotificationAction(uid)),
     updateLanguage: language => dispatch(updateLanguageAction(language)),
     toggleSidebar: () => dispatch(toggleSideBarAction())
