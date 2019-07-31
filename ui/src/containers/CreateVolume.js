@@ -155,8 +155,6 @@ const CreateVolume = props => {
               dirty
             } = formikProps;
 
-            console.log('errors', errors);
-
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
             return (
