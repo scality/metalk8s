@@ -87,5 +87,5 @@
   "volume_creation_failed": "Volume {name} creation has failed.",
   "volume_name_error": "Name must be lowercase letters, numbers and hyphens.",
   "volume_path_error": "Device path must start with a '/'",
-  "volume_size_error": "Size must be composed of a positive integer and a unit like 250Gi or 1Ti."
+  "volume_size_error": "The size must be a postive integer."
 }

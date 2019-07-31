@@ -87,5 +87,5 @@
   "volume_creation_failed": "La création du volume {name} a échoué.",
   "volume_name_error": "Le nom doit être composé de minuscules, chiffres ou de tiret.",
   "volume_path_error": "Le chemin du disque doit commencer par un '/'",
-  "volume_size_error": "La capacité du volume est composée d'un entier positif et d'une unité comme dans 250Gi or 1Ti."
+  "volume_size_error": "La capacité du volume doit être un entier positif"
 }

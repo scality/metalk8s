@@ -98,3 +98,11 @@ export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
     };
   }, [dispatch, refreshAction, stopRefreshAction]);
 };
+
+export const sizeUnits = [
+  { label: 'ki', value: 'Ki' },
+  { label: 'Mi', value: 'Mi' },
+  { label: 'Gi', value: 'Gi' },
+  { label: 'Ti', value: 'Ti' },
+  { label: 'Pi', value: 'Pi' }
+];

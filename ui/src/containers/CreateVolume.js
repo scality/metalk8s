@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
+import * as yup from 'yup';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { Input, Button, Breadcrumb } from '@scality/core-ui';
@@ -17,6 +17,8 @@ import {
   BreadcrumbLabel,
   StyledLink
 } from '../components/BreadcrumbStyle';
+import { sizeUnits } from '../services/utils';
+
 // We might want to do a factorization later for
 // form styled components
 const CreateVolumeContainer = styled.div`
@@ -28,7 +30,6 @@ const FormSection = styled.div`
   padding: 0 ${padding.larger};
   display: flex;
   flex-direction: column;
-
   .sc-input-wrapper {
     width: 200px;
   }
@@ -50,7 +51,6 @@ const CreateVolumeLayout = styled.div`
     .sc-input {
       display: inline-flex;
       margin: ${padding.smaller} 0;
-
       .sc-input-label {
         width: 200px;
       }
@@ -73,6 +73,19 @@ const SelectFieldItem = styled.select`
   width: 200px;
 `;
 
+const SizeFieldContainer = styled.div`
+  display: inline-flex;
+  align-items: center;
+  .sc-input-wrapper {
+    width: 150px;
+  }
+`;
+
+const SizeFieldSelectContainer = styled.div`
+  width: 50px;
+  padding-left: 5px;
+`;
+
 const CreateVolume = props => {
   const { theme, intl, match, history, fetchStorageClass } = props;
   useEffect(() => {
@@ -88,37 +101,44 @@ const CreateVolume = props => {
     { label: 'RawBlockDevice', value: RAW_BLOCK_DEVICE },
     { label: 'SparseLoopDevice', value: SPARSE_LOOP_DEVICE }
   ];
+
   const initialValues = {
     name: '',
     storageClass: storageClassesName[0],
     type: types[0].value,
-    size: '',
-    path: ''
+    path: '',
+    selectedUnit: sizeUnits[0].value,
+    sizeInput: ''
   };
-  const validationSchema = Yup.object().shape({
-    name: Yup.string()
+  const validationSchema = yup.object().shape({
+    name: yup
+      .string()
       .matches(
         /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/,
         intl.messages.volume_name_error
       )
       .required(),
-    storageClass: Yup.string().required(),
-    type: Yup.string().required(),
-    path: Yup.string()
+    storageClass: yup.string().required(),
+    type: yup.string().required(),
+    path: yup
+      .string()
       .matches(/^\//, intl.messages.volume_path_error)
       .when('type', {
         is: RAW_BLOCK_DEVICE,
-        then: Yup.string().required()
+        then: yup.string().required()
       }),
-    size: Yup.string()
-      .matches(
-        /^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/,
-        intl.messages.volume_size_error
-      )
-      .when('type', {
-        is: SPARSE_LOOP_DEVICE,
-        then: Yup.string().required()
-      })
+    sizeInput: yup.number().when('type', {
+      is: SPARSE_LOOP_DEVICE,
+      then: yup
+        .number()
+        .integer(intl.messages.volume_size_error)
+        .positive(intl.messages.volume_size_error)
+        .required()
+    }),
+    selectedUnit: yup.string().when('type', {
+      is: SPARSE_LOOP_DEVICE,
+      then: yup.string().required()
+    })
   });
 
   const isFormReady = storageClassesName.length > 0 && types.length > 0;
@@ -142,7 +162,9 @@ const CreateVolume = props => {
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={values => {
-            props.createVolume(values, nodeName);
+            const newVolume = { ...values };
+            newVolume.size = `${values.sizeInput}${values.selectedUnit}`;
+            props.createVolume(newVolume, nodeName);
           }}
         >
           {formikProps => {
@@ -161,7 +183,6 @@ const CreateVolume = props => {
               <Form>
                 <FormSection>
                   <Input
-                    className="input_item"
                     name="name"
                     value={values.name}
                     onChange={handleChange('name')}
@@ -202,18 +223,37 @@ const CreateVolume = props => {
                   </SelectField>
 
                   {values.type === SPARSE_LOOP_DEVICE ? (
-                    <Input
-                      className="input_item"
-                      name="size"
-                      value={values.size}
-                      onChange={handleChange('size')}
-                      label={intl.messages.volume_size}
-                      error={touched.size && errors.size}
-                      onBlur={handleOnBlur}
-                    />
+                    <SizeFieldContainer>
+                      <Input
+                        name="sizeInput"
+                        type="number"
+                        min="1"
+                        value={values.sizeInput}
+                        onChange={handleChange('sizeInput')}
+                        label={intl.messages.volume_size}
+                        error={touched.sizeInput && errors.sizeInput}
+                        onBlur={handleOnBlur}
+                      />
+                      <SizeFieldSelectContainer>
+                        <select
+                          name="selectedUnit"
+                          value={values.selectedUnit.value}
+                          onChange={handleChange('selectedUnit')}
+                          error={touched.selectedUnit && errors.selectedUnit}
+                          onBlur={handleOnBlur}
+                        >
+                          {sizeUnits.map(({ label, value }, idx) => {
+                            return (
+                              <option key={`sizeUnits_${idx}`} value={value}>
+                                {label}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </SizeFieldSelectContainer>
+                    </SizeFieldContainer>
                   ) : (
                     <Input
-                      className="input_item"
                       name="path"
                       value={values.path}
                       onChange={handleChange('path')}
