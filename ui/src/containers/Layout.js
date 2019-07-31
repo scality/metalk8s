@@ -46,7 +46,10 @@ class Layout extends Component {
         this.props.user.profile &&
         this.props.user.profile.name + ' ' + this.props.user.profile.email,
       actions: [
-        { label: this.props.intl.messages.log_out, onClick: this.logout }
+        {
+          label: this.props.intl.messages.log_out,
+          onClick: event => this.logout(event)
+        }
       ]
     };
 
@@ -162,7 +165,8 @@ const mapStateToProps = state => ({
   theme: state.config.theme,
   notifications: state.app.notifications.list,
   language: state.config.language,
-  userManager: state.config.userManager
+  userManager: state.config.userManager,
+  user: state.oidc.user
 });
 
 const mapDispatchToProps = dispatch => {

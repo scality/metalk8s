@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { CallbackComponent } from 'redux-oidc';
+import { withRouter } from 'react-router-dom';
 import { updateAPIConfigAction } from '../ducks/config';
 
 class CallbackPage extends React.Component {
@@ -36,7 +37,9 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CallbackPage);
+export default withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(CallbackPage)
+);

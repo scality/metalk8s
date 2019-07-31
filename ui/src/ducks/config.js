@@ -29,8 +29,8 @@ const defaultState = {
   theme: {},
   api: null,
   userManagerConfig: {
-    client_id: 'kubernetes',
-    redirect_uri: 'http://localhost:8000/callback',
+    client_id: 'example-app',
+    redirect_uri: 'http://localhost:3000/callback',
     response_type: 'id_token',
     scope: 'openid profile email offline_access',
     authority: '',
