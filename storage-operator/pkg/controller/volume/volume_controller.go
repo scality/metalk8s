@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -35,9 +36,10 @@ func Add(mgr manager.Manager) error {
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	return &ReconcileVolume{
-		client: mgr.GetClient(),
-		scheme: mgr.GetScheme(),
-		salt:   salt.NewClient(getAuthCredential(mgr.GetConfig())),
+		client:   mgr.GetClient(),
+		scheme:   mgr.GetScheme(),
+		recorder: mgr.GetRecorder("volume-controller"),
+		salt:     salt.NewClient(getAuthCredential(mgr.GetConfig())),
 	}
 }
 
@@ -74,9 +76,10 @@ var _ reconcile.Reconciler = &ReconcileVolume{}
 type ReconcileVolume struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
-	salt   *salt.Client
+	client   client.Client
+	scheme   *runtime.Scheme
+	recorder record.EventRecorder
+	salt     *salt.Client
 }
 
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
