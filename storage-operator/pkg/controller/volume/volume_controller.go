@@ -88,7 +88,8 @@ type ReconcileVolume struct {
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Name", request.Name)
-	reqLogger.Info("Reconciling Volume")
+	reqLogger.Info("reconciling volume: START")
+	defer reqLogger.Info("reconciling volume: STOP")
 
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
