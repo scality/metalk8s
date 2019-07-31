@@ -32,7 +32,7 @@ func TestNewClientDefault(t *testing.T) {
 	}
 }
 
-func TestNewPostRequest(t *testing.T) {
+func TestNewRequest(t *testing.T) {
 	tests := map[string]struct {
 		is_auth  bool
 		expected string
@@ -46,7 +46,7 @@ func TestNewPostRequest(t *testing.T) {
 			client := NewClient(nil)
 			client.token = newToken("foo", 0)
 
-			request, _ := client.newPostRequest("/", nil, tc.is_auth)
+			request, _ := client.newRequest("POST", "/", nil, tc.is_auth)
 			token := request.Header.Get("X-Auth-Token")
 
 			assert.Equal(t, tc.expected, token)

@@ -62,7 +62,7 @@ func (self *Client) PrepareVolume(
 
 	self.logger.Info("PrepareVolume")
 
-	ans, err := self.authenticatedPost(ctx, "/", payload)
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return "", errors.Wrapf(
 			err, "PrepareVolume failed (target=%s)", nodeName,
@@ -72,7 +72,7 @@ func (self *Client) PrepareVolume(
 	return ans["jid"].(string), nil
 }
 
-// Send an authenticated POST request to Salt API.
+// Send an authenticated request to Salt API.
 //
 // Automatically handle:
 // - missing token (authenticate)
@@ -81,13 +81,17 @@ func (self *Client) PrepareVolume(
 //
 // Arguments
 //     ctx:      the request context (used for cancellation)
+//     verb:     HTTP verb used for the request
 //     endpoint: API endpoint.
-//     payload:  POST JSON payload.
+//     payload:  request JSON payload (optional)
 //
 // Returns
 //     The decoded response body.
-func (self *Client) authenticatedPost(
-	ctx context.Context, endpoint string, payload map[string]string,
+func (self *Client) authenticatedRequest(
+	ctx context.Context,
+	verb string,
+	endpoint string,
+	payload map[string]string,
 ) (map[string]interface{}, error) {
 	// Authenticate if we don't have a valid token.
 	if self.token == nil || self.token.isExpired() {
@@ -96,7 +100,7 @@ func (self *Client) authenticatedPost(
 		}
 	}
 
-	response, err := self.doPost(ctx, endpoint, payload, true)
+	response, err := self.doRequest(ctx, verb, endpoint, payload, true)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +115,7 @@ func (self *Client) authenticatedPost(
 		if err := self.authenticate(ctx); err != nil {
 			return nil, err
 		}
-		response, err = self.doPost(ctx, endpoint, payload, true)
+		response, err = self.doRequest(ctx, verb, endpoint, payload, true)
 	}
 	defer response.Body.Close()
 
@@ -131,7 +135,7 @@ func (self *Client) authenticate(ctx context.Context) error {
 		"Auth", "username", payload["username"], "type", payload["token_type"],
 	)
 
-	response, err := self.doPost(ctx, "/login", payload, false)
+	response, err := self.doRequest(ctx, "POST", "/login", payload, false)
 	if err != nil {
 		return err
 	}
@@ -149,18 +153,20 @@ func (self *Client) authenticate(ctx context.Context) error {
 	return nil
 }
 
-// Send a POST request to Salt API.
+// Send a request to Salt API.
 //
 // Arguments
 //     ctx:      the request context (used for cancellation)
+//     verb:     HTTP verb used for the request
 //     endpoint: API endpoint.
-//     payload:  POST JSON payload.
+//     payload:  request JSON payload (optional).
 //     is_auth:  Is the request authenticated?
 //
 // Returns
-//     The POST response.
-func (self *Client) doPost(
+//     The request response.
+func (self *Client) doRequest(
 	ctx context.Context,
+	verb string,
 	endpoint string,
 	payload map[string]string,
 	is_auth bool,
@@ -170,19 +176,19 @@ func (self *Client) doPost(
 	// Setup the translog.
 	defer func(start time.Time) {
 		elapsed := int64(time.Since(start) / time.Millisecond)
-		self.logRequest("POST", endpoint, response, elapsed)
+		self.logRequest(verb, endpoint, response, elapsed)
 	}(time.Now())
 
-	request, err := self.newPostRequest(endpoint, payload, is_auth)
+	request, err := self.newRequest(verb, endpoint, payload, is_auth)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot create POST request")
+		return nil, errors.Wrapf(err, "cannot create %s request", verb)
 	}
 	request = request.WithContext(ctx)
 
-	// Send the POST request.
+	// Send the request.
 	response, err = self.client.Do(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "POST failed on Salt API")
+		return nil, errors.Wrapf(err, "%s failed on Salt API", verb)
 	}
 	return response, nil
 }
@@ -208,30 +214,38 @@ func (self *Client) logRequest(
 	}
 }
 
-// Create a POST request for Salt API.
+// Create an HTTP request for Salt API.
 //
 // Arguments
+//     verb:     HTTP verb used for the request
 //     endpoint: API endpoint.
-//     payload:  POST JSON payload.
+//     payload:  request JSON payload (optional).
 //     is_auth:  Is the request authenticated?
 //
 // Returns
-//     The POST request.
-func (self *Client) newPostRequest(
-	endpoint string, payload map[string]string, is_auth bool,
+//     The HTTP request.
+func (self *Client) newRequest(
+	verb string, endpoint string, payload map[string]string, is_auth bool,
 ) (*http.Request, error) {
 	// Build target URL.
 	url := fmt.Sprintf("%s%s", self.address, endpoint)
 
 	// Encode the payload into JSON.
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, errors.Wrap(err, "cannot serialize POST body")
+	var body []byte = nil
+	if payload != nil {
+		var err error
+		body, err = json.Marshal(payload)
+		if err != nil {
+			return nil, errors.Wrapf(err, "cannot serialize %s body", verb)
+		}
 	}
-	// Prepare the POST request.
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+
+	// Prepare the HTTP request.
+	request, err := http.NewRequest(verb, url, bytes.NewBuffer(body))
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot prepare POST query for Salt API")
+		return nil, errors.Wrapf(
+			err, "cannot prepare %s query for Salt API", verb,
+		)
 	}
 
 	request.Header.Set("Accept", "application/json")
@@ -242,10 +256,10 @@ func (self *Client) newPostRequest(
 	return request, nil
 }
 
-// Decode the POST response payload.
+// Decode the HTTP response body.
 //
 // Arguments
-//     response: the POST response.
+//     response: the HTTP response.
 //
 // Returns
 //     The decoded API response.
