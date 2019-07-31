@@ -25,6 +25,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
+
 var log = logf.Log.WithName("controller_volume")
 
 // Add creates a new Volume Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -179,6 +181,24 @@ func (self *ReconcileVolume) setTerminatingVolumeStatus(
 	return reconcile.Result{Requeue: true}, nil
 }
 
+// Add the volume-protection on the volume (if not already present).
+func (self *ReconcileVolume) addVolumeFinalizer(
+	ctx context.Context, volume *storagev1alpha1.Volume,
+) error {
+	finalizers := volume.GetFinalizers()
+	volume.SetFinalizers(SliceAppendUnique(finalizers, VOLUME_PROTECTION))
+	return self.client.Update(ctx, volume)
+}
+
+// Remove the volume-protection on the volume (if not already present).
+func (self *ReconcileVolume) removeVolumeFinalizer(
+	ctx context.Context, volume *storagev1alpha1.Volume,
+) error {
+	finalizers := volume.GetFinalizers()
+	volume.SetFinalizers(SliceRemoveValue(finalizers, VOLUME_PROTECTION))
+	return self.client.Update(ctx, volume)
+}
+
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
 // and what is in the Volume.Spec
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
@@ -241,11 +261,9 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 func newPersistentVolumeForCR(cr *storagev1alpha1.Volume) *corev1.PersistentVolume {
 	return &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   cr.Name,
-			Labels: map[string]string{},
-			Finalizers: []string{
-				"storage.metalk8s.scality.com/volume-protection",
-			},
+			Name:       cr.Name,
+			Labels:     map[string]string{},
+			Finalizers: []string{VOLUME_PROTECTION},
 		},
 		Spec: corev1.PersistentVolumeSpec{
 			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
