@@ -82,6 +82,103 @@ type ReconcileVolume struct {
 	salt     *salt.Client
 }
 
+// Trace a state transition, using logging and Kubernetes events.
+func (self *ReconcileVolume) traceStateTransition(
+	volume *storagev1alpha1.Volume, oldPhase storagev1alpha1.VolumePhase,
+) {
+	// Nothing to trace if there is no transition.
+	if volume.Status.Phase == oldPhase {
+		return
+	}
+
+	reqLogger := log.WithValues("Request.Name", volume.Name)
+
+	self.recorder.Eventf(
+		volume, corev1.EventTypeNormal, "StateTransition",
+		"volume phase transition from '%s' to '%s'",
+		oldPhase, volume.Status.Phase,
+	)
+	reqLogger.Info(
+		"volume phase transition: requeue",
+		"Volume.OldPhase", oldPhase,
+		"Volume.NewPhase", volume.Status.Phase,
+	)
+}
+
+// Commit the Volume Status update.
+func (self *ReconcileVolume) updateVolumeStatus(
+	ctx context.Context,
+	volume *storagev1alpha1.Volume,
+	oldPhase storagev1alpha1.VolumePhase,
+) (reconcile.Result, error) {
+	reqLogger := log.WithValues("Request.Name", volume.Name)
+
+	if err := self.client.Status().Update(ctx, volume); err != nil {
+		reqLogger.Error(err, "cannot update Volume status: requeue")
+		return reconcile.Result{}, err
+	}
+
+	self.traceStateTransition(volume, oldPhase)
+	// Status updated: reschedule to move forward.
+	return reconcile.Result{Requeue: true}, nil
+}
+
+// Put the volume into Failed state.
+func (self *ReconcileVolume) setFailedVolumeStatus(
+	ctx context.Context,
+	volume *storagev1alpha1.Volume,
+	errorCode storagev1alpha1.VolumeErrorCode,
+	format string,
+	args ...interface{},
+) (reconcile.Result, error) {
+	oldPhase := volume.Status.Phase
+
+	volume.SetFailedStatus(errorCode, format, args...)
+	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
+		return reconcile.Result{}, err
+	}
+	return reconcile.Result{Requeue: true}, nil
+}
+
+// Put the volume into Pending state.
+func (self *ReconcileVolume) setPendingVolumeStatus(
+	ctx context.Context, volume *storagev1alpha1.Volume, job string,
+) (reconcile.Result, error) {
+	oldPhase := volume.Status.Phase
+
+	volume.SetPendingStatus(job)
+	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
+		return reconcile.Result{}, err
+	}
+	return reconcile.Result{Requeue: true}, nil
+}
+
+// Put the volume into Available state.
+func (self *ReconcileVolume) setAvailableVolumeStatus(
+	ctx context.Context, volume *storagev1alpha1.Volume,
+) (reconcile.Result, error) {
+	oldPhase := volume.Status.Phase
+
+	volume.SetAvailableStatus()
+	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
+		return reconcile.Result{}, err
+	}
+	return reconcile.Result{Requeue: true}, nil
+}
+
+// Put the volume into Terminating state.
+func (self *ReconcileVolume) setTerminatingVolumeStatus(
+	ctx context.Context, volume *storagev1alpha1.Volume, job string,
+) (reconcile.Result, error) {
+	oldPhase := volume.Status.Phase
+
+	volume.SetTerminatingStatus(job)
+	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
+		return reconcile.Result{}, err
+	}
+	return reconcile.Result{Requeue: true}, nil
+}
+
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
 // and what is in the Volume.Spec
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates

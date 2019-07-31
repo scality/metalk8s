@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -98,6 +100,52 @@ type Volume struct {
 
 	Spec   VolumeSpec   `json:"spec,omitempty"`
 	Status VolumeStatus `json:"status,omitempty"`
+}
+
+// Update the volume status to Failed phase.
+//
+// Arguments
+//     errorCode: the error code that triggered the shift to the Failed phase
+//     format:    the string format for the error message
+//     args:      values used in the error message
+func (self *Volume) SetFailedStatus(
+	errorCode VolumeErrorCode, format string, args ...interface{},
+) {
+	errorMsg := fmt.Sprintf(format, args...)
+
+	self.Status = VolumeStatus{
+		Phase:        VolumeFailed,
+		Job:          self.Status.Job, // Preserve job: can help for debug.
+		ErrorCode:    errorCode,
+		ErrorMessage: errorMsg,
+	}
+}
+
+// Update the volume status to Pending phase.
+//
+// Arguments
+//     job: job in progress
+func (self *Volume) SetPendingStatus(job string) {
+	self.Status = VolumeStatus{
+		Phase: VolumePending, Job: job, ErrorCode: "", ErrorMessage: "",
+	}
+}
+
+// Update the volume status to Available phase.
+func (self *Volume) SetAvailableStatus() {
+	self.Status = VolumeStatus{
+		Phase: VolumeAvailable, Job: "", ErrorCode: "", ErrorMessage: "",
+	}
+}
+
+// Update the volume status to Terminating phase.
+//
+// Arguments
+//     job: job in progress
+func (self *Volume) SetTerminatingStatus(job string) {
+	self.Status = VolumeStatus{
+		Phase: VolumeTerminating, Job: job, ErrorCode: "", ErrorMessage: "",
+	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
