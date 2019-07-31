@@ -214,25 +214,25 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
-	// Fetch the Volume instance
-	instance := &storagev1alpha1.Volume{}
-	err := r.client.Get(ctx, request.NamespacedName, instance)
+	// Fetch the requested Volume object.
+	volume := &storagev1alpha1.Volume{}
+	err := r.client.Get(ctx, request.NamespacedName, volume)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
-			// TODO Remove the finalizer from the generated PV, if exists
+			// Volume not found:
+			// => all the finalizers have been removed & Volume has been deleted
+			// => there is nothing left to do
+			reqLogger.Info("volume already deleted: nothing to do")
 			return reconcile.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
+		reqLogger.Error(err, "cannot read Volume: requeue")
 		return reconcile.Result{}, err
 	}
 
-	pv := newPersistentVolumeForCR(instance)
+	pv := newPersistentVolumeForCR(volume)
 
 	// Set Volume instance as the owner and controller
-	if err := controllerutil.SetControllerReference(instance, pv, r.scheme); err != nil {
+	if err := controllerutil.SetControllerReference(volume, pv, r.scheme); err != nil {
 		return reconcile.Result{}, err
 	}
 
