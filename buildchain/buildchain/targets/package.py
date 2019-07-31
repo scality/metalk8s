@@ -96,7 +96,7 @@ class Package(base.CompositeTarget):
     @property
     def rootdir(self) -> Path:
         """Package root directory."""
-        return constants.PKG_ROOT/self._name
+        return constants.PKG_RPM_ROOT/self._name
 
     @property
     def srcdir(self) -> Path:
@@ -111,14 +111,13 @@ class Package(base.CompositeTarget):
     @property
     def meta(self) -> Path:
         """.meta file path."""
-        #return self.rootdir/'redhat'/'{}.meta'.format(self.name)
-        return constants.PKG_RPM_ROOT/'{}.meta'.format(self.name)
+        return self.rootdir/'{}.meta'.format(self.name)
 
     @property
     def srpm(self) -> Path:
         """SRPM path."""
         fmt = '{pkg.name}-{pkg.version}-{pkg.build_id}.{pkg.SUFFIX}.src.rpm'
-        return constants.PKG_ROOT/fmt.format(pkg=self)
+        return constants.PKG_RPM_ROOT/fmt.format(pkg=self)
 
     @property
     def execution_plan(self) -> List[types.TaskDict]:
@@ -203,7 +202,6 @@ class Package(base.CompositeTarget):
         task['task_dep'].append('{}:{}'.format(self.basename,
                                                self.MKDIR_TASK_NAME))
         return task
-
     def build_srpm(self) -> types.TaskDict:
         """Build the SRPM for the package."""
         env = {
@@ -212,7 +210,6 @@ class Package(base.CompositeTarget):
             'SOURCES': ' '.join(source.name for source in self.sources),
             'VERSION': self.version,
         }
-
         buildsrpm_callable = docker_command.DockerRun(
             command=['/entrypoint.sh', 'buildsrpm'],
             builder=self.builder,
@@ -246,7 +243,7 @@ class Package(base.CompositeTarget):
                     with open(srcfile, 'wb') as fp:
                         fp.write(conn.read())
             else:
-                url = os.path.join(constants.ROOT/'packages', url)
+                url = os.path.join(constants.ROOT/'packages'/'redhat', url)
                 shutil.copyfile(url, srcfile)
 
     def _get_source_files_urls(self) -> Dict[Path, str]:
