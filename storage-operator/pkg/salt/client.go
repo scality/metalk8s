@@ -15,6 +15,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
+type AsyncJobFailed struct {
+	reason string
+}
+
+func (self *AsyncJobFailed) Error() string {
+	return self.reason
+}
+
 // A Salt API client.
 type Client struct {
 	address string       // Address of the Salt API server.
@@ -71,6 +79,59 @@ func (self *Client) PrepareVolume(
 	// TODO(#1461): make this more robust.
 	result := ans["return"].([]interface{})[0].(map[string]interface{})
 	return result["jid"].(string), nil
+}
+
+// Poll the status of an asynchronous Salt job.
+//
+// Arguments
+//     ctx:      the request context (used for cancellation)
+//     jobId:    Salt job ID
+//     nodeName: node on which the job is executed
+//
+// Returns
+//     The result of the job if the execution is over, otherwise nil.
+func (self *Client) PollJob(
+	ctx context.Context, jobId string, nodeName string,
+) (map[string]interface{}, error) {
+	jobLogger := self.logger.WithValues("jobId", jobId)
+	jobLogger.Info("polling Salt job")
+
+	endpoint := fmt.Sprintf("/jobs/%s", jobId)
+	ans, err := self.authenticatedRequest(ctx, "GET", endpoint, nil)
+	if err != nil {
+		return nil, errors.Wrapf(
+			err, "Salt job polling failed for ID %s", jobId,
+		)
+	}
+
+	// TODO(#1461): make this more robust.
+	info := ans["info"].([]interface{})[0].(map[string]interface{})
+
+	// Unknown Job ID: maybe the Salt server restarted or something like that.
+	if errmsg, found := info["Error"]; found {
+		jobLogger.Info("Salt job not found")
+		reason := fmt.Sprintf(
+			"cannot get status for job %s: %s", jobId, (errmsg).(string),
+		)
+		return nil, errors.New(reason)
+	}
+	result := info["Result"].(map[string]interface{})
+	// No result yet, the job is still running.
+	if len(result) == 0 {
+		jobLogger.Info("Salt job is still running")
+		return nil, nil
+	}
+	nodeResult := result[nodeName].(map[string]interface{})
+
+	// The job is done: check if it has succeeded.
+	success := result[nodeName].(map[string]interface{})["success"].(bool)
+	if !success {
+		jobLogger.Info("Salt job failed")
+		reason := nodeResult["return"].(string)
+		return nil, &AsyncJobFailed{reason}
+	}
+	jobLogger.Info("Salt job succeedeed")
+	return nodeResult, nil
 }
 
 // Send an authenticated request to Salt API.
