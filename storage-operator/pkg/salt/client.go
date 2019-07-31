@@ -69,7 +69,8 @@ func (self *Client) PrepareVolume(
 		)
 	}
 	// TODO(#1461): make this more robust.
-	return ans["jid"].(string), nil
+	result := ans["return"].([]interface{})[0].(map[string]interface{})
+	return result["jid"].(string), nil
 }
 
 // Send an authenticated request to Salt API.
@@ -141,7 +142,7 @@ func (self *Client) authenticate(ctx context.Context) error {
 	}
 	defer response.Body.Close()
 
-	output, err := decodeApiResponse(response)
+	result, err := decodeApiResponse(response)
 	if err != nil {
 		return errors.Wrapf(
 			err,
@@ -151,6 +152,7 @@ func (self *Client) authenticate(ctx context.Context) error {
 	}
 
 	// TODO(#1461): make this more robust.
+	output := result["return"].([]interface{})[0].(map[string]interface{})
 	self.token = newToken(
 		output["token"].(string), output["expire"].(float64),
 	)
@@ -285,7 +287,5 @@ func decodeApiResponse(response *http.Response) (map[string]interface{}, error) 
 	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
 		return nil, errors.Wrap(err, "cannot decode Salt API response")
 	}
-	// The real result is in a single-item list stored in the `return` field.
-	// TODO(#1461): make this more robust.
-	return result["return"].([]interface{})[0].(map[string]interface{}), nil
+	return result, nil
 }

@@ -70,7 +70,7 @@ func TestDecodeApiResponse(t *testing.T) {
 			result: nil, error: "cannot decode Salt API response",
 		},
 		"ok": {
-			status: 200, body: httpBody(`{"return": [{"token": "foo"}]}`),
+			status: 200, body: httpBody(`{"token": "foo"}`),
 			result: map[string]interface{}{"token": "foo"}, error: "",
 		},
 	}
