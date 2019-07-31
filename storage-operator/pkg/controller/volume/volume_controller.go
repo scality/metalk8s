@@ -90,9 +90,12 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	reqLogger := log.WithValues("Request.Name", request.Name)
 	reqLogger.Info("Reconciling Volume")
 
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
 	// Fetch the Volume instance
 	instance := &storagev1alpha1.Volume{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	err := r.client.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -125,10 +128,10 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 
 	// Check if this PV already exists
 	found := &corev1.PersistentVolume{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Namespace: "", Name: pv.Name}, found)
+	err = r.client.Get(ctx, types.NamespacedName{Namespace: "", Name: pv.Name}, found)
 	if err != nil && errors.IsNotFound(err) {
 		reqLogger.Info("Creating a new PersistentVolume", "PersistentVolume.Name", pv.Name)
-		err = r.client.Create(context.TODO(), pv)
+		err = r.client.Create(ctx, pv)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
