@@ -63,7 +63,7 @@ func (self *Client) PrepareVolume(
 	ctx context.Context, nodeName string,
 ) (string, error) {
 	// Use rand_sleep to emulate slow operation for now
-	payload := map[string]string{
+	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
 		"fun":    "test.rand_sleep",
@@ -149,11 +149,12 @@ func (self *Client) PollJob(
 func (self *Client) GetVolumeSize(
 	ctx context.Context, nodeName string, devicePath string,
 ) (int64, error) {
-	payload := map[string]string{
-		"client": "local",
-		"tgt":    nodeName,
-		"fun":    "disk.dump",
-		"arg":    devicePath,
+	payload := map[string]interface{}{
+		"client":  "local",
+		"tgt":     nodeName,
+		"fun":     "disk.dump",
+		"arg":     devicePath,
+		"timeout": 1,
 	}
 
 	self.logger.Info("disk.dump")
@@ -191,7 +192,7 @@ func (self *Client) authenticatedRequest(
 	ctx context.Context,
 	verb string,
 	endpoint string,
-	payload map[string]string,
+	payload map[string]interface{},
 ) (map[string]interface{}, error) {
 	// Authenticate if we don't have a valid token.
 	if self.token == nil || self.token.isExpired() {
@@ -224,7 +225,7 @@ func (self *Client) authenticatedRequest(
 
 // Authenticate against the Salt API server.
 func (self *Client) authenticate(ctx context.Context) error {
-	payload := map[string]string{
+	payload := map[string]interface{}{
 		"eauth":      "kubernetes_rbac",
 		"username":   self.creds.username,
 		"token":      self.creds.token,
@@ -273,7 +274,7 @@ func (self *Client) doRequest(
 	ctx context.Context,
 	verb string,
 	endpoint string,
-	payload map[string]string,
+	payload map[string]interface{},
 	is_auth bool,
 ) (*http.Response, error) {
 	var response *http.Response = nil
@@ -330,7 +331,7 @@ func (self *Client) logRequest(
 // Returns
 //     The HTTP request.
 func (self *Client) newRequest(
-	verb string, endpoint string, payload map[string]string, is_auth bool,
+	verb string, endpoint string, payload map[string]interface{}, is_auth bool,
 ) (*http.Request, error) {
 	// Build target URL.
 	url := fmt.Sprintf("%s%s", self.address, endpoint)
@@ -352,6 +353,10 @@ func (self *Client) newRequest(
 			err, "cannot prepare %s query for Salt API", verb,
 		)
 	}
+
+	query := request.URL.Query()
+	query.Add("timeout", "1")
+	request.URL.RawQuery = query.Encode()
 
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Content-Type", "application/json")
