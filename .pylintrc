@@ -47,7 +47,6 @@ disable=abstract-method,     # Too many false positive :/
         bad-continuation,    # I kindly disagree :)
         locally-disabled,    # Sometime we need to disable a warning locally.
         suppressed-message,  # Don't pollute the output with useless info.
-        useless-return       # Disagreement with mypy, see https://github.com/python/mypy/issues/3974
 
 # }}}
 # Basic {{{
