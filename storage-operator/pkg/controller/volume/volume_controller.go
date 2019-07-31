@@ -108,17 +108,6 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return reconcile.Result{}, err
 	}
 
-	result, err := r.salt.TestPing(ctx)
-	if err != nil {
-		reqLogger.Error(err, "test.ping failed")
-		return reconcile.Result{}, err
-	}
-	for hostname := range result {
-		reqLogger.Info(
-			"ping", "hostname", hostname, "result", result[hostname].(bool),
-		)
-	}
-
 	pv := newPersistentVolumeForCR(instance)
 
 	// Set Volume instance as the owner and controller

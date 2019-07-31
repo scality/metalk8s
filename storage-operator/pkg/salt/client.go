@@ -42,25 +42,6 @@ func NewClient(creds *Credential) *Client {
 	}
 }
 
-// Test function, will be removed later…
-func (self *Client) TestPing(
-	ctx context.Context,
-) (map[string]interface{}, error) {
-	payload := map[string]string{
-		"client": "local",
-		"tgt":    "*",
-		"fun":    "test.ping",
-	}
-
-	self.logger.Info("test.ping")
-
-	ans, err := self.authenticatedPost(ctx, "/", payload)
-	if err != nil {
-		return nil, errors.Wrap(err, "test.ping failed")
-	}
-	return ans, nil
-}
-
 // Send an authenticated POST request to Salt API.
 //
 // Automatically handle:
