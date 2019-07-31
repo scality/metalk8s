@@ -35,7 +35,7 @@ repo:
     registry: '90-registry-config.inc'
     common_registry: '99-registry-common.inc'
   local_mode: false
-  relative_path: packages     # relative to ISO root (configured in pillar)
+  relative_path: packages/redhat  # relative to ISO root (configured in pillar)
   port: 8080
   repositories:
     metalk8s-base:
