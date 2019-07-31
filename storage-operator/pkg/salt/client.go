@@ -82,6 +82,37 @@ func (self *Client) PrepareVolume(
 	return result["jid"].(string), nil
 }
 
+// Spawn a job, asynchronously, to unprepare the volume on the specified node.
+//
+// Arguments
+//     ctx:      the request context (used for cancellation)
+//     nodeName: name of the node where the volume will be
+//
+// Returns
+//     The Salt job ID.
+func (self *Client) UnprepareVolume(
+	ctx context.Context, nodeName string,
+) (string, error) {
+	// Use rand_sleep to emulate slow operation for now
+	payload := map[string]interface{}{
+		"client": "local_async",
+		"tgt":    nodeName,
+		"fun":    "test.rand_sleep",
+	}
+
+	self.logger.Info("UnprepareVolume")
+
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
+	if err != nil {
+		return "", errors.Wrapf(
+			err, "UnprepareVolume failed (target=%s)", nodeName,
+		)
+	}
+	// TODO(#1461): make this more robust.
+	result := ans["return"].([]interface{})[0].(map[string]interface{})
+	return result["jid"].(string), nil
+}
+
 // Poll the status of an asynchronous Salt job.
 //
 // Arguments
