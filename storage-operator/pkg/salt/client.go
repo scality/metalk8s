@@ -143,7 +143,11 @@ func (self *Client) authenticate(ctx context.Context) error {
 
 	output, err := decodeApiResponse(response)
 	if err != nil {
-		return errors.Wrap(err, "Salt API authentication failed")
+		return errors.Wrapf(
+			err,
+			"Salt API authentication failed (username=%s, type=%s)",
+			self.creds.username, string(self.creds.kind),
+		)
 	}
 
 	// TODO(#1461): make this more robust.
