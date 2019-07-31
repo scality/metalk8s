@@ -2,6 +2,7 @@ package salt
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -42,7 +43,9 @@ func NewClient(creds *Credential) *Client {
 }
 
 // Test function, will be removed later…
-func (self *Client) TestPing() (map[string]interface{}, error) {
+func (self *Client) TestPing(
+	ctx context.Context,
+) (map[string]interface{}, error) {
 	payload := map[string]string{
 		"client": "local",
 		"tgt":    "*",
@@ -51,7 +54,7 @@ func (self *Client) TestPing() (map[string]interface{}, error) {
 
 	self.logger.Info("test.ping")
 
-	ans, err := self.authenticatedPost("/", payload)
+	ans, err := self.authenticatedPost(ctx, "/", payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "test.ping failed")
 	}
@@ -66,22 +69,23 @@ func (self *Client) TestPing() (map[string]interface{}, error) {
 // - token invalidation (re-authenticate)
 //
 // Arguments
+//     ctx:      the request context (used for cancellation)
 //     endpoint: API endpoint.
 //     payload:  POST JSON payload.
 //
 // Returns
 //     The decoded response body.
 func (self *Client) authenticatedPost(
-	endpoint string, payload map[string]string,
+	ctx context.Context, endpoint string, payload map[string]string,
 ) (map[string]interface{}, error) {
 	// Authenticate if we don't have a valid token.
 	if self.token == nil || self.token.isExpired() {
-		if err := self.authenticate(); err != nil {
+		if err := self.authenticate(ctx); err != nil {
 			return nil, err
 		}
 	}
 
-	response, err := self.doPost(endpoint, payload, true)
+	response, err := self.doPost(ctx, endpoint, payload, true)
 	if err != nil {
 		return nil, err
 	}
@@ -93,10 +97,10 @@ func (self *Client) authenticatedPost(
 		response.Body.Close() // Terminate this request before starting another.
 
 		self.token = nil
-		if err := self.authenticate(); err != nil {
+		if err := self.authenticate(ctx); err != nil {
 			return nil, err
 		}
-		response, err = self.doPost(endpoint, payload, true)
+		response, err = self.doPost(ctx, endpoint, payload, true)
 	}
 	defer response.Body.Close()
 
@@ -104,7 +108,7 @@ func (self *Client) authenticatedPost(
 }
 
 // Authenticate against the Salt API server.
-func (self *Client) authenticate() error {
+func (self *Client) authenticate(ctx context.Context) error {
 	payload := map[string]string{
 		"eauth":      "kubernetes_rbac",
 		"username":   self.creds.username,
@@ -116,7 +120,7 @@ func (self *Client) authenticate() error {
 		"Auth", "username", payload["username"], "type", payload["token_type"],
 	)
 
-	response, err := self.doPost("/login", payload, false)
+	response, err := self.doPost(ctx, "/login", payload, false)
 	if err != nil {
 		return err
 	}
@@ -137,6 +141,7 @@ func (self *Client) authenticate() error {
 // Send a POST request to Salt API.
 //
 // Arguments
+//     ctx:      the request context (used for cancellation)
 //     endpoint: API endpoint.
 //     payload:  POST JSON payload.
 //     is_auth:  Is the request authenticated?
@@ -144,7 +149,10 @@ func (self *Client) authenticate() error {
 // Returns
 //     The POST response.
 func (self *Client) doPost(
-	endpoint string, payload map[string]string, is_auth bool,
+	ctx context.Context,
+	endpoint string,
+	payload map[string]string,
+	is_auth bool,
 ) (*http.Response, error) {
 	var response *http.Response = nil
 
@@ -158,6 +166,7 @@ func (self *Client) doPost(
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create POST request")
 	}
+	request = request.WithContext(ctx)
 
 	// Send the POST request.
 	response, err = self.client.Do(request)
