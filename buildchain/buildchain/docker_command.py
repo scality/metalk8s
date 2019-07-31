@@ -140,7 +140,7 @@ class DockerBuild:
 
     @task_error(docker.errors.BuildError, handler=build_error_handler)
     @task_error(docker.errors.APIError)
-    def __call__(self) -> Optional[TaskError]:
+    def __call__(self) -> None:
         DOCKER_CLIENT.images.build(
             tag=self.tag,
             path=self.path,
@@ -148,7 +148,6 @@ class DockerBuild:
             buildargs=self.buildargs,
             forcerm=True,
         )
-        return None
 
 
 class DockerRun:
@@ -266,14 +265,13 @@ class DockerRun:
     @task_error(docker.errors.ContainerError, handler=container_error_handler)
     @task_error(docker.errors.ImageNotFound)
     @task_error(docker.errors.APIError)
-    def __call__(self) -> Optional[TaskError]:
+    def __call__(self) -> None:
         run_config = self.expand_config()
         DOCKER_CLIENT.containers.run(
             image=self.builder.tag,
             command=self.command,
             **run_config
         )
-        return None
 
 
 class DockerTag:
@@ -294,10 +292,9 @@ class DockerTag:
 
     @task_error(docker.errors.BuildError, handler=build_error_handler)
     @task_error(docker.errors.APIError)
-    def __call__(self) -> Optional[TaskError]:
+    def __call__(self) -> None:
         to_tag = DOCKER_CLIENT.images.get(self.full_name)
         to_tag.tag(self.repository, tag=self.version)
-        return None
 
 
 class DockerPull:
@@ -323,7 +320,8 @@ class DockerPull:
 
     @task_error(docker.errors.BuildError, handler=build_error_handler)
     @task_error(docker.errors.APIError)
-    def __call__(self) -> Optional[TaskError]:
+    @task_error(ValueError)
+    def __call__(self) -> None:
         pulled = DOCKER_CLIENT.images.pull(
             # For some reason, the repository must include the image name
             '{}/{}'.format(self.repository, self.name),
@@ -331,15 +329,13 @@ class DockerPull:
         )
 
         if pulled.id != self.digest:
-            return TaskError(
+            raise ValueError(
                 "Image {s.name}:{s.version} pulled from {s.repository} "
                 "doesn't match expected digest: "
                 "expected {s.digest}, got {observed_digest}".format(
                     s=self, observed_digest=pulled.id
                 )
             )
-
-        return None
 
 
 class DockerSave:
@@ -358,12 +354,10 @@ class DockerSave:
 
     @task_error(docker.errors.APIError)
     @task_error(OSError)
-    def __call__(self) -> Optional[TaskError]:
+    def __call__(self) -> None:
         to_save = DOCKER_CLIENT.images.get(self.tag)
         image_stream = to_save.save(named=True)
 
         with self.save_path.open('wb') as image_file:
             for chunk in image_stream:
                 image_file.write(chunk)
-
-        return None
