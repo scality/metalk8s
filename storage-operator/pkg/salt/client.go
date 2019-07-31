@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -132,6 +133,43 @@ func (self *Client) PollJob(
 	}
 	jobLogger.Info("Salt job succeedeed")
 	return nodeResult, nil
+}
+
+// Return the size of the specified device on the given node.
+//
+// This request is synchronous.
+//
+// Arguments
+//     ctx:        the request context (used for cancellation)
+//     nodeName:   name of the node where the volume will be
+//     devicePath: path of the device for which we want the size
+//
+// Returns
+//     The size of the device, in bytes.
+func (self *Client) GetVolumeSize(
+	ctx context.Context, nodeName string, devicePath string,
+) (int64, error) {
+	payload := map[string]string{
+		"client": "local",
+		"tgt":    nodeName,
+		"fun":    "disk.dump",
+		"arg":    devicePath,
+	}
+
+	self.logger.Info("disk.dump")
+
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
+	if err != nil {
+		return 0, errors.Wrapf(
+			err, "disk.dump failed (target=%s, path=%s)", nodeName, devicePath,
+		)
+	}
+
+	// TODO(#1461): make this more robust.
+	result := ans["return"].([]interface{})[0].(map[string]interface{})
+	nodeResult := result[nodeName].(map[string]interface{})
+	size_str := nodeResult["getsize64"].(string)
+	return strconv.ParseInt(size_str, 10, 64)
 }
 
 // Send an authenticated request to Salt API.
