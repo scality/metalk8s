@@ -42,6 +42,36 @@ func NewClient(creds *Credential) *Client {
 	}
 }
 
+// Spawn a job, asynchronously, to prepare the volume on the specified node.
+//
+// Arguments
+//     ctx:      the request context (used for cancellation)
+//     nodeName: name of the node where the volume will be
+//
+// Returns
+//     The Salt job ID.
+func (self *Client) PrepareVolume(
+	ctx context.Context, nodeName string,
+) (string, error) {
+	// Use rand_sleep to emulate slow operation for now
+	payload := map[string]string{
+		"client": "local_async",
+		"tgt":    nodeName,
+		"fun":    "test.rand_sleep",
+	}
+
+	self.logger.Info("PrepareVolume")
+
+	ans, err := self.authenticatedPost(ctx, "/", payload)
+	if err != nil {
+		return "", errors.Wrapf(
+			err, "PrepareVolume failed (target=%s)", nodeName,
+		)
+	}
+	// TODO(#1461): make this more robust.
+	return ans["jid"].(string), nil
+}
+
 // Send an authenticated POST request to Salt API.
 //
 // Automatically handle:
