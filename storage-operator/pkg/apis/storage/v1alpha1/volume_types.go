@@ -42,12 +42,46 @@ type VolumeSpec struct {
 	VolumeSource `json:",inline"`
 }
 
+type VolumePhase string
+
+// "Enum" representing the phase/status of a volume.
+const (
+	VolumeFailed      VolumePhase = "Failed"
+	VolumePending     VolumePhase = "Pending"
+	VolumeAvailable   VolumePhase = "Available"
+	VolumeTerminating VolumePhase = "Terminating"
+)
+
+type VolumeErrorCode string
+
+// "Enum" representing the error codes of the Failed state.
+const (
+	InternalError    VolumeErrorCode = "InternalError"
+	CreationError    VolumeErrorCode = "CreationError"
+	DestructionError VolumeErrorCode = "DestructionError"
+	UnavailableError VolumeErrorCode = "UnavailableError"
+)
+
 // VolumeStatus defines the observed state of Volume
 // +k8s:openapi-gen=true
 type VolumeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+
+	// Volume lifecycle phase
+	// +kubebuilder:validation:Enum=Available,Pending,Failed,Terminating
+	Phase VolumePhase `json:"phase,omitempty"`
+
+	// Job in progress
+	Job string `json:"job,omitempty"`
+
+	// Volume failure error code
+	// +kubebuilder:validation:Enum=InternalError,CreationError,DestructionError,UnavailableError
+	ErrorCode VolumeErrorCode `json:"errorCode,omitempty"`
+
+	// Volume failure error message
+	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

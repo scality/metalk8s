@@ -67,6 +67,29 @@ spec:
           - storageClassName
           type: object
         status:
+          properties:
+            errorCode:
+              description: Volume failure error code
+              enum:
+              - InternalError
+              - CreationError
+              - DestructionError
+              - UnavailableError
+              type: string
+            errorMessage:
+              description: Volume failure error message
+              type: string
+            job:
+              description: Job in progress
+              type: string
+            phase:
+              description: Volume lifecycle phase
+              enum:
+              - Available
+              - Pending
+              - Failed
+              - Terminating
+              type: string
           type: object
   version: v1alpha1
   versions:
