@@ -25,6 +25,7 @@ import (
 )
 
 const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
+const JOB_DONE_MARKER = "DONE"
 
 var log = logf.Log.WithName("controller_volume")
 
@@ -216,6 +217,15 @@ func (self *ReconcileVolume) getPersistentVolume(
 	return pv, nil
 }
 
+// Remove the volume-protection on the PV (if not already present).
+func (self *ReconcileVolume) removePvFinalizer(
+	ctx context.Context, pv *corev1.PersistentVolume,
+) error {
+	finalizers := pv.GetFinalizers()
+	pv.SetFinalizers(SliceRemoveValue(finalizers, VOLUME_PROTECTION))
+	return self.client.Update(ctx, pv)
+}
+
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
 // and what is in the Volume.Spec
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
@@ -259,10 +269,6 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	// Check if the volume is marked for deletion (i.e., deletion tstamp is set).
 	if !volume.GetDeletionTimestamp().IsZero() {
-		if volume.Status.Phase == storagev1alpha1.VolumePending {
-			reqLogger.Info("pending volume cannot be marked for deletion: requeue")
-			return reconcile.Result{Requeue: true}, nil
-		}
 		return r.finalizeVolume(ctx, request, volume)
 	}
 	// Skip volume stuck waiting for deletion or a manual fix.
@@ -315,7 +321,56 @@ func (self *ReconcileVolume) finalizeVolume(
 	request reconcile.Request,
 	volume *storagev1alpha1.Volume,
 ) (reconcile.Result, error) {
-	return reconcile.Result{Requeue: true}, nil
+	reqLogger := log.WithValues("Request.Name", request.Name)
+
+	if volume.Status.Phase == storagev1alpha1.VolumePending {
+		reqLogger.Info("pending volume cannot be finalized: requeue")
+		return reconcile.Result{Requeue: true}, nil
+	}
+
+	// Check if a PV is associated to the volume.
+	pv, err := self.getPersistentVolume(ctx, volume.Name)
+	if err != nil {
+		reqLogger.Error(
+			err, "cannot read PersistentVolume: requeue",
+			"PersistentVolume.Name", volume.Name,
+		)
+		return reconcile.Result{}, err
+	}
+
+	// No associated PV: let's delete ourselves then.
+	if pv == nil {
+		reqLogger.Info("no PersistentVolume associated to terminating volume")
+		if err := self.removeVolumeFinalizer(ctx, volume); err != nil {
+			reqLogger.Error(err, "cannot remove volume finalizer")
+			return reconcile.Result{}, err
+		}
+		reqLogger.Info("volume finalizer removed")
+		return reconcile.Result{}, nil
+	}
+
+	switch pv.Status.Phase {
+	case corev1.VolumeBound:
+		reqLogger.Info(
+			"backing PersistentVolume is bound: cannot delete volume",
+		)
+		return reconcile.Result{Requeue: true}, nil
+	case corev1.VolumePending:
+		reqLogger.Info(
+			"backing PersistentVolume is pending: waiting for stabilization",
+		)
+		return reconcile.Result{Requeue: true}, nil
+	case corev1.VolumeAvailable, corev1.VolumeReleased, corev1.VolumeFailed:
+		reqLogger.Info("the backing PersistentVolume is removable")
+		return self.destroyPersistentVolume(ctx, request, volume, pv)
+	default:
+		phase := pv.Status.Phase
+		errmsg := fmt.Sprintf(
+			"unexpected PersistentVolume status (%+v): do nothing", phase,
+		)
+		reqLogger.Info(errmsg, "PersistentVolume.Status", phase)
+		return reconcile.Result{Requeue: true}, nil
+	}
 }
 
 func newPersistentVolumeForCR(cr *storagev1alpha1.Volume) *corev1.PersistentVolume {
@@ -367,7 +422,84 @@ func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
 		Required: &selector,
 	}
 	return &affinity
+}
 
+// Destroy the give PersistentVolume.
+func (self *ReconcileVolume) destroyPersistentVolume(
+	ctx context.Context,
+	request reconcile.Request,
+	volume *storagev1alpha1.Volume,
+	pv *corev1.PersistentVolume,
+) (reconcile.Result, error) {
+	nodeName := string(volume.Spec.NodeName)
+	reqLogger := log.WithValues(
+		"Request.Name", request.Name, "Volume.NodeName", nodeName,
+	)
+
+	switch volume.Status.Job {
+	case "": // No job in progress: call Salt to unprepare the volume.
+		if jid, err := self.salt.UnprepareVolume(ctx, nodeName); err != nil {
+			reqLogger.Error(err, "failed to run UnprepareVolume")
+			return reconcile.Result{}, err
+		} else {
+			reqLogger.Info("start to unprepare the volume")
+			self.recorder.Event(
+				volume, corev1.EventTypeNormal, "SaltCall",
+				"Salt call to UnprepareVolume started",
+			)
+			return self.setTerminatingVolumeStatus(ctx, volume, jid)
+		}
+	case JOB_DONE_MARKER: // Salt job is done, now let's delete the PV.
+		if err := self.client.Delete(ctx, pv); err != nil {
+			reqLogger.Error(
+				err, "cannot delete PersistentVolume: requeue",
+				"PersistentVolume.Name", volume.Name,
+			)
+			return reconcile.Result{}, err
+		}
+		reqLogger.Info(
+			"deleting backing PersistentVolume",
+			"PersistentVolume.Name", pv.Name,
+		)
+		if err := self.removePvFinalizer(ctx, pv); err != nil {
+			reqLogger.Error(err, "cannot remove PersistentVolume finalizer")
+			return reconcile.Result{}, err
+		}
+		reqLogger.Info("PersistentVolume finalizer removed")
+		self.recorder.Event(
+			volume, corev1.EventTypeNormal, "PvDeletion",
+			"backing PersistentVolume deleted",
+		)
+		return reconcile.Result{Requeue: true}, nil
+	default: // UnprepareVolume in progress: poll its state.
+		jid := volume.Status.Job
+		if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
+			reqLogger.Error(err, "failed to poll UnprepareVolume status")
+			// This one is not retryable.
+			if failure, ok := err.(*salt.AsyncJobFailed); ok {
+				self.recorder.Event(
+					volume, corev1.EventTypeWarning, "SaltCall",
+					"Salt call to UnprepareVolume failed",
+				)
+				return self.setFailedVolumeStatus(
+					ctx, volume, storagev1alpha1.DestructionError,
+					"UnprepareVolume failed with %s", failure.Error(),
+				)
+			}
+			// Job salt not found, let's retry.
+			return self.setTerminatingVolumeStatus(ctx, volume, "")
+		} else {
+			if result == nil {
+				reqLogger.Info("UnprepareVolume still in progress")
+				return reconcile.Result{Requeue: true}, nil
+			}
+			self.recorder.Event(
+				volume, corev1.EventTypeNormal, "SaltCall",
+				"Salt call to UnprepareVolume succeeded",
+			)
+			return self.setTerminatingVolumeStatus(ctx, volume, JOB_DONE_MARKER)
+		}
+	}
 }
 
 // Return the credential to use to authenticate with Salt API.
