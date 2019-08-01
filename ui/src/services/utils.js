@@ -51,6 +51,81 @@ export const sortSelector = createSelector(
   list => list
 );
 
+/**
+ * This function will sort the `array` by capacity.
+ * The capacity should follow k8s regex rules.
+ * Each elements is an object that have a storageCapacity field.
+ *
+ * @param {array} list - The array that will be sort
+ * @param {string} sortBy - The field that will be sort
+ * @param {string} sortDirection - The direction of the sort.
+ *
+ * @example
+ * const capacities = [
+ *  { capacity: '1Ki' },
+ *  { capacity: '1Gi' },
+ *  { capacity: '100Mi' },
+ * ];
+ *
+ * const sortedCapacity = sortCapacity(capacities, 'capacity', 'DESC')
+ */
+export const sortCapacity = createSelector(
+  (list = [], sortBy = 'storageCapacity', sortDirection = 'ASC') => {
+    if (
+      Array.isArray(list) &&
+      typeof sortBy === 'string' &&
+      typeof sortDirection === 'string'
+    ) {
+      const k8sCapacityRegex = /^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/;
+      const notSortableList = list.filter(
+        item => !k8sCapacityRegex.test(item?.[sortBy])
+      );
+
+      const sortedList = list
+        .filter(item => k8sCapacityRegex.test(item?.[sortBy]))
+        .map(item => {
+          const unit = item[sortBy].slice(-2);
+          const size = item[sortBy].substring(0, item[sortBy].length - 2);
+          const unitBase =
+            sizeUnits.find(sizeUnit => sizeUnit.value === unit)?.base ??
+            sizeUnits[0].value;
+
+          return {
+            ...item,
+            unit,
+            size,
+            unitBase
+          };
+        })
+        .sort((item1, item2) => {
+          const rawValue1 = item1.unitBase * item1.size;
+          const rawValue2 = item2.unitBase * item2.size;
+
+          if (sortDirection === 'ASC') {
+            return rawValue1 - rawValue2;
+          } else if (sortDirection === 'DESC') {
+            return rawValue2 - rawValue1;
+          } else {
+            return 0;
+          }
+        })
+        // Cleanup the object
+        .map(item => {
+          const cleanItem = { ...item };
+          delete cleanItem.unit;
+          delete cleanItem.size;
+          delete cleanItem.unitBase;
+          return cleanItem;
+        });
+
+      return [...sortedList, ...notSortableList];
+    } else {
+      return [];
+    }
+  },
+  list => list
+);
+
 export const getNodeNameFromUrl = (state, props) => {
   if (props && props.match && props.match.params && props.match.params.id) {
     return props.match.params.id;
@@ -100,10 +175,10 @@ export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
 };
 
 export const sizeUnits = [
-  { label: 'B', value: '' },
-  { label: 'KiB', value: 'Ki' },
-  { label: 'MiB', value: 'Mi' },
-  { label: 'GiB', value: 'Gi' },
-  { label: 'TiB', value: 'Ti' },
-  { label: 'PiB', value: 'Pi' }
+  { label: 'B', value: '', base: 1 },
+  { label: 'KiB', value: 'Ki', base: 2 ** 10 },
+  { label: 'MiB', value: 'Mi', base: 2 ** 20 },
+  { label: 'GiB', value: 'Gi', base: 2 ** 30 },
+  { label: 'TiB', value: 'Ti', base: 2 ** 40 },
+  { label: 'PiB', value: 'Pi', base: 2 ** 50 }
 ];
