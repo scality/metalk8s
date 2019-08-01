@@ -17,7 +17,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -199,6 +198,24 @@ func (self *ReconcileVolume) removeVolumeFinalizer(
 	return self.client.Update(ctx, volume)
 }
 
+// Get the PersistentVolume associated to the given volume.
+//
+// Return `nil` if no such volume exists.
+func (self *ReconcileVolume) getPersistentVolume(
+	ctx context.Context, name string,
+) (*corev1.PersistentVolume, error) {
+	pv := &corev1.PersistentVolume{}
+	key := types.NamespacedName{Namespace: "", Name: name}
+
+	if err := self.client.Get(ctx, key, pv); err != nil {
+		if errors.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return pv, nil
+}
+
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
 // and what is in the Volume.Spec
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
@@ -215,6 +232,12 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	defer cancel()
 
 	// Fetch the requested Volume object.
+	//
+	// The reconciliation request can be triggered by either a Volume or a
+	// PersistentVolume owned by a Volume (we're watching both), but because the
+	// lifetime of a Volume always span over the whole lifetime of the backing
+	// PersistentVolume (and they have the same name) it is safe to always
+	// lookup a Volume here.
 	volume := &storagev1alpha1.Volume{}
 	err := r.client.Get(ctx, request.NamespacedName, volume)
 	if err != nil {
@@ -234,7 +257,14 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 			"invalid volume: %s", err.Error(),
 		)
 	}
-
+	// Check if the volume is marked for deletion (i.e., deletion tstamp is set).
+	if !volume.GetDeletionTimestamp().IsZero() {
+		if volume.Status.Phase == storagev1alpha1.VolumePending {
+			reqLogger.Info("pending volume cannot be marked for deletion: requeue")
+			return reconcile.Result{Requeue: true}, nil
+		}
+		return r.finalizeVolume(ctx, request, volume)
+	}
 	// Skip volume stuck waiting for deletion or a manual fix.
 	if volume.IsInUnrecoverableFailedState() {
 		reqLogger.Info(
@@ -244,34 +274,48 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		)
 		return reconcile.Result{}, nil
 	}
-
-	pv := newPersistentVolumeForCR(volume)
-
-	// Set Volume instance as the owner and controller
-	if err := controllerutil.SetControllerReference(volume, pv, r.scheme); err != nil {
+	// Check if a PV already exists for this volume.
+	pv, err := r.getPersistentVolume(ctx, volume.Name)
+	if err != nil {
+		reqLogger.Error(
+			err, "cannot read PersistentVolume: requeue",
+			"PersistentVolume.Name", volume.Name,
+		)
 		return reconcile.Result{}, err
 	}
-
-	// Check if this PV already exists
-	found := &corev1.PersistentVolume{}
-	err = r.client.Get(ctx, types.NamespacedName{Namespace: "", Name: pv.Name}, found)
-	if err != nil && errors.IsNotFound(err) {
-		reqLogger.Info("Creating a new PersistentVolume", "PersistentVolume.Name", pv.Name)
-		err = r.client.Create(ctx, pv)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-
-		// PV created successfully - don't requeue
-		return reconcile.Result{}, nil
-	} else if err != nil {
+	// PV doesn't exist: deploy the volume to create it.
+	if pv == nil {
+		return r.deployVolume(ctx, request, volume)
+	}
+	// Else, check its health.
+	if pv.Status.Phase == corev1.VolumeFailed {
+		_, err := r.setFailedVolumeStatus(
+			ctx, volume, storagev1alpha1.UnavailableError,
+			"backing PersistentVolume is in a failed state (%s): %s",
+			pv.Status.Reason, pv.Status.Message,
+		)
 		return reconcile.Result{}, err
 	}
+	_, err = r.setAvailableVolumeStatus(ctx, volume)
+	return reconcile.Result{}, err
+}
 
-	// PV already exists - don't requeue
-	reqLogger.Info("Skip reconcile: PersistentVolume already exists", "PersistentVolume.Name", found.Name)
+// Deploy a volume (i.e prepare the storage and create a PV).
+func (self *ReconcileVolume) deployVolume(
+	ctx context.Context,
+	request reconcile.Request,
+	volume *storagev1alpha1.Volume,
+) (reconcile.Result, error) {
+	return reconcile.Result{Requeue: true}, nil
+}
 
-	return reconcile.Result{}, nil
+// Finalize a volume marked for deletion.
+func (self *ReconcileVolume) finalizeVolume(
+	ctx context.Context,
+	request reconcile.Request,
+	volume *storagev1alpha1.Volume,
+) (reconcile.Result, error) {
+	return reconcile.Result{Requeue: true}, nil
 }
 
 func newPersistentVolumeForCR(cr *storagev1alpha1.Volume) *corev1.PersistentVolume {
