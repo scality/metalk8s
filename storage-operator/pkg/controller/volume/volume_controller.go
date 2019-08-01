@@ -4,6 +4,7 @@ import (
 	"context"
 	b64 "encoding/base64"
 	"fmt"
+	"time"
 
 	storagev1alpha1 "github.com/scality/metalk8s/storage-operator/pkg/apis/storage/v1alpha1"
 	"github.com/scality/metalk8s/storage-operator/pkg/salt"
@@ -118,12 +119,12 @@ func (self *ReconcileVolume) updateVolumeStatus(
 
 	if err := self.client.Status().Update(ctx, volume); err != nil {
 		reqLogger.Error(err, "cannot update Volume status: requeue")
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
 
 	self.traceStateTransition(volume, oldPhase)
 	// Status updated: reschedule to move forward.
-	return reconcile.Result{Requeue: true}, nil
+	return requeue(nil)
 }
 
 // Put the volume into Failed state.
@@ -138,9 +139,9 @@ func (self *ReconcileVolume) setFailedVolumeStatus(
 
 	volume.SetFailedStatus(errorCode, format, args...)
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
-	return reconcile.Result{Requeue: true}, nil
+	return requeue(nil)
 }
 
 // Put the volume into Pending state.
@@ -151,9 +152,9 @@ func (self *ReconcileVolume) setPendingVolumeStatus(
 
 	volume.SetPendingStatus(job)
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
-	return reconcile.Result{Requeue: true}, nil
+	return requeue(nil)
 }
 
 // Put the volume into Available state.
@@ -164,9 +165,9 @@ func (self *ReconcileVolume) setAvailableVolumeStatus(
 
 	volume.SetAvailableStatus()
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
-	return reconcile.Result{Requeue: true}, nil
+	return requeue(nil)
 }
 
 // Put the volume into Terminating state.
@@ -177,9 +178,9 @@ func (self *ReconcileVolume) setTerminatingVolumeStatus(
 
 	volume.SetTerminatingStatus(job)
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
-	return reconcile.Result{Requeue: true}, nil
+	return requeue(nil)
 }
 
 // Add the volume-protection on the volume (if not already present).
@@ -307,10 +308,10 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 			// => all the finalizers have been removed & Volume has been deleted
 			// => there is nothing left to do
 			reqLogger.Info("volume already deleted: nothing to do")
-			return reconcile.Result{}, nil
+			return endReconciliation()
 		}
 		reqLogger.Error(err, "cannot read Volume: requeue")
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
 	if err := volume.IsValid(); err != nil {
 		return r.setFailedVolumeStatus(
@@ -329,7 +330,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 			"Error.Code", volume.Status.ErrorCode,
 			"Error.Message", volume.Status.ErrorMessage,
 		)
-		return reconcile.Result{}, nil
+		return endReconciliation()
 	}
 	// Check if a PV already exists for this volume.
 	pv, err := r.getPersistentVolume(ctx, volume.Name)
@@ -338,7 +339,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 			err, "cannot read PersistentVolume: requeue",
 			"PersistentVolume.Name", volume.Name,
 		)
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
 	// PV doesn't exist: deploy the volume to create it.
 	if pv == nil {
@@ -351,10 +352,13 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 			"backing PersistentVolume is in a failed state (%s): %s",
 			pv.Status.Reason, pv.Status.Message,
 		)
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
-	_, err = r.setAvailableVolumeStatus(ctx, volume)
-	return reconcile.Result{}, err
+	if _, err = r.setAvailableVolumeStatus(ctx, volume); err != nil {
+		return delayedRequeue(err)
+	}
+	reqLogger.Info("backing PersistentVolume is healthy")
+	return endReconciliation()
 }
 
 // Deploy a volume (i.e prepare the storage and create a PV).
@@ -372,7 +376,7 @@ func (self *ReconcileVolume) deployVolume(
 	case "": // No job in progress: call Salt to prepare the volume.
 		if jid, err := self.salt.PrepareVolume(ctx, nodeName); err != nil {
 			reqLogger.Error(err, "failed to run PrepareVolume")
-			return reconcile.Result{}, err
+			return delayedRequeue(err)
 		} else {
 			reqLogger.Info("start to prepare the volume")
 			self.recorder.Event(
@@ -392,7 +396,7 @@ func (self *ReconcileVolume) deployVolume(
 		}
 		pv := newPersistentVolume(volume, diskSize)
 		if err := self.createPersistentVolume(ctx, pv, volume); err != nil {
-			return reconcile.Result{}, err
+			return delayedRequeue(err)
 		}
 		reqLogger.Info(
 			"creating a new PersistentVolume", "PersistentVolume.Name", pv.Name,
@@ -422,7 +426,7 @@ func (self *ReconcileVolume) deployVolume(
 		} else {
 			if result == nil {
 				reqLogger.Info("PrepareVolume still in progress")
-				return reconcile.Result{Requeue: true}, nil
+				return delayedRequeue(nil)
 			}
 			self.recorder.Event(
 				volume, corev1.EventTypeNormal, "SaltCall",
@@ -443,7 +447,7 @@ func (self *ReconcileVolume) finalizeVolume(
 
 	if volume.Status.Phase == storagev1alpha1.VolumePending {
 		reqLogger.Info("pending volume cannot be finalized: requeue")
-		return reconcile.Result{Requeue: true}, nil
+		return delayedRequeue(nil)
 	}
 
 	// Check if a PV is associated to the volume.
@@ -453,7 +457,7 @@ func (self *ReconcileVolume) finalizeVolume(
 			err, "cannot read PersistentVolume: requeue",
 			"PersistentVolume.Name", volume.Name,
 		)
-		return reconcile.Result{}, err
+		return delayedRequeue(err)
 	}
 
 	// No associated PV: let's delete ourselves then.
@@ -461,10 +465,10 @@ func (self *ReconcileVolume) finalizeVolume(
 		reqLogger.Info("no PersistentVolume associated to terminating volume")
 		if err := self.removeVolumeFinalizer(ctx, volume); err != nil {
 			reqLogger.Error(err, "cannot remove volume finalizer")
-			return reconcile.Result{}, err
+			return delayedRequeue(err)
 		}
 		reqLogger.Info("volume finalizer removed")
-		return reconcile.Result{}, nil
+		return endReconciliation()
 	}
 
 	switch pv.Status.Phase {
@@ -472,12 +476,12 @@ func (self *ReconcileVolume) finalizeVolume(
 		reqLogger.Info(
 			"backing PersistentVolume is bound: cannot delete volume",
 		)
-		return reconcile.Result{Requeue: true}, nil
+		return delayedRequeue(nil)
 	case corev1.VolumePending:
 		reqLogger.Info(
 			"backing PersistentVolume is pending: waiting for stabilization",
 		)
-		return reconcile.Result{Requeue: true}, nil
+		return delayedRequeue(nil)
 	case corev1.VolumeAvailable, corev1.VolumeReleased, corev1.VolumeFailed:
 		reqLogger.Info("the backing PersistentVolume is removable")
 		return self.destroyPersistentVolume(ctx, request, volume, pv)
@@ -487,7 +491,7 @@ func (self *ReconcileVolume) finalizeVolume(
 			"unexpected PersistentVolume status (%+v): do nothing", phase,
 		)
 		reqLogger.Info(errmsg, "PersistentVolume.Status", phase)
-		return reconcile.Result{Requeue: true}, nil
+		return delayedRequeue(nil)
 	}
 }
 
@@ -574,7 +578,7 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 	case "": // No job in progress: call Salt to unprepare the volume.
 		if jid, err := self.salt.UnprepareVolume(ctx, nodeName); err != nil {
 			reqLogger.Error(err, "failed to run UnprepareVolume")
-			return reconcile.Result{}, err
+			return delayedRequeue(err)
 		} else {
 			reqLogger.Info("start to unprepare the volume")
 			self.recorder.Event(
@@ -589,7 +593,7 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 				err, "cannot delete PersistentVolume: requeue",
 				"PersistentVolume.Name", volume.Name,
 			)
-			return reconcile.Result{}, err
+			return delayedRequeue(err)
 		}
 		reqLogger.Info(
 			"deleting backing PersistentVolume",
@@ -597,14 +601,14 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 		)
 		if err := self.removePvFinalizer(ctx, pv); err != nil {
 			reqLogger.Error(err, "cannot remove PersistentVolume finalizer")
-			return reconcile.Result{}, err
+			return delayedRequeue(err)
 		}
 		reqLogger.Info("PersistentVolume finalizer removed")
 		self.recorder.Event(
 			volume, corev1.EventTypeNormal, "PvDeletion",
 			"backing PersistentVolume deleted",
 		)
-		return reconcile.Result{Requeue: true}, nil
+		return requeue(nil)
 	default: // UnprepareVolume in progress: poll its state.
 		jid := volume.Status.Job
 		if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
@@ -625,7 +629,7 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 		} else {
 			if result == nil {
 				reqLogger.Info("UnprepareVolume still in progress")
-				return reconcile.Result{Requeue: true}, nil
+				return delayedRequeue(nil)
 			}
 			self.recorder.Event(
 				volume, corev1.EventTypeNormal, "SaltCall",
@@ -634,6 +638,22 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 			return self.setTerminatingVolumeStatus(ctx, volume, JOB_DONE_MARKER)
 		}
 	}
+}
+
+// Trigger a reschedule after a short delay.
+func delayedRequeue(err error) (reconcile.Result, error) {
+	delay := 10 * time.Second
+	return reconcile.Result{Requeue: err == nil, RequeueAfter: delay}, err
+}
+
+// Trigger a reschedule as soon as possible.
+func requeue(err error) (reconcile.Result, error) {
+	return reconcile.Result{Requeue: err == nil}, err
+}
+
+// Don't trigger a reschedule, we're done.
+func endReconciliation() (reconcile.Result, error) {
+	return reconcile.Result{}, nil
 }
 
 // Return the credential to use to authenticate with Salt API.
