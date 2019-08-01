@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -199,6 +200,25 @@ func (self *ReconcileVolume) removeVolumeFinalizer(
 	return self.client.Update(ctx, volume)
 }
 
+// Get the disk size for the volume.
+func (self *ReconcileVolume) getDiskSizeForVolume(
+	ctx context.Context, volume *storagev1alpha1.Volume,
+) (*resource.Quantity, error) {
+	// We don't need the disk size for a SparseLoopDevice.
+	if volume.Spec.SparseLoopDevice != nil {
+		return nil, nil
+	}
+
+	nodeName := string(volume.Spec.NodeName)
+	size, err := self.salt.GetVolumeSize(
+		ctx, nodeName, volume.Spec.RawBlockDevice.DevicePath,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return resource.NewQuantity(size, resource.BinarySI), nil
+}
+
 // Get the PersistentVolume associated to the given volume.
 //
 // Return `nil` if no such volume exists.
@@ -224,6 +244,37 @@ func (self *ReconcileVolume) removePvFinalizer(
 	finalizers := pv.GetFinalizers()
 	pv.SetFinalizers(SliceRemoveValue(finalizers, VOLUME_PROTECTION))
 	return self.client.Update(ctx, pv)
+}
+
+// Create a PV associated to the volume.
+//
+// Set the ownership and finalizers to tie the PV to the volume.
+func (self *ReconcileVolume) createPersistentVolume(
+	ctx context.Context,
+	pv *corev1.PersistentVolume,
+	volume *storagev1alpha1.Volume,
+) error {
+	reqLogger := log.WithValues("Request.Name", volume.Name)
+
+	// Set Volume instance as the owner and controller.
+	err := controllerutil.SetControllerReference(volume, pv, self.scheme)
+	if err != nil {
+		return err
+	}
+	// Set volume-protection finalizer on the volume.
+	if err := self.addVolumeFinalizer(ctx, volume); err != nil {
+		reqLogger.Error(err, "cannot set volume-protection: requeue")
+		return err
+	}
+	// Create the PV!
+	if err := self.client.Create(ctx, pv); err != nil {
+		reqLogger.Error(
+			err, "cannot create PersistentVolume: requeue",
+			"PersistentVolume.Name", volume.Name,
+		)
+		return err
+	}
+	return nil
 }
 
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
@@ -312,7 +363,74 @@ func (self *ReconcileVolume) deployVolume(
 	request reconcile.Request,
 	volume *storagev1alpha1.Volume,
 ) (reconcile.Result, error) {
-	return reconcile.Result{Requeue: true}, nil
+	nodeName := string(volume.Spec.NodeName)
+	reqLogger := log.WithValues(
+		"Request.Name", request.Name, "Volume.NodeName", nodeName,
+	)
+
+	switch volume.Status.Job {
+	case "": // No job in progress: call Salt to prepare the volume.
+		if jid, err := self.salt.PrepareVolume(ctx, nodeName); err != nil {
+			reqLogger.Error(err, "failed to run PrepareVolume")
+			return reconcile.Result{}, err
+		} else {
+			reqLogger.Info("start to prepare the volume")
+			self.recorder.Event(
+				volume, corev1.EventTypeNormal, "SaltCall",
+				"Salt call to PrepareVolume started",
+			)
+			return self.setPendingVolumeStatus(ctx, volume, jid)
+		}
+	case JOB_DONE_MARKER: // Salt job is done, now let's create the PV.
+		diskSize, err := self.getDiskSizeForVolume(ctx, volume)
+		if err != nil {
+			reqLogger.Error(err, "call to GetVolumeSize failed")
+			return self.setFailedVolumeStatus(
+				ctx, volume, storagev1alpha1.CreationError,
+				"call to GetVolumeSize failed: %s", err.Error(),
+			)
+		}
+		pv := newPersistentVolume(volume, diskSize)
+		if err := self.createPersistentVolume(ctx, pv, volume); err != nil {
+			return reconcile.Result{}, err
+		}
+		reqLogger.Info(
+			"creating a new PersistentVolume", "PersistentVolume.Name", pv.Name,
+		)
+		self.recorder.Event(
+			volume, corev1.EventTypeNormal, "PvCreation",
+			"backing PersistentVolume created",
+		)
+		return self.setAvailableVolumeStatus(ctx, volume)
+	default: // PrepareVolume in progress: poll its state.
+		jid := volume.Status.Job
+		if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
+			reqLogger.Error(err, "failed to poll PrepareVolume status")
+			// This one is not retryable.
+			if failure, ok := err.(*salt.AsyncJobFailed); ok {
+				self.recorder.Event(
+					volume, corev1.EventTypeWarning, "SaltCall",
+					"Salt call to PrepareVolume failed",
+				)
+				return self.setFailedVolumeStatus(
+					ctx, volume, storagev1alpha1.CreationError,
+					"PrepareVolume failed with %s", failure.Error(),
+				)
+			}
+			// Job salt not found, let's retry.
+			return self.setPendingVolumeStatus(ctx, volume, "")
+		} else {
+			if result == nil {
+				reqLogger.Info("PrepareVolume still in progress")
+				return reconcile.Result{Requeue: true}, nil
+			}
+			self.recorder.Event(
+				volume, corev1.EventTypeNormal, "SaltCall",
+				"Salt call to PrepareVolume succeeded",
+			)
+			return self.setPendingVolumeStatus(ctx, volume, JOB_DONE_MARKER)
+		}
+	}
 }
 
 // Finalize a volume marked for deletion.
