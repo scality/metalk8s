@@ -373,26 +373,42 @@ func (self *ReconcileVolume) finalizeVolume(
 	}
 }
 
-func newPersistentVolumeForCR(cr *storagev1alpha1.Volume) *corev1.PersistentVolume {
+// Build a PersistentVolume from a Volume object.
+//
+// Arguments
+//     volume:   a Volume object
+//     diskSize: the disk size (optional)
+//
+// Returns
+//     The PersistentVolume representing the given Volume.
+func newPersistentVolume(
+	volume *storagev1alpha1.Volume, diskSize *resource.Quantity,
+) *corev1.PersistentVolume {
+	// We only support this mode for now.
+	mode := corev1.PersistentVolumeFilesystem
+
 	return &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:       cr.Name,
+			Name:       volume.Name,
 			Labels:     map[string]string{},
 			Finalizers: []string{VOLUME_PROTECTION},
 		},
 		Spec: corev1.PersistentVolumeSpec{
-			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-			Capacity: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceStorage: resource.MustParse("1Gi"),
+			AccessModes: []corev1.PersistentVolumeAccessMode{
+				corev1.ReadWriteOnce,
 			},
+			Capacity: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceStorage: volume.GetSize(diskSize),
+			},
+			VolumeMode: &mode,
 			PersistentVolumeSource: corev1.PersistentVolumeSource{
 				Local: &corev1.LocalVolumeSource{
-					Path: "/tmp/foo",
+					Path: volume.GetPath(),
 				},
 			},
 			PersistentVolumeReclaimPolicy: "Retain",
-			StorageClassName:              cr.Spec.StorageClassName,
-			NodeAffinity:                  nodeAffinity(cr.Spec.NodeName),
+			StorageClassName:              volume.Spec.StorageClassName,
+			NodeAffinity:                  nodeAffinity(volume.Spec.NodeName),
 		},
 	}
 }
