@@ -8,6 +8,16 @@ const testcases = [
   { storageCapacity: '1Mi' }
 ];
 
+const testcases2 = [
+  { storageCapacity: '42949670000' },
+  { storageCapacity: '100Mi' },
+  { storageCapacity: '250Gi' },
+  { storageCapacity: '1Gi' },
+  { storageCapacity: '1Mi' },
+  { storageCapacity: '11111111111' },
+  { storageCapacity: '10Gi' }
+];
+
 it('should sort correctly the array', () => {
   const result = sortCapacity(testcases);
   expect(result).toEqual([
@@ -16,6 +26,17 @@ it('should sort correctly the array', () => {
     { storageCapacity: '100Mi' },
     { storageCapacity: '1Gi' },
     { storageCapacity: '10Gi' }
+  ]);
+
+  const result2 = sortCapacity(testcases2, 'storageCapacity');
+  expect(result2).toEqual([
+    { storageCapacity: '1Mi' },
+    { storageCapacity: '100Mi' },
+    { storageCapacity: '1Gi' },
+    { storageCapacity: '10Gi' },
+    { storageCapacity: '11111111111' },
+    { storageCapacity: '42949670000' },
+    { storageCapacity: '250Gi' }
   ]);
 });
 

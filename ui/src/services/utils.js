@@ -84,8 +84,19 @@ export const sortCapacity = createSelector(
       const sortedList = list
         .filter(item => k8sCapacityRegex.test(item?.[sortBy]))
         .map(item => {
-          const unit = item[sortBy].slice(-2);
-          const size = item[sortBy].substring(0, item[sortBy].length - 2);
+          /**
+           * item[sortBy].split(k8sCapacityRegex) will return an array of
+           * 4 items, only the 2nd and 3rd are useful.
+           *
+           * We might want to improve the regex to get rid of the useless empty
+           * string at the 1st and 4th place of the array later but right now
+           * just keep the k8s regex
+           *
+           * @example
+           * "1Gi" => ["", "1", "Gi", ""]
+           * "123" => ["", "123", "", ""]
+           */
+          const [empty, size, unit] = item[sortBy].split(k8sCapacityRegex);
           const unitBase =
             sizeUnits.find(sizeUnit => sizeUnit.value === unit)?.base ??
             sizeUnits[0].value;
