@@ -169,6 +169,13 @@ func (self *Volume) IsValid() error {
 	return nil
 }
 
+// Check if a volume is in an unrecoverable state.
+func (self *Volume) IsInUnrecoverableFailedState() bool {
+	// Only `UnavailableError` is recoverable.
+	return self.Status.Phase == VolumeFailed &&
+		self.Status.ErrorCode != UnavailableError
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // VolumeList contains a list of Volume

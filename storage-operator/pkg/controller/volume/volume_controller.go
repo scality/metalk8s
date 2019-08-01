@@ -235,6 +235,16 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		)
 	}
 
+	// Skip volume stuck waiting for deletion or a manual fix.
+	if volume.IsInUnrecoverableFailedState() {
+		reqLogger.Info(
+			"volume stuck in error state: do nothing",
+			"Error.Code", volume.Status.ErrorCode,
+			"Error.Message", volume.Status.ErrorMessage,
+		)
+		return reconcile.Result{}, nil
+	}
+
 	pv := newPersistentVolumeForCR(volume)
 
 	// Set Volume instance as the owner and controller
