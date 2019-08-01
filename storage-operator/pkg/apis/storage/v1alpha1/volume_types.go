@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"errors"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -146,6 +147,26 @@ func (self *Volume) SetTerminatingStatus(job string) {
 	self.Status = VolumeStatus{
 		Phase: VolumeTerminating, Job: job, ErrorCode: "", ErrorMessage: "",
 	}
+}
+
+// Check if a volume is valid.
+func (self *Volume) IsValid() error {
+	// Check if a type is specified.
+	if self.Spec.SparseLoopDevice == nil &&
+		self.Spec.RawBlockDevice == nil {
+		return errors.New("volume type not found in Volume Spec")
+	}
+	// Check if the size is strictly positive.
+	if self.Spec.SparseLoopDevice != nil {
+		if self.Spec.SparseLoopDevice.Size.Sign() <= 0 {
+			return fmt.Errorf(
+				"invalid SparseLoopDevice size (should be greater than 0): %s",
+				self.Spec.SparseLoopDevice.Size.String(),
+			)
+		}
+	}
+
+	return nil
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

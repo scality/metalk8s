@@ -228,6 +228,12 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		reqLogger.Error(err, "cannot read Volume: requeue")
 		return reconcile.Result{}, err
 	}
+	if err := volume.IsValid(); err != nil {
+		return r.setFailedVolumeStatus(
+			ctx, volume, storagev1alpha1.InternalError,
+			"invalid volume: %s", err.Error(),
+		)
+	}
 
 	pv := newPersistentVolumeForCR(volume)
 
