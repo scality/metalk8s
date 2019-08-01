@@ -60,6 +60,10 @@ export const sortSelector = createSelector(
  * @param {string} sortBy - The field that will be sort
  * @param {string} sortDirection - The direction of the sort.
  *
+ * /!\ This function will override the following fields, please make
+ * sure your object does not contain those fields :
+ * `tmpInternalSize` and `tmpInternalUnitBase`
+ *
  * @example
  * const capacities = [
  *  { capacity: '1Ki' },
@@ -82,35 +86,34 @@ export const sortCapacity = createSelector(
       );
 
       const sortedList = list
+        // Filter wrong value (ie: null or incorrect unit)
         .filter(item => k8sCapacityRegex.test(item?.[sortBy]))
         .map(item => {
           /**
-           * item[sortBy].split(k8sCapacityRegex) will return an array of
-           * 4 items, only the 2nd and 3rd are useful.
-           *
-           * We might want to improve the regex to get rid of the useless empty
-           * string at the 1st and 4th place of the array later but right now
-           * just keep the k8s regex
-           *
+           * This regex help us to seperate the capacity into
+           * the size and the unit
            * @example
-           * "1Gi" => ["", "1", "Gi", ""]
-           * "123" => ["", "123", "", ""]
+           * "1Gi" => { 'groups': { size: '1', unit: 'Gi'} }
+           * "123" => { 'groups': { size: '1', unit: undefined } }
            */
-          const [empty, size, unit] = item[sortBy].split(k8sCapacityRegex);
-          const unitBase =
-            sizeUnits.find(sizeUnit => sizeUnit.value === unit)?.base ??
-            sizeUnits[0].value;
+          const sizeRegex = /^(?<size>[1-9][0-9]*)(?<unit>[ikKMGTP]{1,2})?$/;
+          const { groups } = item[sortBy].match(sizeRegex);
+
+          const tmpInternalUnit = groups?.unit ?? '';
+          const tmpInternalSize = groups?.size ?? '0';
+          const tmpInternalUnitBase =
+            sizeUnits.find(sizeUnit => sizeUnit.value === tmpInternalUnit)
+              ?.base ?? sizeUnits[0].value;
 
           return {
             ...item,
-            unit,
-            size,
-            unitBase
+            tmpInternalSize,
+            tmpInternalUnitBase
           };
         })
         .sort((item1, item2) => {
-          const rawValue1 = item1.unitBase * item1.size;
-          const rawValue2 = item2.unitBase * item2.size;
+          const rawValue1 = item1.tmpInternalUnitBase * item1.tmpInternalSize;
+          const rawValue2 = item2.tmpInternalUnitBase * item2.tmpInternalSize;
 
           if (sortDirection === 'ASC') {
             return rawValue1 - rawValue2;
@@ -120,12 +123,11 @@ export const sortCapacity = createSelector(
             return 0;
           }
         })
-        // Cleanup the object
+        // Cleanup temporary fields
         .map(item => {
           const cleanItem = { ...item };
-          delete cleanItem.unit;
-          delete cleanItem.size;
-          delete cleanItem.unitBase;
+          delete cleanItem.tmpInternalSize;
+          delete cleanItem.tmpInternalUnitBase;
           return cleanItem;
         });
 
