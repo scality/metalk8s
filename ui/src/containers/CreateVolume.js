@@ -127,17 +127,16 @@ const CreateVolume = props => {
         is: RAW_BLOCK_DEVICE,
         then: yup.string().required()
       }),
-    sizeInput: yup.number().when('type', {
+    sizeInput: yup.string().when('type', {
       is: SPARSE_LOOP_DEVICE,
       then: yup
-        .number()
-        .integer(intl.messages.volume_size_error)
-        .positive(intl.messages.volume_size_error)
+        .string()
+        .matches(/^[1-9][0-9]*$/, intl.messages.volume_size_error)
         .required()
     }),
     selectedUnit: yup.string().when('type', {
       is: SPARSE_LOOP_DEVICE,
-      then: yup.string().required()
+      then: yup.string()
     })
   });
 

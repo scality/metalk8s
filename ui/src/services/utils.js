@@ -100,9 +100,10 @@ export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
 };
 
 export const sizeUnits = [
-  { label: 'ki', value: 'Ki' },
-  { label: 'Mi', value: 'Mi' },
-  { label: 'Gi', value: 'Gi' },
-  { label: 'Ti', value: 'Ti' },
-  { label: 'Pi', value: 'Pi' }
+  { label: 'B', value: '' },
+  { label: 'KiB', value: 'Ki' },
+  { label: 'MiB', value: 'Mi' },
+  { label: 'GiB', value: 'Gi' },
+  { label: 'TiB', value: 'Ti' },
+  { label: 'PiB', value: 'Pi' }
 ];
