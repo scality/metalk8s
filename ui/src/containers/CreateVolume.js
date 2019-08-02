@@ -111,7 +111,7 @@ const CreateVolume = props => {
     storageClass: storageClassesName[0],
     type: types[0].value,
     path: '',
-    selectedUnit: sizeUnits[0].value,
+    selectedUnit: sizeUnits[3].value,
     sizeInput: ''
   };
   const validationSchema = yup.object().shape({
@@ -121,7 +121,12 @@ const CreateVolume = props => {
         /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/,
         intl.messages.volume_name_error
       )
-      .required(),
+      .required(
+        intl.formatMessage(
+          { id: 'generic_missing_field' },
+          { field: intl.messages.name.toLowerCase() }
+        )
+      ),
     storageClass: yup.string().required(),
     type: yup.string().required(),
     path: yup
@@ -129,14 +134,26 @@ const CreateVolume = props => {
       .matches(/^\//, intl.messages.volume_path_error)
       .when('type', {
         is: RAW_BLOCK_DEVICE,
-        then: yup.string().required()
+        then: yup
+          .string()
+          .required(
+            intl.formatMessage(
+              { id: 'generic_missing_field' },
+              { field: intl.messages.device_path.toLowerCase() }
+            )
+          )
       }),
     sizeInput: yup.string().when('type', {
       is: SPARSE_LOOP_DEVICE,
       then: yup
         .string()
         .matches(/^[1-9][0-9]*$/, intl.messages.volume_size_error)
-        .required()
+        .required(
+          intl.formatMessage(
+            { id: 'generic_missing_field' },
+            { field: intl.messages.volume_size.toLowerCase() }
+          )
+        )
     }),
     selectedUnit: yup.string().when('type', {
       is: SPARSE_LOOP_DEVICE,
@@ -241,7 +258,7 @@ const CreateVolume = props => {
                       <SizeUnitFieldSelectContainer>
                         <select
                           name="selectedUnit"
-                          value={values.selectedUnit.value}
+                          value={values.selectedUnit}
                           onChange={handleChange('selectedUnit')}
                           error={touched.selectedUnit && errors.selectedUnit}
                           onBlur={handleOnBlur}
