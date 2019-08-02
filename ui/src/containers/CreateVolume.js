@@ -264,6 +264,12 @@ const CreateVolume = props => {
                           onBlur={handleOnBlur}
                         >
                           {sizeUnits
+                            /**
+                             * `sizeUnits` have a base 2 and base 10 units
+                             * (ie. KiB and KB).
+                             * We chose to only display base 2 units
+                             * to improve the UX.
+                             */
                             .filter((size, idx) => idx < 6)
                             .map(({ label, value }, idx) => {
                               return (
