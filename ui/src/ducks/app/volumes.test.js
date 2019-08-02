@@ -13,7 +13,11 @@ import {
   createVolumes,
   refreshVolumes,
   updateVolumesRefreshingAction,
-  stopRefreshVolumes
+  stopRefreshVolumes,
+  refreshPersistentVolumes,
+  updatePersistentVolumesRefreshingAction,
+  updateVolumesAction,
+  stopRefreshPersistentVolumes
 } from './volumes';
 import * as ApiK8s from '../../services/k8s/api';
 import { SET_STORAGECLASS } from './volumes.js';
@@ -21,6 +25,13 @@ import { REFRESH_TIMEOUT } from '../../constants';
 
 it('update the volume', () => {
   const gen = fetchVolumes();
+  expect(gen.next().value).toEqual(
+    put(
+      updateVolumesAction({
+        isLoading: true
+      })
+    )
+  );
   expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
 
   const result = {
@@ -53,7 +64,14 @@ it('update the volume', () => {
   expect(gen.next(result).value).toEqual(
     put(setVolumesAction(result.body.items))
   );
-
+  expect(gen.next().value).toEqual(delay(1000));
+  expect(gen.next().value).toEqual(
+    put(
+      updateVolumesAction({
+        isLoading: false
+      })
+    )
+  );
   const finalGen = gen.next();
   expect(finalGen.value).toEqual(result);
   expect(finalGen.done).toEqual(true);
@@ -61,10 +79,25 @@ it('update the volume', () => {
 
 it('does not update volume if there is an error', () => {
   const gen = fetchVolumes();
+  expect(gen.next().value).toEqual(
+    put(
+      updateVolumesAction({
+        isLoading: true
+      })
+    )
+  );
   expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
 
   const result = { error: {} };
 
+  expect(gen.next(result).value).toEqual(delay(1000));
+  expect(gen.next().value).toEqual(
+    put(
+      updateVolumesAction({
+        isLoading: false
+      })
+    )
+  );
   const finalGen = gen.next(result);
   expect(finalGen.done).toEqual(true);
   expect(finalGen.value).toEqual(result);
@@ -72,18 +105,31 @@ it('does not update volume if there is an error', () => {
 
 it('should put a empty array if Volumes is not correct', () => {
   const gen = fetchVolumes();
+  expect(gen.next().value).toEqual(
+    put(
+      updateVolumesAction({
+        isLoading: true
+      })
+    )
+  );
   expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
 
   const result = { it: 'should not work' };
   expect(gen.next(result).value).toEqual(put(setVolumesAction([])));
-
+  expect(gen.next().value).toEqual(delay(1000));
+  expect(gen.next().value).toEqual(
+    put(
+      updateVolumesAction({
+        isLoading: false
+      })
+    )
+  );
   const finalGen = gen.next();
   expect(finalGen.done).toEqual(true);
   expect(finalGen.value).toEqual(result);
 });
 
 it('update the storage class', () => {
-  // Working case
   const gen = fetchStorageClass();
 
   expect(gen.next().value).toEqual(call(ApiK8s.getStorageClass));
@@ -442,4 +488,121 @@ it('should stop refresh volume', () => {
   const gen = stopRefreshVolumes();
   expect(gen.next().value).toEqual(put(updateVolumesRefreshingAction(false)));
   expect(gen.next().done).toEqual(true);
+});
+
+it('should refresh the pesistent volume', () => {
+  const gen = refreshPersistentVolumes();
+  expect(gen.next().value).toEqual(
+    put(updatePersistentVolumesRefreshingAction(true))
+  );
+  expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
+  const result = {
+    items: [
+      {
+        metadata: {
+          name: 'gdmlgerml',
+          selfLink: '/api/v1/persistentvolumes/gdmlgerml',
+          uid: 'd0dda5b7-bc7a-48ed-8c1e-7f32a1adfa65',
+          resourceVersion: '702250',
+          creationTimestamp: '2019-08-01T14:09:15Z',
+          ownerReferences: [
+            {
+              apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
+              kind: 'Volume',
+              name: 'gdmlgerml',
+              uid: '316c0dc0-3cfc-48f3-8062-eb0dd4ce6108',
+              controller: true,
+              blockOwnerDeletion: true
+            }
+          ],
+          finalizers: [
+            'storage.metalk8s.scality.com/volume-protection',
+            'kubernetes.io/pv-protection'
+          ]
+        },
+        spec: {
+          capacity: {
+            storage: '12345676432'
+          },
+          local: {
+            path:
+              '/var/lib/metalk8s/storage/sparse/316c0dc0-3cfc-48f3-8062-eb0dd4ce6108'
+          },
+          accessModes: ['ReadWriteOnce'],
+          persistentVolumeReclaimPolicy: 'Retain',
+          storageClassName: 'standard',
+          volumeMode: 'Filesystem',
+          nodeAffinity: {
+            required: {
+              nodeSelectorTerms: [
+                {
+                  matchExpressions: [
+                    {
+                      key: 'kubernetes.io/hostname',
+                      operator: 'In',
+                      values: ['metalk8s-bootstrap.novalocal']
+                    }
+                  ],
+                  matchFields: [
+                    {
+                      key: 'metadata.name',
+                      operator: 'In',
+                      values: ['metalk8s-bootstrap.novalocal']
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        status: {
+          phase: 'Available'
+        }
+      }
+    ]
+  };
+  expect(gen.next(result).value).toEqual(delay(REFRESH_TIMEOUT));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(true).value).toEqual(call(refreshPersistentVolumes));
+  expect(gen.next().done).toEqual(true);
+});
+
+it('should not refresh the pesistent volume if there is error', () => {
+  const gen = refreshPersistentVolumes();
+  expect(gen.next().value).toEqual(
+    put(updatePersistentVolumesRefreshingAction(true))
+  );
+  expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
+  const result = { error: {} };
+  expect(gen.next(result).done).toEqual(true);
+});
+
+it('should stop refresh persistent volume', () => {
+  const gen = stopRefreshPersistentVolumes();
+  expect(gen.next().value).toEqual(
+    put(updatePersistentVolumesRefreshingAction(false))
+  );
+  expect(gen.next().done).toEqual(true);
+});
+
+it('should not refresh persistent volume if you leave the page', () => {
+  const gen = refreshPersistentVolumes();
+  expect(gen.next().value).toEqual(
+    put(updatePersistentVolumesRefreshingAction(true))
+  );
+  expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
+  const result = {};
+  expect(gen.next(result).value).toEqual(delay(REFRESH_TIMEOUT));
+  expect(gen.next().value.type).toEqual('SELECT');
+  expect(gen.next(false).done).toEqual(true);
+});
+
+it('should not refresh volume if volume have an error', () => {
+  const gen = refreshPersistentVolumes();
+  expect(gen.next().value).toEqual(
+    put(updatePersistentVolumesRefreshingAction(true))
+  );
+  expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
+  const result = { error: {} };
+  expect(gen.next(result).done).toEqual(true);
 });

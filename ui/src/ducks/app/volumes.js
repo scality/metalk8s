@@ -25,6 +25,11 @@ const STOP_REFRESH_VOLUMES = 'STOP_REFRESH_VOLUMES';
 const UPDATE_VOLUMES_REFRESHING = 'UPDATE_VOLUMES_REFRESHING';
 const FETCH_PERSISTENT_VOLUME_CLAIMS = 'FETCH_PERSISTENT_VOLUME_CLAIMS';
 const SET_PERSISTENT_VOLUME_CLAIMS = 'SET_PERSISTENT_VOLUME_CLAIMS';
+const REFRESH_PERSISTENT_VOLUMES = 'REFRESH_PERSISTENT_VOLUMES';
+const STOP_REFRESH_PERSISTENT_VOLUMES = 'STOP_REFRESH_PERSISTENT_VOLUMES';
+const UPDATE_PERSISTENT_VOLUMES_REFRESHING =
+  'UPDATE_PERSISTENT_VOLUMES_REFRESHING';
+const UPDATE_VOLUMES = 'UPDATE_VOLUMES';
 
 // Reducer
 const defaultState = {
@@ -32,7 +37,9 @@ const defaultState = {
   storageClass: [],
   pVList: [],
   isRefreshing: false,
-  pVCList: []
+  pVCList: [],
+  isPVRefreshing: false,
+  isLoading: false
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -47,6 +54,12 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, isRefreshing: action.payload };
     case SET_PERSISTENT_VOLUME_CLAIMS:
       return { ...state, pVCList: action.payload };
+    case UPDATE_PERSISTENT_VOLUMES_REFRESHING: {
+      return { ...state, isPVRefreshing: action.payload };
+    }
+    case UPDATE_VOLUMES: {
+      return { ...state, ...action.payload };
+    }
     default:
       return state;
   }
@@ -100,12 +113,39 @@ export const stopRefreshVolumesAction = () => {
   return { type: STOP_REFRESH_VOLUMES };
 };
 
+export const refreshPersistentVolumesAction = () => {
+  return { type: REFRESH_PERSISTENT_VOLUMES };
+};
+
+export const updatePersistentVolumesRefreshingAction = payload => {
+  return { type: UPDATE_PERSISTENT_VOLUMES_REFRESHING, payload };
+};
+
+export const stopRefreshPersistentVolumesAction = () => {
+  return { type: STOP_REFRESH_PERSISTENT_VOLUMES };
+};
+
+export const updateVolumesAction = payload => {
+  return { type: UPDATE_VOLUMES, payload };
+};
+
 // Sagas
 export function* fetchVolumes() {
+  yield put(
+    updateVolumesAction({
+      isLoading: true
+    })
+  );
   const result = yield call(ApiK8s.getVolumes);
   if (!result.error) {
     yield put(setVolumesAction(result?.body?.items ?? []));
   }
+  yield delay(1000); // To make sure that the loader is visible for at least 1s
+  yield put(
+    updateVolumesAction({
+      isLoading: false
+    })
+  );
   return result;
 }
 
@@ -114,6 +154,7 @@ export function* fetchPersistentVolumes() {
   if (!result.error) {
     yield put(setPersistentVolumesAction(result?.body?.items ?? []));
   }
+  return result;
 }
 
 export function* fetchStorageClass() {
@@ -235,6 +276,24 @@ export function* fetchPersistentVolumeClaims() {
   }
 }
 
+export function* refreshPersistentVolumes() {
+  yield put(updatePersistentVolumesRefreshingAction(true));
+  const result = yield call(fetchPersistentVolumes);
+  if (!result.error) {
+    yield delay(REFRESH_TIMEOUT);
+    const isPVRefreshing = yield select(
+      state => state.app.volumes.isPVRefreshing
+    );
+    if (isPVRefreshing) {
+      yield call(refreshPersistentVolumes);
+    }
+  }
+}
+
+export function* stopRefreshPersistentVolumes() {
+  yield put(updatePersistentVolumesRefreshingAction(false));
+}
+
 export function* volumesSaga() {
   yield takeLatest(FETCH_VOLUMES, fetchVolumes);
   yield takeLatest(FETCH_STORAGECLASS, fetchStorageClass);
@@ -243,4 +302,9 @@ export function* volumesSaga() {
   yield takeLatest(REFRESH_VOLUMES, refreshVolumes);
   yield takeLatest(STOP_REFRESH_VOLUMES, stopRefreshVolumes);
   yield takeLatest(FETCH_PERSISTENT_VOLUME_CLAIMS, fetchPersistentVolumeClaims);
+  yield takeLatest(REFRESH_PERSISTENT_VOLUMES, refreshPersistentVolumes);
+  yield takeLatest(
+    STOP_REFRESH_PERSISTENT_VOLUMES,
+    stopRefreshPersistentVolumes
+  );
 }
