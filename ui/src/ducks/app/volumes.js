@@ -275,6 +275,7 @@ export function* fetchPersistentVolumeClaims() {
     yield put(setPersistentVolumeClaimAction(result.body.items));
   }
 }
+
 export function* refreshPersistentVolumes() {
   yield put(updatePersistentVolumesRefreshingAction(true));
   const result = yield call(fetchPersistentVolumes);
