@@ -64,12 +64,12 @@ const SelectLabel = styled.label`
   font-size: ${fontSize.base};
 `;
 
-const SelectField = styled.div`
+const SelectFieldContainer = styled.div`
   display: inline-flex;
   align-items: center;
 `;
 
-const SelectFieldItem = styled.select`
+const SelectField = styled.select`
   width: 200px;
 `;
 
@@ -79,9 +79,13 @@ const SizeFieldContainer = styled.div`
   .sc-input-wrapper {
     width: 150px;
   }
+  .size-unit-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
 `;
 
-const SizeFieldSelectContainer = styled.div`
+const SizeUnitFieldSelectContainer = styled.div`
   width: 50px;
   padding-left: 5px;
 `;
@@ -189,9 +193,9 @@ const CreateVolume = props => {
                     error={touched.name && errors.name}
                     onBlur={handleOnBlur}
                   />
-                  <SelectField>
+                  <SelectFieldContainer>
                     <SelectLabel>{intl.messages.storageClass}</SelectLabel>
-                    <SelectFieldItem
+                    <SelectField
                       name="storageClass"
                       onChange={handleChange('storageClass')}
                       value={values.storageClass}
@@ -203,11 +207,11 @@ const CreateVolume = props => {
                           {SCName}
                         </option>
                       ))}
-                    </SelectFieldItem>
-                  </SelectField>
-                  <SelectField>
+                    </SelectField>
+                  </SelectFieldContainer>
+                  <SelectFieldContainer>
                     <SelectLabel>{intl.messages.type}</SelectLabel>
-                    <SelectFieldItem
+                    <SelectField
                       name="type"
                       onChange={handleChange('type')}
                       error={touched.type && errors.type}
@@ -218,13 +222,14 @@ const CreateVolume = props => {
                           {type.label}
                         </option>
                       ))}
-                    </SelectFieldItem>
-                  </SelectField>
+                    </SelectField>
+                  </SelectFieldContainer>
 
                   {values.type === SPARSE_LOOP_DEVICE ? (
                     <SizeFieldContainer>
                       <Input
                         name="sizeInput"
+                        className="size-unit-input"
                         type="number"
                         min="1"
                         value={values.sizeInput}
@@ -233,7 +238,7 @@ const CreateVolume = props => {
                         error={touched.sizeInput && errors.sizeInput}
                         onBlur={handleOnBlur}
                       />
-                      <SizeFieldSelectContainer>
+                      <SizeUnitFieldSelectContainer>
                         <select
                           name="selectedUnit"
                           value={values.selectedUnit.value}
@@ -249,7 +254,7 @@ const CreateVolume = props => {
                             );
                           })}
                         </select>
-                      </SizeFieldSelectContainer>
+                      </SizeUnitFieldSelectContainer>
                     </SizeFieldContainer>
                   ) : (
                     <Input
