@@ -114,13 +114,13 @@ const CreateVolume = props => {
     selectedUnit: sizeUnits[3].value,
     sizeInput: ''
   };
+  const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const positiveIntegerRegex = /^[1-9][0-9]*$/;
+
   const validationSchema = yup.object().shape({
     name: yup
       .string()
-      .matches(
-        /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/,
-        intl.messages.volume_name_error
-      )
+      .matches(volumeNameRegex, intl.messages.volume_name_error)
       .required(
         intl.formatMessage(
           { id: 'generic_missing_field' },
@@ -147,7 +147,7 @@ const CreateVolume = props => {
       is: SPARSE_LOOP_DEVICE,
       then: yup
         .string()
-        .matches(/^[1-9][0-9]*$/, intl.messages.volume_size_error)
+        .matches(positiveIntegerRegex, intl.messages.volume_size_error)
         .required(
           intl.formatMessage(
             { id: 'generic_missing_field' },
