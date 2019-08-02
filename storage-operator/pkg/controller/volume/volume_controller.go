@@ -26,6 +26,172 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+/* Explanations/schemas about volume lifecycle/reconciliation workflow {{{
+
+===================================
+= Reconciliation loop (top level) =
+===================================
+
+When receiving a request, the first thing we do is to fetch the targeted Volume.
+If it doesn't exist, which happens when a volume is `Terminating` and has no
+finalizer, then we're done: nothing more to do.
+
+If the volume does exist, we have to check its semantic validity (this task is
+usually done by an Admission Controller but it may not be always up and running,
+so we should have a check here).
+
+Once pre-checks are done, we will fall in one of four cases:
+- the volume is marked for deletion: we have to try to delete the volume
+  (details are given in the "Finalize Volume" section below).
+- the volume is stuck in an unrecoverable (automatically at least) error state:
+  we can't do anything here: the request is considered done and won't be
+  rescheduled.
+- the volume doesn't have a backing PersistentVolume (e.g: newly created
+  volume): we have to "deploy" the volume (details are given in the "Deploy
+  Volume" section below)
+- the backing PersistentVolume exists: let's check its status to update the
+  volume's status accordingly.
+
+ -----                                                                   ------
+(START)                                     +-------------------------->( STOP )
+ -----                                      |                            ------
+   |                                        |                              ^
+   |                                        |                              |
+   |                                        |                              |
+   |                                  +------------+                       |
+   |  +------------------------------>|DoNotRequeue|<-------------+        |
+   |  |                               +------------+              |        |
+   |  |N                                    ^                     |        |
+   v  |                                     |Y                    |Y       |
++-------+ Y +------+ Y +-----------+ N  +-------+ N +-----+ Y +---------+  |
+|Exists?|-->|Valid?|-->|Terminating?|-->|Failed?|-->|HasPv|-->|PvHealthy|  |
++-------+   +------+   +-----------+    +-------+   +-----+   +---------+  |
+                |N           |Y                        |N        |N        |
+                |            v                         v         |         |
+                |      +--------------+          +------------+  |         |
+                |      |FinalizeVolume|          |DeployVolume|  |         |
+                |      +--------------+          +------------+  |         |
+                |                                                v         |
+                |                                         +---------+  +-------+
+                +---------------------------------------->|SetFailed|->|Requeue|
+                                                          +---------+  +-------+
+
+
+
+=================
+= Deploy Volume =
+=================
+
+To "deploy" a volume, we need to prepare its storage (using Salt) and create a
+backing PersistentVolume.
+
+If we have no value for `Job`, that means nothing has started, and thus we start
+the volume preparation using an asynchronous Salt call (which gives us a job ID)
+and then reschedule the request to monitor the evolution of the job.
+
+If we do have a job ID, then something is in progress and we monitor it until
+it's over.
+If it has ended with an error, we move the volume into a failed state.
+Otherwise we proceed with the PersistentVolume creation (which may require an
+extra Salt call, synchronous this time, to get the disk size), taking care of
+putting a finalizer on both ourself and the PersistentVolume (so that our
+lifetimes are tied) and setting ourself as the owner of the PersistentVolume.
+
+Once we have successfuly created the PersistentVolume, we can move into the
+`Available` state and reschedule the request (the next iteration will check the
+health of the PersistentVolume we just created).
+
+                    +------------------+             +----------+
+              +---->|SpawnPrepareVolume|------------>|SetPending|
+              |     +------------------+             +----------+
+              | NO                                        |
+              |                                           v
+ -----     +----+ DONE  +--------+   +------------+   +-------+    ------
+(START)--->|Job?|------>|CreatePV|-->|SetAvailable|-->|Requeue|-->( STOP )
+ -----     +----+       +--------+   +------------+   +-------+    ------
+             | YES                                         ^
+             v                                             |
+        +-----------+ Job Failed    +---------+            |
+        |           |-------------->|SetFailed|----------->+
+        |           |               +---------+            |
+        |           |                                      |
+        |           | Unknown Job   +--------+             |
+        |PollSaltJob|-------------->|UnsetJob|------------>+
+        |           |               +--------+             |
+        |           |                                      |
+        |           | Job Succeed   +--------+             |
+        |           |-------------->|Job=DONE|------------>+
+        +-----------+               +--------+             |
+             | Job in progress                             |
+             |                                             |
+             +---------------------------------------------+
+
+
+
+===================
+= Finalize Volume =
+===================
+
+`Pending` volumes cannot be deleted (because we don't know where we are in the
+creation process), so we reschedule the request until the volume becomes either
+`Failed` or `Available`.
+
+For volumes with no backing PersistentVolume (the creation failed, we already
+deleted it, …), we simply remove the `volume-protection` finalizer, since they
+are `Terminating` they will be deleted by Kubernetes once the finalizer is gone.
+
+If we do have a backing PersistentVolume, we need to check if we can delete it.
+If not (because it is bound for instance), then we reschedule the request to
+re-check later.
+If it can be removed, we proceed (unprepare the volume, delete the object and
+then remove the finalizer we put on the PersistentVolume).
+
+  -----                                                    ------
+ (START)                          +---------------------->( STOP )
+  -----                           |                        ------
+    |                             |                          ^
+    |                             |                          |
+    v                             |                          |
++--------+ YES                    |                          |
+|Pending?|------------------------x-----------------------+  |
++--------+                        |                       |  |
+    | NO                          |                       |  |
+    v                             |                       v  |
++--------+ NO         +-----------------------+          +-------+
+| HasPv? |----------->| RemoveVolumeFinalizer |          |Requeue|
++--------+            +-----------------------+          +-------+
+    | YES                                                    ^
+    v                                                        |
++------------+ NO                                            |
+|CanDeletePv?|---------------------------------------------->|
++------------+                                               |
+    | YES        +--------------------+   +--------------+   |
+    |      +---->|SpawnUnprepareVolume|-->|SetTerminating|-->|
+    |      |     +--------------------+   +--------------+   |
+    |      | NO                                              |
+    |      |                                                 |
+    |   +----+ DONE  +--------+   +-----------------+        |
+    +-->|Job?|------>|DeletePV|-->|RemovePvFinalizer|------->|
+        +----+       +--------+   +-----------------+        |
+          | YES                                              |
+          v                                                  |
+     +-----------+ Job Failed         +---------+            |
+     |           |------------------->|SetFailed|----------->|
+     |           |                    +---------+            |
+     |           |                                           |
+     |           | Unknown Job        +--------+             |
+     |PollSaltJob|------------------->|UnsetJob|------------>|
+     |           |                    +--------+             |
+     |           |                                           |
+     |           | Job Succeed        +--------+             |
+     |           |------------------->|Job=DONE|------------>|
+     +-----------+                    +--------+             |
+          | Job in progress                                  |
+          |                                                  |
+          +--------------------------------------------------+
+
+}}} */
+
 const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
 const JOB_DONE_MARKER = "DONE"
 
