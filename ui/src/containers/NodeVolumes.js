@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Button, Table } from '@scality/core-ui';
+import { Button, Table, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
@@ -13,11 +14,16 @@ import {
 } from '../services/utils';
 import {
   refreshVolumesAction,
-  stopRefreshVolumesAction
+  stopRefreshVolumesAction,
+  refreshPersistentVolumesAction,
+  stopRefreshPersistentVolumesAction
 } from '../ducks/app/volumes';
 
 const ButtonContainer = styled.div`
   margin-top: ${padding.small};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const VolumeTable = styled.div`
@@ -27,7 +33,11 @@ const VolumeTable = styled.div`
 
 const NodeVolumes = props => {
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
-
+  useRefreshEffect(
+    refreshPersistentVolumesAction,
+    stopRefreshPersistentVolumesAction
+  );
+  const volumes = useSelector(state => state.app.volumes);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const onSort = ({ sortBy, sortDirection }) => {
@@ -58,7 +68,7 @@ const NodeVolumes = props => {
       dataKey: 'creationTime',
       renderer: data => (
         <span>
-          <FormattedDate value={data} />{' '}
+          <FormattedDate value={data} />
           <FormattedTime
             hour="2-digit"
             minute="2-digit"
@@ -95,6 +105,7 @@ const NodeVolumes = props => {
             props.history.push('createVolume');
           }}
         />
+        {volumes.isLoading && <Loader size="small" />}
       </ButtonContainer>
       <VolumeTable>
         <Table
