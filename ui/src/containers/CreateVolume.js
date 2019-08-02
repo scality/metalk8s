@@ -263,13 +263,15 @@ const CreateVolume = props => {
                           error={touched.selectedUnit && errors.selectedUnit}
                           onBlur={handleOnBlur}
                         >
-                          {sizeUnits.map(({ label, value }, idx) => {
-                            return (
-                              <option key={`sizeUnits_${idx}`} value={value}>
-                                {label}
-                              </option>
-                            );
-                          })}
+                          {sizeUnits
+                            .filter((size, idx) => idx < 6)
+                            .map(({ label, value }, idx) => {
+                              return (
+                                <option key={`sizeUnits_${idx}`} value={value}>
+                                  {label}
+                                </option>
+                              );
+                            })}
                         </select>
                       </SizeUnitFieldSelectContainer>
                     </SizeFieldContainer>
