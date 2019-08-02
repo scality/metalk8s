@@ -278,6 +278,52 @@ func (self *ReconcileVolume) createPersistentVolume(
 	return nil
 }
 
+type stateSetter func(
+	context.Context, *storagev1alpha1.Volume, string,
+) (reconcile.Result, error)
+
+// Poll a Salt state job.
+func (self *ReconcileVolume) pollSaltJob(
+	ctx context.Context,
+	jobName string,
+	volume *storagev1alpha1.Volume,
+	setState stateSetter,
+	errorCode storagev1alpha1.VolumeErrorCode,
+) (reconcile.Result, error) {
+	nodeName := string(volume.Spec.NodeName)
+	reqLogger := log.WithValues(
+		"Request.Name", volume.Name, "Volume.NodeName", nodeName,
+	)
+
+	jid := volume.Status.Job
+	if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
+		reqLogger.Error(err, fmt.Sprintf("failed to poll %s status", jobName))
+		// This one is not retryable.
+		if failure, ok := err.(*salt.AsyncJobFailed); ok {
+			self.recorder.Eventf(
+				volume, corev1.EventTypeWarning, "SaltCall",
+				"Salt call to %s failed", jobName,
+			)
+			return self.setFailedVolumeStatus(
+				ctx, volume, errorCode,
+				"%s failed with %s", jobName, failure.Error(),
+			)
+		}
+		// Job salt not found, let's retry.
+		return setState(ctx, volume, "")
+	} else {
+		if result == nil {
+			reqLogger.Info(fmt.Sprintf("%s still in progress", jobName))
+			return delayedRequeue(nil)
+		}
+		self.recorder.Eventf(
+			volume, corev1.EventTypeNormal, "SaltCall",
+			"Salt call to %s succeeded", jobName,
+		)
+		return setState(ctx, volume, JOB_DONE_MARKER)
+	}
+}
+
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
 // and what is in the Volume.Spec
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
@@ -407,33 +453,10 @@ func (self *ReconcileVolume) deployVolume(
 		)
 		return self.setAvailableVolumeStatus(ctx, volume)
 	default: // PrepareVolume in progress: poll its state.
-		jid := volume.Status.Job
-		if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
-			reqLogger.Error(err, "failed to poll PrepareVolume status")
-			// This one is not retryable.
-			if failure, ok := err.(*salt.AsyncJobFailed); ok {
-				self.recorder.Event(
-					volume, corev1.EventTypeWarning, "SaltCall",
-					"Salt call to PrepareVolume failed",
-				)
-				return self.setFailedVolumeStatus(
-					ctx, volume, storagev1alpha1.CreationError,
-					"PrepareVolume failed with %s", failure.Error(),
-				)
-			}
-			// Job salt not found, let's retry.
-			return self.setPendingVolumeStatus(ctx, volume, "")
-		} else {
-			if result == nil {
-				reqLogger.Info("PrepareVolume still in progress")
-				return delayedRequeue(nil)
-			}
-			self.recorder.Event(
-				volume, corev1.EventTypeNormal, "SaltCall",
-				"Salt call to PrepareVolume succeeded",
-			)
-			return self.setPendingVolumeStatus(ctx, volume, JOB_DONE_MARKER)
-		}
+		return self.pollSaltJob(
+			ctx, "PrepareVolume", volume, self.setPendingVolumeStatus,
+			storagev1alpha1.CreationError,
+		)
 	}
 }
 
@@ -610,33 +633,10 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 		)
 		return requeue(nil)
 	default: // UnprepareVolume in progress: poll its state.
-		jid := volume.Status.Job
-		if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
-			reqLogger.Error(err, "failed to poll UnprepareVolume status")
-			// This one is not retryable.
-			if failure, ok := err.(*salt.AsyncJobFailed); ok {
-				self.recorder.Event(
-					volume, corev1.EventTypeWarning, "SaltCall",
-					"Salt call to UnprepareVolume failed",
-				)
-				return self.setFailedVolumeStatus(
-					ctx, volume, storagev1alpha1.DestructionError,
-					"UnprepareVolume failed with %s", failure.Error(),
-				)
-			}
-			// Job salt not found, let's retry.
-			return self.setTerminatingVolumeStatus(ctx, volume, "")
-		} else {
-			if result == nil {
-				reqLogger.Info("UnprepareVolume still in progress")
-				return delayedRequeue(nil)
-			}
-			self.recorder.Event(
-				volume, corev1.EventTypeNormal, "SaltCall",
-				"Salt call to UnprepareVolume succeeded",
-			)
-			return self.setTerminatingVolumeStatus(ctx, volume, JOB_DONE_MARKER)
-		}
+		return self.pollSaltJob(
+			ctx, "UnprepareVolume", volume, self.setTerminatingVolumeStatus,
+			storagev1alpha1.DestructionError,
+		)
 	}
 }
 
