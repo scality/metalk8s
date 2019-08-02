@@ -9,7 +9,7 @@ const testcases = [
 ];
 
 const testcases2 = [
-  { storageCapacity: '42949670000' },
+  { storageCapacity: '42949670k' },
   { storageCapacity: '100Mi' },
   { storageCapacity: '250Gi' },
   { storageCapacity: '1Gi' },
@@ -35,7 +35,7 @@ it('should sort correctly the array', () => {
     { storageCapacity: '1Gi' },
     { storageCapacity: '10Gi' },
     { storageCapacity: '11111111111' },
-    { storageCapacity: '42949670000' },
+    { storageCapacity: '42949670k' },
     { storageCapacity: '250Gi' }
   ]);
 });

@@ -80,14 +80,14 @@ export const sortCapacity = createSelector(
       typeof sortBy === 'string' &&
       typeof sortDirection === 'string'
     ) {
-      const k8sCapacityRegex = /^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/;
+      const sizeRegex = /^(?<size>[1-9][0-9]*)(?<unit>[kKMGTP]i?)?/;
       const notSortableList = list.filter(
-        item => !k8sCapacityRegex.test(item?.[sortBy])
+        item => !sizeRegex.test(item?.[sortBy])
       );
 
       const sortedList = list
         // Filter wrong value (ie: null or incorrect unit)
-        .filter(item => k8sCapacityRegex.test(item?.[sortBy]))
+        .filter(item => sizeRegex.test(item?.[sortBy]))
         .map(item => {
           /**
            * This regex help us to seperate the capacity into
@@ -96,11 +96,9 @@ export const sortCapacity = createSelector(
            * "1Gi" => { 'groups': { size: '1', unit: 'Gi'} }
            * "123" => { 'groups': { size: '1', unit: undefined } }
            */
-          const sizeRegex = /^(?<size>[1-9][0-9]*)(?<unit>[ikKMGTP]{1,2})?$/;
           const { groups } = item[sortBy].match(sizeRegex);
-
           const tmpInternalUnit = groups?.unit ?? '';
-          const tmpInternalSize = groups?.size ?? '0';
+          const tmpInternalSize = groups?.size;
           const tmpInternalUnitBase =
             sizeUnits.find(sizeUnit => sizeUnit.value === tmpInternalUnit)
               ?.base ?? sizeUnits[0].value;
@@ -193,5 +191,10 @@ export const sizeUnits = [
   { label: 'MiB', value: 'Mi', base: 2 ** 20 },
   { label: 'GiB', value: 'Gi', base: 2 ** 30 },
   { label: 'TiB', value: 'Ti', base: 2 ** 40 },
-  { label: 'PiB', value: 'Pi', base: 2 ** 50 }
+  { label: 'PiB', value: 'Pi', base: 2 ** 50 },
+  { label: 'k', value: 'k', base: 10 ** 3 },
+  { label: 'M', value: 'M', base: 10 ** 6 },
+  { label: 'G', value: 'G', base: 10 ** 9 },
+  { label: 'T', value: 'T', base: 10 ** 12 },
+  { label: 'P', value: 'P', base: 10 ** 15 }
 ];
