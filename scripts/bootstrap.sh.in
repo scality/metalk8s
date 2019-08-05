@@ -160,7 +160,7 @@ configure_yum_local_repositories() {
 
 configure_yum_local_repository() {
     local -r repo_name=$1 gpgcheck=${2:-0}
-    local -r repo_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/packages/$repo_name-el7
+    local -r repo_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/packages/redhat/$repo_name-el7
     local gpg_keys
 
     gpg_keys=$(

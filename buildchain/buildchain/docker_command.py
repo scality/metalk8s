@@ -155,11 +155,11 @@ class DockerRun:
 
     RPMLINTRC_MOUNT : Mount = bind_ro_mount(
         target=Path('/rpmbuild/rpmlintrc'),
-        source=constants.ROOT/'packages'/'rpmlintrc',
+        source=constants.ROOT/'packages'/'redhat'/'rpmlintrc',
     )
     ENTRYPOINT_MOUNT : Mount = bind_ro_mount(
         target=Path('/entrypoint.sh'),
-        source=constants.ROOT/'packages'/'entrypoint.sh',
+        source=constants.ROOT/'packages'/'redhat'/'entrypoint.sh',
     )
     _BASE_CONFIG = {
         'hostname': 'build',
