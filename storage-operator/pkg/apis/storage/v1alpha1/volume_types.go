@@ -176,15 +176,6 @@ func (self *Volume) IsInUnrecoverableFailedState() bool {
 		self.Status.ErrorCode != UnavailableError
 }
 
-// Return the volume size.
-func (self *Volume) GetSize(disk_size *resource.Quantity) resource.Quantity {
-	if self.Spec.SparseLoopDevice != nil {
-		return self.Spec.SparseLoopDevice.Size
-	}
-	// RawBlockDevice use the whole disk, so return the disk size as size.
-	return *disk_size
-}
-
 // Return the volume path on the node.
 func (self *Volume) GetPath() string {
 	return fmt.Sprintf("/dev/disk/by-uuid/%s", self.UID)

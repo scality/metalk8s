@@ -92,8 +92,9 @@ and then reschedule the request to monitor the evolution of the job.
 If we do have a job ID, then something is in progress and we monitor it until
 it's over.
 If it has ended with an error, we move the volume into a failed state.
-Otherwise we proceed with the PersistentVolume creation (which may require an
-extra Salt call, synchronous this time, to get the disk size), taking care of
+
+Otherwise we proceed with the PersistentVolume creation (which require an extra
+Salt call, synchronous this time, to get the volume size), taking care of
 putting a finalizer on both ourself and the PersistentVolume (so that our
 lifetimes are tied) and setting ourself as the owner of the PersistentVolume.
 
@@ -370,20 +371,13 @@ func (self *ReconcileVolume) removeVolumeFinalizer(
 // Get the disk size for the volume.
 func (self *ReconcileVolume) getDiskSizeForVolume(
 	ctx context.Context, volume *storagev1alpha1.Volume,
-) (*resource.Quantity, error) {
-	// We don't need the disk size for a SparseLoopDevice.
-	if volume.Spec.SparseLoopDevice != nil {
-		return nil, nil
-	}
-
+) (resource.Quantity, error) {
 	nodeName := string(volume.Spec.NodeName)
-	size, err := self.salt.GetVolumeSize(
-		ctx, nodeName, volume.Spec.RawBlockDevice.DevicePath,
-	)
+	size, err := self.salt.GetVolumeSize(ctx, nodeName, volume.GetPath())
 	if err != nil {
-		return nil, err
+		return *resource.NewQuantity(0, resource.BinarySI), err
 	}
-	return resource.NewQuantity(size, resource.BinarySI), nil
+	return *resource.NewQuantity(size, resource.BinarySI), err
 }
 
 // Get the PersistentVolume associated to the given volume.
@@ -687,13 +681,13 @@ func (self *ReconcileVolume) finalizeVolume(
 // Build a PersistentVolume from a Volume object.
 //
 // Arguments
-//     volume:   a Volume object
-//     diskSize: the disk size (optional)
+//     volume:     a Volume object
+//     volumeSize: the volume size
 //
 // Returns
 //     The PersistentVolume representing the given Volume.
 func newPersistentVolume(
-	volume *storagev1alpha1.Volume, diskSize *resource.Quantity,
+	volume *storagev1alpha1.Volume, volumeSize resource.Quantity,
 ) *corev1.PersistentVolume {
 	// We only support this mode for now.
 	mode := corev1.PersistentVolumeFilesystem
@@ -709,7 +703,7 @@ func newPersistentVolume(
 				corev1.ReadWriteOnce,
 			},
 			Capacity: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceStorage: volume.GetSize(diskSize),
+				corev1.ResourceStorage: volumeSize,
 			},
 			VolumeMode: &mode,
 			PersistentVolumeSource: corev1.PersistentVolumeSource{
