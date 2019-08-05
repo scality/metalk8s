@@ -100,21 +100,26 @@ const SizeUnitFieldSelectContainer = styled.div`
 const ModalNoStorageClass = styled(Modal)`
   position: absolute;
   width: 500px;
-  height: 150px;
+  height: 180px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) !important;
   background-color: ${grayLightest};
   outline: none;
+  border-radius: 5px;
   button {
-    margin-left: 400px;
+    margin-left: 420px;
   }
-  h4,
+  h3,
   p {
     margin-left: ${padding.larger};
   }
+  p {
+    margin-top: ${padding.larger};
+  }
   a {
     text-decoration: none;
+    margin-left: ${padding.smaller};
   }
 `;
 
@@ -191,7 +196,6 @@ const CreateVolume = props => {
     })
   });
   const isStorageClassExist = storageClassesName.length > 0;
-  // const isFormReady = storageClassesName.length > 0 && types.length > 0;
 
   return isSCLoading ? (
     <Loader />
@@ -345,20 +349,21 @@ const CreateVolume = props => {
         </Formik>
       </CreateVolumeLayout>
       <ModalNoStorageClass isOpen={!isStorageClassExist} ariaHideApp={false}>
-        {/* Need translation here^^ */}
-        <h4>No Storage Class found</h4>
+        <h3>{intl.messages.no_storage_class_found}</h3>
         <p>
-          Please create one from Kubernetes.
+          {intl.messages.storage_class_is_required}
+          <br />
+          {intl.messages.create_storage_class_in_Kubernetes}
           <a
             // eslint-disable-next-line react/jsx-no-target-blank
             target="_blank"
             href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
           >
-            Learn more
+            {intl.messages.learn_more}
           </a>
         </p>
         <Button
-          text={intl.messages.cancel}
+          text={intl.messages.ok}
           type="button"
           outlined
           onClick={() => history.push(`/nodes/${match.params.id}/volumes`)}
