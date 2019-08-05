@@ -39,13 +39,14 @@ func NewClient(creds *Credential) *Client {
 	if address == "" {
 		address = "http://salt-master:4507"
 	}
+	logger := log.Log.WithName("salt-api").WithValues("Salt.Address", address)
 
 	return &Client{
 		address: address,
 		client:  &http.Client{},
 		creds:   creds,
 		token:   nil,
-		logger:  log.Log.WithName("salt_api"),
+		logger:  logger,
 	}
 }
 
@@ -123,7 +124,7 @@ func (self *Client) UnprepareVolume(
 func (self *Client) PollJob(
 	ctx context.Context, jobId string, nodeName string,
 ) (map[string]interface{}, error) {
-	jobLogger := self.logger.WithValues("jobId", jobId)
+	jobLogger := self.logger.WithValues("Salt.JobId", jobId)
 	jobLogger.Info("polling Salt job")
 
 	endpoint := fmt.Sprintf("/jobs/%s", jobId)
