@@ -210,6 +210,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
     Path('salt/metalk8s/addons/ui/precheck.sls'),
 
+    Path('salt/metalk8s/addons/dex/deployed.sls'),
+    Path('salt/metalk8s/addons/dex/files/dex-deployment.yaml'),
 
     Path('salt/metalk8s/addons/nginx-ingress/deployed/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/chart.sls'),
@@ -243,8 +245,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/apiserver/certs/init.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/certs/kubelet-client.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/certs/server.sls'),
+    Path('salt/metalk8s/kubernetes/apiserver/certs/dex.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/files/htpasswd'),
-    Path('salt/metalk8s/kubernetes/apiserver/files/ca.pem'),
     Path('salt/metalk8s/kubernetes/apiserver/init.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/installed.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/kubeconfig.sls'),

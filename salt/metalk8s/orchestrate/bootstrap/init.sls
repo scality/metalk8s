@@ -182,3 +182,10 @@ Store MetalK8s version in annotations:
     - annotation_value: "{{ version }}"
     - require:
       - http: Wait for API server to be available
+
+Deploy Dex:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.addons.dex.deployed
+    - saltenv: {{ saltenv }}

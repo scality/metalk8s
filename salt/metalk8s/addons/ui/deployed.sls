@@ -47,7 +47,8 @@ Create metalk8s-ui ConfigMap:
           {
             "url": "{{ apiserver }}",
             "url_salt": "{{ saltapi }}",
-            "url_prometheus": "{{ prometheus }}"
+            "url_prometheus": "{{ prometheus }}",
+            "oidc_provider_url": "https://{{ grains.metalk8s.workload_plane_ip }}:32000"
           }
         theme.json: |
           {"brand": {"primary": "#403e40", "secondary": "#e99121"}}

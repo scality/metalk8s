@@ -14,3 +14,4 @@ include:
   - .front-proxy-client
   - .kubelet-client
   - .server
+  - .dex

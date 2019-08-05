@@ -2,7 +2,6 @@
 {%- from "metalk8s/map.jinja" import networks with context %}
 
 {%- set htpasswd_path = "/etc/kubernetes/htpasswd" %}
-{%- set ca_dex_path = "/etc/kubernetes/ca.pem" %}
 
 include:
   - metalk8s.kubernetes.ca.advertised
@@ -75,16 +74,6 @@ Set up default basic auth htpasswd:
     - makedirs: True
     - dir_mode: 750
 
-Set up default basic auth ca_dex:
-  file.managed:
-    - name: {{ ca_dex_path }}
-    - source: salt://{{ slspath }}/files/ca.pem
-    - user: root
-    - group: root
-    - mode: 600
-    - makedirs: True
-    - dir_mode: 750
-
 {%- set host = grains['metalk8s']['control_plane_ip'] %}
 
 Create kube-apiserver Pod manifest:
@@ -105,7 +94,6 @@ Create kube-apiserver Pod manifest:
         - /etc/kubernetes/pki/front-proxy-client.key
         - /etc/kubernetes/pki/sa.pub
         - {{ htpasswd_path }}
-        - {{ ca_dex_path }}
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
         - /etc/keepalived/check-apiserver.sh
         - /etc/keepalived/keepalived.conf.sh
@@ -148,7 +136,7 @@ Create kube-apiserver Pod manifest:
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
           - --oidc-issuer-url=https://{{ grains.metalk8s.workload_plane_ip }}:32000
           - --oidc-client-id=example-app
-          - --oidc-ca-file={{ ca_dex_path }}
+          - --oidc-ca-file=/etc/kubernetes/pki/ca.crt
           - --oidc-username-claim=email
           - --oidc-groups-claim=groups
         requested_cpu: 250m
@@ -162,12 +150,6 @@ Create kube-apiserver Pod manifest:
           - path: {{ htpasswd_path }}
             type: File
             name: htpasswd
-          - path: {{ ca_dex_path }}
-            type: File
-            name: ca-dex
-          - path: /etc/ssl/dex-certs
-            name: ca-dex-certs
-            type: DirectoryOrCreate
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
           - path: /etc/keepalived
             name: keepalived-config
@@ -230,7 +212,6 @@ Create kube-apiserver Pod manifest:
       - file: Ensure front-proxy CA cert is present
       - file: Ensure SA pub key is present
       - file: Set up default basic auth htpasswd
-      - file: Set up default basic auth ca_dex
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
       - file: Create keepalived check script
       - file: Create keepalived configuration file generator
