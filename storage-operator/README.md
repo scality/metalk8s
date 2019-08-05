@@ -15,7 +15,7 @@
 
 ```shell
 export KUBECONFIG=<path-to-the-admin.cong-you-copied-locally>
-export METALK8S_SALT_MASTER_ADDRESS=http://<IP-OF-SALT-API-WITHOUT-PORT>
+export METALK8S_SALT_MASTER_ADDRESS=http://<IP-OF-SALT-API-WITH-PORT>
 cd storage-operator
 operator-sdk up local
 ```

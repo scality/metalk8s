@@ -35,15 +35,13 @@ type Client struct {
 
 // Create a new Salt API client.
 func NewClient(creds *Credential) *Client {
-	const SALT_API_PORT int = 4507 // As defined in master-99-metalk8s.conf
-
 	address := os.Getenv("METALK8S_SALT_MASTER_ADDRESS")
 	if address == "" {
-		address = "http://salt-master"
+		address = "http://salt-master:4507"
 	}
 
 	return &Client{
-		address: fmt.Sprintf("%s:%d", address, SALT_API_PORT),
+		address: address,
 		client:  &http.Client{},
 		creds:   creds,
 		token:   nil,

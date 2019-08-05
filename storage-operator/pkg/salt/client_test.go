@@ -18,7 +18,7 @@ func TestNewClientDefault(t *testing.T) {
 		expected string
 	}{
 		"default": {value: "", expected: "http://salt-master:4507"},
-		"env_var": {value: "http://foo", expected: "http://foo:4507"},
+		"env_var": {value: "http://foo:4507", expected: "http://foo:4507"},
 	}
 
 	for name, tc := range tests {
