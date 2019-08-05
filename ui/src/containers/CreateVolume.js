@@ -1,16 +1,22 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
+import Modal from 'react-modal';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
+import Loader from '../components/Loader';
 import { Input, Button, Breadcrumb } from '@scality/core-ui';
 import { isEmpty } from 'lodash';
 import {
   fetchStorageClassAction,
   createVolumeAction
 } from '../ducks/app/volumes';
-import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import {
+  fontSize,
+  padding,
+  grayLightest
+} from '@scality/core-ui/dist/style/theme';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
   BreadcrumbContainer,
@@ -26,6 +32,7 @@ const CreateVolumeContainer = styled.div`
   padding: ${padding.base};
   display: inline-block;
 `;
+
 const FormSection = styled.div`
   padding: 0 ${padding.larger};
   display: flex;
@@ -90,8 +97,30 @@ const SizeUnitFieldSelectContainer = styled.div`
   padding-left: 5px;
 `;
 
+const ModalNoStorageClass = styled(Modal)`
+  position: absolute;
+  width: 500px;
+  height: 150px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) !important;
+  background-color: ${grayLightest};
+  outline: none;
+  button {
+    margin-left: 400px;
+  }
+  h4,
+  p {
+    margin-left: ${padding.larger};
+  }
+  a {
+    text-decoration: none;
+  }
+`;
+
 const CreateVolume = props => {
   const { theme, intl, match, history, fetchStorageClass } = props;
+
   useEffect(() => {
     fetchStorageClass();
   }, [fetchStorageClass]);
@@ -100,6 +129,7 @@ const CreateVolume = props => {
   const storageClassesName = props.storageClass.map(
     storageClass => storageClass.metadata.name
   );
+  const isSCLoading = useSelector(state => state.app.volumes.isSCLoading);
   // Hardcoded
   const types = [
     { label: 'RawBlockDevice', value: RAW_BLOCK_DEVICE },
@@ -160,10 +190,12 @@ const CreateVolume = props => {
       then: yup.string()
     })
   });
+  const isStorageClassExist = storageClassesName.length > 0;
+  // const isFormReady = storageClassesName.length > 0 && types.length > 0;
 
-  const isFormReady = storageClassesName.length > 0 && types.length > 0;
-
-  return isFormReady ? (
+  return isSCLoading ? (
+    <Loader />
+  ) : (
     <CreateVolumeContainer>
       <BreadcrumbContainer>
         <Breadcrumb
@@ -312,8 +344,28 @@ const CreateVolume = props => {
           }}
         </Formik>
       </CreateVolumeLayout>
+      <ModalNoStorageClass isOpen={!isStorageClassExist} ariaHideApp={false}>
+        {/* Need translation here^^ */}
+        <h4>No Storage Class found</h4>
+        <p>
+          Please create one from Kubernetes.
+          <a
+            // eslint-disable-next-line react/jsx-no-target-blank
+            target="_blank"
+            href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
+          >
+            Learn more
+          </a>
+        </p>
+        <Button
+          text={intl.messages.cancel}
+          type="button"
+          outlined
+          onClick={() => history.push(`/nodes/${match.params.id}/volumes`)}
+        />
+      </ModalNoStorageClass>
     </CreateVolumeContainer>
-  ) : null;
+  );
 };
 
 const mapStateToProps = state => ({
