@@ -17,7 +17,8 @@ import {
   refreshPersistentVolumes,
   updatePersistentVolumesRefreshingAction,
   updateVolumesAction,
-  stopRefreshPersistentVolumes
+  stopRefreshPersistentVolumes,
+  updateStorageClassAction
 } from './volumes';
 import * as ApiK8s from '../../services/k8s/api';
 import { SET_STORAGECLASS } from './volumes.js';
@@ -132,6 +133,7 @@ it('should put a empty array if Volumes is not correct', () => {
 it('update the storage class', () => {
   const gen = fetchStorageClass();
 
+  expect(gen.next().value).toEqual(put(updateStorageClassAction(true)));
   expect(gen.next().value).toEqual(call(ApiK8s.getStorageClass));
   const result = {
     body: {
@@ -158,20 +160,20 @@ it('update the storage class', () => {
   expect(gen.next(result).value).toEqual(
     put({ type: SET_STORAGECLASS, payload: result.body.items })
   );
-
+  expect(gen.next().value).toEqual(put(updateStorageClassAction(false)));
   expect(gen.next().done).toEqual(true);
 });
 
 it('does not update the storage class if there is an error', () => {
   const gen = fetchStorageClass();
-
+  expect(gen.next().value).toEqual(put(updateStorageClassAction(true)));
   expect(gen.next().value).toEqual(call(ApiK8s.getStorageClass));
 
   const result = {
     error: {}
   };
-
-  expect(gen.next(result).done).toEqual(true);
+  expect(gen.next(result).value).toEqual(put(updateStorageClassAction(false)));
+  expect(gen.next().done).toEqual(true);
 });
 
 it('update PVs', () => {
