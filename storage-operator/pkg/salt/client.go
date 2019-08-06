@@ -195,12 +195,17 @@ func (self *Client) GetVolumeSize(
 			err, "disk.dump failed (target=%s, path=%s)", nodeName, devicePath,
 		)
 	}
-
 	// TODO(#1461): make this more robust.
 	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	nodeResult := result[nodeName].(map[string]interface{})
-	size_str := nodeResult["getsize64"].(string)
-	return strconv.ParseInt(size_str, 10, 64)
+	if nodeResult, ok := result[nodeName].(map[string]interface{}); ok {
+		size_str := nodeResult["getsize64"].(string)
+		return strconv.ParseInt(size_str, 10, 64)
+	}
+
+	return 0, fmt.Errorf(
+		"no size in disk.dump response (target=%s, path=%s)",
+		nodeName, devicePath,
+	)
 }
 
 // Send an authenticated request to Salt API.
