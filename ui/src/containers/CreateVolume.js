@@ -1,22 +1,18 @@
 import React, { useEffect } from 'react';
 import { connect, useSelector } from 'react-redux';
-import Modal from 'react-modal';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
+import Banner from '../components/Banner';
 import { Input, Button, Breadcrumb } from '@scality/core-ui';
 import { isEmpty } from 'lodash';
 import {
   fetchStorageClassAction,
   createVolumeAction
 } from '../ducks/app/volumes';
-import {
-  fontSize,
-  padding,
-  grayLightest
-} from '@scality/core-ui/dist/style/theme';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
   BreadcrumbContainer,
@@ -95,32 +91,6 @@ const SizeFieldContainer = styled.div`
 const SizeUnitFieldSelectContainer = styled.div`
   width: 50px;
   padding-left: 5px;
-`;
-
-const ModalNoStorageClass = styled(Modal)`
-  position: absolute;
-  width: 500px;
-  height: 180px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) !important;
-  background-color: ${grayLightest};
-  outline: none;
-  border-radius: 5px;
-  button {
-    margin-left: 420px;
-  }
-  h3,
-  p {
-    margin-left: ${padding.larger};
-  }
-  p {
-    margin-top: ${padding.larger};
-  }
-  a {
-    text-decoration: none;
-    margin-left: ${padding.smaller};
-  }
 `;
 
 const CreateVolume = props => {
@@ -213,6 +183,7 @@ const CreateVolume = props => {
           ]}
         />
       </BreadcrumbContainer>
+      {isStorageClassExist ? null : <Banner intlMsg={intl.messages} />}
       <CreateVolumeLayout>
         <Formik
           initialValues={initialValues}
@@ -348,27 +319,6 @@ const CreateVolume = props => {
           }}
         </Formik>
       </CreateVolumeLayout>
-      <ModalNoStorageClass isOpen={!isStorageClassExist} ariaHideApp={false}>
-        <h3>{intl.messages.no_storage_class_found}</h3>
-        <p>
-          {intl.messages.storage_class_is_required}
-          <br />
-          {intl.messages.create_storage_class_in_Kubernetes}
-          <a
-            // eslint-disable-next-line react/jsx-no-target-blank
-            target="_blank"
-            href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
-          >
-            {intl.messages.learn_more}
-          </a>
-        </p>
-        <Button
-          text={intl.messages.ok}
-          type="button"
-          outlined
-          onClick={() => history.push(`/nodes/${match.params.id}/volumes`)}
-        />
-      </ModalNoStorageClass>
     </CreateVolumeContainer>
   );
 };
