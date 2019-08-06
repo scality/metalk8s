@@ -3,12 +3,20 @@
 {% set context = "kubernetes-admin@kubernetes" %}
 
 # Init
-Mount unconfigured solutions:
-  salt.state:
-  - tgt: {{ pillar.bootstrap_id }}
-  - sls:
-    - metalk8s.solutions.prereq
-  - saltenv: metalk8s-{{ version }}
+Make sure solutions namespace exist:
+  metalk8s_kubernetes.namespace_present:
+    - name: solutions
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+
+Make sure solutions configmap present:
+  metalk8s_kubernetes.configmap_present:
+    - name: metalk8s-solutions
+    - namespace: solutions
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - require:
+      - metalk8s_kubernetes: Make sure solutions namespace exist
 
 # Mount
 Mount unconfigured solutions:
@@ -37,6 +45,25 @@ Configure unconfigured solutions:
         },
     )[pillar.bootstrap_id]['ret']
 %}
+# Deploy the operator
+{%- set deploy_files_list = ["operator.yaml", "role.yaml", "role_binding.yaml", "service_account.yaml"] %}
+{%- for deploy_file in deploy_files_list %}
+{%- set filepath = "/srv/scality/" ~ iso_info.name ~ "-" ~ iso_info.version ~ "/operator/deploy/" ~ deploy_file %}
+{%- set sls_content = salt.saltutil.cmd(
+        tgt=pillar.bootstrap_id,
+        fun='slsutil.renderer',
+        kwarg={
+            'path': filepath,
+            'default_renderer': 'jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes'
+        },
+    )[pillar.bootstrap_id]['ret']
+%}
+Apply {{ deploy_file }} for solution {{ iso_info.name }}:
+  module.run:
+    - state.template_str:
+      - tem: "{{ sls_content | yaml }}"
+{%- endfor %}
+
 Update configmap solutions for {{ solution_iso }}:
   module.run:
     - metalk8s_solutions.set_configured:
@@ -46,6 +73,7 @@ Update configmap solutions for {{ solution_iso }}:
       - context: {{ context }}
 {%- endfor %}
 {%- endif %}
+
 
 Update registry for unconfigured solutions:
   salt.state:
