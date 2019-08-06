@@ -197,7 +197,7 @@ reclaim its storage and remove the finalizers to let the object be deleted.
 const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
 const JOB_DONE_MARKER = "DONE"
 
-var log = logf.Log.WithName("controller_volume")
+var log = logf.Log.WithName("volume-controller")
 
 // Add creates a new Volume Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
