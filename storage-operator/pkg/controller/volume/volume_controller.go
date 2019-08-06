@@ -138,59 +138,59 @@ health of the PersistentVolume we just created).
 creation process), so we reschedule the request until the volume becomes either
 `Failed` or `Available`.
 
-For volumes with no backing PersistentVolume (the creation failed, we already
-deleted it, …), we simply remove the `volume-protection` finalizer, since they
-are `Terminating` they will be deleted by Kubernetes once the finalizer is gone.
+For volumes with no backing PersistentVolume we directly go reclaim the storage
+on the node and upon completion we remove our finalizer to let Kubernetes delete
+us.
 
-If we do have a backing PersistentVolume, we need to check if we can delete it.
-If not (because it is bound for instance), then we reschedule the request to
-re-check later.
-If it can be removed, we proceed (unprepare the volume, delete the object and
-then remove the finalizer we put on the PersistentVolume).
+If we do have a backing PersistentVolume, we delete it (if it's not already in a
+terminating state) and watch for the moment when it becomes unused (this is done
+by rescheduling). Once the backing PersistentVolume becomes unused, we go
+reclaim its storage and remove the finalizers to let the object be deleted.
 
-  -----                                                    ------
- (START)                          +---------------------->( STOP )
-  -----                           |                        ------
-    |                             |                          ^
-    |                             |                          |
-    v                             |                          |
-+--------+ YES                    |                          |
-|Pending?|------------------------x-----------------------+  |
-+--------+                        |                       |  |
-    | NO                          |                       |  |
-    v                             |                       v  |
-+--------+ NO         +-----------------------+          +-------+
-| HasPv? |----------->| RemoveVolumeFinalizer |          |Requeue|
-+--------+            +-----------------------+          +-------+
-    | YES                                                    ^
-    v                                                        |
-+------------+ NO                                            |
-|CanDeletePv?|---------------------------------------------->|
-+------------+                                               |
-    | YES        +--------------------+   +--------------+   |
-    |      +---->|SpawnUnprepareVolume|-->|SetTerminating|-->|
-    |      |     +--------------------+   +--------------+   |
-    |      | NO                                              |
-    |      |                                                 |
-    |   +----+ DONE  +--------+   +-----------------+        |
-    +-->|Job?|------>|DeletePV|-->|RemovePvFinalizer|------->|
-        +----+       +--------+   +-----------------+        |
-          | YES                                              |
-          v                                                  |
-     +-----------+ Job Failed         +---------+            |
-     |           |------------------->|SetFailed|----------->|
-     |           |                    +---------+            |
-     |           |                                           |
-     |           | Unknown Job        +--------+             |
-     |PollSaltJob|------------------->|UnsetJob|------------>|
-     |           |                    +--------+             |
-     |           |                                           |
-     |           | Job Succeed        +--------+             |
-     |           |------------------->|Job=DONE|------------>|
-     +-----------+                    +--------+             |
-          | Job in progress                                  |
-          |                                                  |
-          +--------------------------------------------------+
+  -----                                                            ------
+ (START)                                                          ( STOP )
+  -----                                                            ------
+    |                                                                ^
+    |                                                                |
+    v                                                                |
++--------+ YES                                                    +-------+
+|Pending?|------------------------------------------------------->|Requeue|
++--------+                                                        +-------+
+    | NO                                                             ^
+    v                                                                |
++--------+ YES        +----------------+ NO  +--------+              |
+| HasPv? |----------->|IsPvTerminating?|---->|DeletePV|------------->|
++--------+            +----------------+     +--------+              |
+    | NO                     | YES                                   |
+    |                        v                                       |
+    |              YES +-----------+ NO                              |
+    |<-----------------|IsPvUnused?|-------------------------------->|
+    |                  +-----------+                                 |
+    |                                                                |
+    |            +--------------------+   +--------------+           |
+    |      +---->|SpawnUnprepareVolume|-->|SetTerminating|---------->|
+    |      |     +--------------------+   +--------------+           |
+    |      | NO                                                      |
+    |      |                                                         |
+    |   +----+ DONE  +-----------------+   +---------------------+   |
+    +-->|Job?|------>|RemovePvFinalizer|-->|RemoveVolumeFinalizer|-->|
+        +----+       +-----------------+   +---------------------+   |
+          | YES                                                      |
+          v                                                          |
+     +-----------+ Job Failed           +---------+                  |
+     |           |--------------------->|SetFailed|----------------->|
+     |           |                      +---------+                  |
+     |           |                                                   |
+     |           | Unknown Job          +--------+                   |
+     |PollSaltJob|--------------------->|UnsetJob|------------------>|
+     |           |                      +--------+                   |
+     |           |                                                   |
+     |           | Job Succeed          +--------+                   |
+     |           |--------------------->|Job=DONE|------------------>|
+     +-----------+                      +--------+                   |
+          | Job in progress                                          |
+          |                                                          |
+          +----------------------------------------------------------+
 
 }}} */
 
@@ -642,6 +642,7 @@ func (self *ReconcileVolume) finalizeVolume(
 ) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Name", request.Name)
 
+	// Pending volume: can do nothing but wait for stabilization.
 	if volume.Status.Phase == storagev1alpha1.VolumePending {
 		reqLogger.Info("pending volume cannot be finalized: requeue")
 		return delayedRequeue(nil)
@@ -657,39 +658,33 @@ func (self *ReconcileVolume) finalizeVolume(
 		return delayedRequeue(err)
 	}
 
-	// No associated PV: let's delete ourselves then.
-	if pv == nil {
-		reqLogger.Info("no PersistentVolume associated to terminating volume")
-		if err := self.removeVolumeFinalizer(ctx, volume); err != nil {
-			reqLogger.Error(err, "cannot remove volume finalizer")
+	// If we have a backing PV we delete it (the finalizer will keep it alive).
+	if pv != nil && pv.GetDeletionTimestamp().IsZero() {
+		if err := self.client.Delete(ctx, pv); err != nil {
+			reqLogger.Error(
+				err, "cannot delete PersistentVolume: requeue",
+				"PersistentVolume.Name", volume.Name,
+			)
 			return delayedRequeue(err)
 		}
-		reqLogger.Info("volume finalizer removed")
-		return endReconciliation()
+		reqLogger.Info(
+			"deleting backing PersistentVolume",
+			"PersistentVolume.Name", pv.Name,
+		)
+		self.recorder.Event(
+			volume, corev1.EventTypeNormal, "PvDeletion",
+			"backing PersistentVolume deleted",
+		)
+		return requeue(nil)
 	}
 
-	switch pv.Status.Phase {
-	case corev1.VolumeBound:
-		reqLogger.Info(
-			"backing PersistentVolume is bound: cannot delete volume",
-		)
-		return delayedRequeue(nil)
-	case corev1.VolumePending:
-		reqLogger.Info(
-			"backing PersistentVolume is pending: waiting for stabilization",
-		)
-		return delayedRequeue(nil)
-	case corev1.VolumeAvailable, corev1.VolumeReleased, corev1.VolumeFailed:
-		reqLogger.Info("the backing PersistentVolume is removable")
-		return self.destroyPersistentVolume(ctx, request, volume, pv)
-	default:
-		phase := pv.Status.Phase
-		errmsg := fmt.Sprintf(
-			"unexpected PersistentVolume status (%+v): do nothing", phase,
-		)
-		reqLogger.Info(errmsg, "PersistentVolume.Status", phase)
-		return delayedRequeue(nil)
+	// If we don't have a PV or it's only used by us we can reclaim the storage.
+	if pv == nil || isPersistentVolumeUnused(request, pv) {
+		return self.reclaimStorage(ctx, request, volume, pv)
 	}
+
+	// PersistentVolume still in use: wait before reclaiming the storage.
+	return delayedRequeue(nil)
 }
 
 // Build a PersistentVolume from a Volume object.
@@ -759,8 +754,44 @@ func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
 	return &affinity
 }
 
+// Check if a PersistentVolume is only used by us.
+func isPersistentVolumeUnused(
+	request reconcile.Request,
+	pv *corev1.PersistentVolume,
+) bool {
+	reqLogger := log.WithValues("Request.Name", request.Name)
+
+	switch pv.Status.Phase {
+	case corev1.VolumeBound:
+		reqLogger.Info(
+			"backing PersistentVolume is bound: cannot delete volume",
+		)
+		return false
+	case corev1.VolumePending:
+		reqLogger.Info(
+			"backing PersistentVolume is pending: waiting for stabilization",
+		)
+		return false
+	case corev1.VolumeAvailable, corev1.VolumeReleased, corev1.VolumeFailed:
+		reqLogger.Info("the backing PersistentVolume is in a removable state")
+		finalizers := pv.GetFinalizers()
+		if len(finalizers) == 1 && finalizers[0] == VOLUME_PROTECTION {
+			reqLogger.Info("the backing PersistentVolume is unused")
+			return true
+		}
+		return false
+	default:
+		phase := pv.Status.Phase
+		errmsg := fmt.Sprintf(
+			"unexpected PersistentVolume status (%+v): do nothing", phase,
+		)
+		reqLogger.Info(errmsg, "PersistentVolume.Status", phase)
+		return false
+	}
+}
+
 // Destroy the give PersistentVolume.
-func (self *ReconcileVolume) destroyPersistentVolume(
+func (self *ReconcileVolume) reclaimStorage(
 	ctx context.Context,
 	request reconcile.Request,
 	volume *storagev1alpha1.Volume,
@@ -784,28 +815,24 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 			)
 			return self.setTerminatingVolumeStatus(ctx, volume, jid)
 		}
-	case JOB_DONE_MARKER: // Salt job is done, now let's delete the PV.
-		if err := self.client.Delete(ctx, pv); err != nil {
-			reqLogger.Error(
-				err, "cannot delete PersistentVolume: requeue",
-				"PersistentVolume.Name", volume.Name,
+	case JOB_DONE_MARKER: // Salt job is done, now let's remove the finalizers.
+		if pv != nil {
+			if err := self.removePvFinalizer(ctx, pv); err != nil {
+				reqLogger.Error(err, "cannot remove PersistentVolume finalizer")
+				return delayedRequeue(err)
+			}
+			reqLogger.Info("PersistentVolume finalizer removed")
+			self.recorder.Event(
+				volume, corev1.EventTypeNormal, "VolumeFinalization",
+				"storage reclaimed",
 			)
+		}
+		if err := self.removeVolumeFinalizer(ctx, volume); err != nil {
+			reqLogger.Error(err, "cannot remove Volume finalizer")
 			return delayedRequeue(err)
 		}
-		reqLogger.Info(
-			"deleting backing PersistentVolume",
-			"PersistentVolume.Name", pv.Name,
-		)
-		if err := self.removePvFinalizer(ctx, pv); err != nil {
-			reqLogger.Error(err, "cannot remove PersistentVolume finalizer")
-			return delayedRequeue(err)
-		}
-		reqLogger.Info("PersistentVolume finalizer removed")
-		self.recorder.Event(
-			volume, corev1.EventTypeNormal, "PvDeletion",
-			"backing PersistentVolume deleted",
-		)
-		return requeue(nil)
+		reqLogger.Info("volume finalizer removed")
+		return endReconciliation()
 	default: // UnprepareVolume in progress: poll its state.
 		return self.pollSaltJob(
 			ctx, "volume finalization", "UnprepareVolume",
