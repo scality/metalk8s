@@ -452,6 +452,7 @@ type stateSetter func(
 // Poll a Salt state job.
 func (self *ReconcileVolume) pollSaltJob(
 	ctx context.Context,
+	stepName string,
 	jobName string,
 	volume *storagev1alpha1.Volume,
 	setState stateSetter,
@@ -464,28 +465,32 @@ func (self *ReconcileVolume) pollSaltJob(
 
 	jid := volume.Status.Job
 	if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
-		reqLogger.Error(err, fmt.Sprintf("failed to poll %s status", jobName))
+		reqLogger.Error(
+			err, fmt.Sprintf("failed to poll Salt job '%s' status", jobName),
+		)
 		// This one is not retryable.
 		if failure, ok := err.(*salt.AsyncJobFailed); ok {
 			self.recorder.Eventf(
 				volume, corev1.EventTypeWarning, "SaltCall",
-				"Salt call to %s failed", jobName,
+				"step '%s' failed", stepName,
 			)
 			return self.setFailedVolumeStatus(
 				ctx, volume, errorCode,
-				"%s failed with %s", jobName, failure.Error(),
+				"Salt job '%s' failed with %s", jobName, failure.Error(),
 			)
 		}
 		// Job salt not found, let's retry.
 		return setState(ctx, volume, "")
 	} else {
 		if result == nil {
-			reqLogger.Info(fmt.Sprintf("%s still in progress", jobName))
+			reqLogger.Info(
+				fmt.Sprintf("Salt job '%s' still in progress", jobName),
+			)
 			return delayedRequeue(nil)
 		}
 		self.recorder.Eventf(
 			volume, corev1.EventTypeNormal, "SaltCall",
-			"Salt call to %s succeeded", jobName,
+			"step '%s' succeeded", stepName,
 		)
 		return setState(ctx, volume, JOB_DONE_MARKER)
 	}
@@ -594,7 +599,7 @@ func (self *ReconcileVolume) deployVolume(
 			reqLogger.Info("start to prepare the volume")
 			self.recorder.Event(
 				volume, corev1.EventTypeNormal, "SaltCall",
-				"Salt call to PrepareVolume started",
+				"volume provisioning started",
 			)
 			return self.setPendingVolumeStatus(ctx, volume, jid)
 		}
@@ -621,7 +626,8 @@ func (self *ReconcileVolume) deployVolume(
 		return self.setAvailableVolumeStatus(ctx, volume)
 	default: // PrepareVolume in progress: poll its state.
 		return self.pollSaltJob(
-			ctx, "PrepareVolume", volume, self.setPendingVolumeStatus,
+			ctx, "volume provisioning", "PrepareVolume",
+			volume, self.setPendingVolumeStatus,
 			storagev1alpha1.CreationError,
 		)
 	}
@@ -773,7 +779,7 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 			reqLogger.Info("start to unprepare the volume")
 			self.recorder.Event(
 				volume, corev1.EventTypeNormal, "SaltCall",
-				"Salt call to UnprepareVolume started",
+				"volume finalization started",
 			)
 			return self.setTerminatingVolumeStatus(ctx, volume, jid)
 		}
@@ -801,7 +807,8 @@ func (self *ReconcileVolume) destroyPersistentVolume(
 		return requeue(nil)
 	default: // UnprepareVolume in progress: poll its state.
 		return self.pollSaltJob(
-			ctx, "UnprepareVolume", volume, self.setTerminatingVolumeStatus,
+			ctx, "volume finalization", "UnprepareVolume",
+			volume, self.setTerminatingVolumeStatus,
 			storagev1alpha1.DestructionError,
 		)
 	}
