@@ -384,10 +384,10 @@ func (self *ReconcileVolume) getDiskSizeForVolume(
 //
 // Return `nil` if no such volume exists.
 func (self *ReconcileVolume) getPersistentVolume(
-	ctx context.Context, name string,
+	ctx context.Context, volume *storagev1alpha1.Volume,
 ) (*corev1.PersistentVolume, error) {
 	pv := &corev1.PersistentVolume{}
-	key := types.NamespacedName{Namespace: "", Name: name}
+	key := types.NamespacedName{Namespace: "", Name: volume.Name}
 
 	if err := self.client.Get(ctx, key, pv); err != nil {
 		if errors.IsNotFound(err) {
@@ -395,6 +395,13 @@ func (self *ReconcileVolume) getPersistentVolume(
 		}
 		return nil, err
 	}
+	if !metav1.IsControlledBy(pv, volume) {
+		return nil, fmt.Errorf(
+			"name conflict: PersistentVolume %s not owned by Volume %s",
+			pv.Name, volume.Name,
+		)
+	}
+
 	return pv, nil
 }
 
@@ -539,10 +546,10 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return endReconciliation()
 	}
 	// Check if a PV already exists for this volume.
-	pv, err := r.getPersistentVolume(ctx, volume.Name)
+	pv, err := r.getPersistentVolume(ctx, volume)
 	if err != nil {
 		reqLogger.Error(
-			err, "cannot read PersistentVolume: requeue",
+			err, "error while looking for backing PersistentVolume: requeue",
 			"PersistentVolume.Name", volume.Name,
 		)
 		return delayedRequeue(err)
@@ -634,10 +641,10 @@ func (self *ReconcileVolume) finalizeVolume(
 	}
 
 	// Check if a PV is associated to the volume.
-	pv, err := self.getPersistentVolume(ctx, volume.Name)
+	pv, err := self.getPersistentVolume(ctx, volume)
 	if err != nil {
 		reqLogger.Error(
-			err, "cannot read PersistentVolume: requeue",
+			err, "error while looking for backing PersistentVolume: requeue",
 			"PersistentVolume.Name", volume.Name,
 		)
 		return delayedRequeue(err)
