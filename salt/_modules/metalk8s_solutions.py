@@ -13,7 +13,7 @@ from salt.exceptions import CommandExecutionError
 
 HAS_LIBS = True
 SOLUTIONS_CONFIG_MAP = 'metalk8s-solutions'
-SOLUTIONS_CONFIG_MAP_NAMESPACE = 'default'
+SOLUTIONS_CONFIG_MAP_NAMESPACE = 'solutions'
 SOLUTIONS_CONFIG_FILE = '/etc/metalk8s/solutions.yaml'
 try:
     import kubernetes.client

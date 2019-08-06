@@ -1,6 +1,15 @@
 {% set version = pillar.metalk8s.nodes[pillar.bootstrap_id].version %}
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
+
+# Init
+Mount unconfigured solutions:
+  salt.state:
+  - tgt: {{ pillar.bootstrap_id }}
+  - sls:
+    - metalk8s.solutions.prereq
+  - saltenv: metalk8s-{{ version }}
+
 # Mount
 Mount unconfigured solutions:
   salt.state:
