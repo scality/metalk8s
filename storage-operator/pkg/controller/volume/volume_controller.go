@@ -85,9 +85,10 @@ Once pre-checks are done, we will fall in one of four cases:
 To "deploy" a volume, we need to prepare its storage (using Salt) and create a
 backing PersistentVolume.
 
-If we have no value for `Job`, that means nothing has started, and thus we start
-the volume preparation using an asynchronous Salt call (which gives us a job ID)
-and then reschedule the request to monitor the evolution of the job.
+If we have no value for `Job`, that means nothing has started, thus we set a
+finalizer on ourself and then start the volume preparation using an asynchronous
+Salt call (which gives us a job ID) before rescheduling the request to monitor
+the evolution of the job.
 
 If we do have a job ID, then something is in progress and we monitor it until
 it's over.
@@ -95,37 +96,37 @@ If it has ended with an error, we move the volume into a failed state.
 
 Otherwise we proceed with the PersistentVolume creation (which require an extra
 Salt call, synchronous this time, to get the volume size), taking care of
-putting a finalizer on both ourself and the PersistentVolume (so that our
-lifetimes are tied) and setting ourself as the owner of the PersistentVolume.
+putting a finalizer on the PersistentVolume (so that its lifetime is tied to
+ours) and setting ourself as the owner of the PersistentVolume.
 
 Once we have successfuly created the PersistentVolume, we can move into the
 `Available` state and reschedule the request (the next iteration will check the
 health of the PersistentVolume we just created).
 
-                    +------------------+             +----------+
-              +---->|SpawnPrepareVolume|------------>|SetPending|
-              |     +------------------+             +----------+
-              | NO                                        |
-              |                                           v
- -----     +----+ DONE  +--------+   +------------+   +-------+    ------
-(START)--->|Job?|------>|CreatePV|-->|SetAvailable|-->|Requeue|-->( STOP )
- -----     +----+       +--------+   +------------+   +-------+    ------
-             | YES                                         ^
-             v                                             |
-        +-----------+ Job Failed    +---------+            |
-        |           |-------------->|SetFailed|----------->+
-        |           |               +---------+            |
-        |           |                                      |
-        |           | Unknown Job   +--------+             |
-        |PollSaltJob|-------------->|UnsetJob|------------>+
-        |           |               +--------+             |
-        |           |                                      |
-        |           | Job Succeed   +--------+             |
-        |           |-------------->|Job=DONE|------------>+
-        +-----------+               +--------+             |
-             | Job in progress                             |
-             |                                             |
-             +---------------------------------------------+
+                +------------------+   +------------------+   +----------+
+            +-->|SetVolumeFinalizer|-->|SpawnPrepareVolume|-->|SetPending|
+            |   +------------------+   +------------------+   +----------+
+            | NO                                                 |
+            |                                                    v
+ -----    +----+ DONE  +--------+   +------------+          +-------+    ------
+(START)-->|Job?|------>|CreatePV|-->|SetAvailable|--------->|Requeue|-->( STOP )
+ -----    +----+       +--------+   +------------+          +-------+    ------
+            | YES                                                ^
+            v                                                    |
+       +-----------+ Job Failed    +---------+                   |
+       |           |-------------->|SetFailed|------------------>+
+       |           |               +---------+                   |
+       |           |                                             |
+       |           | Unknown Job   +--------+                    |
+       |PollSaltJob|-------------->|UnsetJob|------------------->+
+       |           |               +--------+                    |
+       |           |                                             |
+       |           | Job Succeed   +--------+                    |
+       |           |-------------->|Job=DONE|------------------->+
+       +-----------+               +--------+                    |
+            | Job in progress                                    |
+            |                                                    |
+            +----------------------------------------------------+
 
 
 
@@ -429,11 +430,6 @@ func (self *ReconcileVolume) createPersistentVolume(
 	if err != nil {
 		return err
 	}
-	// Set volume-protection finalizer on the volume.
-	if err := self.addVolumeFinalizer(ctx, volume); err != nil {
-		reqLogger.Error(err, "cannot set volume-protection: requeue")
-		return err
-	}
 	// Create the PV!
 	if err := self.client.Create(ctx, pv); err != nil {
 		reqLogger.Error(
@@ -592,6 +588,11 @@ func (self *ReconcileVolume) deployVolume(
 
 	switch volume.Status.Job {
 	case "": // No job in progress: call Salt to prepare the volume.
+		// Set volume-protection finalizer on the volume.
+		if err := self.addVolumeFinalizer(ctx, volume); err != nil {
+			reqLogger.Error(err, "cannot set volume-protection: requeue")
+			return delayedRequeue(err)
+		}
 		if jid, err := self.salt.PrepareVolume(ctx, nodeName); err != nil {
 			reqLogger.Error(err, "failed to run PrepareVolume")
 			return delayedRequeue(err)
