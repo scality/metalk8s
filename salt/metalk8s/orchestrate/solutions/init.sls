@@ -18,7 +18,7 @@ Make sure UIs namespace exist:
 Make sure solutions configmap present:
   metalk8s_kubernetes.configmap_present:
     - name: metalk8s-solutions
-    - namespace: solutions
+    - namespace: metalk8s-solutions
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - require:
@@ -64,13 +64,39 @@ Configure unconfigured solutions:
         },
     )[pillar.bootstrap_id]['ret']
 %}
-Apply {{ deploy_file }} for solution {{ iso_info.name }}:
+Apply {{ deploy_file }} for solution {{ iso_info.name }} {{ iso_info.version }}:
   module.run:
     - state.template_str:
       - tem: "{{ sls_content | yaml }}"
 {%- endfor %}
 
-Update configmap solutions for {{ solution_iso }}:
+{%- set crdpath = "/srv/scality/" ~ iso_info.name ~ "-" ~ iso_info.version ~ "/operator/deploy/crds" %}
+{%- set crd_files = salt.saltutil.cmd(
+        tgt=pillar.bootstrap_id,
+        fun='file.find',
+        kwarg={
+          'path': crdpath,
+          'name': '\*_crd.yaml'
+        },
+  )[pillar.bootstrap_id]['ret']
+%}
+{%- for crd_file in crd_files %}
+{%- set sls_content = salt.saltutil.cmd(
+        tgt=pillar.bootstrap_id,
+        fun='slsutil.renderer',
+        kwarg={
+            'path': crd_file,
+            'default_renderer': 'jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes'
+        },
+    )[pillar.bootstrap_id]['ret']
+%}
+Apply {{ crd_file }} for solution {{ iso_info.name }} {{ iso_info.version }}:
+  module.run:
+    - state.template_str:
+      - tem: "{{ sls_content | yaml }}"
+{%- endfor %}
+
+Update configmap solutions for {{ solution_iso }} {{ iso_info.version }}:
   module.run:
     - metalk8s_solutions.set_configured:
       - iso_info: {{ iso_info }}
