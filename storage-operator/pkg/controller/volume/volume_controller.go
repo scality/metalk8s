@@ -9,6 +9,7 @@ import (
 	storagev1alpha1 "github.com/scality/metalk8s/storage-operator/pkg/apis/storage/v1alpha1"
 	"github.com/scality/metalk8s/storage-operator/pkg/salt"
 	corev1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -423,6 +424,26 @@ func (self *ReconcileVolume) getPersistentVolume(
 	return pv, nil
 }
 
+// Get the storage class identified by the given name.
+func (self *ReconcileVolume) getStorageClass(
+	ctx context.Context, name string,
+) (*storagev1.StorageClass, error) {
+	sc := &storagev1.StorageClass{}
+	key := types.NamespacedName{Namespace: "", Name: name}
+
+	if err := self.client.Get(ctx, key, sc); err != nil {
+		return nil, err
+	}
+	// We must have `fsType` as parameter, otherwise we can't create our PV.
+	if _, found := sc.Parameters["fsType"]; !found {
+		return nil, fmt.Errorf(
+			"missing field 'parameters.fsType' in StorageClass '%s'", name,
+		)
+	}
+
+	return sc, nil
+}
+
 // Remove the volume-protection on the PV (if not already present).
 func (self *ReconcileVolume) removePvFinalizer(
 	ctx context.Context, pv *corev1.PersistentVolume,
@@ -623,6 +644,7 @@ func (self *ReconcileVolume) deployVolume(
 			return self.setPendingVolumeStatus(ctx, volume, jid)
 		}
 	case JOB_DONE_MARKER: // Salt job is done, now let's create the PV.
+		scName := volume.Spec.StorageClassName
 		diskSize, err := self.getDiskSizeForVolume(ctx, volume)
 		if err != nil {
 			reqLogger.Error(err, "call to GetVolumeSize failed")
@@ -631,7 +653,13 @@ func (self *ReconcileVolume) deployVolume(
 				"call to GetVolumeSize failed: %s", err.Error(),
 			)
 		}
-		pv := newPersistentVolume(volume, diskSize)
+		sc, err := self.getStorageClass(ctx, scName)
+		if err != nil {
+			errmsg := fmt.Sprintf("cannot get StorageClass '%s'", scName)
+			reqLogger.Error(err, errmsg, "StorageClass.Name", scName)
+			return delayedRequeue(err)
+		}
+		pv := newPersistentVolume(volume, sc, diskSize)
 		if err := self.createPersistentVolume(ctx, pv, volume); err != nil {
 			return delayedRequeue(err)
 		}
@@ -708,16 +736,20 @@ func (self *ReconcileVolume) finalizeVolume(
 // Build a PersistentVolume from a Volume object.
 //
 // Arguments
-//     volume:     a Volume object
-//     volumeSize: the volume size
+//     volume:       a Volume object
+//     storageClass: a StorageClass object
+//     volumeSize:   the volume size
 //
 // Returns
 //     The PersistentVolume representing the given Volume.
 func newPersistentVolume(
-	volume *storagev1alpha1.Volume, volumeSize resource.Quantity,
+	volume *storagev1alpha1.Volume,
+	storageClass *storagev1.StorageClass,
+	volumeSize resource.Quantity,
 ) *corev1.PersistentVolume {
 	// We only support this mode for now.
 	mode := corev1.PersistentVolumeFilesystem
+	fsType := storageClass.Parameters["fsType"]
 
 	return &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
@@ -732,10 +764,12 @@ func newPersistentVolume(
 			Capacity: map[corev1.ResourceName]resource.Quantity{
 				corev1.ResourceStorage: volumeSize,
 			},
-			VolumeMode: &mode,
+			MountOptions: storageClass.MountOptions,
+			VolumeMode:   &mode,
 			PersistentVolumeSource: corev1.PersistentVolumeSource{
 				Local: &corev1.LocalVolumeSource{
-					Path: volume.GetPath(),
+					Path:   volume.GetPath(),
+					FSType: &fsType,
 				},
 			},
 			PersistentVolumeReclaimPolicy: "Retain",
