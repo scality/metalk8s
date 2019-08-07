@@ -28,6 +28,7 @@ Overview:
 """
 
 
+import abc
 import importlib
 from pathlib import Path
 import sys
@@ -61,9 +62,9 @@ def task__deploy_salt_tree() -> Iterator[types.TaskDict]:
         yield from file_tree.execution_plan
 
 
-class CommonStaticContainerRegistry(targets.AtomicTarget):
-    """Generate a nginx configuration to serve common static container
-    registry."""
+class _StaticContainerRegistryBase(targets.AtomicTarget, abc.ABC):
+    """Common code to interact with `static-container-registry`."""
+
     def __init__(
         self,
         destination: Path,
@@ -83,10 +84,10 @@ class CommonStaticContainerRegistry(targets.AtomicTarget):
     @property
     def task(self) -> types.TaskDict:
         task = self.basic_task
+        doc = ' '.join(self.__doc__.split()) if self.__doc__ else None
         task.update({
             'title': self._show,
-            'doc': 'Generate the nginx config to serve a common static '
-                   'container registry.',
+            'doc': doc,
             'actions': [self._run],
         })
         return task
@@ -98,12 +99,32 @@ class CommonStaticContainerRegistry(targets.AtomicTarget):
 
     def _run(self) -> None:
         """Generate the nginx configuration."""
+        parts = self._get_parts()
         with Path(self.targets[0]).open('w', encoding='utf-8') as fp:
-            fp.write(container_registry.CONSTANTS)
+            for part in parts:
+                fp.write(part)
+
+    @abc.abstractmethod
+    def _get_parts(self) -> Iterator[str]:
+        """Yield all parts that should go in the generated configuration file.
+        """
+        raise NotImplementedError
 
 
-class StaticContainerRegistry(targets.AtomicTarget):
+class CommonStaticContainerRegistry(_StaticContainerRegistryBase):
+    """Generate a nginx configuration to serve common static container
+    registry."""
+
+    def _get_parts(self) -> Iterator[str]:
+        parts : Iterator[str] = container_registry.create_config(
+                None, None, None, with_constants=True, only_constants=True,
+        )
+        return parts
+
+
+class StaticContainerRegistry(_StaticContainerRegistryBase):
     """Generate a nginx configuration to serve a static container registry."""
+
     def __init__(
         self,
         root: Path,
@@ -123,35 +144,19 @@ class StaticContainerRegistry(targets.AtomicTarget):
         Keyword Arguments:
             They are passed to `Target` init method.
         """
-        kwargs['targets'] = [destination]
-        super().__init__(task_name=destination.name, **kwargs)
+        super().__init__(destination=destination, **kwargs)
         self._img_root = root
         self._srv_root = server_root
         self._name_pfx = name_prefix
 
-    @property
-    def task(self) -> types.TaskDict:
-        task = self.basic_task
-        task.update({
-            'title': self._show,
-            'doc': 'Generate the nginx config to serve a container registry.',
-            'actions': [self._run],
-        })
-        return task
-
-    @staticmethod
-    def _show(task: types.Task) -> str:
-        """Return a description of the task."""
-        return utils.title_with_target1('NGINX_CFG', task)
-
-    def _run(self) -> None:
-        """Generate the nginx configuration."""
-        with Path(self.targets[0]).open('w', encoding='utf-8') as fp:
-            parts = container_registry.create_config(
-                self._img_root, self._srv_root, self._name_pfx, False
-            )
-            for part in parts:
-                fp.write(part)
+    def _get_parts(self) -> Iterator[str]:
+        """Yield all parts that should go in the generated configuration file.
+        """
+        parts : Iterator[str] = container_registry.create_config(
+            self._img_root, self._srv_root, self._name_pfx,
+            with_constants=False,
+        )
+        return parts
 
 
 PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
