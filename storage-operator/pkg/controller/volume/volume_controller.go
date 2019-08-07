@@ -299,15 +299,32 @@ func (self *ReconcileVolume) updateVolumeStatus(
 func (self *ReconcileVolume) setFailedVolumeStatus(
 	ctx context.Context,
 	volume *storagev1alpha1.Volume,
+	pv *corev1.PersistentVolume,
 	errorCode storagev1alpha1.VolumeErrorCode,
 	format string,
 	args ...interface{},
 ) (reconcile.Result, error) {
+	reqLogger := log.WithValues("Request.Name", volume.Name)
 	oldPhase := volume.Status.Phase
 
 	volume.SetFailedStatus(errorCode, format, args...)
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
 		return delayedRequeue(err)
+	}
+	// If a PV is provided, move it to Failed state as well.
+	if pv != nil {
+		pv.Status = corev1.PersistentVolumeStatus{
+			Phase:   corev1.VolumeFailed,
+			Message: "the owning volume failed",
+			Reason:  "OwnerFailed",
+		}
+		if err := self.client.Status().Update(ctx, pv); err != nil {
+			reqLogger.Error(
+				err, "cannot update PersistentVolume status: requeue",
+				"PersistentVolume.Name", pv.Name,
+			)
+			return delayedRequeue(err)
+		}
 	}
 	return requeue(nil)
 }
@@ -451,6 +468,7 @@ func (self *ReconcileVolume) pollSaltJob(
 	stepName string,
 	jobName string,
 	volume *storagev1alpha1.Volume,
+	pv *corev1.PersistentVolume,
 	setState stateSetter,
 	errorCode storagev1alpha1.VolumeErrorCode,
 ) (reconcile.Result, error) {
@@ -471,7 +489,7 @@ func (self *ReconcileVolume) pollSaltJob(
 				"step '%s' failed", stepName,
 			)
 			return self.setFailedVolumeStatus(
-				ctx, volume, errorCode,
+				ctx, volume, pv, errorCode,
 				"Salt job '%s' failed with %s", jobName, failure.Error(),
 			)
 		}
@@ -529,7 +547,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	if err := volume.IsValid(); err != nil {
 		return r.setFailedVolumeStatus(
-			ctx, volume, storagev1alpha1.InternalError,
+			ctx, volume, nil, storagev1alpha1.InternalError,
 			"invalid volume: %s", err.Error(),
 		)
 	}
@@ -562,7 +580,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	// Else, check its health.
 	if pv.Status.Phase == corev1.VolumeFailed {
 		_, err := r.setFailedVolumeStatus(
-			ctx, volume, storagev1alpha1.UnavailableError,
+			ctx, volume, nil, storagev1alpha1.UnavailableError,
 			"backing PersistentVolume is in a failed state (%s): %s",
 			pv.Status.Reason, pv.Status.Message,
 		)
@@ -609,7 +627,7 @@ func (self *ReconcileVolume) deployVolume(
 		if err != nil {
 			reqLogger.Error(err, "call to GetVolumeSize failed")
 			return self.setFailedVolumeStatus(
-				ctx, volume, storagev1alpha1.CreationError,
+				ctx, volume, nil, storagev1alpha1.CreationError,
 				"call to GetVolumeSize failed: %s", err.Error(),
 			)
 		}
@@ -628,7 +646,7 @@ func (self *ReconcileVolume) deployVolume(
 	default: // PrepareVolume in progress: poll its state.
 		return self.pollSaltJob(
 			ctx, "volume provisioning", "PrepareVolume",
-			volume, self.setPendingVolumeStatus,
+			volume, nil, self.setPendingVolumeStatus,
 			storagev1alpha1.CreationError,
 		)
 	}
@@ -836,7 +854,7 @@ func (self *ReconcileVolume) reclaimStorage(
 	default: // UnprepareVolume in progress: poll its state.
 		return self.pollSaltJob(
 			ctx, "volume finalization", "UnprepareVolume",
-			volume, self.setTerminatingVolumeStatus,
+			volume, pv, self.setTerminatingVolumeStatus,
 			storagev1alpha1.DestructionError,
 		)
 	}
