@@ -82,11 +82,15 @@
   "mount_option":"Options de montage",
   "yes": "Oui",
   "no": "Non",
+  "ok": "OK",
   "volume_creation": "Création du volume",
   "volume_creation_success": "Le volume {name} a été créé avec succèss.",
   "volume_creation_failed": "La création du volume {name} a échoué.",
   "volume_name_error": "Le nom doit être composé de minuscules, chiffres ou de tiret.",
   "volume_path_error": "Le chemin du disque doit commencer par un '/'.",
   "volume_size_error": "La capacité du volume doit être un entier positif.",
-  "generic_missing_field": "Veuillez entrer un {field}."
+  "generic_missing_field": "Veuillez entrer un {field}.",
+  "no_storage_class_found": "Aucune classe de stockage trouvée.",
+  "storage_class_is_required": "Une classe de stockage est requise pour créer un volume. Veuillez en créer une dans Kubernetes.",
+  "learn_more": "En savoir plus"
 }

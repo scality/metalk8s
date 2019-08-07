@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
+import Loader from '../components/Loader';
+import Banner from '../components/Banner';
 import { Input, Button, Breadcrumb } from '@scality/core-ui';
 import { isEmpty } from 'lodash';
 import {
@@ -11,7 +13,11 @@ import {
   createVolumeAction
 } from '../ducks/app/volumes';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
-import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
+import {
+  SPARSE_LOOP_DEVICE,
+  RAW_BLOCK_DEVICE,
+  STATUS_BANNER_WARNING
+} from '../constants';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
@@ -22,13 +28,14 @@ import { sizeUnits } from '../services/utils';
 // We might want to do a factorization later for
 // form styled components
 const CreateVolumeContainer = styled.div`
+  display: inline-block;
   height: 100%;
   padding: ${padding.base};
-  display: inline-block;
 `;
+
 const FormSection = styled.div`
-  padding: 0 ${padding.larger};
   display: flex;
+  padding: 0 ${padding.larger};
   flex-direction: column;
   .sc-input-wrapper {
     width: 200px;
@@ -92,6 +99,7 @@ const SizeUnitFieldSelectContainer = styled.div`
 
 const CreateVolume = props => {
   const { theme, intl, match, history, fetchStorageClass } = props;
+
   useEffect(() => {
     fetchStorageClass();
   }, [fetchStorageClass]);
@@ -99,6 +107,9 @@ const CreateVolume = props => {
   const nodeName = props.match.params.id;
   const storageClassesName = props.storageClass.map(
     storageClass => storageClass.metadata.name
+  );
+  const isStorageClassLoading = useSelector(
+    state => state.app.volumes.isStorageClassLoading
   );
   // Hardcoded
   const types = [
@@ -160,10 +171,11 @@ const CreateVolume = props => {
       then: yup.string()
     })
   });
+  const isStorageClassExist = storageClassesName.length > 0;
 
-  const isFormReady = storageClassesName.length > 0 && types.length > 0;
-
-  return isFormReady ? (
+  return isStorageClassLoading ? (
+    <Loader />
+  ) : (
     <CreateVolumeContainer>
       <BreadcrumbContainer>
         <Breadcrumb
@@ -177,6 +189,26 @@ const CreateVolume = props => {
           ]}
         />
       </BreadcrumbContainer>
+
+      {isStorageClassExist ? null : (
+        <Banner
+          type={STATUS_BANNER_WARNING}
+          icon={<i className="fas fa-exclamation-triangle" />}
+          title={intl.messages.no_storage_class_found}
+          messages={[
+            <>
+              {intl.messages.storage_class_is_required}
+              <a
+                rel="noopener noreferrer"
+                target="_blank"
+                href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
+              >
+                {intl.messages.learn_more}
+              </a>
+            </>
+          ]}
+        />
+      )}
       <CreateVolumeLayout>
         <Formik
           initialValues={initialValues}
@@ -313,7 +345,7 @@ const CreateVolume = props => {
         </Formik>
       </CreateVolumeLayout>
     </CreateVolumeContainer>
-  ) : null;
+  );
 };
 
 const mapStateToProps = state => ({

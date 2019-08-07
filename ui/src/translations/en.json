@@ -82,11 +82,15 @@
   "mount_option": "Mount Options",
   "yes": "Yes",
   "no": "No",
+  "ok": "OK",
   "volume_creation": "Volume creation",
   "volume_creation_success": "Volume {name} has been created successfully.",
   "volume_creation_failed": "Volume {name} creation has failed.",
   "volume_name_error": "Name must be lowercase letters, numbers and hyphens.",
   "volume_path_error": "Device path must start with a '/'.",
   "volume_size_error": "The size must be a positive integer.",
-  "generic_missing_field": "Please enter a {field}."
+  "generic_missing_field": "Please enter a {field}.",
+  "no_storage_class_found": "No storage class found.",
+  "storage_class_is_required": "A storage class is required in order to create a volume. Please create one in Kubernetes.",
+  "learn_more": "Learn more"
 }

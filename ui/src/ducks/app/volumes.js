@@ -19,6 +19,7 @@ const FETCH_PERSISTENT_VOLUMES = 'FETCH_PERSISTENT_VOLUMES';
 const SET_PERSISTENT_VOLUMES = 'SET_PERSISTENT_VOLUMES';
 const FETCH_STORAGECLASS = 'FETCH_STORAGECLASS';
 export const SET_STORAGECLASS = 'SET_STORAGECLASS';
+const UPDATE_STORAGECLASS = 'UPDATE_STORAGECLASS';
 const CREATE_VOLUMES = 'CREATE_VOLUMES';
 const REFRESH_VOLUMES = 'REFRESH_VOLUMES';
 const STOP_REFRESH_VOLUMES = 'STOP_REFRESH_VOLUMES';
@@ -39,7 +40,8 @@ const defaultState = {
   isRefreshing: false,
   pVCList: [],
   isPVRefreshing: false,
-  isLoading: false
+  isLoading: false,
+  isSCLoading: false
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -59,6 +61,9 @@ export default function reducer(state = defaultState, action = {}) {
     }
     case UPDATE_VOLUMES: {
       return { ...state, ...action.payload };
+    }
+    case UPDATE_STORAGECLASS: {
+      return { ...state, isSCLoading: action.payload };
     }
     default:
       return state;
@@ -95,6 +100,10 @@ export const fetchStorageClassAction = () => {
 
 export const setStorageClassAction = payload => {
   return { type: SET_STORAGECLASS, payload };
+};
+
+export const updateStorageClassAction = payload => {
+  return { type: UPDATE_STORAGECLASS, payload };
 };
 
 export const createVolumeAction = (newVolume, nodeName) => {
@@ -158,10 +167,12 @@ export function* fetchPersistentVolumes() {
 }
 
 export function* fetchStorageClass() {
+  yield put(updateStorageClassAction(true));
   const result = yield call(ApiK8s.getStorageClass);
   if (!result.error) {
     yield put(setStorageClassAction(result?.body?.items ?? []));
   }
+  yield put(updateStorageClassAction(false));
 }
 
 /**

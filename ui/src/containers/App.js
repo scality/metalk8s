@@ -34,7 +34,6 @@ class App extends Component {
 
   render() {
     const { language, api, theme } = this.props.config;
-
     return api && theme && this.props.isUserInfoLoaded ? (
       <IntlProvider locale={language} messages={messages[language]}>
         <IntlGlobalProvider>
