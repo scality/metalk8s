@@ -90,7 +90,7 @@
   "volume_path_error": "Device path must start with a '/'.",
   "volume_size_error": "The size must be a positive integer.",
   "generic_missing_field": "Please enter a {field}.",
-  "no_storage_class_found": "No storage class found",
+  "no_storage_class_found": "No storage class found.",
   "storage_class_is_required": "A storage class is required in order to create a volume. Please create one in Kubernetes.",
   "learn_more": "Learn more"
 }

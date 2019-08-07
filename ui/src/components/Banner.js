@@ -3,17 +3,25 @@ import styled from 'styled-components';
 import {
   fontSize,
   padding,
-  yellowOrange
+  jade,
+  yellowOrange,
+  warmRed
 } from '@scality/core-ui/dist/style/theme';
+import { STATUS_BANNER_WARNING, STATUS_BANNER_ERROR } from '../constants';
 
 const BannerContainer = styled.div`
   display: flex;
   margin: ${padding.base} 0 0 ${padding.larger};
   padding: ${padding.small} ${padding.small} ${padding.small} 0;
   font-size: ${fontSize.small};
-  border: 1px solid ${yellowOrange};
-  border-left: 5px solid ${yellowOrange};
+
+  border: 1px solid;
+  border-left: 5px solid;
   border-radius: 3px;
+  border-color: ${props => {
+    return props.themeBanner;
+  }};
+
   a {
     text-decoration: none;
     margin-left: ${padding.smaller};
@@ -22,7 +30,9 @@ const BannerContainer = styled.div`
     display: flex;
     align-items: center;
     margin-left: ${padding.small};
-    color: ${yellowOrange};
+    color: ${props => {
+      return props.themeBanner;
+    }};
   }
 `;
 
@@ -35,24 +45,33 @@ const TextLine = styled.span`
   margin-left: ${padding.base};
 `;
 
+const Title = styled.div`
+  margin-left: ${padding.base};
+  font-weight: bold;
+`;
+
 const Banner = props => {
-  const { intlMsg } = props;
+  const { icon, title, messages, type } = props;
+  let themeBanner;
+  switch (type) {
+    case STATUS_BANNER_WARNING:
+      themeBanner = yellowOrange;
+      break;
+    case STATUS_BANNER_ERROR:
+      themeBanner = warmRed;
+      break;
+    default:
+      themeBanner = jade;
+  }
 
   return (
-    <BannerContainer>
-      <i className="fas fa-exclamation-triangle" />
+    <BannerContainer themeBanner={themeBanner}>
+      {icon}
       <TextContainer>
-        <TextLine>{intlMsg.no_storage_class_found}</TextLine>
-        <TextLine>
-          {intlMsg.storage_class_is_required}
-          <a
-            // eslint-disable-next-line react/jsx-no-target-blank
-            target="_blank"
-            href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
-          >
-            {intlMsg.learn_more}
-          </a>
-        </TextLine>
+        <Title>{title}</Title>
+        {messages.map((message, idx) => {
+          return <TextLine key={idx}>{message}</TextLine>;
+        })}
       </TextContainer>
     </BannerContainer>
   );

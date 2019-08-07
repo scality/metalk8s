@@ -13,7 +13,11 @@ import {
   createVolumeAction
 } from '../ducks/app/volumes';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
-import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
+import {
+  SPARSE_LOOP_DEVICE,
+  RAW_BLOCK_DEVICE,
+  STATUS_BANNER_WARNING
+} from '../constants';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
@@ -24,14 +28,14 @@ import { sizeUnits } from '../services/utils';
 // We might want to do a factorization later for
 // form styled components
 const CreateVolumeContainer = styled.div`
+  display: inline-block;
   height: 100%;
   padding: ${padding.base};
-  display: inline-block;
 `;
 
 const FormSection = styled.div`
-  padding: 0 ${padding.larger};
   display: flex;
+  padding: 0 ${padding.larger};
   flex-direction: column;
   .sc-input-wrapper {
     width: 200px;
@@ -104,7 +108,9 @@ const CreateVolume = props => {
   const storageClassesName = props.storageClass.map(
     storageClass => storageClass.metadata.name
   );
-  const isSCLoading = useSelector(state => state.app.volumes.isSCLoading);
+  const isStorageClassLoading = useSelector(
+    state => state.app.volumes.isStorageClassLoading
+  );
   // Hardcoded
   const types = [
     { label: 'RawBlockDevice', value: RAW_BLOCK_DEVICE },
@@ -167,7 +173,7 @@ const CreateVolume = props => {
   });
   const isStorageClassExist = storageClassesName.length > 0;
 
-  return isSCLoading ? (
+  return isStorageClassLoading ? (
     <Loader />
   ) : (
     <CreateVolumeContainer>
@@ -183,7 +189,26 @@ const CreateVolume = props => {
           ]}
         />
       </BreadcrumbContainer>
-      {isStorageClassExist ? null : <Banner intlMsg={intl.messages} />}
+
+      {isStorageClassExist ? null : (
+        <Banner
+          type={STATUS_BANNER_WARNING}
+          icon={<i className="fas fa-exclamation-triangle" />}
+          title={intl.messages.no_storage_class_found}
+          messages={[
+            <>
+              {intl.messages.storage_class_is_required}
+              <a
+                rel="noopener noreferrer"
+                target="_blank"
+                href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
+              >
+                {intl.messages.learn_more}
+              </a>
+            </>
+          ]}
+        />
+      )}
       <CreateVolumeLayout>
         <Formik
           initialValues={initialValues}

@@ -90,7 +90,7 @@
   "volume_path_error": "Le chemin du disque doit commencer par un '/'.",
   "volume_size_error": "La capacité du volume doit être un entier positif.",
   "generic_missing_field": "Veuillez entrer un {field}.",
-  "no_storage_class_found": "Aucune classe de stockage trouvée",
-  "storage_class_is_required": "Une classe de stockage est nécessaire pour créer un volume. Veuillez en créer une à partir de Kubernetes.",
+  "no_storage_class_found": "Aucune classe de stockage trouvée.",
+  "storage_class_is_required": "Une classe de stockage est requise pour créer un volume. Veuillez en créer une dans Kubernetes.",
   "learn_more": "En savoir plus"
 }
