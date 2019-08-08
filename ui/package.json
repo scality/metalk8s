@@ -8,7 +8,7 @@
     "@scality/core-ui": "github:scality/core-ui.git#32af7cc",
     "axios": "^0.18.0",
     "formik": "1.5.1",
-    "lodash": "4.17.11",
+    "lodash": "4.17.13",
     "polished": "3.4.1",
     "rc-tooltip": "^3.7.3",
     "react": "^16.8.1",
