@@ -5,7 +5,7 @@ FROM node:${NODE_IMAGE_VERSION} AS build-step
 
 WORKDIR /home/node
 COPY package*.json /home/node/
-RUN npm install
+RUN npm install --only=prod
 
 COPY public /home/node/public
 COPY src /home/node/src
