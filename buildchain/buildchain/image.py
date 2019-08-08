@@ -141,6 +141,20 @@ def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
         **kwargs,
     )
 
+def _operator_image(name: str, **kwargs: Any) -> targets.OperatorImage:
+    """Build an `OperatorImage` from its name, with sane defaults."""
+    image_info = _get_image_info(name)
+
+    kwargs.setdefault('destination', constants.ISO_IMAGE_ROOT)
+    kwargs.setdefault('task_dep', ['_image_mkdir_root'])
+
+    return targets.OperatorImage(
+        name=name,
+        version=image_info.version,
+        **kwargs,
+    )
+
+
 # }}}
 # Container images to pull {{{
 TO_PULL : List[targets.RemoteImage] = []
@@ -247,11 +261,8 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
             'METALK8S_VERSION': versions.VERSION,
         },
     ),
-    targets.OperatorImage(
+    _operator_image(
         name='storage-operator',
-        version='latest',
-        destination=constants.ISO_IMAGE_ROOT,
-        task_dep=['_image_mkdir_root'],
         file_dep=list(constants.STORAGE_OPERATOR_SOURCES)
     ),
 )

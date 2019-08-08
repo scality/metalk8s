@@ -218,6 +218,11 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         ),
         digest=None,
     ),
+    Image(
+        name='storage-operator',
+        version='latest',
+        digest=None,
+    ),
 )
 
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
