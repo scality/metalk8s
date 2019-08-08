@@ -266,6 +266,22 @@ def _handle_apiregistration_v1_apiservice(obj, kubeconfig, context):
     }
 
 
+@handle('storage.k8s.io/v1', 'StorageClass')
+def _handle_storage_v1_storageclass(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.storageclass_present': [
+            {'name': obj['metadata']['name']},
+            {'provisioner': obj['provisioner']},
+            {'reclaim_policy': obj['reclaimPolicy']},
+            {'volume_binding_mode': obj['volumeBindingMode']},
+            {'mount_options': obj['mountOptions']},
+            {'parameters': obj['parameters']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ]
+    }
+
+
 del handle
 
 
