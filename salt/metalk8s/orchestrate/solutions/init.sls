@@ -76,10 +76,13 @@ Apply {{ deploy_file }} for solution {{ iso_info.name }} {{ iso_info.version }}:
         fun='file.find',
         kwarg={
           'path': crdpath,
-          'name': '\*_crd.yaml'
+          'name': '*_crd.yaml'
         },
   )[pillar.bootstrap_id]['ret']
 %}
+Test for crds {{ crd_files}}:
+  test.succeed_without_changes
+
 {%- for crd_file in crd_files %}
 {%- set sls_content = salt.saltutil.cmd(
         tgt=pillar.bootstrap_id,

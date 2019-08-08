@@ -4,16 +4,16 @@
 {%- for _, solution in existent_solutions_dict.items() %}
   {%- if solution.iso not in desired_soltions_list %}
     # Solution already unconfigured, unmount it now
-Umount solution {{ solution.name }}:
+Umount solution {{ solution.name }}-{{ solution.version }}:
   mount.unmounted:
     - name: /srv/scality/{{ solution.name }}-{{ solution.version }}
     - device: {{ solution.iso }}
     - persist: True
-Clean mount point for solution {{ solution.name }}:
+Clean mount point for solution {{ solution.name }}-{{ solution.version }}:
   file.absent:
     - name: /srv/scality/{{ solution.name }}-{{ solution.version }}
   {%- else %}
-Solution {{ solution.name }} remains:
+Solution {{ solution.name }}-{{ solution.version }} remains:
   test.succeed_without_changes:
     - name: {{ solution.name }} remains
   {%- endif %}

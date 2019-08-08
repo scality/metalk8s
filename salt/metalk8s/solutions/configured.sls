@@ -3,7 +3,7 @@
 {%- for solution_iso in solutions_list %}
   {%- set solution = salt['metalk8s.product_info_from_iso'](solution_iso) %}
   {%- set path = "/srv/scality/" ~ solution.name ~ "-" ~ solution.version %}
-Configure nginx for solution {{ solution.name }}:
+Configure nginx for solution {{ solution.name }}-{{ solution.version }}:
   file.managed:
     - source: {{ path }}/registry-config.inc.j2
     - name: /var/lib/metalk8s/repositories/conf.d/{{solution.name}}-{{ solution.version }}-registry-config.inc
