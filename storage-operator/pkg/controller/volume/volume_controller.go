@@ -264,7 +264,7 @@ func (self *ReconcileVolume) traceStateTransition(
 		return
 	}
 
-	reqLogger := log.WithValues("Request.Name", volume.Name)
+	reqLogger := log.WithValues("Volume.Name", volume.Name)
 
 	self.recorder.Eventf(
 		volume, corev1.EventTypeNormal, "StateTransition",
@@ -284,7 +284,7 @@ func (self *ReconcileVolume) updateVolumeStatus(
 	volume *storagev1alpha1.Volume,
 	oldPhase storagev1alpha1.VolumePhase,
 ) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Name", volume.Name)
+	reqLogger := log.WithValues("Volume.Name", volume.Name)
 
 	if err := self.client.Status().Update(ctx, volume); err != nil {
 		reqLogger.Error(err, "cannot update Volume status: requeue")
@@ -305,7 +305,7 @@ func (self *ReconcileVolume) setFailedVolumeStatus(
 	format string,
 	args ...interface{},
 ) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Name", volume.Name)
+	reqLogger := log.WithValues("Volume.Name", volume.Name)
 	oldPhase := volume.Status.Phase
 
 	volume.SetFailedStatus(errorCode, format, args...)
@@ -462,7 +462,7 @@ func (self *ReconcileVolume) pollSaltJob(
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
-		"Request.Name", volume.Name, "Volume.NodeName", nodeName,
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
 
 	jid := volume.Status.Job
@@ -541,7 +541,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	// Check if the volume is marked for deletion (i.e., deletion tstamp is set).
 	if !volume.GetDeletionTimestamp().IsZero() {
-		return r.finalizeVolume(ctx, request, volume)
+		return r.finalizeVolume(ctx, volume)
 	}
 	// Skip volume stuck waiting for deletion or a manual fix.
 	if volume.IsInUnrecoverableFailedState() {
@@ -563,7 +563,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	// PV doesn't exist: deploy the volume to create it.
 	if pv == nil {
-		return r.deployVolume(ctx, request, volume)
+		return r.deployVolume(ctx, volume)
 	}
 	// Else, check its health.
 	if pv.Status.Phase == corev1.VolumeFailed {
@@ -584,12 +584,11 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 // Deploy a volume (i.e prepare the storage and create a PV).
 func (self *ReconcileVolume) deployVolume(
 	ctx context.Context,
-	request reconcile.Request,
 	volume *storagev1alpha1.Volume,
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
-		"Request.Name", request.Name, "Volume.NodeName", nodeName,
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
 
 	switch volume.Status.Job {
@@ -624,10 +623,9 @@ func (self *ReconcileVolume) deployVolume(
 // Finalize a volume marked for deletion.
 func (self *ReconcileVolume) finalizeVolume(
 	ctx context.Context,
-	request reconcile.Request,
 	volume *storagev1alpha1.Volume,
 ) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Name", request.Name)
+	reqLogger := log.WithValues("Volume.Name", volume.Name)
 
 	// Pending volume: can do nothing but wait for stabilization.
 	if volume.Status.Phase == storagev1alpha1.VolumePending {
@@ -666,8 +664,8 @@ func (self *ReconcileVolume) finalizeVolume(
 	}
 
 	// If we don't have a PV or it's only used by us we can reclaim the storage.
-	if pv == nil || isPersistentVolumeUnused(request, pv) {
-		return self.reclaimStorage(ctx, request, volume, pv)
+	if pv == nil || isPersistentVolumeUnused(pv) {
+		return self.reclaimStorage(ctx, volume, pv)
 	}
 
 	// PersistentVolume still in use: wait before reclaiming the storage.
@@ -679,7 +677,7 @@ func (self *ReconcileVolume) createPersistentVolume(
 	ctx context.Context, volume *storagev1alpha1.Volume,
 ) (reconcile.Result, error) {
 	reqLogger := log.WithValues(
-		"Request.Name", volume.Name,
+		"Volume.Name", volume.Name,
 		"Volume.NodeName", string(volume.Spec.NodeName),
 	)
 
@@ -819,11 +817,8 @@ func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
 }
 
 // Check if a PersistentVolume is only used by us.
-func isPersistentVolumeUnused(
-	request reconcile.Request,
-	pv *corev1.PersistentVolume,
-) bool {
-	reqLogger := log.WithValues("Request.Name", request.Name)
+func isPersistentVolumeUnused(pv *corev1.PersistentVolume) bool {
+	reqLogger := log.WithValues("PersistentVolume.Name", pv.Name)
 
 	switch pv.Status.Phase {
 	case corev1.VolumeBound:
@@ -857,13 +852,12 @@ func isPersistentVolumeUnused(
 // Destroy the give PersistentVolume.
 func (self *ReconcileVolume) reclaimStorage(
 	ctx context.Context,
-	request reconcile.Request,
 	volume *storagev1alpha1.Volume,
 	pv *corev1.PersistentVolume,
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
-		"Request.Name", request.Name, "Volume.NodeName", nodeName,
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
 
 	switch volume.Status.Job {
