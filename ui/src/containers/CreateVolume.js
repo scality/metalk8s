@@ -109,7 +109,7 @@ const CreateVolume = props => {
     storageClass => storageClass.metadata.name
   );
   const isStorageClassLoading = useSelector(
-    state => state.app.volumes.isStorageClassLoading
+    state => state.app.volumes.isSCLoading
   );
   // Hardcoded
   const types = [
