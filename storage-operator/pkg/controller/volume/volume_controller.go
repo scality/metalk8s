@@ -453,32 +453,6 @@ func (self *ReconcileVolume) removePvFinalizer(
 	return self.client.Update(ctx, pv)
 }
 
-// Create a PV associated to the volume.
-//
-// Set the ownership and finalizers to tie the PV to the volume.
-func (self *ReconcileVolume) createPersistentVolume(
-	ctx context.Context,
-	pv *corev1.PersistentVolume,
-	volume *storagev1alpha1.Volume,
-) error {
-	reqLogger := log.WithValues("Request.Name", volume.Name)
-
-	// Set Volume instance as the owner and controller.
-	err := controllerutil.SetControllerReference(volume, pv, self.scheme)
-	if err != nil {
-		return err
-	}
-	// Create the PV!
-	if err := self.client.Create(ctx, pv); err != nil {
-		reqLogger.Error(
-			err, "cannot create PersistentVolume: requeue",
-			"PersistentVolume.Name", volume.Name,
-		)
-		return err
-	}
-	return nil
-}
-
 type stateSetter func(
 	context.Context, *storagev1alpha1.Volume, string,
 ) (reconcile.Result, error)
@@ -644,33 +618,7 @@ func (self *ReconcileVolume) deployVolume(
 			return self.setPendingVolumeStatus(ctx, volume, jid)
 		}
 	case JOB_DONE_MARKER: // Salt job is done, now let's create the PV.
-		scName := volume.Spec.StorageClassName
-		diskSize, err := self.getDiskSizeForVolume(ctx, volume)
-		if err != nil {
-			reqLogger.Error(err, "call to GetVolumeSize failed")
-			return self.setFailedVolumeStatus(
-				ctx, volume, nil, storagev1alpha1.CreationError,
-				"call to GetVolumeSize failed: %s", err.Error(),
-			)
-		}
-		sc, err := self.getStorageClass(ctx, scName)
-		if err != nil {
-			errmsg := fmt.Sprintf("cannot get StorageClass '%s'", scName)
-			reqLogger.Error(err, errmsg, "StorageClass.Name", scName)
-			return delayedRequeue(err)
-		}
-		pv := newPersistentVolume(volume, sc, diskSize)
-		if err := self.createPersistentVolume(ctx, pv, volume); err != nil {
-			return delayedRequeue(err)
-		}
-		reqLogger.Info(
-			"creating a new PersistentVolume", "PersistentVolume.Name", pv.Name,
-		)
-		self.recorder.Event(
-			volume, corev1.EventTypeNormal, "PvCreation",
-			"backing PersistentVolume created",
-		)
-		return self.setAvailableVolumeStatus(ctx, volume)
+		return self.createPersistentVolume(ctx, volume)
 	default: // PrepareVolume in progress: poll its state.
 		return self.pollSaltJob(
 			ctx, "volume provisioning", "PrepareVolume",
@@ -731,6 +679,62 @@ func (self *ReconcileVolume) finalizeVolume(
 
 	// PersistentVolume still in use: wait before reclaiming the storage.
 	return delayedRequeue(nil)
+}
+
+// Create a PersistentVolume in the Kubernetes API server.
+func (self *ReconcileVolume) createPersistentVolume(
+	ctx context.Context, volume *storagev1alpha1.Volume,
+) (reconcile.Result, error) {
+	reqLogger := log.WithValues(
+		"Request.Name", volume.Name,
+		"Volume.NodeName", string(volume.Spec.NodeName),
+	)
+
+	// Fetch disk size.
+	diskSize, err := self.getDiskSizeForVolume(ctx, volume)
+	if err != nil {
+		reqLogger.Error(err, "call to GetVolumeSize failed")
+		return self.setFailedVolumeStatus(
+			ctx, volume, nil, storagev1alpha1.CreationError,
+			"call to GetVolumeSize failed: %s", err.Error(),
+		)
+	}
+	// Fetch referenced storage class.
+	scName := volume.Spec.StorageClassName
+	sc, err := self.getStorageClass(ctx, scName)
+	if err != nil {
+		errmsg := fmt.Sprintf("cannot get StorageClass '%s'", scName)
+		reqLogger.Error(err, errmsg, "StorageClass.Name", scName)
+		return delayedRequeue(err)
+	}
+	// Create the PersistentVolume object.
+	pv := newPersistentVolume(volume, sc, diskSize)
+	// Set Volume instance as the owner and controller.
+	err = controllerutil.SetControllerReference(volume, pv, self.scheme)
+	if err != nil {
+		reqLogger.Error(
+			err, "cannot become owner of the PersistentVolume: requeue",
+			"PersistentVolume.Name", volume.Name,
+		)
+		return delayedRequeue(err)
+	}
+	// Create the PV!
+	if err := self.client.Create(ctx, pv); err != nil {
+		reqLogger.Error(
+			err, "cannot create PersistentVolume: requeue",
+			"PersistentVolume.Name", volume.Name,
+		)
+		return delayedRequeue(err)
+	}
+	reqLogger.Info(
+		"creating a new PersistentVolume", "PersistentVolume.Name", pv.Name,
+	)
+
+	self.recorder.Event(
+		volume, corev1.EventTypeNormal, "PvCreation",
+		"backing PersistentVolume created",
+	)
+	return self.setAvailableVolumeStatus(ctx, volume)
 }
 
 // Build a PersistentVolume from a Volume object.
