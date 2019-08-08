@@ -220,6 +220,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
     Path('salt/metalk8s/addons/ui/precheck.sls'),
 
+    Path('salt/metalk8s/addons/volumes/deployed.sls'),
+    Path('salt/metalk8s/addons/volumes/storage-classes.sls'),
+    Path('salt/metalk8s/addons/volumes/storage-operator.sls'),
+    Path('salt/metalk8s/addons/volumes/volume-crd.sls'),
 
     Path('salt/metalk8s/addons/nginx-ingress/deployed/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/chart.sls'),
