@@ -434,13 +434,6 @@ func (self *ReconcileVolume) getStorageClass(
 	if err := self.client.Get(ctx, key, sc); err != nil {
 		return nil, err
 	}
-	// We must have `fsType` as parameter, otherwise we can't create our PV.
-	if _, found := sc.Parameters["fsType"]; !found {
-		return nil, fmt.Errorf(
-			"missing field 'parameters.fsType' in StorageClass '%s'", name,
-		)
-	}
-
 	return sc, nil
 }
 
@@ -708,7 +701,14 @@ func (self *ReconcileVolume) createPersistentVolume(
 		return delayedRequeue(err)
 	}
 	// Create the PersistentVolume object.
-	pv := newPersistentVolume(volume, sc, diskSize)
+	pv, err := newPersistentVolume(volume, sc, diskSize)
+	if err != nil {
+		reqLogger.Error(
+			err, "cannot create the PersistentVolume object: requeue",
+			"PersistentVolume.Name", volume.Name,
+		)
+		return delayedRequeue(err)
+	}
 	// Set Volume instance as the owner and controller.
 	err = controllerutil.SetControllerReference(volume, pv, self.scheme)
 	if err != nil {
@@ -750,10 +750,18 @@ func newPersistentVolume(
 	volume *storagev1alpha1.Volume,
 	storageClass *storagev1.StorageClass,
 	volumeSize resource.Quantity,
-) *corev1.PersistentVolume {
+) (*corev1.PersistentVolume, error) {
 	// We only support this mode for now.
 	mode := corev1.PersistentVolumeFilesystem
-	fsType := storageClass.Parameters["fsType"]
+
+	// We must have `fsType` as parameter, otherwise we can't create our PV.
+	scName := volume.Spec.StorageClassName
+	fsType, found := storageClass.Parameters["fsType"]
+	if !found {
+		return nil, fmt.Errorf(
+			"missing field 'parameters.fsType' in StorageClass '%s'", scName,
+		)
+	}
 
 	return &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
@@ -780,7 +788,7 @@ func newPersistentVolume(
 			StorageClassName:              volume.Spec.StorageClassName,
 			NodeAffinity:                  nodeAffinity(volume.Spec.NodeName),
 		},
-	}
+	}, nil
 }
 
 func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
