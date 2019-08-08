@@ -120,16 +120,6 @@ def _load_iso_path(config_data):
 
     return res
 
-def _load_solutions():
-    """Load configured solutions from configmap."""
-    solutions = {
-        'configured': \
-        __salt__['metalk8s_solutions.get_solutions_from_configmap'](),
-        'unconfigured': \
-        __salt__['metalk8s_solutions.get_solutions_list_from_configfile']()
-    }
-    return solutions
-
 def ext_pillar(minion_id, pillar, bootstrap_config):
     config = _load_config(bootstrap_config)
     if config.get('_errors'):
@@ -142,7 +132,6 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
             'products': _load_iso_path(config),
             'ca': _load_ca(config),
             'api_server': _load_apiserver(config),
-            'solutions': _load_solutions(),
         }
 
     result = {
