@@ -4,7 +4,6 @@
 {%- set repositories_version = '1.0.0' %}
 
 {%- set products = salt.metalk8s.get_products() %}
-{%- set solutions = pillar.metalk8s.solutions.configured %}
 
 {%- set docker_repository = 'docker.io/library' %}
 {%- set image_name = 'nginx' %}
@@ -45,7 +44,13 @@ Install repositories manifest:
         name: {{ repositories_name }}
         version: {{ repositories_version }}
         products: {{ products }}
+{%- if 'solutions' in pillar.metalk8s %}
+  {%- set solutions = pillar.metalk8s.solutions.deployed %}
         solutions: {{ solutions }}
+{%- else %}
+  {%- set solutions = {} %}
+        solutions: {{ solutions }}
+{%- endif %}
         package_path: /{{ repo.relative_path }}
         image_path: '/images/'
         nginx_confd_path: {{ repo.config.directory }}

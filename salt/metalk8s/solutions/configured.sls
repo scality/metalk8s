@@ -1,4 +1,4 @@
-{%- set solutions_list = pillar.metalk8s.solutions.unconfigured %}
+{%- set solutions_list = pillar.metalk8s.solutions.configured %}
 {%- if solutions_list %}
 {%- for solution_iso in solutions_list %}
   {%- set solution = salt['metalk8s.product_info_from_iso'](solution_iso) %}

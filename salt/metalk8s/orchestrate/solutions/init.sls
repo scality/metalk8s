@@ -40,7 +40,7 @@ Configure unconfigured solutions:
     - metalk8s.solutions.configured
   - saltenv: metalk8s-{{ version }}
 
-{%- set solutions_list = pillar.metalk8s.solutions.unconfigured %}
+{%- set solutions_list = pillar.metalk8s.solutions.configured %}
 {%- if solutions_list %}
 {%- for solution_iso in solutions_list %}
 {%- set iso_info = salt.saltutil.cmd(
@@ -131,8 +131,8 @@ Unmount unconfigured solutions:
     - metalk8s.solutions.unmounted
   - saltenv: metalk8s-{{ version }}
 # update configmap
-{%- set desired_soltions_list = pillar.metalk8s.solutions.unconfigured or [] %}
-{%- set existent_solutions_dict = pillar.metalk8s.solutions.configured %}
+{%- set desired_soltions_list = pillar.metalk8s.solutions.configured or [] %}
+{%- set existent_solutions_dict = pillar.metalk8s.solutions.deployed %}
 {%- if existent_solutions_dict %}
 {%- for _, solution in existent_solutions_dict.items() %}
   {%- if solution.iso not in desired_soltions_list %}

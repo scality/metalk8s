@@ -1,5 +1,5 @@
-{%- set desired_soltions_list = pillar.metalk8s.solutions.unconfigured or [] %}
-{%- set existent_solutions_dict = pillar.metalk8s.solutions.configured or {} %}
+{%- set desired_soltions_list = pillar.metalk8s.solutions.configured or [] %}
+{%- set existent_solutions_dict = pillar.metalk8s.solutions.deployed or {} %}
 {%- if existent_solutions_dict %}
 {%- for _, solution in existent_solutions_dict.items() %}
   {%- if solution.iso not in desired_soltions_list %}
