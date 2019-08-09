@@ -4,6 +4,8 @@ import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { withRouter } from 'react-router-dom';
+import Modal from 'react-modal';
+import Tooltip from '@material-ui/core/Tooltip';
 import { Button, Table, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
@@ -18,6 +20,14 @@ import {
   refreshPersistentVolumesAction,
   stopRefreshPersistentVolumesAction
 } from '../ducks/app/volumes';
+import {
+  STATUS_VOLUME_UNKNOWN,
+  STATUS_TERMINATING,
+  STATUS_PENDING,
+  STATUS_FAILED,
+  STATUS_AVAILABLE,
+  STATUS_BOUND
+} from '../constants';
 
 const ButtonContainer = styled.div`
   margin-top: ${padding.small};
@@ -38,18 +48,58 @@ const NodeVolumes = props => {
     stopRefreshPersistentVolumesAction
   );
   const volumes = useSelector(state => state.app.volumes);
+  const persistentVolumes = useSelector(state => state.app.volumes.pVList);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
+  const [
+    isDeleteConfirmationModalOpen,
+    setisDeleteConfirmationModalOpen
+  ] = useState(false);
+
   const onSort = ({ sortBy, sortDirection }) => {
     setSortBy(sortBy);
     setSortDirection(sortDirection);
   };
 
+  const isVolumeDeletable = rowData => {
+    const volumeStatus = rowData.status;
+    const volumeName = rowData.name;
+
+    if (
+      volumeStatus === STATUS_VOLUME_UNKNOWN ||
+      volumeStatus === STATUS_PENDING ||
+      volumeStatus === STATUS_TERMINATING
+    ) {
+      return false;
+    } else if (
+      volumeStatus === STATUS_FAILED ||
+      volumeStatus === STATUS_AVAILABLE
+    ) {
+      if (persistentVolumes === []) {
+        return true;
+      } else {
+        const persistentVolume = persistentVolumes.find(
+          pv => pv?.metadata?.name === volumeName
+        );
+        const persistentVolumeStatus = persistentVolume?.status?.phase;
+        if (
+          persistentVolumeStatus === STATUS_BOUND ||
+          persistentVolumeStatus === STATUS_AVAILABLE
+        ) {
+          return true;
+        } else if (persistentVolumeStatus === STATUS_PENDING) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+    }
+  };
+
   const columns = [
     {
       label: props.intl.messages.name,
-      dataKey: 'name',
-      flexGrow: 1
+      dataKey: 'name'
     },
     {
       label: props.intl.messages.status,
@@ -66,9 +116,10 @@ const NodeVolumes = props => {
     {
       label: props.intl.messages.creationTime,
       dataKey: 'creationTime',
+      flexGrow: 1,
       renderer: data => (
         <span>
-          <FormattedDate value={data} />
+          <FormattedDate value={data} />{' '}
           <FormattedTime
             hour="2-digit"
             minute="2-digit"
@@ -77,6 +128,38 @@ const NodeVolumes = props => {
           />
         </span>
       )
+    },
+    {
+      label: 'Action',
+      dataKey: 'action-test',
+      disableSort: true,
+      width: 80,
+      renderer: (data, rowData) => {
+        const isEnableClick = isVolumeDeletable(rowData);
+        const CustI = styled.i`
+          cursor: ${props => {
+            if (props.isEnableClick) {
+              return `pointer`;
+            } else {
+              return `not-allowed`;
+            }
+          }};
+        `;
+        return (
+          <div>
+            <Tooltip
+              title="Why it cannot be deleted?"
+              onClick={e => {
+                e.stopPropagation();
+                setisDeleteConfirmationModalOpen(true);
+              }}
+              disableHoverListener={isEnableClick}
+            >
+              <CustI className="fas fa-trash" isEnableClick={isEnableClick} />
+            </Tooltip>
+          </div>
+        );
+      }
     }
   ];
   const onRowClick = row => {
@@ -97,6 +180,7 @@ const NodeVolumes = props => {
 
   return (
     <>
+      <Modal isOpen={isDeleteConfirmationModalOpen} ariaHideApp={false} />
       <ButtonContainer>
         <Button
           text={props.intl.messages.create_new_volume}
