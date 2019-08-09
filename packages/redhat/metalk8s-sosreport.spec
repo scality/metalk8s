@@ -13,8 +13,8 @@ ExclusiveArch:  x86_64
 ExclusiveOS:    Linux
 
 License:        GPL+
-Source0:        metalk8s-sosreport/src/metalk8s.py
-Source1:        metalk8s-sosreport/src/containerd.py
+Source0:        ../common/metalk8s-sosreport/metalk8s.py
+Source1:        ../common/metalk8s-sosreport/containerd.py
 
 %description
 %{Summary}
