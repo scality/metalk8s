@@ -17,11 +17,11 @@ func TestNewCredential(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			creds := NewCredential(tc.username, tc.token, name)
+			creds := NewCredential(tc.username, tc.token, TokenType(name))
 
 			assert.Equal(t, tc.username, creds.username)
 			assert.Equal(t, tc.token, creds.token)
-			assert.Equal(t, name, creds.kind)
+			assert.Equal(t, TokenType(name), creds.kind)
 		})
 	}
 }

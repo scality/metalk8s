@@ -17,15 +17,21 @@ func TestGetAuthCredential(t *testing.T) {
 	}{
 		"ServiceAccount": {
 			token: "foo", username: "", password: "",
-			expected: salt.NewCredential("storage-operator", "foo", "Bearer"),
+			expected: salt.NewCredential(
+				"storage-operator", "foo", salt.BearerToken,
+			),
 		},
 		"BasicAuth": {
 			token: "", username: "foo", password: "bar",
-			expected: salt.NewCredential("foo", "Zm9vOmJhcg==", "Basic"),
+			expected: salt.NewCredential(
+				"foo", "Zm9vOmJhcg==", salt.BasicToken,
+			),
 		},
 		"DefaultCreds": {
 			token: "", username: "", password: "",
-			expected: salt.NewCredential("admin", "YWRtaW46YWRtaW4=", "Basic"),
+			expected: salt.NewCredential(
+				"admin", "YWRtaW46YWRtaW4=", salt.BasicToken,
+			),
 		},
 	}
 	for name, tc := range tests {

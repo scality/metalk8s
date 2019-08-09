@@ -2,17 +2,27 @@ package salt
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+type AsyncJobFailed struct {
+	reason string
+}
+
+func (self *AsyncJobFailed) Error() string {
+	return self.reason
+}
 
 // A Salt API client.
 type Client struct {
@@ -25,40 +35,180 @@ type Client struct {
 
 // Create a new Salt API client.
 func NewClient(creds *Credential) *Client {
-	const SALT_API_PORT int = 4507 // As defined in master-99-metalk8s.conf
-
 	address := os.Getenv("METALK8S_SALT_MASTER_ADDRESS")
 	if address == "" {
-		address = "http://salt-master"
+		address = "http://salt-master:4507"
 	}
+	logger := log.Log.WithName("salt-api").WithValues("Salt.Address", address)
 
 	return &Client{
-		address: fmt.Sprintf("%s:%d", address, SALT_API_PORT),
+		address: address,
 		client:  &http.Client{},
 		creds:   creds,
 		token:   nil,
-		logger:  log.Log.WithName("salt_api"),
+		logger:  logger,
 	}
 }
 
-// Test function, will be removed later…
-func (self *Client) TestPing() (map[string]interface{}, error) {
-	payload := map[string]string{
-		"client": "local",
-		"tgt":    "*",
-		"fun":    "test.ping",
+// Spawn a job, asynchronously, to prepare the volume on the specified node.
+//
+// Arguments
+//     ctx:      the request context (used for cancellation)
+//     nodeName: name of the node where the volume will be
+//
+// Returns
+//     The Salt job ID.
+func (self *Client) PrepareVolume(
+	ctx context.Context, nodeName string,
+) (string, error) {
+	// Use rand_sleep to emulate slow operation for now
+	payload := map[string]interface{}{
+		"client": "local_async",
+		"tgt":    nodeName,
+		"fun":    "test.rand_sleep",
 	}
 
-	self.logger.Info("test.ping")
+	self.logger.Info("PrepareVolume")
 
-	ans, err := self.authenticatedPost("/", payload)
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
-		return nil, errors.Wrap(err, "test.ping failed")
+		return "", errors.Wrapf(
+			err, "PrepareVolume failed (target=%s)", nodeName,
+		)
 	}
-	return ans, nil
+	// TODO(#1461): make this more robust.
+	result := ans["return"].([]interface{})[0].(map[string]interface{})
+	return result["jid"].(string), nil
 }
 
-// Send an authenticated POST request to Salt API.
+// Spawn a job, asynchronously, to unprepare the volume on the specified node.
+//
+// Arguments
+//     ctx:      the request context (used for cancellation)
+//     nodeName: name of the node where the volume will be
+//
+// Returns
+//     The Salt job ID.
+func (self *Client) UnprepareVolume(
+	ctx context.Context, nodeName string,
+) (string, error) {
+	// Use rand_sleep to emulate slow operation for now
+	payload := map[string]interface{}{
+		"client": "local_async",
+		"tgt":    nodeName,
+		"fun":    "test.rand_sleep",
+	}
+
+	self.logger.Info("UnprepareVolume")
+
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
+	if err != nil {
+		return "", errors.Wrapf(
+			err, "UnprepareVolume failed (target=%s)", nodeName,
+		)
+	}
+	// TODO(#1461): make this more robust.
+	result := ans["return"].([]interface{})[0].(map[string]interface{})
+	return result["jid"].(string), nil
+}
+
+// Poll the status of an asynchronous Salt job.
+//
+// Arguments
+//     ctx:      the request context (used for cancellation)
+//     jobId:    Salt job ID
+//     nodeName: node on which the job is executed
+//
+// Returns
+//     The result of the job if the execution is over, otherwise nil.
+func (self *Client) PollJob(
+	ctx context.Context, jobId string, nodeName string,
+) (map[string]interface{}, error) {
+	jobLogger := self.logger.WithValues("Salt.JobId", jobId)
+	jobLogger.Info("polling Salt job")
+
+	endpoint := fmt.Sprintf("/jobs/%s", jobId)
+	ans, err := self.authenticatedRequest(ctx, "GET", endpoint, nil)
+	if err != nil {
+		return nil, errors.Wrapf(
+			err, "Salt job polling failed for ID %s", jobId,
+		)
+	}
+
+	// TODO(#1461): make this more robust.
+	info := ans["info"].([]interface{})[0].(map[string]interface{})
+
+	// Unknown Job ID: maybe the Salt server restarted or something like that.
+	if errmsg, found := info["Error"]; found {
+		jobLogger.Info("Salt job not found")
+		reason := fmt.Sprintf(
+			"cannot get status for job %s: %s", jobId, (errmsg).(string),
+		)
+		return nil, errors.New(reason)
+	}
+	result := info["Result"].(map[string]interface{})
+	// No result yet, the job is still running.
+	if len(result) == 0 {
+		jobLogger.Info("Salt job is still running")
+		return nil, nil
+	}
+	nodeResult := result[nodeName].(map[string]interface{})
+
+	// The job is done: check if it has succeeded.
+	success := result[nodeName].(map[string]interface{})["success"].(bool)
+	if !success {
+		jobLogger.Info("Salt job failed")
+		reason := nodeResult["return"].(string)
+		return nil, &AsyncJobFailed{reason}
+	}
+	jobLogger.Info("Salt job succeedeed")
+	return nodeResult, nil
+}
+
+// Return the size of the specified device on the given node.
+//
+// This request is synchronous.
+//
+// Arguments
+//     ctx:        the request context (used for cancellation)
+//     nodeName:   name of the node where the volume will be
+//     devicePath: path of the device for which we want the size
+//
+// Returns
+//     The size of the device, in bytes.
+func (self *Client) GetVolumeSize(
+	ctx context.Context, nodeName string, devicePath string,
+) (int64, error) {
+	payload := map[string]interface{}{
+		"client":  "local",
+		"tgt":     nodeName,
+		"fun":     "disk.dump",
+		"arg":     devicePath,
+		"timeout": 1,
+	}
+
+	self.logger.Info("disk.dump")
+
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
+	if err != nil {
+		return 0, errors.Wrapf(
+			err, "disk.dump failed (target=%s, path=%s)", nodeName, devicePath,
+		)
+	}
+	// TODO(#1461): make this more robust.
+	result := ans["return"].([]interface{})[0].(map[string]interface{})
+	if nodeResult, ok := result[nodeName].(map[string]interface{}); ok {
+		size_str := nodeResult["getsize64"].(string)
+		return strconv.ParseInt(size_str, 10, 64)
+	}
+
+	return 0, fmt.Errorf(
+		"no size in disk.dump response (target=%s, path=%s)",
+		nodeName, devicePath,
+	)
+}
+
+// Send an authenticated request to Salt API.
 //
 // Automatically handle:
 // - missing token (authenticate)
@@ -66,22 +216,27 @@ func (self *Client) TestPing() (map[string]interface{}, error) {
 // - token invalidation (re-authenticate)
 //
 // Arguments
+//     ctx:      the request context (used for cancellation)
+//     verb:     HTTP verb used for the request
 //     endpoint: API endpoint.
-//     payload:  POST JSON payload.
+//     payload:  request JSON payload (optional)
 //
 // Returns
 //     The decoded response body.
-func (self *Client) authenticatedPost(
-	endpoint string, payload map[string]string,
+func (self *Client) authenticatedRequest(
+	ctx context.Context,
+	verb string,
+	endpoint string,
+	payload map[string]interface{},
 ) (map[string]interface{}, error) {
 	// Authenticate if we don't have a valid token.
 	if self.token == nil || self.token.isExpired() {
-		if err := self.authenticate(); err != nil {
+		if err := self.authenticate(ctx); err != nil {
 			return nil, err
 		}
 	}
 
-	response, err := self.doPost(endpoint, payload, true)
+	response, err := self.doRequest(ctx, verb, endpoint, payload, true)
 	if err != nil {
 		return nil, err
 	}
@@ -93,10 +248,10 @@ func (self *Client) authenticatedPost(
 		response.Body.Close() // Terminate this request before starting another.
 
 		self.token = nil
-		if err := self.authenticate(); err != nil {
+		if err := self.authenticate(ctx); err != nil {
 			return nil, err
 		}
-		response, err = self.doPost(endpoint, payload, true)
+		response, err = self.doRequest(ctx, verb, endpoint, payload, true)
 	}
 	defer response.Body.Close()
 
@@ -104,65 +259,77 @@ func (self *Client) authenticatedPost(
 }
 
 // Authenticate against the Salt API server.
-func (self *Client) authenticate() error {
-	payload := map[string]string{
+func (self *Client) authenticate(ctx context.Context) error {
+	payload := map[string]interface{}{
 		"eauth":      "kubernetes_rbac",
 		"username":   self.creds.username,
 		"token":      self.creds.token,
-		"token_type": self.creds.kind,
+		"token_type": string(self.creds.kind),
 	}
 
 	self.logger.Info(
 		"Auth", "username", payload["username"], "type", payload["token_type"],
 	)
 
-	response, err := self.doPost("/login", payload, false)
+	response, err := self.doRequest(ctx, "POST", "/login", payload, false)
 	if err != nil {
 		return err
 	}
 	defer response.Body.Close()
 
-	output, err := decodeApiResponse(response)
+	result, err := decodeApiResponse(response)
 	if err != nil {
-		return errors.Wrap(err, "Salt API authentication failed")
+		return errors.Wrapf(
+			err,
+			"Salt API authentication failed (username=%s, type=%s)",
+			self.creds.username, string(self.creds.kind),
+		)
 	}
 
 	// TODO(#1461): make this more robust.
+	output := result["return"].([]interface{})[0].(map[string]interface{})
 	self.token = newToken(
 		output["token"].(string), output["expire"].(float64),
 	)
 	return nil
 }
 
-// Send a POST request to Salt API.
+// Send a request to Salt API.
 //
 // Arguments
+//     ctx:      the request context (used for cancellation)
+//     verb:     HTTP verb used for the request
 //     endpoint: API endpoint.
-//     payload:  POST JSON payload.
+//     payload:  request JSON payload (optional).
 //     is_auth:  Is the request authenticated?
 //
 // Returns
-//     The POST response.
-func (self *Client) doPost(
-	endpoint string, payload map[string]string, is_auth bool,
+//     The request response.
+func (self *Client) doRequest(
+	ctx context.Context,
+	verb string,
+	endpoint string,
+	payload map[string]interface{},
+	is_auth bool,
 ) (*http.Response, error) {
 	var response *http.Response = nil
 
 	// Setup the translog.
 	defer func(start time.Time) {
 		elapsed := int64(time.Since(start) / time.Millisecond)
-		self.logRequest("POST", endpoint, response, elapsed)
+		self.logRequest(verb, endpoint, response, elapsed)
 	}(time.Now())
 
-	request, err := self.newPostRequest(endpoint, payload, is_auth)
+	request, err := self.newRequest(verb, endpoint, payload, is_auth)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot create POST request")
+		return nil, errors.Wrapf(err, "cannot create %s request", verb)
 	}
+	request = request.WithContext(ctx)
 
-	// Send the POST request.
+	// Send the request.
 	response, err = self.client.Do(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "POST failed on Salt API")
+		return nil, errors.Wrapf(err, "%s failed on Salt API", verb)
 	}
 	return response, nil
 }
@@ -188,31 +355,43 @@ func (self *Client) logRequest(
 	}
 }
 
-// Create a POST request for Salt API.
+// Create an HTTP request for Salt API.
 //
 // Arguments
+//     verb:     HTTP verb used for the request
 //     endpoint: API endpoint.
-//     payload:  POST JSON payload.
+//     payload:  request JSON payload (optional).
 //     is_auth:  Is the request authenticated?
 //
 // Returns
-//     The POST request.
-func (self *Client) newPostRequest(
-	endpoint string, payload map[string]string, is_auth bool,
+//     The HTTP request.
+func (self *Client) newRequest(
+	verb string, endpoint string, payload map[string]interface{}, is_auth bool,
 ) (*http.Request, error) {
 	// Build target URL.
 	url := fmt.Sprintf("%s%s", self.address, endpoint)
 
 	// Encode the payload into JSON.
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, errors.Wrap(err, "cannot serialize POST body")
+	var body []byte = nil
+	if payload != nil {
+		var err error
+		body, err = json.Marshal(payload)
+		if err != nil {
+			return nil, errors.Wrapf(err, "cannot serialize %s body", verb)
+		}
 	}
-	// Prepare the POST request.
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+
+	// Prepare the HTTP request.
+	request, err := http.NewRequest(verb, url, bytes.NewBuffer(body))
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot prepare POST query for Salt API")
+		return nil, errors.Wrapf(
+			err, "cannot prepare %s query for Salt API", verb,
+		)
 	}
+
+	query := request.URL.Query()
+	query.Add("timeout", "1")
+	request.URL.RawQuery = query.Encode()
 
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set("Content-Type", "application/json")
@@ -222,10 +401,10 @@ func (self *Client) newPostRequest(
 	return request, nil
 }
 
-// Decode the POST response payload.
+// Decode the HTTP response body.
 //
 // Arguments
-//     response: the POST response.
+//     response: the HTTP response.
 //
 // Returns
 //     The decoded API response.
@@ -247,7 +426,5 @@ func decodeApiResponse(response *http.Response) (map[string]interface{}, error) 
 	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
 		return nil, errors.Wrap(err, "cannot decode Salt API response")
 	}
-	// The real result is in a single-item list stored in the `return` field.
-	// TODO(#1461): make this more robust.
-	return result["return"].([]interface{})[0].(map[string]interface{}), nil
+	return result, nil
 }

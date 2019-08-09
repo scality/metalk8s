@@ -18,7 +18,7 @@ func TestNewClientDefault(t *testing.T) {
 		expected string
 	}{
 		"default": {value: "", expected: "http://salt-master:4507"},
-		"env_var": {value: "http://foo", expected: "http://foo:4507"},
+		"env_var": {value: "http://foo:4507", expected: "http://foo:4507"},
 	}
 
 	for name, tc := range tests {
@@ -32,7 +32,7 @@ func TestNewClientDefault(t *testing.T) {
 	}
 }
 
-func TestNewPostRequest(t *testing.T) {
+func TestNewRequest(t *testing.T) {
 	tests := map[string]struct {
 		is_auth  bool
 		expected string
@@ -46,7 +46,7 @@ func TestNewPostRequest(t *testing.T) {
 			client := NewClient(nil)
 			client.token = newToken("foo", 0)
 
-			request, _ := client.newPostRequest("/", nil, tc.is_auth)
+			request, _ := client.newRequest("POST", "/", nil, tc.is_auth)
 			token := request.Header.Get("X-Auth-Token")
 
 			assert.Equal(t, tc.expected, token)
@@ -70,7 +70,7 @@ func TestDecodeApiResponse(t *testing.T) {
 			result: nil, error: "cannot decode Salt API response",
 		},
 		"ok": {
-			status: 200, body: httpBody(`{"return": [{"token": "foo"}]}`),
+			status: 200, body: httpBody(`{"token": "foo"}`),
 			result: map[string]interface{}{"token": "foo"}, error: "",
 		},
 	}

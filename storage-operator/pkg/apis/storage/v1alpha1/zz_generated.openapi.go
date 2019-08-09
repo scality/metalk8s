@@ -104,7 +104,36 @@ func schema_pkg_apis_storage_v1alpha1_VolumeStatus(ref common.ReferenceCallback)
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "VolumeStatus defines the observed state of Volume",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Volume lifecycle phase",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"job": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Job in progress",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"errorCode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Volume failure error code",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"errorMessage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Volume failure error message",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
 			},
 		},
 		Dependencies: []string{},
