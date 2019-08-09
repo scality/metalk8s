@@ -41,6 +41,26 @@ const VolumeTable = styled.div`
   margin-top: ${padding.small};
 `;
 
+const DeleteConfirmationModal = {
+  content: {
+    top: '50%',
+    left: '50%',
+    width: '500px',
+    transform: 'translate(-50%, -50%)'
+  }
+};
+
+const NotificationButtonGroup = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: ${padding.larger};
+  margin-left: 250px;
+`;
+
+const DeleteButton = styled(Button)`
+  margin-left: ${padding.small};
+`;
+
 const NodeVolumes = props => {
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
@@ -55,7 +75,7 @@ const NodeVolumes = props => {
     isDeleteConfirmationModalOpen,
     setisDeleteConfirmationModalOpen
   ] = useState(false);
-
+  const [deleteVolumeName, setDeleteVolumeName] = useState('');
   const onSort = ({ sortBy, sortDirection }) => {
     setSortBy(sortBy);
     setSortDirection(sortDirection);
@@ -64,7 +84,7 @@ const NodeVolumes = props => {
   const isVolumeDeletable = rowData => {
     const volumeStatus = rowData.status;
     const volumeName = rowData.name;
-
+    setDeleteVolumeName(rowData.name);
     if (
       volumeStatus === STATUS_VOLUME_UNKNOWN ||
       volumeStatus === STATUS_PENDING ||
@@ -178,9 +198,35 @@ const NodeVolumes = props => {
     volumeSortedList = sortSelector(volumeSortedList, sortBy, sortDirection);
   }
 
+  const onClickDeleteButton = () => {
+    setisDeleteConfirmationModalOpen(false);
+  };
+
+  const onClickCancelButton = () => {
+    setisDeleteConfirmationModalOpen(false);
+  };
+
   return (
     <>
-      <Modal isOpen={isDeleteConfirmationModalOpen} ariaHideApp={false} />
+      <Modal
+        isOpen={isDeleteConfirmationModalOpen}
+        ariaHideApp={false}
+        style={DeleteConfirmationModal}
+      >
+        <h2>Delete a volume</h2>
+        <div>
+          Deleting this volume will permanently delete the data it contains.
+        </div>
+        <div>Do you want to delete {deleteVolumeName}?</div>
+        <NotificationButtonGroup>
+          <Button outlined text="Cancel" onClick={onClickCancelButton} />
+          <DeleteButton
+            variant="danger"
+            text="Delete"
+            onClick={onClickDeleteButton}
+          />
+        </NotificationButtonGroup>
+      </Modal>
       <ButtonContainer>
         <Button
           text={props.intl.messages.create_new_volume}
