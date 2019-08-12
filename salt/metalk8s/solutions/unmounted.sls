@@ -1,24 +1,34 @@
-{%- set desired_soltions_list = pillar.metalk8s.solutions.configured or [] %}
-{%- set existent_solutions_dict = pillar.metalk8s.solutions.deployed or {} %}
-{%- if existent_solutions_dict %}
-{%- for _, solution in existent_solutions_dict.items() %}
-  {%- if solution.iso not in desired_soltions_list %}
-    # Solution already unconfigured, unmount it now
-Umount solution {{ solution.name }}-{{ solution.version }}:
+{%- set configured = pillar.metalk8s.solutions.configured or [] %}
+{%- set deployed = pillar.metalk8s.solutions.deployed or {} %}
+{%- if deployed %}
+{%- for solution_name, versions in deployed.items() %}
+  {%- for version_info in versions %}
+    {%- set lower_name = solution_name | lower | replace(' ', '-') %}
+    {%- set full_name = lower_name ~ '-' ~ version_info.version %}
+    {%- if version_info.iso not in configured %}
+# Solution already unconfigured, unmount it now
+Umount solution {{ full_name }}:
   mount.unmounted:
-    - name: /srv/scality/{{ solution.name }}-{{ solution.version }}
-    - device: {{ solution.iso }}
+    - name: /srv/scality/{{ full_name }}
+    - device: {{ version_info.iso }}
     - persist: True
-Clean mount point for solution {{ solution.name }}-{{ solution.version }}:
+
+Clean mount point for solution {{ full_name }}:
   file.absent:
-    - name: /srv/scality/{{ solution.name }}-{{ solution.version }}
-  {%- else %}
-Solution {{ solution.name }}-{{ solution.version }} remains:
+    - name: /srv/scality/{{ full_name }}
+    - require:
+      - mount: Umount solution {{ full_name }}
+
+    {%- else %}
+Solution {{ full_name }} remains:
   test.succeed_without_changes:
-    - name: {{ solution.name }} remains
-  {%- endif %}
+    - name: {{ solution_name }} remains
+
+    {%- endif %}
+  {%- endfor %}
 {%- endfor %}
 {%- else %}
 No solution to unmount:
   test.succeed_without_changes
+
 {%- endif %}

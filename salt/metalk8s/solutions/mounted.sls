@@ -3,16 +3,15 @@
 {%- if solutions_list %}
 {%- for solution_iso in solutions_list %}
   {%- set solution = salt['metalk8s.product_info_from_iso'](solution_iso) %}
-  {%- set solution_name = solution.name | lower | replace(' ', '-') %}
-  {%- set path = "/srv/scality/" ~ solution_name ~ "-" ~ solution.version %}
-
-
-Solution path {{ path }} exists:
+  {%- set lower_name = solution.name | lower | replace(' ', '-') %}
+  {%- set full_name = lower_name ~ '-' ~ solution.version %}
+  {%- set path = "/srv/scality/" ~ full_name %}
+Solution mountpoint {{ path }} exists:
   file.directory:
   - name: {{ path }}
   - makedirs: true
 
-Solution {{ solution_iso }} available at {{ path }}:
+Solution {{ solution_iso }} is available at {{ path }}:
   mount.mounted:
   - name: {{ path }}
   - device: {{ solution_iso }}
@@ -25,28 +24,31 @@ Solution {{ solution_iso }} available at {{ path }}:
   - match_on:
     - name
   - require:
-    - file: Solution path {{ path }} exists
-  - require_in:
-    - file: Assert '{{ path }}/product.txt' exists
-    - file: Assert '{{ path }}/images' exists
-    - file: Assert '{{ path }}/operator/deploy' exists
+    - file: Solution mountpoint {{ path }} exists
 
 #  Validate solution structure
 Assert '{{ path }}/product.txt' exists:
   file.exists:
   - name: {{ path }}/product.txt
+  - require:
+    - mount: Solution {{ solution_iso }} is available at {{ path }}
+
 
 Assert '{{ path }}/images' exists:
   file.exists:
-    - name: {{ path }}/images
+  - name: {{ path }}/images
+  - require:
+    - mount: Solution {{ solution_iso }} is available at {{ path }}
 
 Assert '{{ path }}/operator/deploy' exists:
   file.exists:
-    - name: {{ path }}/operator/deploy
+  - name: {{ path }}/operator/deploy
+  - require:
+    - mount: Solution {{ solution_iso }} is available at {{ path }}
 
 {%- endfor %}
 {% else %}
-No unconfigured solutions detected:
+No configured Solution:
   test.succeed_without_changes:
-    - name: All solutions are configured
+    - name: Nothing to do
 {% endif %}
