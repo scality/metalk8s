@@ -380,6 +380,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/deploy_node.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
+    Path('salt/metalk8s/orchestrate/solutions/available.sls'),
     Path('salt/metalk8s/orchestrate/solutions/init.sls'),
     Path('salt/metalk8s/orchestrate/etcd.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
