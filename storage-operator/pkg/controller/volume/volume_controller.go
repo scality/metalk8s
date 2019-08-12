@@ -598,7 +598,8 @@ func (self *ReconcileVolume) deployVolume(
 			reqLogger.Error(err, "cannot set volume-protection: requeue")
 			return delayedRequeue(err)
 		}
-		if jid, err := self.salt.PrepareVolume(ctx, nodeName); err != nil {
+		jid, err := self.salt.PrepareVolume(ctx, nodeName, volume.Name)
+		if err != nil {
 			reqLogger.Error(err, "failed to run PrepareVolume")
 			return delayedRequeue(err)
 		} else {
