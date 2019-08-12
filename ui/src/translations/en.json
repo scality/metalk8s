@@ -92,5 +92,8 @@
   "generic_missing_field": "Please enter a {field}.",
   "no_storage_class_found": "No storage class found.",
   "storage_class_is_required": "A storage class is required in order to create a volume. Please create one in Kubernetes.",
-  "learn_more": "Learn more"
+  "learn_more": "Learn more",
+  "solutions": "Solutions",
+  "versions": "Versions",
+  "deployed_version": "Deployed Version"
 }

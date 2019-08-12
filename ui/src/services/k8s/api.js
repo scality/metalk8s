@@ -12,6 +12,9 @@ let customObjects;
 let storage;
 let k8sApiClient = null;
 
+const SOLUTION_CONFIGMAP_NAME = 'metalk8s-solutions';
+const APP_K8S_COMPONENT_LABEL = 'app.kubernetes.io/component';
+
 export function initialize(apiUrl) {
   k8sApiClient = new ApiClient({ apiUrl });
 }
@@ -114,6 +117,30 @@ export async function createVolume(body) {
 export async function getPersistentVolumeClaims() {
   try {
     return await coreV1.listPersistentVolumeClaimForAllNamespaces();
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getSolutionsConfigMapForAllNamespaces() {
+  try {
+    return await coreV1.listConfigMapForAllNamespaces(
+      null,
+      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getUIServiceForAllNamespaces() {
+  try {
+    return await coreV1.listServiceForAllNamespaces(
+      null,
+      null,
+      null,
+      `${APP_K8S_COMPONENT_LABEL}=ui`
+    );
   } catch (error) {
     return { error };
   }
