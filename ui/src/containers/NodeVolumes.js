@@ -68,6 +68,7 @@ const NodeVolumes = props => {
     refreshPersistentVolumesAction,
     stopRefreshPersistentVolumesAction
   );
+
   const volumes = useSelector(state => state.app.volumes);
   const persistentVolumes = useSelector(state => state.app.volumes.pVList);
   const [sortBy, setSortBy] = useState('name');
@@ -166,10 +167,33 @@ const NodeVolumes = props => {
             }
           }};
         `;
+
+        const hintPopup = () => {
+          let hintMessage = '';
+
+          switch (rowData.status) {
+            case STATUS_PENDING:
+              hintMessage = 'Create volume is on progress.';
+              break;
+            case STATUS_TERMINATING:
+              hintMessage = 'Delete volume in on progress.';
+              break;
+            case STATUS_VOLUME_UNKNOWN:
+              hintMessage = 'The volume is on transient status';
+              break;
+            case STATUS_FAILED:
+              hintMessage = 'The volume is busy.';
+              break;
+            default:
+              hintMessage = '';
+          }
+          return hintMessage;
+        };
+
         return (
           <div>
             <Tooltip
-              title="Why it cannot be deleted?"
+              title={hintPopup()}
               onClick={e => {
                 e.stopPropagation();
                 if (isEnableClick) {
