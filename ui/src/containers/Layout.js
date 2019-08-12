@@ -31,19 +31,6 @@ import {
 const Layout = props => {
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
 
-  const applications = [];
-  props.solutions.reduce((applications, solution) => {
-    return solution.versions.map((version, index) => {
-      if (version.deployed && version.ui_url) {
-        applications.push({
-          label: solution.name,
-          onClick: () => window.open(version.ui_url, '_self') // TO BE IMPROVED in core-ui to allow display Link or <a></a>
-        });
-      }
-      return applications;
-    });
-  }, applications);
-
   const help = [
     {
       label: props.intl.messages.about,
@@ -88,7 +75,21 @@ const Layout = props => {
     ]
   };
 
-  if (props.solutions) {
+  let applications = null;
+  if (props.solutions && props.solutions.length) {
+    applications = [];
+    props.solutions.reduce((applications, solution) => {
+      return solution.versions.map((version, index) => {
+        if (version.deployed && version.ui_url) {
+          applications.push({
+            label: solution.name,
+            onClick: () => window.open(version.ui_url, '_self') // TO BE IMPROVED in core-ui to allow display Link or <a></a>
+          });
+        }
+        return applications;
+      });
+    }, applications);
+
     sidebar.actions.push({
       label: props.intl.messages.solutions,
       icon: <i className="fas fa-th" />,
