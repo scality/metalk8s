@@ -1,0 +1,43 @@
+@startuml
+
+title Volume Creation\n(nominal case)
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 2
+skinparam titleBorderColor red
+skinparam titleBackgroundColor Aqua-CadetBlue
+
+skinparam defaultTextAlignment center
+
+actor User
+participant "Platform UI" as UI
+participant "API Server" as API
+participant "Storage Operator" as Operator
+participant "Salt API" as Salt
+participant "Cluster Node" as Node
+
+User->UI: Create a volume
+UI->API: Create a **Volume** CR
+API->UI: 200 OK
+note left: The **Volume** now appears as **Unknown** in the UI
+
+API->Operator: Notify: New **Volume** CR
+Operator->Salt: Call **PrepareVolume**
+Operator->API: Set **Volume** status to **Pending**
+note left: The **Volume** now appears as **Pending** in the UI
+
+Salt->Node: Send order to Salt minion
+loop
+  Operator->Salt: Poll Salt job status
+  Salt->Operator: Job still in progress…
+
+  ... ...
+end
+Node->Salt: Storage ready
+Operator->Salt: Poll Salt job status
+Salt->Operator: Job done
+Operator->API: Create backing **PersistentVolume**
+deactivate API
+Operator->API: Set **Volume** status to **Available**
+note left: The **Volume** now appears as **Available** in the UI
+
+@enduml

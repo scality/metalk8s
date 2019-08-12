@@ -1,0 +1,53 @@
+@startuml
+
+title Reconciliation loop (top level)
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 2
+skinparam titleBorderColor red
+skinparam titleBackgroundColor Aqua-CadetBlue
+
+skinparam wrapWidth 75
+skinparam defaultTextAlignment center
+
+start
+
+partition Reconciliate {
+  if (**Volume** exists?) then (yes)
+    if (**Volume** is valid?) then (yes)
+      if (**Volume** is marked for deletion?) then (yes)
+        #F000F0:Finalize **Volume**|
+        stop
+      else (no)
+        if (**Volume** is **Failed**?) then (yes)
+          #00FF00:Don't reschedule;
+          note right: Nothing we can do here
+          stop
+        else (no)
+          if (**Volume** is backed by **PersistentVolume**?) then (yes)
+            if (**PersistentVolume** is healthy?) then (yes)
+              #00FF00:Don't reschedule;
+              stop
+            else (no)
+              #FF0000:Set **Volume** status to **Failed**;
+              #00F0F0:Reschedule now;
+              stop
+            endif
+          else (no)
+            #F000F0:Deploy **Volume**|
+            stop
+          endif
+        endif
+      endif
+    else (no)
+      #FF0000:Set **Volume** status to **Failed**;
+      #00F0F0:Reschedule now;
+      stop
+    endif
+  else (no)
+    #00FF00:Don't reschedule;
+    note right: **Volume** has been deleted
+    stop
+  endif
+}
+
+@enduml

@@ -1,0 +1,81 @@
+@startuml
+
+title Volume Finalization
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 2
+skinparam titleBorderColor red
+skinparam titleBackgroundColor Aqua-CadetBlue
+
+skinparam wrapWidth 75
+skinparam defaultTextAlignment center
+
+partition FinalizeVolume {
+  start
+
+  if (**Volume** is **Pending**?) then (YES)
+     #00F0F0:Reschedule in 10s;
+     note right: Wait for the creation to terminate
+     stop
+  else (NO)
+    if (**Volume** is backed by **PersistentVolume**?) then (YES)
+      if (**PersistentVolume** is **Terminating**?) then (YES)
+        if (**PersistentVolume** is unused?) then (YES)
+          #F000F0:**ReclaimStorage**|
+          stop
+        else (NO)
+          #00F0F0:Reschedule in 10s;
+          stop
+        endif
+      else (NO)
+        :Delete **PersistentVolume**;
+        note right: Will go in **Terminating** state
+        #00F0F0:Reschedule now;
+        stop
+      endif
+    else (NO)
+      #F000F0:**ReclaimStorage**|
+      stop
+    endif
+  endif
+}
+
+partition ReclaimStorage {
+ start
+
+ :Check value of the **Volume** field **Job**;
+ split
+   -> No value;
+   :Spawn Salt job **UnprepareVolume**;
+   #FFA500:Set **Volume** status to **Terminating**;
+   #00F0F0:Reschedule now;
+ split again
+   -> Job ID;
+   :Poll the status of the Salt job;
+   split
+     -> Job failed;
+     #FF0000:Set **Volume** status to **Failed**;
+     #00F0F0:Reschedule now;
+   split again
+     -> Job not found;
+     :Unset the **Volume** field **Job**;
+     note right: This will relaunch the job
+     #00F0F0:Reschedule now;
+   split again
+     -> Job succeed;
+     :Set the **Volume** field **Job** to "DONE";
+     #00F0F0:Reschedule now;
+   split again
+     -> Job still in progress;
+     #00F0F0:Reschedule in 10s;
+   end split;
+ split again
+   -> "DONE";
+   :Remove finalizer on the backing **PersistentVolume**;
+   :Remove finalizer on the **Volume**;
+   #00FF00:Do not reschedule;
+   note right: The **Volume** object will be deleted by Kubernetes
+ end split;
+
+ stop
+}
+@enduml
