@@ -14,9 +14,7 @@ def _load_solutions():
     """Load Solutions from ConfigMap and config file."""
     errors = []
     try:
-        deployed = (
-            __salt__['metalk8s_solutions.get_solutions_from_configmap']()
-        )
+        deployed = __salt__['metalk8s_solutions.list_deployed']()
     except KeyError:
         return __utils__['pillar_utils.errors_to_dict']([
             "Failed to load 'metalk8s_solutions' module."
@@ -30,9 +28,7 @@ def _load_solutions():
         )
 
     try:
-        configured = (
-            __salt__['metalk8s_solutions.get_solutions_list_from_configfile']()
-        )
+        configured = __salt__['metalk8s_solutions.list_configured']()
     except (IOError, CommandExecutionError) as exc:
         configured = []
         errors.append(
