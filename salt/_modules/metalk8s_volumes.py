@@ -1,6 +1,7 @@
 # coding: utf-8
 '''Metalk8s volumes module.'''
 
+import json
 import re
 import os
 
@@ -118,6 +119,58 @@ def sparse_loop_initialize(path):
     return result['stdout'].strip()
 
 
+def is_formatted(name):
+    """Check if the given volume is formatted.
+
+    Args:
+        name (str): volume name
+
+    Returns:
+        bool: True if the volume is already formatted, otherwise False
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '*' metalk8s_volumes.volume_is_formatted example-volume
+    """
+    volume = __pillar__['metalk8s']['volumes'].get(name)
+    if volume is None:
+        raise ValueError('volume `{}` not found in pillar'.format(name))
+    path = _get_block_device_path(volume)
+    storage_class = volume['spec']['storageClassName']
+    fs_type = storage_class['parameters']['fsType']
+    return __salt__['disk.fstype'](path) == fs_type
+
+
+def mkfs(name):
+    """Format the given volume.
+
+    Args:
+        name (str): volume name
+
+    Returns:
+        None
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '*' metalk8s_volumes.mkfs example-volume
+    """
+    volume = __pillar__['metalk8s']['volumes'].get(name)
+    if volume is None:
+        raise ValueError('volume `{}` not found in pillar'.format(name))
+    storage_class = volume['spec']['storageClassName']
+    mkfs_options = json.loads(storage_class['parameters']['mkfsOptions'])
+    command = ['mkfs']
+    command.extend(['-t', storage_class['parameters']['fsType']])
+    command.extend(['-U', volume['metadata']['uid']])
+    command.extend(mkfs_options)
+    command.append(_get_block_device_path(volume))
+    _run_cmd(' '.join(command))
+
+
 def _run_cmd(cmd):
     """Execute the given `cmd` command and return its result.
 
@@ -173,3 +226,26 @@ def _quantity_to_bytes(quantity):
     size = int(match.groupdict()['size'])
     unit = match.groupdict().get('unit')
     return size * UNIT_FACTOR[unit]
+
+
+def _get_block_device_path(volume):
+    """Return the path to the backing block device.
+
+    Args:
+        volume (dict): a Volume object
+
+    Returns:
+        str: path to the block device
+    """
+    if 'rawBlockDevice' in volume['spec']:
+        return volume['spec']['rawBlockdevice']['devicePath']
+    elif 'sparseLoopDevice' in volume['spec']:
+        volume_name = volume['metadata']['name']
+        path = '/var/lib/metalk8s/storage/sparse/{}'.format(volume_name)
+        command = ' '.join(['losetup', '--associated', path])
+        result  = _run_cmd(command)
+        # e.g.: /dev/loop0: [2049]:184645 (/var/lib/metalk8s/storage/sparse/vol)
+        device_path, _, _ = result['stdout'].partition(':')
+        return device_path
+    else:
+        raise ValueError('unsupported Volume type')

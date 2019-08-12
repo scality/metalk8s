@@ -88,3 +88,38 @@ def sparse_loop_initialized(name, path):
         ret['result'] = True
         ret['comment'] = 'sparse loop device `{}` initialized'.format(path)
     return ret
+
+
+def formatted(name, volume):
+    """Initialize the give sparse loop device.
+
+    Args:
+        name   (str):  SLS caller name
+        volume (str):  path of the sparse file
+
+    Returns:
+        dict: state return value
+    """
+    ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
+    # Idempotence.
+    if __salt__['metalk8s_volumes.is_formatted'](volume):
+        ret['result'] = True
+        ret['comment'] = 'volume `{}` already formatted'.format(volume)
+        return ret
+    # Dry-run.
+    if __opts__['test']:
+        ret['changes'][volume] = 'Formatted'
+        ret['result'] = None
+        ret['comment'] = 'volume `{}` is going to be formatted'.format(volume)
+        return ret
+    # Let's go for real.
+    try:
+        __salt__['metalk8s_volumes.mkfs'](volume)
+    except Exception as exn:
+        ret['result'] = False
+        ret['comment'] = 'failed to format volume `{}`: {}'.format(volume, exn)
+    else:
+        ret['changes'][volume] = 'Formatted'
+        ret['result'] = True
+        ret['comment'] = 'volume `{}` formatted'.format(volume)
+    return ret
