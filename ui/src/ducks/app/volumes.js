@@ -313,6 +313,26 @@ export function* stopRefreshPersistentVolumes() {
 export function* deleteVolume({ payload }) {
   const result = yield call(ApiK8s.deleteVolume, payload);
   if (!result.error) {
+    const result = yield call(fetchVolumes);
+    if (!result.error) {
+      yield put(
+        addNotificationSuccessAction({
+          title: intl.translate('volume_delete'),
+          message: intl.translate('volume_delete_success', {
+            name: payload
+          })
+        })
+      );
+    }
+  } else {
+    yield put(
+      addNotificationErrorAction({
+        title: intl.translate('volume_delete'),
+        message: intl.translate('volume_delete_failed', {
+          name: payload
+        })
+      })
+    );
   }
 }
 

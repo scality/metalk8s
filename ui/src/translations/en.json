@@ -95,5 +95,8 @@
   "learn_more": "Learn more",
   "solutions": "Solutions",
   "versions": "Versions",
-  "deployed_version": "Deployed Version"
+  "deployed_version": "Deployed Version",
+  "volume_delete": "Volume delete",
+  "volume_delete_success": "Volume {name} is being deleted.",
+  "volume_delete_failed": "Volume {name} deleted failed."
 }
