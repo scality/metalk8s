@@ -8,33 +8,28 @@ include:
   {%- set storage_class = volume_info['spec']['storageClassName'] %}
   {%- if 'sparseLoopDevice' in volume_info['spec'].keys() %}
     {%- set capacity = volume_info['spec']['sparseLoopDevice']['size'] %}
-    {%- set size = salt['metalk8s_volumes.quantity_to_bytes'](capacity) %}
     {%- set path = '/var/lib/metalk8s/storage/sparse/' ~ volume_name %}
     {%- set uuid = volume_info['metadata']['uid'] %}
     {%- set fs_type = storage_class['parameters']['fsType'] %}
     {%- set mkfs_options = storage_class['parameters']['mkfsOptions'] | load_json %}
 
-Creating an empty sparse file:
-  file.managed:
-    - name: {{ path }}
+Create the sparse file directory:
+  file.directory:
+    - name: /var/lib/metalk8s/storage/sparse/
     - makedirs: True
-    - replace: False
 
-Resizing sparse file:
-  module.run:
-    - file.truncate:
-      - path: {{ path }}
-      - length: {{ size }}
-    - unless: losetup -j  {{ path }} | grep -q {{ path }}
+Create the backing sparse file for {{ volume_name }}:
+  metalk8s_volumes.sparse_file_present:
+    - path: {{ path }}
+    - capacity: {{ capacity }}
     - require:
-      - file: Creating an empty sparse file
+      - file: Create the sparse file directory
 
 Setup loop device for {{ volume_name }}:
-  cmd.run:
-    - name: /sbin/losetup --find --partscan {{ path }}
-    - failhard: True
+  metalk8s_volumes.sparse_loop_initialized:
+    - path: {{ path }}
     - require:
-      - module: Resizing sparse file
+      - metalk8s_volumes: Create the backing sparse file for {{ volume_name }}
 
 Format {{ volume_name }}:
   cmd.run:
@@ -45,7 +40,7 @@ Format {{ volume_name }}:
     - require:
       - metalk8s_package_manager: Install e2fsprogs
       - metalk8s_package_manager: Install xfsprogs
-      - cmd: Setup loop device for {{ volume_name }}
+      - metalk8s_volumes: Setup loop device for {{ volume_name }}
   {%- endif %}
 {%- else %}
 Volume "{{ volume_name }}" not found in pillar:
