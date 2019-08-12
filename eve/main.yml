@@ -128,13 +128,22 @@ stages:
           workdir: build/ui
           command: >
             npm install
-            --production
             --no-cache
             --no-save
             -q
             --no-update-notifier &&
             npm run test:nowatch --no-update-notifier
           haltOnFailure: false
+      - ShellCommand:
+          name: Prepare upload folder
+          command: >
+            mkdir upload && mv junit upload
+          workdir: build/ui
+          alwaysRun: true
+      - Upload:
+          name: Upload cypress and junit folder
+          source: ui/upload
+          alwaysRun: true
 
   single-node:
     worker:
@@ -225,16 +234,17 @@ stages:
           workdir: build/ui
           haltOnFailure: true
       - ShellCommand:
-          name: Create temporary folder to upload Cypress result
+          name: Prepare upload folder
           command: >
-            mkdir -p tmp/cypress &&
-            (cp -r cypress/screenshots tmp/cypress || true) &&
-            (cp -r cypress/videos tmp/cypress || true)
+            mkdir -p upload/cypress &&
+            (cp -r cypress/screenshots upload/cypress || true) &&
+            (cp -r cypress/videos upload/cypress || true) &&
+            (cp -r junit upload/ || true)
           workdir: build/ui
           alwaysRun: true
       - Upload:
-          name: Upload Cypress videos and screenshots artifacts
-          source: ui/tmp
+          name: Upload cypress and junit folder
+          source: ui/upload
           alwaysRun: true
       - ShellCommand:
           name: Collect logs using sosreport

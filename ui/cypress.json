@@ -3,5 +3,10 @@
     "target_url": "http://localhost:3000",
     "username": "admin",
     "password": "admin"
+  },
+  "reporter": "junit",
+  "reporterOptions": {
+    "mochaFile": "junit/cypress-junit.xml",
+    "toConsole": true
   }
 }
