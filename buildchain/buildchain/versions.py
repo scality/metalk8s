@@ -263,6 +263,11 @@ PACKAGES = (
         release='9.el7',
     ),
     Package(
+        name='e2fsprogs',
+        version='1.42.9',
+        release='13.el7',
+    ),
+    Package(
         name='genisoimage',
         version='1.1.11',
         release='25.el7',
@@ -331,6 +336,11 @@ PACKAGES = (
         name='util-linux',
         version='2.23.2',
         release='59.el7_6.1',
+    ),
+    Package(
+        name='xfsprogs',
+        version='4.5.0',
+        release='18.el7',
     ),
     Package(
         name='yum-plugin-versionlock',
