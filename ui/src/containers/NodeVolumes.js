@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
@@ -18,7 +18,8 @@ import {
   refreshVolumesAction,
   stopRefreshVolumesAction,
   refreshPersistentVolumesAction,
-  stopRefreshPersistentVolumesAction
+  stopRefreshPersistentVolumesAction,
+  deleteVolumeAction
 } from '../ducks/app/volumes';
 import {
   STATUS_VOLUME_UNKNOWN,
@@ -171,7 +172,9 @@ const NodeVolumes = props => {
               title="Why it cannot be deleted?"
               onClick={e => {
                 e.stopPropagation();
-                setisDeleteConfirmationModalOpen(true);
+                if (isEnableClick) {
+                  setisDeleteConfirmationModalOpen(true);
+                }
               }}
               disableHoverListener={isEnableClick}
             >
@@ -198,7 +201,8 @@ const NodeVolumes = props => {
     volumeSortedList = sortSelector(volumeSortedList, sortBy, sortDirection);
   }
 
-  const onClickDeleteButton = () => {
+  const onClickDeleteButton = deleteVolumeName => {
+    props.deleteVolume(deleteVolumeName);
     setisDeleteConfirmationModalOpen(false);
   };
 
@@ -223,7 +227,10 @@ const NodeVolumes = props => {
           <DeleteButton
             variant="danger"
             text="Delete"
-            onClick={onClickDeleteButton}
+            onClick={e => {
+              e.stopPropagation();
+              onClickDeleteButton(deleteVolumeName);
+            }}
           />
         </NotificationButtonGroup>
       </Modal>
@@ -259,4 +266,18 @@ const NodeVolumes = props => {
   );
 };
 
-export default injectIntl(withRouter(NodeVolumes));
+const mapDispatchToProps = dispatch => {
+  return {
+    deleteVolume: deleteVolumeName =>
+      dispatch(deleteVolumeAction(deleteVolumeName))
+  };
+};
+
+export default injectIntl(
+  withRouter(
+    connect(
+      null,
+      mapDispatchToProps
+    )(NodeVolumes)
+  )
+);

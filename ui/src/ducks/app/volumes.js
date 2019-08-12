@@ -15,6 +15,7 @@ import {
 // Actions
 const FETCH_VOLUMES = 'FETCH_VOLUMES';
 const SET_VOLUMES = 'SET_VOLUMES';
+const DELETE_VOLUME = 'DELETE_VOLUME';
 const FETCH_PERSISTENT_VOLUMES = 'FETCH_PERSISTENT_VOLUMES';
 const SET_PERSISTENT_VOLUMES = 'SET_PERSISTENT_VOLUMES';
 const FETCH_STORAGECLASS = 'FETCH_STORAGECLASS';
@@ -76,6 +77,10 @@ export const fetchVolumesAction = () => {
 
 export const setVolumesAction = payload => {
   return { type: SET_VOLUMES, payload };
+};
+
+export const deleteVolumeAction = payload => {
+  return { type: DELETE_VOLUME, payload };
 };
 
 export const fetchPersistentVolumeAction = () => {
@@ -305,10 +310,17 @@ export function* stopRefreshPersistentVolumes() {
   yield put(updatePersistentVolumesRefreshingAction(false));
 }
 
+export function* deleteVolume({ payload }) {
+  const result = yield call(ApiK8s.deleteVolume, payload);
+  if (!result.error) {
+  }
+}
+
 export function* volumesSaga() {
   yield takeLatest(FETCH_VOLUMES, fetchVolumes);
   yield takeLatest(FETCH_STORAGECLASS, fetchStorageClass);
   yield takeLatest(CREATE_VOLUMES, createVolumes);
+  yield takeLatest(DELETE_VOLUME, deleteVolume);
   yield takeLatest(FETCH_PERSISTENT_VOLUMES, fetchPersistentVolumes);
   yield takeLatest(REFRESH_VOLUMES, refreshVolumes);
   yield takeLatest(STOP_REFRESH_VOLUMES, stopRefreshVolumes);

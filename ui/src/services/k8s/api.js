@@ -85,6 +85,20 @@ export async function getVolumes() {
   }
 }
 
+export async function deleteVolume(deleteVolumeName) {
+  try {
+    return await customObjects.deleteClusterCustomObject(
+      'storage.metalk8s.scality.com',
+      'v1alpha1',
+      'volumes',
+      deleteVolumeName,
+      {}
+    );
+  } catch (error) {
+    return error;
+  }
+}
+
 export async function getPersistentVolumes() {
   try {
     return await coreV1.listPersistentVolume();
