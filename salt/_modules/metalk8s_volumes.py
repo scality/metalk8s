@@ -179,6 +179,12 @@ class Volume(object):
 
         The volume is formatted according to its StorageClass.
         """
+        # Check that the backing device is not already formatted.
+        # Bail out if it is: we don't want data loss because of a typo…
+        if __salt__['disk.fstype'](self.block_device):
+            raise Exception('backing device `{}` already formatted'.format(
+                self.block_device
+            ))
         params = self.get('spec.storageClassName.parameters')
         # mkfs options, if any, are stored as JSON-encoded list.
         mkfs_options = json.loads(params.get('mkfsOptions', '[]'))
