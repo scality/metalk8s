@@ -22,12 +22,13 @@ import {
   deleteVolumeAction
 } from '../ducks/app/volumes';
 import {
-  STATUS_VOLUME_UNKNOWN,
+  STATUS_UNKNOWN,
   STATUS_TERMINATING,
   STATUS_PENDING,
   STATUS_FAILED,
   STATUS_AVAILABLE,
-  STATUS_BOUND
+  STATUS_BOUND,
+  STATUS_RELEASED
 } from '../constants';
 
 const ButtonContainer = styled.div`
@@ -107,7 +108,7 @@ const NodeVolumes = props => {
     const volumeName = rowData.name;
 
     if (
-      volumeStatus === STATUS_VOLUME_UNKNOWN ||
+      volumeStatus === STATUS_UNKNOWN ||
       volumeStatus === STATUS_PENDING ||
       volumeStatus === STATUS_TERMINATING
     ) {
@@ -124,14 +125,17 @@ const NodeVolumes = props => {
         );
         const persistentVolumeStatus = persistentVolume?.status?.phase;
         if (
-          persistentVolumeStatus === STATUS_BOUND ||
-          persistentVolumeStatus === STATUS_AVAILABLE
+          persistentVolumeStatus === STATUS_AVAILABLE ||
+          persistentVolumeStatus === STATUS_RELEASED
         ) {
           return true;
-        } else if (persistentVolumeStatus === STATUS_PENDING) {
+        } else if (
+          persistentVolumeStatus === STATUS_PENDING ||
+          persistentVolumeStatus === STATUS_BOUND
+        ) {
           return false;
         } else {
-          return true;
+          return false;
         }
       }
     }
@@ -205,7 +209,7 @@ const NodeVolumes = props => {
             case STATUS_TERMINATING:
               hintMessage = intl.messages.volume_status_terminating_hint;
               break;
-            case STATUS_VOLUME_UNKNOWN:
+            case STATUS_UNKNOWN:
               hintMessage = intl.messages.volume_status_unknown_hint;
               break;
             case STATUS_FAILED:

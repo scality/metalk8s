@@ -34,7 +34,7 @@ import {
 import {
   STATUS_READY,
   STATUS_NOT_READY,
-  STATUS_UNKNOWN
+  STATUS_API_UNKNOWN
 } from '../../constants.js';
 
 // Actions
@@ -272,7 +272,7 @@ export function* fetchNodes() {
           } else if (statusType && statusType.status === 'False') {
             status = STATUS_NOT_READY;
           } else {
-            status = STATUS_UNKNOWN;
+            status = STATUS_API_UNKNOWN;
           }
 
           const roleTaintMatched = roleTaintMap.find(item => {
