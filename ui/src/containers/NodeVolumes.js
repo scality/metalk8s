@@ -47,7 +47,7 @@ const DeleteConfirmationModal = {
     top: '50%',
     left: '50%',
     width: '540px',
-    height: '180px',
+    height: '190px',
     transform: 'translate(-50%, -50%)'
   }
 };
