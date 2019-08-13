@@ -5,10 +5,10 @@ import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
-import Tooltip from '@material-ui/core/Tooltip';
 import { Button, Table, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
+import Tooltip from '../components/Tooltip';
 import {
   sortSelector,
   sortCapacity,
@@ -61,6 +61,22 @@ const NotificationButtonGroup = styled.div`
 
 const DeleteButton = styled(Button)`
   margin-left: ${padding.small};
+`;
+
+const IconButton = styled.button`
+  border-radius: 30px;
+  width: 30px;
+  height: 30px;
+  background-color: transparent;
+  border: none;
+
+  :hover {
+    background-color: ${props => {
+      if (props.isEnableClick) {
+        return `grey`;
+      }
+    }};
+  }
 `;
 
 const NodeVolumes = props => {
@@ -171,6 +187,14 @@ const NodeVolumes = props => {
           }};
         `;
 
+        const isTriggerTooltip = () => {
+          if (isEnableClick) {
+            return '';
+          } else {
+            return 'hover';
+          }
+        };
+
         const hintPopup = () => {
           let hintMessage = '';
 
@@ -196,23 +220,30 @@ const NodeVolumes = props => {
         return (
           <div>
             <Tooltip
-              title={hintPopup()}
-              onClick={e => {
-                e.stopPropagation();
-                if (isEnableClick) {
-                  setDeleteVolumeName(rowData.name);
-                  setisDeleteConfirmationModalOpen(true);
-                }
-              }}
-              disableHoverListener={isEnableClick}
+              placement="top"
+              trigger={isTriggerTooltip()}
+              overlay={hintPopup()}
             >
-              <CustI className="fas fa-trash" isEnableClick={isEnableClick} />
+              <IconButton isEnableClick={isEnableClick}>
+                <CustI
+                  className="fas fa-lg fa-trash"
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (isEnableClick) {
+                      setDeleteVolumeName(rowData.name);
+                      setisDeleteConfirmationModalOpen(true);
+                    }
+                  }}
+                  isEnableClick={isEnableClick}
+                />
+              </IconButton>
             </Tooltip>
           </div>
         );
       }
     }
   ];
+
   const onRowClick = row => {
     if (row.rowData && row.rowData.name) {
       props.history.push(
@@ -283,7 +314,7 @@ const NodeVolumes = props => {
           columns={columns}
           disableHeader={false}
           headerHeight={40}
-          rowHeight={40}
+          rowHeight={50}
           sortBy={sortBy}
           sortDirection={sortDirection}
           onSort={onSort}
