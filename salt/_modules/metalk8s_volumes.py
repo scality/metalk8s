@@ -262,6 +262,24 @@ class SparseLoopDevice(Volume):
 
 class RawBlockDevice(Volume):
     @property
+    def exists(self):
+        """Does the backing storage device exists?"""
+        return __salt__['file.is_blkdev'](self.block_device)
+
+    def create(self):
+        # Nothing to do, if it's missing we bail out.
+        raise Exception('block device {} does not exists'.format(
+            self.block_device
+        ))
+
+    @property
+    def is_initialized(self):
+        return True  # Nothing to do so it's always True.
+
+    def initialize(self):
+        return  # Nothing to do
+
+    @property
     def block_device(self):
         return self['spec.rawBlockDevice.devicePath']
 
