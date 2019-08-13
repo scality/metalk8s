@@ -52,8 +52,8 @@ def present(name, volume):
     return ret
 
 
-def initialized(name, volume):
-    """Initialize the given volume.
+def provisioned(name, volume):
+    """Provision the given volume.
 
     Args:
         name   (str): SLS caller name
@@ -64,29 +64,29 @@ def initialized(name, volume):
     """
     ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
     # Idempotence.
-    if __salt__['metalk8s_volumes.is_initialized'](volume):
+    if __salt__['metalk8s_volumes.is_provisioned'](volume):
         ret['result'] = True
-        ret['comment'] = 'Storage for volume {} already initialized.'\
+        ret['comment'] = 'Storage for volume {} already provisioned.'\
             .format(volume)
         return ret
     # Dry-run.
     if __opts__['test']:
-        ret['changes'][volume] = 'Initialized'
+        ret['changes'][volume] = 'Provisioned'
         ret['result'] = None
-        ret['comment'] = 'Storage for volume {} is going to be initialized.'\
+        ret['comment'] = 'Storage for volume {} is going to be provisioned.'\
             .format(volume)
         return ret
     # Let's go for real.
     try:
-        __salt__['metalk8s_volumes.initialize'](volume)
+        __salt__['metalk8s_volumes.provision'](volume)
     except CommandExecutionError as exn:
         ret['result'] = False
-        ret['comment'] = 'Storage initialization for volume {} failed: {}.'\
+        ret['comment'] = 'Storage provisioning for volume {} failed: {}.'\
             .format(volume, exn)
     else:
-        ret['changes'][volume] = 'Initialized'
+        ret['changes'][volume] = 'Provisioned'
         ret['result'] = True
-        ret['comment'] = 'Storage initialized for volume {}.'.format(volume)
+        ret['comment'] = 'Storage provisioned for volume {}.'.format(volume)
     return ret
 
 

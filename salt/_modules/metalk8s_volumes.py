@@ -59,26 +59,26 @@ def create(name):
     return _get_volume(name).create()
 
 
-def is_initialized(name):
-    """Check if the backing storage device is initialized for the given volume.
+def is_provisioned(name):
+    """Check if the backing storage device is provisioned for the given volume.
 
     Args:
         path (str): path of the sparse file
 
     Returns:
-        bool: True if the backing storage device is initialized, otherwise False
+        bool: True if the backing storage device is provisioned, otherwise False
 
     CLI Example:
 
     .. code-block:: bash
 
-        salt '*' metalk8s_volumes.is_initialized example-volume
+        salt '*' metalk8s_volumes.is_provisioned example-volume
     """
-    return _get_volume(name).is_initialized
+    return _get_volume(name).is_provisioned
 
 
-def initialize(name):
-    """Initialize the backing storage device of the given volume.
+def provision(name):
+    """Provision the backing storage device of the given volume.
 
     Args:
         name (str): volume name
@@ -90,9 +90,9 @@ def initialize(name):
 
     .. code-block:: bash
 
-        salt '*' metalk8s_volumes.initialize example-volume
+        salt '*' metalk8s_volumes.provision example-volume
     """
-    return _get_volume(name).initialize()
+    return _get_volume(name).provision()
 
 
 def is_formatted(name):
@@ -154,13 +154,13 @@ class Volume(object):
         return
 
     @abc.abstractproperty
-    def is_initialized(self):
-        """Check if the backing storage device is initialized."""
+    def is_provisioned(self):
+        """Check if the backing storage device is provisioned."""
         return
 
     @abc.abstractmethod
-    def initialize(self):
-        """Initialize the backing storage device."""
+    def provision(self):
+        """Provision the backing storage device."""
         return
 
     @abc.abstractproperty
@@ -237,15 +237,15 @@ class SparseLoopDevice(Volume):
             ))
 
     @property
-    def is_initialized(self):
-        # A sparse loop device is initialized when a sparse file is associated
+    def is_provisioned(self):
+        # A sparse loop device is provisioned when a sparse file is associated
         # to a loop device.
         command = ' '.join(['losetup', '--associated', self.path])
         pattern = r'\({}\)'.format(re.escape(self.path))
         result  = _run_cmd(command)
         return re.search(pattern, result['stdout']) is not None
 
-    def initialize(self):
+    def provision(self):
         # Recent losetup support `--nooverlap` but not the one shipped with
         # CentOS 7.
         command = ' '.join(['losetup', '--find', self.path])
@@ -273,10 +273,10 @@ class RawBlockDevice(Volume):
         ))
 
     @property
-    def is_initialized(self):
+    def is_provisioned(self):
         return True  # Nothing to do so it's always True.
 
-    def initialize(self):
+    def provision(self):
         return  # Nothing to do
 
     @property
