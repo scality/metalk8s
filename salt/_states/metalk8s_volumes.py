@@ -15,87 +15,87 @@ def __virtual__():
     return __virtualname__
 
 
-def sparse_file_present(name, path, capacity):
-    """Ensure that the specified sparse file exists with the given capcity.
+def present(name, volume):
+    """Ensure that the backing storage exists for the specified volume.
 
     Args:
-        name     (str):  SLS caller name
-        parh     (str):  path of the sparse file
-        capacity (str):  capacity of the sparse file
+        name   (str): SLS caller name
+        volume (str): Volume name
 
     Returns:
         dict: state return value
     """
     ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
     # Idempotence.
-    if __salt__['metalk8s_volumes.sparse_file_exists'](path, capacity):
+    if __salt__['metalk8s_volumes.exists'](volume):
         ret['result'] = True
-        ret['comment'] = 'sparse file `{}` already exists'.format(path)
+        ret['comment'] = 'Storage for volume {} already exists.'.format(volume)
         return ret
     # Dry-run.
     if __opts__['test']:
-        ret['changes'][path] = 'Present'
+        ret['changes'][volume] = 'Present'
         ret['result'] = None
-        ret['comment'] = 'sparse file `{}` is going to be created'.format(path)
+        ret['comment'] = 'Storage for volume {} is going to be created.'\
+            .format(volume)
         return ret
     # Let's go for real.
     try:
-        __salt__['metalk8s_volumes.sparse_file_create'](path, capacity)
+        __salt__['metalk8s_volumes.create'](volume)
     except Exception as exn:
         ret['result'] = False
-        ret['comment'] = 'cannot create sparse file `{}`: {}'.format(path, exn)
+        ret['comment'] = 'Cannot create storage for volume {}: {}.'\
+            .format(volume, exn)
     else:
-        ret['changes'][path] = 'Present'
+        ret['changes'][volume] = 'Present'
         ret['result'] = True
-        ret['comment'] = 'sparse file created at `{}`'.format(path)
+        ret['comment'] = 'Storage for volume {} created.'.format(volume)
     return ret
 
 
-def sparse_loop_initialized(name, path):
-    """Initialize the give sparse loop device.
+def initialized(name, volume):
+    """Initialize the given volume.
 
     Args:
-        name (str):  SLS caller name
-        path (str):  path of the sparse file
+        name   (str): SLS caller name
+        volume (str): Volume name
 
     Returns:
         dict: state return value
     """
     ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
     # Idempotence.
-    if __salt__['metalk8s_volumes.sparse_loop_is_initialized'](path):
+    if __salt__['metalk8s_volumes.is_initialized'](volume):
         ret['result'] = True
-        ret['comment'] = 'sparse loop device `{}` already initialized'.format(
-            path
-        )
+        ret['comment'] = 'Storage for volume {} already initialized.'\
+            .format(volume)
         return ret
     # Dry-run.
     if __opts__['test']:
-        ret['changes'][path] = 'Initialized'
+        ret['changes'][volume] = 'Initialized'
         ret['result'] = None
-        ret['comment'] = 'sparse loop device `{}` is going to be initialized'\
-            .format(path)
+        ret['comment'] = 'Storage for volume {} is going to be initialized.'\
+            .format(volume)
         return ret
     # Let's go for real.
     try:
-        __salt__['metalk8s_volumes.sparse_loop_initialize'](path)
+        __salt__['metalk8s_volumes.initialize'](volume)
     except CommandExecutionError as exn:
         ret['result'] = False
-        ret['comment'] = 'sparse loop device `{}` initialization failed: {}'\
-            .format(path, exn)
+        ret['comment'] = 'Storage initialization for volume {} failed: {}.'\
+            .format(volume, exn)
     else:
-        ret['changes'][path] = 'Initialized'
+        ret['changes'][volume] = 'Initialized'
         ret['result'] = True
-        ret['comment'] = 'sparse loop device `{}` initialized'.format(path)
+        ret['comment'] = 'Storage initialized for volume {}.'.format(volume)
     return ret
 
 
 def formatted(name, volume):
-    """Initialize the give sparse loop device.
+    """Format the given volume.
 
     Args:
-        name   (str):  SLS caller name
-        volume (str):  path of the sparse file
+        name   (str): SLS caller name
+        volume (str): Volume name
 
     Returns:
         dict: state return value
@@ -104,22 +104,22 @@ def formatted(name, volume):
     # Idempotence.
     if __salt__['metalk8s_volumes.is_formatted'](volume):
         ret['result'] = True
-        ret['comment'] = 'volume `{}` already formatted'.format(volume)
+        ret['comment'] = 'Volume {} already formatted.'.format(volume)
         return ret
     # Dry-run.
     if __opts__['test']:
         ret['changes'][volume] = 'Formatted'
         ret['result'] = None
-        ret['comment'] = 'volume `{}` is going to be formatted'.format(volume)
+        ret['comment'] = 'Volume {} is going to be formatted.'.format(volume)
         return ret
     # Let's go for real.
     try:
-        __salt__['metalk8s_volumes.mkfs'](volume)
+        __salt__['metalk8s_volumes.format'](volume)
     except Exception as exn:
         ret['result'] = False
-        ret['comment'] = 'failed to format volume `{}`: {}'.format(volume, exn)
+        ret['comment'] = 'Failed to format volume {}: {}.'.format(volume, exn)
     else:
         ret['changes'][volume] = 'Formatted'
         ret['result'] = True
-        ret['comment'] = 'volume `{}` formatted'.format(volume)
+        ret['comment'] = 'Volume {} formatted.'.format(volume)
     return ret
