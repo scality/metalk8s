@@ -315,7 +315,7 @@ export function* deleteVolume({ payload }) {
   if (!result.error) {
     yield put(
       addNotificationSuccessAction({
-        title: intl.translate('volume_delete'),
+        title: intl.translate('volume_deletion'),
         message: intl.translate('volume_delete_success', {
           name: payload
         })
@@ -324,7 +324,7 @@ export function* deleteVolume({ payload }) {
   } else {
     yield put(
       addNotificationErrorAction({
-        title: intl.translate('volume_delete'),
+        title: intl.translate('volume_deletion'),
         message: intl.translate('volume_delete_failed', {
           name: payload
         })

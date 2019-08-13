@@ -97,6 +97,16 @@
   "versions": "Versions",
   "deployed_version": "Deployed Version",
   "volume_delete": "Volume delete",
+  "action": "Action",
+  "delete": "Delete",
+  "volume_deletion": "Volume deletion",
   "volume_delete_success": "Volume {name} is being deleted.",
-  "volume_delete_failed": "Volume {name} deleted failed."
+  "volume_delete_failed": "Volume {name} deleted failed.",
+  "volume_status_pending_hint": "Volume creation is in progress.",
+  "volume_status_terminating_hint": "Volume deletion is in progress.",
+  "volume_status_unknown_hint": "The volume is in a transient state.",
+  "volume_status_failed_hint": "The volume is busy.",
+  "delete_a_volume": "Delete a volume",
+  "delete_a_volume_warning": "Deleting this volume will permanently delete the data it contains.",
+  "delete_a_volume_confirm": "Do you want to delete"
 }

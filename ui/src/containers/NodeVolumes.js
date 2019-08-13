@@ -46,7 +46,8 @@ const DeleteConfirmationModal = {
   content: {
     top: '50%',
     left: '50%',
-    width: '500px',
+    width: '540px',
+    height: '180px',
     transform: 'translate(-50%, -50%)'
   }
 };
@@ -55,7 +56,7 @@ const NotificationButtonGroup = styled.div`
   display: flex;
   justify-content: center;
   margin-top: ${padding.larger};
-  margin-left: 250px;
+  margin-left: 270px;
 `;
 
 const DeleteButton = styled(Button)`
@@ -63,6 +64,8 @@ const DeleteButton = styled(Button)`
 `;
 
 const NodeVolumes = props => {
+  const { intl } = props;
+
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
     refreshPersistentVolumesAction,
@@ -120,23 +123,23 @@ const NodeVolumes = props => {
 
   const columns = [
     {
-      label: props.intl.messages.name,
+      label: intl.messages.name,
       dataKey: 'name'
     },
     {
-      label: props.intl.messages.status,
+      label: intl.messages.status,
       dataKey: 'status'
     },
     {
-      label: props.intl.messages.storageCapacity,
+      label: intl.messages.storageCapacity,
       dataKey: 'storageCapacity'
     },
     {
-      label: props.intl.messages.storageClass,
+      label: intl.messages.storageClass,
       dataKey: 'storageClass'
     },
     {
-      label: props.intl.messages.creationTime,
+      label: intl.messages.creationTime,
       dataKey: 'creationTime',
       flexGrow: 1,
       renderer: data => (
@@ -152,8 +155,8 @@ const NodeVolumes = props => {
       )
     },
     {
-      label: 'Action',
-      dataKey: 'action-test',
+      label: intl.messages.action,
+      dataKey: 'action',
       disableSort: true,
       width: 80,
       renderer: (data, rowData) => {
@@ -173,16 +176,16 @@ const NodeVolumes = props => {
 
           switch (rowData.status) {
             case STATUS_PENDING:
-              hintMessage = 'Create volume is on progress.';
+              hintMessage = intl.messages.volume_status_pending_hint;
               break;
             case STATUS_TERMINATING:
-              hintMessage = 'Delete volume in on progress.';
+              hintMessage = intl.messages.volume_status_terminating_hint;
               break;
             case STATUS_VOLUME_UNKNOWN:
-              hintMessage = 'The volume is on transient status';
+              hintMessage = intl.messages.volume_status_unknown_hint;
               break;
             case STATUS_FAILED:
-              hintMessage = 'The volume is busy.';
+              hintMessage = intl.messages.volume_status_failed_hint;
               break;
             default:
               hintMessage = '';
@@ -242,16 +245,21 @@ const NodeVolumes = props => {
         ariaHideApp={false}
         style={DeleteConfirmationModal}
       >
-        <h2>Delete a volume</h2>
+        <h2>{intl.messages.delete_a_volume}</h2>
+        <div>{intl.messages.delete_a_volume_warning}</div>
         <div>
-          Deleting this volume will permanently delete the data it contains.
+          {intl.messages.delete_a_volume_confirm}{' '}
+          <strong>{deleteVolumeName}</strong>?
         </div>
-        <div>Do you want to delete {deleteVolumeName}?</div>
         <NotificationButtonGroup>
-          <Button outlined text="Cancel" onClick={onClickCancelButton} />
+          <Button
+            outlined
+            text={intl.messages.cancel}
+            onClick={onClickCancelButton}
+          />
           <DeleteButton
             variant="danger"
-            text="Delete"
+            text={intl.messages.delete}
             onClick={e => {
               e.stopPropagation();
               onClickDeleteButton(deleteVolumeName);
@@ -261,7 +269,7 @@ const NodeVolumes = props => {
       </Modal>
       <ButtonContainer>
         <Button
-          text={props.intl.messages.create_new_volume}
+          text={intl.messages.create_new_volume}
           type="button"
           onClick={() => {
             props.history.push('createVolume');
@@ -283,7 +291,7 @@ const NodeVolumes = props => {
             onRowClick(item);
           }}
           noRowsRenderer={() => (
-            <NoRowsRenderer content={props.intl.messages.no_volume_found} />
+            <NoRowsRenderer content={intl.messages.no_volume_found} />
           )}
         />
       </VolumeTable>
