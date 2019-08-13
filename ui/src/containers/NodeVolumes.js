@@ -48,16 +48,15 @@ const DeleteConfirmationModal = {
     top: '50%',
     left: '50%',
     width: '540px',
-    height: '190px',
+    height: '200px',
     transform: 'translate(-50%, -50%)'
   }
 };
 
 const NotificationButtonGroup = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   margin-top: ${padding.larger};
-  margin-left: 270px;
 `;
 
 const DeleteButton = styled(Button)`
@@ -107,37 +106,36 @@ const NodeVolumes = props => {
     const volumeStatus = rowData.status;
     const volumeName = rowData.name;
 
-    if (
-      volumeStatus === STATUS_UNKNOWN ||
-      volumeStatus === STATUS_PENDING ||
-      volumeStatus === STATUS_TERMINATING
-    ) {
-      return false;
-    } else if (
-      volumeStatus === STATUS_FAILED ||
-      volumeStatus === STATUS_AVAILABLE
-    ) {
-      if (persistentVolumes === []) {
-        return true;
-      } else {
-        const persistentVolume = persistentVolumes.find(
-          pv => pv?.metadata?.name === volumeName
-        );
-        const persistentVolumeStatus = persistentVolume?.status?.phase;
-        if (
-          persistentVolumeStatus === STATUS_AVAILABLE ||
-          persistentVolumeStatus === STATUS_RELEASED
-        ) {
+    switch (volumeStatus) {
+      case STATUS_UNKNOWN:
+      case STATUS_PENDING:
+      case STATUS_TERMINATING:
+        return false;
+      case STATUS_FAILED:
+      case STATUS_AVAILABLE:
+        if (persistentVolumes?.length === 0) {
           return true;
-        } else if (
-          persistentVolumeStatus === STATUS_PENDING ||
-          persistentVolumeStatus === STATUS_BOUND
-        ) {
-          return false;
         } else {
-          return false;
+          const persistentVolume = persistentVolumes.find(
+            pv => pv?.metadata?.name === volumeName
+          );
+          const persistentVolumeStatus = persistentVolume?.status?.phase;
+
+          switch (persistentVolumeStatus) {
+            case STATUS_FAILED:
+            case STATUS_AVAILABLE:
+            case STATUS_RELEASED:
+              return true;
+            case STATUS_PENDING:
+            case STATUS_BOUND:
+            default:
+              console.error('Error!');
+              return false;
+          }
         }
-      }
+      default:
+        console.error('Error!');
+        return false;
     }
   };
 
@@ -213,7 +211,22 @@ const NodeVolumes = props => {
               hintMessage = intl.messages.volume_status_unknown_hint;
               break;
             case STATUS_FAILED:
-              hintMessage = intl.messages.volume_status_failed_hint;
+              const persistentVolume = persistentVolumes.find(
+                pv => pv?.metadata?.name === rowData.name
+              );
+              const persistentVolumeStatus = persistentVolume?.status?.phase;
+              switch (persistentVolumeStatus) {
+                case STATUS_BOUND:
+                  hintMessage =
+                    intl.messages.volume_statue_failed_pv_bound_hint;
+                  break;
+                case STATUS_PENDING:
+                  hintMessage =
+                    intl.messages.volume_status_failed_pv_pending_hint;
+                  break;
+                default:
+                  hintMessage = '';
+              }
               break;
             default:
               hintMessage = '';

@@ -105,7 +105,8 @@
   "volume_status_pending_hint": "Création du volume en cours.",
   "volume_status_terminating_hint": "Suppression du volume en cours.",
   "volume_status_unknown_hint": "Le volume est dans un état transitoire.",
-  "volume_status_failed_hint": "Le volume est occupé.",
+  "volume_status_failed_pv_pending_hint": "Le volume est occupé.", 
+  "volume_statue_failed_pv_bound_hint": "Le volume est lié à une demande de stockage.",
   "delete_a_volume": "Supprimer un volume",
   "delete_a_volume_warning": "La suppression de ce volume entraînera la perte des données qu'il contient.",
   "delete_a_volume_confirm": "Voulez-vous supprimez "
