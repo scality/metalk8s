@@ -241,11 +241,8 @@ class SparseLoopDevice(Volume):
     def initialize(self):
         # Recent losetup support `--nooverlap` but not the one shipped with
         # CentOS 7.
-        command = ' '.join(
-            ['losetup', '--find', '--partscan', '--show', self.sparse_file]
-        )
-        result  = _run_cmd(command)
-        return result['stdout'].strip()
+        command = ' '.join(['losetup', '--find', self.sparse_file])
+        return _run_cmd(command)
 
     @property
     def block_device(self):
