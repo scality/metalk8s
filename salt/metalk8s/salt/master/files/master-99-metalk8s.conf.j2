@@ -37,4 +37,7 @@ external_auth:
       - '@jobs'
     storage-operator:
       - '*':
-        - 'test.ping'
+        - 'test.rand_sleep'
+        - 'disk.dump'
+        - 'state.sls'
+      - '@jobs'
