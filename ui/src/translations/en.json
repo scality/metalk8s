@@ -84,7 +84,7 @@
   "no": "No",
   "ok": "OK",
   "volume_creation": "Volume creation",
-  "volume_creation_success": "Volume {name} has been created successfully.",
+  "volume_creation_success": "Volume {name} is being created.",
   "volume_creation_failed": "Volume {name} creation has failed.",
   "volume_name_error": "Name must be lowercase letters, numbers and hyphens.",
   "volume_path_error": "Device path must start with a '/'.",
@@ -101,12 +101,12 @@
   "delete": "Delete",
   "volume_deletion": "Volume deletion",
   "volume_delete_success": "Volume {name} is being deleted.",
-  "volume_delete_failed": "Volume {name} deleted failed.",
+  "volume_delete_failed": "Volume {name} deletion failed.",
   "volume_status_pending_hint": "Volume creation is in progress.",
   "volume_status_terminating_hint": "Volume deletion is in progress.",
   "volume_status_unknown_hint": "The volume is in a transient state.",
   "volume_status_failed_hint": "The volume is busy.",
   "delete_a_volume": "Delete a volume",
   "delete_a_volume_warning": "Deleting this volume will permanently delete the data it contains.",
-  "delete_a_volume_confirm": "Do you want to delete"
+  "delete_a_volume_confirm": "Do you want to delete "
 }

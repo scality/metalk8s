@@ -279,7 +279,7 @@ const NodeVolumes = props => {
         <h2>{intl.messages.delete_a_volume}</h2>
         <div>{intl.messages.delete_a_volume_warning}</div>
         <div>
-          {intl.messages.delete_a_volume_confirm}{' '}
+          {intl.messages.delete_a_volume_confirm}
           <strong>{deleteVolumeName}</strong>?
         </div>
         <NotificationButtonGroup>
