@@ -164,35 +164,34 @@ class Volume(object):
         return
 
     @abc.abstractproperty
-    def block_device(self):
-        """Path to the backing block device."""
+    def path(self):
+        """Path to the backing device."""
         return
 
     @property
     def is_formatted(self):
         """Check if the volume is already formatted."""
         fs_type = self.get('spec.storageClassName.parameters.fsType')
-        return __salt__['disk.fstype'](self.block_device) == fs_type
+        return __salt__['disk.fstype'](self.path) == fs_type
 
-    def format(self):
+    def format(self, force=False):
         """Format the volume.
 
         The volume is formatted according to its StorageClass.
         """
         # Check that the backing device is not already formatted.
         # Bail out if it is: we don't want data loss because of a typo…
-        if __salt__['disk.fstype'](self.block_device):
+        if __salt__['disk.fstype'](self.path):
             raise Exception('backing device `{}` already formatted'.format(
-                self.block_device
+                self.path
             ))
         params = self.get('spec.storageClassName.parameters')
         # mkfs options, if any, are stored as JSON-encoded list.
-        mkfs_options = json.loads(params.get('mkfsOptions', '[]'))
-        command = ['mkfs']
-        command.extend(['-t', params['fsType']])
-        command.extend(['-U', self.get('metadata.uid')])
-        command.extend(mkfs_options)
-        command.append(self.block_device)
+        options = json.loads(params.get('mkfsOptions', '[]'))
+        fs_type = params['fsType']
+        command = _mkfs(
+            self.path, fs_type, self.get('metadata.uid'), force, options
+        )
         _run_cmd(' '.join(command))
 
     def get(self, path):
@@ -206,7 +205,7 @@ class Volume(object):
 
 class SparseLoopDevice(Volume):
     @property
-    def sparse_file(self):
+    def path(self):
         return '/var/lib/metalk8s/storage/sparse/{}'.format(
             self.get('metadata.uid')
         )
@@ -217,18 +216,20 @@ class SparseLoopDevice(Volume):
 
     @property
     def exists(self):
-        path = self.sparse_file
-        return os.path.isfile(path) and os.path.getsize(path) == self.size
+        return (
+            os.path.isfile(self.path) and
+            os.path.getsize(self.path) == self.size
+        )
 
     def create(self):
         # Try to create a sparse file, don't clobber existing one!
         open_flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
         try:
-            with _open_fd(self.sparse_file, open_flags) as fd:
+            with _open_fd(self.path, open_flags) as fd:
                 try:
                     os.ftruncate(fd, self.size)
                 except Exception:
-                    os.unlink(self.sparse_file)
+                    os.unlink(self.path)
                     raise
         except OSError as exn:
             raise Exception('cannot create sparse file at {}: {}'.format(
@@ -239,24 +240,20 @@ class SparseLoopDevice(Volume):
     def is_initialized(self):
         # A sparse loop device is initialized when a sparse file is associated
         # to a loop device.
-        command = ' '.join(['losetup', '--associated', self.sparse_file])
-        pattern = r'\({}\)'.format(re.escape(self.sparse_file))
+        command = ' '.join(['losetup', '--associated', self.path])
+        pattern = r'\({}\)'.format(re.escape(self.path))
         result  = _run_cmd(command)
         return re.search(pattern, result['stdout']) is not None
 
     def initialize(self):
         # Recent losetup support `--nooverlap` but not the one shipped with
         # CentOS 7.
-        command = ' '.join(['losetup', '--find', self.sparse_file])
+        command = ' '.join(['losetup', '--find', self.path])
         return _run_cmd(command)
 
-    @property
-    def block_device(self):
-        command = ' '.join(['losetup', '--associated', self.sparse_file])
-        result  = _run_cmd(command)
-        # e.g.: /dev/loop0: [2049]:184645 (/var/lib/metalk8s/storage/sparse/vol)
-        block_device, _, _ = result['stdout'].partition(':')
-        return block_device
+    def format(self, force=False):
+        # We format a "normal" file, not a block device: we need force=True.
+        super(SparseLoopDevice, self).format(force=True)
 
 
 # }}}
@@ -267,12 +264,12 @@ class RawBlockDevice(Volume):
     @property
     def exists(self):
         """Does the backing storage device exists?"""
-        return __salt__['file.is_blkdev'](self.block_device)
+        return __salt__['file.is_blkdev'](self.path)
 
     def create(self):
         # Nothing to do, if it's missing we bail out.
         raise Exception('block device {} does not exists'.format(
-            self.block_device
+            self.path
         ))
 
     @property
@@ -283,8 +280,12 @@ class RawBlockDevice(Volume):
         return  # Nothing to do
 
     @property
-    def block_device(self):
+    def path(self):
         return self.get('spec.rawBlockDevice.devicePath')
+
+    def format(self, force=False):
+        # We format an entire device, not just a partition: we need force=True.
+        super(RawBlockDevice, self).format(force=True)
 
 
 # }}}
@@ -368,6 +369,46 @@ def _open_fd(*args, **kwargs):
         yield fd
     finally:
         os.close(fd)
+
+
+def _mkfs(path, fs_type, uuid, force=False, options=None):
+    """Build the command line required to format `path` as specified.
+
+    Args:
+        path    (str):  path to the device to format
+        fs_type (str):  filesystem to use for the formatting
+        uuid    (str):  UUID for the new filesystem
+        force   (bool): force the formatting it True
+        options (list): a list of extra-formatting options.
+
+    Returns:
+        list: the command line to use
+    """
+    funcname =  '_mkfs_{}'.format(fs_type)
+    try:
+        return globals()[funcname](path, uuid, force, options)
+    except KeyError:
+        raise ValueError('unsupported filesystem: {}'.format(fs_type))
+
+
+def _mkfs_ext4(path, uuid, force=False, options=None):
+    command = ['mkfs.ext4']
+    if force:
+        command.append('-F')
+    command.extend(['-U', uuid])
+    command.extend(options or [])
+    command.append(path)
+    return command
+
+
+def _mkfs_xfs(path, uuid, force=False, options=None):
+    command = ['mkfs.xfs']
+    if force:
+        command.append('-f')
+    command.extend(['-m', 'uuid={}'.format(uuid)])
+    command.extend(options or [])
+    command.append(path)
+    return command
 
 
 # }}}
