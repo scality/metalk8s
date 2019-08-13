@@ -86,7 +86,7 @@ const NodeVolumes = props => {
   const isVolumeDeletable = rowData => {
     const volumeStatus = rowData.status;
     const volumeName = rowData.name;
-    setDeleteVolumeName(rowData.name);
+
     if (
       volumeStatus === STATUS_VOLUME_UNKNOWN ||
       volumeStatus === STATUS_PENDING ||
@@ -197,6 +197,7 @@ const NodeVolumes = props => {
               onClick={e => {
                 e.stopPropagation();
                 if (isEnableClick) {
+                  setDeleteVolumeName(rowData.name);
                   setisDeleteConfirmationModalOpen(true);
                 }
               }}

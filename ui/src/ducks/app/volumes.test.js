@@ -18,7 +18,8 @@ import {
   updatePersistentVolumesRefreshingAction,
   updateVolumesAction,
   stopRefreshPersistentVolumes,
-  updateStorageClassAction
+  updateStorageClassAction,
+  deleteVolume
 } from './volumes';
 import * as ApiK8s from '../../services/k8s/api';
 import { SET_STORAGECLASS } from './volumes.js';
@@ -607,4 +608,55 @@ it('should not refresh volume if volume have an error', () => {
   expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
   const result = { error: {} };
   expect(gen.next(result).done).toEqual(true);
+});
+
+it('should delete volume', () => {
+  const payload = { payload: 'test-volume' };
+  const gen = deleteVolume(payload);
+  expect(gen.next().value).toEqual(call(ApiK8s.deleteVolume, 'test-volume'));
+  const result = {
+    body: {
+      apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
+      kind: 'Volume',
+      metadata: {
+        creationTimestamp: '2019-08-13T06:56:43Z',
+        deletionGracePeriodSeconds: 0,
+        deletionTimestamp: '2019-08-13T07:04:11Z',
+        finalizers: ['storage.metalk8s.scality.com/volume-protection'],
+        generation: 2,
+        name: 'yanjin-volume-for-test',
+        resourceVersion: '1870920',
+        selfLink:
+          '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/yanjin-volume-for-test',
+        uid: 'dcf7e212-16aa-48df-a275-0bcb73410a8c'
+      },
+      spec: {
+        nodeName: 'metalk8s-bootstrap.novalocal',
+        sparseLoopDevice: {
+          size: '45Gi'
+        },
+        storageClassName: 'metalk8s-prometheus'
+      },
+      status: {
+        phase: 'Available'
+      }
+    }
+  };
+  expect(gen.next(result).value.payload.action.type).toEqual(
+    ADD_NOTIFICATION_SUCCESS
+  );
+  expect(gen.next().value).toEqual(call(fetchVolumes));
+  expect(gen.next().done).toEqual(true);
+});
+
+it('should display the error notification when there is error in delete volume', () => {
+  const payload = { payload: 'test-volume' };
+  const gen = deleteVolume(payload);
+  expect(gen.next().value).toEqual(call(ApiK8s.deleteVolume, 'test-volume'));
+  const result = { error: {} };
+  expect(gen.next(result).value.payload.action.type).toEqual(
+    ADD_NOTIFICATION_ERROR
+  );
+  expect(gen.next().value).toEqual(call(fetchVolumes));
+  expect(gen.next().done).toEqual(true);
 });
