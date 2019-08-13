@@ -61,7 +61,7 @@ def list_configured():
                       SOLUTIONS_CONFIG_FILE, str(exc))
         raise CommandExecutionError()
 
-    return content.get('archives', [])
+    return content.get('archives', []) or []
 
 
 def register_solution_version(
