@@ -1887,3 +1887,47 @@ def apiservice_absent(name, **kwargs):
     }
 
     return ret
+
+
+def storageclass_present(
+    name, provisioner, reclaim_policy, volume_binding_mode, mount_options,
+    parameters, **kwargs
+):
+    '''
+    Ensures that the named Storage Class is present with the giveni fields.
+    If the Storage Class exists it will be replaced.
+    '''
+    ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
+    storageclass= __salt__['metalk8s_kubernetes.show_storageclass'](
+        name, **kwargs
+    )
+    if storageclass is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The StorageClass is going to be created'
+            return ret
+
+        res = __salt__['metalk8s_kubernetes.create_storageclass'](
+            name=name, mount_options=mount_options, parameters=parameters,
+            provisioner=provisioner, reclaim_policy=reclaim_policy,
+            volume_binding_mode=volume_binding_mode, **kwargs
+        ),
+        ret['result'] = True
+        ret['changes'][name] = {'old': {}, 'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The StorageClass is going to be replaced'
+            return ret
+
+        log.info('Forcing the recreation of the storage class')
+        ret['comment'] = 'The StorageClass already exists. Forcing recreation'
+        res = __salt__['metalk8s_kubernetes.replace_storageclass'](
+            name=name, mount_options=mount_options, parameters=parameters,
+            provisioner=provisioner, reclaim_policy=reclaim_policy,
+            volume_binding_mode=volume_binding_mode, **kwargs
+        ),
+        ret['result'] = True
+        ret['changes'][name] = {'old': storageclass, 'new': res}
+
+    return ret

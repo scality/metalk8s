@@ -14,10 +14,19 @@ spec:
         name: storage-operator
     spec:
       serviceAccountName: storage-operator
+      tolerations:
+      - key: "node-role.kubernetes.io/bootstrap"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/infra"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
       containers:
         - name: storage-operator
-          # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: {{ build_image_name('storage-operator') }}
           command:
           - storage-operator
           imagePullPolicy: Always
