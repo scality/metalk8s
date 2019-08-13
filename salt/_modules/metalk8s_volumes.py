@@ -172,7 +172,7 @@ class Volume(object):
     def is_formatted(self):
         """Check if the volume is already formatted."""
         fs_type = self.get('spec.storageClassName.parameters.fsType')
-        return __salt__['disk.fstype'](self.path) == fs_type
+        return _get_fstype(self.path) == fs_type
 
     def format(self, force=False):
         """Format the volume.
@@ -181,7 +181,7 @@ class Volume(object):
         """
         # Check that the backing device is not already formatted.
         # Bail out if it is: we don't want data loss because of a typo…
-        if __salt__['disk.fstype'](self.path):
+        if _get_fstype(self.path):
             raise Exception('backing device `{}` already formatted'.format(
                 self.path
             ))
@@ -369,6 +369,34 @@ def _open_fd(*args, **kwargs):
         yield fd
     finally:
         os.close(fd)
+
+
+# Cannot use `disk.fstype` from Salt because you can't trust its output…
+#
+# Example:
+# - On a unformated sparse file:
+#     __salt__['disk.fstype']('/var/lib/metalk8s/storage/sparse/example')
+#     returns "/dev/sda1      ext4  41152736 7765776  31273476  20% /"
+#
+# - On a raw (non-formatted) block device:
+#     __salt__['disk.fstype']('/dev/sdb')
+#     returns "devtmpfs       devtmpfs   1932084     0   1932084   0% /dev"
+#
+# So yeah, let's not rely on this…
+def _get_fstype(path):
+    # Can't use `disk.blkid` because it makes no distinction between the
+    # different return codes…
+    res = __salt__['cmd.run_all']('blkid -p {}'.format(path))
+    retcode = res.get('retcode', 0)
+    if retcode == 0:
+        pat = r'TYPE="(?P<fstype>.+)"'
+        match = re.search(pat, res['stdout'])
+        return match.groupdict().get('fstype') if match else None
+    if retcode == -2: # Nothing was detected (device not formatted).
+        return None
+    raise CommandExecutionError(
+        'error while trying to run `{0}`: {1}' .format(cmd, res['stderr'])
+    )
 
 
 def _mkfs(path, fs_type, uuid, force=False, options=None):
