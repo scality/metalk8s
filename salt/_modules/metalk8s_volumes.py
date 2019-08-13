@@ -171,7 +171,7 @@ class Volume(object):
     @property
     def is_formatted(self):
         """Check if the volume is already formatted."""
-        fs_type = self['spec.storageClassName.parameters.fsType']
+        fs_type = self.get('spec.storageClassName.parameters.fsType')
         return __salt__['disk.fstype'](self.block_device) == fs_type
 
     def format(self):
@@ -179,18 +179,18 @@ class Volume(object):
 
         The volume is formatted according to its StorageClass.
         """
-        params = self['spec.storageClassName.parameters']
+        params = self.get('spec.storageClassName.parameters')
         # mkfs options, if any, are stored as JSON-encoded list.
         mkfs_options = json.loads(params.get('mkfsOptions', '[]'))
         command = ['mkfs']
         command.extend(['-t', params['fsType']])
-        command.extend(['-U', self['metadata.uid']])
+        command.extend(['-U', self.get('metadata.uid')])
         command.extend(mkfs_options)
         command.append(self.block_device)
         _run_cmd(' '.join(command))
 
-    def __getitem__(self, path):
-        """Return the Volume attribute `attr` from the Volume dict."""
+    def get(self, path):
+        """Return the Volume attribute `path` from the Volume dict."""
         return functools.reduce(operator.getitem, path.split('.'), self._volume)
 
 
@@ -202,12 +202,12 @@ class SparseLoopDevice(Volume):
     @property
     def sparse_file(self):
         return '/var/lib/metalk8s/storage/sparse/{}'.format(
-            self['metadata.uid']
+            self.get('metadata.uid')
         )
 
     @property
     def size(self):
-        return _quantity_to_bytes(self['spec.sparseLoopDevice.size'])
+        return _quantity_to_bytes(self.get('spec.sparseLoopDevice.size'))
 
     @property
     def exists(self):
@@ -281,7 +281,7 @@ class RawBlockDevice(Volume):
 
     @property
     def block_device(self):
-        return self['spec.rawBlockDevice.devicePath']
+        return self.get('spec.rawBlockDevice.devicePath')
 
 
 # }}}
