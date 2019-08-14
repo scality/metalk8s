@@ -170,6 +170,14 @@ PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
 )
 
+OPERATOR_YAML_ROOT : Path = constants.ROOT/'storage-operator/deploy'
+
+VOLUME_CRD : Path = OPERATOR_YAML_ROOT/'crds/storage_v1alpha1_volume_crd.yaml'
+
+OPERATOR_ACCOUNT     : Path = OPERATOR_YAML_ROOT/'service_account.yaml'
+OPERATOR_ROLE        : Path = OPERATOR_YAML_ROOT/'role.yaml'
+OPERATOR_ROLEBINDING : Path = OPERATOR_YAML_ROOT/'role_binding.yaml'
+OPERATOR_DEPLOYMENT  : Path = OPERATOR_YAML_ROOT/'operator.yaml'
 
 # List of salt files to install.
 SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
@@ -220,6 +228,36 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
     Path('salt/metalk8s/addons/ui/precheck.sls'),
 
+    Path('salt/metalk8s/addons/volumes/deployed.sls'),
+    Path('salt/metalk8s/addons/volumes/storage-classes.sls'),
+    targets.TemplateFile(
+        task_name='storage-operator.sls',
+        source=constants.ROOT.joinpath(
+            'salt/metalk8s/addons/volumes/storage-operator.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/volumes/storage-operator.sls'
+        ),
+        context={
+            'ServiceAccount': OPERATOR_ACCOUNT.read_text(encoding='utf-8'),
+            'Role': OPERATOR_ROLE.read_text(encoding='utf-8'),
+            'RoleBinding': OPERATOR_ROLEBINDING.read_text(encoding='utf-8'),
+            'Deployment': OPERATOR_DEPLOYMENT.read_text(encoding='utf-8'),
+        },
+        file_dep=[OPERATOR_ACCOUNT, OPERATOR_ROLE,
+                  OPERATOR_ROLEBINDING, OPERATOR_DEPLOYMENT],
+    ),
+    targets.TemplateFile(
+        task_name='volume-crd.sls',
+        source=constants.ROOT/'salt/metalk8s/addons/volumes/volume-crd.sls.in',
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/volumes/volume-crd.sls'
+        ),
+        context={
+            'CustomResourceDefinition': VOLUME_CRD.read_text(encoding='utf-8')
+        },
+        file_dep=[VOLUME_CRD],
+    ),
 
     Path('salt/metalk8s/addons/nginx-ingress/deployed/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/chart.sls'),

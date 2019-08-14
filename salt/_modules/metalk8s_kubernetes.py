@@ -2728,3 +2728,78 @@ def show_api_service(name, **kwargs):
             raise CommandExecutionError(exc)
     finally:
         _cleanup(**cfg)
+
+
+def show_storageclass(name, **kwargs):
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.StorageV1Api()
+        api_response = api_instance.read_storage_class(name)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling StorageV1Api->read_storage_class'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_storageclass(
+    name, provisioner, reclaim_policy, volume_binding_mode, mount_options,
+    parameters, **kwargs
+):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1StorageClass(
+        metadata=meta_obj, mount_options=mount_options, parameters=parameters,
+        provisioner=provisioner, reclaim_policy=reclaim_policy,
+        volume_binding_mode=volume_binding_mode
+    )
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.StorageV1Api()
+        api_response = api_instance.create_storage_class(body)
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling StorageV1Api->create_storage_class'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_storageclass(
+    name, provisioner, reclaim_policy, volume_binding_mode, mount_options,
+    parameters, **kwargs
+):
+    meta_obj = kubernetes.client.V1ObjectMeta(name=name)
+    body = kubernetes.client.V1StorageClass(
+        metadata=meta_obj, mount_options=mount_options, parameters=parameters,
+        provisioner=provisioner, reclaim_policy=reclaim_policy,
+        volume_binding_mode=volume_binding_mode
+    )
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.StorageV1Api()
+        api_response = api_instance.replace_storage_class(name, body)
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling StorageV1Api->replace_storage_class'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)

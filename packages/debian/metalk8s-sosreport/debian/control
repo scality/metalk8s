@@ -1,0 +1,13 @@
+Source: metalk8s-sosreport
+Section: base
+Priority: extra
+Maintainer: Scality Platform <moonshot-platform@scality.com>
+Build-Depends: debhelper (>=9)
+Standards-Version: 2.4.0 
+Homepage: https://github.com/scality/metalk8s
+
+Package: metalk8s-sosreport
+Architecture: any
+Multi-Arch: foreign
+Depends: sosreport
+Description: Metalk8s SOS report custom plugins.
