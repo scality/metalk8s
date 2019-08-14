@@ -69,6 +69,7 @@ const IconButton = styled.button`
   height: 30px;
   background-color: transparent;
   border: none;
+  outline: none;
 
   :hover {
     background-color: ${props => {
@@ -129,12 +130,12 @@ const NodeVolumes = props => {
             case STATUS_PENDING:
             case STATUS_BOUND:
             default:
-              console.error('Error!');
+              console.error('Error! There is error from PV status.');
               return false;
           }
         }
       default:
-        console.error('Error!');
+        console.error('Error! There is error from volume status.');
         return false;
     }
   };
@@ -270,7 +271,6 @@ const NodeVolumes = props => {
   };
 
   let volumeSortedList = props.data;
-
   if (sortBy === 'storageCapacity') {
     volumeSortedList = sortCapacity(volumeSortedList, sortBy, sortDirection);
   } else {

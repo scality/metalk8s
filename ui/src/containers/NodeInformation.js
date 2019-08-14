@@ -32,6 +32,7 @@ import {
   InformationValue,
   InformationMainValue
 } from '../components/InformationList';
+import { STATUS_UNKNOWN } from '../constants';
 
 const NodeInformationContainer = styled.div`
   display: flex;
@@ -174,8 +175,7 @@ const NodeInformation = props => {
     return {
       name: volume.metadata.name,
       status:
-        (volume && volume.status && volume.status.phase) ||
-        intl.messages.unknown,
+        (volume && volume.status && volume.status.phase) || STATUS_UNKNOWN,
       storageCapacity:
         (volumePV &&
           volumePV.spec &&
