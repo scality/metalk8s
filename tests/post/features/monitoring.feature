@@ -1,5 +1,10 @@
 @post @ci @local @monitoring
 Feature: Monitoring is up and running
+    Scenario: Create Persistent Volume
+        Given the Kubernetes API is available
+        And Persistent Volume Claim 'prometheus-monitoring' in namespace 'monitoring' is available
+        Then create persistent volume 'test-prom-volume' for pods in monitoring namespace with storageclass 'metalk8s-prometheus' of size '5Gi'
+
     Scenario: List Pods
         Given the Kubernetes API is available
         Then the 'pods' list should not be empty in the 'monitoring' namespace

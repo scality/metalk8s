@@ -1,6 +1,11 @@
 import requests
 import json
 
+from urllib3.exceptions import HTTPError
+
+from kubernetes.client import CoreV1Api
+from kubernetes.client.rest import ApiException
+
 from pytest_bdd import scenario, given, then, parsers
 
 from tests import kube_utils
@@ -8,6 +13,11 @@ from tests import utils
 
 
 # Scenarios {{{
+
+@scenario('../features/monitoring.feature', 'Create Persistent Volume')
+def test_create_persistent_volume(host):
+    pass
+
 
 @scenario('../features/monitoring.feature', 'List Pods')
 def test_list_pods(host):
@@ -27,6 +37,30 @@ def test_monitored_components(host):
 # }}}
 # Given {{{
 
+
+@given(
+    "Persistent Volume Claim '{name}' in namespace '{namespace}' is available"
+    )
+def check_persistent_volume_claim(
+    host,
+    name,
+    namespace,
+    k8s_apiclient
+):
+    try:
+        k8s_client = CoreV1Api(api_client=k8s_apiclient)
+        pvc = k8s_client.read_namespaced_persistent_volume_claim(
+            name,
+            namespace
+        )
+        assert pvc.metadata.name == "prometheus-monitoring"
+        assert pvc.spec.storage_class_name == "metalk8s-prometheus"
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            assert False, 'Persistent volume claim {} not found'.format(name)
+        raise
+
+
 @given("the Prometheus API is available")
 def check_prometheus_api(host):
     response = _query_prometheus_api(host, 'targets')
@@ -36,6 +70,39 @@ def check_prometheus_api(host):
 
 # }}}
 # Then {{{
+
+@then(parsers.parse(
+    "create persistent volume '{name}' for pods in monitoring namespace with \
+         storageclass '{storageclassName}' of size '{capacity}'"
+))
+def persistent_volume_present(
+    host,
+    name,
+    storageclassName,
+    capacity,
+    k8s_apiclient
+):
+    try:
+        k8s_client = CoreV1Api(api_client=k8s_apiclient)
+        body = {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "metadata": {
+              "name": name
+            },
+            "spec": {
+              "storageClassName": storageclassName,
+              "sparseLoopDevice": {
+                "size": capacity
+              }
+            }
+          }
+        k8s_client.V1PersistentVolume(body) is not None
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            assert False, 'Unable to create volume {}'.format(name)
+        raise
+
 
 @then(parsers.parse(
     "job '{job}' in namespace '{namespace}' is '{health}'"
