@@ -84,7 +84,7 @@
   "no": "Non",
   "ok": "OK",
   "volume_creation": "Création du volume",
-  "volume_creation_success": "Le volume {name} a été créé avec succèss.",
+  "volume_creation_success": "Volume {name} est en cours de création.",
   "volume_creation_failed": "La création du volume {name} a échoué.",
   "volume_name_error": "Le nom doit être composé de minuscules, chiffres ou de tiret.",
   "volume_path_error": "Le chemin du disque doit commencer par un '/'.",

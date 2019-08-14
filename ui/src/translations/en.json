@@ -106,7 +106,7 @@
   "volume_status_terminating_hint": "Volume deletion is in progress.",
   "volume_status_unknown_hint": "The volume is in a transient state.",
   "volume_status_failed_pv_pending_hint": "The volume is busy.",
-  "volume_statue_failed_pv_bound_hint": "The volume is bound to a storage request",
+  "volume_statue_failed_pv_bound_hint": "The volume is bound to a storage request.",
   "delete_a_volume": "Delete a volume",
   "delete_a_volume_warning": "Deleting this volume will permanently delete the data it contains.",
   "delete_a_volume_confirm": "Do you want to delete "

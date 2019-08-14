@@ -41,6 +41,9 @@ const ButtonContainer = styled.div`
 const VolumeTable = styled.div`
   flex-grow: 1;
   margin-top: ${padding.small};
+  .sc-table-column-cell-container-action {
+    justify-content: center;
+  }
 `;
 
 const DeleteConfirmationModal = {
@@ -136,13 +139,18 @@ const NodeVolumes = props => {
               return true;
             case STATUS_PENDING:
             case STATUS_BOUND:
+              return false;
             default:
-              console.error('Error! There is error from PV status.');
+              console.error(
+                `Unexpected state for PersistentVolume ${persistentVolume}:${persistentVolumeStatus}`
+              );
               return false;
           }
         }
       default:
-        console.error('Error! There is error from volume status.');
+        console.error(
+          `Unexpected state for Volume ${volumeName}:${volumeStatus}`
+        );
         return false;
     }
   };
@@ -209,6 +217,7 @@ const NodeVolumes = props => {
               hintMessage = intl.messages.volume_status_unknown_hint;
               break;
             case STATUS_FAILED:
+            case STATUS_AVAILABLE:
               const persistentVolume = persistentVolumes.find(
                 pv => pv?.metadata?.name === rowData.name
               );
