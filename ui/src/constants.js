@@ -12,9 +12,9 @@ export const STATUS_BANNER_WARNING = 'banner_warning';
 export const STATUS_BANNER_ERROR = 'banner_error';
 export const STATUS_BANNER_SUCCESS = 'banner_success';
 
-export const STATUS_READY = 'ready';
-export const STATUS_NOT_READY = 'not_ready';
-export const STATUS_API_UNKNOWN = 'unknown';
+export const API_STATUS_READY = 'ready';
+export const API_STATUS_NOT_READY = 'not_ready';
+export const API_STATUS_UNKNOWN = 'unknown';
 
 export const STATUS_BOUND = 'Bound';
 export const STATUS_PENDING = 'Pending';

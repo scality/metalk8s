@@ -12,7 +12,7 @@ import {
 } from '../ducks/app/nodes';
 import { sortSelector, useRefreshEffect } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-import { STATUS_NOT_READY, STATUS_API_UNKNOWN } from '../constants.js';
+import { API_STATUS_NOT_READY, API_STATUS_UNKNOWN } from '../constants.js';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel
@@ -83,7 +83,7 @@ const NodeList = props => {
       dataKey: 'deployment',
       renderer: (data, rowData) => {
         if (
-          (!rowData.status || rowData.status === STATUS_API_UNKNOWN) &&
+          (!rowData.status || rowData.status === API_STATUS_UNKNOWN) &&
           !rowData.jid
         ) {
           return (
@@ -171,8 +171,8 @@ const NodeList = props => {
             // FIXME we will change that behavior later
             // We want let the user click on the item only it's deployed.
             if (
-              item.rowData.status !== STATUS_API_UNKNOWN &&
-              item.rowData.status !== STATUS_NOT_READY
+              item.rowData.status !== API_STATUS_UNKNOWN &&
+              item.rowData.status !== API_STATUS_NOT_READY
             ) {
               onRowClick(item);
             }

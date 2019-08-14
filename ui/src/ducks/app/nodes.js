@@ -32,9 +32,9 @@ import {
 } from '../../services/salt/utils';
 
 import {
-  STATUS_READY,
-  STATUS_NOT_READY,
-  STATUS_API_UNKNOWN
+  API_STATUS_READY,
+  API_STATUS_NOT_READY,
+  API_STATUS_UNKNOWN
 } from '../../constants.js';
 
 // Actions
@@ -268,11 +268,11 @@ export function* fetchNodes() {
             node.status.conditions.find(conditon => conditon.type === 'Ready');
           let status;
           if (statusType && statusType.status === 'True') {
-            status = STATUS_READY;
+            status = API_STATUS_READY;
           } else if (statusType && statusType.status === 'False') {
-            status = STATUS_NOT_READY;
+            status = API_STATUS_NOT_READY;
           } else {
-            status = STATUS_API_UNKNOWN;
+            status = API_STATUS_UNKNOWN;
           }
 
           const roleTaintMatched = roleTaintMap.find(item => {
