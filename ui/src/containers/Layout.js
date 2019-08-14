@@ -76,19 +76,18 @@ const Layout = props => {
   };
 
   let applications = null;
-  if (props.solutions && props.solutions.length) {
-    applications = [];
-    props.solutions.reduce((applications, solution) => {
-      return solution.versions.map((version, index) => {
-        if (version.deployed && version.ui_url) {
-          applications.push({
-            label: solution.name,
-            onClick: () => window.open(version.ui_url, '_self') // TO BE IMPROVED in core-ui to allow display Link or <a></a>
-          });
-        }
-        return applications;
-      });
-    }, applications);
+  if (props?.solutions?.length) {
+    applications = props?.solutions?.reduce((prev, solution) => {
+      let solutionDeployedVersions = solution?.versions?.filter(
+        version => version?.deployed && version?.ui_url
+      );
+      let app = solutionDeployedVersions.map(version => ({
+        label: solution.name,
+        // TO BE IMPROVED in core-ui to allow display Link or <a></a>
+        onClick: () => window.open(version.ui_url, '_self')
+      }));
+      return [...prev, ...app];
+    }, []);
 
     sidebar.actions.push({
       label: props.intl.messages.solutions,
