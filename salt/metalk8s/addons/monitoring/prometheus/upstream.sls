@@ -1356,6 +1356,19 @@ spec:
   - key: "node-role.kubernetes.io/infra"
     operator: "Exists"
     effect: "NoSchedule"
+  storage:
+    volumeClaimTemplate:
+      apiVersion: v1
+      metadata:
+        name: prometheus-monitoring
+      kind: PersistentVolumeClaim
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: metalk8s-prometheus
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
