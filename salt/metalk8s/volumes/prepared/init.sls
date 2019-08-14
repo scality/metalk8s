@@ -26,13 +26,13 @@ Create the sparse file directory:
 
 Create backing storage for {{ volume }}:
   metalk8s_volumes.present:
-    - volume: {{ volume }}
+    - name: {{ volume }}
     - require:
       - file: Create the sparse file directory
 
 Format backing storage for {{ volume }}:
   metalk8s_volumes.formatted:
-    - volume: {{ volume }}
+    - name: {{ volume }}
     - require:
       - metalk8s_package_manager: Install e2fsprogs
       - metalk8s_package_manager: Install xfsprogs
@@ -40,7 +40,7 @@ Format backing storage for {{ volume }}:
 
 Provision backing storage for {{ volume }}:
   metalk8s_volumes.provisioned:
-    - volume: {{ volume }}
+    - name: {{ volume }}
     - require:
       - metalk8s_volumes: Format backing storage for {{ volume }}
 
