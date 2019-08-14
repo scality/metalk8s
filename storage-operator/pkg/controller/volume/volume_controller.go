@@ -498,6 +498,23 @@ func (self *ReconcileVolume) pollSaltJob(
 	}
 }
 
+// Return the saltenv to use on the given node.
+func (self *ReconcileVolume) fetchSaltEnv(
+	ctx context.Context, nodeName string,
+) (string, error) {
+	node := &corev1.Node{}
+	key := types.NamespacedName{Namespace: "", Name: nodeName}
+
+	if err := self.client.Get(ctx, key, node); err != nil {
+		return "", err
+	}
+	versionKey := "metalk8s.scality.com/version"
+	if version, found := node.Labels[versionKey]; found {
+		return fmt.Sprintf("metalk8s-%s", version), nil
+	}
+	return "", fmt.Errorf("label %s not found on node %s", versionKey, nodeName)
+}
+
 // Reconcile reads that state of the cluster for a Volume object and makes changes based on the state read
 // and what is in the Volume.Spec
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
@@ -539,6 +556,11 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 			"invalid volume: %s", err.Error(),
 		)
 	}
+	saltenv, err := r.fetchSaltEnv(ctx, string(volume.Spec.NodeName))
+	if err != nil {
+		reqLogger.Error(err, "cannot compute saltenv")
+		return delayedRequeue(err)
+	}
 	// Check if the volume is marked for deletion (i.e., deletion tstamp is set).
 	if !volume.GetDeletionTimestamp().IsZero() {
 		return r.finalizeVolume(ctx, volume)
@@ -563,7 +585,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	// PV doesn't exist: deploy the volume to create it.
 	if pv == nil {
-		return r.deployVolume(ctx, volume)
+		return r.deployVolume(ctx, volume, saltenv)
 	}
 	// Else, check its health.
 	if pv.Status.Phase == corev1.VolumeFailed {
@@ -585,6 +607,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 func (self *ReconcileVolume) deployVolume(
 	ctx context.Context,
 	volume *storagev1alpha1.Volume,
+	saltenv string,
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
@@ -598,7 +621,7 @@ func (self *ReconcileVolume) deployVolume(
 			reqLogger.Error(err, "cannot set volume-protection: requeue")
 			return delayedRequeue(err)
 		}
-		jid, err := self.salt.PrepareVolume(ctx, nodeName, volume.Name)
+		jid, err := self.salt.PrepareVolume(ctx, nodeName, volume.Name, saltenv)
 		if err != nil {
 			reqLogger.Error(err, "failed to run PrepareVolume")
 			return delayedRequeue(err)

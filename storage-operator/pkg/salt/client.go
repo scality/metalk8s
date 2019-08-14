@@ -56,11 +56,12 @@ func NewClient(creds *Credential) *Client {
 //     ctx:        the request context (used for cancellation)
 //     nodeName:   name of the node where the volume will be
 //     volumeName: name of the volume to prepare
+//     saltenv:    saltenv to use
 //
 // Returns
 //     The Salt job ID.
 func (self *Client) PrepareVolume(
-	ctx context.Context, nodeName string, volumeName string,
+	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (string, error) {
 	payload := map[string]interface{}{
 		"client": "local_async",
@@ -68,7 +69,7 @@ func (self *Client) PrepareVolume(
 		"fun":    "state.sls",
 		"kwarg": map[string]interface{}{
 			"mods":    "metalk8s.volumes",
-			"saltenv": "metalk8s-2.4.0-dev",
+			"saltenv": saltenv,
 			"pillar":  map[string]interface{}{"volume": volumeName},
 		},
 	}
