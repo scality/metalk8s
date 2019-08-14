@@ -6,7 +6,7 @@ import { FormattedDate, FormattedTime } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
 import { Button, Table, Loader } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, grayLight } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import Tooltip from '../components/Tooltip';
 import {
@@ -70,11 +70,18 @@ const IconButton = styled.button`
   background-color: transparent;
   border: none;
   outline: none;
+  cursor: ${props => {
+    if (props.isEnableClick) {
+      return `pointer`;
+    } else {
+      return `not-allowed`;
+    }
+  }};
 
   :hover {
     background-color: ${props => {
       if (props.isEnableClick) {
-        return `grey`;
+        return grayLight;
       }
     }};
   }
@@ -143,7 +150,8 @@ const NodeVolumes = props => {
   const columns = [
     {
       label: intl.messages.name,
-      dataKey: 'name'
+      dataKey: 'name',
+      flexGrow: 1
     },
     {
       label: intl.messages.status,
@@ -160,7 +168,6 @@ const NodeVolumes = props => {
     {
       label: intl.messages.creationTime,
       dataKey: 'creationTime',
-      flexGrow: 1,
       renderer: data => (
         <span>
           <FormattedDate value={data} />{' '}
@@ -180,16 +187,6 @@ const NodeVolumes = props => {
       width: 80,
       renderer: (data, rowData) => {
         const isEnableClick = isVolumeDeletable(rowData);
-        const CustI = styled.i`
-          cursor: ${props => {
-            if (props.isEnableClick) {
-              return `pointer`;
-            } else {
-              return `not-allowed`;
-            }
-          }};
-        `;
-
         const isTriggerTooltip = () => {
           if (isEnableClick) {
             return '';
@@ -242,18 +239,17 @@ const NodeVolumes = props => {
               trigger={isTriggerTooltip()}
               overlay={hintPopup()}
             >
-              <IconButton isEnableClick={isEnableClick}>
-                <CustI
-                  className="fas fa-lg fa-trash"
-                  onClick={e => {
-                    e.stopPropagation();
-                    if (isEnableClick) {
-                      setDeleteVolumeName(rowData.name);
-                      setisDeleteConfirmationModalOpen(true);
-                    }
-                  }}
-                  isEnableClick={isEnableClick}
-                />
+              <IconButton
+                onClick={e => {
+                  e.stopPropagation();
+                  if (isEnableClick) {
+                    setDeleteVolumeName(rowData.name);
+                    setisDeleteConfirmationModalOpen(true);
+                  }
+                }}
+                isEnableClick={isEnableClick}
+              >
+                <i className="fas fa-lg fa-trash" />
               </IconButton>
             </Tooltip>
           </div>
