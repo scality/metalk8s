@@ -481,7 +481,7 @@ func (self *ReconcileVolume) pollSaltJob(
 				"Salt job '%s' failed with %s", jobName, failure.Error(),
 			)
 		}
-		// Job salt not found, let's retry.
+		// Job salt not found or failed to run, let's retry.
 		return setState(ctx, volume, "")
 	} else {
 		if result == nil {
