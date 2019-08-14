@@ -18,7 +18,7 @@ RUN yum install -y epel-release \
     git \
     nodejs \
     && adduser -u 1042 --home /home/eve eve \
-    && chown eve:eve /home/eve/workspace \
+    && chown -R eve:eve /home/eve \
     && pip install buildbot-worker==${BUILDBOT_VERSION}
 
 USER eve
