@@ -142,7 +142,7 @@ const NodeVolumes = props => {
               return false;
             default:
               console.error(
-                `Unexpected state for PersistentVolume ${persistentVolume}:${persistentVolumeStatus}`
+                `Unexpected state for PersistentVolume ${volumeName}:${persistentVolumeStatus}`
               );
               return false;
           }
