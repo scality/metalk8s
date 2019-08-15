@@ -13,6 +13,7 @@ import logging
 
 from salt.exceptions import CommandExecutionError
 
+
 log = logging.getLogger(__name__)
 
 
@@ -172,7 +173,7 @@ class Volume(object):
     def is_formatted(self):
         """Check if the volume is already formatted by us."""
         uuid = self.get('metadata.uid').lower()
-        return _get_from_blkid(self.path, 'UUID') == uuid
+        return _get_from_blkid(self.path).uuid == uuid
 
     def format(self, force=False):
         """Format the volume.
@@ -181,10 +182,14 @@ class Volume(object):
         """
         # Check that the backing device is not already formatted.
         # Bail out if it is: we don't want data loss because of a typo…
-        if _get_from_blkid(self.path, 'TYPE'):
-            raise Exception('backing device `{}` already formatted'.format(
-                self.path
-            ))
+        device_info = _get_from_blkid(self.path)
+        if device_info.fstype:
+            raise Exception(
+                'backing device `{}` already formatted'.format(self.path)
+            )
+        if device_info.has_partition:
+            raise Exception('backing device `{}` contains a partition table'\
+                            .format(self.path))
         params = self.get('spec.storageClassName.parameters')
         # mkfs options, if any, are stored as JSON-encoded list.
         options = json.loads(params.get('mkfsOptions', '[]'))
@@ -383,20 +388,14 @@ def _open_fd(*args, **kwargs):
 #     returns "devtmpfs       devtmpfs   1932084     0   1932084   0% /dev"
 #
 # So yeah, let's not rely on this…
-def _get_from_blkid(path, key):
-    # Can't use `disk.blkid` because it makes no distinction between the
-    # different return codes…
-    res = __salt__['cmd.run_all']('blkid -p {}'.format(path))
-    retcode = res.get('retcode', 0)
-    if retcode == 0:
-        pat = r'{}="(?P<value>.+)"'.format(key)
-        match = re.search(pat, res['stdout'])
-        return match.groupdict().get('value') if match else None
-    if retcode == -2: # Nothing was detected (device not formatted).
-        return None
-    raise CommandExecutionError(
-        'error while trying to run `{0}`: {1}' .format(cmd, res['stderr'])
-    )
+def _get_from_blkid(path):
+    flags = __utils__['metalk8s_volumes.get_superblock_flags']('UUID', 'TYPE')
+    kwargs = {
+        'use_superblocks': True, 'superblocks_flags': flags,
+        'use_partitions': True,
+    }
+    with __utils__['metalk8s_volumes.get_blkid_probe'](path, **kwargs) as probe:
+        return probe.probe()
 
 
 def _mkfs(path, fs_type, uuid, force=False, options=None):
