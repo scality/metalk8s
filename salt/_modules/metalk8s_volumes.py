@@ -170,9 +170,9 @@ class Volume(object):
 
     @property
     def is_formatted(self):
-        """Check if the volume is already formatted."""
-        fs_type = self.get('spec.storageClassName.parameters.fsType')
-        return _get_fstype(self.path) == fs_type
+        """Check if the volume is already formatted by us."""
+        uuid = self.get('metadata.uid').lower()
+        return _get_from_blkid(self.path, 'UUID') == uuid
 
     def format(self, force=False):
         """Format the volume.
@@ -181,7 +181,7 @@ class Volume(object):
         """
         # Check that the backing device is not already formatted.
         # Bail out if it is: we don't want data loss because of a typo…
-        if _get_fstype(self.path):
+        if _get_from_blkid(self.path, 'TYPE'):
             raise Exception('backing device `{}` already formatted'.format(
                 self.path
             ))
@@ -383,15 +383,15 @@ def _open_fd(*args, **kwargs):
 #     returns "devtmpfs       devtmpfs   1932084     0   1932084   0% /dev"
 #
 # So yeah, let's not rely on this…
-def _get_fstype(path):
+def _get_from_blkid(path, key):
     # Can't use `disk.blkid` because it makes no distinction between the
     # different return codes…
     res = __salt__['cmd.run_all']('blkid -p {}'.format(path))
     retcode = res.get('retcode', 0)
     if retcode == 0:
-        pat = r'TYPE="(?P<fstype>.+)"'
+        pat = r'{}="(?P<value>.+)"'.format(key)
         match = re.search(pat, res['stdout'])
-        return match.groupdict().get('fstype') if match else None
+        return match.groupdict().get('value') if match else None
     if retcode == -2: # Nothing was detected (device not formatted).
         return None
     raise CommandExecutionError(
