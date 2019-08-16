@@ -341,6 +341,7 @@ const CreateVolume = props => {
                     text={intl.messages.create}
                     type="submit"
                     disabled={!dirty || !isEmpty(errors)}
+                    data-cy="submit-create-volume"
                   />
                 </ActionContainer>
               </Form>

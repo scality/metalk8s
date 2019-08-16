@@ -323,6 +323,7 @@ const NodeVolumes = props => {
           onClick={() => {
             props.history.push('createVolume');
           }}
+          data-cy="create-volume-button"
         />
         {volumes.isLoading && <Loader size="small" />}
       </ButtonContainer>
