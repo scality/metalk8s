@@ -139,7 +139,7 @@ stages:
   single-node:
     worker:
       type: openstack
-      image: CentOS 7 (PVHVM)
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.medium
       path: eve/workers/openstack-single-node
     steps:
@@ -265,7 +265,7 @@ stages:
   multiple-nodes:
     worker:
       type: openstack
-      image: CentOS 7 (PVHVM)
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.medium
       path: eve/workers/openstack-multiple-nodes
     steps:
