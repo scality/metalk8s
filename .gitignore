@@ -11,3 +11,5 @@ buildchain/.venv/
 
 *.pyc
 *.log
+
+junit/
