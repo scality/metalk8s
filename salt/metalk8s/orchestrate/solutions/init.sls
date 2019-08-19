@@ -127,6 +127,79 @@ Register Solution {{ fullname }} in ConfigMap:
       - salt: Prepare registry configuration for declared Solutions
 {%- endfor %} {# fullname, solution_info in solutions_info.items() #}
 
+
+# undeploy solutions
+{%- set custom_absent_renderer =
+  "jinja | kubernetes kubeconfig=" ~ kubeconfig ~ "&context=" ~ context ~ "&absent=True"
+%}
+
+{%- set configured = pillar.metalk8s.solutions.configured or [] %}
+{%- set deployed = pillar.metalk8s.solutions.deployed or {} %}
+{%- if deployed %}
+{%- for solution_name, versions in deployed.items() %}
+  {%- for version_info in versions %}
+    {%- set lower_name = solution_name | lower | replace(' ', '-') %}
+    {%- set fullname = lower_name ~ '-' ~ version_info.version %}
+    {%- if version_info.iso not in configured %}
+  # Undeoloy solution
+    # Undeploy the Admin UI
+    {%- set deploy_files_list = ["deployment.yaml", "service.yaml"] %}
+    {%- for deploy_file in deploy_files_list %}
+      {%- set filepath = "/srv/scality/" ~ fullname ~ "/ui/" ~ deploy_file %}
+      {%- set repository = repo_prefix ~ "/" ~ fullname %}
+      {%- set sls_content = salt.saltutil.cmd(
+              tgt=pillar.bootstrap_id,
+              fun='slsutil.renderer',
+              kwarg={
+                  'path': filepath,
+                  'default_renderer': custom_absent_renderer,
+                  'repository': repository
+              },
+          )[pillar.bootstrap_id]['ret']
+      %}
+Delete Admin UI "{{ deploy_file }}" for Solution {{ fullname }}:
+  module.run:
+    - state.template_str:
+      - tem: "{{ sls_content | yaml }}"
+    - require:
+      - salt: Prepare registry configuration for declared Solutions
+
+    {%- endfor %} {# deploy_file in deploy_files_list #}
+
+    # Deploy the CRDs
+    {%- set crds_path = "/srv/scality/" ~ fullname ~ "/operator/deploy/crds" %}
+    {%- set crd_files = salt.saltutil.cmd(
+            tgt=pillar.bootstrap_id,
+            fun='file.find',
+            kwarg={
+              'path': crds_path,
+              'name': '*_crd.yaml'
+            },
+      )[pillar.bootstrap_id]['ret']
+    %}
+
+    {%- for crd_file in crd_files %}
+      {%- set sls_content = salt.saltutil.cmd(
+              tgt=pillar.bootstrap_id,
+              fun='slsutil.renderer',
+              kwarg={
+                  'path': crd_file,
+                  'default_renderer': custom_absent_renderer
+              },
+          )[pillar.bootstrap_id]['ret']
+      %}
+Delete CRD "{{ crd_file }}" for Solution {{ fullname }}:
+  module.run:
+    - state.template_str:
+      - tem: "{{ sls_content | yaml }}"
+
+     {%- endfor %} {# crd_file in crd_files #}
+    {%- endif %} {# if version_info #}
+   {%- endfor %} {# for version_info #}
+  {%- endfor %} {# for solution_name #}
+{%- endif %} {# if deployed #}
+
+
 # Unconfigure
 Remove registry configurations for removed Solutions:
   salt.state:
@@ -161,9 +234,6 @@ Unregister Solution {{ solution_name }}-{{ solution_info.version }}:
       - context: {{ context }}
     - require:
       - salt: Unmount removed Solutions archives
-    - require_in:
-      - salt: Update registry with latest Solutions
-
     {%- endif %}
   {%- endfor %} {# solution_info in versions #}
 {%- endfor %} {# solution_name, versions in deployed.items() #}
