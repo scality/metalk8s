@@ -851,28 +851,18 @@ def delete_deployment(name, namespace='default', **kwargs):
             namespace=namespace,
             body=body)
         mutable_api_response = api_response.to_dict()
-        if not salt.utils.platform.is_windows():
-            try:
-                with _time_limit(POLLING_TIME_LIMIT):
-                    while show_deployment(name, namespace, **kwargs) is not None:
-                        time.sleep(1)
-                    else:  # pylint: disable=useless-else-on-loop
-                        mutable_api_response['code'] = 200
-            except TimeoutError:
-                pass
-        else:
-            # Windows has not signal.alarm implementation, so we are just falling
-            # back to loop-counting.
-            for i in range(60):
-                if show_deployment(name, namespace, **kwargs) is None:
-                    mutable_api_response['code'] = 200
-                    break
-                else:
+        try:
+            with _time_limit(POLLING_TIME_LIMIT):
+                while show_deployment(name, namespace, **kwargs) is not None:
                     time.sleep(1)
+                else:
+                    mutable_api_response['code'] = 200
+        except TimeoutError:
+            pass
         if mutable_api_response['code'] != 200:
-            log.warning('Reached polling time limit. Deployment is not yet '
-                        'deleted, but we are backing off. Sorry, but you\'ll '
-                        'have to check manually.')
+            log.warning("Reached polling time limit. Deployment is not yet "
+                        "deleted, but we are backing off. Sorry, but you'll "
+                        "have to check manually.")
         return mutable_api_response
     except (ApiException, HTTPError) as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
@@ -906,35 +896,25 @@ def delete_service(name, namespace='default', **kwargs):
             namespace=namespace,
             body=body)
         mutable_api_response = api_response.to_dict()
-        if not salt.utils.platform.is_windows():
-            try:
-                with _time_limit(POLLING_TIME_LIMIT):
-                    while show_service(name, namespace, **kwargs) is not None:
-                        time.sleep(1)
-                    else:  # pylint: disable=useless-else-on-loop
-                        mutable_api_response['code'] = 200
-            except TimeoutError:
-                pass
-        else:
-            # Windows has not signal.alarm implementation, so we are just falling
-            # back to loop-counting.
-            for i in range(60):
-                if show_service(name, namespace, **kwargs) is None:
-                    mutable_api_response['code'] = 200
-                    break
-                else:
+        try:
+            with _time_limit(POLLING_TIME_LIMIT):
+                while show_service(name, namespace, **kwargs) is not None:
                     time.sleep(1)
+                else:
+                    mutable_api_response['code'] = 200
+        except TimeoutError:
+            pass
         if mutable_api_response['code'] != 200:
-            log.warning('Reached polling time limit. Service is not yet '
-                        'deleted, but we are backing off. Sorry, but you\'ll '
-                        'have to check manually.')
+            log.warning("Reached polling time limit. Service is not yet "
+                        "deleted, but we are backing off. Sorry, but you'll "
+                        "have to check manually.")
         return mutable_api_response
     except (ApiException, HTTPError) as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
             return None
         else:
             log.exception(
-                'Exception when calling CoreV1Api-->delete_namespaced_service'
+                'Exception when calling CoreV1Api->delete_namespaced_service'
             )
             raise CommandExecutionError(exc)
     finally:
