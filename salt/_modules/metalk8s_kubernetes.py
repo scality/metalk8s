@@ -900,8 +900,10 @@ def delete_service(name, namespace='default', **kwargs):
 
     try:
         api_instance = kubernetes.client.CoreV1Api()
+        body = kubernetes.client.V1DeleteOptions()
         api_response = api_instance.delete_namespaced_service(
             name=name,
+            body=body,
             namespace=namespace)
 
         return api_response.to_dict()
