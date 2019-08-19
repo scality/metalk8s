@@ -2312,6 +2312,28 @@ def replace_customresourcedefinition(
         _cleanup(**cfg)
 
 
+def delete_customresourcedefinition(name, **kwargs):
+    cfg = _setup_conn(**kwargs)
+    body = kubernetes.client.V1DeleteOptions()
+
+    try:
+        api_instance = kubernetes.client.ApiextensionsV1beta1Api()
+        api_response = api_instance.delete_custom_resource_definition(
+           name, body=body)
+        return api_response
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ApiextensionsV1beta1Api->delete_custom_resource_definition'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
 def customresourcedefinition(**kwargs):
     '''
     Return the list of kubernetes CRD
