@@ -11,9 +11,6 @@ CRICTL=${CRICTL:-crictl}
 SALT=""
 SALTENV=""
 PILLAR=""
-SOLUTION_PATH=""
-SOLUTION_NAME=""
-SOLUTION_VERSION=""
 
 
 _usage() {
@@ -214,7 +211,12 @@ _add_solution() {
 }
 
 _configure_solutions() {
-    echo "Configuring solutions..."
+    echo "Mount solutions..."
+    $SALT salt-run state.orchestrate \
+        metalk8s.orchestrate.solutions.available \
+        saltenv="$SALTENV" \
+        pillar="${PILLAR[*]}"
+    echo "Configure and deploy solutions..."
     $SALT salt-run state.orchestrate \
         metalk8s.orchestrate.solutions \
         saltenv="$SALTENV" \
