@@ -854,7 +854,7 @@ def delete_deployment(name, namespace='default', **kwargs):
         if not salt.utils.platform.is_windows():
             try:
                 with _time_limit(POLLING_TIME_LIMIT):
-                    while show_deployment(name, namespace) is not None:
+                    while show_deployment(name, namespace, **kwargs) is not None:
                         time.sleep(1)
                     else:  # pylint: disable=useless-else-on-loop
                         mutable_api_response['code'] = 200
@@ -864,7 +864,7 @@ def delete_deployment(name, namespace='default', **kwargs):
             # Windows has not signal.alarm implementation, so we are just falling
             # back to loop-counting.
             for i in range(60):
-                if show_deployment(name, namespace) is None:
+                if show_deployment(name, namespace, **kwargs) is None:
                     mutable_api_response['code'] = 200
                     break
                 else:
