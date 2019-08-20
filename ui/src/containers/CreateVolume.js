@@ -218,7 +218,7 @@ const CreateVolume = props => {
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
             const handleSelectChange = field => selectedObj => {
-              setFieldValue(field, selectedObj.value);
+              setFieldValue(field, selectedObj ? selectedObj.value : '');
             };
 
             const optionsStorageClasses = storageClassesName.map(SCName => {

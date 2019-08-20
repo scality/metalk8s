@@ -109,7 +109,7 @@
   "delete_a_volume": "Supprimer un volume",
   "delete_a_volume_warning": "La suppression de ce volume entraînera la perte des données qu'il contient.",
   "delete_a_volume_confirm": "Voulez-vous supprimez ",
-  "select_a_storageClass": "Sélectionner une classe de stockage...",
-  "select_a_type": "Sélectionner un type...",
+  "select_a_storageClass": "Sélectionner une classe de stockage…",
+  "select_a_type": "Sélectionner un type…",
   "no_results": "Aucun résultat"
 }
