@@ -203,10 +203,10 @@ configure_salt_minion_local_mode() {
     local -r file_root="$base_dir/salt"
 
     "$SALT_CALL" --file-root="$file_root" \
-        --local --retcode-passthrough saltutil.sync_all
+        --local --retcode-passthrough saltutil.sync_all saltenv=base
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough state.sls metalk8s.salt.minion.local \
-        pillar="{'metalk8s': {'products': '$base_dir'}}"
+        pillar="{'metalk8s': {'products': '$base_dir'}}" saltenv=base
 }
 
 get_salt_container() {

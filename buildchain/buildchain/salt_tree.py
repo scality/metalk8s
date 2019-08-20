@@ -430,6 +430,11 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/minion/local.sls'),
     Path('salt/metalk8s/salt/minion/running.sls'),
 
+    Path('salt/metalk8s/volumes/init.sls'),
+    Path('salt/metalk8s/volumes/prepared/init.sls'),
+    Path('salt/metalk8s/volumes/prepared/installed.sls'),
+    Path('salt/metalk8s/volumes/provisioned/init.sls'),
+
     Path('salt/_auth/kubernetes_rbac.py'),
 
     Path('salt/_modules/containerd.py'),
@@ -441,6 +446,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s_kubernetes_utils.py'),
     Path('salt/_modules/metalk8s.py'),
     Path('salt/_modules/metalk8s_package_manager.py'),
+    Path('salt/_modules/metalk8s_volumes.py'),
 
 
     Path('salt/_pillar/metalk8s.py'),
@@ -462,8 +468,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
     Path('salt/_states/metalk8s_package_manager.py'),
+    Path('salt/_states/metalk8s_volumes.py'),
 
     Path('salt/_utils/pillar_utils.py'),
+    Path('salt/_utils/volume_utils.py'),
 
     # This image is defined here and not in the `image` module since it is
     # saved into the `salt/` tree.

@@ -53,27 +53,36 @@ func NewClient(creds *Credential) *Client {
 // Spawn a job, asynchronously, to prepare the volume on the specified node.
 //
 // Arguments
-//     ctx:      the request context (used for cancellation)
-//     nodeName: name of the node where the volume will be
+//     ctx:        the request context (used for cancellation)
+//     nodeName:   name of the node where the volume will be
+//     volumeName: name of the volume to prepare
+//     saltenv:    saltenv to use
 //
 // Returns
 //     The Salt job ID.
 func (self *Client) PrepareVolume(
-	ctx context.Context, nodeName string,
+	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (string, error) {
-	// Use rand_sleep to emulate slow operation for now
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
-		"fun":    "test.rand_sleep",
+		"fun":    "state.sls",
+		"kwarg": map[string]interface{}{
+			"mods":    "metalk8s.volumes",
+			"saltenv": saltenv,
+			"pillar":  map[string]interface{}{"volume": volumeName},
+		},
 	}
 
-	self.logger.Info("PrepareVolume")
+	self.logger.Info(
+		"PrepareVolume", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return "", errors.Wrapf(
-			err, "PrepareVolume failed (target=%s)", nodeName,
+			err, "PrepareVolume failed (target=%s, volume=%s)",
+			nodeName, volumeName,
 		)
 	}
 	// TODO(#1461): make this more robust.
@@ -156,10 +165,29 @@ func (self *Client) PollJob(
 
 	// The job is done: check if it has succeeded.
 	success := result[nodeName].(map[string]interface{})["success"].(bool)
+	retcode := result[nodeName].(map[string]interface{})["retcode"].(float64)
+
+	// `"success": false` == stacktrace => the job executed and failed.
 	if !success {
 		jobLogger.Info("Salt job failed")
 		reason := nodeResult["return"].(string)
 		return nil, &AsyncJobFailed{reason}
+	}
+	// /!\ `"success": true` != job ran and succeedeed!!
+	// See https://github.com/saltstack/salt/issues/4002
+	//
+	// IIUC, having `success == true` and `retcode != 0` means "the job failed
+	// before being executed": it didn't really fail (because it haven't run)
+	// so we got `"success": true` BUT something went wrong (so retcode != 0).
+	//
+	// Real life example: run `metalk8s.volumes` for volume Foo, then while it's
+	// still in progress run `metalk8s.volumes` for volume Bar => the job for
+	// Bar will fail with success:true/retcode:1 because the state is already
+	// running for Foo…
+	//
+	// So let's check `retcode` to be 100% sure it succeedeed.
+	if int(retcode) != 0 {
+		return nil, fmt.Errorf("Salt job %s failed to run", jobId)
 	}
 	jobLogger.Info("Salt job succeedeed")
 	return nodeResult, nil

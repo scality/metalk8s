@@ -17,5 +17,6 @@ Configure salt minion:
     - defaults:
       master_hostname: {{ metalk8s.endpoints['salt-master'].ip }}
       minion_id: {{ grains.id }}
+      saltenv: {{ saltenv }}
     - watch_in:
       - cmd: Restart salt-minion
