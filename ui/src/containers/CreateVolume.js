@@ -67,12 +67,10 @@ const CreateVolumeLayout = styled.div`
 
 const SizeFieldContainer = styled.div`
   display: inline-flex;
-  align-items: center;
-  .sc-input-wrapper {
-    width: 150px;
-  }
-  .size-unit-input {
-    width: 100%;
+  align-items: flex-start;
+  .sc-input-wrapper,
+  .sc-input-type {
+    width: 120px;
     box-sizing: border-box;
   }
 `;
@@ -294,7 +292,6 @@ const CreateVolume = props => {
                     <SizeFieldContainer>
                       <Input
                         name="sizeInput"
-                        className="size-unit-input"
                         type="number"
                         min="1"
                         value={values.sizeInput}
