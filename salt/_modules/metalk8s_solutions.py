@@ -57,9 +57,8 @@ def list_configured():
         with open(SOLUTIONS_CONFIG_FILE, 'r') as fd:
             content = yaml.safe_load(fd)
     except Exception as exc:
-        log.exception('Failed to load "%s": %s',
-                      SOLUTIONS_CONFIG_FILE, str(exc))
-        raise CommandExecutionError()
+        msg = 'Failed to load "{}": {}'.format(SOLUTIONS_CONFIG_FILE, str(exc))
+        raise CommandExecutionError(message=msg)
 
     return content.get('archives', []) or []
 
@@ -112,7 +111,7 @@ def register_solution_version(
 
     body = {'data': {name: json.dumps(all_versions)}}
 
-    try: 
+    try:
         api_instance.patch_namespaced_config_map(
             SOLUTIONS_CONFIG_MAP,
             SOLUTIONS_CONFIG_MAP_NAMESPACE,
@@ -157,18 +156,31 @@ def unregister_solution_version(
         version_dict for version_dict in old_versions
         if version_dict['version'] != version
     ]
-
-    body = {'data': {name: json.dumps(new_versions)}}
-
-    try:
-        api_instance.patch_namespaced_config_map(
-            SOLUTIONS_CONFIG_MAP,
-            SOLUTIONS_CONFIG_MAP_NAMESPACE,
-            body
-        )
-    except ApiException as exc:
-        log.exception('Failed to patch ConfigMap "%s": %s',
-                      SOLUTIONS_CONFIG_MAP, str(exc))
-        return False
+    # If this is the last registered version then remove all the entry
+    if new_versions == []:
+        del configmap['data'][name]
+        # Patching a CM while removing a key does not work, we need to replace it
+        try:
+            api_instance.replace_namespaced_config_map(
+                SOLUTIONS_CONFIG_MAP,
+                SOLUTIONS_CONFIG_MAP_NAMESPACE,
+                configmap
+            )
+        except ApiException as exc:
+            log.exception('Failed to patch ConfigMap "%s": %s',
+                          SOLUTIONS_CONFIG_MAP, str(exc))
+            return False
+    else:
+        body = {'data': {name: json.dumps(new_versions)}}
+        try:
+            api_instance.patch_namespaced_config_map(
+                SOLUTIONS_CONFIG_MAP,
+                SOLUTIONS_CONFIG_MAP_NAMESPACE,
+                body
+            )
+        except ApiException as exc:
+            log.exception('Failed to patch ConfigMap "%s": %s',
+                          SOLUTIONS_CONFIG_MAP, str(exc))
+            return False
 
     return True
