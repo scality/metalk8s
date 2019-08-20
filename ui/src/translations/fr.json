@@ -111,5 +111,5 @@
   "delete_a_volume_confirm": "Voulez-vous supprimez ",
   "select_a_storageClass": "Sélectionner une classe de stockage...",
   "select_a_type": "Sélectionner un type...",
-  "not_found": "Pas trouvé"
+  "no_results": "Aucun résultat"
 }

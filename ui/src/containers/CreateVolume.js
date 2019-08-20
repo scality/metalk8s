@@ -267,7 +267,7 @@ const CreateVolume = props => {
                     type="select"
                     options={optionsStorageClasses}
                     placeholder={intl.messages.select_a_storageClass}
-                    noResultsText={intl.messages.not_found}
+                    noResultsText={intl.messages.no_results}
                     name="storageClass"
                     onChange={handleSelectChange('storageClass')}
                     value={values.storageClass}
@@ -281,7 +281,7 @@ const CreateVolume = props => {
                     type="select"
                     options={optionsTypes}
                     placeholder={intl.messages.select_a_type}
-                    noResultsText={intl.messages.not_found}
+                    noResultsText={intl.messages.no_results}
                     name="type"
                     onChange={handleSelectChange('type')}
                     value={values.type}
@@ -308,7 +308,7 @@ const CreateVolume = props => {
                           type="select"
                           options={optionsSizeUnits}
                           placeholder={intl.messages.select_a_type}
-                          noResultsText={intl.messages.not_found}
+                          noResultsText={intl.messages.no_results}
                           name="selectedUnit"
                           onChange={handleSelectChange('selectedUnit')}
                           value={values.selectedUnit}
