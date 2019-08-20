@@ -4,8 +4,7 @@ import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import Modal from 'react-modal';
-import { Button, Table, Loader } from '@scality/core-ui';
+import { Button, Table, Loader, Modal } from '@scality/core-ui';
 import { padding, grayLight } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import Tooltip from '../components/Tooltip';
@@ -46,24 +45,17 @@ const VolumeTable = styled.div`
   }
 `;
 
-const DeleteConfirmationModal = {
-  content: {
-    top: '50%',
-    left: '50%',
-    width: '540px',
-    height: '200px',
-    transform: 'translate(-50%, -50%)'
-  }
-};
-
 const NotificationButtonGroup = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-top: ${padding.larger};
 `;
 
 const DeleteButton = styled(Button)`
   margin-left: ${padding.small};
+`;
+
+const ModalBody = styled.div`
+  padding-bottom: ${padding.base};
 `;
 
 const IconButton = styled.button`
@@ -294,32 +286,36 @@ const NodeVolumes = props => {
   return (
     <>
       <Modal
+        close={() => setisDeleteConfirmationModalOpen(false)}
         isOpen={isDeleteConfirmationModalOpen}
-        ariaHideApp={false}
-        style={DeleteConfirmationModal}
+        title={intl.messages.delete_a_volume}
+        footer={
+          <NotificationButtonGroup>
+            <Button
+              outlined
+              text={intl.messages.cancel}
+              onClick={onClickCancelButton}
+            />
+            <DeleteButton
+              variant="danger"
+              text={intl.messages.delete}
+              onClick={e => {
+                e.stopPropagation();
+                onClickDeleteButton(deleteVolumeName);
+              }}
+            />
+          </NotificationButtonGroup>
+        }
       >
-        <h2>{intl.messages.delete_a_volume}</h2>
-        <div>{intl.messages.delete_a_volume_warning}</div>
-        <div>
-          {intl.messages.delete_a_volume_confirm}
-          <strong>{deleteVolumeName}</strong>?
-        </div>
-        <NotificationButtonGroup>
-          <Button
-            outlined
-            text={intl.messages.cancel}
-            onClick={onClickCancelButton}
-          />
-          <DeleteButton
-            variant="danger"
-            text={intl.messages.delete}
-            onClick={e => {
-              e.stopPropagation();
-              onClickDeleteButton(deleteVolumeName);
-            }}
-          />
-        </NotificationButtonGroup>
+        <ModalBody>
+          <div>{intl.messages.delete_a_volume_warning}</div>
+          <div>
+            {intl.messages.delete_a_volume_confirm}
+            <strong>{deleteVolumeName}</strong>?
+          </div>
+        </ModalBody>
       </Modal>
+
       <ButtonContainer>
         <Button
           text={intl.messages.create_new_volume}
