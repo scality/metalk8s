@@ -8,3 +8,18 @@ Feature: Volume management
     Scenario: The storage operator is up
         Given the Kubernetes API is available
         Then we have 1 running pod labeled 'name=storage-operator' in namespace 'kube-system'
+
+    Scenario: Test volume creation (sparseLoopDevice)
+        Given the Kubernetes API is available
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume1
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s-prometheus
+              sparseLoopDevice:
+                size: 10Gi
+        Then the Volume 'volume1' is 'Available'
+        And the PersistentVolume 'volume1' has size '10Gi'
