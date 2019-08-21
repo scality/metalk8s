@@ -1,10 +1,13 @@
+import '@fortawesome/fontawesome-free/css/all.css';
+import 'react-select/dist/react-select.css';
+import 'react-virtualized-select/styles.css';
+
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Route, Switch } from 'react-router-dom';
 import { IntlProvider, addLocaleData } from 'react-intl';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
-import '@fortawesome/fontawesome-free/css/all.css';
 import Loader from '../components/Loader';
 
 import translations_en from '../translations/en';

@@ -12,7 +12,7 @@ import {
   fetchStorageClassAction,
   createVolumeAction
 } from '../ducks/app/volumes';
-import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
@@ -65,36 +65,21 @@ const CreateVolumeLayout = styled.div`
   }
 `;
 
-const SelectLabel = styled.label`
-  width: 200px;
-  padding: 10px;
-  font-size: ${fontSize.base};
-`;
-
-const SelectFieldContainer = styled.div`
-  display: inline-flex;
-  align-items: center;
-`;
-
-const SelectField = styled.select`
-  width: 200px;
-`;
-
 const SizeFieldContainer = styled.div`
   display: inline-flex;
-  align-items: center;
-  .sc-input-wrapper {
-    width: 150px;
-  }
-  .size-unit-input {
-    width: 100%;
+  align-items: flex-start;
+  .sc-input-wrapper,
+  .sc-input-type {
+    width: 120px;
     box-sizing: border-box;
   }
 `;
 
 const SizeUnitFieldSelectContainer = styled.div`
-  width: 50px;
-  padding-left: 5px;
+  .sc-select {
+    width: 75px;
+    padding-left: 5px;
+  }
 `;
 
 const CreateVolume = props => {
@@ -226,11 +211,44 @@ const CreateVolume = props => {
               errors,
               touched,
               setFieldTouched,
-              dirty
+              dirty,
+              setFieldValue
             } = formikProps;
 
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
+            const handleSelectChange = field => selectedObj => {
+              setFieldValue(field, selectedObj ? selectedObj.value : '');
+            };
+
+            const optionsStorageClasses = storageClassesName.map(SCName => {
+              return {
+                label: SCName,
+                value: SCName
+              };
+            });
+
+            const optionsTypes = types.map(({ label, value }) => {
+              return {
+                label,
+                value
+              };
+            });
+
+            const optionsSizeUnits = sizeUnits
+              /**
+               * `sizeUnits` have a base 2 and base 10 units
+               * (ie. KiB and KB).
+               * We chose to only display base 2 units
+               * to improve the UX.
+               */
+              .filter((size, idx) => idx < 6)
+              .map(({ label, value }) => {
+                return {
+                  label,
+                  value
+                };
+              });
             return (
               <Form>
                 <FormSection>
@@ -242,43 +260,38 @@ const CreateVolume = props => {
                     error={touched.name && errors.name}
                     onBlur={handleOnBlur}
                   />
-                  <SelectFieldContainer>
-                    <SelectLabel>{intl.messages.storageClass}</SelectLabel>
-                    <SelectField
-                      name="storageClass"
-                      onChange={handleChange('storageClass')}
-                      value={values.storageClass}
-                      error={touched.storageClass && errors.storageClass}
-                      onBlur={handleOnBlur}
-                    >
-                      {storageClassesName.map((SCName, idx) => (
-                        <option key={`storageClass_${idx}`} value={SCName}>
-                          {SCName}
-                        </option>
-                      ))}
-                    </SelectField>
-                  </SelectFieldContainer>
-                  <SelectFieldContainer>
-                    <SelectLabel>{intl.messages.type}</SelectLabel>
-                    <SelectField
-                      name="type"
-                      onChange={handleChange('type')}
-                      error={touched.type && errors.type}
-                      onBlur={handleOnBlur}
-                    >
-                      {types.map((type, idx) => (
-                        <option key={`type_${idx}`} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </SelectField>
-                  </SelectFieldContainer>
-
+                  <Input
+                    id="storageClass_input"
+                    label={intl.messages.storageClass}
+                    clearable={false}
+                    type="select"
+                    options={optionsStorageClasses}
+                    placeholder={intl.messages.select_a_storageClass}
+                    noResultsText={intl.messages.no_results}
+                    name="storageClass"
+                    onChange={handleSelectChange('storageClass')}
+                    value={values.storageClass}
+                    error={touched.storageClass && errors.storageClass}
+                    onBlur={handleOnBlur}
+                  />
+                  <Input
+                    id="type_input"
+                    label={intl.messages.type}
+                    clearable={false}
+                    type="select"
+                    options={optionsTypes}
+                    placeholder={intl.messages.select_a_type}
+                    noResultsText={intl.messages.no_results}
+                    name="type"
+                    onChange={handleSelectChange('type')}
+                    value={values.type}
+                    error={touched.type && errors.type}
+                    onBlur={handleOnBlur}
+                  />
                   {values.type === SPARSE_LOOP_DEVICE ? (
                     <SizeFieldContainer>
                       <Input
                         name="sizeInput"
-                        className="size-unit-input"
                         type="number"
                         min="1"
                         value={values.sizeInput}
@@ -288,29 +301,20 @@ const CreateVolume = props => {
                         onBlur={handleOnBlur}
                       />
                       <SizeUnitFieldSelectContainer>
-                        <select
+                        <Input
+                          id="unit_input"
+                          label=""
+                          clearable={false}
+                          type="select"
+                          options={optionsSizeUnits}
+                          placeholder={intl.messages.select_a_type}
+                          noResultsText={intl.messages.no_results}
                           name="selectedUnit"
+                          onChange={handleSelectChange('selectedUnit')}
                           value={values.selectedUnit}
-                          onChange={handleChange('selectedUnit')}
                           error={touched.selectedUnit && errors.selectedUnit}
                           onBlur={handleOnBlur}
-                        >
-                          {sizeUnits
-                            /**
-                             * `sizeUnits` have a base 2 and base 10 units
-                             * (ie. KiB and KB).
-                             * We chose to only display base 2 units
-                             * to improve the UX.
-                             */
-                            .filter((size, idx) => idx < 6)
-                            .map(({ label, value }, idx) => {
-                              return (
-                                <option key={`sizeUnits_${idx}`} value={value}>
-                                  {label}
-                                </option>
-                              );
-                            })}
-                        </select>
+                        />
                       </SizeUnitFieldSelectContainer>
                     </SizeFieldContainer>
                   ) : (
