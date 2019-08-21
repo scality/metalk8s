@@ -824,13 +824,6 @@ func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
 						Values:   []string{string(node)},
 					},
 				},
-				MatchFields: []corev1.NodeSelectorRequirement{
-					{
-						Key:      "metadata.name",
-						Operator: corev1.NodeSelectorOpIn,
-						Values:   []string{string(node)},
-					},
-				},
 			},
 		},
 	}
