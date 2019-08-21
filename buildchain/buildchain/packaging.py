@@ -73,6 +73,12 @@ def task__package_mkdir_rpm_root() -> types.TaskDict:
         directory=constants.PKG_RPM_ROOT, task_dep=['_package_mkdir_root']
     ).task
 
+def task__package_mkdir_deb_root() -> types.TaskDict:
+    """Create the Debian packages root directory."""
+    return targets.Mkdir(
+        directory=constants.PKG_DEB_ROOT, task_dep=['_package_mkdir_root']
+    ).task
+
 def task__package_mkdir_iso_root() -> types.TaskDict:
     """Create the packages root directory on the ISO."""
     return targets.Mkdir(
@@ -83,6 +89,12 @@ def task__package_mkdir_rpm_iso_root() -> types.TaskDict:
     """Create the RedHat packages root directory on the ISO."""
     return targets.Mkdir(
         directory=constants.REPO_RPM_ROOT, task_dep=['_package_mkdir_iso_root']
+    ).task
+
+def task__package_mkdir_deb_iso_root() -> types.TaskDict:
+    """Create the Debian packages root directory on the ISO."""
+    return targets.Mkdir(
+        directory=constants.REPO_DEB_ROOT, task_dep=['_package_mkdir_iso_root']
     ).task
 
 def task__download_packages() -> types.TaskDict:
