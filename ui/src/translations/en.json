@@ -110,6 +110,6 @@
   "delete_a_volume_warning": "Deleting this volume will permanently delete the data it contains.",
   "delete_a_volume_confirm": "Do you want to delete ",
   "select_a_storageClass": "Select a Storage Class…",
-  "select_a_type": "Select a type…",
+  "select_a_type": "Select a type of volume…",
   "no_results": "No results"
 }
