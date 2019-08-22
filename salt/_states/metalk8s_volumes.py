@@ -19,7 +19,7 @@ def present(name):
     """Ensure that the backing storage exists for the specified volume.
 
     Args:
-        name   (str): Volume name
+        name (str): Volume name
 
     Returns:
         dict: state return value
@@ -55,7 +55,7 @@ def provisioned(name):
     """Provision the given volume.
 
     Args:
-        name   (str): Volume name
+        name (str): Volume name
 
     Returns:
         dict: state return value
@@ -92,7 +92,7 @@ def formatted(name):
     """Format the given volume.
 
     Args:
-        name   (str): Volume name
+        name (str): Volume name
 
     Returns:
         dict: state return value
