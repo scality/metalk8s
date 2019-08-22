@@ -531,7 +531,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         #- name: upgrade-ipam
-        #  image: calico/cni:v3.8.0
+        #  image: calico/cni:v3.8.2
         #  command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
         #  env:
         #    - name: KUBERNETES_NODE_NAME
@@ -552,7 +552,7 @@ spec:
         # and CNI network config file on each node.
         # Note: In MetalK8s, we handle this in the Calico state
         #- name: install-cni
-        #  image: calico/cni:v3.8.0
+        #  image: calico/cni:v3.8.2
         #  command: ["/install-cni.sh"]
         #  env:
         #    # Name of the CNI config file to create.
@@ -587,7 +587,7 @@ spec:
         # to communicate with Felix over the Policy Sync API.
         # Note: In MetalK8s, we have no support for Dikastes (yet).
         #- name: flexvol-driver
-        #  image: calico/pod2daemon-flexvol:v3.8.0
+        #  image: calico/pod2daemon-flexvol:v3.8.2
         #  volumeMounts:
         #  - name: flexvol-driver-host
         #    mountPath: /host/driver
