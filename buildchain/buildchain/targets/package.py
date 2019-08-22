@@ -167,11 +167,11 @@ class RPMPackage(Package):
         spec_guest_file = Path('/rpmbuild/SPECS', self.spec.name)
         meta_guest_file = Path('/rpmbuild/META', self.meta.name)
         mounts = [
-            docker_command.DockerRun.ENTRYPOINT_MOUNT,
-            docker_command.bind_ro_mount(
+            utils.get_entrypoint_mount('redhat'),
+            utils.bind_ro_mount(
                 source=self.spec, target=spec_guest_file
             ),
-            docker_command.bind_mount(
+            utils.bind_mount(
                 source=self.meta.parent, target=meta_guest_file.parent
             )
         ]
@@ -237,7 +237,8 @@ class RPMPackage(Package):
             environment=env,
             tmpfs={'/home/build': '', '/var/tmp': ''},
             mounts=self._get_buildsrpm_mounts(self.srpm.parent),
-            read_only=True
+            read_only=True,
+            run_config=docker_command.RPM_BASE_CONFIG
         )
 
         task = self.basic_task
@@ -291,23 +292,23 @@ class RPMPackage(Package):
         """Return the list of container mounts required by `buildsrpm`."""
         mounts = [
             # .spec file
-            docker_command.bind_ro_mount(
+            utils.bind_ro_mount(
                 source=self.spec,
                 target=Path('/rpmbuild/SPECS', self.spec.name)
             ),
             # SRPM directory.
-            docker_command.bind_mount(
+            utils.bind_mount(
                 source=srpm_dir,
                 target=Path('/rpmbuild/SRPMS'),
             ),
             # rpmlint configuration file
-            docker_command.DockerRun.RPMLINTRC_MOUNT
+            docker_command.RPMLINTRC_MOUNT
         ]
 
         # Source files.
         for source in self.sources:
             mounts.append(
-                docker_command.bind_ro_mount(
+                utils.bind_ro_mount(
                     source=source,
                     target=Path('/rpmbuild/SOURCES', source.name)
                 )

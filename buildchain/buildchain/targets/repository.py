@@ -193,6 +193,7 @@ class RPMRepository(Repository):
                 environment=env,
                 mounts=self._get_buildrpm_mounts(pkg.srpm, rpm.parent),
                 tmpfs={'/home/build': '', '/var/tmp': ''},
+                run_config=docker_command.RPM_BASE_CONFIG
             )
 
             task = self.basic_task
@@ -264,17 +265,17 @@ class RPMRepository(Repository):
         """Return the list of container mounts required by `buildrpm`."""
         mounts = [
             # SRPM directory.
-            docker_command.bind_ro_mount(
+            utils.bind_ro_mount(
                 source=srpm_path,
                 target=Path('/rpmbuild/SRPMS', srpm_path.name)
             ),
             # RPM directory.
-            docker_command.bind_mount(
+            utils.bind_mount(
                 source=rpm_dir,
                 target=Path('/rpmbuild/RPMS'),
             ),
             # rpmlint configuration file
-            docker_command.DockerRun.RPMLINTRC_MOUNT
+            docker_command.RPMLINTRC_MOUNT
         ]
 
         return mounts
@@ -282,10 +283,10 @@ class RPMRepository(Repository):
     def _buildrepo_action(self) -> types.Action:
         """Return the command to run `buildrepo` inside a container."""
         mounts = [
-            docker_command.bind_ro_mount(
+            utils.bind_ro_mount(
                 source=self.rootdir, target=Path('/repository')
             ),
-            docker_command.bind_mount(
+            utils.bind_mount(
                 source=self.repodata, target=Path('/repository/repodata')
             )
         ]
@@ -293,7 +294,8 @@ class RPMRepository(Repository):
             command=['/entrypoint.sh', 'buildrepo'],
             builder=self.builder,
             mounts=mounts,
-            read_only=True
+            read_only=True,
+            run_config=docker_command.RPM_BASE_CONFIG
         )
 
         return buildrepo_callable

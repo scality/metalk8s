@@ -111,10 +111,10 @@ def task__download_rpm_packages() -> types.TaskDict:
             coreutils.rm_rf(repository.rootdir)
 
     mounts = [
-        docker_command.bind_mount(
+        utils.bind_mount(
             source=constants.PKG_RPM_ROOT, target=Path('/install_root')
         ),
-        docker_command.bind_mount(
+        utils.bind_mount(
             source=constants.REPO_RPM_ROOT, target=Path('/repositories')
         ),
     ]
@@ -122,7 +122,8 @@ def task__download_rpm_packages() -> types.TaskDict:
         command=['/entrypoint.sh', 'download_packages', *RPM_TO_DOWNLOAD],
         builder=RPM_BUILDER,
         mounts=mounts,
-        environment={'RELEASEVER': 7}
+        environment={'RELEASEVER': 7},
+        run_config=docker_command.RPM_BASE_CONFIG
     )
     return {
         'title': utils.title_with_target1('GET PKGS'),
