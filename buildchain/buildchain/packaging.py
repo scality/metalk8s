@@ -49,9 +49,9 @@ def task_packaging() -> types.TaskDict:
             '_build_rpm_container',
             '_package_mkdir_root',
             '_package_mkdir_iso_root',
-            '_download_packages',
+            '_download_rpm_packages',
             '_build_rpm_packages:*',
-            '_build_repositories:*',
+            '_build_rpm_repositories:*',
         ],
     }
 
@@ -97,12 +97,12 @@ def task__package_mkdir_deb_iso_root() -> types.TaskDict:
         directory=constants.REPO_DEB_ROOT, task_dep=['_package_mkdir_iso_root']
     ).task
 
-def task__download_packages() -> types.TaskDict:
+def task__download_rpm_packages() -> types.TaskDict:
     """Download packages locally."""
     def clean() -> None:
         """Delete cache and repositories on the ISO."""
         coreutils.rm_rf(constants.PKG_RPM_ROOT/'var')
-        for repository in REPOSITORIES:
+        for repository in RPM_REPOSITORIES:
             # Repository with an explicit list of packages are created by a
             # dedicated task that will also handle their cleaning, so we skip
             # them here.
@@ -145,9 +145,9 @@ def task__build_rpm_packages() -> Iterator[types.TaskDict]:
         for package in repo_pkgs:
             yield from package.execution_plan
 
-def task__build_repositories() -> Iterator[types.TaskDict]:
-    """Build a repository."""
-    for repository in REPOSITORIES:
+def task__build_rpm_repositories() -> Iterator[types.TaskDict]:
+    """Build a RPM repository."""
+    for repository in RPM_REPOSITORIES:
         yield from repository.execution_plan
 
 # Image used to build the packages
@@ -244,49 +244,49 @@ _TO_DOWNLOAD_CONFIG : Dict[str, str] = {
 }
 
 
-REPOSITORIES : Tuple[targets.Repository, ...] = (
-    targets.Repository(
-        basename='_build_repositories',
+RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
         name='scality',
         builder=RPM_BUILDER,
         packages=RPM_TO_BUILD['scality'],
         task_dep=['_package_mkdir_rpm_iso_root'],
     ),
-    targets.Repository(
-        basename='_build_repositories',
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
         name='base',
         builder=RPM_BUILDER,
-        task_dep=['_download_packages'],
+        task_dep=['_download_rpm_packages'],
     ),
-    targets.Repository(
-        basename='_build_repositories',
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
         name='extras',
         builder=RPM_BUILDER,
-        task_dep=['_download_packages'],
+        task_dep=['_download_rpm_packages'],
     ),
-    targets.Repository(
-        basename='_build_repositories',
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
         name='updates',
         builder=RPM_BUILDER,
-        task_dep=['_download_packages'],
+        task_dep=['_download_rpm_packages'],
     ),
-    targets.Repository(
-        basename='_build_repositories',
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
         name='epel',
         builder=RPM_BUILDER,
-        task_dep=['_download_packages'],
+        task_dep=['_download_rpm_packages'],
     ),
-    targets.Repository(
-        basename='_build_repositories',
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
         name='kubernetes',
         builder=RPM_BUILDER,
-        task_dep=['_download_packages'],
+        task_dep=['_download_rpm_packages'],
     ),
-    targets.Repository(
-        basename='_build_repositories',
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
         name='saltstack',
         builder=RPM_BUILDER,
-        task_dep=['_download_packages'],
+        task_dep=['_download_rpm_packages'],
     ),
 )
 

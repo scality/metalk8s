@@ -30,7 +30,7 @@ CASE 2: local repository
                                  └───────────┘
 """
 
-
+import abc
 import operator
 from pathlib import Path
 from typing import Any, List, Optional, Sequence
@@ -53,17 +53,15 @@ MKDIR_ARCH_TASK_NAME = 'mkdir_repo_arch'
 
 
 class Repository(base.CompositeTarget):
-    """A software repository for CentOS 7 x86_64."""
-
-    SUFFIX = 'el7'
-    ARCH   = 'x86_64'
+    """Base class to build a repository of software packages."""
 
     def __init__(
         self,
         basename: str,
         name: str,
         builder: image.ContainerImage,
-        packages: Optional[Sequence[package.RPMPackage]]=None,
+        repo_root: Path,
+        packages: Optional[Sequence[package.Package]]=None,
         **kwargs: Any
     ):
         """Initialize the repository.
@@ -80,6 +78,7 @@ class Repository(base.CompositeTarget):
         self._name = name
         self._builder = builder
         self._packages = packages or []
+        self._repo_root = repo_root
         super().__init__(
             basename='{base}:{name}'.format(base=basename, name=self.name),
             **kwargs
@@ -88,6 +87,49 @@ class Repository(base.CompositeTarget):
     name     = property(operator.attrgetter('_name'))
     builder  = property(operator.attrgetter('_builder'))
     packages = property(operator.attrgetter('_packages'))
+
+    @abc.abstractproperty
+    def fullname(self) -> str:
+        """Repository full name."""
+
+    @property
+    def rootdir(self) -> Path:
+        """Repository root directory."""
+        return self._repo_root/self.fullname
+
+    @property
+    def execution_plan(self) -> List[types.TaskDict]:
+        tasks = [self.build_repo()]
+        if self._packages:
+            tasks.extend(self.build_packages())
+        return tasks
+
+    @abc.abstractmethod
+    def build_repo(self) -> types.TaskDict:
+        """Build the repository."""
+
+    @abc.abstractmethod
+    def build_packages(self) -> List[types.TaskDict]:
+        """Build the packages for the repository."""
+
+class RPMRepository(Repository):
+    """A software repository for CentOS 7 x86_64."""
+
+    SUFFIX = 'el7'
+    ARCH   = 'x86_64'
+
+    def __init__(
+        self,
+        basename: str,
+        name: str,
+        builder: image.ContainerImage,
+        packages: Optional[Sequence[package.RPMPackage]]=None,
+        **kwargs: Any
+    ):
+        super ().__init__(
+            basename, name, builder, constants.REPO_RPM_ROOT, packages,
+            **kwargs
+        )
 
     @property
     def fullname(self) -> str:
@@ -98,21 +140,9 @@ class Repository(base.CompositeTarget):
         )
 
     @property
-    def rootdir(self) -> Path:
-        """Repository root directory."""
-        return constants.REPO_RPM_ROOT/self.fullname
-
-    @property
     def repodata(self) -> Path:
         """Repository metadata directory."""
         return self.rootdir/'repodata'
-
-    @property
-    def execution_plan(self) -> List[types.TaskDict]:
-        tasks = [self.build_repo()]
-        if self._packages:
-            tasks.extend(self.build_rpms())
-        return tasks
 
     def build_repo(self) -> types.TaskDict:
         """Build the repository."""
@@ -147,7 +177,7 @@ class Repository(base.CompositeTarget):
             ])
         return task
 
-    def build_rpms(self) -> List[types.TaskDict]:
+    def build_packages(self) -> List[types.TaskDict]:
         """Build the RPMs from SRPMs."""
         tasks = [self._mkdir_repo_root(), self._mkdir_repo_arch()]
         for pkg in self.packages:
