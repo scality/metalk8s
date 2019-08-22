@@ -43,14 +43,61 @@ from . import directory
 from . import image
 
 
-SOURCE_URL_PATTERN = re.compile(r'^Source\d+:\s+(?P<url>.+)$')
-
-
 class Package(base.CompositeTarget):
-    """A RPM software package for CentOS 7."""
+    """Base class to build a software package."""
 
     MKDIR_TASK_NAME = 'pkg_mkdir'
+
+    def __init__(
+        self,
+        basename: str,
+        name: str,
+        version: str,
+        build_id: int,
+        builder: image.ContainerImage,
+        pkg_root: Path,
+        **kwargs: Any
+    ):
+        self._name = name
+        self._version = version
+        self._build_id = build_id
+        self._builder = builder
+        self._pkg_root = pkg_root
+        super().__init__(
+            basename='{base}:{name}'.format(base=basename, name=self.name),
+            **kwargs
+        )
+
+    name     = property(operator.attrgetter('_name'))
+    version  = property(operator.attrgetter('_version'))
+    build_id = property(operator.attrgetter('_build_id'))
+    builder  = property(operator.attrgetter('_builder'))
+
+    @property
+    def rootdir(self) -> Path:
+        """Package root directory."""
+        return self._pkg_root/self._name
+
+    def make_package_directory(self) -> types.TaskDict:
+        """Create the package's directory."""
+        task = self.basic_task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
+        task.update({
+            'name': self.MKDIR_TASK_NAME,
+            'doc': 'Create directory for {}.'.format(self.name),
+            'title': mkdir['title'],
+            'actions': mkdir['actions'],
+            'uptodate': mkdir['uptodate'],
+            'targets': mkdir['targets'],
+        })
+        return task
+
+
+class RPMPackage(Package):
+    """A RPM software package for CentOS 7."""
+
     SUFFIX = 'el7'
+    SOURCE_URL_PATTERN = re.compile(r'^Source\d+:\s+(?P<url>.+)$')
 
     def __init__(
         self,
@@ -75,28 +122,15 @@ class Package(base.CompositeTarget):
         Keyword Arguments:
             They are passed to `Target` init method.
         """
-        self._name = name
-        self._version = version
-        self._build_id = build_id
+        super().__init__(
+            basename, name, version, build_id, builder, constants.PKG_RPM_ROOT,
+            **kwargs
+        )
         self._sources = [
             self.rootdir/'SOURCES'/filename for filename in sources
         ]
-        self._builder = builder
-        super().__init__(
-            basename='{base}:{name}'.format(base=basename, name=self.name),
-            **kwargs
-        )
 
-    name     = property(operator.attrgetter('_name'))
-    version  = property(operator.attrgetter('_version'))
-    build_id = property(operator.attrgetter('_build_id'))
     sources  = property(operator.attrgetter('_sources'))
-    builder  = property(operator.attrgetter('_builder'))
-
-    @property
-    def rootdir(self) -> Path:
-        """Package root directory."""
-        return constants.PKG_RPM_ROOT/self._name
 
     @property
     def srcdir(self) -> Path:
@@ -127,20 +161,6 @@ class Package(base.CompositeTarget):
             self.get_source_files(),
             self.build_srpm(),
         ]
-
-    def make_package_directory(self) -> types.TaskDict:
-        """Create the package's directory."""
-        task = self.basic_task
-        mkdir = directory.Mkdir(directory=self.rootdir).task
-        task.update({
-            'name': self.MKDIR_TASK_NAME,
-            'doc': 'Create directory for {}.'.format(self.name),
-            'title': mkdir['title'],
-            'actions': mkdir['actions'],
-            'uptodate': mkdir['uptodate'],
-            'targets': mkdir['targets'],
-        })
-        return task
 
     def generate_meta(self) -> types.TaskDict:
         """Generate the .meta file for the package."""
@@ -202,6 +222,7 @@ class Package(base.CompositeTarget):
         task['task_dep'].append('{}:{}'.format(self.basename,
                                                self.MKDIR_TASK_NAME))
         return task
+
     def build_srpm(self) -> types.TaskDict:
         """Build the SRPM for the package."""
         env = {
@@ -252,7 +273,7 @@ class Package(base.CompositeTarget):
         sourcefiles = {src.name for src in self.sources}
         with open(self.meta, 'r', encoding='utf-8') as fp:
             for line in fp:
-                match = SOURCE_URL_PATTERN.match(line)
+                match = self.SOURCE_URL_PATTERN.match(line)
                 if not match:
                     continue
                 url = match.group('url')
@@ -292,7 +313,6 @@ class Package(base.CompositeTarget):
                 )
             )
         return mounts
-
 
 def _file_from_url(url: str) -> str:
     """Get filename from a URL."""

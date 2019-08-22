@@ -46,18 +46,18 @@ def task_packaging() -> types.TaskDict:
     return {
         'actions': None,
         'task_dep': [
-            '_build_container',
+            '_build_rpm_container',
             '_package_mkdir_root',
             '_package_mkdir_iso_root',
             '_download_packages',
-            '_build_packages:*',
+            '_build_rpm_packages:*',
             '_build_repositories:*',
         ],
     }
 
-def task__build_container() -> types.TaskDict:
+def task__build_rpm_container() -> types.TaskDict:
     """Build the container image used to build the packages/repositories."""
-    task = BUILDER.task
+    task = RPM_BUILDER.task
     task.pop('name')  # `name` is only used for sub-task.
     return task
 
@@ -119,8 +119,8 @@ def task__download_packages() -> types.TaskDict:
         ),
     ]
     dl_packages_callable = docker_command.DockerRun(
-        command=['/entrypoint.sh', 'download_packages', *TO_DOWNLOAD],
-        builder=BUILDER,
+        command=['/entrypoint.sh', 'download_packages', *RPM_TO_DOWNLOAD],
+        builder=RPM_BUILDER,
         mounts=mounts,
         environment={'RELEASEVER': 7}
     )
@@ -131,7 +131,7 @@ def task__download_packages() -> types.TaskDict:
         'task_dep': [
             '_package_mkdir_rpm_root',
             '_package_mkdir_rpm_iso_root',
-            '_build_container'
+            '_build_rpm_container'
         ],
         'clean': [clean],
         'uptodate': [config_changed(_TO_DOWNLOAD_CONFIG)],
@@ -139,9 +139,9 @@ def task__download_packages() -> types.TaskDict:
         'verbosity': 0,
     }
 
-def task__build_packages() -> Iterator[types.TaskDict]:
-    """Build a package."""
-    for repo_pkgs in TO_BUILD.values():
+def task__build_rpm_packages() -> Iterator[types.TaskDict]:
+    """Build a RPM package."""
+    for repo_pkgs in RPM_TO_BUILD.values():
         for package in repo_pkgs:
             yield from package.execution_plan
 
@@ -151,8 +151,8 @@ def task__build_repositories() -> Iterator[types.TaskDict]:
         yield from repository.execution_plan
 
 # Image used to build the packages
-BUILDER : targets.LocalImage = targets.LocalImage(
-    name='metalk8s-build',
+RPM_BUILDER : targets.LocalImage = targets.LocalImage(
+    name='metalk8s-rpm-build',
     version='latest',
     dockerfile=constants.ROOT/'packages'/'redhat'/'Dockerfile',
     destination=config.BUILD_ROOT,
@@ -179,7 +179,7 @@ BUILDER : targets.LocalImage = targets.LocalImage(
 )
 
 # Packages to build, per repository.
-def _package(name: str, sources: List[Path]) -> targets.Package:
+def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
     try:
         pkg_info = versions.PACKAGES_MAP[name]
     except KeyError:
@@ -190,20 +190,20 @@ def _package(name: str, sources: List[Path]) -> targets.Package:
     # In case the `release` is of form "{build_id}.{os}", which is standard
     build_id_str, _, _ = pkg_info.release.partition('.')
 
-    return targets.Package(
-        basename='_build_packages',
+    return targets.RPMPackage(
+        basename='_build_rpm_packages',
         name=name,
         version=pkg_info.version,
         build_id=int(build_id_str),
         sources=sources,
-        builder=BUILDER,
-        task_dep=['_package_mkdir_rpm_root', '_build_container'],
+        builder=RPM_BUILDER,
+        task_dep=['_package_mkdir_rpm_root', '_build_rpm_container'],
     )
 
-TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
+RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
     'scality': (
         # SOS report custom plugins.
-        _package(
+        _rpm_package(
             name='metalk8s-sosreport',
             sources=[
                 Path('metalk8s.py'),
@@ -211,7 +211,7 @@ TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
             ],
         ),
         # Calico Container Network Interface Plugin.
-        _package(
+        _rpm_package(
             name='calico-cni-plugin',
             sources=[
                 Path('calico-amd64'),
@@ -222,25 +222,25 @@ TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
     ),
 }
 
-_TO_BUILD_PKG_NAMES : List[str] = []
+_RPM_TO_BUILD_PKG_NAMES : List[str] = []
 
-for pkgs in TO_BUILD.values():
+for pkgs in RPM_TO_BUILD.values():
     for pkg in pkgs:
-        _TO_BUILD_PKG_NAMES.append(pkg.name)
+        _RPM_TO_BUILD_PKG_NAMES.append(pkg.name)
 
-# All packages not referenced in `TO_BUILD` but listed in `versions.PACKAGES`
-# are supposed to be downloaded.
-TO_DOWNLOAD : FrozenSet[str] = frozenset(
+# All packages not referenced in `RPM_TO_BUILD` but listed in
+# `versions.PACKAGES` are supposed to be downloaded.
+RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
     "{p.name}-{p.version}-{p.release}".format(p=package)
     for package in versions.PACKAGES
-    if package.name not in _TO_BUILD_PKG_NAMES
+    if package.name not in _RPM_TO_BUILD_PKG_NAMES
 )
 
 # Store these versions in a dict to use with doit.tools.config_changed
 _TO_DOWNLOAD_CONFIG : Dict[str, str] = {
     pkg.name: "{p.version}-{p.release}".format(p=pkg)
     for pkg in versions.PACKAGES
-    if pkg.name not in _TO_BUILD_PKG_NAMES
+    if pkg.name not in _RPM_TO_BUILD_PKG_NAMES
 }
 
 
@@ -248,44 +248,44 @@ REPOSITORIES : Tuple[targets.Repository, ...] = (
     targets.Repository(
         basename='_build_repositories',
         name='scality',
-        builder=BUILDER,
-        packages=TO_BUILD['scality'],
+        builder=RPM_BUILDER,
+        packages=RPM_TO_BUILD['scality'],
         task_dep=['_package_mkdir_rpm_iso_root'],
     ),
     targets.Repository(
         basename='_build_repositories',
         name='base',
-        builder=BUILDER,
+        builder=RPM_BUILDER,
         task_dep=['_download_packages'],
     ),
     targets.Repository(
         basename='_build_repositories',
         name='extras',
-        builder=BUILDER,
+        builder=RPM_BUILDER,
         task_dep=['_download_packages'],
     ),
     targets.Repository(
         basename='_build_repositories',
         name='updates',
-        builder=BUILDER,
+        builder=RPM_BUILDER,
         task_dep=['_download_packages'],
     ),
     targets.Repository(
         basename='_build_repositories',
         name='epel',
-        builder=BUILDER,
+        builder=RPM_BUILDER,
         task_dep=['_download_packages'],
     ),
     targets.Repository(
         basename='_build_repositories',
         name='kubernetes',
-        builder=BUILDER,
+        builder=RPM_BUILDER,
         task_dep=['_download_packages'],
     ),
     targets.Repository(
         basename='_build_repositories',
         name='saltstack',
-        builder=BUILDER,
+        builder=RPM_BUILDER,
         task_dep=['_download_packages'],
     ),
 )

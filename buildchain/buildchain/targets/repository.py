@@ -63,7 +63,7 @@ class Repository(base.CompositeTarget):
         basename: str,
         name: str,
         builder: image.ContainerImage,
-        packages: Optional[Sequence[package.Package]]=None,
+        packages: Optional[Sequence[package.RPMPackage]]=None,
         **kwargs: Any
     ):
         """Initialize the repository.
@@ -181,7 +181,7 @@ class Repository(base.CompositeTarget):
             task['task_dep'].append('{base}:{name}'.format(
                 base=self.basename, name=MKDIR_ARCH_TASK_NAME,
             ))
-            task['task_dep'].append('_build_container')
+            task['task_dep'].append('_build_rpm_container')
             tasks.append(task)
         return tasks
 
@@ -220,7 +220,7 @@ class Repository(base.CompositeTarget):
         ))
         return task
 
-    def _get_rpm_path(self, pkg: package.Package) -> Path:
+    def _get_rpm_path(self, pkg: package.RPMPackage) -> Path:
         """Return the path of the RPM of a given package."""
         filename = pkg.srpm.name.replace(
             '.src.rpm', '.{}.rpm'.format(self.ARCH)
