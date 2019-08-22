@@ -53,6 +53,12 @@ def test_volume_creation(host):
 def test_volume_deletion(host):
     pass
 
+@scenario('../features/volume.feature',
+          'Test PersistentVolume protection',
+          strict_gherkin=False)
+def test_pv_protection(host):
+    pass
+
 # }}}
 # Given {{{
 
@@ -82,6 +88,16 @@ def delete_volume(host, name, k8s_custom_client):
         body=kubernetes.client.V1DeleteOptions(),
         grace_period_seconds=0
     )
+
+
+@when(parsers.parse("I delete the PersistentVolume '{name}'"))
+def delete_pv(host, name, k8s_client):
+    k8s_client.delete_persistent_volume(
+        name=name,
+        body=kubernetes.client.V1DeleteOptions(),
+        grace_period_seconds=0
+    )
+
 
 # }}}
 # Then {{{
@@ -152,21 +168,33 @@ def check_volume_absent(host, name, k8s_custom_client):
 @then(parsers.parse("the PersistentVolume '{name}' does not exist"))
 def check_pv_absent(name, k8s_client):
     def _check_pv():
-        try:
-            k8s_client.read_persistent_volume(name)
-        except (ApiException, HTTPError) as exc:
-            if isinstance(exc, ApiException) and exc.status == 404:
-                return
-            raise
-        assert False, 'PersistentVolume {} exist'.format(name)
+        assert _get_pv(k8s_client, name) is None,\
+            'PersistentVolume {} exist'.format(name)
 
     utils.retry(
         _check_pv, times=10, wait=2,
         name='checking the absence of PersistentVolume {}'.format(name)
     )
 
+
+@then(parsers.parse("the PersistentVolume '{name}' is marked for deletion"))
+def check_pv_deletion_marker(name, k8s_client):
+    def _check_pv_deletion_marker():
+        pv = _get_pv(k8s_client, name)
+        assert pv is not None, 'PersistentVolume {} not found'.format(name)
+        assert pv.metadata.deletion_timestamp is not None,\
+            'PersistentVolume {} is not marked for deletion'.format(name)
+
+    utils.retry(
+        _check_pv_deletion_marker, times=10, wait=2,
+        name='checking that PersistentVolume {} is marked for deletion'.format(
+            name
+        )
+    )
+
 # }}}
 # Helpers {{{
+# Volume {{{
 
 def _create_volume(k8s_client, body):
     k8s_client.create_cluster_custom_object(
@@ -190,4 +218,16 @@ def _get_volume(k8s_client, name):
             return None
         raise
 
+# }}}
+# PersistentVolume {{{
+
+def _get_pv(k8s_client, name):
+    try:
+        return k8s_client.read_persistent_volume(name)
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        raise
+
+# }}}
 # }}}

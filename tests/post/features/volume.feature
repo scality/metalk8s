@@ -29,3 +29,12 @@ Feature: Volume management
         When I delete the Volume 'volume2'
         Then the Volume 'volume2' does not exist
         And the PersistentVolume 'volume2' does not exist
+
+    Scenario: Test PersistentVolume protection
+        Given a Volume 'volume3' exist
+        When I delete the PersistentVolume 'volume3'
+        Then the PersistentVolume 'volume3' is marked for deletion
+        And the Volume 'volume3' is 'Available'
+        When I delete the Volume 'volume3'
+        Then the Volume 'volume3' does not exist
+        And the PersistentVolume 'volume3' does not exist
