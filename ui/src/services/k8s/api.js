@@ -1,9 +1,10 @@
 import ApiClient from '../ApiClient';
+
 import {
   Config,
-  Core_v1Api,
-  Custom_objectsApi,
-  Storage_v1Api
+  CoreV1Api,
+  CustomObjectsApi,
+  StorageV1Api
 } from '@kubernetes/client-node';
 
 let config;
@@ -30,9 +31,9 @@ export function authenticate(token) {
 
 export const updateApiServerConfig = (url, token) => {
   config = new Config(url, token, 'Basic');
-  coreV1 = config.makeApiClient(Core_v1Api);
-  customObjects = config.makeApiClient(Custom_objectsApi);
-  storage = config.makeApiClient(Storage_v1Api);
+  coreV1 = config.makeApiClient(CoreV1Api);
+  customObjects = config.makeApiClient(CustomObjectsApi);
+  storage = config.makeApiClient(StorageV1Api);
 };
 
 export async function getNodes() {
