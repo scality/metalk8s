@@ -53,9 +53,7 @@ def test_volume_creation(host):
 def test_volume_deletion(host):
     pass
 
-@scenario('../features/volume.feature',
-          'Test PersistentVolume protection',
-          strict_gherkin=False)
+@scenario('../features/volume.feature', 'Test PersistentVolume protection')
 def test_pv_protection(host):
     pass
 

@@ -11,9 +11,7 @@ import yaml
 from tests import utils
 
 # Scenarios
-@scenario('../features/expansion.feature',
-          'Add one node to the cluster',
-          strict_gherkin=False)
+@scenario('../features/expansion.feature', 'Add one node to the cluster')
 def test_cluster_expansion(host):
     pass
 
