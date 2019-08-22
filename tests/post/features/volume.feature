@@ -38,3 +38,15 @@ Feature: Volume management
         When I delete the Volume 'volume3'
         Then the Volume 'volume3' does not exist
         And the PersistentVolume 'volume3' does not exist
+
+    Scenario: Create a volume with no volume type
+        Given the Kubernetes API is available
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume4
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s-prometheus
+        Then the Volume 'volume4' is 'Failed' with code 'InternalError' and message matches 'volume type not found'

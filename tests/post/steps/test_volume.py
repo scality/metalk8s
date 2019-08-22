@@ -1,3 +1,4 @@
+import re
 from urllib3.exceptions import HTTPError
 
 import kubernetes.client
@@ -55,6 +56,10 @@ def test_volume_deletion(host):
 
 @scenario('../features/volume.feature', 'Test PersistentVolume protection')
 def test_pv_protection(host):
+    pass
+
+@scenario('../features/volume.feature', 'Create a volume with no volume type')
+def test_no_volume_type(host):
     pass
 
 # }}}
@@ -188,6 +193,33 @@ def check_pv_deletion_marker(name, k8s_client):
         name='checking that PersistentVolume {} is marked for deletion'.format(
             name
         )
+    )
+
+
+@then(parsers.parse("the Volume '{name}' is 'Failed' "
+                    "with code '{code}' and message matches '{pattern}'"))
+def check_volume_error(host, name, code, pattern, k8s_custom_client):
+    def _check_error():
+        volume = _get_volume(k8s_custom_client, name)
+        assert volume is not None, 'Volume {} not found'.format(name)
+        status = volume.get('status')
+        assert status is not None, 'no status for volume {}'.format(name)
+        assert status['phase'] == 'Failed',\
+            'Unexpected status: expected Failed, got {}'.format(
+                status, status['phase']
+            )
+        assert status['errorCode'] == code,\
+            'Unexpected error code: expected {}, got {}'.format(
+                code, status['errorCode']
+            )
+        assert re.search(pattern, status['errorMessage']) is not None,\
+            "error message `{}` doesn't match `{}`".format(
+                status['errorMessage'], pattern
+            )
+
+    utils.retry(
+        _check_error, times=30, wait=2,
+        name='checking error for Volume {}'.format(name)
     )
 
 # }}}
