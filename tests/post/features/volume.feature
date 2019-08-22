@@ -23,3 +23,9 @@ Feature: Volume management
                 size: 10Gi
         Then the Volume 'volume1' is 'Available'
         And the PersistentVolume 'volume1' has size '10Gi'
+
+    Scenario: Test volume deletion (sparseLoopDevice)
+        Given a Volume 'volume2' exist
+        When I delete the Volume 'volume2'
+        Then the Volume 'volume2' does not exist
+        And the PersistentVolume 'volume2' does not exist
