@@ -95,25 +95,35 @@ func (self *Client) PrepareVolume(
 // Arguments
 //     ctx:      the request context (used for cancellation)
 //     nodeName: name of the node where the volume will be
+//     volumeName: name of the volume to prepare
+//     saltenv:    saltenv to use
 //
 // Returns
 //     The Salt job ID.
 func (self *Client) UnprepareVolume(
-	ctx context.Context, nodeName string,
+	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (string, error) {
-	// Use rand_sleep to emulate slow operation for now
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
-		"fun":    "test.rand_sleep",
+		"fun":    "state.sls",
+		"kwarg": map[string]interface{}{
+			"mods":    "metalk8s.volumes.unprepared",
+			"saltenv": saltenv,
+			"pillar":  map[string]interface{}{"volume": volumeName},
+		},
 	}
 
-	self.logger.Info("UnprepareVolume")
+	self.logger.Info(
+		"UnprepareVolume",
+		"Volume.NodeName", nodeName, "Volume.Name", volumeName,
+	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return "", errors.Wrapf(
-			err, "UnprepareVolume failed (target=%s)", nodeName,
+			err, "UnrepareVolume failed (target=%s, volume=%s)",
+			nodeName, volumeName,
 		)
 	}
 	// TODO(#1461): make this more robust.

@@ -563,7 +563,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	// Check if the volume is marked for deletion (i.e., deletion tstamp is set).
 	if !volume.GetDeletionTimestamp().IsZero() {
-		return r.finalizeVolume(ctx, volume)
+		return r.finalizeVolume(ctx, volume, saltenv)
 	}
 	// Skip volume stuck waiting for deletion or a manual fix.
 	if volume.IsInUnrecoverableFailedState() {
@@ -648,6 +648,7 @@ func (self *ReconcileVolume) deployVolume(
 func (self *ReconcileVolume) finalizeVolume(
 	ctx context.Context,
 	volume *storagev1alpha1.Volume,
+	saltenv string,
 ) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Volume.Name", volume.Name)
 
@@ -689,7 +690,7 @@ func (self *ReconcileVolume) finalizeVolume(
 
 	// If we don't have a PV or it's only used by us we can reclaim the storage.
 	if pv == nil || isPersistentVolumeUnused(pv) {
-		return self.reclaimStorage(ctx, volume, pv)
+		return self.reclaimStorage(ctx, volume, pv, saltenv)
 	}
 
 	// PersistentVolume still in use: wait before reclaiming the storage.
@@ -871,6 +872,7 @@ func (self *ReconcileVolume) reclaimStorage(
 	ctx context.Context,
 	volume *storagev1alpha1.Volume,
 	pv *corev1.PersistentVolume,
+	saltenv string,
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
@@ -879,7 +881,10 @@ func (self *ReconcileVolume) reclaimStorage(
 
 	switch volume.Status.Job {
 	case "": // No job in progress: call Salt to unprepare the volume.
-		if jid, err := self.salt.UnprepareVolume(ctx, nodeName); err != nil {
+		jid, err := self.salt.UnprepareVolume(
+			ctx, nodeName, volume.Name, saltenv,
+		)
+		if err != nil {
 			reqLogger.Error(err, "failed to run UnprepareVolume")
 			return delayedRequeue(err)
 		} else {
