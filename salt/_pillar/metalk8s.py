@@ -120,6 +120,7 @@ def _load_iso_path(config_data):
 
     return res
 
+
 def ext_pillar(minion_id, pillar, bootstrap_config):
     config = _load_config(bootstrap_config)
     if config.get('_errors'):
@@ -131,7 +132,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
         metal_data = {
             'products': _load_iso_path(config),
             'ca': _load_ca(config),
-            'api_server': _load_apiserver(config),
+            'api_server': _load_apiserver(config)
         }
 
     result = {

@@ -20,7 +20,7 @@ Prepare registry configuration for declared Solutions:
 # Compute information about Solutions from their ISO files
 {%- set solutions_info = {} %} {# indexed by <name>-<version> #}
 {%- set highest_versions = {} %} {# indexed by <name> #}
-{%- for solution_iso in pillar.metalk8s.solutions.configured %}
+{%- for solution_iso in configured %}
   {%- set iso_info = salt.saltutil.cmd(
           tgt=pillar.bootstrap_id,
           fun='metalk8s.product_info_from_iso',
@@ -215,7 +215,7 @@ Unmount removed Solutions archives:
   - sls:
     - metalk8s.solutions.unmounted
   - saltenv: metalk8s-{{ version }}
-  require:
+  - require:
     - salt: Remove registry configurations for removed Solutions
 
 # Unregister removed Solutions

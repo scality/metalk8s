@@ -1619,7 +1619,7 @@ def customresourcedefinition_absent(
         'metalk8s_kubernetes.show_customresourcedefinition'](name, **kwargs)
 
     if customresourcedefinition is None:
-        ret['result'] = True if not __opts__['test'] else None
+        ret['result'] = True
         ret['comment'] = 'The custom resource definition does not exist'
         return ret
 

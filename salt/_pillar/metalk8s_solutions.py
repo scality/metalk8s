@@ -47,5 +47,4 @@ def _load_solutions():
 
 
 def ext_pillar(minion_id, pillar):
-    solutions = _load_solutions
     return {"metalk8s": {'solutions': _load_solutions()}}

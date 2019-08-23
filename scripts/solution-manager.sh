@@ -17,8 +17,6 @@ _usage() {
     echo "solution-manager.sh [options]"
     echo "Options:"
     echo "-s/--solution <solution path>:   Path to solution ISO"
-    echo "-n/--name <solution name>:       Solution name"
-    echo "--version <solution version>:    Version fo the solution"
     echo "-l/--log-file <logfile_path>:    Path to log file"
     echo "-v/--verbose:                    Run in verbose mode"
 }
@@ -184,8 +182,8 @@ _add_solution() {
     # ("/tmp/solution1.iso" "/tmp/solution2.iso")
     local existent_solutions=()
     IFS=" " read -r -a \
-        existent_solutions <<< "$(salt-call pillar.get metalk8s:solutions:configured \
-        --out txt | cut -d' ' -f2- | tr -d '[],{}')"
+        products <<< "$(salt-call --out txt slsutil.renderer \
+          string=\"{{ pillar.metalk8s.solutions.configured | join(' ')}}\" | cut -d' ' -f2-) )"
     for solution in "${SOLUTIONS[@]}"; do
         if ! containsElement "'$solution'" \
              "${existent_solutions[@]+"${existent_solutions[@]}"}"; then
@@ -200,7 +198,7 @@ _add_solution() {
         solutions_list+=,$i
     done
 
-    echo "Updating metalk8s.solutions.yaml"
+    echo "Updating $SOLUTION_CONFIG"
     $SALT_CALL state.single file.serialize "$SOLUTION_CONFIG" \
         dataset="{'archives': [$solutions_list]}" \
         merge_if_exists=True \

@@ -1,4 +1,3 @@
-
 {%- set solutions_list = pillar.metalk8s.solutions.configured %}
 {%- if solutions_list %}
 {%- for solution_iso in solutions_list %}
