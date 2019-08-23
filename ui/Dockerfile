@@ -3,6 +3,7 @@ ARG NODE_IMAGE_VERSION=10.16.0
 
 FROM node:${NODE_IMAGE_VERSION} AS build-step
 
+USER node
 WORKDIR /home/node
 # Install only dev dependencies that are necessary for the build.
 RUN npm install \
