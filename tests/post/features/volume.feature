@@ -64,3 +64,16 @@ Feature: Volume management
               someRandomDevice:
                 capacity: 10Gi
         Then the Volume 'volume5' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
+
+    Scenario: Test in-use protection
+        Given a Volume 'volume6' exist
+        And a PersistentVolumeClaim exists for 'volume6'
+        And a Pod using volume 'volume6' and running '["sleep", "60"]' exist
+        When I delete the Volume 'volume6'
+        Then the Volume 'volume6' is 'Available'
+        And the Volume 'volume6' is marked for deletion
+        And the PersistentVolume 'volume6' is marked for deletion
+        When I delete the Pod using 'volume6'
+        And I delete the PersistentVolumeClaim on 'volume6'
+        Then the Volume 'volume6' does not exist
+        And the PersistentVolume 'volume6' does not exist

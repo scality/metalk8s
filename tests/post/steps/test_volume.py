@@ -26,6 +26,48 @@ spec:
     size: 10Gi
 """
 
+PVC_TEMPLATE = """
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {volume_name}-pvc
+spec:
+  storageClassName: {storage_class}
+  accessModes:
+      - {access}
+  resources:
+      requests:
+        storage: {size}
+"""
+
+POD_TEMPLATE = """
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {volume_name}-pod
+spec:
+  volumes:
+    - name: {volume_name}-pod-storage
+      persistentVolumeClaim:
+        claimName: {volume_name}-pvc
+  containers:
+    - name: {volume_name}-pod-container
+      image: {image_name}
+      command: {command}
+      volumeMounts:
+        - mountPath: "/mnt/"
+          name: {volume_name}-pod-storage
+  tolerations:
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
+  terminationGracePeriodSeconds: 0
+"""
+
+
 # }}}
 # Fixture {{{
 
@@ -67,6 +109,10 @@ def test_no_volume_type(host):
 def test_invalid_volume_type(host):
     pass
 
+@scenario('../features/volume.feature', 'Test in-use protection')
+def test_in_use_protection(host):
+    pass
+
 # }}}
 # Given {{{
 
@@ -77,6 +123,43 @@ def volume_exist(host, name, k8s_custom_client):
     body = DEFAULT_VOLUME.format(name=name)
     _create_volume(k8s_custom_client, body)
     check_volume_status(host, name, 'Available', k8s_custom_client)
+
+
+@given(parsers.parse("a PersistentVolumeClaim exists for '{volume_name}'"))
+def create_pvc_for_volume(host, volume_name, k8s_client):
+    if _get_pv_claim(k8s_client, '{}-pvc'.format(volume_name)) is not None:
+        return
+    pv = _get_pv(k8s_client, volume_name)
+    assert pv is not None, 'PersistentVolume {} not found'.format(volume_name)
+    body = PVC_TEMPLATE.format(
+        volume_name=volume_name,
+        storage_class=pv.spec.storage_class_name,
+        access=pv.spec.access_modes[0],
+        size=pv.spec.capacity['storage']
+    )
+    k8s_client.create_namespaced_persistent_volume_claim(
+        namespace='default', body=yaml.safe_load(body)
+    )
+
+
+@given(parsers.parse(
+    "a Pod using volume '{volume_name}' and running '{command}' exist"
+))
+def create_pod_for_volume(host, volume_name, command, k8s_client, utils_image):
+    pod_name = '{}-pod'.format(volume_name)
+    if _get_pod(k8s_client, pod_name) is not None:
+        return
+    body = POD_TEMPLATE.format(
+        volume_name=volume_name, image_name=utils_image, command=command,
+    )
+    k8s_client.create_namespaced_pod(
+        namespace='default', body=yaml.safe_load(body)
+    )
+    utils.retry(
+        kube_utils.wait_for_pod(k8s_client, pod_name),
+        times=30, wait=2,
+        name="wait for pod {}".format(pod_name)
+    )
 
 # }}}
 # When {{{
@@ -106,6 +189,39 @@ def delete_pv(host, name, k8s_client):
         grace_period_seconds=0
     )
 
+
+@when(parsers.parse("I delete the Pod using '{volume_name}'"))
+def delete_pod(host, volume_name, k8s_client):
+    name = '{}-pod'.format(volume_name)
+
+    def _check_pod_absent():
+        assert _get_pod(k8s_client, name) is None,\
+            'Volume {} still exist'.format(name)
+
+    k8s_client.delete_namespaced_pod(
+        name=name, namespace='default', grace_period_seconds=0
+    )
+    utils.retry(
+        _check_pod_absent, times=30, wait=2,
+        name='checking for the absence of pod {}'.format(name)
+    )
+
+
+@when(parsers.parse("I delete the PersistentVolumeClaim on '{volume_name}'"))
+def delete_pv_claim(host, volume_name, k8s_client):
+    name = '{}-pvc'.format(volume_name)
+
+    def _check_pv_claim_absent():
+        assert _get_pv_claim(k8s_client, name) is None,\
+            'PersistentVolumeClaim {} still exist'.format(name)
+
+    k8s_client.delete_namespaced_persistent_volume_claim(
+        name=name, namespace='default', grace_period_seconds=0
+    )
+    utils.retry(
+        _check_pv_claim_absent, times=10, wait=2,
+        name='checking for the absence of PersistentVolumeClaim {}'.format(name)
+    )
 
 # }}}
 # Then {{{
@@ -227,6 +343,20 @@ def check_volume_error(host, name, code, pattern, k8s_custom_client):
         name='checking error for Volume {}'.format(name)
     )
 
+
+@then(parsers.parse("the Volume '{name}' is marked for deletion"))
+def check_volume_deletion_marker(name, k8s_custom_client):
+    def _check_volume_deletion_marker():
+        volume = _get_volume(k8s_custom_client, name)
+        assert volume is not None, 'Volume {} not found'.format(name)
+        assert volume['metadata'].get('deletionTimestamp') is not None,\
+            'Volume {} is not marked for deletion'.format(name)
+
+    utils.retry(
+        _check_volume_deletion_marker, times=30, wait=2,
+        name='checking that Volume {} is marked for deletion'.format(name)
+    )
+
 # }}}
 # Helpers {{{
 # Volume {{{
@@ -259,6 +389,30 @@ def _get_volume(k8s_client, name):
 def _get_pv(k8s_client, name):
     try:
         return k8s_client.read_persistent_volume(name)
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        raise
+
+# }}}
+# PersistentVolumeClaim {{{
+
+def _get_pv_claim(k8s_client, name, namespace='default'):
+    try:
+        return k8s_client.read_namespaced_persistent_volume_claim(
+            name=name, namespace=namespace
+        )
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        raise
+
+# }}}
+# Pod {{{
+
+def _get_pod(k8s_client, name, namespace='default'):
+    try:
+        return k8s_client.read_namespaced_pod(name=name, namespace=namespace)
     except (ApiException, HTTPError) as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
             return None
