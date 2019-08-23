@@ -1,0 +1,52 @@
+@startuml
+
+title Volume Deployment
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 2
+skinparam titleBorderColor red
+skinparam titleBackgroundColor Aqua-CadetBlue
+
+skinparam wrapWidth 75
+skinparam defaultTextAlignment center
+
+partition DeployVolume {
+  start
+
+  :Check value of the field **Job**;
+  split
+    -> No value;
+    :Add finalizer on **Volume**;
+    :Spawn Salt job **PrepareVolume**;
+    #FFA500:Set **Volume** status to **Pending**;
+    #00F0F0:Reschedule now;
+  split again
+    -> Job ID;
+    :Poll the status of the Salt job;
+    split
+      -> Job failed;
+      #FF0000:Set **Volume** status to **Failed**;
+      #00F0F0:Reschedule now;
+    split again
+      -> Job not found;
+      :Unset the **Volume** field **Job**;
+      note right: This will relaunch the job
+      #00F0F0:Reschedule now;
+    split again
+      -> Job succeed;
+      :Set the **Volume** field **Job** to "DONE";
+      #00F0F0:Reschedule now;
+    split again
+      -> Job still in progress;
+      #00F0F0:Reschedule in 10s;
+    end split;
+  split again
+    -> "DONE";
+    :Create the backing **PersistentVolume**;
+    #00FF00:Set **Volume** status to **Available**;
+    #00F0F0:Reschedule now;
+  end split;
+
+  stop
+}
+
+@enduml

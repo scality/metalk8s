@@ -1,0 +1,48 @@
+@startuml
+
+title Volume Deletion\n(nominal case)
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 2
+skinparam titleBorderColor red
+skinparam titleBackgroundColor Aqua-CadetBlue
+
+skinparam defaultTextAlignment center
+
+actor User
+participant "Platform UI" as UI
+participant "API Server" as API
+participant "Storage Operator" as Operator
+participant "Salt API" as Salt
+participant "Cluster Node" as Node
+
+User->UI: Delete a volume
+UI->API: Delete a **Volume** CR
+API->UI: 200 OK
+note left: The **Volume** is now marked for deletion
+
+API->Operator: Notify: Delete **Volume** CR
+Operator->API: Delete backing **PersistentVolume**
+note left: The **PersistentVolume** is now marked for deletion
+
+Operator->Salt: Call **UnprepareVolume**
+Operator->API: Set **Volume** status to **Terminating**
+note left: The **Volume** now appears as **Terminating** in the UI
+
+Salt->Node: Send order to Salt minion
+loop
+  Operator->Salt: Poll Salt job status
+  Salt->Operator: Job still in progress…
+
+  ... ...
+end
+Node->Salt: Storage cleaned up
+Operator->Salt: Poll Salt job status
+Salt->Operator: Job done
+
+Operator->API: Remove **PersistentVolume** finalizer
+note left: The **PersistentVolume** object is really deleted
+
+Operator->API: Remove **PersistentVolume** finalizer
+note left: The **Volume** object is really deleted
+
+@enduml

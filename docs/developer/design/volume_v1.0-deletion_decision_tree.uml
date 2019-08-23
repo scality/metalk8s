@@ -1,0 +1,58 @@
+@startuml
+
+title Volume deletion decision tree
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 2
+skinparam titleBorderColor red
+skinparam titleBackgroundColor Aqua-CadetBlue
+
+skinparam wrapWidth 75
+skinparam defaultTextAlignment center
+
+start
+
+:**Volume** Status;
+split
+  -> **Unknown**;
+  #FF0000:**CANNOT DELETE**]
+  stop
+split again
+  -> **Pending**;
+  #FF0000:**CANNOT DELETE**]
+  stop
+split again
+  -> **Failed**/**Available**;
+  if (**Volume** has **PersistentVolume**?) then (YES)
+    :**PersistentVolume** Status;
+    split
+      -> **Pending**;
+      #FF0000:**CANNOT DELETE**]
+      stop
+    split again
+      -> **Available**;
+      #00FF00:**CAN DELETE**]
+      stop
+    split again
+      -> **Bound**;
+      #FF0000:**CANNOT DELETE**]
+      stop
+    split again
+      -> **Released**;
+      #00FF00:**CAN DELETE**]
+      stop
+    split again
+      -> **Failed**;
+      #00FF00:**CAN DELETE**]
+      stop
+    end split;
+  else (NO)
+    #00FF00:**CAN DELETE**]
+    stop
+  endif
+split again
+  -> **Terminating**;
+  #FF0000:**CANNOT DELETE**]
+  stop
+end split;
+
+@enduml
