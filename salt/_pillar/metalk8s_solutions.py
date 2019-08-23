@@ -1,4 +1,3 @@
-import os.path
 import logging
 from salt.exceptions import CommandExecutionError
 

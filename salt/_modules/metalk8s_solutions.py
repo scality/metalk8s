@@ -82,8 +82,9 @@ def get_unconfigured_solutions():
     return result
 
 def set_configured(
-        iso_info,
-        solution_iso,
+        name,
+        version,
+        iso_path,
         context="kubernetes-admin@kubernetes",
         kubeconfig="/etc/kubernetes/admin.conf"
         ):
@@ -95,9 +96,9 @@ def set_configured(
     api_instance = kubernetes.client.CoreV1Api()
     # recreate the configmap format
     sol_dict = {
-        '{}.name'.format(iso_info['name']): iso_info['name'],
-        '{}.version'.format(iso_info['name']): iso_info['version'],
-        '{}.iso'.format(iso_info['name']): solution_iso
+        '{}.name'.format(name): name,
+        '{}.version'.format(name): version,
+        '{}.iso'.format(name): iso_path
     }
     body = {'data': sol_dict}
     try: 

@@ -3,7 +3,8 @@
 {%- if solutions_list %}
 {%- for solution_iso in solutions_list %}
   {%- set solution = salt['metalk8s.product_info_from_iso'](solution_iso) %}
-  {%- set path = "/srv/scality/" ~ solution.name ~ "-" ~ solution.version %}
+  {%- set solution_name = solution.name | lower | replace(' ', '-') %}
+  {%- set path = "/srv/scality/" ~ solution_name ~ "-" ~ solution.version %}
 
 
 Solution path {{ path }} exists:
