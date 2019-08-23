@@ -1,5 +1,16 @@
-Running a local cluster
-=======================
+Running a cluster locally
+=========================
+
+Requirements
+------------
+
+- the :ref:`mandatory requirements for the buildchain<build-required-deps>`
+- `Vagrant <https://www.vagrantup.com/>`_, 1.8 or higher: to spawn a local
+  cluster (VirtualBox is currently the only provider supported)
+- `VirtualBox <https://www.virtualbox.org>`_: to spawn a local cluster
+
+Procedure
+---------
 
 You can spawn a local MetalK8s cluster by running ``./doit.sh vagrant_up``.
 
@@ -21,6 +32,6 @@ This will:
 - spawn a virtual machine for the node 1
 - import the pre-shared SSH key into it
 
-You can then follow the cluster expansion procedure to add the frshly spawned
+You can then follow the cluster expansion procedure to add the freshly spawned
 node into your MetalK8s cluster (you can get the node's IP with
 ``vagrant ssh node1 -- sudo ip a show eth1``).
