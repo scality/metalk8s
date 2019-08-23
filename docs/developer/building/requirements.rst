@@ -4,6 +4,9 @@ Requirements
 In order to build MetalK8s we rely and third-party tools, some of them are
 mandatory, others are optional.
 
+
+.. _build-required-deps:
+
 Mandatory
 ---------
 
