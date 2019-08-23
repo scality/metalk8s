@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.7.2",
-    "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#2496b58",
+    "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#test/remove-dist",
     "@scality/core-ui": "github:scality/core-ui.git#094b88f",
     "axios": "^0.18.0",
     "formik": "1.5.1",
