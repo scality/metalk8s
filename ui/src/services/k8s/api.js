@@ -1,5 +1,5 @@
 import ApiClient from '../ApiClient';
-import { Config, Core_v1Api } from '@kubernetes/client-node';
+import { Config, CoreV1Api } from '@kubernetes/client-node';
 
 let config, coreV1;
 let k8sApiClient = null;
@@ -19,7 +19,7 @@ export function authenticate(token) {
 
 export const updateApiServerConfig = (url, token) => {
   config = new Config(url, token, 'Basic');
-  coreV1 = config.makeApiClient(Core_v1Api);
+  coreV1 = config.makeApiClient(CoreV1Api);
 };
 
 export async function getNodes() {
