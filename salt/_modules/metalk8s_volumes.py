@@ -3,6 +3,7 @@
 
 import abc
 import contextlib
+import errno
 import functools
 import json
 import re
@@ -123,6 +124,39 @@ def format(name):
     _get_volume(name).format()
 
 
+def is_cleaned_up(name):
+    """Check if the backing storage device for the given volume is cleaned up.
+
+    Args:
+        name (str): volume name
+
+    Returns:
+        bool: True if the backing storage device is cleaned up, otherwise False
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '<NODE_NAME>' metalk8s_volumes.is_cleaned_up example-volume
+    """
+    return _get_volume(name).is_cleaned_up
+
+
+def clean_up(name):
+    """Clean up the backing storage device of the given volume.
+
+    Args:
+        name (str): volume name
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '<NODE_NAME>' metalk8s_volumes.clean_up example-volume
+    """
+    _get_volume(name).clean_up()
+
+
 # Volume {{{
 
 
@@ -153,6 +187,16 @@ class Volume(object):
     @abc.abstractmethod
     def provision(self):
         """Provision the backing storage device."""
+        return
+
+    @abc.abstractproperty
+    def is_cleaned_up(self):
+        """Check if the backing storage device is cleaned up."""
+        return
+
+    @abc.abstractmethod
+    def clean_up(self):
+        """Clean up the backing storage device."""
         return
 
     @abc.abstractproperty
@@ -251,6 +295,29 @@ class SparseLoopDevice(Volume):
         # We format a "normal" file, not a block device: we need force=True.
         super(SparseLoopDevice, self).format(force=True)
 
+    @property
+    def is_cleaned_up(self):
+        return not (self.is_provisioned or self.exists)
+
+    def clean_up(self):
+        try:
+            device_path = '/dev/disk/by-uuid/{}'.format(
+                self.get('metadata.uid')
+            )
+            command = ' '.join(['losetup', '--detach', device_path])
+            _run_cmd(command)
+        except CommandExecutionError as exn:
+            # Gracefully handle if the loop device is already detached.
+            # Return code is too generic, have to check the error message…
+            if 'No such file or directory' not in exn.message:
+                raise
+        try:
+            os.remove(self.path)
+        except OSError as exn:
+            # Gracefully handle if the file was already deleted.
+            if exn.errno != errno.ENOENT:
+                raise
+
 
 # }}}
 # RawBlockdevice {{{
@@ -282,6 +349,13 @@ class RawBlockDevice(Volume):
     def format(self, force=False):
         # We format an entire device, not just a partition: we need force=True.
         super(RawBlockDevice, self).format(force=True)
+
+    @property
+    def is_cleaned_up(self):
+        return True # Nothing to do so it's always True.
+
+    def clean_up(self):
+        return  # Nothing to do
 
 
 # }}}
