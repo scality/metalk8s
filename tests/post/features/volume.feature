@@ -50,3 +50,17 @@ Feature: Volume management
               nodeName: bootstrap
               storageClassName: metalk8s-prometheus
         Then the Volume 'volume4' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
+
+    Scenario: Create a volume with an invalid volume type
+        Given the Kubernetes API is available
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume5
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s-prometheus
+              someRandomDevice:
+                capacity: 10Gi
+        Then the Volume 'volume5' is 'Failed' with code 'InternalError' and message matches 'volume type not found'

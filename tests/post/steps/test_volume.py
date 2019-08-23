@@ -62,6 +62,11 @@ def test_pv_protection(host):
 def test_no_volume_type(host):
     pass
 
+@scenario('../features/volume.feature',
+          'Create a volume with an invalid volume type')
+def test_invalid_volume_type(host):
+    pass
+
 # }}}
 # Given {{{
 
