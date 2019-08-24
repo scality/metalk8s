@@ -18,7 +18,7 @@ Package = namedtuple('Package', ('name', 'version', 'release'))
 # Project-wide versions {{{
 
 CALICO_VERSION     : str = '3.8.2'
-K8S_VERSION        : str = '1.15.2'
+K8S_VERSION        : str = '1.15.3'
 KEEPALIVED_VERSION : str = '1.3.5-8.el7_6'
 SALT_VERSION       : str = '2018.3.4'
 
