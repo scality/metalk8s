@@ -134,7 +134,7 @@ stages:
           name: Run all UI unit tests
           workdir: build/ui
           command: >
-            npm install
+            npm ci
             --no-cache
             --no-save
             -q
