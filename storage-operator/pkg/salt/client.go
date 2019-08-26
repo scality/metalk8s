@@ -81,8 +81,9 @@ func (self *Client) PrepareVolume(
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return "", errors.Wrapf(
-			err, "PrepareVolume failed (target=%s, volume=%s)",
-			nodeName, volumeName,
+			err,
+			"PrepareVolume failed (env=%s, target=%s, volume=%s)",
+			saltenv, nodeName, volumeName,
 		)
 	}
 	// TODO(#1461): make this more robust.
@@ -122,8 +123,9 @@ func (self *Client) UnprepareVolume(
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return "", errors.Wrapf(
-			err, "UnrepareVolume failed (target=%s, volume=%s)",
-			nodeName, volumeName,
+			err,
+			"UnrepareVolume failed (env=%s, target=%s, volume=%s)",
+			saltenv, nodeName, volumeName,
 		)
 	}
 	// TODO(#1461): make this more robust.
