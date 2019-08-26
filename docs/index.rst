@@ -25,6 +25,10 @@ Welcome to MetalK8s's documentation!
    operation/index
    glossary
 
+Useless Change
+==============
+Because, why not.
+
 
 Indices and tables
 ==================
