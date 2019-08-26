@@ -25,7 +25,8 @@ Solution {{ solution_iso }} is available at {{ path }}:
   - require:
     - file: Solution mountpoint {{ path }} exists
 
-#  Validate solution structure
+# Validate solution structure
+# TODO: This should be moved before mounting the solution's ISO
 Assert '{{ path }}/product.txt' exists:
   file.exists:
   - name: {{ path }}/product.txt

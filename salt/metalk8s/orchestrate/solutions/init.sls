@@ -7,6 +7,8 @@
 {%- set custom_renderer =
   "jinja | kubernetes kubeconfig=" ~ kubeconfig ~ "&context=" ~ context
 %}
+{%- set configured = pillar.metalk8s.solutions.configured | default([]) %}
+{%- set deployed = pillar.metalk8s.solutions.deployed | default({}) %}
 
 
 # Configure
@@ -133,15 +135,18 @@ Register Solution {{ fullname }} in ConfigMap:
   "jinja | kubernetes kubeconfig=" ~ kubeconfig ~ "&context=" ~ context ~ "&absent=True"
 %}
 
-{%- set configured = pillar.metalk8s.solutions.configured or [] %}
-{%- set deployed = pillar.metalk8s.solutions.deployed or {} %}
+# Undeoloy solution
+# Only undeploy if this is the last deployed version
+# Else the deployed version will already override the
+# old k8s objects from older versions
 {%- if deployed %}
 {%- for solution_name, versions in deployed.items() %}
-  {%- for version_info in versions %}
+  {%- if versions|length == 1 %}
+  {%- set version_info = versions[0] %}
+#  {%- for version_info in versions %}
     {%- set lower_name = solution_name | lower | replace(' ', '-') %}
     {%- set fullname = lower_name ~ '-' ~ version_info.version %}
     {%- if version_info.iso not in configured %}
-  # Undeoloy solution
     # Undeploy the Admin UI
     {%- set deploy_files_list = ["deployment.yaml", "service.yaml"] %}
     {%- for deploy_file in deploy_files_list %}
@@ -157,6 +162,7 @@ Register Solution {{ fullname }} in ConfigMap:
               },
           )[pillar.bootstrap_id]['ret']
       %}
+
 Delete Admin UI "{{ deploy_file }}" for Solution {{ fullname }}:
   module.run:
     - state.template_str:
@@ -195,8 +201,10 @@ Delete CRD "{{ crd_file }}" for Solution {{ fullname }}:
 
      {%- endfor %} {# crd_file in crd_files #}
     {%- endif %} {# if version_info #}
-   {%- endfor %} {# for version_info #}
+#   {%- endfor %} {# for version_info #}
+   {%- endif %} {# if len() #}
   {%- endfor %} {# for solution_name #}
+  
 {%- endif %} {# if deployed #}
 
 
@@ -219,9 +227,6 @@ Unmount removed Solutions archives:
     - salt: Remove registry configurations for removed Solutions
 
 # Unregister removed Solutions
-# TODO: consider undeploying UI/CRDs
-{%- set configured = pillar.metalk8s.solutions.configured | default([]) %}
-{%- set deployed = pillar.metalk8s.solutions.deployed | default({}) %}
 {%- for solution_name, versions in deployed.items() %}
   {%- for solution_info in versions %}
     {%- if solution_info.iso not in configured %}
