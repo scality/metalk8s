@@ -11,6 +11,16 @@ stages:
     worker:
       type: local
     steps:
+      - Git: &git_pull
+          name: git pull
+          repourl: "%(prop:git_reference)s"
+          method: clobber
+          retryFetch: true
+          haltOnFailure: true
+      - SetPropertyFromCommand:
+          name: Blah
+          property: metalk8s_test_plan
+          command: python3 eve/construct-test-plan.py
       - TriggerStages:
           name: Trigger build, docs and lint stages simultaneously
           stage_names:
@@ -53,12 +63,7 @@ stages:
             echo "Could not reach Docker daemon from buildbot worker" >&2
             exit 1'
           haltOnFailure: true
-      - Git: &git_pull
-          name: git pull
-          repourl: "%(prop:git_reference)s"
-          method: clobber
-          retryFetch: true
-          haltOnFailure: true
+      - Git: *git_pull
       - ShellCommand:
           name: build everything
           env:
