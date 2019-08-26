@@ -24,7 +24,7 @@ Gather required information
 
    .. code-block:: shell
 
-      root@boostrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf get svc metalk8s-ui -n kube-system
+      root@boostrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf get svc metalk8s-ui -n metalk8s-ui
 
       NAME                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
       metalk8s-ui           NodePort    10.104.61.208   <none>        80:30923/TCP     3h
