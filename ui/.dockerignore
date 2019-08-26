@@ -1,0 +1,4 @@
+build/
+junit/
+node_modules/
+tmp/
