@@ -5,7 +5,6 @@ import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
-import { fetchClusterVersion } from './app/nodes';
 import { fetchUserInfo } from './login';
 import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 import { REFRESH_TIMEOUT } from '../constants';
@@ -126,7 +125,6 @@ export function* fetchConfig() {
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
     yield call(fetchUserInfo);
-    yield call(fetchClusterVersion);
   }
 }
 
