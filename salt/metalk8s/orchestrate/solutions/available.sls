@@ -15,16 +15,10 @@ Make sure "metalk8s-solutions" Namespace exists:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
 
-Make sure "admin-uis" Namespace exists:
-  metalk8s_kubernetes.namespace_present:
-    - name: admin-uis
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
-
 Make sure "ui-branding" ConfigMap exists:
   metalk8s_kubernetes.configmap_present:
     - name: ui-branding
-    - namespace: admin-uis
+    - namespace: metalk8s-solutions
     - data:
         config.json: |
           {
@@ -37,9 +31,8 @@ Make sure "ui-branding" ConfigMap exists:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - require:
-      - metalk8s_kubernetes: Make sure "admin-uis" Namespace exists
+      - metalk8s_kubernetes: Make sure "metalk8s-solutions" Namespace exists
 
-# Mount
 Mount declared Solutions archives:
   salt.state:
   - tgt: {{ pillar.bootstrap_id }}
