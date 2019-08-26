@@ -4,6 +4,7 @@
 import abc
 import contextlib
 import errno
+import fcntl
 import functools
 import json
 import re
@@ -300,23 +301,16 @@ class SparseLoopDevice(Volume):
         return not (self.is_provisioned or self.exists)
 
     def clean_up(self):
+        LOOP_CLR_FD = 0x4C01  # From /usr/include/linux/loop.h
+        device_path = '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
         try:
-            device_path = '/dev/disk/by-uuid/{}'.format(
-                self.get('metadata.uid')
-            )
-            command = ' '.join(['losetup', '--detach', device_path])
-            _run_cmd(command)
-        except CommandExecutionError as exn:
-            # Gracefully handle if the loop device is already detached.
-            # Return code is too generic, have to check the error message…
-            if 'No such file or directory' not in exn.message:
-                raise
-        try:
+            with _open_fd(device_path, os.O_RDONLY) as fd:
+                fcntl.ioctl(fd, LOOP_CLR_FD, 0)
             os.remove(self.path)
         except OSError as exn:
-            # Gracefully handle if the file was already deleted.
             if exn.errno != errno.ENOENT:
                 raise
+            log.warning('{} already removed'.format(exn.filename))
 
 
 # }}}
