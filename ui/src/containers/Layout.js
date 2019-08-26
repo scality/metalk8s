@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
@@ -27,9 +27,14 @@ import {
   refreshSolutionsAction,
   stopRefreshSolutionsAction
 } from '../ducks/config';
+import { fetchClusterVersionAction } from '../ducks/app/nodes';
 
 const Layout = props => {
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
+  useEffect(() => {
+    props.fetchClusterVersion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const help = [
     {
@@ -189,7 +194,8 @@ const mapDispatchToProps = dispatch => {
     logout: () => dispatch(logoutAction()),
     removeNotification: uid => dispatch(removeNotificationAction(uid)),
     updateLanguage: language => dispatch(updateLanguageAction(language)),
-    toggleSidebar: () => dispatch(toggleSideBarAction())
+    toggleSidebar: () => dispatch(toggleSideBarAction()),
+    fetchClusterVersion: () => dispatch(fetchClusterVersionAction())
   };
 };
 

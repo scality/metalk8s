@@ -61,6 +61,7 @@ it('update the config state when fetchConfig', () => {
     call(ApiPrometheus.initialize, 'http://172.21.254.46:30222')
   );
   expect(gen.next().value).toEqual(call(fetchUserInfo));
+  expect(gen.next().done).toEqual(true);
 });
 
 it('update the language when updateLanguage', () => {
