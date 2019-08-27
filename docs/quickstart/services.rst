@@ -12,7 +12,7 @@ From the bootstrap node, get the port used by Grafana:
 
 .. code-block:: shell
 
-   root@bootstrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf get service grafana -n monitoring
+   root@bootstrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf get service grafana -n metalk8s-monitoring
 
    NAME      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
    grafana   ClusterIP   10.109.125.193   <none>        3000/TCP   1h
@@ -29,7 +29,7 @@ Forward the port used by Grafana:
 
 .. code-block:: shell
 
-   user@your-host $ kubectl --namespace monitoring port-forward svc/grafana 3000
+   user@your-host $ kubectl --namespace metalk8s-monitoring port-forward svc/grafana 3000
 
 Then open your web browser and navigate to ``http://localhost:3000``
 
