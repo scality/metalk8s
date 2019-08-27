@@ -1,6 +1,7 @@
 {%- from "metalk8s/repo/macro.sls" import repo_prefix with context %}
 
 {%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
+{%- set registry = 'https://' ~ pillar.metalk8s.endpoints.repositories.ip ~ ':8080' %}
 {%- set version = pillar.metalk8s.nodes[pillar.bootstrap_id].version %}
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}
@@ -23,6 +24,7 @@ Make sure "ui-branding" ConfigMap exists:
         config.json: |
           {
             "url": "{{ apiserver }}"
+            "registry_prefix": "{{ registry }}"
           }
         theme.json: |
           {
