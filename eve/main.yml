@@ -149,7 +149,7 @@ stages:
     worker:
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
-      flavor: m1.medium
+      flavor: m1.large
       path: eve/workers/openstack-single-node
     steps:
       - Git: *git_pull
