@@ -21,7 +21,7 @@ def reach_UI(host):
         ip = json.loads(output)['local']
 
         cmd_port = ('kubectl --kubeconfig=/etc/kubernetes/admin.conf'
-                    ' get svc -n kube-system metalk8s-ui --no-headers'
+                    ' get svc -n metalk8s-ui metalk8s-ui --no-headers'
                     ' -o custom-columns=":spec.ports[0].nodePort"')
         port = host.check_output(cmd_port)
 

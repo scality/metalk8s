@@ -8,10 +8,16 @@ include:
 {%- set saltapi = 'http://' ~ pillar.metalk8s.endpoints['salt-master'].ip ~ ':' ~ pillar.metalk8s.endpoints['salt-master'].ports.api %}
 {%- set prometheus = 'http://' ~ pillar.metalk8s.endpoints.prometheus.ip ~ ':' ~ pillar.metalk8s.endpoints.prometheus.ports.api.node_port  %}
 
+Create metalk8s-ui namespace:
+  metalk8s_kubernetes.namespace_present:
+    - name: metalk8s-ui
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.deployment_present:
     - name: metalk8s-ui
-    - namespace: kube-system
+    - namespace: metalk8s-ui
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - source: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml
@@ -20,7 +26,7 @@ Create metalk8s-ui deployment:
 Create metalk8s-ui service:
   metalk8s_kubernetes.service_present:
     - name: metalk8s-ui
-    - namespace: kube-system
+    - namespace: metalk8s-ui
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - metadata:
@@ -39,7 +45,7 @@ Create metalk8s-ui service:
 Create metalk8s-ui ConfigMap:
   metalk8s_kubernetes.configmap_present:
     - name: metalk8s-ui
-    - namespace: kube-system
+    - namespace: metalk8s-ui
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - data:
