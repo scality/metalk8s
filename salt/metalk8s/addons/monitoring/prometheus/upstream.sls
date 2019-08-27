@@ -26,7 +26,7 @@ spec:
   insecureSkipTLSVerify: true
   service:
     name: prometheus-adapter
-    namespace: monitoring
+    namespace: metalk8s-monitoring
   version: v1beta1
   versionPriority: 100
 ---
@@ -38,7 +38,7 @@ metadata:
     prometheus: k8s
     role: alert-rules
   name: prometheus-k8s-rules
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   groups:
   - name: k8s.rules
@@ -359,7 +359,7 @@ spec:
         message: Alertmanager has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerdown
       expr: |
-        absent(up{job="alertmanager-main",namespace="monitoring"} == 1)
+        absent(up{job="alertmanager-main",namespace="metalk8s-monitoring"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -431,7 +431,7 @@ spec:
         message: Prometheus has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusdown
       expr: |
-        absent(up{job="prometheus-k8s",namespace="monitoring"} == 1)
+        absent(up{job="prometheus-k8s",namespace="metalk8s-monitoring"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -440,7 +440,7 @@ spec:
         message: PrometheusOperator has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatordown
       expr: |
-        absent(up{job="prometheus-operator",namespace="monitoring"} == 1)
+        absent(up{job="prometheus-operator",namespace="metalk8s-monitoring"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -844,7 +844,7 @@ spec:
         message: The configuration of the instances of the Alertmanager cluster `{{$labels.service}}`
           are out of sync.
       expr: |
-        count_values("config_hash", alertmanager_config_hash{job="alertmanager-main",namespace="monitoring"}) BY (service) / ON(service) GROUP_LEFT() label_replace(prometheus_operator_spec_replicas{job="prometheus-operator",namespace="monitoring",controller="alertmanager"}, "service", "alertmanager-$1", "name", "(.*)") != 1
+        count_values("config_hash", alertmanager_config_hash{job="alertmanager-main",namespace="metalk8s-monitoring"}) BY (service) / ON(service) GROUP_LEFT() label_replace(prometheus_operator_spec_replicas{job="prometheus-operator",namespace="metalk8s-monitoring",controller="alertmanager"}, "service", "alertmanager-$1", "name", "(.*)") != 1
       for: 5m
       labels:
         severity: critical
@@ -853,7 +853,7 @@ spec:
         message: Reloading Alertmanager's configuration has failed for {{ $labels.namespace
           }}/{{ $labels.pod}}.
       expr: |
-        alertmanager_config_last_reload_successful{job="alertmanager-main",namespace="monitoring"} == 0
+        alertmanager_config_last_reload_successful{job="alertmanager-main",namespace="metalk8s-monitoring"} == 0
       for: 10m
       labels:
         severity: warning
@@ -861,9 +861,9 @@ spec:
       annotations:
         message: Alertmanager has not found all other members of the cluster.
       expr: |
-        alertmanager_cluster_members{job="alertmanager-main",namespace="monitoring"}
+        alertmanager_cluster_members{job="alertmanager-main",namespace="metalk8s-monitoring"}
           != on (service) GROUP_LEFT()
-        count by (service) (alertmanager_cluster_members{job="alertmanager-main",namespace="monitoring"})
+        count by (service) (alertmanager_cluster_members{job="alertmanager-main",namespace="metalk8s-monitoring"})
       for: 5m
       labels:
         severity: critical
@@ -914,7 +914,7 @@ spec:
         description: Reloading Prometheus' configuration has failed for {{$labels.namespace}}/{{$labels.pod}}
         summary: Reloading Prometheus' configuration failed
       expr: |
-        prometheus_config_last_reload_successful{job="prometheus-k8s",namespace="monitoring"} == 0
+        prometheus_config_last_reload_successful{job="prometheus-k8s",namespace="metalk8s-monitoring"} == 0
       for: 10m
       labels:
         severity: warning
@@ -924,7 +924,7 @@ spec:
           $labels.pod}}
         summary: Prometheus' alert notification queue is running full
       expr: |
-        predict_linear(prometheus_notifications_queue_length{job="prometheus-k8s",namespace="monitoring"}[5m], 60 * 30) > prometheus_notifications_queue_capacity{job="prometheus-k8s",namespace="monitoring"}
+        predict_linear(prometheus_notifications_queue_length{job="prometheus-k8s",namespace="metalk8s-monitoring"}[5m], 60 * 30) > prometheus_notifications_queue_capacity{job="prometheus-k8s",namespace="metalk8s-monitoring"}
       for: 10m
       labels:
         severity: warning
@@ -934,7 +934,7 @@ spec:
           $labels.pod}} to Alertmanager {{$labels.Alertmanager}}
         summary: Errors while sending alert from Prometheus
       expr: |
-        rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="monitoring"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0.01
+        rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="metalk8s-monitoring"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="metalk8s-monitoring"}[5m]) > 0.01
       for: 10m
       labels:
         severity: warning
@@ -944,7 +944,7 @@ spec:
           $labels.pod}} to Alertmanager {{$labels.Alertmanager}}
         summary: Errors while sending alerts from Prometheus
       expr: |
-        rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="monitoring"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0.03
+        rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="metalk8s-monitoring"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="metalk8s-monitoring"}[5m]) > 0.03
       for: 10m
       labels:
         severity: critical
@@ -954,7 +954,7 @@ spec:
           to any Alertmanagers
         summary: Prometheus is not connected to any Alertmanagers
       expr: |
-        prometheus_notifications_alertmanagers_discovered{job="prometheus-k8s",namespace="monitoring"} < 1
+        prometheus_notifications_alertmanagers_discovered{job="prometheus-k8s",namespace="metalk8s-monitoring"} < 1
       for: 10m
       labels:
         severity: warning
@@ -964,7 +964,7 @@ spec:
           reload failures over the last four hours.'
         summary: Prometheus has issues reloading data blocks from disk
       expr: |
-        increase(prometheus_tsdb_reloads_failures_total{job="prometheus-k8s",namespace="monitoring"}[2h]) > 0
+        increase(prometheus_tsdb_reloads_failures_total{job="prometheus-k8s",namespace="metalk8s-monitoring"}[2h]) > 0
       for: 12h
       labels:
         severity: warning
@@ -974,7 +974,7 @@ spec:
           compaction failures over the last four hours.'
         summary: Prometheus has issues compacting sample blocks
       expr: |
-        increase(prometheus_tsdb_compactions_failed_total{job="prometheus-k8s",namespace="monitoring"}[2h]) > 0
+        increase(prometheus_tsdb_compactions_failed_total{job="prometheus-k8s",namespace="metalk8s-monitoring"}[2h]) > 0
       for: 12h
       labels:
         severity: warning
@@ -984,7 +984,7 @@ spec:
           log (WAL).'
         summary: Prometheus write-ahead log is corrupted
       expr: |
-        tsdb_wal_corruptions_total{job="prometheus-k8s",namespace="monitoring"} > 0
+        tsdb_wal_corruptions_total{job="prometheus-k8s",namespace="metalk8s-monitoring"} > 0
       for: 4h
       labels:
         severity: warning
@@ -994,7 +994,7 @@ spec:
           samples.
         summary: Prometheus isn't ingesting samples
       expr: |
-        rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-k8s",namespace="monitoring"}[5m]) <= 0
+        rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-k8s",namespace="metalk8s-monitoring"}[5m]) <= 0
       for: 10m
       labels:
         severity: warning
@@ -1004,7 +1004,7 @@ spec:
           due to duplicate timestamps but different values'
         summary: Prometheus has many samples rejected
       expr: |
-        increase(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0
+        increase(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-k8s",namespace="metalk8s-monitoring"}[5m]) > 0
       for: 10m
       labels:
         severity: warning
@@ -1015,7 +1015,7 @@ spec:
         message: Errors while reconciling {{ $labels.controller }} in {{ $labels.namespace
           }} Namespace.
       expr: |
-        rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator",namespace="monitoring"}[5m]) > 0.1
+        rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator",namespace="metalk8s-monitoring"}[5m]) > 0.1
       for: 10m
       labels:
         severity: warning
@@ -1023,7 +1023,7 @@ spec:
       annotations:
         message: Errors while reconciling Prometheus in {{ $labels.namespace }} Namespace.
       expr: |
-        rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator",namespace="monitoring"}[5m]) > 0.1
+        rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator",namespace="metalk8s-monitoring"}[5m]) > 0.1
       for: 10m
       labels:
         severity: warning
@@ -1041,7 +1041,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -1049,7 +1049,7 @@ metadata:
   labels:
     k8s-app: kubelet
   name: kubelet
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -1091,7 +1091,7 @@ metadata:
   labels:
     name: prometheus-adapter
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   ports:
   - name: https
@@ -1104,7 +1104,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: prometheus-k8s-config
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 rules:
 - apiGroups:
   - ""
@@ -1119,7 +1119,7 @@ metadata:
   labels:
     k8s-app: prometheus
   name: prometheus
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - interval: 30s
@@ -1166,7 +1166,7 @@ items:
   kind: Role
   metadata:
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
   rules:
   - apiGroups:
     - ""
@@ -1184,13 +1184,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus-k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 items:
@@ -1206,7 +1206,7 @@ items:
   subjects:
   - kind: ServiceAccount
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
@@ -1219,12 +1219,12 @@ items:
   subjects:
   - kind: ServiceAccount
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
   roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: Role
@@ -1232,14 +1232,14 @@ items:
   subjects:
   - kind: ServiceAccount
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 kind: RoleBindingList
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   replicas: 1
   selector:
@@ -1260,7 +1260,7 @@ spec:
         - --config=/etc/adapter/config.yaml
         - --logtostderr=true
         - --metrics-relist-interval=1m
-        - --prometheus-url=http://prometheus-k8s.monitoring.svc:9090/
+        - --prometheus-url=http://prometheus-k8s.metalk8s-monitoring.svc:9090/
         - --secure-port=6443
         image: {{ build_image_name('k8s-prometheus-adapter-amd64') }}
         name: prometheus-adapter
@@ -1302,7 +1302,7 @@ metadata:
   labels:
     k8s-app: coredns
   name: coredns
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -1322,12 +1322,12 @@ metadata:
   labels:
     prometheus: k8s
   name: k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   alerting:
     alertmanagers:
     - name: alertmanager-main
-      namespace: monitoring
+      namespace: metalk8s-monitoring
       port: web
   baseImage: {{ metalk8s_repository }}/prometheus
   nodeSelector:
@@ -1363,7 +1363,7 @@ metadata:
   labels:
     k8s-app: apiserver
   name: kube-apiserver
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -1399,7 +1399,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -1407,7 +1407,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -1420,7 +1420,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -1457,7 +1457,7 @@ metadata:
   labels:
     prometheus: k8s
   name: prometheus-k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   ports:
   - name: web
@@ -1479,7 +1479,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -1487,7 +1487,7 @@ metadata:
   labels:
     k8s-app: kube-controller-manager
   name: kube-controller-manager
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - interval: 30s
@@ -1509,7 +1509,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: prometheus-k8s-config
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -1517,7 +1517,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -1541,7 +1541,7 @@ metadata:
   labels:
     k8s-app: kube-scheduler
   name: kube-scheduler
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - interval: 30s
@@ -1586,4 +1586,4 @@ data:
 kind: ConfigMap
 metadata:
   name: adapter-config
-  namespace: monitoring
+  namespace: metalk8s-monitoring

@@ -22,7 +22,7 @@ const alertsResult = {
           endpoint: 'https-main',
           instance: '10.233.132.80:8443',
           job: 'kube-state-metrics',
-          namespace: 'monitoring',
+          namespace: 'metalk8s-monitoring',
           node: 'node1',
           pod: 'kube-state-metrics-6f76945b5b-g9mtf',
           service: 'kube-state-metrics',

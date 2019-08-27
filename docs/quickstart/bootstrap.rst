@@ -127,28 +127,29 @@ Check if all :term:`Pods <Pod>` on the Bootstrap node are in the
    bootstrap              Ready     bootstrap,etcd,infra,master   17m       v1.11.7
 
    root@bootstrap $ kubectl get pods --all-namespaces -o wide --kubeconfig /etc/kubernetes/admin.conf
-   NAMESPACE     NAME                                       READY     STATUS              RESTARTS   AGE       IP              NODE        NOMINATED NODE
-   kube-system   calico-kube-controllers-79fdff95b4-ldrnc   1/1       Running             1          11m       10.233.132.86   bootstrap   <none>
-   kube-system   calico-node-mhp89                          1/1       Running             1          11m       172.21.254.3    bootstrap   <none>
-   kube-system   coredns-9f7df8996-8mq6p                    1/1       Running             1          13m       10.233.132.83   bootstrap   <none>
-   kube-system   coredns-9f7df8996-zwwjp                    1/1       Running             1          13m       10.233.132.84   bootstrap   <none>
-   kube-system   etcd-bootstrap                             1/1       Running             2          12m       172.21.254.3    bootstrap   <none>
-   kube-system   kube-apiserver-bootstrap                   2/2       Running             2          14m       172.21.254.3    bootstrap   <none>
-   kube-system   kube-controller-manager-bootstrap          1/1       Running             1          14m       172.21.254.3    bootstrap   <none>
-   kube-system   kube-proxy-4dwzw                           1/1       Running             1          14m       172.21.254.3    bootstrap   <none>
-   kube-system   kube-scheduler-bootstrap                   1/1       Running             1          14m       172.21.254.3    bootstrap   <none>
-   kube-system   metalk8s-ui-89cb4d86b-xtbtp                1/1       Running             0          13m       10.233.132.82   bootstrap   <none>
-   kube-system   repositories-bootstrap                     1/1       Running             1          14m       172.21.254.3    bootstrap   <none>
-   kube-system   salt-master-bootstrap                      2/2       Running             2          14m       172.21.254.3    bootstrap   <none>
-   monitoring    alertmanager-main-0                        2/2       Running             2          11m       10.233.132.81   bootstrap   <none>
-   monitoring    alertmanager-main-1                        2/2       Running             2          11m       10.233.132.77   bootstrap   <none>
-   monitoring    alertmanager-main-2                        2/2       Running             2          11m       10.233.132.78   bootstrap   <none>
-   monitoring    grafana-6dc8899796-mdd7h                   1/1       Running             1          11m       10.233.132.88   bootstrap   <none>
-   monitoring    kube-state-metrics-85648f5db9-sl25z        4/4       Running             4          11m       10.233.132.87   bootstrap   <none>
-   monitoring    node-exporter-rdz8l                        2/2       Running             2          11m       172.21.254.3    bootstrap   <none>
-   monitoring    prometheus-k8s-0                           3/3       Running             4          11m       10.233.132.79   bootstrap   <none>
-   monitoring    prometheus-k8s-1                           3/3       Running             4          11m       10.233.132.80   bootstrap   <none>
-   monitoring    prometheus-operator-7c9cc49c9-hqpg6        1/1       Running             1          11m       10.233.132.85   bootstrap   <none>
+   NAMESPACE             NAME                                             READY     STATUS    RESTARTS   AGE       IP              NODE        NOMINATED NODE
+   kube-system           calico-kube-controllers-b7bc4449f-6rh2q          1/1       Running   0          4m        10.233.132.65   bootstrap   <none>
+   kube-system           calico-node-r2qxs                                1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
+   kube-system           coredns-7475f8d796-8h4lt                         1/1       Running   0          4m        10.233.132.67   bootstrap   <none>
+   kube-system           coredns-7475f8d796-m5zz9                         1/1       Running   0          4m        10.233.132.66   bootstrap   <none>
+   kube-system           etcd-bootstrap                                   1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
+   kube-system           kube-apiserver-bootstrap                         2/2       Running   0          4m        172.21.254.12   bootstrap   <none>
+   kube-system           kube-controller-manager-bootstrap                1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
+   kube-system           kube-proxy-vb74b                                 1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
+   kube-system           kube-scheduler-bootstrap                         1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
+   kube-system           repositories-bootstrap                           1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
+   kube-system           salt-master-bootstrap                            2/2       Running   0          4m        172.21.254.12   bootstrap   <none>
+   metalk8s-ingress      nginx-ingress-controller-46lxd                   1/1       Running   0          4m        10.233.132.73   bootstrap   <none>
+   metalk8s-ingress      nginx-ingress-default-backend-5449d5b699-8bkbr   1/1       Running   0          4m        10.233.132.74   bootstrap   <none>
+   metalk8s-monitoring   alertmanager-main-0                              2/2       Running   0          4m        10.233.132.70   bootstrap   <none>
+   metalk8s-monitoring   alertmanager-main-1                              2/2       Running   0          3m        10.233.132.76   bootstrap   <none>
+   metalk8s-monitoring   alertmanager-main-2                              2/2       Running   0          3m        10.233.132.77   bootstrap   <none>
+   metalk8s-monitoring   grafana-5cb4945b7b-ltdrz                         1/1       Running   0          4m        10.233.132.71   bootstrap   <none>
+   metalk8s-monitoring   kube-state-metrics-588d699b56-d6crn              4/4       Running   0          3m        10.233.132.75   bootstrap   <none>
+   metalk8s-monitoring   node-exporter-4jdgv                              2/2       Running   0          4m        172.21.254.12   bootstrap   <none>
+   metalk8s-monitoring   prometheus-k8s-0                                 3/3       Running   1          4m        10.233.132.72   bootstrap   <none>
+   metalk8s-monitoring   prometheus-k8s-1                                 3/3       Running   1          3m        10.233.132.78   bootstrap   <none>
+   metalk8s-monitoring   prometheus-operator-64477d4bff-xxjw2             1/1       Running   0          4m        10.233.132.68   bootstrap   <none>
 
 Check that you can access the MetalK8s GUI, following
 :ref:`this procedure <quickstart-services-admin-ui>`.

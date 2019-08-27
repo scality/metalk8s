@@ -20064,4 +20064,4 @@ data:
 kind: ConfigMap
 metadata:
   name: grafana-dashboard-nodesfull
-  namespace: monitoring
+  namespace: metalk8s-monitoring
