@@ -139,12 +139,24 @@ def manage_static_pod(host):
 @then("the static pod was changed")
 def check_static_pod_changed(host, hostname, k8s_client, static_pod_id):
     fullname = "{}-{}".format(DEFAULT_POD_NAME, hostname)
-    utils.retry(
-        kube_utils.wait_for_pod(k8s_client, fullname),
-        times=10,
-        wait=5,
-        name="wait for Pod '{}'".format(fullname),
+
+    wait_for_pod = kube_utils.wait_for_pod(
+        k8s_client,
+        name=fullname,
+        namespace="default",
     )
+
+    def wait_for_pod_reloaded():
+        pod = wait_for_pod()
+        assert pod.metadata.uid != static_pod_id
+
+    utils.retry(
+        wait_for_pod_reloaded,
+        times=12,
+        wait=5,
+        name="wait for Pod '{}' to be reloaded".format(fullname),
+    )
+
     pod = k8s_client.read_namespaced_pod(name=fullname, namespace="default")
 
     assert pod.metadata.uid != static_pod_id
