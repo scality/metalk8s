@@ -219,23 +219,6 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         file_dep=[constants.ROOT/'images'/'keepalived'/'entrypoint.sh'],
     ),
     _local_image(
-        name='metalk8s-ui',
-        dockerfile=constants.ROOT/'ui'/'Dockerfile',
-        build_args={
-            'NGINX_IMAGE_VERSION': versions.NGINX_IMAGE_VERSION,
-            'NODE_IMAGE_VERSION': versions.NODEJS_IMAGE_VERSION,
-        },
-        file_dep=(
-            list(coreutils.ls_files_rec(constants.ROOT/'ui'/'public')) +
-            list(coreutils.ls_files_rec(constants.ROOT/'ui'/'src')) +
-            [
-                constants.ROOT/'ui'/'package.json',
-                constants.ROOT/'ui'/'package-lock.json',
-                constants.ROOT/'ui'/'conf'/'nginx.conf'
-            ]
-        )
-    ),
-    _local_image(
         name='metalk8s-utils',
         build_args={
             'BASE_IMAGE': versions.CENTOS_BASE_IMAGE,
