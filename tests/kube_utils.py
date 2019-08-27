@@ -42,4 +42,6 @@ def wait_for_pod(k8s_client, name, namespace="default", state="Running"):
 
         assert pod.status.phase == state, "Pod not yet '{}'".format(state)
 
+        return pod
+
     return _wait_for_pod
