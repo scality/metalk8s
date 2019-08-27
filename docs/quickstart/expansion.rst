@@ -13,8 +13,7 @@ Once the :term:`Bootstrap node` has been installed
 Unlike the |kubeadm join|_ approach which relies on `bootstrap tokens`_ and
 manual operations on each node, MetalK8s uses Salt SSH to setup new
 :term:`Nodes <Node>` through declarative configuration,
-from a single entrypoint. This operation can be done either through
-:ref:`the MetalK8s GUI <quickstart-expansion-ui>` or
+from a single entrypoint. This operation can be done through
 :ref:`the command-line <quickstart-expansion-cli>`.
 
 Defining an architecture
@@ -31,83 +30,6 @@ control-plane to a total of three members), and twice for workload-plane Nodes.
    - explain architecture: 3 control-plane + etcd, 2 workers (one being
      dedicated for infra)
    - remind roles and taints from intro
-
-
-.. _quickstart-expansion-ui:
-
-Adding a node with the :ref:`MetalK8s GUI <quickstart-services-admin-ui>`
--------------------------------------------------------------------------
-To reach the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`.
-
-Creating a Node object
-^^^^^^^^^^^^^^^^^^^^^^
-The first step to adding a Node to a cluster is to declare it in the API.
-The MetalK8s GUI provides a simple form for that purpose.
-
-#. Navigate to the Node list page, by clicking the button in the sidebar:
-
-   .. image:: img/ui/click-node-list.png
-
-#. From the Node list (the Bootstrap node should be visible there), click the
-   button labeled "Create a New Node":
-
-   .. image:: img/ui/click-create-node.png
-
-#. Fill the form with relevant information (make sure the
-   :ref:`SSH provisioning <quickstart-bootstrap-ssh>` for the Bootstrap node is
-   done first):
-
-   - **Name**: the hostname of the new Node
-   - **MetalK8s Version**: use "|release|"
-   - **SSH User**: the user for which the Bootstrap has SSH access
-   - **Hostname or IP**: the address to use for SSH from the Bootstrap
-   - **SSH Port**: the port to use for SSH from the Bootstrap
-   - **SSH Key Path**: the path to the private key generated in
-     :ref:`this procedure <quickstart-bootstrap-ssh>`
-   - **Sudo required**: whether the SSH deployment will need ``sudo`` access
-   - **Roles/Workload Plane**: check this box if the new Node should receive
-     workload applications
-   - **Roles/Control Plane**: check this box if the new Node should run
-     control-plane services
-   - **Roles/Infra**: check this box if the new Node should run
-     infra services
-
-#. Click "Create". You will be redirected to the Node list page, and will be
-   shown a notification to confirm the Node creation:
-
-   .. image:: img/ui/notification-node-created.png
-
-
-Deploying the Node
-^^^^^^^^^^^^^^^^^^
-After the desired state has been declared, it can be applied to the machine.
-The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
-
-#. From the Node list page, any yet-to-be-deployed Node will have a "Deploy"
-   button. Click it to begin the deployment:
-
-   .. image:: img/ui/click-node-deploy.png
-
-#. Once clicked, the button will change to "Deploying". Click it again to open
-   the deployment status page:
-
-   .. image:: img/ui/deployment-progress.png
-
-   Detailed events are shown on the right of this page, for advanced users to
-   debug in case of errors.
-
-   .. todo::
-
-      - UI should parse these events further
-      - Events should be documented
-
-#. When complete, click on "Back to nodes list". The new Node should have a
-   ``Ready`` status.
-
-.. todo::
-
-   - troubleshooting (example errors)
-
 
 .. _quickstart-expansion-cli:
 
