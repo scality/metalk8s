@@ -16,14 +16,14 @@ data:
 kind: Secret
 metadata:
   name: grafana-datasources
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 type: Opaque
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: grafana
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 {%- raw %}
 apiVersion: v1
@@ -943,7 +943,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-cluster-rsrc-use
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     k8s-node-rsrc-use.json: |-
@@ -1886,7 +1886,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-node-rsrc-use
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     k8s-resources-cluster.json: |-
@@ -3214,7 +3214,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-resources-cluster
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     k8s-resources-namespace.json: |-
@@ -4053,7 +4053,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-resources-namespace
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     k8s-resources-pod.json: |-
@@ -4919,7 +4919,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-resources-pod
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     nodes.json: |-
@@ -6037,7 +6037,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-nodes
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     pods.json: |-
@@ -6521,7 +6521,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-pods
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     statefulset.json: |-
@@ -7371,7 +7371,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-statefulset
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 kind: ConfigMapList
 {%- endraw %}
 ---
@@ -7381,7 +7381,7 @@ metadata:
   labels:
     app: grafana
   name: grafana
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   replicas: 1
   selector:
@@ -7518,13 +7518,13 @@ data:
 kind: ConfigMap
 metadata:
   name: grafana-dashboards
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: grafana
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   ports:
   - name: http

@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-dashboard-coredns
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 data:
   coredns.json: |-
     {

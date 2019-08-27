@@ -22,7 +22,7 @@ data:
 kind: Secret
 metadata:
   name: alertmanager-main
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 type: Opaque
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -31,7 +31,7 @@ metadata:
   labels:
     alertmanager: main
   name: main
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   baseImage: {{ metalk8s_repository }}/alertmanager
   nodeSelector:
@@ -54,7 +54,7 @@ metadata:
   labels:
     alertmanager: main
   name: alertmanager-main
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   ports:
   - name: web
@@ -68,7 +68,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: alertmanager-main
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -76,7 +76,7 @@ metadata:
   labels:
     k8s-app: alertmanager
   name: alertmanager
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - interval: 30s

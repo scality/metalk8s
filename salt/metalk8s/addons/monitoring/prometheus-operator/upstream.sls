@@ -13,7 +13,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: monitoring
+  name: metalk8s-monitoring
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -6119,7 +6119,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-operator
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -6193,7 +6193,7 @@ metadata:
   labels:
     k8s-app: prometheus-operator
   name: prometheus-operator
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   replicas: 1
   selector:
@@ -6244,7 +6244,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus-operator
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -6252,7 +6252,7 @@ metadata:
   labels:
     k8s-app: prometheus-operator
   name: prometheus-operator
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - honorLabels: true
@@ -6267,7 +6267,7 @@ metadata:
   labels:
     k8s-app: prometheus-operator
   name: prometheus-operator
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   clusterIP: None
   ports:

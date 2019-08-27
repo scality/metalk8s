@@ -14,7 +14,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: kube-state-metrics
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 rules:
 - apiGroups:
   - ""
@@ -47,7 +47,7 @@ metadata:
   labels:
     k8s-app: kube-state-metrics
   name: kube-state-metrics
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   clusterIP: None
   ports:
@@ -64,7 +64,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: kube-state-metrics
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -84,7 +84,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: kube-state-metrics
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -160,7 +160,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kube-state-metrics
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
@@ -168,7 +168,7 @@ metadata:
   labels:
     app: kube-state-metrics
   name: kube-state-metrics
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   replicas: 1
   selector:
@@ -274,7 +274,7 @@ metadata:
   labels:
     k8s-app: kube-state-metrics
   name: kube-state-metrics
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
