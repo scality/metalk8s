@@ -137,7 +137,6 @@ Check if all :term:`Pods <Pod>` on the Bootstrap node are in the
    kube-system   kube-controller-manager-bootstrap          1/1       Running             1          14m       172.21.254.3    bootstrap   <none>
    kube-system   kube-proxy-4dwzw                           1/1       Running             1          14m       172.21.254.3    bootstrap   <none>
    kube-system   kube-scheduler-bootstrap                   1/1       Running             1          14m       172.21.254.3    bootstrap   <none>
-   kube-system   metalk8s-ui-89cb4d86b-xtbtp                1/1       Running             0          13m       10.233.132.82   bootstrap   <none>
    kube-system   repositories-bootstrap                     1/1       Running             1          14m       172.21.254.3    bootstrap   <none>
    kube-system   salt-master-bootstrap                      2/2       Running             2          14m       172.21.254.3    bootstrap   <none>
    monitoring    alertmanager-main-0                        2/2       Running             2          11m       10.233.132.81   bootstrap   <none>
@@ -149,9 +148,6 @@ Check if all :term:`Pods <Pod>` on the Bootstrap node are in the
    monitoring    prometheus-k8s-0                           3/3       Running             4          11m       10.233.132.79   bootstrap   <none>
    monitoring    prometheus-k8s-1                           3/3       Running             4          11m       10.233.132.80   bootstrap   <none>
    monitoring    prometheus-operator-7c9cc49c9-hqpg6        1/1       Running             1          11m       10.233.132.85   bootstrap   <none>
-
-Check that you can access the MetalK8s GUI, following
-:ref:`this procedure <quickstart-services-admin-ui>`.
 
 Troubleshooting
 ^^^^^^^^^^^^^^^
