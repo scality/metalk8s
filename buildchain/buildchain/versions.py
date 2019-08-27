@@ -202,11 +202,6 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
-        name='metalk8s-ui',
-        version=VERSION,
-        digest=None,
-    ),
-    Image(
         name='metalk8s-utils',
         version=VERSION,
         digest=None,
