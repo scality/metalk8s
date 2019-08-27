@@ -70,7 +70,7 @@ def check_job_health(host, job, namespace, health):
 
 def _query_prometheus_api(host, route):
     ip = _get_local_grain(host, 'metalk8s:workload_plane_ip')
-    port = _get_nodeport(host, 'prometheus', 'monitoring')
+    port = _get_nodeport(host, 'prometheus', 'metalk8s-monitoring')
 
     return requests.get(
         'http://{ip}:{port}/api/v1/{route}'

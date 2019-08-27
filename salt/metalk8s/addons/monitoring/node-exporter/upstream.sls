@@ -16,7 +16,7 @@ metadata:
   labels:
     k8s-app: node-exporter
   name: node-exporter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -36,7 +36,7 @@ metadata:
   labels:
     k8s-app: node-exporter
   name: node-exporter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   clusterIP: None
   ports:
@@ -57,7 +57,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: node-exporter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: apps/v1beta2
 kind: DaemonSet
@@ -65,7 +65,7 @@ metadata:
   labels:
     app: node-exporter
   name: node-exporter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   selector:
     matchLabels:
@@ -162,7 +162,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: node-exporter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

@@ -26,7 +26,7 @@ spec:
   insecureSkipTLSVerify: true
   service:
     name: prometheus-adapter
-    namespace: monitoring
+    namespace: metalk8s-monitoring
   version: v1beta1
   versionPriority: 100
 ---
@@ -38,7 +38,7 @@ metadata:
     prometheus: k8s
     role: alert-rules
   name: prometheus-k8s-rules
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   groups:
   - name: k8s.rules
@@ -1025,7 +1025,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -1033,7 +1033,7 @@ metadata:
   labels:
     k8s-app: kubelet
   name: kubelet
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -1065,7 +1065,7 @@ metadata:
   labels:
     name: prometheus-adapter
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   ports:
   - name: https
@@ -1078,7 +1078,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: prometheus-k8s-config
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 rules:
 - apiGroups:
   - ""
@@ -1093,7 +1093,7 @@ metadata:
   labels:
     k8s-app: prometheus
   name: prometheus
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - interval: 30s
@@ -1140,7 +1140,7 @@ items:
   kind: Role
   metadata:
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
   rules:
   - apiGroups:
     - ""
@@ -1158,13 +1158,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus-k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 items:
@@ -1180,7 +1180,7 @@ items:
   subjects:
   - kind: ServiceAccount
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
@@ -1193,12 +1193,12 @@ items:
   subjects:
   - kind: ServiceAccount
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
   roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: Role
@@ -1206,14 +1206,14 @@ items:
   subjects:
   - kind: ServiceAccount
     name: prometheus-k8s
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 kind: RoleBindingList
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   replicas: 1
   selector:
@@ -1234,7 +1234,7 @@ spec:
         - --config=/etc/adapter/config.yaml
         - --logtostderr=true
         - --metrics-relist-interval=1m
-        - --prometheus-url=http://prometheus-k8s.monitoring.svc:9090/
+        - --prometheus-url=http://prometheus-k8s.metalk8s-monitoring.svc:9090/
         - --secure-port=6443
         image: {{ build_image_name('k8s-prometheus-adapter-amd64') }}
         name: prometheus-adapter
@@ -1276,7 +1276,7 @@ metadata:
   labels:
     k8s-app: coredns
   name: coredns
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -1296,12 +1296,12 @@ metadata:
   labels:
     prometheus: k8s
   name: k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   alerting:
     alertmanagers:
     - name: alertmanager-main
-      namespace: monitoring
+      namespace: metalk8s-monitoring
       port: web
   baseImage: {{ metalk8s_repository }}/prometheus
   nodeSelector:
@@ -1337,7 +1337,7 @@ metadata:
   labels:
     k8s-app: apiserver
   name: kube-apiserver
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -1365,7 +1365,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -1373,7 +1373,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -1386,7 +1386,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-adapter
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -1423,7 +1423,7 @@ metadata:
   labels:
     prometheus: k8s
   name: prometheus-k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   ports:
   - name: web
@@ -1445,7 +1445,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -1453,7 +1453,7 @@ metadata:
   labels:
     k8s-app: kube-controller-manager
   name: kube-controller-manager
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - interval: 30s
@@ -1475,7 +1475,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: prometheus-k8s-config
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -1483,7 +1483,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-k8s
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -1507,7 +1507,7 @@ metadata:
   labels:
     k8s-app: kube-scheduler
   name: kube-scheduler
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - interval: 30s
@@ -1552,4 +1552,4 @@ data:
 kind: ConfigMap
 metadata:
   name: adapter-config
-  namespace: monitoring
+  namespace: metalk8s-monitoring

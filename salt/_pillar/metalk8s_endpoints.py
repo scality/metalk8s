@@ -103,7 +103,7 @@ def ext_pillar(minion_id, pillar, kubeconfig):
     services = {
         "kube-system": ['salt-master', 'repositories'],
     }
-    nodeport_services = {"monitoring": ["prometheus"]}
+    nodeport_services = {"metalk8s-monitoring": ["prometheus"]}
 
     if not os.path.isfile(kubeconfig):
         error_tplt = '{}: kubeconfig not found at {}'
