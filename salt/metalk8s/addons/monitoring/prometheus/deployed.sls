@@ -13,7 +13,7 @@ include:
 Expose Prometheus:
   metalk8s_kubernetes.service_present:
     - name: prometheus
-    - namespace: monitoring
+    - namespace: metalk8s-monitoring
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - metadata:

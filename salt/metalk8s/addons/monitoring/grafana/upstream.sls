@@ -16,7 +16,7 @@ data:
 kind: Secret
 metadata:
   name: grafana-datasources
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 type: Opaque
 ---
 apiVersion: v1
@@ -39,7 +39,7 @@ data:
 kind: ConfigMap
 metadata:
   name: grafana-dashboards
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
@@ -47,7 +47,7 @@ metadata:
   labels:
     app: grafana
   name: grafana
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   replicas: 1
   selector:
@@ -181,7 +181,7 @@ metadata:
   labels:
     app: grafana
   name: grafana
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   ports:
   - name: http
@@ -1108,7 +1108,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-cluster-rsrc-use
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     k8s-node-rsrc-use.json: |-
@@ -2051,7 +2051,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-node-rsrc-use
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     k8s-resources-cluster.json: |-
@@ -3379,7 +3379,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-resources-cluster
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     k8s-resources-namespace.json: |-
@@ -4218,7 +4218,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-resources-namespace
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     k8s-resources-pod.json: |-
@@ -5084,7 +5084,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-k8s-resources-pod
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     nodes.json: |-
@@ -6402,7 +6402,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-nodes
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     persistentvolumesusage.json: |-
@@ -6751,7 +6751,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-persistentvolumesusage
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     pods.json: |-
@@ -7241,7 +7241,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-pods
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 - apiVersion: v1
   data:
     statefulset.json: |-
@@ -8104,7 +8104,7 @@ items:
   kind: ConfigMap
   metadata:
     name: grafana-dashboard-statefulset
-    namespace: monitoring
+    namespace: metalk8s-monitoring
 kind: ConfigMapList
 {%- endraw %}
 ---
@@ -8112,13 +8112,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: grafana
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: grafana
-  namespace: monitoring
+  namespace: metalk8s-monitoring
 spec:
   endpoints:
   - interval: 15s
