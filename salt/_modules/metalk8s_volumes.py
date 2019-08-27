@@ -3,6 +3,8 @@
 
 import abc
 import contextlib
+import errno
+import fcntl
 import functools
 import json
 import re
@@ -37,7 +39,7 @@ def exists(name):
 
     .. code-block:: bash
 
-        salt '*' metalk8s_volumes.exists example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.exists example-volume
     """
     return _get_volume(name).exists
 
@@ -48,23 +50,20 @@ def create(name):
     Args:
         name (str): volume name
 
-    Returns:
-        None
-
     CLI Example:
 
     .. code-block:: bash
 
-        salt '*' metalk8s_volumes.create example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.create example-volume
     """
-    return _get_volume(name).create()
+    _get_volume(name).create()
 
 
 def is_provisioned(name):
     """Check if the backing storage device is provisioned for the given volume.
 
     Args:
-        path (str): path of the sparse file
+        name (str): volume name
 
     Returns:
         bool: True if the backing storage device is provisioned, otherwise False
@@ -73,7 +72,7 @@ def is_provisioned(name):
 
     .. code-block:: bash
 
-        salt '*' metalk8s_volumes.is_provisioned example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.is_provisioned example-volume
     """
     return _get_volume(name).is_provisioned
 
@@ -84,16 +83,13 @@ def provision(name):
     Args:
         name (str): volume name
 
-    Returns:
-        str: path to the associated loop device
-
     CLI Example:
 
     .. code-block:: bash
 
-        salt '*' metalk8s_volumes.provision example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.provision example-volume
     """
-    return _get_volume(name).provision()
+    _get_volume(name).provision()
 
 
 def is_formatted(name):
@@ -109,7 +105,7 @@ def is_formatted(name):
 
     .. code-block:: bash
 
-        salt '*' metalk8s_volumes.volume_is_formatted example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.volume_is_formatted example-volume
     """
     return _get_volume(name).is_formatted
 
@@ -120,16 +116,46 @@ def format(name):
     Args:
         name (str): volume name
 
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '<NODE_NAME>' metalk8s_volumes.format example-volume
+    """
+    _get_volume(name).format()
+
+
+def is_cleaned_up(name):
+    """Check if the backing storage device for the given volume is cleaned up.
+
+    Args:
+        name (str): volume name
+
     Returns:
-        None
+        bool: True if the backing storage device is cleaned up, otherwise False
 
     CLI Example:
 
     .. code-block:: bash
 
-        salt '*' metalk8s_volumes.format example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.is_cleaned_up example-volume
     """
-    _get_volume(name).format()
+    return _get_volume(name).is_cleaned_up
+
+
+def clean_up(name):
+    """Clean up the backing storage device of the given volume.
+
+    Args:
+        name (str): volume name
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '<NODE_NAME>' metalk8s_volumes.clean_up example-volume
+    """
+    _get_volume(name).clean_up()
 
 
 # Volume {{{
@@ -162,6 +188,16 @@ class Volume(object):
     @abc.abstractmethod
     def provision(self):
         """Provision the backing storage device."""
+        return
+
+    @abc.abstractproperty
+    def is_cleaned_up(self):
+        """Check if the backing storage device is cleaned up."""
+        return
+
+    @abc.abstractmethod
+    def clean_up(self):
+        """Clean up the backing storage device."""
         return
 
     @abc.abstractproperty
@@ -260,6 +296,22 @@ class SparseLoopDevice(Volume):
         # We format a "normal" file, not a block device: we need force=True.
         super(SparseLoopDevice, self).format(force=True)
 
+    @property
+    def is_cleaned_up(self):
+        return not (self.is_provisioned or self.exists)
+
+    def clean_up(self):
+        LOOP_CLR_FD = 0x4C01  # From /usr/include/linux/loop.h
+        device_path = '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
+        try:
+            with _open_fd(device_path, os.O_RDONLY) as fd:
+                fcntl.ioctl(fd, LOOP_CLR_FD, 0)
+            os.remove(self.path)
+        except OSError as exn:
+            if exn.errno != errno.ENOENT:
+                raise
+            log.warning('{} already removed'.format(exn.filename))
+
 
 # }}}
 # RawBlockdevice {{{
@@ -291,6 +343,13 @@ class RawBlockDevice(Volume):
     def format(self, force=False):
         # We format an entire device, not just a partition: we need force=True.
         super(RawBlockDevice, self).format(force=True)
+
+    @property
+    def is_cleaned_up(self):
+        return True # Nothing to do so it's always True.
+
+    def clean_up(self):
+        return  # Nothing to do
 
 
 # }}}

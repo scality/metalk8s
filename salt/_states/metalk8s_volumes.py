@@ -19,7 +19,7 @@ def present(name):
     """Ensure that the backing storage exists for the specified volume.
 
     Args:
-        name   (str): Volume name
+        name (str): Volume name
 
     Returns:
         dict: state return value
@@ -55,7 +55,7 @@ def provisioned(name):
     """Provision the given volume.
 
     Args:
-        name   (str): Volume name
+        name (str): Volume name
 
     Returns:
         dict: state return value
@@ -92,7 +92,7 @@ def formatted(name):
     """Format the given volume.
 
     Args:
-        name   (str): Volume name
+        name (str): Volume name
 
     Returns:
         dict: state return value
@@ -119,4 +119,38 @@ def formatted(name):
         ret['changes'][name] = 'Formatted'
         ret['result'] = True
         ret['comment'] = 'Volume {} formatted.'.format(name)
+    return ret
+
+
+def removed(name):
+    """Remove and cleanup the given volume.
+
+    Args:
+        name (str): Volume name
+
+    Returns:
+        dict: state return value
+    """
+    ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
+    # Idempotence.
+    if __salt__['metalk8s_volumes.is_cleaned_up'](name):
+        ret['result'] = True
+        ret['comment'] = 'Volume {} already cleaned up.'.format(name)
+        return ret
+    # Dry-run.
+    if __opts__['test']:
+        ret['changes'][name] = 'Cleaned up'
+        ret['result'] = None
+        ret['comment'] = 'Volume {} is going to be cleaned up.'.format(name)
+        return ret
+    # Let's go for real.
+    try:
+        __salt__['metalk8s_volumes.clean_up'](name)
+    except Exception as exn:
+        ret['result'] = False
+        ret['comment'] = 'Failed to clean up volume {}: {}.'.format(name, exn)
+    else:
+        ret['changes'][name] = 'Cleaned up'
+        ret['result'] = True
+        ret['comment'] = 'Volume {} cleaned up.'.format(name)
     return ret

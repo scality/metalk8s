@@ -41,6 +41,8 @@ if soname is None:
     raise ImportError('cannot find blkid library')
 blkid = ctypes.cdll.LoadLibrary(soname)
 
+# See `/usr/include/blkid/blkid.h` & co for more details.
+
 # Error handlers {{{
 
 
@@ -71,30 +73,69 @@ def _check_error_code(result, func, arguments):
 # Probing {{{
 
 
-# blkid_new_probe_from_filename
+# blkid_probe blkid_new_probe_from_filename(const char *filename)
+#
+# Args:
+#     filename: device or regular file
+#
+# Returns:
+#     a pointer to the newly allocated probe struct or NULL in case of error.
 new_probe_from_filename = blkid.blkid_new_probe_from_filename
 new_probe_from_filename.restype  = ctypes.c_void_p
 new_probe_from_filename.argtypes = [ctypes.c_char_p]
 new_probe_from_filename.errcheck = _check_null_pointer
 
-# blkid_free_probe
+# void blkid_free_probe(blkid_probe pr)
+#
+# Args:
+#     pr: probe
+#
+# Returns:
+#     None
 free_probe = blkid.blkid_free_probe
 free_probe.restype  = None
 free_probe.argtypes = [ctypes.c_void_p]
 
-# blkid_do_safeprobe
+# int blkid_do_safeprobe(blkid_probe pr)
+#
+# Args:
+#     pr: probe
+#
+# Returns:
+#     0 on success, 1 if nothing is detected, -2 if ambivalent result is
+#     detected and -1 on case of error.
 do_safeprobe = blkid.blkid_do_safeprobe
 do_safeprobe.restype  = ctypes.c_int
 do_safeprobe.argtypes = [ctypes.c_void_p]
 do_safeprobe.errcheck = _check_error_code
 
-# blkid_probe_numof_values
+# int blkid_probe_numof_values(blkid_probe pr)
+#
+# Args:
+#     pr: probe
+#
+# Returns:
+#     number of values in probing result or -1 in case of error.
 probe_numof_values = blkid.blkid_probe_numof_values
 probe_numof_values.restype  = ctypes.c_int
 probe_numof_values.argtypes = [ctypes.c_void_p]
 probe_numof_values.errcheck = _check_error_code
 
-# blkid_probe_get_value
+# int blkid_probe_get_value(blkid_probe pr, int num, const char **name,
+#                           const char **data, size_t *len)
+#
+# Note, the @len returns length of the @data, including the terminating '\0'
+# character.
+#
+# Args:
+#     pr:   probe
+#     num:  wanted value in range 0..N, where N is blkid_probe_numof_values()-1
+#     name: pointer to return value name or NULL
+#     data: pointer to return value data or NULL
+#     len:  pointer to return value length or NULL
+#
+# Returns:
+#     0 on success, or -1 in case of error.
 probe_get_value = blkid.blkid_probe_get_value
 probe_get_value.restype  = ctypes.c_int
 probe_get_value.argtypes = [
@@ -111,13 +152,27 @@ probe_get_value.errcheck = _check_error_code
 # Partitions prober {{{
 
 
-# blkid_probe_enable_partitions
+# int blkid_probe_enable_partitions(blkid_probe pr, int enable)
+#
+# Args:
+#     pr: probe
+#     enable: TRUE/FALSE
+#
+# Returns:
+#     0 on success, or -1 in case of error.
 probe_enable_partitions = blkid.blkid_probe_enable_partitions
 probe_enable_partitions.restype  = ctypes.c_int
 probe_enable_partitions.argtypes = [ctypes.c_void_p, ctypes.c_int]
 probe_enable_partitions.errcheck = _check_error_code
 
-# blkid_probe_set_partitions_flags
+# int blkid_probe_set_partitions_flags(blkid_probe pr, int flags)
+#
+# Args:
+#     pr: probe
+#     flags: PARTS_* flags
+#
+# Returns:
+#     0 on success, or -1 in case of error.
 probe_set_partitions_flags = blkid.blkid_probe_set_partitions_flags
 probe_set_partitions_flags.restype  = ctypes.c_int
 probe_set_partitions_flags.argtypes = [ctypes.c_void_p, ctypes.c_int]
@@ -134,13 +189,27 @@ PARTS_MAGIC         = 1 << 3
 # Superblocks prober {{{
 
 
-# blkid_probe_enable_superblocks
+# int blkid_probe_enable_superblocks(blkid_probe pr, int enable)
+#
+# Args:
+#     pr: probe
+#     enable: TRUE/FALSE
+#
+# Returns:
+#     0 on success, or -1 in case of error.
 probe_enable_superblocks = blkid.blkid_probe_enable_superblocks
 probe_enable_superblocks.restype  = ctypes.c_int
 probe_enable_superblocks.argtypes = [ctypes.c_void_p, ctypes.c_int]
 probe_enable_superblocks.errcheck = _check_error_code
 
-# blkid_probe_set_superblocks_flags
+# int blkid_probe_set_superblocks_flags(blkid_probe pr, int flags)
+#
+# Args:
+#     pr: probe
+#     flags: SUBLKS_* flags
+#
+# Returns:
+#     0 on success, or -1 in case of error.
 probe_set_superblocks_flags = blkid.blkid_probe_set_superblocks_flags
 probe_set_superblocks_flags.restype  = ctypes.c_int
 probe_set_superblocks_flags.argtypes = [ctypes.c_void_p, ctypes.c_int]
@@ -249,7 +318,7 @@ class _Probe(object):
                 self._probe, i,
                 ctypes.byref(name), ctypes.byref(data), ctypes.byref(length)
             )
-            # `length`: length of `data`, including the terminating nul byte.
+            # `length`: length of `data`, including the terminating NUL byte.
             info[name.value] = ctypes.string_at(data, length.value - 1)
         return DeviceInfo(fstype=info.get('TYPE'),
                           uuid=info.get('UUID'),
