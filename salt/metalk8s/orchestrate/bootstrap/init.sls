@@ -153,26 +153,6 @@ Deploy Kubernetes objects:
   - require:
     - http: Wait for API server to be available
 
-Precheck for MetalK8s UI:
-  salt.runner:
-    - name: state.orchestrate
-    - mods:
-      - metalk8s.addons.ui.precheck
-    - saltenv: {{ saltenv }}
-    - retry:
-        attempts: 5
-    - require:
-      - salt: Deploy Kubernetes objects
-
-Deploy MetalK8s UI:
-  salt.runner:
-    - name: state.orchestrate
-    - mods:
-      - metalk8s.addons.ui.deployed
-    - saltenv: {{ saltenv }}
-    - require:
-      - salt: Precheck for MetalK8s UI
-
 Store MetalK8s version in annotations:
   metalk8s_kubernetes.namespace_annotation_present:
     - name: "kube-system"
