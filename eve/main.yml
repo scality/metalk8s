@@ -16,7 +16,6 @@ stages:
             - build
             - docs
             - lint
-            - unit_tests
           haltOnFailure: true
       - SetPropertyFromCommand:
           name: Set version as property from built artifacts
@@ -115,36 +114,6 @@ stages:
           usePTY: true
           haltOnFailure: false
 
-  unit_tests:
-    worker:
-      type: kube_pod
-      path: eve/workers/pod-unit-tests/pod.yaml
-      images:
-        docker-unit-tests: eve/workers/pod-unit-tests
-    steps:
-      - Git: *git_pull
-      - ShellCommand:
-          name: Run all UI unit tests
-          workdir: build/ui
-          command: >
-            npm install
-            --no-cache
-            --no-save
-            -q
-            --no-update-notifier &&
-            npm run test:nowatch --no-update-notifier
-          haltOnFailure: false
-      - ShellCommand:
-          name: Prepare upload folder
-          command: >
-            mkdir upload && mv junit upload
-          workdir: build/ui
-          alwaysRun: true
-      - Upload:
-          name: Upload cypress and junit folder
-          source: ui/upload
-          alwaysRun: true
-
   single-node:
     worker:
       type: openstack
@@ -228,24 +197,6 @@ stages:
             tox -e tests-local --
             -m "post and ci and not multinode and slow"
           haltOnFailure: true
-      - ShellCommand:
-          name: Cypress test
-          command: bash cypress.sh
-          workdir: build/ui
-          haltOnFailure: true
-      - ShellCommand:
-          name: Prepare upload folder
-          command: >
-            mkdir -p upload/cypress &&
-            (cp -r cypress/screenshots upload/cypress || true) &&
-            (cp -r cypress/videos upload/cypress || true) &&
-            (cp -r junit upload/ || true)
-          workdir: build/ui
-          alwaysRun: true
-      - Upload:
-          name: Upload cypress and junit folder
-          source: ui/upload
-          alwaysRun: true
       - ShellCommand:
           name: Collect logs using sosreport
           command: >
