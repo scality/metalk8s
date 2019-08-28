@@ -1,0 +1,29 @@
+ui:
+- 'ui/*'
+
+dependencies:
+- '**/requirements*.in'
+- '**/requirements*.txt'
+- '**/package.json'
+- '**/package-lock.json'
+- '**/go.mod'
+- '**/go.sum'
+
+docs:
+- 'docs/*'
+
+storage:
+- 'storage-operator/*'
+
+tests:
+- 'tests/*'
+
+build:
+- 'buildchain/*'
+- 'packages/*'
+- 'images/*'
+
+ci:
+- 'eve/*'
+- '.github/workflows/*'
+- '.github/labeler.yml'
