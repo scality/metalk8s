@@ -1,6 +1,9 @@
+import ast
+import json
 import re
 from urllib3.exceptions import HTTPError
 
+import kubernetes as k8s
 import kubernetes.client
 from kubernetes.client import CustomObjectsApi
 from kubernetes.client import StorageV1Api
@@ -10,6 +13,7 @@ from pytest_bdd import given, when, scenario, then, parsers
 import yaml
 
 from tests import utils
+from tests import kube_utils
 
 
 # Constants {{{
@@ -53,7 +57,8 @@ spec:
   containers:
     - name: {volume_name}-pod-container
       image: {image_name}
-      command: {command}
+      command: [{command}]
+      args: {args}
       volumeMounts:
         - mountPath: "/mnt/"
           name: {volume_name}-pod-storage
@@ -127,6 +132,10 @@ def test_invalid_volume_type(host, cleanup_volumes):
 def test_in_use_protection(host, cleanup_volumes):
     pass
 
+@scenario('../features/volume.feature', 'Volume usage (data persistency)')
+def test_volume_data_persistency(host, cleanup_volumes):
+    pass
+
 # }}}
 # Given {{{
 
@@ -159,21 +168,8 @@ def create_pvc_for_volume(host, volume_name, k8s_client):
 @given(parsers.parse(
     "a Pod using volume '{volume_name}' and running '{command}' exist"
 ))
-def create_pod_for_volume(host, volume_name, command, k8s_client, utils_image):
-    pod_name = '{}-pod'.format(volume_name)
-    if _get_pod(k8s_client, pod_name) is not None:
-        return
-    body = POD_TEMPLATE.format(
-        volume_name=volume_name, image_name=utils_image, command=command,
-    )
-    k8s_client.create_namespaced_pod(
-        namespace='default', body=yaml.safe_load(body)
-    )
-    utils.retry(
-        kube_utils.wait_for_pod(k8s_client, pod_name),
-        times=30, wait=2,
-        name="wait for pod {}".format(pod_name)
-    )
+def pod_exists_for_volume(host, volume_name, command, k8s_client, utils_image):
+    _create_pod(k8s_client, volume_name, utils_image, command)
 
 # }}}
 # When {{{
@@ -229,6 +225,13 @@ def delete_pv_claim(host, volume_name, k8s_client):
         _check_pv_claim_absent, times=10, wait=2,
         name='checking for the absence of PersistentVolumeClaim {}'.format(name)
     )
+
+
+@when(parsers.parse(
+    "I create a Pod using volume '{volume_name}' and running '{command}'"
+))
+def create_pod_for_volume(host, volume_name, command, k8s_client, utils_image):
+    _create_pod(k8s_client, volume_name, utils_image, command)
 
 # }}}
 # Then {{{
@@ -357,6 +360,32 @@ def check_volume_deletion_marker(name, k8s_custom_client):
         name='checking that Volume {} is marked for deletion'.format(name)
     )
 
+
+@then(parsers.parse("the Pod using volume '{volume_name}' "
+                    "has a file '{path}' containing '{content}'"))
+def check_file_content_inside_pod(volume_name, path, content, k8s_client):
+    name = '{}-pod'.format(volume_name)
+
+    def _check_file_content():
+        try:
+            result = k8s.stream.stream(
+                k8s_client.connect_get_namespaced_pod_exec,
+                name=name, namespace='default',
+                command=['cat', path],
+                stderr=True, stdin=False, stdout=True, tty=False
+               )
+        except ApiException:
+            assert False
+        assert result.rstrip('\n') == content,\
+            'unexpected data in {}: expected "{}", got "{}"'.format(
+                path, content, result
+            )
+
+    utils.retry(
+        _check_file_content, times=10, wait=2,
+        name='checking content of {} on Pod {}'.format(path, name)
+    )
+
 # }}}
 # Helpers {{{
 # Volume {{{
@@ -431,6 +460,25 @@ def _get_pv_claim(k8s_client, name, namespace='default'):
 
 # }}}
 # Pod {{{
+
+def _create_pod(k8s_client, volume_name, image_name, full_command):
+    pod_name = '{}-pod'.format(volume_name)
+    if _get_pod(k8s_client, pod_name) is not None:
+        return
+    command, *args = ast.literal_eval(full_command)
+    body = POD_TEMPLATE.format(
+        volume_name=volume_name, image_name=image_name,
+        command=json.dumps(command), args=json.dumps(args)
+    )
+    k8s_client.create_namespaced_pod(
+        namespace='default', body=yaml.safe_load(body)
+    )
+
+    utils.retry(
+        kube_utils.wait_for_pod(k8s_client, pod_name),
+        times=30, wait=2,
+        name="wait for pod {}".format(pod_name)
+    )
 
 def _get_pod(k8s_client, name, namespace='default'):
     try:

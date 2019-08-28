@@ -77,3 +77,11 @@ Feature: Volume management
         And I delete the PersistentVolumeClaim on 'volume6'
         Then the Volume 'volume6' does not exist
         And the PersistentVolume 'volume6' does not exist
+
+    Scenario: Volume usage (data persistency)
+        Given a Volume 'volume7' exist
+        And a PersistentVolumeClaim exists for 'volume7'
+        And a Pod using volume 'volume7' and running '["sh", "-c", "echo 'foo' > /mnt/bar.txt"]' exist
+        When I delete the Pod using 'volume7'
+        And I create a Pod using volume 'volume7' and running '["sleep", "60"]'
+        Then the Pod using volume 'volume7' has a file '/mnt/bar.txt' containing 'foo'
