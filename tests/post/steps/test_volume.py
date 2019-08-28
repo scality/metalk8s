@@ -75,6 +75,20 @@ spec:
 def k8s_custom_client(k8s_apiclient):
     return CustomObjectsApi(api_client=k8s_apiclient)
 
+
+@pytest.fixture
+def cleanup_volumes(k8s_custom_client):
+    yield
+    volumes = k8s_custom_client.list_cluster_custom_object(
+        group="storage.metalk8s.scality.com",
+        version="v1alpha1",
+        plural="volumes"
+    )
+    for volume in volumes['items']:
+        name = volume['metadata']['name']
+        _delete_volume(k8s_custom_client, name)
+        _wait_for_volume_deletion(k8s_custom_client, name)
+
 # }}}
 # Scenarios {{{
 
@@ -88,29 +102,29 @@ def test_deploy_operator(host):
 
 @scenario('../features/volume.feature',
           'Test volume creation (sparseLoopDevice)')
-def test_volume_creation(host):
+def test_volume_creation(host, cleanup_volumes):
     pass
 
 @scenario('../features/volume.feature',
           'Test volume deletion (sparseLoopDevice)')
-def test_volume_deletion(host):
+def test_volume_deletion(host, cleanup_volumes):
     pass
 
 @scenario('../features/volume.feature', 'Test PersistentVolume protection')
-def test_pv_protection(host):
+def test_pv_protection(host, cleanup_volumes):
     pass
 
 @scenario('../features/volume.feature', 'Create a volume with no volume type')
-def test_no_volume_type(host):
+def test_no_volume_type(host, cleanup_volumes):
     pass
 
 @scenario('../features/volume.feature',
           'Create a volume with an invalid volume type')
-def test_invalid_volume_type(host):
+def test_invalid_volume_type(host, cleanup_volumes):
     pass
 
 @scenario('../features/volume.feature', 'Test in-use protection')
-def test_in_use_protection(host):
+def test_in_use_protection(host, cleanup_volumes):
     pass
 
 # }}}
@@ -171,14 +185,7 @@ def create_volume(host, body, k8s_custom_client):
 
 @when(parsers.parse("I delete the Volume '{name}'"))
 def delete_volume(host, name, k8s_custom_client):
-    k8s_custom_client.delete_cluster_custom_object(
-        group="storage.metalk8s.scality.com",
-        version="v1alpha1",
-        plural="volumes",
-        name=name,
-        body=kubernetes.client.V1DeleteOptions(),
-        grace_period_seconds=0
-    )
+    _delete_volume(k8s_custom_client, name)
 
 
 @when(parsers.parse("I delete the PersistentVolume '{name}'"))
@@ -279,14 +286,7 @@ def check_pv_size(host, name, size, k8s_client):
 
 @then(parsers.parse("the Volume '{name}' does not exist"))
 def check_volume_absent(host, name, k8s_custom_client):
-    def _check_volume_absent():
-        assert _get_volume(k8s_custom_client, name) is None,\
-            'Volume {} still exist'.format(name)
-
-    utils.retry(
-        _check_volume_absent, times=30, wait=2,
-        name='checking for the absence of volume {}'.format(name)
-    )
+    _wait_for_volume_deletion(k8s_custom_client, name)
 
 
 @then(parsers.parse("the PersistentVolume '{name}' does not exist"))
@@ -382,6 +382,28 @@ def _get_volume(k8s_client, name):
         if isinstance(exc, ApiException) and exc.status == 404:
             return None
         raise
+
+
+def _delete_volume(k8s_client, name):
+    k8s_client.delete_cluster_custom_object(
+        group="storage.metalk8s.scality.com",
+        version="v1alpha1",
+        plural="volumes",
+        name=name,
+        body=kubernetes.client.V1DeleteOptions(),
+        grace_period_seconds=0
+    )
+
+
+def _wait_for_volume_deletion(k8s_client, name):
+    def _check_volume_absent():
+        assert _get_volume(k8s_client, name) is None,\
+            'Volume {} still exist'.format(name)
+
+    utils.retry(
+        _check_volume_absent, times=30, wait=2,
+        name='checking for the absence of volume {}'.format(name)
+    )
 
 # }}}
 # PersistentVolume {{{
