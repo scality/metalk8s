@@ -473,7 +473,7 @@ def _create_pod(k8s_client, volume_name, image_name, full_command):
     )
 
     utils.retry(
-        kube_utils.wait_for_pod(k8s_client, pod_name),
+        kube_utils.check_pod_status(k8s_client, pod_name),
         times=30, wait=2,
         name="wait for pod {}".format(pod_name)
     )
