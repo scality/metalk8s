@@ -186,7 +186,7 @@ _add_solution() {
     local existent_solutions=()
     IFS=" " read -r -a \
         existent_solutions <<< "$(salt-call --out txt slsutil.renderer \
-          string="{{ pillar.metalk8s.solutions.configured | join(' ') }}" | cut -d' ' -f2-)"
+          string="{{ pillar.metalk8s.solutions.configured | join(' ') }}" | cut -d' ' -f2- | tr -d '{}' )"
     for solution in "${SOLUTIONS[@]}"; do
         if ! containsElement "'$solution'" \
              "${existent_solutions[@]+"${existent_solutions[@]}"}"; then
