@@ -23,7 +23,7 @@ Make sure "ui-branding" ConfigMap exists:
     - data:
         config.json: |
           {
-            "url": "{{ apiserver }}"
+            "url": "{{ apiserver }}",
             "registry_prefix": "{{ registry }}"
           }
         theme.json: |
