@@ -1,3 +1,4 @@
+import abc
 import ast
 import json
 import re
@@ -77,40 +78,27 @@ spec:
 # Fixture {{{
 
 @pytest.fixture
-def k8s_custom_client(k8s_apiclient):
-    return CustomObjectsApi(api_client=k8s_apiclient)
-
+def volume_client(k8s_apiclient):
+    return VolumeClient(CustomObjectsApi(api_client=k8s_apiclient))
 
 @pytest.fixture
-def teardown(k8s_client, k8s_custom_client):
-    yield
-    # Delete pods.
-    pods = k8s_client.list_namespaced_pod(namespace='default')
-    for pod in pods.items:
-        pod_name = pod.metadata.name
-        if not pod_name.startswith('volume'):
-            continue
-        _delete_pod(k8s_client, pod_name)
-        _wait_for_pod_deletion(k8s_client, pod_name)
-    # Delete claims.
-    claims = k8s_client.list_namespaced_persistent_volume_claim(
-        namespace='default'
-    )
-    for claim in claims.items:
-        claim_name = claim.metadata.name
-        _delete_pv_claim(k8s_client, claim_name)
-        _wait_for_pv_claim_deletion(k8s_client, claim_name)
+def pv_client(k8s_client):
+    return PersistentVolumeClient(k8s_client)
 
-    # Delete volumes.
-    volumes = k8s_custom_client.list_cluster_custom_object(
-        group="storage.metalk8s.scality.com",
-        version="v1alpha1",
-        plural="volumes"
-    )
-    for volume in volumes['items']:
-        volume_name = volume['metadata']['name']
-        _delete_volume(k8s_custom_client, volume_name)
-        _wait_for_volume_deletion(k8s_custom_client, volume_name)
+@pytest.fixture
+def pvc_client(k8s_client):
+    return PersistentVolumeClaimClient(k8s_client)
+
+@pytest.fixture
+def pod_client(k8s_client, utils_image):
+    return PodClient(k8s_client, utils_image)
+
+@pytest.fixture
+def teardown(pod_client, pvc_client, volume_client):
+    yield
+    pod_client.delete_all(sync=True)
+    pvc_client.delete_all(sync=True)
+    volume_client.delete_all(sync=True)
 
 # }}}
 # Scenarios {{{
@@ -158,78 +146,61 @@ def test_volume_data_persistency(host, teardown):
 # Given {{{
 
 @given(parsers.parse("a Volume '{name}' exist"))
-def volume_exist(host, name, k8s_custom_client):
-    if _get_volume(k8s_custom_client, name) is not None:
+def volume_exist(host, name, volume_client):
+    if volume_client.get(name) is not None:
         return
-    body = DEFAULT_VOLUME.format(name=name)
-    _create_volume(k8s_custom_client, body)
-    check_volume_status(host, name, 'Available', k8s_custom_client)
+    volume_client.create_from_yaml(DEFAULT_VOLUME.format(name=name))
+    check_volume_status(host, name, 'Available', volume_client)
 
 
 @given(parsers.parse("a PersistentVolumeClaim exists for '{volume_name}'"))
-def create_pvc_for_volume(host, volume_name, k8s_client):
-    if _get_pv_claim(k8s_client, '{}-pvc'.format(volume_name)) is not None:
+def create_pvc_for_volume(host, volume_name, pvc_client, pv_client):
+    if pvc_client.get('{}-pvc'.format(volume_name)) is not None:
         return
-    pv = _get_pv(k8s_client, volume_name)
-    assert pv is not None, 'PersistentVolume {} not found'.format(volume_name)
-    body = PVC_TEMPLATE.format(
-        volume_name=volume_name,
-        storage_class=pv.spec.storage_class_name,
-        access=pv.spec.access_modes[0],
-        size=pv.spec.capacity['storage']
-    )
-    k8s_client.create_namespaced_persistent_volume_claim(
-        namespace='default', body=yaml.safe_load(body)
-    )
+    pvc_client.create_for_volume(volume_name, pv_client.get(volume_name))
 
 
 @given(parsers.parse(
     "a Pod using volume '{volume_name}' and running '{command}' exist"
 ))
-def pod_exists_for_volume(host, volume_name, command, k8s_client, utils_image):
-    _create_pod(k8s_client, volume_name, utils_image, command)
+def pod_exists_for_volume(host, volume_name, command, pod_client):
+    if pod_client.get('{}-pod'.format(volume_name)) is not None:
+        return
+    pod_client.create_with_volume(volume_name, command)
 
 # }}}
 # When {{{
 
 @when(parsers.parse("I create the following Volume:\n{body}"))
-def create_volume(host, body, k8s_custom_client):
-    _create_volume(k8s_custom_client, body)
+def create_volume(host, body, volume_client):
+    volume_client.create_from_yaml(body)
 
 
 @when(parsers.parse("I delete the Volume '{name}'"))
-def delete_volume(host, name, k8s_custom_client):
-    _delete_volume(k8s_custom_client, name)
+def delete_volume(host, name, volume_client):
+    volume_client.delete(name, sync=False)
 
 
 @when(parsers.parse("I delete the PersistentVolume '{name}'"))
-def delete_pv(host, name, k8s_client):
-    k8s_client.delete_persistent_volume(
-        name=name,
-        body=kubernetes.client.V1DeleteOptions(),
-        grace_period_seconds=0
-    )
+def delete_pv(host, name, pv_client):
+    pv_client.delete(name)
 
 
 @when(parsers.parse("I delete the Pod using '{volume_name}'"))
-def delete_pod(host, volume_name, k8s_client):
-    name = '{}-pod'.format(volume_name)
-    _delete_pod(k8s_client, name)
-    _wait_for_pod_deletion(k8s_client, name)
+def delete_pod(host, volume_name, pod_client):
+    pod_client.delete('{}-pod'.format(volume_name), sync=True)
 
 
 @when(parsers.parse("I delete the PersistentVolumeClaim on '{volume_name}'"))
-def delete_pv_claim(host, volume_name, k8s_client):
-    name = '{}-pvc'.format(volume_name)
-    _delete_pv_claim(k8s_client, name)
-    _wait_for_pv_claim_deletion(k8s_client, name)
+def delete_pv_claim(host, volume_name, pvc_client):
+    pvc_client.delete('{}-pvc'.format(volume_name), sync=True)
 
 
 @when(parsers.parse(
     "I create a Pod using volume '{volume_name}' and running '{command}'"
 ))
-def create_pod_for_volume(host, volume_name, command, k8s_client, utils_image):
-    _create_pod(k8s_client, volume_name, utils_image, command)
+def create_pod_for_volume(host, volume_name, command, pod_client):
+    pod_client.create_with_volume(volume_name, command)
 
 # }}}
 # Then {{{
@@ -246,9 +217,9 @@ def check_storage_class(host, name, k8s_apiclient):
 
 
 @then(parsers.parse("the Volume '{name}' is '{status}'"))
-def check_volume_status(host, name, status, k8s_custom_client):
+def check_volume_status(host, name, status, volume_client):
     def _check_volume_status():
-        volume = _get_volume(k8s_custom_client, name)
+        volume = volume_client.get(name)
         assert volume is not None, 'Volume {} not found'.format(name)
         try:
             assert volume['status']['phase'] == status,\
@@ -266,14 +237,10 @@ def check_volume_status(host, name, status, k8s_custom_client):
 
 
 @then(parsers.parse("the PersistentVolume '{name}' has size '{size}'"))
-def check_pv_size(host, name, size, k8s_client):
+def check_pv_size(host, name, size, pv_client):
     def _check_pv_size():
-        try:
-            pv = k8s_client.read_persistent_volume(name)
-        except (ApiException, HTTPError) as exc:
-            if isinstance(exc, ApiException) and exc.status == 404:
-                assert False, 'PersistentVolume {} not found'.format(name)
-            raise
+        pv = pv_client.get(name)
+        assert pv is not None, 'PersistentVolume {} not found'.format(name)
         assert pv.spec.capacity['storage'] == size, \
             'Unexpected PersistentVolume size: expected {}, got {}'.format(
                 size, pv.spec.capacity['storage']
@@ -286,43 +253,25 @@ def check_pv_size(host, name, size, k8s_client):
 
 
 @then(parsers.parse("the Volume '{name}' does not exist"))
-def check_volume_absent(host, name, k8s_custom_client):
-    _wait_for_volume_deletion(k8s_custom_client, name)
+def check_volume_absent(host, name, volume_client):
+    volume_client.wait_for_deletion(name)
 
 
 @then(parsers.parse("the PersistentVolume '{name}' does not exist"))
-def check_pv_absent(name, k8s_client):
-    def _check_pv():
-        assert _get_pv(k8s_client, name) is None,\
-            'PersistentVolume {} exist'.format(name)
-
-    utils.retry(
-        _check_pv, times=10, wait=2,
-        name='checking the absence of PersistentVolume {}'.format(name)
-    )
+def check_pv_absent(name, pv_client):
+    pv_client.wait_for_deletion(name)
 
 
 @then(parsers.parse("the PersistentVolume '{name}' is marked for deletion"))
-def check_pv_deletion_marker(name, k8s_client):
-    def _check_pv_deletion_marker():
-        pv = _get_pv(k8s_client, name)
-        assert pv is not None, 'PersistentVolume {} not found'.format(name)
-        assert pv.metadata.deletion_timestamp is not None,\
-            'PersistentVolume {} is not marked for deletion'.format(name)
-
-    utils.retry(
-        _check_pv_deletion_marker, times=10, wait=2,
-        name='checking that PersistentVolume {} is marked for deletion'.format(
-            name
-        )
-    )
+def check_pv_deletion_marker(name, pv_client):
+    pv_client.check_deletion_marker(name)
 
 
 @then(parsers.parse("the Volume '{name}' is 'Failed' "
                     "with code '{code}' and message matches '{pattern}'"))
-def check_volume_error(host, name, code, pattern, k8s_custom_client):
+def check_volume_error(host, name, code, pattern, volume_client):
     def _check_error():
-        volume = _get_volume(k8s_custom_client, name)
+        volume = volume_client.get(name)
         assert volume is not None, 'Volume {} not found'.format(name)
         status = volume.get('status')
         assert status is not None, 'no status for volume {}'.format(name)
@@ -346,17 +295,8 @@ def check_volume_error(host, name, code, pattern, k8s_custom_client):
 
 
 @then(parsers.parse("the Volume '{name}' is marked for deletion"))
-def check_volume_deletion_marker(name, k8s_custom_client):
-    def _check_volume_deletion_marker():
-        volume = _get_volume(k8s_custom_client, name)
-        assert volume is not None, 'Volume {} not found'.format(name)
-        assert volume['metadata'].get('deletionTimestamp') is not None,\
-            'Volume {} is not marked for deletion'.format(name)
-
-    utils.retry(
-        _check_volume_deletion_marker, times=30, wait=2,
-        name='checking that Volume {} is marked for deletion'.format(name)
-    )
+def check_volume_deletion_marker(name, volume_client):
+    volume_client.check_deletion_marker(name)
 
 
 @then(parsers.parse("the Pod using volume '{volume_name}' "
@@ -386,139 +326,248 @@ def check_file_content_inside_pod(volume_name, path, content, k8s_client):
 
 # }}}
 # Helpers {{{
-# Volume {{{
+# Client {{{
 
-def _create_volume(k8s_client, body):
-    k8s_client.create_cluster_custom_object(
-        group="storage.metalk8s.scality.com",
-        version="v1alpha1",
-        plural="volumes",
-        body=yaml.safe_load(body)
-    )
+class Client(abc.ABC):
+    def __init__(self, k8s_client, kind, retry_count, retry_delay):
+        self._client = k8s_client
+        self._kind   = kind
+        self._count  = retry_count
+        self._delay  = retry_delay
+
+    def create_from_yaml(self, manifest):
+        """Create a new object from the given YAML manifest."""
+        self._create(yaml.safe_load(manifest))
+
+    def get(self, name):
+        """Return the object identified by `name`, or None if not found."""
+        try:
+            return self._get(name)
+        except (ApiException, HTTPError) as exc:
+            if isinstance(exc, ApiException) and exc.status == 404:
+                return None
+            raise
+
+    def delete(self, name, sync=False):
+        """Delete the object identified by `name`.
+
+        If `sync` is True, don't return until the object is actually deleted.
+        """
+        self._delete(name)
+        if sync:
+            self.wait_for_deletion(name)
+
+    def delete_all(self, sync=False):
+        """Delete all the existing objects.
+
+        If `sync` is True, don't return until the object is actually deleted.
+        """
+        for obj in self.list():
+            if isinstance(obj, dict):
+                name = obj['metadata']['name']
+            else:
+                name = obj.metadata.name
+            self.delete(name, sync=sync)
+
+    def wait_for_deletion(self, name):
+        """Wait for the object to disappear."""
+        def _check_absence():
+            assert self.get(name) is None,\
+                '{} {} still exist'.format(self._kind, name)
+
+        utils.retry(
+            _check_absence, times=self._count, wait=self._delay,
+            name='checking the absence of {} {}'.format(self._kind, name)
+        )
+
+    def check_deletion_marker(self, name):
+        def _check_deletion_marker():
+            obj = self.get(name)
+            assert obj is not None, '{} {} not found'.format(self._kind, name)
+            if isinstance(obj, dict):
+                tstamp = obj['metadata'].get('deletionTimestamp')
+            else:
+                tstamp = obj.metadata.deletion_timestamp
+            assert tstamp is not None,\
+                '{} {} is not marked for deletion'.format(self._kind, name)
+
+        utils.retry(
+            _check_deletion_marker, times=self._count, wait=self._delay,
+            name='checking that {} {} is marked for deletion'.format(
+                self._kind, name
+            )
+        )
 
 
-def _get_volume(k8s_client, name):
-    try:
-        return k8s_client.get_cluster_custom_object(
-            group="storage.metalk8s.scality.com",
-            version="v1alpha1",
-            plural="volumes",
+    @abc.abstractmethod
+    def list(self):
+        """Return a list of existing objects."""
+        pass
+
+    @abc.abstractmethod
+    def _create(self, body):
+        """Create a new object using the given body."""
+        pass
+
+    @abc.abstractmethod
+    def _get(self, name):
+        """Return the object identified by `name`, raise if not found."""
+        pass
+
+    @abc.abstractmethod
+    def _delete(self, name):
+        """Delete the object identified by `name`.
+
+        The object may be simply marked for deletion and stay around for a
+        while.
+        """
+        pass
+
+# }}}
+# VolumeClient {{{
+
+class VolumeClient(Client):
+    def __init__(self, k8s_client):
+        super().__init__(
+            k8s_client, kind='Volume', retry_count=30, retry_delay=2
+        )
+        self._group="storage.metalk8s.scality.com"
+        self._version="v1alpha1"
+        self._plural="volumes"
+
+    def list(self):
+        return self._client.list_cluster_custom_object(
+            group=self._group, version=self._version, plural=self._plural
+        )['items']
+
+    def _create(self, body):
+        self._client.create_cluster_custom_object(
+            group=self._group, version=self._version, plural=self._plural,
+            body=body
+        )
+
+    def _get(self, name):
+        return self._client.get_cluster_custom_object(
+            group=self._group, version=self._version, plural=self._plural,
             name=name
         )
-    except (ApiException, HTTPError) as exc:
-        if isinstance(exc, ApiException) and exc.status == 404:
-            return None
-        raise
 
-
-def _delete_volume(k8s_client, name):
-    k8s_client.delete_cluster_custom_object(
-        group="storage.metalk8s.scality.com",
-        version="v1alpha1",
-        plural="volumes",
-        name=name,
-        body=kubernetes.client.V1DeleteOptions(),
-        grace_period_seconds=0
-    )
-
-
-def _wait_for_volume_deletion(k8s_client, name):
-    def _check_volume_absent():
-        assert _get_volume(k8s_client, name) is None,\
-            'Volume {} still exist'.format(name)
-
-    utils.retry(
-        _check_volume_absent, times=30, wait=2,
-        name='checking for the absence of volume {}'.format(name)
-    )
-
-# }}}
-# PersistentVolume {{{
-
-def _get_pv(k8s_client, name):
-    try:
-        return k8s_client.read_persistent_volume(name)
-    except (ApiException, HTTPError) as exc:
-        if isinstance(exc, ApiException) and exc.status == 404:
-            return None
-        raise
-
-# }}}
-# PersistentVolumeClaim {{{
-
-def _get_pv_claim(k8s_client, name, namespace='default'):
-    try:
-        return k8s_client.read_namespaced_persistent_volume_claim(
-            name=name, namespace=namespace
+    def _delete(self, name):
+        body = kubernetes.client.V1DeleteOptions()
+        self._client.delete_cluster_custom_object(
+            group=self._group, version=self._version, plural=self._plural,
+            name=name, body=body, grace_period_seconds=0
         )
-    except (ApiException, HTTPError) as exc:
-        if isinstance(exc, ApiException) and exc.status == 404:
-            return None
-        raise
 
 # }}}
-# Pod {{{
+# PersistentVolumeClient {{{
 
-def _create_pod(k8s_client, volume_name, image_name, full_command):
-    pod_name = '{}-pod'.format(volume_name)
-    if _get_pod(k8s_client, pod_name) is not None:
-        return
-    command, *args = ast.literal_eval(full_command)
-    body = POD_TEMPLATE.format(
-        volume_name=volume_name, image_name=image_name,
-        command=json.dumps(command), args=json.dumps(args)
-    )
-    k8s_client.create_namespaced_pod(
-        namespace='default', body=yaml.safe_load(body)
-    )
+class PersistentVolumeClient(Client):
+    def __init__(self, k8s_client):
+        super().__init__(
+            k8s_client, kind='PersistentVolume',
+            retry_count=10, retry_delay=2
+        )
 
-    utils.retry(
-        kube_utils.check_pod_status(k8s_client, pod_name),
-        times=30, wait=2,
-        name="wait for pod {}".format(pod_name)
-    )
+    def list(self):
+        return self._client.list_persistent_volume().items
 
-def _get_pod(k8s_client, name, namespace='default'):
-    try:
-        return k8s_client.read_namespaced_pod(name=name, namespace=namespace)
-    except (ApiException, HTTPError) as exc:
-        if isinstance(exc, ApiException) and exc.status == 404:
-            return None
-        raise
+    def _create(self, body):
+        self._client.create_persistent_volume(body=body)
 
+    def _get(self, name):
+        return self._client.read_persistent_volume(name)
 
-def _delete_pod(k8s_client, name):
-    k8s_client.delete_namespaced_pod(
-        name=name, namespace='default', grace_period_seconds=0
-    )
+    def _delete(self, name):
+        body = kubernetes.client.V1DeleteOptions()
+        self._client.delete_persistent_volume(
+            name=name, body=body, grace_period_seconds=0
+        )
 
+# }}}
+# PersistentVolumeClaimClient {{{
 
-def _wait_for_pod_deletion(k8s_client, name):
-    def _check_pod_absent():
-        assert _get_pod(k8s_client, name) is None,\
-            'Pod {} still exist'.format(name)
+class PersistentVolumeClaimClient(Client):
+    def __init__(self, k8s_client, namespace='default'):
+        super().__init__(
+            k8s_client, kind='PersistentVolumeClaim',
+            retry_count=10, retry_delay=2
+        )
+        self._namespace = namespace
 
-    utils.retry(
-        _check_pod_absent, times=30, wait=2,
-        name='checking for the absence of pod {}'.format(name)
-    )
+    def create_for_volume(self, volume, pv):
+        """Create a PVC matching the given volume."""
+        assert pv is not None, 'PersistentVolume {} not found'.format(volume)
+        body = PVC_TEMPLATE.format(
+            volume_name=volume,
+            storage_class=pv.spec.storage_class_name,
+            access=pv.spec.access_modes[0],
+            size=pv.spec.capacity['storage']
+        )
+        self.create_from_yaml(body)
 
+    def list(self):
+        return self._client.list_namespaced_persistent_volume_claim(
+            namespace=self._namespace
+        ).items
 
-def _delete_pv_claim(k8s_client, name):
-    k8s_client.delete_namespaced_persistent_volume_claim(
-        name=name, namespace='default', grace_period_seconds=0
-    )
+    def _create(self, body):
+        self._client.create_namespaced_persistent_volume_claim(
+            namespace=self._namespace, body=body
+        )
 
+    def _get(self, name):
+        return self._client.read_namespaced_persistent_volume_claim(
+            name=name, namespace=self._namespace
+        )
 
-def _wait_for_pv_claim_deletion(k8s_client, name):
-    def _check_pv_claim_absent():
-        assert _get_pv_claim(k8s_client, name) is None,\
-            'PersistentVolumeClaim {} still exist'.format(name)
+    def _delete(self, name):
+        self._client.delete_namespaced_persistent_volume_claim(
+            name=name, namespace=self._namespace, grace_period_seconds=0
+        )
 
-    utils.retry(
-        _check_pv_claim_absent, times=10, wait=2,
-        name='checking for the absence of PersistentVolumeClaim {}'.format(name)
-    )
+# }}}
+# PodClient {{{
+
+class PodClient(Client):
+    def __init__(self, k8s_client, image, namespace='default'):
+        super().__init__(
+            k8s_client, kind='Pod', retry_count=30, retry_delay=2
+        )
+        self._image = image
+        self._namespace = namespace
+
+    def create_with_volume(self, volume_name, command):
+        """Create a pod using the specified volume."""
+        binary, *args = ast.literal_eval(command)
+        body = POD_TEMPLATE.format(
+            volume_name=volume_name, image_name=self._image,
+            command=json.dumps(binary), args=json.dumps(args)
+        )
+        self.create_from_yaml(body)
+        # Wait for the Pod to be up and running.
+        pod_name = '{}-pod'.format(volume_name)
+        utils.retry(
+            kube_utils.check_pod_status(self._client, pod_name),
+            times=self._count, wait=self._delay,
+            name="wait for pod {}".format(pod_name)
+        )
+
+    def list(self):
+        return self._client.list_namespaced_pod(namespace=self._namespace).items
+
+    def _create(self, body):
+        self._client.create_namespaced_pod(namespace=self._namespace, body=body)
+
+    def _get(self, name):
+        return self._client.read_namespaced_pod(
+            name=name, namespace=self._namespace
+        )
+
+    def _delete(self, name):
+        self._client.delete_namespaced_pod(
+            name=name, namespace=self._namespace, grace_period_seconds=0
+        )
 
 # }}}
 # }}}
