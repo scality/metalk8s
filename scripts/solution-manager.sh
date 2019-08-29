@@ -159,6 +159,9 @@ _init () {
     _set_env
     _check_salt_master
     _set_bootstrap_id
+    if [ ! -f "$SOLUTION_CONFIG" ]; then
+      echo "archives: []" >"$SOLUTION_CONFIG"
+    fi
 }
 
 
@@ -182,8 +185,8 @@ _add_solution() {
     # ("/tmp/solution1.iso" "/tmp/solution2.iso")
     local existent_solutions=()
     IFS=" " read -r -a \
-        products <<< "$(salt-call --out txt slsutil.renderer \
-          string=\"{{ pillar.metalk8s.solutions.configured | join(' ')}}\" | cut -d' ' -f2-) )"
+        existent_solutions <<< "$(salt-call --out txt slsutil.renderer \
+          string="{{ pillar.metalk8s.solutions.configured | join(' ') }}" | cut -d' ' -f2-)"
     for solution in "${SOLUTIONS[@]}"; do
         if ! containsElement "'$solution'" \
              "${existent_solutions[@]+"${existent_solutions[@]}"}"; then
