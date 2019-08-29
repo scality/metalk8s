@@ -119,29 +119,29 @@ def task__iso_add_node_manifest() -> types.TaskDict:
 
 def task__iso_add_utilities_scripts() -> types.TaskDict:
     """Copy the ISO manager script to scripts."""
-    iso_manager_src = constants.ROOT/'scripts'/'iso-manager.sh'
-    iso_manager_dest = constants.ISO_ROOT/'iso-manager.sh'
-    iso_manager = [iso_manager_src, iso_manager_dest]
-
-    downgrade_src = constants.ROOT/'scripts'/'downgrade.sh'
-    downgrade_dest = constants.ISO_ROOT/'downgrade.sh'
-    downgrade = [downgrade_src, downgrade_dest]
-
-    upgrade_src = constants.ROOT/'scripts'/'upgrade.sh'
-    upgrade_dest = constants.ISO_ROOT/'upgrade.sh'
-    upgrade = [upgrade_src, upgrade_dest]
+    files = (
+        (
+            constants.ROOT/'scripts'/'iso-manager.sh',
+            constants.ISO_ROOT/'iso-manager.sh'
+        ), (
+            constants.ROOT/'scripts'/'downgrade.sh',
+            constants.ISO_ROOT/'downgrade.sh'
+        ), (
+            constants.ROOT/'scripts'/'upgrade.sh',
+            constants.ISO_ROOT/'upgrade.sh'
+        ), (
+            constants.ROOT/'scripts'/'solution-manager.sh',
+            constants.ISO_ROOT/'solution-manager.sh'
+        )
+    )
     return {
             'title': utils.title_with_target1('COPY'),
-            'actions': [
-                    (coreutils.cp_file, iso_manager),
-                    (coreutils.cp_file, downgrade),
-                    (coreutils.cp_file, upgrade)
-                ],
-            'targets': [iso_manager_dest, downgrade_dest, upgrade_dest],
+            'actions': [ (coreutils.cp_file, filepair) for filepair in files],
+            'targets': [filepair[1] for filepair in files],
             'task_dep': ['_iso_mkdir_root'],
-            'file_dep': [iso_manager_src, downgrade_src, upgrade_src],
+            'file_dep': [filepair[0] for filepair in files],
             'clean': True,
-            }
+    }
 
 
 def task__iso_render_bootstrap() -> types.TaskDict:

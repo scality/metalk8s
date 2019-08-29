@@ -1582,6 +1582,72 @@ def customresourcedefinition_present(
     return ret
 
 
+def customresourcedefinition_absent(
+        name,
+        namespace='default',
+        body=None,
+        source=None,
+        **kwargs):
+    '''
+    Ensures that the named custom resource definitino is absent from
+    the given namespace.
+
+    name
+        The name of the custom resource definition.
+
+    namespace
+        The namespace holding the custom resource definition.
+        The 'default' one is going to be used,
+        unless a different one is specified.
+
+    body
+        The definition of the custom resource definition as a python dict.
+
+    source
+        A file containing the definition of the custom resource definition
+        in the official kubernetes format.
+    '''
+
+    ret = {
+        'name': name,
+        'changes': {},
+        'result': False,
+        'comment': ''
+    }
+
+    customresourcedefinition = __salt__[
+        'metalk8s_kubernetes.show_customresourcedefinition'](name, **kwargs)
+
+    if customresourcedefinition is None:
+        ret['result'] = True
+        ret['comment'] = 'The custom resource definition does not exist'
+        return ret
+
+    if __opts__['test']:
+        ret['result'] = None
+        ret['comment'] = 'The custom resource definition is going to be deleted'
+        return ret
+
+    res = __salt__['metalk8s_kubernetes.delete_customresourcedefinition'](
+        name, **kwargs
+    )
+
+    crd_full_name = '{0}.{1}'.format(namespace, name)
+
+    if res is None:
+        return ret
+
+    ret['result'] = True
+    ret['changes'] = {
+        crd_full_name: {
+            'new': 'absent',
+            'old': 'present',
+        }
+    }
+
+    return ret
+
+
 def _extract_custom_resource_data(name, namespace, body, source, **kwargs):
     if body and source:
         raise ValueError("'source' cannot be used in combination with 'body'")
