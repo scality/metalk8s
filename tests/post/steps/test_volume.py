@@ -82,17 +82,35 @@ def k8s_custom_client(k8s_apiclient):
 
 
 @pytest.fixture
-def cleanup_volumes(k8s_custom_client):
+def teardown(k8s_client, k8s_custom_client):
     yield
+    # Delete pods.
+    pods = k8s_client.list_namespaced_pod(namespace='default')
+    for pod in pods.items:
+        pod_name = pod.metadata.name
+        if not pod_name.startswith('volume'):
+            continue
+        _delete_pod(k8s_client, pod_name)
+        _wait_for_pod_deletion(k8s_client, pod_name)
+    # Delete claims.
+    claims = k8s_client.list_namespaced_persistent_volume_claim(
+        namespace='default'
+    )
+    for claim in claims.items:
+        claim_name = claim.metadata.name
+        _delete_pv_claim(k8s_client, claim_name)
+        _wait_for_pv_claim_deletion(k8s_client, claim_name)
+
+    # Delete volumes.
     volumes = k8s_custom_client.list_cluster_custom_object(
         group="storage.metalk8s.scality.com",
         version="v1alpha1",
         plural="volumes"
     )
     for volume in volumes['items']:
-        name = volume['metadata']['name']
-        _delete_volume(k8s_custom_client, name)
-        _wait_for_volume_deletion(k8s_custom_client, name)
+        volume_name = volume['metadata']['name']
+        _delete_volume(k8s_custom_client, volume_name)
+        _wait_for_volume_deletion(k8s_custom_client, volume_name)
 
 # }}}
 # Scenarios {{{
@@ -107,33 +125,33 @@ def test_deploy_operator(host):
 
 @scenario('../features/volume.feature',
           'Test volume creation (sparseLoopDevice)')
-def test_volume_creation(host, cleanup_volumes):
+def test_volume_creation(host, teardown):
     pass
 
 @scenario('../features/volume.feature',
           'Test volume deletion (sparseLoopDevice)')
-def test_volume_deletion(host, cleanup_volumes):
+def test_volume_deletion(host, teardown):
     pass
 
 @scenario('../features/volume.feature', 'Test PersistentVolume protection')
-def test_pv_protection(host, cleanup_volumes):
+def test_pv_protection(host, teardown):
     pass
 
 @scenario('../features/volume.feature', 'Create a volume with no volume type')
-def test_no_volume_type(host, cleanup_volumes):
+def test_no_volume_type(host, teardown):
     pass
 
 @scenario('../features/volume.feature',
           'Create a volume with an invalid volume type')
-def test_invalid_volume_type(host, cleanup_volumes):
+def test_invalid_volume_type(host, teardown):
     pass
 
 @scenario('../features/volume.feature', 'Test in-use protection')
-def test_in_use_protection(host, cleanup_volumes):
+def test_in_use_protection(host, teardown):
     pass
 
 @scenario('../features/volume.feature', 'Volume usage (data persistency)')
-def test_volume_data_persistency(host, cleanup_volumes):
+def test_volume_data_persistency(host, teardown):
     pass
 
 # }}}
@@ -196,35 +214,15 @@ def delete_pv(host, name, k8s_client):
 @when(parsers.parse("I delete the Pod using '{volume_name}'"))
 def delete_pod(host, volume_name, k8s_client):
     name = '{}-pod'.format(volume_name)
-
-    def _check_pod_absent():
-        assert _get_pod(k8s_client, name) is None,\
-            'Volume {} still exist'.format(name)
-
-    k8s_client.delete_namespaced_pod(
-        name=name, namespace='default', grace_period_seconds=0
-    )
-    utils.retry(
-        _check_pod_absent, times=30, wait=2,
-        name='checking for the absence of pod {}'.format(name)
-    )
+    _delete_pod(k8s_client, name)
+    _wait_for_pod_deletion(k8s_client, name)
 
 
 @when(parsers.parse("I delete the PersistentVolumeClaim on '{volume_name}'"))
 def delete_pv_claim(host, volume_name, k8s_client):
     name = '{}-pvc'.format(volume_name)
-
-    def _check_pv_claim_absent():
-        assert _get_pv_claim(k8s_client, name) is None,\
-            'PersistentVolumeClaim {} still exist'.format(name)
-
-    k8s_client.delete_namespaced_persistent_volume_claim(
-        name=name, namespace='default', grace_period_seconds=0
-    )
-    utils.retry(
-        _check_pv_claim_absent, times=10, wait=2,
-        name='checking for the absence of PersistentVolumeClaim {}'.format(name)
-    )
+    _delete_pv_claim(k8s_client, name)
+    _wait_for_pv_claim_deletion(k8s_client, name)
 
 
 @when(parsers.parse(
@@ -487,6 +485,40 @@ def _get_pod(k8s_client, name, namespace='default'):
         if isinstance(exc, ApiException) and exc.status == 404:
             return None
         raise
+
+
+def _delete_pod(k8s_client, name):
+    k8s_client.delete_namespaced_pod(
+        name=name, namespace='default', grace_period_seconds=0
+    )
+
+
+def _wait_for_pod_deletion(k8s_client, name):
+    def _check_pod_absent():
+        assert _get_pod(k8s_client, name) is None,\
+            'Pod {} still exist'.format(name)
+
+    utils.retry(
+        _check_pod_absent, times=30, wait=2,
+        name='checking for the absence of pod {}'.format(name)
+    )
+
+
+def _delete_pv_claim(k8s_client, name):
+    k8s_client.delete_namespaced_persistent_volume_claim(
+        name=name, namespace='default', grace_period_seconds=0
+    )
+
+
+def _wait_for_pv_claim_deletion(k8s_client, name):
+    def _check_pv_claim_absent():
+        assert _get_pv_claim(k8s_client, name) is None,\
+            'PersistentVolumeClaim {} still exist'.format(name)
+
+    utils.retry(
+        _check_pv_claim_absent, times=10, wait=2,
+        name='checking for the absence of PersistentVolumeClaim {}'.format(name)
+    )
 
 # }}}
 # }}}
