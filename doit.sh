@@ -57,4 +57,4 @@ then
     . "${DOTENV}"
 fi
 
-"${BUILDENV}/bin/python" -m doit "$@"
+exec "${BUILDENV}/bin/python" -m doit "$@"
