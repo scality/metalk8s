@@ -36,3 +36,24 @@ Then(
     cy.get('.sc-table-column-cell-name').should('contain', volumeName);
   }
 );
+
+Then(
+  'I fill out the create volume form with SparseLoopDevice volume type and ckeck if the the volume I created is displayed on the volume list',
+  () => {
+    const volumeName = Cypress.env('volume_name');
+    const devicePath = Cypress.env('device_path');
+    const volumeCapacity = Cypress.env('volume_capacity');
+
+    cy.get('input[name=name]').type(volumeName);
+    cy.get('input[name=path]').type(devicePath);
+
+    cy.get('select[name=storageClass]').select('metalk8s-prometheus');
+    cy.get('select[name=type]').select('SparseLoopDevice');
+
+    cy.get('input[name=sizeInput]').type(volumeCapacity);
+    cy.get('select[name=selectedUnit]').select('GiB');
+
+    cy.get('[data-cy="submit-create-volume"]').click();
+    cy.get('.sc-table-column-cell-name').should('contain', volumeName);
+  }
+);

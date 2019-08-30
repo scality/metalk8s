@@ -2,7 +2,10 @@
   "env": {
     "target_url": "http://localhost:3000",
     "username": "admin",
-    "password": "admin"
+    "password": "admin",
+    "volume_name": "test",
+    "device_path": "/dev/disk1",
+    "volume_capacity": "1"
   },
   "reporter": "junit",
   "reporterOptions": {
