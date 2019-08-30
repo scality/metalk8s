@@ -85,3 +85,42 @@ Feature: Volume management
         When I delete the Pod using 'volume7'
         And I create a Pod using volume 'volume7' and running '["sleep", "60"]'
         Then the Pod using volume 'volume7' has a file '/mnt/bar.txt' containing 'foo'
+
+    Scenario: Create a volume with unsupported FS type
+        When I create the following StorageClass:
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+            name: btrfs-volume
+          provisioner: kubernetes.io/no-provisioner
+          parameters:
+            fsType: btrfs
+            mkfsOptions: '["-d", "raid0"]'
+          reclaimPolicy: Retain
+          mountOptions: []
+          volumeBindingMode: WaitForFirstConsumer
+        And I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume8
+            spec:
+              nodeName: bootstrap
+              storageClassName: btrfs-volume
+              sparseLoopDevice:
+                size: 10Gi
+        Then the Volume 'volume8' is 'Failed' with code 'CreationError' and message matches 'unsupported filesystem: btrfs'
+
+    Scenario: Create a volume using a non-existing StorageClass
+        Given the StorageClass 'not-found' does not exist
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume9
+            spec:
+              nodeName: bootstrap
+              storageClassName: not-found
+              sparseLoopDevice:
+                size: 10Gi
+        Then the Volume 'volume9' is 'Failed' with code 'CreationError' and message matches 'Failure!'

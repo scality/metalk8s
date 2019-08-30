@@ -94,6 +94,10 @@ def pod_client(k8s_client, utils_image):
     return PodClient(k8s_client, utils_image)
 
 @pytest.fixture
+def sc_client(k8s_apiclient):
+    return StorageClassClient(StorageV1Api(api_client=k8s_apiclient))
+
+@pytest.fixture
 def teardown(pod_client, pvc_client, volume_client):
     yield
     pod_client.delete_all(sync=True)
@@ -175,6 +179,13 @@ def pod_exists_for_volume(host, volume_name, command, pod_client):
     if pod_client.get('{}-pod'.format(volume_name)) is None:
         pod_client.create_with_volume(volume_name, command)
 
+
+@given(parsers.parse("the StorageClass '{name}' does not exist"))
+def storage_class_does_not_exist(host, name, sc_client):
+    sc = sc_client.get(name)
+    if sc is not None:
+        sc_client.delete(sc.metadata.name)
+
 # }}}
 # When {{{
 
@@ -209,18 +220,18 @@ def delete_pv_claim(host, volume_name, pvc_client):
 def create_pod_for_volume(host, volume_name, command, pod_client):
     pod_client.create_with_volume(volume_name, command)
 
+
+@when(parsers.parse("I create the following StorageClass:\n{body}"))
+def create_storage_class(host, body, sc_client):
+    sc_client.create_from_yaml(body)
+
 # }}}
 # Then {{{
 
 @then(parsers.parse("we have a StorageClass '{name}'"))
-def check_storage_class(host, name, k8s_apiclient):
-    k8s_client = StorageV1Api(api_client=k8s_apiclient)
-    try:
-        k8s_client.read_storage_class(name) is not None
-    except (ApiException, HTTPError) as exc:
-        if isinstance(exc, ApiException) and exc.status == 404:
-            assert False, 'StorageClass {} not found'.format(name)
-        raise
+def check_storage_class(host, name, sc_client):
+    assert sc_client.get(name) is not None,\
+        'StorageClass {} not found'.format(name)
 
 
 @then(parsers.parse("the Volume '{name}' is '{status}'"))
@@ -580,6 +591,27 @@ class PodClient(Client):
         self._client.delete_namespaced_pod(
             name=name, namespace=self._namespace, grace_period_seconds=0
         )
+
+# }}}
+# StorageClassClient {{{
+
+class StorageClassClient(Client):
+    def __init__(self, k8s_client):
+        super().__init__(
+            k8s_client, kind='StorageClass', retry_count=10, retry_delay=2
+        )
+
+    def list(self):
+        return self._client.list_storage_class().items
+
+    def _create(self, body):
+        self._client.create_storage_class(body=body)
+
+    def _get(self, name):
+        return self._client.read_storage_class(name=name)
+
+    def _delete(self, name):
+        self._client.delete_storage_class(name=name, grace_period_seconds=0)
 
 # }}}
 # }}}
