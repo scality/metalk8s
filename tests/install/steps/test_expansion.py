@@ -11,19 +11,10 @@ import yaml
 from tests import utils
 
 # Scenarios
-@scenario('../features/expansion.feature',
-          'Add one node to the cluster',
-          strict_gherkin=False)
+@scenario('../features/expansion.feature', 'Add one node to the cluster')
 def test_cluster_expansion(host):
     pass
 
-# Fixtures {{{
-
-@pytest.fixture
-def ssh_config(request):
-    return request.config.getoption('--ssh-config')
-
-# }}}
 # When {{{
 
 @when(parsers.parse('we declare a new "{node_type}" node on host "{hostname}"'))

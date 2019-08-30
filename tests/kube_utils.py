@@ -22,7 +22,7 @@ def get_pods(
     ).items
 
 
-def wait_for_pod(k8s_client, name, namespace="default", state="Running"):
+def check_pod_status(k8s_client, name, namespace="default", state="Running"):
     """Helper to generate a simple assertion method to check a Pod state.
 
     It is designed to be used with `tests.utils.retry`, and handles 404
@@ -30,7 +30,7 @@ def wait_for_pod(k8s_client, name, namespace="default", state="Running"):
     `retry`).
     """
 
-    def _wait_for_pod():
+    def _check_pod_status():
         try:
             pod = k8s_client.read_namespaced_pod(
                 name=name, namespace=namespace
@@ -44,4 +44,4 @@ def wait_for_pod(k8s_client, name, namespace="default", state="Running"):
 
         return pod
 
-    return _wait_for_pod
+    return _check_pod_status

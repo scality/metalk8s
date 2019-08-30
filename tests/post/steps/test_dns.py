@@ -27,7 +27,7 @@ def utils_pod(k8s_client, utils_image):
 
     # Wait for the Pod to be ready
     utils.retry(
-        kube_utils.wait_for_pod(
+        kube_utils.check_pod_status(
             k8s_client, name=pod_name, namespace="default", state="Running"
         ),
         times=10,

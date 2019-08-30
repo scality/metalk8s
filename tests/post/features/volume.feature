@@ -8,3 +8,80 @@ Feature: Volume management
     Scenario: The storage operator is up
         Given the Kubernetes API is available
         Then we have 1 running pod labeled 'name=storage-operator' in namespace 'kube-system'
+
+    Scenario: Test volume creation (sparseLoopDevice)
+        Given the Kubernetes API is available
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume1
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s-prometheus
+              sparseLoopDevice:
+                size: 10Gi
+        Then the Volume 'volume1' is 'Available'
+        And the PersistentVolume 'volume1' has size '10Gi'
+
+    Scenario: Test volume deletion (sparseLoopDevice)
+        Given a Volume 'volume2' exist
+        When I delete the Volume 'volume2'
+        Then the Volume 'volume2' does not exist
+        And the PersistentVolume 'volume2' does not exist
+
+    Scenario: Test PersistentVolume protection
+        Given a Volume 'volume3' exist
+        When I delete the PersistentVolume 'volume3'
+        Then the PersistentVolume 'volume3' is marked for deletion
+        And the Volume 'volume3' is 'Available'
+        When I delete the Volume 'volume3'
+        Then the Volume 'volume3' does not exist
+        And the PersistentVolume 'volume3' does not exist
+
+    Scenario: Create a volume with no volume type
+        Given the Kubernetes API is available
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume4
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s-prometheus
+        Then the Volume 'volume4' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
+
+    Scenario: Create a volume with an invalid volume type
+        Given the Kubernetes API is available
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume5
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s-prometheus
+              someRandomDevice:
+                capacity: 10Gi
+        Then the Volume 'volume5' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
+
+    Scenario: Test in-use protection
+        Given a Volume 'volume6' exist
+        And a PersistentVolumeClaim exists for 'volume6'
+        And a Pod using volume 'volume6' and running '["sleep", "60"]' exist
+        When I delete the Volume 'volume6'
+        Then the Volume 'volume6' is 'Available'
+        And the Volume 'volume6' is marked for deletion
+        And the PersistentVolume 'volume6' is marked for deletion
+        When I delete the Pod using 'volume6'
+        And I delete the PersistentVolumeClaim on 'volume6'
+        Then the Volume 'volume6' does not exist
+        And the PersistentVolume 'volume6' does not exist
+
+    Scenario: Volume usage (data persistency)
+        Given a Volume 'volume7' exist
+        And a PersistentVolumeClaim exists for 'volume7'
+        And a Pod using volume 'volume7' and running '["sh", "-c", "echo 'foo' > /mnt/bar.txt"]' exist
+        When I delete the Pod using 'volume7'
+        And I create a Pod using volume 'volume7' and running '["sleep", "60"]'
+        Then the Pod using volume 'volume7' has a file '/mnt/bar.txt' containing 'foo'
