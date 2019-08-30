@@ -78,8 +78,8 @@ spec:
 # Fixture {{{
 
 @pytest.fixture
-def volume_client(k8s_apiclient):
-    return VolumeClient(CustomObjectsApi(api_client=k8s_apiclient))
+def volume_client(k8s_apiclient, ssh_config):
+    return VolumeClient(CustomObjectsApi(api_client=k8s_apiclient), ssh_config)
 
 @pytest.fixture
 def pv_client(k8s_client):
@@ -427,10 +427,11 @@ class Client(abc.ABC):
 # VolumeClient {{{
 
 class VolumeClient(Client):
-    def __init__(self, k8s_client):
+    def __init__(self, k8s_client, ssh_config):
         super().__init__(
             k8s_client, kind='Volume', retry_count=30, retry_delay=2
         )
+        self._ssh_config = ssh_config
         self._group="storage.metalk8s.scality.com"
         self._version="v1alpha1"
         self._plural="volumes"
@@ -441,6 +442,10 @@ class VolumeClient(Client):
         )['items']
 
     def _create(self, body):
+        # Fixup the hostname.
+        body['spec']['nodeName'] = utils.resolve_hostname(
+            body['spec']['nodeName'], self._ssh_config
+        )
         self._client.create_cluster_custom_object(
             group=self._group, version=self._version, plural=self._plural,
             body=body

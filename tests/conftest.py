@@ -131,6 +131,11 @@ def utils_image(registry_address, version):
     )
 
 
+@pytest.fixture
+def ssh_config(request):
+    return request.config.getoption('--ssh-config')
+
+
 # }}}
 # Given {{{
 
