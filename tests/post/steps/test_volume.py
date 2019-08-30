@@ -142,31 +142,38 @@ def test_in_use_protection(host, teardown):
 def test_volume_data_persistency(host, teardown):
     pass
 
+@scenario('../features/volume.feature',
+          'Create a volume with unsupported FS type')
+def test_volume_invalid_fs_type(host, teardown):
+    pass
+
+@scenario('../features/volume.feature',
+          'Create a volume using a non-existing StorageClass')
+def test_volume_invalid_storage_class(host, teardown):
+    pass
+
 # }}}
 # Given {{{
 
 @given(parsers.parse("a Volume '{name}' exist"))
 def volume_exist(host, name, volume_client):
-    if volume_client.get(name) is not None:
-        return
-    volume_client.create_from_yaml(DEFAULT_VOLUME.format(name=name))
-    check_volume_status(host, name, 'Available', volume_client)
+    if volume_client.get(name) is None:
+        volume_client.create_from_yaml(DEFAULT_VOLUME.format(name=name))
+        check_volume_status(host, name, 'Available', volume_client)
 
 
 @given(parsers.parse("a PersistentVolumeClaim exists for '{volume_name}'"))
 def create_pvc_for_volume(host, volume_name, pvc_client, pv_client):
-    if pvc_client.get('{}-pvc'.format(volume_name)) is not None:
-        return
-    pvc_client.create_for_volume(volume_name, pv_client.get(volume_name))
+    if pvc_client.get('{}-pvc'.format(volume_name)) is None:
+        pvc_client.create_for_volume(volume_name, pv_client.get(volume_name))
 
 
 @given(parsers.parse(
     "a Pod using volume '{volume_name}' and running '{command}' exist"
 ))
 def pod_exists_for_volume(host, volume_name, command, pod_client):
-    if pod_client.get('{}-pod'.format(volume_name)) is not None:
-        return
-    pod_client.create_with_volume(volume_name, command)
+    if pod_client.get('{}-pod'.format(volume_name)) is None:
+        pod_client.create_with_volume(volume_name, command)
 
 # }}}
 # When {{{
