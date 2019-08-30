@@ -123,4 +123,4 @@ Feature: Volume management
               storageClassName: not-found
               sparseLoopDevice:
                 size: 10Gi
-        Then the Volume 'volume9' is 'Failed' with code 'CreationError' and message matches 'Failure!'
+        Then the Volume 'volume9' is 'Failed' with code 'CreationError' and message matches 'not found in pillar'
