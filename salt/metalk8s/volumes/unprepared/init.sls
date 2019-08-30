@@ -8,5 +8,5 @@ Clean up backing storage for {{ volume }}:
     - name: {{ volume }}
 {%- else %}
 Volume "{{ volume }}" not found in pillar:
-  test.fail_without_changes: []
+  test.succeed_without_changes: []
 {%- endif %}
