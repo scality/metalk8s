@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -182,7 +183,7 @@ func (self *Client) PollJob(
 	// `"success": false` == stacktrace => the job executed and failed.
 	if !success {
 		jobLogger.Info("Salt job failed")
-		reason := nodeResult["return"].(string)
+		reason := getStateFailureRootCause(nodeResult["return"])
 		return nil, &AsyncJobFailed{reason}
 	}
 	// /!\ `"success": true` != job ran and succeedeed!!
@@ -206,8 +207,29 @@ func (self *Client) PollJob(
 		return nil, fmt.Errorf("Salt job %s failed to run", jobId)
 	default:
 		jobLogger.Info("Salt job failed")
-		reason := nodeResult["return"].(string)
+		reason := getStateFailureRootCause(nodeResult["return"])
 		return nil, &AsyncJobFailed{reason}
+	}
+}
+
+func getStateFailureRootCause(output interface{}) string {
+	const non_root_error_prefix string = "One or more requisite failed"
+
+	switch error := output.(type) {
+	case string:
+		return error
+	case map[string]interface{}:
+		for key := range error {
+			status := error[key].(map[string]interface{})
+			success := status["result"].(bool)
+			reason := status["comment"].(string)
+			if !success && !strings.HasPrefix(reason, non_root_error_prefix) {
+				return reason
+			}
+		}
+		return "state failed, root cause not found"
+	default:
+		return fmt.Sprintf("unknown error type (%T)", error)
 	}
 }
 

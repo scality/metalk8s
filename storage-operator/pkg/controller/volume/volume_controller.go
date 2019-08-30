@@ -478,7 +478,7 @@ func (self *ReconcileVolume) pollSaltJob(
 			)
 			return self.setFailedVolumeStatus(
 				ctx, volume, pv, errorCode,
-				"Salt job '%s' failed with %s", jobName, failure.Error(),
+				"Salt job '%s' failed with: %s", jobName, failure.Error(),
 			)
 		}
 		// Job salt not found or failed to run, let's retry.
