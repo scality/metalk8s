@@ -109,9 +109,6 @@ def list_volumes(api_client, minion_id):
             [error_tplt.format(exc)]
         )
 
-    if not storage_classes:
-        return {}
-
     try:
         volumes = customObjectsApi.list_cluster_custom_object(
             group="storage.metalk8s.scality.com",
@@ -134,16 +131,12 @@ def list_volumes(api_client, minion_id):
     for volume in local_volumes:
         name = volume['metadata']['name']
         storageclass = storage_classes.get(
+            volume['spec']['storageClassName'],
             volume['spec']['storageClassName']
         )
-        if storageclass:
-            volume['spec']['storageClassName'] = storageclass
-            name = volume['metadata']['name']
-            results[name] = volume
-        else:
-            log.error('Unknown StorageClass "{}" for Volume "{}"'.format(
-                volume['spec']['storageClassName'], name)
-            )
+        volume['spec']['storageClassName'] = storageclass
+        name = volume['metadata']['name']
+        results[name] = volume
 
     return results
 
