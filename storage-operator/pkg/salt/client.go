@@ -198,11 +198,17 @@ func (self *Client) PollJob(
 	// running for Foo…
 	//
 	// So let's check `retcode` to be 100% sure it succeedeed.
-	if int(retcode) != 0 {
+	switch int(retcode) {
+	case 0:
+		jobLogger.Info("Salt job succeeded")
+		return nodeResult, nil
+	case 1: // Concurrent state execution.
 		return nil, fmt.Errorf("Salt job %s failed to run", jobId)
+	default:
+		jobLogger.Info("Salt job failed")
+		reason := nodeResult["return"].(string)
+		return nil, &AsyncJobFailed{reason}
 	}
-	jobLogger.Info("Salt job succeedeed")
-	return nodeResult, nil
 }
 
 // Return the size of the specified device on the given node.
