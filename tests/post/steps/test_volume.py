@@ -119,6 +119,10 @@ def teardown(pod_client, pvc_client, volume_client, sc_client):
     volume_client.delete_all(sync=True)
     sc_client.delete_all(sync=True, prefix='test-')
 
+@pytest.fixture(scope='function')
+def context():
+    return {}
+
 # }}}
 # Scenarios {{{
 
@@ -180,10 +184,10 @@ def test_volume_invalid_storage_class(host, teardown):
 # Given {{{
 
 @given(parsers.parse("a Volume '{name}' exist"))
-def volume_exist(name, volume_client):
+def volume_exist(context, name, volume_client):
     if volume_client.get(name) is None:
         volume_client.create_from_yaml(DEFAULT_VOLUME.format(name=name))
-        check_volume_status(name, 'Available', volume_client)
+        check_volume_status(context, name, 'Available', volume_client)
 
 
 @given(parsers.parse("a PersistentVolumeClaim exists for '{volume_name}'"))
@@ -266,10 +270,11 @@ def check_storage_class(name, sc_client):
 
 
 @then(parsers.parse("the Volume '{name}' is '{status}'"))
-def check_volume_status(name, status, volume_client):
+def check_volume_status(context, name, status, volume_client):
     def _check_volume_status():
         volume = volume_client.get(name)
         assert volume is not None, 'Volume {} not found'.format(name)
+        context[name] = volume
         try:
             assert volume['status']['phase'] == status,\
                 'Unexpected status: expected {}, got {}'.format(
@@ -318,10 +323,11 @@ def check_pv_deletion_marker(name, pv_client):
 
 @then(parsers.parse("the Volume '{name}' is 'Failed' "
                     "with code '{code}' and message matches '{pattern}'"))
-def check_volume_error(name, code, pattern, volume_client):
+def check_volume_error(context, name, code, pattern, volume_client):
     def _check_error():
         volume = volume_client.get(name)
         assert volume is not None, 'Volume {} not found'.format(name)
+        context[name] = volume
         status = volume.get('status')
         assert status is not None, 'no status for volume {}'.format(name)
         assert status['phase'] == 'Failed',\
@@ -372,6 +378,36 @@ def check_file_content_inside_pod(volume_name, path, content, k8s_client):
         _check_file_content, times=10, wait=2,
         name='checking content of {} on Pod {}'.format(path, name)
     )
+
+
+@then(parsers.parse("the backing storage for Volume '{name}' is created"))
+def check_storage_is_created(context, host, name):
+    volume = context.get(name)
+    assert volume is not None, 'volume {} not found in context'.format(name)
+    assert 'sparseLoopDevice' in volume['spec'],\
+        'unsupported volume type for this step'
+    uuid = volume['metadata']['uid']
+    capacity = volume['spec']['sparseLoopDevice']['size']
+    # Check that the sparse file exists and has the proper size.
+    path = '/var/lib/metalk8s/storage/sparse/{}'.format(uuid)
+    size = int(host.check_output('stat -c %s {}'.format(path)))
+    assert _quantity_to_bytes(capacity) == size
+    # Check that the loop device is mounted.
+    host.run_test('test -b /dev/disk/by-uuid/{}'.format(uuid))
+
+
+@then(parsers.parse("the backing storage for Volume '{name}' is deleted"))
+def check_storage_is_deleted(context, host, name):
+    volume = context.get(name)
+    assert volume is not None, 'volume {} not found in context'.format(name)
+    assert 'sparseLoopDevice' in volume['spec'],\
+        'unsupported volume type for this step'
+    uuid = volume['metadata']['uid']
+    # Check that the sparse file is deleted.
+    path = '/var/lib/metalk8s/storage/sparse/{}'.format(uuid)
+    host.run_test('test ! -f {}'.format(path))
+    # Check that the loop device is not mounted.
+    host.run_test('test ! -b /dev/disk/by-uuid/{}'.format(uuid))
 
 # }}}
 # Helpers {{{
@@ -648,4 +684,42 @@ class StorageClassClient(Client):
         self._client.delete_storage_class(name=name, grace_period_seconds=0)
 
 # }}}
+
+def _quantity_to_bytes(quantity):
+    """Return a quantity with a unit converted into a number of bytes.
+
+    Examples:
+    >>> quantity_to_bytes('42Gi')
+    45097156608
+    >>> quantity_to_bytes('100M')
+    100000000
+    >>> quantity_to_bytes('1024')
+    1024
+
+    Args:
+        quantity (str): a quantity, composed of a count and an optional unit
+
+    Returns:
+        int: the capacity (in bytes)
+    """
+    UNIT_FACTOR = {
+      None:  1,
+      'Ki':  2 ** 10,
+      'Mi':  2 ** 20,
+      'Gi':  2 ** 30,
+      'Ti':  2 ** 40,
+      'Pi':  2 ** 50,
+      'k':  10 ** 3,
+      'M':  10 ** 6,
+      'G':  10 ** 9,
+      'T':  10 ** 12,
+      'P':  10 ** 15,
+    }
+    size_regex = r'^(?P<size>[1-9][0-9]*)(?P<unit>[kKMGTP]i?)?$'
+    match = re.match(size_regex, quantity)
+    assert match is not None, 'invalid resource.Quantity value'
+    size = int(match.groupdict()['size'])
+    unit = match.groupdict().get('unit')
+    return size * UNIT_FACTOR[unit]
+
 # }}}
