@@ -91,7 +91,7 @@ Feature: Volume management
           apiVersion: storage.k8s.io/v1
           kind: StorageClass
           metadata:
-            name: btrfs-volume
+            name: test-sc-btrfs
           provisioner: kubernetes.io/no-provisioner
           parameters:
             fsType: btrfs
@@ -106,7 +106,7 @@ Feature: Volume management
               name: volume8
             spec:
               nodeName: bootstrap
-              storageClassName: btrfs-volume
+              storageClassName: test-sc-btrfs
               sparseLoopDevice:
                 size: 10Gi
         Then the Volume 'volume8' is 'Failed' with code 'CreationError' and message matches 'unsupported filesystem: btrfs'

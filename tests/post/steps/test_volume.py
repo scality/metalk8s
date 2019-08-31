@@ -112,11 +112,12 @@ def sc_client(k8s_apiclient):
     return StorageClassClient(StorageV1Api(api_client=k8s_apiclient))
 
 @pytest.fixture
-def teardown(pod_client, pvc_client, volume_client):
+def teardown(pod_client, pvc_client, volume_client, sc_client):
     yield
     pod_client.delete_all(sync=True)
     pvc_client.delete_all(sync=True)
     volume_client.delete_all(sync=True)
+    sc_client.delete_all(sync=True, prefix='test-')
 
 # }}}
 # Scenarios {{{
@@ -405,9 +406,11 @@ class Client(abc.ABC):
         if sync:
             self.wait_for_deletion(name)
 
-    def delete_all(self, sync=False):
+    def delete_all(self, prefix=None, sync=False):
         """Delete all the existing objects.
 
+        If `prefix` is given, only the objects whose name starts with the prefix
+        are deleted.
         If `sync` is True, don't return until the object is actually deleted.
         """
         for obj in self.list():
@@ -415,7 +418,8 @@ class Client(abc.ABC):
                 name = obj['metadata']['name']
             else:
                 name = obj.metadata.name
-            self.delete(name, sync=sync)
+            if prefix is None or name.startswith(prefix):
+                self.delete(name, sync=sync)
 
     def wait_for_deletion(self, name):
         """Wait for the object to disappear."""
