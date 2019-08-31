@@ -180,14 +180,14 @@ def test_volume_invalid_storage_class(host, teardown):
 # Given {{{
 
 @given(parsers.parse("a Volume '{name}' exist"))
-def volume_exist(host, name, volume_client):
+def volume_exist(name, volume_client):
     if volume_client.get(name) is None:
         volume_client.create_from_yaml(DEFAULT_VOLUME.format(name=name))
-        check_volume_status(host, name, 'Available', volume_client)
+        check_volume_status(name, 'Available', volume_client)
 
 
 @given(parsers.parse("a PersistentVolumeClaim exists for '{volume_name}'"))
-def create_pvc_for_volume(host, volume_name, pvc_client, pv_client):
+def create_pvc_for_volume(volume_name, pvc_client, pv_client):
     if pvc_client.get('{}-pvc'.format(volume_name)) is None:
         pvc_client.create_for_volume(volume_name, pv_client.get(volume_name))
 
@@ -195,20 +195,20 @@ def create_pvc_for_volume(host, volume_name, pvc_client, pv_client):
 @given(parsers.parse(
     "a Pod using volume '{volume_name}' and running '{command}' exist"
 ))
-def pod_exists_for_volume(host, volume_name, command, pod_client):
+def pod_exists_for_volume(volume_name, command, pod_client):
     if pod_client.get('{}-pod'.format(volume_name)) is None:
         pod_client.create_with_volume(volume_name, command)
 
 
 @given(parsers.parse("the StorageClass '{name}' does not exist"))
-def storage_class_does_not_exist(host, name, sc_client):
+def storage_class_does_not_exist(name, sc_client):
     sc = sc_client.get(name)
     if sc is not None:
         sc_client.delete(sc.metadata.name)
 
 
 @given(parsers.parse("a StorageClass '{name}' exist"))
-def storage_class_exist(host, name, sc_client):
+def storage_class_exist(name, sc_client):
     if sc_client.get(name) is None:
         sc_client.create_from_yaml(DEFAULT_SC.format(name=name))
 
@@ -216,57 +216,57 @@ def storage_class_exist(host, name, sc_client):
 # When {{{
 
 @when(parsers.parse("I create the following Volume:\n{body}"))
-def create_volume(host, body, volume_client):
+def create_volume(body, volume_client):
     volume_client.create_from_yaml(body)
 
 
 @when(parsers.parse("I delete the Volume '{name}'"))
-def delete_volume(host, name, volume_client):
+def delete_volume(name, volume_client):
     volume_client.delete(name, sync=False)
 
 
 @when(parsers.parse("I delete the PersistentVolume '{name}'"))
-def delete_pv(host, name, pv_client):
+def delete_pv(name, pv_client):
     pv_client.delete(name)
 
 
 @when(parsers.parse("I delete the Pod using '{volume_name}'"))
-def delete_pod(host, volume_name, pod_client):
+def delete_pod(volume_name, pod_client):
     pod_client.delete('{}-pod'.format(volume_name), sync=True)
 
 
 @when(parsers.parse("I delete the PersistentVolumeClaim on '{volume_name}'"))
-def delete_pv_claim(host, volume_name, pvc_client):
+def delete_pv_claim(volume_name, pvc_client):
     pvc_client.delete('{}-pvc'.format(volume_name), sync=True)
 
 
 @when(parsers.parse(
     "I create a Pod using volume '{volume_name}' and running '{command}'"
 ))
-def create_pod_for_volume(host, volume_name, command, pod_client):
+def create_pod_for_volume(volume_name, command, pod_client):
     pod_client.create_with_volume(volume_name, command)
 
 
 @when(parsers.parse("I create the following StorageClass:\n{body}"))
-def create_storage_class(host, body, sc_client):
+def create_storage_class(body, sc_client):
     sc_client.create_from_yaml(body)
 
 
 @when(parsers.parse("I delete the StorageClass '{name}'"))
-def delete_storage_class(host, name, sc_client):
+def delete_storage_class(name, sc_client):
     sc_client.delete(name, sync=False)
 
 # }}}
 # Then {{{
 
 @then(parsers.parse("we have a StorageClass '{name}'"))
-def check_storage_class(host, name, sc_client):
+def check_storage_class(name, sc_client):
     assert sc_client.get(name) is not None,\
         'StorageClass {} not found'.format(name)
 
 
 @then(parsers.parse("the Volume '{name}' is '{status}'"))
-def check_volume_status(host, name, status, volume_client):
+def check_volume_status(name, status, volume_client):
     def _check_volume_status():
         volume = volume_client.get(name)
         assert volume is not None, 'Volume {} not found'.format(name)
@@ -286,7 +286,7 @@ def check_volume_status(host, name, status, volume_client):
 
 
 @then(parsers.parse("the PersistentVolume '{name}' has size '{size}'"))
-def check_pv_size(host, name, size, pv_client):
+def check_pv_size(name, size, pv_client):
     def _check_pv_size():
         pv = pv_client.get(name)
         assert pv is not None, 'PersistentVolume {} not found'.format(name)
@@ -302,7 +302,7 @@ def check_pv_size(host, name, size, pv_client):
 
 
 @then(parsers.parse("the Volume '{name}' does not exist"))
-def check_volume_absent(host, name, volume_client):
+def check_volume_absent(name, volume_client):
     volume_client.wait_for_deletion(name)
 
 
@@ -318,7 +318,7 @@ def check_pv_deletion_marker(name, pv_client):
 
 @then(parsers.parse("the Volume '{name}' is 'Failed' "
                     "with code '{code}' and message matches '{pattern}'"))
-def check_volume_error(host, name, code, pattern, volume_client):
+def check_volume_error(name, code, pattern, volume_client):
     def _check_error():
         volume = volume_client.get(name)
         assert volume is not None, 'Volume {} not found'.format(name)
