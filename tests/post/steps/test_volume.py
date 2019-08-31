@@ -73,6 +73,20 @@ spec:
   terminationGracePeriodSeconds: 0
 """
 
+DEFAULT_SC = """
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {name}
+provisioner: kubernetes.io/no-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+mountOptions:
+  - rw
+parameters:
+  fsType: ext4
+  mkfsOptions: '["-m", "0"]'
+"""
 
 # }}}
 # Fixture {{{
@@ -156,6 +170,11 @@ def test_volume_invalid_fs_type(host, teardown):
 def test_volume_invalid_storage_class(host, teardown):
     pass
 
+@scenario('../features/volume.feature',
+          'Delete a Volume with missing StorageClass')
+def test_volume_invalid_storage_class(host, teardown):
+    pass
+
 # }}}
 # Given {{{
 
@@ -185,6 +204,12 @@ def storage_class_does_not_exist(host, name, sc_client):
     sc = sc_client.get(name)
     if sc is not None:
         sc_client.delete(sc.metadata.name)
+
+
+@given(parsers.parse("a StorageClass '{name}' exist"))
+def storage_class_exist(host, name, sc_client):
+    if sc_client.get(name) is None:
+        sc_client.create_from_yaml(DEFAULT_SC.format(name=name))
 
 # }}}
 # When {{{
@@ -224,6 +249,11 @@ def create_pod_for_volume(host, volume_name, command, pod_client):
 @when(parsers.parse("I create the following StorageClass:\n{body}"))
 def create_storage_class(host, body, sc_client):
     sc_client.create_from_yaml(body)
+
+
+@when(parsers.parse("I delete the StorageClass '{name}'"))
+def delete_storage_class(host, name, sc_client):
+    sc_client.delete(name, sync=False)
 
 # }}}
 # Then {{{

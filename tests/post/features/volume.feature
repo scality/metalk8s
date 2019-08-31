@@ -124,3 +124,20 @@ Feature: Volume management
               sparseLoopDevice:
                 size: 10Gi
         Then the Volume 'volume9' is 'Failed' with code 'CreationError' and message matches 'not found in pillar'
+
+    Scenario: Delete a Volume with missing StorageClass
+        Given a StorageClass 'test-sc-delete' exist
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: volume10
+            spec:
+              nodeName: bootstrap
+              storageClassName: test-sc-delete
+              sparseLoopDevice:
+                size: 10Gi
+        And I delete the StorageClass 'test-sc-delete'
+        And I delete the Volume 'volume10'
+        Then the Volume 'volume10' does not exist
+        And the PersistentVolume 'volume10' does not exist
