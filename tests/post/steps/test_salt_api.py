@@ -8,6 +8,9 @@ import pytest
 from pytest_bdd import parsers, scenario, then, when
 
 
+# Scenario {{{
+
+
 @scenario('../features/salt_api.feature', 'Login to SaltAPI')
 def test_login_to_salt_api(host):
     pass
@@ -26,6 +29,10 @@ def test_login_to_salt_api_using_an_incorrect_username(host, request):
 @pytest.fixture(scope='function')
 def context():
     return {}
+
+
+# }}}
+# When {{{
 
 
 @when(parsers.parse(
@@ -52,6 +59,10 @@ def login_salt_api_token(host, k8s_client, account_name, version, context):
     context['salt-api'] = _salt_api_login(
         address, account_name, token, 'Bearer'
     )
+
+
+# }}}
+# Then {{{
 
 
 @then('we can ping all minions')
@@ -86,6 +97,10 @@ def invoke_module_on_target(host, context, modules, targets):
 @then(parsers.parse("we have '{perms}' perms"))
 def have_perms(host, context, perms):
     assert perms in context['salt-api']['perms']
+
+
+# }}}
+# Helpers {{{
 
 
 def _get_salt_api_address(host, version):
@@ -133,3 +148,6 @@ def _salt_api_login(address, username, token, token_type):
         result['token'] = json_data['return'][0]['token']
         result['perms'] = json_data['return'][0]['perms']
     return result
+
+
+# }}}
