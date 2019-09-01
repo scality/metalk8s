@@ -1,3 +1,4 @@
+import ast
 import base64
 import json
 
@@ -105,10 +106,9 @@ def ping_all_minions(host, context):
 def authentication_fails(host, context):
     assert context['salt-api']['login-status-code'] == 401
 
-@then(parsers.parse(
-    "we can invoke '{modules}' on '{targets}'"))
+@then(parsers.parse("we can invoke '{modules}' on '{targets}'"))
 def invoke_module_on_target(host, context, modules, targets):
-    assert { targets: [ modules ] } in context['salt-api']['perms']
+    assert {targets: ast.literal_eval(modules)} in context['salt-api']['perms']
 
 @then(parsers.parse("we have '{perms}' perms"))
 def have_perms(host, context, perms):
