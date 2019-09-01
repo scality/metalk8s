@@ -9,6 +9,12 @@ Feature: SaltAPI
         And we have '@runner' perms
         And we have '@jobs' perms
 
+    Scenario: Login to SaltAPI
+        Given the Kubernetes API is available
+        When we login to SaltAPI with the ServiceAccount 'storage-operator'
+        Then we can invoke '["disk.dump", "state.sls"]' on '*'
+        And we have '@jobs' perms
+
     Scenario: Login to SaltAPI using an incorrect password
         Given the Kubernetes API is available
         When we login to SaltAPI as 'admin' using password 'notadmin'

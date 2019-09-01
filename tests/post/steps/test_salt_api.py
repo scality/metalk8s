@@ -30,55 +30,28 @@ def context():
 
 @when(parsers.parse(
     "we login to SaltAPI as '{username}' using password '{password}'"))
-def login_salt_api(host, username, password, version, context, request):
-    cmd_cidr = ' '.join([
-        'salt-call pillar.get',
-        'networks:control_plane',
-        'saltenv=metalk8s-{version}'.format(version=version),
-        '--out json',
-    ])
-    with host.sudo():
-        cidr_output = host.check_output(cmd_cidr)
-    cidr = json.loads(cidr_output)['local']
-
-    cmd_ip = ' '.join([
-        'salt-call --local',
-        'network.ip_addrs',
-        'cidr="{cidr}"'.format(cidr=cidr),
-        '--out json',
-    ])
-    with host.sudo():
-        cmd_output = host.check_output(cmd_ip)
-    ip = json.loads(cmd_output)['local'][0]
-
-    port = 4507
-
+def login_salt_api_basic(host, username, password, version, context):
+    address = _get_salt_api_address(host, version)
     token = base64.encodebytes(
-        '{}:{}'.format(username, password).encode('utf-8')).rstrip()
-    response = requests.post(
-        'http://{ip}:{port}/login'.format(ip=ip, port=port),
-        data={
-            'eauth': 'kubernetes_rbac',
-            'username': username,
-            'token': token,
-            'token_type': 'Basic',
-        },
+        '{}:{}'.format(username, password).encode('utf-8')
+    ).rstrip()
+    context['salt-api'] = _salt_api_login(address, username, token, 'Basic')
+
+
+@when(parsers.parse(
+    "we login to SaltAPI with the ServiceAccount '{account_name}'"))
+def login_salt_api_token(host, k8s_client, account_name, version, context):
+    address = _get_salt_api_address(host, version)
+    service_account = k8s_client.read_namespaced_service_account(
+        name=account_name, namespace='kube-system'
     )
-
-    result = {
-        'url': 'http://{ip}:{port}'.format(ip=ip, port=port),
-        'token': None,
-        'perms': [],
-        'login-status-code': response.status_code,
-    }
-
-    if response.status_code == 200:
-        json_data = response.json()
-
-        result['token'] = json_data['return'][0]['token']
-        result['perms'] = json_data['return'][0]['perms']
-
-    context['salt-api'] = result
+    secret = k8s_client.read_namespaced_secret(
+        name=service_account.secrets[0].name, namespace='kube-system'
+    )
+    token = base64.decodebytes(secret.data['token'].encode('utf-8'))
+    context['salt-api'] = _salt_api_login(
+        address, account_name, token, 'Bearer'
+    )
 
 
 @then('we can ping all minions')
@@ -113,3 +86,50 @@ def invoke_module_on_target(host, context, modules, targets):
 @then(parsers.parse("we have '{perms}' perms"))
 def have_perms(host, context, perms):
     assert perms in context['salt-api']['perms']
+
+
+def _get_salt_api_address(host, version):
+    SALT_API_PORT = 4507
+    cmd_cidr = ' '.join([
+        'salt-call', 'pillar.get',
+        'networks:control_plane',
+        'saltenv=metalk8s-{version}'.format(version=version),
+        '--out', 'json',
+    ])
+    with host.sudo():
+        cidr_output = host.check_output(cmd_cidr)
+    cidr = json.loads(cidr_output)['local']
+
+    cmd_ip = ' '.join([
+        'salt-call', '--local',
+        'network.ip_addrs',
+        'cidr="{cidr}"'.format(cidr=cidr),
+        '--out', 'json',
+    ])
+    with host.sudo():
+        cmd_output = host.check_output(cmd_ip)
+    ip = json.loads(cmd_output)['local'][0]
+    return '{}:{}'.format(ip, SALT_API_PORT)
+
+
+def _salt_api_login(address, username, token, token_type):
+    response = requests.post(
+        'http://{}/login'.format(address),
+        data={
+            'eauth': 'kubernetes_rbac',
+            'username': username,
+            'token': token,
+            'token_type': token_type,
+        },
+    )
+    result = {
+        'url': 'http://{}'.format(address),
+        'token': None,
+        'perms': [],
+        'login-status-code': response.status_code,
+    }
+    if response.status_code == 200:
+        json_data = response.json()
+        result['token'] = json_data['return'][0]['token']
+        result['perms'] = json_data['return'][0]['perms']
+    return result
