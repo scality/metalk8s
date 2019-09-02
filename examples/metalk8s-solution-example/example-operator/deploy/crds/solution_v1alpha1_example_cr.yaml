@@ -1,0 +1,7 @@
+apiVersion: solution.com/v1alpha1
+kind: Example
+metadata:
+  name: example-example
+spec:
+  # Add fields here
+  size: 3
