@@ -4,5 +4,6 @@
 
 # Don't ignore images to include in docs
 !/quickstart/img/**/*.png
+!/operation/volume_management/img/**/*.png
 
 /_build/
