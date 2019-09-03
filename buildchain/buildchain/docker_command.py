@@ -39,6 +39,17 @@ RPM_BASE_CONFIG = {
     'remove': True
 }
 
+DEB_BASE_CONFIG = {
+    'hostname': 'build',
+    'mounts': [utils.get_entrypoint_mount('debian')],
+    'environment': {
+        'TARGET_UID': os.geteuid(),
+        'TARGET_GID': os.getegid()
+    },
+    'tmpfs': {'/tmp': ''},
+    'remove': True
+}
+
 
 def default_error_handler(exc: Exception) -> str:
     """Default string formatting exception handler."""

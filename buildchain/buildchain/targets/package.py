@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
 from buildchain import constants
+from buildchain import coreutils
 from buildchain import types
 from buildchain import utils
 from buildchain import docker_command
@@ -319,3 +320,114 @@ def _file_from_url(url: str) -> str:
     """Get filename from a URL."""
     path = urllib.parse.urlparse(url).path
     return urllib.parse.unquote(os.path.basename(path))
+
+
+class DEBPackage(Package):
+    """A DEB software package for Ubuntu 18.04."""
+
+    ARCH = 'amd64'
+
+    def __init__(
+        self,
+        basename: str,
+        name: str,
+        version: str,
+        sources: Path,
+        build_id: int,
+        builder: image.ContainerImage,
+        **kwargs: Any
+    ):
+        super().__init__(
+            basename, name, version, build_id, builder,
+            constants.PKG_DEB_ROOT, **kwargs
+         )
+        self._sources = sources
+
+    sources = property(operator.attrgetter('_sources'))
+
+    @property
+    def deb(self) -> Path:
+        """DEB path."""
+        fmt = '{pkg.name}_{pkg.version}-{pkg.build_id}_{pkg.ARCH}.deb'
+        return self.rootdir/fmt.format(pkg=self)
+
+    @property
+    def debuild_sources(self) -> Path:
+        """Path to the directory that contains input files for debuild."""
+        return constants.ROOT.joinpath('packages','debian',self.name)
+
+    @property
+    def execution_plan(self) -> List[types.TaskDict]:
+        tasks = [self.make_package_directory()]
+        if self.sources.suffix == '.rpm':
+            tasks.append(self.convert_package())
+        else:
+            tasks.append(self.build_package())
+        return tasks
+
+    def build_package(self) -> types.TaskDict:
+        """Build DEB packages from source files."""
+        mounts = [
+            utils.bind_ro_mount(
+                source=self.sources, target=Path('/debbuild/pkg-src')
+            ),
+            utils.bind_ro_mount(
+                source=self.debuild_sources, target=Path('/debbuild/pkg-meta')
+            ),
+            utils.bind_mount(
+                source=self.rootdir, target=Path('/debbuild/result')
+            ),
+        ]
+        builddeb_callable = docker_command.DockerRun(
+            command=['/entrypoint.sh', 'builddeb'],
+            builder=self.builder,
+            run_config=docker_command.DEB_BASE_CONFIG,
+            mounts=mounts,
+            environment={
+                'VERSION': '{}-{}'.format(self.version, self.build_id)
+            },
+        )
+        task = self.basic_task
+        task.update({
+            'name': 'build_deb_pkg',
+            'actions': [builddeb_callable],
+            'doc': 'Build DEB package from sources for {}'.format(self.name),
+            'title': utils.title_with_target1('BUILD DEB'),
+            'targets': [self.deb],
+        })
+        task['file_dep'].extend(coreutils.ls_files_rec(self.sources))
+        task['file_dep'].extend(coreutils.ls_files_rec(self.debuild_sources))
+        task['task_dep'].append('_package_mkdir_deb_iso_root')
+        task['task_dep'].append('_build_deb_container')
+        return task
+
+    def convert_package(self) -> types.TaskDict:
+        """Build a DEB package from a RPM one."""
+        mounts = [
+            utils.bind_ro_mount(
+                source=self.sources,
+                target=Path('/rpmbuild/source.rpm')
+            ),
+            utils.bind_mount(
+                source=self.rootdir,
+                target=Path('/debbuild/result')
+            ),
+        ]
+        builddeb_callable = docker_command.DockerRun(
+            command=['/entrypoint.sh', 'rpm2deb'],
+            builder=self.builder,
+            run_config=docker_command.DEB_BASE_CONFIG,
+            mounts=mounts
+        )
+        task = self.basic_task
+        task.update({
+            'name': 'convert_rpm_pkg_to_deb',
+            'actions': [builddeb_callable],
+            'doc': 'Build DEB package from RPM for {}'.format(self.name),
+            'title': utils.title_with_target1('RPM2DEB'),
+            'targets': [self.deb],
+        })
+        task['file_dep'].append(self.sources)
+        task['task_dep'].append('_package_mkdir_deb_iso_root')
+        task['task_dep'].append('_build_deb_container')
+        return task

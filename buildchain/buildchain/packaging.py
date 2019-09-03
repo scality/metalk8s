@@ -47,6 +47,7 @@ def task_packaging() -> types.TaskDict:
         'actions': None,
         'task_dep': [
             '_build_rpm_container',
+            '_build_deb_container',
             '_package_mkdir_root',
             '_package_mkdir_iso_root',
             '_download_rpm_packages',
@@ -58,6 +59,12 @@ def task_packaging() -> types.TaskDict:
 def task__build_rpm_container() -> types.TaskDict:
     """Build the container image used to build the packages/repositories."""
     task = RPM_BUILDER.task
+    task.pop('name')  # `name` is only used for sub-task.
+    return task
+
+def task__build_deb_container() -> types.TaskDict:
+    """Build the container image used to build the packages/repositories."""
+    task = DEB_BUILDER.task
     task.pop('name')  # `name` is only used for sub-task.
     return task
 
@@ -178,6 +185,16 @@ RPM_BUILDER : targets.LocalImage = targets.LocalImage(
         'SALT_VERSION': versions.SALT_VERSION,
     },
 )
+
+DEB_BUILDER : targets.LocalImage = targets.LocalImage(
+    name='metalk8s-deb-build',
+    version='latest',
+    dockerfile=constants.ROOT/'packages'/'debian'/'Dockerfile',
+    destination=config.BUILD_ROOT,
+    save_on_disk=False,
+    task_dep=['_build_root'],
+)
+
 
 # Packages to build, per repository.
 def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:

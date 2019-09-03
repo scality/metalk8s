@@ -12,6 +12,7 @@ checksum
 checksums
 containerd
 de
+debuild
 dockerfile
 doit
 dedup
