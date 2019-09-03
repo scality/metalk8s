@@ -16,16 +16,23 @@ PILLAR=""
 _usage() {
     echo "solution-manager.sh [options]"
     echo "Options:"
-    echo "-s/--solution <solution path>:   Path to solution ISO"
+    echo "-a/--add <solution path>:        Add solution from ISO path"
+    echo "-d/--del <solution path>:        Uninstall solution from ISO path"
     echo "-l/--log-file <logfile_path>:    Path to log file"
     echo "-v/--verbose:                    Run in verbose mode"
 }
 
-SOLUTIONS=()
+SOLUTIONS_ADD=()
+SOLUTIONS_REMOVE=()
+EXISTENT_SOLUTIONS=()
 while (( "$#" )); do
   case "$1" in
-    -s|--solution)
-      SOLUTIONS+=("$2")
+    -a|--add)
+      SOLUTIONS_ADD+=("$2")
+      shift 2
+      ;;
+    -d|--del)
+      SOLUTIONS_REMOVE+=("$2")
       shift 2
       ;;
     -v|--verbose)
@@ -175,31 +182,62 @@ containsElement () {
   return 1
 }
 
-_add_solution() {
-    # Skip adding solutions if none is passed
-    [ ${#SOLUTIONS[@]} -lt 1 ] && return 0
+add_solutions() {
+    add=("$@")
+    for solution in "${add[@]}"; do
+        if ! containsElement "'$solution'" \
+             "${EXISTENT_SOLUTIONS[@]+"${EXISTENT_SOLUTIONS[@]}"}"; then
+            EXISTENT_SOLUTIONS+=("'$solution'")
+        fi
+    done
+}
+
+remove_solutions() {
+  delete=("$@")
+  for target in "${delete[@]}"; do
+    for i in "${!EXISTENT_SOLUTIONS[@]}"; do
+      if [[ "${EXISTENT_SOLUTIONS[i]}" = "$target" ]]; then
+        unset 'EXISTENT_SOLUTIONS[i]'
+      fi
+    done
+  done
+  # Rebuild the gaps in the array
+  for i in "${!EXISTENT_SOLUTIONS[@]}"; do
+    new_array+=( "${EXISTENT_SOLUTIONS[i]}" )
+  done
+  EXISTENT_SOLUTIONS=("${new_array[@]+"${new_array[@]}"}")
+  unset new_array
+}
+
+_add_del_solution() {
+    # Skip adding/deleting solutions if none is passed
+    [ ${#SOLUTIONS_REMOVE[@]} -lt 1  ] && [ ${#SOLUTIONS_ADD[@]} -lt 1 ] && return 0
     # The use salt file.serialize merge require having full list
     # salt-call output example:
     # local: ["/tmp/solution1.iso", "/tmp/solution2.iso"]
     # parsed products:
     # ("/tmp/solution1.iso" "/tmp/solution2.iso")
-    local existent_solutions=()
     IFS=" " read -r -a \
-        existent_solutions <<< "$(salt-call --out txt slsutil.renderer \
+        EXISTENT_SOLUTIONS <<< "$(salt-call --out txt slsutil.renderer \
           string="{{ pillar.metalk8s.solutions.configured | join(' ') }}" | cut -d' ' -f2- | tr -d '{}' )"
-    for solution in "${SOLUTIONS[@]}"; do
-        if ! containsElement "'$solution'" \
-             "${existent_solutions[@]+"${existent_solutions[@]}"}"; then
-            existent_solutions+=("'$solution'")
-        fi
-    done
+    # Add new solutions
+    if [ ${#SOLUTIONS_ADD[@]} -ge 1 ]; then
+        add_solutions "${SOLUTIONS_ADD[@]}"
+    fi
+    # Remove unwanted solutions
+    if [ ${#SOLUTIONS_REMOVE[@]} -ge 1 ]; then
+        remove_solutions "${SOLUTIONS_REMOVE[@]}"
+    fi
     echo "Collecting solutions..."
-    echo "${existent_solutions[@]}"
     # build product list
-    solutions_list=${existent_solutions[0]}
-    for i in "${existent_solutions[@]:1}"; do
-        solutions_list+=,$i
-    done
+    if [ ${#EXISTENT_SOLUTIONS[@]} -eq 0 ]; then
+        solutions_list=""
+    else
+        solutions_list=${EXISTENT_SOLUTIONS[0]}
+        for i in "${EXISTENT_SOLUTIONS[@]:1}"; do
+            solutions_list+=,$i
+        done
+    fi
 
     echo "Updating $SOLUTION_CONFIG"
     $SALT_CALL state.single file.serialize "$SOLUTION_CONFIG" \
@@ -226,5 +264,5 @@ _configure_solutions() {
 
 # Main
 _init
-run "Add solution" _add_solution
+run "Add/Delete solution" _add_del_solution
 run "Configure solutions" _configure_solutions
