@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-solution-ui
+  namespace: metalk8s-solutions
+  labels:
+    app: example-solution-ui
+    heritage: example-solution
+    app.kubernetes.io/name: example-solution-ui
+    app.kubernetes.io/version: "@VERSION@"
+    app.kubernetes.io/component: ui
+    app.kubernetes.io/part-of: example-solution
+    # UIs are deployed and managed by Salt, provided with MetalK8s
+    app.kubernetes.io/managed-by: salt
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: example-solution-ui
+  template:
+    metadata:
+      labels:
+        app: example-solution-ui
+        heritage: example-solution
+        app.kubernetes.io/name: example-solution-ui
+        app.kubernetes.io/instance: example-solution-ui
+        app.kubernetes.io/version: "@VERSION@"
+        app.kubernetes.io/component: ui
+        app.kubernetes.io/part-of: example-solution
+        # UIs are deployed and managed by Salt, provided with MetalK8s
+        app.kubernetes.io/managed-by: salt
+    spec:
+      tolerations:
+      # UIs are deployed on "infra" Nodes, so we need these tolerations
+      - key: "node-role.kubernetes.io/bootstrap"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/infra"
+        operator: "Exists"
+        effect: "NoSchedule"
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+        node-role.kubernetes.io/infra: ''
+      containers:
+        - name: example-solution-ui
+          image: "@REPOSITORY@/example-solution-ui:@VERSION@"
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+          volumeMounts:
+          - name: ui-branding
+            mountPath: /etc/example-solution/ui
+            readOnly: true
+      volumes:
+        - name: ui-branding
+          configMap:
+            name: ui-branding

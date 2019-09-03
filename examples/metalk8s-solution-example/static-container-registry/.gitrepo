@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/nicolast/static-container-registry
+	branch = master
+	commit = de9ad9be0a87645bf0850d90c5111b637b3fdbb7
+	parent = d0a00623ed8a0d428f545c2690dab722b7ab1c5e
+	method = merge
+	cmdver = 0.4.0

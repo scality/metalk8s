@@ -1,0 +1,43 @@
+version: '3.2'
+
+services:
+  static-container-registry:
+    build: .
+    entrypoint: /docker-test-entrypoint.sh
+    volumes:
+      - type: volume
+        source: images
+        target: /var/lib/images
+      - type: bind
+        source: ./ci/docker/static-container-registry/docker-test-entrypoint.sh
+        target: /docker-test-entrypoint.sh
+    depends_on:
+      - image-provisioner
+
+  image-provisioner:
+    build: ci/docker/image-provisioner
+    command: /provision-images.sh
+    volumes:
+      - type: volume
+        source: images
+        target: /var/lib/images
+
+  sut:
+    build:
+      context: .
+      dockerfile: ci/docker/sut/Dockerfile
+    command: bash_unit /test.sh
+    depends_on:
+      - static-container-registry
+    environment:
+      IMAGE: ''
+      IMAGES: ''
+      REGISTRY_HOST: 'static-container-registry'
+      REGISTRY_PORT: '80'
+      TEST_DOCKER: '0'
+      TEST_CRIO: '0'
+      TEST_CONTAINERD: '0'
+      TEST_SKOPEO: '1'
+
+volumes:
+  images:

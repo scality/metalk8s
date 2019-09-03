@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: example-solution-ui
+  namespace: metalk8s-solutions
+  labels:
+    app: example-solution-ui
+    heritage: example-solution
+    app.kubernetes.io/name: example-solution-ui
+    app.kubernetes.io/version: "@VERSION@"
+    app.kubernetes.io/component: ui
+    app.kubernetes.io/part-of: example-solution
+    app.kubernetes.io/managed-by: salt
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: example-solution-ui
+  type: NodePort

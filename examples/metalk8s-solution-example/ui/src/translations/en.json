@@ -1,0 +1,23 @@
+{
+  "product_name": "Example Solution UI",
+  "username": "Username",
+  "password": "Password",
+  "submit": "Submit",
+  "about": "About",
+  "log_out": "Log out",
+  "create_new_customResource": "Create New Custom Resource",
+  "edit_customResource": "Edit a Custom Resource",
+  "operator_version": "Operator Version",
+  "name": "Name",
+  "cancel": "Cancel",
+  "create": "Create",
+  "edit": "Edit",
+  "namespace": "Namespace",
+  "version": "Version",
+  "replicas": "Replicas",
+  "no_data_available": "No data available",
+  "custom_resource": "Custom Resource",
+  "select_a_namespace": "Select a namespace…",
+  "not_found": "No results",
+  "not_valid_version": "This is not a valid version"
+}
