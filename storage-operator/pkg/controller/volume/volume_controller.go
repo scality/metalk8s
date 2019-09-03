@@ -478,7 +478,7 @@ func (self *ReconcileVolume) pollSaltJob(
 			)
 			return self.setFailedVolumeStatus(
 				ctx, volume, pv, errorCode,
-				"Salt job '%s' failed with %s", jobName, failure.Error(),
+				"Salt job '%s' failed with: %s", jobName, failure.Error(),
 			)
 		}
 		// Job salt not found or failed to run, let's retry.
@@ -878,8 +878,14 @@ func (self *ReconcileVolume) reclaimStorage(
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
+	saltJob := volume.Status.Job
+	// Ignore existing Job ID in Failed case (no job are running), JID only here
+	// for debug (which is now useless as we're going to delete the Volume).
+	if volume.Status.Phase == storagev1alpha1.VolumeFailed {
+		saltJob = ""
+	}
 
-	switch volume.Status.Job {
+	switch saltJob {
 	case "": // No job in progress: call Salt to unprepare the volume.
 		jid, err := self.salt.UnprepareVolume(
 			ctx, nodeName, volume.Name, saltenv,

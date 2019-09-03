@@ -226,7 +226,11 @@ class Volume(object):
         if device_info.has_partition:
             raise Exception('backing device `{}` contains a partition table'\
                             .format(self.path))
-        params = self.get('spec.storageClassName.parameters')
+        storage_class = self.get('spec.storageClassName')
+        # If we got a string that means the name wasn't replaced by the object.
+        if isinstance(storage_class, basestring):
+            raise Exception('StorageClass {} not found'.format(storage_class))
+        params = storage_class['parameters']
         # mkfs options, if any, are stored as JSON-encoded list.
         options = json.loads(params.get('mkfsOptions', '[]'))
         fs_type = params['fsType']

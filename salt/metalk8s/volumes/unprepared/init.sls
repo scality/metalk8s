@@ -7,6 +7,13 @@ Clean up backing storage for {{ volume }}:
   metalk8s_volumes.removed:
     - name: {{ volume }}
 {%- else %}
-Volume "{{ volume }}" not found in pillar:
-  test.fail_without_changes: []
+
+{%- do salt.log.warning('Volume ' ~ volume ~ ' not found in pillar') -%}
+
+Volume {{ volume }} not found in pillar:
+  test.configurable_test_state:
+    - name: {{ volume }}
+    - changes: False
+    - result: True
+    - comment: Volume {{ volume }} not found in pillar
 {%- endif %}

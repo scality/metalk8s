@@ -73,6 +73,20 @@ spec:
   terminationGracePeriodSeconds: 0
 """
 
+DEFAULT_SC = """
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {name}
+provisioner: kubernetes.io/no-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+mountOptions:
+  - rw
+parameters:
+  fsType: ext4
+  mkfsOptions: '["-m", "0"]'
+"""
 
 # }}}
 # Fixture {{{
@@ -94,11 +108,20 @@ def pod_client(k8s_client, utils_image):
     return PodClient(k8s_client, utils_image)
 
 @pytest.fixture
-def teardown(pod_client, pvc_client, volume_client):
+def sc_client(k8s_apiclient):
+    return StorageClassClient(StorageV1Api(api_client=k8s_apiclient))
+
+@pytest.fixture
+def teardown(pod_client, pvc_client, volume_client, sc_client):
     yield
     pod_client.delete_all(sync=True)
     pvc_client.delete_all(sync=True)
     volume_client.delete_all(sync=True)
+    sc_client.delete_all(sync=True, prefix='test-')
+
+@pytest.fixture(scope='function')
+def context():
+    return {}
 
 # }}}
 # Scenarios {{{
@@ -142,85 +165,116 @@ def test_in_use_protection(host, teardown):
 def test_volume_data_persistency(host, teardown):
     pass
 
+@scenario('../features/volume.feature',
+          'Create a volume with unsupported FS type')
+def test_volume_invalid_fs_type(host, teardown):
+    pass
+
+@scenario('../features/volume.feature',
+          'Create a volume using a non-existing StorageClass')
+def test_volume_invalid_storage_class(host, teardown):
+    pass
+
+@scenario('../features/volume.feature',
+          'Delete a Volume with missing StorageClass')
+def test_volume_invalid_storage_class(host, teardown):
+    pass
+
 # }}}
 # Given {{{
 
 @given(parsers.parse("a Volume '{name}' exist"))
-def volume_exist(host, name, volume_client):
-    if volume_client.get(name) is not None:
-        return
-    volume_client.create_from_yaml(DEFAULT_VOLUME.format(name=name))
-    check_volume_status(host, name, 'Available', volume_client)
+def volume_exist(context, name, volume_client):
+    if volume_client.get(name) is None:
+        volume_client.create_from_yaml(DEFAULT_VOLUME.format(name=name))
+        check_volume_status(context, name, 'Available', volume_client)
 
 
 @given(parsers.parse("a PersistentVolumeClaim exists for '{volume_name}'"))
-def create_pvc_for_volume(host, volume_name, pvc_client, pv_client):
-    if pvc_client.get('{}-pvc'.format(volume_name)) is not None:
-        return
-    pvc_client.create_for_volume(volume_name, pv_client.get(volume_name))
+def create_pvc_for_volume(volume_name, pvc_client, pv_client):
+    if pvc_client.get('{}-pvc'.format(volume_name)) is None:
+        pvc_client.create_for_volume(volume_name, pv_client.get(volume_name))
 
 
 @given(parsers.parse(
     "a Pod using volume '{volume_name}' and running '{command}' exist"
 ))
-def pod_exists_for_volume(host, volume_name, command, pod_client):
-    if pod_client.get('{}-pod'.format(volume_name)) is not None:
-        return
-    pod_client.create_with_volume(volume_name, command)
+def pod_exists_for_volume(volume_name, command, pod_client):
+    if pod_client.get('{}-pod'.format(volume_name)) is None:
+        pod_client.create_with_volume(volume_name, command)
+
+
+@given(parsers.parse("the StorageClass '{name}' does not exist"))
+def storage_class_does_not_exist(name, sc_client):
+    sc = sc_client.get(name)
+    if sc is not None:
+        sc_client.delete(sc.metadata.name)
+
+
+@given(parsers.parse("a StorageClass '{name}' exist"))
+def storage_class_exist(name, sc_client):
+    if sc_client.get(name) is None:
+        sc_client.create_from_yaml(DEFAULT_SC.format(name=name))
 
 # }}}
 # When {{{
 
 @when(parsers.parse("I create the following Volume:\n{body}"))
-def create_volume(host, body, volume_client):
+def create_volume(body, volume_client):
     volume_client.create_from_yaml(body)
 
 
 @when(parsers.parse("I delete the Volume '{name}'"))
-def delete_volume(host, name, volume_client):
+def delete_volume(name, volume_client):
     volume_client.delete(name, sync=False)
 
 
 @when(parsers.parse("I delete the PersistentVolume '{name}'"))
-def delete_pv(host, name, pv_client):
+def delete_pv(name, pv_client):
     pv_client.delete(name)
 
 
 @when(parsers.parse("I delete the Pod using '{volume_name}'"))
-def delete_pod(host, volume_name, pod_client):
+def delete_pod(volume_name, pod_client):
     pod_client.delete('{}-pod'.format(volume_name), sync=True)
 
 
 @when(parsers.parse("I delete the PersistentVolumeClaim on '{volume_name}'"))
-def delete_pv_claim(host, volume_name, pvc_client):
+def delete_pv_claim(volume_name, pvc_client):
     pvc_client.delete('{}-pvc'.format(volume_name), sync=True)
 
 
 @when(parsers.parse(
     "I create a Pod using volume '{volume_name}' and running '{command}'"
 ))
-def create_pod_for_volume(host, volume_name, command, pod_client):
+def create_pod_for_volume(volume_name, command, pod_client):
     pod_client.create_with_volume(volume_name, command)
+
+
+@when(parsers.parse("I create the following StorageClass:\n{body}"))
+def create_storage_class(body, sc_client):
+    sc_client.create_from_yaml(body)
+
+
+@when(parsers.parse("I delete the StorageClass '{name}'"))
+def delete_storage_class(name, sc_client):
+    sc_client.delete(name, sync=False)
 
 # }}}
 # Then {{{
 
 @then(parsers.parse("we have a StorageClass '{name}'"))
-def check_storage_class(host, name, k8s_apiclient):
-    k8s_client = StorageV1Api(api_client=k8s_apiclient)
-    try:
-        k8s_client.read_storage_class(name) is not None
-    except (ApiException, HTTPError) as exc:
-        if isinstance(exc, ApiException) and exc.status == 404:
-            assert False, 'StorageClass {} not found'.format(name)
-        raise
+def check_storage_class(name, sc_client):
+    assert sc_client.get(name) is not None,\
+        'StorageClass {} not found'.format(name)
 
 
 @then(parsers.parse("the Volume '{name}' is '{status}'"))
-def check_volume_status(host, name, status, volume_client):
+def check_volume_status(context, name, status, volume_client):
     def _check_volume_status():
         volume = volume_client.get(name)
         assert volume is not None, 'Volume {} not found'.format(name)
+        context[name] = volume
         try:
             assert volume['status']['phase'] == status,\
                 'Unexpected status: expected {}, got {}'.format(
@@ -237,7 +291,7 @@ def check_volume_status(host, name, status, volume_client):
 
 
 @then(parsers.parse("the PersistentVolume '{name}' has size '{size}'"))
-def check_pv_size(host, name, size, pv_client):
+def check_pv_size(name, size, pv_client):
     def _check_pv_size():
         pv = pv_client.get(name)
         assert pv is not None, 'PersistentVolume {} not found'.format(name)
@@ -253,7 +307,7 @@ def check_pv_size(host, name, size, pv_client):
 
 
 @then(parsers.parse("the Volume '{name}' does not exist"))
-def check_volume_absent(host, name, volume_client):
+def check_volume_absent(name, volume_client):
     volume_client.wait_for_deletion(name)
 
 
@@ -269,10 +323,11 @@ def check_pv_deletion_marker(name, pv_client):
 
 @then(parsers.parse("the Volume '{name}' is 'Failed' "
                     "with code '{code}' and message matches '{pattern}'"))
-def check_volume_error(host, name, code, pattern, volume_client):
+def check_volume_error(context, name, code, pattern, volume_client):
     def _check_error():
         volume = volume_client.get(name)
         assert volume is not None, 'Volume {} not found'.format(name)
+        context[name] = volume
         status = volume.get('status')
         assert status is not None, 'no status for volume {}'.format(name)
         assert status['phase'] == 'Failed',\
@@ -324,6 +379,36 @@ def check_file_content_inside_pod(volume_name, path, content, k8s_client):
         name='checking content of {} on Pod {}'.format(path, name)
     )
 
+
+@then(parsers.parse("the backing storage for Volume '{name}' is created"))
+def check_storage_is_created(context, host, name):
+    volume = context.get(name)
+    assert volume is not None, 'volume {} not found in context'.format(name)
+    assert 'sparseLoopDevice' in volume['spec'],\
+        'unsupported volume type for this step'
+    uuid = volume['metadata']['uid']
+    capacity = volume['spec']['sparseLoopDevice']['size']
+    # Check that the sparse file exists and has the proper size.
+    path = '/var/lib/metalk8s/storage/sparse/{}'.format(uuid)
+    size = int(host.check_output('stat -c %s {}'.format(path)))
+    assert _quantity_to_bytes(capacity) == size
+    # Check that the loop device is mounted.
+    host.run_test('test -b /dev/disk/by-uuid/{}'.format(uuid))
+
+
+@then(parsers.parse("the backing storage for Volume '{name}' is deleted"))
+def check_storage_is_deleted(context, host, name):
+    volume = context.get(name)
+    assert volume is not None, 'volume {} not found in context'.format(name)
+    assert 'sparseLoopDevice' in volume['spec'],\
+        'unsupported volume type for this step'
+    uuid = volume['metadata']['uid']
+    # Check that the sparse file is deleted.
+    path = '/var/lib/metalk8s/storage/sparse/{}'.format(uuid)
+    host.run_test('test ! -f {}'.format(path))
+    # Check that the loop device is not mounted.
+    host.run_test('test ! -b /dev/disk/by-uuid/{}'.format(uuid))
+
 # }}}
 # Helpers {{{
 # Client {{{
@@ -357,9 +442,11 @@ class Client(abc.ABC):
         if sync:
             self.wait_for_deletion(name)
 
-    def delete_all(self, sync=False):
+    def delete_all(self, prefix=None, sync=False):
         """Delete all the existing objects.
 
+        If `prefix` is given, only the objects whose name starts with the prefix
+        are deleted.
         If `sync` is True, don't return until the object is actually deleted.
         """
         for obj in self.list():
@@ -367,7 +454,8 @@ class Client(abc.ABC):
                 name = obj['metadata']['name']
             else:
                 name = obj.metadata.name
-            self.delete(name, sync=sync)
+            if prefix is None or name.startswith(prefix):
+                self.delete(name, sync=sync)
 
     def wait_for_deletion(self, name):
         """Wait for the object to disappear."""
@@ -575,4 +663,63 @@ class PodClient(Client):
         )
 
 # }}}
+# StorageClassClient {{{
+
+class StorageClassClient(Client):
+    def __init__(self, k8s_client):
+        super().__init__(
+            k8s_client, kind='StorageClass', retry_count=10, retry_delay=2
+        )
+
+    def list(self):
+        return self._client.list_storage_class().items
+
+    def _create(self, body):
+        self._client.create_storage_class(body=body)
+
+    def _get(self, name):
+        return self._client.read_storage_class(name=name)
+
+    def _delete(self, name):
+        self._client.delete_storage_class(name=name, grace_period_seconds=0)
+
+# }}}
+
+def _quantity_to_bytes(quantity):
+    """Return a quantity with a unit converted into a number of bytes.
+
+    Examples:
+    >>> quantity_to_bytes('42Gi')
+    45097156608
+    >>> quantity_to_bytes('100M')
+    100000000
+    >>> quantity_to_bytes('1024')
+    1024
+
+    Args:
+        quantity (str): a quantity, composed of a count and an optional unit
+
+    Returns:
+        int: the capacity (in bytes)
+    """
+    UNIT_FACTOR = {
+      None:  1,
+      'Ki':  2 ** 10,
+      'Mi':  2 ** 20,
+      'Gi':  2 ** 30,
+      'Ti':  2 ** 40,
+      'Pi':  2 ** 50,
+      'k':  10 ** 3,
+      'M':  10 ** 6,
+      'G':  10 ** 9,
+      'T':  10 ** 12,
+      'P':  10 ** 15,
+    }
+    size_regex = r'^(?P<size>[1-9][0-9]*)(?P<unit>[kKMGTP]i?)?$'
+    match = re.match(size_regex, quantity)
+    assert match is not None, 'invalid resource.Quantity value'
+    size = int(match.groupdict()['size'])
+    unit = match.groupdict().get('unit')
+    return size * UNIT_FACTOR[unit]
+
 # }}}

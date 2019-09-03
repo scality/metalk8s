@@ -10,8 +10,12 @@ include:
   {%- if target_volume in all_volumes.keys() %}
     {%- do volumes_to_create.append(target_volume) %}
   {%- else %}
-Volume "{{ target_volume }}" not found in pillar:
-  test.fail_without_changes: []
+Volume {{ target_volume }} not found in pillar:
+  test.configurable_test_state:
+    - name: {{ target_volume }}
+    - changes: False
+    - result: False
+    - comment: Volume {{ target_volume }} not found in pillar
   {%- endif %}
 {%- else %}
     {%- do volumes_to_create.extend(all_volumes.keys()|list) %}
