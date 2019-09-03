@@ -14,7 +14,14 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import './commands';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
+
+// In Cypress, we disable fetch feature to catch the response.
+// You can find the solution here:
+// https://github.com/cypress-io/cypress/issues/1619
+Cypress.on('window:before:load', win => {
+  win.fetch = null;
+});

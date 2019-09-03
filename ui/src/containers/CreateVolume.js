@@ -98,8 +98,14 @@ const CreateVolume = props => {
   );
   // Hardcoded
   const types = [
-    { label: 'RawBlockDevice', value: RAW_BLOCK_DEVICE },
-    { label: 'SparseLoopDevice', value: SPARSE_LOOP_DEVICE }
+    {
+      label: 'RawBlockDevice',
+      value: RAW_BLOCK_DEVICE
+    },
+    {
+      label: 'SparseLoopDevice',
+      value: SPARSE_LOOP_DEVICE
+    }
   ];
 
   const initialValues = {
@@ -231,7 +237,8 @@ const CreateVolume = props => {
             const optionsTypes = types.map(({ label, value }) => {
               return {
                 label,
-                value
+                value,
+                'data-cy': `type-${value}`
               };
             });
 
@@ -246,7 +253,8 @@ const CreateVolume = props => {
               .map(({ label, value }) => {
                 return {
                   label,
-                  value
+                  value,
+                  'data-cy': `size-${label}`
                 };
               });
             return (
