@@ -53,6 +53,7 @@ def task_packaging() -> types.TaskDict:
             '_download_rpm_packages',
             '_build_rpm_packages:*',
             '_build_rpm_repositories:*',
+            '_build_deb_packages:*',
         ],
     }
 
@@ -153,6 +154,14 @@ def task__build_rpm_packages() -> Iterator[types.TaskDict]:
         for package in repo_pkgs:
             yield from package.execution_plan
 
+
+def task__build_deb_packages() -> Iterator[types.TaskDict]:
+    """Build Debian packages"""
+    for repo_pkgs in DEB_TO_BUILD.values():
+        for package in repo_pkgs:
+            yield from package.execution_plan
+
+
 def task__build_rpm_repositories() -> Iterator[types.TaskDict]:
     """Build a RPM repository."""
     for repository in RPM_REPOSITORIES:
@@ -218,6 +227,38 @@ def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
         task_dep=['_package_mkdir_rpm_root', '_build_rpm_container'],
     )
 
+
+def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
+    try:
+        pkg_info = versions.PACKAGES_MAP[name]
+    except KeyError:
+        raise ValueError(
+            'Missing version for package "{}"'.format(name)
+        )
+
+    # In case the `release` is of form "{build_id}.{os}", which is standard
+    build_id_str, _, _ = pkg_info.release.partition('.')
+
+    return targets.DEBPackage(
+        basename='_build_deb_packages',
+        name=name,
+        version=pkg_info.version,
+        build_id=int(build_id_str),
+        sources=sources,
+        builder=DEB_BUILDER,
+        task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
+    )
+
+# Calico Container Network Interface Plugin.
+CALICO_RPM = _rpm_package(
+    name='calico-cni-plugin',
+    sources=[
+        Path('calico-amd64'),
+        Path('calico-ipam-amd64'),
+        Path('v{}.tar.gz'.format(versions.CALICO_VERSION)),
+    ],
+)
+
 RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
     'scality': (
         # SOS report custom plugins.
@@ -228,15 +269,7 @@ RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
                 Path('containerd.py'),
             ],
         ),
-        # Calico Container Network Interface Plugin.
-        _rpm_package(
-            name='calico-cni-plugin',
-            sources=[
-                Path('calico-amd64'),
-                Path('calico-ipam-amd64'),
-                Path('v{}.tar.gz'.format(versions.CALICO_VERSION)),
-            ],
-        ),
+        CALICO_RPM
     ),
 }
 
@@ -261,15 +294,16 @@ _TO_DOWNLOAD_CONFIG : Dict[str, str] = {
     if pkg.name not in _RPM_TO_BUILD_PKG_NAMES
 }
 
+SCALITY_RPM_REPOSITORY = targets.RPMRepository(
+    basename='_build_rpm_repositories',
+    name='scality',
+    builder=RPM_BUILDER,
+    packages=RPM_TO_BUILD['scality'],
+    task_dep=['_package_mkdir_rpm_iso_root'],
+)
 
 RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='scality',
-        builder=RPM_BUILDER,
-        packages=RPM_TO_BUILD['scality'],
-        task_dep=['_package_mkdir_rpm_iso_root'],
-    ),
+    SCALITY_RPM_REPOSITORY,
     targets.RPMRepository(
         basename='_build_rpm_repositories',
         name='base',
@@ -307,6 +341,20 @@ RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
         task_dep=['_download_rpm_packages'],
     ),
 )
+
+DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
+    'scality': (
+        # SOS report custom plugins.
+        _deb_package(
+            name='metalk8s-sosreport',
+            sources=config.ROOT/'packages/common/metalk8s-sosreport',
+        ),
+        _deb_package(
+            name='calico-cni-plugin',
+            sources=SCALITY_RPM_REPOSITORY.get_rpm_path(CALICO_RPM)
+        ),
+    )
+}
 
 
 __all__ = utils.export_only_tasks(__name__)
