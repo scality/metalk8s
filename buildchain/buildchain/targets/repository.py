@@ -173,7 +173,7 @@ class RPMRepository(Repository):
                 base=self.basename, name=MKDIR_ROOT_TASK_NAME
             ))
             task['file_dep'].extend([
-                self._get_rpm_path(pkg) for pkg in self.packages
+                self.get_rpm_path(pkg) for pkg in self.packages
             ])
         return task
 
@@ -181,7 +181,7 @@ class RPMRepository(Repository):
         """Build the RPMs from SRPMs."""
         tasks = [self._mkdir_repo_root(), self._mkdir_repo_arch()]
         for pkg in self.packages:
-            rpm = self._get_rpm_path(pkg)
+            rpm = self.get_rpm_path(pkg)
             env = {
                 'RPMS': '{arch}/{rpm}'.format(arch=self.ARCH, rpm=rpm.name),
                 'SRPM': pkg.srpm.name,
@@ -204,7 +204,7 @@ class RPMRepository(Repository):
                     pkg=pkg.name, repo=self.name
                 ),
                 'title': utils.title_with_target1('BUILD RPM'),
-                'targets': [self._get_rpm_path(pkg)],
+                'targets': [self.get_rpm_path(pkg)],
                 # Prevent Docker from polluting our output.
                 'verbosity': 0,
             })
@@ -251,7 +251,7 @@ class RPMRepository(Repository):
         ))
         return task
 
-    def _get_rpm_path(self, pkg: package.RPMPackage) -> Path:
+    def get_rpm_path(self, pkg: package.RPMPackage) -> Path:
         """Return the path of the RPM of a given package."""
         filename = pkg.srpm.name.replace(
             '.src.rpm', '.{}.rpm'.format(self.ARCH)
