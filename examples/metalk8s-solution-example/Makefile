@@ -109,7 +109,7 @@ OPERATOR_IMG_DEPS := $(shell find $(OPERATOR_SRC) \
 	-type f -not -name ".*" -print \
 )
 OPERATOR_BUILD_ARGS ?= \
-	--go-build-args "-ldflags -X=version.Version=$(VERSION_FULL)"
+	--go-build-args "-ldflags -X=example-operator/version.Version=$(VERSION_FULL)"
 
 $(OPERATOR_BUILD_TARGET): $(OPERATOR_IMG_DEPS)
 	@echo Building Operator image "$(OPERATOR_IMG_NAME):$(VERSION_FULL)"...
