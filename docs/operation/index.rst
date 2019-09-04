@@ -14,3 +14,4 @@ do not have a working MetalK8s_ setup.
    upgrade
    downgrade
    changing_node_hostname
+   volume_management/index
