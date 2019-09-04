@@ -76,7 +76,7 @@ export function* fetchCustomResource() {
 export function* createCustomResource({ payload }) {
   const { name, namespaces, replicas, version } = payload;
   const body = {
-    apiVersion: 'solution.com/v1alpha1',
+    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'Example',
     metadata: {
       name: name
@@ -115,7 +115,7 @@ export function* createCustomResource({ payload }) {
 export function* editCustomResource({ payload }) {
   const { name, namespaces, replicas, version } = payload;
   const body = {
-    apiVersion: 'solution.com/v1alpha1',
+    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'Example',
     metadata: {
       name: name

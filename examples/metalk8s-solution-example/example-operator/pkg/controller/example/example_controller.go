@@ -157,13 +157,10 @@ func (r *ReconcileExample) Reconcile(request reconcile.Request) (reconcile.Resul
 	deployedVersion, ok := depLabels["app.kubernetes.io/version"]
 	if !ok || deployedVersion != version {
 		// Update labels and image name
-		labels := labelsForExample(instance)
+		labels := labelsForExample(instance, true)
 		image := imageForExample(instance)
 		found.ObjectMeta.Labels = labels
 		found.Spec.Template.ObjectMeta.Labels = labels
-		found.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: labels,
-		}
 		found.Spec.Template.Spec.Containers[0].Image = image
 
 		err = r.client.Update(ctx, found)
@@ -181,7 +178,8 @@ func (r *ReconcileExample) Reconcile(request reconcile.Request) (reconcile.Resul
 }
 
 func (r *ReconcileExample) deploymentForExample(example *solutionv1alpha1.Example) *appsv1.Deployment {
-	labels := labelsForExample(example)
+	labels := labelsForExample(example, true)
+	labelsSelector := labelsForExample(example, false)
 	maxSurge := intstr.FromInt(0)
 	maxUnavailable := intstr.FromInt(1)
 
@@ -194,7 +192,7 @@ func (r *ReconcileExample) deploymentForExample(example *solutionv1alpha1.Exampl
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &example.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: labelsSelector,
 			},
 			Strategy: appsv1.DeploymentStrategy{
 				Type: appsv1.RollingUpdateDeploymentStrategyType,
@@ -227,17 +225,19 @@ func (r *ReconcileExample) deploymentForExample(example *solutionv1alpha1.Exampl
 	return deployment
 }
 
-func labelsForExample(example *solutionv1alpha1.Example) map[string]string {
-	return map[string]string{
+func labelsForExample(example *solutionv1alpha1.Example, versionize bool) map[string]string {
+	var labels = map[string]string{
 		"app":                                   "example",
-		"app.kubernetes.io/name":                "example",
-		"app.kubernetes.io/version":             example.Spec.Version,
+		"app.kubernetes.io/name":                example.Name,
 		"app.kubernetes.io/component":           "component",
-		"app.kubernetes.io/part-of":             "example-solution",
+		"app.kubernetes.io/part-of":             "example",
 		"app.kubernetes.io/managed-by":          "example-operator",
-		"example.solution.com/cr-name":          example.Name,
-		"example.solution.com/operator-version": version.Version,
 	}
+	if versionize {
+		labels["app.kubernetes.io/version"] = example.Spec.Version
+		labels["example-solution.metalk8s.scality.com/operator-version"] = version.Version
+	}
+	return labels
 }
 
 func imageForExample(example *solutionv1alpha1.Example) string {

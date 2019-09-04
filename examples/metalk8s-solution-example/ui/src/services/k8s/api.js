@@ -41,7 +41,7 @@ export async function getCustomResource() {
   try {
     // We want to change this hardcoded data later
     return await customObjects.listClusterCustomObject(
-      'solution.com',
+      'example-solution.metalk8s.scality.com',
       'v1alpha1',
       'examples'
     );
@@ -53,7 +53,7 @@ export async function getCustomResource() {
 export async function createCustomResource(body, namespaces) {
   try {
     return await customObjects.createNamespacedCustomObject(
-      'solution.com',
+      'example-solution.metalk8s.scality.com',
       'v1alpha1',
       namespaces,
       'examples',
@@ -67,7 +67,7 @@ export async function createCustomResource(body, namespaces) {
 export async function updateCustomResource(body, namespaces, name) {
   try {
     return await customObjects.patchNamespacedCustomObject(
-      'solution.com',
+      'example-solution.metalk8s.scality.com',
       'v1alpha1',
       namespaces,
       'examples',
