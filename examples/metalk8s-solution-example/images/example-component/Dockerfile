@@ -25,7 +25,7 @@ COPY __version__.py /app/
 RUN sed -i 's/@VERSION@/$VERSION/' __version__.py
 
 # These contain BUILD_DATE so should come 'late' for layer caching
-LABEL maintainer="example@solution.com" \
+LABEL maintainer="moonshot-platform@scality.com" \
       # http://label-schema.org/rc1/
       org.label-schema.build-date="$BUILD_DATE" \
       org.label-schema.name="example-component" \
@@ -39,7 +39,7 @@ LABEL maintainer="example@solution.com" \
       org.label-schema.docker.cmd="docker run -listen-address :8080" \
       # https://github.com/opencontainers/image-spec/blob/master/annotations.md
       org.opencontainers.image.created="$BUILD_DATE" \
-      org.opencontainers.image.authors="example@solution.com" \
+      org.opencontainers.image.authors="moonshot-platform@scality.com" \
       org.opencontainers.image.url="https://github.com/example/solution/" \
       org.opencontainers.image.source="https://github.com/example/solution.git" \
       org.opencontainers.image.version="$VERSION" \

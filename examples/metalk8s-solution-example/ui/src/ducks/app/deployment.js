@@ -236,7 +236,7 @@ const roleBody = {
       verbs: ['get']
     },
     {
-      apiGroups: ['solution.com'],
+      apiGroups: ['example-solution.metalk8s.scality.com'],
       resources: ['*'],
       verbs: ['*']
     }

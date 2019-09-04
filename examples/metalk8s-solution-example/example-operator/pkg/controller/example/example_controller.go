@@ -228,15 +228,14 @@ func (r *ReconcileExample) deploymentForExample(example *solutionv1alpha1.Exampl
 func labelsForExample(example *solutionv1alpha1.Example, versionize bool) map[string]string {
 	var labels = map[string]string{
 		"app":                                   "example",
-		"app.kubernetes.io/name":                "example",
+		"app.kubernetes.io/name":                example.Name,
 		"app.kubernetes.io/component":           "component",
-		"app.kubernetes.io/part-of":             "example-solution",
+		"app.kubernetes.io/part-of":             "example",
 		"app.kubernetes.io/managed-by":          "example-operator",
-		"example.solution.com/cr-name":          example.Name,
 	}
 	if versionize {
 		labels["app.kubernetes.io/version"] = example.Spec.Version
-		labels["example.solution.com/operator-version"] = version.Version
+		labels["example-solution.metalk8s.scality.com/operator-version"] = version.Version
 	}
 	return labels
 }
