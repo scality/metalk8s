@@ -1,0 +1,15 @@
+name: Add issues to Priorities project
+
+on: [issues]
+
+jobs:
+  automate-project-columns:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move new issues into 'Needs triage'
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        uses: alex-page/github-project-automation-plus@master
+        with:
+          project: Priorities
+          column: 'Needs triage'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
