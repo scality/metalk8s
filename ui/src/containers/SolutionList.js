@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
-import { Table } from '@scality/core-ui';
+import { Table, Button } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
@@ -23,10 +23,18 @@ const TableContainer = styled.div`
 const VersionLabel = styled.label`
   padding: 0 5px;
 `;
+
+const ActionContainer = styled.div`
+  margin-bottom: ${padding.base};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 const SolutionsList = props => {
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
-  const { intl, solutions } = props;
+  const { intl, solutions, history } = props;
   const columns = [
     {
       label: intl.messages.name,
@@ -68,6 +76,13 @@ const SolutionsList = props => {
 
   return (
     <PageContainer>
+      <ActionContainer>
+        <Button
+          text={intl.messages.create_new_namespace}
+          onClick={() => history.push('/namespace/create')}
+          icon={<i className="fas fa-plus" />}
+        />
+      </ActionContainer>
       <TableContainer>
         <Table
           list={solutionsSortedList}
