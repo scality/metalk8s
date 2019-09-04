@@ -113,5 +113,6 @@
   "select_a_storageClass": "Select a Storage Class…",
   "select_a_type": "Select a type of volume…",
   "no_results": "No results",
-  "search": "Search…"
+  "search": "Search…",
+  "no_solution_available": "No solution available"
 }
