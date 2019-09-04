@@ -111,5 +111,6 @@
   "delete_a_volume_confirm": "Do you want to delete ",
   "select_a_storageClass": "Select a Storage Class…",
   "select_a_type": "Select a type of volume…",
-  "no_results": "No results"
+  "no_results": "No results",
+  "no_solution_available": "No solution available"
 }

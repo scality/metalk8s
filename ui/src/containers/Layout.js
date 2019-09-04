@@ -76,6 +76,18 @@ const Layout = props => {
           exact: false,
           strict: true
         })
+      },
+      {
+        label: props.intl.messages.solutions,
+        icon: <i className="fas fa-th" />,
+        onClick: () => {
+          props.history.push('/solutions');
+        },
+        active: matchPath(props.history.location.pathname, {
+          path: '/solutions',
+          exact: false,
+          strict: true
+        })
       }
     ]
   };
@@ -93,19 +105,6 @@ const Layout = props => {
       }));
       return [...prev, ...app];
     }, []);
-
-    sidebar.actions.push({
-      label: props.intl.messages.solutions,
-      icon: <i className="fas fa-th" />,
-      onClick: () => {
-        props.history.push('/solutions');
-      },
-      active: matchPath(props.history.location.pathname, {
-        path: '/solutions',
-        exact: false,
-        strict: true
-      })
-    });
   }
 
   // In this particular case, the label should not be translated

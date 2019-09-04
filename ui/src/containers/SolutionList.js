@@ -80,7 +80,7 @@ const SolutionsList = props => {
           onSort={onSort}
           onRowClick={() => {}}
           noRowsRenderer={() => (
-            <NoRowsRenderer content={intl.messages.no_data_available} />
+            <NoRowsRenderer content={intl.messages.no_solution_available} />
           )}
         />
       </TableContainer>
