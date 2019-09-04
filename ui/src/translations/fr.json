@@ -112,5 +112,9 @@
   "select_a_storageClass": "Sélectionner une classe de stockage…",
   "select_a_type": "Sélectionner un type de volume…",
   "no_results": "Aucun résultat",
-  "no_solution_available": "Aucune solution disponible"
+  "no_solution_available": "Aucune solution disponible",
+  "create_new_namespace": "Créer un namespace",
+  "namespace_creation": "Création un namespace",
+  "namespace_creation_success": "Le namespace {name} a été créé avec succèss.",
+  "namespace_creation_failed": "La création du namespace {name} a échoué."
 }

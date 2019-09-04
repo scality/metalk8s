@@ -12,6 +12,7 @@ import SolutionList from './SolutionList';
 import NodeInformation from './NodeInformation';
 import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
+import NamespacesCreation from './NamespacesCreation';
 import About from './About';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
@@ -83,11 +84,17 @@ const Layout = props => {
         onClick: () => {
           props.history.push('/solutions');
         },
-        active: matchPath(props.history.location.pathname, {
-          path: '/solutions',
-          exact: false,
-          strict: true
-        })
+        active:
+          matchPath(props.history.location.pathname, {
+            path: '/solutions',
+            exact: false,
+            strict: true
+          }) ||
+          matchPath(props.history.location.pathname, {
+            path: '/namespace',
+            exact: false,
+            strict: true
+          })
       }
     ]
   };
@@ -168,8 +175,12 @@ const Layout = props => {
             component={VolumeInformation}
           />
           <PrivateRoute path="/nodes/:id" component={NodeInformation} />
-
           <PrivateRoute exact path="/nodes" component={NodeList} />
+          <PrivateRoute
+            exact
+            path="/namespace/create"
+            component={NamespacesCreation}
+          />
           <PrivateRoute exact path="/solutions" component={SolutionList} />
           <PrivateRoute exact path="/about" component={About} />
           <PrivateRoute exact path="/" component={ClusterMonitoring} />

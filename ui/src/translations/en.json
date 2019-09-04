@@ -112,5 +112,9 @@
   "select_a_storageClass": "Select a Storage Class…",
   "select_a_type": "Select a type of volume…",
   "no_results": "No results",
-  "no_solution_available": "No solution available"
+  "no_solution_available": "No solution available",
+  "create_new_namespace": "Create a namespace",
+  "namespace_creation": "Namespace Creation",
+  "namespace_creation_success": "Namespace {name} has been created successfully.",
+  "namespace_creation_failed": "Namespace {name} creation  has failed."
 }

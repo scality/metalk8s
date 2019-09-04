@@ -158,3 +158,11 @@ export async function getUIServiceForAllNamespaces() {
     return { error };
   }
 }
+
+export async function createNamespace(body) {
+  try {
+    return await coreV1.createNamespace(body);
+  } catch (error) {
+    return { error };
+  }
+}
