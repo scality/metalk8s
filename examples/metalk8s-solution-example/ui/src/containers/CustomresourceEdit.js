@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 import { Button, Input } from '@scality/core-ui';
-import { padding, gray, fontSize } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize, gray } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import semver from 'semver';
 import { editCustomResourceAction } from '../ducks/app/customResource';
@@ -25,7 +25,11 @@ const CreateCustomresourceLayout = styled.div`
   form {
     .sc-input {
       margin: ${padding.smaller} 0;
-      .sc-input-label,
+      .sc-input-label {
+        width: 120px;
+        box-sizing: border-box;
+      }
+
       .sc-input-type,
       .sc-select {
         width: 200px;
@@ -36,7 +40,7 @@ const CreateCustomresourceLayout = styled.div`
 `;
 
 const InputLabel = styled.label`
-  width: 200px;
+  width: 120px;
   padding: 10px;
   font-size: ${fontSize.base};
   box-sizing: border-box;
@@ -49,9 +53,8 @@ const InputContainer = styled.div`
 
 const ActionContainer = styled.div`
   display: flex;
-  margin: ${padding.large} 0;
+  margin: 0 ${padding.larger};
   justify-content: flex-end;
-  margin: 0 ${padding.large};
 
   button {
     margin-left: ${padding.large};
@@ -60,11 +63,19 @@ const ActionContainer = styled.div`
 
 const FormSectionTitle = styled.h3`
   margin: 0 ${padding.small} 0;
-  color: ${gray};
 `;
 
+const FormSubSectionTitle = styled.h4`
+  margin: 0 ${padding.small} ${padding.small};
+  color: ${gray};
+`;
+const FormSubSection = styled.div`
+  padding: 0 ${padding.larger} ${padding.larger};
+  display: flex;
+  flex-direction: column;
+`;
 const FormSection = styled.div`
-  padding: 0 ${padding.larger};
+  padding: ${padding.larger};
   display: flex;
   flex-direction: column;
 `;
@@ -116,7 +127,8 @@ const CustomresourceEditForm = props => {
                 touched,
                 errors,
                 setFieldTouched,
-                setFieldValue
+                setFieldValue,
+                dirty
               } = formProps;
 
               //handleChange of the Formik props does not update 'values' when field value is empty
@@ -146,72 +158,81 @@ const CustomresourceEditForm = props => {
                   value: option.version
                 };
               });
+              const actionName =
+                values.version === customResource.version
+                  ? intl.messages.edit
+                  : semver.gt(values.version, customResource.version)
+                  ? intl.messages.upgrade
+                  : intl.messages.downgrade;
+
               return (
                 <Form>
+                  <FormSectionTitle>
+                    {intl.messages.edit_customResource}
+                  </FormSectionTitle>
                   <FormSection>
-                    <FormSectionTitle>
-                      {intl.messages.edit_customResource}
-                    </FormSectionTitle>
-                    <InputContainer>
-                      <InputLabel>{intl.messages.name}</InputLabel>
-                      <InputValue>{values.name}</InputValue>
-                    </InputContainer>
-                    <Input
-                      id="namespaces_input_creation"
-                      label={intl.messages.namespace}
-                      clearable={false}
-                      type="select"
-                      options={options}
-                      placeholder={intl.messages.select_a_namespace}
-                      noResultsText={intl.messages.not_found}
-                      name="namespaces"
-                      onChange={handleSelectChange('namespaces')}
-                      value={values.namespaces}
-                      error={touched.namespaces && errors.namespaces}
-                      onBlur={handleOnBlur}
-                    />
-                    <Input
-                      id="version_input_creation"
-                      name="version"
-                      type="select"
-                      clearable={false}
-                      options={versionOptions}
-                      placeholder={intl.messages.select_a_version}
-                      noResultsText={intl.messages.not_found}
-                      label={intl.messages.version}
-                      value={values.version}
-                      onChange={handleSelectChange('version')}
-                      error={touched.version && errors.version}
-                      onBlur={handleOnBlur}
-                    />
-
-                    <Input
-                      name="replicas"
-                      label={intl.messages.replicas}
-                      value={values.replicas}
-                      onChange={handleChange('replicas')}
-                      error={touched.replicas && errors.replicas}
-                      onBlur={handleOnBlur}
-                    />
-
+                    <FormSubSection>
+                      <FormSubSectionTitle>
+                        {intl.messages.main_parameters}
+                      </FormSubSectionTitle>
+                      <InputContainer>
+                        <InputLabel>{intl.messages.name}</InputLabel>
+                        <InputValue>{values.name}</InputValue>
+                      </InputContainer>
+                      <Input
+                        id="namespaces_input_creation"
+                        label={intl.messages.namespace}
+                        clearable={false}
+                        type="select"
+                        options={options}
+                        placeholder={intl.messages.select_a_namespace}
+                        noResultsText={intl.messages.not_found}
+                        name="namespaces"
+                        onChange={handleSelectChange('namespaces')}
+                        value={values.namespaces}
+                        error={touched.namespaces && errors.namespaces}
+                        onBlur={handleOnBlur}
+                      />
+                      <Input
+                        id="version_input_creation"
+                        name="version"
+                        type="select"
+                        clearable={false}
+                        options={versionOptions}
+                        placeholder={intl.messages.select_a_version}
+                        noResultsText={intl.messages.not_found}
+                        label={intl.messages.version}
+                        value={values.version}
+                        onChange={handleSelectChange('version')}
+                        error={touched.version && errors.version}
+                        onBlur={handleOnBlur}
+                      />
+                    </FormSubSection>
+                    <FormSubSection>
+                      <FormSubSectionTitle>
+                        {intl.messages.custom_parameters}
+                      </FormSubSectionTitle>
+                      <Input
+                        name="replicas"
+                        label={intl.messages.replicas}
+                        value={values.replicas}
+                        onChange={handleChange('replicas')}
+                        error={touched.replicas && errors.replicas}
+                        onBlur={handleOnBlur}
+                      />
+                    </FormSubSection>
                     <ActionContainer>
-                      <div>
-                        <div>
-                          <Button
-                            text={intl.messages.cancel}
-                            type="button"
-                            outlined
-                            onClick={() =>
-                              props.history.push('/customResource')
-                            }
-                          />
-                          <Button
-                            text={intl.messages.edit}
-                            type="submit"
-                            disabled={!isEmpty(errors)}
-                          />
-                        </div>
-                      </div>
+                      <Button
+                        text={intl.messages.cancel}
+                        type="button"
+                        outlined
+                        onClick={() => props.history.push('/customResource')}
+                      />
+                      <Button
+                        text={actionName}
+                        type="submit"
+                        disabled={!isEmpty(errors) || !dirty}
+                      />
                     </ActionContainer>
                   </FormSection>
                 </Form>
