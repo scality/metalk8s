@@ -1688,6 +1688,7 @@ def __dict_to_api_service_spec(spec):
         group_priority_minimum=spec['groupPriorityMinimum'],
         service=service_ref,
         version_priority=spec['versionPriority'],
+        insecure_skip_tls_verify=spec.get('insecureSkipTLSVerify', None),
     )
     for key, value in iteritems(spec):
         if hasattr(spec_obj, key):
