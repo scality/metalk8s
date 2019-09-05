@@ -4,8 +4,9 @@
 # Available states
 # ================
 #
-# * installed   -> install and advertise as CA server
+# * installed   -> install as CA server
+# * exported    -> export the CA certificate in the mine
 # * advertised  -> deploy the kubernetes CA certificate
 #
 include:
-  - .installed
+  - .exported
