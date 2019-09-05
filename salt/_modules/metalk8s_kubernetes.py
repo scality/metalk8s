@@ -1671,6 +1671,8 @@ def __dict_to_service_spec(spec):
                     port_kwargs = {"port": port}
                 kube_port = kubernetes.client.V1ServicePort(**port_kwargs)
                 spec_obj.ports.append(kube_port)
+        elif key == 'clusterIP':
+            spec_obj.cluster_ip = value
         elif hasattr(spec_obj, key):
             setattr(spec_obj, key, value)
 
