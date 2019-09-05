@@ -94,8 +94,8 @@
   "storage_class_is_required": "Une classe de stockage est requise pour créer un volume. Veuillez en créer une dans Kubernetes.",
   "learn_more": "En savoir plus",
   "solutions": "Solutions",
-  "versions": "Versions",
-  "deployed_version": "Version Déployée",
+  "versions": "Versions disponibles",
+  "deployed_version": "Version actuelle",
   "action": "Action",
   "delete": "Supprimer",
   "volume_deletion": "Suppression du volume",
@@ -116,5 +116,6 @@
   "create_new_namespace": "Créer un namespace",
   "namespace_creation": "Création un namespace",
   "namespace_creation_success": "Le namespace {name} a été créé avec succèss.",
-  "namespace_creation_failed": "La création du namespace {name} a échoué."
+  "namespace_creation_failed": "La création du namespace {name} a échoué.",
+  "solution_name": "Nom de la solution"
 }
