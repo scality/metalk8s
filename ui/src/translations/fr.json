@@ -117,5 +117,6 @@
   "namespace_creation": "Création un namespace",
   "namespace_creation_success": "Le namespace {name} a été créé avec succèss.",
   "namespace_creation_failed": "La création du namespace {name} a échoué.",
-  "solution_name": "Nom de la solution"
+  "solution_name": "Nom de la solution",
+  "import_solution": "Importer une solution"
 }

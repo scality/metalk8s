@@ -166,3 +166,11 @@ export async function createNamespace(body) {
     return { error };
   }
 }
+
+export async function getNamespaces() {
+  try {
+    return await coreV1.listNamespace();
+  } catch (error) {
+    return { error };
+  }
+}

@@ -117,5 +117,6 @@
   "namespace_creation": "Namespace Creation",
   "namespace_creation_success": "Namespace {name} has been created successfully.",
   "namespace_creation_failed": "Namespace {name} creation  has failed.",
-  "solution_name": "Solution Name"
+  "solution_name": "Solution Name",
+  "import_solution": "Import Solution"
 }

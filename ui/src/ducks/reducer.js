@@ -9,6 +9,7 @@ import layout from './app/layout';
 import notifications from './app/notifications';
 import salt from './app/salt';
 import monitoring from './app/monitoring';
+import namespaces from './app/namespaces';
 
 const rootReducer = combineReducers({
   config,
@@ -20,7 +21,8 @@ const rootReducer = combineReducers({
     notifications,
     salt,
     monitoring,
-    volumes
+    volumes,
+    namespaces
   })
 });
 
