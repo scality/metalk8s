@@ -11,14 +11,14 @@ import Tooltip from '../components/Tooltip';
 import {
   sortSelector,
   sortCapacity,
-  useRefreshEffect
+  useRefreshEffect,
 } from '../services/utils';
 import {
   refreshVolumesAction,
   stopRefreshVolumesAction,
   refreshPersistentVolumesAction,
   stopRefreshPersistentVolumesAction,
-  deleteVolumeAction
+  deleteVolumeAction,
 } from '../ducks/app/volumes';
 import {
   STATUS_UNKNOWN,
@@ -27,7 +27,7 @@ import {
   STATUS_FAILED,
   STATUS_AVAILABLE,
   STATUS_BOUND,
-  STATUS_RELEASED
+  STATUS_RELEASED,
 } from '../constants';
 
 const ButtonContainer = styled.div`
@@ -88,7 +88,7 @@ const NodeVolumes = props => {
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
     refreshPersistentVolumesAction,
-    stopRefreshPersistentVolumesAction
+    stopRefreshPersistentVolumesAction,
   );
 
   const volumes = useSelector(state => state.app.volumes);
@@ -97,7 +97,7 @@ const NodeVolumes = props => {
   const [sortDirection, setSortDirection] = useState('ASC');
   const [
     isDeleteConfirmationModalOpen,
-    setisDeleteConfirmationModalOpen
+    setisDeleteConfirmationModalOpen,
   ] = useState(false);
   const [deleteVolumeName, setDeleteVolumeName] = useState('');
   const onSort = ({ sortBy, sortDirection }) => {
@@ -120,7 +120,7 @@ const NodeVolumes = props => {
           return true;
         } else {
           const persistentVolume = persistentVolumes.find(
-            pv => pv?.metadata?.name === volumeName
+            pv => pv?.metadata?.name === volumeName,
           );
           const persistentVolumeStatus = persistentVolume?.status?.phase;
 
@@ -134,14 +134,14 @@ const NodeVolumes = props => {
               return false;
             default:
               console.error(
-                `Unexpected state for PersistentVolume ${volumeName}:${persistentVolumeStatus}`
+                `Unexpected state for PersistentVolume ${volumeName}:${persistentVolumeStatus}`,
               );
               return false;
           }
         }
       default:
         console.error(
-          `Unexpected state for Volume ${volumeName}:${volumeStatus}`
+          `Unexpected state for Volume ${volumeName}:${volumeStatus}`,
         );
         return false;
     }
@@ -151,19 +151,23 @@ const NodeVolumes = props => {
     {
       label: intl.messages.name,
       dataKey: 'name',
-      flexGrow: 1
+      flexGrow: 1,
     },
     {
       label: intl.messages.status,
-      dataKey: 'status'
+      dataKey: 'status',
+    },
+    {
+      label: intl.messages.bound,
+      dataKey: 'bound',
     },
     {
       label: intl.messages.storageCapacity,
-      dataKey: 'storageCapacity'
+      dataKey: 'storageCapacity',
     },
     {
       label: intl.messages.storageClass,
-      dataKey: 'storageClass'
+      dataKey: 'storageClass',
     },
     {
       label: intl.messages.creationTime,
@@ -178,7 +182,7 @@ const NodeVolumes = props => {
             value={data}
           />
         </span>
-      )
+      ),
     },
     {
       label: intl.messages.action,
@@ -211,7 +215,7 @@ const NodeVolumes = props => {
             case STATUS_FAILED:
             case STATUS_AVAILABLE:
               const persistentVolume = persistentVolumes.find(
-                pv => pv?.metadata?.name === rowData.name
+                pv => pv?.metadata?.name === rowData.name,
               );
               const persistentVolumeStatus = persistentVolume?.status?.phase;
               switch (persistentVolumeStatus) {
@@ -255,14 +259,14 @@ const NodeVolumes = props => {
             </Tooltip>
           </div>
         );
-      }
-    }
+      },
+    },
   ];
 
   const onRowClick = row => {
     if (row.rowData && row.rowData.name) {
       props.history.push(
-        `/nodes/${props.nodeName}/volumes/${row.rowData.name}`
+        `/nodes/${props.nodeName}/volumes/${row.rowData.name}`,
       );
     }
   };
@@ -352,7 +356,7 @@ const NodeVolumes = props => {
 const mapDispatchToProps = dispatch => {
   return {
     deleteVolume: deleteVolumeName =>
-      dispatch(deleteVolumeAction(deleteVolumeName))
+      dispatch(deleteVolumeAction(deleteVolumeName)),
   };
 };
 
@@ -360,7 +364,7 @@ export default injectIntl(
   withRouter(
     connect(
       null,
-      mapDispatchToProps
-    )(NodeVolumes)
-  )
+      mapDispatchToProps,
+    )(NodeVolumes),
+  ),
 );

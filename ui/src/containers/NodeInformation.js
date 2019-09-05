@@ -10,29 +10,29 @@ import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import {
   fetchVolumesAction,
-  fetchPersistentVolumeAction
+  fetchPersistentVolumeAction,
 } from '../ducks/app/volumes';
 import {
   sortSelector,
   makeGetNodeFromUrl,
   makeGetPodsFromUrl,
   makeGetVolumesFromUrl,
-  useRefreshEffect
+  useRefreshEffect,
 } from '../services/utils';
 import NodeVolumes from './NodeVolumes';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
-  StyledLink
+  StyledLink,
 } from '../components/BreadcrumbStyle';
 import {
   InformationListContainer,
   InformationSpan,
   InformationLabel,
   InformationValue,
-  InformationMainValue
+  InformationMainValue,
 } from '../components/InformationList';
-import { STATUS_UNKNOWN } from '../constants';
+import { STATUS_UNKNOWN, STATUS_BOUND } from '../constants';
 
 const NodeInformationContainer = styled.div`
   display: flex;
@@ -92,15 +92,15 @@ const NodeInformation = props => {
     {
       label: props.intl.messages.name,
       dataKey: 'name',
-      flexGrow: 1
+      flexGrow: 1,
     },
     {
       label: props.intl.messages.status,
-      dataKey: 'status'
+      dataKey: 'status',
     },
     {
       label: props.intl.messages.namespace,
-      dataKey: 'namespace'
+      dataKey: 'namespace',
     },
     {
       label: props.intl.messages.start_time,
@@ -109,12 +109,12 @@ const NodeInformation = props => {
         <span>
           <FormattedDate value={data} /> <FormattedTime value={data} />
         </span>
-      )
+      ),
     },
     {
       label: props.intl.messages.restart,
-      dataKey: 'restartCount'
-    }
+      dataKey: 'restartCount',
+    },
   ];
 
   const podsSortedList = sortSelector(pods, sortBy, sortDirection);
@@ -169,13 +169,15 @@ const NodeInformation = props => {
   );
   const volumeData = volumes.map(volume => {
     const volumePV = pVList.find(
-      pV => pV.metadata.name === volume.metadata.name
+      pV => pV.metadata.name === volume.metadata.name,
     );
-
     return {
       name: volume.metadata.name,
-      status:
-        (volume && volume.status && volume.status.phase) || STATUS_UNKNOWN,
+      status: volume?.status?.phase || STATUS_UNKNOWN,
+      bound:
+        volumePV?.status?.phase === STATUS_BOUND
+          ? intl.messages.yes
+          : intl.messages.no,
       storageCapacity:
         (volumePV &&
           volumePV.spec &&
@@ -183,7 +185,7 @@ const NodeInformation = props => {
           volumePV.spec.capacity.storage) ||
         intl.messages.unknown,
       storageClass: volume.spec.storageClassName,
-      creationTime: volume.metadata.creationTimestamp
+      creationTime: volume.metadata.creationTimestamp,
     };
   });
 
@@ -193,18 +195,18 @@ const NodeInformation = props => {
     {
       selected: !isVolumesPage && !isPodsPage,
       title: intl.messages.details,
-      onClick: () => history.push(match.url)
+      onClick: () => history.push(match.url),
     },
     {
       selected: isVolumesPage,
       title: intl.messages.volumes,
-      onClick: () => history.push(`${match.url}/volumes`)
+      onClick: () => history.push(`${match.url}/volumes`),
     },
     {
       selected: isPodsPage,
       title: intl.messages.pods,
-      onClick: () => history.push(`${match.url}/pods`)
-    }
+      onClick: () => history.push(`${match.url}/pods`),
+    },
   ];
 
   return (
@@ -214,7 +216,7 @@ const NodeInformation = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-            <BreadcrumbLabel>{node.name}</BreadcrumbLabel>
+            <BreadcrumbLabel>{node.name}</BreadcrumbLabel>,
           ]}
         />
       </BreadcrumbContainer>
