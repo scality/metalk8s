@@ -121,7 +121,7 @@ const NodeInformation = props => {
 
   const onSort = ({ sortBy, sortDirection }) => {
     setSortBy(sortBy);
-    setsortDirection(setsortDirection);
+    setsortDirection(sortDirection);
   };
 
   const NodeDetails = () => (
