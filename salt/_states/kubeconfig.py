@@ -123,7 +123,7 @@ def managed(name,
     try:
         b64_ca_cert = __salt__['mine.get'](
             ca_server,
-            'kubernetes_ca_server'
+            'kubernetes_root_ca_b64'
         )[ca_server]
     except KeyError:
         ret.update({
