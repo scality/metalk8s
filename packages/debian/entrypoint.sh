@@ -35,7 +35,7 @@ rpm2deb() {
     chown "${TARGET_UID}:${TARGET_GID}" * 
 }
 
-case ${1:-''} in
+case ${1:- } in
     builddeb)
         builddeb
         ;;
