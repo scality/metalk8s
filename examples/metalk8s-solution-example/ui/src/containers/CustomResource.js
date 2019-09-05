@@ -46,12 +46,12 @@ const CustomResource = props => {
       flexGrow: 1
     },
     {
-      label: intl.messages.replicas,
-      dataKey: 'replicas'
-    },
-    {
       label: intl.messages.version,
       dataKey: 'version'
+    },
+    {
+      label: intl.messages.replicas,
+      dataKey: 'replicas'
     }
   ];
 
@@ -89,7 +89,7 @@ const CustomResource = props => {
             history.push(`/customResource/${row.rowData.name}/edit`);
           }}
           noRowsRenderer={() => (
-            <NoRowsRenderer content={intl.messages.no_data_available} />
+            <NoRowsRenderer content={intl.messages.no_instance_available} />
           )}
         />
       </TableContainer>

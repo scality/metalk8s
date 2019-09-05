@@ -8,6 +8,7 @@ import {
 } from '@kubernetes/client-node';
 
 import { LABEL_PART_OF } from '../../ducks/app/deployment';
+const SOLUTION_CONFIGMAP_NAME = 'metalk8s-solutions';
 
 let config;
 let coreV1;
@@ -86,13 +87,7 @@ export async function updateCustomResource(body, namespaces, name) {
 
 export async function getSolutionNamespaces() {
   try {
-    return await coreV1.listNamespace(
-      null,
-      null,
-      null,
-      null,
-      `${LABEL_PART_OF}=example-solution`
-    );
+    return await coreV1.listNamespace();
   } catch (error) {
     return { error };
   }
@@ -159,6 +154,17 @@ export async function updateDeployment(body, namespaces, name) {
           'Content-Type': 'application/merge-patch+json'
         }
       }
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getSolutionsConfigMapForAllNamespaces() {
+  try {
+    return await coreV1.listConfigMapForAllNamespaces(
+      null,
+      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`
     );
   } catch (error) {
     return { error };

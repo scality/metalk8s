@@ -26,7 +26,11 @@ const CreateCustomresourceLayout = styled.div`
   form {
     .sc-input {
       margin: ${padding.smaller} 0;
-      .sc-input-label,
+      .sc-input-label {
+        width: 120px;
+        box-sizing: border-box;
+      }
+
       .sc-input-type,
       .sc-select {
         width: 200px;
@@ -40,25 +44,36 @@ const ActionContainer = styled.div`
   display: flex;
   margin: ${padding.large} 0;
   justify-content: flex-end;
+  margin: 0 ${padding.larger};
 
   button {
-    margin-right: ${padding.large};
+    margin-left: ${padding.large};
   }
 `;
 
 const FormSectionTitle = styled.h3`
   margin: 0 ${padding.small} 0;
+`;
+
+const FormSubSectionTitle = styled.h4`
+  margin: 0 ${padding.small} ${padding.small};
   color: ${gray};
 `;
 
 const FormSection = styled.div`
-  padding: 0 ${padding.larger};
+  padding: ${padding.larger};
+  display: flex;
+  flex-direction: column;
+`;
+
+const FormSubSection = styled.div`
+  padding: 0 ${padding.larger} ${padding.larger};
   display: flex;
   flex-direction: column;
 `;
 
 const CustomresourceCreationForm = props => {
-  const { intl, namespaces } = props;
+  const { intl, namespaces, versions } = props;
   const initialValues = {
     namespaces: namespaces.length ? namespaces[0].metadata.name : '',
     version: '',
@@ -114,52 +129,73 @@ const CustomresourceCreationForm = props => {
               };
             });
 
+            const versionOptions = versions.map(option => {
+              return {
+                label: option.version,
+                value: option.version
+              };
+            });
+
             return (
               <Form>
+                <FormSectionTitle>
+                  {intl.messages.create_new_customResource}
+                </FormSectionTitle>
                 <FormSection>
-                  <FormSectionTitle>
-                    {intl.messages.create_new_customResource}
-                  </FormSectionTitle>
-                  <Input
-                    name="name"
-                    label={intl.messages.name}
-                    value={values.name}
-                    onChange={handleChange('name')}
-                    error={touched.name && errors.name}
-                    onBlur={handleOnBlur}
-                  />
-                  <Input
-                    id="namespaces_input_creation"
-                    label={intl.messages.namespace}
-                    clearable={false}
-                    type="select"
-                    options={options}
-                    placeholder={intl.messages.select_a_namespace}
-                    noResultsText={intl.messages.not_found}
-                    name="namespaces"
-                    onChange={handleSelectChange('namespaces')}
-                    value={values.namespaces}
-                    error={touched.namespaces && errors.namespaces}
-                    onBlur={handleOnBlur}
-                  />
-                  <Input
-                    name="version"
-                    label={intl.messages.version}
-                    value={values.version}
-                    onChange={handleChange('version')}
-                    error={touched.version && errors.version}
-                    onBlur={handleOnBlur}
-                  />
-
-                  <Input
-                    name="replicas"
-                    label={intl.messages.replicas}
-                    value={values.replicas}
-                    onChange={handleChange('replicas')}
-                    error={touched.replicas && errors.replicas}
-                    onBlur={handleOnBlur}
-                  />
-
+                  <FormSubSection>
+                    <FormSubSectionTitle>
+                      {intl.messages.main_parameters}
+                    </FormSubSectionTitle>
+                    <Input
+                      name="name"
+                      label={intl.messages.name}
+                      value={values.name}
+                      onChange={handleChange('name')}
+                      error={touched.name && errors.name}
+                      onBlur={handleOnBlur}
+                    />
+                    <Input
+                      id="namespaces_input_creation"
+                      label={intl.messages.namespace}
+                      clearable={false}
+                      type="select"
+                      options={options}
+                      placeholder={intl.messages.select_a_namespace}
+                      noResultsText={intl.messages.not_found}
+                      name="namespaces"
+                      onChange={handleSelectChange('namespaces')}
+                      value={values.namespaces}
+                      error={touched.namespaces && errors.namespaces}
+                      onBlur={handleOnBlur}
+                    />
+                    <Input
+                      id="version_input_creation"
+                      name="version"
+                      type="select"
+                      clearable={false}
+                      options={versionOptions}
+                      placeholder={intl.messages.select_a_version}
+                      noResultsText={intl.messages.not_found}
+                      label={intl.messages.version}
+                      value={values.version}
+                      onChange={handleSelectChange('version')}
+                      error={touched.version && errors.version}
+                      onBlur={handleOnBlur}
+                    />
+                  </FormSubSection>
+                  <FormSubSection>
+                    <FormSubSectionTitle>
+                      {intl.messages.custom_parameters}
+                    </FormSubSectionTitle>
+                    <Input
+                      name="replicas"
+                      label={intl.messages.replicas}
+                      value={values.replicas}
+                      onChange={handleChange('replicas')}
+                      error={touched.replicas && errors.replicas}
+                      onBlur={handleOnBlur}
+                    />
+                  </FormSubSection>
                   <ActionContainer>
                     <div>
                       <div>
@@ -189,7 +225,8 @@ const CustomresourceCreationForm = props => {
 
 function mapStateToProps(state) {
   return {
-    namespaces: state.app.namespaces.list
+    namespaces: state.app.namespaces.list,
+    versions: state.config.versions
   };
 }
 
