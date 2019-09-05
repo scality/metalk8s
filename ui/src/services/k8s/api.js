@@ -24,8 +24,8 @@ export function initialize(apiUrl) {
 export function authenticate(token) {
   return k8sApiClient.get('/api/v1', null, {
     headers: {
-      Authorization: 'Basic ' + token
-    }
+      Authorization: 'Basic ' + token,
+    },
   });
 }
 
@@ -58,7 +58,7 @@ export async function getKubeSystemNamespace() {
       null,
       null,
       null,
-      'metadata.name=kube-system'
+      'metadata.name=kube-system',
     );
   } catch (error) {
     return { error };
@@ -79,7 +79,7 @@ export async function getVolumes() {
     return await customObjects.listClusterCustomObject(
       'storage.metalk8s.scality.com',
       'v1alpha1',
-      'volumes'
+      'volumes',
     );
   } catch (error) {
     return { error };
@@ -93,7 +93,7 @@ export async function deleteVolume(deleteVolumeName) {
       'v1alpha1',
       'volumes',
       deleteVolumeName,
-      {}
+      {},
     );
   } catch (error) {
     return error;
@@ -122,7 +122,7 @@ export async function createVolume(body) {
       'storage.metalk8s.scality.com',
       'v1alpha1',
       'volumes',
-      body
+      body,
     );
   } catch (error) {
     return { error };
@@ -141,7 +141,7 @@ export async function getSolutionsConfigMapForAllNamespaces() {
   try {
     return await coreV1.listConfigMapForAllNamespaces(
       null,
-      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`
+      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`,
     );
   } catch (error) {
     return { error };
@@ -154,7 +154,7 @@ export async function getUIServiceForAllNamespaces() {
       null,
       null,
       null,
-      `${APP_K8S_COMPONENT_LABEL}=ui`
+      `${APP_K8S_COMPONENT_LABEL}=ui`,
     );
   } catch (error) {
     return { error };
