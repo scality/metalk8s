@@ -1,11 +1,9 @@
 import ApiClient from '../ApiClient';
 
-import {
-  Config,
-  CoreV1Api,
-  CustomObjectsApi,
-  StorageV1Api
-} from '@kubernetes/client-node';
+import { Config } from '@kubernetes/client-node/dist/browser/config';
+import { CoreV1Api } from '@kubernetes/client-node/dist/gen/api/coreV1Api';
+import { CustomObjectsApi } from '@kubernetes/client-node/dist/gen/api/customObjectsApi';
+import { StorageV1Api } from '@kubernetes/client-node/dist/gen/api/storageV1Api';
 
 let config;
 let coreV1;
