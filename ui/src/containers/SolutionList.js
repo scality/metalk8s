@@ -84,7 +84,7 @@ const SolutionsList = props => {
   const namespacesColumns = [
     {
       label: intl.messages.name,
-      dataKey: 'name',
+      dataKey: 'displayName',
       flexGrow: 1
     },
     {

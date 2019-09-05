@@ -15,6 +15,8 @@ const STOP_REFRESH_NAMESPACES = 'STOP_REFRESH_NAMESPACES';
 const CREATE_NAMESPACES = 'CREATE_NAMESPACES';
 const UPDATE_NAMESPACES = 'UPDATE_NAMESPACES';
 
+const SOLUTIONS_NAMESPACES_PREFIX = 'solutions-';
+
 const defaultState = {
   list: [],
   isRefreshing: false
@@ -50,7 +52,7 @@ export const updateNamespacesAction = payload => {
 export function* createNamespaces({ payload }) {
   const body = {
     metadata: {
-      name: payload.name
+      name: SOLUTIONS_NAMESPACES_PREFIX + payload.name
     }
   };
   const result = yield call(ApiK8s.createNamespace, body);
@@ -68,7 +70,9 @@ export function* createNamespaces({ payload }) {
     yield put(
       addNotificationErrorAction({
         title: intl.translate('namespace_creation'),
-        message: intl.translate('node_creation_failed', { name: payload.name })
+        message: intl.translate('namespace_creation_failed', {
+          name: payload.name
+        })
       })
     );
   }
@@ -79,12 +83,21 @@ export function* fetchNamespaces() {
   if (!results.error) {
     yield put(
       updateNamespacesAction({
-        list: results.body.items.map(ns => {
-          return {
-            name: ns.metadata.name,
-            status: ns.status.phase
-          };
-        })
+        list: results.body.items
+          .filter(ns =>
+            ns.metadata.name.startsWith(SOLUTIONS_NAMESPACES_PREFIX)
+          )
+          .map(ns => {
+            const nameWithoutPrefix = ns.metadata.name.replace(
+              SOLUTIONS_NAMESPACES_PREFIX,
+              ''
+            );
+            return {
+              displayName: nameWithoutPrefix,
+              name: ns.metadata.name,
+              status: ns.status.phase
+            };
+          })
       })
     );
   }
