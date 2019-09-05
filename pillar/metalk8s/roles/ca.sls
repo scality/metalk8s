@@ -1,5 +1,5 @@
 mine_functions:
-  kubernetes_ca_server:
+  kubernetes_root_ca_b64:
     mine_function: hashutil.base64_encodefile
     fname: /etc/kubernetes/pki/ca.crt
 
