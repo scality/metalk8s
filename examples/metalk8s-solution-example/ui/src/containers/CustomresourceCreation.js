@@ -42,7 +42,6 @@ const CreateCustomresourceLayout = styled.div`
 
 const ActionContainer = styled.div`
   display: flex;
-  margin: ${padding.large} 0;
   justify-content: flex-end;
   margin: 0 ${padding.larger};
 
