@@ -1,4 +1,4 @@
-{%- set ca_server = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_ca_server') %}
+{%- set ca_server = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_root_ca_b64') %}
 
 {%- if ca_server %}
 
@@ -17,7 +17,7 @@ Ensure kubernetes CA cert is present:
 
 {%- else %}
 
-Unable to get kubernetes CA cert, no kubernetes_ca_server in mine:
+Unable to get kubernetes CA cert, no kubernetes_root_ca_b64 in mine:
   test.fail_without_changes: []
 
 {%- endif %}
