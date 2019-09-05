@@ -95,7 +95,7 @@ const CustomresourceEditForm = props => {
     namespaces: customResource
       ? customResource.namespace
       : namespaces.length
-      ? namespaces[0].metadata.name
+      ? namespaces[0].name
       : '',
     version: customResource ? customResource.version : '',
     replicas: customResource ? customResource.replicas : '',
@@ -147,8 +147,8 @@ const CustomresourceEditForm = props => {
               };
               const options = namespaces.map(namespace => {
                 return {
-                  label: namespace.metadata.name,
-                  value: namespace.metadata.name
+                  label: namespace.displayName,
+                  value: namespace.name
                 };
               });
 

@@ -8,6 +8,7 @@ import {
   fetchSolutionDeployments
 } from './deployment';
 import { REFRESH_TIMEOUT } from '../../constants';
+import { SOLUTIONS_NAMESPACES_PREFIX } from './namespaces';
 
 // Actions
 const REFRESH_CUSTOM_RESOURCE = 'REFRESH_CUSTOM_RESOURCE';
@@ -60,9 +61,14 @@ export function* fetchCustomResource() {
     yield put(
       updateCustomResourceAction({
         list: results.body.items.map(cr => {
+          const nameWithoutPrefix = cr.metadata.namespace.replace(
+            SOLUTIONS_NAMESPACES_PREFIX,
+            ''
+          );
           return {
             name: cr.metadata.name,
-            namespace: cr.metadata.namespace,
+            namespace: cr.metadata.namespac,
+            displayNamespace: nameWithoutPrefix,
             replicas: cr.spec.replicas,
             version: cr.spec.version
           };

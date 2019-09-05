@@ -6,6 +6,8 @@ const REFRESH_NAMESPACES = 'REFRESH_NAMESPACES';
 const STOP_REFRESH_NAMESPACES = 'STOP_REFRESH_NAMESPACES';
 const UPDATE_NAMESPACES = 'UPDATE_NAMESPACES';
 
+export const SOLUTIONS_NAMESPACES_PREFIX = 'solutions-';
+
 // Reducer
 const defaultState = {
   list: []
@@ -40,6 +42,19 @@ export function* fetchNamespaces() {
     yield put(
       updateNamespacesAction({
         list: results.body.items
+          .filter(ns =>
+            ns.metadata.name.startsWith(SOLUTIONS_NAMESPACES_PREFIX)
+          )
+          .map(ns => {
+            const nameWithoutPrefix = ns.metadata.name.replace(
+              SOLUTIONS_NAMESPACES_PREFIX,
+              ''
+            );
+            return {
+              displayName: nameWithoutPrefix,
+              name: ns.metadata.name
+            };
+          })
       })
     );
   }

@@ -42,7 +42,7 @@ const CustomResource = props => {
     },
     {
       label: intl.messages.namespace,
-      dataKey: 'namespace',
+      dataKey: 'displayNamespace',
       flexGrow: 1
     },
     {

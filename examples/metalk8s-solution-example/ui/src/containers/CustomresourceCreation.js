@@ -74,7 +74,7 @@ const FormSubSection = styled.div`
 const CustomresourceCreationForm = props => {
   const { intl, namespaces, versions } = props;
   const initialValues = {
-    namespaces: namespaces.length ? namespaces[0].metadata.name : '',
+    namespaces: namespaces.length ? namespaces[0].name : '',
     version: '',
     replicas: '',
     name: ''
@@ -123,8 +123,8 @@ const CustomresourceCreationForm = props => {
 
             const options = namespaces.map(namespace => {
               return {
-                label: namespace.metadata.name,
-                value: namespace.metadata.name
+                label: namespace.displayName,
+                value: namespace.name
               };
             });
 
