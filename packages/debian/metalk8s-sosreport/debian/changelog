@@ -1,4 +1,4 @@
-metalk8s-sosreport (2.4.0) bionic; urgency=low
+metalk8s-sosreport (_VERSION_) bionic; urgency=low
 
   * Initial release.
 

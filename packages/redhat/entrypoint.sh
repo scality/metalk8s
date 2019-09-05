@@ -125,7 +125,7 @@ download_packages() {
         -not -path "$repo_cache_root")
 }
 
-case ${1:-''} in
+case ${1:- } in
     buildmeta)
         buildmeta
         ;;

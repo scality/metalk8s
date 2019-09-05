@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
 from buildchain import constants
+from buildchain import coreutils
 from buildchain import types
 from buildchain import utils
 from buildchain import docker_command
@@ -43,14 +44,61 @@ from . import directory
 from . import image
 
 
-SOURCE_URL_PATTERN = re.compile(r'^Source\d+:\s+(?P<url>.+)$')
-
-
 class Package(base.CompositeTarget):
-    """A RPM software package for CentOS 7."""
+    """Base class to build a software package."""
 
     MKDIR_TASK_NAME = 'pkg_mkdir'
+
+    def __init__(
+        self,
+        basename: str,
+        name: str,
+        version: str,
+        build_id: int,
+        builder: image.ContainerImage,
+        pkg_root: Path,
+        **kwargs: Any
+    ):
+        self._name = name
+        self._version = version
+        self._build_id = build_id
+        self._builder = builder
+        self._pkg_root = pkg_root
+        super().__init__(
+            basename='{base}:{name}'.format(base=basename, name=self.name),
+            **kwargs
+        )
+
+    name     = property(operator.attrgetter('_name'))
+    version  = property(operator.attrgetter('_version'))
+    build_id = property(operator.attrgetter('_build_id'))
+    builder  = property(operator.attrgetter('_builder'))
+
+    @property
+    def rootdir(self) -> Path:
+        """Package root directory."""
+        return self._pkg_root/self._name
+
+    def make_package_directory(self) -> types.TaskDict:
+        """Create the package's directory."""
+        task = self.basic_task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
+        task.update({
+            'name': self.MKDIR_TASK_NAME,
+            'doc': 'Create directory for {}.'.format(self.name),
+            'title': mkdir['title'],
+            'actions': mkdir['actions'],
+            'uptodate': mkdir['uptodate'],
+            'targets': mkdir['targets'],
+        })
+        return task
+
+
+class RPMPackage(Package):
+    """A RPM software package for CentOS 7."""
+
     SUFFIX = 'el7'
+    SOURCE_URL_PATTERN = re.compile(r'^Source\d+:\s+(?P<url>.+)$')
 
     def __init__(
         self,
@@ -75,28 +123,15 @@ class Package(base.CompositeTarget):
         Keyword Arguments:
             They are passed to `Target` init method.
         """
-        self._name = name
-        self._version = version
-        self._build_id = build_id
+        super().__init__(
+            basename, name, version, build_id, builder, constants.PKG_RPM_ROOT,
+            **kwargs
+        )
         self._sources = [
             self.rootdir/'SOURCES'/filename for filename in sources
         ]
-        self._builder = builder
-        super().__init__(
-            basename='{base}:{name}'.format(base=basename, name=self.name),
-            **kwargs
-        )
 
-    name     = property(operator.attrgetter('_name'))
-    version  = property(operator.attrgetter('_version'))
-    build_id = property(operator.attrgetter('_build_id'))
     sources  = property(operator.attrgetter('_sources'))
-    builder  = property(operator.attrgetter('_builder'))
-
-    @property
-    def rootdir(self) -> Path:
-        """Package root directory."""
-        return constants.PKG_RPM_ROOT/self._name
 
     @property
     def srcdir(self) -> Path:
@@ -128,30 +163,16 @@ class Package(base.CompositeTarget):
             self.build_srpm(),
         ]
 
-    def make_package_directory(self) -> types.TaskDict:
-        """Create the package's directory."""
-        task = self.basic_task
-        mkdir = directory.Mkdir(directory=self.rootdir).task
-        task.update({
-            'name': self.MKDIR_TASK_NAME,
-            'doc': 'Create directory for {}.'.format(self.name),
-            'title': mkdir['title'],
-            'actions': mkdir['actions'],
-            'uptodate': mkdir['uptodate'],
-            'targets': mkdir['targets'],
-        })
-        return task
-
     def generate_meta(self) -> types.TaskDict:
         """Generate the .meta file for the package."""
         spec_guest_file = Path('/rpmbuild/SPECS', self.spec.name)
         meta_guest_file = Path('/rpmbuild/META', self.meta.name)
         mounts = [
-            docker_command.DockerRun.ENTRYPOINT_MOUNT,
-            docker_command.bind_ro_mount(
+            utils.get_entrypoint_mount('redhat'),
+            utils.bind_ro_mount(
                 source=self.spec, target=spec_guest_file
             ),
-            docker_command.bind_mount(
+            utils.bind_mount(
                 source=self.meta.parent, target=meta_guest_file.parent
             )
         ]
@@ -202,6 +223,7 @@ class Package(base.CompositeTarget):
         task['task_dep'].append('{}:{}'.format(self.basename,
                                                self.MKDIR_TASK_NAME))
         return task
+
     def build_srpm(self) -> types.TaskDict:
         """Build the SRPM for the package."""
         env = {
@@ -216,7 +238,8 @@ class Package(base.CompositeTarget):
             environment=env,
             tmpfs={'/home/build': '', '/var/tmp': ''},
             mounts=self._get_buildsrpm_mounts(self.srpm.parent),
-            read_only=True
+            read_only=True,
+            run_config=docker_command.RPM_BASE_CONFIG
         )
 
         task = self.basic_task
@@ -252,7 +275,7 @@ class Package(base.CompositeTarget):
         sourcefiles = {src.name for src in self.sources}
         with open(self.meta, 'r', encoding='utf-8') as fp:
             for line in fp:
-                match = SOURCE_URL_PATTERN.match(line)
+                match = self.SOURCE_URL_PATTERN.match(line)
                 if not match:
                     continue
                 url = match.group('url')
@@ -270,31 +293,141 @@ class Package(base.CompositeTarget):
         """Return the list of container mounts required by `buildsrpm`."""
         mounts = [
             # .spec file
-            docker_command.bind_ro_mount(
+            utils.bind_ro_mount(
                 source=self.spec,
                 target=Path('/rpmbuild/SPECS', self.spec.name)
             ),
             # SRPM directory.
-            docker_command.bind_mount(
+            utils.bind_mount(
                 source=srpm_dir,
                 target=Path('/rpmbuild/SRPMS'),
             ),
             # rpmlint configuration file
-            docker_command.DockerRun.RPMLINTRC_MOUNT
+            docker_command.RPMLINTRC_MOUNT
         ]
 
         # Source files.
         for source in self.sources:
             mounts.append(
-                docker_command.bind_ro_mount(
+                utils.bind_ro_mount(
                     source=source,
                     target=Path('/rpmbuild/SOURCES', source.name)
                 )
             )
         return mounts
 
-
 def _file_from_url(url: str) -> str:
     """Get filename from a URL."""
     path = urllib.parse.urlparse(url).path
     return urllib.parse.unquote(os.path.basename(path))
+
+
+class DEBPackage(Package):
+    """A DEB software package for Ubuntu 18.04."""
+
+    ARCH = 'amd64'
+
+    def __init__(
+        self,
+        basename: str,
+        name: str,
+        version: str,
+        sources: Path,
+        build_id: int,
+        builder: image.ContainerImage,
+        **kwargs: Any
+    ):
+        super().__init__(
+            basename, name, version, build_id, builder,
+            constants.PKG_DEB_ROOT, **kwargs
+         )
+        self._sources = sources
+
+    sources = property(operator.attrgetter('_sources'))
+
+    @property
+    def deb(self) -> Path:
+        """DEB path."""
+        fmt = '{pkg.name}_{pkg.version}-{pkg.build_id}_{pkg.ARCH}.deb'
+        return self.rootdir/fmt.format(pkg=self)
+
+    @property
+    def debuild_sources(self) -> Path:
+        """Path to the directory that contains input files for debuild."""
+        return constants.ROOT.joinpath('packages','debian',self.name)
+
+    @property
+    def execution_plan(self) -> List[types.TaskDict]:
+        tasks = [self.make_package_directory()]
+        if self.sources.suffix == '.rpm':
+            tasks.append(self.convert_package())
+        else:
+            tasks.append(self.build_package())
+        return tasks
+
+    def build_package(self) -> types.TaskDict:
+        """Build DEB packages from source files."""
+        mounts = [
+            utils.bind_ro_mount(
+                source=self.sources, target=Path('/debbuild/pkg-src')
+            ),
+            utils.bind_ro_mount(
+                source=self.debuild_sources, target=Path('/debbuild/pkg-meta')
+            ),
+            utils.bind_mount(
+                source=self.rootdir, target=Path('/debbuild/result')
+            ),
+        ]
+        builddeb_callable = docker_command.DockerRun(
+            command=['/entrypoint.sh', 'builddeb'],
+            builder=self.builder,
+            run_config=docker_command.DEB_BASE_CONFIG,
+            mounts=mounts,
+            environment={
+                'VERSION': '{}-{}'.format(self.version, self.build_id)
+            },
+        )
+        task = self.basic_task
+        task.update({
+            'name': 'build_deb_pkg',
+            'actions': [builddeb_callable],
+            'doc': 'Build DEB package from sources for {}'.format(self.name),
+            'title': utils.title_with_target1('BUILD DEB'),
+            'targets': [self.deb],
+        })
+        task['file_dep'].extend(coreutils.ls_files_rec(self.sources))
+        task['file_dep'].extend(coreutils.ls_files_rec(self.debuild_sources))
+        task['task_dep'].append('_package_mkdir_deb_iso_root')
+        task['task_dep'].append('_build_deb_container')
+        return task
+
+    def convert_package(self) -> types.TaskDict:
+        """Build a DEB package from a RPM one."""
+        mounts = [
+            utils.bind_ro_mount(
+                source=self.sources,
+                target=Path('/rpmbuild/source.rpm')
+            ),
+            utils.bind_mount(
+                source=self.rootdir,
+                target=Path('/debbuild/result')
+            ),
+        ]
+        builddeb_callable = docker_command.DockerRun(
+            command=['/entrypoint.sh', 'rpm2deb'],
+            builder=self.builder,
+            run_config=docker_command.DEB_BASE_CONFIG,
+            mounts=mounts
+        )
+        task = self.basic_task
+        task.update({
+            'name': 'convert_rpm_pkg_to_deb',
+            'actions': [builddeb_callable],
+            'doc': 'Build DEB package from RPM for {}'.format(self.name),
+            'title': utils.title_with_target1('RPM2DEB'),
+            'targets': [self.deb],
+        })
+        task['file_dep'].append(self.sources)
+        task['task_dep'].append('_package_mkdir_deb_iso_root')
+        task['task_dep'].append('_build_deb_container')
+        return task

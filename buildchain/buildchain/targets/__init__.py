@@ -10,8 +10,8 @@ from buildchain.targets.directory import Mkdir
 from buildchain.targets.file_tree import FileTree
 from buildchain.targets.local_image import LocalImage
 from buildchain.targets.operator_image import OperatorImage
-from buildchain.targets.package import Package
+from buildchain.targets.package import Package, RPMPackage, DEBPackage
 from buildchain.targets.remote_image import RemoteImage
-from buildchain.targets.repository import Repository
+from buildchain.targets.repository import Repository, RPMRepository
 from buildchain.targets.serialize import SerializedData
 from buildchain.targets.template import TemplateFile

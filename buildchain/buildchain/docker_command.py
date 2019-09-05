@@ -18,42 +18,37 @@ from docker.types import Mount                        # type: ignore
 from doit.exceptions import TaskError                 # type: ignore
 
 from buildchain import constants
+from buildchain import utils
 from buildchain.targets import image
 
 DOCKER_CLIENT : docker.DockerClient = docker.from_env()
 
+RPMLINTRC_MOUNT : Mount = utils.bind_ro_mount(
+    target=Path('/rpmbuild/rpmlintrc'),
+    source=constants.ROOT/'packages'/'redhat'/'rpmlintrc',
+)
 
-def bind_mount(source: Path, target: Path, **kwargs: Any) -> Mount:
-    """Helper for Docker mount objects.
+RPM_BASE_CONFIG = {
+    'hostname': 'build',
+    'mounts': [utils.get_entrypoint_mount('redhat')],
+    'environment': {
+        'TARGET_UID': os.geteuid(),
+        'TARGET_GID': os.getegid()
+    },
+    'tmpfs': {'/tmp': ''},
+    'remove': True
+}
 
-    Arguments:
-        source: the host path to be mounted
-        target: the container path the source should be mounted to
-
-    Keyword arguments:
-        Passed through to the underlying docker.services.Mount object
-        initialization
-    """
-    return Mount(
-        source=str(source),
-        target=str(target),
-        type='bind',
-        **kwargs
-    )
-
-
-def bind_ro_mount(source: Path, target: Path) -> Mount:
-    """Helper for Docker *read-only* mount objects.
-
-    Arguments:
-        source: the host path to be mounted
-        target: the container path the source should be mounted to
-    """
-    return bind_mount(
-        source=source,
-        target=target,
-        read_only=True
-    )
+DEB_BASE_CONFIG = {
+    'hostname': 'build',
+    'mounts': [utils.get_entrypoint_mount('debian')],
+    'environment': {
+        'TARGET_UID': os.geteuid(),
+        'TARGET_GID': os.getegid()
+    },
+    'tmpfs': {'/tmp': ''},
+    'remove': True
+}
 
 
 def default_error_handler(exc: Exception) -> str:
@@ -153,33 +148,14 @@ class DockerBuild:
 class DockerRun:
     """A class to expose the `docker run` command through the API client."""
 
-    RPMLINTRC_MOUNT : Mount = bind_ro_mount(
-        target=Path('/rpmbuild/rpmlintrc'),
-        source=constants.ROOT/'packages'/'redhat'/'rpmlintrc',
-    )
-    ENTRYPOINT_MOUNT : Mount = bind_ro_mount(
-        target=Path('/entrypoint.sh'),
-        source=constants.ROOT/'packages'/'redhat'/'entrypoint.sh',
-    )
-    _BASE_CONFIG = {
-        'hostname': 'build',
-        'mounts': [ENTRYPOINT_MOUNT],
-        'environment': {
-            'TARGET_UID': os.geteuid(),
-            'TARGET_GID': os.getegid()
-        },
-        'tmpfs': {'/tmp': ''},
-        'remove': True
-    }
-
     def __init__(
         self,
         command:     List[str],
         builder:     image.ContainerImage,
+        run_config:  Dict[str, Any],
         environment: Optional[Dict[str, Any]]=None,
         mounts:      Optional[List[Mount]]=None,
         tmpfs:       Optional[Dict[str, str]]=None,
-        run_config:  Optional[Dict[str, Any]]=None,
         read_only:   bool=False
     ):
         """Initialize a `docker run` callable object.
@@ -199,13 +175,8 @@ class DockerRun:
         self.environment = environment or {}
         self.mounts = mounts or []
         self.tmpfs = tmpfs or {}
-        self.run_config = run_config or self.builder_config()
+        self.run_config = run_config
         self.read_only = read_only
-
-    @classmethod
-    def builder_config(cls) -> Dict[str, Any]:
-        """Docker run command base configuration."""
-        return copy.deepcopy(cls._BASE_CONFIG)
 
     def expand_config(self) -> Dict[str, Any]:
         """Expand the run configuration with given data.

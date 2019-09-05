@@ -30,7 +30,7 @@ CASE 2: local repository
                                  └───────────┘
 """
 
-
+import abc
 import operator
 from pathlib import Path
 from typing import Any, List, Optional, Sequence
@@ -53,16 +53,14 @@ MKDIR_ARCH_TASK_NAME = 'mkdir_repo_arch'
 
 
 class Repository(base.CompositeTarget):
-    """A software repository for CentOS 7 x86_64."""
-
-    SUFFIX = 'el7'
-    ARCH   = 'x86_64'
+    """Base class to build a repository of software packages."""
 
     def __init__(
         self,
         basename: str,
         name: str,
         builder: image.ContainerImage,
+        repo_root: Path,
         packages: Optional[Sequence[package.Package]]=None,
         **kwargs: Any
     ):
@@ -80,6 +78,7 @@ class Repository(base.CompositeTarget):
         self._name = name
         self._builder = builder
         self._packages = packages or []
+        self._repo_root = repo_root
         super().__init__(
             basename='{base}:{name}'.format(base=basename, name=self.name),
             **kwargs
@@ -88,6 +87,49 @@ class Repository(base.CompositeTarget):
     name     = property(operator.attrgetter('_name'))
     builder  = property(operator.attrgetter('_builder'))
     packages = property(operator.attrgetter('_packages'))
+
+    @abc.abstractproperty
+    def fullname(self) -> str:
+        """Repository full name."""
+
+    @property
+    def rootdir(self) -> Path:
+        """Repository root directory."""
+        return self._repo_root/self.fullname
+
+    @property
+    def execution_plan(self) -> List[types.TaskDict]:
+        tasks = [self.build_repo()]
+        if self._packages:
+            tasks.extend(self.build_packages())
+        return tasks
+
+    @abc.abstractmethod
+    def build_repo(self) -> types.TaskDict:
+        """Build the repository."""
+
+    @abc.abstractmethod
+    def build_packages(self) -> List[types.TaskDict]:
+        """Build the packages for the repository."""
+
+class RPMRepository(Repository):
+    """A software repository for CentOS 7 x86_64."""
+
+    SUFFIX = 'el7'
+    ARCH   = 'x86_64'
+
+    def __init__(
+        self,
+        basename: str,
+        name: str,
+        builder: image.ContainerImage,
+        packages: Optional[Sequence[package.RPMPackage]]=None,
+        **kwargs: Any
+    ):
+        super ().__init__(
+            basename, name, builder, constants.REPO_RPM_ROOT, packages,
+            **kwargs
+        )
 
     @property
     def fullname(self) -> str:
@@ -98,21 +140,9 @@ class Repository(base.CompositeTarget):
         )
 
     @property
-    def rootdir(self) -> Path:
-        """Repository root directory."""
-        return constants.REPO_RPM_ROOT/self.fullname
-
-    @property
     def repodata(self) -> Path:
         """Repository metadata directory."""
         return self.rootdir/'repodata'
-
-    @property
-    def execution_plan(self) -> List[types.TaskDict]:
-        tasks = [self.build_repo()]
-        if self._packages:
-            tasks.extend(self.build_rpms())
-        return tasks
 
     def build_repo(self) -> types.TaskDict:
         """Build the repository."""
@@ -143,15 +173,15 @@ class Repository(base.CompositeTarget):
                 base=self.basename, name=MKDIR_ROOT_TASK_NAME
             ))
             task['file_dep'].extend([
-                self._get_rpm_path(pkg) for pkg in self.packages
+                self.get_rpm_path(pkg) for pkg in self.packages
             ])
         return task
 
-    def build_rpms(self) -> List[types.TaskDict]:
+    def build_packages(self) -> List[types.TaskDict]:
         """Build the RPMs from SRPMs."""
         tasks = [self._mkdir_repo_root(), self._mkdir_repo_arch()]
         for pkg in self.packages:
-            rpm = self._get_rpm_path(pkg)
+            rpm = self.get_rpm_path(pkg)
             env = {
                 'RPMS': '{arch}/{rpm}'.format(arch=self.ARCH, rpm=rpm.name),
                 'SRPM': pkg.srpm.name,
@@ -163,6 +193,7 @@ class Repository(base.CompositeTarget):
                 environment=env,
                 mounts=self._get_buildrpm_mounts(pkg.srpm, rpm.parent),
                 tmpfs={'/home/build': '', '/var/tmp': ''},
+                run_config=docker_command.RPM_BASE_CONFIG
             )
 
             task = self.basic_task
@@ -173,7 +204,7 @@ class Repository(base.CompositeTarget):
                     pkg=pkg.name, repo=self.name
                 ),
                 'title': utils.title_with_target1('BUILD RPM'),
-                'targets': [self._get_rpm_path(pkg)],
+                'targets': [self.get_rpm_path(pkg)],
                 # Prevent Docker from polluting our output.
                 'verbosity': 0,
             })
@@ -181,7 +212,7 @@ class Repository(base.CompositeTarget):
             task['task_dep'].append('{base}:{name}'.format(
                 base=self.basename, name=MKDIR_ARCH_TASK_NAME,
             ))
-            task['task_dep'].append('_build_container')
+            task['task_dep'].append('_build_rpm_container')
             tasks.append(task)
         return tasks
 
@@ -220,7 +251,7 @@ class Repository(base.CompositeTarget):
         ))
         return task
 
-    def _get_rpm_path(self, pkg: package.Package) -> Path:
+    def get_rpm_path(self, pkg: package.RPMPackage) -> Path:
         """Return the path of the RPM of a given package."""
         filename = pkg.srpm.name.replace(
             '.src.rpm', '.{}.rpm'.format(self.ARCH)
@@ -234,17 +265,17 @@ class Repository(base.CompositeTarget):
         """Return the list of container mounts required by `buildrpm`."""
         mounts = [
             # SRPM directory.
-            docker_command.bind_ro_mount(
+            utils.bind_ro_mount(
                 source=srpm_path,
                 target=Path('/rpmbuild/SRPMS', srpm_path.name)
             ),
             # RPM directory.
-            docker_command.bind_mount(
+            utils.bind_mount(
                 source=rpm_dir,
                 target=Path('/rpmbuild/RPMS'),
             ),
             # rpmlint configuration file
-            docker_command.DockerRun.RPMLINTRC_MOUNT
+            docker_command.RPMLINTRC_MOUNT
         ]
 
         return mounts
@@ -252,10 +283,10 @@ class Repository(base.CompositeTarget):
     def _buildrepo_action(self) -> types.Action:
         """Return the command to run `buildrepo` inside a container."""
         mounts = [
-            docker_command.bind_ro_mount(
+            utils.bind_ro_mount(
                 source=self.rootdir, target=Path('/repository')
             ),
-            docker_command.bind_mount(
+            utils.bind_mount(
                 source=self.repodata, target=Path('/repository/repodata')
             )
         ]
@@ -263,7 +294,8 @@ class Repository(base.CompositeTarget):
             command=['/entrypoint.sh', 'buildrepo'],
             builder=self.builder,
             mounts=mounts,
-            read_only=True
+            read_only=True,
+            run_config=docker_command.RPM_BASE_CONFIG
         )
 
         return buildrepo_callable

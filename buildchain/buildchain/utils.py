@@ -7,7 +7,9 @@
 import inspect
 import sys
 from pathlib import Path
-from typing import Callable, List
+from typing import Any, Callable, List
+
+from docker.types import Mount  # type: ignore
 
 from buildchain import config
 from buildchain import constants
@@ -81,3 +83,35 @@ def title_with_subtask_name(command: str) -> Callable[[types.Task], str]:
             cmd=command, width=constants.CMD_WIDTH, name=task.name.split(':')[1]
         )
     return title
+
+
+def bind_mount(source: Path, target: Path, **kwargs: Any) -> Mount:
+    """Return a Docker mount object.
+
+    Arguments:
+        source: the host path to be mounted
+        target: the container path the source should be mounted to
+
+    Keyword arguments:
+        Passed through to the underlying docker.services.Mount object
+        initialization
+    """
+    return Mount(source=str(source), target=str(target), type='bind', **kwargs)
+
+
+def bind_ro_mount(source: Path, target: Path) -> Mount:
+    """Return *read-only* Docker mount object.
+
+    Arguments:
+        source: the host path to be mounted
+        target: the container path the source should be mounted to
+    """
+    return bind_mount(source=source, target=target, read_only=True)
+
+
+def get_entrypoint_mount(osfamily: str) -> Mount:
+    """Return the path to the entry point script for the given OS family."""
+    return bind_ro_mount(
+        target=Path('/entrypoint.sh'),
+        source=constants.ROOT/'packages'/osfamily/'entrypoint.sh',
+    )
