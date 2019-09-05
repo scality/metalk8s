@@ -25,7 +25,9 @@ no_host_keys: true
 rest_cherrypy:
   port: 4507
   host: {{ salt_ip }}
-  disable_ssl: true
+  ssl_crt: /etc/kubernetes/pki/salt-api.crt
+  ssl_key: /etc/kubernetes/pki/salt-api.key
+  ssl_chain: /etc/kubernetes/pki/ca.crt
 
 external_auth:
   kubernetes_rbac:
