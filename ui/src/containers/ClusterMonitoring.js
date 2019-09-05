@@ -13,7 +13,7 @@ import {
   stopRefreshAlertsAction,
   stopRefreshClusterStatusAction,
   CLUSTER_STATUS_UP,
-  CLUSTER_STATUS_DOWN
+  CLUSTER_STATUS_DOWN,
 } from '../ducks/app/monitoring';
 import { STATUS_CRITICAL, STATUS_SUCCESS } from '../constants';
 import { sortSelector } from '../services/utils';
@@ -75,7 +75,7 @@ const ClusterMonitoring = props => {
     refreshAlerts,
     stopRefreshAlerts,
     refreshClusterStatus,
-    stopRefreshClusterStatus
+    stopRefreshClusterStatus,
   } = props;
 
   useEffect(() => {
@@ -100,7 +100,7 @@ const ClusterMonitoring = props => {
     {
       label: props.intl.messages.name,
       dataKey: 'name',
-      width: 250
+      width: 250,
     },
     {
       label: props.intl.messages.severity,
@@ -108,12 +108,12 @@ const ClusterMonitoring = props => {
       width: 100,
       renderer: data => {
         return <CircleStatus className="fas fa-circle" status={data} />;
-      }
+      },
     },
     {
       label: props.intl.messages.message,
       dataKey: 'message',
-      flexGrow: 1
+      flexGrow: 1,
     },
     {
       label: props.intl.messages.active_at,
@@ -129,8 +129,8 @@ const ClusterMonitoring = props => {
             value={data}
           />
         </span>
-      )
-    }
+      ),
+    },
   ];
 
   const alerts = props.alerts.list
@@ -140,7 +140,7 @@ const ClusterMonitoring = props => {
         name: alert.labels.alertname,
         severity: alert.labels.severity,
         message: alert.annotations.message,
-        activeAt: alert.activeAt
+        activeAt: alert.activeAt,
       };
     });
 
@@ -148,13 +148,13 @@ const ClusterMonitoring = props => {
     jobCount > 0 ? STATUS_SUCCESS : STATUS_CRITICAL;
 
   const apiServerStatus = checkControlPlaneStatus(
-    props.cluster.apiServerStatus
+    props.cluster.apiServerStatus,
   );
   const kubeSchedulerStatus = checkControlPlaneStatus(
-    props.cluster.kubeSchedulerStatus
+    props.cluster.kubeSchedulerStatus,
   );
   const kubeControllerManagerStatus = checkControlPlaneStatus(
-    props.cluster.kubeControllerManagerStatus
+    props.cluster.kubeControllerManagerStatus,
   );
 
   const sortedAlerts = sortSelector(alerts, sortBy, sortDirection);
@@ -224,7 +224,7 @@ const mapStateToProps = (state, props) => {
   return {
     alerts: state.app.monitoring.alert,
     clusterStatus: makeClusterStatus(state, props),
-    cluster: state.app.monitoring.cluster
+    cluster: state.app.monitoring.cluster,
   };
 };
 
@@ -255,13 +255,13 @@ const mapDispatchToProps = dispatch => {
     refreshClusterStatus: () => dispatch(refreshClusterStatusAction()),
     refreshAlerts: () => dispatch(refreshAlertsAction()),
     stopRefreshAlerts: () => dispatch(stopRefreshAlertsAction()),
-    stopRefreshClusterStatus: () => dispatch(stopRefreshClusterStatusAction())
+    stopRefreshClusterStatus: () => dispatch(stopRefreshClusterStatusAction()),
   };
 };
 
 export default injectIntl(
   connect(
     mapStateToProps,
-    mapDispatchToProps
-  )(ClusterMonitoring)
+    mapDispatchToProps,
+  )(ClusterMonitoring),
 );

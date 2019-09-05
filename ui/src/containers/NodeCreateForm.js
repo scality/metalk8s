@@ -10,12 +10,12 @@ import { padding, fontSize, gray } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import {
   createNodeAction,
-  clearCreateNodeErrorAction
+  clearCreateNodeErrorAction,
 } from '../ducks/app/nodes';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
-  StyledLink
+  StyledLink,
 } from '../components/BreadcrumbStyle';
 const CreateNodeContainter = styled.div`
   height: 100%;
@@ -98,7 +98,7 @@ const initialValues = {
   sudo_required: false,
   workload_plane: true,
   control_plane: false,
-  infra: false
+  infra: false,
 };
 
 const validationSchema = Yup.object().shape({
@@ -113,7 +113,7 @@ const validationSchema = Yup.object().shape({
   sudo_required: Yup.boolean().required(),
   workload_plane: Yup.boolean().required(),
   control_plane: Yup.boolean().required(),
-  infra: Yup.boolean().required()
+  infra: Yup.boolean().required(),
 });
 
 class NodeCreateForm extends React.Component {
@@ -130,7 +130,9 @@ class NodeCreateForm extends React.Component {
             activeColor={theme.brand.secondary}
             paths={[
               <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-              <BreadcrumbLabel>{intl.messages.create_new_node}</BreadcrumbLabel>
+              <BreadcrumbLabel>
+                {intl.messages.create_new_node}
+              </BreadcrumbLabel>,
             ]}
           />
         </BreadcrumbContainer>
@@ -147,7 +149,7 @@ class NodeCreateForm extends React.Component {
                 errors,
                 dirty,
                 setFieldTouched,
-                setFieldValue
+                setFieldValue,
               } = props;
 
               //handleChange of the Formik props does not update 'values' when field value is empty
@@ -156,7 +158,7 @@ class NodeCreateForm extends React.Component {
                 setFieldValue(
                   field,
                   type === 'checkbox' ? checked : value,
-                  true
+                  true,
                 );
               };
               //touched is not "always" correctly set
@@ -315,13 +317,13 @@ class NodeCreateForm extends React.Component {
 const mapStateToProps = state => ({
   asyncErrors: state.app.nodes.errors,
   clusterVersion: state.app.nodes.clusterVersion,
-  theme: state.config.theme
+  theme: state.config.theme,
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     createNode: body => dispatch(createNodeAction(body)),
-    clearCreateNodeError: () => dispatch(clearCreateNodeErrorAction())
+    clearCreateNodeError: () => dispatch(clearCreateNodeErrorAction()),
   };
 };
 
@@ -329,7 +331,7 @@ export default injectIntl(
   withRouter(
     connect(
       mapStateToProps,
-      mapDispatchToProps
-    )(NodeCreateForm)
-  )
+      mapDispatchToProps,
+    )(NodeCreateForm),
+  ),
 );
