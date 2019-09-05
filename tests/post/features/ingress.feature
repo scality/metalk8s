@@ -3,12 +3,12 @@ Feature: Ingress
     Scenario: Access HTTP services
         Given the Kubernetes API is available
         When we perform an HTTP request on port 80 on a workload-plane IP
-        Then the server returns 502 'Bad Gateway'
+        Then the server returns 404 'Not Found'
 
     Scenario: Access HTTPS services
         Given the Kubernetes API is available
         When we perform an HTTPS request on port 443 on a workload-plane IP
-        Then the server returns 502 'Bad Gateway'
+        Then the server returns 404 'Not Found'
 
     Scenario: Access HTTP services on control-plane IP
         Given the Kubernetes API is available
