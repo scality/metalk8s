@@ -95,8 +95,8 @@
   "storage_class_is_required": "A storage class is required in order to create a volume. Please create one in Kubernetes.",
   "learn_more": "Learn more",
   "solutions": "Solutions",
-  "versions": "Versions",
-  "deployed_version": "Deployed Version",
+  "versions": "Available Versions",
+  "deployed_version": "Current Version",
   "action": "Action",
   "delete": "Delete",
   "volume_deletion": "Volume deletion",
@@ -115,8 +115,9 @@
   "no_results": "No results",
   "search": "Search…",
   "no_solution_available": "No solution available",
-  "create_new_namespace": "Create a namespace",
+  "create_new_namespace": "Create a Namespace",
   "namespace_creation": "Namespace Creation",
   "namespace_creation_success": "Namespace {name} has been created successfully.",
-  "namespace_creation_failed": "Namespace {name} creation  has failed."
+  "namespace_creation_failed": "Namespace {name} creation  has failed.",
+  "solution_name": "Solution Name"
 }
