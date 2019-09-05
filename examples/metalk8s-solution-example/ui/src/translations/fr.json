@@ -23,5 +23,7 @@
   "select_a_version": "Sélectionner de la version…",
   "no_instance_available": "Aucune instance disponible",
   "main_parameters": "Paramètres Principaux",
-  "custom_parameters": "Paramètres Personnalisés"
+  "custom_parameters": "Paramètres Personnalisés",
+  "upgrade": "Mettre à jour",
+  "downgrade": "Rétrograder"
 }

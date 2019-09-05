@@ -23,5 +23,7 @@
   "select_a_version": "Select a version…",
   "no_instance_available": "No instance available",
   "main_parameters": "Main Parameters",
-  "custom_parameters": "Custom Parameters"
+  "custom_parameters": "Custom Parameters",
+  "upgrade": "Upgrade",
+  "downgrade": "Downgrade"
 }
