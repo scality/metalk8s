@@ -1,8 +1,8 @@
-{%- set ca_server = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_ca_server') %}
+{%- set root_ca_b64_request = salt['mine.get'](pillar['metalk8s']['ca']['minion'], 'kubernetes_root_ca_b64') %}
 
-{%- if ca_server %}
+{%- if root_ca_b64_request %}
 
-{%- set ca_cert_b64 = ca_server[pillar['metalk8s']['ca']['minion']] %}
+{%- set ca_cert_b64 = root_ca_b64_request[pillar['metalk8s']['ca']['minion']] %}
 {%- set ca_cert = salt['hashutil.base64_b64decode'](ca_cert_b64) %}
 
 Ensure kubernetes CA cert is present:
@@ -17,7 +17,7 @@ Ensure kubernetes CA cert is present:
 
 {%- else %}
 
-Unable to get kubernetes CA cert, no kubernetes_ca_server in mine:
+Unable to get kubernetes CA cert, no kubernetes_root_ca_b64 in mine:
   test.fail_without_changes: []
 
 {%- endif %}
