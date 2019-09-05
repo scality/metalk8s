@@ -32,7 +32,7 @@ import {
   InformationValue,
   InformationMainValue,
 } from '../components/InformationList';
-import { STATUS_UNKNOWN } from '../constants';
+import { STATUS_UNKNOWN, STATUS_BOUND } from '../constants';
 
 const NodeInformationContainer = styled.div`
   display: flex;
@@ -171,11 +171,13 @@ const NodeInformation = props => {
     const volumePV = pVList.find(
       pV => pV.metadata.name === volume.metadata.name,
     );
-
     return {
       name: volume.metadata.name,
-      status:
-        (volume && volume.status && volume.status.phase) || STATUS_UNKNOWN,
+      status: volume?.status?.phase || STATUS_UNKNOWN,
+      bound:
+        volumePV?.status?.phase === STATUS_BOUND
+          ? intl.messages.yes
+          : intl.messages.no,
       storageCapacity:
         (volumePV &&
           volumePV.spec &&

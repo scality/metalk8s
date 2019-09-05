@@ -155,7 +155,11 @@ const NodeVolumes = props => {
     },
     {
       label: intl.messages.status,
-      dataKey: 'status'
+      dataKey: 'status',
+    },
+    {
+      label: intl.messages.bound,
+      dataKey: 'bound',
     },
     {
       label: intl.messages.storageCapacity,
