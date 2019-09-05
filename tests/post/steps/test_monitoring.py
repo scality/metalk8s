@@ -3,6 +3,9 @@ import json
 
 from pytest_bdd import scenario, given, then, parsers
 
+import kubernetes.client
+from kubernetes.client.rest import ApiException
+
 from tests import kube_utils
 from tests import utils
 
@@ -24,6 +27,12 @@ def test_monitored_components(host):
     pass
 
 
+@scenario('../features/monitoring.feature',
+    'The metrics.k8s.io/v1beta1 API is available')
+def test_metrics_v1beta1_apiservice(host):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -32,6 +41,22 @@ def check_prometheus_api(host):
     response = _query_prometheus_api(host, 'targets')
 
     assert response.status_code == 200, response.text
+
+
+@given(parsers.parse("the '{name}' APIService exists"))
+def apiservice_exists(host, name, k8s_apiclient, request):
+    client = kubernetes.client.ApiregistrationV1Api(api_client=k8s_apiclient)
+
+    def _check_object_exists():
+        try:
+            _ = client.read_api_service(name)
+        except ApiException as err:
+            if err.status == 404:
+                raise AssertionError('APIService not yet created')
+            raise
+
+    utils.retry(_check_object_exists, times=20, wait=3)
+
 
 
 # }}}
@@ -63,6 +88,30 @@ def check_job_health(host, job, namespace, health):
         name="wait for job '{}' in namespace '{}' being '{}'".format(
             job, namespace, health)
     )
+
+
+@then(parsers.parse("the '{name}' APIService is {condition}"))
+def apiservice_condition_met(name, condition, k8s_apiclient):
+    client = kubernetes.client.ApiregistrationV1Api(api_client=k8s_apiclient)
+
+    def _check_object_exists():
+        try:
+            svc = client.read_api_service(name)
+
+            ok = False
+            for cond in svc.status.conditions:
+                if cond.type == condition:
+                    assert cond.status == 'True', \
+                        '{} condition is True'.format(condition)
+                    ok = True
+
+            assert ok, '{} condition not found'.format(condition)
+        except ApiException as err:
+            if err.status == 404:
+                raise AssertionError('APIService not yet created')
+            raise
+
+    utils.retry(_check_object_exists, times=20, wait=3)
 
 
 # }}}
