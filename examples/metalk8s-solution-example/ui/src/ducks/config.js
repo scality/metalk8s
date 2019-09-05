@@ -11,12 +11,17 @@ export const SET_THEME = 'SET_THEME';
 const FETCH_THEME = 'FETCH_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
+const SET_VERSIONS = 'SET_VERSIONS';
+const FETCH_VERSIONS = 'FETCH_VERSIONS';
+
+const SOLUTION_NAME = 'example-solution';
 
 // Reducer
 const defaultState = {
   language: 'en',
   theme: {},
-  api: null
+  api: null,
+  versions: []
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -27,6 +32,8 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, theme: action.payload };
     case SET_API_CONFIG:
       return { ...state, api: action.payload };
+    case SET_VERSIONS:
+      return { ...state, versions: action.payload };
     default:
       return state;
   }
@@ -53,6 +60,14 @@ export function setApiConfigAction(conf) {
   return { type: SET_API_CONFIG, payload: conf };
 }
 
+export function setVersionsAction(payload) {
+  return { type: SET_VERSIONS, payload };
+}
+
+export function fetchVersionsAction() {
+  return { type: FETCH_VERSIONS };
+}
+
 // Sagas
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
@@ -73,7 +88,22 @@ export function* fetchConfig() {
   }
 }
 
+export function* fetchVersions() {
+  const result = yield call(ApiK8s.getSolutionsConfigMapForAllNamespaces);
+  if (!result.error) {
+    const solutionsConfigMap = result.body.items[0];
+    if (solutionsConfigMap && solutionsConfigMap.data) {
+      const solution = solutionsConfigMap.data[SOLUTION_NAME];
+      if (solution) {
+        yield put(setVersionsAction(JSON.parse(solution)));
+      }
+    }
+  }
+  return result;
+}
+
 export function* configSaga() {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
+  yield takeEvery(FETCH_VERSIONS, fetchVersions);
 }

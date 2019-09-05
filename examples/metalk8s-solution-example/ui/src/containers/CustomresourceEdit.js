@@ -51,9 +51,10 @@ const ActionContainer = styled.div`
   display: flex;
   margin: ${padding.large} 0;
   justify-content: flex-end;
+  margin: 0 ${padding.large};
 
   button {
-    margin-right: ${padding.large};
+    margin-left: ${padding.large};
   }
 `;
 
@@ -75,7 +76,7 @@ const InputValue = styled.label`
 `;
 
 const CustomresourceEditForm = props => {
-  const { intl, namespaces, match, customResources } = props;
+  const { intl, namespaces, match, customResources, versions } = props;
   const customResource = customResources.find(
     cr => cr.name === match.params.id
   );
@@ -138,6 +139,13 @@ const CustomresourceEditForm = props => {
                   value: namespace.metadata.name
                 };
               });
+
+              const versionOptions = versions.map(option => {
+                return {
+                  label: option.version,
+                  value: option.version
+                };
+              });
               return (
                 <Form>
                   <FormSection>
@@ -163,10 +171,16 @@ const CustomresourceEditForm = props => {
                       onBlur={handleOnBlur}
                     />
                     <Input
+                      id="version_input_creation"
                       name="version"
+                      type="select"
+                      clearable={false}
+                      options={versionOptions}
+                      placeholder={intl.messages.select_a_version}
+                      noResultsText={intl.messages.not_found}
                       label={intl.messages.version}
                       value={values.version}
-                      onChange={handleChange('version')}
+                      onChange={handleSelectChange('version')}
                       error={touched.version && errors.version}
                       onBlur={handleOnBlur}
                     />
@@ -213,7 +227,8 @@ const CustomresourceEditForm = props => {
 function mapStateToProps(state) {
   return {
     namespaces: state.app.namespaces.list,
-    customResources: state.app.customResource.list
+    customResources: state.app.customResource.list,
+    versions: state.config.versions
   };
 }
 

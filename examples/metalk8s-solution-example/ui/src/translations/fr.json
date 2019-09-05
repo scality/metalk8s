@@ -1,12 +1,12 @@
 {
-  "product_name": "Example Solution UI",
+  "product_name": "My Solution UI",
   "username": "Nom d'utilisateur",
   "password": "Mot de passe",
   "submit": "Connexion",
   "about": "À propos",
   "log_out": "Déconnexion",
-  "create_new_customResource": "Créer un nouveau Custom Resource",
-  "edit_customResource": "Éditer un Custom Resource",
+  "create_new_customResource": "Créer une instance de My Solution",
+  "edit_customResource": "Éditer une instance de My Solution",
   "operator_version": "Version de l'opérateur",
   "name": "Nom",
   "cancel": "Annuler",
@@ -14,10 +14,14 @@
   "edit": "Éditer",
   "namespace": "Namespace",
   "version": "Version",
-  "replicas": "Duplication",
+  "replicas": "Param1",
   "no_data_available": "Pas de données disponibles",
-  "custom_resource": "Custom Resource",
+  "custom_resource": "Application",
   "select_a_namespace": "Sélectionner un namespace…",
   "not_found": "Aucun résultat",
-  "not_valid_version": "Ce n'est pas une version valide"
+  "not_valid_version": "Ce n'est pas une version valide",
+  "select_a_version": "Sélectionner de la version…",
+  "no_instance_available": "Aucune instance disponible",
+  "main_parameters": "Paramètres Principaux",
+  "custom_parameters": "Paramètres Personnalisés"
 }
