@@ -17,19 +17,25 @@ func TestNewClientDefault(t *testing.T) {
 		value    string
 		expected string
 	}{
-		"default": {value: "", expected: "http://salt-master:4507"},
-		"env_var": {value: "http://foo:4507", expected: "http://foo:4507"},
+		"default": {value: "", expected: "https://salt-master:4507"},
+		"env_var": {value: "https://foo:4507", expected: "https://foo:4507"},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			os.Setenv("METALK8S_SALT_MASTER_ADDRESS", tc.value)
 
-			client := NewClient(nil)
+			client, _ := NewClient(nil, []byte("<insert_your_cert_here>"))
 
 			assert.Equal(t, tc.expected, client.address)
 		})
 	}
+}
+
+func TestNewClientNoCaCert(t *testing.T) {
+	_, err := NewClient(nil, []byte{})
+	assert.Error(t, err)
+	assert.Regexp(t, regexp.MustCompile("Empty CA cert"), err.Error())
 }
 
 func TestNewRequest(t *testing.T) {
@@ -43,7 +49,7 @@ func TestNewRequest(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			client := NewClient(nil)
+			client, _ := NewClient(nil, []byte("<insert_your_cert_here>"))
 			client.token = newToken("foo", 0)
 
 			request, _ := client.newRequest("POST", "/", nil, tc.is_auth)

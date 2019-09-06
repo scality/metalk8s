@@ -37,5 +37,5 @@ Procedure
 
    cd storage-operator
    export KUBECONFIG=<path-to-the-admin.cong-you-copied-locally>
-   export METALK8S_SALT_MASTER_ADDRESS=http://<ADDRESS-OF-SALT-API>
+   export METALK8S_SALT_MASTER_ADDRESS=https://<ADDRESS-OF-SALT-API>
    operator-sdk up local

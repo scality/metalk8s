@@ -4,8 +4,10 @@ import (
 	"context"
 	b64 "encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"time"
 
+	errorsng "github.com/pkg/errors"
 	storagev1alpha1 "github.com/scality/metalk8s/storage-operator/pkg/apis/storage/v1alpha1"
 	"github.com/scality/metalk8s/storage-operator/pkg/salt"
 	corev1 "k8s.io/api/core/v1"
@@ -203,17 +205,38 @@ var log = logf.Log.WithName("volume-controller")
 // Add creates a new Volume Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+	reconciler, err := newReconciler(mgr)
+	if err != nil {
+		return err
+	}
+	return add(mgr, reconciler)
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager) (reconcile.Reconciler, error) {
+	config := mgr.GetConfig()
+	caCertData := config.CAData
+	if len(caCertData) == 0 {
+		log.Info("CAData is empty, fallbacking on CAFile")
+		cert, err := ioutil.ReadFile(config.CAFile)
+		if err != nil {
+			return nil, errorsng.Wrapf(
+				err, "cannot read CA cert file (%s)", config.CAFile,
+			)
+		}
+		caCertData = cert
+	}
+	saltClient, err := salt.NewClient(getAuthCredential(config), caCertData)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ReconcileVolume{
 		client:   mgr.GetClient(),
 		scheme:   mgr.GetScheme(),
 		recorder: mgr.GetRecorder("volume-controller"),
-		salt:     salt.NewClient(getAuthCredential(mgr.GetConfig())),
-	}
+		salt:     saltClient,
+	}, nil
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler

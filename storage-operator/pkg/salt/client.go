@@ -3,6 +3,8 @@ package salt
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -35,20 +37,30 @@ type Client struct {
 }
 
 // Create a new Salt API client.
-func NewClient(creds *Credential) *Client {
+func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 	address := os.Getenv("METALK8S_SALT_MASTER_ADDRESS")
 	if address == "" {
-		address = "http://salt-master:4507"
+		address = "https://salt-master:4507"
 	}
 	logger := log.Log.WithName("salt-api").WithValues("Salt.Address", address)
 
+	if len(caCertData) == 0 {
+		return nil, fmt.Errorf("Empty CA certificate")
+	}
+
+	certs := x509.NewCertPool()
+	certs.AppendCertsFromPEM(caCertData)
 	return &Client{
 		address: address,
-		client:  &http.Client{},
-		creds:   creds,
-		token:   nil,
-		logger:  logger,
-	}
+		client: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{RootCAs: certs},
+			},
+		},
+		creds:  creds,
+		token:  nil,
+		logger: logger,
+	}, nil
 }
 
 // Spawn a job, asynchronously, to prepare the volume on the specified node.
