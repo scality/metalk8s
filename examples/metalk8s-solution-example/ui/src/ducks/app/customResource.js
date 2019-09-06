@@ -67,7 +67,7 @@ export function* fetchCustomResource() {
           );
           return {
             name: cr.metadata.name,
-            namespace: cr.metadata.namespac,
+            namespace: cr.metadata.namespace,
             displayNamespace: nameWithoutPrefix,
             replicas: cr.spec.replicas,
             version: cr.spec.version
