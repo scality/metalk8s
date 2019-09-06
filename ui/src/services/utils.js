@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { createSelector } from 'reselect';
-import { sortBy as sortByArray } from 'lodash';
+import sortByArray from 'lodash.sortby';
 
 export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];

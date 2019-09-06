@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import Loader from '../components/Loader';
 import Banner from '../components/Banner';
 import { Input, Button, Breadcrumb } from '@scality/core-ui';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
   createVolumeAction,

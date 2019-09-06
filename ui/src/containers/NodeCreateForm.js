@@ -7,7 +7,7 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Checkbox, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize, gray } from '@scality/core-ui/dist/style/theme';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash.isempty';
 import {
   createNodeAction,
   clearCreateNodeErrorAction,

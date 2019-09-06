@@ -7,7 +7,7 @@ import { brand, padding } from '@scality/core-ui/dist/style/theme';
 import styled from 'styled-components';
 import { authenticateAction } from '../ducks/login';
 import { injectIntl } from 'react-intl';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash.isempty';
 
 const LoginFormContainer = styled.div`
   height: 100vh;
