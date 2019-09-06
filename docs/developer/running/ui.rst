@@ -32,7 +32,7 @@ Procedure
    pillar = json.loads(output)['local']
    ui_conf = {
        'url': 'https://{}:6443'.format(pillar['api_server']['host']),
-       'url_salt': 'http://{salt[ip]}:{salt[ports][api]}'.format(
+       'url_salt': 'https://{salt[ip]}:{salt[ports][api]}'.format(
            salt=pillar['endpoints']['salt-master']
        ),
        'url_prometheus': 'http://{prom[ip]}:{prom[ports][api][node_port]}'.format(
