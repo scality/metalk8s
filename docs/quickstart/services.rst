@@ -41,8 +41,10 @@ The login page is loaded, and should resemble the following:
 .. image:: img/ui/login.png
 
 In the bottom left corner of the page, click the link
-``Accept SSL Certificate``. In the new tab, click the button ``Advanced...``,
-then select ``Accept the risk and continue``.
+``Accept SSL Certificate for Kubernetes``. In the new tab, click the button
+``Advanced...``, then select ``Accept the risk and continue``.
+
+Follow the same steps for the second link, ``Accept SSL Certificate for Salt``.
 
 Go back to the first tab, then log in with the default login / password
 (admin / admin).
