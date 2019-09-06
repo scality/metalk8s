@@ -28,6 +28,10 @@ spec:
           scheme: {{ scheme }}
         initialDelaySeconds: 15
         timeoutSeconds: 15
+{%- if ports is defined and ports %}
+      ports:
+      {{ ports | yaml(False) | indent(6, False) }}
+{%- endif %}
       resources:
         requests:
           cpu: {{ requested_cpu }}

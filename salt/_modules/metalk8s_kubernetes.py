@@ -1667,10 +1667,16 @@ def __dict_to_service_spec(spec):
                     for port_key, port_value in iteritems(port):
                         if port_key in ("name", "port", "protocol", "node_port", "target_port"):
                             port_kwargs[port_key] = port_value
+                        elif port_key == 'nodePort':
+                            port_kwargs['node_port'] = port_value
+                        elif port_key == 'targetPort':
+                            port_kwargs['target_port'] = port_value
                 else:
                     port_kwargs = {"port": port}
                 kube_port = kubernetes.client.V1ServicePort(**port_kwargs)
                 spec_obj.ports.append(kube_port)
+        elif key == 'clusterIP':
+            spec_obj.cluster_ip = value
         elif hasattr(spec_obj, key):
             setattr(spec_obj, key, value)
 
@@ -1686,6 +1692,7 @@ def __dict_to_api_service_spec(spec):
         group_priority_minimum=spec['groupPriorityMinimum'],
         service=service_ref,
         version_priority=spec['versionPriority'],
+        insecure_skip_tls_verify=spec.get('insecureSkipTLSVerify', None),
     )
     for key, value in iteritems(spec):
         if hasattr(spec_obj, key):
