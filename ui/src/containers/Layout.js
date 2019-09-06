@@ -79,6 +79,7 @@ const Layout = props => {
         })
       },
       {
+        id: 'sidepanel_solutions-button',
         label: props.intl.messages.solutions,
         icon: <i className="fas fa-th" />,
         onClick: () => {

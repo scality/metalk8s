@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
+import Joyride from 'react-joyride';
+
 import { sortSelector, useRefreshEffect } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
   refreshNamespacesAction,
   stopRefreshNamespacesAction
 } from '../ducks/app/namespaces';
+
+const SOLUTIONS_GUIDED_TOUR_DONE = 'SOLUTIONS_GUIDED_TOUR_DONE';
+
 const PageContainer = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -40,13 +45,28 @@ const ActionContainer = styled.div`
   align-items: center;
 `;
 
+const StepContent = styled.div`
+  text-align: start;
+`;
+
 const SolutionsList = props => {
   useRefreshEffect(refreshNamespacesAction, stopRefreshNamespacesAction);
+  useEffect(() => {
+    const hasGuidedTourRun = JSON.parse(
+      localStorage.getItem(SOLUTIONS_GUIDED_TOUR_DONE)
+    );
+    if (!hasGuidedTourRun) {
+      setGuidedTourRun(true);
+      localStorage.setItem(SOLUTIONS_GUIDED_TOUR_DONE, true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const [namespacesSortBy, setNamespacesSortBy] = useState('name');
   const [namespacesSortDirection, setNamespacesSortDirection] = useState('ASC');
+  const [guidedTourRun, setGuidedTourRun] = useState(false);
 
   const { intl, solutions, namespaces, history } = props;
   const columns = [
@@ -109,10 +129,75 @@ const SolutionsList = props => {
     namespacesSortDirection
   );
 
+  const steps = [
+    {
+      target: '#sidepanel_solutions-button',
+      content: (
+        <StepContent>
+          <h3>What is a Solution?</h3>
+          <span>
+            A Solution is a packaged Kubernetes application, archived as an ISO
+            disk image, containing:
+          </span>
+          <ul>
+            <li>A set of OCI images to inject in MetalK8s image registry </li>
+            <li>An Operator to deploy on the cluster </li>
+            <li>
+              Optionally, a UI for managing and monitoring the application,
+              represented by a standard Kubernetes Deployment
+            </li>
+          </ul>
+          <h3>How to import a Solution in Metalk8s?</h3>
+          <ul>
+            <li>Import the Solution</li>
+            <li>Create a namespace</li>
+          </ul>
+        </StepContent>
+      ),
+      placement: 'right',
+      disableBeacon: true
+    },
+    {
+      target: '#import_solution_button',
+      content: (
+        <StepContent>
+          <h3>Import the Solution</h3>
+          <span>To import a Solution, follow these below steps:</span>
+          <ul>
+            <li>
+              Make Solution ISO archive available in the MetalK8s cluster{' '}
+            </li>
+            <li>
+              Click "Import Solution" in the UI to select a version to import
+            </li>
+          </ul>
+        </StepContent>
+      ),
+      placement: 'right'
+    },
+    {
+      target: '#create_namespace_button',
+      content: (
+        <StepContent>
+          <h3>Create a namespace</h3>
+          <span>To create a Solution instance, a namespace is required</span>
+        </StepContent>
+      ),
+      placement: 'right'
+    }
+  ];
   return (
     <PageContainer>
+      <Joyride
+        continuous={true}
+        showProgress={true}
+        showSkipButton={true}
+        steps={steps}
+        run={guidedTourRun}
+      />
       <ActionContainer>
         <Button
+          id="import_solution_button"
           text={intl.messages.import_solution}
           onClick={() => history.push('/solutions/import')}
           icon={<i className="fas fa-plus" />}
@@ -136,6 +221,7 @@ const SolutionsList = props => {
       </TableContainer>
       <ActionContainer>
         <Button
+          id="create_namespace_button"
           text={intl.messages.create_new_namespace}
           onClick={() => history.push('/namespace/create')}
           icon={<i className="fas fa-plus" />}
