@@ -129,13 +129,14 @@ def _get_salt_api_address(host, version):
 
 def _salt_api_login(address, username, token, token_type):
     response = requests.post(
-        'http://{}/login'.format(address),
+        'https://{}/login'.format(address),
         data={
             'eauth': 'kubernetes_rbac',
             'username': username,
             'token': token,
             'token_type': token_type,
         },
+        verify=False,
     )
     result = {
         'url': 'http://{}'.format(address),
