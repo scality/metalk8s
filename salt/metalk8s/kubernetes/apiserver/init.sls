@@ -11,3 +11,4 @@
 include:
   - .installed
   - .kubeconfig
+  - .cryptconfig
