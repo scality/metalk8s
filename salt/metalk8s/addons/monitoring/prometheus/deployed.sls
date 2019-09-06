@@ -27,7 +27,7 @@ Expose Prometheus:
           port: 9090
           protocol: TCP
           node_port: 30222
-          targetPort: api
+          targetPort: web
         selector:
           app: prometheus
           prometheus: k8s
