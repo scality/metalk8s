@@ -1,11 +1,9 @@
 import ApiClient from '../ApiClient';
 
-import {
-  Config,
-  CoreV1Api,
-  CustomObjectsApi,
-  StorageV1Api
-} from '@kubernetes/client-node';
+import { Config } from '@kubernetes/client-node/dist/browser/config';
+import { CoreV1Api } from '@kubernetes/client-node/dist/gen/api/coreV1Api';
+import { CustomObjectsApi } from '@kubernetes/client-node/dist/gen/api/customObjectsApi';
+import { StorageV1Api } from '@kubernetes/client-node/dist/gen/api/storageV1Api';
 
 let config;
 let coreV1;
@@ -24,8 +22,8 @@ export function initialize(apiUrl) {
 export function authenticate(token) {
   return k8sApiClient.get('/api/v1', null, {
     headers: {
-      Authorization: 'Basic ' + token
-    }
+      Authorization: 'Basic ' + token,
+    },
   });
 }
 
@@ -58,7 +56,7 @@ export async function getKubeSystemNamespace() {
       null,
       null,
       null,
-      'metadata.name=kube-system'
+      'metadata.name=kube-system',
     );
   } catch (error) {
     return { error };
@@ -79,7 +77,7 @@ export async function getVolumes() {
     return await customObjects.listClusterCustomObject(
       'storage.metalk8s.scality.com',
       'v1alpha1',
-      'volumes'
+      'volumes',
     );
   } catch (error) {
     return { error };
@@ -93,7 +91,7 @@ export async function deleteVolume(deleteVolumeName) {
       'v1alpha1',
       'volumes',
       deleteVolumeName,
-      {}
+      {},
     );
   } catch (error) {
     return error;
@@ -122,7 +120,7 @@ export async function createVolume(body) {
       'storage.metalk8s.scality.com',
       'v1alpha1',
       'volumes',
-      body
+      body,
     );
   } catch (error) {
     return { error };
@@ -141,7 +139,7 @@ export async function getSolutionsConfigMapForAllNamespaces() {
   try {
     return await coreV1.listConfigMapForAllNamespaces(
       null,
-      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`
+      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`,
     );
   } catch (error) {
     return { error };
@@ -154,7 +152,7 @@ export async function getUIServiceForAllNamespaces() {
       null,
       null,
       null,
-      `${APP_K8S_COMPONENT_LABEL}=ui`
+      `${APP_K8S_COMPONENT_LABEL}=ui`,
     );
   } catch (error) {
     return { error };

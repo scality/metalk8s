@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { createSelector } from 'reselect';
-import { sortBy as sortByArray } from 'lodash';
+import sortByArray from 'lodash.sortby';
 
 export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
@@ -24,7 +24,7 @@ export function prettifyBytes(bytes, decimals) {
   return {
     value: num + ' ' + unit,
     unit: unit,
-    number: num
+    number: num,
   };
 }
 
@@ -40,7 +40,7 @@ export const sortSelector = createSelector(
         return typeof item[sortBy] === 'string'
           ? item[sortBy].toLowerCase()
           : item[sortBy];
-      }
+      },
     ]);
 
     if (sortDirection === 'DESC') {
@@ -48,7 +48,7 @@ export const sortSelector = createSelector(
     }
     return sortedList;
   },
-  list => list
+  list => list,
 );
 
 /**
@@ -82,7 +82,7 @@ export const sortCapacity = createSelector(
     ) {
       const sizeRegex = /^(?<size>[1-9][0-9]*)(?<unit>[kKMGTP]i?)?/;
       const notSortableList = list.filter(
-        item => !sizeRegex.test(item?.[sortBy])
+        item => !sizeRegex.test(item?.[sortBy]),
       );
 
       const sortedList = list
@@ -106,7 +106,7 @@ export const sortCapacity = createSelector(
           return {
             ...item,
             tmpInternalSize,
-            tmpInternalUnitBase
+            tmpInternalUnitBase,
           };
         })
         .sort((item1, item2) => {
@@ -134,7 +134,7 @@ export const sortCapacity = createSelector(
       return [];
     }
   },
-  list => list
+  list => list,
 );
 
 export const getNodeNameFromUrl = (state, props) => {
@@ -157,13 +157,13 @@ export const getVolumes = state =>
 export const makeGetNodeFromUrl = createSelector(
   getNodeNameFromUrl,
   getNodes,
-  (nodeName, nodes) => nodes.find(node => node.name === nodeName) || {}
+  (nodeName, nodes) => nodes.find(node => node.name === nodeName) || {},
 );
 
 export const makeGetPodsFromUrl = createSelector(
   getNodeNameFromUrl,
   getPods,
-  (nodeName, pods) => pods.filter(pod => pod.nodeName === nodeName) || []
+  (nodeName, pods) => pods.filter(pod => pod.nodeName === nodeName) || [],
 );
 
 export const makeGetVolumesFromUrl = createSelector(
@@ -171,8 +171,8 @@ export const makeGetVolumesFromUrl = createSelector(
   getVolumes,
   (nodeName, volumes) =>
     volumes.filter(
-      volume => volume && volume.spec && volume.spec.nodeName === nodeName
-    )
+      volume => volume && volume.spec && volume.spec.nodeName === nodeName,
+    ),
 );
 
 export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
@@ -196,5 +196,5 @@ export const sizeUnits = [
   { label: 'M', value: 'M', base: 10 ** 6 },
   { label: 'G', value: 'G', base: 10 ** 9 },
   { label: 'T', value: 'T', base: 10 ** 12 },
-  { label: 'P', value: 'P', base: 10 ** 15 }
+  { label: 'P', value: 'P', base: 10 ** 15 },
 ];

@@ -7,21 +7,21 @@ import styled from 'styled-components';
 import Loader from '../components/Loader';
 import Banner from '../components/Banner';
 import { Input, Button, Breadcrumb } from '@scality/core-ui';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
-  createVolumeAction
+  createVolumeAction,
 } from '../ducks/app/volumes';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
-  STATUS_BANNER_WARNING
+  STATUS_BANNER_WARNING,
 } from '../constants';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
-  StyledLink
+  StyledLink,
 } from '../components/BreadcrumbStyle';
 import { sizeUnits } from '../services/utils';
 
@@ -91,21 +91,21 @@ const CreateVolume = props => {
 
   const nodeName = props.match.params.id;
   const storageClassesName = props.storageClass.map(
-    storageClass => storageClass.metadata.name
+    storageClass => storageClass.metadata.name,
   );
   const isStorageClassLoading = useSelector(
-    state => state.app.volumes.isSCLoading
+    state => state.app.volumes.isSCLoading,
   );
   // Hardcoded
   const types = [
     {
       label: 'RawBlockDevice',
-      value: RAW_BLOCK_DEVICE
+      value: RAW_BLOCK_DEVICE,
     },
     {
       label: 'SparseLoopDevice',
-      value: SPARSE_LOOP_DEVICE
-    }
+      value: SPARSE_LOOP_DEVICE,
+    },
   ];
 
   const initialValues = {
@@ -114,7 +114,7 @@ const CreateVolume = props => {
     type: types[0].value,
     path: '',
     selectedUnit: sizeUnits[3].value,
-    sizeInput: ''
+    sizeInput: '',
   };
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   const positiveIntegerRegex = /^[1-9][0-9]*$/;
@@ -126,8 +126,8 @@ const CreateVolume = props => {
       .required(
         intl.formatMessage(
           { id: 'generic_missing_field' },
-          { field: intl.messages.name.toLowerCase() }
-        )
+          { field: intl.messages.name.toLowerCase() },
+        ),
       ),
     storageClass: yup.string().required(),
     type: yup.string().required(),
@@ -141,9 +141,9 @@ const CreateVolume = props => {
           .required(
             intl.formatMessage(
               { id: 'generic_missing_field' },
-              { field: intl.messages.device_path.toLowerCase() }
-            )
-          )
+              { field: intl.messages.device_path.toLowerCase() },
+            ),
+          ),
       }),
     sizeInput: yup.string().when('type', {
       is: SPARSE_LOOP_DEVICE,
@@ -153,14 +153,14 @@ const CreateVolume = props => {
         .required(
           intl.formatMessage(
             { id: 'generic_missing_field' },
-            { field: intl.messages.volume_size.toLowerCase() }
-          )
-        )
+            { field: intl.messages.volume_size.toLowerCase() },
+          ),
+        ),
     }),
     selectedUnit: yup.string().when('type', {
       is: SPARSE_LOOP_DEVICE,
-      then: yup.string()
-    })
+      then: yup.string(),
+    }),
   });
   const isStorageClassExist = storageClassesName.length > 0;
 
@@ -176,7 +176,9 @@ const CreateVolume = props => {
             <StyledLink to={`/nodes/${match.params.id}/volumes`}>
               {match.params.id}
             </StyledLink>,
-            <BreadcrumbLabel>{intl.messages.create_new_volume}</BreadcrumbLabel>
+            <BreadcrumbLabel>
+              {intl.messages.create_new_volume}
+            </BreadcrumbLabel>,
           ]}
         />
       </BreadcrumbContainer>
@@ -196,7 +198,7 @@ const CreateVolume = props => {
               >
                 {intl.messages.learn_more}
               </a>
-            </>
+            </>,
           ]}
         />
       )}
@@ -218,7 +220,7 @@ const CreateVolume = props => {
               touched,
               setFieldTouched,
               dirty,
-              setFieldValue
+              setFieldValue,
             } = formikProps;
 
             //touched is not "always" correctly set
@@ -230,7 +232,7 @@ const CreateVolume = props => {
             const optionsStorageClasses = storageClassesName.map(SCName => {
               return {
                 label: SCName,
-                value: SCName
+                value: SCName,
               };
             });
 
@@ -238,7 +240,7 @@ const CreateVolume = props => {
               return {
                 label,
                 value,
-                'data-cy': `type-${value}`
+                'data-cy': `type-${value}`,
               };
             });
 
@@ -254,7 +256,7 @@ const CreateVolume = props => {
                 return {
                   label,
                   value,
-                  'data-cy': `size-${label}`
+                  'data-cy': `size-${label}`,
                 };
               });
             return (
@@ -363,20 +365,20 @@ const CreateVolume = props => {
 
 const mapStateToProps = state => ({
   storageClass: state.app.volumes.storageClass,
-  theme: state.config.theme
+  theme: state.config.theme,
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     fetchStorageClass: () => dispatch(fetchStorageClassAction()),
     createVolume: (body, nodeName) =>
-      dispatch(createVolumeAction(body, nodeName))
+      dispatch(createVolumeAction(body, nodeName)),
   };
 };
 
 export default injectIntl(
   connect(
     mapStateToProps,
-    mapDispatchToProps
-  )(CreateVolume)
+    mapDispatchToProps,
+  )(CreateVolume),
 );

@@ -7,7 +7,7 @@ import { brand, padding } from '@scality/core-ui/dist/style/theme';
 import styled from 'styled-components';
 import { authenticateAction } from '../ducks/login';
 import { injectIntl } from 'react-intl';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash.isempty';
 
 const LoginFormContainer = styled.div`
   height: 100vh;
@@ -62,7 +62,7 @@ const LoginForm = props => {
     intl,
     setFieldValue,
     setFieldTouched,
-    asyncErrors
+    asyncErrors,
   } = props;
   //handleChange of the Formik props does not update 'values' when field value is empty
   const handleChange = field => e => {
@@ -124,12 +124,12 @@ const LoginForm = props => {
 
 const initialValues = {
   username: '',
-  password: ''
+  password: '',
 };
 
 const validationSchema = Yup.object().shape({
   username: Yup.string().required(),
-  password: Yup.string().required()
+  password: Yup.string().required(),
 });
 
 class Login extends React.Component {
@@ -144,7 +144,7 @@ class Login extends React.Component {
             const formikProps = {
               ...props,
               ...this.props,
-              asyncErrors: this.props.asyncErrors
+              asyncErrors: this.props.asyncErrors,
             };
             return <LoginForm {...formikProps} />;
           }}
@@ -156,18 +156,18 @@ class Login extends React.Component {
 
 const mapStateToProps = state => ({
   asyncErrors: state.login.errors,
-  config: state.config.api
+  config: state.config.api,
 });
 
 const mapDispatchToProps = dispatch => {
   return {
-    authenticate: values => dispatch(authenticateAction(values))
+    authenticate: values => dispatch(authenticateAction(values)),
   };
 };
 
 export default injectIntl(
   connect(
     mapStateToProps,
-    mapDispatchToProps
-  )(Login)
+    mapDispatchToProps,
+  )(Login),
 );
