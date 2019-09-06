@@ -131,27 +131,6 @@ def utils_image(registry_address, version):
     )
 
 
-# }}}
-# Given {{{
-
-@given('the Kubernetes API is available')
-def check_service(host):
-    _verify_kubeapi_service(host)
-
-
-# }}}
-# Then {{{
-
-@then('the Kubernetes API is available')
-def verify_kubeapi_service(host):
-    _verify_kubeapi_service(host)
-
-
-@then(parsers.re(
-    r"we have (?P<pods_count>\d+) running pod labeled '(?P<label>[^']+)' "
-    r"in namespace '(?P<namespace>[^']+)'(?: on node '(?P<node>[^']+)')?"),
-    converters=dict(pods_count=int)
-)
 def count_running_pods(
         request, k8s_client, pods_count, label, namespace, node):
     ssh_config = request.config.getoption('--ssh-config')
@@ -172,6 +151,41 @@ def count_running_pods(
         error_msg += "on node '{node}'".format(node=node)
 
     utils.retry(_check_pods_count, times=20, wait=3, error_msg=error_msg)
+
+
+_COUNT_RUNNING_PODS_PARSER = parsers.re(
+    r"we have (?P<pods_count>\d+) running pod labeled '(?P<label>[^']+)' "
+    r"in namespace '(?P<namespace>[^']+)'(?: on node '(?P<node>[^']+)')?")
+
+
+# }}}
+# Given {{{
+
+@given('the Kubernetes API is available')
+def check_service(host):
+    _verify_kubeapi_service(host)
+
+
+@given(_COUNT_RUNNING_PODS_PARSER, converters=dict(pods_count=int))
+def given_count_running_pods(
+        request, k8s_client, pods_count, label, namespace, node):
+    return count_running_pods(
+        request, k8s_client, pods_count, label, namespace, node)
+
+
+# }}}
+# Then {{{
+
+@then('the Kubernetes API is available')
+def verify_kubeapi_service(host):
+    _verify_kubeapi_service(host)
+
+
+@then(_COUNT_RUNNING_PODS_PARSER, converters=dict(pods_count=int))
+def then_count_running_pods(
+        request, k8s_client, pods_count, label, namespace, node):
+    return count_running_pods(
+        request, k8s_client, pods_count, label, namespace, node)
 
 
 @then(parsers.parse(
