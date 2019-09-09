@@ -5,7 +5,7 @@ include:
 
 Create Salt API private key:
   x509.private_key_managed:
-    - name: /etc/kubernetes/pki/salt-api.key
+    - name: /etc/salt/pki/api/salt-api.key
     - bits: 2048
     - verbose: False
     - user: root
@@ -28,8 +28,8 @@ Create Salt API private key:
 
 Generate Salt API certificate:
   x509.certificate_managed:
-    - name: /etc/kubernetes/pki/salt-api.crt
-    - public_key: /etc/kubernetes/pki/salt-api.key
+    - name: /etc/salt/pki/api/salt-api.crt
+    - public_key: /etc/salt/pki/api/salt-api.key
 {%- if salt.config.get('file_client') != 'local' %}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
 {%- endif %}
