@@ -55,13 +55,14 @@ def login_salt_api(host, username, password, version, context, request):
     token = base64.encodebytes(
         '{}:{}'.format(username, password).encode('utf-8')).rstrip()
     response = requests.post(
-        'http://{ip}:{port}/login'.format(ip=ip, port=port),
+        'https://{ip}:{port}/login'.format(ip=ip, port=port),
         data={
             'eauth': 'kubernetes_rbac',
             'username': username,
             'token': token,
             'token_type': 'Basic',
         },
+        verify=False,
     )
 
     result = {
