@@ -66,7 +66,7 @@ def login_salt_api(host, username, password, version, context, request):
     )
 
     result = {
-        'url': 'http://{ip}:{port}'.format(ip=ip, port=port),
+        'url': 'https://{ip}:{port}'.format(ip=ip, port=port),
         'token': None,
         'perms': [],
         'login-status-code': response.status_code,
@@ -95,6 +95,7 @@ def ping_all_minions(host, context):
         headers={
             'X-Auth-Token': context['salt-api']['token'],
         },
+        verify=False,
     )
 
     result_data = result.json()
