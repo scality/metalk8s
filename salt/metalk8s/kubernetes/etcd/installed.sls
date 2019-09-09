@@ -10,7 +10,7 @@ include:
 {%- set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
 
 {#- Get the list of existing etcd node. #}
-{%- set etcd_endpoints = salt['mine.get']('*', 'etcd_endpoints').values() %}
+{%- set etcd_endpoints = pillar.metalk8s.etcd.members %}
 
 {#- Compute the initial state according to the existing list of node. #}
 {%- set state = "existing" if etcd_endpoints else "new" %}
