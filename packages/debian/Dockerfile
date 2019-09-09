@@ -11,6 +11,7 @@ RUN apt update -y \
         devscripts \
         build-essential \
         lintian \
+        apt-rdepends \
         alien
 
 RUN useradd -m build
