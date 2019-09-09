@@ -14,8 +14,13 @@ Create kubelet service environment file:
     - makedirs: True
     - dir_mode: 750
     - context:
-        options: {{ kubelet.service.options }}
-        node_ip: {{ grains['metalk8s']['control_plane_ip'] }}
+    - context:
+        options:
+      {%- for opt, value in kubelet.service.options.items() %}
+          {{ opt }}: {{ value }}
+      {%- endfor %}
+          node-ip: {{ grains['metalk8s']['control_plane_ip'] }}
+          hostname-override: {{ grains['id'] }}
     - require:
       - metalk8s_package_manager: Install kubelet
     - watch_in:
