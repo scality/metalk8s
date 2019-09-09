@@ -267,6 +267,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/ca/front-proxy/installed.sls'),
     Path('salt/metalk8s/kubernetes/ca/init.sls'),
     Path('salt/metalk8s/kubernetes/ca/kubernetes/advertised.sls'),
+    Path('salt/metalk8s/kubernetes/ca/kubernetes/exported.sls'),
     Path('salt/metalk8s/kubernetes/ca/kubernetes/init.sls'),
     Path('salt/metalk8s/kubernetes/ca/kubernetes/installed.sls'),
 
@@ -384,6 +385,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/master/installed.sls'),
     Path('salt/metalk8s/salt/master/certs/etcd-client.sls'),
     Path('salt/metalk8s/salt/master/certs/init.sls'),
+    Path('salt/metalk8s/salt/master/certs/salt-api.sls'),
 
     Path('salt/metalk8s/salt/minion/configured.sls'),
     Path('salt/metalk8s/salt/minion/files/minion-99-metalk8s.conf.j2'),
