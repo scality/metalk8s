@@ -79,6 +79,7 @@ def ping_all_minions(host, context):
         headers={
             'X-Auth-Token': context['salt-api']['token'],
         },
+        verify=False,
     )
 
     result_data = result.json()
@@ -139,7 +140,7 @@ def _salt_api_login(address, username, token, token_type):
         verify=False,
     )
     result = {
-        'url': 'http://{}'.format(address),
+        'url': 'https://{}'.format(address),
         'token': None,
         'perms': [],
         'login-status-code': response.status_code,
