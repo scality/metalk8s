@@ -2,7 +2,7 @@ import { call, put, delay } from 'redux-saga/effects';
 import history from '../../history';
 import {
   ADD_NOTIFICATION_ERROR,
-  ADD_NOTIFICATION_SUCCESS
+  ADD_NOTIFICATION_SUCCESS,
 } from './notifications';
 import {
   fetchVolumes,
@@ -19,7 +19,7 @@ import {
   updateVolumesAction,
   stopRefreshPersistentVolumes,
   updateStorageClassAction,
-  deleteVolume
+  deleteVolume,
 } from './volumes';
 import * as ApiK8s from '../../services/k8s/api';
 import { SET_STORAGECLASS } from './volumes.js';
@@ -30,9 +30,9 @@ it('update the volume', () => {
   expect(gen.next().value).toEqual(
     put(
       updateVolumesAction({
-        isLoading: true
-      })
-    )
+        isLoading: true,
+      }),
+    ),
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
 
@@ -49,30 +49,30 @@ it('update the volume', () => {
             resourceVersion: '24324',
             selfLink:
               '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/yanjin-test',
-            uid: '5e417a13-71cd-4b80-81e9-112dff5da750'
+            uid: '5e417a13-71cd-4b80-81e9-112dff5da750',
           },
           spec: {
             nodeName: 'metalk8s-bootstrap.novalocal',
             sparseLoopDevice: {
-              size: '1Gi'
+              size: '1Gi',
             },
-            storageClassName: 'standard'
-          }
-        }
-      ]
-    }
+            storageClassName: 'standard',
+          },
+        },
+      ],
+    },
   };
 
   expect(gen.next(result).value).toEqual(
-    put(setVolumesAction(result.body.items))
+    put(setVolumesAction(result.body.items)),
   );
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
     put(
       updateVolumesAction({
-        isLoading: false
-      })
-    )
+        isLoading: false,
+      }),
+    ),
   );
   const finalGen = gen.next();
   expect(finalGen.value).toEqual(result);
@@ -84,9 +84,9 @@ it('does not update volume if there is an error', () => {
   expect(gen.next().value).toEqual(
     put(
       updateVolumesAction({
-        isLoading: true
-      })
-    )
+        isLoading: true,
+      }),
+    ),
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
 
@@ -96,9 +96,9 @@ it('does not update volume if there is an error', () => {
   expect(gen.next().value).toEqual(
     put(
       updateVolumesAction({
-        isLoading: false
-      })
-    )
+        isLoading: false,
+      }),
+    ),
   );
   const finalGen = gen.next(result);
   expect(finalGen.done).toEqual(true);
@@ -110,9 +110,9 @@ it('should put a empty array if Volumes is not correct', () => {
   expect(gen.next().value).toEqual(
     put(
       updateVolumesAction({
-        isLoading: true
-      })
-    )
+        isLoading: true,
+      }),
+    ),
   );
   expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
 
@@ -122,9 +122,9 @@ it('should put a empty array if Volumes is not correct', () => {
   expect(gen.next().value).toEqual(
     put(
       updateVolumesAction({
-        isLoading: false
-      })
-    )
+        isLoading: false,
+      }),
+    ),
   );
   const finalGen = gen.next();
   expect(finalGen.done).toEqual(true);
@@ -145,21 +145,21 @@ it('update the storage class', () => {
             selfLink: '/apis/storage.k8s.io/v1/storageclasses/standard',
             uid: 'ad65238e-c860-4782-bdda-f8468998086e',
             resourceVersion: '21491',
-            creationTimestamp: '2019-07-25T15:52:24Z'
+            creationTimestamp: '2019-07-25T15:52:24Z',
           },
           provisioner: 'kubernetes.io/aws-ebs',
           parameters: {
-            type: 'gp2'
+            type: 'gp2',
           },
           reclaimPolicy: 'Retain',
           mountOptions: ['debug'],
-          volumeBindingMode: 'Immediate'
-        }
-      ]
-    }
+          volumeBindingMode: 'Immediate',
+        },
+      ],
+    },
   };
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_STORAGECLASS, payload: result.body.items })
+    put({ type: SET_STORAGECLASS, payload: result.body.items }),
   );
   expect(gen.next().value).toEqual(put(updateStorageClassAction(false)));
   expect(gen.next().done).toEqual(true);
@@ -171,7 +171,7 @@ it('does not update the storage class if there is an error', () => {
   expect(gen.next().value).toEqual(call(ApiK8s.getStorageClass));
 
   const result = {
-    error: {}
+    error: {},
   };
   expect(gen.next(result).value).toEqual(put(updateStorageClassAction(false)));
   expect(gen.next().done).toEqual(true);
@@ -198,20 +198,20 @@ it('update PVs', () => {
                 name: 'yanjin-test',
                 uid: '5e417a13-71cd-4b80-81e9-112dff5da750',
                 controller: true,
-                blockOwnerDeletion: true
-              }
+                blockOwnerDeletion: true,
+              },
             ],
             finalizers: [
               'storage.metalk8s.scality.com/volume-protection',
-              'kubernetes.io/pv-protection'
-            ]
+              'kubernetes.io/pv-protection',
+            ],
           },
           spec: {
             capacity: {
-              storage: '1Gi'
+              storage: '1Gi',
             },
             local: {
-              path: '/tmp/foo'
+              path: '/tmp/foo',
             },
             accessModes: ['ReadWriteOnce'],
             persistentVolumeReclaimPolicy: 'Retain',
@@ -225,31 +225,31 @@ it('update PVs', () => {
                       {
                         key: 'kubernetes.io/hostname',
                         operator: 'In',
-                        values: ['metalk8s-bootstrap.novalocal']
-                      }
+                        values: ['metalk8s-bootstrap.novalocal'],
+                      },
                     ],
                     matchFields: [
                       {
                         key: 'metadata.name',
                         operator: 'In',
-                        values: ['metalk8s-bootstrap.novalocal']
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
+                        values: ['metalk8s-bootstrap.novalocal'],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
           },
           status: {
-            phase: 'Available'
-          }
-        }
-      ]
-    }
+            phase: 'Available',
+          },
+        },
+      ],
+    },
   };
 
   expect(gen.next(result).value).toEqual(
-    put(setPersistentVolumesAction(result.body.items))
+    put(setPersistentVolumesAction(result.body.items)),
   );
   expect(gen.next().done).toEqual(true);
 });
@@ -270,7 +270,7 @@ it('does not update PV if there is an error', () => {
   expect(gen.next().value).toEqual(call(ApiK8s.getPersistentVolumes));
 
   const result = {
-    error: {}
+    error: {},
   };
 
   expect(gen.next(result).done).toEqual(true);
@@ -283,10 +283,10 @@ it('create volume with the type sparseloopdevice', () => {
         name: 'volume1',
         storageClass: 'metalk8s-default',
         type: 'sparseLoopDevice',
-        size: '1Gi'
+        size: '1Gi',
       },
-      nodeName: 'bootstrap'
-    }
+      nodeName: 'bootstrap',
+    },
   };
 
   const { newVolume, nodeName } = action.payload;
@@ -297,13 +297,13 @@ it('create volume with the type sparseloopdevice', () => {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
     kind: 'Volume',
     metadata: {
-      name: newVolume.name
+      name: newVolume.name,
     },
     spec: {
       nodeName: nodeName,
       storageClassName: newVolume.storageClass,
-      sparseLoopDevice: { size: newVolume.size }
-    }
+      sparseLoopDevice: { size: newVolume.size },
+    },
   };
 
   expect(gen.next(body).value).toEqual(call(ApiK8s.createVolume, body));
@@ -318,24 +318,24 @@ it('create volume with the type sparseloopdevice', () => {
         resourceVersion: '345964',
         selfLink:
           '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/patrick-098765',
-        uid: 'd432d9f1-7247-44d4-868e-1d4599723516'
+        uid: 'd432d9f1-7247-44d4-868e-1d4599723516',
       },
       spec: {
         nodeName: 'metalk8s-bootstrap.novalocal',
         sparseLoopDevice: {
-          size: '42Gi'
+          size: '42Gi',
         },
-        storageClassName: 'standard'
-      }
-    }
+        storageClassName: 'standard',
+      },
+    },
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/nodes/${nodeName}/volumes`)
+    call(history.push, `/nodes/${nodeName}/volumes`),
   );
 
   expect(gen.next().value.payload.action.type).toEqual(
-    ADD_NOTIFICATION_SUCCESS
+    ADD_NOTIFICATION_SUCCESS,
   );
 
   expect(gen.next().done).toEqual(true);
@@ -348,10 +348,10 @@ it('create a volume with the type rawBlockdevice', () => {
         name: 'volume1',
         storageClass: 'metalk8s-default',
         type: 'rawBlockDevice',
-        path: '/dev/disk1'
+        path: '/dev/disk1',
       },
-      nodeName: 'bootstrap'
-    }
+      nodeName: 'bootstrap',
+    },
   };
   const { newVolume, nodeName } = action.payload;
   const gen = createVolumes(action);
@@ -360,13 +360,13 @@ it('create a volume with the type rawBlockdevice', () => {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
     kind: 'Volume',
     metadata: {
-      name: newVolume.name
+      name: newVolume.name,
     },
     spec: {
       nodeName: nodeName,
       storageClassName: newVolume.storageClass,
-      rawBlockDevice: { devicePath: newVolume.path }
-    }
+      rawBlockDevice: { devicePath: newVolume.path },
+    },
   };
 
   expect(gen.next(body).value).toEqual(call(ApiK8s.createVolume, body));
@@ -381,21 +381,21 @@ it('create a volume with the type rawBlockdevice', () => {
         resourceVersion: '345964',
         selfLink:
           '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/patrick-098765',
-        uid: 'd432d9f1-7247-44d4-868e-1d4599723516'
+        uid: 'd432d9f1-7247-44d4-868e-1d4599723516',
       },
       spec: {
         nodeName: 'metalk8s-bootstrap.novalocal',
         rawBlockDevice: { devicePath: '/dev/disk1' },
-        storageClassName: 'standard'
-      }
-    }
+        storageClassName: 'standard',
+      },
+    },
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/nodes/${nodeName}/volumes`)
+    call(history.push, `/nodes/${nodeName}/volumes`),
   );
   expect(gen.next().value.payload.action.type).toEqual(
-    ADD_NOTIFICATION_SUCCESS
+    ADD_NOTIFICATION_SUCCESS,
   );
 
   expect(gen.next().done).toEqual(true);
@@ -408,10 +408,10 @@ it('display a notification when the params are wrong', () => {
         name: 'volume1',
         storageClass: 'metalk8s-default',
         type: 'rawBlockDevice',
-        path: ''
+        path: '',
       },
-      nodeName: 'bootstrap'
-    }
+      nodeName: 'bootstrap',
+    },
   };
 
   const gen = createVolumes(action);
@@ -427,10 +427,10 @@ it('does not create a volume when there is an error', () => {
         name: 'volume1',
         storageClass: 'metalk8s-default',
         type: 'rawBlockDevice',
-        path: '/dev/disk1'
+        path: '/dev/disk1',
       },
-      nodeName: 'bootstrap'
-    }
+      nodeName: 'bootstrap',
+    },
   };
   const { newVolume, nodeName } = action.payload;
   const gen = createVolumes(action);
@@ -438,19 +438,19 @@ it('does not create a volume when there is an error', () => {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
     kind: 'Volume',
     metadata: {
-      name: newVolume.name
+      name: newVolume.name,
     },
     spec: {
       nodeName: nodeName,
       storageClassName: newVolume.storageClass,
-      rawBlockDevice: { devicePath: newVolume.path }
-    }
+      rawBlockDevice: { devicePath: newVolume.path },
+    },
   };
   expect(gen.next(body).value).toEqual(call(ApiK8s.createVolume, body));
   const result = { error: {} };
 
   expect(gen.next(result).value.payload.action.type).toEqual(
-    ADD_NOTIFICATION_ERROR
+    ADD_NOTIFICATION_ERROR,
   );
 
   expect(gen.next().done).toEqual(true);
@@ -496,7 +496,7 @@ it('should stop refresh volume', () => {
 it('should refresh the pesistent volume', () => {
   const gen = refreshPersistentVolumes();
   expect(gen.next().value).toEqual(
-    put(updatePersistentVolumesRefreshingAction(true))
+    put(updatePersistentVolumesRefreshingAction(true)),
   );
   expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
   const result = {
@@ -515,21 +515,21 @@ it('should refresh the pesistent volume', () => {
               name: 'gdmlgerml',
               uid: '316c0dc0-3cfc-48f3-8062-eb0dd4ce6108',
               controller: true,
-              blockOwnerDeletion: true
-            }
+              blockOwnerDeletion: true,
+            },
           ],
           finalizers: [
             'storage.metalk8s.scality.com/volume-protection',
-            'kubernetes.io/pv-protection'
-          ]
+            'kubernetes.io/pv-protection',
+          ],
         },
         spec: {
           capacity: {
-            storage: '12345676432'
+            storage: '12345676432',
           },
           local: {
             path:
-              '/var/lib/metalk8s/storage/sparse/316c0dc0-3cfc-48f3-8062-eb0dd4ce6108'
+              '/var/lib/metalk8s/storage/sparse/316c0dc0-3cfc-48f3-8062-eb0dd4ce6108',
           },
           accessModes: ['ReadWriteOnce'],
           persistentVolumeReclaimPolicy: 'Retain',
@@ -543,26 +543,26 @@ it('should refresh the pesistent volume', () => {
                     {
                       key: 'kubernetes.io/hostname',
                       operator: 'In',
-                      values: ['metalk8s-bootstrap.novalocal']
-                    }
+                      values: ['metalk8s-bootstrap.novalocal'],
+                    },
                   ],
                   matchFields: [
                     {
                       key: 'metadata.name',
                       operator: 'In',
-                      values: ['metalk8s-bootstrap.novalocal']
-                    }
-                  ]
-                }
-              ]
-            }
-          }
+                      values: ['metalk8s-bootstrap.novalocal'],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
         },
         status: {
-          phase: 'Available'
-        }
-      }
-    ]
+          phase: 'Available',
+        },
+      },
+    ],
   };
   expect(gen.next(result).value).toEqual(delay(REFRESH_TIMEOUT));
   expect(gen.next().value.type).toEqual('SELECT');
@@ -573,7 +573,7 @@ it('should refresh the pesistent volume', () => {
 it('should not refresh the pesistent volume if there is error', () => {
   const gen = refreshPersistentVolumes();
   expect(gen.next().value).toEqual(
-    put(updatePersistentVolumesRefreshingAction(true))
+    put(updatePersistentVolumesRefreshingAction(true)),
   );
   expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
   const result = { error: {} };
@@ -583,7 +583,7 @@ it('should not refresh the pesistent volume if there is error', () => {
 it('should stop refresh persistent volume', () => {
   const gen = stopRefreshPersistentVolumes();
   expect(gen.next().value).toEqual(
-    put(updatePersistentVolumesRefreshingAction(false))
+    put(updatePersistentVolumesRefreshingAction(false)),
   );
   expect(gen.next().done).toEqual(true);
 });
@@ -591,7 +591,7 @@ it('should stop refresh persistent volume', () => {
 it('should not refresh persistent volume if you leave the page', () => {
   const gen = refreshPersistentVolumes();
   expect(gen.next().value).toEqual(
-    put(updatePersistentVolumesRefreshingAction(true))
+    put(updatePersistentVolumesRefreshingAction(true)),
   );
   expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
   const result = {};
@@ -603,7 +603,7 @@ it('should not refresh persistent volume if you leave the page', () => {
 it('should not refresh volume if volume have an error', () => {
   const gen = refreshPersistentVolumes();
   expect(gen.next().value).toEqual(
-    put(updatePersistentVolumesRefreshingAction(true))
+    put(updatePersistentVolumesRefreshingAction(true)),
   );
   expect(gen.next().value).toEqual(call(fetchPersistentVolumes));
   const result = { error: {} };
@@ -628,22 +628,22 @@ it('should delete volume', () => {
         resourceVersion: '1870920',
         selfLink:
           '/apis/storage.metalk8s.scality.com/v1alpha1/volumes/yanjin-volume-for-test',
-        uid: 'dcf7e212-16aa-48df-a275-0bcb73410a8c'
+        uid: 'dcf7e212-16aa-48df-a275-0bcb73410a8c',
       },
       spec: {
         nodeName: 'metalk8s-bootstrap.novalocal',
         sparseLoopDevice: {
-          size: '45Gi'
+          size: '45Gi',
         },
-        storageClassName: 'metalk8s-prometheus'
+        storageClassName: 'metalk8s-prometheus',
       },
       status: {
-        phase: 'Available'
-      }
-    }
+        phase: 'Available',
+      },
+    },
   };
   expect(gen.next(result).value.payload.action.type).toEqual(
-    ADD_NOTIFICATION_SUCCESS
+    ADD_NOTIFICATION_SUCCESS,
   );
   expect(gen.next().value).toEqual(call(fetchVolumes));
   expect(gen.next().done).toEqual(true);
@@ -655,7 +655,7 @@ it('should display the error notification when there is error in delete volume',
   expect(gen.next().value).toEqual(call(ApiK8s.deleteVolume, 'test-volume'));
   const result = { error: {} };
   expect(gen.next(result).value.payload.action.type).toEqual(
-    ADD_NOTIFICATION_ERROR
+    ADD_NOTIFICATION_ERROR,
   );
   expect(gen.next().value).toEqual(call(fetchVolumes));
   expect(gen.next().done).toEqual(true);

@@ -4,12 +4,12 @@ import history from '../../history';
 import { intl } from '../../translations/IntlGlobalProvider';
 import {
   addNotificationErrorAction,
-  addNotificationSuccessAction
+  addNotificationSuccessAction,
 } from './notifications';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
-  REFRESH_TIMEOUT
+  REFRESH_TIMEOUT,
 } from '../../constants';
 
 // Actions
@@ -42,7 +42,7 @@ const defaultState = {
   pVCList: [],
   isPVRefreshing: false,
   isLoading: false,
-  isSCLoading: false
+  isSCLoading: false,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -147,8 +147,8 @@ export const updateVolumesAction = payload => {
 export function* fetchVolumes() {
   yield put(
     updateVolumesAction({
-      isLoading: true
-    })
+      isLoading: true,
+    }),
   );
   const result = yield call(ApiK8s.getVolumes);
   if (!result.error) {
@@ -157,8 +157,8 @@ export function* fetchVolumes() {
   yield delay(1000); // To make sure that the loader is visible for at least 1s
   yield put(
     updateVolumesAction({
-      isLoading: false
-    })
+      isLoading: false,
+    }),
   );
   return result;
 }
@@ -211,12 +211,12 @@ export function* createVolumes({ payload }) {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
     kind: 'Volume',
     metadata: {
-      name: newVolume.name
+      name: newVolume.name,
     },
     spec: {
       nodeName,
-      storageClassName: newVolume.storageClass
-    }
+      storageClassName: newVolume.storageClass,
+    },
   };
 
   /**
@@ -244,18 +244,18 @@ export function* createVolumes({ payload }) {
         addNotificationSuccessAction({
           title: intl.translate('volume_creation'),
           message: intl.translate('volume_creation_success', {
-            name: newVolume.name
-          })
-        })
+            name: newVolume.name,
+          }),
+        }),
       );
     } else {
       yield put(
         addNotificationErrorAction({
           title: intl.translate('volume_creation'),
           message: intl.translate('volume_creation_failed', {
-            name: newVolume.name
-          })
-        })
+            name: newVolume.name,
+          }),
+        }),
       );
     }
   } else {
@@ -263,8 +263,8 @@ export function* createVolumes({ payload }) {
     yield put(
       addNotificationErrorAction({
         title: 'Volume Form Error',
-        message: 'Volume not created, some fields are missing.'
-      })
+        message: 'Volume not created, some fields are missing.',
+      }),
     );
   }
 }
@@ -298,7 +298,7 @@ export function* refreshPersistentVolumes() {
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
     const isPVRefreshing = yield select(
-      state => state.app.volumes.isPVRefreshing
+      state => state.app.volumes.isPVRefreshing,
     );
     if (isPVRefreshing) {
       yield call(refreshPersistentVolumes);
@@ -317,18 +317,18 @@ export function* deleteVolume({ payload }) {
       addNotificationSuccessAction({
         title: intl.translate('volume_deletion'),
         message: intl.translate('volume_delete_success', {
-          name: payload
-        })
-      })
+          name: payload,
+        }),
+      }),
     );
   } else {
     yield put(
       addNotificationErrorAction({
         title: intl.translate('volume_deletion'),
         message: intl.translate('volume_delete_failed', {
-          name: payload
-        })
-      })
+          name: payload,
+        }),
+      }),
     );
   }
   yield call(fetchVolumes);
@@ -346,6 +346,6 @@ export function* volumesSaga() {
   yield takeLatest(REFRESH_PERSISTENT_VOLUMES, refreshPersistentVolumes);
   yield takeLatest(
     STOP_REFRESH_PERSISTENT_VOLUMES,
-    stopRefreshPersistentVolumes
+    stopRefreshPersistentVolumes,
   );
 }
