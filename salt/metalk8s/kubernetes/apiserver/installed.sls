@@ -116,7 +116,7 @@ Create kube-apiserver Pod manifest:
           - --cors-allowed-origins=.*
           - --enable-admission-plugins=NodeRestriction
           - --enable-bootstrap-token-auth=true
-          - --experimental-encryption-provider-config={{ encryption_k8s_path }}
+          - --encryption-provider-config={{ encryption_k8s_path }}
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
           - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
