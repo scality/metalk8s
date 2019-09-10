@@ -11,10 +11,14 @@ from pytest_bdd import parsers, scenario, then, when
 # Scenario {{{
 
 
-@scenario('../features/salt_api.feature', 'Login to SaltAPI')
-def test_login_to_salt_api(host):
+@scenario('../features/salt_api.feature', 'Login to SaltAPI using Basic auth')
+def test_login_basic_auth_to_salt_api(host):
     pass
 
+@scenario('../features/salt_api.feature',
+          'Login to SaltAPI using a ServiceAccount')
+def test_login_bearer_auth_to_salt_api(host):
+    pass
 
 @scenario('../features/salt_api.feature', 'Login to SaltAPI using an incorrect password')
 def test_login_to_salt_api_using_an_incorrect_password(host, request):
