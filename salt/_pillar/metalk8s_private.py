@@ -1,4 +1,4 @@
-import os.path
+import errno
 import logging
 
 
@@ -14,19 +14,27 @@ def __virtual__():
     return __virtualname__
 
 
+def _read_private_key(key_name, key_path):
+    try:
+        with open(key_path, "r") as key_file:
+            key_data = key_file.read()
+    except IOError as exn:
+        if exn.errno == errno.ENOENT:
+            err_msg = "Missing {0} key file to share with master node at {1}."
+            return {"_errors": [err_msg.format(key_name, key_path)]}
+        err_msg = "Unable to read {0} key file contents at {1} - {2}."
+        return {"_errors": [err_msg.format(key_name, key_path, str(exn))]}
+
+    return {key_name: key_data}
+
+
 def _read_sa_private_key():
     # FIXME: we only have access to this file because:
     #   1- Salt master Pod mounts all of /etc/kubernetes
     #   2- Salt master Pod runs on the 'bootstrap' minion, which is, by chance,
     #      also the 'ca' minion, the owner of this key
     # Suggestion: read through https://github.com/saltstack/salt/issues/45882
-    if not os.path.isfile(SA_PRIVATE_KEY_PATH):
-        return {"_errors": ["Missing SA key to share with master node."]}
-
-    with open(SA_PRIVATE_KEY_PATH, 'r') as key_file:
-        key_data = key_file.read()
-
-    return {"sa_private_key": key_data}
+    return _read_private_key("sa_private_key", SA_PRIVATE_KEY_PATH)
 
 
 def _read_apiserver_key():
@@ -34,16 +42,7 @@ def _read_apiserver_key():
     #   1- Salt master Pod mounts all of /etc/metalk8s
     #   2- Salt master Pod runs on the 'bootstrap' minion, which is, by chance,
     #      also the initial master node
-
-    if not os.path.isfile(APISERVER_KEY_PATH):
-        return {"_errors": [
-            "Missing secrets encryption key to share with master node."
-        ]}
-
-    with open(APISERVER_KEY_PATH, "r") as config_file:
-        encryption_key = config_file.read()
-
-    return {"apiserver_key": encryption_key}
+    return _read_private_key("apiserver_key", APISERVER_KEY_PATH)
 
 
 def ext_pillar(minion_id, pillar):
