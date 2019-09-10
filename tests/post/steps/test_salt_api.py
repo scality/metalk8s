@@ -55,17 +55,18 @@ def login_salt_api(host, username, password, version, context, request):
     token = base64.encodebytes(
         '{}:{}'.format(username, password).encode('utf-8')).rstrip()
     response = requests.post(
-        'http://{ip}:{port}/login'.format(ip=ip, port=port),
+        'https://{ip}:{port}/login'.format(ip=ip, port=port),
         data={
             'eauth': 'kubernetes_rbac',
             'username': username,
             'token': token,
             'token_type': 'Basic',
         },
+        verify=False,
     )
 
     result = {
-        'url': 'http://{ip}:{port}'.format(ip=ip, port=port),
+        'url': 'https://{ip}:{port}'.format(ip=ip, port=port),
         'token': None,
         'perms': [],
         'login-status-code': response.status_code,
@@ -94,6 +95,7 @@ def ping_all_minions(host, context):
         headers={
             'X-Auth-Token': context['salt-api']['token'],
         },
+        verify=False,
     )
 
     result_data = result.json()
