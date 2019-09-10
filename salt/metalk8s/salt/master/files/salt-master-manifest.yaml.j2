@@ -85,11 +85,13 @@ spec:
         httpGet:
           path: /
           port: api
+          scheme: HTTPS
           host: {{ salt_ip }}
       readinessProbe:
         httpGet:
           path: /
           port: api
+          scheme: HTTPS
           host: {{ salt_ip }}
       volumeMounts:
         - name: config
@@ -97,6 +99,9 @@ spec:
           readOnly: true
         - name: run
           mountPath: '/var/run/salt'
+        - name: kubernetes-config
+          mountPath: '/etc/kubernetes'
+          readOnly: true
   volumes:
     - name: config
       hostPath:
