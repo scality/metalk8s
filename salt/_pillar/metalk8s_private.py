@@ -20,11 +20,12 @@ def _read_sa_private_key():
     #   2- Salt master Pod runs on the 'bootstrap' minion, which is, by chance,
     #      also the 'ca' minion, the owner of this key
     # Suggestion: read through https://github.com/saltstack/salt/issues/45882
-    if not os.path.isfile(SA_PRIVATE_KEY_PATH):
-        return {"_errors": ["Missing SA key to share with master node."]}
 
-    with open(SA_PRIVATE_KEY_PATH, 'r') as key_file:
-        key_data = key_file.read()
+    try:
+        with open(SA_PRIVATE_KEY_PATH, 'r') as key_file:
+            key_data = key_file.read()
+    except IOError:
+        return {"_errors": ["Missing SA key to share with master node."]}
 
     return {"sa_private_key": key_data}
 
@@ -35,13 +36,13 @@ def _read_apiserver_key():
     #   2- Salt master Pod runs on the 'bootstrap' minion, which is, by chance,
     #      also the initial master node
 
-    if not os.path.isfile(APISERVER_KEY_PATH):
+    try:
+        with open(APISERVER_KEY_PATH, "r") as config_file:
+            encryption_key = config_file.read()
+    except IOError:
         return {"_errors": [
             "Missing secrets encryption key to share with master node."
         ]}
-
-    with open(APISERVER_KEY_PATH, "r") as config_file:
-        encryption_key = config_file.read()
 
     return {"apiserver_key": encryption_key}
 
