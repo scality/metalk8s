@@ -2,6 +2,7 @@
 {%- from "metalk8s/map.jinja" import networks with context %}
 
 {%- set htpasswd_path = "/etc/kubernetes/htpasswd" %}
+{%- set encryption_k8s_path = "/etc/kubernetes/encryption.conf" %}
 
 include:
   - metalk8s.kubernetes.ca.advertised
@@ -81,6 +82,7 @@ Create kube-apiserver Pod manifest:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
     - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
     - config_files:
+        - {{ encryption_k8s_path }}
         - /etc/kubernetes/pki/apiserver.crt
         - /etc/kubernetes/pki/apiserver.key
         - /etc/kubernetes/pki/apiserver-etcd-client.crt
@@ -114,6 +116,7 @@ Create kube-apiserver Pod manifest:
           - --cors-allowed-origins=.*
           - --enable-admission-plugins=NodeRestriction
           - --enable-bootstrap-token-auth=true
+          - --encryption-provider-config={{ encryption_k8s_path }}
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
           - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
@@ -136,6 +139,9 @@ Create kube-apiserver Pod manifest:
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
         requested_cpu: 250m
         volumes:
+          - path: {{ encryption_k8s_path }}
+            type: File
+            name: k8s-encryption
           - path: /etc/pki
             name: etc-pki
           - path: /etc/kubernetes/pki
