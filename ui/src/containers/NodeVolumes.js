@@ -344,9 +344,15 @@ const NodeVolumes = props => {
           onRowClick={item => {
             onRowClick(item);
           }}
-          noRowsRenderer={() => (
-            <NoRowsRenderer content={intl.messages.no_volume_found} />
-          )}
+          noRowsRenderer={() =>
+            searchedVolumeName === '' ? (
+              <NoRowsRenderer content={intl.messages.no_volume_found} />
+            ) : (
+              <NoRowsRenderer
+                content={intl.messages.no_searched_volume_found}
+              />
+            )
+          }
         />
       </VolumeTable>
     </>

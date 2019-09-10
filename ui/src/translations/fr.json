@@ -70,6 +70,7 @@
   "creationTime": "Date de création",
   "create_new_volume": "Créer un nouveau volume",
   "no_volume_found": "Aucun volume sur ce nœud",
+  "no_searched_volume_found": "Aucun volume correspondant à la recherche",
   "type": "Type",
   "volume_size": "Capacité du volume",
   "device_path": "Chemin du disque",
@@ -111,5 +112,6 @@
   "delete_a_volume_confirm": "Voulez-vous supprimez ",
   "select_a_storageClass": "Sélectionner une classe de stockage…",
   "select_a_type": "Sélectionner un type de volume…",
-  "no_results": "Aucun résultat"
+  "no_results": "Aucun résultat",
+  "search": "Rechercher…"
 }
