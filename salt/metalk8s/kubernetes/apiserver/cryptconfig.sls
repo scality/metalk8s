@@ -33,8 +33,8 @@ Recreate encryption configuration from pillar:
     - name: {{ encryption_k8s_path }}
     - mode: 0600
     - dataset:
-        apiVersion: v1
-        kind: EncryptionConfig
+        apiVersion: apiserver.config.k8s.io/v1
+        kind: EncryptionConfiguration
         resources:
           - resources:
             - secrets
