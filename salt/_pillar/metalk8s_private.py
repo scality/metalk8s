@@ -3,6 +3,7 @@ import logging
 
 
 SA_PRIVATE_KEY_PATH = "/etc/kubernetes/pki/sa.key"
+APISERVER_KEY_PATH = "/etc/metalk8s/crypt/apiserver.key"
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +29,23 @@ def _read_sa_private_key():
     return {"sa_private_key": key_data}
 
 
+def _read_apiserver_key():
+    # FIXME: we only have access to this file because:
+    #   1- Salt master Pod mounts all of /etc/metalk8s
+    #   2- Salt master Pod runs on the 'bootstrap' minion, which is, by chance,
+    #      also the initial master node
+
+    if not os.path.isfile(APISERVER_KEY_PATH):
+        return {"_errors": [
+            "Missing secrets encryption key to share with master node."
+        ]}
+
+    with open(APISERVER_KEY_PATH, "r") as config_file:
+        encryption_key = config_file.read()
+
+    return {"apiserver_key": encryption_key}
+
+
 def ext_pillar(minion_id, pillar):
     nodes_info = pillar.get("metalk8s", {}).get("nodes", {})
 
@@ -42,7 +60,10 @@ def ext_pillar(minion_id, pillar):
     private_data = {'private': None}
 
     if "master" in node_info["roles"]:
-        private_data['private'] = _read_sa_private_key()
+        data = {}
+        data.update(_read_sa_private_key())
+        data.update(_read_apiserver_key())
+        private_data['private'] = data
         __utils__['pillar_utils.promote_errors'](private_data, 'private')
 
     result = {"metalk8s": private_data}
