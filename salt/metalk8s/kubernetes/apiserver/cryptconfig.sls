@@ -43,5 +43,6 @@ Recreate encryption configuration from pillar:
                 keys:
                 - name: metalk8s-secrets-key
                   secret: {{ encryption_key }}
+            - identity: {}
     - require_in:
       - metalk8s: Create kube-apiserver Pod manifest
