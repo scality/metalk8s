@@ -256,6 +256,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/apiserver/files/htpasswd'),
     Path('salt/metalk8s/kubernetes/apiserver/init.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/installed.sls'),
+    Path('salt/metalk8s/kubernetes/apiserver/cryptconfig.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/kubeconfig.sls'),
 
     Path('salt/metalk8s/kubernetes/ca/advertised.sls'),
