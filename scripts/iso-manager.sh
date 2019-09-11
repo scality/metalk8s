@@ -5,7 +5,7 @@ set -o pipefail
 
 BOOTSTRAP_CONFIG="/etc/metalk8s/bootstrap.yaml"
 VERBOSE=${VERBOSE:-0}
-LOGFILE="/var/log/metalk8s-iso-manager.log"
+LOGFILE="/var/log/metalk8s/iso-manager.log"
 SALT_CALL=${SALT_CALL:-salt-call}
 DRY_RUN="False"
 SALTENV=""
@@ -50,6 +50,8 @@ while (( "$#" )); do
 done
 
 TMPFILES=$(mktemp -d)
+
+mkdir -p "$(dirname "${LOGFILE}")"
 
 cat << EOF >> "${LOGFILE}"
 --- MetalK8s ISO manager started on $(date -u -R) ---
