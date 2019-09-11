@@ -50,6 +50,8 @@ cleanup() {
 
 trap cleanup EXIT
 
+BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+
 RPM=${RPM:-$(command -v rpm)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 YUM=${YUM:-$(command -v yum)}
@@ -162,7 +164,7 @@ configure_yum_local_repositories() {
 
 configure_yum_local_repository() {
     local -r repo_name=$1 gpgcheck=${2:-0}
-    local -r repo_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/packages/redhat/$repo_name-el7
+    local -r repo_path="$BASE_DIR/packages/redhat/$repo_name-el7"
     local gpg_keys
 
     gpg_keys=$(
@@ -201,14 +203,13 @@ install_genisoimage() {
 }
 
 configure_salt_minion_local_mode() {
-    local -r base_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
-    local -r file_root="$base_dir/salt"
+    local -r file_root="$BASE_DIR/salt"
 
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough saltutil.sync_all saltenv=base
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough state.sls metalk8s.salt.minion.local \
-        pillar="{'metalk8s': {'archives': '$base_dir'}}" saltenv=base
+        pillar="{'metalk8s': {'archives': '$BASE_DIR'}}" saltenv=base
 }
 
 get_salt_container() {
@@ -329,6 +330,8 @@ main() {
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
     orchestrate_bootstrap
+
+    "$BASE_DIR"/backup.sh
 }
 
 main

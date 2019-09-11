@@ -78,6 +78,7 @@ def task_populate_iso() -> types.TaskDict:
         'task_dep': [
             '_iso_mkdir_root',
             '_iso_render_bootstrap',
+            '_iso_render_restore',
             '_iso_add_node_manifest',
             '_iso_generate_product_txt',
             '_iso_add_utilities_scripts',
@@ -132,6 +133,9 @@ def task__iso_add_utilities_scripts() -> types.TaskDict:
         ), (
             constants.ROOT/'scripts'/'solution-manager.sh',
             constants.ISO_ROOT/'solution-manager.sh'
+        ), (
+            constants.ROOT/'scripts'/'backup.sh',
+            constants.ISO_ROOT/'backup.sh'
         )
     )
     return {
@@ -149,6 +153,17 @@ def task__iso_render_bootstrap() -> types.TaskDict:
     return helper.TemplateFile(
         source=constants.ROOT/'scripts'/'bootstrap.sh.in',
         destination=constants.ISO_ROOT/'bootstrap.sh',
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
+        task_dep=['_iso_mkdir_root'],
+    ).task
+
+
+def task__iso_render_restore() -> types.TaskDict:
+    """Generate the restore script."""
+    return helper.TemplateFile(
+        source=constants.ROOT/'scripts'/'restore.sh.in',
+        destination=constants.ISO_ROOT/'restore.sh',
         context={'VERSION': versions.VERSION},
         file_dep=[versions.VERSION_FILE],
         task_dep=['_iso_mkdir_root'],

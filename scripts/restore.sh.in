@@ -1,0 +1,442 @@
+#!/bin/bash
+set -e
+set -u
+set -o pipefail
+
+VERBOSE=${VERBOSE:-0}
+LOGFILE="/var/log/metalk8s/restore.log"
+
+_usage() {
+    echo "$(basename "$0") [options]"
+    echo "Options:"
+    echo "-b/--backup-file <backup_file>:  Path to backup file"
+    echo "-l/--log-file <logfile_path>:    Path to log file"
+    echo "-v/--verbose:                    Run in verbose mode"
+}
+
+while (( "$#" )); do
+  case "$1" in
+    -v|--verbose)
+      VERBOSE=1
+      shift
+      ;;
+    -l|--log-file)
+      LOGFILE="$2"
+      shift 2
+      ;;
+    -b|--backup-file)
+      BACKUP_ARCHIVE="$2"
+      shift 2
+      ;;
+    *) # unsupported flags
+      echo "Error: Unsupported flag $1" >&2
+      _usage
+      exit 1
+      ;;
+  esac
+done
+
+TMPFILES=$(mktemp -d)
+BACKUP_DIR=$(mktemp -d)
+
+mkdir -p "$(dirname "$LOGFILE")"
+
+cat << EOF >> "${LOGFILE}"
+--- Restore started on $(date -u -R) ---
+EOF
+
+exec > >(tee -ia "${LOGFILE}") 2>&1
+
+cleanup() {
+    rm -rf "${TMPFILES}" || true
+    rm -rf "${BACKUP_DIR}" || true
+}
+
+trap cleanup EXIT
+
+BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+
+RPM=${RPM:-$(command -v rpm)}
+SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
+YUM=${YUM:-$(command -v yum)}
+SALT_CALL=${SALT_CALL:-salt-call}
+
+declare -A GPGCHECK_REPOSITORIES=(
+    [metalk8s-base]=1
+    [metalk8s-epel]=1
+    [metalk8s-extras]=1
+    [metalk8s-updates]=1
+    [metalk8s-kubernetes]=1
+    [metalk8s-saltstack]=1
+    [metalk8s-scality]=0
+)
+
+run_quiet() {
+    local name=$1
+    shift 1
+
+    echo -n "> ${name}..."
+    local start
+    start=$(date +%s)
+    set +e
+    "$@" 2>&1 | tee -ia "${LOGFILE}" > "${TMPFILES}/out"
+    local RC=$?
+    set -e
+    local end
+    end=$(date +%s)
+
+    local duration=$(( end - start ))
+
+    if [ $RC -eq 0 ]; then
+        echo " done [${duration}s]"
+    else
+        echo " fail [${duration}s]"
+        cat >/dev/stderr << EOM
+
+Failure while running step '${name}'
+
+Command: $@
+
+Output:
+
+<< BEGIN >>
+EOM
+        cat "${TMPFILES}/out" > /dev/stderr
+
+        cat >/dev/stderr << EOM
+<< END >>
+
+This script will now exit
+
+EOM
+
+        exit 1
+    fi
+}
+
+run_verbose() {
+    local name=$1
+    shift 1
+
+    echo "> ${name}..."
+    "$@"
+}
+
+run() {
+    if [ "$VERBOSE" -eq 1 ]; then
+        run_verbose "${@}"
+    else
+        run_quiet "${@}"
+    fi
+}
+
+die() {
+    echo 1>&2 "$@"
+    return 1
+}
+
+_save_cp() {
+    local -r src="$(readlink -f "$1")"
+    local -r dst="$2"
+    if [ -f "$src" ]; then
+        echo "Copying '$src' to '$dst'"
+        if [ ! -d "$(dirname "$dst")" ]; then
+          echo "Creating '$(dirname "$dst")' directory"
+          mkdir -p "$(dirname "$dst")"
+        fi
+        cp -a "$src" "$dst"
+    elif [ -d "$src" ]; then
+        for filename in "$src"/*; do
+            _save_cp "$filename" "$dst/$(basename "$filename")"
+        done
+    else
+        echo "Error: '$src' does not exists" >&2
+        exit 1
+    fi
+}
+
+extract_archive() {
+    tar -C "$BACKUP_DIR" -xz -f "$BACKUP_ARCHIVE" ./
+}
+
+pre_minion_checks() {
+    test "x$(whoami)" = "xroot" || die "Script must run as root"
+    test -n "${RPM}" || die "rpm not found"
+    test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
+    test -n "${SYSTEMCTL}" || die "systemctl not found"
+    test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
+    test -n "${YUM}" || die "yum not found"
+    test -x "${YUM}" || die "yum at '${YUM}' is not executable"
+}
+
+disable_salt_minion_service() {
+    ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
+}
+
+stop_salt_minion_service() {
+    ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
+}
+
+configure_yum_repositories() {
+    configure_yum_local_repositories
+
+    "$YUM" clean all
+}
+
+configure_yum_local_repositories() {
+    for repository in "${!GPGCHECK_REPOSITORIES[@]}"; do
+        configure_yum_local_repository "$repository" \
+            "${GPGCHECK_REPOSITORIES[$repository]}"
+    done
+}
+
+configure_yum_local_repository() {
+    local -r repo_name=$1 gpgcheck=${2:-0}
+    local -r repo_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/packages/redhat/$repo_name-el7
+    local gpg_keys
+
+    gpg_keys=$(
+        find "$repo_path" -maxdepth 1 -name "RPM-GPG-KEY-*" \
+            -printf "file://%p "
+    )
+
+    cat > /etc/yum.repos.d/"$repo_name".repo << EOF
+[$repo_name]
+name=$repo_name
+baseurl=file://$repo_path
+enabled=0
+gpgcheck=$gpgcheck
+${gpg_keys:+gpgkey=${gpg_keys%?}}
+EOF
+}
+
+install_salt_minion() {
+    local -a yum_opts=(
+        '--assumeyes'
+        '--disablerepo=*'
+        '--enablerepo=metalk8s-*'
+    )
+
+    "$YUM" install "${yum_opts[@]}" salt-minion
+}
+
+install_genisoimage() {
+    local -a yum_opts=(
+        '--assumeyes'
+        '--disablerepo=*'
+        '--enablerepo=metalk8s-*'
+    )
+
+    "$YUM" install "${yum_opts[@]}" genisoimage
+}
+
+configure_salt_minion_local_mode() {
+    local -r file_root="$BASE_DIR/salt"
+
+    "$SALT_CALL" --file-root="$file_root" \
+        --local --retcode-passthrough saltutil.sync_all saltenv=base
+    "$SALT_CALL" --file-root="$file_root" \
+        --local --retcode-passthrough state.sls metalk8s.salt.minion.local \
+        pillar="{'metalk8s': {'archives': '$BASE_DIR'}}" saltenv=base
+}
+
+restore_metalk8s_conf() {
+    _save_cp "${BACKUP_DIR}/metalk8s" "/etc/metalk8s"
+
+    local -r bootstrap_id=$(
+        ${SALT_CALL} --local --out txt grains.get id \
+        | awk '/^local\: /{ print $2 }'
+    )
+
+    "$SALT_CALL" --local --retcode-passthrough state.single file.serialize \
+        "/etc/metalk8s/bootstrap.yaml" formatter="yaml" merge_if_exists=True \
+        dataset="{'ca': {'minion': '$bootstrap_id'}}"
+}
+
+restore_cas() {
+    local -r ca_dir='/etc/kubernetes/pki/'
+    local -a ca_files=(
+        'ca.key'
+        'ca.crt'
+        'front-proxy-ca.key'
+        'front-proxy-ca.crt'
+        'etcd/ca.key'
+        'etcd/ca.crt'
+        'sa.key'
+        'sa.pub'
+    )
+    for ca in "${ca_files[@]}"; do
+        _save_cp "${BACKUP_DIR}/pki/$ca" "${ca_dir}$ca"
+    done
+}
+
+get_salt_container() {
+    local -r max_retries=10
+    local salt_container='' attempts=0
+
+    while [ -z "$salt_container" ] && [ $attempts -lt $max_retries ]; do
+        salt_container="$(crictl ps -q \
+            --label io.kubernetes.pod.namespace=kube-system \
+            --label io.kubernetes.container.name=salt-master \
+            --state Running)"
+        (( attempts++ ))
+    done
+
+    if [ -z "$salt_container" ]; then
+        echo "Failed to find a running 'salt-master' container" >&2
+        exit 1
+    fi
+
+    echo "$salt_container"
+}
+
+configure_salt_master() {
+    # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
+    # otherwise grains set during execution won't be taken into account
+    # properly.
+    "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
+        metalk8s.node.grains \
+        saltenv=metalk8s-@@VERSION
+
+    local -r control_plane_ip=$(
+        ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
+        | awk '/^local\: /{ print $2 }'
+    )
+
+    pillar=(
+      "{"
+      "  'repo': {'local_mode': True},"
+      "  'metalk8s': {"
+      "    'endpoints': {"
+      "      'repositories': {"
+      "         'ip': $control_plane_ip,"
+      "         'ports': {'http': 8080}"
+      "      },"
+      "      'salt-master': {'ip': $control_plane_ip}"
+      "    }"
+      "  }"
+      "}"
+    )
+
+    "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
+        '["metalk8s.roles.bootstrap", "metalk8s.roles.minion"]' \
+        saltenv=metalk8s-@@VERSION \
+        pillar="${pillar[*]}"
+
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
+        saltenv=metalk8s-@@VERSION
+
+    local -r bootstrap_id=$(
+        ${SALT_CALL} --local --out txt grains.get id \
+        | awk '/^local\: /{ print $2 }'
+    )
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.orchestrate.bootstrap.accept-minion \
+        saltenv=metalk8s-@@VERSION \
+        pillar="{'bootstrap_id': '$bootstrap_id'}"
+
+    "${SALT_CALL}" --retcode-passthrough saltutil.sync_all \
+        refresh=True \
+        saltenv=metalk8s-@@VERSION
+
+    "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
+        metalk8s.kubernetes.kubelet \
+        saltenv=metalk8s-@@VERSION \
+        pillar="${pillar[*]}"
+
+    "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
+        metalk8s.kubernetes.apiserver.kubeconfig \
+        saltenv=metalk8s-@@VERSION \
+        pillar="${pillar[*]}"
+}
+
+push_cas() {
+    "${SALT_CALL}" --retcode-passthrough mine.send "kubernetes_root_ca_b64" \
+        mine_function="hashutil.base64_encodefile" \
+        /etc/kubernetes/pki/ca.crt
+    "${SALT_CALL}" --retcode-passthrough mine.send 'kubernetes_etcd_ca_b64' \
+        mine_function="hashutil.base64_encodefile" \
+        /etc/kubernetes/pki/etcd/ca.crt
+    "${SALT_CALL}" --retcode-passthrough mine.send 'kubernetes_front_proxy_ca_b64' \
+        mine_function="hashutil.base64_encodefile" \
+        /etc/kubernetes/pki/front-proxy-ca.crt
+    "${SALT_CALL}" --retcode-passthrough mine.send 'kubernetes_sa_pub_key_b64' \
+        mine_function="hashutil.base64_encodefile" \
+        /etc/kubernetes/pki/sa.pub
+}
+
+mark_control_plane() {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.kubernetes.mark-control-plane.deployed \
+        saltenv=metalk8s-@@VERSION
+
+    "${SALT_CALL}" --retcode-passthrough mine.update
+}
+
+reconfigure_nodes() {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    local -r non_bootstrap=$(
+        ${SALT_CALL} --out=txt slsutil.renderer \
+        string="{{ pillar.metalk8s.nodes.keys() | difference(salt.metalk8s.minions_by_role('bootstrap')) | join(',') }}" \
+        | awk '/^local\: /{ print $2 }'
+    )
+
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_roster \
+        saltenv=metalk8s-@@VERSION
+    "${SALT_MASTER_CALL[@]}" salt-ssh --roster kubernetes \
+        -L "$non_bootstrap" \
+        file.remove /etc/salt/pki/minion/minion_master.pub
+    "${SALT_MASTER_CALL[@]}" salt-ssh --roster kubernetes \
+        -L "$non_bootstrap" --state-output=mixed \
+        state.sls '["metalk8s.roles.minion", "metalk8s.container-engine"]' \
+        saltenv=metalk8s-@@VERSION
+    "${SALT_MASTER_CALL[@]}" salt-key -A -y
+
+}
+
+highstate_bootstrap() {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    local -r bootstrap_id=$(
+        ${SALT_CALL} --local --out txt grains.get id \
+        | awk '/^local\: /{ print $2 }'
+    )
+
+    "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
+        metalk8s.salt.master.certs.etcd-client \
+        saltenv=metalk8s-@@VERSION
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.orchestrate.deploy_node \
+        saltenv=metalk8s-@@VERSION \
+        pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
+}
+
+if [ ! -f "$BACKUP_ARCHIVE" ]; then
+    echo "Backup '$BACKUP_ARCHIVE' file does not exist" >&2
+    exit 1
+fi
+
+run "Extract backup archive '$BACKUP_ARCHIVE'" extract_archive
+run "Pre-minion system tests" pre_minion_checks
+run "Disabling Salt minion service" disable_salt_minion_service
+run "Stopping Salt minion service" stop_salt_minion_service
+run "Configuring local YUM repositories" configure_yum_repositories
+run "Installing Salt minion" install_salt_minion
+run "Installing genisoimage" install_genisoimage
+run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
+
+run "Restoring MetalK8s configurations" restore_metalk8s_conf
+run "Restoring CAs certificates and keys" restore_cas
+run "Configuring salt-master" configure_salt_master
+run "Pushing CAs to salt mine" push_cas
+run "Marking new bootstrap node" mark_control_plane
+
+run "Reconfiguring all nodes" reconfigure_nodes
+
+run "Applying highstate on the new bootstrap node" highstate_bootstrap
+
+"$BASE_DIR"/backup.sh

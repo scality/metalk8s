@@ -3,9 +3,7 @@
 
 include:
   - metalk8s.repo
-{%- if kubelet.container_engine %}
-  - metalk8s.container-engine.{{ kubelet.container_engine }}
-{%- endif %}
+  - metalk8s.container-engine
 
 Install kubelet:
   {{ pkg_installed('kubelet') }}
