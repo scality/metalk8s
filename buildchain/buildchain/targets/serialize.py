@@ -67,7 +67,7 @@ class SerializedData(base.AtomicTarget):
         task = self.basic_task
         task.update({
             'title': utils.title_with_target1(
-                'RENDER {}'.format(self._renderer)
+                'RENDER {}'.format(self._renderer.value)
             ),
             'doc': 'Render file "{}" with "{}"'.format(
                 self._dest, self._renderer
