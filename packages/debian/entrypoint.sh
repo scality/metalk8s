@@ -66,20 +66,20 @@ download_packages() {
     chown "${TARGET_UID}:${TARGET_GID}" *
 }
 
-    case ${1:- } in
-        builddeb)
-            builddeb
-            ;;
-        rpm2deb)
-            rpm2deb
-            ;;
-        download_packages)
-            download_packages
-            ;;
-        '')
-            exec /bin/bash
-            ;;
-        *)
-            exec "$@"
-            ;;
-    esac
+case ${1:- } in
+    builddeb)
+        builddeb
+        ;;
+    rpm2deb)
+        rpm2deb
+        ;;
+    download_packages)
+        download_packages
+        ;;
+    '')
+        exec /bin/bash
+        ;;
+    *)
+        exec "$@"
+        ;;
+esac
