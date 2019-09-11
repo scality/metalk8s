@@ -4,7 +4,7 @@ set -u
 set -o pipefail
 
 VERBOSE=${VERBOSE:-0}
-LOGFILE=/var/log/metalk8s-downgrade.log
+LOGFILE=/var/log/metalk8s/downgrade.log
 DRY_RUN=0
 SALTENV=""
 DESTINATION_VERSION=""
@@ -23,7 +23,6 @@ _usage() {
     echo "-d/--dry-run:                    Run actions in dry run mode"
     echo "-h/--help:                       Show this help menu"
 }
-
 
 while (( "$#" )); do
   case "$1" in
@@ -56,6 +55,8 @@ while (( "$#" )); do
 done
 
 TMPFILES=$(mktemp -d)
+
+mkdir -p "$(dirname "${LOGFILE}")"
 
 cat << EOF >> "${LOGFILE}"
 --- MetalK8s downgrade started on $(date -u -R) ---
