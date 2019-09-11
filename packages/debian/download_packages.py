@@ -5,6 +5,7 @@
 
 import itertools
 import os
+import pathlib
 import sys
 import subprocess
 from typing import Dict, Mapping, Optional, Sequence
@@ -51,6 +52,44 @@ def select_package_version(
     raise ValueError('package {} not found in version {}: {}'.format(
         package.name, version, package.versions
     ))
+
+
+def select_package_origin(package: apt.package.Version) -> str:
+    """Select a trusted origin for the package and return its "name"."""
+    for origin in package.origins:
+        if not origin.trusted:
+            continue
+        # Some repo don't have `archive` (Salt, I'm looking at you…).
+        return str(origin.archive) or str(origin.label)
+    raise Exception('no trusted origin found for package {}'\
+                    .format(pathlib.Path(package.filename).name))
+
+
+# We can't use `package.fetch_binary` because it relies on MD5 and some packages
+# only have a SHA256…
+#
+# In the same vein, we are doing checksum validation manually because
+# `apt_pkg.AcquireFile` is failing on some packages (the ones from the external
+# repositories…).
+def fetch_binary(package: apt.package.Version, destdir: pathlib.Path) -> None:
+    """Download the DEB file corresponding to the given package."""
+    destdir.mkdir(exist_ok=True)  # TODO: to be done by the build chain.
+
+    filename = pathlib.Path(package.filename).name
+    destfile = destdir/filename
+    print('Downloading package {}'.format(filename))
+    with urllib.request.urlopen(package.uri) as response:
+        destfile.write_bytes(response.read())
+    # Check package size.
+    if destfile.stat().st_size != package.size:
+        raise Exception('Failed to download package {}: size mismatch'.format(
+            filename
+        ))
+    # Check package checksum.
+    with open(destfile) as fp:
+        if apt_pkg.sha256sum(fp) != package.sha256:
+            raise Exception('Failed to download package {}: checksum failed'\
+                            .format(filename))
 
 
 # }}}
@@ -125,6 +164,13 @@ def get_package_deps(
     return dependencies
 
 
+def download_package(package: apt.package.Version) -> None:
+    """Download the DEB corresponding to `package`."""
+    repo = select_package_origin(package)
+    destination = pathlib.Path('/repositories', 'metalk8s-{}'.format(repo))
+    fetch_binary(package, destdir=destination)
+
+
 def main(packages: Sequence[str], env: Mapping[str, str]) -> None:
     """Download the packages specified on the command-line."""
     add_external_repositories(env['SALT_VERSION'])
@@ -134,7 +180,8 @@ def main(packages: Sequence[str], env: Mapping[str, str]) -> None:
     for package in packages:
         deps = get_package_deps(package, cache)
         to_download.update(deps)
-
+    for pkg in to_download.values():
+        download_package(pkg)
 
 
 if __name__ == '__main__':
