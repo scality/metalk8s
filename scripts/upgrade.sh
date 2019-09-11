@@ -4,7 +4,7 @@ set -u
 set -o pipefail
 
 VERBOSE=${VERBOSE:-0}
-LOGFILE=/var/log/metalk8s-upgrade.log
+LOGFILE=/var/log/metalk8s/upgrade.log
 DRY_RUN=0
 DESTINATION_VERSION=""
 SALT_CALL=${SALT_CALL:-salt-call}
@@ -52,6 +52,8 @@ while (( "$#" )); do
 done
 
 TMPFILES=$(mktemp -d)
+
+mkdir -p "$(dirname "${LOGFILE}")"
 
 cat << EOF >> "${LOGFILE}"
 --- MetalK8s Upgrade started on $(date -u -R) ---
