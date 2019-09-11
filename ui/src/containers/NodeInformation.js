@@ -167,6 +167,7 @@ const NodeInformation = props => {
       </PodsContainer>
     </>
   );
+
   const volumeData = volumes.map(volume => {
     const volumePV = pVList.find(
       pV => pV.metadata.name === volume.metadata.name,

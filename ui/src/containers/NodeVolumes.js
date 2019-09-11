@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Button, Table, Loader, Modal } from '@scality/core-ui';
+import { Button, Table, Loader, Modal, SearchInput } from '@scality/core-ui';
 import { padding, grayLight } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import Tooltip from '../components/Tooltip';
@@ -29,13 +29,6 @@ import {
   STATUS_BOUND,
   STATUS_RELEASED,
 } from '../constants';
-
-const ButtonContainer = styled.div`
-  margin-top: ${padding.small};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
 
 const VolumeTable = styled.div`
   flex-grow: 1;
@@ -82,6 +75,26 @@ const IconButton = styled.button`
   }
 `;
 
+const ActionContainer = styled.div`
+  margin-top: ${padding.small};
+  display: flex;
+  justify-content: space-between;
+`;
+
+const SearchContainer = styled.div`
+  width: 250px;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const LoaderContainer = styled(Loader)`
+  padding-right: ${padding.smaller};
+`;
+
 const NodeVolumes = props => {
   const { intl } = props;
 
@@ -93,6 +106,7 @@ const NodeVolumes = props => {
 
   const volumes = useSelector(state => state.app.volumes);
   const persistentVolumes = useSelector(state => state.app.volumes.pVList);
+  const [searchedVolumeName, setSearchedVolumeName] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const [
@@ -271,7 +285,12 @@ const NodeVolumes = props => {
     }
   };
 
-  let volumeSortedList = props.data;
+  const volumeDataList = props.data;
+
+  let volumeSortedList = volumeDataList.filter(volume =>
+    volume.name.includes(searchedVolumeName),
+  );
+
   if (sortBy === 'storageCapacity') {
     volumeSortedList = sortCapacity(volumeSortedList, sortBy, sortDirection);
   } else {
@@ -285,6 +304,10 @@ const NodeVolumes = props => {
 
   const onClickCancelButton = () => {
     setisDeleteConfirmationModalOpen(false);
+  };
+
+  const handleChange = e => {
+    setSearchedVolumeName(e.target.value);
   };
 
   return (
@@ -320,17 +343,31 @@ const NodeVolumes = props => {
         </ModalBody>
       </Modal>
 
-      <ButtonContainer>
-        <Button
-          text={intl.messages.create_new_volume}
-          type="button"
-          onClick={() => {
-            props.history.push('createVolume');
-          }}
-          data-cy="create-volume-button"
-        />
-        {volumes.isLoading && <Loader size="small" />}
-      </ButtonContainer>
+      <ActionContainer>
+        <SearchContainer>
+          <SearchInput
+            value={searchedVolumeName}
+            placeholder={intl.messages.search}
+            disableToggle={true}
+            onChange={handleChange}
+          ></SearchInput>
+        </SearchContainer>
+
+        <ButtonContainer>
+          {volumes.isLoading && <LoaderContainer size="small" />}
+          <Tooltip placement="left" overlay={intl.messages.create_new_volume}>
+            <Button
+              text={<i className="fas fa-plus "></i>}
+              type="button"
+              onClick={() => {
+                props.history.push('createVolume');
+              }}
+              data-cy="create-volume-button"
+            />
+          </Tooltip>
+        </ButtonContainer>
+      </ActionContainer>
+
       <VolumeTable>
         <Table
           list={volumeSortedList}
@@ -344,9 +381,15 @@ const NodeVolumes = props => {
           onRowClick={item => {
             onRowClick(item);
           }}
-          noRowsRenderer={() => (
-            <NoRowsRenderer content={intl.messages.no_volume_found} />
-          )}
+          noRowsRenderer={() =>
+            searchedVolumeName === '' ? (
+              <NoRowsRenderer content={intl.messages.no_volume_found} />
+            ) : (
+              <NoRowsRenderer
+                content={intl.messages.no_searched_volume_found}
+              />
+            )
+          }
         />
       </VolumeTable>
     </>

@@ -7,7 +7,7 @@ import {
   AUTHENTICATION_SUCCESS,
   SET_USER_INFO_LOADED,
   fetchUserInfo,
-  authenticateSaltApi
+  authenticateSaltApi,
 } from './login';
 import * as ApiK8s from '../services/k8s/api';
 
@@ -21,21 +21,21 @@ it('authentication failed', () => {
   const result = {
     error: {
       response: {
-        data: 'Unauthorized'
-      }
-    }
+        data: 'Unauthorized',
+      },
+    },
   };
   expect(gen.next(result).value).toEqual(
     put({
       type: AUTHENTICATION_FAILED,
-      payload: 'Unauthorized'
-    })
+      payload: 'Unauthorized',
+    }),
   );
   expect(gen.next(result).value).toEqual(
     put({
       type: SET_USER_INFO_LOADED,
-      payload: true
-    })
+      payload: true,
+    }),
   );
 });
 
@@ -47,12 +47,12 @@ it('authentication success', () => {
   expect(gen.next().value).toEqual(call(ApiK8s.authenticate, token));
 
   const result = {
-    data: {}
+    data: {},
   };
 
   expect(gen.next(result).value.type).toEqual('SELECT');
   expect(gen.next({ url: 'localhost:8080' }).value).toEqual(
-    call(ApiK8s.updateApiServerConfig, 'localhost:8080', token)
+    call(ApiK8s.updateApiServerConfig, 'localhost:8080', token),
   );
 
   expect(gen.next().value).toEqual(
@@ -61,9 +61,9 @@ it('authentication success', () => {
       payload: {
         username: 'admin',
         password: 'admin',
-        token
-      }
-    })
+        token,
+      },
+    }),
   );
 
   expect(gen.next().value).toEqual(call(authenticateSaltApi, true));
@@ -71,22 +71,22 @@ it('authentication success', () => {
   expect(gen.next(result).value).toEqual(
     put({
       type: SET_USER_INFO_LOADED,
-      payload: true
-    })
+      payload: true,
+    }),
   );
 });
 
 it('fetchUserInfo success', () => {
   localStorage.setItem(HASH_KEY, 'dGVzdDp0ZXN0');
-  const gen = fetchUserInfo();
 
+  const gen = fetchUserInfo();
   expect(gen.next().value.type).toEqual('SELECT');
   expect(gen.next({ url: 'localhost:8080' }).value).toEqual(
-    call(ApiK8s.updateApiServerConfig, 'localhost:8080', 'dGVzdDp0ZXN0')
+    call(ApiK8s.updateApiServerConfig, 'localhost:8080', 'dGVzdDp0ZXN0'),
   );
 
   const result = {
-    data: {}
+    data: {},
   };
   expect(gen.next(result).value).toEqual(
     put({
@@ -94,9 +94,9 @@ it('fetchUserInfo success', () => {
       payload: {
         username: 'test',
         password: 'test',
-        token: 'dGVzdDp0ZXN0'
-      }
-    })
+        token: 'dGVzdDp0ZXN0',
+      },
+    }),
   );
 
   expect(gen.next().value).toEqual(call(authenticateSaltApi));
@@ -104,22 +104,22 @@ it('fetchUserInfo success', () => {
   expect(gen.next(result).value).toEqual(
     put({
       type: SET_USER_INFO_LOADED,
-      payload: true
-    })
+      payload: true,
+    }),
   );
   localStorage.removeItem(HASH_KEY);
 });
 
 it('fetchUserInfo failed', () => {
   localStorage.removeItem(HASH_KEY);
-  const gen = fetchUserInfo();
 
+  const gen = fetchUserInfo();
   expect(gen.next().value).toEqual(call(history.push, '/login'));
 
   expect(gen.next().value).toEqual(
     put({
       type: SET_USER_INFO_LOADED,
-      payload: true
-    })
+      payload: true,
+    }),
   );
 });

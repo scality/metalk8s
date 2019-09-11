@@ -21,7 +21,7 @@ export const HASH_KEY = 'token';
 const defaultState = {
   user: null,
   error: null,
-  isUserInfoLoaded: false
+  isUserInfoLoaded: false,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -29,22 +29,22 @@ export default function reducer(state = defaultState, action = {}) {
     case AUTHENTICATION_SUCCESS:
       return {
         ...state,
-        user: action.payload
+        user: action.payload,
       };
     case SALT_AUTHENTICATION_SUCCESS:
       return {
         ...state,
-        salt: action.payload
+        salt: action.payload,
       };
     case AUTHENTICATION_FAILED:
       return {
         ...state,
-        errors: { authentication: action.payload.message }
+        errors: { authentication: action.payload.message },
       };
     case SET_USER_INFO_LOADED:
       return {
         ...state,
-        isUserInfoLoaded: action.payload
+        isUserInfoLoaded: action.payload,
       };
 
     default:
@@ -72,14 +72,14 @@ export const setUserInfoLoadedAction = payload => {
 export const setAuthenticationSuccessAction = payload => {
   return {
     type: AUTHENTICATION_SUCCESS,
-    payload
+    payload,
   };
 };
 
 export const setSaltAuthenticationSuccessAction = payload => {
   return {
     type: SALT_AUTHENTICATION_SUCCESS,
-    payload
+    payload,
   };
 };
 
@@ -92,7 +92,7 @@ export function* authenticate({ payload }) {
   if (result.error) {
     yield put({
       type: AUTHENTICATION_FAILED,
-      payload: result.error.response.data
+      payload: result.error.response.data,
     });
   } else {
     const api_server = yield select(state => state.config.api);
@@ -102,8 +102,8 @@ export function* authenticate({ payload }) {
       setAuthenticationSuccessAction({
         username,
         password,
-        token
-      })
+        token,
+      }),
     );
     yield call(authenticateSaltApi, true);
   }
@@ -116,14 +116,14 @@ export function* authenticateSaltApi(redirect) {
   const result = yield call(ApiSalt.authenticate, user);
   if (!result.error) {
     yield call(ApiSalt.getClient().setHeaders, {
-      'X-Auth-Token': result.return[0].token
+      'X-Auth-Token': result.return[0].token,
     });
     yield put(setSaltAuthenticationSuccessAction(result));
     yield put(
       connectSaltApiAction({
         url: api.url_salt,
-        token: result.return[0].token
-      })
+        token: result.return[0].token,
+      }),
     );
     if (redirect) {
       yield call(history.push, '/');
@@ -152,8 +152,8 @@ export function* fetchUserInfo() {
       setAuthenticationSuccessAction({
         username,
         password,
-        token
-      })
+        token,
+      }),
     );
     yield call(authenticateSaltApi);
   } else {

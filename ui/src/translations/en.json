@@ -70,6 +70,7 @@
   "creationTime": "Creation Time",
   "create_new_volume": "Create a New Volume",
   "no_volume_found": "No volumes on this node",
+  "no_searched_volume_found": "No volumes matching the search",
   "type": "Type",
   "volume_size": "Volume Capacity",
   "device_path": "Device path",
@@ -111,5 +112,6 @@
   "delete_a_volume_confirm": "Do you want to delete ",
   "select_a_storageClass": "Select a Storage Class…",
   "select_a_type": "Select a type of volume…",
-  "no_results": "No results"
+  "no_results": "No results",
+  "search": "Search…"
 }
