@@ -8,7 +8,7 @@ set -u
 if test -z "$(type -p)"; then set -o pipefail; fi
 
 VERBOSE=${VERBOSE:-0}
-LOGFILE=/var/log/metalk8s-bootstrap.log
+LOGFILE=/var/log/metalk8s/bootstrap.log
 
 if ! options=$(getopt --options v --long verbose,log-file: -- "$@"); then
     echo 1>&2 "Incorrect arguments provided"
@@ -35,6 +35,8 @@ while true; do
 done
 
 TMPFILES=$(mktemp -d)
+
+mkdir -p "$(dirname "${LOGFILE}")"
 
 cat << EOF >> "${LOGFILE}"
 --- Bootstrap started on $(date -u -R) ---

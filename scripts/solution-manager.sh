@@ -5,7 +5,7 @@ set -o pipefail
 
 SOLUTION_CONFIG="/etc/metalk8s/solutions.yaml"
 VERBOSE=${VERBOSE:-0}
-LOGFILE="/var/log/metalk8s-solution-manager.log"
+LOGFILE="/var/log/metalk8s/solution-manager.log"
 SALT_CALL=${SALT_CALL:-salt-call}
 CRICTL=${CRICTL:-crictl}
 SALT=""
@@ -53,6 +53,8 @@ while (( "$#" )); do
 done
 
 TMPFILES=$(mktemp -d)
+
+mkdir -p "$(dirname "${LOGFILE}")"
 
 cat << EOF >> "${LOGFILE}"
 --- MetalK8s solution manager started on $(date -u -R) ---
