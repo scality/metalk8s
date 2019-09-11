@@ -27,7 +27,7 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
     def setup(self):
         self.add_copy_spec('/etc/kubernetes/manifests')
         self.add_copy_spec('/var/log/pods')
-        self.add_copy_spec('/var/log/metalk8s-bootstrap.log')
+        self.add_copy_spec('/var/log/metalk8s')
 
         services = [
             'kubelet',
