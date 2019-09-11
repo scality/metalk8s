@@ -71,7 +71,9 @@ def select_package_origin(package: apt.package.Version) -> str:
 # In the same vein, we are doing checksum validation manually because
 # `apt_pkg.AcquireFile` is failing on some packages (the ones from the external
 # repositories…).
-def fetch_binary(package: apt.package.Version, destdir: pathlib.Path) -> None:
+def fetch_binary(
+    package: apt.package.Version, destdir: pathlib.Path
+) -> pathlib.Path:
     """Download the DEB file corresponding to the given package."""
     destdir.mkdir(exist_ok=True)  # TODO: to be done by the build chain.
 
@@ -90,6 +92,7 @@ def fetch_binary(package: apt.package.Version, destdir: pathlib.Path) -> None:
         if apt_pkg.sha256sum(fp) != package.sha256:
             raise Exception('Failed to download package {}: checksum failed'\
                             .format(filename))
+    return destfile
 
 
 # }}}
@@ -164,11 +167,11 @@ def get_package_deps(
     return dependencies
 
 
-def download_package(package: apt.package.Version) -> None:
+def download_package(package: apt.package.Version) -> pathlib.Path:
     """Download the DEB corresponding to `package`."""
     repo = select_package_origin(package)
     destination = pathlib.Path('/repositories', 'metalk8s-{}'.format(repo))
-    fetch_binary(package, destdir=destination)
+    return fetch_binary(package, destdir=destination)
 
 
 def main(packages: Sequence[str], env: Mapping[str, str]) -> None:
@@ -181,7 +184,8 @@ def main(packages: Sequence[str], env: Mapping[str, str]) -> None:
         deps = get_package_deps(package, cache)
         to_download.update(deps)
     for pkg in to_download.values():
-        download_package(pkg)
+        filepath = download_package(pkg)
+        os.chown(filepath, int(env['TARGET_UID']), int(env['TARGET_GID']))
 
 
 if __name__ == '__main__':
