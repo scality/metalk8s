@@ -175,6 +175,9 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
     constants.INGRESS_REPOSITORY: [
         'nginx-ingress-controller',
     ],
+    constants.KIWIGRID_REPOSITORY: [
+        'k8s-sidecar',
+    ],
     constants.PROMETHEUS_REPOSITORY: [
         'alertmanager',
         'node-exporter',
