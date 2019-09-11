@@ -44,8 +44,10 @@ timestamp
 tmp
 tmpfs
 txt
+xenial
 yaml
 ConsoleReporter
 Dockerfile
+GPG
 LZ77
 Mio

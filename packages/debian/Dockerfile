@@ -12,6 +12,7 @@ RUN apt update -y \
         build-essential \
         lintian \
         apt-rdepends \
+        python-apt \
         alien
 
 RUN useradd -m build
