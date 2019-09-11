@@ -27,12 +27,21 @@ import yaml
 BOILERPLATE = '''
 #!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
+{% raw %}
 '''
 
+BOILERPLATE_END = '''
+{% endraw %}
+'''
 
 def fixup_metadata(namespace, doc):
     if 'metadata' in doc and 'namespace' not in doc['metadata']:
         doc['metadata']['namespace'] = namespace
+
+    if doc.get('kind', None) == 'ConfigMapList':
+        doc['items'] = [fixup_metadata(namespace, configmap)
+                        for configmap in doc['items']]
 
     return doc
 
@@ -45,7 +54,8 @@ def maybe_copy(doc, src, dest):
 
 
 def fixup_dict(doc):
-    if doc.get('heritage') == 'Tiller':
+    if doc.get('heritage') == 'Tiller' or \
+            doc.get('app.kubernetes.io/managed-by') == 'Tiller':
         maybe_copy(doc, 'app', 'app.kubernetes.io/name')
         maybe_copy(doc, 'component', 'app.kubernetes.io/component')
 
@@ -63,6 +73,18 @@ def fixup_doc(doc):
         return [fixup_doc(d) for d in doc]
     else:
         return doc
+
+
+def keep_doc(doc):
+    if not doc:
+        return False
+
+    if doc.get('metadata', {}) \
+            .get('annotations', {}) \
+            .get('helm.sh/hook') == 'test-success':
+        return False
+
+    return True
 
 
 def main():
@@ -88,9 +110,13 @@ def main():
     sys.stdout.write('\n')
 
     yaml.safe_dump_all(
-        (fixup(doc) for doc in yaml.safe_load_all(template) if doc),
+        (fixup(doc)
+            for doc in yaml.safe_load_all(template)
+            if keep_doc(doc)),
         sys.stdout,
     )
+
+    sys.stdout.write(BOILERPLATE_END)
 
 
 if __name__ == '__main__':
