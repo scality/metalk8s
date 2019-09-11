@@ -95,6 +95,7 @@ def _handle_v1_configmap(obj, kubeconfig, context):
             {'kubeconfig': kubeconfig},
             {'context': context},
             {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
             {'data': obj['data']},
         ],
     }

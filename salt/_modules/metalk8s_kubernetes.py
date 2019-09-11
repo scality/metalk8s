@@ -1261,7 +1261,8 @@ def create_configmap(
     data = __enforce_only_strings_dict(data)
 
     body = kubernetes.client.V1ConfigMap(
-        metadata=__dict_to_object_meta(name, namespace, {}),
+        metadata=__dict_to_object_meta(
+                    name, namespace, kwargs.get('metadata', {})),
         data=data)
 
     cfg = _setup_conn(**kwargs)
@@ -1496,7 +1497,8 @@ def replace_configmap(name,
     data = __enforce_only_strings_dict(data)
 
     body = kubernetes.client.V1ConfigMap(
-        metadata=__dict_to_object_meta(name, namespace, {}),
+        metadata=__dict_to_object_meta(
+                    name, namespace, kwargs.get('metadata', {})),
         data=data)
 
     cfg = _setup_conn(**kwargs)
