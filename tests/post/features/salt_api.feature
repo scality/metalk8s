@@ -1,6 +1,6 @@
 @post @ci @local @salt
 Feature: SaltAPI
-    Scenario: Login to SaltAPI
+    Scenario: Login to SaltAPI using Basic auth
         Given the Kubernetes API is available
         When we login to SaltAPI as 'admin' using password 'admin'
         Then we can ping all minions
@@ -9,7 +9,7 @@ Feature: SaltAPI
         And we have '@runner' perms
         And we have '@jobs' perms
 
-    Scenario: Login to SaltAPI
+    Scenario: Login to SaltAPI using a ServiceAccount
         Given the Kubernetes API is available
         When we login to SaltAPI with the ServiceAccount 'storage-operator'
         Then we can invoke '["disk.dump", "state.sls"]' on '*'
