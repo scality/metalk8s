@@ -51,7 +51,7 @@ Create coredns service:
         labels:
           k8s-app: kube-dns
           kubernetes.io/cluster-service: "true"
-          kubernetes.io/name: "CoreDNS"
+          app.kubernetes.io/name: "CoreDNS"
     - spec:
         selector:
           k8s-app: kube-dns
