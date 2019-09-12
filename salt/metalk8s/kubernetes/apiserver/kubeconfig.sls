@@ -1,6 +1,9 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
 
+include:
+  - metalk8s.internal.m2crypto
+
 {%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
 
 Create kubeconfig file for admin:
