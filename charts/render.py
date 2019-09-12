@@ -13,7 +13,7 @@ It performs the following tasks:
   always part of chart templates) in the metadata section
 - Fix up the resulting objects labels and annotations replace their `Tiller`
   heritage by `metalk8s`, set the `app.kubernetes.io/part-of` and
-  `app.kubernetes.io/managed-by` to `metalk8s`, and copy any `app` and
+  `app.kubernetes.io/managed-by` to `salt`, and copy any `app` and
   `component` fields to the canonical `app.kubernetes.io/name` and
   `app.kubernetes.io/component` fields
 '''
@@ -51,7 +51,7 @@ def fixup_dict(doc):
 
         doc['heritage'] = 'metalk8s'
         doc['app.kubernetes.io/part-of'] = 'metalk8s'
-        doc['app.kubernetes.io/managed-by'] = 'metalk8s'
+        doc['app.kubernetes.io/managed-by'] = 'salt'
 
     return dict((key, fixup_doc(value)) for (key, value) in doc.items())
 
