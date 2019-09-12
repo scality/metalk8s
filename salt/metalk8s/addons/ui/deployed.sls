@@ -39,7 +39,7 @@ Create metalk8s-ui service:
           protocol: TCP
           targetPort: 80
         selector:
-          k8s-app: ui
+          app: metalk8s-ui
         type: NodePort
 
 Create metalk8s-ui ConfigMap:
@@ -55,5 +55,13 @@ Create metalk8s-ui ConfigMap:
             "url_salt": "{{ saltapi }}",
             "url_prometheus": "{{ prometheus }}"
           }
+
+Create ui-branding ConfigMap:
+  metalk8s_kubernetes.configmap_present:
+    - name: ui-branding
+    - namespace: metalk8s-ui
+    - kubeconfig: {{ kubeconfig }}
+    - context: {{ context }}
+    - data:
         theme.json: |
           {"brand": {"primary": "#403e40", "secondary": "#e99121"}}

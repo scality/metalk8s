@@ -4,7 +4,12 @@ kind: Deployment
 metadata:
   labels:
     k8s-app: kube-dns
-    kubernetes.io/name: "CoreDNS"
+    app: "CoreDNS"
+    heritage: metalk8s
+    app.kubernetes.io/name: "CoreDNS"
+    app.kubernetes.io/component: kube-dns
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/managed-by: salt
 spec:
   replicas: 2
   strategy:

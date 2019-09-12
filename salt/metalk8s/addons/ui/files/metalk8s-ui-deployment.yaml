@@ -3,16 +3,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    k8s-app: ui
-    kubernetes.io/name: "MetalK8sUI"
+    app: metalk8s-ui
+    heritage: metalk8s
+    app.kubernetes.io/name: metalk8s-ui
+    app.kubernetes.io/component: ui
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/managed-by: salt
 spec:
   selector:
     matchLabels:
-      k8s-app: ui
+      app: metalk8s-ui
   template:
     metadata:
       labels:
-        k8s-app: ui
+        app: metalk8s-ui
     spec:
       tolerations:
       - key: "node-role.kubernetes.io/bootstrap"
@@ -50,9 +54,15 @@ spec:
               scheme: HTTP
           volumeMounts:
           - name: metalk8s-ui-volume
-            mountPath: /etc/metalk8s/ui
+            mountPath: /etc/metalk8s/ui/config
+            readOnly: true
+          - name: ui-branding-volume
+            mountPath: /etc/metalk8s/ui/brand
             readOnly: true
       volumes:
         - name: metalk8s-ui-volume
           configMap:
             name: metalk8s-ui
+        - name: ui-branding-volume
+          configMap:
+            name: ui-branding
