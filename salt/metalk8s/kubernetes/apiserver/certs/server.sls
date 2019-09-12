@@ -1,5 +1,7 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
+{%- set kubernetes_service_ip = salt.metalk8s_network.get_kubernetes_service_ip() %}
+
 include:
   - metalk8s.internal.m2crypto
 
@@ -22,7 +24,7 @@ Create kube-apiserver private key:
     'kubernetes.default',
     'kubernetes.default.svc',
     'kubernetes.default.svc.cluster.local',
-    kube_api.service_ip,
+    kubernetes_service_ip,
     grains['metalk8s']['control_plane_ip'],
     pillar['metalk8s']['api_server']['host'],
 ]
