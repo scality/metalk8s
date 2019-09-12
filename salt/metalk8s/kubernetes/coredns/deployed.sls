@@ -1,5 +1,7 @@
 {%- from "metalk8s/map.jinja" import coredns with context %}
 
+{%- set cluster_dns_ip = salt.metalk8s_network.get_cluster_dns_ip() %}
+
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
 
@@ -55,7 +57,7 @@ Create coredns service:
     - spec:
         selector:
           k8s-app: kube-dns
-        cluster_ip: {{ coredns.cluster_dns_ip }}
+        cluster_ip: {{ cluster_dns_ip }}
         ports:
         - name: dns
           port: 53

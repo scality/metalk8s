@@ -113,7 +113,6 @@ kube_api:
   cert:
     server_signing_policy: kube_apiserver_server_policy
     client_signing_policy: kube_apiserver_client_policy
-  service_ip: "10.96.0.1"
 
 etcd:
   ca:
@@ -137,7 +136,6 @@ front_proxy:
     client_signing_policy: front_proxy_client_policy
 
 coredns:
-  cluster_dns_ip: 10.96.0.10
   cluster_domain: cluster.local
   reverse_cidrs: in-addr.arpa ip6.arpa
 
