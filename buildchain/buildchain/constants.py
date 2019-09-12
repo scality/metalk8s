@@ -23,6 +23,7 @@ DOCKER_REPOSITORY     : str = 'docker.io/library'
 GOOGLE_REPOSITORY     : str = 'k8s.gcr.io'
 GRAFANA_REPOSITORY    : str = 'docker.io/grafana'
 INGRESS_REPOSITORY    : str = 'quay.io/kubernetes-ingress-controller'
+KIWIGRID_REPOSITORY   : str = 'docker.io/kiwigrid'
 PROMETHEUS_REPOSITORY : str = 'quay.io/prometheus'
 
 # Paths {{{

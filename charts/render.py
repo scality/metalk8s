@@ -13,7 +13,7 @@ It performs the following tasks:
   always part of chart templates) in the metadata section
 - Fix up the resulting objects labels and annotations replace their `Tiller`
   heritage by `metalk8s`, set the `app.kubernetes.io/part-of` and
-  `app.kubernetes.io/managed-by` to `metalk8s`, and copy any `app` and
+  `app.kubernetes.io/managed-by` to `salt`, and copy any `app` and
   `component` fields to the canonical `app.kubernetes.io/name` and
   `app.kubernetes.io/component` fields
 '''
@@ -27,12 +27,21 @@ import yaml
 BOILERPLATE = '''
 #!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
+{% raw %}
 '''
 
+BOILERPLATE_END = '''
+{% endraw %}
+'''
 
 def fixup_metadata(namespace, doc):
     if 'metadata' in doc and 'namespace' not in doc['metadata']:
         doc['metadata']['namespace'] = namespace
+
+    if doc.get('kind', None) == 'ConfigMapList':
+        doc['items'] = [fixup_metadata(namespace, configmap)
+                        for configmap in doc['items']]
 
     return doc
 
@@ -45,13 +54,14 @@ def maybe_copy(doc, src, dest):
 
 
 def fixup_dict(doc):
-    if doc.get('heritage') == 'Tiller':
+    if doc.get('heritage') == 'Tiller' or \
+            doc.get('app.kubernetes.io/managed-by') == 'Tiller':
         maybe_copy(doc, 'app', 'app.kubernetes.io/name')
         maybe_copy(doc, 'component', 'app.kubernetes.io/component')
 
         doc['heritage'] = 'metalk8s'
         doc['app.kubernetes.io/part-of'] = 'metalk8s'
-        doc['app.kubernetes.io/managed-by'] = 'metalk8s'
+        doc['app.kubernetes.io/managed-by'] = 'salt'
 
     return dict((key, fixup_doc(value)) for (key, value) in doc.items())
 
@@ -63,6 +73,18 @@ def fixup_doc(doc):
         return [fixup_doc(d) for d in doc]
     else:
         return doc
+
+
+def keep_doc(doc):
+    if not doc:
+        return False
+
+    if doc.get('metadata', {}) \
+            .get('annotations', {}) \
+            .get('helm.sh/hook') == 'test-success':
+        return False
+
+    return True
 
 
 def main():
@@ -88,9 +110,13 @@ def main():
     sys.stdout.write('\n')
 
     yaml.safe_dump_all(
-        (fixup(doc) for doc in yaml.safe_load_all(template) if doc),
+        (fixup(doc)
+            for doc in yaml.safe_load_all(template)
+            if keep_doc(doc)),
         sys.stdout,
     )
+
+    sys.stdout.write(BOILERPLATE_END)
 
 
 if __name__ == '__main__':

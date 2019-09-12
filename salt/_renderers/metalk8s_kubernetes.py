@@ -95,6 +95,7 @@ def _handle_v1_configmap(obj, kubeconfig, context):
             {'kubeconfig': kubeconfig},
             {'context': context},
             {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
             {'data': obj['data']},
         ],
     }
@@ -257,6 +258,20 @@ def _handle_monitoring_coreos_com_v1_customresource(obj, kubeconfig, context):
 def _handle_apiregistration_v1_apiservice(obj, kubeconfig, context):
     return {
         'metalk8s_kubernetes.apiservice_present': [
+            {'name': obj['metadata']['name']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ]
+    }
+
+
+@handle('policy/v1beta1', 'PodSecurityPolicy')
+@handle('extensions/v1beta1', 'PodSecurityPolicy')
+def _handle_extensions_v1beta1_podsecuritypolicy(obj, kubeconfig, context):
+    return {
+        'metalk8s_kubernetes.podsecuritypolicy_present': [
             {'name': obj['metadata']['name']},
             {'metadata': obj['metadata']},
             {'spec': obj['spec']},

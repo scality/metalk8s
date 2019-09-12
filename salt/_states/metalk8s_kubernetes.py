@@ -1887,3 +1887,52 @@ def apiservice_absent(name, **kwargs):
     }
 
     return ret
+
+
+def podsecuritypolicy_present(
+        name,
+        metadata,
+        spec,
+        **kwargs):
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    podsecuritypolicy = __salt__['metalk8s_kubernetes.show_podsecuritypolicy'](name, **kwargs)
+
+    if podsecuritypolicy is None:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The podsecuritypolicy is going to be created'
+            return ret
+
+        res = __salt__['metalk8s_kubernetes.create_podsecuritypolicy'](name=name,
+                                                      metadata=metadata,
+                                                      spec=spec,
+                                                      **kwargs)
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': {},
+            'new': res}
+    else:
+        if __opts__['test']:
+            ret['result'] = None
+            ret['comment'] = 'The podsecuritypolicy is going to be replaced'
+            return ret
+
+        # TODO: improve checks  # pylint: disable=fixme
+        log.info('Forcing the recreation of the podsecuritypolicy')
+        ret['comment'] = 'The podsecuritypolicy is already present. Forcing recreation'
+        res = __salt__['metalk8s_kubernetes.replace_podsecuritypolicy'](
+            name=name,
+            metadata=metadata,
+            spec=spec,
+            **kwargs)
+
+        ret['result'] = True
+        ret['changes'][name] = {
+            'old': podsecuritypolicy,
+            'new': res}
+
+    return ret
