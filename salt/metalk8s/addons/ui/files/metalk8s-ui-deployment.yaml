@@ -54,7 +54,7 @@ spec:
               scheme: HTTP
           volumeMounts:
           - name: metalk8s-ui-volume
-            mountPath: /etc/metalk8s/ui
+            mountPath: /etc/metalk8s/ui/config
             readOnly: true
           - name: ui-branding-volume
             mountPath: /etc/metalk8s/ui/brand
