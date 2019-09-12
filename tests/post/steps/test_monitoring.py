@@ -27,12 +27,6 @@ def test_monitored_components(host):
     pass
 
 
-@scenario('../features/monitoring.feature',
-    'The metrics.k8s.io/v1beta1 API is available')
-def test_metrics_v1beta1_apiservice(host):
-    pass
-
-
 # }}}
 # Given {{{
 
