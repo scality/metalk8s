@@ -35,13 +35,15 @@ def _get_endpoint_up(ca_cert, cert_key, cert_cert, nodes=None):
     etcd_hosts = __salt__['metalk8s.minions_by_role']('etcd', nodes=nodes)
 
     # Get host ip from etcd_hosts
+    cp_ips = __salt__['saltutil.runner'](
+        'mine.get',
+        tgt='*',
+        fun='control_plane_ip'
+    )
     endpoints = [
-        __salt__['saltutil.runner'](
-            'mine.get',
-            tgt=host,
-            fun='control_plane_ip'
-        )[host]
+        cp_ips[host]
         for host in etcd_hosts
+        if host in cp_ips
     ]
 
     for endpoint in endpoints:
