@@ -1,0 +1,114 @@
+kubeTargetVersionOverride: 1.13.10
+
+commonLabels:
+  # This needs to remain 'Tiller' for the render script to work properly
+  #heritage: 'metalk8s'
+  app.kubernetes.io/part-of: 'metalk8s'
+  app.kubernetes.io/managed-by: 'metalk8s'
+
+alertmanager:
+  alertmanagerSpec:
+    image:
+      repository: '''{%- endraw -%}{{ build_image_name("alertmanager", False) }}{%- raw -%}'''
+
+    nodeSelector:
+      node-role.kubernetes.io/infra: ''
+
+    podAntiAffinity: 'soft'
+
+    tolerations:
+      - key: 'node-role.kubernetes.io/bootstrap'
+        operator: 'Exists'
+        effect: 'NoSchedule'
+      - key: 'node-role.kubernetes.io/infra'
+        operator: 'Exists'
+        effect: 'NoSchedule'
+
+prometheusOperator:
+  tlsProxy:
+    enabled: false
+
+  admissionWebhooks:
+    enabled: false
+
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''
+
+  tolerations:
+    - key: 'node-role.kubernetes.io/bootstrap'
+      operator: 'Exists'
+      effect: 'NoSchedule'
+    - key: 'node-role.kubernetes.io/infra'
+      operator: 'Exists'
+      effect: 'NoSchedule'
+
+  image:
+    repository: '{%- endraw -%}{{ build_image_name(\"prometheus-operator\", False) }}{%- raw -%}'
+
+  configmapReloadImage:
+    repository: '{%- endraw -%}{{ build_image_name("configmap-reload", False) }}{%- raw -%}'
+
+  prometheusConfigReloaderImage:
+    repository: '{%- endraw -%}{{ build_image_name("prometheus-config-reloader", False) }}{%- raw -%}'
+
+  hyperkubeImage:
+    repository: '''{%- endraw -%}{{ build_image_name("hyperkube", False) }}{%- raw -%}'''
+
+
+prometheus:
+  prometheusSpec:
+    image:
+      repository: '''{%- endraw -%}{{ build_image_name("prometheus", False) }}{%- raw -%}'''
+
+    tolerations:
+      - key: 'node-role.kubernetes.io/bootstrap'
+        operator: 'Exists'
+        effect: 'NoSchedule'
+      - key: 'node-role.kubernetes.io/infra'
+        operator: 'Exists'
+        effect: 'NoSchedule'
+
+    nodeSelector:
+      node-role.kubernetes.io/infra: ''
+
+    podAntiAffinity: 'soft'
+
+
+grafana:
+  image:
+    repository: '{%- endraw -%}{{ build_image_name(\"grafana\", False) }}{%- raw -%}'
+
+  sidecar:
+    image: '{%- endraw -%}{{ build_image_name(\"k8s-sidecar\", False) }}{%- raw -%}:0.1.20'
+
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''
+
+  tolerations:
+    - key: 'node-role.kubernetes.io/bootstrap'
+      operator: 'Exists'
+      effect: 'NoSchedule'
+    - key: 'node-role.kubernetes.io/infra'
+      operator: 'Exists'
+      effect: 'NoSchedule'
+
+
+kube-state-metrics:
+  image:
+    repository: '{%- endraw -%}{{ build_image_name(\"kube-state-metrics\", False) }}{%- raw -%}'
+
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''
+
+  tolerations:
+    - key: 'node-role.kubernetes.io/bootstrap'
+      operator: 'Exists'
+      effect: 'NoSchedule'
+    - key: 'node-role.kubernetes.io/infra'
+      operator: 'Exists'
+      effect: 'NoSchedule'
+
+
+prometheus-node-exporter:
+  image:
+    repository: '{%- endraw -%}{{ build_image_name(\"node-exporter\", False) }}{%- raw -%}'

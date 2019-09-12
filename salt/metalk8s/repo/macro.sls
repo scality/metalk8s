@@ -5,12 +5,16 @@
 {%- set repo_prefix = repo_endpoint.ip ~ ':' ~ repo_endpoint.ports.http %}
 {%- set metalk8s_repository = repo_prefix ~ '/' ~ saltenv %}
 
-{%- macro build_image_name(name='') -%}
-    {%- set image_info = repo.images.get(name, {}) -%}
-    {%- if image_info -%}
-        {%- set image_tag = name ~ ':' ~ image_info.version -%}
+{%- macro build_image_name(name='', include_tag=True) -%}
+    {%- if include_tag -%}
+        {%- set image_info = repo.images.get(name, {}) -%}
+        {%- if image_info -%}
+            {%- set image_tag = name ~ ':' ~ image_info.version -%}
 {{ metalk8s_repository }}/{{ image_tag }}
-    {%- else -%}
+        {%- else -%}
 {{ raise('Missing version information about image "' ~ name ~ '"') }}
+        {%- endif -%}
+    {%- else -%}
+{{ metalk8s_repository }}/{{ name }}
     {%- endif -%}
 {%- endmacro -%}
