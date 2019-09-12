@@ -1,5 +1,7 @@
 {%- from "metalk8s/map.jinja" import kubelet with context %}
 
+{%- set cluster_dns_ip = salt.metalk8s_network.get_cluster_dns_ip() %}
+
 include:
   - .running
 
@@ -56,7 +58,7 @@ Create kubelet config file:
         cgroupDriver: cgroupfs
         cgroupsPerQOS: true
         clusterDNS:
-          - 10.96.0.10
+          - {{ cluster_dns_ip }}
         clusterDomain: cluster.local
         configMapAndSecretChangeDetectionStrategy: Watch
         containerLogMaxFiles: 5

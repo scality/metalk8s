@@ -1,6 +1,8 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
 
+{%- set kubernetes_service_ip = salt.metalk8s_network.get_kubernetes_service_ip() %}
+
 include:
   - metalk8s.internal.m2crypto
 
@@ -12,7 +14,7 @@ Create kubeconf file for calico:
     - client_cert_info:
         CN: {{ salt['network.get_hostname']() }}
         O: metalk8s:calico-node
-    - apiserver: https://{{ kube_api.service_ip }}:443
+    - apiserver: https://{{ kubernetes_service_ip }}:443
     - cluster: {{ kubernetes.cluster }}
     - require:
       - metalk8s_package_manager: Install m2crypto
