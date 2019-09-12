@@ -280,17 +280,17 @@ for pkgs in RPM_TO_BUILD.values():
         _RPM_TO_BUILD_PKG_NAMES.append(pkg.name)
 
 # All packages not referenced in `RPM_TO_BUILD` but listed in
-# `versions.PACKAGES` are supposed to be downloaded.
+# `versions.RPM_PACKAGES` are supposed to be downloaded.
 RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
     "{p.name}-{p.version}-{p.release}".format(p=package)
-    for package in versions.PACKAGES
+    for package in versions.RPM_PACKAGES
     if package.name not in _RPM_TO_BUILD_PKG_NAMES
 )
 
 # Store these versions in a dict to use with doit.tools.config_changed
 _TO_DOWNLOAD_CONFIG : Dict[str, str] = {
     pkg.name: "{p.version}-{p.release}".format(p=pkg)
-    for pkg in versions.PACKAGES
+    for pkg in versions.RPM_PACKAGES
     if pkg.name not in _RPM_TO_BUILD_PKG_NAMES
 }
 
