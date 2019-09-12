@@ -41,13 +41,16 @@ Configuration
       apiServer:
         host: <IP-of-the-bootstrap-node>
       archives:
-        - <path-to-extracted-directory-or-iso>
+        - <path-to-metalk8s-iso>
+
+The ``archives`` field is a list of absolute paths to MetalK8s ISO files. When
+the bootstrap script is executed, those ISOs are automatically mounted and the
+system is configured to re-mount them automatically after a reboot.
 
 .. todo::
 
    - Explain the role of this config file and its values
    - Add a note about setting HA for ``apiServer``
-   - Explain the ``archives`` list
 
 
 .. _quickstart-bootstrap-ssh:
