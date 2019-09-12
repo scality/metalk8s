@@ -14,7 +14,7 @@ Install yum-plugin-versionlock:
 {%- for repo_name, repo_config in repo.repositories.items() %}
   {%- if repo.local_mode %}
     {%- set repo_base_url = "file://" ~ 
-                            salt.metalk8s.get_products()[saltenv].path ~ "/" ~
+                            salt.metalk8s.get_archives()[saltenv].path ~ "/" ~
                             repo.relative_path %}
   {%- else %}
     {%- set repo_base_url = "http://" ~ repo_host ~ ':' ~ repo_port ~ 

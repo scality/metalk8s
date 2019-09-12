@@ -31,7 +31,7 @@ Install and start salt master manifest:
     - context:
         image: {{ image_name }}
         version: {{ image_version }}
-        products: {{ salt.metalk8s.get_products() }}
+        archives: {{ salt.metalk8s.get_archives() }}
         salt_ip: "{{ salt_ip }}"
     - require:
       - file: Create salt master directories

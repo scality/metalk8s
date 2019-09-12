@@ -169,7 +169,7 @@ stages:
               minion: $(hostname)
             apiServer:
               host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
-            products:
+            archives:
               metalk8s:
                 - /srv/scality/metalk8s-%(prop:metalk8s_version)s
             END

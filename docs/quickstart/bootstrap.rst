@@ -40,7 +40,7 @@ Configuration
         minion: <hostname-of-the-bootstrap-node>
       apiServer:
         host: <IP-of-the-bootstrap-node>
-      products:
+      archives:
         metalk8s:
           - <path-to-extracted-directory-or-iso>
 
@@ -48,7 +48,7 @@ Configuration
 
    - Explain the role of this config file and its values
    - Add a note about setting HA for ``apiServer``
-   - Explain the ``products`` list
+   - Explain the ``archives`` list
 
 
 .. _quickstart-bootstrap-ssh:

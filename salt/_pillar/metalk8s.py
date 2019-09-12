@@ -25,7 +25,7 @@ def _load_config(path):
 
     errors = (
         __utils__['pillar_utils.assert_equals'](config, expected) +
-        __utils__['pillar_utils.assert_keys'](config, ['products'])
+        __utils__['pillar_utils.assert_keys'](config, ['archives'])
     )
 
     if errors:
@@ -106,14 +106,14 @@ def _load_iso_path(config_data):
     """Load iso path from BootstrapConfiguration
 
     """
-    res = config_data['products']['metalk8s']
+    res = config_data['archives']['metalk8s']
 
     if isinstance(res, str):
         res = [res]
 
     if not isinstance(res, list):
         return __utils__['pillar_utils.errors_to_dict']([
-            "Invalid products format in config file, list or string expected "
+            "Invalid archives format in config file, list or string expected "
             "got {1}."
             .format(res)
         ])
@@ -130,7 +130,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
 
     else:
         metal_data = {
-            'products': _load_iso_path(config),
+            'archives': _load_iso_path(config),
             'ca': _load_ca(config),
             'api_server': _load_apiserver(config)
         }
@@ -140,9 +140,9 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
         'metalk8s': metal_data
     }
 
-    if not isinstance(metal_data['products'], list):
-        # Special case for products in pillar
-        __utils__['pillar_utils.promote_errors'](metal_data, 'products')
+    if not isinstance(metal_data['archives'], list):
+        # Special case for archives in pillar
+        __utils__['pillar_utils.promote_errors'](metal_data, 'archives')
     for key in ['ca', 'api_server']:
         __utils__['pillar_utils.promote_errors'](metal_data, key)
     for key in ['networks', 'metalk8s']:
