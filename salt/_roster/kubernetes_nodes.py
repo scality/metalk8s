@@ -25,8 +25,8 @@ def __virtual__():
 
 
 def targets(tgt, tgt_type='glob', **kwargs):
-    if tgt_type != 'glob':
-        log.error('Only "glob" lookups are supported for now')
+    if tgt_type not in ['glob', 'list']:
+        log.error('Only "glob" and "list" lookups are supported for now')
         return {}
 
     try:
@@ -48,7 +48,15 @@ def targets(tgt, tgt_type='glob', **kwargs):
     prefix = 'metalk8s.scality.com/ssh-'
     targets = {}
     for item in nodes.items:
-        if fnmatch.fnmatch(item.metadata.name, tgt):
+        match = False
+        if tgt_type == "glob":
+            if fnmatch.fnmatch(item.metadata.name, tgt):
+                match = True
+        elif tgt_type == "list":
+            if item.metadata.name in tgt:
+                match = True
+
+        if match:
             annotations = item.metadata.annotations
             targets[item.metadata.name] = {
                 # Assume node name is resolvable
