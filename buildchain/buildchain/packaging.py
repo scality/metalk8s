@@ -54,6 +54,7 @@ def task_packaging() -> types.TaskDict:
             '_build_rpm_packages:*',
             '_build_rpm_repositories:*',
             '_build_deb_packages:*',
+            '_download_deb_packages',
         ],
     }
 
@@ -134,7 +135,7 @@ def task__download_rpm_packages() -> types.TaskDict:
         run_config=docker_command.RPM_BASE_CONFIG
     )
     return {
-        'title': utils.title_with_target1('GET PKGS'),
+        'title': utils.title_with_target1('GET RPM PKGS'),
         'actions': [dl_packages_callable],
         'targets': [constants.PKG_RPM_ROOT/'var'],
         'task_dep': [
@@ -147,6 +148,40 @@ def task__download_rpm_packages() -> types.TaskDict:
         # Prevent Docker from polluting our output.
         'verbosity': 0,
     }
+
+
+def task__download_deb_packages() -> types.TaskDict:
+    """Download Debian packages locally."""
+    # TODO: Clean the repository
+    mounts = [
+        utils.bind_ro_mount(
+            source=constants.ROOT/'packages'/'debian'/'download_packages.py',
+            target=Path('/download_packages.py'),
+        ),
+        utils.bind_mount(
+            source=constants.REPO_DEB_ROOT,
+            target=Path('/repositories')
+        ),
+    ]
+    dl_packages_callable = docker_command.DockerRun(
+        command=['/download_packages.py', *DEB_TO_DOWNLOAD],
+        builder=DEB_BUILDER,
+        mounts=mounts,
+        environment={'SALT_VERSION': versions.SALT_VERSION},
+        run_config=docker_command.DEB_BASE_CONFIG
+    )
+    return {
+        'title': utils.title_with_target1('GET DEB PKGS'),
+        'actions': [dl_packages_callable],
+        'targets': [constants.REPO_DEB_ROOT/'.witness'],
+        'task_dep': [
+            '_package_mkdir_deb_root',
+            '_package_mkdir_deb_iso_root',
+            '_build_deb_container'
+        ],
+        'uptodate': [config_changed(_TO_DOWNLOAD_DEB_CONFIG)],
+    }
+
 
 def task__build_rpm_packages() -> Iterator[types.TaskDict]:
     """Build a RPM package."""
@@ -274,6 +309,7 @@ RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
 }
 
 _RPM_TO_BUILD_PKG_NAMES : List[str] = []
+_DEB_TO_BUILD_PKG_NAMES : List[str] = []
 
 for pkgs in RPM_TO_BUILD.values():
     for pkg in pkgs:
@@ -287,12 +323,20 @@ RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
     if package.name not in _RPM_TO_BUILD_PKG_NAMES
 )
 
+
 # Store these versions in a dict to use with doit.tools.config_changed
 _TO_DOWNLOAD_CONFIG : Dict[str, str] = {
     pkg.name: "{p.version}-{p.release}".format(p=pkg)
     for pkg in versions.RPM_PACKAGES
     if pkg.name not in _RPM_TO_BUILD_PKG_NAMES
 }
+
+_TO_DOWNLOAD_DEB_CONFIG : Dict[str, str] = {
+    pkg.name: "{p.version}-{p.release}".format(p=pkg)
+    for pkg in versions.DEB_PACKAGES
+    if pkg.name not in _DEB_TO_BUILD_PKG_NAMES
+}
+
 
 SCALITY_RPM_REPOSITORY = targets.RPMRepository(
     basename='_build_rpm_repositories',
@@ -356,5 +400,10 @@ DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
     )
 }
 
+DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
+        "{p.name}".format(p=package)
+        for package in versions.DEB_PACKAGES
+        if package.name not in DEB_TO_BUILD
+)
 
 __all__ = utils.export_only_tasks(__name__)
