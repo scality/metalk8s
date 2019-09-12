@@ -170,8 +170,7 @@ stages:
             apiServer:
               host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
             archives:
-              metalk8s:
-                - /srv/scality/metalk8s-%(prop:metalk8s_version)s
+              - /srv/scality/metalk8s-%(prop:metalk8s_version)s
             END
             EOF
       - ShellCommand:

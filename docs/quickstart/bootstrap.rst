@@ -41,8 +41,7 @@ Configuration
       apiServer:
         host: <IP-of-the-bootstrap-node>
       archives:
-        metalk8s:
-          - <path-to-extracted-directory-or-iso>
+        - <path-to-extracted-directory-or-iso>
 
 .. todo::
 

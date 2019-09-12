@@ -133,7 +133,6 @@ apiServer:
   keepalived:
     enabled: true
 archives:
-  metalk8s:
   - /srv/scality/metalk8s-$VERSION
 EOF
 

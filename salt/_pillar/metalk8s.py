@@ -106,7 +106,7 @@ def _load_iso_path(config_data):
     """Load iso path from BootstrapConfiguration
 
     """
-    res = config_data['archives']['metalk8s']
+    res = config_data['archives']
 
     if isinstance(res, str):
         res = [res]

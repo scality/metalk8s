@@ -20,8 +20,7 @@ ca:
 apiServer:
   host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
 archives:
-  metalk8s:
-    - /var/tmp/metalk8s
+  - /var/tmp/metalk8s
 EOF
 
 ls "$(dirname $OUTPUT_FILE)"
