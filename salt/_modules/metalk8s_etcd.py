@@ -30,9 +30,9 @@ def __virtual__():
         return False, "python-etcd3 not available"
 
 
-def _get_endpoint_up(ca_cert, cert_key, cert_cert):
+def _get_endpoint_up(ca_cert, cert_key, cert_cert, nodes=None):
     """Pick an answering etcd endpoint among all etcd servers."""
-    etcd_hosts = __salt__['metalk8s.minions_by_role']('etcd')
+    etcd_hosts = __salt__['metalk8s.minions_by_role']('etcd', nodes=nodes)
 
     # Get host ip from etcd_hosts
     endpoints = [
@@ -169,3 +169,33 @@ def check_etcd_health(
         raise CommandExecutionError("cluster is degraded")
     else:
         return "cluster is healthy"
+
+def get_etcd_member_list(
+        endpoint=None,
+        nodes=None,
+        ca_cert='/etc/kubernetes/pki/etcd/ca.crt',
+        cert_key='/etc/kubernetes/pki/etcd/salt-master-etcd-client.key',
+        cert_cert='/etc/kubernetes/pki/etcd/salt-master-etcd-client.crt'):
+    '''Get the list of etcd members peer urls using the python etcd3 client.'''
+    member_peer_urls = []
+    if not endpoint:
+        # If we have no endpoint get it from mine
+        try:
+            endpoint = _get_endpoint_up(
+                nodes=nodes,
+                ca_cert=ca_cert,
+                cert_key=cert_key,
+                cert_cert=cert_cert
+            )
+        except:
+            return member_peer_urls
+    with etcd3.client(host=endpoint,
+                      ca_cert=ca_cert,
+                      cert_key=cert_key,
+                      cert_cert=cert_cert,
+                      timeout=TIMEOUT) as etcd:
+        for member in etcd.members:
+            member_peer_urls.append('{0}={1}'.format(
+                member.name,
+                member.peer_urls[0]))
+    return list(set(member_peer_urls))
