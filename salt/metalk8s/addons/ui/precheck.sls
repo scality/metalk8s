@@ -6,4 +6,4 @@ Check pillar for MetalK8s UI:
       - metalk8s:endpoints:prometheus:ip
     - integer:
       - metalk8s:endpoints:salt-master:ports:api
-      - metalk8s:endpoints:prometheus:ports:api:node_port
+      - metalk8s:endpoints:prometheus:ports:web:node_port

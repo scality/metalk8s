@@ -98,6 +98,7 @@ def _handle_v1_configmap(obj, kubeconfig, context, absent):
             {'kubeconfig': kubeconfig},
             {'context': context},
             {'namespace': obj['metadata']['namespace']},
+            {'metadata': obj['metadata']},
             {'data': obj['data']},
         ],
     }
@@ -292,6 +293,22 @@ def _handle_storage_v1_storageclass(obj, kubeconfig, context, absent):
             {'volume_binding_mode': obj['volumeBindingMode']},
             {'mount_options': obj['mountOptions']},
             {'parameters': obj['parameters']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+        ]
+    }
+
+
+@handle('policy/v1beta1', 'PodSecurityPolicy')
+@handle('extensions/v1beta1', 'PodSecurityPolicy')
+def _handle_extensions_v1beta1_podsecuritypolicy(obj, kubeconfig, context,
+        absent):
+    return {
+        'metalk8s_kubernetes.podsecuritypolicy_{}'.format(
+            'absent' if absent else 'present'): [
+            {'name': obj['metadata']['name']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
             {'kubeconfig': kubeconfig},
             {'context': context},
         ]

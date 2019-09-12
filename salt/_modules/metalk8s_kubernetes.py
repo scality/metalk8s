@@ -1265,7 +1265,8 @@ def create_configmap(
     data = __enforce_only_strings_dict(data)
 
     body = kubernetes.client.V1ConfigMap(
-        metadata=__dict_to_object_meta(name, namespace, {}),
+        metadata=__dict_to_object_meta(
+                    name, namespace, kwargs.get('metadata', {})),
         data=data)
 
     cfg = _setup_conn(**kwargs)
@@ -1500,7 +1501,8 @@ def replace_configmap(name,
     data = __enforce_only_strings_dict(data)
 
     body = kubernetes.client.V1ConfigMap(
-        metadata=__dict_to_object_meta(name, namespace, {}),
+        metadata=__dict_to_object_meta(
+                    name, namespace, kwargs.get('metadata', {})),
         data=data)
 
     cfg = _setup_conn(**kwargs)
@@ -2832,6 +2834,99 @@ def replace_storageclass(
         else:
             log.exception(
                 'Exception when calling StorageV1Api->replace_storage_class'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def show_podsecuritypolicy(name, **kwargs):
+    '''
+    Return the kubernetes podsecuritypolicy defined by name
+
+    CLI Examples::
+
+        salt '*' kubernetes.show_podsecuritypolicy root-policy
+        salt '*' kubernetes.show_podsecuritypolicy name=root-policy
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.read_pod_security_policy(name)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->read_pod_security_policy'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_podsecuritypolicy(
+        name,
+        metadata,
+        spec,
+        **kwargs):
+    if not metadata:
+        metadata = {}
+    metadata['name'] = name
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    body = kubernetes.client.ExtensionsV1beta1PodSecurityPolicy(
+        metadata=meta_obj, spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.create_pod_security_policy(
+            body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->create_pod_security_policy'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_podsecuritypolicy(
+        name,
+        metadata,
+        spec,
+        **kwargs):
+    if not metadata:
+        metadata = {}
+    metadata['name'] = name
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    body = kubernetes.client.ExtensionsV1beta1PodSecurityPolicy(
+        metadata=meta_obj, spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.replace_pod_security_policy(name, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->replace_pod_security_policy'
             )
             raise CommandExecutionError(exc)
     finally:
