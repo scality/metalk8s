@@ -1,3 +1,4 @@
+//@flow
 import React from 'react';
 import styled from 'styled-components';
 import {
@@ -5,7 +6,7 @@ import {
   padding,
   jade,
   yellowOrange,
-  warmRed
+  warmRed,
 } from '@scality/core-ui/dist/style/theme';
 import { STATUS_BANNER_WARNING, STATUS_BANNER_ERROR } from '../constants';
 
@@ -49,8 +50,14 @@ const Title = styled.div`
   margin-left: ${padding.base};
   font-weight: bold;
 `;
+type Props = {
+  icon: Object,
+  title: string,
+  messages: Array<string>,
+  type: string,
+};
 
-const Banner = props => {
+const Banner = (props: Props) => {
   const { icon, title, messages, type } = props;
   let themeBanner;
   switch (type) {

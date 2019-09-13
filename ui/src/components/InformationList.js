@@ -1,7 +1,8 @@
+//@flow
 import {
   padding,
   fontSize,
-  fontWeight
+  fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import styled from 'styled-components';
 
