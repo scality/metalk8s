@@ -43,7 +43,7 @@ spec:
       volumeMounts:
         - name: nginx-configuration
           mountPath: /etc/nginx/conf.d
-        {%- for env, product in products.items() | sort(attribute='0') %}
+        {%- for env, archive in archives.items() | sort(attribute='0') %}
         - name: repositories-{{ env | replace('.', '-') }}
           mountPath: /var/www/repositories/{{ env }}/
         - name: registry-{{ env | replace('.', '-') }}
@@ -54,13 +54,13 @@ spec:
       hostPath:
         path: {{ nginx_confd_path }}
         type: Directory
-    {%- for env, product in products.items() | sort(attribute='0') %}
+    {%- for env, archive in archives.items() | sort(attribute='0') %}
     - name: repositories-{{ env | replace('.', '-') }}
       hostPath:
-        path: {{ product.path ~ package_path }}
+        path: {{ archive.path ~ package_path }}
         type: Directory
     - name: registry-{{ env | replace('.', '-') }}
       hostPath:
-        path: {{ product.path ~ image_path }}
+        path: {{ archive.path ~ image_path }}
         type: Directory
     {%- endfor %}

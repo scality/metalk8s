@@ -8,5 +8,5 @@ with the current installation:
 
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/iso-manager.sh -p <path_to_iso>
+     /srv/scality/metalk8s-X.X.X/iso-manager.sh -a <path_to_iso>
 
