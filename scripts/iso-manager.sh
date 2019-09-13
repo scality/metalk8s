@@ -14,18 +14,18 @@ SALTENV=""
 _usage() {
     echo "iso-manager.sh [options]"
     echo "Options:"
-    echo "-p/--product <product path>:     Path to product folder or ISO"
+    echo "-a/--archive <archive path>:     Path to archive folder or ISO"
     echo "-l/--log-file <logfile_path>:    Path to log file"
     echo "-v/--verbose:                    Run in verbose mode"
     echo "-d/--dry-run:                    Run actions in dry run mode"
 }
 
-PRODUCTS=()
+ARCHIVES=()
 
 while (( "$#" )); do
   case "$1" in
-    -p|--product)
-      PRODUCTS+=("$2")
+    -a|--archive)
+      ARCHIVES+=("$2")
       shift 2
       ;;
     -d|--dry-run)
@@ -149,32 +149,32 @@ containsElement () {
   return 1
 }
 
-_add_products() {
-    # Skip adding product if None passed
+_add_archives() {
+    # Skip adding archive if None passed
     [ $# -lt 1 ] && return 0
     # Use salt file.serialize merge require having full list
     # salt-call output example:
     # local: ["/srv/scality/metalk8s-2.0.0/", "/tmp/metalk8s-2.1.0.iso"]
-    # parsed products:
+    # parsed archives:
     # ("/srv/scality/metalk8s-2.0.0/" "/tmp/metalk8s-2.1.0.iso")
     IFS=" " read -r -a \
-        products <<< "$(salt-call pillar.get metalk8s:products \
+        archives <<< "$(salt-call pillar.get metalk8s:archives \
         --out txt | cut -d' ' -f2- | tr -d '[],')"
-    for product in "$@"; do
-        if ! containsElement "'$product'" "${products[@]}"; then
-            products+=("'$product'")
+    for archive in "$@"; do
+        if ! containsElement "'$archive'" "${archives[@]}"; then
+            archives+=("'$archive'")
         fi
     done
-    echo "Collecting products..."
-    echo "${products[@]}"
-    # build product list
-    product_list=${products[0]}
-    for i in "${products[@]:1}"; do
-        product_list+=,$i
+    echo "Collecting archives..."
+    echo "${archives[@]}"
+    # build archive list
+    archive_list=${archives[0]}
+    for i in "${archives[@]:1}"; do
+        archive_list+=,$i
     done
     echo "Updating bootstrap.yaml"
     $SALT_CALL state.single file.serialize "$BOOTSTRAP_CONFIG" \
-        dataset="{'products': {'metalk8s': [$product_list]}}" \
+        dataset="{'archives': {'metalk8s': [$archive_list]}}" \
         merge_if_exists=True \
         formatter=yaml \
         show_changes=True \
@@ -183,20 +183,20 @@ _add_products() {
     return $?
 }
 
-_configure_products() {
-    # Mount products
-    echo "Mounting products..."
-    $SALT_CALL state.sls metalk8s.products.mounted \
+_configure_archives() {
+    # Mount archives
+    echo "Mounting archives..."
+    $SALT_CALL state.sls metalk8s.archives.mounted \
         saltenv="$SALTENV" test=$DRY_RUN \
         --retcode-passthrough
     # Configure repos
     salt_envs=$(salt-call --out txt slsutil.renderer \
-        string="{{ salt.metalk8s.get_products().keys() | join(' ') }}" \
+        string="{{ salt.metalk8s.get_archives().keys() | join(' ') }}" \
         | cut -d' ' -f2-)
-    [[ -z $salt_envs ]] && die "Cannot detect products envs"
+    [[ -z $salt_envs ]] && die "Cannot detect archives envs"
     for salt_env in $salt_envs; do
-        echo "Configuring product $salt_env..."
-        $SALT_CALL --local state.sls metalk8s.products.configured \
+        echo "Configuring archive $salt_env..."
+        $SALT_CALL --local state.sls metalk8s.archives.configured \
             saltenv="$salt_env" \
             pillar="{'metalk8s': {'endpoints': \
             $(salt-call --out txt pillar.get metalk8s:endpoints | cut -c 8-)}}" \
@@ -205,7 +205,7 @@ _configure_products() {
     done
     # Make the new version available
     echo "Making new versions available"
-    $SALT_CALL state.sls metalk8s.products saltenv="$SALTENV" test="$DRY_RUN" \
+    $SALT_CALL state.sls metalk8s.archives saltenv="$SALTENV" test="$DRY_RUN" \
         --retcode-passthrough
 }
 
@@ -214,5 +214,5 @@ _configure_products() {
 _set_env
 [ -z "$SALTENV" ] && die "saltenv not set"
 
-run "Add products" _add_products ${PRODUCTS[@]+"${PRODUCTS[@]}"}
-run "Configure products" _configure_products
+run "Add archives" _add_archives ${ARCHIVES[@]+"${ARCHIVES[@]}"}
+run "Configure archives" _configure_archives
