@@ -15,3 +15,11 @@ Register host as part of etcd cluster:
     - name: {{ nodename }}
     - peer_urls:
        - {{ peer_url }}
+
+Check etcd cluster health:
+  metalk8s.module_run:
+    - metalk8s_etcd.check_etcd_health:
+      - minion_id: {{ nodename }}
+    - attemps: 5
+    - require:
+      - metalk8s_etcd: Register host as part of etcd cluster
