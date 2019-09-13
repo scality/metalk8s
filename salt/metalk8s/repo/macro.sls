@@ -1,8 +1,7 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
-{%- set repo_endpoint = metalk8s.endpoints.repositories %}
-{%- set repo_prefix = repo_endpoint.ip ~ ':' ~ repo_endpoint.ports.http %}
+{%- set repo_prefix = repo.registry_endpoint %}
 {%- set metalk8s_repository = repo_prefix ~ '/' ~ saltenv %}
 
 {%- macro build_image_name(name='', include_tag=True) -%}
