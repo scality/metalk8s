@@ -59,7 +59,7 @@ spec:
           mountPath: '/var/cache/salt'
         - name: run
           mountPath: '/var/run/salt'
-        {%- for env, product in products.items() | sort(attribute='0') %}
+        {%- for env, archive in archives.items() | sort(attribute='0') %}
         - name: states-{{ env | replace('.', '-') }}
           mountPath: '/srv/scality/{{ env }}/salt'
           readOnly: true
@@ -115,14 +115,14 @@ spec:
       hostPath:
         path: '/var/run/salt'
         type: Directory
-    {%- for env, product in products.items() | sort(attribute='0') %}
+    {%- for env, archive in archives.items() | sort(attribute='0') %}
     - name: states-{{ env | replace('.', '-') }}
       hostPath:
-        path: '{{ product.path }}/salt'
+        path: '{{ archive.path }}/salt'
         type: Directory
     - name: pillar-{{ env | replace('.', '-') }}
       hostPath:
-        path: '{{ product.path }}/pillar'
+        path: '{{ archive.path }}/pillar'
         type: Directory
     {%- endfor %}
     - name: metalk8s-config
