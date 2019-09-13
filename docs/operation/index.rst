@@ -10,6 +10,7 @@ do not have a working MetalK8s_ setup.
 
 .. toctree::
 
+   bootstrap_backup_restore
    preparation
    upgrade
    downgrade
