@@ -112,14 +112,15 @@ def bootstrap_config(host):
 
 
 @pytest.fixture
-def registry_address(host):
+def registry_address(host, version):
     with host.sudo():
         registry_json = host.check_output(
-            "salt-call pillar.get metalk8s:endpoints:repositories --out json"
+            "salt-call --out json slsutil.renderer string='"
+            "{% from \"metalk8s/map.jinja\" import repo with context %}"
+            "{{ repo.registry_endpoint }}' "
+            "saltenv='metalk8s-" + str(version) + "'"
         )
-    registry = json.loads(registry_json)["local"]
-
-    return "{}:{}".format(registry["ip"], registry["ports"]["http"])
+    return json.loads(registry_json)["local"]
 
 
 @pytest.fixture

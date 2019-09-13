@@ -37,6 +37,7 @@ repo:
   local_mode: false
   relative_path: packages/redhat  # relative to ISO root (configured in pillar)
   port: 8080
+  registry_endpoint: 'metalk8s-registry-from-config.invalid'
   repositories:
     metalk8s-base:
       humanname: CentOS - Base
