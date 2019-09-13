@@ -82,8 +82,11 @@ const FormSection = styled.div`
 
 const InputValue = styled.label`
   width: 200px;
-  font-weight: bold;
   font-size: ${fontSize.large};
+`;
+
+const MainInputValue = styled(InputValue)`
+  font-weight: bold;
 `;
 
 const CustomresourceEditForm = props => {
@@ -103,7 +106,6 @@ const CustomresourceEditForm = props => {
   };
 
   const validationSchema = Yup.object().shape({
-    namespaces: Yup.string().required(),
     version: Yup.string()
       .required()
       .test('is-version-valid', intl.messages.not_valid_version, value =>
@@ -145,12 +147,6 @@ const CustomresourceEditForm = props => {
               const handleSelectChange = field => selectedObj => {
                 setFieldValue(field, selectedObj.value);
               };
-              const options = namespaces.map(namespace => {
-                return {
-                  label: namespace.metadata.name,
-                  value: namespace.metadata.name
-                };
-              });
 
               const versionOptions = versions.map(option => {
                 return {
@@ -177,22 +173,12 @@ const CustomresourceEditForm = props => {
                       </FormSubSectionTitle>
                       <InputContainer>
                         <InputLabel>{intl.messages.name}</InputLabel>
-                        <InputValue>{values.name}</InputValue>
+                        <MainInputValue>{values.name}</MainInputValue>
                       </InputContainer>
-                      <Input
-                        id="namespaces_input_creation"
-                        label={intl.messages.namespace}
-                        clearable={false}
-                        type="select"
-                        options={options}
-                        placeholder={intl.messages.select_a_namespace}
-                        noResultsText={intl.messages.not_found}
-                        name="namespaces"
-                        onChange={handleSelectChange('namespaces')}
-                        value={values.namespaces}
-                        error={touched.namespaces && errors.namespaces}
-                        onBlur={handleOnBlur}
-                      />
+                      <InputContainer>
+                        <InputLabel>{intl.messages.namespace}</InputLabel>
+                        <InputValue>{values.namespaces}</InputValue>
+                      </InputContainer>
                       <Input
                         id="version_input_creation"
                         name="version"
