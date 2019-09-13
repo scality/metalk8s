@@ -1,6 +1,6 @@
 {%- from "metalk8s/map.jinja" import repo with context %}
 
-{%- set products = salt.metalk8s.get_products() %}
+{%- set archives = salt.metalk8s.get_archives() %}
 
 Generate repositories nginx configuration:
   file.managed:
@@ -46,4 +46,4 @@ Generate container registry configuration:
     - makedirs: true
     - backup: false
     - defaults:
-        products: {{ products }}
+        archives: {{ archives }}
