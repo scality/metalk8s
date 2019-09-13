@@ -3,7 +3,7 @@
 {%- set repositories_name = 'repositories' %}
 {%- set repositories_version = '1.0.0' %}
 
-{%- set products = salt.metalk8s.get_products() %}
+{%- set archives = salt.metalk8s.get_archives() %}
 {%- set solutions = pillar.metalk8s.get('solutions', {}).get('deployed', {}) %}
 
 {%- set docker_repository = 'docker.io/library' %}
@@ -22,7 +22,7 @@ include:
 Inject nginx image:
   containerd.image_managed:
     - name: {{ image_fullname }}
-    - archive_path: {{ products[saltenv].path }}/images/{{ image_name }}-{{ image_version }}.tar
+    - archive_path: {{ archives[saltenv].path }}/images/{{ image_name }}-{{ image_version }}.tar
 
 Install repositories manifest:
   metalk8s.static_pod_managed:
@@ -34,7 +34,7 @@ Install repositories manifest:
       - {{ salt.file.join(repo.config.directory, repo.config.common_registry) }}
       - {{ salt.file.join(repo.config.directory, '99-' ~ saltenv ~ '-registry.inc') }}
     - config_files_opt:
-    {%- for env in products.keys() %}
+    {%- for env in archives.keys() %}
       {%- if env != saltenv %}
       - {{ salt.file.join(repo.config.directory, '99-' ~ env ~ '-registry.inc') }}
       {%- endif %}
@@ -44,7 +44,7 @@ Install repositories manifest:
         image: {{ image_fullname }}
         name: {{ repositories_name }}
         version: {{ repositories_version }}
-        products: {{ products }}
+        archives: {{ archives }}
         solutions: {{ solutions }}
         package_path: /{{ repo.relative_path }}
         image_path: '/images/'

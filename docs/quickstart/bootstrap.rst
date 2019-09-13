@@ -40,15 +40,17 @@ Configuration
         minion: <hostname-of-the-bootstrap-node>
       apiServer:
         host: <IP-of-the-bootstrap-node>
-      products:
-        metalk8s:
-          - <path-to-extracted-directory-or-iso>
+      archives:
+        - <path-to-metalk8s-iso>
+
+The ``archives`` field is a list of absolute paths to MetalK8s ISO files. When
+the bootstrap script is executed, those ISOs are automatically mounted and the
+system is configured to re-mount them automatically after a reboot.
 
 .. todo::
 
    - Explain the role of this config file and its values
    - Add a note about setting HA for ``apiServer``
-   - Explain the ``products`` list
 
 
 .. _quickstart-bootstrap-ssh:

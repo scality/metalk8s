@@ -1,4 +1,4 @@
-{%- set products = salt.metalk8s.get_products() %}
+{%- set archives = salt.metalk8s.get_archives() %}
 
 Configure salt minion for local mode:
   file.serialize:
@@ -11,12 +11,12 @@ Configure salt minion for local mode:
     - backup: false
     - dataset:
         file_roots:
-        {%- for env, info in products.items() | sort(attribute='0') %}
+        {%- for env, info in archives.items() | sort(attribute='0') %}
           {{ env }}:
             - {{ salt.file.join(info.path, 'salt') }}
         {%- endfor %}
         pillar_roots:
-        {%- for env, info in products.items() | sort(attribute='0') %}
+        {%- for env, info in archives.items() | sort(attribute='0') %}
           {{ env }}:
             - {{ salt.file.join(info.path, 'pillar') }}
         {%- endfor %}
