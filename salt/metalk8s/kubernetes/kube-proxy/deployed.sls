@@ -6,8 +6,7 @@
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}
 
-{#- TODO: Not always use local machine as apiserver #}
-{%- set apiserver = 'https://' ~ grains['metalk8s']['control_plane_ip'] ~ ':6443' %}
+{%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
 
 Deploy kube-proxy (ServiceAccount):
   metalk8s_kubernetes.serviceaccount_present:
