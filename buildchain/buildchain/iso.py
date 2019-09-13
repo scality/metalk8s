@@ -80,7 +80,7 @@ def task_populate_iso() -> types.TaskDict:
             '_iso_mkdir_root',
             '_iso_render_bootstrap',
             '_iso_render_restore',
-            '_iso_add_node_manifest',
+            '_iso_add_example_manifests',
             '_iso_generate_product_txt',
             '_iso_add_utilities_scripts',
             'images',
@@ -96,25 +96,27 @@ def task__iso_mkdir_examples() -> types.TaskDict:
     ).task
 
 
-def task__iso_add_node_manifest() -> types.TaskDict:
-    """Copy the node announcement manifest to examples."""
-    # generic node manifest
-    src_generic = constants.ROOT/'examples'/'new-node.yaml'
-    dest_generic = constants.ISO_ROOT/'examples'/'new-node.yaml'
-    new_node_generic = [src_generic, dest_generic]
-    # vagrant node manifest
-    src_vagrant = constants.ROOT/'examples'/'new-node_vagrant.yaml'
-    dest_vagrant = constants.ISO_ROOT/'examples'/'new-node_vagrant.yaml'
-    new_node_vagrant = [src_vagrant, dest_vagrant]
+def task__iso_add_example_manifests() -> types.TaskDict:
+    """Copy the example manifests to examples."""
+
+    examples = [
+        (constants.ROOT/'examples'/name, constants.ISO_ROOT/'examples'/name)
+        for name in [
+            'new-node.yaml',
+            'new-node_vagrant.yaml',
+            'prometheus-sparse.yaml',
+        ]
+    ]
+
     return {
          'title': utils.title_with_target1('COPY'),
          'actions': [
-             (coreutils.cp_file, new_node_generic),
-             (coreutils.cp_file, new_node_vagrant)
+             (coreutils.cp_file, example)
+             for example in examples
          ],
-         'targets': [dest_generic, dest_vagrant],
+         'file_dep': [example[0] for example in examples],
+         'targets': [example[1] for example in examples],
          'task_dep': ['_iso_mkdir_examples'],
-         'file_dep': [src_generic, src_vagrant],
          'clean': True,
      }
 

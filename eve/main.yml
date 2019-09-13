@@ -290,6 +290,14 @@ stages:
             --verbose
           haltOnFailure: true
       - ShellCommand:
+          name: Provision Prometheus and AlertManager storage
+          command: >
+            sudo env
+            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
+            eve/create-volumes.sh
+          haltOnFailure: true
+      - ShellCommand:
           name: Install kubectl for running tests
           command: >
             sudo yum install -y kubectl --disablerepo=*
@@ -445,6 +453,19 @@ stages:
             sudo bash
             /var/tmp/metalk8s/bootstrap.sh --verbose
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Provision Prometheus and AlertManager storage
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          command: >
+            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
+            ssh -F $SSH_CONFIG bootstrap
+            sudo env
+            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
+            PRODUCT_MOUNT=/var/tmp/metalk8s
+            /tmp/create-volumes.sh
           haltOnFailure: true
       - ShellCommand:
           name: Install kubectl on the boostrap node

@@ -24,6 +24,19 @@ alertmanager:
         operator: 'Exists'
         effect: 'NoSchedule'
 
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: metalk8s-prometheus
+          accessModes: ['ReadWriteOnce']
+          resources:
+            requests:
+              storage: 1Gi
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus-operator-alertmanager
+
+
 prometheusOperator:
   tlsProxy:
     enabled: false
@@ -73,6 +86,17 @@ prometheus:
 
     podAntiAffinity: 'soft'
 
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: metalk8s-prometheus
+          accessModes: ['ReadWriteOnce']
+          resources:
+            requests:
+              storage: 10Gi
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus-operator-prometheus
 
 grafana:
   image:

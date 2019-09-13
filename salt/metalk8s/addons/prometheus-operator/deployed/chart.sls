@@ -19908,6 +19908,18 @@ spec:
     runAsNonRoot: true
     runAsUser: 1000
   serviceAccountName: prometheus-operator-alertmanager
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: prometheus-operator-alertmanager
+        storageClassName: metalk8s-prometheus
   tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/bootstrap
@@ -19973,6 +19985,18 @@ spec:
   serviceMonitorSelector:
     matchLabels:
       release: prometheus-operator
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: prometheus-operator-prometheus
+        storageClassName: metalk8s-prometheus
   tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/bootstrap
