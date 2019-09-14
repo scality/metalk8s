@@ -193,11 +193,17 @@ TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
     ),
 }
 
-_TO_BUILD_PKG_NAMES : List[str] = []
 
-for pkgs in TO_BUILD.values():
-    for pkg in pkgs:
-        _TO_BUILD_PKG_NAMES.append(pkg.name)
+def _list_packages_to_build(
+    pkg_cats: Dict[str, Tuple[targets.Package, ...]]
+) -> List[str]:
+    return [
+        pkg.name for pkg_list in pkg_cats.values()
+        for pkg in pkg_list
+    ]
+
+
+_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(TO_BUILD)
 
 # All packages not referenced in `TO_BUILD` but listed in `versions.PACKAGES`
 # are supposed to be downloaded.
