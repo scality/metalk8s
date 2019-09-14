@@ -144,7 +144,7 @@ def task__download_rpm_packages() -> types.TaskDict:
             '_build_rpm_container'
         ],
         'clean': [clean],
-        'uptodate': [config_changed(_TO_DOWNLOAD_CONFIG)],
+        'uptodate': [config_changed(_TO_DOWNLOAD_RPM_CONFIG)],
         # Prevent Docker from polluting our output.
         'verbosity': 0,
     }
@@ -324,18 +324,27 @@ RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
 )
 
 
-# Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_CONFIG : Dict[str, str] = {
-    pkg.name: "{p.version}-{p.release}".format(p=pkg)
-    for pkg in versions.RPM_PACKAGES
-    if pkg.name not in _RPM_TO_BUILD_PKG_NAMES
-}
+def _list_packages_to_download(
+    package_versions: Tuple[versions.Package, ...],
+    packages_to_build: List[str]
+) -> Dict[str,str]:
+    return {
+        pkg.name: "{p.version}-{p.release}".format(p=pkg)
+        for pkg in package_versions
+        if pkg.name not in packages_to_build
+    }
 
-_TO_DOWNLOAD_DEB_CONFIG : Dict[str, str] = {
-    pkg.name: "{p.version}-{p.release}".format(p=pkg)
-    for pkg in versions.DEB_PACKAGES
-    if pkg.name not in _DEB_TO_BUILD_PKG_NAMES
-}
+# Store these versions in a dict to use with doit.tools.config_changed
+_TO_DOWNLOAD_RPM_CONFIG : Dict[str, str] = _list_packages_to_download(
+    versions.PACKAGES,
+    _RPM_TO_BUILD_PKG_NAMES
+)
+
+# Store these versions in a dict to use with doit.tools.config_changed
+_TO_DOWNLOAD_DEB_CONFIG : Dict[str, str] = _list_packages_to_download(
+    versions.DEB_PACKAGES,
+    _DEB_TO_BUILD_PKG_NAMES
+)
 
 
 SCALITY_RPM_REPOSITORY = targets.RPMRepository(
