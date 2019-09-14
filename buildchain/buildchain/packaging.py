@@ -207,12 +207,22 @@ TO_DOWNLOAD : FrozenSet[str] = frozenset(
     if package.name not in _TO_BUILD_PKG_NAMES
 )
 
+
+def _list_packages_to_download(
+    package_versions: Tuple[versions.Package, ...],
+    packages_to_build: List[str]
+) -> Dict[str,str]:
+    return {
+        pkg.name: "{p.version}-{p.release}".format(p=pkg)
+        for pkg in package_versions
+        if pkg.name not in packages_to_build
+    }
+
 # Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_CONFIG : Dict[str, str] = {
-    pkg.name: "{p.version}-{p.release}".format(p=pkg)
-    for pkg in versions.PACKAGES
-    if pkg.name not in _TO_BUILD_PKG_NAMES
-}
+_TO_DOWNLOAD_CONFIG : Dict[str, str] = _list_packages_to_download(
+    versions.PACKAGES,
+    _TO_BUILD_PKG_NAMES
+)
 
 
 REPOSITORIES : Tuple[targets.Repository, ...] = (
