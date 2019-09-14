@@ -308,12 +308,32 @@ RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
     ),
 }
 
-_RPM_TO_BUILD_PKG_NAMES : List[str] = []
-_DEB_TO_BUILD_PKG_NAMES : List[str] = []
+DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
+    'scality': (
+        # SOS report custom plugins.
+        _deb_package(
+            name='metalk8s-sosreport',
+            sources=config.ROOT/'packages/common/metalk8s-sosreport',
+        ),
+        _deb_package(
+            name='calico-cni-plugin',
+            sources=SCALITY_RPM_REPOSITORY.get_rpm_path(CALICO_RPM)
+        ),
+    )
+}
 
-for pkgs in RPM_TO_BUILD.values():
-    for pkg in pkgs:
-        _RPM_TO_BUILD_PKG_NAMES.append(pkg.name)
+def _list_packages_to_build(
+    pkg_cats: Dict[str, Tuple[targets.Package, ...]]
+) -> List[str]:
+    return [
+        pkg.name for pkg_list in pkg_cats.values()
+        for pkg in pkg_list
+    ]
+
+
+_RPM_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(RPM_TO_BUILD)
+_DEB_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(DEB_TO_BUILD)
+
 
 # All packages not referenced in `RPM_TO_BUILD` but listed in
 # `versions.RPM_PACKAGES` are supposed to be downloaded.
@@ -321,6 +341,12 @@ RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
     "{p.name}-{p.version}-{p.release}".format(p=package)
     for package in versions.RPM_PACKAGES
     if package.name not in _RPM_TO_BUILD_PKG_NAMES
+)
+
+DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
+    "{p.name}".format(p=package)
+    for package in versions.DEB_PACKAGES
+    if package.name not in DEB_TO_BUILD
 )
 
 
@@ -395,24 +421,5 @@ RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
     ),
 )
 
-DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
-    'scality': (
-        # SOS report custom plugins.
-        _deb_package(
-            name='metalk8s-sosreport',
-            sources=config.ROOT/'packages/common/metalk8s-sosreport',
-        ),
-        _deb_package(
-            name='calico-cni-plugin',
-            sources=SCALITY_RPM_REPOSITORY.get_rpm_path(CALICO_RPM)
-        ),
-    )
-}
-
-DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
-        "{p.name}".format(p=package)
-        for package in versions.DEB_PACKAGES
-        if package.name not in DEB_TO_BUILD
-)
 
 __all__ = utils.export_only_tasks(__name__)
