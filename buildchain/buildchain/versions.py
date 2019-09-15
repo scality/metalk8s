@@ -6,14 +6,14 @@
 This module MUST be kept valid in a standalone context, since it is intended
 for use in tests and documentation as well.
 """
+import operator
 
 from collections import namedtuple
 from pathlib import Path
-from typing import Tuple
+from typing import cast, Optional, Tuple
 
 
 Image = namedtuple('Image', ('name', 'version', 'digest'))
-Package = namedtuple('Package', ('name', 'version', 'release'))
 
 # Project-wide versions {{{
 
@@ -218,122 +218,170 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
 
 # }}}
+
 # Packages {{{
+
+class PackageVersion:
+    """A package's authoritative version data.
+
+    This class contains version information for a named package, and
+    provides helper methods for formatting version/release data as well
+    as version-enriched package name, for all supported OS families.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        version: Optional[str] = None,
+        release: Optional[str] = None
+    ):
+        """Initializes a package version.
+
+        Arguments:
+            name: the name of the package
+            version: the version of the package
+            release: the release of the package
+        """
+        self._name     = name
+        self._version  = version
+        self._release  = release
+
+    name = property(operator.attrgetter('_name'))
+    version = property(operator.attrgetter('_version'))
+    release = property(operator.attrgetter('_release'))
+
+    @property
+    def full_version(self) -> Optional[str]:
+        """The full package version string."""
+        full_version = None
+        if self.version:
+            full_version = self.version
+            if self.release:
+                full_version = '{}-{}'.format(self.version, self.release)
+        return full_version
+
+    @property
+    def rpm_full_name(self) -> str:
+        """The package's full name in RPM conventions."""
+        if self.full_version:
+            return '{}-{}'.format(self.name, self.full_version)
+        return cast(str, self.name)
+
 
 PACKAGES = (
     # Remote packages
-    Package(
+    PackageVersion(
         name='containerd',
         version='1.2.4',
         release='1.el7',
     ),
-    Package(
+    PackageVersion(
         name='cri-tools',
         version='1.13.0',
         release='0',
     ),
-    Package(
+    PackageVersion(
         name='container-selinux',
         version='2.107',
         release='3.el7',
     ),
-    Package(
+    PackageVersion(
         name='coreutils',
         version='8.22',
         release='24.el7',
     ),
-    Package(
+    PackageVersion(
         name='ebtables',
         version='2.0.10',
         release='16.el7',
     ),
-    Package(
+    PackageVersion(
         name='ethtool',
         version='4.8',
         release='10.el7',
     ),
-    Package(
+    PackageVersion(
         name='genisoimage',
         version='1.1.11',
         release='25.el7',
     ),
-    Package(
+    PackageVersion(
         name='iproute',
         version='4.11.0',
         release='25.el7',
     ),
-    Package(
+    PackageVersion(
         name='iptables',
         version='1.4.21',
         release='33.el7',
     ),
-    Package(
+    PackageVersion(
         name='kubectl',
         version=K8S_VERSION,
         release='0',
     ),
-    Package(
+    PackageVersion(
         name='kubelet',
         version=K8S_VERSION,
         release='0',
     ),
-    Package(
+    PackageVersion(
         name='kubernetes-cni',
         version='0.7.5',
         release='0',
     ),
-    Package(
+    PackageVersion(
         name='m2crypto',
         version='0.31.0',
         release='3.el7',
     ),
-    Package(
+    PackageVersion(
         name='python2-kubernetes',
         version='8.0.1',
         release='1.el7',
     ),
-    Package(
+    PackageVersion(
         name='runc',
         version='1.0.0',
         release='65.rc8.el7.centos',
     ),
-    Package(
+    PackageVersion(
         name='salt-minion',
         version=SALT_VERSION,
         release='1.el7',
     ),
-    Package(
+    PackageVersion(
         name='skopeo',
         version='0.1.37',
         release='3.el7.centos',
     ),
-    Package(
+    PackageVersion(
         name='socat',
         version='1.7.3.2',
         release='2.el7',
     ),
-    Package(
+    PackageVersion(
         name='sos',
         version='3.7',
         release='5.el7.centos',
     ),
-    Package(
+    PackageVersion(
         name='util-linux',
         version='2.23.2',
         release='61.el7',
     ),
-    Package(
+    PackageVersion(
         name='yum-plugin-versionlock',
         version='1.1.31',
         release='52.el7',
     ),
     # Local packages
-    Package(
+    PackageVersion(
         name='metalk8s-sosreport',
         version=SHORT_VERSION,
         release='1.el7',
     ),
-    Package(
+    PackageVersion(
         name='calico-cni-plugin',
         version=CALICO_VERSION,
         release='1.el7',

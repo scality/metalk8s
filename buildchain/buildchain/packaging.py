@@ -56,11 +56,10 @@ def _list_packages_to_download(
     packages_to_build: List[str]
 ) -> Dict[str,str]:
     return {
-        pkg.name: "{p.version}-{p.release}".format(p=pkg)
+        pkg.name: pkg.full_version
         for pkg in package_versions
         if pkg.name not in packages_to_build
     }
-
 
 # }}}
 # Tasks {{{
@@ -226,24 +225,14 @@ TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
 
 _TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(TO_BUILD)
 
-# All packages not referenced in `TO_BUILD` but listed in `versions.PACKAGES`
-# are supposed to be downloaded.
+# All packages not referenced in `TO_BUILD` but listed in
+# `versions.PACKAGES` are supposed to be downloaded.
 TO_DOWNLOAD : FrozenSet[str] = frozenset(
-    "{p.name}-{p.version}-{p.release}".format(p=package)
+    package.rpm_full_name
     for package in versions.PACKAGES
     if package.name not in _TO_BUILD_PKG_NAMES
 )
 
-
-def _list_packages_to_download(
-    package_versions: Tuple[versions.Package, ...],
-    packages_to_build: List[str]
-) -> Dict[str,str]:
-    return {
-        pkg.name: "{p.version}-{p.release}".format(p=pkg)
-        for pkg in package_versions
-        if pkg.name not in packages_to_build
-    }
 
 # Store these versions in a dict to use with doit.tools.config_changed
 _TO_DOWNLOAD_CONFIG : Dict[str, str] = _list_packages_to_download(
