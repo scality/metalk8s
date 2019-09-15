@@ -6,6 +6,7 @@ buildrepo
 buildrpm
 buildsrpm
 cli
+cni
 cmd
 cp
 checksum
@@ -22,7 +23,9 @@ gofmt
 filename
 init
 io
-Kubernetes
+kubernetes
+kubectl
+kubelet
 linter
 metadata
 mkdir

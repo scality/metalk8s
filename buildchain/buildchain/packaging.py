@@ -272,7 +272,7 @@ DEB_BUILDER : targets.LocalImage = targets.LocalImage(
 # Packages to build, per repository.
 def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
     try:
-        pkg_info = versions.PACKAGES_MAP[name]
+        pkg_info = versions.RPM_PACKAGES_MAP[name]
     except KeyError:
         raise ValueError(
             'Missing version for package "{}"'.format(name)
