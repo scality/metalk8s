@@ -41,6 +41,30 @@ from buildchain import utils
 from buildchain import versions
 
 
+# Utilities {{{
+
+def _list_packages_to_build(
+    pkg_cats: Dict[str, Tuple[targets.Package, ...]]
+) -> List[str]:
+    return [
+        pkg.name for pkg_list in pkg_cats.values() for pkg in pkg_list
+    ]
+
+
+def _list_packages_to_download(
+    package_versions: Tuple[versions.PackageVersion, ...],
+    packages_to_build: List[str]
+) -> Dict[str,str]:
+    return {
+        pkg.name: "{p.version}-{p.release}".format(p=pkg)
+        for pkg in package_versions
+        if pkg.name not in packages_to_build
+    }
+
+
+# }}}
+# Tasks {{{
+
 def task_packaging() -> types.TaskDict:
     """Build the packages and repositories."""
     return {
@@ -131,6 +155,9 @@ def task__build_repositories() -> Iterator[types.TaskDict]:
         yield from repository.execution_plan
 
 
+# }}}
+# Builders {{{
+
 # Image used to build the packages
 BUILDER : targets.LocalImage = targets.LocalImage(
     name='metalk8s-build',
@@ -148,6 +175,9 @@ BUILDER : targets.LocalImage = targets.LocalImage(
         'SALT_VERSION': versions.SALT_VERSION,
     },
 )
+
+# }}}
+# RPM packages and repository {{{
 
 # Packages to build, per repository.
 def _package(name: str, sources: List[Path]) -> targets.Package:
@@ -192,15 +222,6 @@ TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
         ),
     ),
 }
-
-
-def _list_packages_to_build(
-    pkg_cats: Dict[str, Tuple[targets.Package, ...]]
-) -> List[str]:
-    return [
-        pkg.name for pkg_list in pkg_cats.values()
-        for pkg in pkg_list
-    ]
 
 
 _TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(TO_BUILD)
@@ -276,6 +297,8 @@ REPOSITORIES : Tuple[targets.Repository, ...] = (
         task_dep=['_download_packages'],
     ),
 )
+
+# }}}
 
 
 __all__ = utils.export_only_tasks(__name__)
