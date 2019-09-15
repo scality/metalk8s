@@ -41,6 +41,30 @@ from buildchain import utils
 from buildchain import versions
 
 
+# Utilities {{{
+
+def _list_packages_to_build(
+    pkg_cats: Dict[str, Tuple[targets.Package, ...]]
+) -> List[str]:
+    return [
+        pkg.name for pkg_list in pkg_cats.values() for pkg in pkg_list
+    ]
+
+
+def _list_packages_to_download(
+    package_versions: Tuple[versions.PackageVersion, ...],
+    packages_to_build: List[str]
+) -> Dict[str,str]:
+    return {
+        pkg.name: "{p.version}-{p.release}".format(p=pkg)
+        for pkg in package_versions
+        if pkg.name not in packages_to_build
+    }
+
+
+# }}}
+# Tasks {{{
+
 def task_packaging() -> types.TaskDict:
     """Build the packages and repositories."""
     return {
@@ -202,6 +226,10 @@ def task__build_rpm_repositories() -> Iterator[types.TaskDict]:
     for repository in RPM_REPOSITORIES:
         yield from repository.execution_plan
 
+
+# }}}
+# Builders {{{
+
 # Image used to build the packages
 RPM_BUILDER : targets.LocalImage = targets.LocalImage(
     name='metalk8s-rpm-build',
@@ -239,6 +267,8 @@ DEB_BUILDER : targets.LocalImage = targets.LocalImage(
     task_dep=['_build_root'],
 )
 
+# }}}
+# RPM packages and repository {{{
 
 # Packages to build, per repository.
 def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
@@ -262,27 +292,6 @@ def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
         task_dep=['_package_mkdir_rpm_root', '_build_rpm_container'],
     )
 
-
-def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
-    try:
-        pkg_info = versions.PACKAGES_MAP[name]
-    except KeyError:
-        raise ValueError(
-            'Missing version for package "{}"'.format(name)
-        )
-
-    # In case the `release` is of form "{build_id}.{os}", which is standard
-    build_id_str, _, _ = pkg_info.release.partition('.')
-
-    return targets.DEBPackage(
-        basename='_build_deb_packages',
-        name=name,
-        version=pkg_info.version,
-        build_id=int(build_id_str),
-        sources=sources,
-        builder=DEB_BUILDER,
-        task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
-    )
 
 # Calico Container Network Interface Plugin.
 CALICO_RPM = _rpm_package(
@@ -308,6 +317,58 @@ RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
     ),
 }
 
+
+_RPM_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(RPM_TO_BUILD)
+
+# All packages not referenced in `RPM_TO_BUILD` but listed in
+# `versions.RPM_PACKAGES` are supposed to be downloaded.
+RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
+    "{p.name}-{p.version}-{p.release}".format(p=package)
+    for package in versions.RPM_PACKAGES
+    if package.name not in _RPM_TO_BUILD_PKG_NAMES
+)
+
+
+# Store these versions in a dict to use with doit.tools.config_changed
+_TO_DOWNLOAD_RPM_CONFIG : Dict[str, str] = _list_packages_to_download(
+    versions.PACKAGES,
+    _RPM_TO_BUILD_PKG_NAMES
+)
+
+
+SCALITY_RPM_REPOSITORY = targets.RPMRepository(
+    basename='_build_rpm_repositories',
+    name='scality',
+    builder=RPM_BUILDER,
+    packages=RPM_TO_BUILD['scality'],
+    task_dep=['_package_mkdir_rpm_iso_root'],
+)
+
+# }}}
+# Debian packages and repositories {{{
+
+def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
+    try:
+        pkg_info = versions.DEB_PACKAGES_MAP[name]
+    except KeyError:
+        raise ValueError(
+            'Missing version for package "{}"'.format(name)
+        )
+
+    # In case the `release` is of form "{build_id}.{os}", which is standard
+    build_id_str, _, _ = pkg_info.release.partition('.')
+
+    return targets.DEBPackage(
+        basename='_build_deb_packages',
+        name=name,
+        version=pkg_info.version,
+        build_id=int(build_id_str),
+        sources=sources,
+        builder=DEB_BUILDER,
+        task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
+    )
+
+
 DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
     'scality': (
         # SOS report custom plugins.
@@ -322,49 +383,9 @@ DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
     )
 }
 
-def _list_packages_to_build(
-    pkg_cats: Dict[str, Tuple[targets.Package, ...]]
-) -> List[str]:
-    return [
-        pkg.name for pkg_list in pkg_cats.values()
-        for pkg in pkg_list
-    ]
 
-
-_RPM_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(RPM_TO_BUILD)
 _DEB_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(DEB_TO_BUILD)
 
-
-# All packages not referenced in `RPM_TO_BUILD` but listed in
-# `versions.RPM_PACKAGES` are supposed to be downloaded.
-RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
-    "{p.name}-{p.version}-{p.release}".format(p=package)
-    for package in versions.RPM_PACKAGES
-    if package.name not in _RPM_TO_BUILD_PKG_NAMES
-)
-
-DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
-    "{p.name}".format(p=package)
-    for package in versions.DEB_PACKAGES
-    if package.name not in DEB_TO_BUILD
-)
-
-
-def _list_packages_to_download(
-    package_versions: Tuple[versions.Package, ...],
-    packages_to_build: List[str]
-) -> Dict[str,str]:
-    return {
-        pkg.name: "{p.version}-{p.release}".format(p=pkg)
-        for pkg in package_versions
-        if pkg.name not in packages_to_build
-    }
-
-# Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_RPM_CONFIG : Dict[str, str] = _list_packages_to_download(
-    versions.PACKAGES,
-    _RPM_TO_BUILD_PKG_NAMES
-)
 
 # Store these versions in a dict to use with doit.tools.config_changed
 _TO_DOWNLOAD_DEB_CONFIG : Dict[str, str] = _list_packages_to_download(
@@ -373,13 +394,12 @@ _TO_DOWNLOAD_DEB_CONFIG : Dict[str, str] = _list_packages_to_download(
 )
 
 
-SCALITY_RPM_REPOSITORY = targets.RPMRepository(
-    basename='_build_rpm_repositories',
-    name='scality',
-    builder=RPM_BUILDER,
-    packages=RPM_TO_BUILD['scality'],
-    task_dep=['_package_mkdir_rpm_iso_root'],
+DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
+    "{p.name}".format(p=package)
+    for package in versions.DEB_PACKAGES
+    if package.name not in _DEB_TO_BUILD_PKG_NAMES
 )
+
 
 RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
     SCALITY_RPM_REPOSITORY,
@@ -420,6 +440,8 @@ RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
         task_dep=['_download_rpm_packages'],
     ),
 )
+
+# }}}
 
 
 __all__ = utils.export_only_tasks(__name__)
