@@ -56,11 +56,10 @@ def _list_packages_to_download(
     packages_to_build: List[str]
 ) -> Dict[str,str]:
     return {
-        pkg.name: "{p.version}-{p.release}".format(p=pkg)
+        pkg.name: pkg.full_version
         for pkg in package_versions
         if pkg.name not in packages_to_build
     }
-
 
 # }}}
 # Tasks {{{
@@ -323,7 +322,7 @@ _RPM_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(RPM_TO_BUILD)
 # All packages not referenced in `RPM_TO_BUILD` but listed in
 # `versions.RPM_PACKAGES` are supposed to be downloaded.
 RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
-    "{p.name}-{p.version}-{p.release}".format(p=package)
+    package.rpm_full_name
     for package in versions.RPM_PACKAGES
     if package.name not in _RPM_TO_BUILD_PKG_NAMES
 )
@@ -331,7 +330,7 @@ RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
 
 # Store these versions in a dict to use with doit.tools.config_changed
 _TO_DOWNLOAD_RPM_CONFIG : Dict[str, str] = _list_packages_to_download(
-    versions.PACKAGES,
+    versions.RPM_PACKAGES,
     _RPM_TO_BUILD_PKG_NAMES
 )
 
@@ -395,7 +394,7 @@ _TO_DOWNLOAD_DEB_CONFIG : Dict[str, str] = _list_packages_to_download(
 
 
 DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
-    "{p.name}".format(p=package)
+    package.deb_full_name
     for package in versions.DEB_PACKAGES
     if package.name not in _DEB_TO_BUILD_PKG_NAMES
 )
