@@ -809,32 +809,33 @@ func newPersistentVolume(
 		)
 	}
 
-	return &corev1.PersistentVolume{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:       volume.Name,
-			Labels:     map[string]string{},
-			Finalizers: []string{VOLUME_PROTECTION},
+	pv := corev1.PersistentVolume{
+		ObjectMeta: volume.Spec.Template.Metadata,
+		Spec:       volume.Spec.Template.Spec,
+	}
+	pv.ObjectMeta.Name = volume.Name
+	pv.ObjectMeta.Finalizers = append(
+		pv.ObjectMeta.Finalizers, VOLUME_PROTECTION,
+	)
+	pv.Spec.AccessModes = []corev1.PersistentVolumeAccessMode{
+		corev1.ReadWriteOnce,
+	}
+	pv.Spec.Capacity = map[corev1.ResourceName]resource.Quantity{
+		corev1.ResourceStorage: volumeSize,
+	}
+	pv.Spec.MountOptions = storageClass.MountOptions
+	pv.Spec.VolumeMode = &mode
+	pv.Spec.PersistentVolumeSource = corev1.PersistentVolumeSource{
+		Local: &corev1.LocalVolumeSource{
+			Path:   volume.GetPath(),
+			FSType: &fsType,
 		},
-		Spec: corev1.PersistentVolumeSpec{
-			AccessModes: []corev1.PersistentVolumeAccessMode{
-				corev1.ReadWriteOnce,
-			},
-			Capacity: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceStorage: volumeSize,
-			},
-			MountOptions: storageClass.MountOptions,
-			VolumeMode:   &mode,
-			PersistentVolumeSource: corev1.PersistentVolumeSource{
-				Local: &corev1.LocalVolumeSource{
-					Path:   volume.GetPath(),
-					FSType: &fsType,
-				},
-			},
-			PersistentVolumeReclaimPolicy: "Retain",
-			StorageClassName:              volume.Spec.StorageClassName,
-			NodeAffinity:                  nodeAffinity(volume.Spec.NodeName),
-		},
-	}, nil
+	}
+	pv.Spec.PersistentVolumeReclaimPolicy = "Retain"
+	pv.Spec.StorageClassName = volume.Spec.StorageClassName
+	pv.Spec.NodeAffinity = nodeAffinity(volume.Spec.NodeName)
+
+	return &pv, nil
 }
 
 func nodeAffinity(node types.NodeName) *corev1.VolumeNodeAffinity {
