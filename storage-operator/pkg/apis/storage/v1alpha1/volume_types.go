@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -42,7 +43,22 @@ type VolumeSpec struct {
 	// PersistentVolume if present.
 	StorageClassName string `json:"storageClassName"`
 
+	// Template for the underlying PersistentVolume.
+	// +optional
+	Template PersistentVolumeTemplateSpec `json:"template,omitempty"`
+
 	VolumeSource `json:",inline"`
+}
+
+// Describes the PersistentVolume that will be created to back the Volume.
+// +k8s:openapi-gen=true
+type PersistentVolumeTemplateSpec struct {
+	// Standard object's metadata.
+	// +optional
+	Metadata metav1.ObjectMeta `json:"metadata,omitempty"`
+	// Specification of the Persistent Volume.
+	// +optional
+	Spec corev1.PersistentVolumeSpec `json:"spec,omitempty"`
 }
 
 type VolumePhase string
