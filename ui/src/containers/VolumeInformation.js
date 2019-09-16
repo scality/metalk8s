@@ -9,24 +9,24 @@ import { makeGetNodeFromUrl, makeGetVolumesFromUrl } from '../services/utils';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
-  STATUS_BOUND
+  STATUS_BOUND,
 } from '../constants';
 import {
   fetchVolumesAction,
   fetchPersistentVolumeAction,
-  fetchStorageClassAction
+  fetchStorageClassAction,
 } from '../ducks/app/volumes';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
-  StyledLink
+  StyledLink,
 } from '../components/BreadcrumbStyle';
 import {
   InformationListContainer,
   InformationSpan,
   InformationLabel,
-  InformationValue
+  InformationValue,
 } from '../components/InformationList';
 
 const VolumeInformationListContainer = styled(InformationListContainer)`
@@ -58,13 +58,13 @@ const VolumeInformation = props => {
   const storageClasses = useSelector(state => state.app.volumes.storageClass);
   const currentVolumeName = match.params.volumeName;
   const volume = volumes.find(
-    volume => volume.metadata.name === currentVolumeName
+    volume => volume.metadata.name === currentVolumeName,
   );
   const pV = pVList.find(pv => pv.metadata.name === currentVolumeName);
   const storageClass = storageClasses.find(
     SC =>
       SC.metadata.name ===
-      (volume && volume.spec && volume.spec.storageClassName)
+      (volume && volume.spec && volume.spec.storageClassName),
   );
   return (
     <VolumeInformationContainer>
@@ -73,10 +73,12 @@ const VolumeInformation = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-            <StyledLink to={`/nodes/${node.name}/volumes`}>
+            <StyledLink to={`/nodes/${node.name}/volumes`} title={node.name}>
               {node.name}
             </StyledLink>,
-            <BreadcrumbLabel>{match.params.volumeName}</BreadcrumbLabel>
+            <BreadcrumbLabel title={match.params.volumeName}>
+              {match.params.volumeName}
+            </BreadcrumbLabel>,
           ]}
         />
       </BreadcrumbContainer>

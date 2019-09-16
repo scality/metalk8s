@@ -173,7 +173,10 @@ const CreateVolume = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-            <StyledLink to={`/nodes/${match.params.id}/volumes`}>
+            <StyledLink
+              to={`/nodes/${match.params.id}/volumes`}
+              title={match.params.id}
+            >
               {match.params.id}
             </StyledLink>,
             <BreadcrumbLabel>
