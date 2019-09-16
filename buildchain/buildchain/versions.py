@@ -230,7 +230,7 @@ CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
 # }}}
 # Packages {{{
 
-PACKAGES = (
+RPM_PACKAGES = (
     # Remote packages
     Package(
         name='containerd',
@@ -360,6 +360,106 @@ PACKAGES = (
     ),
 )
 
-PACKAGES_MAP = {pkg.name: pkg for pkg in PACKAGES}
+PACKAGES_MAP = {pkg.name: pkg for pkg in RPM_PACKAGES}
+
+
+DEB_PACKAGES = (
+    Package(
+        name='containerd',
+        version='',
+        release='',
+    ),
+    Package(
+        name='cri-tools',
+        version='',
+        release='',
+    ),
+    Package(
+        name='coreutils',
+        version='',
+        release='',
+    ),
+    Package(
+        name='ebtables',
+        version='',
+        release='',
+    ),
+    Package(
+        name='ethtool',
+        version='',
+        release='',
+    ),
+    Package(
+        name='e2fsprogs',
+        version='',
+        release='',
+    ),
+    Package(
+        name='genisoimage',
+        version='',
+        release='',
+    ),
+    Package(
+        name='iproute2',
+        version='',
+        release='',
+    ),
+    Package(
+        name='iptables',
+        version='',
+        release='',
+    ),
+    Package(
+        name='salt-minion={}'.format(SALT_VERSION),
+        version='',
+        release='',
+    ),
+    Package(
+        name='kubectl={}'.format(K8S_VERSION),
+        version='',
+        release='',
+    ),
+    Package(
+        name='kubelet={}'.format(K8S_VERSION),
+        version='',
+        release='',
+    ),
+    Package(
+        name='kubernetes-cni',
+        version='',
+        release='',
+    ),
+    Package(
+        name='python-m2crypto',
+        version='',
+        release='',
+    ),
+    Package(
+        name='runc',
+        version='',
+        release='',
+    ),
+    Package(
+        name='socat',
+        version='',
+        release='',
+    ),
+    Package(
+        name='sosreport',
+        version='',
+        release='',
+    ),
+    Package(
+        name='util-linux',
+        version='',
+        release='',
+    ),
+    Package(
+        name='xfsprogs',
+        version='',
+        release='',
+    ),
+)
+
 
 # }}}

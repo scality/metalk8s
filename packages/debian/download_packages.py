@@ -176,17 +176,27 @@ def download_package(package: apt.package.Version) -> pathlib.Path:
 
 def main(packages: Sequence[str], env: Mapping[str, str]) -> None:
     """Download the packages specified on the command-line."""
+    witness_file = pathlib.Path('/repositories/.witness')
+    try:
+        witness_file.unlink()
+    except FileNotFoundError:
+        pass
     add_external_repositories(env['SALT_VERSION'])
     apt_pkg.init()
     cache = apt.cache.Cache()
     to_download = {}
+    dest = pathlib.Path('/repositories')
     for package in packages:
         deps = get_package_deps(package, cache)
         to_download.update(deps)
     for pkg in to_download.values():
         filepath = download_package(pkg)
         os.chown(filepath, int(env['TARGET_UID']), int(env['TARGET_GID']))
-
+    # TODO: need to be done by the build chain
+    for directory in dest.iterdir():
+        os.chown(directory, int(env['TARGET_UID']), int(env['TARGET_GID']))
+    witness_file.touch()
+    os.chown(witness_file, int(env['TARGET_UID']), int(env['TARGET_GID']))
 
 if __name__ == '__main__':
     _, *PACKAGES = sys.argv
