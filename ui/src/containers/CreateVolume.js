@@ -12,7 +12,7 @@ import {
   fetchStorageClassAction,
   createVolumeAction,
 } from '../ducks/app/volumes';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
@@ -63,6 +63,10 @@ const CreateVolumeLayout = styled.div`
       }
     }
   }
+  .sc-select-option-label,
+  .sc-select__placeholder {
+    font-size: ${fontSize.base};
+  }
 `;
 
 const SizeFieldContainer = styled.div`
@@ -70,14 +74,15 @@ const SizeFieldContainer = styled.div`
   align-items: flex-start;
   .sc-input-wrapper,
   .sc-input-type {
-    width: 120px;
+    width: 100px;
     box-sizing: border-box;
+    height: 38px;
   }
 `;
 
 const SizeUnitFieldSelectContainer = styled.div`
   .sc-select {
-    width: 75px;
+    width: 100px;
     padding-left: 5px;
   }
 `;
@@ -231,6 +236,10 @@ const CreateVolume = props => {
             const handleSelectChange = field => selectedObj => {
               setFieldValue(field, selectedObj ? selectedObj.value : '');
             };
+            //get the select item from the object array
+            const getSelectedObjectItem = (items, selectedValue) => {
+              return items.find(item => item.value === selectedValue);
+            };
 
             const optionsStorageClasses = storageClassesName.map(SCName => {
               return {
@@ -280,10 +289,13 @@ const CreateVolume = props => {
                     type="select"
                     options={optionsStorageClasses}
                     placeholder={intl.messages.select_a_storageClass}
-                    noResultsText={intl.messages.no_results}
+                    noOptionsMessage={() => intl.messages.no_results}
                     name="storageClass"
                     onChange={handleSelectChange('storageClass')}
-                    value={values.storageClass}
+                    value={getSelectedObjectItem(
+                      optionsStorageClasses,
+                      values?.storageClass,
+                    )}
                     error={touched.storageClass && errors.storageClass}
                     onBlur={handleOnBlur}
                   />
@@ -294,10 +306,10 @@ const CreateVolume = props => {
                     type="select"
                     options={optionsTypes}
                     placeholder={intl.messages.select_a_type}
-                    noResultsText={intl.messages.no_results}
+                    noOptionsMessage={() => intl.messages.no_results}
                     name="type"
                     onChange={handleSelectChange('type')}
-                    value={values.type}
+                    value={getSelectedObjectItem(optionsTypes, values?.type)}
                     error={touched.type && errors.type}
                     onBlur={handleOnBlur}
                   />
@@ -320,11 +332,13 @@ const CreateVolume = props => {
                           clearable={false}
                           type="select"
                           options={optionsSizeUnits}
-                          placeholder={intl.messages.select_a_type}
-                          noResultsText={intl.messages.no_results}
+                          noOptionsMessage={() => intl.messages.no_results}
                           name="selectedUnit"
                           onChange={handleSelectChange('selectedUnit')}
-                          value={values.selectedUnit}
+                          value={getSelectedObjectItem(
+                            optionsSizeUnits,
+                            values?.selectedUnit,
+                          )}
                           error={touched.selectedUnit && errors.selectedUnit}
                           onBlur={handleOnBlur}
                         />

@@ -1,6 +1,4 @@
 import '@fortawesome/fontawesome-free/css/all.css';
-import 'react-select/dist/react-select.css';
-import 'react-virtualized-select/styles.css';
 
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
@@ -22,7 +20,7 @@ import { initToggleSideBarAction } from '../ducks/app/layout';
 
 const messages = {
   EN: translations_en,
-  FR: translations_fr
+  FR: translations_fr,
 };
 
 addLocaleData([...locale_en, ...locale_fr]);
@@ -54,20 +52,20 @@ class App extends Component {
 
 const mapStateToProps = state => ({
   config: state.config,
-  isUserInfoLoaded: state.login.isUserInfoLoaded
+  isUserInfoLoaded: state.login.isUserInfoLoaded,
 });
 
 const mapDispatchToProps = dispatch => {
   return {
     fetchConfig: () => dispatch(fetchConfigAction()),
     setInitialLanguage: () => dispatch(setInitialLanguageAction()),
-    initToggleSideBar: () => dispatch(initToggleSideBarAction())
+    initToggleSideBar: () => dispatch(initToggleSideBarAction()),
   };
 };
 
 export default withRouter(
   connect(
     mapStateToProps,
-    mapDispatchToProps
-  )(App)
+    mapDispatchToProps,
+  )(App),
 );
