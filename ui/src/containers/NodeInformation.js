@@ -216,8 +216,8 @@ const NodeInformation = props => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
-            <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-            <BreadcrumbLabel>{node.name}</BreadcrumbLabel>,
+            <StyledLink to="/nodes">{intl.messages.nodes} </StyledLink>,
+            <BreadcrumbLabel title={node.name}>{node.name}</BreadcrumbLabel>,
           ]}
         />
       </BreadcrumbContainer>
