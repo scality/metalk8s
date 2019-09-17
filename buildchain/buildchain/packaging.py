@@ -27,7 +27,7 @@ Overview;
 
 
 from pathlib import Path
-from typing import Dict, FrozenSet, Iterator, List, Tuple
+from typing import Dict, FrozenSet, Iterator, List, Mapping, Optional, Tuple
 
 from doit.tools import config_changed  # type: ignore
 
@@ -44,7 +44,7 @@ from buildchain import versions
 # Utilities {{{
 
 def _list_packages_to_build(
-    pkg_cats: Dict[str, Tuple[targets.Package, ...]]
+    pkg_cats: Mapping[str, Tuple[targets.Package, ...]]
 ) -> List[str]:
     return [
         pkg.name for pkg_list in pkg_cats.values() for pkg in pkg_list
@@ -54,7 +54,7 @@ def _list_packages_to_build(
 def _list_packages_to_download(
     package_versions: Tuple[versions.PackageVersion, ...],
     packages_to_build: List[str]
-) -> Dict[str,str]:
+) -> Dict[str, Optional[str]]:
     return {
         pkg.name: pkg.full_version
         for pkg in package_versions
@@ -329,10 +329,8 @@ RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
 
 
 # Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_RPM_CONFIG : Dict[str, str] = _list_packages_to_download(
-    versions.RPM_PACKAGES,
-    _RPM_TO_BUILD_PKG_NAMES
-)
+_TO_DOWNLOAD_RPM_CONFIG: Dict[str, Optional[str]] = \
+    _list_packages_to_download(versions.RPM_PACKAGES, _RPM_TO_BUILD_PKG_NAMES)
 
 
 SCALITY_RPM_REPOSITORY = targets.RPMRepository(
@@ -387,10 +385,8 @@ _DEB_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(DEB_TO_BUILD)
 
 
 # Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_DEB_CONFIG : Dict[str, str] = _list_packages_to_download(
-    versions.DEB_PACKAGES,
-    _DEB_TO_BUILD_PKG_NAMES
-)
+_TO_DOWNLOAD_DEB_CONFIG: Dict[str, Optional[str]] = \
+    _list_packages_to_download(versions.DEB_PACKAGES, _DEB_TO_BUILD_PKG_NAMES)
 
 
 DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
