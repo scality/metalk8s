@@ -63,6 +63,10 @@ const CreateVolumeLayout = styled.div`
       }
     }
   }
+  .sc-select-option-label,
+  .sc-select__placeholder {
+    font-size: 14px;
+  }
 `;
 
 const SizeFieldContainer = styled.div`
@@ -70,14 +74,15 @@ const SizeFieldContainer = styled.div`
   align-items: flex-start;
   .sc-input-wrapper,
   .sc-input-type {
-    width: 120px;
+    width: 100px;
     box-sizing: border-box;
+    height: 38px;
   }
 `;
 
 const SizeUnitFieldSelectContainer = styled.div`
   .sc-select {
-    width: 75px;
+    width: 100px;
     padding-left: 5px;
   }
 `;
@@ -279,11 +284,10 @@ const CreateVolume = props => {
                     clearable={false}
                     type="select"
                     options={optionsStorageClasses}
-                    placeholder={intl.messages.select_a_type}
                     noOptionsMessage={() => intl.messages.no_results}
                     name="storageClass"
                     onChange={handleSelectChange('storageClass')}
-                    value={values.storageClass}
+                    value={optionsStorageClasses[0]}
                     error={touched.storageClass && errors.storageClass}
                     onBlur={handleOnBlur}
                   />
@@ -293,11 +297,12 @@ const CreateVolume = props => {
                     clearable={false}
                     type="select"
                     options={optionsTypes}
-                    placeholder={intl.messages.select_a_type}
                     noOptionsMessage={() => intl.messages.no_results}
                     name="type"
                     onChange={handleSelectChange('type')}
-                    value={values.type}
+                    value={optionsTypes.find(
+                      optionType => optionType.value === values.type,
+                    )}
                     error={touched.type && errors.type}
                     onBlur={handleOnBlur}
                   />
@@ -320,11 +325,13 @@ const CreateVolume = props => {
                           clearable={false}
                           type="select"
                           options={optionsSizeUnits}
-                          placeholder={intl.messages.select_a_type}
                           noOptionsMessage={() => intl.messages.no_results}
                           name="selectedUnit"
                           onChange={handleSelectChange('selectedUnit')}
-                          value={values.selectedUnit}
+                          value={optionsSizeUnits.find(
+                            optionsSizeUnit =>
+                              optionsSizeUnit.value === values.selectedUnit,
+                          )}
                           error={touched.selectedUnit && errors.selectedUnit}
                           onBlur={handleOnBlur}
                         />
