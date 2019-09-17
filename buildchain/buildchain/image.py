@@ -166,7 +166,6 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
     ],
     constants.COREOS_REPOSITORY: [
         'configmap-reload',
-        'kube-rbac-proxy',
         'kube-state-metrics',
         'prometheus-config-reloader',
         'prometheus-operator',
@@ -175,7 +174,6 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
         'nginx',
     ],
     constants.GOOGLE_REPOSITORY: [
-        'addon-resizer-amd64',
         'coredns',
         'etcd',
         'kube-apiserver',
