@@ -1,12 +1,12 @@
+//@flow
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
-import { Table } from '@scality/core-ui';
+import { Table, Tooltip } from '@scality/core-ui';
 import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
-import Tooltip from '../components/Tooltip';
 import {
   refreshClusterStatusAction,
   refreshAlertsAction,
@@ -158,7 +158,6 @@ const ClusterMonitoring = props => {
   );
 
   const sortedAlerts = sortSelector(alerts, sortBy, sortDirection);
-
   return (
     <PageContainer>
       <ClusterStatusTitleContainer>

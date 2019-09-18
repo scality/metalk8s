@@ -4,10 +4,16 @@ import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Button, Table, Loader, Modal, SearchInput } from '@scality/core-ui';
+import {
+  Button,
+  Table,
+  Loader,
+  Modal,
+  SearchInput,
+  Tooltip,
+} from '@scality/core-ui';
 import { padding, grayLight } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-import Tooltip from '../components/Tooltip';
 import {
   sortSelector,
   sortCapacity,
