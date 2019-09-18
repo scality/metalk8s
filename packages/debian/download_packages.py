@@ -75,8 +75,6 @@ def fetch_binary(
     package: apt.package.Version, destdir: pathlib.Path
 ) -> pathlib.Path:
     """Download the DEB file corresponding to the given package."""
-    destdir.mkdir(exist_ok=True)  # TODO: to be done by the build chain.
-
     filename = pathlib.Path(package.filename).name
     destfile = destdir/filename
     print('Downloading package {}'.format(filename))
@@ -185,16 +183,12 @@ def main(packages: Sequence[str], env: Mapping[str, str]) -> None:
     apt_pkg.init()
     cache = apt.cache.Cache()
     to_download = {}
-    dest = pathlib.Path('/repositories')
     for package in packages:
         deps = get_package_deps(package, cache)
         to_download.update(deps)
     for pkg in to_download.values():
         filepath = download_package(pkg)
         os.chown(filepath, int(env['TARGET_UID']), int(env['TARGET_GID']))
-    # TODO: need to be done by the build chain
-    for directory in dest.iterdir():
-        os.chown(directory, int(env['TARGET_UID']), int(env['TARGET_GID']))
     witness_file.touch()
     os.chown(witness_file, int(env['TARGET_UID']), int(env['TARGET_GID']))
 
