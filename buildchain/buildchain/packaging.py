@@ -175,7 +175,22 @@ def task__download_rpm_packages() -> types.TaskDict:
 
 def task__download_deb_packages() -> types.TaskDict:
     """Download Debian packages locally."""
-    # TODO: Clean the repository
+    def clean() -> None:
+        """Delete cache and repositories on the ISO."""
+        for repository in DEB_REPOSITORIES:
+            # Repository with an explicit list of packages are created by a
+            # dedicated task that will also handle their cleaning, so we skip
+            # them here.
+            if repository.packages:
+                continue
+            coreutils.rm_rf(repository.rootdir)
+        constants.REPO_DEB_ROOT.rmdir()
+
+    def mkdirs() -> None:
+        """Create directories for the repositories."""
+        for repository in DEB_REPOSITORIES:
+            repository.rootdir.mkdir(exist_ok=True)
+
     mounts = [
         utils.bind_ro_mount(
             source=constants.ROOT/'packages'/'debian'/'download_packages.py',
@@ -195,14 +210,17 @@ def task__download_deb_packages() -> types.TaskDict:
     )
     return {
         'title': utils.title_with_target1('GET DEB PKGS'),
-        'actions': [dl_packages_callable],
+        'actions': [mkdirs, dl_packages_callable],
         'targets': [constants.REPO_DEB_ROOT/'.witness'],
         'task_dep': [
             '_package_mkdir_deb_root',
             '_package_mkdir_deb_iso_root',
             '_build_deb_container'
         ],
+        'clean': [clean],
         'uptodate': [config_changed(_TO_DOWNLOAD_DEB_CONFIG)],
+        # Prevent Docker from polluting our output.
+        'verbosity': 0,
     }
 
 
