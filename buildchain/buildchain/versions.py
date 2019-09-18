@@ -19,7 +19,7 @@ Package = namedtuple('Package', ('name', 'version', 'release'))
 
 CALICO_VERSION     : str = '3.8.2'
 K8S_VERSION        : str = '1.11.10'
-KEEPALIVED_VERSION : str = '1.3.5-8.el7_6'
+KEEPALIVED_VERSION : str = '1.3.5-16.el7'
 SALT_VERSION       : str = '2018.3.4'
 
 def load_version_information() -> None:
@@ -234,13 +234,13 @@ PACKAGES = (
     ),
     Package(
         name='container-selinux',
-        version='2.99',
-        release='1.el7_6',
+        version='2.107',
+        release='3.el7',
     ),
     Package(
         name='coreutils',
         version='8.22',
-        release='23.el7',
+        release='24.el7',
     ),
     Package(
         name='ebtables',
@@ -250,7 +250,7 @@ PACKAGES = (
     Package(
         name='ethtool',
         version='4.8',
-        release='9.el7',
+        release='10.el7',
     ),
     Package(
         name='genisoimage',
@@ -260,12 +260,12 @@ PACKAGES = (
     Package(
         name='iproute',
         version='4.11.0',
-        release='14.el7_6.2',
+        release='25.el7',
     ),
     Package(
         name='iptables',
         version='1.4.21',
-        release='28.el7',
+        release='33.el7',
     ),
     Package(
         name='kubectl',
@@ -295,7 +295,7 @@ PACKAGES = (
     Package(
         name='runc',
         version='1.0.0',
-        release='59.dev.git2abd837.el7.centos',
+        release='65.rc8.el7.centos',
     ),
     Package(
         name='salt-minion',
@@ -304,8 +304,8 @@ PACKAGES = (
     ),
     Package(
         name='skopeo',
-        version='0.1.35',
-        release='2.git404c5bd.el7.centos',
+        version='0.1.37',
+        release='3.el7.centos',
     ),
     Package(
         name='socat',
@@ -314,18 +314,18 @@ PACKAGES = (
     ),
     Package(
         name='sos',
-        version='3.6',
-        release='17.el7.centos',
+        version='3.7',
+        release='5.el7.centos',
     ),
     Package(
         name='util-linux',
         version='2.23.2',
-        release='59.el7_6.1',
+        release='61.el7',
     ),
     Package(
         name='yum-plugin-versionlock',
         version='1.1.31',
-        release='50.el7',
+        release='52.el7',
     ),
     # Local packages
     Package(
