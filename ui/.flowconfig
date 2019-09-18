@@ -1,5 +1,4 @@
 [ignore]
-./node_modules/.*
 .*/node_modules/module-deps/.*
 [include]
 src/.*
