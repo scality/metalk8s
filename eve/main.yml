@@ -15,6 +15,7 @@ stages:
           name: Trigger build, docs and lint stages simultaneously
           stage_names:
             - build
+            - buildprev
             - docs
             - lint
             - unit_tests
@@ -80,6 +81,68 @@ stages:
             - "*.iso"
             - SHA256SUM
             - product.txt
+
+  buildprev:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-builder/pod.yaml
+      images:
+        docker-builder: eve/workers/pod-builder
+    steps:
+      - ShellCommand:
+          name: Wait for Docker daemon to be ready
+          command: |
+            bash -c '
+            for i in {1..150}
+            do
+              docker info &> /dev/null && exit
+              sleep 2
+            done
+            echo "Could not reach Docker daemon from buildbot worker" >&2
+            exit 1'
+          haltOnFailure: true
+      - SetPropertyFromCommand:
+          name: set product_version_prev
+          property: product_version_prev
+          command: >
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+              echo "$major.$(( $minor-1 ))"
+      - ShellCommand:
+          name: clone previous version branch
+          command: >
+              git clone "%(prop:repository)s" \
+                  --branch "development/%(prop:product_version_prev)s" \
+                  metalk8s-"%(prop:product_version_prev)s"
+      - SetPropertyFromCommand:
+          name: set product_full_version
+          property: product_full_version
+          command: >
+              bash -c '
+              source metalk8s-%(prop:product_version_prev)s/VERSION &&
+              echo %(prop:product_version_prev)s.$VERSION_PATCH$VERSION_SUFFIX'
+      - ShellCommand:
+          name: build everything
+          env:
+            PYTHON_SYS: python36
+          # There are 3 CPUs available for Docker, and 1 for `doit` in the Pod.
+          # Given the network IO-bound nature of some of the build steps, and
+          # most build steps running in Docker, set concurrency to 4.
+          command: cd metalk8s-%(prop:product_version_prev)s && ./doit.sh -n 4
+          usePTY: true
+      - ShellCommand:
+          name: Put the iso file in a separate folder
+          command: >
+            mkdir iso/pre -p &&
+            cp metalk8s-%(prop:product_version_prev)s/_build/metalk8s.iso \
+              iso/pre/metalk8s-%(prop:product_full_version)s.iso &&
+            cp metalk8s-%(prop:product_version_prev)s/_build/SHA256SUM \
+              iso/pre/SHA256SUM-%(prop:product_full_version)s &&
+            cp metalk8s-%(prop:product_version_prev)s/_build/root/product.txt \
+              iso/pre/product-%(prop:product_full_version)s.txt
+      - Upload:
+          name: upload artifacts
+          source: iso/
 
   docs:
     worker:
