@@ -161,7 +161,7 @@ class RPMRepository(Repository):
             'name': 'build_repodata',
             'actions': actions,
             'doc': 'Build the {} repository metadata.'.format(self.name),
-            'title': utils.title_with_target1('BUILD REPO'),
+            'title': utils.title_with_target1('BUILD RPM REPO'),
             'targets': targets,
             'uptodate': [True],
             'clean': [clean],
@@ -299,3 +299,52 @@ class RPMRepository(Repository):
         )
 
         return buildrepo_callable
+
+
+class DEBRepository(Repository):
+    """A software repository for Debian."""
+
+    def __init__(
+        self,
+        basename: str,
+        name: str,
+        builder: image.ContainerImage,
+        **kwargs: Any
+    ):
+        super ().__init__(
+            basename, name, builder, constants.REPO_DEB_ROOT,
+            **kwargs
+        )
+        task = self.basic_task
+        task['task_dep'].append('_download_deb_packages')
+
+
+    @property
+    def fullname(self) -> str:
+        """Repository full name."""
+        return '{project}-{repo}'.format(
+            project=config.PROJECT_NAME.lower(),
+            repo=self.name,
+        )
+
+    def _mkdir_deb_repo_root(self) -> types.TaskDict:
+        """Create the root directory for the repository."""
+        task = self.basic_task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
+        task.update({
+            'name': MKDIR_ROOT_TASK_NAME,
+            'doc': 'Create root directory for the {} repository.'.format(
+                self.name
+            ),
+            'title': mkdir['title'],
+            'actions': mkdir['actions'],
+            'uptodate': [True],
+            'targets': mkdir['targets'],
+        })
+        return task
+
+    def build_packages(self) -> List[types.TaskDict]:
+        return []
+
+    def build_repo(self) -> types.TaskDict:
+        return self.basic_task
