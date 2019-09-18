@@ -341,6 +341,48 @@ SCALITY_RPM_REPOSITORY = targets.RPMRepository(
     task_dep=['_package_mkdir_rpm_iso_root'],
 )
 
+
+RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
+    SCALITY_RPM_REPOSITORY,
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
+        name='base',
+        builder=RPM_BUILDER,
+        task_dep=['_download_rpm_packages'],
+    ),
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
+        name='extras',
+        builder=RPM_BUILDER,
+        task_dep=['_download_rpm_packages'],
+    ),
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
+        name='updates',
+        builder=RPM_BUILDER,
+        task_dep=['_download_rpm_packages'],
+    ),
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
+        name='epel',
+        builder=RPM_BUILDER,
+        task_dep=['_download_rpm_packages'],
+    ),
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
+        name='kubernetes',
+        builder=RPM_BUILDER,
+        task_dep=['_download_rpm_packages'],
+    ),
+    targets.RPMRepository(
+        basename='_build_rpm_repositories',
+        name='saltstack',
+        builder=RPM_BUILDER,
+        task_dep=['_download_rpm_packages'],
+    ),
+)
+
+
 # }}}
 # Debian packages and repositories {{{
 
@@ -396,47 +438,46 @@ DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
 )
 
 
-RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
-    SCALITY_RPM_REPOSITORY,
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='base',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
+DEB_REPOSITORIES : Tuple[targets.DEBRepository, ...] = (
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='scality',
+        builder=DEB_BUILDER,
+        packages=DEB_TO_BUILD['scality'],
+        task_dep=['_package_mkdir_deb_iso_root'],
     ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='extras',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='bionic',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
     ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='updates',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='bionic-backports',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
     ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='epel',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='bionic-updates',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
     ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='kubernetes',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='kubernetes-xenial',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
     ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='saltstack',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='salt_ubuntu1804',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
     ),
 )
 
 # }}}
-
 
 __all__ = utils.export_only_tasks(__name__)
