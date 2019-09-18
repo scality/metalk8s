@@ -131,9 +131,13 @@ def task__package_mkdir_deb_iso_root() -> types.TaskDict:
 
 def task__download_rpm_packages() -> types.TaskDict:
     """Download packages locally."""
+    def mkdirs() -> None:
+        """Create directories for the repositories."""
+        for repository in RPM_REPOSITORIES:
+            repository.rootdir.mkdir(exist_ok=True)
+
     def clean() -> None:
         """Delete cache and repositories on the ISO."""
-        coreutils.rm_rf(constants.PKG_RPM_ROOT/'var')
         for repository in RPM_REPOSITORIES:
             # Repository with an explicit list of packages are created by a
             # dedicated task that will also handle their cleaning, so we skip
@@ -143,15 +147,16 @@ def task__download_rpm_packages() -> types.TaskDict:
             coreutils.rm_rf(repository.rootdir)
 
     mounts = [
-        utils.bind_mount(
-            source=constants.PKG_RPM_ROOT, target=Path('/install_root')
+        utils.bind_ro_mount(
+            target=Path('/download_packages.py'),
+            source=constants.ROOT/'packages'/'redhat'/'download_packages.py',
         ),
         utils.bind_mount(
             source=constants.REPO_RPM_ROOT, target=Path('/repositories')
         ),
     ]
     dl_packages_callable = docker_command.DockerRun(
-        command=['/entrypoint.sh', 'download_packages', *RPM_TO_DOWNLOAD],
+        command=['/download_packages.py', *RPM_TO_DOWNLOAD],
         builder=RPM_BUILDER,
         mounts=mounts,
         environment={'RELEASEVER': 7},
@@ -159,7 +164,7 @@ def task__download_rpm_packages() -> types.TaskDict:
     )
     return {
         'title': utils.title_with_target1('GET RPM PKGS'),
-        'actions': [dl_packages_callable],
+        'actions': [mkdirs, dl_packages_callable],
         'targets': [constants.PKG_RPM_ROOT/'var'],
         'task_dep': [
             '_package_mkdir_rpm_root',
@@ -322,7 +327,7 @@ _RPM_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(RPM_TO_BUILD)
 # All packages not referenced in `RPM_TO_BUILD` but listed in
 # `versions.RPM_PACKAGES` are supposed to be downloaded.
 RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
-    package.rpm_full_name
+    package.deb_full_name
     for package in versions.RPM_PACKAGES
     if package.name not in _RPM_TO_BUILD_PKG_NAMES
 )
