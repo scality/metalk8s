@@ -195,7 +195,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         data={
             'kubernetes': {'version': versions.K8S_VERSION},
             'packages': {
-                pkg.name: {'version': "{}-{}".format(pkg.version, pkg.release)}
+                pkg.name: {'version': pkg.full_version}
                 for pkg in versions.RPM_PACKAGES
             },
             'images': {
