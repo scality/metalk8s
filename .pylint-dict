@@ -6,6 +6,7 @@ buildrepo
 buildrpm
 buildsrpm
 cli
+cni
 cmd
 cp
 checksum
@@ -20,6 +21,9 @@ epel
 filename
 init
 io
+kubernetes
+kubectl
+kubelet
 linter
 metadata
 mkdir
