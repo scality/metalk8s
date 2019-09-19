@@ -104,7 +104,7 @@ stages:
               major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
               echo "$major.$(( $minor-1 ))"
-      - ShellCommand:
+      - ShellCommand: &clone_previous_version
           name: clone previous version branch
           command: >
               git clone "%(prop:repository)s" \
@@ -266,7 +266,7 @@ stages:
             tox -e tests-local --
             -m "post and ci and not multinode and slow"
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &collect_sos_report
           name: Collect logs using sosreport
           command: >
             sudo sosreport --all-logs
@@ -275,13 +275,13 @@ stages:
             --batch --tmp-dir /var/tmp &&
             sudo chown eve:eve /var/tmp/sosreport*
           alwaysRun: true
-      - ShellCommand:
+      - ShellCommand: &copy_sos_report
           name: Copy sosreport to correct directory structure
           command: >
             mkdir -p sosreport/sosreport/single-node &&
             cp /var/tmp/sosreport* sosreport/sosreport/single-node
           alwaysRun: true
-      - Upload:
+      - Upload: &upload_sos_artifact
           name: upload artifacts
           source: sosreport
       - ShellCommand:
@@ -312,6 +312,30 @@ stages:
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
             --destination-version %(prop:metalk8s_prev_version)s
+      - ShellCommand:
+          name: clean sos report
+          command: rm -f sosreport/sosreport/single-node/*
+      - ShellCommand: *collect_sos_report
+      - ShellCommand: *copy_sos_report
+      - Upload: *upload_sos_artifact
+      - SetPropertyFromCommand:
+          name: set product_version_prev
+          property: product_version_prev
+          command: >
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+              echo "$major.$(( $minor-1 ))"
+      - ShellCommand: *clone_previous_version
+      - ShellCommand:
+          name: Run tests locally
+          env:
+            ISO_MOUNTPOINT: >
+              /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
+          command: >
+            cd metalk8s-%(prop:product_version_prev)s &&
+            tox -e tests-local --
+            -m "post and ci and not multinode and not slow"
+          haltOnFailure: true
       - ShellCommand:
           name: Debug step - wait 1 hour before allowing resource destruction
           timeout: 3600
