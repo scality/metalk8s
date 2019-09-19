@@ -1,4 +1,4 @@
-{% set hostname = pillar.get('mark_control_plane_hostname', salt['network.get_hostname']()) %}
+{% set node_name = pillar.bootstrap_id %}
 
 {% set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {% set context = "kubernetes-admin@kubernetes" %}
@@ -8,7 +8,7 @@ Apply control-plane master role label:
     - name: "node-role.kubernetes.io/master"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - node: {{ hostname }}
+    - node: {{ node_name }}
     - value: ""
 
 Apply control-plane etcd role label:
@@ -16,7 +16,7 @@ Apply control-plane etcd role label:
     - name: "node-role.kubernetes.io/etcd"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - node: {{ hostname }}
+    - node: {{ node_name }}
     - value: ""
 
 Apply control-plane bootstrap role label:
@@ -24,7 +24,7 @@ Apply control-plane bootstrap role label:
     - name: "node-role.kubernetes.io/bootstrap"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - node: {{ hostname }}
+    - node: {{ node_name }}
     - value: ""
 
 Apply control-plane infra role label:
@@ -32,12 +32,12 @@ Apply control-plane infra role label:
     - name: "node-role.kubernetes.io/infra"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - node: {{ hostname }}
+    - node: {{ node_name }}
     - value: ""
 
 Apply control-plane taints:
   metalk8s_kubernetes.node_taints_present:
-    - name: {{ hostname }}
+    - name: {{ node_name }}
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - taints:
@@ -51,7 +51,7 @@ Apply node version label:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - name: "metalk8s.scality.com/version"
-    - node: {{ hostname }}
+    - node: {{ node_name }}
     - value: "@@VERSION"
 
 Annotate with CRI socket information:
@@ -59,7 +59,7 @@ Annotate with CRI socket information:
     - name: "kubeadm.alpha.kubernetes.io/cri-socket"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - node: {{ hostname }}
+    - node: {{ node_name }}
     # TODO: the socket location may become configurable, we should make sure
     #       this value is accurate (hardcoded to the default value for now)
     - value: "/run/containerd/containerd.sock"
