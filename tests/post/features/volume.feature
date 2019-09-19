@@ -21,8 +21,13 @@ Feature: Volume management
               storageClassName: metalk8s-prometheus
               sparseLoopDevice:
                 size: 10Gi
+              template:
+                metadata:
+                  labels:
+                    random-key: random-value
         Then the Volume 'volume1' is 'Available'
         And the PersistentVolume 'volume1' has size '10Gi'
+        And the PersistentVolume 'volume1' has label 'random-key' with value 'random-value'
         And the backing storage for Volume 'volume1' is created
 
     Scenario: Test volume deletion (sparseLoopDevice)

@@ -62,6 +62,16 @@ spec:
                 Also, any mount options are copied from the StorageClass to the PersistentVolume
                 if present.
               type: string
+            template:
+              description: Template for the underlying PersistentVolume.
+              properties:
+                metadata:
+                  description: Standard object's metadata.
+                  type: object
+                spec:
+                  description: Specification of the Persistent Volume.
+                  type: object
+              type: object
           required:
           - nodeName
           - storageClassName
