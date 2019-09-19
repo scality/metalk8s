@@ -352,14 +352,11 @@ def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
             'Missing version for package "{}"'.format(name)
         )
 
-    # In case the `release` is of form "{build_id}.{os}", which is standard
-    build_id_str, _, _ = pkg_info.release.partition('.')
-
     return targets.DEBPackage(
         basename='_build_deb_packages',
         name=name,
         version=pkg_info.version,
-        build_id=int(build_id_str),
+        build_id=int(pkg_info.release),
         sources=sources,
         builder=DEB_BUILDER,
         task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
