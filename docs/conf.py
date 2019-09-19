@@ -28,10 +28,10 @@ copyright = '2019, Scality'
 author = 'Scality'
 
 # The short version, {major}.{minor}
-version = '2.0'
+version = '2.4'
 
 # The full version, including alpha/beta/rc tags
-release = '2.0.0-dev'
+release = '2.4.0-beta1'
 
 
 # -- General configuration ---------------------------------------------------
