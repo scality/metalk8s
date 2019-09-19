@@ -350,13 +350,13 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(
             name='calico-cni-plugin',
             version=CALICO_VERSION,
-            release='0'
+            release='1'
         ),
         PackageVersion(name='iproute2', override='iproute'),
         PackageVersion(
             name='metalk8s-sosreport',
             version=SHORT_VERSION,
-            release='0'
+            release='1'
         ),
         PackageVersion(name='python-m2crypto', override='m2crypto'),
         PackageVersion(name='sosreport', override='sos'),
