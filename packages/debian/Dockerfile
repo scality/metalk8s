@@ -13,6 +13,7 @@ RUN apt update -y \
         lintian \
         apt-rdepends \
         python-apt \
+        reprepro \
         alien
 
 RUN useradd -m build
