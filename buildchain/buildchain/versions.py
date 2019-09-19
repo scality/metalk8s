@@ -79,11 +79,6 @@ def _version_prefix(version: str, prefix: str = 'v') -> str:
 CONTAINER_IMAGES : Tuple[Image, ...] = (
     # Remote images
     Image(
-        name='addon-resizer-amd64',
-        version='2.1',
-        digest='sha256:d00afd42fc267fa3275a541083cfe67d160f966c788174b44597434760e1e1eb',
-    ),
-    Image(
         name='alertmanager',
         version='v0.17.0',
         digest='sha256:3db6eccdbf4bdaea3407b7a9e6a41fc50abcf272a1356227260948e73414ec09',
@@ -137,11 +132,6 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         name='kube-proxy',
         version=_version_prefix(K8S_VERSION),
         digest='sha256:4ef8ca8fa1fbe311f3e6c5d6123d19f48a7bc62984ea8acfc8da8fbdac52bff7',
-    ),
-    Image(
-        name='kube-rbac-proxy',
-        version='v0.4.1',
-        digest='sha256:9d07c391aeb1a9d02eb4343c113ed01825227c70c32b3cae861711f90191b0fd',
     ),
     Image(
         name='kube-scheduler',
