@@ -27,7 +27,7 @@ Overview;
 
 
 from pathlib import Path
-from typing import Dict, FrozenSet, Iterator, List, Tuple
+from typing import Dict, FrozenSet, Iterator, List, Mapping, Optional, Tuple
 
 from doit.tools import config_changed  # type: ignore
 
@@ -40,6 +40,29 @@ from buildchain import types
 from buildchain import utils
 from buildchain import versions
 
+
+# Utilities {{{
+
+def _list_packages_to_build(
+    pkg_cats: Mapping[str, Tuple[targets.Package, ...]]
+) -> List[str]:
+    return [
+        pkg.name for pkg_list in pkg_cats.values() for pkg in pkg_list
+    ]
+
+
+def _list_packages_to_download(
+    package_versions: Tuple[versions.PackageVersion, ...],
+    packages_to_build: List[str]
+) -> Dict[str, Optional[str]]:
+    return {
+        pkg.name: pkg.full_version
+        for pkg in package_versions
+        if pkg.name not in packages_to_build
+    }
+
+# }}}
+# Tasks {{{
 
 def task_packaging() -> types.TaskDict:
     """Build the packages and repositories."""
@@ -131,6 +154,9 @@ def task__build_repositories() -> Iterator[types.TaskDict]:
         yield from repository.execution_plan
 
 
+# }}}
+# Builders {{{
+
 # Image used to build the packages
 BUILDER : targets.LocalImage = targets.LocalImage(
     name='metalk8s-build',
@@ -148,6 +174,9 @@ BUILDER : targets.LocalImage = targets.LocalImage(
         'SALT_VERSION': versions.SALT_VERSION,
     },
 )
+
+# }}}
+# RPM packages and repository {{{
 
 # Packages to build, per repository.
 def _package(name: str, sources: List[Path]) -> targets.Package:
@@ -193,26 +222,23 @@ TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
     ),
 }
 
-_TO_BUILD_PKG_NAMES : List[str] = []
 
-for pkgs in TO_BUILD.values():
-    for pkg in pkgs:
-        _TO_BUILD_PKG_NAMES.append(pkg.name)
+_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(TO_BUILD)
 
-# All packages not referenced in `TO_BUILD` but listed in `versions.PACKAGES`
-# are supposed to be downloaded.
+# All packages not referenced in `TO_BUILD` but listed in
+# `versions.PACKAGES` are supposed to be downloaded.
 TO_DOWNLOAD : FrozenSet[str] = frozenset(
-    "{p.name}-{p.version}-{p.release}".format(p=package)
+    package.rpm_full_name
     for package in versions.PACKAGES
     if package.name not in _TO_BUILD_PKG_NAMES
 )
 
+
 # Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_CONFIG : Dict[str, str] = {
-    pkg.name: "{p.version}-{p.release}".format(p=pkg)
-    for pkg in versions.PACKAGES
-    if pkg.name not in _TO_BUILD_PKG_NAMES
-}
+_TO_DOWNLOAD_CONFIG : Dict[str, Optional[str]] = _list_packages_to_download(
+    versions.PACKAGES,
+    _TO_BUILD_PKG_NAMES
+)
 
 
 REPOSITORIES : Tuple[targets.Repository, ...] = (
@@ -260,6 +286,8 @@ REPOSITORIES : Tuple[targets.Repository, ...] = (
         task_dep=['_download_packages'],
     ),
 )
+
+# }}}
 
 
 __all__ = utils.export_only_tasks(__name__)

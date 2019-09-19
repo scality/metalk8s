@@ -6,14 +6,14 @@
 This module MUST be kept valid in a standalone context, since it is intended
 for use in tests and documentation as well.
 """
+import operator
 
 from collections import namedtuple
 from pathlib import Path
-from typing import Tuple
+from typing import cast, Dict, Optional, Tuple
 
 
 Image = namedtuple('Image', ('name', 'version', 'digest'))
-Package = namedtuple('Package', ('name', 'version', 'release'))
 
 # Project-wide versions {{{
 
@@ -218,127 +218,147 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
 
 # }}}
+
 # Packages {{{
 
-PACKAGES = (
-    # Remote packages
-    Package(
-        name='containerd',
-        version='1.2.4',
-        release='1.el7',
+class PackageVersion:
+    """A package's authoritative version data.
+
+    This class contains version information for a named package, and
+    provides helper methods for formatting version/release data as well
+    as version-enriched package name, for all supported OS families.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        version: Optional[str] = None,
+        release: Optional[str] = None,
+        override: Optional[str] = None
+    ):
+        """Initializes a package version.
+
+        Arguments:
+            name: the name of the package
+            version: the version of the package
+            release: the release of the package
+        """
+        self._name     = name
+        self._version  = version
+        self._release  = release
+        self._override = override
+
+    name = property(operator.attrgetter('_name'))
+    version = property(operator.attrgetter('_version'))
+    release = property(operator.attrgetter('_release'))
+    override = property(operator.attrgetter('_override'))
+
+    @property
+    def full_version(self) -> Optional[str]:
+        """The full package version string."""
+        full_version = None
+        if self.version:
+            full_version = self.version
+            if self.release:
+                full_version = '{}-{}'.format(self.version, self.release)
+        return full_version
+
+    @property
+    def rpm_full_name(self) -> str:
+        """The package's full name in RPM conventions."""
+        if self.full_version:
+            return '{}-{}'.format(self.name, self.full_version)
+        return cast(str, self.name)
+
+
+
+# The authoritative list of packages required.
+#
+# Common packages are packages for which we need not care about OS-specific
+# divergences.
+#
+# In this case, either:
+#   * the _latest_ version is good enough, and will be the one
+#     selected by the package managers (so far: apt and yum).
+#   * we have strict version requirements that span OS families, and the
+#     version schemes _and_ package names do not diverge
+#
+# Strict version requirements are notably:
+#   * kubelet and kubectl which _make_ the K8s version of the cluster
+#   * salt-minion which _makes_ the Salt version of the cluster
+#
+# These common packages may be overridden by OS-specific packages if package
+# names or version conventions diverge.
+#
+# Packages that we build ourselves require a version and release as part of
+# their build process.
+PACKAGE_LIST: Dict[str, Tuple[PackageVersion, ...]] = {
+    'common': (
+        # Pinned packages
+        PackageVersion(name='kubectl', version=K8S_VERSION),
+        PackageVersion(name='kubelet', version=K8S_VERSION),
+        # Latest packages
+        PackageVersion(name='containerd'),
+        PackageVersion(name='coreutils'),
+        PackageVersion(name='cri-tools'),
+        PackageVersion(name='e2fsprogs'),
+        PackageVersion(name='ebtables'),
+        PackageVersion(name='ethtool'),
+        PackageVersion(name='genisoimage'),
+        PackageVersion(name='iproute'),
+        PackageVersion(name='iptables'),
+        PackageVersion(name='kubernetes-cni'),
+        PackageVersion(name='m2crypto'),
+        PackageVersion(name='runc'),
+        PackageVersion(name='salt-minion', version=SALT_VERSION),
+        PackageVersion(name='socat'),
+        PackageVersion(name='sos'),  # TODO download built package dependencies
+        PackageVersion(name='util-linux'),
+        PackageVersion(name='xfsprogs'),
     ),
-    Package(
-        name='cri-tools',
-        version='1.13.0',
-        release='0',
+    'redhat': (
+        PackageVersion(
+            name='calico-cni-plugin',
+            version=CALICO_VERSION,
+            release='1.el7'
+        ),
+        PackageVersion(name='container-selinux'),  # TODO #1710
+        PackageVersion(
+            name='metalk8s-sosreport',
+            version=SHORT_VERSION,
+            release='1.el7'
+        ),
+        PackageVersion(name='yum-plugin-versionlock'),
     ),
-    Package(
-        name='container-selinux',
-        version='2.107',
-        release='3.el7',
-    ),
-    Package(
-        name='coreutils',
-        version='8.22',
-        release='24.el7',
-    ),
-    Package(
-        name='ebtables',
-        version='2.0.10',
-        release='16.el7',
-    ),
-    Package(
-        name='ethtool',
-        version='4.8',
-        release='10.el7',
-    ),
-    Package(
-        name='genisoimage',
-        version='1.1.11',
-        release='25.el7',
-    ),
-    Package(
-        name='iproute',
-        version='4.11.0',
-        release='25.el7',
-    ),
-    Package(
-        name='iptables',
-        version='1.4.21',
-        release='33.el7',
-    ),
-    Package(
-        name='kubectl',
-        version=K8S_VERSION,
-        release='0',
-    ),
-    Package(
-        name='kubelet',
-        version=K8S_VERSION,
-        release='0',
-    ),
-    Package(
-        name='kubernetes-cni',
-        version='0.7.5',
-        release='0',
-    ),
-    Package(
-        name='m2crypto',
-        version='0.31.0',
-        release='3.el7',
-    ),
-    Package(
-        name='python2-kubernetes',
-        version='8.0.1',
-        release='1.el7',
-    ),
-    Package(
-        name='runc',
-        version='1.0.0',
-        release='65.rc8.el7.centos',
-    ),
-    Package(
-        name='salt-minion',
-        version=SALT_VERSION,
-        release='1.el7',
-    ),
-    Package(
-        name='skopeo',
-        version='0.1.37',
-        release='3.el7.centos',
-    ),
-    Package(
-        name='socat',
-        version='1.7.3.2',
-        release='2.el7',
-    ),
-    Package(
-        name='sos',
-        version='3.7',
-        release='5.el7.centos',
-    ),
-    Package(
-        name='util-linux',
-        version='2.23.2',
-        release='61.el7',
-    ),
-    Package(
-        name='yum-plugin-versionlock',
-        version='1.1.31',
-        release='52.el7',
-    ),
-    # Local packages
-    Package(
-        name='metalk8s-sosreport',
-        version=SHORT_VERSION,
-        release='1.el7',
-    ),
-    Package(
-        name='calico-cni-plugin',
-        version=CALICO_VERSION,
-        release='1.el7',
-    ),
-)
+}
+
+
+def _list_pkgs_for_os_family(os_family: str) -> Tuple[PackageVersion, ...]:
+    """List downloaded packages for a given OS family.
+
+    Arguments:
+        os_family: OS_family for which to list packages
+    """
+    common_pkgs = PACKAGE_LIST['common']
+    os_family_pkgs = PACKAGE_LIST.get(os_family)
+
+    if os_family_pkgs is None:
+        raise Exception('No packages for OS family: {}'.format(os_family))
+
+    os_override_names = [
+        pkg.override for pkg in os_family_pkgs
+        if pkg.override is not None
+    ]
+
+    overridden = filter(
+        lambda item: item.name not in os_override_names,
+        common_pkgs
+    )
+
+    return tuple(overridden) + os_family_pkgs
+
+
+PACKAGES = _list_pkgs_for_os_family('redhat')
 
 PACKAGES_MAP = {pkg.name: pkg for pkg in PACKAGES}
 
