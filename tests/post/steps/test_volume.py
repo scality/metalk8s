@@ -116,7 +116,7 @@ def teardown(pod_client, pvc_client, volume_client, sc_client):
     yield
     pod_client.delete_all(sync=True)
     pvc_client.delete_all(sync=True)
-    volume_client.delete_all(sync=True)
+    volume_client.delete_all(sync=True, prefix='test-')
     sc_client.delete_all(sync=True, prefix='test-')
 
 @pytest.fixture(scope='function')
