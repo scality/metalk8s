@@ -78,13 +78,11 @@ def task_packaging() -> types.TaskDict:
         ],
     }
 
-
 def task__build_container() -> types.TaskDict:
     """Build the container image used to build the packages/repositories."""
     task = BUILDER.task
     task.pop('name')  # `name` is only used for sub-task.
     return task
-
 
 def task__package_mkdir_root() -> types.TaskDict:
     """Create the packages root directory."""
@@ -92,6 +90,11 @@ def task__package_mkdir_root() -> types.TaskDict:
         directory=constants.PKG_ROOT, task_dep=['_build_root']
     ).task
 
+def task__package_mkdir_rpm_root() -> types.TaskDict:
+    """Create the RedHat packages root directory."""
+    return targets.Mkdir(
+        directory=constants.PKG_RPM_ROOT, task_dep=['_package_mkdir_root']
+    ).task
 
 def task__package_mkdir_iso_root() -> types.TaskDict:
     """Create the packages root directory on the ISO."""
@@ -99,12 +102,17 @@ def task__package_mkdir_iso_root() -> types.TaskDict:
         directory=constants.REPO_ROOT, task_dep=['_iso_mkdir_root']
     ).task
 
+def task__package_mkdir_rpm_iso_root() -> types.TaskDict:
+    """Create the RedHat packages root directory on the ISO."""
+    return targets.Mkdir(
+        directory=constants.REPO_RPM_ROOT, task_dep=['_package_mkdir_iso_root']
+    ).task
 
 def task__download_packages() -> types.TaskDict:
     """Download packages locally."""
     def clean() -> None:
         """Delete cache and repositories on the ISO."""
-        coreutils.rm_rf(constants.PKG_ROOT/'var')
+        coreutils.rm_rf(constants.PKG_RPM_ROOT/'var')
         for repository in REPOSITORIES:
             # Repository with an explicit list of packages are created by a
             # dedicated task that will also handle their cleaning, so we skip
@@ -115,10 +123,10 @@ def task__download_packages() -> types.TaskDict:
 
     mounts = [
         docker_command.bind_mount(
-            source=constants.PKG_ROOT, target=Path('/install_root')
+            source=constants.PKG_RPM_ROOT, target=Path('/install_root')
         ),
         docker_command.bind_mount(
-            source=constants.REPO_ROOT, target=Path('/repositories')
+            source=constants.REPO_RPM_ROOT, target=Path('/repositories')
         ),
     ]
     dl_packages_callable = docker_command.DockerRun(
@@ -130,9 +138,11 @@ def task__download_packages() -> types.TaskDict:
     return {
         'title': lambda task: utils.title_with_target1('GET PKGS', task),
         'actions': [dl_packages_callable],
-        'targets': [constants.PKG_ROOT/'var'],
+        'targets': [constants.PKG_RPM_ROOT/'var'],
         'task_dep': [
-            '_package_mkdir_root', '_package_mkdir_iso_root', '_build_container'
+            '_package_mkdir_rpm_root',
+            '_package_mkdir_rpm_iso_root',
+            '_build_container'
         ],
         'clean': [clean],
         'uptodate': [config_changed(_TO_DOWNLOAD_CONFIG)],
@@ -140,13 +150,11 @@ def task__download_packages() -> types.TaskDict:
         'verbosity': 0,
     }
 
-
 def task__build_packages() -> Iterator[types.TaskDict]:
     """Build a package."""
     for repo_pkgs in TO_BUILD.values():
         for package in repo_pkgs:
             yield from package.execution_plan
-
 
 def task__build_repositories() -> Iterator[types.TaskDict]:
     """Build a repository."""
@@ -161,13 +169,23 @@ def task__build_repositories() -> Iterator[types.TaskDict]:
 BUILDER : targets.LocalImage = targets.LocalImage(
     name='metalk8s-build',
     version='latest',
-    dockerfile=constants.ROOT/'packages'/'Dockerfile',
+    dockerfile=constants.ROOT/'packages'/'redhat'/'Dockerfile',
     destination=config.BUILD_ROOT,
     save_on_disk=False,
     task_dep=['_build_root'],
     file_dep=[
-        constants.ROOT/'packages/yum_repositories/kubernetes.repo',
-        constants.ROOT/'packages/yum_repositories/saltstack.repo',
+        constants.ROOT.joinpath(
+            'packages',
+            'redhat',
+            'yum_repositories',
+            'kubernetes.repo'
+        ),
+        constants.ROOT.joinpath(
+            'packages',
+            'redhat',
+            'yum_repositories',
+            'saltstack.repo'
+        )
     ],
     build_args={
         # Used to template the SaltStack repository definition
@@ -197,7 +215,7 @@ def _package(name: str, sources: List[Path]) -> targets.Package:
         build_id=int(build_id_str),
         sources=sources,
         builder=BUILDER,
-        task_dep=['_package_mkdir_root', '_build_container'],
+        task_dep=['_package_mkdir_rpm_root', '_build_container'],
     )
 
 TO_BUILD : Dict[str, Tuple[targets.Package, ...]] = {
@@ -247,7 +265,7 @@ REPOSITORIES : Tuple[targets.Repository, ...] = (
         name='scality',
         builder=BUILDER,
         packages=TO_BUILD['scality'],
-        task_dep=['_package_mkdir_iso_root'],
+        task_dep=['_package_mkdir_rpm_iso_root'],
     ),
     targets.Repository(
         basename='_build_repositories',
