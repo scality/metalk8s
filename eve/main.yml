@@ -286,6 +286,12 @@ stages:
             -m "post and ci and not multinode and slow"
           haltOnFailure: true
       - ShellCommand:
+          name: Debug step - wait 1 hour before allowing resource destruction
+          timeout: 3600
+          command: sleep 3600
+          doStepIf: true
+          alwaysRun: true
+      - ShellCommand:
           name: Run downgrade
           command: >
             sudo bash
@@ -313,13 +319,6 @@ stages:
       - Upload:
           name: upload artifacts
           source: sosreport
-          alwaysRun: true
-      - ShellCommand:
-          name: Debug step - wait 1 hour before allowing resource destruction
-          timeout: 3600
-          command: sleep 3600
-          doStepIf: false
-          alwaysRun: true
 
   multiple-nodes:
     worker:
