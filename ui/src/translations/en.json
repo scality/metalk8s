@@ -113,5 +113,8 @@
   "select_a_storageClass": "Select a Storage Class…",
   "select_a_type": "Select a type of volume…",
   "no_results": "No results",
-  "search": "Search…"
+  "search": "Search…",
+  "detailed_information": "Detailed Information",
+  "failed_to_create_volume":"Failed to create volume.",
+  "not_applicable": "Not applicable"
 }
