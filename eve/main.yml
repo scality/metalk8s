@@ -28,7 +28,7 @@ stages:
       - TriggerStages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
-            - single-node
+            - single-node-downgrade-test
             - multiple-nodes
 
   build:
@@ -177,7 +177,7 @@ stages:
           usePTY: true
           haltOnFailure: false
 
-  single-node:
+  single-node-downgrade-test:
     worker:
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
@@ -185,6 +185,14 @@ stages:
       path: eve/workers/openstack-single-node
     steps:
       - Git: *git_pull
+      - SetPropertyFromCommand:
+          name: Set previous version
+          property: metalk8s_prev_version
+          command: >
+            bash -c '
+              source VERSION &&
+              VERSION_MINOR=$((VERSION_MINOR-1))
+            echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
       - ShellCommand: &ssh_ip_setup
           name: Report IP and install SSH keys
           command: >
@@ -192,7 +200,7 @@ stages:
             mkdir -p ~/.ssh &&
             echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys
       - ShellCommand: &retrieve_iso
-          name: Retrieve ISO image
+          name: Retrieve ISO version N image
           command: >
             curl -s -XGET -o metalk8s.iso
             "%(prop:artifacts_private_url)s/metalk8s.iso"
@@ -206,6 +214,24 @@ stages:
       - ShellCommand: &check_iso_checksum
           name: Check image with checksum
           command: sha256sum -c SHA256SUM
+          haltOnFailure: true
+      - ShellCommand:
+          name: Retrieve ISO version N-1 image
+          command: >
+            isourl="/pre/metalk8s-%(prop:metalk8s_prev_version)s.iso";
+            curl -s -XGET -o /tmp/metalk8s.iso
+            "%(prop:artifacts_private_url)s$isourl"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Retrieve ISO N-1 image checksum
+          command: >
+            shasumurl="/pre/SHA256SUM-%(prop:metalk8s_prev_version)s";
+            curl -s -XGET -o /tmp/SHA256SUM
+            "%(prop:artifacts_private_url)s$shasumurl"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Check N-1 image with checksum
+          command: cd /tmp && sha256sum -c SHA256SUM
           haltOnFailure: true
       - ShellCommand:
           name: Create mountpoint
@@ -258,6 +284,16 @@ stages:
             -m "post and ci and not multinode and not slow" &&
             tox -e tests-local --
             -m "post and ci and not multinode and slow"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run downgrade
+          command: >
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/iso-manager.sh
+            --archive /tmp/metalk8s.iso &&
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
+            --destination-version %(prop:metalk8s_prev_version)s
           haltOnFailure: true
       - ShellCommand:
           name: Collect logs using sosreport
