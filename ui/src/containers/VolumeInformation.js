@@ -71,9 +71,7 @@ const VolumeInformation = props => {
   );
   const pV = pVList.find(pv => pv.metadata.name === currentVolumeName);
   const storageClass = storageClasses.find(
-    SC =>
-      SC.metadata.name ===
-      (volume && volume.spec && volume.spec.storageClassName),
+    SC => SC.metadata.name === volume?.spec?.storageClassName,
   );
 
   return (
@@ -112,28 +110,24 @@ const VolumeInformation = props => {
       <VolumeInformationListContainer>
         <InformationSpan>
           <InformationLabel>{intl.messages.name}</InformationLabel>
-          <InformationValue>
-            {volume && volume.metadata && volume.metadata.name}
-          </InformationValue>
+          <InformationValue>{volume?.metadata?.name}</InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.status}</InformationLabel>
           <InformationValue>
-            {(volume && volume.status && volume.status.phase) ||
-              intl.messages.unknown}
+            {volume?.status?.phase ?? intl.messages.unknown}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.size}</InformationLabel>
           <InformationValue>
-            {(pV && pV.spec && pV.spec.capacity && pV.spec.capacity.storage) ||
-              intl.messages.unknown}
+            {pV?.spec?.capacity?.storage ?? intl.messages.unknown}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.type}</InformationLabel>
           <InformationValue>
-            {volume && volume.spec && volume.spec.rawBlockDevice
+            {volume?.spec?.rawBlockDevice
               ? RAW_BLOCK_DEVICE
               : SPARSE_LOOP_DEVICE}
           </InformationValue>
@@ -141,39 +135,37 @@ const VolumeInformation = props => {
         <InformationSpan>
           <InformationLabel>{intl.messages.bound}</InformationLabel>
           <InformationValue>
-            {pV && pV.status && pV.status.phase === STATUS_BOUND
+            {pV?.status?.phase === STATUS_BOUND
               ? intl.messages.yes
               : intl.messages.no}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.storageClass}</InformationLabel>
-          <InformationValue>
-            {volume && volume.spec && volume.spec.storageClassName}
-          </InformationValue>
+          <InformationValue>{volume?.spec?.storageClassName}</InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.path}</InformationLabel>
           <InformationValue>
-            {volume?.spec?.rawBlockDevice?.devicePath ||
+            {volume?.spec?.rawBlockDevice?.devicePath ??
               intl.messages.not_applicable}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.access_mode}</InformationLabel>
           <InformationValue>
-            {(pV && pV.spec && pV.spec.accessModes) || intl.messages.unknown}
+            {pV?.spec?.accessModes ?? intl.messages.unknown}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.mount_option}</InformationLabel>
           <InformationValue>
-            {storageClass && storageClass.mountOptions.join(', ')}
+            {storageClass?.mountOptions.join(', ')}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.creationTime}</InformationLabel>
-          {volume && volume.metadata && volume.metadata.creationTimestamp ? (
+          {volume?.metadata?.creationTimestamp ? (
             <InformationValue>
               <FormattedDate value={volume.metadata.creationTimestamp} />{' '}
               <FormattedTime
