@@ -29,6 +29,7 @@ Overview:
 
 import datetime as dt
 import socket
+import subprocess
 from pathlib import Path
 from typing import Sequence
 
@@ -203,21 +204,36 @@ def task__iso_generate_product_txt() -> types.TaskDict:
 @doit.create_after(executed='populate_iso')  # type: ignore
 def task__iso_build() -> types.TaskDict:
     """Create the ISO from the files in ISO_ROOT."""
-    mkisofs = [
-        config.ExtCommand.MKISOFS.value, '-output',  ISO_FILE,
-        '-quiet',
-        '-rock',
-        '-joliet',
-        '-joliet-long',
-        '-full-iso9660-filenames',
-        '-volid', '{} {}'.format(config.PROJECT_NAME, versions.VERSION),
-        '--iso-level', '3',
-        '-gid', '0',
-        '-uid', '0',
-        '-input-charset', 'utf-8',
-        '-output-charset', 'utf-8',
-        constants.ISO_ROOT
-    ]
+    def unlink_if_exist(filepath: Path) -> None:
+        """Delete a file if it exists."""
+        try:
+            filepath.unlink()
+        except FileNotFoundError:
+            pass
+
+    def mkisofs() -> None:
+        """Create an ISO file (delete on error)."""
+        cmd = [
+            config.ExtCommand.MKISOFS.value, '-output',  ISO_FILE,
+            '-quiet',
+            '-rock',
+            '-joliet',
+            '-joliet-long',
+            '-full-iso9660-filenames',
+            '-volid', '{} {}'.format(config.PROJECT_NAME, versions.VERSION),
+            '--iso-level', '3',
+            '-gid', '0',
+            '-uid', '0',
+            '-input-charset', 'utf-8',
+            '-output-charset', 'utf-8',
+            constants.ISO_ROOT
+        ]
+        try:
+            subprocess.run(cmd, check=True)
+        except:
+            unlink_if_exist(ISO_FILE)
+            raise
+
     doc = 'Create the ISO from the files in {}.'.format(
         utils.build_relpath(constants.ISO_ROOT)
     )
