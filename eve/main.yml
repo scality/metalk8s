@@ -3,7 +3,7 @@ version: "0.2"
 
 branches:
   # yamllint disable rule:line-length
-  user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*:
+  user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
     stage: pre-merge
 
 stages:
