@@ -31,7 +31,6 @@
 {% endif %}
 
 {%- set pillar_data = {
-        'bootstrap_id': pillar.bootstrap_id,
         'metalk8s': {
             'nodes': {
                 pillar.bootstrap_id: {
