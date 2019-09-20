@@ -218,4 +218,5 @@ fi
 run "Performing Pre-Downgrade checks" precheck_downgrade
 [ $DRY_RUN -eq 1 ] && exit 0
 run "Launching the downgrade" launch_downgrade
+sleep 30
 run "Downgrading bootstrap" downgrade_bootstrap
