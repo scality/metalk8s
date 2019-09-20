@@ -1,3 +1,5 @@
+//@flow
+
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -8,14 +10,14 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   deployNodeAction,
   refreshNodesAction,
-  stopRefreshNodesAction
+  stopRefreshNodesAction,
 } from '../ducks/app/nodes';
 import { sortSelector, useRefreshEffect } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { API_STATUS_NOT_READY, API_STATUS_UNKNOWN } from '../constants.js';
 import {
   BreadcrumbContainer,
-  BreadcrumbLabel
+  BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -71,12 +73,12 @@ const NodeList = props => {
     {
       label: intl.messages.name,
       dataKey: 'name',
-      flexGrow: 1
+      flexGrow: 1,
     },
     {
       label: intl.messages.status,
       dataKey: 'status',
-      renderer: data => <span> {intl.messages[data] || data}</span>
+      renderer: data => <span> {intl.messages[data] || data}</span>,
     },
     {
       label: intl.messages.deployment,
@@ -115,17 +117,17 @@ const NodeList = props => {
           );
         }
         return data;
-      }
+      },
     },
     {
       label: intl.messages.roles,
       dataKey: 'roles',
-      flexGrow: 1
+      flexGrow: 1,
     },
     {
       label: intl.messages.version,
-      dataKey: 'metalk8s_version'
-    }
+      dataKey: 'metalk8s_version',
+    },
   ];
 
   const onSort = ({ sortBy, sortDirection }) => {
@@ -189,13 +191,13 @@ const NodeList = props => {
 function mapStateToProps(state) {
   return {
     nodes: state.app.nodes,
-    theme: state.config.theme
+    theme: state.config.theme,
   };
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    deployNode: payload => dispatch(deployNodeAction(payload))
+    deployNode: payload => dispatch(deployNodeAction(payload)),
   };
 };
 
@@ -203,7 +205,7 @@ export default injectIntl(
   withRouter(
     connect(
       mapStateToProps,
-      mapDispatchToProps
-    )(NodeList)
-  )
+      mapDispatchToProps,
+    )(NodeList),
+  ),
 );
