@@ -11,7 +11,6 @@ RUN apt update -y \
         devscripts \
         build-essential \
         lintian \
-        apt-rdepends \
         python-apt \
         reprepro \
         alien
