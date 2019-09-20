@@ -321,6 +321,12 @@ stages:
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
       - ShellCommand:
+          name: Debug step - wait 1 hour before allowing resource destruction
+          timeout: 3600
+          command: sleep 3600
+          doStepIf: true
+          alwaysRun: true
+      - ShellCommand:
           name: Run tests locally
           env:
             ISO_MOUNTPOINT: >
@@ -377,12 +383,6 @@ stages:
       - Upload:
           name: upload artifacts
           source: sosreport
-          alwaysRun: true
-      - ShellCommand:
-          name: Debug step - wait 1 hour before allowing resource destruction
-          timeout: 3600
-          command: sleep 3600
-          doStepIf: false
           alwaysRun: true
 
   multiple-nodes:
