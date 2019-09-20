@@ -100,7 +100,7 @@ class Repository(base.CompositeTarget):
     @property
     def rootdir(self) -> Path:
         """Repository root directory."""
-        return constants.REPO_ROOT/self.fullname
+        return constants.REPO_RPM_ROOT/self.fullname
 
     @property
     def repodata(self) -> Path:
