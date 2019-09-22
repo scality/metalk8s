@@ -9,4 +9,5 @@
    quickstart/index
    installation-guide/index
    developer/index
+   operation/index
    glossary
