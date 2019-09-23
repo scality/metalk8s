@@ -22,7 +22,7 @@ Overview:
                 └────────┘ ╲───>│  salt_tree  │────╱   ^
                         │       └─────────────┘        │
                         │       ┌─────────────┐        │
-                        └──────>│ product.txt │────────┘
+                        └──────>│   iso_tree  │────────┘
                                 └─────────────┘
 """
 
@@ -31,7 +31,7 @@ import datetime as dt
 import socket
 import subprocess
 from pathlib import Path
-from typing import Iterator, Sequence, Tuple
+from typing import Iterator, Tuple
 
 import doit  # type: ignore
 
@@ -42,6 +42,7 @@ from buildchain import targets as helper
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
+from buildchain.targets.serialize import Renderer
 
 
 ISO_FILE : Path = config.BUILD_ROOT/'{}.iso'.format(config.PROJECT_NAME.lower())
@@ -78,6 +79,26 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
                 context={'VERSION': versions.VERSION},
                 file_dep=[versions.VERSION_FILE],
                 task_dep=['_iso_mkdir_root'],
+            ),
+            helper.SerializedData(
+                task_name='product.txt',
+                destination=constants.ISO_ROOT/'product.txt',
+                data={
+                    'NAME': config.PROJECT_NAME,
+                    'VERSION': versions.VERSION,
+                    'SHORT_VERSION': versions.SHORT_VERSION,
+                    'GIT': constants.GIT_REF or '',
+                    'DEVELOPMENT_RELEASE':
+                        '1' if versions.VERSION_SUFFIX == '-dev' else '0',
+                    'BUILD_TIMESTAMP':
+                        dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    'BUILD_HOST': socket.gethostname(),
+                },
+                renderer=Renderer.ENV,
+                file_dep=[versions.VERSION_FILE],
+                task_dep=['_iso_mkdir_root'],
+                # False because we include the build timestamp.
+                uptodate=[False],
             ),
         ),
         destination_directory=constants.ISO_ROOT,
@@ -118,7 +139,6 @@ def task_populate_iso() -> types.TaskDict:
         # Aggregate here the tasks that put files into ISO_ROOT.
         'task_dep': [
             '_iso_mkdir_root',
-            '_iso_generate_product_txt',
             '_iso_add_tree:*',
             'images',
             'salt_tree',
@@ -131,36 +151,6 @@ def task__iso_add_tree() -> Iterator[types.TaskDict]:
     """Deploy an ISO sub-tree"""
     for file_tree in FILE_TREES:
         yield from file_tree.execution_plan
-
-
-def task__iso_generate_product_txt() -> types.TaskDict:
-    """Generate the product.txt file."""
-    def action(targets: Sequence[str]) -> None:
-        datefmt = "%Y-%m-%dT%H:%M:%SZ"
-        dev_release = '1' if versions.VERSION_SUFFIX == '-dev' else '0'
-        info = (
-            ('NAME', config.PROJECT_NAME),
-            ('VERSION', versions.VERSION),
-            ('SHORT_VERSION', versions.SHORT_VERSION),
-            ('GIT', constants.GIT_REF or ''),
-            ('DEVELOPMENT_RELEASE', dev_release),
-            ('BUILD_TIMESTAMP', dt.datetime.utcnow().strftime(datefmt)),
-            ('BUILD_HOST', socket.gethostname()),
-        )
-        with open(targets[0], 'w', encoding='utf-8') as fp:
-            data = '\n'.join('{}={}'.format(key, value) for key, value in info)
-            fp.write(data)
-            fp.write('\n')
-
-    return {
-        'title': utils.title_with_target1('GENERATE'),
-        'actions': [action],
-        'targets': [constants.ISO_ROOT/'product.txt'],
-        'file_dep': [versions.VERSION_FILE],
-        'task_dep': ['_iso_mkdir_root'],
-        'uptodate': [False],  # False because we include the build timestamp.
-        'clean': True,
-    }
 
 
 @doit.create_after(executed='populate_iso')  # type: ignore
