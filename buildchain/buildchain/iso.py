@@ -42,7 +42,6 @@ from buildchain import targets as helper
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
-from buildchain.targets.serialize import Renderer
 
 
 ISO_FILE : Path = config.BUILD_ROOT/'{}.iso'.format(config.PROJECT_NAME.lower())
@@ -94,7 +93,7 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
                         dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
                     'BUILD_HOST': socket.gethostname(),
                 },
-                renderer=Renderer.ENV,
+                renderer=helper.Renderer.ENV,
                 file_dep=[versions.VERSION_FILE],
                 task_dep=['_iso_mkdir_root'],
                 # False because we include the build timestamp.

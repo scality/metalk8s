@@ -40,7 +40,6 @@ from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
-from buildchain.targets.serialize import Renderer
 
 sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
 container_registry : Any = importlib.import_module('static-container-registry')
@@ -204,7 +203,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             },
             'metalk8s': {'version': versions.VERSION},
         },
-        renderer=Renderer.JSON,
+        renderer=targets.Renderer.JSON,
     ),
 
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
