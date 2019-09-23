@@ -71,7 +71,7 @@ Deploy kube-proxy (ConfigMap):
             scheduler: ""
             syncPeriod: 30s
           kind: KubeProxyConfiguration
-          metricsBindAddress: 127.0.0.1:10249
+          metricsBindAddress: 0.0.0.0:10249
           mode: ""
           nodePortAddresses:
           - {{ networks.workload_plane }}
