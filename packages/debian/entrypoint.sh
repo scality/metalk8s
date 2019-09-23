@@ -36,9 +36,26 @@ rpm2deb() {
 }
 
 
+buildrepo() {
+    set -x
+    mkdir -p /repository/debian/{conf,incoming}
+    # All downloaded packages must be mounted in /metalk8s-deb
+    cp /metalk8s-deb/distributions /repository/debian/conf
+    #TODO: Mount `distributions` file in  /repository/debian/conf
+    reprepro -b /repository/debian export
+    for dir in /metalk8s-deb/metalk8s-*; do
+        reprepro -C "${dir##*/}" -b /repository/debian \
+            includedeb bionic "$dir"/*.deb
+    done
+}
+
+
 case ${1:- } in
     builddeb)
         builddeb
+        ;;
+    buildrepo)
+        buildrepo
         ;;
     rpm2deb)
         rpm2deb
