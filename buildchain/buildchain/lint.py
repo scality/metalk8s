@@ -59,9 +59,9 @@ def lint_python() -> types.TaskDict:
 
 def lint_shell() -> types.TaskDict:
     """Run shell scripts linting."""
-    shell_scripts : List[Path] = [constants.ROOT/'doit.sh']
-    for ext in ('.sh', '.sh.in'):
-        shell_scripts.extend(constants.ROOT.glob('*/*{}'.format(ext)))
+    shell_scripts = [
+        filepath for filepath in utils.git_ls() if '.sh' in filepath.suffixes
+    ]
     return {
         'name': 'shell',
         'doc': lint_shell.__doc__,
@@ -76,7 +76,10 @@ def lint_yaml() -> types.TaskDict:
         'name': 'yaml',
         'doc': lint_yaml.__doc__,
         'actions': [['tox', '-e', 'lint-yaml']],
-        'file_dep': list(constants.ROOT.glob('salt/**/*.yaml')),
+        'file_dep': [
+            constants.ROOT/'eve/main.yml',
+            constants.ROOT/'salt/metalk8s/defaults.yaml'
+        ],
     }
 
 
