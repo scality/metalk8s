@@ -36,11 +36,11 @@ chattr +i /etc/resolv.conf
 # Then, loop over interfaces and retry the dhclient call until an address is
 # found
 for ifname in "${INTERFACES[@]}"; do
-    echo $ifname
-    for i in $(seq 1 $MAX_RETRY); do
+    echo "$ifname"
+    for _ in $(seq 1 $MAX_RETRY); do
         request_ip "$ifname"
         sleep 1s
-        if [ $(check_ip "$ifname") ]; then
+        if [ "$(check_ip "$ifname")" ]; then
             echo "Found IP address for $ifname"
             break
         fi

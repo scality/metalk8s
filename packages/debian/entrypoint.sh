@@ -32,7 +32,7 @@ rpm2deb() {
     pushd /debbuild/result 1> /dev/null
     alien --bump=0 /rpmbuild/source.rpm
 
-    chown "${TARGET_UID}:${TARGET_GID}" *
+    chown "${TARGET_UID}:${TARGET_GID}" -- *
 }
 
 
