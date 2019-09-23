@@ -186,6 +186,8 @@ downgrade_bootstrap () {
     kubeconfig=/etc/kubernetes/admin.conf
   $SALT salt-run state.sls metalk8s.orchestrate.deploy_node saltenv="$SALTENV" \
     pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
+   _check_salt_master
+  $SALT salt-run saltutil.sync_all saltenv="DESTINATION_VERSION"
 }
 
 # patch the kube-system namespace annotation with <destination-version> input
