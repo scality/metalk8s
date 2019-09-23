@@ -70,7 +70,10 @@ class FileTree(base.CompositeTarget):
             for directory
             in self._compute_dir_tree(self.files)
         ]
-        self._root = self.directories[-1].relative_to(self.destination)
+        if not self.directories:
+            self._root = self.destination
+        else:
+            self._root = self.directories[-1].relative_to(self.destination)
         super().__init__(
             basename='{base}:{root}'.format(base=basename, root=self._root),
             **kwargs
@@ -91,18 +94,15 @@ class FileTree(base.CompositeTarget):
 
     @property
     def execution_plan(self) -> List[types.TaskDict]:
-        tasks = [
-            self.make_directories(),
-            self.copy_files(),
-        ]
+        tasks = [self.copy_files()]
+        if self.directories:
+            tasks.insert(0, self.make_directories())
         for target in self._files:
             if not isinstance(target, base.AtomicTarget):
                 continue
             task = target.task
             task['basename'] = self.basename
-            task['task_dep'].append('{base}:{name}'.format(
-                base=self.basename, name=MAKE_TASK_NAME
-            ))
+            task['task_dep'].extend(self._get_task_dep_for_copy())
             tasks.append(task)
         return tasks
 
@@ -136,9 +136,7 @@ class FileTree(base.CompositeTarget):
             'doc': 'Copy files tree to {}.'.format(self._root),
             'title': show
         })
-        task['task_dep'].append('{base}:{name}'.format(
-            base=self.basename, name=MAKE_TASK_NAME
-        ))
+        task['task_dep'].extend(self._get_task_dep_for_copy())
         # Copy "plain" files (file paths, not targets).
         for path in self._files:
             if isinstance(path, base.AtomicTarget):
@@ -161,6 +159,13 @@ class FileTree(base.CompositeTarget):
         dirs.discard(Path('.'))
         # Sort by depth, from the leaves to the root.
         return sorted(dirs, key=lambda path: -str(path).count('/'))
+
+    def _get_task_dep_for_copy(self) -> List[str]:
+        """Return the list of tasks to execute before copying the files."""
+        # If we have no directory hierarchy to create, then no task dependency!
+        if not self.directories:
+            return []
+        return ['{base}:{name}'.format(base=self.basename, name=MAKE_TASK_NAME)]
 
 
 def _get_destination(target: base.AtomicTarget) -> Path:
