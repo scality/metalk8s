@@ -17,6 +17,10 @@ Overview;
            ───>│ doc:pdf  │
                └──────────┘
 
+┌─────────┐
+│ livedoc │
+└─────────┘
+
 ┌───────────────┐    ┌───────┐    ┌────────┐
 │ documentation │───>│ mkdir │───>│ deploy │
 └───────────────┘    └───────┘    └────────┘
@@ -27,6 +31,8 @@ Overview;
 from collections import namedtuple
 from typing import Callable, Iterator
 from pathlib import Path
+
+import doit  # type: ignore
 
 from buildchain import config
 from buildchain import coreutils
@@ -101,6 +107,16 @@ def task_doc() -> Iterator[types.TaskDict]:
             'file_dep': list(utils.git_ls('docs')),
             'clean': [clean(target)],
         }
+
+
+def task_livedoc() -> types.TaskDict:
+    """Start documentation auto-build with live-reload."""
+    return {
+        'title': lambda _: 'LIVEDOC',
+        'doc': task_livedoc.__doc__,
+        'actions': [doit.tools.LongRunning('tox -e docs -- livehtml')],
+        'uptodate': [False],
+    }
 
 
 __all__ = utils.export_only_tasks(__name__)

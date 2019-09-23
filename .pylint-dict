@@ -28,6 +28,7 @@ kubernetes
 kubectl
 kubelet
 linter
+livedoc
 metadata
 mkdir
 mkisofs
