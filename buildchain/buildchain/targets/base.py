@@ -26,11 +26,11 @@ class Target:
         """Initialize the input/output of the target.
 
         Arguments:
-            targets:  paths to the output files
-            file_dep: paths to the input files, if any
-            task_dep: names of the prerequisites tasks, if any
-            basename: tasks basename
-            name:     name of the sub-task
+            targets:   paths to the output files
+            file_dep:  paths to the input files, if any
+            task_dep:  names of the prerequisites tasks, if any
+            basename:  tasks basename
+            task_name: name of the sub-task
         """
         self._actions  = []  # type: List[types.Action]
         self._targets  = targets or []
