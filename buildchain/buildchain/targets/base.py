@@ -22,6 +22,7 @@ class Target:
         task_dep: Optional[Sequence[str]]=None,
         basename: Optional[str]=None,
         task_name: Optional[str]=None,
+        uptodate: Optional[Sequence[types.UpToDateCheck]]=None,
     ):
         """Initialize the input/output of the target.
 
@@ -31,6 +32,7 @@ class Target:
             task_dep:  names of the prerequisites tasks, if any
             basename:  tasks basename
             task_name: name of the sub-task
+            uptodate:  extra up-to-date checks
         """
         self._actions  = []  # type: List[types.Action]
         self._targets  = targets or []
@@ -38,12 +40,14 @@ class Target:
         self._task_dep = task_dep or []
         self._basename = basename
         self._task_name = task_name
+        self._uptodate = uptodate or []
 
     actions   = property(operator.attrgetter('_actions'))
     targets   = property(operator.attrgetter('_targets'))
     file_dep  = property(operator.attrgetter('_file_dep'))
     task_dep  = property(operator.attrgetter('_task_dep'))
     task_name = property(operator.attrgetter('_task_name'))
+    uptodate  = property(operator.attrgetter('_uptodate'))
 
     @property
     def basename(self) -> Optional[str]:
@@ -58,6 +62,7 @@ class Target:
             'targets': self.targets.copy(),
             'file_dep': self.file_dep.copy(),
             'task_dep': self.task_dep.copy(),
+            'uptodate': self.uptodate.copy(),
             'clean': True
         }
         if self.basename:
