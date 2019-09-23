@@ -175,6 +175,7 @@ downgrade_bootstrap () {
     --out txt pillar.get metalk8s:endpoints | cut -c 8-)}}" \
     --retcode-passthrough
   _check_salt_master
+  $SALT salt-run saltutil.sync_all saltenv="metalk8s-$DESTINATION_VERSION"
   local bootstrap_id
   bootstrap_id=$(
     $SALT_CALL grains.get id --out txt \
