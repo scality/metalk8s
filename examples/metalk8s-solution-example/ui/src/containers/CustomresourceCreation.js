@@ -106,6 +106,10 @@ const CustomresourceCreationForm = props => {
             const handleSelectChange = field => selectedObj => {
               setFieldValue(field, selectedObj.value);
             };
+            //get the select item from the object array
+            const getSelectedObjectItem = (items, selectedValue) => {
+              return items.find(item => item.value === selectedValue);
+            };
 
             const options = namespaces.map(namespace => {
               return {
@@ -138,7 +142,7 @@ const CustomresourceCreationForm = props => {
                     noResultsText={intl.messages.not_found}
                     name="namespaces"
                     onChange={handleSelectChange('namespaces')}
-                    value={values.namespaces}
+                    value={getSelectedObjectItem(options, values.namespaces)}
                     error={touched.namespaces && errors.namespaces}
                     onBlur={handleOnBlur}
                   />
