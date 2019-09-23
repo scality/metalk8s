@@ -327,6 +327,11 @@ class DEBRepository(Repository):
             repo=self.name,
         )
 
+    @property
+    def pkgdir(self) -> Path:
+        """Repository where to download the packages."""
+        return constants.PKG_DEB_ROOT/self.fullname
+
     def _mkdir_deb_repo_root(self) -> types.TaskDict:
         """Create the root directory for the repository."""
         task = self.basic_task
