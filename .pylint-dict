@@ -19,8 +19,9 @@ doit
 dedup
 env
 epel
-gofmt
 filename
+gofmt
+html
 init
 io
 kubernetes
@@ -32,6 +33,7 @@ mkdir
 mkisofs
 mypy
 nginx
+pdf
 prebuilt
 py
 readonly
