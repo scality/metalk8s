@@ -16,21 +16,61 @@ Overview;
 └───────┘╲     ┌──────────┐
            ───>│ doc:pdf  │
                └──────────┘
+
+┌───────────────┐    ┌───────┐    ┌────────┐
+│ documentation │───>│ mkdir │───>│ deploy │
+└───────────────┘    └───────┘    └────────┘
 """
 
 
 
 from collections import namedtuple
 from typing import Callable, Iterator
+from pathlib import Path
 
 from buildchain import config
 from buildchain import coreutils
 from buildchain import constants
+from buildchain import targets
 from buildchain import types
 from buildchain import utils
 
 
 DocTarget = namedtuple('DocTarget', ('name', 'command', 'target'))
+DOC_BUILD_DIR : Path = constants.ROOT/'docs/_build'
+DOC_PDF_FILE  : Path = DOC_BUILD_DIR/'latex/{}.pdf'.format(config.PROJECT_NAME)
+
+
+def task_documentation() -> types.TaskDict:
+    """Generate documentations for the ISO."""
+    return {
+        'actions': None,
+        'task_dep': [
+            '_doc_mkdir_root',
+            '_doc_deploy'
+        ],
+    }
+
+
+def task__doc_mkdir_root() -> types.TaskDict:
+    """Create the documentation root directory."""
+    return targets.Mkdir(
+        directory=constants.ISO_DOCS_ROOT, task_dep=['_iso_mkdir_root']
+    ).task
+
+
+def task__doc_deploy() -> types.TaskDict:
+    """Deploy the documentation on the ISO."""
+    source = DOC_PDF_FILE
+    target = constants.ISO_DOCS_ROOT/'user-guide.pdf'
+    return {
+        'title': utils.title_with_target1('COPY'),
+        'actions': [(coreutils.cp_file, (source, target))],
+        'targets': [target],
+        'task_dep': ['_doc_mkdir_root'],
+        'file_dep': [source],
+        'clean': True,
+    }
 
 
 def task_doc() -> Iterator[types.TaskDict]:
@@ -39,19 +79,19 @@ def task_doc() -> Iterator[types.TaskDict]:
         """Delete the build sub-directory for the given target."""
         return lambda: coreutils.rm_rf(target.target.parent)
 
-    project = config.PROJECT_NAME
-    doc_buildroot = constants.ROOT/'docs/_build'
     doc_targets = (
         DocTarget(name='html', command='html',
-                  target=doc_buildroot/'html/index.html'),
-        DocTarget(name='pdf', command='latexpdf',
-                  target=doc_buildroot/'latex/{}.pdf'.format(project)),
+                  target=DOC_BUILD_DIR/'html/index.html'),
+        DocTarget(name='pdf', command='latexpdf', target=DOC_PDF_FILE)
     )
     for target in doc_targets:
         doc_format = target.name.upper()
         yield {
             'name': target.name,
-            'doc': 'Generate {} {} documentation'.format(project, doc_format),
+            'title': utils.title_with_target1('DOC {}'.format(doc_format)),
+            'doc': 'Generate {} {} documentation'.format(
+                config.PROJECT_NAME, doc_format
+            ),
             'actions': [['tox', '-e', 'docs', '--', target.command]],
             'targets': [target.target],
             'file_dep': list(utils.git_ls('docs')),
