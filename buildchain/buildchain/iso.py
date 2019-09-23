@@ -31,7 +31,7 @@ import datetime as dt
 import socket
 import subprocess
 from pathlib import Path
-from typing import Sequence
+from typing import Iterator, Sequence, Tuple
 
 import doit  # type: ignore
 
@@ -45,6 +45,46 @@ from buildchain import versions
 
 
 ISO_FILE : Path = config.BUILD_ROOT/'{}.iso'.format(config.PROJECT_NAME.lower())
+FILE_TREES : Tuple[helper.FileTree, ...] = (
+    helper.FileTree(
+        basename='_iso_add_tree',
+        files=(
+            Path('examples/new-node.yaml'),
+            Path('examples/new-node_vagrant.yaml'),
+        ),
+        destination_directory=constants.ISO_ROOT,
+        task_dep=['_iso_mkdir_root']
+    ),
+    helper.FileTree(
+        basename='_iso_add_tree',
+        files=(
+            Path('iso-manager.sh'),
+            Path('downgrade.sh'),
+            Path('upgrade.sh'),
+            Path('solution-manager.sh'),
+            Path('backup.sh'),
+            helper.TemplateFile(
+                task_name='bootstrap.sh',
+                source=constants.ROOT/'scripts'/'bootstrap.sh.in',
+                destination=constants.ISO_ROOT/'bootstrap.sh',
+                context={'VERSION': versions.VERSION},
+                file_dep=[versions.VERSION_FILE],
+                task_dep=['_iso_mkdir_root'],
+            ),
+            helper.TemplateFile(
+                task_name='restore.sh',
+                source=constants.ROOT/'scripts'/'restore.sh.in',
+                destination=constants.ISO_ROOT/'restore.sh',
+                context={'VERSION': versions.VERSION},
+                file_dep=[versions.VERSION_FILE],
+                task_dep=['_iso_mkdir_root'],
+            ),
+        ),
+        destination_directory=constants.ISO_ROOT,
+        source_prefix=Path('scripts'),
+        task_dep=['_iso_mkdir_root']
+    )
+)
 
 
 def task_iso() -> types.TaskDict:
@@ -78,97 +118,19 @@ def task_populate_iso() -> types.TaskDict:
         # Aggregate here the tasks that put files into ISO_ROOT.
         'task_dep': [
             '_iso_mkdir_root',
-            '_iso_render_bootstrap',
-            '_iso_render_restore',
-            '_iso_add_node_manifest',
             '_iso_generate_product_txt',
-            '_iso_add_utilities_scripts',
+            '_iso_add_tree:*',
             'images',
             'salt_tree',
             'packaging',
         ],
     }
 
-def task__iso_mkdir_examples() -> types.TaskDict:
-    """Create ISO_ROOT/examples"""
-    return helper.Mkdir(
-        directory=constants.ISO_ROOT/"examples", task_dep=['_iso_mkdir_root']
-    ).task
 
-
-def task__iso_add_node_manifest() -> types.TaskDict:
-    """Copy the node announcement manifest to examples."""
-    # generic node manifest
-    src_generic = constants.ROOT/'examples'/'new-node.yaml'
-    dest_generic = constants.ISO_ROOT/'examples'/'new-node.yaml'
-    new_node_generic = [src_generic, dest_generic]
-    # vagrant node manifest
-    src_vagrant = constants.ROOT/'examples'/'new-node_vagrant.yaml'
-    dest_vagrant = constants.ISO_ROOT/'examples'/'new-node_vagrant.yaml'
-    new_node_vagrant = [src_vagrant, dest_vagrant]
-    return {
-         'title': utils.title_with_target1('COPY'),
-         'actions': [
-             (coreutils.cp_file, new_node_generic),
-             (coreutils.cp_file, new_node_vagrant)
-         ],
-         'targets': [dest_generic, dest_vagrant],
-         'task_dep': ['_iso_mkdir_examples'],
-         'file_dep': [src_generic, src_vagrant],
-         'clean': True,
-     }
-
-
-def task__iso_add_utilities_scripts() -> types.TaskDict:
-    """Copy the ISO manager script to scripts."""
-    files = (
-        (
-            constants.ROOT/'scripts'/'iso-manager.sh',
-            constants.ISO_ROOT/'iso-manager.sh'
-        ), (
-            constants.ROOT/'scripts'/'downgrade.sh',
-            constants.ISO_ROOT/'downgrade.sh'
-        ), (
-            constants.ROOT/'scripts'/'upgrade.sh',
-            constants.ISO_ROOT/'upgrade.sh'
-        ), (
-            constants.ROOT/'scripts'/'solution-manager.sh',
-            constants.ISO_ROOT/'solution-manager.sh'
-        ), (
-            constants.ROOT/'scripts'/'backup.sh',
-            constants.ISO_ROOT/'backup.sh'
-        )
-    )
-    return {
-            'title': utils.title_with_target1('COPY'),
-            'actions': [ (coreutils.cp_file, filepair) for filepair in files],
-            'targets': [filepair[1] for filepair in files],
-            'task_dep': ['_iso_mkdir_root'],
-            'file_dep': [filepair[0] for filepair in files],
-            'clean': True,
-    }
-
-
-def task__iso_render_bootstrap() -> types.TaskDict:
-    """Generate the bootstrap script."""
-    return helper.TemplateFile(
-        source=constants.ROOT/'scripts'/'bootstrap.sh.in',
-        destination=constants.ISO_ROOT/'bootstrap.sh',
-        context={'VERSION': versions.VERSION},
-        file_dep=[versions.VERSION_FILE],
-        task_dep=['_iso_mkdir_root'],
-    ).task
-
-
-def task__iso_render_restore() -> types.TaskDict:
-    """Generate the restore script."""
-    return helper.TemplateFile(
-        source=constants.ROOT/'scripts'/'restore.sh.in',
-        destination=constants.ISO_ROOT/'restore.sh',
-        context={'VERSION': versions.VERSION},
-        file_dep=[versions.VERSION_FILE],
-        task_dep=['_iso_mkdir_root'],
-    ).task
+def task__iso_add_tree() -> Iterator[types.TaskDict]:
+    """Deploy an ISO sub-tree"""
+    for file_tree in FILE_TREES:
+        yield from file_tree.execution_plan
 
 
 def task__iso_generate_product_txt() -> types.TaskDict:
