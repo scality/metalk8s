@@ -76,7 +76,10 @@ def lint_yaml() -> types.TaskDict:
         'name': 'yaml',
         'doc': lint_yaml.__doc__,
         'actions': [['tox', '-e', 'lint-yaml']],
-        'file_dep': list(constants.ROOT.glob('salt/**/*.yaml')),
+        'file_dep': [
+            constants.ROOT/'eve/main.yml',
+            constants.ROOT/'salt/metalk8s/defaults.yaml'
+        ],
     }
 
 
