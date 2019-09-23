@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file is to be executed using `bash_unit`
 
 DOCKER=${DOCKER:-$(command -v docker || echo false)}
