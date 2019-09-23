@@ -59,9 +59,9 @@ def lint_python() -> types.TaskDict:
 
 def lint_shell() -> types.TaskDict:
     """Run shell scripts linting."""
-    shell_scripts : List[Path] = [constants.ROOT/'doit.sh']
-    for ext in ('.sh', '.sh.in'):
-        shell_scripts.extend(constants.ROOT.glob('*/*{}'.format(ext)))
+    shell_scripts = [
+        filepath for filepath in utils.git_ls() if '.sh' in filepath.suffixes
+    ]
     return {
         'name': 'shell',
         'doc': lint_shell.__doc__,
