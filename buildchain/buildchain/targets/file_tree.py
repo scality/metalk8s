@@ -30,7 +30,7 @@ Overview:
 
 import operator
 from pathlib import Path
-from typing import Any, List, Sequence, Set, Union
+from typing import Any, List, Optional, Sequence, Set, Union
 
 from buildchain import constants
 from buildchain import coreutils
@@ -51,6 +51,7 @@ class FileTree(base.CompositeTarget):
         basename: str,
         files: Sequence[Union[Path, base.AtomicTarget]],
         destination_directory: Path,
+        source_prefix: Optional[Path]=None,
         **kwargs: Any
     ):
         """Initialize the file hierarchy.
@@ -59,19 +60,21 @@ class FileTree(base.CompositeTarget):
             basename:              basename for the sub-tasks
             files:                 list of files to copy
             destination_directory: where to copy the tree
+            source_prefix:         prefix to add to the file path from `files`
 
         Keyword Arguments:
             They are passed to `Target` init method.
         """
         self._files = files
         self._dest = destination_directory
+        self._src_prefix = source_prefix or Path('.')
         self._dirs = [
             self._dest/directory
             for directory
             in self._compute_dir_tree(self.files)
         ]
         if not self.directories:
-            self._root = self.destination
+            self._root = self.source_prefix
         else:
             self._root = self.directories[-1].relative_to(self.destination)
         super().__init__(
@@ -79,8 +82,9 @@ class FileTree(base.CompositeTarget):
             **kwargs
         )
 
-    directories = property(operator.attrgetter('_dirs'))
-    destination = property(operator.attrgetter('_dest'))
+    directories   = property(operator.attrgetter('_dirs'))
+    destination   = property(operator.attrgetter('_dest'))
+    source_prefix = property(operator.attrgetter('_src_prefix'))
 
     @property
     def files(self) -> List[Path]:
@@ -141,7 +145,7 @@ class FileTree(base.CompositeTarget):
         for path in self._files:
             if isinstance(path, base.AtomicTarget):
                 continue
-            source = constants.ROOT/path
+            source = constants.ROOT/self.source_prefix/path
             destination = self.destination/path
             task['actions'].append(
                 (coreutils.cp_file, [source, destination])
