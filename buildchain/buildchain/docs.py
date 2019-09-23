@@ -86,13 +86,17 @@ def task_doc() -> Iterator[types.TaskDict]:
     )
     for target in doc_targets:
         doc_format = target.name.upper()
+        action = ['tox', '-e', 'docs', '--', target.command]
+        # In CI we reuse already built PDF: just check the existence.
+        if config.RUNNING_IN_CI:
+            action = ['test', '-f', target.target]
         yield {
             'name': target.name,
             'title': utils.title_with_target1('DOC {}'.format(doc_format)),
             'doc': 'Generate {} {} documentation'.format(
                 config.PROJECT_NAME, doc_format
             ),
-            'actions': [['tox', '-e', 'docs', '--', target.command]],
+            'actions': [action],
             'targets': [target.target],
             'file_dep': list(utils.git_ls('docs')),
             'clean': [clean(target)],
