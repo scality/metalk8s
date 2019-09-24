@@ -37,26 +37,71 @@ export const updateApiServerConfig = (url, token) => {
   rbacAuthorizationV1Api = config.makeApiClient(RbacAuthorizationV1Api);
 };
 
-export async function getCustomResource() {
+export async function getStack() {
   try {
-    // We want to change this hardcoded data later
     return await customObjects.listClusterCustomObject(
-      'example-solution.metalk8s.scality.com',
+      'solutions.metalk8s.scality.com',
       'v1alpha1',
-      'examples'
+      'stacks'
     );
   } catch (error) {
     return { error };
   }
 }
 
-export async function createCustomResource(body, namespaces) {
+export async function updateStack(body, namespaces, name) {
+  try {
+    return await customObjects.patchNamespacedCustomObject(
+      'solutions.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'stacks',
+      name,
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/merge-patch+json'
+        }
+      }
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getClockServer(namespaces) {
+  try {
+    return await customObjects.listNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'clockservers'
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getVersionServer(namespaces) {
+  try {
+    return await customObjects.listNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'versionservers'
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createClockServer(body, namespaces) {
   try {
     return await customObjects.createNamespacedCustomObject(
       'example-solution.metalk8s.scality.com',
       'v1alpha1',
       namespaces,
-      'examples',
+      'clockservers',
       body
     );
   } catch (error) {
@@ -64,13 +109,47 @@ export async function createCustomResource(body, namespaces) {
   }
 }
 
-export async function updateCustomResource(body, namespaces, name) {
+export async function createVersionServer(body, namespaces) {
+  try {
+    return await customObjects.createNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'versionservers',
+      body
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function updateClockServer(body, namespaces, name) {
   try {
     return await customObjects.patchNamespacedCustomObject(
       'example-solution.metalk8s.scality.com',
       'v1alpha1',
       namespaces,
-      'examples',
+      'clockservers',
+      name,
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/merge-patch+json'
+        }
+      }
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function updateVersionServer(body, namespaces, name) {
+  try {
+    return await customObjects.patchNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'versionservers',
       name,
       body,
       {

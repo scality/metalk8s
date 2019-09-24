@@ -5,19 +5,24 @@ import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
-import { Button, Input } from '@scality/core-ui';
-import { padding, gray, fontSize } from '@scality/core-ui/dist/style/theme';
+import { Button, Input, Breadcrumb } from '@scality/core-ui';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import semver from 'semver';
-import { editCustomResourceAction } from '../ducks/app/customResource';
+import { editClockServerAction } from '../ducks/app/clockServer';
+import {
+  BreadcrumbContainer,
+  BreadcrumbLabel,
+  StyledLink
+} from '../components/BreadcrumbStyle';
 
-const CreateCustomresourceContainter = styled.div`
+const CreateClockServerContainter = styled.div`
   height: 100%;
   padding: ${padding.base};
   display: inline-block;
 `;
 
-const CreateCustomresourceLayout = styled.div`
+const CreateClockServerLayout = styled.div`
   height: 100%;
   overflow: auto;
   display: inline-block;
@@ -28,7 +33,7 @@ const CreateCustomresourceLayout = styled.div`
       .sc-input-label,
       .sc-input-type,
       .sc-select {
-        width: 200px;
+        width: 150px;
         box-sizing: border-box;
       }
     }
@@ -36,7 +41,7 @@ const CreateCustomresourceLayout = styled.div`
 `;
 
 const InputLabel = styled.label`
-  width: 200px;
+  width: 150px;
   padding: 10px;
   font-size: ${fontSize.base};
   box-sizing: border-box;
@@ -53,13 +58,8 @@ const ActionContainer = styled.div`
   justify-content: flex-end;
 
   button {
-    margin-right: ${padding.large};
+    margin-left: ${padding.large};
   }
-`;
-
-const FormSectionTitle = styled.h3`
-  margin: 0 ${padding.small} 0;
-  color: ${gray};
 `;
 
 const FormSection = styled.div`
@@ -69,45 +69,51 @@ const FormSection = styled.div`
 `;
 
 const InputValue = styled.label`
-  width: 200px;
+  width: 150px;
   font-weight: bold;
   font-size: ${fontSize.large};
 `;
 
-const CustomresourceEditForm = props => {
-  const { intl, namespaces, match, customResources } = props;
-  const customResource = customResources.find(
-    cr => cr.name === match.params.id
-  );
+const ClockServerEditForm = props => {
+  const { intl, match, clockServers, theme } = props;
+  const stack = match.params.name;
+  const clockServer = clockServers.find(cr => cr.name === match.params.id);
   const initialValues = {
-    namespaces: customResource
-      ? customResource.namespace
-      : namespaces.length
-      ? namespaces[0].metadata.name
-      : '',
-    version: customResource ? customResource.version : '',
-    replicas: customResource ? customResource.replicas : '',
-    name: customResource ? customResource.name : ''
+    version: clockServer ? clockServer.version : '',
+    timezone: clockServer ? clockServer.timezone : '',
+    name: clockServer ? clockServer.name : '',
+    stack
   };
 
   const validationSchema = Yup.object().shape({
-    namespaces: Yup.string().required(),
     version: Yup.string()
       .required()
       .test('is-version-valid', intl.messages.not_valid_version, value =>
         semver.valid(value)
       ),
-    replicas: Yup.number().required()
+    timezone: Yup.string().required()
   });
 
   return (
-    <CreateCustomresourceContainter>
-      <CreateCustomresourceLayout>
-        {customResource ? (
+    <CreateClockServerContainter>
+      <BreadcrumbContainer>
+        <Breadcrumb
+          activeColor={theme.brand.secondary}
+          paths={[
+            <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
+            <StyledLink to={`/stacks/${stack}`}>{stack} </StyledLink>,
+            <BreadcrumbLabel title={intl.messages.edit_clock_server}>
+              {intl.messages.edit_clock_server}
+            </BreadcrumbLabel>
+          ]}
+        />
+      </BreadcrumbContainer>
+      <CreateClockServerLayout>
+        {clockServer ? (
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={props.editCustomResource}
+            onSubmit={props.editClockServer}
           >
             {formProps => {
               const {
@@ -129,43 +135,14 @@ const CustomresourceEditForm = props => {
               };
               //touched is not "always" correctly set
               const handleOnBlur = e => setFieldTouched(e.target.name, true);
-              const handleSelectChange = field => selectedObj => {
-                setFieldValue(field, selectedObj.value);
-              };
-              //get the select item from the object array
-              const getSelectedObjectItem = (items, selectedValue) => {
-                return items.find(item => item.value === selectedValue);
-              };
-              const options = namespaces.map(namespace => {
-                return {
-                  label: namespace.metadata.name,
-                  value: namespace.metadata.name
-                };
-              });
+
               return (
                 <Form>
                   <FormSection>
-                    <FormSectionTitle>
-                      {intl.messages.edit_customResource}
-                    </FormSectionTitle>
                     <InputContainer>
                       <InputLabel>{intl.messages.name}</InputLabel>
                       <InputValue>{values.name}</InputValue>
                     </InputContainer>
-                    <Input
-                      id="namespaces_input_creation"
-                      label={intl.messages.namespace}
-                      clearable={false}
-                      type="select"
-                      options={options}
-                      placeholder={intl.messages.select_a_namespace}
-                      noResultsText={intl.messages.not_found}
-                      name="namespaces"
-                      onChange={handleSelectChange('namespaces')}
-                      value={getSelectedObjectItem(options, values.namespaces)}
-                      error={touched.namespaces && errors.namespaces}
-                      onBlur={handleOnBlur}
-                    />
                     <Input
                       name="version"
                       label={intl.messages.version}
@@ -174,13 +151,12 @@ const CustomresourceEditForm = props => {
                       error={touched.version && errors.version}
                       onBlur={handleOnBlur}
                     />
-
                     <Input
-                      name="replicas"
-                      label={intl.messages.replicas}
-                      value={values.replicas}
-                      onChange={handleChange('replicas')}
-                      error={touched.replicas && errors.replicas}
+                      name="timezone"
+                      label={intl.messages.timezone}
+                      value={values.timezone}
+                      onChange={handleChange('timezone')}
+                      error={touched.timezone && errors.timezone}
                       onBlur={handleOnBlur}
                     />
 
@@ -192,7 +168,7 @@ const CustomresourceEditForm = props => {
                             type="button"
                             outlined
                             onClick={() =>
-                              props.history.push('/customResource')
+                              props.history.push(`/stacks/${stack}`)
                             }
                           />
                           <Button
@@ -209,21 +185,21 @@ const CustomresourceEditForm = props => {
             }}
           </Formik>
         ) : null}
-      </CreateCustomresourceLayout>
-    </CreateCustomresourceContainter>
+      </CreateClockServerLayout>
+    </CreateClockServerContainter>
   );
 };
 
 function mapStateToProps(state) {
   return {
-    namespaces: state.app.namespaces.list,
-    customResources: state.app.customResource.list
+    theme: state.config.theme,
+    clockServers: state.app.clockServer.list
   };
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    editCustomResource: body => dispatch(editCustomResourceAction(body))
+    editClockServer: body => dispatch(editClockServerAction(body))
   };
 };
 
@@ -232,6 +208,6 @@ export default injectIntl(
     connect(
       mapStateToProps,
       mapDispatchToProps
-    )(CustomresourceEditForm)
+    )(ClockServerEditForm)
   )
 );

@@ -7,33 +7,25 @@ import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 import { withRouter, Switch } from 'react-router-dom';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
-import CustomResource from './CustomResource';
-import CustomresourceCreation from './CustomresourceCreation';
-import CustomresourceEdit from './CustomresourceEdit';
+
+import ClockServerCreation from './ClockServerCreation';
+import ClockServerEdit from './ClockServerEdit';
+import VersionServerCreation from './VersionServerCreation';
+import VersionServerEdit from './VersionServerEdit';
+import Stack from './Stack';
+import StackDetail from './StackDetail';
 
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
 
-import {
-  refreshCustomResourceAction,
-  stopRefreshCustomResourceAction
-} from '../ducks/app/customResource.js';
-
-import {
-  refreshNamespacesAction,
-  stopRefreshNamespacesAction
-} from '../ducks/app/namespaces.js';
+import { refreshStackAction, stopRefreshStackAction } from '../ducks/app/stack';
 
 import { useRefreshEffect } from '../services/utils';
 
 const Layout = props => {
-  useRefreshEffect(
-    refreshCustomResourceAction,
-    stopRefreshCustomResourceAction
-  );
-  useRefreshEffect(refreshNamespacesAction, stopRefreshNamespacesAction);
+  useRefreshEffect(refreshStackAction, stopRefreshStackAction);
 
   const applications = [];
 
@@ -55,7 +47,7 @@ const Layout = props => {
     expanded: props.sidebar.expanded,
     actions: [
       {
-        label: props.intl.messages.custom_resource,
+        label: props.intl.messages.stacks,
         icon: <i className="fas fa-server" />,
         onClick: () => {
           props.history.push('/');
@@ -67,7 +59,7 @@ const Layout = props => {
             strict: true
           }) ||
           matchPath(props.history.location.pathname, {
-            path: '/customResource',
+            path: '/stacks',
             exact: false,
             strict: true
           })
@@ -101,20 +93,27 @@ const Layout = props => {
           <PrivateRoute exact path="/about" component={Welcome} />
           <PrivateRoute
             exact
-            path="/customResource"
-            component={CustomResource}
+            path="/stacks/:name/clockServer/create"
+            component={ClockServerCreation}
           />
           <PrivateRoute
             exact
-            path="/customResource/:id/edit"
-            component={CustomresourceEdit}
+            path="/stacks/:name/clockServer/:id/edit"
+            component={ClockServerEdit}
           />
           <PrivateRoute
             exact
-            path="/customResource/create"
-            component={CustomresourceCreation}
+            path="/stacks/:name/versionServer/create"
+            component={VersionServerCreation}
           />
-          <PrivateRoute exact path="/" component={CustomResource} />
+          <PrivateRoute
+            exact
+            path="/stacks/:name/versionServer/:id/edit"
+            component={VersionServerEdit}
+          />
+          <PrivateRoute path="/stacks/:name" component={StackDetail} />
+          <PrivateRoute exact path="/stacks" component={Stack} />
+          <PrivateRoute exact path="/" component={Stack} />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>
