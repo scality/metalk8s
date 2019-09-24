@@ -3,5 +3,5 @@ Label: metalk8s
 Suite: stable
 Codename: bionic
 Architectures: amd64
-Components: metalk8s-bionic metalk8s-bionic-backports metalk8s-bionic-updates metalk8s-kubernetes-xenial metalk8s-salt_ubuntu1804 metalk8s-scality
-Description: MetalK8s repository for bionic
+Components: _REPONAME_
+Description: _REPONAME_ repository for bionic
