@@ -123,7 +123,7 @@ def urls_exist_in_cluster(
 
 
 def check_etcd_health(
-        minion_id,
+        minion_id=None,
         ca_cert='/etc/kubernetes/pki/etcd/ca.crt',
         cert_key='/etc/kubernetes/pki/etcd/salt-master-etcd-client.key',
         cert_cert='/etc/kubernetes/pki/etcd/salt-master-etcd-client.crt'):
@@ -135,10 +135,16 @@ def check_etcd_health(
         minion_id (str): minion id of an etcd node
     '''
     # Get host ip from the minion id
-    endpoint = __salt__['saltutil.runner'](
-        'mine.get', tgt=minion_id, fun='control_plane_ip'
-    )[minion_id]
-
+    if minion_id:
+        endpoint = __salt__['saltutil.runner'](
+            'mine.get', tgt=minion_id, fun='control_plane_ip'
+        )[minion_id]
+    else:
+        endpoint = _get_endpoint_up(
+            ca_cert=ca_cert,
+            cert_key=cert_key,
+            cert_cert=cert_cert
+        )
     # Get all members
     with etcd3.client(host=endpoint,
                       ca_cert=ca_cert,
