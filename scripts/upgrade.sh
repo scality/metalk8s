@@ -162,6 +162,8 @@ upgrade_bootstrap () {
 
 launch_upgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
+        saltenv="metalk8s-$DESTINATION_VERSION"
 
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.upgrade saltenv="metalk8s-$DESTINATION_VERSION"
