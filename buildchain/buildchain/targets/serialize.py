@@ -5,7 +5,7 @@
 import enum
 import json
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from buildchain import types
 from buildchain import utils
@@ -19,9 +19,20 @@ def render_json(obj: Any, filepath: Path) -> None:
         json.dump(obj, file_obj, sort_keys=True, indent=2)
 
 
+def render_envfile(variables: Mapping[str, str], filepath: Path) -> None:
+    """Serialize a dict as an env file to the given file path."""
+    with filepath.open('w', encoding='utf-8') as fp:
+        data = '\n'.join(
+            '{}={}'.format(key, value) for key, value in variables.items()
+        )
+        fp.write(data)
+        fp.write('\n')
+
+
 class Renderer(enum.Enum):
     """Supported rendering methods for `SerializedData` targets."""
     JSON = 'JSON'
+    ENV  = 'ENV'
 
 
 class SerializedData(base.AtomicTarget):
@@ -29,6 +40,7 @@ class SerializedData(base.AtomicTarget):
 
     RENDERERS = {
         Renderer.JSON: render_json,
+        Renderer.ENV:  render_envfile,
     }
 
     def __init__(
