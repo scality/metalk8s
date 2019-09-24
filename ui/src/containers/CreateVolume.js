@@ -245,9 +245,9 @@ const CreateVolume = props => {
               return {
                 label: SCName,
                 value: SCName,
+                'data-cy': `storageClass-${SCName}`,
               };
             });
-
             const optionsTypes = types.map(({ label, value }) => {
               return {
                 label,
