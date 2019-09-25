@@ -331,10 +331,14 @@ class DEBRepository(Repository):
     @property
     def pkgdir(self) -> Path:
         """Repository where to download the packages."""
+        if self.packages:
+            # Built packages are not under a sub-directory.
+            return constants.PKG_DEB_ROOT
         return constants.PKG_DEB_ROOT/self.fullname
 
-    def _mkdir_deb_repo_root(self) -> types.TaskDict:
-        """Create the root directory for the repository."""
+    def build_packages(self) -> List[types.TaskDict]:
+        # Nothing to do: packages are already built.
+        return []
 
     def build_repo(self) -> types.TaskDict:
         def clean() -> None:
@@ -358,6 +362,8 @@ class DEBRepository(Repository):
             'uptodate': [True],
             'clean': [clean],
         })
+        for pkg in self.packages:
+            task['file_dep'].append(pkg.deb)
         return task
 
     def _buildrepo_action(self) -> types.Action:
