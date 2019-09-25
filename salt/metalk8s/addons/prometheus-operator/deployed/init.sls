@@ -3,3 +3,4 @@ include:
   - .storageclass
   - .chart
   - .prometheus-nodeport
+  - .dashboards
