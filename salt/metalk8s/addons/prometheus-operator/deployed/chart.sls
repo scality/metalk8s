@@ -19387,9 +19387,9 @@ spec:
   clusterIP: None
   ports:
   - name: http-metrics
-    port: 2379
+    port: 2381
     protocol: TCP
-    targetPort: 2379
+    targetPort: 2381
   selector:
     component: etcd
   type: ClusterIP
