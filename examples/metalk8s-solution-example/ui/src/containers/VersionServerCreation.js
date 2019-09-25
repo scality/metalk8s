@@ -60,7 +60,6 @@ const FormSection = styled.div`
 const VersionServerCreationForm = props => {
   const { intl, match, theme } = props;
   const stack = match.params.name;
-  const version = match.params.version;
 
   const initialValues = {
     version: '',
@@ -86,9 +85,7 @@ const VersionServerCreationForm = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
-            <StyledLink to={`/stacks/${stack}/version/${version}/prepare`}>
-              {stack}
-            </StyledLink>,
+            <StyledLink to={`/stacks/${stack}`}>{stack}</StyledLink>,
             <BreadcrumbLabel title={intl.messages.create_version_server}>
               {intl.messages.create_version_server}
             </BreadcrumbLabel>
@@ -99,9 +96,7 @@ const VersionServerCreationForm = props => {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={values =>
-            props.createVersionServer({ ...values, stackVersion: version })
-          }
+          onSubmit={props.createVersionServer}
         >
           {formProps => {
             const {
@@ -159,11 +154,7 @@ const VersionServerCreationForm = props => {
                           text={intl.messages.cancel}
                           type="button"
                           outlined
-                          onClick={() =>
-                            props.history.push(
-                              `/stacks/${stack}/version/${version}/prepare`
-                            )
-                          }
+                          onClick={() => props.history.push(`/stacks/${stack}`)}
                         />
                         <Button
                           text={intl.messages.create}

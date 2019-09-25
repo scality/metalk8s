@@ -66,9 +66,7 @@ const Stack = props => {
           sortDirection={sortDirection}
           onSort={onSort}
           onRowClick={row => {
-            history.push(
-              `/stacks/${row.rowData.name}/version/${row.rowData.version}/prepare`
-            );
+            history.push(`/stacks/${row.rowData.name}`);
           }}
           noRowsRenderer={() => (
             <NoRowsRenderer content={intl.messages.no_data_available} />

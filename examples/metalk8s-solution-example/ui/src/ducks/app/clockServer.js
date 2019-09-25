@@ -69,7 +69,7 @@ export function* fetchClockServer(namespaces) {
 }
 
 export function* createClockServer({ payload }) {
-  const { name, stack, timezone, version, stackVersion } = payload;
+  const { name, stack, timezone, version } = payload;
   const body = {
     apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'ClockServer',
@@ -89,15 +89,12 @@ export function* createClockServer({ payload }) {
   );
   if (!result.error) {
     yield call(fetchClockServer, `${stack}-example-solution`);
-    yield call(
-      history.push,
-      `/stacks/${stack}/version/${stackVersion}/prepare`
-    );
+    yield call(history.push, `/stacks/${stack}`);
   }
 }
 
 export function* editClockServer({ payload }) {
-  const { name, stack, timezone, version, stackVersion } = payload;
+  const { name, stack, timezone, version } = payload;
   const body = {
     apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'ClockServer',
@@ -119,10 +116,7 @@ export function* editClockServer({ payload }) {
 
   if (!result.error) {
     yield call(fetchClockServer, `${stack}-example-solution`);
-    yield call(
-      history.push,
-      `/stacks/${stack}/version/${stackVersion}/prepare`
-    );
+    yield call(history.push, `/stacks/${stack}`);
   }
 }
 

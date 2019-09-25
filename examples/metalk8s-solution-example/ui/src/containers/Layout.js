@@ -14,7 +14,7 @@ import VersionServerCreation from './VersionServerCreation';
 import VersionServerEdit from './VersionServerEdit';
 import Stack from './Stack';
 import StackDetail from './StackDetail';
-
+import StackPreparation from './StackPreparation';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
@@ -93,28 +93,30 @@ const Layout = props => {
           <PrivateRoute exact path="/about" component={Welcome} />
           <PrivateRoute
             exact
-            path="/stacks/:name/version/:version/clockServer/create"
+            path="/stacks/:name/clockServer/create"
             component={ClockServerCreation}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/version/:version/clockServer/:id/edit"
+            path="/stacks/:name/clockServer/:id/edit"
             component={ClockServerEdit}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/version/:version/versionServer/create"
+            path="/stacks/:name/versionServer/create"
             component={VersionServerCreation}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/version/:version/versionServer/:id/edit"
+            path="/stacks/:name/versionServer/:id/edit"
             component={VersionServerEdit}
           />
           <PrivateRoute
+            exact
             path="/stacks/:name/version/:version/prepare"
-            component={StackDetail}
+            component={StackPreparation}
           />
+          <PrivateRoute path="/stacks/:name" component={StackDetail} />
           <PrivateRoute exact path="/stacks" component={Stack} />
           <PrivateRoute exact path="/" component={Stack} />
         </Switch>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
@@ -23,7 +23,7 @@ import {
   InformationMainValue
 } from '../components/InformationList';
 import ComponentsList from './Component';
-import { editStackAction, prepareStackAction } from '../ducks/app/stack';
+import { upgradeStackAction } from '../ducks/app/stack';
 
 const StackDetailContainer = styled.div`
   display: flex;
@@ -55,7 +55,7 @@ const StackEditFormContainer = styled.div`
 `;
 
 const StackEditForm = props => {
-  const { intl, currentVersion, onCancel, onSubmit } = props;
+  const { intl, currentVersion, onCancel, onSubmit, stack } = props;
   const initialValues = {
     version: currentVersion
   };
@@ -73,7 +73,7 @@ const StackEditForm = props => {
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={onSubmit}
+        onSubmit={values => onSubmit({ name: stack, version: values.version })}
       >
         {formProps => {
           const {
@@ -126,16 +126,10 @@ const StackEditForm = props => {
   );
 };
 const StackDetail = props => {
-  const { match, intl, theme, stacks, editStack, prepareStack } = props;
+  const { match, intl, theme, stacks, upgradeStack } = props;
   const [stackEditing, setStackEditing] = useState(false);
   const stackName = match.params.name;
-  const stackVersion = match.params.version;
   const stack = stacks.find(stack => stack.name === stackName);
-
-  useEffect(() => {
-    prepareStack({ name: stackName, version: stackVersion });
-  }, []);
-
   return stack ? (
     <StackDetailContainer>
       <BreadcrumbContainer>
@@ -166,8 +160,12 @@ const StackDetail = props => {
               <StackEditForm
                 intl={intl}
                 onCancel={() => setStackEditing(false)}
-                onSubmit={editStack}
+                onSubmit={payload => {
+                  upgradeStack(payload);
+                  setStackEditing(false);
+                }}
                 currentVersion={stack.version}
+                stack={stackName}
               />
             ) : (
               <InformationValue>
@@ -202,8 +200,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => {
   return {
-    prepareStack: body => dispatch(prepareStackAction(body)),
-    editStack: body => dispatch(editStackAction(body))
+    upgradeStack: body => dispatch(upgradeStackAction(body))
   };
 };
 

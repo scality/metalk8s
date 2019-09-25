@@ -1,6 +1,6 @@
 import { all, call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
-
+import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
 import { createNamespaces } from './namespaces';
 import {
@@ -17,6 +17,7 @@ const REFRESH_STACK = 'REFRESH_STACK';
 const STOP_REFRESH_STACK = 'STOP_REFRESH_STACK';
 
 const PREPARE_STACK = 'PREPARE_STACK';
+const UPGRADE_STACK = 'UPGRADE_STACK';
 const UPDATE_STACK = 'UPDATE_STACK';
 const ADD_STACK = 'ADD_STACK';
 const EDIT_STACK = 'EDIT_STACK';
@@ -31,9 +32,11 @@ export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case ADD_STACK:
       const list = [...state.list];
-      let stackToUpdate = list.find(item => item.name === action.payload.name);
-      if (stackToUpdate) {
-        stackToUpdate = action.payload;
+      const index = state.list.findIndex(
+        item => item.name === action.payload.name
+      );
+      if (index > -1) {
+        list[index] = action.payload;
         return { ...state, list: [...list] };
       }
       return { ...state, list: [...state.list, action.payload] };
@@ -69,6 +72,10 @@ export const prepareStackAction = payload => {
   return { type: PREPARE_STACK, payload };
 };
 
+export const upgradeStackAction = payload => {
+  return { type: UPGRADE_STACK, payload };
+};
+
 // Sagas
 export function* fetchStack() {
   const results = yield call(ApiK8s.getStack);
@@ -97,8 +104,16 @@ export function* updateStack(stack) {
     })
   );
 }
-
 export function* prepareStack({ payload }) {
+  yield call(manageStack, payload);
+  yield call(history.push, `/stacks/${payload.name}`);
+}
+
+export function* upgradeStack({ payload }) {
+  yield call(manageStack, payload);
+}
+
+export function* manageStack(payload) {
   const { name, version } = payload;
 
   //Prepare stack if not done yet
@@ -133,6 +148,7 @@ export function* prepareStack({ payload }) {
       !resultsRBAC.find(result => result.error)
     ) {
       yield call(addOrUpdateSolutionInStack, name, version);
+      yield call(fetchStack);
     }
   }
 }
@@ -187,4 +203,5 @@ export function* stackSaga() {
   yield takeEvery(REFRESH_STACK, refreshStack);
   yield takeEvery(STOP_REFRESH_STACK, stopRefreshStack);
   yield takeEvery(PREPARE_STACK, prepareStack);
+  yield takeEvery(UPGRADE_STACK, upgradeStack);
 }

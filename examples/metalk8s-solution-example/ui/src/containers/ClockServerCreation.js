@@ -60,8 +60,6 @@ const FormSection = styled.div`
 const ClockServerCreationForm = props => {
   const { intl, match, theme } = props;
   const stack = match.params.name;
-  const version = match.params.version;
-
   const initialValues = {
     version: '',
     timezone: '',
@@ -86,9 +84,7 @@ const ClockServerCreationForm = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
-            <StyledLink to={`/stacks/${stack}/version/${version}/prepare`}>
-              {stack}
-            </StyledLink>,
+            <StyledLink to={`/stacks/${stack}`}>{stack}</StyledLink>,
             <BreadcrumbLabel title={intl.messages.create_clock_server}>
               {intl.messages.create_clock_server}
             </BreadcrumbLabel>
@@ -99,9 +95,7 @@ const ClockServerCreationForm = props => {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={values =>
-            props.createClockServer({ ...values, stackVersion: version })
-          }
+          onSubmit={props.createClockServer}
         >
           {formProps => {
             const {
@@ -159,9 +153,7 @@ const ClockServerCreationForm = props => {
                           type="button"
                           outlined
                           onClick={() =>
-                            props.history.push(
-                              `/stacks/${match.params.name}/version/${version}/prepare`
-                            )
+                            props.history.push(`/stacks/${match.params.name}`)
                           }
                         />
                         <Button

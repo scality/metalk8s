@@ -77,7 +77,6 @@ const InputValue = styled.label`
 const VersionServerEditForm = props => {
   const { intl, match, versionServers, theme } = props;
   const stack = match.params.name;
-  const version = match.params.version;
   const versionServer = versionServers.find(cr => cr.name === match.params.id);
   const initialValues = {
     version: versionServer ? versionServer.version : '',
@@ -102,9 +101,7 @@ const VersionServerEditForm = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
-            <StyledLink to={`/stacks/${stack}/version/${version}/prepare`}>
-              {stack}
-            </StyledLink>,
+            <StyledLink to={`/stacks/${stack}`}>{stack}</StyledLink>,
             <BreadcrumbLabel title={intl.messages.edit_version_server}>
               {intl.messages.edit_version_server}
             </BreadcrumbLabel>
@@ -116,9 +113,7 @@ const VersionServerEditForm = props => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={values =>
-              props.editversionServer({ ...values, stackVersion: version })
-            }
+            onSubmit={props.editversionServer}
           >
             {formProps => {
               const {
@@ -174,9 +169,7 @@ const VersionServerEditForm = props => {
                             type="button"
                             outlined
                             onClick={() =>
-                              props.history.push(
-                                `/stacks/${stack}/version/${version}/prepare`
-                              )
+                              props.history.push(`/stacks/${stack}`)
                             }
                           />
                           <Button

@@ -27,5 +27,6 @@
   "information": "Information",
   "kind": "Kind",
   "edit_stack_version": "Edit Environment Version",
-  "timezone": "Time Zone"
+  "timezone": "Time Zone",
+  "prepare_environment": "Preparing environment..."
 }
