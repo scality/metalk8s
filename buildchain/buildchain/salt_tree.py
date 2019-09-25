@@ -207,6 +207,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
 
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/init.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/'
@@ -444,6 +445,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s_drain.py'),
     Path('salt/_modules/metalk8s_kubernetes.py'),
     Path('salt/_modules/metalk8s_etcd.py'),
+    Path('salt/_modules/metalk8s_grafana.py'),
     Path('salt/_modules/metalk8s_kubernetes_utils.py'),
     Path('salt/_modules/metalk8s.py'),
     Path('salt/_modules/metalk8s_network.py'),
