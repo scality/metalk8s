@@ -51,6 +51,7 @@ Create local etcd Pod manifest:
           - --key-file=/etc/kubernetes/pki/etcd/server.key
           - --listen-client-urls=https://127.0.0.1:2379,https://{{ host }}:2379
           - --listen-peer-urls=https://{{ host }}:2380
+          - --listen-metrics-urls=http://127.0.0.1:2381,http://{{ host }}:2381
           - --name={{ host_name }}
           - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
           - --peer-client-cert-auth=true
