@@ -152,6 +152,8 @@ if ! grep -Fxq "$(cat .ssh/#{PRESHARED_SSH_KEY_NAME}.pub)" .ssh/authorized_keys 
 fi
 SCRIPT
 
+INSTALL_PYTHON = 'DEBIAN_FRONTEND=noninteractive apt install python -yq'
+
 # To support VirtualBox linked clones
 Vagrant.require_version(">= 1.8")
 
@@ -163,6 +165,13 @@ def declare_bootstrap(machine, os_data)
   machine.vm.provider "virtualbox" do |v|
     v.memory = 4086
     machine.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+  end
+
+  if os_data.fetch(:scripts, []).each do |script|
+       machine.vm.provision script[:name],
+         type: script[:type],
+         inline: script[:data]
+     end
   end
 
   machine.vm.provision "import-release",
@@ -193,14 +202,17 @@ Vagrant.configure("2") do |config|
     },
     ubuntu: {
       name: 'ubuntu/bionic64',
-      version: '20190514.0.0'
+      version: '20190514.0.0',
+      scripts: [
+        {
+          name: 'install-python',
+          type: 'shell',
+          data: INSTALL_PYTHON
+        }
+      ]
     }
   }
 
-  INSTALL_PYTHON = <<-SCRIPT
-  #!/bin/bash
-  apt install python -y
-  SCRIPT
   config.vm.box = os_data[:centos][:name]
   config.vm.box_version = os_data[:centos][:version]
 
