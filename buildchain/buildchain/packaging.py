@@ -78,6 +78,7 @@ def task_packaging() -> types.TaskDict:
             '_build_rpm_repositories:*',
             '_build_deb_packages:*',
             '_download_deb_packages',
+            '_build_deb_repositories:*',
         ],
     }
 
@@ -243,6 +244,11 @@ def task__build_rpm_repositories() -> Iterator[types.TaskDict]:
     for repository in RPM_REPOSITORIES:
         yield from repository.execution_plan
 
+
+def task__build_deb_repositories() -> Iterator[types.TaskDict]:
+    """Build a DEB repository."""
+    for repository in DEB_REPOSITORIES:
+        yield from repository.execution_plan
 
 # }}}
 # Builders {{{
