@@ -148,7 +148,7 @@ it('should return false when volume is failed and there is no PV', () => {
     testcaseVolumeFailedWithoutPv.rowData,
     testcaseVolumeFailedWithoutPv.persistentVolumes,
   );
-  expect(result).toEqual(false);
+  expect(result).toEqual(true);
 });
 
 it('should return true when volume is failed and PV is failed', () => {
@@ -252,5 +252,5 @@ it('should return false when volume is available and there is no PV', () => {
     testcaseVolumeAvailableWithoutPv.rowData,
     testcaseVolumeAvailableWithoutPv.persistentVolumes,
   );
-  expect(result).toEqual(false);
+  expect(result).toEqual(true);
 });
