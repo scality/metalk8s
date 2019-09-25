@@ -155,13 +155,6 @@ def task__iso_add_tree() -> Iterator[types.TaskDict]:
 @doit.create_after(executed='populate_iso')  # type: ignore
 def task__iso_build() -> types.TaskDict:
     """Create the ISO from the files in ISO_ROOT."""
-    def unlink_if_exist(filepath: Path) -> None:
-        """Delete a file if it exists."""
-        try:
-            filepath.unlink()
-        except FileNotFoundError:
-            pass
-
     def mkisofs() -> None:
         """Create an ISO file (delete on error)."""
         cmd = [

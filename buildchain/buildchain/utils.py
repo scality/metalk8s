@@ -132,3 +132,11 @@ def git_ls(directory: Optional[str]=None) -> Iterator[Path]:
     return map(Path, subprocess.check_output(
         ['git', 'ls-files', '-z', root], encoding='utf-8'
     ).split('\x00')[:-1])  # `:-1` to skip the last element (empty string).
+
+
+def unlink_if_exist(filepath: Path) -> None:
+    """Delete a file if it exists."""
+    try:
+        filepath.unlink()
+    except FileNotFoundError:
+        pass
