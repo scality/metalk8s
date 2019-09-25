@@ -349,7 +349,7 @@ class DEBPackage(Package):
     def deb(self) -> Path:
         """DEB path."""
         fmt = '{pkg.name}_{pkg.version}-{pkg.build_id}_{pkg.ARCH}.deb'
-        return self.rootdir/fmt.format(pkg=self)
+        return constants.PKG_DEB_ROOT/fmt.format(pkg=self)
 
     @property
     def debuild_sources(self) -> Path:
@@ -358,12 +358,9 @@ class DEBPackage(Package):
 
     @property
     def execution_plan(self) -> List[types.TaskDict]:
-        tasks = [self.make_package_directory()]
         if self.sources.suffix == '.rpm':
-            tasks.append(self.convert_package())
-        else:
-            tasks.append(self.build_package())
-        return tasks
+            return [self.convert_package()]
+        return [self.build_package()]
 
     def build_package(self) -> types.TaskDict:
         """Build DEB packages from source files."""
@@ -375,7 +372,7 @@ class DEBPackage(Package):
                 source=self.debuild_sources, target=Path('/debbuild/pkg-meta')
             ),
             utils.bind_mount(
-                source=self.rootdir, target=Path('/debbuild/result')
+                source=constants.PKG_DEB_ROOT, target=Path('/debbuild/result')
             ),
         ]
         builddeb_callable = docker_command.DockerRun(
@@ -404,14 +401,10 @@ class DEBPackage(Package):
     def convert_package(self) -> types.TaskDict:
         """Build a DEB package from a RPM one."""
         mounts = [
-            utils.bind_ro_mount(
-                source=self.sources,
-                target=Path('/rpmbuild/source.rpm')
-            ),
-            utils.bind_mount(
-                source=self.rootdir,
-                target=Path('/debbuild/result')
-            ),
+            utils.bind_ro_mount(source=self.sources,
+                                target=Path('/rpmbuild/source.rpm')),
+            utils.bind_mount(source=constants.PKG_DEB_ROOT,
+                             target=Path('/debbuild/result')),
         ]
         builddeb_callable = docker_command.DockerRun(
             command=['/entrypoint.sh', 'rpm2deb'],
