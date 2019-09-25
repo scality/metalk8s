@@ -157,7 +157,15 @@ export function* addOrUpdateSolutionInStack(name, version) {
   yield call(fetchStack);
   const stacks = yield select(state => state.app.stack.list);
   const stackToUpdate = stacks.find(item => item.name === name);
+
   if (stackToUpdate) {
+    let solutions = stackToUpdate.solutions;
+    const solutionToUpdate = solutions.find(sol => sol.name === SOLUTION_NAME);
+    if (solutionToUpdate) {
+      solutionToUpdate.version = version;
+    } else {
+      solutions = [...solutions, { name: SOLUTION_NAME, version }];
+    }
     const body = {
       apiVersion: 'solutions.metalk8s.scality.com/v1alpha1',
       kind: 'Stack',
@@ -165,10 +173,7 @@ export function* addOrUpdateSolutionInStack(name, version) {
         name
       },
       spec: {
-        solutions: [
-          ...stackToUpdate.solutions,
-          { name: SOLUTION_NAME, version }
-        ]
+        solutions
       }
     };
     yield call(ApiK8s.updateStack, body, name);
