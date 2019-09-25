@@ -68,7 +68,7 @@ export function* fetchVersionServer(namespaces) {
 }
 
 export function* createVersionServer({ payload }) {
-  const { name, stack, replicas, version } = payload;
+  const { name, stack, replicas, version, stackVersion } = payload;
   const body = {
     apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'VersionServer',
@@ -88,12 +88,15 @@ export function* createVersionServer({ payload }) {
   );
   if (!result.error) {
     yield call(fetchVersionServer, `${stack}-example-solution`);
-    yield call(history.push, `/stacks/${stack}`);
+    yield call(
+      history.push,
+      `/stacks/${stack}/version/${stackVersion}/prepare`
+    );
   }
 }
 
 export function* editVersionServer({ payload }) {
-  const { name, stack, replicas, version } = payload;
+  const { name, stack, replicas, version, stackVersion } = payload;
   const body = {
     apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'VersionServer',
@@ -114,7 +117,10 @@ export function* editVersionServer({ payload }) {
 
   if (!result.error) {
     yield call(fetchVersionServer, `${stack}-example-solution`);
-    yield call(history.push, `/stacks/${stack}`);
+    yield call(
+      history.push,
+      `/stacks/${stack}/version/${stackVersion}/prepare`
+    );
   }
 }
 

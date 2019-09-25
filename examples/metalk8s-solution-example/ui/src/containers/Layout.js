@@ -93,25 +93,28 @@ const Layout = props => {
           <PrivateRoute exact path="/about" component={Welcome} />
           <PrivateRoute
             exact
-            path="/stacks/:name/clockServer/create"
+            path="/stacks/:name/version/:version/clockServer/create"
             component={ClockServerCreation}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/clockServer/:id/edit"
+            path="/stacks/:name/version/:version/clockServer/:id/edit"
             component={ClockServerEdit}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/versionServer/create"
+            path="/stacks/:name/version/:version/versionServer/create"
             component={VersionServerCreation}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/versionServer/:id/edit"
+            path="/stacks/:name/version/:version/versionServer/:id/edit"
             component={VersionServerEdit}
           />
-          <PrivateRoute path="/stacks/:name" component={StackDetail} />
+          <PrivateRoute
+            path="/stacks/:name/version/:version/prepare"
+            component={StackDetail}
+          />
           <PrivateRoute exact path="/stacks" component={Stack} />
           <PrivateRoute exact path="/" component={Stack} />
         </Switch>

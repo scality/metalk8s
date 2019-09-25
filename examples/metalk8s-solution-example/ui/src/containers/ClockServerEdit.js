@@ -77,6 +77,7 @@ const InputValue = styled.label`
 const ClockServerEditForm = props => {
   const { intl, match, clockServers, theme } = props;
   const stack = match.params.name;
+  const version = match.params.version;
   const clockServer = clockServers.find(cr => cr.name === match.params.id);
   const initialValues = {
     version: clockServer ? clockServer.version : '',
@@ -101,7 +102,9 @@ const ClockServerEditForm = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
-            <StyledLink to={`/stacks/${stack}`}>{stack} </StyledLink>,
+            <StyledLink to={`/stacks/${stack}/version/${version}/prepare`}>
+              {stack}
+            </StyledLink>,
             <BreadcrumbLabel title={intl.messages.edit_clock_server}>
               {intl.messages.edit_clock_server}
             </BreadcrumbLabel>
@@ -113,7 +116,9 @@ const ClockServerEditForm = props => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={props.editClockServer}
+            onSubmit={values =>
+              props.editClockServer({ ...values, stackVersion: version })
+            }
           >
             {formProps => {
               const {
@@ -168,7 +173,9 @@ const ClockServerEditForm = props => {
                             type="button"
                             outlined
                             onClick={() =>
-                              props.history.push(`/stacks/${stack}`)
+                              props.history.push(
+                                `/stacks/${stack}/version/${version}/prepare`
+                              )
                             }
                           />
                           <Button

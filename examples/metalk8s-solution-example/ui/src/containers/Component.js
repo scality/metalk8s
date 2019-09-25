@@ -46,6 +46,7 @@ const ListContainer = styled.div`
 const Component = props => {
   const { intl, history, versionServers, clockServers, match } = props;
   const stack = match.params.name;
+  const version = match.params.version;
 
   useEffect(() => {
     props.refreshClockServer(stack);
@@ -133,7 +134,9 @@ const Component = props => {
           <Button
             text={intl.messages.create_version_server}
             onClick={() =>
-              history.push(`/stacks/${stack}/versionServer/create`)
+              history.push(
+                `/stacks/${stack}/version/${version}/versionServer/create`
+              )
             }
             icon={<i className="fas fa-plus" />}
           />
@@ -150,7 +153,7 @@ const Component = props => {
             onSort={onSortVS}
             onRowClick={row => {
               history.push(
-                `/stacks/${stack}/versionServer/${row.rowData.name}/edit`
+                `/stacks/${stack}/version/${version}/versionServer/${row.rowData.name}/edit`
               );
             }}
             noRowsRenderer={() => (
@@ -163,7 +166,11 @@ const Component = props => {
         <ActionContainer>
           <Button
             text={intl.messages.create_clock_server}
-            onClick={() => history.push(`/stacks/${stack}/clockServer/create`)}
+            onClick={() =>
+              history.push(
+                `/stacks/${stack}/version/${version}/clockServer/create`
+              )
+            }
             icon={<i className="fas fa-plus" />}
           />
         </ActionContainer>
@@ -179,7 +186,7 @@ const Component = props => {
             onSort={onSortCS}
             onRowClick={row => {
               history.push(
-                `/stacks/${stack}/clockServer/${row.rowData.name}/edit`
+                `/stacks/${stack}/version/${version}/clockServer/${row.rowData.name}/edit`
               );
             }}
             noRowsRenderer={() => (
