@@ -8,7 +8,8 @@ import {
   createNamespacedServiceAccount,
   createNamespacedRole,
   createNamespacedRoleBinding,
-  createOrUpdateOperatorDeployment
+  createOrUpdateOperatorDeployment,
+  fetchOpertorDeployments
 } from './deployment';
 
 // Actions
@@ -17,6 +18,7 @@ const STOP_REFRESH_STACK = 'STOP_REFRESH_STACK';
 
 const PREPARE_STACK = 'PREPARE_STACK';
 const UPDATE_STACK = 'UPDATE_STACK';
+const ADD_STACK = 'ADD_STACK';
 const EDIT_STACK = 'EDIT_STACK';
 
 // Reducer
@@ -27,6 +29,14 @@ const defaultState = {
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
+    case ADD_STACK:
+      const list = [...state.list];
+      let stackToUpdate = list.find(item => item.name === action.payload.name);
+      if (stackToUpdate) {
+        stackToUpdate = action.payload;
+        return { ...state, list: [...list] };
+      }
+      return { ...state, list: [...state.list, action.payload] };
     case UPDATE_STACK:
       return { ...state, ...action.payload };
     default:
@@ -47,6 +57,10 @@ export const updateStackAction = payload => {
   return { type: UPDATE_STACK, payload };
 };
 
+export const addStackAction = payload => {
+  return { type: ADD_STACK, payload };
+};
+
 export const editStackAction = payload => {
   return { type: EDIT_STACK, payload };
 };
@@ -59,26 +73,40 @@ export const prepareStackAction = payload => {
 export function* fetchStack() {
   const results = yield call(ApiK8s.getStack);
   if (!results.error) {
-    yield put(
-      updateStackAction({
-        list: results.body.items.map(stack => {
-          return {
-            name: stack.metadata.name,
-            status: 'Ready',
-            description: stack.spec.description,
-            version: '0.0.1',
-            solutions: stack.spec.solutions || []
-          };
-        })
+    yield all(
+      results.body.items.map(stack => {
+        return call(updateStack, stack);
       })
     );
   }
   return results;
 }
+export function* updateStack(stack) {
+  yield call(
+    fetchOpertorDeployments,
+    `${stack.metadata.name}-example-solution`
+  );
+  const operators = yield select(state => state.app.deployments.list);
+  yield put(
+    addStackAction({
+      name: stack.metadata.name,
+      status: '',
+      description: stack.spec.description,
+      version: operators.length ? operators[0].version : '',
+      solutions: stack.spec.solutions || []
+    })
+  );
+}
 
 export function* prepareStack({ payload }) {
   const { name, version } = payload;
-  if (name && version) {
+
+  //Prepare stack if not done yet
+  yield call(fetchStack);
+  const stacks = yield select(state => state.app.stack.list);
+  const stackToPrepare = stacks.find(item => item.name === name);
+  // TODO: If the environment is up-to-date
+  if (stackToPrepare.version !== version) {
     const namespaces = `${name}-example-solution`;
 
     //Create Namespace if not exists
