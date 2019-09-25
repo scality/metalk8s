@@ -10,11 +10,9 @@
   "cancel": "Annuler",
   "create": "Créer",
   "edit": "Éditer",
-  "namespace": "Namespace",
   "version": "Version",
   "replicas": "Duplication",
   "no_data_available": "Pas de données disponibles",
-  "select_a_namespace": "Sélectionner un namespace…",
   "not_found": "Aucun résultat",
   "not_valid_version": "Ce n'est pas une version valide"
 }

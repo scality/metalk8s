@@ -1,13 +1,21 @@
-import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
+import { all, call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
-import history from '../../history';
 
 import { REFRESH_TIMEOUT } from '../../constants';
+import { createNamespaces } from './namespaces';
+import {
+  SOLUTION_NAME,
+  createNamespacedServiceAccount,
+  createNamespacedRole,
+  createNamespacedRoleBinding,
+  createOrUpdateOperatorDeployment
+} from './deployment';
 
 // Actions
 const REFRESH_STACK = 'REFRESH_STACK';
 const STOP_REFRESH_STACK = 'STOP_REFRESH_STACK';
 
+const PREPARE_STACK = 'PREPARE_STACK';
 const UPDATE_STACK = 'UPDATE_STACK';
 const EDIT_STACK = 'EDIT_STACK';
 
@@ -43,18 +51,23 @@ export const editStackAction = payload => {
   return { type: EDIT_STACK, payload };
 };
 
+export const prepareStackAction = payload => {
+  return { type: PREPARE_STACK, payload };
+};
+
 // Sagas
 export function* fetchStack() {
   const results = yield call(ApiK8s.getStack);
   if (!results.error) {
     yield put(
       updateStackAction({
-        list: results.body.items.map(cr => {
+        list: results.body.items.map(stack => {
           return {
-            name: cr.metadata.name,
+            name: stack.metadata.name,
             status: 'Ready',
-            description: cr.spec.description,
-            version: '0.0.1'
+            description: stack.spec.description,
+            version: '0.0.1',
+            solutions: stack.spec.solutions || []
           };
         })
       })
@@ -63,25 +76,58 @@ export function* fetchStack() {
   return results;
 }
 
-export function* editStack({ payload }) {
-  const { name, namespaces, replicas, version } = payload;
-  const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
-    kind: 'Example',
-    metadata: {
-      name: name
-    },
-    spec: {
-      replicas: parseInt(replicas, 10),
+export function* prepareStack({ payload }) {
+  const { name, version } = payload;
+  if (name && version) {
+    const namespaces = `${name}-example-solution`;
+
+    //Create Namespace if not exists
+    const resultsCreateNamespaces = yield call(createNamespaces, namespaces);
+
+    //Create ServiceAccount, Role, et RoleBinding for Operator if not exist
+    const resultsRBAC = yield all([
+      yield call(createNamespacedServiceAccount, namespaces),
+      yield call(createNamespacedRole, namespaces),
+      yield call(createNamespacedRoleBinding, namespaces)
+    ]);
+
+    // Create or upgrade Operator
+    const resultsOperatorDeployments = yield call(
+      createOrUpdateOperatorDeployment,
+      namespaces,
       version
+    );
+
+    // Update Solution of Stack
+    if (
+      !resultsCreateNamespaces.error &&
+      !resultsOperatorDeployments.error &&
+      !resultsRBAC.find(result => result.error)
+    ) {
+      yield call(addOrUpdateSolutionInStack, name, version);
     }
-  };
+  }
+}
 
-  const result = yield call(ApiK8s.updateStack, body, namespaces, name);
-
-  if (!result.error) {
-    yield call(fetchStack);
-    yield call(history.push, `/stacks`);
+export function* addOrUpdateSolutionInStack(name, version) {
+  yield call(fetchStack);
+  const stacks = yield select(state => state.app.stack.list);
+  const stackToUpdate = stacks.find(item => item.name === name);
+  if (stackToUpdate) {
+    const body = {
+      apiVersion: 'solutions.metalk8s.scality.com/v1alpha1',
+      kind: 'Stack',
+      metadata: {
+        name
+      },
+      spec: {
+        solutions: [
+          ...stackToUpdate.solutions,
+          { name: SOLUTION_NAME, version }
+        ]
+      }
+    };
+    yield call(ApiK8s.updateStack, body, name);
   }
 }
 
@@ -112,5 +158,5 @@ export function* stopRefreshStack() {
 export function* stackSaga() {
   yield takeEvery(REFRESH_STACK, refreshStack);
   yield takeEvery(STOP_REFRESH_STACK, stopRefreshStack);
-  yield takeEvery(EDIT_STACK, editStack);
+  yield takeEvery(PREPARE_STACK, prepareStack);
 }

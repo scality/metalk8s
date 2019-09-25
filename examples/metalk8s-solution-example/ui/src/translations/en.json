@@ -10,14 +10,12 @@
   "cancel": "Cancel",
   "create": "Create",
   "edit": "Edit",
-  "namespace": "Namespace",
   "version": "Version",
   "replicas": "Replicas",
   "no_data_available": "No data available",
-  "select_a_namespace": "Select a namespace…",
   "not_found": "No results",
   "not_valid_version": "This is not a valid version",
-  "stacks": "Stacks",
+  "stacks": "Environments",
   "description": "Description",
   "status": "Status",
   "create_version_server": "Create a Version Server",
@@ -28,6 +26,6 @@
   "components": "Components",
   "information": "Information",
   "kind": "Kind",
-  "edit_stack_version": "Edit Stack Version",
+  "edit_stack_version": "Edit Environment Version",
   "timezone": "Time Zone"
 }

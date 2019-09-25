@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
@@ -23,7 +23,7 @@ import {
   InformationMainValue
 } from '../components/InformationList';
 import ComponentsList from './Component';
-import { editStackAction } from '../ducks/app/stack';
+import { editStackAction, prepareStackAction } from '../ducks/app/stack';
 
 const StackDetailContainer = styled.div`
   display: flex;
@@ -126,10 +126,16 @@ const StackEditForm = props => {
   );
 };
 const StackDetail = props => {
-  const { match, intl, theme, stacks, editStack } = props;
+  const { match, intl, theme, stacks, editStack, prepareStack } = props;
   const [stackEditing, setStackEditing] = useState(false);
+  const stackName = match.params.name;
+  const stackVersion = match.params.version;
+  const stack = stacks.find(stack => stack.name === stackName);
 
-  const stack = stacks.find(stack => stack.name === match.params.name);
+  useEffect(() => {
+    prepareStack({ name: stackName, version: stackVersion });
+  }, []);
+
   return stack ? (
     <StackDetailContainer>
       <BreadcrumbContainer>
@@ -196,6 +202,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => {
   return {
+    prepareStack: body => dispatch(prepareStackAction(body)),
     editStack: body => dispatch(editStackAction(body))
   };
 };

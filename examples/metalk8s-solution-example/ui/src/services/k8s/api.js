@@ -49,12 +49,11 @@ export async function getStack() {
   }
 }
 
-export async function updateStack(body, namespaces, name) {
+export async function updateStack(body, name) {
   try {
-    return await customObjects.patchNamespacedCustomObject(
+    return await customObjects.patchClusterCustomObject(
       'solutions.metalk8s.scality.com',
       'v1alpha1',
-      namespaces,
       'stacks',
       name,
       body,
@@ -163,26 +162,14 @@ export async function updateVersionServer(body, namespaces, name) {
   }
 }
 
-export async function getSolutionNamespaces() {
+export async function getOperatorDeployments(namespaces, name) {
   try {
-    return await coreV1.listNamespace(
+    return await appsV1Api.listNamespacedDeployment(
+      namespaces,
       null,
       null,
       null,
-      null,
-      `${LABEL_PART_OF}=example-solution`
-    );
-  } catch (error) {
-    return { error };
-  }
-}
-
-export async function getSolutionDeployment(version) {
-  try {
-    return await appsV1Api.listDeploymentForAllNamespaces(
-      null,
-      null,
-      null,
+      `metadata.name=${name}`,
       `${LABEL_PART_OF}=example-solution`
     );
   } catch (error) {
@@ -198,6 +185,20 @@ export async function createNamespacedDeployment(namespaces, body) {
   }
 }
 
+export async function listNamespacedServiceAccount(namespaces, name) {
+  try {
+    return await coreV1.listNamespacedServiceAccount(
+      namespaces,
+      null,
+      null,
+      null,
+      `metadata.name=${name}`
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function createNamespacedServiceAccount(namespaces, body) {
   try {
     return await coreV1.createNamespacedServiceAccount(namespaces, body);
@@ -206,9 +207,37 @@ export async function createNamespacedServiceAccount(namespaces, body) {
   }
 }
 
+export async function listNamespacedRole(namespaces, name) {
+  try {
+    return await rbacAuthorizationV1Api.listNamespacedRole(
+      namespaces,
+      null,
+      null,
+      null,
+      `metadata.name=${name}`
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function createNamespacedRole(namespaces, body) {
   try {
     return await rbacAuthorizationV1Api.createNamespacedRole(namespaces, body);
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function listNamespacedRoleBinding(namespaces, name) {
+  try {
+    return await rbacAuthorizationV1Api.listNamespacedRoleBinding(
+      namespaces,
+      null,
+      null,
+      null,
+      `metadata.name=${name}`
+    );
   } catch (error) {
     return { error };
   }
@@ -238,6 +267,27 @@ export async function updateDeployment(body, namespaces, name) {
           'Content-Type': 'application/merge-patch+json'
         }
       }
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createNamespace(body) {
+  try {
+    return await coreV1.createNamespace(body);
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getNamespaces(name) {
+  try {
+    return await coreV1.listNamespace(
+      null,
+      null,
+      null,
+      `metadata.name=${name}`
     );
   } catch (error) {
     return { error };
