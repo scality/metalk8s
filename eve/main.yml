@@ -46,6 +46,7 @@ stages:
           name: Wait for Docker daemon to be ready
           command: |
             bash -c '
+            cat /etc/redhat-release
             for i in {1..150}
             do
               docker info &> /dev/null && exit
