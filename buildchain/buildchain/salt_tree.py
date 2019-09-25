@@ -208,6 +208,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/deployed/files/'
+            'node-exporter-full.json'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/init.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/'

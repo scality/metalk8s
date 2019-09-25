@@ -1,6 +1,11 @@
 #!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
 
 {%- set dashboards = [
+        {
+            'name': 'node-exporter-full',
+            'title': 'Nodes (Detailed)',
+            'tags': ['nodes'],
+        },
     ]
 %}
 
