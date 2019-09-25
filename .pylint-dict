@@ -37,6 +37,7 @@ py
 readonly
 renderer
 repo
+reprepro
 rpmlint
 rpmspec
 scality
