@@ -112,6 +112,23 @@ class Repository(base.CompositeTarget):
     def build_packages(self) -> List[types.TaskDict]:
         """Build the packages for the repository."""
 
+    def _mkdir_repo_root(self) -> types.TaskDict:
+        """Create the root directory for the repository."""
+        task = self.basic_task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
+        task.update({
+            'name': MKDIR_ROOT_TASK_NAME,
+            'doc': 'Create root directory for the {} repository.'.format(
+                self.name
+            ),
+            'title': mkdir['title'],
+            'actions': mkdir['actions'],
+            'uptodate': [True],
+            'targets': mkdir['targets'],
+        })
+        return task
+
+
 class RPMRepository(Repository):
     """A software repository for CentOS 7 x86_64."""
 
@@ -215,22 +232,6 @@ class RPMRepository(Repository):
             task['task_dep'].append('_build_rpm_container')
             tasks.append(task)
         return tasks
-
-    def _mkdir_repo_root(self) -> types.TaskDict:
-        """Create the root directory for the repository."""
-        task = self.basic_task
-        mkdir = directory.Mkdir(directory=self.rootdir).task
-        task.update({
-            'name': MKDIR_ROOT_TASK_NAME,
-            'doc': 'Create root directory for the {} repository.'.format(
-                self.name
-            ),
-            'title': mkdir['title'],
-            'actions': mkdir['actions'],
-            'uptodate': [True],
-            'targets': mkdir['targets'],
-        })
-        return task
 
     def _mkdir_repo_arch(self) -> types.TaskDict:
         """Create the CPU architecture directory for the repository."""
