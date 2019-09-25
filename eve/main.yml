@@ -35,6 +35,7 @@ stages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
             - single-node
+            - single-node-upgrade-test
             - multiple-nodes
 
   build:
@@ -346,7 +347,7 @@ stages:
           name: Upload cypress and junit folder
           source: ui/upload
           alwaysRun: true
-      - ShellCommand:
+      - ShellCommand: &collect_sosreport
           name: Collect logs using sosreport
           command: >
             sudo sosreport --all-logs
@@ -355,16 +356,110 @@ stages:
             --batch --tmp-dir /var/tmp &&
             sudo chown eve:eve /var/tmp/sosreport*
           alwaysRun: true
-      - ShellCommand:
+      - ShellCommand: &copy_sosreport
           name: Copy sosreport to correct directory structure
           command: >
             mkdir -p sosreport/sosreport/single-node &&
             cp /var/tmp/sosreport* sosreport/sosreport/single-node
           alwaysRun: true
-      - Upload:
+      - Upload: &upload_report_artifact
           name: upload artifacts
           source: sosreport
           alwaysRun: true
+      - ShellCommand:
+          name: Debug step - wait 1 hour before allowing resource destruction
+          timeout: 3600
+          command: sleep 3600
+          doStepIf: false
+          alwaysRun: true
+
+  single-node-upgrade-test:
+    worker:
+      type: openstack
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
+      flavor: m1.large
+      path: eve/workers/openstack-single-node
+    steps:
+      - Git: *git_pull
+      - ShellCommand: *ssh_ip_setup
+      - SetPropertyFromCommand: &set_prev_version
+          name: Set previous version
+          property: metalk8s_prev_version
+          command: >
+            bash -c '
+              source VERSION &&
+              VERSION_MINOR=$((VERSION_MINOR-1))
+            echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
+      - ShellCommand: &get_prev_iso
+          name: Get %(prop:metalk8s_prev_version)s image
+          command: >
+            isourl="/pre/metalk8s-%(prop:metalk8s_prev_version)s.iso";
+            curl -s -XGET -o /tmp/metalk8s.iso
+            "%(prop:artifacts_private_url)s$isourl"
+          haltOnFailure: true
+      - ShellCommand: &get_prev_iso_checksum
+          name: Get %(prop:metalk8s_prev_version)s checksum
+          command: >
+            shasumurl="/pre/SHA256SUM-%(prop:metalk8s_prev_version)s";
+            curl -s -XGET -o /tmp/SHA256SUM
+            "%(prop:artifacts_private_url)s$shasumurl"
+          haltOnFailure: true
+      - ShellCommand: &verify_prev_iso_checksum
+          name: Verify %(prop:metalk8s_prev_version)s checksum
+          command: cd /tmp && sha256sum -c SHA256SUM
+          haltOnFailure: true
+      - ShellCommand: &create_prev_iso_mountpoint
+          name: Create %(prop:metalk8s_prev_version)s mountpoint
+          command: >
+            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
+      - ShellCommand: &mount_prev_iso
+          name: Mount %(prop:metalk8s_prev_version)s image
+          command: >
+            sudo mount -o loop /tmp/metalk8s.iso
+            /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
+          haltOnFailure: true
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
+      - ShellCommand:
+          name: Create bootstrap configuration file
+          command: |
+            sudo bash << EOF
+            mkdir -p /etc/metalk8s
+            cat > /etc/metalk8s/bootstrap.yaml << END
+            apiVersion: metalk8s.scality.com/v1alpha2
+            kind: BootstrapConfiguration
+            networks:
+              controlPlane: 10.100.0.0/16
+              workloadPlane: 10.100.0.0/16
+            ca:
+              minion: $(hostname)
+            apiServer:
+              host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
+            archives:
+              - /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
+            END
+            EOF
+      - ShellCommand:
+          name: Start %(prop:metalk8s_prev_version)s bootstrap
+          command: >
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s/bootstrap.sh
+            --verbose
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run upgrade to %(prop:metalk8s_version)s
+          command: >
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s/iso-manager.sh
+            --archive "$(readlink -f metalk8s.iso)" &&
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
+            --destination-version %(prop:metalk8s_version)s
+          haltOnFailure: true
+      - ShellCommand: *collect_sosreport
+      - ShellCommand: *copy_sosreport
+      - Upload: *upload_report_artifact
       - ShellCommand:
           name: Debug step - wait 1 hour before allowing resource destruction
           timeout: 3600
