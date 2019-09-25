@@ -331,7 +331,6 @@ stages:
           name: Cypress test
           command: bash cypress.sh
           workdir: build/ui
-          doStepIf: false
           haltOnFailure: true
       - ShellCommand:
           name: Prepare upload folder
