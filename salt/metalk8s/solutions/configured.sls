@@ -1,7 +1,7 @@
 {%- set solutions_list = pillar.metalk8s.solutions.configured %}
 {%- if solutions_list %}
 {%- for solution_iso in solutions_list %}
-  {%- set solution = salt['metalk8s.product_info_from_iso'](solution_iso) %}
+  {%- set solution = salt['metalk8s.archive_info_from_iso'](solution_iso) %}
   {%- set lower_name = solution.name | lower | replace(' ', '-') %}
   {%- set full_name = lower_name ~ '-' ~ solution.version %}
   {%- set path = "/srv/scality/" ~ full_name %}
