@@ -74,25 +74,6 @@ class Package(base.CompositeTarget):
     build_id = property(operator.attrgetter('_build_id'))
     builder  = property(operator.attrgetter('_builder'))
 
-    @property
-    def rootdir(self) -> Path:
-        """Package root directory."""
-        return self._pkg_root/self._name
-
-    def make_package_directory(self) -> types.TaskDict:
-        """Create the package's directory."""
-        task = self.basic_task
-        mkdir = directory.Mkdir(directory=self.rootdir).task
-        task.update({
-            'name': self.MKDIR_TASK_NAME,
-            'doc': 'Create directory for {}.'.format(self.name),
-            'title': mkdir['title'],
-            'actions': mkdir['actions'],
-            'uptodate': mkdir['uptodate'],
-            'targets': mkdir['targets'],
-        })
-        return task
-
 
 class RPMPackage(Package):
     """A RPM software package for CentOS 7."""
@@ -134,6 +115,11 @@ class RPMPackage(Package):
     sources  = property(operator.attrgetter('_sources'))
 
     @property
+    def rootdir(self) -> Path:
+        """Package root directory."""
+        return self._pkg_root/self._name
+
+    @property
     def srcdir(self) -> Path:
         """Package source directory."""
         return self.rootdir/'SOURCES'
@@ -162,6 +148,20 @@ class RPMPackage(Package):
             self.get_source_files(),
             self.build_srpm(),
         ]
+
+    def make_package_directory(self) -> types.TaskDict:
+        """Create the package's directory."""
+        task = self.basic_task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
+        task.update({
+            'name': self.MKDIR_TASK_NAME,
+            'doc': 'Create directory for {}.'.format(self.name),
+            'title': mkdir['title'],
+            'actions': mkdir['actions'],
+            'uptodate': mkdir['uptodate'],
+            'targets': mkdir['targets'],
+        })
+        return task
 
     def generate_meta(self) -> types.TaskDict:
         """Generate the .meta file for the package."""
