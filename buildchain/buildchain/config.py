@@ -23,6 +23,9 @@ from buildchain import ROOT
 # Project name.
 PROJECT_NAME : str = os.getenv('PROJECT_NAME', 'MetalK8s')
 
+# Are we running in the CI?
+RUNNING_IN_CI : bool = os.getenv('IN_CI', 'False') == 'True'
+
 # Path to the root of the build directory.
 BUILD_ROOT : Path = Path(os.getenv('BUILD_ROOT', '_build'))
 if not BUILD_ROOT.is_absolute():
