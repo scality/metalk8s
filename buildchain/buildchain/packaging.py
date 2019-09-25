@@ -176,6 +176,8 @@ def task__download_rpm_packages() -> types.TaskDict:
 
 def task__download_deb_packages() -> types.TaskDict:
     """Download Debian packages locally."""
+    witness = constants.PKG_DEB_ROOT/'.witness'
+
     def clean() -> None:
         """Delete downloaded Debian packages."""
         for repository in DEB_REPOSITORIES:
@@ -185,6 +187,7 @@ def task__download_deb_packages() -> types.TaskDict:
             if repository.packages:
                 continue
             coreutils.rm_rf(repository.pkgdir)
+        utils.unlink_if_exist(witness)
         constants.REPO_DEB_ROOT.rmdir()
 
     def mkdirs() -> None:

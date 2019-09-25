@@ -175,7 +175,7 @@ def task__iso_build() -> types.TaskDict:
         try:
             subprocess.run(cmd, check=True)
         except:
-            unlink_if_exist(ISO_FILE)
+            utils.unlink_if_exist(ISO_FILE)
             raise
 
     doc = 'Create the ISO from the files in {}.'.format(
