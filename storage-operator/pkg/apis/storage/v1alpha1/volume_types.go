@@ -63,7 +63,8 @@ type PersistentVolumeTemplateSpec struct {
 
 type VolumePhase string
 
-// "Enum" representing the phase/status of a volume.
+// TODO: kept for temporary compatibility, to be removed.
+// "Enum" representing the phase of a volume.
 const (
 	VolumeFailed      VolumePhase = "Failed"
 	VolumePending     VolumePhase = "Pending"
@@ -71,15 +72,38 @@ const (
 	VolumeTerminating VolumePhase = "Terminating"
 )
 
-type VolumeErrorCode string
+type ConditionReason string
 
+// TODO: replace those by more fine-grained ones.
 // "Enum" representing the error codes of the Failed state.
 const (
-	InternalError    VolumeErrorCode = "InternalError"
-	CreationError    VolumeErrorCode = "CreationError"
-	DestructionError VolumeErrorCode = "DestructionError"
-	UnavailableError VolumeErrorCode = "UnavailableError"
+	InternalError    ConditionReason = "InternalError"
+	CreationError    ConditionReason = "CreationError"
+	DestructionError ConditionReason = "DestructionError"
+	UnavailableError ConditionReason = "UnavailableError"
 )
+
+type VolumeConditionType string
+
+const (
+	// VolumeReady means Volume is ready to be used.
+	VolumeReady VolumeConditionType = "Ready"
+)
+
+type VolumeCondition struct {
+	// Type of volume condition.
+	Type VolumeConditionType `json:"type"`
+	// Status of the condition, one of True, False, Unknown.
+	Status corev1.ConditionStatus `json:"status"`
+	// Last time the condition was updated (optional).
+	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
+	// Last time the condition transited from one status to another (optional).
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
+	// Unique, one-word, CamelCase reason for the condition's last transition.
+	Reason ConditionReason `json:"reason,omitempty"`
+	// Human readable message indicating details about last transition.
+	Message string `json:"message,omitempty"`
+}
 
 // VolumeStatus defines the observed state of Volume
 // +k8s:openapi-gen=true
@@ -88,19 +112,12 @@ type VolumeStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
-	// Volume lifecycle phase
+	// List of conditions through which the Volume has or has not passed.
 	// +kubebuilder:validation:Enum=Available,Pending,Failed,Terminating
-	Phase VolumePhase `json:"phase,omitempty"`
+	Conditions []VolumeCondition `json:"conditions,omitempty"`
 
 	// Job in progress
 	Job string `json:"job,omitempty"`
-
-	// Volume failure error code
-	// +kubebuilder:validation:Enum=InternalError,CreationError,DestructionError,UnavailableError
-	ErrorCode VolumeErrorCode `json:"errorCode,omitempty"`
-
-	// Volume failure error message
-	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
