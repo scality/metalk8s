@@ -25,7 +25,7 @@ Prepare registry configuration for declared Solutions:
 {%- for solution_iso in configured %}
   {%- set iso_info = salt.saltutil.cmd(
           tgt=pillar.bootstrap_id,
-          fun='metalk8s.product_info_from_iso',
+          fun='metalk8s.archive_info_from_iso',
           kwarg={
               'path': solution_iso,
           },
