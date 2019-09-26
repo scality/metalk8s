@@ -30,10 +30,13 @@ const CreateClockServerLayout = styled.div`
   form {
     .sc-input {
       margin: ${padding.smaller} 0;
-      .sc-input-label,
-      .sc-input-type,
-      .sc-select {
+      .sc-input-label {
         width: 150px;
+        box-sizing: border-box;
+      }
+      .sc-select,
+      .sc-input-type {
+        width: 200px;
         box-sizing: border-box;
       }
     }
@@ -69,13 +72,13 @@ const FormSection = styled.div`
 `;
 
 const InputValue = styled.label`
-  width: 150px;
+  width: 200px;
   font-weight: bold;
   font-size: ${fontSize.large};
 `;
 
 const ClockServerEditForm = props => {
-  const { intl, match, clockServers, theme } = props;
+  const { intl, match, clockServers, config } = props;
   const stack = match.params.name;
   const clockServer = clockServers.find(cr => cr.name === match.params.id);
   const initialValues = {
@@ -98,7 +101,7 @@ const ClockServerEditForm = props => {
     <CreateClockServerContainter>
       <BreadcrumbContainer>
         <Breadcrumb
-          activeColor={theme.brand.secondary}
+          activeColor={config.theme.brand.secondary}
           paths={[
             <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
             <StyledLink to={`/stacks/${stack}`}>{stack}</StyledLink>,
@@ -133,9 +136,22 @@ const ClockServerEditForm = props => {
                   true
                 );
               };
+              const handleSelectChange = field => selectedObj => {
+                setFieldValue(field, selectedObj.value);
+              };
+              //get the select item from the object array
+              const getSelectedObjectItem = (items, selectedValue) => {
+                return items.find(item => item.value === selectedValue);
+              };
+
               //touched is not "always" correctly set
               const handleOnBlur = e => setFieldTouched(e.target.name, true);
-
+              const availableVersions = config.versions.map(item => {
+                return {
+                  label: item.version,
+                  value: item.version
+                };
+              });
               return (
                 <Form>
                   <FormSection>
@@ -143,14 +159,24 @@ const ClockServerEditForm = props => {
                       <InputLabel>{intl.messages.name}</InputLabel>
                       <InputValue>{values.name}</InputValue>
                     </InputContainer>
+
                     <Input
-                      name="version"
                       label={intl.messages.version}
-                      value={values.version}
-                      onChange={handleChange('version')}
+                      clearable={false}
+                      type="select"
+                      options={availableVersions}
+                      placeholder={intl.messages.select_a_version}
+                      noResultsText={intl.messages.not_found}
+                      name="version"
+                      onChange={handleSelectChange('version')}
+                      value={getSelectedObjectItem(
+                        availableVersions,
+                        values.version
+                      )}
                       error={touched.version && errors.version}
                       onBlur={handleOnBlur}
                     />
+
                     <Input
                       name="timezone"
                       label={intl.messages.timezone}
@@ -192,7 +218,7 @@ const ClockServerEditForm = props => {
 
 function mapStateToProps(state) {
   return {
-    theme: state.config.theme,
+    config: state.config,
     clockServers: state.app.clockServer.list
   };
 }

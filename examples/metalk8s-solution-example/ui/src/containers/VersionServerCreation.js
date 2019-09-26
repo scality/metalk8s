@@ -31,10 +31,13 @@ const CreateVersionServerLayout = styled.div`
   form {
     .sc-input {
       margin: ${padding.smaller} 0;
-      .sc-input-label,
-      .sc-input-type,
-      .sc-select {
+      .sc-input-label {
         width: 150px;
+        box-sizing: border-box;
+      }
+      .sc-select,
+      .sc-input-type {
+        width: 200px;
         box-sizing: border-box;
       }
     }
@@ -58,7 +61,7 @@ const FormSection = styled.div`
 `;
 
 const VersionServerCreationForm = props => {
-  const { intl, match, theme } = props;
+  const { intl, match, config } = props;
   const stack = match.params.name;
 
   const initialValues = {
@@ -82,7 +85,7 @@ const VersionServerCreationForm = props => {
     <CreateVersionServerContainter>
       <BreadcrumbContainer>
         <Breadcrumb
-          activeColor={theme.brand.secondary}
+          activeColor={config.theme.brand.secondary}
           paths={[
             <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
             <StyledLink to={`/stacks/${stack}`}>{stack}</StyledLink>,
@@ -113,10 +116,21 @@ const VersionServerCreationForm = props => {
               const { value, checked, type } = e.target;
               setFieldValue(field, type === 'checkbox' ? checked : value, true);
             };
-
+            const handleSelectChange = field => selectedObj => {
+              setFieldValue(field, selectedObj.value);
+            };
+            //get the select item from the object array
+            const getSelectedObjectItem = (items, selectedValue) => {
+              return items.find(item => item.value === selectedValue);
+            };
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
-
+            const availableVersions = config.versions.map(item => {
+              return {
+                label: item.version,
+                value: item.version
+              };
+            });
             return (
               <Form>
                 <FormSection>
@@ -130,10 +144,18 @@ const VersionServerCreationForm = props => {
                   />
 
                   <Input
-                    name="version"
                     label={intl.messages.version}
-                    value={values.version}
-                    onChange={handleChange('version')}
+                    clearable={false}
+                    type="select"
+                    options={availableVersions}
+                    placeholder={intl.messages.select_a_version}
+                    noResultsText={intl.messages.not_found}
+                    name="version"
+                    onChange={handleSelectChange('version')}
+                    value={getSelectedObjectItem(
+                      availableVersions,
+                      values.version
+                    )}
                     error={touched.version && errors.version}
                     onBlur={handleOnBlur}
                   />
@@ -175,7 +197,7 @@ const VersionServerCreationForm = props => {
 };
 
 function mapStateToProps(state) {
-  return { theme: state.config.theme };
+  return { config: state.config };
 }
 
 const mapDispatchToProps = dispatch => {
