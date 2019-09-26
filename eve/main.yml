@@ -244,11 +244,6 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/bootstrap.sh
             --verbose
           haltOnFailure: true
-      - ShellCommand: &install_kubectl
-          name: Install kubectl for running tests
-          command: >
-            sudo yum install -y kubectl --disablerepo=*
-            --enablerepo=metalk8s-kubernetes
       - ShellCommand:
           name: Run tests locally
           env:
@@ -361,7 +356,6 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s/bootstrap.sh
             --verbose
           haltOnFailure: true
-      - ShellCommand: *install_kubectl
       - ShellCommand:
           name: Run fast tests locally
           env:
