@@ -28,7 +28,7 @@ spec:
         - name: worker-workspace
           mountPath: /home/eve/workspace
     - name: platform-dind-daemon
-      image: docker:18.09.6-dind
+      image: docker:19.03.2-dind
       resources:
         requests:
           cpu: "3"
@@ -36,6 +36,9 @@ spec:
         limits:
           cpu: "3"
           memory: 2Gi
+      env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ''
       securityContext:
         privileged: true
       volumeMounts:
