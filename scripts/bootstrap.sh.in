@@ -189,7 +189,6 @@ disable_salt_minion_service() {
 
 stop_salt_minion_service() {
     ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
-}
 
 configure_repositories() {
 
@@ -205,16 +204,42 @@ configure_repositories() {
     esac
 }
 
+configure_repositories() {
+
+    case "$OS" in
+        centos)
+            configure_yum_repositories
+            ;;
+        ubuntu)
+            configure_apt_repositories
+            ;;
+        *)
+            die "OS $OS not supported";;
+    esac
+}
+
 configure_yum_repositories() {
     configure_yum_local_repositories
 
     "$YUM" clean all
 }
 
+configure_apt_repositories() {
+    configure_apt_local_repositories
+
+    "$APT" clean all
+}
+
 configure_yum_local_repositories() {
-    for repository in "${!GPGCHECK_REPOSITORIES[@]}"; do
+    for repository in "${!GPGCHECK_YUM_REPOSITORIES[@]}"; do
         configure_yum_local_repository "$repository" \
-            "${GPGCHECK_REPOSITORIES[$repository]}"
+            "${GPGCHECK_YUM_REPOSITORIES[$repository]}"
+    done
+}
+
+configure_apt_local_repositories() {
+    for repository in "${!GPGCHECK_APT_REPOSITORIES[@]}"; do
+        configure_apt_local_repository "$repository"
     done
 }
 
@@ -236,6 +261,13 @@ enabled=0
 gpgcheck=$gpgcheck
 ${gpg_keys:+gpgkey=${gpg_keys%?}}
 EOF
+}
+
+configure_apt_local_repository() {
+    local -r repo_name=$1
+    local -r repo_path="$BASE_DIR/packages/debian/$repo_name"
+    echo "deb [trusted=yes] file://$repo_path bionic $repo_name" \
+        > /etc/apt/sources.list.d/"$repo_name".list
 }
 
 install_salt_minion() {
