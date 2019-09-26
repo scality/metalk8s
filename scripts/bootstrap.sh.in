@@ -10,6 +10,8 @@ if test -z "$(type -p)"; then set -o pipefail; fi
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/bootstrap.log
 
+declare OS
+
 if ! options=$(getopt --options v --long verbose,log-file: -- "$@"); then
     echo 1>&2 "Incorrect arguments provided"
     exit 1
@@ -43,6 +45,19 @@ cat << EOF >> "${LOGFILE}"
 EOF
 
 exec > >(tee -ia "${LOGFILE}") 2>&1
+
+determine_os() {
+    # We rely on /etc/os-release to discover the OS because its present on all
+    # recent Linux distributions
+    if [ -f /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        OS=$ID
+    else
+        die "Impossible to determine the OS"
+    fi
+
+}
 
 cleanup() {
     rm -rf "${TMPFILES}" || true
