@@ -106,6 +106,7 @@ export function* updateStack(stack) {
 }
 export function* prepareStack({ payload }) {
   yield call(manageStack, payload);
+  yield delay(1000);
   yield call(history.push, `/stacks/${payload.name}`);
 }
 
