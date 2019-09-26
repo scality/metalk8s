@@ -73,6 +73,10 @@ APT=${APT:-$(command -v apt || true)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
+declare -a PACKAGES=(
+    salt-minion
+    genisoimage
+)
 
 declare -A GPGCHECK_YUM_REPOSITORIES=(
     [metalk8s-base]=1
@@ -270,24 +274,40 @@ configure_apt_local_repository() {
         > /etc/apt/sources.list.d/"$repo_name".list
 }
 
-install_salt_minion() {
-    local -a yum_opts=(
-        '--assumeyes'
-        '--disablerepo=*'
-        '--enablerepo=metalk8s-*'
-    )
+install_packages() {
+    local -ra packages=("$@")
+    local -a repo_list=(/etc/apt/sources.list)
 
-    "$YUM" install "${yum_opts[@]}" salt-minion
-}
+    case "$OS" in
+        centos)
+            local -a yum_opts=(
+                '--assumeyes'
+                '--disablerepo=*'
+                '--enablerepo=metalk8s-*'
+            )
+            "$YUM" install "${yum_opts[@]}" "${packages[@]}"
+            ;;
+        ubuntu)
+            mapfile -O 1 -t repo_list < <(find \
+                /etc/apt/sources.list.d/ \
+                ! -name 'metalk8s-*' -a -name '*.list')
 
-install_genisoimage() {
-    local -a yum_opts=(
-        '--assumeyes'
-        '--disablerepo=*'
-        '--enablerepo=metalk8s-*'
-    )
+            for source_list in "${repo_list[@]}"; do
+                mv "$source_list"{,.disabled}
+            done
+            "$APT" update
+            DEBIAN_FRONTEND=noninteractive "$APT" -y install "${packages[@]}" \
+                || exit_code=$?
 
-    "$YUM" install "${yum_opts[@]}" genisoimage
+            for source_list in "${repo_list[@]}"; do
+                mv "$source_list"{.disabled,}
+            done
+
+            return ${exit_code:-0}
+            ;;
+        *)
+            die "OS $OS not supported";;
+    esac
 }
 
 configure_salt_minion_local_mode() {
@@ -412,9 +432,8 @@ main() {
     run "Pre-minion system tests" pre_minion_checks
     run "Disabling Salt minion service" disable_salt_minion_service
     run "Stopping Salt minion service" stop_salt_minion_service
-    run "Configuring local YUM repositories" configure_yum_repositories
-    run "Installing Salt minion" install_salt_minion
-    run "Installing genisoimage" install_genisoimage
+    run "Configuring local repositories" configure_repositories
+    run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
     orchestrate_bootstrap
