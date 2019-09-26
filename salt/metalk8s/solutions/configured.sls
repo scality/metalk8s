@@ -1,3 +1,5 @@
+{%- from "metalk8s/map.jinja" import repo with context %}
+
 {%- set solutions_list = pillar.metalk8s.solutions.configured %}
 {%- if solutions_list %}
 {%- for solution_iso in solutions_list %}
@@ -8,7 +10,7 @@
 Configure nginx for Solution {{ full_name }}:
   file.managed:
     - source: {{ path }}/registry-config.inc.j2
-    - name: /var/lib/metalk8s/repositories/conf.d/{{ full_name }}-registry-config.inc
+    - name: {{ repo.config.directory }}/{{ full_name }}-registry-config.inc
     - template: jinja
     - defaults:
       repository: {{ full_name }}
