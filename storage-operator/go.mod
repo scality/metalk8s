@@ -31,3 +31,6 @@ replace (
 )
 
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.9.0
+
+// See https://github.com/operator-framework/operator-sdk/issues/1873
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0

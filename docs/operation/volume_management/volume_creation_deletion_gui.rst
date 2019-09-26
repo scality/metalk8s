@@ -24,7 +24,7 @@ To access the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`
 
     .. image:: /operation/volume_management/img/node_detail.png
 
-#. Click the **Create a New Volume** button
+#. Click the **+** button to create a volume
 
     .. image:: /operation/volume_management/img/create_volume.png
 
@@ -37,6 +37,7 @@ To access the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`
       :doc:`/operation/volume_management/storageclass_creation`
     - **Type**: Metalk8s currently only supports **RawBlockDevice** and
       **SparseLoopDevice**.
+    - **Device path**: Refers to the path of an existing storage device.
 
 #. Finally, click the **Create** button
 

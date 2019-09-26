@@ -26,7 +26,7 @@ export const isVolumeDeletable = (rowData, persistentVolumes) => {
           pv => pv?.metadata?.name === volumeName,
         );
         if (!persistentVolume) {
-          return false;
+          return true;
         }
         const persistentVolumeStatus = persistentVolume?.status?.phase;
 

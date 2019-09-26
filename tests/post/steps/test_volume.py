@@ -116,7 +116,7 @@ def teardown(pod_client, pvc_client, volume_client, sc_client):
     yield
     pod_client.delete_all(sync=True)
     pvc_client.delete_all(sync=True)
-    volume_client.delete_all(sync=True)
+    volume_client.delete_all(sync=True, prefix='test-')
     sc_client.delete_all(sync=True, prefix='test-')
 
 @pytest.fixture(scope='function')
@@ -303,6 +303,26 @@ def check_pv_size(name, size, pv_client):
     utils.retry(
         _check_pv_size, times=10, wait=2,
         name='checking size of PersistentVolume {}'.format(name)
+    )
+
+
+@then(parsers.parse(
+    "the PersistentVolume '{name}' has label '{key}' with value '{value}'"
+))
+def check_pv_label(name, key, value, pv_client):
+    def _check_pv_label():
+        pv = pv_client.get(name)
+        assert pv is not None, 'PersistentVolume {} not found'.format(name)
+        labels = pv.metadata.labels
+        assert key in labels, 'Label {} is missing'.format(key)
+        assert labels[key] == value,\
+            'Unexpected value for label {}: expected {}, got {}'.format(
+                key, value, labels[key]
+            )
+
+    utils.retry(
+        _check_pv_label, times=10, wait=2,
+        name='checking label of PersistentVolume {}'.format(name)
     )
 
 

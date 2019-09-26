@@ -140,6 +140,8 @@ echo "Launching bootstrap"
 exec "/srv/scality/metalk8s-$VERSION/bootstrap.sh"
 SCRIPT
 
+CREATE_VOLUMES = File.read(__dir__ + "/eve/create-volumes.sh")
+
 DEPLOY_SSH_PUBLIC_KEY = <<-SCRIPT
 #!/bin/bash
 
@@ -192,6 +194,10 @@ Vagrant.configure("2") do |config|
     bootstrap.vm.provision "bootstrap",
       type: "shell",
       inline: BOOTSTRAP
+
+    bootstrap.vm.provision "create-volumes",
+      type: "shell",
+      inline: CREATE_VOLUMES
   end
 
   os_data = {

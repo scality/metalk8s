@@ -35,7 +35,7 @@ Procedure
        'url_salt': 'https://{salt[ip]}:{salt[ports][api]}'.format(
            salt=pillar['endpoints']['salt-master']
        ),
-       'url_prometheus': 'http://{prom[ip]}:{prom[ports][api][node_port]}'.format(
+       'url_prometheus': 'http://{prom[ip]}:{prom[ports][web][node_port]}'.format(
            prom=pillar['endpoints']['prometheus']
        ),
    }

@@ -1,0 +1,7 @@
+Origin: Scality
+Label: metalk8s
+Suite: stable
+Codename: bionic
+Architectures: amd64
+Components: _REPONAME_
+Description: _REPONAME_ repository for bionic

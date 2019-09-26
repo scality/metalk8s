@@ -112,6 +112,23 @@ class Repository(base.CompositeTarget):
     def build_packages(self) -> List[types.TaskDict]:
         """Build the packages for the repository."""
 
+    def _mkdir_repo_root(self) -> types.TaskDict:
+        """Create the root directory for the repository."""
+        task = self.basic_task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
+        task.update({
+            'name': MKDIR_ROOT_TASK_NAME,
+            'doc': 'Create root directory for the {} repository.'.format(
+                self.name
+            ),
+            'title': mkdir['title'],
+            'actions': mkdir['actions'],
+            'uptodate': [True],
+            'targets': mkdir['targets'],
+        })
+        return task
+
+
 class RPMRepository(Repository):
     """A software repository for CentOS 7 x86_64."""
 
@@ -161,7 +178,7 @@ class RPMRepository(Repository):
             'name': 'build_repodata',
             'actions': actions,
             'doc': 'Build the {} repository metadata.'.format(self.name),
-            'title': utils.title_with_target1('BUILD REPO'),
+            'title': utils.title_with_target1('BUILD RPM REPO'),
             'targets': targets,
             'uptodate': [True],
             'clean': [clean],
@@ -215,22 +232,6 @@ class RPMRepository(Repository):
             task['task_dep'].append('_build_rpm_container')
             tasks.append(task)
         return tasks
-
-    def _mkdir_repo_root(self) -> types.TaskDict:
-        """Create the root directory for the repository."""
-        task = self.basic_task
-        mkdir = directory.Mkdir(directory=self.rootdir).task
-        task.update({
-            'name': MKDIR_ROOT_TASK_NAME,
-            'doc': 'Create root directory for the {} repository.'.format(
-                self.name
-            ),
-            'title': mkdir['title'],
-            'actions': mkdir['actions'],
-            'uptodate': [True],
-            'targets': mkdir['targets'],
-        })
-        return task
 
     def _mkdir_repo_arch(self) -> types.TaskDict:
         """Create the CPU architecture directory for the repository."""
@@ -298,4 +299,88 @@ class RPMRepository(Repository):
             run_config=docker_command.RPM_BASE_CONFIG
         )
 
+        return buildrepo_callable
+
+
+class DEBRepository(Repository):
+    """A software repository for Debian."""
+
+    def __init__(
+        self,
+        basename: str,
+        name: str,
+        builder: image.ContainerImage,
+        **kwargs: Any
+    ):
+        super ().__init__(
+            basename, name, builder, constants.REPO_DEB_ROOT,
+            **kwargs
+        )
+        task = self.basic_task
+        task['task_dep'].append('_download_deb_packages')
+
+
+    @property
+    def fullname(self) -> str:
+        """Repository full name."""
+        return '{project}-{repo}'.format(
+            project=config.PROJECT_NAME.lower(),
+            repo=self.name,
+        )
+
+    @property
+    def pkgdir(self) -> Path:
+        """Repository where to download the packages."""
+        if self.packages:
+            # Built packages are not under a sub-directory.
+            return constants.PKG_DEB_ROOT
+        return constants.PKG_DEB_ROOT/self.fullname
+
+    def build_packages(self) -> List[types.TaskDict]:
+        # Nothing to do: packages are already built.
+        return []
+
+    def build_repo(self) -> types.TaskDict:
+        def clean() -> None:
+            """Delete the repository directory and its contents."""
+            coreutils.rm_rf(self.rootdir)
+
+        mkdir = self._mkdir_repo_root()
+        actions = mkdir['actions']
+        actions.append(self._buildrepo_action())
+        targets = [Path(self.rootdir, 'dists/bionic',
+                        self.fullname, 'binary-amd64/Packages')]
+        targets.extend(mkdir['targets'])
+
+        task = self.basic_task
+        task.update({
+            'name': 'build_repo',
+            'actions': actions,
+            'doc': 'Build the {} repository.'.format(self.name),
+            'title': utils.title_with_target1('BUILD DEB REPO'),
+            'targets': targets,
+            'uptodate': [True],
+            'clean': [clean],
+        })
+        for pkg in self.packages:
+            task['file_dep'].append(pkg.deb)
+        return task
+
+    def _buildrepo_action(self) -> types.Action:
+        """Return the command to run `reprepro` inside a container."""
+        mounts = [
+            utils.bind_ro_mount(
+                source=constants.ROOT/'packages'/'debian'/'distributions',
+                target=Path('/distributions')
+            ),
+            utils.bind_ro_mount(source=self.pkgdir, target=Path('/packages')),
+            utils.bind_mount(source=self.rootdir, target=Path('/repository'))
+        ]
+        buildrepo_callable = docker_command.DockerRun(
+            command=['/entrypoint.sh', 'buildrepo', self.fullname],
+            builder=self.builder,
+            mounts=mounts,
+            read_only=True,
+            run_config=docker_command.DEB_BASE_CONFIG
+        )
         return buildrepo_callable

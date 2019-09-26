@@ -32,13 +32,31 @@ rpm2deb() {
     pushd /debbuild/result 1> /dev/null
     alien --bump=0 /rpmbuild/source.rpm
 
-    chown "${TARGET_UID}:${TARGET_GID}" *
+    chown "${TARGET_UID}:${TARGET_GID}" -- *
+}
+
+
+buildrepo() {
+    set -x
+
+    local -r reponame="$1"
+
+    mkdir /repository/conf
+    cp /distributions /repository/conf
+    sed -i 's/_REPONAME_/'"${reponame}"'/g' /repository/conf/distributions
+    reprepro -b /repository/ export
+    reprepro -C "$reponame" -b /repository/ includedeb bionic /packages/*.deb
+    chown -R "${TARGET_UID}:${TARGET_GID}" /repository
 }
 
 
 case ${1:- } in
     builddeb)
         builddeb
+        ;;
+    buildrepo)
+        shift
+        buildrepo "$1"
         ;;
     rpm2deb)
         rpm2deb

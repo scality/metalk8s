@@ -174,7 +174,7 @@ _add_archives() {
     done
     echo "Updating bootstrap.yaml"
     $SALT_CALL state.single file.serialize "$BOOTSTRAP_CONFIG" \
-        dataset="{'archives': {'metalk8s': [$archive_list]}}" \
+        dataset="{'archives': [$archive_list]}" \
         merge_if_exists=True \
         formatter=yaml \
         show_changes=True \

@@ -40,7 +40,6 @@ from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
-from buildchain.targets.serialize import Renderer
 
 sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
 container_registry : Any = importlib.import_module('static-container-registry')
@@ -195,7 +194,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         data={
             'kubernetes': {'version': versions.K8S_VERSION},
             'packages': {
-                pkg.name: {'version': "{}-{}".format(pkg.version, pkg.release)}
+                pkg.name: {'version': pkg.full_version}
                 for pkg in versions.RPM_PACKAGES
             },
             'images': {
@@ -204,21 +203,24 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             },
             'metalk8s': {'version': versions.VERSION},
         },
-        renderer=Renderer.JSON,
+        renderer=targets.Renderer.JSON,
     ),
 
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/deployed/files/'
+            'node-exporter-full.json'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/init.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/'
             'prometheus-nodeport.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/deployed/storageclass.sls'),
 
     Path('salt/metalk8s/addons/ui/deployed.sls'),
     Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
     Path('salt/metalk8s/addons/ui/precheck.sls'),
 
     Path('salt/metalk8s/addons/volumes/deployed.sls'),
-    Path('salt/metalk8s/addons/volumes/storage-classes.sls'),
     targets.TemplateFile(
         task_name='storage-operator.sls',
         source=constants.ROOT.joinpath(
@@ -445,6 +447,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s_drain.py'),
     Path('salt/_modules/metalk8s_kubernetes.py'),
     Path('salt/_modules/metalk8s_etcd.py'),
+    Path('salt/_modules/metalk8s_grafana.py'),
     Path('salt/_modules/metalk8s_kubernetes_utils.py'),
     Path('salt/_modules/metalk8s.py'),
     Path('salt/_modules/metalk8s_network.py'),

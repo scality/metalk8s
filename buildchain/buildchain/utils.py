@@ -5,9 +5,10 @@
 
 
 import inspect
+import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Callable, List
+from typing import Any, Callable, Iterator, List, Optional
 
 from docker.types import Mount  # type: ignore
 
@@ -115,3 +116,27 @@ def get_entrypoint_mount(osfamily: str) -> Mount:
         target=Path('/entrypoint.sh'),
         source=constants.ROOT/'packages'/osfamily/'entrypoint.sh',
     )
+
+
+def git_ls(directory: Optional[str]=None) -> Iterator[Path]:
+    """Return the list of files tracked by Git under `root` (recursively).
+
+    Arguments:
+        directory: directory to list (relative to the root of the repo).
+
+    Returns:
+        A list of files tracked by Git.
+    """
+    root = constants.ROOT if directory is None else constants.ROOT/directory
+    assert root.is_dir()
+    return map(Path, subprocess.check_output(
+        ['git', 'ls-files', '-z', root], encoding='utf-8'
+    ).split('\x00')[:-1])  # `:-1` to skip the last element (empty string).
+
+
+def unlink_if_exist(filepath: Path) -> None:
+    """Delete a file if it exists."""
+    try:
+        filepath.unlink()
+    except FileNotFoundError:
+        pass

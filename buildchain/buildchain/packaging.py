@@ -27,7 +27,7 @@ Overview;
 
 
 from pathlib import Path
-from typing import Dict, FrozenSet, Iterator, List, Tuple
+from typing import Dict, FrozenSet, Iterator, List, Mapping, Optional, Tuple
 
 from doit.tools import config_changed  # type: ignore
 
@@ -40,6 +40,29 @@ from buildchain import types
 from buildchain import utils
 from buildchain import versions
 
+
+# Utilities {{{
+
+def _list_packages_to_build(
+    pkg_cats: Mapping[str, Tuple[targets.Package, ...]]
+) -> List[str]:
+    return [
+        pkg.name for pkg_list in pkg_cats.values() for pkg in pkg_list
+    ]
+
+
+def _list_packages_to_download(
+    package_versions: Tuple[versions.PackageVersion, ...],
+    packages_to_build: List[str]
+) -> Dict[str, Optional[str]]:
+    return {
+        pkg.name: pkg.full_version
+        for pkg in package_versions
+        if pkg.name not in packages_to_build
+    }
+
+# }}}
+# Tasks {{{
 
 def task_packaging() -> types.TaskDict:
     """Build the packages and repositories."""
@@ -55,6 +78,7 @@ def task_packaging() -> types.TaskDict:
             '_build_rpm_repositories:*',
             '_build_deb_packages:*',
             '_download_deb_packages',
+            '_build_deb_repositories:*',
         ],
     }
 
@@ -144,7 +168,7 @@ def task__download_rpm_packages() -> types.TaskDict:
             '_build_rpm_container'
         ],
         'clean': [clean],
-        'uptodate': [config_changed(_TO_DOWNLOAD_CONFIG)],
+        'uptodate': [config_changed(_TO_DOWNLOAD_RPM_CONFIG)],
         # Prevent Docker from polluting our output.
         'verbosity': 0,
     }
@@ -152,14 +176,32 @@ def task__download_rpm_packages() -> types.TaskDict:
 
 def task__download_deb_packages() -> types.TaskDict:
     """Download Debian packages locally."""
-    # TODO: Clean the repository
+    witness = constants.PKG_DEB_ROOT/'.witness'
+
+    def clean() -> None:
+        """Delete downloaded Debian packages."""
+        for repository in DEB_REPOSITORIES:
+            # Repository with an explicit list of packages are created by a
+            # dedicated task that will also handle their cleaning, so we skip
+            # them here.
+            if repository.packages:
+                continue
+            coreutils.rm_rf(repository.pkgdir)
+        utils.unlink_if_exist(witness)
+        constants.REPO_DEB_ROOT.rmdir()
+
+    def mkdirs() -> None:
+        """Create directories for the repositories."""
+        for repository in DEB_REPOSITORIES:
+            repository.pkgdir.mkdir(exist_ok=True)
+
     mounts = [
         utils.bind_ro_mount(
             source=constants.ROOT/'packages'/'debian'/'download_packages.py',
             target=Path('/download_packages.py'),
         ),
         utils.bind_mount(
-            source=constants.REPO_DEB_ROOT,
+            source=constants.PKG_DEB_ROOT,
             target=Path('/repositories')
         ),
     ]
@@ -172,14 +214,17 @@ def task__download_deb_packages() -> types.TaskDict:
     )
     return {
         'title': utils.title_with_target1('GET DEB PKGS'),
-        'actions': [dl_packages_callable],
-        'targets': [constants.REPO_DEB_ROOT/'.witness'],
+        'actions': [mkdirs, dl_packages_callable],
+        'targets': [constants.PKG_DEB_ROOT/'.witness'],
         'task_dep': [
             '_package_mkdir_deb_root',
             '_package_mkdir_deb_iso_root',
             '_build_deb_container'
         ],
+        'clean': [clean],
         'uptodate': [config_changed(_TO_DOWNLOAD_DEB_CONFIG)],
+        # Prevent Docker from polluting our output.
+        'verbosity': 0,
     }
 
 
@@ -201,6 +246,15 @@ def task__build_rpm_repositories() -> Iterator[types.TaskDict]:
     """Build a RPM repository."""
     for repository in RPM_REPOSITORIES:
         yield from repository.execution_plan
+
+
+def task__build_deb_repositories() -> Iterator[types.TaskDict]:
+    """Build a DEB repository."""
+    for repository in DEB_REPOSITORIES:
+        yield from repository.execution_plan
+
+# }}}
+# Builders {{{
 
 # Image used to build the packages
 RPM_BUILDER : targets.LocalImage = targets.LocalImage(
@@ -239,11 +293,13 @@ DEB_BUILDER : targets.LocalImage = targets.LocalImage(
     task_dep=['_build_root'],
 )
 
+# }}}
+# RPM packages and repository {{{
 
 # Packages to build, per repository.
 def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
     try:
-        pkg_info = versions.PACKAGES_MAP[name]
+        pkg_info = versions.RPM_PACKAGES_MAP[name]
     except KeyError:
         raise ValueError(
             'Missing version for package "{}"'.format(name)
@@ -262,27 +318,6 @@ def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
         task_dep=['_package_mkdir_rpm_root', '_build_rpm_container'],
     )
 
-
-def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
-    try:
-        pkg_info = versions.PACKAGES_MAP[name]
-    except KeyError:
-        raise ValueError(
-            'Missing version for package "{}"'.format(name)
-        )
-
-    # In case the `release` is of form "{build_id}.{os}", which is standard
-    build_id_str, _, _ = pkg_info.release.partition('.')
-
-    return targets.DEBPackage(
-        basename='_build_deb_packages',
-        name=name,
-        version=pkg_info.version,
-        build_id=int(build_id_str),
-        sources=sources,
-        builder=DEB_BUILDER,
-        task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
-    )
 
 # Calico Container Network Interface Plugin.
 CALICO_RPM = _rpm_package(
@@ -308,34 +343,21 @@ RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
     ),
 }
 
-_RPM_TO_BUILD_PKG_NAMES : List[str] = []
-_DEB_TO_BUILD_PKG_NAMES : List[str] = []
 
-for pkgs in RPM_TO_BUILD.values():
-    for pkg in pkgs:
-        _RPM_TO_BUILD_PKG_NAMES.append(pkg.name)
+_RPM_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(RPM_TO_BUILD)
 
 # All packages not referenced in `RPM_TO_BUILD` but listed in
 # `versions.RPM_PACKAGES` are supposed to be downloaded.
 RPM_TO_DOWNLOAD : FrozenSet[str] = frozenset(
-    "{p.name}-{p.version}-{p.release}".format(p=package)
+    package.rpm_full_name
     for package in versions.RPM_PACKAGES
     if package.name not in _RPM_TO_BUILD_PKG_NAMES
 )
 
 
 # Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_CONFIG : Dict[str, str] = {
-    pkg.name: "{p.version}-{p.release}".format(p=pkg)
-    for pkg in versions.RPM_PACKAGES
-    if pkg.name not in _RPM_TO_BUILD_PKG_NAMES
-}
-
-_TO_DOWNLOAD_DEB_CONFIG : Dict[str, str] = {
-    pkg.name: "{p.version}-{p.release}".format(p=pkg)
-    for pkg in versions.DEB_PACKAGES
-    if pkg.name not in _DEB_TO_BUILD_PKG_NAMES
-}
+_TO_DOWNLOAD_RPM_CONFIG: Dict[str, Optional[str]] = \
+    _list_packages_to_download(versions.RPM_PACKAGES, _RPM_TO_BUILD_PKG_NAMES)
 
 
 SCALITY_RPM_REPOSITORY = targets.RPMRepository(
@@ -345,6 +367,7 @@ SCALITY_RPM_REPOSITORY = targets.RPMRepository(
     packages=RPM_TO_BUILD['scality'],
     task_dep=['_package_mkdir_rpm_iso_root'],
 )
+
 
 RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
     SCALITY_RPM_REPOSITORY,
@@ -386,6 +409,29 @@ RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
     ),
 )
 
+
+# }}}
+# Debian packages and repositories {{{
+
+def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
+    try:
+        pkg_info = versions.DEB_PACKAGES_MAP[name]
+    except KeyError:
+        raise ValueError(
+            'Missing version for package "{}"'.format(name)
+        )
+
+    return targets.DEBPackage(
+        basename='_build_deb_packages',
+        name=name,
+        version=pkg_info.version,
+        build_id=int(pkg_info.release),
+        sources=sources,
+        builder=DEB_BUILDER,
+        task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
+    )
+
+
 DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
     'scality': (
         # SOS report custom plugins.
@@ -400,10 +446,62 @@ DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
     )
 }
 
+
+_DEB_TO_BUILD_PKG_NAMES : List[str] = _list_packages_to_build(DEB_TO_BUILD)
+
+
+# Store these versions in a dict to use with doit.tools.config_changed
+_TO_DOWNLOAD_DEB_CONFIG: Dict[str, Optional[str]] = \
+    _list_packages_to_download(versions.DEB_PACKAGES, _DEB_TO_BUILD_PKG_NAMES)
+
+
 DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
-        "{p.name}".format(p=package)
-        for package in versions.DEB_PACKAGES
-        if package.name not in DEB_TO_BUILD
+    package.deb_full_name
+    for package in versions.DEB_PACKAGES
+    if package.name not in _DEB_TO_BUILD_PKG_NAMES
 )
+
+
+DEB_REPOSITORIES : Tuple[targets.DEBRepository, ...] = (
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='scality',
+        builder=DEB_BUILDER,
+        packages=DEB_TO_BUILD['scality'],
+        task_dep=['_package_mkdir_deb_iso_root'],
+    ),
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='bionic',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
+    ),
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='bionic-backports',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
+    ),
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='bionic-updates',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
+    ),
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='kubernetes-xenial',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
+    ),
+    targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name='salt_ubuntu1804',
+        builder=DEB_BUILDER,
+        task_dep=['_download_deb_packages'],
+    ),
+)
+
+# }}}
 
 __all__ = utils.export_only_tasks(__name__)

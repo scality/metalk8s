@@ -20,6 +20,18 @@ Action = Union[
     List[str],
 ]
 
+# An uptodate item (see https://pydoit.org/dependencies.html#uptodate).
+UpToDateCheck = Union[
+    # True for always up-to-date or False for never up-to-date
+    bool,
+    # Placeholder for dynamically computed value.
+    None,
+    # A Python callable.
+    Callable[..., Any],
+    # A Shell command
+    str,
+]
+
 # A doit task.
 Task = doit.task.Task
 
