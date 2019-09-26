@@ -77,10 +77,13 @@ type ConditionReason string
 // TODO: replace those by more fine-grained ones.
 // "Enum" representing the error codes of the Failed state.
 const (
-	InternalError    ConditionReason = "InternalError"
-	CreationError    ConditionReason = "CreationError"
-	DestructionError ConditionReason = "DestructionError"
-	UnavailableError ConditionReason = "UnavailableError"
+	ReasonPending     ConditionReason = "Pending"
+	ReasonTerminating ConditionReason = "Terminating"
+
+	ReasonInternalError    ConditionReason = "InternalError"
+	ReasonCreationError    ConditionReason = "CreationError"
+	ReasonDestructionError ConditionReason = "DestructionError"
+	ReasonUnavailableError ConditionReason = "UnavailableError"
 )
 
 type VolumeConditionType string
@@ -136,23 +139,88 @@ type Volume struct {
 	Status VolumeStatus `json:"status,omitempty"`
 }
 
+// Set a condition for the volume.
+//
+// If a condition of this type already exists it is updated, otherwise a new
+// condition is added.
+//
+// Arguments
+//     kind:      type of condition
+//     status:    status of the condition
+//     reason:    one-word, CamelCase reason for the transition (optional)
+//     message:   details about the transition (optional)
+func (self *Volume) SetCondition(
+	kind VolumeConditionType,
+	status corev1.ConditionStatus,
+	reason ConditionReason,
+	message string,
+) {
+	now := metav1.Now()
+	condition := VolumeCondition{
+		Type:               kind,
+		Status:             status,
+		LastUpdateTime:     now,
+		LastTransitionTime: now,
+		Reason:             reason,
+		Message:            message,
+	}
+
+	for idx, cond := range self.Status.Conditions {
+		if cond.Type == kind {
+			// Don't update LastTransitionTime if status hasn't changed.
+			if cond.Status == condition.Status {
+				condition.LastTransitionTime = cond.LastTransitionTime
+			}
+			self.Status.Conditions[idx] = condition
+			return
+		}
+	}
+	self.Status.Conditions = append(self.Status.Conditions, condition)
+}
+
+// Get the condition identified by `kind` for the volume.
+//
+// Return `nil` if no such condition exists on the volume.
+func (self *Volume) GetCondition(kind VolumeConditionType) *VolumeCondition {
+	for _, cond := range self.Status.Conditions {
+		if cond.Type == kind {
+			return &cond
+		}
+	}
+	return nil
+}
+
+// Return the volume phase, computed from the Ready condition.
+func (self *Volume) ComputePhase() VolumePhase {
+	if ready := self.GetCondition(VolumeReady); ready != nil {
+		switch ready.Status {
+		case corev1.ConditionTrue:
+			return VolumeAvailable
+		case corev1.ConditionFalse:
+			return VolumeFailed
+		case corev1.ConditionUnknown:
+			if ready.Reason == ReasonPending {
+				return VolumePending
+			}
+			return VolumeTerminating
+		}
+	}
+	return ""
+}
+
 // Update the volume status to Failed phase.
 //
 // Arguments
-//     errorCode: the error code that triggered the shift to the Failed phase
+//     reason:    the error code that triggered failure.
 //     format:    the string format for the error message
 //     args:      values used in the error message
 func (self *Volume) SetFailedStatus(
-	errorCode VolumeErrorCode, format string, args ...interface{},
+	reason ConditionReason, format string, args ...interface{},
 ) {
-	errorMsg := fmt.Sprintf(format, args...)
+	message := fmt.Sprintf(format, args...)
 
-	self.Status = VolumeStatus{
-		Phase:        VolumeFailed,
-		Job:          self.Status.Job, // Preserve job: can help for debug.
-		ErrorCode:    errorCode,
-		ErrorMessage: errorMsg,
-	}
+	// Don't overwrite `Job`: having JID around can help for debug.
+	self.SetCondition(VolumeReady, corev1.ConditionFalse, reason, message)
 }
 
 // Update the volume status to Pending phase.
@@ -160,16 +228,14 @@ func (self *Volume) SetFailedStatus(
 // Arguments
 //     job: job in progress
 func (self *Volume) SetPendingStatus(job string) {
-	self.Status = VolumeStatus{
-		Phase: VolumePending, Job: job, ErrorCode: "", ErrorMessage: "",
-	}
+	self.SetCondition(VolumeReady, corev1.ConditionUnknown, ReasonPending, "")
+	self.Status.Job = job
 }
 
 // Update the volume status to Available phase.
 func (self *Volume) SetAvailableStatus() {
-	self.Status = VolumeStatus{
-		Phase: VolumeAvailable, Job: "", ErrorCode: "", ErrorMessage: "",
-	}
+	self.SetCondition(VolumeReady, corev1.ConditionTrue, "", "")
+	self.Status.Job = ""
 }
 
 // Update the volume status to Terminating phase.
@@ -177,9 +243,8 @@ func (self *Volume) SetAvailableStatus() {
 // Arguments
 //     job: job in progress
 func (self *Volume) SetTerminatingStatus(job string) {
-	self.Status = VolumeStatus{
-		Phase: VolumeTerminating, Job: job, ErrorCode: "", ErrorMessage: "",
-	}
+	self.SetCondition(VolumeReady, corev1.ConditionUnknown, ReasonTerminating, "")
+	self.Status.Job = job
 }
 
 // Check if a volume is valid.
@@ -203,10 +268,15 @@ func (self *Volume) IsValid() error {
 }
 
 // Check if a volume is in an unrecoverable state.
-func (self *Volume) IsInUnrecoverableFailedState() bool {
+func (self *Volume) IsInUnrecoverableFailedState() *VolumeCondition {
 	// Only `UnavailableError` is recoverable.
-	return self.Status.Phase == VolumeFailed &&
-		self.Status.ErrorCode != UnavailableError
+	if ready := self.GetCondition(VolumeReady); ready != nil {
+		if ready.Status == corev1.ConditionFalse &&
+			ready.Reason != ReasonUnavailableError {
+			return ready
+		}
+	}
+	return nil
 }
 
 // Return the volume path on the node.
