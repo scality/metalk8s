@@ -93,6 +93,9 @@ Deploy Kubernetes objects:
     - require:
       - salt: Downgrade etcd cluster
 
+{#- UI is not present before version 2.4 #}
+{%- set version_list = (dest_version|string).split('.') %}
+{%- if version_list[0] == "2" and version_list[1]|int >= 4 %}
 Precheck for MetalK8s UI:
   salt.runner:
     - name: state.orchestrate
@@ -112,3 +115,4 @@ Deploy MetalK8s UI:
     - saltenv: metalk8s-{{ dest_version }}
     - require:
       - salt: Precheck for MetalK8s UI
+{%- endif %}
