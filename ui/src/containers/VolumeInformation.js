@@ -31,6 +31,10 @@ import {
   InformationLabel,
   InformationValue,
 } from '../components/InformationList';
+import {
+  computeVolumeGlobalStatus,
+  volumeGetError,
+} from '../services/NodeVolumesUtils';
 
 const VolumeInformationListContainer = styled(InformationListContainer)`
   margin-left: ${padding.larger};
@@ -73,6 +77,10 @@ const VolumeInformation = props => {
   const storageClass = storageClasses.find(
     SC => SC.metadata.name === volume?.spec?.storageClassName,
   );
+  const volumeStatus = computeVolumeGlobalStatus(
+    volume.metadata.name, volume?.status
+  );
+  const [errorCode, errorMessage] = volumeGetError(volume?.status);
 
   return (
     <VolumeInformationContainer>
@@ -94,16 +102,16 @@ const VolumeInformation = props => {
         {intl.messages.detailed_information}
       </VolumeInformationTitle>
 
-      {volume?.status?.phase === STATUS_FAILED ? (
+      {volumeStatus === STATUS_FAILED ? (
         <Banner
           type={STATUS_BANNER_ERROR}
           icon={<i className="fas fa-exclamation-triangle" />}
           title={
-            volume?.status?.errorCode === 'CreationError'
+            errorCode === 'CreationError'
               ? intl.messages.failed_to_create_volume
               : intl.messages.error
           }
-          messages={[volume?.status?.errorMessage]}
+          messages={[errorMessage]}
         />
       ) : null}
 
@@ -115,7 +123,7 @@ const VolumeInformation = props => {
         <InformationSpan>
           <InformationLabel>{intl.messages.status}</InformationLabel>
           <InformationValue>
-            {volume?.status?.phase ?? intl.messages.unknown}
+            {volumeStatus ?? intl.messages.unknown}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>

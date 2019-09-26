@@ -32,7 +32,8 @@ import {
   InformationValue,
   InformationMainValue,
 } from '../components/InformationList';
-import { STATUS_UNKNOWN, STATUS_BOUND } from '../constants';
+import { STATUS_BOUND } from '../constants';
+import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
 
 const NodeInformationContainer = styled.div`
   display: flex;
@@ -174,7 +175,7 @@ const NodeInformation = props => {
     );
     return {
       name: volume.metadata.name,
-      status: volume?.status?.phase || STATUS_UNKNOWN,
+      status: computeVolumeGlobalStatus(volume.metadata.name, volume?.status),
       bound:
         volumePV?.status?.phase === STATUS_BOUND
           ? intl.messages.yes
