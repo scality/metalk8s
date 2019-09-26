@@ -56,7 +56,6 @@ determine_os() {
     else
         die "Impossible to determine the OS"
     fi
-
 }
 
 cleanup() {
@@ -67,9 +66,11 @@ trap cleanup EXIT
 
 BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
-RPM=${RPM:-$(command -v rpm)}
+RPM=${RPM:-$(command -v rpm || true)}
+DPKG=${DPKG:-$(command -v dpkg || true)}
+YUM=${YUM:-$(command -v yum || true)}
+APT=${APT:-$(command -v apt || true)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
-YUM=${YUM:-$(command -v yum)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
 declare -A GPGCHECK_REPOSITORIES=(
@@ -146,14 +147,30 @@ die() {
     return 1
 }
 
+check_package_managers() {
+    case $OS in
+        centos)
+            test -n "$RPM" || die "rpm not found"
+            test -x "$RPM" || die "rpm at '$RPM' is not executable"
+            test -n "$YUM" || die "yum not found"
+            test -x "$YUM" || die "yum at '$YUM' is not executable"
+            ;;
+        ubuntu)
+            test -n "$DPKG" || die "dpkg not found"
+            test -x "$DPKG" || die "dpkg at '$DPKG' is not executable"
+            test -n "$APT" || die "apt not found"
+            test -x "$APT" || die "apt '$APT' is not executable"
+            ;;
+        *)
+            die "OS $OS not supported";;
+    esac
+}
+
 pre_minion_checks() {
+    check_package_managers
     test "x$(whoami)" = "xroot" || die "Script must run as root"
-    test -n "${RPM}" || die "rpm not found"
-    test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
-    test -n "${SYSTEMCTL}" || die "systemctl not found"
-    test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
-    test -n "${YUM}" || die "yum not found"
-    test -x "${YUM}" || die "yum at '${YUM}' is not executable"
+    test -n "$SYSTEMCTL" || die "systemctl not found"
+    test -x "$SYSTEMCTL" || die "systemctl at '$SYSTEMCTL' is not executable"
 }
 
 disable_salt_minion_service() {
@@ -162,6 +179,20 @@ disable_salt_minion_service() {
 
 stop_salt_minion_service() {
     ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
+}
+
+configure_repositories() {
+
+    case "$OS" in
+        centos)
+            configure_yum_repositories
+            ;;
+        ubuntu)
+            configure_apt_repositories
+            ;;
+        *)
+            die "OS found not supported: $OS";;
+    esac
 }
 
 configure_yum_repositories() {
