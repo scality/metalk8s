@@ -73,7 +73,8 @@ APT=${APT:-$(command -v apt || true)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
-declare -A GPGCHECK_REPOSITORIES=(
+
+declare -A GPGCHECK_YUM_REPOSITORIES=(
     [metalk8s-base]=1
     [metalk8s-epel]=1
     [metalk8s-extras]=1
@@ -81,6 +82,15 @@ declare -A GPGCHECK_REPOSITORIES=(
     [metalk8s-kubernetes]=1
     [metalk8s-saltstack]=1
     [metalk8s-scality]=0
+)
+
+declare -A GPGCHECK_APT_REPOSITORIES=(
+    [metalk8s-bionic]=no
+    [metalk8s-bionic-backports]=no
+    [metalk8s-bionic-updates]=no
+    [metalk8s-kubernetes-xenial]=no
+    [metalk8s-salt_ubuntu1804]=no
+    [metalk8s-scality]=no
 )
 
 run_quiet() {
