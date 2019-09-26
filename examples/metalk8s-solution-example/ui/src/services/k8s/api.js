@@ -8,6 +8,7 @@ import {
 } from '@kubernetes/client-node';
 
 import { LABEL_PART_OF } from '../../ducks/app/deployment';
+const SOLUTION_CONFIGMAP_NAME = 'metalk8s-solutions';
 
 let config;
 let coreV1;
@@ -288,6 +289,16 @@ export async function getNamespaces(name) {
       null,
       null,
       `metadata.name=${name}`
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+export async function getSolutionsConfigMap() {
+  try {
+    return await coreV1.listConfigMapForAllNamespaces(
+      null,
+      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`
     );
   } catch (error) {
     return { error };

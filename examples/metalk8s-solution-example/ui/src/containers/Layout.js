@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
@@ -23,9 +23,14 @@ import { toggleSidebarAction } from '../ducks/app/layout';
 import { refreshStackAction, stopRefreshStackAction } from '../ducks/app/stack';
 
 import { useRefreshEffect } from '../services/utils';
+import { fetchVersionsAction } from '../ducks/config';
 
 const Layout = props => {
   useRefreshEffect(refreshStackAction, stopRefreshStackAction);
+  useEffect(() => {
+    props.fetchVersions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const applications = [];
 
@@ -136,7 +141,8 @@ const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
-    removeNotification: uid => dispatch(removeNotificationAction(uid))
+    removeNotification: uid => dispatch(removeNotificationAction(uid)),
+    fetchVersions: () => dispatch(fetchVersionsAction())
   };
 };
 

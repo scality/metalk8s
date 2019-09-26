@@ -28,5 +28,6 @@
   "kind": "Kind",
   "edit_stack_version": "Edit Environment Version",
   "timezone": "Time Zone",
-  "prepare_environment": "Preparing environment..."
+  "prepare_environment": "Preparing environment...",
+  "select_a_version": "Select a Version"
 }

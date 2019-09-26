@@ -55,11 +55,10 @@ const StackEditFormContainer = styled.div`
 `;
 
 const StackEditForm = props => {
-  const { intl, currentVersion, onCancel, onSubmit, stack } = props;
+  const { intl, currentVersion, onCancel, onSubmit, stack, versions } = props;
   const initialValues = {
     version: currentVersion
   };
-
   const validationSchema = Yup.object().shape({
     version: Yup.string()
       .required()
@@ -85,26 +84,35 @@ const StackEditForm = props => {
             setFieldValue
           } = formProps;
 
-          //handleChange of the Formik props does not update 'values' when field value is empty
-          const handleChange = field => e => {
-            const { value, checked, type } = e.target;
-            setFieldValue(field, type === 'checkbox' ? checked : value, true);
-          };
-
           //touched is not "always" correctly set
           const handleOnBlur = e => setFieldTouched(e.target.name, true);
-
+          const handleSelectChange = field => selectedObj => {
+            setFieldValue(field, selectedObj.value);
+          };
+          //get the select item from the object array
+          const getSelectedObjectItem = (items, selectedValue) => {
+            return items.find(item => item.value === selectedValue);
+          };
+          const availableVersions = versions.map(item => {
+            return {
+              label: item.version,
+              value: item.version
+            };
+          });
           return (
             <Form>
               <Input
+                clearable={false}
+                type="select"
+                options={availableVersions}
+                placeholder={intl.messages.select_a_version}
+                noResultsText={intl.messages.not_found}
                 name="version"
-                label=""
-                value={values.version}
-                onChange={handleChange('version')}
+                onChange={handleSelectChange('version')}
+                value={getSelectedObjectItem(availableVersions, values.version)}
                 error={touched.version && errors.version}
                 onBlur={handleOnBlur}
               />
-
               <Button
                 title={intl.messages.cancel}
                 icon={<i className="fas fa-times"></i>}
@@ -126,7 +134,7 @@ const StackEditForm = props => {
   );
 };
 const StackDetail = props => {
-  const { match, intl, theme, stacks, upgradeStack } = props;
+  const { match, intl, config, stacks, upgradeStack } = props;
   const [stackEditing, setStackEditing] = useState(false);
   const stackName = match.params.name;
   const stack = stacks.find(stack => stack.name === stackName);
@@ -134,7 +142,7 @@ const StackDetail = props => {
     <StackDetailContainer>
       <BreadcrumbContainer>
         <Breadcrumb
-          activeColor={theme.brand.secondary}
+          activeColor={config.theme.brand.secondary}
           paths={[
             <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
             <BreadcrumbLabel title={stack.name}>{stack.name}</BreadcrumbLabel>
@@ -166,6 +174,7 @@ const StackDetail = props => {
                 }}
                 currentVersion={stack.version}
                 stack={stackName}
+                versions={config.versions}
               />
             ) : (
               <InformationValue>
@@ -194,7 +203,7 @@ const StackDetail = props => {
 };
 
 const mapStateToProps = state => ({
-  theme: state.config.theme,
+  config: state.config,
   stacks: state.app.stack.list
 });
 
