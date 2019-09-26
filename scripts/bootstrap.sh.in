@@ -429,7 +429,9 @@ orchestrate_bootstrap() {
 }
 
 main() {
+    run "Determine the OS" determine_os
     run "Pre-minion system tests" pre_minion_checks
+    run "Configure internal repositories" configure_repositories
     run "Disabling Salt minion service" disable_salt_minion_service
     run "Stopping Salt minion service" stop_salt_minion_service
     run "Configuring local repositories" configure_repositories
