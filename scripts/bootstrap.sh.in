@@ -101,7 +101,7 @@ run_quiet() {
     local start
     start=$(date +%s)
     set +e
-    "$@" 2>&1 | tee -ia "${LOGFILE}" > "${TMPFILES}/out"
+    "$@" > >(tee -ia "${LOGFILE}" > "${TMPFILES}/out") 2>&1
     local RC=$?
     set -e
     local end
