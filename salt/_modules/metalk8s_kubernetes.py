@@ -1679,6 +1679,8 @@ def __dict_to_service_spec(spec):
                 spec_obj.ports.append(kube_port)
         elif key == 'clusterIP':
             spec_obj.cluster_ip = value
+        elif key == 'externalIPs':
+            spec_obj.external_i_ps = value
         elif hasattr(spec_obj, key):
             setattr(spec_obj, key, value)
 
