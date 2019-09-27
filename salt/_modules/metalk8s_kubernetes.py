@@ -1681,6 +1681,8 @@ def __dict_to_service_spec(spec):
             spec_obj.cluster_ip = value
         elif key == 'externalIPs':
             spec_obj.external_i_ps = value
+        elif key == 'externalName':
+            spec_obj.external_name = value
         elif hasattr(spec_obj, key):
             setattr(spec_obj, key, value)
 
