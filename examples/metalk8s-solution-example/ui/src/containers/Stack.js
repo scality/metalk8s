@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
-import { Table } from '@scality/core-ui';
+import { Table, Button, Modal, Input } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
@@ -14,6 +14,10 @@ const PageContainer = styled.div`
   flex-direction: column;
   height: 100%;
   padding: ${padding.base};
+
+  .sc-modal-content {
+    overflow: initial;
+  }
 `;
 
 const TableContainer = styled.div`
@@ -21,10 +25,37 @@ const TableContainer = styled.div`
   display: flex;
 `;
 
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  .sc-button {
+    margin-left: ${padding.base};
+  }
+`;
+
+const ModalBody = styled.div`
+  padding-bottom: ${padding.base};
+`;
+
+const ModalBodyTitle = styled.div`
+  padding-bottom: ${padding.base};
+`;
+
 const Stack = props => {
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
-  const { intl, history, stack } = props;
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState('');
+  const [selectedEnvironment, setSelectedEnvironment] = useState('');
+  const { intl, history, stack, versions } = props;
+
+  const availableVersions = versions.map(item => {
+    return {
+      label: item.version,
+      value: item.version
+    };
+  });
+
   const columns = [
     {
       label: intl.messages.name,
@@ -37,7 +68,25 @@ const Stack = props => {
     },
     {
       label: intl.messages.version,
-      dataKey: 'version'
+      dataKey: 'version',
+      renderer: (data, rowData) => {
+        if (!data) {
+          return (
+            <Button
+              text={intl.messages.add_solution}
+              size="small"
+              type="button"
+              onClick={e => {
+                e.stopPropagation();
+                setSelectedEnvironment(rowData.name);
+                setOpenModal(true);
+              }}
+            />
+          );
+        } else {
+          return data;
+        }
+      }
     },
     {
       label: intl.messages.description,
@@ -55,6 +104,52 @@ const Stack = props => {
 
   return (
     <PageContainer>
+      <Modal
+        close={() => {
+          setSelectedEnvironment('');
+          setOpenModal(false);
+        }}
+        isOpen={openModal}
+        title={intl.messages.add_solution}
+        footer={
+          <ButtonGroup>
+            <Button
+              outlined
+              text={intl.messages.cancel}
+              onClick={() => {
+                setSelectedEnvironment('');
+                setOpenModal(false);
+              }}
+            />
+            <Button
+              text={intl.messages.add}
+              onClick={e => {
+                e.stopPropagation();
+                history.push(
+                  `/stacks/${selectedEnvironment}/version/${selectedVersion.value}/prepare`
+                );
+              }}
+            />
+          </ButtonGroup>
+        }
+      >
+        <ModalBody>
+          <ModalBodyTitle>
+            {intl.messages.select_a_version_to_add}
+          </ModalBodyTitle>
+          <Input
+            label={intl.messages.version}
+            clearable={false}
+            type="select"
+            options={availableVersions}
+            placeholder={intl.messages.select_a_version}
+            noResultsText={intl.messages.not_found}
+            name="version"
+            onChange={selectedObj => setSelectedVersion(selectedObj)}
+            value={selectedVersion}
+          />
+        </ModalBody>
+      </Modal>
       <TableContainer>
         <Table
           list={stackSortedList}
@@ -79,7 +174,8 @@ const Stack = props => {
 
 function mapStateToProps(state) {
   return {
-    stack: state.app.stack
+    stack: state.app.stack,
+    versions: state.config.versions
   };
 }
 
