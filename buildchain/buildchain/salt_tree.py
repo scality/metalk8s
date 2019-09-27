@@ -212,8 +212,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'node-exporter-full.json'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/init.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls'),
-    Path('salt/metalk8s/addons/prometheus-operator/deployed/'
-            'prometheus-nodeport.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/storageclass.sls'),
 
     Path('salt/metalk8s/addons/ui/deployed/dependencies.sls'),

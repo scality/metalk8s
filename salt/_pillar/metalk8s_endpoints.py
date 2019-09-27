@@ -16,51 +16,6 @@ def __virtual__():
         return __virtualname__
 
 
-def service_endpoints_nodeport(service, namespace, kubeconfig):
-    endpoint = service_endpoints(service, namespace, kubeconfig)
-    node_name = endpoint.get('node_name')
-
-    if not node_name:
-        return __utils__['pillar_utils.errors_to_dict']([
-            'Cannot get `node_name` from {}.'.format(endpoint)
-        ])
-
-    try:
-        node = __salt__['metalk8s_kubernetes.node'](
-            name=node_name,
-            kubeconfig=kubeconfig,
-        )
-    except Exception as exc:  # pylint: disable=broad-except
-        error_tplt = 'Unable to get kubernetes node {}:\n{}'
-        return __utils__['pillar_utils.errors_to_dict'](
-            [error_tplt.format(node_name, exc)]
-        )
-
-    node_meta = node['metadata']
-    host_net = node_meta['annotations']['projectcalico.org/IPv4Address']
-    host_addr = host_net.split('/')[0]
-
-    try:
-        service = __salt__['metalk8s_kubernetes.show_service'](
-            name=service,
-            namespace=namespace,
-            kubeconfig=kubeconfig,
-        )
-    except Exception as exc:  # pylint: disable=broad-except
-        error_tplt = 'Unable to get kubernetes service {} in namespace {}:\n{}'
-        return __utils__['pillar_utils.errors_to_dict'](
-            [error_tplt.format(service, namespace, exc)]
-        )
-
-    endpoint['ip'] = host_addr
-    endpoint['ports'] = {
-        port['name']: port
-        for port in service['spec']['ports']
-    }
-
-    return endpoint
-
-
 def service_endpoints(service, namespace, kubeconfig):
     try:
         endpoint = __salt__['metalk8s_kubernetes.show_endpoint'](
@@ -103,7 +58,6 @@ def ext_pillar(minion_id, pillar, kubeconfig):
     services = {
         "kube-system": ['salt-master', 'repositories'],
     }
-    nodeport_services = {"metalk8s-monitoring": ["prometheus"]}
 
     if not os.path.isfile(kubeconfig):
         error_tplt = '{}: kubeconfig not found at {}'
@@ -123,15 +77,6 @@ def ext_pillar(minion_id, pillar, kubeconfig):
                         )
                     }
                 )
-                __utils__['pillar_utils.promote_errors'](endpoints, service)
-
-        for namespace, services in nodeport_services.items():
-            for service in services:
-                endpoints.update({
-                    service: service_endpoints_nodeport(
-                        service, namespace, kubeconfig
-                    )
-                })
                 __utils__['pillar_utils.promote_errors'](endpoints, service)
 
     result = {

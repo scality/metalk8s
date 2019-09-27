@@ -112,25 +112,13 @@ def apiservice_condition_met(name, condition, k8s_apiclient):
 # Helpers {{{
 
 def _query_prometheus_api(host, route):
-    ip = _get_local_grain(host, 'metalk8s:workload_plane_ip')
-    port = _get_nodeport(host, 'prometheus', 'metalk8s-monitoring')
+    ip = _get_local_grain(host, 'metalk8s:control_plane_ip')
 
     return requests.get(
-        'http://{ip}:{port}/api/v1/{route}'
-        .format(ip=ip, port=port, route=route)
+        'https://{ip}:8443/api/prometheus/api/v1/{route}'
+        .format(ip=ip, route=route),
+        verify=False,
     )
-
-
-def _get_nodeport(host, name, namespace):
-    with host.sudo():
-        port = host.check_output(
-            'kubectl --kubeconfig=/etc/kubernetes/admin.conf '
-            'get svc -n {namespace} {name} --no-headers '
-            '-o custom-columns=":spec.ports[0].nodePort"'
-            .format(namespace=namespace, name=name)
-        )
-
-    return port
 
 
 def _get_local_grain(host, key):
