@@ -14,7 +14,6 @@ import {
 } from '@scality/core-ui';
 import { padding, grayLight } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-//import Tooltip from '../components/Tooltip';
 import {
   sortSelector,
   sortCapacity,
@@ -40,8 +39,12 @@ import {
 const VolumeTable = styled.div`
   flex-grow: 1;
   margin-top: ${padding.small};
-  .sc-table-column-cell-container-action {
-    justify-content: center;
+  /*solve the tooltip display issue*/
+  .ReactVirtualized__Grid {
+    overflow: visible !important;
+  }
+  .sc-table-column-cell-action {
+    overflow: visible !important;
   }
 `;
 
@@ -98,6 +101,7 @@ const ButtonContainer = styled.div`
   align-items: center;
   .sc-tooltip-overlay-text {
     white-space: nowrap;
+    letter-spacing: 0.8px;
   }
 `;
 
@@ -169,16 +173,10 @@ const NodeVolumes = props => {
       label: intl.messages.action,
       dataKey: 'action',
       disableSort: true,
-      width: 80,
+      width: 150,
       renderer: (data, rowData) => {
         const isEnableClick = isVolumeDeletable(rowData, persistentVolumes);
-        const isTriggerTooltip = () => {
-          if (isEnableClick) {
-            return '';
-          } else {
-            return 'hover';
-          }
-        };
+
         const hintPopup = () => {
           let hintMessage = '';
 
@@ -219,11 +217,7 @@ const NodeVolumes = props => {
 
         return (
           <>
-            <Tooltip
-              placement="top"
-              trigger={isTriggerTooltip()}
-              overlay={hintPopup()}
-            >
+            <Tooltip placement="top" overlay={hintPopup()}>
               <IconButton
                 onClick={e => {
                   e.stopPropagation();
@@ -321,11 +315,7 @@ const NodeVolumes = props => {
 
         <ButtonContainer>
           {volumes.isLoading && <LoaderContainer size="small" />}
-          <Tooltip
-            placement="left"
-            text={intl.messages.create_new_volume}
-            trigger="hover"
-          >
+          <Tooltip placement="left" overlay={intl.messages.create_new_volume}>
             <Button
               text={<i className="fas fa-plus "></i>}
               type="button"

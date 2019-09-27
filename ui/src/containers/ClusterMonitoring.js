@@ -3,10 +3,9 @@ import { connect } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
-import { Table } from '@scality/core-ui';
+import { Table, Tooltip } from '@scality/core-ui';
 import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
-import Tooltip from '../components/Tooltip';
 import {
   refreshClusterStatusAction,
   refreshAlertsAction,
@@ -48,6 +47,10 @@ const PageSubtitle = styled.h3`
 const ClusterStatusTitleContainer = styled.div`
   display: flex;
   align-items: center;
+  .sc-tooltip-overlay-text {
+    white-space: nowrap;
+    text-align: left;
+  }
 `;
 
 const ClusterStatusValue = styled.span`
