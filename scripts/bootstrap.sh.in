@@ -188,28 +188,14 @@ pre_minion_checks() {
 }
 
 disable_salt_minion_service() {
-    ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
+    $SYSTEMCTL disable salt-minion.service 2>/dev/null || true
 }
 
 stop_salt_minion_service() {
-    ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
-
-configure_repositories() {
-
-    case "$OS" in
-        centos)
-            configure_yum_repositories
-            ;;
-        ubuntu)
-            configure_apt_repositories
-            ;;
-        *)
-            die "OS found not supported: $OS";;
-    esac
+    $SYSTEMCTL stop salt-minion.service 2>/dev/null || true
 }
 
 configure_repositories() {
-
     case "$OS" in
         centos)
             configure_yum_repositories
@@ -345,13 +331,13 @@ orchestrate_bootstrap() {
     # otherwise grains set during execution won't be taken into account
     # properly.
     run "Calculating Salt grains in local mode" \
-        "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
+        "$SALT_CALL" --local --state-output=mixed --retcode-passthrough state.sls \
             metalk8s.node.grains \
             saltenv=metalk8s-@@VERSION \
             pillarenv=metalk8s-@@VERSION
 
     local -r control_plane_ip=$(
-        ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
+        $SALT_CALL --local grains.get metalk8s:control_plane_ip --out txt \
         | awk '/^local\: /{ print $2 }'
     )
 
@@ -371,7 +357,7 @@ orchestrate_bootstrap() {
     )
 
     run "Deploying early-stage bootstrap node in local mode (this may take a while)" \
-        "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
+        "$SALT_CALL" --local --state-output=mixed --retcode-passthrough state.sls \
             '["metalk8s.kubernetes.ca.kubernetes.installed", "metalk8s.roles.bootstrap", "metalk8s.roles.minion"]' \
             saltenv=metalk8s-@@VERSION \
             pillarenv=metalk8s-@@VERSION \
@@ -394,7 +380,7 @@ orchestrate_bootstrap() {
             saltenv=metalk8s-@@VERSION
 
     local -r bootstrap_id=$(
-        ${SALT_CALL} --local --out txt grains.get id \
+        $SALT_CALL --local --out txt grains.get id \
         | awk '/^local\: /{ print $2 }'
     )
 
@@ -425,7 +411,7 @@ orchestrate_bootstrap() {
     # not always to actually update the mine with all `mine_functions` we
     # expect. Forcing another update seems to resolve this somewhat.
     run "Syncing mine" \
-        "${SALT_CALL}" mine.update
+        "$SALT_CALL" mine.update
 }
 
 main() {
