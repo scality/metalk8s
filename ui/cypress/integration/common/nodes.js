@@ -2,7 +2,7 @@ import { Then } from 'cypress-cucumber-preprocessor/steps';
 
 Then('I go to the nodes list by click the node icon in the sidebar', () => {
   cy.server();
-  cy.route('GET', '/api/v1/nodes').as('getNodes');
+  cy.route('GET', '/api/kubernetes/api/v1/nodes').as('getNodes');
 
   cy.get('.sc-sidebar-item')
     .eq(1)

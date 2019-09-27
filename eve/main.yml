@@ -333,6 +333,8 @@ stages:
           command: bash cypress.sh
           workdir: build/ui
           haltOnFailure: true
+          env:
+            IN_CI: 'True'
       - ShellCommand:
           name: Prepare upload folder
           command: >

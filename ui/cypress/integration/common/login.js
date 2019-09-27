@@ -4,8 +4,8 @@ Given('I log in', () => {
   const target_url = Cypress.env('target_url');
   cy.visit(target_url);
   cy.server();
-  cy.route('GET', '/api/v1').as('getAPIResourceList');
-  cy.route('POST', '/login').as('saltAuthentication');
+  cy.route('GET', '/api/kubernetes/api/v1').as('getAPIResourceList');
+  cy.route('POST', '/api/salt/login').as('saltAuthentication');
 
   const userName = Cypress.env('username');
   const userPassword = Cypress.env('password');

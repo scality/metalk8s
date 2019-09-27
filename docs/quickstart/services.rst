@@ -12,42 +12,25 @@ and can be used for operating, extending and upgrading a MetalK8s cluster.
 
 Gather required information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#. Get the workload plane IP of the bootstrap node.
+#. Get the control plane IP of the bootstrap node.
 
    .. code-block:: shell
 
-      root@bootstrap $ salt-call grains.get metalk8s:workload_plane_ip
+      root@bootstrap $ salt-call grains.get metalk8s:control_plane_ip
       local:
-          <the workload plane IP>
-
-#. Retrieve the active ``NodePort`` number for the UI (here ``30923``):
-
-   .. code-block:: shell
-
-      root@boostrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf get svc metalk8s-ui -n metalk8s-ui
-
-      NAME                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-      metalk8s-ui           NodePort    10.104.61.208   <none>        80:30923/TCP     3h
-
+          <the control plane IP>
 
 Use MetalK8s UI
 ^^^^^^^^^^^^^^^
 Once you have gathered the IP address and the port number, open your
-web browser and navigate to the URL ``http://<ip>:<port>``, replacing
+web browser and navigate to the URL ``https://<ip>:8443``, replacing
 placeholders with the values retrieved before.
 
 The login page is loaded, and should resemble the following:
 
 .. image:: img/ui/login.png
 
-In the bottom left corner of the page, click the link
-``Accept SSL Certificate for Kubernetes``. In the new tab, click the button
-``Advanced...``, then select ``Accept the risk and continue``.
-
-Follow the same steps for the second link, ``Accept SSL Certificate for Salt``.
-
-Go back to the first tab, then log in with the default login / password
-(admin / admin).
+Log in with the default login / password (admin / admin).
 
 The landing page should look like this:
 

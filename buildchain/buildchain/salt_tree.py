@@ -216,9 +216,12 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'prometheus-nodeport.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/storageclass.sls'),
 
-    Path('salt/metalk8s/addons/ui/deployed.sls'),
-    Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
-    Path('salt/metalk8s/addons/ui/precheck.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/dependencies.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/ingress.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/init.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml'),
+    Path('salt/metalk8s/addons/ui/deployed/namespace.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/ui.sls'),
 
     Path('salt/metalk8s/addons/volumes/deployed.sls'),
     targets.TemplateFile(

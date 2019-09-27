@@ -1,18 +1,8 @@
 include:
-  - .precheck
+- .namespace
 
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}
-
-{%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
-{%- set saltapi = 'https://' ~ pillar.metalk8s.endpoints['salt-master'].ip ~ ':' ~ pillar.metalk8s.endpoints['salt-master'].ports.api %}
-{%- set prometheus = 'http://' ~ grains.metalk8s.workload_plane_ip ~ ':30222'  %}
-
-Create metalk8s-ui namespace:
-  metalk8s_kubernetes.namespace_present:
-    - name: metalk8s-ui
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.deployment_present:
@@ -40,7 +30,7 @@ Create metalk8s-ui service:
           targetPort: 80
         selector:
           app: metalk8s-ui
-        type: NodePort
+        type: ClusterIP
 
 Create metalk8s-ui ConfigMap:
   metalk8s_kubernetes.configmap_present:
@@ -51,9 +41,9 @@ Create metalk8s-ui ConfigMap:
     - data:
         config.json: |
           {
-            "url": "{{ apiserver }}",
-            "url_salt": "{{ saltapi }}",
-            "url_prometheus": "{{ prometheus }}"
+            "url": "/api/kubernetes",
+            "url_salt": "/api/salt",
+            "url_prometheus": "/api/prometheus"
           }
 
 Create ui-branding ConfigMap:
