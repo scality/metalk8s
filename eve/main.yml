@@ -116,7 +116,7 @@ stages:
             echo "Could not reach Docker daemon from buildbot worker" >&2
             exit 1'
           haltOnFailure: true
-      - SetPropertyFromCommand:
+      - SetPropertyFromCommand: &set_product_version_prev
           name: set product_version_prev
           property: product_version_prev
           command: >
@@ -381,14 +381,15 @@ stages:
     steps:
       - Git: *git_pull
       - ShellCommand: *ssh_ip_setup
+      - SetPropertyFromCommand: *set_product_version_prev
       - SetPropertyFromCommand: &set_prev_version
           name: Set previous version
           property: metalk8s_prev_version
           command: >
             bash -c '
-              source VERSION &&
-              VERSION_MINOR=$((VERSION_MINOR-1))
-            echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
+              git checkout development/%(prop:product_version_prev)s --quiet &&
+              source VERSION ;
+              echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
       - ShellCommand: &get_prev_iso
           name: Get %(prop:metalk8s_prev_version)s image
           command: >
