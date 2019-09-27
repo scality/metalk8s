@@ -4,10 +4,17 @@ import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Button, Table, Loader, Modal, SearchInput } from '@scality/core-ui';
+import {
+  Button,
+  Table,
+  Loader,
+  Modal,
+  SearchInput,
+  Tooltip,
+} from '@scality/core-ui';
 import { padding, grayLight } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-import Tooltip from '../components/Tooltip';
+//import Tooltip from '../components/Tooltip';
 import {
   sortSelector,
   sortCapacity,
@@ -89,6 +96,9 @@ const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  .sc-tooltip-overlay-text {
+    white-space: nowrap;
+  }
 `;
 
 const LoaderContainer = styled(Loader)`
@@ -118,7 +128,6 @@ const NodeVolumes = props => {
     setSortBy(sortBy);
     setSortDirection(sortDirection);
   };
-
   const columns = [
     {
       label: intl.messages.name,
@@ -170,7 +179,6 @@ const NodeVolumes = props => {
             return 'hover';
           }
         };
-
         const hintPopup = () => {
           let hintMessage = '';
 
@@ -210,7 +218,7 @@ const NodeVolumes = props => {
         };
 
         return (
-          <div>
+          <>
             <Tooltip
               placement="top"
               trigger={isTriggerTooltip()}
@@ -229,7 +237,7 @@ const NodeVolumes = props => {
                 <i className="fas fa-lg fa-trash" />
               </IconButton>
             </Tooltip>
-          </div>
+          </>
         );
       },
     },
@@ -313,7 +321,11 @@ const NodeVolumes = props => {
 
         <ButtonContainer>
           {volumes.isLoading && <LoaderContainer size="small" />}
-          <Tooltip placement="left" overlay={intl.messages.create_new_volume}>
+          <Tooltip
+            placement="left"
+            text={intl.messages.create_new_volume}
+            trigger="hover"
+          >
             <Button
               text={<i className="fas fa-plus "></i>}
               type="button"
