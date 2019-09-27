@@ -31,7 +31,7 @@ author = 'Scality'
 version = '2.4'
 
 # The full version, including alpha/beta/rc tags
-release = '2.4.0-dev'
+release = '2.4.0-beta2'
 
 
 # -- General configuration ---------------------------------------------------
