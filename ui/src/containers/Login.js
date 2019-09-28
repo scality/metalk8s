@@ -48,15 +48,6 @@ const LogoContainer = styled.div`
   top: 45px;
 `;
 
-const K8sSSLCertificateContainer = styled.div`
-  position: absolute;
-  bottom: 50px;
-`;
-const SaltSSLCertificateContainer = styled.div`
-  position: absolute;
-  bottom: 30px;
-`;
-
 
 const LoginForm = props => {
   const {
@@ -76,13 +67,6 @@ const LoginForm = props => {
   };
   //touched is not "always" correctly set
   const handleOnBlur = e => setFieldTouched(e.target.name, true);
-
-  // FIXME This is a temporary solution.
-  // We should remove this when we will fix the SSL issue
-  const k8sSslCertificateUrl =
-    props?.config?.url ? props.config.url + '/api/v1' : '';
-  const saltSslCertificateUrl =
-    props?.config?.url_salt ? props.config.url_salt + '/login' : '';
 
   return (
     <Form autoComplete="off">
@@ -118,20 +102,6 @@ const LoginForm = props => {
       {asyncErrors && asyncErrors.authentication && (
         <Error>{asyncErrors.authentication}</Error>
       )}
-      {k8sSslCertificateUrl !== '' ? (
-        <K8sSSLCertificateContainer>
-          <a href={k8sSslCertificateUrl} target="_blank" rel="noopener noreferrer">
-            Accept SSL certificate for Kubernetes
-          </a>
-        </K8sSSLCertificateContainer>
-      ) : null}
-      {saltSslCertificateUrl !== '' ? (
-        <SaltSSLCertificateContainer>
-          <a href={saltSslCertificateUrl} target="_blank" rel="noopener noreferrer">
-            Accept SSL certificate for Salt
-          </a>
-        </SaltSSLCertificateContainer>
-      ) : null}
     </Form>
   );
 };
