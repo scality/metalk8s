@@ -371,6 +371,10 @@ data:
 
     provisioning = /etc/grafana/provisioning
 
+    [server]
+
+    root_url = /grafana
+
     '
 kind: ConfigMap
 metadata:
@@ -19597,7 +19601,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: ea7b59b62d323a0963036c404f90f44a7abe8da38e3b8c352183f899caef5e24
+        checksum/config: ed3002a8745f1ab05688029b158d1f1a33ff74cfe4b52c5ae8e70e7574411fa1
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: dc7735583397252c24f82d71d355833fc1e7986140b063616adf9b06236effe3
         checksum/secret: f832480599cee4cc655aa0e062da52607f34f87a2785e158519d543e17235c86
@@ -19867,6 +19871,32 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/infra
         operator: Exists
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx-control-plane
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  labels:
+    app: grafana
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: metalk8s
+    chart: grafana-3.8.11
+    heritage: metalk8s
+    release: prometheus-operator
+  name: prometheus-operator-grafana
+  namespace: metalk8s-monitoring
+spec:
+  rules:
+  - host: null
+    http:
+      paths:
+      - backend:
+          serviceName: prometheus-operator-grafana
+          servicePort: 80
+        path: /grafana(/|$)(.*)
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Alertmanager

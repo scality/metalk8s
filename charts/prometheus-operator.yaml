@@ -116,6 +116,19 @@ grafana:
       operator: 'Exists'
       effect: 'NoSchedule'
 
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx-control-plane
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    path: /grafana(/|$)(.*)
+    hosts:
+      - null
+
+  grafana.ini:
+    server:
+      root_url: /grafana
+
 
 kube-state-metrics:
   image:

@@ -47,23 +47,8 @@ This page displays two monitoring indicators:
 
 Grafana
 -------
-
-You will first need the latest ``kubectl`` version installed on your host.
-
-To authenticate with the cluster, retrieve the admin kubeconfig on your host:
-
-.. code-block:: shell
-
-   user@your-host $ scp root@bootstrap:/etc/kubernetes/admin.conf ./admin.conf
-
-Forward the port used by Grafana:
-
-.. code-block:: shell
-
-   user@your-host $ kubectl -n metalk8s-monitoring port-forward svc/prometheus-operator-grafana 3000:80
-
-Then open your web browser and navigate to ``http://localhost:3000``
-
+Grafana is available on the same host as the MetalK8s UI, under ``/grafana``.
+Log in with the default credentials: ``admin`` / ``prom-operator``.
 
 .. _quickstart-services-salt:
 
