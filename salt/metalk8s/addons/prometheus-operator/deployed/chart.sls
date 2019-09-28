@@ -351,7 +351,9 @@ apiVersion: v1
 data:
   grafana.ini: '[analytics]
 
-    check_for_updates = true
+    check_for_updates = false
+
+    reporting_enabled = false
 
     [grafana_net]
 
@@ -19601,7 +19603,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: ed3002a8745f1ab05688029b158d1f1a33ff74cfe4b52c5ae8e70e7574411fa1
+        checksum/config: d5c37d9d864b156886df6835be5bfcb25e41f3b81d9d93f74265789ba70193d9
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: dc7735583397252c24f82d71d355833fc1e7986140b063616adf9b06236effe3
         checksum/secret: f832480599cee4cc655aa0e062da52607f34f87a2785e158519d543e17235c86
