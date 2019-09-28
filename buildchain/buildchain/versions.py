@@ -80,8 +80,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     # Remote images
     Image(
         name='alertmanager',
-        version='v0.17.0',
-        digest='sha256:3db6eccdbf4bdaea3407b7a9e6a41fc50abcf272a1356227260948e73414ec09',
+        version='v0.19.0',
+        digest='sha256:7dbf4949a317a056d11ed8f379826b04d0665fad5b9334e1d69b23e946056cd3',
     ),
     Image(
         name='calico-node',
