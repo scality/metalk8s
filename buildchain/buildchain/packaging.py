@@ -27,7 +27,9 @@ Overview;
 
 
 from pathlib import Path
-from typing import Dict, FrozenSet, Iterator, List, Mapping, Optional, Tuple
+from typing import (
+    Dict, FrozenSet, Iterator, List, Mapping, Optional, Sequence, Tuple
+)
 
 from doit.tools import config_changed  # type: ignore
 
@@ -319,6 +321,26 @@ def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
     )
 
 
+def _rpm_repository(
+    name: str, packages: Optional[Sequence[targets.RPMPackage]]=None
+) -> targets.RPMRepository:
+    """Return a RPM repository object.
+
+    Arguments:
+        name:     repository name
+        packages: list of locally built packages
+    """
+    mkdir_task = '_package_mkdir_rpm_iso_root'
+    download_task = '_download_rpm_packages'
+    return targets.RPMRepository(
+        basename='_build_rpm_repositories',
+        name=name,
+        builder=RPM_BUILDER,
+        packages=packages,
+        task_dep=[download_task if packages is None else mkdir_task],
+    )
+
+
 # Calico Container Network Interface Plugin.
 CALICO_RPM = _rpm_package(
     name='calico-cni-plugin',
@@ -360,53 +382,19 @@ _TO_DOWNLOAD_RPM_CONFIG: Dict[str, Optional[str]] = \
     _list_packages_to_download(versions.RPM_PACKAGES, _RPM_TO_BUILD_PKG_NAMES)
 
 
-SCALITY_RPM_REPOSITORY = targets.RPMRepository(
-    basename='_build_rpm_repositories',
-    name='scality',
-    builder=RPM_BUILDER,
-    packages=RPM_TO_BUILD['scality'],
-    task_dep=['_package_mkdir_rpm_iso_root'],
+SCALITY_RPM_REPOSITORY : targets.RPMRepository = _rpm_repository(
+    name='scality', packages=RPM_TO_BUILD['scality']
 )
 
 
 RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
     SCALITY_RPM_REPOSITORY,
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='base',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='extras',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='updates',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='epel',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='kubernetes',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='saltstack',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
+    _rpm_repository(name='base'),
+    _rpm_repository(name='extras'),
+    _rpm_repository(name='updates'),
+    _rpm_repository(name='epel'),
+    _rpm_repository(name='kubernetes'),
+    _rpm_repository(name='saltstack'),
 )
 
 
@@ -429,6 +417,26 @@ def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
         sources=sources,
         builder=DEB_BUILDER,
         task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
+    )
+
+
+def _deb_repository(
+    name: str, packages: Optional[Sequence[targets.DEBPackage]]=None
+) -> targets.DEBRepository:
+    """Return a DEB repository object.
+
+    Arguments:
+        name:     repository name
+        packages: list of locally built packages
+    """
+    mkdir_task = '_package_mkdir_deb_iso_root'
+    download_task = '_download_deb_packages'
+    return targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name=name,
+        builder=DEB_BUILDER,
+        packages=packages,
+        task_dep=[download_task if packages is None else mkdir_task],
     )
 
 
@@ -463,43 +471,12 @@ DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
 
 
 DEB_REPOSITORIES : Tuple[targets.DEBRepository, ...] = (
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='scality',
-        builder=DEB_BUILDER,
-        packages=DEB_TO_BUILD['scality'],
-        task_dep=['_package_mkdir_deb_iso_root'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='bionic',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='bionic-backports',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='bionic-updates',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='kubernetes-xenial',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='salt_ubuntu1804',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
+    _deb_repository(name='scality', packages=DEB_TO_BUILD['scality']),
+    _deb_repository(name='bionic'),
+    _deb_repository(name='bionic-backports'),
+    _deb_repository(name='bionic-updates'),
+    _deb_repository(name='kubernetes-xenial'),
+    _deb_repository(name='salt_ubuntu1804'),
 )
 
 # }}}
