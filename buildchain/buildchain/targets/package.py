@@ -337,6 +337,9 @@ class DEBPackage(Package):
         builder: image.ContainerImage,
         **kwargs: Any
     ):
+        kwargs.setdefault('task_dep', []).extend([
+            '_package_mkdir_deb_iso_root', '_build_deb_container',
+        ])
         super().__init__(
             basename, name, version, build_id, builder,
             constants.PKG_DEB_ROOT, **kwargs
@@ -394,8 +397,6 @@ class DEBPackage(Package):
         })
         task['file_dep'].extend(coreutils.ls_files_rec(self.sources))
         task['file_dep'].extend(coreutils.ls_files_rec(self.debuild_sources))
-        task['task_dep'].append('_package_mkdir_deb_iso_root')
-        task['task_dep'].append('_build_deb_container')
         return task
 
     def convert_package(self) -> types.TaskDict:
@@ -421,6 +422,4 @@ class DEBPackage(Package):
             'targets': [self.deb],
         })
         task['file_dep'].append(self.sources)
-        task['task_dep'].append('_package_mkdir_deb_iso_root')
-        task['task_dep'].append('_build_deb_container')
         return task
