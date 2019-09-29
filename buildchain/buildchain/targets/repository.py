@@ -229,7 +229,9 @@ class RPMRepository(Repository):
             task['task_dep'].append('{base}:{name}'.format(
                 base=self.basename, name=MKDIR_ARCH_TASK_NAME,
             ))
-            task['task_dep'].append('_build_rpm_container')
+            task['task_dep'].append(
+                '_build_builder:{}'.format(self.builder.name)
+            )
             tasks.append(task)
         return tasks
 

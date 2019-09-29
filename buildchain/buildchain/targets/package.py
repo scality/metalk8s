@@ -338,7 +338,8 @@ class DEBPackage(Package):
         **kwargs: Any
     ):
         kwargs.setdefault('task_dep', []).extend([
-            '_package_mkdir_deb_iso_root', '_build_deb_container',
+            '_package_mkdir_deb_iso_root',
+            '_build_builder:{}'.format(builder.name),
         ])
         super().__init__(
             basename, name, version, build_id, builder,

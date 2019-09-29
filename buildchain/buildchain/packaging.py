@@ -33,6 +33,7 @@ from typing import (
 
 from doit.tools import config_changed  # type: ignore
 
+from buildchain import builder
 from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
@@ -71,8 +72,6 @@ def task_packaging() -> types.TaskDict:
     return {
         'actions': None,
         'task_dep': [
-            '_build_rpm_container',
-            '_build_deb_container',
             '_package_mkdir_root',
             '_package_mkdir_iso_root',
             '_download_rpm_packages',
@@ -83,18 +82,6 @@ def task_packaging() -> types.TaskDict:
             '_build_deb_repositories:*',
         ],
     }
-
-def task__build_rpm_container() -> types.TaskDict:
-    """Build the container image used to build the packages/repositories."""
-    task = RPM_BUILDER.task
-    task.pop('name')  # `name` is only used for sub-task.
-    return task
-
-def task__build_deb_container() -> types.TaskDict:
-    """Build the container image used to build the packages/repositories."""
-    task = DEB_BUILDER.task
-    task.pop('name')  # `name` is only used for sub-task.
-    return task
 
 def task__package_mkdir_root() -> types.TaskDict:
     """Create the packages root directory."""
@@ -155,7 +142,7 @@ def task__download_rpm_packages() -> types.TaskDict:
     ]
     dl_packages_callable = docker_command.DockerRun(
         command=['/entrypoint.sh', 'download_packages', *RPM_TO_DOWNLOAD],
-        builder=RPM_BUILDER,
+        builder=builder.RPM_BUILDER,
         mounts=mounts,
         environment={'RELEASEVER': 7},
         run_config=docker_command.RPM_BASE_CONFIG
@@ -167,7 +154,7 @@ def task__download_rpm_packages() -> types.TaskDict:
         'task_dep': [
             '_package_mkdir_rpm_root',
             '_package_mkdir_rpm_iso_root',
-            '_build_rpm_container'
+            '_build_builder:{}'.format(builder.RPM_BUILDER.name),
         ],
         'clean': [clean],
         'uptodate': [config_changed(_TO_DOWNLOAD_RPM_CONFIG)],
@@ -209,7 +196,7 @@ def task__download_deb_packages() -> types.TaskDict:
     ]
     dl_packages_callable = docker_command.DockerRun(
         command=['/download_packages.py', *DEB_TO_DOWNLOAD],
-        builder=DEB_BUILDER,
+        builder=builder.DEB_BUILDER,
         mounts=mounts,
         environment={'SALT_VERSION': versions.SALT_VERSION},
         run_config=docker_command.DEB_BASE_CONFIG
@@ -221,7 +208,7 @@ def task__download_deb_packages() -> types.TaskDict:
         'task_dep': [
             '_package_mkdir_deb_root',
             '_package_mkdir_deb_iso_root',
-            '_build_deb_container'
+            '_build_builder:{}'.format(builder.DEB_BUILDER.name),
         ],
         'clean': [clean],
         'uptodate': [config_changed(_TO_DOWNLOAD_DEB_CONFIG)],
@@ -256,46 +243,6 @@ def task__build_deb_repositories() -> Iterator[types.TaskDict]:
         yield from repository.execution_plan
 
 # }}}
-# Builders {{{
-
-# Image used to build the packages
-RPM_BUILDER : targets.LocalImage = targets.LocalImage(
-    name='metalk8s-rpm-build',
-    version='latest',
-    dockerfile=constants.ROOT/'packages'/'redhat'/'Dockerfile',
-    destination=config.BUILD_ROOT,
-    save_on_disk=False,
-    task_dep=['_build_root'],
-    file_dep=[
-        constants.ROOT.joinpath(
-            'packages',
-            'redhat',
-            'yum_repositories',
-            'kubernetes.repo'
-        ),
-        constants.ROOT.joinpath(
-            'packages',
-            'redhat',
-            'yum_repositories',
-            'saltstack.repo'
-        )
-    ],
-    build_args={
-        # Used to template the SaltStack repository definition
-        'SALT_VERSION': versions.SALT_VERSION,
-    },
-)
-
-DEB_BUILDER : targets.LocalImage = targets.LocalImage(
-    name='metalk8s-deb-build',
-    version='latest',
-    dockerfile=constants.ROOT/'packages'/'debian'/'Dockerfile',
-    destination=config.BUILD_ROOT,
-    save_on_disk=False,
-    task_dep=['_build_root'],
-)
-
-# }}}
 # RPM packages and repository {{{
 
 # Packages to build, per repository.
@@ -316,8 +263,11 @@ def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
         version=pkg_info.version,
         build_id=int(build_id_str),
         sources=sources,
-        builder=RPM_BUILDER,
-        task_dep=['_package_mkdir_rpm_root', '_build_rpm_container'],
+        builder=builder.RPM_BUILDER,
+        task_dep=[
+            '_package_mkdir_rpm_root',
+            '_build_builder:{}'.format(builder.RPM_BUILDER.name)
+        ],
     )
 
 
@@ -335,7 +285,7 @@ def _rpm_repository(
     return targets.RPMRepository(
         basename='_build_rpm_repositories',
         name=name,
-        builder=RPM_BUILDER,
+        builder=builder.RPM_BUILDER,
         packages=packages,
         task_dep=[download_task if packages is None else mkdir_task],
     )
@@ -415,8 +365,11 @@ def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
         version=pkg_info.version,
         build_id=int(pkg_info.release),
         sources=sources,
-        builder=DEB_BUILDER,
-        task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
+        builder=builder.DEB_BUILDER,
+        task_dep=[
+            '_package_mkdir_deb_root',
+            '_build_builder:{}'.format(builder.DEB_BUILDER.name)
+        ],
     )
 
 
@@ -434,7 +387,7 @@ def _deb_repository(
     return targets.DEBRepository(
         basename='_build_deb_repositories',
         name=name,
-        builder=DEB_BUILDER,
+        builder=builder.DEB_BUILDER,
         packages=packages,
         task_dep=[download_task if packages is None else mkdir_task],
     )
