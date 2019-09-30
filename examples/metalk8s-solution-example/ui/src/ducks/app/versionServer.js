@@ -27,8 +27,8 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // Action Creators
-export const refreshVersionServerAction = stack => {
-  return { type: REFRESH_VERSION_SERVER, stack };
+export const refreshVersionServerAction = environment => {
+  return { type: REFRESH_VERSION_SERVER, environment };
 };
 
 export const stopRefreshVersionServerAction = () => {
@@ -68,7 +68,7 @@ export function* fetchVersionServer(namespaces) {
 }
 
 export function* createVersionServer({ payload }) {
-  const { name, stack, replicas, version } = payload;
+  const { name, environment, replicas, version } = payload;
   const body = {
     apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'VersionServer',
@@ -84,16 +84,16 @@ export function* createVersionServer({ payload }) {
   const result = yield call(
     ApiK8s.createVersionServer,
     body,
-    `${stack}-example-solution`
+    `${environment}-example-solution`
   );
   if (!result.error) {
-    yield call(fetchVersionServer, `${stack}-example-solution`);
-    yield call(history.push, `/stacks/${stack}`);
+    yield call(fetchVersionServer, `${environment}-example-solution`);
+    yield call(history.push, `/environments/${environment}`);
   }
 }
 
 export function* editVersionServer({ payload }) {
-  const { name, stack, replicas, version } = payload;
+  const { name, environment, replicas, version } = payload;
   const body = {
     apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'VersionServer',
@@ -108,30 +108,30 @@ export function* editVersionServer({ payload }) {
   const result = yield call(
     ApiK8s.updateVersionServer,
     body,
-    `${stack}-example-solution`,
+    `${environment}-example-solution`,
     name
   );
 
   if (!result.error) {
-    yield call(fetchVersionServer, `${stack}-example-solution`);
-    yield call(history.push, `/stacks/${stack}`);
+    yield call(fetchVersionServer, `${environment}-example-solution`);
+    yield call(history.push, `/environments/${environment}`);
   }
 }
 
-export function* refreshVersionServer({ stack }) {
+export function* refreshVersionServer({ environment }) {
   yield put(
     updateVersionServerAction({
       isRefreshing: true
     })
   );
-  const results = yield call(fetchVersionServer, `${stack}-example-solution`);
+  const results = yield call(fetchVersionServer, `${environment}-example-solution`);
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(
       state => state.app.versionServer.isRefreshing
     );
     if (isRefreshing) {
-      yield call(refreshVersionServer, { stack });
+      yield call(refreshVersionServer, { environment });
     }
   }
 }

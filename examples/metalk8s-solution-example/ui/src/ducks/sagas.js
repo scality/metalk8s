@@ -4,7 +4,7 @@ import { authenticateSaga } from './login';
 import { clockServerSaga } from './app/clockServer';
 import { versionServerSaga } from './app/versionServer';
 import { deploymentSaga } from './app/deployment';
-import { stackSaga } from './app/stack';
+import { environmentSaga } from './app/environment';
 
 export default function* rootSaga() {
   yield all([
@@ -13,6 +13,6 @@ export default function* rootSaga() {
     fork(clockServerSaga),
     fork(versionServerSaga),
     fork(deploymentSaga),
-    fork(stackSaga)
+    fork(environmentSaga)
   ]);
 }

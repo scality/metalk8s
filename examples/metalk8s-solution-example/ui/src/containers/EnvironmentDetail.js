@@ -23,9 +23,9 @@ import {
   InformationMainValue
 } from '../components/InformationList';
 import ComponentsList from './Component';
-import { upgradeStackAction } from '../ducks/app/stack';
+import { upgradeEnvironmentAction } from '../ducks/app/environment';
 
-const StackDetailContainer = styled.div`
+const EnvironmentDetailContainer = styled.div`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -46,7 +46,7 @@ padding: 0 ${padding.base}
   }
 `;
 
-const StackEditFormContainer = styled.div`
+const EnvironmentEditFormContainer = styled.div`
   display: inline-block;
   .sc-button,
   .sc-input {
@@ -54,8 +54,15 @@ const StackEditFormContainer = styled.div`
   }
 `;
 
-const StackEditForm = props => {
-  const { intl, currentVersion, onCancel, onSubmit, stack, versions } = props;
+const EnvironmentEditForm = props => {
+  const {
+    intl,
+    currentVersion,
+    onCancel,
+    onSubmit,
+    environment,
+    versions
+  } = props;
   const initialValues = {
     version: currentVersion
   };
@@ -68,11 +75,13 @@ const StackEditForm = props => {
   });
 
   return (
-    <StackEditFormContainer>
+    <EnvironmentEditFormContainer>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={values => onSubmit({ name: stack, version: values.version })}
+        onSubmit={values =>
+          onSubmit({ name: environment, version: values.version })
+        }
       >
         {formProps => {
           const {
@@ -130,22 +139,28 @@ const StackEditForm = props => {
           );
         }}
       </Formik>
-    </StackEditFormContainer>
+    </EnvironmentEditFormContainer>
   );
 };
-const StackDetail = props => {
-  const { match, intl, config, stacks, upgradeStack } = props;
-  const [stackEditing, setStackEditing] = useState(false);
-  const stackName = match.params.name;
-  const stack = stacks.find(stack => stack.name === stackName);
-  return stack ? (
-    <StackDetailContainer>
+const EnvironmentDetail = props => {
+  const { match, intl, config, environments, upgradeEnvironment } = props;
+  const [environmentEditing, setEnvironmentEditing] = useState(false);
+  const environmentName = match.params.name;
+  const environment = environments.find(
+    environment => environment.name === environmentName
+  );
+  return environment ? (
+    <EnvironmentDetailContainer>
       <BreadcrumbContainer>
         <Breadcrumb
           activeColor={config.theme.brand.secondary}
           paths={[
-            <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
-            <BreadcrumbLabel title={stack.name}>{stack.name}</BreadcrumbLabel>
+            <StyledLink to="/environments">
+              {intl.messages.environments}{' '}
+            </StyledLink>,
+            <BreadcrumbLabel title={environment.name}>
+              {environment.name}
+            </BreadcrumbLabel>
           ]}
         />
       </BreadcrumbContainer>
@@ -153,35 +168,35 @@ const StackDetail = props => {
         <h3>{intl.messages.information}</h3>
         <InformationSpan>
           <InformationLabel>{intl.messages.name}</InformationLabel>
-          <InformationMainValue>{stack.name}</InformationMainValue>
+          <InformationMainValue>{environment.name}</InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.status}</InformationLabel>
           <InformationValue>
-            {intl.messages[stack.status] || stack.status}
+            {intl.messages[environment.status] || environment.status}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.version}</InformationLabel>
           <InformationValue>
-            {stackEditing ? (
-              <StackEditForm
+            {environmentEditing ? (
+              <EnvironmentEditForm
                 intl={intl}
-                onCancel={() => setStackEditing(false)}
+                onCancel={() => setEnvironmentEditing(false)}
                 onSubmit={payload => {
-                  upgradeStack(payload);
-                  setStackEditing(false);
+                  upgradeEnvironment(payload);
+                  setEnvironmentEditing(false);
                 }}
-                currentVersion={stack.version}
-                stack={stackName}
+                currentVersion={environment.version}
+                environment={environmentName}
                 versions={config.versions}
               />
             ) : (
               <InformationValue>
-                {stack.version}
+                {environment.version}
                 <EditIcon
-                  title={intl.messages.edit_stack_version}
-                  onClick={() => setStackEditing(true)}
+                  title={intl.messages.edit_environment_version}
+                  onClick={() => setEnvironmentEditing(true)}
                 >
                   <i className="fas fa-edit"></i>
                 </EditIcon>
@@ -191,25 +206,25 @@ const StackDetail = props => {
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.description}</InformationLabel>
-          <InformationValue>{stack.description}</InformationValue>
+          <InformationValue>{environment.description}</InformationValue>
         </InformationSpan>
       </InformationListContainer>
       <ComponentContainer>
         <h3>{intl.messages.components}</h3>
         <ComponentsList />
       </ComponentContainer>
-    </StackDetailContainer>
+    </EnvironmentDetailContainer>
   ) : null;
 };
 
 const mapStateToProps = state => ({
   config: state.config,
-  stacks: state.app.stack.list
+  environments: state.app.environment.list
 });
 
 const mapDispatchToProps = dispatch => {
   return {
-    upgradeStack: body => dispatch(upgradeStackAction(body))
+    upgradeEnvironment: body => dispatch(upgradeEnvironmentAction(body))
   };
 };
 
@@ -218,6 +233,6 @@ export default injectIntl(
     connect(
       mapStateToProps,
       mapDispatchToProps
-    )(StackDetail)
+    )(EnvironmentDetail)
   )
 );

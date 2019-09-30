@@ -38,24 +38,24 @@ export const updateApiServerConfig = (url, token) => {
   rbacAuthorizationV1Api = config.makeApiClient(RbacAuthorizationV1Api);
 };
 
-export async function getStack() {
+export async function getEnvironment() {
   try {
     return await customObjects.listClusterCustomObject(
       'solutions.metalk8s.scality.com',
       'v1alpha1',
-      'stacks'
+      'environments'
     );
   } catch (error) {
     return { error };
   }
 }
 
-export async function updateStack(body, name) {
+export async function updateEnvironment(body, name) {
   try {
     return await customObjects.patchClusterCustomObject(
       'solutions.metalk8s.scality.com',
       'v1alpha1',
-      'stacks',
+      'environments',
       name,
       body,
       {

@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { withRouter } from 'react-router-dom';
 
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
-import { prepareStackAction } from '../ducks/app/stack';
+import { prepareEnvironmentAction } from '../ducks/app/environment';
 
 const LoaderContainer = styled.div`
   display: flex;
@@ -15,13 +15,13 @@ const LoaderContainer = styled.div`
   height: 100vh;
 `;
 
-const StackPreparation = props => {
-  const { match, intl, prepareStack } = props;
-  const stackName = match.params.name;
-  const stackVersion = match.params.version;
+const EnvironmentPreparation = props => {
+  const { match, intl, prepareEnvironment } = props;
+  const environmentName = match.params.name;
+  const environmentVersion = match.params.version;
 
   useEffect(() => {
-    prepareStack({ name: stackName, version: stackVersion });
+    prepareEnvironment({ name: environmentName, version: environmentVersion });
   }, []);
 
   return (
@@ -35,7 +35,7 @@ const StackPreparation = props => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    prepareStack: body => dispatch(prepareStackAction(body))
+    prepareEnvironment: body => dispatch(prepareEnvironmentAction(body))
   };
 };
 
@@ -44,6 +44,6 @@ export default injectIntl(
     connect(
       null,
       mapDispatchToProps
-    )(StackPreparation)
+    )(EnvironmentPreparation)
   )
 );

@@ -28,8 +28,8 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // Action Creators
-export const refreshClockServerAction = stack => {
-  return { type: REFRESH_CLOCK_SERVER, stack };
+export const refreshClockServerAction = environment => {
+  return { type: REFRESH_CLOCK_SERVER, environment };
 };
 
 export const stopRefreshClockServerAction = () => {
@@ -69,7 +69,7 @@ export function* fetchClockServer(namespaces) {
 }
 
 export function* createClockServer({ payload }) {
-  const { name, stack, timezone, version } = payload;
+  const { name, environment, timezone, version } = payload;
   const body = {
     apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'ClockServer',
@@ -85,16 +85,16 @@ export function* createClockServer({ payload }) {
   const result = yield call(
     ApiK8s.createClockServer,
     body,
-    `${stack}-example-solution`
+    `${environment}-example-solution`
   );
   if (!result.error) {
-    yield call(fetchClockServer, `${stack}-example-solution`);
-    yield call(history.push, `/stacks/${stack}`);
+    yield call(fetchClockServer, `${environment}-example-solution`);
+    yield call(history.push, `/environments/${environment}`);
   }
 }
 
 export function* editClockServer({ payload }) {
-  const { name, stack, timezone, version } = payload;
+  const { name, environment, timezone, version } = payload;
   const body = {
     apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
     kind: 'ClockServer',
@@ -110,30 +110,30 @@ export function* editClockServer({ payload }) {
   const result = yield call(
     ApiK8s.updateClockServer,
     body,
-    `${stack}-example-solution`,
+    `${environment}-example-solution`,
     name
   );
 
   if (!result.error) {
-    yield call(fetchClockServer, `${stack}-example-solution`);
-    yield call(history.push, `/stacks/${stack}`);
+    yield call(fetchClockServer, `${environment}-example-solution`);
+    yield call(history.push, `/environments/${environment}`);
   }
 }
 
-export function* refreshClockServer({ stack }) {
+export function* refreshClockServer({ environment }) {
   yield put(
     updateClockServerAction({
       isRefreshing: true
     })
   );
-  const results = yield call(fetchClockServer, `${stack}-example-solution`);
+  const results = yield call(fetchClockServer, `${environment}-example-solution`);
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(
       state => state.app.clockServer.isRefreshing
     );
     if (isRefreshing) {
-      yield call(refreshClockServer, { stack });
+      yield call(refreshClockServer, { environment });
     }
   }
 }

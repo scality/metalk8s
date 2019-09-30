@@ -7,7 +7,7 @@ import clockServer from './app/clockServer';
 import versionServer from './app/versionServer';
 import notifications from './app/notifications';
 import deployments from './app/deployment';
-import stack from './app/stack';
+import environment from './app/environment';
 
 const rootReducer = combineReducers({
   config,
@@ -18,7 +18,7 @@ const rootReducer = combineReducers({
     versionServer,
     notifications,
     deployments,
-    stack
+    environment
   })
 });
 

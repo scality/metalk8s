@@ -32,7 +32,7 @@ export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
   }, [dispatch, refreshAction, stopRefreshAction]);
 };
 
-/* Check if a version is supported by comparaing it to the 'stackVersion'
+/* Check if a version is supported by comparaing it to the 'environmentVersion'
    Here we decide that all the  "preminor of 1" versions are allowed
    Example :
    const versions = [
@@ -49,20 +49,20 @@ export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
 
     ]
 */
-export const isVersionSupported = stackVersion => item => {
-  if (stackVersion) {
-    const stackVersionMajor = semver.major(stackVersion);
-    const stackVersionMinor = semver.minor(stackVersion);
-    const stackVersionPatch = semver.patch(stackVersion);
+export const isVersionSupported = environmentVersion => item => {
+  if (environmentVersion) {
+    const environmentVersionMajor = semver.major(environmentVersion);
+    const environmentVersionMinor = semver.minor(environmentVersion);
+    const environmentVersionPatch = semver.patch(environmentVersion);
 
-    const parsedStackVersion = `${stackVersionMajor}.${stackVersionMinor}.${stackVersionPatch}`;
-    const minimunSupportedVersion = `${stackVersionMajor}.${
-      stackVersionMinor > 1 ? stackVersionMinor - 1 : 0
+    const parsedEnvironmentVersion = `${environmentVersionMajor}.${environmentVersionMinor}.${environmentVersionPatch}`;
+    const minimunSupportedVersion = `${environmentVersionMajor}.${
+      environmentVersionMinor > 1 ? environmentVersionMinor - 1 : 0
     }.0`;
 
     return (
       semver.gte(item.version, minimunSupportedVersion) &&
-      semver.lte(item.version, parsedStackVersion)
+      semver.lte(item.version, parsedEnvironmentVersion)
     );
   } else {
     return true;

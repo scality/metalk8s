@@ -79,17 +79,21 @@ const InputValue = styled.label`
 `;
 
 const VersionServerEditForm = props => {
-  const { intl, match, versionServers, config, stacks } = props;
-  const stack = match.params.name;
-  const currentStack = stacks.find(item => item.name === stack);
-  const currentStackVersion = currentStack ? currentStack.version : '';
+  const { intl, match, versionServers, config, environments } = props;
+  const environment = match.params.name;
+  const currentEnvironment = environments.find(
+    item => item.name === environment
+  );
+  const currentEnvironmentVersion = currentEnvironment
+    ? currentEnvironment.version
+    : '';
 
   const versionServer = versionServers.find(cr => cr.name === match.params.id);
   const initialValues = {
     version: versionServer ? versionServer.version : '',
     replicas: versionServer ? versionServer.replicas : '',
     name: versionServer ? versionServer.name : '',
-    stack
+    environment
   };
 
   const validationSchema = Yup.object().shape({
@@ -107,8 +111,12 @@ const VersionServerEditForm = props => {
         <Breadcrumb
           activeColor={config.theme.brand.secondary}
           paths={[
-            <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
-            <StyledLink to={`/stacks/${stack}`}>{stack}</StyledLink>,
+            <StyledLink to="/environments">
+              {intl.messages.environments}
+            </StyledLink>,
+            <StyledLink to={`/environments/${environment}`}>
+              {environment}
+            </StyledLink>,
             <BreadcrumbLabel title={intl.messages.edit_version_server}>
               {intl.messages.edit_version_server}
             </BreadcrumbLabel>
@@ -150,7 +158,7 @@ const VersionServerEditForm = props => {
               //touched is not "always" correctly set
               const handleOnBlur = e => setFieldTouched(e.target.name, true);
               const availableVersions = config.versions
-                .filter(isVersionSupported(currentStackVersion))
+                .filter(isVersionSupported(currentEnvironmentVersion))
                 .map(item => {
                   return {
                     label: item.version,
@@ -198,7 +206,7 @@ const VersionServerEditForm = props => {
                             type="button"
                             outlined
                             onClick={() =>
-                              props.history.push(`/stacks/${stack}`)
+                              props.history.push(`/environments/${environment}`)
                             }
                           />
                           <Button
@@ -224,7 +232,7 @@ function mapStateToProps(state) {
   return {
     config: state.config,
     versionServers: state.app.versionServer.list,
-    stacks: state.app.stack.list
+    environments: state.app.environment.list
   };
 }
 

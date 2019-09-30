@@ -62,16 +62,20 @@ const FormSection = styled.div`
 `;
 
 const ClockServerCreationForm = props => {
-  const { intl, match, config, stacks } = props;
-  const stack = match.params.name;
-  const currentStack = stacks.find(item => item.name === stack);
-  const currentStackVersion = currentStack ? currentStack.version : '';
+  const { intl, match, config, environments } = props;
+  const environment = match.params.name;
+  const currentEnvironment = environments.find(
+    item => item.name === environment
+  );
+  const currentEnvironmentVersion = currentEnvironment
+    ? currentEnvironment.version
+    : '';
 
   const initialValues = {
     version: '',
     timezone: '',
     name: '',
-    stack
+    environment
   };
 
   const validationSchema = Yup.object().shape({
@@ -90,8 +94,12 @@ const ClockServerCreationForm = props => {
         <Breadcrumb
           activeColor={config.theme.brand.secondary}
           paths={[
-            <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
-            <StyledLink to={`/stacks/${stack}`}>{stack}</StyledLink>,
+            <StyledLink to="/environments">
+              {intl.messages.environments}
+            </StyledLink>,
+            <StyledLink to={`/environments/${environment}`}>
+              {environment}
+            </StyledLink>,
             <BreadcrumbLabel title={intl.messages.create_clock_server}>
               {intl.messages.create_clock_server}
             </BreadcrumbLabel>
@@ -130,7 +138,7 @@ const ClockServerCreationForm = props => {
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
             const availableVersions = config.versions
-              .filter(isVersionSupported(currentStackVersion))
+              .filter(isVersionSupported(currentEnvironmentVersion))
               .map(item => {
                 return {
                   label: item.version,
@@ -183,7 +191,9 @@ const ClockServerCreationForm = props => {
                           type="button"
                           outlined
                           onClick={() =>
-                            props.history.push(`/stacks/${match.params.name}`)
+                            props.history.push(
+                              `/environments/${match.params.name}`
+                            )
                           }
                         />
                         <Button
@@ -207,7 +217,7 @@ const ClockServerCreationForm = props => {
 function mapStateToProps(state) {
   return {
     config: state.config,
-    stacks: state.app.stack.list
+    environments: state.app.environment.list
   };
 }
 

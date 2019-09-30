@@ -12,21 +12,24 @@ import ClockServerCreation from './ClockServerCreation';
 import ClockServerEdit from './ClockServerEdit';
 import VersionServerCreation from './VersionServerCreation';
 import VersionServerEdit from './VersionServerEdit';
-import Stack from './Stack';
-import StackDetail from './StackDetail';
-import StackPreparation from './StackPreparation';
+import Environment from './Environment';
+import EnvironmentDetail from './EnvironmentDetail';
+import EnvironmentPreparation from './EnvironmentPreparation';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
 
-import { refreshStackAction, stopRefreshStackAction } from '../ducks/app/stack';
+import {
+  refreshEnvironmentAction,
+  stopRefreshEnvironmentAction
+} from '../ducks/app/environment';
 
 import { useRefreshEffect } from '../services/utils';
 import { fetchVersionsAction } from '../ducks/config';
 
 const Layout = props => {
-  useRefreshEffect(refreshStackAction, stopRefreshStackAction);
+  useRefreshEffect(refreshEnvironmentAction, stopRefreshEnvironmentAction);
   useEffect(() => {
     props.fetchVersions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,7 +55,7 @@ const Layout = props => {
     expanded: props.sidebar.expanded,
     actions: [
       {
-        label: props.intl.messages.stacks,
+        label: props.intl.messages.environments,
         icon: <i className="fas fa-server" />,
         onClick: () => {
           props.history.push('/');
@@ -64,7 +67,7 @@ const Layout = props => {
             strict: true
           }) ||
           matchPath(props.history.location.pathname, {
-            path: '/stacks',
+            path: '/environments',
             exact: false,
             strict: true
           })
@@ -98,32 +101,35 @@ const Layout = props => {
           <PrivateRoute exact path="/about" component={Welcome} />
           <PrivateRoute
             exact
-            path="/stacks/:name/clockServer/create"
+            path="/environments/:name/clockServer/create"
             component={ClockServerCreation}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/clockServer/:id/edit"
+            path="/environments/:name/clockServer/:id/edit"
             component={ClockServerEdit}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/versionServer/create"
+            path="/environments/:name/versionServer/create"
             component={VersionServerCreation}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/versionServer/:id/edit"
+            path="/environments/:name/versionServer/:id/edit"
             component={VersionServerEdit}
           />
           <PrivateRoute
             exact
-            path="/stacks/:name/version/:version/prepare"
-            component={StackPreparation}
+            path="/environments/:name/version/:version/prepare"
+            component={EnvironmentPreparation}
           />
-          <PrivateRoute path="/stacks/:name" component={StackDetail} />
-          <PrivateRoute exact path="/stacks" component={Stack} />
-          <PrivateRoute exact path="/" component={Stack} />
+          <PrivateRoute
+            path="/environments/:name"
+            component={EnvironmentDetail}
+          />
+          <PrivateRoute exact path="/environments" component={Environment} />
+          <PrivateRoute exact path="/" component={Environment} />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>

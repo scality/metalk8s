@@ -62,15 +62,19 @@ const FormSection = styled.div`
 `;
 
 const VersionServerCreationForm = props => {
-  const { intl, match, config, stacks } = props;
-  const stack = match.params.name;
-  const currentStack = stacks.find(item => item.name === stack);
-  const currentStackVersion = currentStack ? currentStack.version : '';
+  const { intl, match, config, environments } = props;
+  const environment = match.params.name;
+  const currentEnvironment = environments.find(
+    item => item.name === environment
+  );
+  const currentEnvironmentVersion = currentEnvironment
+    ? currentEnvironment.version
+    : '';
   const initialValues = {
     version: '',
     replicas: '',
     name: '',
-    stack
+    environment
   };
 
   const validationSchema = Yup.object().shape({
@@ -89,8 +93,12 @@ const VersionServerCreationForm = props => {
         <Breadcrumb
           activeColor={config.theme.brand.secondary}
           paths={[
-            <StyledLink to="/stacks">{intl.messages.stacks} </StyledLink>,
-            <StyledLink to={`/stacks/${stack}`}>{stack}</StyledLink>,
+            <StyledLink to="/environments">
+              {intl.messages.environments}
+            </StyledLink>,
+            <StyledLink to={`/environments/${environment}`}>
+              {environment}
+            </StyledLink>,
             <BreadcrumbLabel title={intl.messages.create_version_server}>
               {intl.messages.create_version_server}
             </BreadcrumbLabel>
@@ -128,7 +136,7 @@ const VersionServerCreationForm = props => {
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
             const availableVersions = config.versions
-              .filter(isVersionSupported(currentStackVersion))
+              .filter(isVersionSupported(currentEnvironmentVersion))
               .map(item => {
                 return {
                   label: item.version,
@@ -180,7 +188,9 @@ const VersionServerCreationForm = props => {
                           text={intl.messages.cancel}
                           type="button"
                           outlined
-                          onClick={() => props.history.push(`/stacks/${stack}`)}
+                          onClick={() =>
+                            props.history.push(`/environments/${environment}`)
+                          }
                         />
                         <Button
                           text={intl.messages.create}
@@ -201,7 +211,7 @@ const VersionServerCreationForm = props => {
 };
 
 function mapStateToProps(state) {
-  return { config: state.config, stacks: state.app.stack.list };
+  return { config: state.config, environments: state.app.environment.list };
 }
 
 const mapDispatchToProps = dispatch => {

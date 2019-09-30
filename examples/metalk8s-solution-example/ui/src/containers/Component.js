@@ -45,17 +45,17 @@ const ListContainer = styled.div`
 
 const Component = props => {
   const { intl, history, versionServers, clockServers, match } = props;
-  const stack = match.params.name;
+  const environment = match.params.name;
 
   useEffect(() => {
-    props.refreshClockServer(stack);
+    props.refreshClockServer(environment);
     return () => {
       props.stopRefreshClockServer();
     };
   }, []);
 
   useEffect(() => {
-    props.refreshVersionServer(stack);
+    props.refreshVersionServer(environment);
     return () => {
       props.stopRefreshVersionServer();
     };
@@ -133,7 +133,7 @@ const Component = props => {
           <Button
             text={intl.messages.create_version_server}
             onClick={() =>
-              history.push(`/stacks/${stack}/versionServer/create`)
+              history.push(`/environments/${environment}/versionServer/create`)
             }
             icon={<i className="fas fa-plus" />}
           />
@@ -150,7 +150,7 @@ const Component = props => {
             onSort={onSortVS}
             onRowClick={row => {
               history.push(
-                `/stacks/${stack}/versionServer/${row.rowData.name}/edit`
+                `/environments/${environment}/versionServer/${row.rowData.name}/edit`
               );
             }}
             noRowsRenderer={() => (
@@ -163,7 +163,7 @@ const Component = props => {
         <ActionContainer>
           <Button
             text={intl.messages.create_clock_server}
-            onClick={() => history.push(`/stacks/${stack}/clockServer/create`)}
+            onClick={() => history.push(`/environments/${environment}/clockServer/create`)}
             icon={<i className="fas fa-plus" />}
           />
         </ActionContainer>
@@ -179,7 +179,7 @@ const Component = props => {
             onSort={onSortCS}
             onRowClick={row => {
               history.push(
-                `/stacks/${stack}/clockServer/${row.rowData.name}/edit`
+                `/environments/${environment}/clockServer/${row.rowData.name}/edit`
               );
             }}
             noRowsRenderer={() => (
@@ -200,8 +200,8 @@ function mapStateToProps(state) {
 }
 const mapDispatchToProps = dispatch => {
   return {
-    refreshClockServer: stack => dispatch(refreshClockServerAction(stack)),
-    refreshVersionServer: stack => dispatch(refreshVersionServerAction(stack)),
+    refreshClockServer: environment => dispatch(refreshClockServerAction(environment)),
+    refreshVersionServer: environment => dispatch(refreshVersionServerAction(environment)),
     stopRefreshClockServer: () => dispatch(stopRefreshClockServerAction()),
     stopRefreshVersionServer: () => dispatch(stopRefreshVersionServerAction())
   };

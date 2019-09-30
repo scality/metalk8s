@@ -41,13 +41,13 @@ const ModalBodyTitle = styled.div`
   padding-bottom: ${padding.base};
 `;
 
-const Stack = props => {
+const Environment = props => {
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const [openModal, setOpenModal] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('');
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
-  const { intl, history, stack, versions } = props;
+  const { intl, history, environment, versions } = props;
 
   const availableVersions = versions.map(item => {
     return {
@@ -100,7 +100,11 @@ const Stack = props => {
     setSortDirection(sortDirection);
   };
 
-  const stackSortedList = sortSelector(stack.list, sortBy, sortDirection);
+  const environmentSortedList = sortSelector(
+    environment.list,
+    sortBy,
+    sortDirection
+  );
 
   return (
     <PageContainer>
@@ -126,7 +130,7 @@ const Stack = props => {
               onClick={e => {
                 e.stopPropagation();
                 history.push(
-                  `/stacks/${selectedEnvironment}/version/${selectedVersion.value}/prepare`
+                  `/environments/${selectedEnvironment}/version/${selectedVersion.value}/prepare`
                 );
               }}
             />
@@ -152,7 +156,7 @@ const Stack = props => {
       </Modal>
       <TableContainer>
         <Table
-          list={stackSortedList}
+          list={environmentSortedList}
           columns={columns}
           disableHeader={false}
           headerHeight={40}
@@ -161,7 +165,7 @@ const Stack = props => {
           sortDirection={sortDirection}
           onSort={onSort}
           onRowClick={row => {
-            history.push(`/stacks/${row.rowData.name}`);
+            history.push(`/environments/${row.rowData.name}`);
           }}
           noRowsRenderer={() => (
             <NoRowsRenderer content={intl.messages.no_data_available} />
@@ -174,9 +178,9 @@ const Stack = props => {
 
 function mapStateToProps(state) {
   return {
-    stack: state.app.stack,
+    environment: state.app.environment,
     versions: state.config.versions
   };
 }
 
-export default injectIntl(withRouter(connect(mapStateToProps)(Stack)));
+export default injectIntl(withRouter(connect(mapStateToProps)(Environment)));
