@@ -1,12 +1,27 @@
 [ignore]
-./node_modules/.*
 .*/node_modules/module-deps/.*
+.*/build/.*
+
 [include]
 src/.*
+node_modules/@scality/core-ui/.*
+
 [libs]
 
 [lints]
+all=error
+untyped-import=off
+unclear-type=off
+sketchy-null=off
+unsafe-getters-setters=warn
+dynamic-export=off
+inexact-spread =off
 
 [options]
 esproposal.optional_chaining=enable
+module.name_mapper='@scality/core-ui' -> '@scality/core-ui/src/lib'
+
 [strict]
+
+[untyped]
+.*/node_modules/react-select/.*
