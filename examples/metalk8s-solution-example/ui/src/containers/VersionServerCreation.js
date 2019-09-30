@@ -10,6 +10,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import semver from 'semver';
 
+import { isVersionSupported } from '../services/utils';
 import { createVersionServerAction } from '../ducks/app/versionServer';
 import {
   BreadcrumbContainer,
@@ -61,9 +62,10 @@ const FormSection = styled.div`
 `;
 
 const VersionServerCreationForm = props => {
-  const { intl, match, config } = props;
+  const { intl, match, config, stacks } = props;
   const stack = match.params.name;
-
+  const currentStack = stacks.find(item => item.name === stack);
+  const currentStackVersion = currentStack ? currentStack.version : '';
   const initialValues = {
     version: '',
     replicas: '',
@@ -125,12 +127,14 @@ const VersionServerCreationForm = props => {
             };
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
-            const availableVersions = config.versions.map(item => {
-              return {
-                label: item.version,
-                value: item.version
-              };
-            });
+            const availableVersions = config.versions
+              .filter(isVersionSupported(currentStackVersion))
+              .map(item => {
+                return {
+                  label: item.version,
+                  value: item.version
+                };
+              });
             return (
               <Form>
                 <FormSection>
@@ -197,7 +201,7 @@ const VersionServerCreationForm = props => {
 };
 
 function mapStateToProps(state) {
-  return { config: state.config };
+  return { config: state.config, stacks: state.app.stack.list };
 }
 
 const mapDispatchToProps = dispatch => {

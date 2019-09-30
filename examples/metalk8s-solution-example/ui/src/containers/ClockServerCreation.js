@@ -10,6 +10,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import semver from 'semver';
 
+import { isVersionSupported } from '../services/utils';
 import { createClockServerAction } from '../ducks/app/clockServer';
 import {
   BreadcrumbContainer,
@@ -61,8 +62,10 @@ const FormSection = styled.div`
 `;
 
 const ClockServerCreationForm = props => {
-  const { intl, match, config } = props;
+  const { intl, match, config, stacks } = props;
   const stack = match.params.name;
+  const currentStack = stacks.find(item => item.name === stack);
+  const currentStackVersion = currentStack ? currentStack.version : '';
 
   const initialValues = {
     version: '',
@@ -126,12 +129,14 @@ const ClockServerCreationForm = props => {
 
             //touched is not "always" correctly set
             const handleOnBlur = e => setFieldTouched(e.target.name, true);
-            const availableVersions = config.versions.map(item => {
-              return {
-                label: item.version,
-                value: item.version
-              };
-            });
+            const availableVersions = config.versions
+              .filter(isVersionSupported(currentStackVersion))
+              .map(item => {
+                return {
+                  label: item.version,
+                  value: item.version
+                };
+              });
             return (
               <Form>
                 <FormSection>

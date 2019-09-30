@@ -15,6 +15,7 @@ import {
   BreadcrumbLabel,
   StyledLink
 } from '../components/BreadcrumbStyle';
+import { isVersionSupported } from '../services/utils';
 
 const CreateClockServerContainter = styled.div`
   height: 100%;
@@ -78,8 +79,10 @@ const InputValue = styled.label`
 `;
 
 const ClockServerEditForm = props => {
-  const { intl, match, clockServers, config } = props;
+  const { intl, match, clockServers, config, stacks } = props;
   const stack = match.params.name;
+  const currentStack = stacks.find(item => item.name === stack);
+  const currentStackVersion = currentStack ? currentStack.version : '';
   const clockServer = clockServers.find(cr => cr.name === match.params.id);
   const initialValues = {
     version: clockServer ? clockServer.version : '',
@@ -146,12 +149,14 @@ const ClockServerEditForm = props => {
 
               //touched is not "always" correctly set
               const handleOnBlur = e => setFieldTouched(e.target.name, true);
-              const availableVersions = config.versions.map(item => {
-                return {
-                  label: item.version,
-                  value: item.version
-                };
-              });
+              const availableVersions = config.versions
+                .filter(isVersionSupported(currentStackVersion))
+                .map(item => {
+                  return {
+                    label: item.version,
+                    value: item.version
+                  };
+                });
               return (
                 <Form>
                   <FormSection>
@@ -219,7 +224,8 @@ const ClockServerEditForm = props => {
 function mapStateToProps(state) {
   return {
     config: state.config,
-    clockServers: state.app.clockServer.list
+    clockServers: state.app.clockServer.list,
+    stacks: state.app.stack.list
   };
 }
 

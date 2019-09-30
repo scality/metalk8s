@@ -15,6 +15,7 @@ import {
   BreadcrumbLabel,
   StyledLink
 } from '../components/BreadcrumbStyle';
+import { isVersionSupported } from '../services/utils';
 
 const CreateVersionServerContainter = styled.div`
   height: 100%;
@@ -78,8 +79,11 @@ const InputValue = styled.label`
 `;
 
 const VersionServerEditForm = props => {
-  const { intl, match, versionServers, config } = props;
+  const { intl, match, versionServers, config, stacks } = props;
   const stack = match.params.name;
+  const currentStack = stacks.find(item => item.name === stack);
+  const currentStackVersion = currentStack ? currentStack.version : '';
+
   const versionServer = versionServers.find(cr => cr.name === match.params.id);
   const initialValues = {
     version: versionServer ? versionServer.version : '',
@@ -145,12 +149,14 @@ const VersionServerEditForm = props => {
               };
               //touched is not "always" correctly set
               const handleOnBlur = e => setFieldTouched(e.target.name, true);
-              const availableVersions = config.versions.map(item => {
-                return {
-                  label: item.version,
-                  value: item.version
-                };
-              });
+              const availableVersions = config.versions
+                .filter(isVersionSupported(currentStackVersion))
+                .map(item => {
+                  return {
+                    label: item.version,
+                    value: item.version
+                  };
+                });
               return (
                 <Form>
                   <FormSection>
@@ -217,7 +223,8 @@ const VersionServerEditForm = props => {
 function mapStateToProps(state) {
   return {
     config: state.config,
-    versionServers: state.app.versionServer.list
+    versionServers: state.app.versionServer.list,
+    stacks: state.app.stack.list
   };
 }
 
