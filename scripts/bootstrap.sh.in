@@ -10,6 +10,8 @@ if test -z "$(type -p)"; then set -o pipefail; fi
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/bootstrap.log
 
+declare OS
+
 if ! options=$(getopt --options v --long verbose,log-file: -- "$@"); then
     echo 1>&2 "Incorrect arguments provided"
     exit 1
@@ -44,6 +46,18 @@ EOF
 
 exec > >(tee -ia "${LOGFILE}") 2>&1
 
+determine_os() {
+    # We rely on /etc/os-release to discover the OS because its present on all
+    # recent Linux distributions
+    if [ -f /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        OS=$ID
+    else
+        die "Impossible to determine the OS"
+    fi
+}
+
 cleanup() {
     rm -rf "${TMPFILES}" || true
 }
@@ -52,12 +66,19 @@ trap cleanup EXIT
 
 BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
-RPM=${RPM:-$(command -v rpm)}
+RPM=${RPM:-$(command -v rpm || true)}
+DPKG=${DPKG:-$(command -v dpkg || true)}
+YUM=${YUM:-$(command -v yum || true)}
+APT=${APT:-$(command -v apt || true)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
-YUM=${YUM:-$(command -v yum)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
-declare -A GPGCHECK_REPOSITORIES=(
+declare -a PACKAGES=(
+    salt-minion
+    genisoimage
+)
+
+declare -A GPGCHECK_YUM_REPOSITORIES=(
     [metalk8s-base]=1
     [metalk8s-epel]=1
     [metalk8s-extras]=1
@@ -65,6 +86,15 @@ declare -A GPGCHECK_REPOSITORIES=(
     [metalk8s-kubernetes]=1
     [metalk8s-saltstack]=1
     [metalk8s-scality]=0
+)
+
+declare -A GPGCHECK_APT_REPOSITORIES=(
+    [metalk8s-bionic]=no
+    [metalk8s-bionic-backports]=no
+    [metalk8s-bionic-updates]=no
+    [metalk8s-kubernetes-xenial]=no
+    [metalk8s-salt_ubuntu1804]=no
+    [metalk8s-scality]=no
 )
 
 run_quiet() {
@@ -75,7 +105,7 @@ run_quiet() {
     local start
     start=$(date +%s)
     set +e
-    "$@" 2>&1 | tee -ia "${LOGFILE}" > "${TMPFILES}/out"
+    "$@" > >(tee -ia "${LOGFILE}" > "${TMPFILES}/out") 2>&1
     local RC=$?
     set -e
     local end
@@ -131,22 +161,51 @@ die() {
     return 1
 }
 
+check_package_managers() {
+    case $OS in
+        centos)
+            test -n "$RPM" || die "rpm not found"
+            test -x "$RPM" || die "rpm at '$RPM' is not executable"
+            test -n "$YUM" || die "yum not found"
+            test -x "$YUM" || die "yum at '$YUM' is not executable"
+            ;;
+        ubuntu)
+            test -n "$DPKG" || die "dpkg not found"
+            test -x "$DPKG" || die "dpkg at '$DPKG' is not executable"
+            test -n "$APT" || die "apt not found"
+            test -x "$APT" || die "apt '$APT' is not executable"
+            ;;
+        *)
+            die "OS $OS not supported";;
+    esac
+}
+
 pre_minion_checks() {
+    check_package_managers
     test "x$(whoami)" = "xroot" || die "Script must run as root"
-    test -n "${RPM}" || die "rpm not found"
-    test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
-    test -n "${SYSTEMCTL}" || die "systemctl not found"
-    test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
-    test -n "${YUM}" || die "yum not found"
-    test -x "${YUM}" || die "yum at '${YUM}' is not executable"
+    test -n "$SYSTEMCTL" || die "systemctl not found"
+    test -x "$SYSTEMCTL" || die "systemctl at '$SYSTEMCTL' is not executable"
 }
 
 disable_salt_minion_service() {
-    ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
+    $SYSTEMCTL disable salt-minion.service 2>/dev/null || true
 }
 
 stop_salt_minion_service() {
-    ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
+    $SYSTEMCTL stop salt-minion.service 2>/dev/null || true
+}
+
+configure_repositories() {
+    case "$OS" in
+        centos)
+            configure_yum_repositories
+            ;;
+        ubuntu)
+            configure_apt_repositories
+            ;;
+        *)
+            die "OS $OS not supported";;
+    esac
 }
 
 configure_yum_repositories() {
@@ -155,10 +214,22 @@ configure_yum_repositories() {
     "$YUM" clean all
 }
 
+configure_apt_repositories() {
+    configure_apt_local_repositories
+
+    "$APT" clean all
+}
+
 configure_yum_local_repositories() {
-    for repository in "${!GPGCHECK_REPOSITORIES[@]}"; do
+    for repository in "${!GPGCHECK_YUM_REPOSITORIES[@]}"; do
         configure_yum_local_repository "$repository" \
-            "${GPGCHECK_REPOSITORIES[$repository]}"
+            "${GPGCHECK_YUM_REPOSITORIES[$repository]}"
+    done
+}
+
+configure_apt_local_repositories() {
+    for repository in "${!GPGCHECK_APT_REPOSITORIES[@]}"; do
+        configure_apt_local_repository "$repository"
     done
 }
 
@@ -182,24 +253,47 @@ ${gpg_keys:+gpgkey=${gpg_keys%?}}
 EOF
 }
 
-install_salt_minion() {
-    local -a yum_opts=(
-        '--assumeyes'
-        '--disablerepo=*'
-        '--enablerepo=metalk8s-*'
-    )
-
-    "$YUM" install "${yum_opts[@]}" salt-minion
+configure_apt_local_repository() {
+    local -r repo_name=$1
+    local -r repo_path="$BASE_DIR/packages/debian/$repo_name"
+    echo "deb [trusted=yes] file://$repo_path bionic $repo_name" \
+        > /etc/apt/sources.list.d/"$repo_name".list
 }
 
-install_genisoimage() {
-    local -a yum_opts=(
-        '--assumeyes'
-        '--disablerepo=*'
-        '--enablerepo=metalk8s-*'
-    )
+install_packages() {
+    local -ra packages=("$@")
+    local -a repo_list=(/etc/apt/sources.list)
 
-    "$YUM" install "${yum_opts[@]}" genisoimage
+    case "$OS" in
+        centos)
+            local -a yum_opts=(
+                '--assumeyes'
+                '--disablerepo=*'
+                '--enablerepo=metalk8s-*'
+            )
+            "$YUM" install "${yum_opts[@]}" "${packages[@]}"
+            ;;
+        ubuntu)
+            mapfile -O 1 -t repo_list < <(find \
+                /etc/apt/sources.list.d/ \
+                ! -name 'metalk8s-*' -a -name '*.list')
+
+            for source_list in "${repo_list[@]}"; do
+                mv "$source_list"{,.disabled}
+            done
+            "$APT" update
+            DEBIAN_FRONTEND=noninteractive "$APT" -y install "${packages[@]}" \
+                || exit_code=$?
+
+            for source_list in "${repo_list[@]}"; do
+                mv "$source_list"{.disabled,}
+            done
+
+            return ${exit_code:-0}
+            ;;
+        *)
+            die "OS $OS not supported";;
+    esac
 }
 
 configure_salt_minion_local_mode() {
@@ -237,13 +331,13 @@ orchestrate_bootstrap() {
     # otherwise grains set during execution won't be taken into account
     # properly.
     run "Calculating Salt grains in local mode" \
-        "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
+        "$SALT_CALL" --local --state-output=mixed --retcode-passthrough state.sls \
             metalk8s.node.grains \
             saltenv=metalk8s-@@VERSION \
             pillarenv=metalk8s-@@VERSION
 
     local -r control_plane_ip=$(
-        ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
+        $SALT_CALL --local grains.get metalk8s:control_plane_ip --out txt \
         | awk '/^local\: /{ print $2 }'
     )
 
@@ -263,7 +357,7 @@ orchestrate_bootstrap() {
     )
 
     run "Deploying early-stage bootstrap node in local mode (this may take a while)" \
-        "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
+        "$SALT_CALL" --local --state-output=mixed --retcode-passthrough state.sls \
             '["metalk8s.kubernetes.ca.kubernetes.installed", "metalk8s.roles.bootstrap", "metalk8s.roles.minion"]' \
             saltenv=metalk8s-@@VERSION \
             pillarenv=metalk8s-@@VERSION \
@@ -286,7 +380,7 @@ orchestrate_bootstrap() {
             saltenv=metalk8s-@@VERSION
 
     local -r bootstrap_id=$(
-        ${SALT_CALL} --local --out txt grains.get id \
+        $SALT_CALL --local --out txt grains.get id \
         | awk '/^local\: /{ print $2 }'
     )
 
@@ -317,16 +411,17 @@ orchestrate_bootstrap() {
     # not always to actually update the mine with all `mine_functions` we
     # expect. Forcing another update seems to resolve this somewhat.
     run "Syncing mine" \
-        "${SALT_CALL}" mine.update
+        "$SALT_CALL" mine.update
 }
 
 main() {
+    run "Determine the OS" determine_os
     run "Pre-minion system tests" pre_minion_checks
+    run "Configure internal repositories" configure_repositories
     run "Disabling Salt minion service" disable_salt_minion_service
     run "Stopping Salt minion service" stop_salt_minion_service
-    run "Configuring local YUM repositories" configure_yum_repositories
-    run "Installing Salt minion" install_salt_minion
-    run "Installing genisoimage" install_genisoimage
+    run "Configuring local repositories" configure_repositories
+    run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
     orchestrate_bootstrap
