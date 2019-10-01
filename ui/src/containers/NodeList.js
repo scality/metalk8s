@@ -19,6 +19,7 @@ import {
   BreadcrumbContainer,
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
+
 const PageContainer = styled.div`
   box-sizing: border-box;
   display: flex;
