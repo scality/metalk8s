@@ -95,6 +95,7 @@
   "storage_class_is_required": "A storage class is required in order to create a volume. Please create one in Kubernetes.",
   "learn_more": "Learn more",
   "solutions": "Solutions",
+  "available_solutions": "Available Solutions",
   "versions": "Versions",
   "deployed_version": "Deployed Version",
   "action": "Action",
@@ -116,5 +117,11 @@
   "search": "Search…",
   "detailed_information": "Detailed Information",
   "failed_to_create_volume":"Failed to create volume.",
-  "not_applicable": "Not applicable"
+  "not_applicable": "Not applicable",
+  "environments": "Environments",
+  "create_new_environment": "Create a New Environment",
+  "description": "Description",
+  "add_solution_to_environment": "Add solution to the environment {environment}",
+  "version_env": "Versions",
+  "add_solution": "Add the solution"
 }
