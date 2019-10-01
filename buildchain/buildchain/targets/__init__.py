@@ -15,5 +15,5 @@ from buildchain.targets.remote_image import RemoteImage
 from buildchain.targets.repository import (
     Repository, RPMRepository, DEBRepository
 )
-from buildchain.targets.serialize import SerializedData
+from buildchain.targets.serialize import Renderer, SerializedData
 from buildchain.targets.template import TemplateFile

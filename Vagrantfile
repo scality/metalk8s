@@ -140,6 +140,8 @@ echo "Launching bootstrap"
 exec "/srv/scality/metalk8s-$VERSION/bootstrap.sh"
 SCRIPT
 
+CREATE_VOLUMES = File.read(__dir__ + "/eve/create-volumes.sh")
+
 DEPLOY_SSH_PUBLIC_KEY = <<-SCRIPT
 #!/bin/bash
 
@@ -150,12 +152,69 @@ if ! grep -Fxq "$(cat .ssh/#{PRESHARED_SSH_KEY_NAME}.pub)" .ssh/authorized_keys 
 fi
 SCRIPT
 
+INSTALL_PYTHON = 'DEBIAN_FRONTEND=noninteractive apt install python -yq'
+
 # To support VirtualBox linked clones
 Vagrant.require_version(">= 1.8")
 
+def declare_bootstrap(machine, os_data)
+  machine.vm.box = os_data[:name]
+  machine.vm.box_version = os_data[:version]
+
+  machine.vm.hostname = "bootstrap"
+  machine.vm.provider "virtualbox" do |v|
+    v.memory = 4086
+    machine.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+  end
+
+  if os_data.fetch(:scripts, []).each do |script|
+       machine.vm.provision script[:name],
+         type: script[:type],
+         inline: script[:data]
+     end
+  end
+
+  machine.vm.provision "import-release",
+    type: "shell",
+    inline: IMPORT_RELEASE
+
+  machine.vm.provision "import-ssh-private-key",
+    type: "shell",
+    inline: IMPORT_SSH_PRIVATE_KEY
+
+  machine.vm.provision "bootstrap",
+    type: "shell",
+    inline: BOOTSTRAP
+
+  machine.vm.provision "create-volumes",
+    type: "shell",
+    inline: CREATE_VOLUMES
+
+  machine
+end
+
 Vagrant.configure("2") do |config|
-  config.vm.box = "centos/7"
-  config.vm.box_version = "1811.02"
+
+  os_data = {
+    centos: {
+      name: 'centos/7',
+      version: '1811.02'
+    },
+    ubuntu: {
+      name: 'ubuntu/bionic64',
+      version: '20190514.0.0',
+      scripts: [
+        {
+          name: 'install-python',
+          type: 'shell',
+          data: INSTALL_PYTHON
+        }
+      ]
+    }
+  }
+
+  config.vm.box = os_data[:centos][:name]
+  config.vm.box_version = os_data[:centos][:version]
 
   config.vm.provider "virtualbox" do |v|
     v.linked_clone = true
@@ -173,42 +232,13 @@ Vagrant.configure("2") do |config|
     nic_type: 'virtio',
     **WORKLOAD_PLANE_NETWORK
 
-  config.vm.define :bootstrap, primary: true do |bootstrap|
-    bootstrap.vm.hostname = "bootstrap"
-
-    bootstrap.vm.provider "virtualbox" do |v|
-      v.memory = 4096
-      bootstrap.vm.synced_folder ".", "/vagrant", type: "virtualbox"
-    end
-
-    bootstrap.vm.provision "import-release",
-      type: "shell",
-      inline: IMPORT_RELEASE
-
-    bootstrap.vm.provision "import-ssh-private-key",
-      type: "shell",
-      inline: IMPORT_SSH_PRIVATE_KEY
-
-    bootstrap.vm.provision "bootstrap",
-      type: "shell",
-      inline: BOOTSTRAP
+  config.vm.define :bootstrap, primary: true do |machine|
+    declare_bootstrap machine, os_data[:centos]
   end
 
-  os_data = {
-    centos: {
-      name: 'centos/7',
-      version: '1811.02'
-    },
-    ubuntu: {
-      name: 'ubuntu/bionic64',
-      version: '20190514.0.0'
-    }
-  }
-
-  INSTALL_PYTHON = <<-SCRIPT
-  #!/bin/bash
-  apt install python -y
-  SCRIPT
+  config.vm.define :bootstrap_ubuntu, autostart: false do |machine|
+    declare_bootstrap machine, os_data[:ubuntu]
+  end
 
   os_data.each do |os, os_data|
     (1..5).each do |i|

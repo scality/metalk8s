@@ -78,27 +78,41 @@ spec:
           type: object
         status:
           properties:
-            errorCode:
-              description: Volume failure error code
-              enum:
-              - InternalError
-              - CreationError
-              - DestructionError
-              - UnavailableError
-              type: string
-            errorMessage:
-              description: Volume failure error message
-              type: string
+            conditions:
+              description: List of conditions through which the Volume has or has
+                not passed.
+              items:
+                properties:
+                  lastTransitionTime:
+                    description: Last time the condition transited from one status
+                      to another (optional).
+                    format: date-time
+                    type: string
+                  lastUpdateTime:
+                    description: Last time the condition was updated (optional).
+                    format: date-time
+                    type: string
+                  message:
+                    description: Human readable message indicating details about last
+                      transition.
+                    type: string
+                  reason:
+                    description: Unique, one-word, CamelCase reason for the condition's
+                      last transition.
+                    type: string
+                  status:
+                    description: Status of the condition, one of True, False, Unknown.
+                    type: string
+                  type:
+                    description: Type of volume condition.
+                    type: string
+                required:
+                - type
+                - status
+                type: object
+              type: array
             job:
               description: Job in progress
-              type: string
-            phase:
-              description: Volume lifecycle phase
-              enum:
-              - Available
-              - Pending
-              - Failed
-              - Terminating
               type: string
           type: object
   version: v1alpha1

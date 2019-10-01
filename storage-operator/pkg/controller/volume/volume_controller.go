@@ -282,8 +282,10 @@ type ReconcileVolume struct {
 func (self *ReconcileVolume) traceStateTransition(
 	volume *storagev1alpha1.Volume, oldPhase storagev1alpha1.VolumePhase,
 ) {
+	newPhase := volume.ComputePhase()
+
 	// Nothing to trace if there is no transition.
-	if volume.Status.Phase == oldPhase {
+	if newPhase == oldPhase {
 		return
 	}
 
@@ -292,12 +294,12 @@ func (self *ReconcileVolume) traceStateTransition(
 	self.recorder.Eventf(
 		volume, corev1.EventTypeNormal, "StateTransition",
 		"volume phase transition from '%s' to '%s'",
-		oldPhase, volume.Status.Phase,
+		oldPhase, newPhase,
 	)
 	reqLogger.Info(
 		"volume phase transition: requeue",
 		"Volume.OldPhase", oldPhase,
-		"Volume.NewPhase", volume.Status.Phase,
+		"Volume.NewPhase", newPhase,
 	)
 }
 
@@ -324,14 +326,14 @@ func (self *ReconcileVolume) setFailedVolumeStatus(
 	ctx context.Context,
 	volume *storagev1alpha1.Volume,
 	pv *corev1.PersistentVolume,
-	errorCode storagev1alpha1.VolumeErrorCode,
+	reason storagev1alpha1.ConditionReason,
 	format string,
 	args ...interface{},
 ) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Volume.Name", volume.Name)
-	oldPhase := volume.Status.Phase
+	oldPhase := volume.ComputePhase()
 
-	volume.SetFailedStatus(errorCode, format, args...)
+	volume.SetFailedStatus(reason, format, args...)
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
 		return delayedRequeue(err)
 	}
@@ -357,7 +359,7 @@ func (self *ReconcileVolume) setFailedVolumeStatus(
 func (self *ReconcileVolume) setPendingVolumeStatus(
 	ctx context.Context, volume *storagev1alpha1.Volume, job string,
 ) (reconcile.Result, error) {
-	oldPhase := volume.Status.Phase
+	oldPhase := volume.ComputePhase()
 
 	volume.SetPendingStatus(job)
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
@@ -370,7 +372,7 @@ func (self *ReconcileVolume) setPendingVolumeStatus(
 func (self *ReconcileVolume) setAvailableVolumeStatus(
 	ctx context.Context, volume *storagev1alpha1.Volume,
 ) (reconcile.Result, error) {
-	oldPhase := volume.Status.Phase
+	oldPhase := volume.ComputePhase()
 
 	volume.SetAvailableStatus()
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
@@ -383,7 +385,7 @@ func (self *ReconcileVolume) setAvailableVolumeStatus(
 func (self *ReconcileVolume) setTerminatingVolumeStatus(
 	ctx context.Context, volume *storagev1alpha1.Volume, job string,
 ) (reconcile.Result, error) {
-	oldPhase := volume.Status.Phase
+	oldPhase := volume.ComputePhase()
 
 	volume.SetTerminatingStatus(job)
 	if _, err := self.updateVolumeStatus(ctx, volume, oldPhase); err != nil {
@@ -481,7 +483,7 @@ func (self *ReconcileVolume) pollSaltJob(
 	volume *storagev1alpha1.Volume,
 	pv *corev1.PersistentVolume,
 	setState stateSetter,
-	errorCode storagev1alpha1.VolumeErrorCode,
+	reason storagev1alpha1.ConditionReason,
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
@@ -500,7 +502,7 @@ func (self *ReconcileVolume) pollSaltJob(
 				"step '%s' failed", stepName,
 			)
 			return self.setFailedVolumeStatus(
-				ctx, volume, pv, errorCode,
+				ctx, volume, pv, reason,
 				"Salt job '%s' failed with: %s", jobName, failure.Error(),
 			)
 		}
@@ -575,7 +577,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	if err := volume.IsValid(); err != nil {
 		return r.setFailedVolumeStatus(
-			ctx, volume, nil, storagev1alpha1.InternalError,
+			ctx, volume, nil, storagev1alpha1.ReasonInternalError,
 			"invalid volume: %s", err.Error(),
 		)
 	}
@@ -589,11 +591,11 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return r.finalizeVolume(ctx, volume, saltenv)
 	}
 	// Skip volume stuck waiting for deletion or a manual fix.
-	if volume.IsInUnrecoverableFailedState() {
+	if condition := volume.IsInUnrecoverableFailedState(); condition != nil {
 		reqLogger.Info(
 			"volume stuck in error state: do nothing",
-			"Error.Code", volume.Status.ErrorCode,
-			"Error.Message", volume.Status.ErrorMessage,
+			"Error.Code", condition.Reason,
+			"Error.Message", condition.Message,
 		)
 		return endReconciliation()
 	}
@@ -613,7 +615,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	// Else, check its health.
 	if pv.Status.Phase == corev1.VolumeFailed {
 		_, err := r.setFailedVolumeStatus(
-			ctx, volume, nil, storagev1alpha1.UnavailableError,
+			ctx, volume, nil, storagev1alpha1.ReasonUnavailableError,
 			"backing PersistentVolume is in a failed state (%s): %s",
 			pv.Status.Reason, pv.Status.Message,
 		)
@@ -662,7 +664,7 @@ func (self *ReconcileVolume) deployVolume(
 		return self.pollSaltJob(
 			ctx, "volume provisioning", "PrepareVolume",
 			volume, nil, self.setPendingVolumeStatus,
-			storagev1alpha1.CreationError,
+			storagev1alpha1.ReasonCreationError,
 		)
 	}
 }
@@ -676,7 +678,7 @@ func (self *ReconcileVolume) finalizeVolume(
 	reqLogger := log.WithValues("Volume.Name", volume.Name)
 
 	// Pending volume: can do nothing but wait for stabilization.
-	if volume.Status.Phase == storagev1alpha1.VolumePending {
+	if volume.ComputePhase() == storagev1alpha1.VolumePending {
 		reqLogger.Info("pending volume cannot be finalized: requeue")
 		return delayedRequeue(nil)
 	}
@@ -734,7 +736,7 @@ func (self *ReconcileVolume) createPersistentVolume(
 	if err != nil {
 		reqLogger.Error(err, "call to GetVolumeSize failed")
 		return self.setFailedVolumeStatus(
-			ctx, volume, nil, storagev1alpha1.CreationError,
+			ctx, volume, nil, storagev1alpha1.ReasonCreationError,
 			"call to GetVolumeSize failed: %s", err.Error(),
 		)
 	}
@@ -905,7 +907,7 @@ func (self *ReconcileVolume) reclaimStorage(
 	saltJob := volume.Status.Job
 	// Ignore existing Job ID in Failed case (no job are running), JID only here
 	// for debug (which is now useless as we're going to delete the Volume).
-	if volume.Status.Phase == storagev1alpha1.VolumeFailed {
+	if volume.ComputePhase() == storagev1alpha1.VolumeFailed {
 		saltJob = ""
 	}
 
@@ -947,7 +949,7 @@ func (self *ReconcileVolume) reclaimStorage(
 		return self.pollSaltJob(
 			ctx, "volume finalization", "UnprepareVolume",
 			volume, pv, self.setTerminatingVolumeStatus,
-			storagev1alpha1.DestructionError,
+			storagev1alpha1.ReasonDestructionError,
 		)
 	}
 }

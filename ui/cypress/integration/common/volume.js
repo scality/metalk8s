@@ -6,7 +6,7 @@ And(
     cy.get('.sc-table-row')
       .eq(1)
       .click();
-  }
+  },
 );
 
 And('I choose the Volumes tag', () => {
@@ -28,42 +28,61 @@ Then(
     cy.get('input[name=name]').type(volumeNameRawBlockDevice);
     cy.get('input[name=path]').type(devicePath);
 
+    cy.get('.sc-select')
+      .eq(0)
+      .click();
+    cy.get('.sc-select__menu')
+      .find('[data-cy=storageClass-metalk8s-prometheus]')
+      .click();
+
+    cy.get('.sc-select')
+      .eq(1)
+      .click();
+    cy.get('.sc-select__menu')
+      .find('[data-cy="type-rawBlockDevice"]')
+      .click();
+
     cy.get('[data-cy="submit-create-volume"]').click();
 
     cy.get('.sc-table-column-cell-name').should(
       'contain',
-      volumeNameRawBlockDevice
+      volumeNameRawBlockDevice,
     );
-  }
+  },
 );
 
 Then(
   'I fill out the create volume form with SparseLoopDevice volume type and ckeck if the the volume I created is displayed on the volume list',
   () => {
     const volumeNameSparseLoopDevice = `volume-${new Date().getTime()}`;
-    const devicePath = Cypress.env('device_path');
     const volumeCapacity = Cypress.env('volume_capacity');
 
     cy.get('input[name=name]').type(volumeNameSparseLoopDevice);
-    cy.get('input[name=path]').type(devicePath);
-
-    cy.get('.Select')
-      .eq(1)
+    cy.get('.sc-select')
+      .eq(0)
+      .click();
+    cy.get('.sc-select__menu')
+      .find('[data-cy=storageClass-metalk8s-prometheus]')
       .click();
 
-    cy.get('[data-cy="type-sparseLoopDevice"]').click();
+    cy.get('.sc-select')
+      .eq(1)
+      .click();
+    cy.get('.sc-select__menu')
+      .find('[data-cy="type-sparseLoopDevice"]')
+      .click();
 
     cy.get('input[name=sizeInput]').type(volumeCapacity);
 
-    cy.get('.Select')
+    cy.get('.sc-select')
       .eq(2)
       .click();
-    cy.get('[data-cy="size-GiB"]').click();
+    cy.get('[data-cy="size-KiB"]').click();
 
     cy.get('[data-cy="submit-create-volume"]').click();
     cy.get('.sc-table-column-cell-name').should(
       'contain',
-      volumeNameSparseLoopDevice
+      volumeNameSparseLoopDevice,
     );
-  }
+  },
 );

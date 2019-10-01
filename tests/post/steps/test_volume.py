@@ -116,7 +116,7 @@ def teardown(pod_client, pvc_client, volume_client, sc_client):
     yield
     pod_client.delete_all(sync=True)
     pvc_client.delete_all(sync=True)
-    volume_client.delete_all(sync=True)
+    volume_client.delete_all(sync=True, prefix='test-')
     sc_client.delete_all(sync=True, prefix='test-')
 
 @pytest.fixture(scope='function')
@@ -276,10 +276,9 @@ def check_volume_status(context, name, status, volume_client):
         assert volume is not None, 'Volume {} not found'.format(name)
         context[name] = volume
         try:
-            assert volume['status']['phase'] == status,\
-                'Unexpected status: expected {}, got {}'.format(
-                    status, volume['status']['phase']
-                )
+            phase = VolumeClient.compute_phase(volume['status'])
+            assert phase == status,\
+                'Unexpected status: expected {}, got {}'.format(status, phase)
         except KeyError:
             assert status == 'Unknown', \
                 'Unexpected status: expected {}, got none'.format(status)
@@ -350,18 +349,14 @@ def check_volume_error(context, name, code, pattern, volume_client):
         context[name] = volume
         status = volume.get('status')
         assert status is not None, 'no status for volume {}'.format(name)
-        assert status['phase'] == 'Failed',\
-            'Unexpected status: expected Failed, got {}'.format(
-                status, status['phase']
-            )
-        assert status['errorCode'] == code,\
-            'Unexpected error code: expected {}, got {}'.format(
-                code, status['errorCode']
-            )
-        assert re.search(pattern, status['errorMessage']) is not None,\
-            "error message `{}` doesn't match `{}`".format(
-                status['errorMessage'], pattern
-            )
+        phase = VolumeClient.compute_phase(status)
+        errcode, errmsg = VolumeClient.get_error(status)
+        assert phase == 'Failed',\
+            'Unexpected status: expected Failed, got {}'.format(status, phase)
+        assert errcode == code,\
+            'Unexpected error code: expected {}, got {}'.format(code, errcode)
+        assert re.search(pattern, errmsg) is not None,\
+            "error message `{}` doesn't match `{}`".format(errmsg, pattern)
 
     utils.retry(
         _check_error, times=30, wait=2,
@@ -571,6 +566,32 @@ class VolumeClient(Client):
             group=self._group, version=self._version, plural=self._plural,
             name=name, body=body, grace_period_seconds=0
         )
+
+    @staticmethod
+    def compute_phase(volume_status):
+        for condition in volume_status.get('conditions', []):
+            if condition['type'] != 'Ready':
+                continue
+            if condition['status'] == 'True':
+                return 'Available'
+            elif condition['status'] == 'False':
+                return 'Failed'
+            elif condition['status'] == 'Unknown':
+                return condition['reason']
+            else:
+                assert False, 'invalid condition status: {}'.format(
+                    condition['status']
+                )
+        return ''
+
+    @staticmethod
+    def get_error(volume_status):
+        for condition in volume_status.get('conditions', []):
+            if condition['type'] != 'Ready':
+                continue
+            return condition.get('reason', ''), condition.get('message', '')
+        return '', ''
+
 
 # }}}
 # PersistentVolumeClient {{{

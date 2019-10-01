@@ -6,7 +6,7 @@ include:
 
 {%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
 {%- set saltapi = 'https://' ~ pillar.metalk8s.endpoints['salt-master'].ip ~ ':' ~ pillar.metalk8s.endpoints['salt-master'].ports.api %}
-{%- set prometheus = 'http://' ~ pillar.metalk8s.endpoints.prometheus.ip ~ ':' ~ pillar.metalk8s.endpoints.prometheus.ports.web.node_port  %}
+{%- set prometheus = 'http://' ~ grains.metalk8s.workload_plane_ip ~ ':30222'  %}
 
 Create metalk8s-ui namespace:
   metalk8s_kubernetes.namespace_present:

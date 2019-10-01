@@ -1,3 +1,5 @@
+.. _volume-management:
+
 Volume Management
 =================
 

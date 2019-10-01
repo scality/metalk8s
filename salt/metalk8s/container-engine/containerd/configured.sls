@@ -11,6 +11,7 @@ Start and enable containerd:
       - metalk8s_package_manager: Install containerd
     - watch:
       - file: Configure registry IP in containerd conf
+      - file: Create containerd service drop-in
 
 Inject pause image:
   # The `containerd` states require the `cri` module, which requires `crictl`

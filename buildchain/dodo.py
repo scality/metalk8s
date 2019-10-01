@@ -12,6 +12,7 @@ import doit  # type: ignore
 from buildchain.build import *
 from buildchain.codegen import *
 from buildchain.deps import *
+from buildchain.docs import *
 from buildchain.image import *
 from buildchain.iso import *
 from buildchain.format import *

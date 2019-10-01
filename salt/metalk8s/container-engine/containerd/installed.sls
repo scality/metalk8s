@@ -26,7 +26,19 @@ Install containerd:
       - test: Repositories configured
       - metalk8s_package_manager: Install runc
       - metalk8s_package_manager: Install container-selinux
- 
+
+Create containerd service drop-in:
+  file.managed:
+    - name: /etc/systemd/system/containerd.service.d/50-metalk8s.conf
+    - source: salt://{{ slspath }}/files/50-metalk8s.conf
+    - user: root
+    - group: root
+    - mode: 0644
+    - makedirs: true
+    - dir_mode: 0755
+    - require:
+      - metalk8s_package_manager: Install containerd
+
 Install and configure cri-tools:
   {{ pkg_installed('cri-tools') }}
     - require:

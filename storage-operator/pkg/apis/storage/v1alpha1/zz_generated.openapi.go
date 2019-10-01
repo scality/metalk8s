@@ -138,11 +138,17 @@ func schema_pkg_apis_storage_v1alpha1_VolumeStatus(ref common.ReferenceCallback)
 			SchemaProps: spec.SchemaProps{
 				Description: "VolumeStatus defines the observed state of Volume",
 				Properties: map[string]spec.Schema{
-					"phase": {
+					"conditions": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Volume lifecycle phase",
-							Type:        []string{"string"},
-							Format:      "",
+							Description: "List of conditions through which the Volume has or has not passed.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("./pkg/apis/storage/v1alpha1.VolumeCondition"),
+									},
+								},
+							},
 						},
 					},
 					"job": {
@@ -152,23 +158,10 @@ func schema_pkg_apis_storage_v1alpha1_VolumeStatus(ref common.ReferenceCallback)
 							Format:      "",
 						},
 					},
-					"errorCode": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Volume failure error code",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"errorMessage": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Volume failure error message",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
 				},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"./pkg/apis/storage/v1alpha1.VolumeCondition"},
 	}
 }

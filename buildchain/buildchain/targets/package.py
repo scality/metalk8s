@@ -74,25 +74,6 @@ class Package(base.CompositeTarget):
     build_id = property(operator.attrgetter('_build_id'))
     builder  = property(operator.attrgetter('_builder'))
 
-    @property
-    def rootdir(self) -> Path:
-        """Package root directory."""
-        return self._pkg_root/self._name
-
-    def make_package_directory(self) -> types.TaskDict:
-        """Create the package's directory."""
-        task = self.basic_task
-        mkdir = directory.Mkdir(directory=self.rootdir).task
-        task.update({
-            'name': self.MKDIR_TASK_NAME,
-            'doc': 'Create directory for {}.'.format(self.name),
-            'title': mkdir['title'],
-            'actions': mkdir['actions'],
-            'uptodate': mkdir['uptodate'],
-            'targets': mkdir['targets'],
-        })
-        return task
-
 
 class RPMPackage(Package):
     """A RPM software package for CentOS 7."""
@@ -134,6 +115,11 @@ class RPMPackage(Package):
     sources  = property(operator.attrgetter('_sources'))
 
     @property
+    def rootdir(self) -> Path:
+        """Package root directory."""
+        return self._pkg_root/self._name
+
+    @property
     def srcdir(self) -> Path:
         """Package source directory."""
         return self.rootdir/'SOURCES'
@@ -162,6 +148,20 @@ class RPMPackage(Package):
             self.get_source_files(),
             self.build_srpm(),
         ]
+
+    def make_package_directory(self) -> types.TaskDict:
+        """Create the package's directory."""
+        task = self.basic_task
+        mkdir = directory.Mkdir(directory=self.rootdir).task
+        task.update({
+            'name': self.MKDIR_TASK_NAME,
+            'doc': 'Create directory for {}.'.format(self.name),
+            'title': mkdir['title'],
+            'actions': mkdir['actions'],
+            'uptodate': mkdir['uptodate'],
+            'targets': mkdir['targets'],
+        })
+        return task
 
     def generate_meta(self) -> types.TaskDict:
         """Generate the .meta file for the package."""
@@ -349,7 +349,7 @@ class DEBPackage(Package):
     def deb(self) -> Path:
         """DEB path."""
         fmt = '{pkg.name}_{pkg.version}-{pkg.build_id}_{pkg.ARCH}.deb'
-        return self.rootdir/fmt.format(pkg=self)
+        return constants.PKG_DEB_ROOT/fmt.format(pkg=self)
 
     @property
     def debuild_sources(self) -> Path:
@@ -358,12 +358,9 @@ class DEBPackage(Package):
 
     @property
     def execution_plan(self) -> List[types.TaskDict]:
-        tasks = [self.make_package_directory()]
         if self.sources.suffix == '.rpm':
-            tasks.append(self.convert_package())
-        else:
-            tasks.append(self.build_package())
-        return tasks
+            return [self.convert_package()]
+        return [self.build_package()]
 
     def build_package(self) -> types.TaskDict:
         """Build DEB packages from source files."""
@@ -375,7 +372,7 @@ class DEBPackage(Package):
                 source=self.debuild_sources, target=Path('/debbuild/pkg-meta')
             ),
             utils.bind_mount(
-                source=self.rootdir, target=Path('/debbuild/result')
+                source=constants.PKG_DEB_ROOT, target=Path('/debbuild/result')
             ),
         ]
         builddeb_callable = docker_command.DockerRun(
@@ -404,14 +401,10 @@ class DEBPackage(Package):
     def convert_package(self) -> types.TaskDict:
         """Build a DEB package from a RPM one."""
         mounts = [
-            utils.bind_ro_mount(
-                source=self.sources,
-                target=Path('/rpmbuild/source.rpm')
-            ),
-            utils.bind_mount(
-                source=self.rootdir,
-                target=Path('/debbuild/result')
-            ),
+            utils.bind_ro_mount(source=self.sources,
+                                target=Path('/rpmbuild/source.rpm')),
+            utils.bind_mount(source=constants.PKG_DEB_ROOT,
+                             target=Path('/debbuild/result')),
         ]
         builddeb_callable = docker_command.DockerRun(
             command=['/entrypoint.sh', 'rpm2deb'],

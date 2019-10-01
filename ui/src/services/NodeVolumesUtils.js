@@ -26,7 +26,7 @@ export const isVolumeDeletable = (rowData, persistentVolumes) => {
           pv => pv?.metadata?.name === volumeName,
         );
         if (!persistentVolume) {
-          return false;
+          return true;
         }
         const persistentVolumeStatus = persistentVolume?.status?.phase;
 
@@ -52,4 +52,71 @@ export const isVolumeDeletable = (rowData, persistentVolumes) => {
       );
       return false;
   }
+};
+
+
+// Compute the global status of a volume from its conditions.
+//
+// Arguments
+//     name:    the volume name
+//     status:  the volume Status field
+//
+// Returns
+//     The computed global status of the volume.
+export const computeVolumeGlobalStatus = (name, status) => {
+  if (!Array.isArray(status?.conditions)) {
+    return STATUS_UNKNOWN;
+  }
+  const condition = status?.conditions.find(
+    condition => condition.type === 'Ready',
+  );
+
+  if (condition === undefined) {
+    return STATUS_UNKNOWN;
+  }
+
+  const condStatus = condition?.status;
+  const condReason = condition?.reason;
+
+  switch(condStatus) {
+  case 'True':
+    return STATUS_AVAILABLE;
+  case 'False':
+    return STATUS_FAILED;
+  case 'Unknown':
+    switch(condReason) {
+    case 'Pending':
+      return STATUS_PENDING;
+    case 'Terminating':
+      return STATUS_TERMINATING;
+    default:
+      console.error(
+        `Unexpected Ready reason for Volume ${name}: ${condReason}`,
+      );
+      return STATUS_UNKNOWN;
+    }
+  default:
+    console.error(
+      `Unexpected Ready status for Volume ${name}: ${condStatus}`,
+    );
+    return STATUS_UNKNOWN;
+  }
+};
+
+// Extract the error code and message from the conditions.
+//
+// Arguments
+//     status:  the volume Status field
+//
+// Returns
+//     a tuple (error code, error message).
+export const volumeGetError = status => {
+  if (!Array.isArray(status?.conditions)) {
+    return ['', ''];
+  }
+  const condition = status?.conditions.find(
+    condition => condition.type === 'Ready',
+  );
+
+  return [condition?.reason ?? '', condition?.message ?? ''];
 };

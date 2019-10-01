@@ -38,6 +38,8 @@ REPO_RPM_ROOT : Path = REPO_ROOT/'redhat'
 REPO_DEB_ROOT : Path = REPO_ROOT/'debian'
 # Root for the images on the ISO.
 ISO_IMAGE_ROOT : Path = ISO_ROOT/'images'
+# Root for the documentation on the ISO.
+ISO_DOCS_ROOT : Path = ISO_ROOT/'documentation'
 # Root for the packages that we build ourselves.
 PKG_ROOT : Path = config.BUILD_ROOT/'packages'
 # Root for the RPM packages that we build ourselves.
