@@ -1,4 +1,4 @@
-import { call, put, takeEvery, select } from 'redux-saga/effects';
+import { call, takeEvery, select } from 'redux-saga/effects';
 
 import * as ApiK8s from '../../services/k8s/api';
 
@@ -6,36 +6,17 @@ import * as ApiK8s from '../../services/k8s/api';
 const LABEL_COMPONENT = 'app.kubernetes.io/component';
 const LABEL_NAME = 'app.kubernetes.io/name';
 export const LABEL_PART_OF = 'app.kubernetes.io/part-of';
-const LABEL_VERSION = 'app.kubernetes.io/version';
+export const LABEL_VERSION = 'app.kubernetes.io/version';
 export const SOLUTION_NAME = 'example-solution';
 const DEPLOYMENT_NAME = 'example-operator';
 const OPERATOR_NAME = 'example-solution-operator';
 
 const CREATE_DEPLOYMENT = 'CREATE_DEPLOYMENT';
-const UPDATE_DEPLOYMENT = 'UPDATE_DEPLOYMENT';
 const EDIT_DEPLOYMENT = 'EDIT_DEPLOYMENT';
-
-// Reducer
-const defaultState = {
-  list: []
-};
-
-export default function reducer(state = defaultState, action = {}) {
-  switch (action.type) {
-    case UPDATE_DEPLOYMENT:
-      return { ...state, ...action.payload };
-    default:
-      return state;
-  }
-}
 
 // Action Creators
 export const createDeploymentAction = () => {
   return { type: CREATE_DEPLOYMENT };
-};
-
-export const updateDeploymentAction = payload => {
-  return { type: UPDATE_DEPLOYMENT, payload };
 };
 
 export const editDeploymentAction = payload => {
@@ -49,18 +30,6 @@ export function* fetchOpertorDeployments(namespaces) {
     namespaces,
     DEPLOYMENT_NAME
   );
-
-  if (!result.error && result.body.items.length) {
-    const flattenedItems = result.body.items.map(item => ({
-      name: item.metadata.name,
-      namespace: item.metadata.namespace,
-      image: item.spec.template.spec.containers['0'].image,
-      version:
-        (item.metadata.labels && item.metadata.labels[LABEL_VERSION]) || ''
-    }));
-
-    yield put(updateDeploymentAction({ list: flattenedItems }));
-  }
   return result;
 }
 
@@ -86,15 +55,21 @@ export function* createDeployment(namespaces, version) {
   return result;
 }
 
-export function* createOrUpdateOperatorDeployment(namespaces, version) {
-  yield call(fetchOpertorDeployments, namespaces);
-  const operatorDeployments = yield select(state => state.app.deployments.list);
+export function* createOrUpdateOperatorDeployment(
+  namespaces,
+  environment,
+  version
+) {
+  const environments = yield select(state => state.app.environment.list);
+  const environmentToUpdate = environments.find(
+    env => env.name === environment
+  );
   let results;
-  if (operatorDeployments.length) {
+  if (environmentToUpdate && environmentToUpdate.operator) {
     results = yield call(
       editDeployment,
       version,
-      operatorDeployments[0].name,
+      environmentToUpdate.operator.name,
       namespaces
     );
   } else {

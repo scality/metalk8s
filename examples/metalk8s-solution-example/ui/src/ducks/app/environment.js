@@ -5,6 +5,7 @@ import { REFRESH_TIMEOUT } from '../../constants';
 import { createNamespaces } from './namespaces';
 import {
   SOLUTION_NAME,
+  LABEL_VERSION,
   createNamespacedServiceAccount,
   createNamespacedRole,
   createNamespacedRoleBinding,
@@ -89,18 +90,33 @@ export function* fetchEnvironment() {
   return results;
 }
 export function* updateEnvironment(environment) {
-  yield call(
+  const results = yield call(
     fetchOpertorDeployments,
     `${environment.metadata.name}-example-solution`
   );
-  const operators = yield select(state => state.app.deployments.list);
+  // One operator per environment
+  const operator = results.body.items.length ? results.body.items[0] : null;
   yield put(
     addEnvironmentAction({
       name: environment.metadata.name,
-      status: '',
+      status: '', //TO be implemented
       description: environment.spec.description,
-      version: operators.length ? operators[0].version : '',
-      solutions: environment.spec.solutions || []
+      version:
+        operator && operator.metadata.labels
+          ? operator.metadata.labels[LABEL_VERSION]
+          : '',
+      solutions: environment.spec.solutions || [],
+      operator: operator
+        ? {
+            name: operator.metadata.name,
+            namespace: operator.metadata.namespace,
+            image: operator.spec.template.spec.containers['0'].image,
+            version:
+              (operator.metadata.labels &&
+                operator.metadata.labels[LABEL_VERSION]) ||
+              ''
+          }
+        : null
     })
   );
 }
@@ -139,6 +155,7 @@ export function* manageEnvironment(payload) {
     const resultsOperatorDeployments = yield call(
       createOrUpdateOperatorDeployment,
       namespaces,
+      name,
       version
     );
 
