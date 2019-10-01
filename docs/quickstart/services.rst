@@ -48,7 +48,7 @@ This page displays two monitoring indicators:
 Grafana
 -------
 Grafana is available on the same host as the MetalK8s UI, under ``/grafana``.
-Log in with the default credentials: ``admin`` / ``prom-operator``.
+Log in with the default credentials: ``admin`` / ``admin``.
 
 .. _quickstart-services-salt:
 

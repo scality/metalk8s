@@ -99,6 +99,8 @@ prometheus:
               app.kubernetes.io/name: prometheus-operator-prometheus
 
 grafana:
+  adminPassword: admin
+
   image:
     repository: '{%- endraw -%}{{ build_image_name(\"grafana\", False) }}{%- raw -%}'
 
