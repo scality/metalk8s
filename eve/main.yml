@@ -360,9 +360,6 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
-          name: Create sosreport directory on the bastion
-          command: mkdir -p sosreport/sosreport/multi-node
-      - ShellCommand:
           name: Generate sosreport on every machine
           env:
             SSH_CONFIG: >-
@@ -382,6 +379,7 @@ stages:
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
+            mkdir -p sosreport/sosreport/multi-node &&
             for host in bootstrap node1; do
               scp -F $SSH_CONFIG \
               $host:/var/tmp/sosreport-* \
