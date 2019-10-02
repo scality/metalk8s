@@ -62,9 +62,18 @@ DEB_BUILDER : targets.LocalImage = _builder_image(
     dockerfile=constants.ROOT/'packages/debian/Dockerfile',
 )
 
+DOC_BUILDER : targets.LocalImage = _builder_image(
+    name='doc',
+    dockerfile=constants.ROOT/'docs/Dockerfile',
+    build_context=constants.ROOT,
+    file_dep=[
+        constants.ROOT/'tox.ini', constants.ROOT/'docs/requirements.txt'
+    ]
+)
+
 
 _BUILDERS : Tuple[targets.LocalImage, ...] = (
-    RPM_BUILDER, DEB_BUILDER,
+    RPM_BUILDER, DEB_BUILDER, DOC_BUILDER,
 )
 
 
