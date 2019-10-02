@@ -653,10 +653,11 @@ stages:
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
+            mkdir -p sosreport/sosreport/multiple-nodes &&
             for host in bootstrap node1; do
               scp -F $SSH_CONFIG \
               $host:/var/tmp/sosreport-* \
-              sosreport/sosreport/multi-node/$host-sosreport.tar.xz
+              sosreport/sosreport/multiple-nodes/$host-sosreport.tar.xz
             done
           alwaysRun: true
       - Upload:
