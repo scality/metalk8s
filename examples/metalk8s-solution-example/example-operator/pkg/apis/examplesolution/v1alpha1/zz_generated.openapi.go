@@ -11,9 +11,95 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
+		"./pkg/apis/examplesolution/v1alpha1.ClockServer":         schema_pkg_apis_examplesolution_v1alpha1_ClockServer(ref),
+		"./pkg/apis/examplesolution/v1alpha1.ClockServerSpec":     schema_pkg_apis_examplesolution_v1alpha1_ClockServerSpec(ref),
+		"./pkg/apis/examplesolution/v1alpha1.ClockServerStatus":   schema_pkg_apis_examplesolution_v1alpha1_ClockServerStatus(ref),
 		"./pkg/apis/examplesolution/v1alpha1.VersionServer":       schema_pkg_apis_examplesolution_v1alpha1_VersionServer(ref),
 		"./pkg/apis/examplesolution/v1alpha1.VersionServerSpec":   schema_pkg_apis_examplesolution_v1alpha1_VersionServerSpec(ref),
 		"./pkg/apis/examplesolution/v1alpha1.VersionServerStatus": schema_pkg_apis_examplesolution_v1alpha1_VersionServerStatus(ref),
+	}
+}
+
+func schema_pkg_apis_examplesolution_v1alpha1_ClockServer(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ClockServer is the Schema for the clockservers API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/examplesolution/v1alpha1.ClockServerSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/examplesolution/v1alpha1.ClockServerStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"./pkg/apis/examplesolution/v1alpha1.ClockServerSpec", "./pkg/apis/examplesolution/v1alpha1.ClockServerStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_examplesolution_v1alpha1_ClockServerSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ClockServerSpec defines the desired state of ClockServer",
+				Properties: map[string]spec.Schema{
+					"timezone": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Timezone for this clock, in the format \"UTC[+/-]HH:MM\"",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The version of the container image to run",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"timezone", "version"},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_examplesolution_v1alpha1_ClockServerStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ClockServerStatus defines the observed state of ClockServer",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
 	}
 }
 

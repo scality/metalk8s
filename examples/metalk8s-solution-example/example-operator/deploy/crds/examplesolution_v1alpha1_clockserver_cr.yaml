@@ -1,0 +1,7 @@
+apiVersion: example-solution.metalk8s.scality.com/v1alpha1
+kind: ClockServer
+metadata:
+  name: example-clockserver
+spec:
+  # Add fields here
+  size: 3
