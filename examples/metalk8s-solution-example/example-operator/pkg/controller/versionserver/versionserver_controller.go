@@ -2,19 +2,15 @@ package versionserver
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	examplesolutionv1alpha1 "example-operator/pkg/apis/examplesolution/v1alpha1"
-	"example-operator/version"
+	"example-operator/pkg/controller/util"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -164,12 +160,8 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 	if !ok || deployedVersion != version {
 		// Update labels and image name
 		labels := labelsForVersionServer(instance)
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: labels,
-		}
 		deployment.ObjectMeta.Labels = labels
 		deployment.Spec.Template.ObjectMeta.Labels = labels
-		deployment.Spec.Selector = &labelSelector
 		deployment.Spec.Template.Spec.Containers = []corev1.Container{
 			containerForVersionServer(instance),
 		}
@@ -213,7 +205,6 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 	if !ok || exposedVersion != version {
 		labels := labelsForVersionServer(instance)
 		service.ObjectMeta.Labels = labels
-		service.Spec.Selector = labels
 		err = r.client.Update(ctx, service)
 		if err != nil {
 			reqLogger.Error(err, "Failed to update Service", "Service.Namespace", service.Namespace, "Service.Name", service.Name)
@@ -232,43 +223,14 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 }
 
 func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) *appsv1.Deployment {
-	labels := labelsForVersionServer(versionserver, true)
-	labelsSelector := labelsForVersionServer(versionserver, false)
-	annotations := annotationsForVersionServer(versionserver)
-	maxSurge := intstr.FromInt(0)
-	maxUnavailable := intstr.FromInt(1)
-
-	deployment := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        versionserver.Name,
-			Namespace:   versionserver.Namespace,
-			Labels:      labels,
-			Annotations: annotations,
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: &versionserver.Spec.Replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labelsSelector,
-			},
-			Strategy: appsv1.DeploymentStrategy{
-				Type: appsv1.RollingUpdateDeploymentStrategyType,
-				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       &maxSurge,
-					MaxUnavailable: &maxUnavailable,
-				},
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						containerForVersionServer(versionserver),
-					},
-				},
-			},
-		},
-	}
+	deployment := util.BuildDeployment(
+		versionserver.Name,
+		versionserver.Namespace,
+		versionserver.Spec.Version,
+		util.VersionServerKind,
+		versionserver.Spec.Replicas,
+		containerForVersionServer(versionserver),
+	)
 
 	// Set the owner reference
 	controllerutil.SetControllerReference(versionserver, deployment, r.scheme)
@@ -276,27 +238,12 @@ func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examp
 }
 
 func (r *ReconcileVersionServer) serviceForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) *corev1.Service {
-	labels := labelsForVersionServer(versionserver)
-	annotations := annotationsForVersionServer(versionserver)
-
-	service := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        versionserver.Name,
-			Namespace:   versionserver.Namespace,
-			Labels:      labels,
-			Annotations: annotations,
-		},
-		Spec: corev1.ServiceSpec{
-			Ports: []corev1.ServicePort{{
-				Name:       "http",
-				Port:       8080,
-				Protocol:   corev1.ProtocolTCP,
-				TargetPort: intstr.FromString("http"),
-			}},
-			Selector: labels,
-			Type:     corev1.ServiceTypeClusterIP,
-		},
-	}
+	service := util.BuildService(
+		versionserver.Name,
+		versionserver.Namespace,
+		versionserver.Spec.Version,
+		util.VersionServerKind,
+	)
 
 	// Set the owner reference
 	controllerutil.SetControllerReference(versionserver, service, r.scheme)
@@ -304,61 +251,18 @@ func (r *ReconcileVersionServer) serviceForVersionServer(versionserver *examples
 }
 
 func containerForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) corev1.Container {
-	return corev1.Container{
-		Image: imageForVersionServer(versionserver),
-		Name:  "version-server",
-		Command: []string{
-			"python3",
-			"/app/server.py",
-			"--version", versionserver.Spec.Version,
-		},
-		LivenessProbe: &corev1.Probe{
-			Handler: corev1.Handler{
-				HTTPGet: &corev1.HTTPGetAction{
-					Path:   "/version",
-					Port:   intstr.FromInt(8080),
-					Scheme: corev1.URISchemeHTTP,
-				},
-			},
-			FailureThreshold:    8,
-			InitialDelaySeconds: 10,
-			TimeoutSeconds:      3,
-		},
-		Ports: []corev1.ContainerPort{{
-			ContainerPort: 8080,
-			Name:          "http",
-		}},
-	}
+	return util.BuildContainer(
+		versionserver.Spec.Version,
+		versionserver.Name,
+		util.VersionServerKind,
+		[]string{"--version", versionserver.Spec.Version},
+	)
 }
 
-func labelsForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer, versionize bool) map[string]string {
-	var labels = map[string]string{
-		"app":                          "example",
-		"app.kubernetes.io/name":       versionserver.Name,
-		"app.kubernetes.io/component":  "version-server",
-		"app.kubernetes.io/part-of":    "example",
-		"app.kubernetes.io/managed-by": "example-operator",
-	}
-	if versionize {
-		labels["app.kubernetes.io/version"] = versionserver.Spec.Version
-	}
-	return labels
-}
-
-func annotationsForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) map[string]string {
-	return map[string]string{
-		"example-solution.metalk8s.scality.com/operator-version": version.Version,
-	}
-}
-
-func imageForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) string {
-	prefix, found := os.LookupEnv("REGISTRY_PREFIX")
-	if !found {
-		prefix = "docker.io/metalk8s"
-	}
-
-	return fmt.Sprintf(
-		"%[1]s/example-solution-%[2]s/base-server:%[2]s",
-		prefix, versionserver.Spec.Version,
+func labelsForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) map[string]string {
+	return util.BuildLabels(
+		util.VersionServerKind,
+		versionserver.Name,
+		versionserver.Spec.Version,
 	)
 }

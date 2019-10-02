@@ -2,19 +2,15 @@ package clockserver
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	examplesolutionv1alpha1 "example-operator/pkg/apis/examplesolution/v1alpha1"
-	"example-operator/version"
+	"example-operator/pkg/controller/util"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -175,12 +171,8 @@ func (r *ReconcileClockServer) Reconcile(request reconcile.Request) (reconcile.R
 	if !ok || deployedVersion != version {
 		// Update labels and container
 		labels := labelsForClockServer(instance)
-		labelSelector := metav1.LabelSelector{
-			MatchLabels: labels,
-		}
 		found.ObjectMeta.Labels = labels
 		found.Spec.Template.ObjectMeta.Labels = labels
-		found.Spec.Selector = &labelSelector
 		found.Spec.Template.Spec.Containers = []corev1.Container{
 			containerForClockServer(instance),
 		}
@@ -224,7 +216,6 @@ func (r *ReconcileClockServer) Reconcile(request reconcile.Request) (reconcile.R
 	if !ok || exposedVersion != version {
 		labels := labelsForClockServer(instance)
 		service.ObjectMeta.Labels = labels
-		service.Spec.Selector = labels
 		err = r.client.Update(ctx, service)
 		if err != nil {
 			reqLogger.Error(err, "Failed to update Service", "Service.Namespace", service.Namespace, "Service.Name", service.Name)
@@ -243,44 +234,16 @@ func (r *ReconcileClockServer) Reconcile(request reconcile.Request) (reconcile.R
 }
 
 func (r *ReconcileClockServer) deploymentForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) *appsv1.Deployment {
-	labels := labelsForClockServer(clockserver)
-	labelsSelector := metav1.LabelSelector{
-		MatchLabels: labels,
-	}
-	annotations := annotationsForClockServer(clockserver)
-	maxSurge := intstr.FromInt(0)
-	maxUnavailable := intstr.FromInt(1)
 	replicas := int32(1)
 
-	deployment := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        clockserver.Name,
-			Namespace:   clockserver.Namespace,
-			Labels:      labels,
-			Annotations: annotations,
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &labelsSelector,
-			Strategy: appsv1.DeploymentStrategy{
-				Type: appsv1.RollingUpdateDeploymentStrategyType,
-				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxSurge:       &maxSurge,
-					MaxUnavailable: &maxUnavailable,
-				},
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						containerForClockServer(clockserver),
-					},
-				},
-			},
-		},
-	}
+	deployment := util.BuildDeployment(
+		clockserver.Name,
+		clockserver.Namespace,
+		clockserver.Spec.Version,
+		util.ClockServerKind,
+		replicas,
+		containerForClockServer(clockserver),
+	)
 
 	// Set the owner reference
 	controllerutil.SetControllerReference(clockserver, deployment, r.scheme)
@@ -288,27 +251,12 @@ func (r *ReconcileClockServer) deploymentForClockServer(clockserver *examplesolu
 }
 
 func (r *ReconcileClockServer) serviceForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) *corev1.Service {
-	labels := labelsForClockServer(clockserver)
-	annotations := annotationsForClockServer(clockserver)
-
-	service := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        clockserver.Name,
-			Namespace:   clockserver.Namespace,
-			Labels:      labels,
-			Annotations: annotations,
-		},
-		Spec: corev1.ServiceSpec{
-			Ports: []corev1.ServicePort{{
-				Name:       "http",
-				Port:       8080,
-				Protocol:   corev1.ProtocolTCP,
-				TargetPort: intstr.FromString("http"),
-			}},
-			Selector: labels,
-			Type:     corev1.ServiceTypeClusterIP,
-		},
-	}
+	service := util.BuildService(
+		clockserver.Name,
+		clockserver.Namespace,
+		clockserver.Spec.Version,
+		util.ClockServerKind,
+	)
 
 	// Set the owner reference
 	controllerutil.SetControllerReference(clockserver, service, r.scheme)
@@ -316,64 +264,18 @@ func (r *ReconcileClockServer) serviceForClockServer(clockserver *examplesolutio
 }
 
 func containerForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) corev1.Container {
-	timezone := clockserver.Spec.Timezone
-	if clockserver.Spec.Version == "2.0.0-beta1" {
-		// Emulate a broken version (could have changed the image, but meh)
-		timezone = "BROKEN"
-	}
-	return corev1.Container{
-		Image: imageForClockServer(clockserver),
-		Name:  "clock-server",
-		Command: []string{
-			"python3",
-			"/app/server.py",
-			"--clock", timezone,
-		},
-		LivenessProbe: &corev1.Probe{
-			Handler: corev1.Handler{
-				HTTPGet: &corev1.HTTPGetAction{
-					Path:   "/time",
-					Port:   intstr.FromInt(8080),
-					Scheme: corev1.URISchemeHTTP,
-				},
-			},
-			FailureThreshold:    8,
-			InitialDelaySeconds: 10,
-			TimeoutSeconds:      3,
-		},
-		Ports: []corev1.ContainerPort{{
-			ContainerPort: 8080,
-			Name:          "http",
-		}},
-	}
+	return util.BuildContainer(
+		clockserver.Spec.Version,
+		clockserver.Name,
+		util.ClockServerKind,
+		[]string{"--clock", clockserver.Spec.Timezone},
+	)
 }
 
 func labelsForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) map[string]string {
-	return map[string]string{
-		"app":                          "example",
-		"app.kubernetes.io/name":       clockserver.Name,
-		"app.kubernetes.io/component":  "clock-server",
-		"app.kubernetes.io/part-of":    "example",
-		"app.kubernetes.io/managed-by": "example-operator",
-		"app.kubernetes.io/version":    clockserver.Spec.Version,
-	}
-}
-
-func annotationsForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) map[string]string {
-	return map[string]string{
-		"example-solution.metalk8s.scality.com/operator-version": version.Version,
-		"example-solution.metalk8s.scality.com/clock-timezone":   clockserver.Spec.Timezone,
-	}
-}
-
-func imageForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) string {
-	prefix, found := os.LookupEnv("REGISTRY_PREFIX")
-	if !found {
-		prefix = "docker.io/metalk8s"
-	}
-
-	return fmt.Sprintf(
-		"%[1]s/example-solution-%[2]s/base-server:%[2]s",
-		prefix, clockserver.Spec.Version,
+	return util.BuildLabels(
+		util.ClockServerKind,
+		clockserver.Name,
+		clockserver.Spec.Version,
 	)
 }
