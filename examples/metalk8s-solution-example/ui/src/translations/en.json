@@ -29,8 +29,8 @@
   "edit_environment_version": "Edit Environment Version",
   "timezone": "Time Zone",
   "prepare_environment": "Preparing environment...",
-  "select_a_version": "Select a Version",
-  "add_solution": "Add Solution",
+  "select_a_version": "Select a version",
+  "prepare": "Prepare",
   "select_a_version_to_add": "Select a version of the solution to add to the environment",
   "add": "Add"
 }

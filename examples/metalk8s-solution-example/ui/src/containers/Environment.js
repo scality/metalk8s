@@ -73,7 +73,7 @@ const Environment = props => {
         if (!data) {
           return (
             <Button
-              text={intl.messages.add_solution}
+              text={intl.messages.prepare}
               size="small"
               type="button"
               onClick={e => {
@@ -114,7 +114,7 @@ const Environment = props => {
           setOpenModal(false);
         }}
         isOpen={openModal}
-        title={intl.messages.add_solution}
+        title={intl.messages.prepare}
         footer={
           <ButtonGroup>
             <Button
@@ -165,7 +165,9 @@ const Environment = props => {
           sortDirection={sortDirection}
           onSort={onSort}
           onRowClick={row => {
-            history.push(`/environments/${row.rowData.name}`);
+            if (row.rowData.version) {
+              history.push(`/environments/${row.rowData.name}`);
+            }
           }}
           noRowsRenderer={() => (
             <NoRowsRenderer content={intl.messages.no_data_available} />
