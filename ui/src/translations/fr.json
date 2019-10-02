@@ -95,6 +95,7 @@
   "storage_class_is_required": "Une classe de stockage est requise pour créer un volume. Veuillez en créer une dans Kubernetes.",
   "learn_more": "En savoir plus",
   "solutions": "Solutions",
+  "available_solutions": "Solutions disponibles",
   "versions": "Versions",
   "deployed_version": "Version Déployée",
   "action": "Action",
@@ -116,5 +117,11 @@
   "search": "Rechercher…",
   "detailed_information": "Informations détaillées",
   "failed_to_create_volume":"Échec de la création du volume.",
-  "not_applicable": "Non applicable"
+  "not_applicable": "Non applicable",
+  "environments": "Environnements",
+  "create_new_environment": "Créer un nouvel environnement",
+  "description": "Description",
+  "add_solution_to_environment": "Ajout d'une solution à l'environnement {environment}",
+  "version_env": "Versions",
+  "add_solution": "Ajout de la solution"
 }

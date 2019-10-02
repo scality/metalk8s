@@ -6,6 +6,7 @@ import { authenticateSaga } from './login';
 import { configSaga } from './config';
 import { monitoringSaga } from './app/monitoring';
 import { layoutSaga } from './app/layout';
+import { solutionsSaga } from './app/solutions';
 
 export default function* rootSaga() {
   yield all([
@@ -15,6 +16,7 @@ export default function* rootSaga() {
     fork(configSaga),
     fork(monitoringSaga),
     fork(layoutSaga),
-    fork(volumesSaga)
+    fork(volumesSaga),
+    fork(solutionsSaga),
   ]);
 }
