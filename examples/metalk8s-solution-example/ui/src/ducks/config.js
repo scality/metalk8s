@@ -4,7 +4,7 @@ import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import { fetchUserInfo } from './login';
-import { SOLUTION_NAME } from './app/deployment';
+import { SOLUTION_NAME } from '../constants';
 // Actions
 const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';

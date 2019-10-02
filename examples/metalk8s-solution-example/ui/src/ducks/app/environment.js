@@ -4,14 +4,13 @@ import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
 import { createNamespaces } from './namespaces';
 import {
-  SOLUTION_NAME,
-  LABEL_VERSION,
   createNamespacedServiceAccount,
   createNamespacedRole,
   createNamespacedRoleBinding,
   createOrUpdateOperatorDeployment,
   fetchOpertorDeployments
 } from './deployment';
+import { LABEL_VERSION, SOLUTION_NAME } from '../../constants';
 
 // Actions
 const REFRESH_ENVIRONMENT = 'REFRESH_ENVIRONMENT';

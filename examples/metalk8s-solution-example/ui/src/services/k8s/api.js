@@ -7,8 +7,7 @@ import {
   RbacAuthorizationV1Api
 } from '@kubernetes/client-node';
 
-import { LABEL_PART_OF } from '../../ducks/app/deployment';
-const SOLUTION_CONFIGMAP_NAME = 'metalk8s-solutions';
+import { LABEL_PART_OF, SOLUTION_CONFIGMAP_NAME } from '../../constants';
 
 let config;
 let coreV1;

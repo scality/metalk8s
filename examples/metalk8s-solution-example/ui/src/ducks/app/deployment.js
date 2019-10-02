@@ -1,16 +1,15 @@
 import { call, takeEvery, select } from 'redux-saga/effects';
 
 import * as ApiK8s from '../../services/k8s/api';
-
-// Constants
-const LABEL_COMPONENT = 'app.kubernetes.io/component';
-const LABEL_NAME = 'app.kubernetes.io/name';
-export const LABEL_PART_OF = 'app.kubernetes.io/part-of';
-export const LABEL_VERSION = 'app.kubernetes.io/version';
-export const SOLUTION_NAME = 'example-solution';
-const DEPLOYMENT_NAME = 'example-operator';
-const OPERATOR_NAME = 'example-solution-operator';
-
+import {
+  LABEL_COMPONENT,
+  LABEL_NAME,
+  LABEL_PART_OF,
+  LABEL_VERSION,
+  SOLUTION_NAME,
+  DEPLOYMENT_NAME,
+  OPERATOR_NAME
+} from '../../constants';
 const CREATE_DEPLOYMENT = 'CREATE_DEPLOYMENT';
 const EDIT_DEPLOYMENT = 'EDIT_DEPLOYMENT';
 
