@@ -322,7 +322,7 @@ def node(name, **kwargs):
     cfg = _setup_conn(**kwargs)
     try:
         api_instance = kubernetes.client.CoreV1Api()
-        api_response = api_instance.list_node()
+        api_response = api_instance.list_node(_request_timeout=1)
     except (ApiException, HTTPError) as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
             return None
