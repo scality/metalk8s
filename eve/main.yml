@@ -457,8 +457,21 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
             --destination-version %(prop:metalk8s_version)s
           haltOnFailure: true
-      - ShellCommand: *collect_sosreport
-      - ShellCommand: *copy_sosreport
+      - ShellCommand:
+          name: Collect logs using sosreport
+          command: >
+            sudo sosreport --all-logs
+            -o metalk8s -kmetalk8s.podlogs=True
+            -o containerd -kcontainerd.all=True -kcontainerd.logs=True
+            --batch --tmp-dir /var/tmp &&
+            sudo chown eve:eve /var/tmp/sosreport*
+          alwaysRun: true
+      - ShellCommand:
+          name: Copy sosreport to correct directory structure
+          command: >
+            mkdir -p sosreport/sosreport/single-node-upgrade-test &&
+            cp /var/tmp/sosreport* sosreport/sosreport/single-node-upgrade-test
+          alwaysRun: true
       - Upload: *upload_report_artifact
       - ShellCommand:
           name: Debug step - wait 1 hour before allowing resource destruction
