@@ -639,7 +639,7 @@ def show_deployment(name, namespace='default', **kwargs):
     cfg = _setup_conn(**kwargs)
     try:
         api_instance = kubernetes.client.ExtensionsV1beta1Api()
-        api_response = api_instance.read_namespaced_deployment(name, namespace)
+        api_response = api_instance.read_namespaced_deployment(name, namespace, _request_timeout=1)
 
         return api_response.to_dict()
     except (ApiException, HTTPError) as exc:
