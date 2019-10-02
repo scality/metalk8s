@@ -49,21 +49,18 @@ export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
 
     ]
 */
-export const isVersionSupported = environmentVersion => item => {
-  if (environmentVersion) {
-    const environmentVersionMajor = semver.major(environmentVersion);
-    const environmentVersionMinor = semver.minor(environmentVersion);
-    const environmentVersionPatch = semver.patch(environmentVersion);
-
-    const parsedEnvironmentVersion = `${environmentVersionMajor}.${environmentVersionMinor}.${environmentVersionPatch}`;
-    const minimunSupportedVersion = `${environmentVersionMajor}.${
-      environmentVersionMinor > 1 ? environmentVersionMinor - 1 : 0
-    }.0`;
-
-    return (
-      semver.gte(item.version, minimunSupportedVersion) &&
-      semver.lte(item.version, parsedEnvironmentVersion)
-    );
+export const isVersionSupported = envVersionStr => item => {
+  if (envVersionStr) {
+    const envVersion = semver.parse(envVersionStr);
+    envVersion.prerelease = []; // Reset pre-release info
+    const minVersion = `${envVersion.major}.${Math.max(
+      envVersion.minor - 1,
+      0
+    )}`;
+    const versionRange = `${minVersion} - ${envVersion.format()}`;
+    return semver.satisfies(item.version, versionRange, {
+      includePrerelease: true
+    });
   } else {
     return true;
   }
