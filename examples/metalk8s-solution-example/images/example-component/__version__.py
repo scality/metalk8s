@@ -1,1 +1,0 @@
-__VERSION__ = '@VERSION@'
