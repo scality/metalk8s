@@ -17,7 +17,7 @@ import {
 } from '../components/BreadcrumbStyle';
 import { isVersionSupported } from '../services/utils';
 
-const CreateClockServerContainter = styled.div`
+const CreateClockServerContainer = styled.div`
   height: 100%;
   padding: ${padding.base};
   display: inline-block;
@@ -46,7 +46,7 @@ const CreateClockServerLayout = styled.div`
 
 const InputLabel = styled.label`
   width: 150px;
-  padding: 10px;
+  padding: ${padding.small};
   font-size: ${fontSize.base};
   box-sizing: border-box;
 `;
@@ -105,7 +105,7 @@ const ClockServerEditForm = props => {
   });
 
   return (
-    <CreateClockServerContainter>
+    <CreateClockServerContainer>
       <BreadcrumbContainer>
         <Breadcrumb
           activeColor={config.theme.brand.secondary}
@@ -225,7 +225,7 @@ const ClockServerEditForm = props => {
           </Formik>
         ) : null}
       </CreateClockServerLayout>
-    </CreateClockServerContainter>
+    </CreateClockServerContainer>
   );
 };
 

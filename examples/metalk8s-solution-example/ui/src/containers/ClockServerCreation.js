@@ -18,7 +18,7 @@ import {
   StyledLink
 } from '../components/BreadcrumbStyle';
 
-const CreateClockServerContainter = styled.div`
+const CreateClockServerContainer = styled.div`
   height: 100%;
   padding: ${padding.base};
   display: inline-block;
@@ -89,7 +89,7 @@ const ClockServerCreationForm = props => {
   });
 
   return (
-    <CreateClockServerContainter>
+    <CreateClockServerContainer>
       <BreadcrumbContainer>
         <Breadcrumb
           activeColor={config.theme.brand.secondary}
@@ -210,7 +210,7 @@ const ClockServerCreationForm = props => {
           }}
         </Formik>
       </CreateClockServerLayout>
-    </CreateClockServerContainter>
+    </CreateClockServerContainer>
   );
 };
 
