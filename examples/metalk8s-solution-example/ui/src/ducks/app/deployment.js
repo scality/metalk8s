@@ -1,43 +1,21 @@
-import { all, call, put, takeEvery, select } from 'redux-saga/effects';
+import { call, takeEvery, select } from 'redux-saga/effects';
 
 import * as ApiK8s from '../../services/k8s/api';
-import history from '../../history';
-
-// Constants
-const LABEL_COMPONENT = 'app.kubernetes.io/component';
-const LABEL_NAME = 'app.kubernetes.io/name';
-export const LABEL_PART_OF = 'app.kubernetes.io/part-of';
-const LABEL_VERSION = 'app.kubernetes.io/version';
-const SOLUTION_NAME = 'example-solution';
-const DEPLOYMENT_NAME = 'example-operator';
-const OPERATOR_NAME = 'example-solution-operator';
-
+import {
+  LABEL_COMPONENT,
+  LABEL_NAME,
+  LABEL_PART_OF,
+  LABEL_VERSION,
+  SOLUTION_NAME,
+  DEPLOYMENT_NAME,
+  OPERATOR_NAME
+} from '../../constants';
 const CREATE_DEPLOYMENT = 'CREATE_DEPLOYMENT';
-const UPDATE_DEPLOYMENT = 'UPDATE_DEPLOYMENT';
 const EDIT_DEPLOYMENT = 'EDIT_DEPLOYMENT';
 
-// Reducer
-const defaultState = {
-  list: []
-};
-
-export default function reducer(state = defaultState, action = {}) {
-  switch (action.type) {
-    case UPDATE_DEPLOYMENT:
-      return { ...state, ...action.payload };
-    default:
-      return state;
-  }
-}
-
 // Action Creators
-
 export const createDeploymentAction = () => {
   return { type: CREATE_DEPLOYMENT };
-};
-
-export const updateDeploymentAction = payload => {
-  return { type: UPDATE_DEPLOYMENT, payload };
 };
 
 export const editDeploymentAction = payload => {
@@ -45,24 +23,12 @@ export const editDeploymentAction = payload => {
 };
 
 // Sagas
-export function* fetchSolutionDeployments() {
-  const result = yield call(ApiK8s.getSolutionDeployment);
-
-  if (!result.error) {
-    const deployments = result.body.items.filter(
-      item => item.metadata.name === DEPLOYMENT_NAME
-    );
-
-    const flattenedItems = deployments.map(item => ({
-      name: item.metadata.name,
-      namespace: item.metadata.namespace,
-      image: item.spec.template.spec.containers['0'].image,
-      version:
-        (item.metadata.labels && item.metadata.labels[LABEL_VERSION]) || ''
-    }));
-
-    yield put(updateDeploymentAction({ list: flattenedItems }));
-  }
+export function* fetchOpertorDeployments(namespaces) {
+  const result = yield call(
+    ApiK8s.getOperatorDeployments,
+    namespaces,
+    DEPLOYMENT_NAME
+  );
   return result;
 }
 
@@ -70,42 +36,96 @@ export function* editDeployment(version, name, namespace) {
   const registry_prefix = yield select(
     state => state.config.api.registry_prefix
   );
-
   const body = operatorDeployment(registry_prefix, version);
   const result = yield call(ApiK8s.updateDeployment, body, namespace, name);
-  if (!result.error) {
-    yield call(history.push, `/customResource`);
-  }
   return result;
 }
 
-export function* createDeployment(namespaces, operator_version) {
+export function* createDeployment(namespaces, version) {
   const registry_prefix = yield select(
     state => state.config.api.registry_prefix
   );
+  const body = operatorDeployment(registry_prefix, version);
+  const result = yield call(
+    ApiK8s.createNamespacedDeployment,
+    namespaces,
+    body
+  );
+  return result;
+}
 
-  const body = operatorDeployment(registry_prefix, operator_version);
+export function* createOrUpdateOperatorDeployment(
+  namespaces,
+  environment,
+  version
+) {
+  const environments = yield select(state => state.app.environment.list);
+  const environmentToUpdate = environments.find(
+    env => env.name === environment
+  );
+  let results;
+  if (environmentToUpdate && environmentToUpdate.operator) {
+    results = yield call(
+      editDeployment,
+      version,
+      environmentToUpdate.operator.name,
+      namespaces
+    );
+  } else {
+    results = yield call(createDeployment, namespaces, version);
+  }
+  return results;
+}
 
-  const rbacResults = yield all([
-    yield call(
+export function* createNamespacedServiceAccount(namespaces) {
+  const results = yield call(
+    ApiK8s.listNamespacedServiceAccount,
+    namespaces,
+    DEPLOYMENT_NAME
+  );
+  if (results.body.items.length === 0) {
+    const result = yield call(
       ApiK8s.createNamespacedServiceAccount,
       namespaces,
       serviceAccountBody
-    ),
-    yield call(ApiK8s.createNamespacedRole, namespaces, roleBody),
-    yield call(ApiK8s.createNamespacedRoleBinding, namespaces, roleBindingBody)
-  ]);
-
-  const resultError = rbacResults.find(result => result.error);
-  if (!resultError) {
-    const result = yield call(
-      ApiK8s.createNamespacedDeployment,
-      namespaces,
-      body
     );
     return result;
   }
-  return resultError;
+  return results;
+}
+
+export function* createNamespacedRole(namespaces) {
+  const results = yield call(
+    ApiK8s.listNamespacedRole,
+    namespaces,
+    DEPLOYMENT_NAME
+  );
+  if (results.body.items.length === 0) {
+    const result = yield call(
+      ApiK8s.createNamespacedRole,
+      namespaces,
+      roleBody
+    );
+    return result;
+  }
+  return results;
+}
+
+export function* createNamespacedRoleBinding(namespaces) {
+  const results = yield call(
+    ApiK8s.listNamespacedRoleBinding,
+    namespaces,
+    DEPLOYMENT_NAME
+  );
+  if (results.body.items.length === 0) {
+    const result = yield call(
+      ApiK8s.createNamespacedRoleBinding,
+      namespaces,
+      roleBindingBody
+    );
+    return result;
+  }
+  return results;
 }
 
 // Helpers

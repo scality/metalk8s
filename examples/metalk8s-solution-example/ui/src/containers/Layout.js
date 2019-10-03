@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
@@ -7,33 +7,33 @@ import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 import { withRouter, Switch } from 'react-router-dom';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
-import CustomResource from './CustomResource';
-import CustomresourceCreation from './CustomresourceCreation';
-import CustomresourceEdit from './CustomresourceEdit';
 
+import ClockServerCreation from './ClockServerCreation';
+import ClockServerEdit from './ClockServerEdit';
+import VersionServerCreation from './VersionServerCreation';
+import VersionServerEdit from './VersionServerEdit';
+import Environment from './Environment';
+import EnvironmentDetail from './EnvironmentDetail';
+import EnvironmentPreparation from './EnvironmentPreparation';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
 import { toggleSidebarAction } from '../ducks/app/layout';
 
 import {
-  refreshCustomResourceAction,
-  stopRefreshCustomResourceAction
-} from '../ducks/app/customResource.js';
-
-import {
-  refreshNamespacesAction,
-  stopRefreshNamespacesAction
-} from '../ducks/app/namespaces.js';
+  refreshEnvironmentAction,
+  stopRefreshEnvironmentAction
+} from '../ducks/app/environment';
 
 import { useRefreshEffect } from '../services/utils';
+import { fetchVersionsAction } from '../ducks/config';
 
 const Layout = props => {
-  useRefreshEffect(
-    refreshCustomResourceAction,
-    stopRefreshCustomResourceAction
-  );
-  useRefreshEffect(refreshNamespacesAction, stopRefreshNamespacesAction);
+  useRefreshEffect(refreshEnvironmentAction, stopRefreshEnvironmentAction);
+  useEffect(() => {
+    props.fetchVersions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const applications = [];
 
@@ -55,7 +55,7 @@ const Layout = props => {
     expanded: props.sidebar.expanded,
     actions: [
       {
-        label: props.intl.messages.custom_resource,
+        label: props.intl.messages.environments,
         icon: <i className="fas fa-server" />,
         onClick: () => {
           props.history.push('/');
@@ -67,7 +67,7 @@ const Layout = props => {
             strict: true
           }) ||
           matchPath(props.history.location.pathname, {
-            path: '/customResource',
+            path: '/environments',
             exact: false,
             strict: true
           })
@@ -101,20 +101,35 @@ const Layout = props => {
           <PrivateRoute exact path="/about" component={Welcome} />
           <PrivateRoute
             exact
-            path="/customResource"
-            component={CustomResource}
+            path="/environments/:name/clockServer/create"
+            component={ClockServerCreation}
           />
           <PrivateRoute
             exact
-            path="/customResource/:id/edit"
-            component={CustomresourceEdit}
+            path="/environments/:name/clockServer/:id/edit"
+            component={ClockServerEdit}
           />
           <PrivateRoute
             exact
-            path="/customResource/create"
-            component={CustomresourceCreation}
+            path="/environments/:name/versionServer/create"
+            component={VersionServerCreation}
           />
-          <PrivateRoute exact path="/" component={CustomResource} />
+          <PrivateRoute
+            exact
+            path="/environments/:name/versionServer/:id/edit"
+            component={VersionServerEdit}
+          />
+          <PrivateRoute
+            exact
+            path="/environments/:name/version/:version/prepare"
+            component={EnvironmentPreparation}
+          />
+          <PrivateRoute
+            path="/environments/:name"
+            component={EnvironmentDetail}
+          />
+          <PrivateRoute exact path="/environments" component={Environment} />
+          <PrivateRoute exact path="/" component={Environment} />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>
@@ -132,7 +147,8 @@ const mapDispatchToProps = dispatch => {
   return {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
-    removeNotification: uid => dispatch(removeNotificationAction(uid))
+    removeNotification: uid => dispatch(removeNotificationAction(uid)),
+    fetchVersions: () => dispatch(fetchVersionsAction())
   };
 };
 

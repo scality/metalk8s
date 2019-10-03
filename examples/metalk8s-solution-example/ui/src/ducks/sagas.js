@@ -1,16 +1,18 @@
 import { all, fork } from 'redux-saga/effects';
 import { configSaga } from './config';
 import { authenticateSaga } from './login';
-import { customResourceSaga } from './app/customResource';
-import { namespacesSaga } from './app/namespaces';
+import { clockServerSaga } from './app/clockServer';
+import { versionServerSaga } from './app/versionServer';
 import { deploymentSaga } from './app/deployment';
+import { environmentSaga } from './app/environment';
 
 export default function* rootSaga() {
   yield all([
     fork(configSaga),
     fork(authenticateSaga),
-    fork(customResourceSaga),
-    fork(namespacesSaga),
-    fork(deploymentSaga)
+    fork(clockServerSaga),
+    fork(versionServerSaga),
+    fork(deploymentSaga),
+    fork(environmentSaga)
   ]);
 }

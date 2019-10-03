@@ -7,7 +7,7 @@ import {
   RbacAuthorizationV1Api
 } from '@kubernetes/client-node';
 
-import { LABEL_PART_OF } from '../../ducks/app/deployment';
+import { LABEL_PART_OF, SOLUTION_CONFIGMAP_NAME } from '../../constants';
 
 let config;
 let coreV1;
@@ -37,40 +37,24 @@ export const updateApiServerConfig = (url, token) => {
   rbacAuthorizationV1Api = config.makeApiClient(RbacAuthorizationV1Api);
 };
 
-export async function getCustomResource() {
+export async function getEnvironment() {
   try {
-    // We want to change this hardcoded data later
     return await customObjects.listClusterCustomObject(
-      'example-solution.metalk8s.scality.com',
+      'solutions.metalk8s.scality.com',
       'v1alpha1',
-      'examples'
+      'environments'
     );
   } catch (error) {
     return { error };
   }
 }
 
-export async function createCustomResource(body, namespaces) {
+export async function updateEnvironment(body, name) {
   try {
-    return await customObjects.createNamespacedCustomObject(
-      'example-solution.metalk8s.scality.com',
+    return await customObjects.patchClusterCustomObject(
+      'solutions.metalk8s.scality.com',
       'v1alpha1',
-      namespaces,
-      'examples',
-      body
-    );
-  } catch (error) {
-    return { error };
-  }
-}
-
-export async function updateCustomResource(body, namespaces, name) {
-  try {
-    return await customObjects.patchNamespacedCustomObject(
-      'example-solution.metalk8s.scality.com',
-      'v1alpha1',
-      namespaces,
-      'examples',
+      'environments',
       name,
       body,
       {
@@ -84,26 +68,108 @@ export async function updateCustomResource(body, namespaces, name) {
   }
 }
 
-export async function getSolutionNamespaces() {
+export async function getClockServer(namespaces) {
   try {
-    return await coreV1.listNamespace(
-      null,
-      null,
-      null,
-      null,
-      `${LABEL_PART_OF}=example-solution`
+    return await customObjects.listNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'clockservers'
     );
   } catch (error) {
     return { error };
   }
 }
 
-export async function getSolutionDeployment(version) {
+export async function getVersionServer(namespaces) {
   try {
-    return await appsV1Api.listDeploymentForAllNamespaces(
+    return await customObjects.listNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'versionservers'
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createClockServer(body, namespaces) {
+  try {
+    return await customObjects.createNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'clockservers',
+      body
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createVersionServer(body, namespaces) {
+  try {
+    return await customObjects.createNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'versionservers',
+      body
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function updateClockServer(body, namespaces, name) {
+  try {
+    return await customObjects.patchNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'clockservers',
+      name,
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/merge-patch+json'
+        }
+      }
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function updateVersionServer(body, namespaces, name) {
+  try {
+    return await customObjects.patchNamespacedCustomObject(
+      'example-solution.metalk8s.scality.com',
+      'v1alpha1',
+      namespaces,
+      'versionservers',
+      name,
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/merge-patch+json'
+        }
+      }
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getOperatorDeployments(namespaces, name) {
+  try {
+    return await appsV1Api.listNamespacedDeployment(
+      namespaces,
       null,
       null,
       null,
+      `metadata.name=${name}`,
       `${LABEL_PART_OF}=example-solution`
     );
   } catch (error) {
@@ -119,6 +185,20 @@ export async function createNamespacedDeployment(namespaces, body) {
   }
 }
 
+export async function listNamespacedServiceAccount(namespaces, name) {
+  try {
+    return await coreV1.listNamespacedServiceAccount(
+      namespaces,
+      null,
+      null,
+      null,
+      `metadata.name=${name}`
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function createNamespacedServiceAccount(namespaces, body) {
   try {
     return await coreV1.createNamespacedServiceAccount(namespaces, body);
@@ -127,9 +207,37 @@ export async function createNamespacedServiceAccount(namespaces, body) {
   }
 }
 
+export async function listNamespacedRole(namespaces, name) {
+  try {
+    return await rbacAuthorizationV1Api.listNamespacedRole(
+      namespaces,
+      null,
+      null,
+      null,
+      `metadata.name=${name}`
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function createNamespacedRole(namespaces, body) {
   try {
     return await rbacAuthorizationV1Api.createNamespacedRole(namespaces, body);
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function listNamespacedRoleBinding(namespaces, name) {
+  try {
+    return await rbacAuthorizationV1Api.listNamespacedRoleBinding(
+      namespaces,
+      null,
+      null,
+      null,
+      `metadata.name=${name}`
+    );
   } catch (error) {
     return { error };
   }
@@ -159,6 +267,37 @@ export async function updateDeployment(body, namespaces, name) {
           'Content-Type': 'application/merge-patch+json'
         }
       }
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createNamespace(body) {
+  try {
+    return await coreV1.createNamespace(body);
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getNamespaces(name) {
+  try {
+    return await coreV1.listNamespace(
+      null,
+      null,
+      null,
+      `metadata.name=${name}`
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+export async function getSolutionsConfigMap() {
+  try {
+    return await coreV1.listConfigMapForAllNamespaces(
+      null,
+      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`
     );
   } catch (error) {
     return { error };
