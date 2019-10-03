@@ -180,7 +180,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -221,7 +221,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -262,7 +262,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -324,7 +324,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: alertmanager-prometheus-operator-alertmanager
@@ -415,7 +415,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_datasource: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -1034,7 +1034,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -1568,7 +1568,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -2155,7 +2155,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -2720,7 +2720,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -3466,7 +3466,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -3957,7 +3957,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -4482,7 +4482,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -4992,7 +4992,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -5519,7 +5519,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -6712,7 +6712,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -7185,7 +7185,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -7657,7 +7657,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -8141,7 +8141,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -8422,7 +8422,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -8751,7 +8751,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -9214,7 +9214,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -9801,7 +9801,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -10372,7 +10372,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -10886,7 +10886,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -11347,7 +11347,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -11420,7 +11420,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -11435,7 +11435,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -11450,7 +11450,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -11467,7 +11467,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: alertmanagers.monitoring.coreos.com
@@ -13951,7 +13951,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: podmonitors.monitoring.coreos.com
@@ -14198,7 +14198,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheuses.monitoring.coreos.com
@@ -17746,7 +17746,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheusrules.monitoring.coreos.com
@@ -18183,7 +18183,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: servicemonitors.monitoring.coreos.com
@@ -18744,7 +18744,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -18767,7 +18767,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -18847,7 +18847,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator-psp
@@ -18870,7 +18870,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -18918,7 +18918,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-psp
@@ -19028,7 +19028,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -19050,7 +19050,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -19072,7 +19072,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator-psp
@@ -19094,7 +19094,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -19116,7 +19116,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-psp
@@ -19304,7 +19304,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -19328,7 +19328,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     jobLabel: coredns
     release: prometheus-operator
@@ -19352,7 +19352,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     jobLabel: kube-controller-manager
     release: prometheus-operator
@@ -19377,7 +19377,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     jobLabel: kube-etcd
     release: prometheus-operator
@@ -19402,7 +19402,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     jobLabel: kube-proxy
     release: prometheus-operator
@@ -19427,7 +19427,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     jobLabel: kube-scheduler
     release: prometheus-operator
@@ -19452,7 +19452,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -19475,7 +19475,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -19811,7 +19811,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -19829,7 +19829,7 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        chart: prometheus-operator-6.10.0
+        chart: prometheus-operator-6.11.0
         heritage: metalk8s
         release: prometheus-operator
     spec:
@@ -19876,7 +19876,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -19927,7 +19927,7 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v0.17.0
+  version: v0.19.0
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
@@ -19937,7 +19937,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -20014,7 +20014,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager.rules
@@ -20062,7 +20062,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-etcd
@@ -20206,7 +20206,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-general.rules
@@ -20251,7 +20251,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-k8s.rules
@@ -20310,7 +20310,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-apiserver.rules
@@ -20343,7 +20343,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-prometheus-node-recording.rules
@@ -20380,7 +20380,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-scheduler.rules
@@ -20443,7 +20443,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-absent
@@ -20536,7 +20536,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-apps
@@ -20688,7 +20688,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-resources
@@ -20769,7 +20769,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-storage
@@ -20821,7 +20821,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-system
@@ -20970,7 +20970,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-exporter.rules
@@ -21019,7 +21019,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-exporter
@@ -21161,7 +21161,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-network
@@ -21187,7 +21187,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-time
@@ -21213,7 +21213,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node.rules
@@ -21243,7 +21243,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-operator
@@ -21278,7 +21278,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -21478,7 +21478,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -21503,7 +21503,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-coredns
@@ -21529,7 +21529,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-apiserver
@@ -21560,7 +21560,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-controller-manager
@@ -21586,7 +21586,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-etcd
@@ -21612,7 +21612,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-proxy
@@ -21638,7 +21638,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-scheduler
@@ -21664,7 +21664,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -21687,7 +21687,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubelet
@@ -21725,7 +21725,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-exporter
@@ -21747,7 +21747,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -21772,7 +21772,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -21797,7 +21797,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.10.0
+    chart: prometheus-operator-6.11.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
