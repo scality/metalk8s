@@ -192,13 +192,7 @@ class LocalImage(image.ContainerImage):
 
     def _do_build(self) -> List[types.Action]:
         """Return the actions used to build the image."""
-        docker_build = docker_command.DockerBuild(
-            tag=self.tag,
-            path=self.build_context,
-            dockerfile=self.dockerfile,
-            buildargs=self.build_args
-        )
-        return [docker_build]
+        return [(docker_command.docker_build, [self], {})]
 
     def _do_save(self) -> List[types.Action]:
         """Return the actions used to save the image."""
