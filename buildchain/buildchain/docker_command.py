@@ -286,3 +286,12 @@ def docker_save(tag: str, save_path: Path) -> None:
     with save_path.open('wb') as image_file:
         for chunk in image_stream:
             image_file.write(chunk)
+
+
+def docker_image_exists(tag: str) -> bool:
+    """Check if the image identified by `tag` exists in the local registry."""
+    try:
+        docker_image = DOCKER_CLIENT.images.get(tag)
+        return docker_image is not None
+    except docker.errors.ImageNotFound:
+        return False
