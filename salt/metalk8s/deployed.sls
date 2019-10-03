@@ -6,4 +6,6 @@ include:
   - metalk8s.salt.master.deployed
   - metalk8s.addons.prometheus-operator.deployed
   - metalk8s.addons.nginx-ingress.deployed
+  - metalk8s.addons.nginx-ingress-control-plane.deployed
   - metalk8s.addons.volumes.deployed
+  - metalk8s.addons.ui.deployed

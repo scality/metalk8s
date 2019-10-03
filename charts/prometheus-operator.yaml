@@ -99,6 +99,8 @@ prometheus:
               app.kubernetes.io/name: prometheus-operator-prometheus
 
 grafana:
+  adminPassword: admin
+
   image:
     repository: '{%- endraw -%}{{ build_image_name(\"grafana\", False) }}{%- raw -%}'
 
@@ -115,6 +117,22 @@ grafana:
     - key: 'node-role.kubernetes.io/infra'
       operator: 'Exists'
       effect: 'NoSchedule'
+
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx-control-plane
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    path: /grafana(/|$)(.*)
+    hosts:
+      - null
+
+  grafana.ini:
+    server:
+      root_url: /grafana
+    analytics:
+      reporting_enabled: false
+      check_for_updates: false
 
 
 kube-state-metrics:

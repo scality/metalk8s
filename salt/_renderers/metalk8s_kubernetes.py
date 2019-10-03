@@ -315,6 +315,22 @@ def _handle_extensions_v1beta1_podsecuritypolicy(obj, kubeconfig, context,
     }
 
 
+@handle('networking.k8s.io/v1beta1', 'Ingress')
+@handle('extensions/v1beta1', 'Ingress')
+def _handle_ingress(obj, kubeconfig, context, absent):
+    return {
+        'metalk8s_kubernetes.ingress_{}'.format(
+            'absent' if absent else 'present'): [
+            {'name': obj['metadata']['name']},
+            {'metadata': obj['metadata']},
+            {'spec': obj['spec']},
+            {'kubeconfig': kubeconfig},
+            {'context': context},
+            {'namespace': obj['metadata']['namespace']},
+        ]
+    }
+
+
 del handle
 
 

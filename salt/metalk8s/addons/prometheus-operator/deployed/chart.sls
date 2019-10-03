@@ -297,7 +297,7 @@ spec:
 ---
 apiVersion: v1
 data:
-  admin-password: cHJvbS1vcGVyYXRvcg==
+  admin-password: YWRtaW4=
   admin-user: YWRtaW4=
   ldap-toml: ''
 kind: Secret
@@ -351,7 +351,9 @@ apiVersion: v1
 data:
   grafana.ini: '[analytics]
 
-    check_for_updates = true
+    check_for_updates = false
+
+    reporting_enabled = false
 
     [grafana_net]
 
@@ -370,6 +372,10 @@ data:
     plugins = /var/lib/grafana/plugins
 
     provisioning = /etc/grafana/provisioning
+
+    [server]
+
+    root_url = /grafana
 
     '
 kind: ConfigMap
@@ -19597,10 +19603,10 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: ea7b59b62d323a0963036c404f90f44a7abe8da38e3b8c352183f899caef5e24
+        checksum/config: d5c37d9d864b156886df6835be5bfcb25e41f3b81d9d93f74265789ba70193d9
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: dc7735583397252c24f82d71d355833fc1e7986140b063616adf9b06236effe3
-        checksum/secret: f832480599cee4cc655aa0e062da52607f34f87a2785e158519d543e17235c86
+        checksum/secret: c112788a78dfad681482268907a2d2866bfef2fcfad86bca7a9daf2a126a2cc6
       labels:
         app: grafana
         release: prometheus-operator
@@ -19867,6 +19873,32 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/infra
         operator: Exists
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx-control-plane
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  labels:
+    app: grafana
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: metalk8s
+    chart: grafana-3.8.11
+    heritage: metalk8s
+    release: prometheus-operator
+  name: prometheus-operator-grafana
+  namespace: metalk8s-monitoring
+spec:
+  rules:
+  - host: null
+    http:
+      paths:
+      - backend:
+          serviceName: prometheus-operator-grafana
+          servicePort: 80
+        path: /grafana(/|$)(.*)
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Alertmanager

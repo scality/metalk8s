@@ -1679,6 +1679,10 @@ def __dict_to_service_spec(spec):
                 spec_obj.ports.append(kube_port)
         elif key == 'clusterIP':
             spec_obj.cluster_ip = value
+        elif key == 'externalIPs':
+            spec_obj.external_i_ps = value
+        elif key == 'externalName':
+            spec_obj.external_name = value
         elif hasattr(spec_obj, key):
             setattr(spec_obj, key, value)
 
@@ -2863,6 +2867,98 @@ def replace_podsecuritypolicy(
             log.exception(
                 'Exception when calling '
                 'ExtensionsV1beta1Api->replace_pod_security_policy'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def show_ingress(name, namespace='default', **kwargs):
+    '''
+    Return the kubernetes ingres defined by name and namespace
+    '''
+    cfg = _setup_conn(**kwargs)
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.read_namespaced_ingress(name, namespace)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->read_namespaced_ingress'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def create_ingress(
+        name,
+        namespace,
+        metadata,
+        spec,
+        **kwargs):
+    if not metadata:
+        metadata = {}
+    metadata['name'] = name
+    metadata['namespace'] = namespace
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    body = kubernetes.client.V1beta1Ingress(
+        metadata=meta_obj, spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.create_namespaced_ingress(
+            namespace=namespace, body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->create_namespaced_ingreess'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def replace_ingress(
+        name,
+        namespace,
+        metadata,
+        spec,
+        **kwargs):
+    if not metadata:
+        metadata = {}
+    metadata['name'] = name
+    metadata['namespace'] = namespace
+    meta_obj = kubernetes.client.V1ObjectMeta(**metadata)
+    body = kubernetes.client.V1beta1Ingress(
+        metadata=meta_obj, spec=spec)
+
+    cfg = _setup_conn(**kwargs)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.replace_namespaced_ingress(name, namespace, body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api->replace_namespaced_ingress'
             )
             raise CommandExecutionError(exc)
     finally:

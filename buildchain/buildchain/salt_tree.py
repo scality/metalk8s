@@ -212,13 +212,14 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'node-exporter-full.json'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/init.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls'),
-    Path('salt/metalk8s/addons/prometheus-operator/deployed/'
-            'prometheus-nodeport.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/storageclass.sls'),
 
-    Path('salt/metalk8s/addons/ui/deployed.sls'),
-    Path('salt/metalk8s/addons/ui/files/metalk8s-ui-deployment.yaml'),
-    Path('salt/metalk8s/addons/ui/precheck.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/dependencies.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/ingress.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/init.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml'),
+    Path('salt/metalk8s/addons/ui/deployed/namespace.sls'),
+    Path('salt/metalk8s/addons/ui/deployed/ui.sls'),
 
     Path('salt/metalk8s/addons/volumes/deployed.sls'),
     targets.TemplateFile(
@@ -253,6 +254,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/nginx-ingress/deployed/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/chart.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/namespace.sls'),
+
+    Path('salt/metalk8s/addons/nginx-ingress-control-plane/deployed/init.sls'),
+    Path('salt/metalk8s/addons/nginx-ingress-control-plane/deployed/chart.sls'),
 
     Path('salt/metalk8s/container-engine/containerd/configured.sls'),
     Path('salt/metalk8s/container-engine/containerd/files/50-metalk8s.conf'),

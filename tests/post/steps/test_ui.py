@@ -16,15 +16,13 @@ def reach_UI(host):
     with host.sudo():
         output = host.check_output(' '.join([
             'salt-call', '--local', '--out=json',
-            'grains.get', 'metalk8s:workload_plane_ip',
+            'grains.get', 'metalk8s:control_plane_ip',
         ]))
         ip = json.loads(output)['local']
 
-        cmd_port = ('kubectl --kubeconfig=/etc/kubernetes/admin.conf'
-                    ' get svc -n metalk8s-ui metalk8s-ui --no-headers'
-                    ' -o custom-columns=":spec.ports[0].nodePort"')
-        port = host.check_output(cmd_port)
-
-    response = requests.get('http://{ip}:{port}'.format(ip=ip, port=port))
+    response = requests.get(
+        'https://{ip}:8443'.format(ip=ip),
+        verify=False,
+    )
 
     assert response.status_code == 200, response.text
