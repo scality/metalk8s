@@ -18,12 +18,7 @@ Mandatory
   local and remote images
 - `hardlink <https://jak-linux.org/projects/hardlink/>`_: to de-duplicate images
   layers
-- `Go <https://golang.org/>`_ (1.12 or higher) and
-  `operator-sdk <https://github.com/operator-framework/operator-sdk>`_ (0.9 or
-  higher): to build the Kubernetes Operators
 - mkisofs: to create the MetalK8s ISO
-- `Mercurial <https://www.mercurial-scm.org/>`_: some Go dependencies are
-  downloaded from Mercurial repositories.
 
 Optional
 --------
