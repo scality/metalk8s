@@ -8,10 +8,10 @@ from typing import Any, Iterator, Tuple
 
 from buildchain import config
 from buildchain import constants
-from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
+from buildchain.targets.local_image import LocalImage  # Avoid circular import…
 
 
 def task__build_builder() -> Iterator[types.TaskDict]:
@@ -22,7 +22,7 @@ def task__build_builder() -> Iterator[types.TaskDict]:
 
 def _builder_image(
     name: str, dockerfile: Path, **kwargs: Any
-) -> targets.LocalImage:
+) -> LocalImage:
     """Create a builder image.
 
     Arguments:
@@ -33,7 +33,7 @@ def _builder_image(
         They are passed to `LocalImage` init method.
     """
     img_name = '{}-{}-builder'.format(config.PROJECT_NAME.lower(), name)
-    return targets.LocalImage(
+    return LocalImage(
         name=img_name,
         version='latest',
         dockerfile=dockerfile,
@@ -43,7 +43,7 @@ def _builder_image(
     )
 
 
-RPM_BUILDER : targets.LocalImage = _builder_image(
+RPM_BUILDER : LocalImage = _builder_image(
     name='rpm',
     dockerfile=constants.ROOT/'packages/redhat/Dockerfile',
     file_dep=[
@@ -56,12 +56,12 @@ RPM_BUILDER : targets.LocalImage = _builder_image(
     },
 )
 
-DEB_BUILDER : targets.LocalImage = _builder_image(
+DEB_BUILDER : LocalImage = _builder_image(
     name='deb',
     dockerfile=constants.ROOT/'packages/debian/Dockerfile',
 )
 
-DOC_BUILDER : targets.LocalImage = _builder_image(
+DOC_BUILDER : LocalImage = _builder_image(
     name='doc',
     dockerfile=constants.ROOT/'docs/Dockerfile',
     build_context=constants.ROOT,
@@ -70,7 +70,7 @@ DOC_BUILDER : targets.LocalImage = _builder_image(
     ]
 )
 
-GO_BUILDER : targets.LocalImage = _builder_image(
+GO_BUILDER : LocalImage = _builder_image(
     name='go',
     dockerfile=constants.STORAGE_OPERATOR_ROOT/'Dockerfile',
     file_dep=[
@@ -80,7 +80,7 @@ GO_BUILDER : targets.LocalImage = _builder_image(
 )
 
 
-_BUILDERS : Tuple[targets.LocalImage, ...] = (
+_BUILDERS : Tuple[LocalImage, ...] = (
     RPM_BUILDER, DEB_BUILDER, DOC_BUILDER, GO_BUILDER
 )
 
