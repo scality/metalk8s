@@ -175,12 +175,13 @@ class LocalImage(image.ContainerImage):
             'title': lambda _: self.show('IMG BUILD'),
             'doc': 'Build {} container image.'.format(self.name),
             'actions': self._build_actions(),
-            'targets': [
-                self.dirname/'manifest.json' if self.save_on_disk
-                else self.dest_dir/self.tag
-            ],
-            'clean': [self.clean] if self.save_on_disk else True
+            'uptodate': [(docker_command.docker_image_exists, [self.tag], {})],
         })
+        if self.save_on_disk:
+            task.update({
+                'targets': [self.dirname/'manifest.json'],
+                'clean': [self.clean],
+            })
         return task
 
     def _build_actions(self) -> List[types.Action]:

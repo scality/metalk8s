@@ -39,7 +39,6 @@ def _builder_image(
         dockerfile=dockerfile,
         destination=config.BUILD_ROOT,
         save_on_disk=False,
-        task_dep=['_builder_root'],
         **kwargs
     )
 
