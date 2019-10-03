@@ -70,9 +70,18 @@ DOC_BUILDER : targets.LocalImage = _builder_image(
     ]
 )
 
+GO_BUILDER : targets.LocalImage = _builder_image(
+    name='go',
+    dockerfile=constants.STORAGE_OPERATOR_ROOT/'Dockerfile',
+    file_dep=[
+        constants.STORAGE_OPERATOR_ROOT/'go.mod',
+        constants.STORAGE_OPERATOR_ROOT/'go.sum',
+    ]
+)
+
 
 _BUILDERS : Tuple[targets.LocalImage, ...] = (
-    RPM_BUILDER, DEB_BUILDER, DOC_BUILDER,
+    RPM_BUILDER, DEB_BUILDER, DOC_BUILDER, GO_BUILDER
 )
 
 
