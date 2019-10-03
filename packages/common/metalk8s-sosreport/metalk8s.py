@@ -98,7 +98,7 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
                         pods = [p.split()[0] for p in
                                 r['output'].splitlines()[1:]]
                         for pod in pods:
-                            self.add_cmd_output('{0} logs {1}'.format(kube_namespaced_cmd, pod))
+                            self.add_cmd_output('{0} logs {1} --all-containers'.format(kube_namespaced_cmd, pod))
 
             if not self.get_option('all'):
                 kube_namespaced_cmd = '{} get --all-namespaces=true'.format(kube_cmd)
