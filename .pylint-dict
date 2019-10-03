@@ -52,6 +52,7 @@ sls
 timestamp
 tmp
 tmpfs
+tox
 txt
 uptodate
 xenial

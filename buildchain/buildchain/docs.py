@@ -34,9 +34,11 @@ from pathlib import Path
 
 import doit  # type: ignore
 
+from buildchain import builder
 from buildchain import config
 from buildchain import coreutils
 from buildchain import constants
+from buildchain import docker_command
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
@@ -92,15 +94,31 @@ def task_doc() -> Iterator[types.TaskDict]:
     )
     for target in doc_targets:
         doc_format = target.name.upper()
+        run_config = docker_command.default_run_config(
+            constants.ROOT/'docs/entrypoint.sh'
+        )
+        # The builder stores the tox env in /tmp, don't shadow it!
+        run_config.pop('tmpfs', None)
+        build_doc = docker_command.DockerRun(
+            command=['/entrypoint.sh', target.command],
+            builder=builder.DOC_BUILDER,
+            run_config=run_config,
+            mounts=[
+                utils.bind_mount(
+                    target=Path('/usr/src/metalk8s/'), source=constants.ROOT
+                )
+            ]
+        )
         yield {
             'name': target.name,
             'title': utils.title_with_target1('DOC {}'.format(doc_format)),
             'doc': 'Generate {} {} documentation'.format(
                 config.PROJECT_NAME, doc_format
             ),
-            'actions': [['tox', '-e', 'docs', '--', target.command]],
+            'actions': [build_doc],
             'targets': [target.target],
             'file_dep': list(utils.git_ls('docs')),
+            'task_dep': ['_build_builder:{}'.format(builder.DOC_BUILDER.name)],
             'clean': [clean(target)],
         }
 
