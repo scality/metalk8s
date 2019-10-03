@@ -145,7 +145,9 @@ def task__download_rpm_packages() -> types.TaskDict:
         builder=builder.RPM_BUILDER,
         mounts=mounts,
         environment={'RELEASEVER': 7},
-        run_config=docker_command.RPM_BASE_CONFIG
+        run_config=docker_command.default_run_config(
+            constants.REDHAT_ENTRYPOINT
+        )
     )
     return {
         'title': utils.title_with_target1('GET RPM PKGS'),
@@ -199,7 +201,9 @@ def task__download_deb_packages() -> types.TaskDict:
         builder=builder.DEB_BUILDER,
         mounts=mounts,
         environment={'SALT_VERSION': versions.SALT_VERSION},
-        run_config=docker_command.DEB_BASE_CONFIG
+        run_config=docker_command.default_run_config(
+            constants.DEBIAN_ENTRYPOINT
+        )
     )
     return {
         'title': utils.title_with_target1('GET DEB PKGS'),

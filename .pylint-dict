@@ -17,6 +17,7 @@ debuild
 dockerfile
 doit
 dedup
+entrypoints
 env
 epel
 filename

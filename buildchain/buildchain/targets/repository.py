@@ -210,7 +210,9 @@ class RPMRepository(Repository):
                 environment=env,
                 mounts=self._get_buildrpm_mounts(pkg.srpm, rpm.parent),
                 tmpfs={'/home/build': '', '/var/tmp': ''},
-                run_config=docker_command.RPM_BASE_CONFIG
+                run_config=docker_command.default_run_config(
+                    constants.REDHAT_ENTRYPOINT
+                )
             )
 
             task = self.basic_task
@@ -298,7 +300,9 @@ class RPMRepository(Repository):
             builder=self.builder,
             mounts=mounts,
             read_only=True,
-            run_config=docker_command.RPM_BASE_CONFIG
+            run_config=docker_command.default_run_config(
+                constants.REDHAT_ENTRYPOINT
+            )
         )
 
         return buildrepo_callable
@@ -383,6 +387,8 @@ class DEBRepository(Repository):
             builder=self.builder,
             mounts=mounts,
             read_only=True,
-            run_config=docker_command.DEB_BASE_CONFIG
+            run_config=docker_command.default_run_config(
+                constants.DEBIAN_ENTRYPOINT
+            )
         )
         return buildrepo_callable

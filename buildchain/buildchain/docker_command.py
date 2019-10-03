@@ -36,27 +36,23 @@ RPMLINTRC_MOUNT : Mount = utils.bind_ro_mount(
     source=constants.ROOT/'packages'/'redhat'/'rpmlintrc',
 )
 
-RPM_BASE_CONFIG = {
-    'hostname': 'build',
-    'mounts': [utils.get_entrypoint_mount('redhat')],
-    'environment': {
-        'TARGET_UID': os.geteuid(),
-        'TARGET_GID': os.getegid()
-    },
-    'tmpfs': {'/tmp': ''},
-    'remove': True
-}
 
-DEB_BASE_CONFIG = {
-    'hostname': 'build',
-    'mounts': [utils.get_entrypoint_mount('debian')],
-    'environment': {
-        'TARGET_UID': os.geteuid(),
-        'TARGET_GID': os.getegid()
-    },
-    'tmpfs': {'/tmp': ''},
-    'remove': True
-}
+def default_run_config(entrypoint: Path) -> Dict[str, Any]:
+    """Return a default run configuration."""
+    return {
+        'hostname': 'build',
+        'mounts': [
+            utils.bind_ro_mount(
+                target=Path('/entrypoint.sh'), source=entrypoint
+            )
+        ],
+        'environment': {
+            'TARGET_UID': os.geteuid(),
+            'TARGET_GID': os.getegid()
+        },
+        'tmpfs': {'/tmp': ''},
+        'remove': True
+    }
 
 
 def default_error_handler(exc: Exception) -> str:
