@@ -14,7 +14,7 @@ from buildchain import config
 
 # Max length of a "command".
 # (used in task display, for a nice aligned output).
-CMD_WIDTH : int = 12
+CMD_WIDTH : int = 14
 
 # URLs of the main container repositories.
 CALICO_REPOSITORY     : str = 'quay.io/calico'
