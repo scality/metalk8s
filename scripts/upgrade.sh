@@ -153,11 +153,16 @@ get_salt_container() {
 }
 
 upgrade_bootstrap () {
+    local saltmaster_endpoint repo_endpoint
+    saltmaster_endpoint="$($SALT_CALL pillar.get \
+        metalk8s:endpoints:salt-master --out txt | cut -d' ' -f2- )"
+    repo_endpoint="$($SALT_CALL pillar.get \
+        metalk8s:endpoints:repositories --out txt | cut -d' ' -f2- )"
     "${SALT_CALL}" --local state.sls metalk8s.roles.bootstrap \
         saltenv="metalk8s-$DESTINATION_VERSION" \
-        pillar="{'metalk8s': {'endpoints': $(salt-call --out \
-        txt pillar.get metalk8s:endpoints \
-        | cut -c 8-)}}"
+        pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
+        'repositories': $repo_endpoint}}}" \
+        --retcode-passthrough
 }
 
 launch_upgrade () {
