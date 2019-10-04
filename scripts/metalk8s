@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -ue -o pipefail
+
+pushd "$(dirname ${BASH_SOURCE[0]})" > /dev/null
+SCRIPTS_DIR="$(pwd)"
+popd > /dev/null
+
+if [ ! -d "${SCRIPTS_DIR}" ]; then
+    echo "Expected scripts directory '${SCRIPTS_DIR}' to be a directory" > /dev/stderr
+    exit 1
+fi
+
+PYTHON36=$(command -v python3.6)
+if [ -z "${PYTHON36}" ]; then
+    PYTHON36=$(command -v python36)
+fi
+
+PYTHON27=$(command -v python2.7)
+if [ -z "${PYTHON27}" ]; then
+    PYTHON27=$(command -v python27)
+fi
+
+if [ -z "${PYTHON36}" ]; then
+    PYTHON="${PYTHON27}"
+else
+    PYTHON="${PYTHON36}"
+fi
+
+if [ ! -x "${PYTHON}" ]; then
+    echo "No suitable Python interpreter (2.7 or 3.6) found" > /dev/stderr
+    exit 1
+fi
+
+exec "${PYTHON}" -B -E -s -m metalk8s_cli "${@}"
