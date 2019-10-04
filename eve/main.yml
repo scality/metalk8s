@@ -66,11 +66,13 @@ stages:
           # most build steps running in Docker, set concurrency to 4.
           command: ./doit.sh -n 4
           usePTY: true
+          haltOnFailure: true
       - ShellCommand:
           name: Put the iso file in a separate folder
           command: >
             mkdir iso &&
             cp _build/metalk8s.iso _build/SHA256SUM _build/root/product.txt iso
+          haltOnFailure: true
       - Upload:
           name: upload artifacts
           source: iso/
