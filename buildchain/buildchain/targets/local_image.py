@@ -87,24 +87,28 @@ class LocalImage(image.ContainerImage):
         dockerfile: Path,
         destination: Path,
         save_on_disk: bool,
+        build_context: Optional[Path]=None,
         build_args: Optional[Dict[str, Any]]=None,
         **kwargs: Any
     ):
         """Initialize a local container image.
 
         Arguments:
-            name:         image name
-            version:      image version
-            dockerfile:   path to the Dockerfile
-            destination:  where to save the result
-            save_on_disk: save the image on disk?
-            build_args:   build arguments
+            name:          image name
+            version:       image version
+            dockerfile:    path to the Dockerfile
+            destination:   where to save the result
+            save_on_disk:  save the image on disk?
+            build_context: path to the build context
+                           (default to the directory containing the Dockerfile)
+            build_args:    build arguments
 
         Keyword Arguments:
             They are passed to `Target` init method.
         """
         self._dockerfile = dockerfile
         self._save = save_on_disk
+        self._build_context = build_context or self.dockerfile.parent
         self._build_args = build_args or {}
         kwargs.setdefault('file_dep', []).append(self.dockerfile)
         kwargs.setdefault('task_dep', []).append('check_for:skopeo')
@@ -112,9 +116,10 @@ class LocalImage(image.ContainerImage):
             name=name, version=version, destination=destination, **kwargs
         )
 
-    dockerfile   = property(operator.attrgetter('_dockerfile'))
-    save_on_disk = property(operator.attrgetter('_save'))
-    build_args   = property(operator.attrgetter('_build_args'))
+    dockerfile    = property(operator.attrgetter('_dockerfile'))
+    save_on_disk  = property(operator.attrgetter('_save'))
+    build_context = property(operator.attrgetter('_build_context'))
+    build_args    = property(operator.attrgetter('_build_args'))
     dep_re = re.compile(
         r'^\s*(COPY|ADD)( --[^ ]+)* (?P<src>[^ ]+) (?P<dst>[^ ]+)\s*$'
     )
@@ -170,12 +175,13 @@ class LocalImage(image.ContainerImage):
             'title': lambda _: self.show('IMG BUILD'),
             'doc': 'Build {} container image.'.format(self.name),
             'actions': self._build_actions(),
-            'targets': [
-                self.dirname/'manifest.json' if self.save_on_disk
-                else self.dest_dir/self.tag
-            ],
-            'clean': [self.clean] if self.save_on_disk else True
+            'uptodate': [(docker_command.docker_image_exists, [self.tag], {})],
         })
+        if self.save_on_disk:
+            task.update({
+                'targets': [self.dirname/'manifest.json'],
+                'clean': [self.clean],
+            })
         return task
 
     def _build_actions(self) -> List[types.Action]:
@@ -187,13 +193,7 @@ class LocalImage(image.ContainerImage):
 
     def _do_build(self) -> List[types.Action]:
         """Return the actions used to build the image."""
-        docker_build = docker_command.DockerBuild(
-            tag=self.tag,
-            path=self.dockerfile.parent,
-            dockerfile=self.dockerfile,
-            buildargs=self.build_args
-        )
-        return [docker_build]
+        return [(docker_command.docker_build, [self], {})]
 
     def _do_save(self) -> List[types.Action]:
         """Return the actions used to save the image."""

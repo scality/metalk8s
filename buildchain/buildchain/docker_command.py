@@ -10,7 +10,7 @@ import copy
 import functools
 import os
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING
 
 import docker                                         # type: ignore
 from docker.errors import BuildError, ContainerError  # type: ignore
@@ -19,7 +19,15 @@ from doit.exceptions import TaskError                 # type: ignore
 
 from buildchain import constants
 from buildchain import utils
-from buildchain.targets import image
+
+# TYPE_CHECKING is always False at runtime: the import below are never executed
+# => we can safely disable `cyclic-import` to avoid pylint false-positive.
+# pylint: disable=cyclic-import,useless-suppression
+if TYPE_CHECKING:
+    from buildchain.targets import LocalImage
+    from buildchain.targets.image import ContainerImage
+# pylint: enable=cyclic-import,useless-suppression
+
 
 DOCKER_CLIENT : docker.DockerClient = docker.from_env()
 
@@ -28,27 +36,23 @@ RPMLINTRC_MOUNT : Mount = utils.bind_ro_mount(
     source=constants.ROOT/'packages'/'redhat'/'rpmlintrc',
 )
 
-RPM_BASE_CONFIG = {
-    'hostname': 'build',
-    'mounts': [utils.get_entrypoint_mount('redhat')],
-    'environment': {
-        'TARGET_UID': os.geteuid(),
-        'TARGET_GID': os.getegid()
-    },
-    'tmpfs': {'/tmp': ''},
-    'remove': True
-}
 
-DEB_BASE_CONFIG = {
-    'hostname': 'build',
-    'mounts': [utils.get_entrypoint_mount('debian')],
-    'environment': {
-        'TARGET_UID': os.geteuid(),
-        'TARGET_GID': os.getegid()
-    },
-    'tmpfs': {'/tmp': ''},
-    'remove': True
-}
+def default_run_config(entrypoint: Path) -> Dict[str, Any]:
+    """Return a default run configuration."""
+    return {
+        'hostname': 'build',
+        'mounts': [
+            utils.bind_ro_mount(
+                target=Path('/entrypoint.sh'), source=entrypoint
+            )
+        ],
+        'environment': {
+            'TARGET_UID': os.geteuid(),
+            'TARGET_GID': os.getegid()
+        },
+        'tmpfs': {'/tmp': ''},
+        'remove': True
+    }
 
 
 def default_error_handler(exc: Exception) -> str:
@@ -108,41 +112,17 @@ def task_error(
     return wrapped_task
 
 
-class DockerBuild:
-    # The call method is not counted as a public method
-    # pylint: disable=too-few-public-methods
-    """A class to expose the `docker build` command through the API client."""
-
-    def __init__(
-        self,
-        tag: str,
-        path: Path,
-        dockerfile: Path,
-        buildargs: Dict[str, Any]
-    ):
-        """Initialize a `docker tag` callable object.
-
-        Arguments:
-            tag:        the tag to add to the resulting image
-            path:       the build context path
-            dockerfile: the Dockerfile path
-            buildargs:  dict of CLI-equivalent `--build-arg` parameters
-        """
-        self.tag = tag
-        self.path = str(path)
-        self.dockerfile = str(dockerfile)
-        self.buildargs = buildargs
-
-    @task_error(docker.errors.BuildError, handler=build_error_handler)
-    @task_error(docker.errors.APIError)
-    def __call__(self) -> None:
-        DOCKER_CLIENT.images.build(
-            tag=self.tag,
-            path=self.path,
-            dockerfile=self.dockerfile,
-            buildargs=self.buildargs,
-            forcerm=True,
-        )
+@task_error(docker.errors.BuildError, handler=build_error_handler)
+@task_error(docker.errors.APIError)
+def docker_build(image: 'LocalImage') -> None:
+    """Build a Docker image using Docker API."""
+    DOCKER_CLIENT.images.build(
+        tag=image.tag,
+        path=str(image.build_context),
+        dockerfile=str(image.dockerfile),
+        buildargs=image.build_args,
+        forcerm=True,
+    )
 
 
 class DockerRun:
@@ -151,7 +131,7 @@ class DockerRun:
     def __init__(
         self,
         command:     List[str],
-        builder:     image.ContainerImage,
+        builder:     'ContainerImage',
         run_config:  Dict[str, Any],
         environment: Optional[Dict[str, Any]]=None,
         mounts:      Optional[List[Mount]]=None,
@@ -245,90 +225,69 @@ class DockerRun:
         )
 
 
-class DockerTag:
-    # The call method is not counted as a public method
-    # pylint: disable=too-few-public-methods
-    """A class to expose the `docker tag` command through the API client."""
+@task_error(docker.errors.BuildError, handler=build_error_handler)
+@task_error(docker.errors.APIError)
+def docker_tag(repository: str, full_name: str, version: str) -> None:
+    """Tag an image using the Docker API.
 
-    def __init__(self, repository: str, full_name: str, version: str):
-        """Initialize a `docker tag` callable object.
-         Arguments:
-            repository: the repository to which the tag should be pushed
-            full_name:  the fully qualified image name
-            version:    the version to tag the image with
-        """
-        self.repository = repository
-        self.full_name = full_name
-        self.version = version
-
-    @task_error(docker.errors.BuildError, handler=build_error_handler)
-    @task_error(docker.errors.APIError)
-    def __call__(self) -> None:
-        to_tag = DOCKER_CLIENT.images.get(self.full_name)
-        to_tag.tag(self.repository, tag=self.version)
+    Arguments:
+        repository: the repository to which the tag should be pushed
+        full_name:  the fully qualified image name
+        version:    the version to tag the image with
+    """
+    image_to_tag = DOCKER_CLIENT.images.get(full_name)
+    image_to_tag.tag(repository, tag=version)
 
 
-class DockerPull:
-    # The call method is not counted as a public method
-    # pylint: disable=too-few-public-methods
-    """A class to expose the `docker pull` command through the API client."""
+@task_error(docker.errors.BuildError, handler=build_error_handler)
+@task_error(docker.errors.APIError)
+@task_error(ValueError)
+def docker_pull(repository: str, name: str, version: str, digest: str) -> None:
+    """Pull a Docker image using Docker API.
 
-    def __init__(
-        self, repository: str, name: str, version: str, digest: str
-    ):
-        """Initialize a `docker pull` callable object.
-
-         Arguments:
-            repository: the repository to pull from
-            name:       the image name to pull from the repository
-            version:    the version of the image to pull
-            digest:     the expected digest of the image to pull
-        """
-        self.repository = repository
-        self.name = name
-        self.version = version
-        self.digest = digest
-
-    @task_error(docker.errors.BuildError, handler=build_error_handler)
-    @task_error(docker.errors.APIError)
-    @task_error(ValueError)
-    def __call__(self) -> None:
-        pulled = DOCKER_CLIENT.images.pull(
-            # For some reason, the repository must include the image name
-            '{}/{}'.format(self.repository, self.name),
-            tag=self.version,
+    Arguments:
+        repository: the repository to pull from
+        name:       the image name to pull from the repository
+        version:    the version of the image to pull
+        digest:     the expected digest of the image to pull
+    """
+    pulled = DOCKER_CLIENT.images.pull(
+        # For some reason, the repository must include the image name…
+        '{}/{}'.format(repository, name),
+        tag=version,
+    )
+    if pulled.id != digest:
+        raise ValueError(
+            "Image {name}:{version} pulled from {repository} "
+            "doesn't match expected digest: "
+            "expected {digest}, got {observed_digest}".format(
+                name=name, version=version, repository=repository,
+                digest=digest, observed_digest=pulled.id
+            )
         )
 
-        if pulled.id != self.digest:
-            raise ValueError(
-                "Image {s.name}:{s.version} pulled from {s.repository} "
-                "doesn't match expected digest: "
-                "expected {s.digest}, got {observed_digest}".format(
-                    s=self, observed_digest=pulled.id
-                )
-            )
+
+@task_error(docker.errors.APIError)
+@task_error(OSError)
+def docker_save(tag: str, save_path: Path) -> None:
+    """Save a Docker image using Docker API.
+
+    Arguments:
+        tag:        the image's repository and tag
+        save_path:  the resulting image save path
+    """
+    to_save = DOCKER_CLIENT.images.get(tag)
+    image_stream = to_save.save(named=True)
+
+    with save_path.open('wb') as image_file:
+        for chunk in image_stream:
+            image_file.write(chunk)
 
 
-class DockerSave:
-    # The call method is not counted as a public method
-    # pylint: disable=too-few-public-methods
-    """A class to expose the `docker save` command through the API client."""
-
-    def __init__(self, tag: str, save_path: Path):
-        """Initialize a `docker save` callable object.
-         Arguments:
-            tag:        the image's repository and tag
-            save_path:  the resulting image save path
-        """
-        self.tag = tag
-        self.save_path = save_path
-
-    @task_error(docker.errors.APIError)
-    @task_error(OSError)
-    def __call__(self) -> None:
-        to_save = DOCKER_CLIENT.images.get(self.tag)
-        image_stream = to_save.save(named=True)
-
-        with self.save_path.open('wb') as image_file:
-            for chunk in image_stream:
-                image_file.write(chunk)
+def docker_image_exists(tag: str) -> bool:
+    """Check if the image identified by `tag` exists in the local registry."""
+    try:
+        docker_image = DOCKER_CLIENT.images.get(tag)
+        return docker_image is not None
+    except docker.errors.ImageNotFound:
+        return False

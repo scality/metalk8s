@@ -99,21 +99,26 @@ class RemoteImage(image.ContainerImage):
         if self._use_tar:
             # Use Docker to pull, tag, then save the image
             task['actions'] = [
-                docker_command.DockerPull(
-                    self.repository,
-                    self._remote_name,
-                    self.version,
-                    self.digest,
+                (
+                    docker_command.docker_pull,
+                    [
+                        self.repository,
+                        self._remote_name,
+                        self.version,
+                        self.digest,
+                    ],
+                    {}
                 ),
-                docker_command.DockerTag(
-                    '{img.repository}/{img.name}'.format(img=self),
-                    self.remote_fullname,
-                    self.version,
+                (
+                    docker_command.docker_tag,
+                    [
+                        '{img.repository}/{img.name}'.format(img=self),
+                        self.remote_fullname,
+                        self.version,
+                    ],
+                    {}
                 ),
-                docker_command.DockerSave(
-                    self.fullname,
-                    self.filepath,
-                )
+                (docker_command.docker_save, [self.fullname, self.filepath], {})
             ]
         else:
             # Use Skopeo to directly copy the remote image into a directory

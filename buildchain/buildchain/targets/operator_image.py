@@ -10,14 +10,13 @@ instead of calling Docker directly.
 
 
 from pathlib import Path
-import shlex
 from typing import Any, List
 
-import doit # type: ignore
-
-from buildchain import config
+from buildchain import builder
 from buildchain import constants
+from buildchain import docker_command
 from buildchain import types
+from buildchain import utils
 
 from . import local_image
 
@@ -38,7 +37,9 @@ class OperatorImage(local_image.LocalImage):
             They are passed to `Target` init method.
         """
         dockerfile = constants.ROOT/name/'build'/'Dockerfile'
-        kwargs.setdefault('task_dep', []).append('check_for:operator-sdk')
+        kwargs.setdefault('task_dep', []).append(
+            '_build_builder:{}'.format(builder.GO_BUILDER.name)
+        )
         super().__init__(
             name=name, version=version, dockerfile=dockerfile,
             destination=destination, save_on_disk=True, build_args=None,
@@ -47,8 +48,22 @@ class OperatorImage(local_image.LocalImage):
 
     def _do_build(self) -> List[types.Action]:
         """Return the actions used to build the image."""
-        cwd = constants.ROOT/self.name
-        cmd = ' '.join(map(shlex.quote, [
-            config.ExtCommand.OPERATOR_SDK.value, 'build', self.tag
-        ]))
-        return [doit.action.CmdAction(cmd, cwd=cwd)]
+        return [docker_command.DockerRun(
+            command=['/entrypoint.sh', self.tag],
+            builder=builder.GO_BUILDER,
+            run_config=docker_command.default_run_config(
+                constants.STORAGE_OPERATOR_ROOT/'entrypoint.sh'
+            ),
+            mounts=[
+                utils.bind_mount(
+                    target=Path('/storage-operator'),
+                    source=constants.STORAGE_OPERATOR_ROOT
+                ),
+                # This container (through operator-sdk) will call `docker
+                # build`, so we need to expose our Docker socket.
+                utils.bind_mount(
+                    target=Path('/var/run/docker.sock'),
+                    source=Path('/var/run/docker.sock'),
+                )
+            ]
+        )]

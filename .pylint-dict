@@ -17,6 +17,7 @@ debuild
 dockerfile
 doit
 dedup
+entrypoints
 env
 epel
 filename
@@ -43,6 +44,7 @@ repo
 reprepro
 rpmlint
 rpmspec
+runtime
 scality
 sdk
 skopeo
@@ -50,6 +52,7 @@ sls
 timestamp
 tmp
 tmpfs
+tox
 txt
 uptodate
 xenial

@@ -12,15 +12,11 @@ stages:
       type: local
     steps:
       - TriggerStages:
-          name: Trigger docs building
-          stage_names:
-            - docs
-          haltOnFailure: true
-      - TriggerStages:
-          name: Trigger build, lint and unit tests stages simultaneously
+          name: Trigger build, docs and lint stages simultaneously
           stage_names:
             - build
             - buildprev
+            - docs
             - lint
             - unit_tests
           haltOnFailure: true
@@ -43,9 +39,7 @@ stages:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
-        docker-builder:
-          context: 'storage-operator'
-          dockerfile: eve/workers/pod-builder/Dockerfile
+        docker-builder: eve/workers/pod-builder
     steps:
       - ShellCommand:
           name: Wait for Docker daemon to be ready
@@ -65,18 +59,10 @@ stages:
           method: clobber
           retryFetch: true
           haltOnFailure: true
-      - ShellCommand: &download_pdf_doc
-          name: Fetch pre-built PDF documentation
-          command: >
-            mkdir -p docs/_build/latex &&
-            curl -s -XGET -o docs/_build/latex/MetalK8s.pdf
-            "%(prop:artifacts_private_url)s/latex/MetalK8s.pdf"
-          haltOnFailure: true
       - ShellCommand:
           name: build everything
           env:
             PYTHON_SYS: python3.6
-            IN_CI: 'True'
           # There are 3 CPUs available for Docker, and 1 for `doit` in the Pod.
           # Given the network IO-bound nature of some of the build steps, and
           # most build steps running in Docker, set concurrency to 4.
@@ -100,9 +86,7 @@ stages:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
-        docker-builder:
-          context: 'storage-operator'
-          dockerfile: eve/workers/pod-builder/Dockerfile
+        docker-builder: eve/workers/pod-builder
     steps:
       - ShellCommand:
           name: Wait for Docker daemon to be ready
@@ -136,8 +120,6 @@ stages:
               bash -c '
               source metalk8s-%(prop:product_version_prev)s/VERSION &&
               echo %(prop:product_version_prev)s.$VERSION_PATCH$VERSION_SUFFIX'
-
-      - ShellCommand: *download_pdf_doc
       - ShellCommand:
           name: build everything
           env:

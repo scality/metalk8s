@@ -27,10 +27,13 @@ Overview;
 
 
 from pathlib import Path
-from typing import Dict, FrozenSet, Iterator, List, Mapping, Optional, Tuple
+from typing import (
+    Dict, FrozenSet, Iterator, List, Mapping, Optional, Sequence, Tuple
+)
 
 from doit.tools import config_changed  # type: ignore
 
+from buildchain import builder
 from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
@@ -69,8 +72,6 @@ def task_packaging() -> types.TaskDict:
     return {
         'actions': None,
         'task_dep': [
-            '_build_rpm_container',
-            '_build_deb_container',
             '_package_mkdir_root',
             '_package_mkdir_iso_root',
             '_download_rpm_packages',
@@ -81,18 +82,6 @@ def task_packaging() -> types.TaskDict:
             '_build_deb_repositories:*',
         ],
     }
-
-def task__build_rpm_container() -> types.TaskDict:
-    """Build the container image used to build the packages/repositories."""
-    task = RPM_BUILDER.task
-    task.pop('name')  # `name` is only used for sub-task.
-    return task
-
-def task__build_deb_container() -> types.TaskDict:
-    """Build the container image used to build the packages/repositories."""
-    task = DEB_BUILDER.task
-    task.pop('name')  # `name` is only used for sub-task.
-    return task
 
 def task__package_mkdir_root() -> types.TaskDict:
     """Create the packages root directory."""
@@ -153,10 +142,12 @@ def task__download_rpm_packages() -> types.TaskDict:
     ]
     dl_packages_callable = docker_command.DockerRun(
         command=['/entrypoint.sh', 'download_packages', *RPM_TO_DOWNLOAD],
-        builder=RPM_BUILDER,
+        builder=builder.RPM_BUILDER,
         mounts=mounts,
         environment={'RELEASEVER': 7},
-        run_config=docker_command.RPM_BASE_CONFIG
+        run_config=docker_command.default_run_config(
+            constants.REDHAT_ENTRYPOINT
+        )
     )
     return {
         'title': utils.title_with_target1('GET RPM PKGS'),
@@ -165,7 +156,7 @@ def task__download_rpm_packages() -> types.TaskDict:
         'task_dep': [
             '_package_mkdir_rpm_root',
             '_package_mkdir_rpm_iso_root',
-            '_build_rpm_container'
+            '_build_builder:{}'.format(builder.RPM_BUILDER.name),
         ],
         'clean': [clean],
         'uptodate': [config_changed(_TO_DOWNLOAD_RPM_CONFIG)],
@@ -207,10 +198,12 @@ def task__download_deb_packages() -> types.TaskDict:
     ]
     dl_packages_callable = docker_command.DockerRun(
         command=['/download_packages.py', *DEB_TO_DOWNLOAD],
-        builder=DEB_BUILDER,
+        builder=builder.DEB_BUILDER,
         mounts=mounts,
         environment={'SALT_VERSION': versions.SALT_VERSION},
-        run_config=docker_command.DEB_BASE_CONFIG
+        run_config=docker_command.default_run_config(
+            constants.DEBIAN_ENTRYPOINT
+        )
     )
     return {
         'title': utils.title_with_target1('GET DEB PKGS'),
@@ -219,7 +212,7 @@ def task__download_deb_packages() -> types.TaskDict:
         'task_dep': [
             '_package_mkdir_deb_root',
             '_package_mkdir_deb_iso_root',
-            '_build_deb_container'
+            '_build_builder:{}'.format(builder.DEB_BUILDER.name),
         ],
         'clean': [clean],
         'uptodate': [config_changed(_TO_DOWNLOAD_DEB_CONFIG)],
@@ -254,46 +247,6 @@ def task__build_deb_repositories() -> Iterator[types.TaskDict]:
         yield from repository.execution_plan
 
 # }}}
-# Builders {{{
-
-# Image used to build the packages
-RPM_BUILDER : targets.LocalImage = targets.LocalImage(
-    name='metalk8s-rpm-build',
-    version='latest',
-    dockerfile=constants.ROOT/'packages'/'redhat'/'Dockerfile',
-    destination=config.BUILD_ROOT,
-    save_on_disk=False,
-    task_dep=['_build_root'],
-    file_dep=[
-        constants.ROOT.joinpath(
-            'packages',
-            'redhat',
-            'yum_repositories',
-            'kubernetes.repo'
-        ),
-        constants.ROOT.joinpath(
-            'packages',
-            'redhat',
-            'yum_repositories',
-            'saltstack.repo'
-        )
-    ],
-    build_args={
-        # Used to template the SaltStack repository definition
-        'SALT_VERSION': versions.SALT_VERSION,
-    },
-)
-
-DEB_BUILDER : targets.LocalImage = targets.LocalImage(
-    name='metalk8s-deb-build',
-    version='latest',
-    dockerfile=constants.ROOT/'packages'/'debian'/'Dockerfile',
-    destination=config.BUILD_ROOT,
-    save_on_disk=False,
-    task_dep=['_build_root'],
-)
-
-# }}}
 # RPM packages and repository {{{
 
 # Packages to build, per repository.
@@ -314,8 +267,31 @@ def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
         version=pkg_info.version,
         build_id=int(build_id_str),
         sources=sources,
-        builder=RPM_BUILDER,
-        task_dep=['_package_mkdir_rpm_root', '_build_rpm_container'],
+        builder=builder.RPM_BUILDER,
+        task_dep=[
+            '_package_mkdir_rpm_root',
+            '_build_builder:{}'.format(builder.RPM_BUILDER.name)
+        ],
+    )
+
+
+def _rpm_repository(
+    name: str, packages: Optional[Sequence[targets.RPMPackage]]=None
+) -> targets.RPMRepository:
+    """Return a RPM repository object.
+
+    Arguments:
+        name:     repository name
+        packages: list of locally built packages
+    """
+    mkdir_task = '_package_mkdir_rpm_iso_root'
+    download_task = '_download_rpm_packages'
+    return targets.RPMRepository(
+        basename='_build_rpm_repositories',
+        name=name,
+        builder=builder.RPM_BUILDER,
+        packages=packages,
+        task_dep=[download_task if packages is None else mkdir_task],
     )
 
 
@@ -360,53 +336,19 @@ _TO_DOWNLOAD_RPM_CONFIG: Dict[str, Optional[str]] = \
     _list_packages_to_download(versions.RPM_PACKAGES, _RPM_TO_BUILD_PKG_NAMES)
 
 
-SCALITY_RPM_REPOSITORY = targets.RPMRepository(
-    basename='_build_rpm_repositories',
-    name='scality',
-    builder=RPM_BUILDER,
-    packages=RPM_TO_BUILD['scality'],
-    task_dep=['_package_mkdir_rpm_iso_root'],
+SCALITY_RPM_REPOSITORY : targets.RPMRepository = _rpm_repository(
+    name='scality', packages=RPM_TO_BUILD['scality']
 )
 
 
 RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
     SCALITY_RPM_REPOSITORY,
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='base',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='extras',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='updates',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='epel',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='kubernetes',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
-    targets.RPMRepository(
-        basename='_build_rpm_repositories',
-        name='saltstack',
-        builder=RPM_BUILDER,
-        task_dep=['_download_rpm_packages'],
-    ),
+    _rpm_repository(name='base'),
+    _rpm_repository(name='extras'),
+    _rpm_repository(name='updates'),
+    _rpm_repository(name='epel'),
+    _rpm_repository(name='kubernetes'),
+    _rpm_repository(name='saltstack'),
 )
 
 
@@ -427,8 +369,31 @@ def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
         version=pkg_info.version,
         build_id=int(pkg_info.release),
         sources=sources,
-        builder=DEB_BUILDER,
-        task_dep=['_package_mkdir_deb_root', '_build_deb_container'],
+        builder=builder.DEB_BUILDER,
+        task_dep=[
+            '_package_mkdir_deb_root',
+            '_build_builder:{}'.format(builder.DEB_BUILDER.name)
+        ],
+    )
+
+
+def _deb_repository(
+    name: str, packages: Optional[Sequence[targets.DEBPackage]]=None
+) -> targets.DEBRepository:
+    """Return a DEB repository object.
+
+    Arguments:
+        name:     repository name
+        packages: list of locally built packages
+    """
+    mkdir_task = '_package_mkdir_deb_iso_root'
+    download_task = '_download_deb_packages'
+    return targets.DEBRepository(
+        basename='_build_deb_repositories',
+        name=name,
+        builder=builder.DEB_BUILDER,
+        packages=packages,
+        task_dep=[download_task if packages is None else mkdir_task],
     )
 
 
@@ -463,43 +428,12 @@ DEB_TO_DOWNLOAD : FrozenSet[str] = frozenset(
 
 
 DEB_REPOSITORIES : Tuple[targets.DEBRepository, ...] = (
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='scality',
-        builder=DEB_BUILDER,
-        packages=DEB_TO_BUILD['scality'],
-        task_dep=['_package_mkdir_deb_iso_root'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='bionic',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='bionic-backports',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='bionic-updates',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='kubernetes-xenial',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
-    targets.DEBRepository(
-        basename='_build_deb_repositories',
-        name='salt_ubuntu1804',
-        builder=DEB_BUILDER,
-        task_dep=['_download_deb_packages'],
-    ),
+    _deb_repository(name='scality', packages=DEB_TO_BUILD['scality']),
+    _deb_repository(name='bionic'),
+    _deb_repository(name='bionic-backports'),
+    _deb_repository(name='bionic-updates'),
+    _deb_repository(name='kubernetes-xenial'),
+    _deb_repository(name='salt_ubuntu1804'),
 )
 
 # }}}

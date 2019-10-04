@@ -110,14 +110,6 @@ def bind_ro_mount(source: Path, target: Path) -> Mount:
     return bind_mount(source=source, target=target, read_only=True)
 
 
-def get_entrypoint_mount(osfamily: str) -> Mount:
-    """Return the path to the entry point script for the given OS family."""
-    return bind_ro_mount(
-        target=Path('/entrypoint.sh'),
-        source=constants.ROOT/'packages'/osfamily/'entrypoint.sh',
-    )
-
-
 def git_ls(directory: Optional[str]=None) -> Iterator[Path]:
     """Return the list of files tracked by Git under `root` (recursively).
 

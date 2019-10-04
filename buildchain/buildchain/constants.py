@@ -55,6 +55,10 @@ STATIC_CONTAINER_REGISTRY : Path = Path(
 # Path to the storage-operator source directory.
 STORAGE_OPERATOR_ROOT : Path = ROOT/'storage-operator'
 
+# Docker entrypoints.
+DEBIAN_ENTRYPOINT : Path = ROOT/'packages/debian/entrypoint.sh'
+REDHAT_ENTRYPOINT : Path = ROOT/'packages/redhat/entrypoint.sh'
+
 # }}}
 # Vagrant parameters {{{
 

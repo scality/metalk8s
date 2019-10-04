@@ -39,6 +39,3 @@ COPY docs/requirements.txt docs/
 
 RUN tox --workdir /tmp/tox --notest -e docs && \
     rm -rf ~/.cache/pip
-
-ENTRYPOINT ["tox", "--workdir", "/tmp/tox", "-e", "docs", "--"]
-CMD ["html"]

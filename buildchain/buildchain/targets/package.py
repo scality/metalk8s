@@ -168,7 +168,6 @@ class RPMPackage(Package):
         spec_guest_file = Path('/rpmbuild/SPECS', self.spec.name)
         meta_guest_file = Path('/rpmbuild/META', self.meta.name)
         mounts = [
-            utils.get_entrypoint_mount('redhat'),
             utils.bind_ro_mount(
                 source=self.spec, target=spec_guest_file
             ),
@@ -176,14 +175,12 @@ class RPMPackage(Package):
                 source=self.meta.parent, target=meta_guest_file.parent
             )
         ]
-        command = ['/entrypoint.sh', 'buildmeta']
-        rpmspec_config = {
-            'hostname': 'build',
-            'read_only': True,
-            'remove': True
-        }
+        rpmspec_config = docker_command.default_run_config(
+            constants.REDHAT_ENTRYPOINT
+        )
+        rpmspec_config['read_only'] = True
         buildmeta_callable = docker_command.DockerRun(
-            command=command,
+            command=['/entrypoint.sh', 'buildmeta'],
             builder=self.builder,
             environment={
                 'SPEC': self.spec.name,
@@ -239,7 +236,9 @@ class RPMPackage(Package):
             tmpfs={'/home/build': '', '/var/tmp': ''},
             mounts=self._get_buildsrpm_mounts(self.srpm.parent),
             read_only=True,
-            run_config=docker_command.RPM_BASE_CONFIG
+            run_config=docker_command.default_run_config(
+                constants.REDHAT_ENTRYPOINT
+            )
         )
 
         task = self.basic_task
@@ -337,6 +336,10 @@ class DEBPackage(Package):
         builder: image.ContainerImage,
         **kwargs: Any
     ):
+        kwargs.setdefault('task_dep', []).extend([
+            '_package_mkdir_deb_iso_root',
+            '_build_builder:{}'.format(builder.name),
+        ])
         super().__init__(
             basename, name, version, build_id, builder,
             constants.PKG_DEB_ROOT, **kwargs
@@ -378,7 +381,9 @@ class DEBPackage(Package):
         builddeb_callable = docker_command.DockerRun(
             command=['/entrypoint.sh', 'builddeb'],
             builder=self.builder,
-            run_config=docker_command.DEB_BASE_CONFIG,
+            run_config=docker_command.default_run_config(
+                constants.DEBIAN_ENTRYPOINT
+            ),
             mounts=mounts,
             environment={
                 'VERSION': '{}-{}'.format(self.version, self.build_id)
@@ -394,8 +399,6 @@ class DEBPackage(Package):
         })
         task['file_dep'].extend(coreutils.ls_files_rec(self.sources))
         task['file_dep'].extend(coreutils.ls_files_rec(self.debuild_sources))
-        task['task_dep'].append('_package_mkdir_deb_iso_root')
-        task['task_dep'].append('_build_deb_container')
         return task
 
     def convert_package(self) -> types.TaskDict:
@@ -409,7 +412,9 @@ class DEBPackage(Package):
         builddeb_callable = docker_command.DockerRun(
             command=['/entrypoint.sh', 'rpm2deb'],
             builder=self.builder,
-            run_config=docker_command.DEB_BASE_CONFIG,
+            run_config=docker_command.default_run_config(
+                constants.DEBIAN_ENTRYPOINT
+            ),
             mounts=mounts
         )
         task = self.basic_task
@@ -421,6 +426,4 @@ class DEBPackage(Package):
             'targets': [self.deb],
         })
         task['file_dep'].append(self.sources)
-        task['task_dep'].append('_package_mkdir_deb_iso_root')
-        task['task_dep'].append('_build_deb_container')
         return task
