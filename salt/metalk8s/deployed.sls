@@ -8,4 +8,5 @@ include:
   - metalk8s.addons.nginx-ingress.deployed
   - metalk8s.addons.nginx-ingress-control-plane.deployed
   - metalk8s.addons.volumes.deployed
+  - metalk8s.addons.solutions.deployed
   - metalk8s.addons.ui.deployed
