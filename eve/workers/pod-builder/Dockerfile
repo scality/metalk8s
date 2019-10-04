@@ -19,7 +19,6 @@ RUN yum install -y epel-release \
     python36-pip \
     genisoimage \
     git \
-    hg \
     skopeo \
     yum-utils \
     docker-ce-cli-18.09.6 \
@@ -28,7 +27,3 @@ RUN yum install -y epel-release \
     && pip install buildbot-worker==${BUILDBOT_VERSION}
 
 USER eve
-
-# Pre-download the Go dependencies.
-COPY go.mod go.sum ./
-RUN go mod download

@@ -39,9 +39,7 @@ stages:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
-        docker-builder:
-          context: 'storage-operator'
-          dockerfile: eve/workers/pod-builder/Dockerfile
+        docker-builder: eve/workers/pod-builder
     steps:
       - ShellCommand:
           name: Wait for Docker daemon to be ready
@@ -88,9 +86,7 @@ stages:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
-        docker-builder:
-          context: 'storage-operator'
-          dockerfile: eve/workers/pod-builder/Dockerfile
+        docker-builder: eve/workers/pod-builder
     steps:
       - ShellCommand:
           name: Wait for Docker daemon to be ready
