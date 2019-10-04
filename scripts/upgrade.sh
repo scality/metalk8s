@@ -170,6 +170,12 @@ launch_upgrade () {
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="metalk8s-$DESTINATION_VERSION"
 
+    "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.sync_auth  \
+        saltenv="metalk8s-$DESTINATION_VERSION"
+
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_roster  \
+        saltenv="metalk8s-$DESTINATION_VERSION"
+
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.upgrade saltenv="metalk8s-$DESTINATION_VERSION"
 }
