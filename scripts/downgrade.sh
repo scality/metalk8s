@@ -181,6 +181,9 @@ downgrade_bootstrap () {
     --retcode-passthrough
   _check_salt_master
   $SALT salt-run saltutil.sync_all saltenv="metalk8s-$DESTINATION_VERSION"
+  $SALT salt-run metalk8s_saltutil.sync_auth saltenv="metalk8s-$DESTINATION_VERSION"
+  $SALT salt-run saltutil.sync_roster saltenv="metalk8s-$DESTINATION_VERSION"
+
   local bootstrap_id
   bootstrap_id=$(
     $SALT_CALL grains.get id --out txt \
