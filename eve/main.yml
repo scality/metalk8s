@@ -447,6 +447,15 @@ stages:
             --destination-version %(prop:metalk8s_version)s
           haltOnFailure: true
       - ShellCommand:
+          name: Provision Prometheus and AlertManager storage after upgrade
+          command: >
+            git checkout %(prop:branch)s --quiet &&
+            sudo env
+            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
+            eve/create-volumes.sh
+          haltOnFailure: true
+      - ShellCommand:
           name: Run fast tests locally
           env:
             ISO_MOUNTPOINT: >
