@@ -98,7 +98,7 @@ stages:
             echo "Could not reach Docker daemon from buildbot worker" >&2
             exit 1'
           haltOnFailure: true
-      - SetPropertyFromCommand: &set_product_version_prev
+      - SetPropertyFromCommand: &product_version_prev
           name: set product_version_prev
           property: product_version_prev
           command: >
@@ -245,11 +245,6 @@ stages:
             --verbose
           haltOnFailure: true
       - ShellCommand:
-          name: Install kubectl for running tests
-          command: >
-            sudo yum install -y kubectl --disablerepo=*
-            --enablerepo=metalk8s-kubernetes
-      - ShellCommand:
           name: Run tests locally
           env:
             ISO_MOUNTPOINT: >
@@ -295,7 +290,7 @@ stages:
     steps:
       - Git: *git_pull
       - ShellCommand: *ssh_ip_setup
-      - SetPropertyFromCommand: *set_product_version_prev
+      - SetPropertyFromCommand: *product_version_prev
       - SetPropertyFromCommand: &set_prev_version
           name: Set previous version
           property: metalk8s_prev_version
@@ -362,6 +357,16 @@ stages:
             --verbose
           haltOnFailure: true
       - ShellCommand:
+          name: Run fast tests locally
+          env:
+            ISO_MOUNTPOINT: >
+              /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
+          command: >
+            git checkout "development/%(prop:product_version_prev)s" &&
+            tox -e tests-local --
+            -m "post and ci and not multinode and not slow"
+          haltOnFailure: true
+      - ShellCommand:
           name: Run upgrade to %(prop:metalk8s_version)s
           command: >
             sudo bash
@@ -370,6 +375,16 @@ stages:
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
             --destination-version %(prop:metalk8s_version)s
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run fast tests locally
+          env:
+            ISO_MOUNTPOINT: >
+              /srv/scality/metalk8s-%(prop:metalk8s_version)s
+          command: >
+            git checkout %(prop:branch)s &&
+            tox -e tests-local --
+            -m "post and ci and not multinode and not slow"
           haltOnFailure: true
       - ShellCommand: *collect_sosreport
       - ShellCommand:
