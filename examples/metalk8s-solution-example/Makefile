@@ -84,6 +84,7 @@ build_ui: $(UI_BUILD_TARGET)
 
 UI_IMG_DEPS := $(shell find $(UI_SRC) \
 	-path "$(UI_SRC)/deploy" -prune -or \
+	-path "$(UI_SRC)/node_modules" -prune -or \
 	-type f \
 	-not -name ".*" -and \
 	-not -name "Dockerfile" -and \
