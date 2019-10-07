@@ -1,14 +1,14 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: examples.example-solution.metalk8s.scality.com
+  name: versionservers.example-solution.metalk8s.scality.com
 spec:
   group: example-solution.metalk8s.scality.com
   names:
-    kind: Example
-    listKind: ExampleList
-    plural: examples
-    singular: example
+    kind: VersionServer
+    listKind: VersionServerList
+    plural: versionservers
+    singular: versionserver
   scope: Namespaced
   subresources:
     status: {}
@@ -30,12 +30,12 @@ spec:
         spec:
           properties:
             replicas:
-              description: Number of example Pods to run as part of the Solution
+              description: Number of Pods to run for this VersionServer
               format: int32
               minimum: 1
               type: integer
             version:
-              description: Version of the example Pods container image
+              description: The version of the container image to run
               type: string
           required:
           - replicas
