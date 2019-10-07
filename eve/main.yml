@@ -499,6 +499,37 @@ stages:
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
       - ShellCommand:
+          name: Check if unzip and curl are installed
+          command: |-
+            if ! unzip -h 2&> /dev/null; then
+              echo "aborting - unzip not installed and required" >&2
+              exit 1
+            fi
+            if ! curl -h 2&> /dev/null; then
+              echo "aborting - curl not installed and required" >&2
+              exit 1
+            fi
+          haltOnFailure: true
+      - ShellCommand:
+          name: Download and install terraform
+          env:
+            TF_VERSION: "0.12.3"
+          command: >
+            TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/";
+            TF_FILE="terraform_${TF_VERSION}_linux_amd64.zip";
+            curl --retry 5 -O "${TF_URL}${TF_FILE}" &&
+            sudo unzip "${TF_FILE}" -d /usr/local/sbin/ &&
+            rm -f "${TF_FILE}"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Check that terraform was installed
+          command: |-
+            if ! terraform --version 2&> /dev/null; then
+              echo "aborting - terraform not installed and required" >&2
+              exit 1
+            fi
+          haltOnFailure: true
+      - ShellCommand:
           name: Init terraform
           command: terraform init
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
