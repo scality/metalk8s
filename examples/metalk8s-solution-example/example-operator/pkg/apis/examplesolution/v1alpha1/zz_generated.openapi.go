@@ -11,17 +11,17 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"./pkg/apis/solution/v1alpha1.Example":       schema_pkg_apis_solution_v1alpha1_Example(ref),
-		"./pkg/apis/solution/v1alpha1.ExampleSpec":   schema_pkg_apis_solution_v1alpha1_ExampleSpec(ref),
-		"./pkg/apis/solution/v1alpha1.ExampleStatus": schema_pkg_apis_solution_v1alpha1_ExampleStatus(ref),
+		"./pkg/apis/examplesolution/v1alpha1.VersionServer":       schema_pkg_apis_examplesolution_v1alpha1_VersionServer(ref),
+		"./pkg/apis/examplesolution/v1alpha1.VersionServerSpec":   schema_pkg_apis_examplesolution_v1alpha1_VersionServerSpec(ref),
+		"./pkg/apis/examplesolution/v1alpha1.VersionServerStatus": schema_pkg_apis_examplesolution_v1alpha1_VersionServerStatus(ref),
 	}
 }
 
-func schema_pkg_apis_solution_v1alpha1_Example(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_examplesolution_v1alpha1_VersionServer(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Example is the Schema for the examples API",
+				Description: "VersionServer is the Schema for the examples API",
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -44,38 +44,38 @@ func schema_pkg_apis_solution_v1alpha1_Example(ref common.ReferenceCallback) com
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("./pkg/apis/solution/v1alpha1.ExampleSpec"),
+							Ref: ref("./pkg/apis/examplesolution/v1alpha1.VersionServerSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("./pkg/apis/solution/v1alpha1.ExampleStatus"),
+							Ref: ref("./pkg/apis/examplesolution/v1alpha1.VersionServerStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"./pkg/apis/solution/v1alpha1.ExampleSpec", "./pkg/apis/solution/v1alpha1.ExampleStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"./pkg/apis/examplesolution/v1alpha1.VersionServerSpec", "./pkg/apis/examplesolution/v1alpha1.VersionServerStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
-func schema_pkg_apis_solution_v1alpha1_ExampleSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_examplesolution_v1alpha1_VersionServerSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ExampleSpec defines the desired state of Example",
+				Description: "VersionServerSpec defines the desired state of VersionServer",
 				Properties: map[string]spec.Schema{
 					"replicas": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Number of example Pods to run as part of the Solution",
+							Description: "Number of Pods to run for this VersionServer",
 							Type:        []string{"integer"},
 							Format:      "int32",
 						},
 					},
 					"version": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Version of the example Pods container image",
+							Description: "The version of the container image to run",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -88,11 +88,11 @@ func schema_pkg_apis_solution_v1alpha1_ExampleSpec(ref common.ReferenceCallback)
 	}
 }
 
-func schema_pkg_apis_solution_v1alpha1_ExampleStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_examplesolution_v1alpha1_VersionServerStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ExampleStatus defines the observed state of Example",
+				Description: "VersionServerStatus defines the observed state of VersionServer",
 				Properties:  map[string]spec.Schema{},
 			},
 		},

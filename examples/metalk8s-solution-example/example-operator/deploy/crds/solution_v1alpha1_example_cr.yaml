@@ -1,7 +1,0 @@
-apiVersion: example-solution.metalk8s.scality.com/v1alpha1
-kind: Example
-metadata:
-  name: example-example
-spec:
-  # Add fields here
-  size: 3

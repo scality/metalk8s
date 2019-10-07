@@ -1,11 +1,11 @@
-package example
+package versionserver
 
 import (
 	"context"
 	"fmt"
 	"os"
 
-	solutionv1alpha1 "example-operator/pkg/apis/solution/v1alpha1"
+	examplesolutionv1alpha1 "example-operator/pkg/apis/examplesolution/v1alpha1"
 	"example-operator/version"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -25,15 +25,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-/* Reconciliation of `Example` Custom Resources {{{
+/* Reconciliation of `VersionServer` Custom Resources {{{
 
 TODO: describe logic in case of Size and/or Version mismatch
 
 }}} */
 
-var log = logf.Log.WithName("example-controller")
+var log = logf.Log.WithName("version-server-controller")
 
-// Add creates a new Example Controller and adds it to the Manager. The Manager will set fields on the Controller
+// Add creates a new VersionServer Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
@@ -41,27 +41,27 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileExample{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileVersionServer{client: mgr.GetClient(), scheme: mgr.GetScheme()}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("example-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("version-server-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to primary resource Example
-	err = c.Watch(&source.Kind{Type: &solutionv1alpha1.Example{}}, &handler.EnqueueRequestForObject{})
+	// Watch for changes to primary resource VersionServer
+	err = c.Watch(&source.Kind{Type: &examplesolutionv1alpha1.VersionServer{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to secondary resources and requeue the owner Example
+	// Watch for changes to secondary resources and requeue the owner VersionServer
 	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &solutionv1alpha1.Example{},
+		OwnerType:    &examplesolutionv1alpha1.VersionServer{},
 	})
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	err = c.Watch(&source.Kind{Type: &corev1.Service{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &solutionv1alpha1.Example{},
+		OwnerType:    &examplesolutionv1alpha1.VersionServer{},
 	})
 	if err != nil {
 		return err
@@ -78,40 +78,40 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-// blank assignment to verify that ReconcileExample implements reconcile.Reconciler
-var _ reconcile.Reconciler = &ReconcileExample{}
+// blank assignment to verify that ReconcileVersionServer implements reconcile.Reconciler
+var _ reconcile.Reconciler = &ReconcileVersionServer{}
 
-// ReconcileExample reconciles a Example object
-type ReconcileExample struct {
+// ReconcileVersionServer reconciles a VersionServer object
+type ReconcileVersionServer struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client client.Client
 	scheme *runtime.Scheme
 }
 
-// Reconcile reads that state of the cluster for a Example object and makes changes based on the state read
-// and what is in the Example.Spec
+// Reconcile reads that state of the cluster for a VersionServer object and makes changes based on the state read
+// and what is in the VersionServer.Spec
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
-func (r *ReconcileExample) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	reqLogger.Info("Reconciling Example: START")
-	defer reqLogger.Info("Reconciling Example: STOP")
+	reqLogger.Info("Reconciling VersionServer: START")
+	defer reqLogger.Info("Reconciling VersionServer: STOP")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	// Cancel the request context after Reconcile returns.
 	defer cancel()
 
-	// Fetch the Example instance
-	instance := &solutionv1alpha1.Example{}
+	// Fetch the VersionServer instance
+	instance := &examplesolutionv1alpha1.VersionServer{}
 	err := r.client.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
-			reqLogger.Info("Example resource not found. Ignoring since object must be deleted")
+			reqLogger.Info("VersionServer resource not found. Ignoring since object must be deleted")
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -124,7 +124,7 @@ func (r *ReconcileExample) Reconcile(request reconcile.Request) (reconcile.Resul
 	err = r.client.Get(ctx, types.NamespacedName{Name: instance.Name, Namespace: instance.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
-		dep := r.deploymentForExample(instance)
+		dep := r.deploymentForVersionServer(instance)
 		reqLogger.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 		err = r.client.Create(ctx, dep)
 		if err != nil {
@@ -157,8 +157,8 @@ func (r *ReconcileExample) Reconcile(request reconcile.Request) (reconcile.Resul
 	deployedVersion, ok := depLabels["app.kubernetes.io/version"]
 	if !ok || deployedVersion != version {
 		// Update labels and image name
-		labels := labelsForExample(instance, true)
-		image := imageForExample(instance)
+		labels := labelsForVersionServer(instance, true)
+		image := imageForVersionServer(instance)
 		found.ObjectMeta.Labels = labels
 		found.Spec.Template.ObjectMeta.Labels = labels
 		found.Spec.Template.Spec.Containers[0].Image = image
@@ -177,20 +177,20 @@ func (r *ReconcileExample) Reconcile(request reconcile.Request) (reconcile.Resul
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileExample) deploymentForExample(example *solutionv1alpha1.Example) *appsv1.Deployment {
-	labels := labelsForExample(example, true)
-	labelsSelector := labelsForExample(example, false)
+func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) *appsv1.Deployment {
+	labels := labelsForVersionServer(versionserver, true)
+	labelsSelector := labelsForVersionServer(versionserver, false)
 	maxSurge := intstr.FromInt(0)
 	maxUnavailable := intstr.FromInt(1)
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      example.Name,
-			Namespace: example.Namespace,
+			Name:      versionserver.Name,
+			Namespace: versionserver.Namespace,
 			Labels:    labels,
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &example.Spec.Replicas,
+			Replicas: &versionserver.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labelsSelector,
 			},
@@ -207,12 +207,12 @@ func (r *ReconcileExample) deploymentForExample(example *solutionv1alpha1.Exampl
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
-						Image:   imageForExample(example),
-						Name:    "example-component",
+						Image:   imageForVersionServer(versionserver),
+						Name:    "version-server",
 						Command: []string{"python3", "/app/server.py"},
 						Ports: []corev1.ContainerPort{{
 							ContainerPort: 8080,
-							Name:          "example",
+							Name:          "version-server",
 						}},
 					}},
 				},
@@ -221,33 +221,33 @@ func (r *ReconcileExample) deploymentForExample(example *solutionv1alpha1.Exampl
 	}
 
 	// Set the owner reference
-	controllerutil.SetControllerReference(example, deployment, r.scheme)
+	controllerutil.SetControllerReference(versionserver, deployment, r.scheme)
 	return deployment
 }
 
-func labelsForExample(example *solutionv1alpha1.Example, versionize bool) map[string]string {
+func labelsForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer, versionize bool) map[string]string {
 	var labels = map[string]string{
-		"app":                                   "example",
-		"app.kubernetes.io/name":                example.Name,
-		"app.kubernetes.io/component":           "component",
-		"app.kubernetes.io/part-of":             "example",
-		"app.kubernetes.io/managed-by":          "example-operator",
+		"app":                          "example",
+		"app.kubernetes.io/name":       versionserver.Name,
+		"app.kubernetes.io/component":  "version-server",
+		"app.kubernetes.io/part-of":    "example",
+		"app.kubernetes.io/managed-by": "example-operator",
 	}
 	if versionize {
-		labels["app.kubernetes.io/version"] = example.Spec.Version
+		labels["app.kubernetes.io/version"] = versionserver.Spec.Version
 		labels["example-solution.metalk8s.scality.com/operator-version"] = version.Version
 	}
 	return labels
 }
 
-func imageForExample(example *solutionv1alpha1.Example) string {
+func imageForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) string {
 	prefix, found := os.LookupEnv("REGISTRY_PREFIX")
 	if !found {
 		prefix = "docker.io/metalk8s"
 	}
 
 	return fmt.Sprintf(
-		"%s/example-solution-%s/example-component:%s",
-		prefix, example.Spec.Version, example.Spec.Version,
+		"%s/example-solution-%s/base-server:%s",
+		prefix, versionserver.Spec.Version, versionserver.Spec.Version,
 	)
 }

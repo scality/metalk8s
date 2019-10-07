@@ -7,24 +7,24 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// ExampleSpec defines the desired state of Example
+// VersionServerSpec defines the desired state of VersionServer
 // +k8s:openapi-gen=true
-type ExampleSpec struct {
+type VersionServerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// +kubebuilder:validation:Minimum=1
-	// Number of example Pods to run as part of the Solution
+	// Number of Pods to run for this VersionServer
 	Replicas int32 `json:"replicas"`
 
-	// Version of the example Pods container image
+	// The version of the container image to run
 	Version string `json:"version"`
 }
 
-// ExampleStatus defines the observed state of Example
+// VersionServerStatus defines the observed state of VersionServer
 // +k8s:openapi-gen=true
-type ExampleStatus struct {
+type VersionServerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
@@ -32,26 +32,26 @@ type ExampleStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Example is the Schema for the examples API
+// VersionServer is the Schema for the examples API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-type Example struct {
+type VersionServer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ExampleSpec   `json:"spec,omitempty"`
-	Status ExampleStatus `json:"status,omitempty"`
+	Spec   VersionServerSpec   `json:"spec,omitempty"`
+	Status VersionServerStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ExampleList contains a list of Example
-type ExampleList struct {
+// VersionServerList contains a list of VersionServer
+type VersionServerList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Example `json:"items"`
+	Items           []VersionServer `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Example{}, &ExampleList{})
+	SchemeBuilder.Register(&VersionServer{}, &VersionServerList{})
 }
