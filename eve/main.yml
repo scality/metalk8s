@@ -70,18 +70,22 @@ stages:
           usePTY: true
           haltOnFailure: true
       - ShellCommand:
-          name: Put the iso file in a separate folder
+          name: Put the artifacts to upload in a separate folder
           command: >
-            mkdir iso &&
-            cp _build/metalk8s.iso _build/SHA256SUM _build/root/product.txt iso
+            mkdir artifacts &&
+            cp build.log artifacts &&
+            cp _build/SHA256SUM artifacts &&
+            cp _build/metalk8s.iso artifacts &&
+            cp _build/root/product.txt artifacts
           haltOnFailure: true
       - Upload:
           name: upload artifacts
-          source: iso/
+          source: artifacts/
           urls:
             - "*.iso"
             - SHA256SUM
             - product.txt
+            - build.log
 
   buildprev:
     worker:
