@@ -4,7 +4,11 @@ import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
 import { Table, Tooltip } from '@scality/core-ui';
-import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
+import {
+  padding,
+  fontWeight,
+  fontSize,
+} from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
 import {
   refreshClusterStatusAction,
@@ -47,9 +51,27 @@ const PageSubtitle = styled.h3`
 const ClusterStatusTitleContainer = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
+`;
+
+const LeftClusterStatusContainer = styled.div`
+  display: flex;
+  align-items: center;
   .sc-tooltip-overlay-text {
     white-space: nowrap;
     text-align: left;
+  }
+`;
+
+const RightClusterStatusContainer = styled.div`
+  display: flex;
+  i {
+    font-size: ${fontSize.larger};
+    color: ${props => props.theme.brand.primary};
+    &:hover {
+      color: ${props => props.theme.brand.secondary};
+      cursor: pointer;
+    }
   }
 `;
 
@@ -165,40 +187,62 @@ const ClusterMonitoring = props => {
   return (
     <PageContainer>
       <ClusterStatusTitleContainer>
-        <PageSubtitle>{props.intl.messages.cluster_status + ' :'}</PageSubtitle>
-        <ClusterStatusValue
-          isUp={props.clusterStatus.value === CLUSTER_STATUS_UP}
-        >
-          {props.clusterStatus.label}
-        </ClusterStatusValue>
-        <Tooltip
-          placement="right"
-          overlay={
-            <TooltipContent>
-              <div>
-                <CircleStatus status={apiServerStatus} />
-                <ControlPlaneStatusLabel>
-                  {props.intl.messages.api_server}
-                </ControlPlaneStatusLabel>
-              </div>
-              <div>
-                <CircleStatus status={kubeSchedulerStatus} />
-                <ControlPlaneStatusLabel>
-                  {props.intl.messages.kube_scheduler}
-                </ControlPlaneStatusLabel>
-              </div>
-              <div>
-                <CircleStatus status={kubeControllerManagerStatus} />
-                <ControlPlaneStatusLabel>
-                  {props.intl.messages.kube_controller_manager}
-                </ControlPlaneStatusLabel>
-              </div>
-            </TooltipContent>
-          }
-        >
-          <QuestionMarkIcon className="fas fa-question-circle" />
-        </Tooltip>
-        {props.clusterStatus.isLoading ? <LoaderCoreUI size="small" /> : null}
+        <LeftClusterStatusContainer>
+          <PageSubtitle>
+            {props.intl.messages.cluster_status + ' :'}
+          </PageSubtitle>
+          <ClusterStatusValue
+            isUp={props.clusterStatus.value === CLUSTER_STATUS_UP}
+          >
+            {props.clusterStatus.label}
+          </ClusterStatusValue>
+          <Tooltip
+            placement="right"
+            overlay={
+              <TooltipContent>
+                <div>
+                  <CircleStatus status={apiServerStatus} />
+                  <ControlPlaneStatusLabel>
+                    {props.intl.messages.api_server}
+                  </ControlPlaneStatusLabel>
+                </div>
+                <div>
+                  <CircleStatus status={kubeSchedulerStatus} />
+                  <ControlPlaneStatusLabel>
+                    {props.intl.messages.kube_scheduler}
+                  </ControlPlaneStatusLabel>
+                </div>
+                <div>
+                  <CircleStatus status={kubeControllerManagerStatus} />
+                  <ControlPlaneStatusLabel>
+                    {props.intl.messages.kube_controller_manager}
+                  </ControlPlaneStatusLabel>
+                </div>
+              </TooltipContent>
+            }
+          >
+            <QuestionMarkIcon className="fas fa-question-circle" />
+          </Tooltip>
+          {props.clusterStatus.isLoading ? <LoaderCoreUI size="small" /> : null}
+        </LeftClusterStatusContainer>
+        <RightClusterStatusContainer>
+          <Tooltip
+            placement="left"
+            overlay={
+              <TooltipContent>
+                {props.intl.messages.advanced_monitoring}
+              </TooltipContent>
+            }
+          >
+            <div
+              onClick={() => {
+                window.open(props.config.api.url_grafana, '_blank');
+              }}
+            >
+              <i className="fas fa-chart-line" />
+            </div>
+          </Tooltip>
+        </RightClusterStatusContainer>
       </ClusterStatusTitleContainer>
 
       <PageSubtitle>
@@ -228,6 +272,7 @@ const mapStateToProps = (state, props) => {
     alerts: state.app.monitoring.alert,
     clusterStatus: makeClusterStatus(state, props),
     cluster: state.app.monitoring.cluster,
+    config: state.config,
   };
 };
 

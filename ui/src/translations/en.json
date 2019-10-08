@@ -123,5 +123,6 @@
   "description": "Description",
   "add_solution_to_environment": "Add solution to the environment {environment}",
   "version_env": "Versions",
-  "add_solution": "Add the solution"
+  "add_solution": "Add the solution",
+  "advanced_monitoring": "Advanced Monitoring"
 }
