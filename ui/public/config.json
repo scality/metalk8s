@@ -1,5 +1,6 @@
 {
-    "url": "https://172.21.254.13:6443",
-    "url_salt": "http://172.21.254.13:4507",
-    "url_prometheus": "http://172.21.254.46:31266"
+    "url": "https://{ip}:8443/api/kubernetes",
+    "url_salt": "https://{ip}:8443/api/salt",
+    "url_prometheus": "https://{ip}:8443/api/prometheus",
+    "url_grafana": "https://{ip}:8443/grafana"
 }
