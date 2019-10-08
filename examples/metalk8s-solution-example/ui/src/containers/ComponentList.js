@@ -43,7 +43,7 @@ const ListContainer = styled.div`
   padding: ${padding.base};
 `;
 
-const Component = props => {
+const ComponentList = props => {
   const { intl, history, versionServers, clockServers, match } = props;
   const environment = match.params.name;
 
@@ -131,9 +131,9 @@ const Component = props => {
       <ListContainer>
         <ActionContainer>
           <Button
-            text={intl.messages.create_version_server}
+            text={intl.messages.create_hyperdrive}
             onClick={() =>
-              history.push(`/environments/${environment}/versionServer/create`)
+              history.push(`/environments/${environment}/hyperdrive/create`)
             }
             icon={<i className="fas fa-plus" />}
           />
@@ -163,7 +163,9 @@ const Component = props => {
         <ActionContainer>
           <Button
             text={intl.messages.create_clock_server}
-            onClick={() => history.push(`/environments/${environment}/clockServer/create`)}
+            onClick={() =>
+              history.push(`/environments/${environment}/clockServer/create`)
+            }
             icon={<i className="fas fa-plus" />}
           />
         </ActionContainer>
@@ -200,8 +202,10 @@ function mapStateToProps(state) {
 }
 const mapDispatchToProps = dispatch => {
   return {
-    refreshClockServer: environment => dispatch(refreshClockServerAction(environment)),
-    refreshVersionServer: environment => dispatch(refreshVersionServerAction(environment)),
+    refreshClockServer: environment =>
+      dispatch(refreshClockServerAction(environment)),
+    refreshVersionServer: environment =>
+      dispatch(refreshVersionServerAction(environment)),
     stopRefreshClockServer: () => dispatch(stopRefreshClockServerAction()),
     stopRefreshVersionServer: () => dispatch(stopRefreshVersionServerAction())
   };
@@ -212,6 +216,6 @@ export default injectIntl(
     connect(
       mapStateToProps,
       mapDispatchToProps
-    )(Component)
+    )(ComponentList)
   )
 );

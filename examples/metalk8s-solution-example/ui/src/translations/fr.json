@@ -14,5 +14,7 @@
   "replicas": "Duplication",
   "no_data_available": "Pas de données disponibles",
   "not_found": "Aucun résultat",
-  "not_valid_version": "Ce n'est pas une version valide"
+  "not_valid_version": "Ce n'est pas une version valide",
+  "create_hyperdrive": "Créer un Hyperdrive",
+  "create_hyperdrive_controller": "Créer un Hyperdrive Controller"
 }

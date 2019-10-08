@@ -22,7 +22,7 @@ import {
   InformationValue,
   InformationMainValue
 } from '../components/InformationList';
-import ComponentsList from './Component';
+import ComponentList from './ComponentList';
 import { upgradeEnvironmentAction } from '../ducks/app/environment';
 
 const EnvironmentDetailContainer = styled.div`
@@ -142,6 +142,7 @@ const EnvironmentEditForm = props => {
     </EnvironmentEditFormContainer>
   );
 };
+
 const EnvironmentDetail = props => {
   const { match, intl, config, environments, upgradeEnvironment } = props;
   const [environmentEditing, setEnvironmentEditing] = useState(false);
@@ -149,6 +150,7 @@ const EnvironmentDetail = props => {
   const environment = environments.find(
     environment => environment.name === environmentName
   );
+
   return environment ? (
     <EnvironmentDetailContainer>
       <BreadcrumbContainer>
@@ -211,7 +213,7 @@ const EnvironmentDetail = props => {
       </InformationListContainer>
       <ComponentContainer>
         <h3>{intl.messages.components}</h3>
-        <ComponentsList />
+        <ComponentList />
       </ComponentContainer>
     </EnvironmentDetailContainer>
   ) : null;

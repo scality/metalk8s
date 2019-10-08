@@ -303,3 +303,9 @@ export async function getSolutionsConfigMap() {
     return { error };
   }
 }
+
+export async function getHyperdrives() {
+  //
+
+  return {};
+}

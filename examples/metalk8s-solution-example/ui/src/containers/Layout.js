@@ -15,6 +15,7 @@ import VersionServerEdit from './VersionServerEdit';
 import Environment from './Environment';
 import EnvironmentDetail from './EnvironmentDetail';
 import EnvironmentPreparation from './EnvironmentPreparation';
+import HyperdriveCreation from './HyperdriveCreation';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
@@ -123,6 +124,10 @@ const Layout = props => {
             exact
             path="/environments/:name/version/:version/prepare"
             component={EnvironmentPreparation}
+          />
+          <PrivateRoute
+            path="/environments/:name/hyperdrive/create"
+            component={HyperdriveCreation}
           />
           <PrivateRoute
             path="/environments/:name"
