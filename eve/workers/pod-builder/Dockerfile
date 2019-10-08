@@ -9,6 +9,7 @@ RUN yum install -y epel-release \
     --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo \
     && yum install -y \
+    sudo \
     gcc \
     hardlinks \
     make \
@@ -25,5 +26,8 @@ RUN yum install -y epel-release \
     && adduser -u 1042 --home /home/eve eve --groups docker \
     && chown eve:eve /home/eve/workspace \
     && pip install buildbot-worker==${BUILDBOT_VERSION}
+
+# Add eve to sudoers.
+RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve
 
 USER eve

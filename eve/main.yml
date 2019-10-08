@@ -57,6 +57,12 @@ stages:
           method: clobber
           retryFetch: true
           haltOnFailure: true
+      - ShellCommand: &setup_cache
+          name: Setup proxy cache
+          command: >
+              curl -s http://proxy-cache/setup.sh | sudo sh &&
+              . /usr/local/bin/use_scality_proxy_cache
+          haltOnFailure: true
       - ShellCommand:
           name: build everything
           env:
@@ -153,6 +159,7 @@ stages:
           dockerfile: docs/Dockerfile
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand:
           name: Build documentation
           env:
@@ -174,6 +181,7 @@ stages:
         docker-linter: eve/workers/pod-linter
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all linting targets
           command: ./doit.sh lint
@@ -188,6 +196,7 @@ stages:
       path: eve/workers/openstack-single-node
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand: &ssh_ip_setup
           name: Report IP and install SSH keys
           command: >
@@ -411,6 +420,7 @@ stages:
       path: eve/workers/openstack-multiple-nodes
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
