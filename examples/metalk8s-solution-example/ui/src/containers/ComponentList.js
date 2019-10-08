@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import { connect, useDispatch, useSelector } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button } from '@scality/core-ui';
@@ -8,12 +9,12 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
-  refreshClockServerAction,
-  stopRefreshClockServerAction
-} from '../ducks/app/clockServer';
+  refreshHyperdriveAction,
+  stopRefreshHyperdriveAction,
+} from '../ducks/app/hyperdrive';
 import {
   refreshVersionServerAction,
-  stopRefreshVersionServerAction
+  stopRefreshVersionServerAction,
 } from '../ducks/app/versionServer';
 
 const ComponentContainer = styled.div`
@@ -44,15 +45,20 @@ const ListContainer = styled.div`
 `;
 
 const ComponentList = props => {
-  const { intl, history, versionServers, clockServers, match } = props;
+  const { intl, versionServers, match } = props;
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const hyperdrives = useSelector(state => state.app.hyperdrive.list);
   const environment = match.params.name;
 
+  console.log('ComponentList hyperdrives', hyperdrives);
+
   useEffect(() => {
-    props.refreshClockServer(environment);
+    dispatch(refreshHyperdriveAction());
     return () => {
-      props.stopRefreshClockServer();
+      dispatch(stopRefreshHyperdriveAction());
     };
-  }, []);
+  }, [refreshHyperdriveAction, stopRefreshHyperdriveAction]);
 
   useEffect(() => {
     props.refreshVersionServer(environment);
@@ -70,39 +76,39 @@ const ComponentList = props => {
     {
       label: intl.messages.name,
       dataKey: 'name',
-      flexGrow: 1
+      flexGrow: 1,
     },
     {
       label: intl.messages.version,
-      dataKey: 'version'
+      dataKey: 'version',
     },
     {
       label: intl.messages.status,
-      dataKey: 'status'
+      dataKey: 'status',
     },
     {
       label: intl.messages.replicas,
-      dataKey: 'replicas'
-    }
+      dataKey: 'replicas',
+    },
   ];
   const columnsCS = [
     {
       label: intl.messages.name,
       dataKey: 'name',
-      flexGrow: 1
+      flexGrow: 1,
     },
     {
       label: intl.messages.version,
-      dataKey: 'version'
+      dataKey: 'version',
     },
     {
       label: intl.messages.status,
-      dataKey: 'status'
+      dataKey: 'status',
     },
     {
       label: intl.messages.timezone,
-      dataKey: 'timezone'
-    }
+      dataKey: 'timezone',
+    },
   ];
 
   const onSortVS = ({ sortBy, sortDirection }) => {
@@ -117,13 +123,7 @@ const ComponentList = props => {
   const versionServerstSortedList = sortSelector(
     versionServers,
     sortByVS,
-    sortDirectionVS
-  );
-
-  const clockServersSortedList = sortSelector(
-    clockServers,
-    sortByCS,
-    sortDirectionCS
+    sortDirectionVS,
   );
 
   return (
@@ -150,7 +150,7 @@ const ComponentList = props => {
             onSort={onSortVS}
             onRowClick={row => {
               history.push(
-                `/environments/${environment}/versionServer/${row.rowData.name}/edit`
+                `/environments/${environment}/versionServer/${row.rowData.name}/edit`,
               );
             }}
             noRowsRenderer={() => (
@@ -171,7 +171,7 @@ const ComponentList = props => {
         </ActionContainer>
         <TableContainer>
           <Table
-            list={clockServersSortedList}
+            list={[]}
             columns={columnsCS}
             disableHeader={false}
             headerHeight={40}
@@ -181,7 +181,7 @@ const ComponentList = props => {
             onSort={onSortCS}
             onRowClick={row => {
               history.push(
-                `/environments/${environment}/clockServer/${row.rowData.name}/edit`
+                `/environments/${environment}/clockServer/${row.rowData.name}/edit`,
               );
             }}
             noRowsRenderer={() => (
@@ -197,17 +197,14 @@ const ComponentList = props => {
 function mapStateToProps(state) {
   return {
     clockServers: state.app.clockServer.list,
-    versionServers: state.app.versionServer.list
+    versionServers: state.app.versionServer.list,
   };
 }
 const mapDispatchToProps = dispatch => {
   return {
-    refreshClockServer: environment =>
-      dispatch(refreshClockServerAction(environment)),
     refreshVersionServer: environment =>
       dispatch(refreshVersionServerAction(environment)),
-    stopRefreshClockServer: () => dispatch(stopRefreshClockServerAction()),
-    stopRefreshVersionServer: () => dispatch(stopRefreshVersionServerAction())
+    stopRefreshVersionServer: () => dispatch(stopRefreshVersionServerAction()),
   };
 };
 
@@ -215,7 +212,7 @@ export default injectIntl(
   withRouter(
     connect(
       mapStateToProps,
-      mapDispatchToProps
-    )(ComponentList)
-  )
+      mapDispatchToProps,
+    )(ComponentList),
+  ),
 );

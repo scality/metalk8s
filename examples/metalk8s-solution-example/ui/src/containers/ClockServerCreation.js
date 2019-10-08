@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { withRouter } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -63,6 +64,7 @@ const FormSection = styled.div`
 
 const ClockServerCreationForm = props => {
   const { intl, match, config, environments } = props;
+  const history = useHistory();
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
@@ -191,9 +193,7 @@ const ClockServerCreationForm = props => {
                           type="button"
                           outlined
                           onClick={() =>
-                            props.history.push(
-                              `/environments/${match.params.name}`
-                            )
+                            history.push(`/environments/${match.params.name}`)
                           }
                         />
                         <Button

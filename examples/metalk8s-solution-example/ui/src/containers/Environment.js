@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button, Modal, Input } from '@scality/core-ui';
@@ -47,7 +48,8 @@ const Environment = props => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('');
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
-  const { intl, history, environment, versions } = props;
+  const { intl, environment, versions } = props;
+  const history = useHistory();
 
   const availableVersions = versions.map(item => {
     return {

@@ -35,5 +35,8 @@
   "add": "Add",
   "hyperdrive": "Hyperdrive",
   "create_hyperdrive": "Create a Hyperdrive",
-  "create_hyperdrive_controller": "Create a Hyperdrive Controller"
+  "create_hyperdrive_controller": "Create a Hyperdrive Controller",
+  "node": "Node",
+  "index_volume": "IndexVolume",
+  "data_volumes": "Data Volumes"
 }

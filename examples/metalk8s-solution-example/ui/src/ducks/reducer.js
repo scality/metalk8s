@@ -7,6 +7,7 @@ import clockServer from './app/clockServer';
 import versionServer from './app/versionServer';
 import notifications from './app/notifications';
 import environment from './app/environment';
+import hyperdrive from './app/hyperdrive';
 
 const rootReducer = combineReducers({
   config,
@@ -16,7 +17,8 @@ const rootReducer = combineReducers({
     clockServer,
     versionServer,
     notifications,
-    environment
+    environment,
+    hyperdrive
   })
 });
 

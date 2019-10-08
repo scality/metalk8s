@@ -4,7 +4,7 @@ import {
   CoreV1Api,
   CustomObjectsApi,
   AppsV1Api,
-  RbacAuthorizationV1Api
+  RbacAuthorizationV1Api,
 } from '@kubernetes/client-node';
 
 import { LABEL_PART_OF, SOLUTION_CONFIGMAP_NAME } from '../../constants';
@@ -24,8 +24,8 @@ export function initialize(apiUrl) {
 export function authenticate(token) {
   return k8sApiClient.get('/api/v1', null, {
     headers: {
-      Authorization: 'Basic ' + token
-    }
+      Authorization: 'Basic ' + token,
+    },
   });
 }
 
@@ -42,7 +42,7 @@ export async function getEnvironment() {
     return await customObjects.listClusterCustomObject(
       'solutions.metalk8s.scality.com',
       'v1alpha1',
-      'environments'
+      'environments',
     );
   } catch (error) {
     return { error };
@@ -59,9 +59,9 @@ export async function updateEnvironment(body, name) {
       body,
       {
         headers: {
-          'Content-Type': 'application/merge-patch+json'
-        }
-      }
+          'Content-Type': 'application/merge-patch+json',
+        },
+      },
     );
   } catch (error) {
     return { error };
@@ -74,7 +74,7 @@ export async function getClockServer(namespaces) {
       'example-solution.metalk8s.scality.com',
       'v1alpha1',
       namespaces,
-      'clockservers'
+      'clockservers',
     );
   } catch (error) {
     return { error };
@@ -87,7 +87,7 @@ export async function getVersionServer(namespaces) {
       'example-solution.metalk8s.scality.com',
       'v1alpha1',
       namespaces,
-      'versionservers'
+      'versionservers',
     );
   } catch (error) {
     return { error };
@@ -101,7 +101,7 @@ export async function createClockServer(body, namespaces) {
       'v1alpha1',
       namespaces,
       'clockservers',
-      body
+      body,
     );
   } catch (error) {
     return { error };
@@ -115,7 +115,7 @@ export async function createVersionServer(body, namespaces) {
       'v1alpha1',
       namespaces,
       'versionservers',
-      body
+      body,
     );
   } catch (error) {
     return { error };
@@ -133,9 +133,9 @@ export async function updateClockServer(body, namespaces, name) {
       body,
       {
         headers: {
-          'Content-Type': 'application/merge-patch+json'
-        }
-      }
+          'Content-Type': 'application/merge-patch+json',
+        },
+      },
     );
   } catch (error) {
     return { error };
@@ -153,9 +153,9 @@ export async function updateVersionServer(body, namespaces, name) {
       body,
       {
         headers: {
-          'Content-Type': 'application/merge-patch+json'
-        }
-      }
+          'Content-Type': 'application/merge-patch+json',
+        },
+      },
     );
   } catch (error) {
     return { error };
@@ -170,7 +170,7 @@ export async function getOperatorDeployments(namespaces, name) {
       null,
       null,
       `metadata.name=${name}`,
-      `${LABEL_PART_OF}=example-solution`
+      `${LABEL_PART_OF}=example-solution`,
     );
   } catch (error) {
     return { error };
@@ -192,7 +192,7 @@ export async function listNamespacedServiceAccount(namespaces, name) {
       null,
       null,
       null,
-      `metadata.name=${name}`
+      `metadata.name=${name}`,
     );
   } catch (error) {
     return { error };
@@ -214,7 +214,7 @@ export async function listNamespacedRole(namespaces, name) {
       null,
       null,
       null,
-      `metadata.name=${name}`
+      `metadata.name=${name}`,
     );
   } catch (error) {
     return { error };
@@ -236,7 +236,7 @@ export async function listNamespacedRoleBinding(namespaces, name) {
       null,
       null,
       null,
-      `metadata.name=${name}`
+      `metadata.name=${name}`,
     );
   } catch (error) {
     return { error };
@@ -247,7 +247,7 @@ export async function createNamespacedRoleBinding(namespaces, body) {
   try {
     return await rbacAuthorizationV1Api.createNamespacedRoleBinding(
       namespaces,
-      body
+      body,
     );
   } catch (error) {
     return { error };
@@ -264,9 +264,9 @@ export async function updateDeployment(body, namespaces, name) {
       undefined,
       {
         headers: {
-          'Content-Type': 'application/merge-patch+json'
-        }
-      }
+          'Content-Type': 'application/merge-patch+json',
+        },
+      },
     );
   } catch (error) {
     return { error };
@@ -287,7 +287,7 @@ export async function getNamespaces(name) {
       null,
       null,
       null,
-      `metadata.name=${name}`
+      `metadata.name=${name}`,
     );
   } catch (error) {
     return { error };
@@ -297,7 +297,7 @@ export async function getSolutionsConfigMap() {
   try {
     return await coreV1.listConfigMapForAllNamespaces(
       null,
-      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`
+      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`,
     );
   } catch (error) {
     return { error };
@@ -305,7 +305,34 @@ export async function getSolutionsConfigMap() {
 }
 
 export async function getHyperdrives() {
-  //
+  try {
+    return await customObjects.listClusterCustomObject(
+      'dataservice.scality.com',
+      'v1alpha1',
+      'dataservices',
+    );
+  } catch (error) {
+    return { error };
+  }
+}
 
-  return {};
+export async function getNodes() {
+  try {
+    return await coreV1.listNode();
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getVolumes() {
+  try {
+    // We want to change this hardcoded data later
+    return await customObjects.listClusterCustomObject(
+      'storage.metalk8s.scality.com',
+      'v1alpha1',
+      'volumes',
+    );
+  } catch (error) {
+    return { error };
+  }
 }

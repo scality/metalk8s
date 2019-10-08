@@ -5,6 +5,7 @@ import { clockServerSaga } from './app/clockServer';
 import { versionServerSaga } from './app/versionServer';
 import { deploymentSaga } from './app/deployment';
 import { environmentSaga } from './app/environment';
+import { hyperdriveSaga } from './app/hyperdrive';
 
 export default function* rootSaga() {
   yield all([
@@ -13,6 +14,7 @@ export default function* rootSaga() {
     fork(clockServerSaga),
     fork(versionServerSaga),
     fork(deploymentSaga),
-    fork(environmentSaga)
+    fork(environmentSaga),
+    fork(hyperdriveSaga)
   ]);
 }
