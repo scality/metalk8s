@@ -33,3 +33,5 @@ replace (
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.9.0
 
 go 1.13
+
+// EVE-1098: Dummy comment to force image rebuild
