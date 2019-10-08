@@ -269,7 +269,15 @@ stages:
           haltOnFailure: true
       - ShellCommand:
           name: Init terraform
-          command: terraform init
+          command: |-
+            for _ in $(seq 1 12); do
+              if terraform init; then
+                break
+              else
+                rm -rf .terraform/
+                sleep 5
+              fi
+            done;
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
