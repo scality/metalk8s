@@ -11,6 +11,7 @@ WORKDIR /home/eve/workspace
 RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash -
 RUN yum install -y epel-release \
     && yum install -y gcc \
+    sudo \
     make \
     python-devel \
     python-pip \
@@ -23,6 +24,9 @@ RUN yum install -y epel-release \
     && adduser -u 1042 --home /home/eve eve \
     && chown -R eve:eve /home/eve \
     && pip install buildbot-worker==${BUILDBOT_VERSION}
+
+# Add eve to sudoers.
+RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve
 
 # Install Go tooling to build the Kubernetes Operators.
 ENV GOROOT /usr/local/go
