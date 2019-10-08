@@ -8,6 +8,7 @@ FROM docker.io/ubuntu:18.04
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install --no-install-recommends -y \
+        sudo \
         enchant \
         curl \
         git \

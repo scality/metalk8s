@@ -8,6 +8,7 @@ ENV LANG=en_US.utf8
 WORKDIR /home/eve/workspace
 
 RUN dnf install -y git \
+  sudo \
   gcc \
   make \
   enchant \
@@ -23,5 +24,8 @@ RUN dnf install -y git \
   && chown eve:eve /home/eve/workspace \
   && pip install tox \
   && pip install buildbot-worker==${BUILDBOT_VERSION}
+
+# Add eve to sudoers.
+RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve
 
 USER eve
