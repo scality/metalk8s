@@ -33,3 +33,5 @@ replace (
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.9.0
 
 go 1.13
+
+// Dummy comment to force image rebuild (CI bug, to be removed when fixed)
