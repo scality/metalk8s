@@ -115,13 +115,19 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
-		reqLogger.Error(err, "Failed to get Memcached")
+		reqLogger.Error(err, "Failed to get VersionServer")
 		return reconcile.Result{}, err
 	}
+	instanceNamespacedName := types.NamespacedName{
+		Name:      instance.Name,
+		Namespace: instance.Namespace,
+	}
+
+	// --- Deployment ---
 
 	// Check if the deployment already exists, if not create a new one
-	found := &appsv1.Deployment{}
-	err = r.client.Get(ctx, types.NamespacedName{Name: instance.Name, Namespace: instance.Namespace}, found)
+	deployment := &appsv1.Deployment{}
+	err = r.client.Get(ctx, instanceNamespacedName, deployment)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
 		dep := r.deploymentForVersionServer(instance)
@@ -138,13 +144,13 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{}, err
 	}
 
-	// Ensure the deployment size is the same as the spec
+	// Ensure the deployment size is the one specified
 	size := instance.Spec.Replicas
-	if *found.Spec.Replicas != size {
-		found.Spec.Replicas = &size
-		err = r.client.Update(ctx, found)
+	if *deployment.Spec.Replicas != size {
+		deployment.Spec.Replicas = &size
+		err = r.client.Update(ctx, deployment)
 		if err != nil {
-			reqLogger.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+			reqLogger.Error(err, "Failed to update Deployment", "Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
 			return reconcile.Result{}, err
 		}
 		// Spec updated - return and requeue
@@ -153,41 +159,91 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 
 	// Ensure the version is the same as well
 	version := instance.Spec.Version
-	depLabels := found.ObjectMeta.Labels
+	depLabels := deployment.ObjectMeta.Labels
 	deployedVersion, ok := depLabels["app.kubernetes.io/version"]
 	if !ok || deployedVersion != version {
 		// Update labels and image name
-		labels := labelsForVersionServer(instance, true)
-		image := imageForVersionServer(instance)
-		found.ObjectMeta.Labels = labels
-		found.Spec.Template.ObjectMeta.Labels = labels
-		found.Spec.Template.Spec.Containers[0].Image = image
+		labels := labelsForVersionServer(instance)
+		labelSelector := metav1.LabelSelector{
+			MatchLabels: labels,
+		}
+		deployment.ObjectMeta.Labels = labels
+		deployment.Spec.Template.ObjectMeta.Labels = labels
+		deployment.Spec.Selector = &labelSelector
+		deployment.Spec.Template.Spec.Containers = []corev1.Container{
+			containerForVersionServer(instance),
+		}
 
-		err = r.client.Update(ctx, found)
+		err = r.client.Update(ctx, deployment)
 		if err != nil {
-			reqLogger.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+			reqLogger.Error(err, "Failed to update Deployment", "Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
 			return reconcile.Result{}, err
 		}
 		// Spec updated - return and requeue
 		return reconcile.Result{Requeue: true}, nil
 	}
 
-	// Deployment already exists - don't requeue
-	reqLogger.Info("Skip reconcile: Deployment already exists", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+	// TODO: check `operator-version` annotation to trigger updates?
+
+	// --- Deployment: done ---
+	// --- Service ---
+
+	// Check if Service exists, create it otherwise
+	service := &corev1.Service{}
+	err = r.client.Get(ctx, instanceNamespacedName, service)
+	if err != nil && errors.IsNotFound(err) {
+		// Define a new Service
+		service := r.serviceForVersionServer(instance)
+		reqLogger.Info("Creating a new Service", "Service.Namespace", service.Namespace, "Service.Name", service.Name)
+		err = r.client.Create(ctx, service)
+		if err != nil {
+			reqLogger.Error(err, "Failed to create new Service", "Service.Namespace", service.Namespace, "Service.Name", service.Name)
+			return reconcile.Result{}, err
+		}
+		// Service created successfully - return and requeue
+		return reconcile.Result{Requeue: true}, nil
+	} else if err != nil {
+		reqLogger.Error(err, "Failed to get Service")
+		return reconcile.Result{}, err
+	}
+
+	// Ensure the version exposed is up-to-date
+	serviceLabels := service.ObjectMeta.Labels
+	exposedVersion, ok := serviceLabels["app.kubernetes.io/version"]
+	if !ok || exposedVersion != version {
+		labels := labelsForVersionServer(instance)
+		service.ObjectMeta.Labels = labels
+		service.Spec.Selector = labels
+		err = r.client.Update(ctx, service)
+		if err != nil {
+			reqLogger.Error(err, "Failed to update Service", "Service.Namespace", service.Namespace, "Service.Name", service.Name)
+			return reconcile.Result{}, err
+		}
+		// Spec updated - return and requeue
+		return reconcile.Result{Requeue: true}, nil
+	}
+
+	// TODO: check `operator-version` annotation to trigger updates?
+
+	/// --- Service: done ---
+
+	reqLogger.Info("Skip reconcile: Everything is up-to-date")
 	return reconcile.Result{}, nil
 }
 
 func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) *appsv1.Deployment {
 	labels := labelsForVersionServer(versionserver, true)
 	labelsSelector := labelsForVersionServer(versionserver, false)
+	annotations := annotationsForVersionServer(versionserver)
 	maxSurge := intstr.FromInt(0)
 	maxUnavailable := intstr.FromInt(1)
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      versionserver.Name,
-			Namespace: versionserver.Namespace,
-			Labels:    labels,
+			Name:        versionserver.Name,
+			Namespace:   versionserver.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &versionserver.Spec.Replicas,
@@ -206,15 +262,9 @@ func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examp
 					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{{
-						Image:   imageForVersionServer(versionserver),
-						Name:    "version-server",
-						Command: []string{"python3", "/app/server.py"},
-						Ports: []corev1.ContainerPort{{
-							ContainerPort: 8080,
-							Name:          "version-server",
-						}},
-					}},
+					Containers: []corev1.Container{
+						containerForVersionServer(versionserver),
+					},
 				},
 			},
 		},
@@ -223,6 +273,62 @@ func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examp
 	// Set the owner reference
 	controllerutil.SetControllerReference(versionserver, deployment, r.scheme)
 	return deployment
+}
+
+func (r *ReconcileVersionServer) serviceForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) *corev1.Service {
+	labels := labelsForVersionServer(versionserver)
+	annotations := annotationsForVersionServer(versionserver)
+
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        versionserver.Name,
+			Namespace:   versionserver.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{{
+				Name:       "http",
+				Port:       8080,
+				Protocol:   corev1.ProtocolTCP,
+				TargetPort: intstr.FromString("http"),
+			}},
+			Selector: labels,
+			Type:     corev1.ServiceTypeClusterIP,
+		},
+	}
+
+	// Set the owner reference
+	controllerutil.SetControllerReference(versionserver, service, r.scheme)
+	return service
+}
+
+func containerForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) corev1.Container {
+	return corev1.Container{
+		Image: imageForVersionServer(versionserver),
+		Name:  "version-server",
+		Command: []string{
+			"python3",
+			"/app/server.py",
+			"--version", versionserver.Spec.Version,
+		},
+		LivenessProbe: &corev1.Probe{
+			Handler: corev1.Handler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path:   "/version",
+					Port:   intstr.FromInt(8080),
+					Scheme: corev1.URISchemeHTTP,
+				},
+			},
+			FailureThreshold:    8,
+			InitialDelaySeconds: 10,
+			TimeoutSeconds:      3,
+		},
+		Ports: []corev1.ContainerPort{{
+			ContainerPort: 8080,
+			Name:          "http",
+		}},
+	}
 }
 
 func labelsForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer, versionize bool) map[string]string {
@@ -235,9 +341,14 @@ func labelsForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer
 	}
 	if versionize {
 		labels["app.kubernetes.io/version"] = versionserver.Spec.Version
-		labels["example-solution.metalk8s.scality.com/operator-version"] = version.Version
 	}
 	return labels
+}
+
+func annotationsForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) map[string]string {
+	return map[string]string{
+		"example-solution.metalk8s.scality.com/operator-version": version.Version,
+	}
 }
 
 func imageForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) string {
@@ -247,7 +358,7 @@ func imageForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer)
 	}
 
 	return fmt.Sprintf(
-		"%s/example-solution-%s/base-server:%s",
-		prefix, versionserver.Spec.Version, versionserver.Spec.Version,
+		"%[1]s/example-solution-%[2]s/base-server:%[2]s",
+		prefix, versionserver.Spec.Version,
 	)
 }
