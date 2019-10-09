@@ -333,6 +333,7 @@ stages:
       - ShellCommand:
           name: Provision Prometheus and AlertManager storage
           command: >
+            git checkout %(prop:branch)s --quiet &&
             sudo env
             PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
             PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
