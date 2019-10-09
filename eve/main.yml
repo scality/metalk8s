@@ -308,7 +308,7 @@ stages:
           name: Run fast tests locally
           env:
             ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:metalk8s_version)s
+              /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
           command: >
             git checkout "development/%(prop:product_version_prev)s" &&
             tox -e tests-local --
