@@ -34,6 +34,18 @@ Skip node {{ node }}, bootstrap node downgrade should be done later:
 
   {%- else %}
 
+Wait for API server to be available on {{ node }}:
+  http.wait_for_successful_query:
+  - name: https://{{ pillar.metalk8s.api_server.host }}:6443/healthz
+  - match: 'ok'
+  - status: 200
+  - verify_ssl: false
+  - require:
+    - salt: Execute the downgrade prechecks
+  {%- if previous_node is defined %}
+    - salt: Deploy node {{ previous_node }}
+  {%- endif %}
+
 Set node {{ node }} version to {{ dest_version }}:
   metalk8s_kubernetes.node_label_present:
     - name: metalk8s.scality.com/version
@@ -42,10 +54,7 @@ Set node {{ node }} version to {{ dest_version }}:
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - require:
-      - salt: Execute the downgrade prechecks
-    {%- if previous_node is defined %}
-      - salt: Deploy node {{ previous_node }}
-    {%- endif %}
+      - http: Wait for API server to be available on {{ node }}
 
 Deploy node {{ node }}:
   salt.runner:
