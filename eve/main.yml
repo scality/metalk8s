@@ -197,14 +197,15 @@ stages:
     steps:
       - Git: *git_pull
       - ShellCommand: *setup_cache
-      - SetPropertyFromCommand:
+      - SetPropertyFromCommand: *product_version_prev
+      - SetPropertyFromCommand: &set_prev_version
           name: Set previous version
           property: metalk8s_prev_version
           command: >
             bash -c '
-              source VERSION &&
-              VERSION_MINOR=$((VERSION_MINOR-1))
-            echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
+              git checkout development/%(prop:product_version_prev)s --quiet &&
+              source VERSION ;
+              echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
       - ShellCommand: &ssh_ip_setup
           name: Report IP and install SSH keys
           command: >
@@ -227,21 +228,21 @@ stages:
           name: Check image with checksum
           command: sha256sum -c SHA256SUM
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &get_prev_iso
           name: Retrieve ISO version N-1 image
           command: >
             isourl="/pre/metalk8s-%(prop:metalk8s_prev_version)s.iso";
             curl -s -XGET -o /tmp/metalk8s.iso
             "%(prop:artifacts_private_url)s$isourl"
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &get_prev_iso_checksum
           name: Retrieve ISO N-1 image checksum
           command: >
             shasumurl="/pre/SHA256SUM-%(prop:metalk8s_prev_version)s";
             curl -s -XGET -o /tmp/SHA256SUM
             "%(prop:artifacts_private_url)s$shasumurl"
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &verify_prev_iso_checksum
           name: Check N-1 image with checksum
           command: cd /tmp && sha256sum -c SHA256SUM
           haltOnFailure: true
@@ -349,32 +350,10 @@ stages:
       - Git: *git_pull
       - ShellCommand: *ssh_ip_setup
       - SetPropertyFromCommand: *product_version_prev
-      - SetPropertyFromCommand: &set_prev_version
-          name: Set previous version
-          property: metalk8s_prev_version
-          command: >
-            bash -c '
-              git checkout development/%(prop:product_version_prev)s --quiet &&
-              source VERSION ;
-              echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
-      - ShellCommand: &get_prev_iso
-          name: Get %(prop:metalk8s_prev_version)s image
-          command: >
-            isourl="/pre/metalk8s-%(prop:metalk8s_prev_version)s.iso";
-            curl -s -XGET -o /tmp/metalk8s.iso
-            "%(prop:artifacts_private_url)s$isourl"
-          haltOnFailure: true
-      - ShellCommand: &get_prev_iso_checksum
-          name: Get %(prop:metalk8s_prev_version)s checksum
-          command: >
-            shasumurl="/pre/SHA256SUM-%(prop:metalk8s_prev_version)s";
-            curl -s -XGET -o /tmp/SHA256SUM
-            "%(prop:artifacts_private_url)s$shasumurl"
-          haltOnFailure: true
-      - ShellCommand: &verify_prev_iso_checksum
-          name: Verify %(prop:metalk8s_prev_version)s checksum
-          command: cd /tmp && sha256sum -c SHA256SUM
-          haltOnFailure: true
+      - SetPropertyFromCommand: *set_prev_version
+      - ShellCommand: *get_prev_iso
+      - ShellCommand: *get_prev_iso_checksum
+      - ShellCommand: *verify_prev_iso_checksum
       - ShellCommand: &create_prev_iso_mountpoint
           name: Create %(prop:metalk8s_prev_version)s mountpoint
           command: >
