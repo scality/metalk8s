@@ -163,7 +163,7 @@ const EnvironmentCreationForm = props => {
                     text={intl.messages.create}
                     type="submit"
                     disabled={!dirty || !isEmpty(errors)}
-                    data-cy="submit-create-environment"
+                    data-cy="submit_create_environment"
                   />
                 </ActionContainer>
               </Form>

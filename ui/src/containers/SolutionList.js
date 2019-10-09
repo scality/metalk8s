@@ -8,13 +8,17 @@ import { injectIntl } from 'react-intl';
 import { Table, Button, Breadcrumb, Modal, Input } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
-import { sortSelector } from '../services/utils';
+import { sortSelector, useRefreshEffect } from '../services/utils';
 import Loader from '../components/Loader';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
+import {
+  refreshEnvironmentsAction,
+  stopRefreshEnvironmentsAction,
+} from '../ducks/app/solutions.js';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -81,6 +85,7 @@ const SelectContainer = styled.div`
 `;
 
 const SolutionsList = props => {
+  useRefreshEffect(refreshEnvironmentsAction, stopRefreshEnvironmentsAction);
   const [solutionSortBy, setSolutionSortBy] = useState('name');
   const [solutionSortDirection, setSolutionSortDirection] = useState('ASC');
   const [envSortBy, setEnvSortBy] = useState('name');
@@ -241,6 +246,7 @@ const SolutionsList = props => {
               text={intl.messages.create_new_environment}
               onClick={() => history.push('/solutions/create-environment')}
               icon={<i className="fas fa-plus" />}
+              data-cy="create_new_environment_button"
             />
           </EnvironmentHeader>
 

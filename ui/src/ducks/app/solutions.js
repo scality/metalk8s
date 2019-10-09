@@ -14,6 +14,9 @@ export const SET_ENVIRONMENTS = 'SET_ENVIRONMENTS';
 const CREATE_ENVIRONMENT = 'CREATE_ENVIRONMENT';
 const REFRESH_SOLUTIONS = 'REFRESH_SOLUTIONS';
 const STOP_REFRESH_SOLUTIONS = 'STOP_REFRESH_SOLUTIONS';
+const REFRESH_ENVIRONMENTS = 'REFRESH_ENVIRONMENTS';
+const STOP_REFRESH_ENVIRONMENTS = 'STOP_REFRESH_ENVIRONMENTS';
+export const SET_ENVIRONMENTS_REFRESHING = 'SET_ENVIRONMENTS_REFRESHING';
 
 // Reducer
 const defaultState = {
@@ -21,6 +24,7 @@ const defaultState = {
   services: [],
   environments: [],
   isSolutionsRefreshing: false,
+  isEnvironmentsRefreshing: false,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -33,6 +37,8 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, environments: action.payload };
     case SET_SOLUTIONS_REFRESHING:
       return { ...state, isSolutionsRefreshing: action.payload };
+    case SET_ENVIRONMENTS_REFRESHING:
+      return { ...state, isEnvironmentsRefreshing: action.payload };
     default:
       return state;
   }
@@ -60,8 +66,20 @@ export const refreshSolutionsAction = () => {
   return { type: REFRESH_SOLUTIONS };
 };
 
+export function setEnvironmentsRefeshingAction(payload) {
+  return { type: SET_ENVIRONMENTS_REFRESHING, payload };
+}
+
 export const stopRefreshSolutionsAction = () => {
   return { type: STOP_REFRESH_SOLUTIONS };
+};
+
+export const refreshEnvironmentsAction = () => {
+  return { type: REFRESH_ENVIRONMENTS };
+};
+
+export const stopRefreshEnvironmentsAction = () => {
+  return { type: STOP_REFRESH_ENVIRONMENTS };
 };
 
 export function createEnvironmentAction(newEnvironment) {
@@ -147,16 +165,11 @@ export function* refreshSolutions() {
 
   const resultFetchUIServices = yield call(fetchUIServices);
   const resultFetchSolutions = yield call(fetchSolutions);
-  const resultFetchEnvironments = yield call(fetchEnvironments);
 
-  if (
-    !resultFetchSolutions.error &&
-    !resultFetchUIServices.error &&
-    !resultFetchEnvironments.error
-  ) {
+  if (!resultFetchSolutions.error && !resultFetchUIServices.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(
-      state => state.config.isSolutionsRefreshing,
+      state => state.app.solutions.isSolutionsRefreshing,
     );
     if (isRefreshing) {
       yield call(refreshSolutions);
@@ -168,9 +181,31 @@ export function* stopRefreshSolutions() {
   yield put(setSolutionsRefeshingAction(false));
 }
 
+export function* refreshEnvironments() {
+  yield put(setEnvironmentsRefeshingAction(true));
+
+  const resultFetchEnvironments = yield call(fetchEnvironments);
+
+  if (!resultFetchEnvironments.error) {
+    yield delay(REFRESH_TIMEOUT);
+    const isRefreshing = yield select(
+      state => state.app.solutions.isEnvironmentsRefreshing,
+    );
+    if (isRefreshing) {
+      yield call(refreshEnvironments);
+    }
+  }
+}
+
+export function* stopRefreshEnvironments() {
+  yield put(setEnvironmentsRefeshingAction(false));
+}
+
 // Sagas
 export function* solutionsSaga() {
   yield takeEvery(REFRESH_SOLUTIONS, refreshSolutions);
   yield takeEvery(STOP_REFRESH_SOLUTIONS, stopRefreshSolutions);
+  yield takeEvery(REFRESH_ENVIRONMENTS, refreshEnvironments);
+  yield takeEvery(STOP_REFRESH_ENVIRONMENTS, stopRefreshEnvironments);
   yield takeEvery(CREATE_ENVIRONMENT, createEnvironment);
 }
