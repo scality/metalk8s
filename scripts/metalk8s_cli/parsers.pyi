@@ -1,0 +1,13 @@
+import argparse
+
+
+def build_version_parser() -> argparse.ArgumentParser: ...
+
+
+def build_kubeconfig_parser() -> argparse.ArgumentParser: ...
+
+
+def build_verbosity_parser() -> argparse.ArgumentParser: ...
+
+
+def build_logfile_parser() -> argparse.ArgumentParser: ...
