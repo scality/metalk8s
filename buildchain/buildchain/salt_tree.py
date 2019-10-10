@@ -401,12 +401,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/archives/init.sls'),
     Path('salt/metalk8s/archives/mounted.sls'),
 
-    Path('salt/metalk8s/solutions/configured.sls'),
-    Path('salt/metalk8s/solutions/mounted.sls'),
-    Path('salt/metalk8s/solutions/unconfigured.sls'),
-    Path('salt/metalk8s/solutions/unmounted.sls'),
-    Path('salt/metalk8s/solutions/init.sls'),
-
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
     Path('salt/metalk8s/repo/files/apt.sources.list.j2'),
@@ -450,6 +444,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/minion/installed.sls'),
     Path('salt/metalk8s/salt/minion/local.sls'),
     Path('salt/metalk8s/salt/minion/running.sls'),
+
+    Path('salt/metalk8s/solutions/available.sls'),
+    Path('salt/metalk8s/solutions/init.sls'),
 
     Path('salt/metalk8s/volumes/init.sls'),
     Path('salt/metalk8s/volumes/prepared/init.sls'),
