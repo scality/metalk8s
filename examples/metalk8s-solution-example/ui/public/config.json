@@ -1,4 +1,4 @@
 {
-    "url": "https://apiserver:6443",
+    "url": "https://10.100.3.217:8443/api/kubernetes",
     "registry_prefix": "registry:8080"
 }

@@ -162,9 +162,11 @@ const ComponentList = props => {
       <ListContainer>
         <ActionContainer>
           <Button
-            text={intl.messages.create_clock_server}
+            text={intl.messages.create_hyperdrive_controller}
             onClick={() =>
-              history.push(`/environments/${environment}/clockServer/create`)
+              history.push(
+                `/environments/${environment}/hyperdrive-controller/create`,
+              )
             }
             icon={<i className="fas fa-plus" />}
           />

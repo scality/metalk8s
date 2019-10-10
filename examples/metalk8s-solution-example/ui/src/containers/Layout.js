@@ -23,7 +23,7 @@ import { toggleSidebarAction } from '../ducks/app/layout';
 
 import {
   refreshEnvironmentAction,
-  stopRefreshEnvironmentAction
+  stopRefreshEnvironmentAction,
 } from '../ducks/app/environment';
 
 import { useRefreshEffect } from '../services/utils';
@@ -43,13 +43,13 @@ const Layout = props => {
       label: props.intl.messages.about,
       onClick: () => {
         props.history.push('/about');
-      }
-    }
+      },
+    },
   ];
 
   const user = {
     name: props.user && props.user.username,
-    actions: [{ label: props.intl.messages.log_out, onClick: props.logout }]
+    actions: [{ label: props.intl.messages.log_out, onClick: props.logout }],
   };
 
   const sidebar = {
@@ -65,15 +65,15 @@ const Layout = props => {
           matchPath(props.history.location.pathname, {
             path: '/',
             exact: true,
-            strict: true
+            strict: true,
           }) ||
           matchPath(props.history.location.pathname, {
             path: '/environments',
             exact: false,
-            strict: true
-          })
-      }
-    ]
+            strict: true,
+          }),
+      },
+    ],
   };
 
   const navbar = {
@@ -88,7 +88,7 @@ const Layout = props => {
         alt="logo"
         src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
       />
-    )
+    ),
   };
 
   return (
@@ -130,6 +130,10 @@ const Layout = props => {
             component={HyperdriveCreation}
           />
           <PrivateRoute
+            path="/environments/:name/hyperdrive-controller/create"
+            component={HyperdriveCreation}
+          />
+          <PrivateRoute
             path="/environments/:name"
             component={EnvironmentDetail}
           />
@@ -145,7 +149,7 @@ const mapStateToProps = state => ({
   user: state.login.user,
   sidebar: state.app.layout.sidebar,
   theme: state.config.theme,
-  notifications: state.app.notifications.list
+  notifications: state.app.notifications.list,
 });
 
 const mapDispatchToProps = dispatch => {
@@ -153,7 +157,7 @@ const mapDispatchToProps = dispatch => {
     logout: () => dispatch(logoutAction()),
     toggleSidebar: () => dispatch(toggleSidebarAction()),
     removeNotification: uid => dispatch(removeNotificationAction(uid)),
-    fetchVersions: () => dispatch(fetchVersionsAction())
+    fetchVersions: () => dispatch(fetchVersionsAction()),
   };
 };
 
@@ -161,7 +165,7 @@ export default injectIntl(
   withRouter(
     connect(
       mapStateToProps,
-      mapDispatchToProps
-    )(Layout)
-  )
+      mapDispatchToProps,
+    )(Layout),
+  ),
 );

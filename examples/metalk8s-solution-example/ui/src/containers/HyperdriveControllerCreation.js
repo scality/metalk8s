@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { isEmpty } from 'lodash';
 import { Formik, Form } from 'formik';
@@ -13,7 +13,6 @@ import { useRefreshEffect } from '../services/utils';
 import {
   refreshVolumesAction,
   stopRefreshVolumesAction,
-  createHyperdriveAction,
   refreshNodesAction,
   stopRefreshNodesAction,
 } from '../ducks/app/hyperdrive';
@@ -24,7 +23,7 @@ import {
 } from '../components/BreadcrumbStyle';
 
 const HyperdriveCreationContainer = styled.div`
-  display: inline-block;
+  display: flex;
   flex-direction: column;
   box-sizing: border-box;
   height: 100%;
@@ -81,18 +80,18 @@ const InputValue = styled(InputLabel)`
   padding: ${padding.small} 0;
 `;
 
-const HyperdriveCreation = props => {
+const HyperdriveControllerCreation = props => {
   const intl = useIntl();
   const history = useHistory();
   const params = useParams();
-  const dispatch = useDispatch();
 
   const config = useSelector(state => state.config);
+  const hyperdrives = useSelector(state => state.app.hyperdrive);
   const nodes = useSelector(state => state.app.hyperdrive.nodes);
   const volumes = useSelector(state => state.app.hyperdrive.volumes);
-  const environment = params.name;
+  const [nodeVolumes, setNodeVolumes] = useState([]);
 
-  console.log('environment', environment);
+  // console.log('HyperdriveCreation', hyperdrives);
 
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
@@ -104,22 +103,18 @@ const HyperdriveCreation = props => {
 
   const initialValues = {
     name: '',
-    node: nodeOptions?.[0],
+    node: nodeOptions[0],
     indexVolume: volumes.filter(
       volume =>
-        volume?.spec?.nodeName === nodeOptions[0]?.label &&
-        volume?.spec?.storageClassName === 'hyperdrive-index',
+        volume.spec.nodeName === nodeOptions[0]?.label &&
+        volume.spec.storageClassName === 'hyperdrive-index',
     ),
     dataVolumes: volumes.filter(
       volume =>
-        volume?.spec?.nodeName === nodeOptions[0]?.label &&
-        volume?.spec?.storageClassName === 'hyperdrive-data',
+        volume.spec.nodeName === nodeOptions[0]?.label &&
+        volume.spec.storageClassName === 'hyperdrive-data',
     ),
-    // Needed to create a ressource
-    environment,
   };
-
-  console.log('initialValues', initialValues);
 
   const validationSchema = yup.object().shape({
     name: yup.string().required(),
@@ -146,7 +141,7 @@ const HyperdriveCreation = props => {
             <StyledLink to={`/environments/${params.name}`}>
               {params.name}
             </StyledLink>,
-            <BreadcrumbLabel title={intl.messages.create_hyperdrive}>
+            <BreadcrumbLabel title={intl.messages.create_hyperdrive_controller}>
               {intl.messages.create_hyperdrive}
             </BreadcrumbLabel>,
           ]}
@@ -159,8 +154,7 @@ const HyperdriveCreation = props => {
             validationSchema={validationSchema}
             onSubmit={values => {
               // TODO
-              console.log('submit', values);
-              dispatch(createHyperdriveAction({}));
+              console.log('values', values);
             }}
           >
             {formProps => {
@@ -280,4 +274,4 @@ const HyperdriveCreation = props => {
   );
 };
 
-export default HyperdriveCreation;
+export default HyperdriveControllerCreation;

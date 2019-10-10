@@ -8,9 +8,13 @@ import {
   createNamespacedRole,
   createNamespacedRoleBinding,
   createOrUpdateOperatorDeployment,
-  fetchOpertorDeployments
+  fetchOpertorDeployments,
 } from './deployment';
-import { LABEL_VERSION, SOLUTION_NAME } from '../../constants';
+import {
+  LABEL_VERSION,
+  SOLUTION_NAME,
+  OPERATOR_NAMESPACE,
+} from '../../constants';
 
 // Actions
 const REFRESH_ENVIRONMENT = 'REFRESH_ENVIRONMENT';
@@ -25,7 +29,7 @@ const EDIT_ENVIRONMENT = 'EDIT_ENVIRONMENT';
 // Reducer
 const defaultState = {
   list: [],
-  isRefreshing: false
+  isRefreshing: false,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -33,7 +37,7 @@ export default function reducer(state = defaultState, action = {}) {
     case ADD_ENVIRONMENT:
       const list = [...state.list];
       const index = state.list.findIndex(
-        item => item.name === action.payload.name
+        item => item.name === action.payload.name,
       );
       if (index > -1) {
         list[index] = action.payload;
@@ -83,7 +87,7 @@ export function* fetchEnvironment() {
     yield all(
       results.body.items.map(environment => {
         return call(updateEnvironment, environment);
-      })
+      }),
     );
   }
   return results;
@@ -91,7 +95,7 @@ export function* fetchEnvironment() {
 export function* updateEnvironment(environment) {
   const results = yield call(
     fetchOpertorDeployments,
-    `${environment.metadata.name}-example-solution`
+    `${environment.metadata.name}-example-solution`,
   );
   // One operator per environment
   const operator = results.body.items.length ? results.body.items[0] : null;
@@ -113,10 +117,10 @@ export function* updateEnvironment(environment) {
             version:
               (operator.metadata.labels &&
                 operator.metadata.labels[LABEL_VERSION]) ||
-              ''
+              '',
           }
-        : null
-    })
+        : null,
+    }),
   );
 }
 export function* prepareEnvironment({ payload }) {
@@ -132,13 +136,13 @@ export function* upgradeEnvironment({ payload }) {
 export function* manageEnvironment(payload) {
   const { name, version } = payload;
 
-  //Prepare environment if not done yet
+  // Prepare environment if not done yet
   yield call(fetchEnvironment);
   const environments = yield select(state => state.app.environment.list);
   const environmentToPrepare = environments.find(item => item.name === name);
   // TODO: If the environment is up-to-date
   if (environmentToPrepare.version !== version) {
-    const namespaces = `${name}-example-solution`;
+    const namespaces = `${name}-${OPERATOR_NAMESPACE}`;
 
     //Create Namespace if not exists
     const resultsCreateNamespaces = yield call(createNamespaces, namespaces);
@@ -147,7 +151,7 @@ export function* manageEnvironment(payload) {
     const resultsRBAC = yield all([
       yield call(createNamespacedServiceAccount, namespaces),
       yield call(createNamespacedRole, namespaces),
-      yield call(createNamespacedRoleBinding, namespaces)
+      yield call(createNamespacedRoleBinding, namespaces),
     ]);
 
     // Create or upgrade Operator
@@ -155,7 +159,7 @@ export function* manageEnvironment(payload) {
       createOrUpdateOperatorDeployment,
       namespaces,
       name,
-      version
+      version,
     );
 
     // Update Solution of Environment
@@ -187,11 +191,11 @@ export function* addOrUpdateSolutionInEnvironment(name, version) {
       apiVersion: 'solutions.metalk8s.scality.com/v1alpha1',
       kind: 'Environment',
       metadata: {
-        name
+        name,
       },
       spec: {
-        solutions
-      }
+        solutions,
+      },
     };
     yield call(ApiK8s.updateEnvironment, body, name);
   }
@@ -200,14 +204,14 @@ export function* addOrUpdateSolutionInEnvironment(name, version) {
 export function* refreshEnvironment() {
   yield put(
     updateEnvironmentAction({
-      isRefreshing: true
-    })
+      isRefreshing: true,
+    }),
   );
   const results = yield call(fetchEnvironment);
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(
-      state => state.app.environment.isRefreshing
+      state => state.app.environment.isRefreshing,
     );
     if (isRefreshing) {
       yield call(refreshEnvironment);
@@ -218,8 +222,8 @@ export function* refreshEnvironment() {
 export function* stopRefreshEnvironment() {
   yield put(
     updateEnvironmentAction({
-      isRefreshing: false
-    })
+      isRefreshing: false,
+    }),
   );
 }
 

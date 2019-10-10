@@ -316,6 +316,21 @@ export async function getHyperdrives() {
   }
 }
 
+export async function createHyperdrive(body, namespace = 'default') {
+  console.log('beforeCall createHyperdrive ');
+  try {
+    return await customObjects.createNamespacedCustomObject(
+      'dataservice.scality.com',
+      'v1alpha1',
+      namespace,
+      'dataservices',
+      body,
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function getNodes() {
   try {
     return await coreV1.listNode();
