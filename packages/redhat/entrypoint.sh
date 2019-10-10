@@ -36,7 +36,7 @@ buildsrpm() {
 
 buildrpm() {
     set -x
-    yum-builddep -y "/rpmbuild/SRPMS/${SRPM}"
+    yum-builddep -y "/rpmbuild/SRPMS/${SRPM}" >&2
     chown build:build /home/build
     su -l build rpmdev-setuptree
     su -l build -c "rpmbuild --rebuild /rpmbuild/SRPMS/${SRPM}"
