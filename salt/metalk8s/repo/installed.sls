@@ -53,6 +53,13 @@ Install repositories manifest:
       - file: Deploy container registry nginx configuration
       - file: Generate container registry configuration
 
+Delay after repositories pod deployment:
+  module.wait:
+    - test.sleep:
+      - length: 10
+    - watch:
+      - metalk8s: Install repositories manifest
+
 Ensure repositories container is up:
   module.wait:
     - cri.wait_container:
@@ -63,3 +70,12 @@ Ensure repositories container is up:
       - file: Deploy container registry nginx configuration
       - file: Generate container registry configuration
       - metalk8s: Install repositories manifest
+    - require:
+      - module: Delay after repositories pod deployment
+
+Wait for Repositories container to answer:
+  http.wait_for_successful_query:
+   - name: http://127.0.0.1:{{ repo.port }}/{{ saltenv }}/
+   - status: 200
+   - require:
+     - module: Ensure repositories container is up
