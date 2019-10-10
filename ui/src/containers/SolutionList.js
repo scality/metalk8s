@@ -176,6 +176,7 @@ const SolutionsList = props => {
                   setSelectedEnvironment(row.name);
                   setisAddSolutionModalOpen(true);
                 }}
+                data-cy={`add_solution_to_${row.name}_button`}
               />
             </ButtonContainer>
           </div>
@@ -329,6 +330,7 @@ const SolutionsList = props => {
               const solutionsSelectOptions = sortedSolutions.map(solution => ({
                 label: solution.name,
                 value: solution.name,
+                'data-cy': solution.name,
               }));
 
               const selectedSolutionVersions =
@@ -340,6 +342,7 @@ const SolutionsList = props => {
                 solutionVersion => ({
                   label: solutionVersion.version,
                   value: solutionVersion.version,
+                  'data-cy': solutionVersion.version,
                 }),
               );
 
@@ -382,6 +385,7 @@ const SolutionsList = props => {
                         <Button
                           text={intl.messages.add_solution}
                           type="submit"
+                          data-cy="add_solution_submit_button"
                         />
                       </ActionContainer>
                     </FormStyle>

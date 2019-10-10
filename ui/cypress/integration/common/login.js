@@ -2,7 +2,11 @@ import { Given } from 'cypress-cucumber-preprocessor/steps';
 
 Given('I log in', () => {
   const target_url = Cypress.env('target_url');
-  cy.visit(target_url);
+  cy.visit(target_url, {
+    onBeforeLoad(win) {
+      cy.stub(win, 'open').as('windowOpen'); // to test window.open(url, '_blank')
+    },
+  });
   cy.server();
   cy.route('GET', '/api/kubernetes/api/v1').as('getAPIResourceList');
   cy.route('POST', '/api/salt/login').as('saltAuthentication');
@@ -16,13 +20,13 @@ Given('I log in', () => {
 
   const timeOut = {
     requestTimeout: 30000,
-    responseTimeout: 30000
+    responseTimeout: 30000,
   };
   cy.wait('@getAPIResourceList', timeOut);
   cy.wait('@saltAuthentication', timeOut);
 
   cy.get('.sc-navbar .sc-dropdown > .trigger > .sc-trigger-text').should(
     'contain',
-    userName
+    userName,
   );
 });
