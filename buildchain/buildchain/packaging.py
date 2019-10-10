@@ -431,6 +431,7 @@ DEB_REPOSITORIES : Tuple[targets.DEBRepository, ...] = (
     _deb_repository(name='scality', packages=DEB_TO_BUILD['scality']),
     _deb_repository(name='bionic'),
     _deb_repository(name='bionic-backports'),
+    _deb_repository(name='bionic-security'),
     _deb_repository(name='bionic-updates'),
     _deb_repository(name='kubernetes-xenial'),
     _deb_repository(name='salt_ubuntu1804'),
