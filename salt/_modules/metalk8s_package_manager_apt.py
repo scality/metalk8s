@@ -3,26 +3,28 @@ Describes our custom way to deal with yum packages
 so that we can support downgrade in metalk8s
 '''
 import logging
-# pylint: disable=import-error
-import apt      # type: ignore
-import apt_pkg  # type: ignore
-# pylint: enable=import-error
+
+try:
+    import apt
+    HAS_APT_LIBS = True
+except ImportError:
+    HAS_APT_LIBS = False
 
 log = logging.getLogger(__name__)
-
 
 __virtualname__ = 'metalk8s_package_manager'
 
 
 def __virtual__():
-    if __grains__['os_family'].lower() == 'debian':
+    if __grains__['os_family'] == 'Debian' and HAS_APT_LIBS :
         return __virtualname__
     return False
+
 
 def _list_dependents(
     name, version, fromrepo=None, allowed_versions=None
 ):
-    '''List and filter all packages requiring package `{name}-{version}`.
+    '''List and filter all packages requiring package `{name}={version}`.
 
     Filter based on the `allowed_versions` provided, within the provided
     `fromrepo` repositories.
@@ -36,7 +38,6 @@ def _list_dependents(
     cache = apt.cache.Cache()
     root_package = cache[name]
     stack = [root_package]
-   # name, _, version = root_package_name.partition('=')
 
     while stack:
         package = stack.pop()
@@ -111,32 +112,8 @@ def list_pkg_dependents(
         )
         return None
 
-#    dependents = _list_dependents(
-#        name,
-#        version,
-#        fromrepo=fromrepo,
-#        allowed_versions=versions_dict,
-#    )
-#
-#    all_pkgs.update(dependents)
-
     for pkg_name, desired_version in all_pkgs.items():
         if not strict_version:
             all_pkgs[pkg_name] += '*'
-#        ret = __salt__['cmd.run_all'](['rpm', '-qa', pkg_name])
-
-#        if ret['retcode'] != 0:
-#            log.error(
-#                'Failed to check if package "%s" is installed: %s',
-#                pkg_name,
-#                ret['stderr'] or ret['stdout']
-#            )
-#            return None
-
- #       is_installed = bool(ret['stdout'].strip())
-#        if not is_installed and pkg_name != name:
-            # Any package requiring the target `name` that is not yet installed
-            # should not be installed
-#            del all_pkgs[pkg_name]
 
     return all_pkgs
