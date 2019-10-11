@@ -5,7 +5,7 @@ plantuml >= 0.2
 Sphinx >= 1.7
 sphinx_rtd_theme >= 0.3
 sphinxcontrib_github_alt >= 1.0
-sphinxcontrib-plantuml >= 0.15
+sphinxcontrib-plantuml >= 0.16.1
 sphinxcontrib-spelling >= 4.1
 sphinx-autobuild >= 0.7.1
 
