@@ -11,8 +11,9 @@ __virtualname__ = 'metalk8s_package_manager'
 
 
 def __virtual__():
-    return __virtualname__
-
+    if __grains__['os_family'].lower() == 'redhat':
+        return __virtualname__
+    return False
 
 def _list_dependents(
     name, version, fromrepo=None, allowed_versions=None
