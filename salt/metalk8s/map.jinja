@@ -2,13 +2,31 @@
 {% import_json 'metalk8s/versions.json' as versions with context %}
 
 {# First merge the basic defaults with versions information #}
-{% set version_defaults = {
-  'kubernetes': versions.kubernetes,
-  'repo': {
-    'packages': versions.packages,
-    'images': versions.images,
+{% set version_defaults = salt['grains.filter_by']({
+  'RedHat': {
+    'kubernetes': versions.kubernetes,
+    'repo': {
+      'packages': versions.packages.centos,
+      'images': versions.images,
+    },
   },
-} %}
+  'Debian': {
+    'kubernetes': versions.kubernetes,
+    'repo': {
+      'packages': versions.packages.ubuntu,
+      'images': versions.images,
+    },
+  },
+}, grain='os_family', merge=defaults.get('version_defaults')) %}
+
+{% set packages = salt['grains.filter_by']({
+  'RedHat': {},
+  'Debian': {
+    'm2crypto': 'python-m2crypto',
+    'iproute': 'iproute2',
+
+  },
+}, grain='os_family') %}
 
 {% set defaults = salt['grains.filter_by']({
   'default': defaults,
