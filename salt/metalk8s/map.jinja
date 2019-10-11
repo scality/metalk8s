@@ -32,7 +32,7 @@
 }, merge=defaults.get('kubeadm_preflight')) %}
 
 {% set repo = salt['grains.filter_by']({
-  'CentOS': {
+  'RedHat': {
     'containerd': {
       'name': 'epel'
     },
@@ -104,7 +104,62 @@
       },
     }
   },
-}, merge=defaults.get('repo')) %}
+  'Debian': {
+    'repositories': {
+      'metalk8s-bionic': {
+        'name': 'deb [trusted=yes] '
+              'file:///vagrant/_build/root/packages/debian/metalk8s-bionic '
+              'bionic metalk8s-bionic',
+        'comps': [
+          'metalk8s-bionic'
+        ]
+      },
+      'metalk8s-bionic-updates': {
+        'name': 'deb [trusted=yes] '
+                'file:///vagrant/_build/root/packages/debian/'
+                'metalk8s-bionic-updates bionic metalk8s-bionic-updates',
+        'comps': [
+          'metalk8s-bionic-updates'
+        ],
+      },
+      'metalk8s-bionic-backports':{
+        'name': 'deb [trusted=yes] '
+                'file:///vagrant/_build/root/packages/debian/'
+                'metalk8s-bionic-backports bionic metalk8s-bionic-backports',
+        'comps': [
+          'metalk8s-bionic-backports'
+        ]
+      },
+      'metalk8s-salt_ubuntu1804': {
+        'name': 'deb [trusted=yes] '
+                'file:///vagrant/_build/root/packages/debian/'
+                'metalk8s-salt_ubuntu1804 bionic metalk8s-salt_ubuntu1804',
+        'options': {
+          'trusted': 'yes',
+        },
+        'comps': [
+          'metalk8s-salt_ubuntu1804'
+        ]
+      },
+      'metalk8s-kubernetes-xenial': {
+        'name': 'deb [trusted=yes] '
+                'file:///vagrant/_build/root/packages/debian/'
+                'metalk8s-kubernetes-xenial bionic metalk8s-kubernetes-xenial',
+        'comps': [
+          'metalk8s-kubernetes-xenial'
+        ]
+      },
+      'metalk8s-scality': {
+        'name': 'deb [trusted=yes] '
+                'file:///vagrant/_build/root/packages/debian/'
+                'metalk8s-scality bionic metalk8s-scality',
+        'comps': [
+          'metalk8s-scality'
+        ]
+      }
+    }
+  }
+}, grain='os_family', merge=defaults.get('repo')) %}
 
 {% set networks = salt['grains.filter_by']({
   'default': {}
