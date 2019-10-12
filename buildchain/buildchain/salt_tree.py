@@ -382,8 +382,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/deploy_node.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
-    Path('salt/metalk8s/orchestrate/solutions/available.sls'),
-    Path('salt/metalk8s/orchestrate/solutions/init.sls'),
     Path('salt/metalk8s/orchestrate/etcd.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
@@ -393,10 +391,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/archives/init.sls'),
     Path('salt/metalk8s/archives/mounted.sls'),
 
-    Path('salt/metalk8s/solutions/configured.sls'),
-    Path('salt/metalk8s/solutions/mounted.sls'),
-    Path('salt/metalk8s/solutions/unconfigured.sls'),
-    Path('salt/metalk8s/solutions/unmounted.sls'),
+    Path('salt/metalk8s/solutions/available.sls'),
+    Path('salt/metalk8s/solutions/removed.sls'),
     Path('salt/metalk8s/solutions/init.sls'),
 
     Path('salt/metalk8s/repo/configured.sls'),
