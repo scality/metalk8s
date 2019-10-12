@@ -14,7 +14,11 @@ def get_pods(
     if node:
         nodename = utils.resolve_hostname(node, ssh_config)
         field_selector.append('spec.nodeName={}'.format(nodename))
-
+    if not label:
+        return k8s_client.list_namespaced_pod(
+            namespace,
+            field_selector=','.join(field_selector),
+        ).items
     return k8s_client.list_namespaced_pod(
         namespace,
         field_selector=','.join(field_selector),

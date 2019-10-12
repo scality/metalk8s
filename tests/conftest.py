@@ -203,3 +203,29 @@ def _verify_kubeapi_service(host):
             pytest.fail(res.stderr)
 
 # }}}
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    # execute all other hooks to obtain the report object
+    outcome = yield
+    rep = outcome.get_result()
+    # attach the failing result to the report object
+    setattr(item, "rep", rep)
+
+
+@pytest.fixture
+def showpods(request, k8s_client):
+    yield
+    # request.node is an "item" because we use the default
+    # "function" scope
+    if request.node.rep.failed:
+        ssh_config = request.config.getoption('--ssh-config')
+        print("test failed!", request.node.nodeid)
+        for namespace in ("kube-system", "metalk8s-monitoring", "metalk8s-ui"):
+            pods = kube_utils.get_pods(
+                k8s_client, ssh_config, label=None, node="bootstrap",
+                namespace=namespace, state="Running",
+            )
+            print("Running pods for namespace {}".format(namespace))
+            print('\n'.join([p.metadata.name for p in pods]))
