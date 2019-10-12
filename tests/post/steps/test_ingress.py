@@ -87,7 +87,7 @@ def perform_request(host, context, protocol, port, plane):
 @then(parsers.re(
     r"the server returns (?P<status_code>\d+) '(?P<reason>.+)'"),
     converters=dict(status_code=int))
-def server_returns(host, context, status_code, reason):
+def server_returns(host, context, status_code, reason, showpods):
     response = context.get('response')
     assert response is not None
     assert response.status_code == int(status_code)
@@ -95,7 +95,7 @@ def server_returns(host, context, status_code, reason):
 
 
 @then("the server should not respond")
-def server_does_not_respond(host, context):
+def server_does_not_respond(host, context, showpods):
     assert 'exception' in context
     assert isinstance(
         context['exception'] , requests.exceptions.ConnectionError)

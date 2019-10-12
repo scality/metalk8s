@@ -82,7 +82,7 @@ def login_salt_api(host, username, password, version, context, request):
 
 
 @then('we can ping all minions')
-def ping_all_minions(host, context):
+def ping_all_minions(host, context, showpods):
     result = requests.post(
         context['salt-api']['url'],
         json=[

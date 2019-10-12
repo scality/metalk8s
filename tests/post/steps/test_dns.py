@@ -54,7 +54,7 @@ def test_dns(host):
 
 
 @then(parsers.parse("the hostname '{hostname}' should be resolved"))
-def resolve_hostname(utils_pod, host, hostname):
+def resolve_hostname(utils_pod, host, hostname, showpods):
     with host.sudo():
         # test dns resolve
         result = host.run(
