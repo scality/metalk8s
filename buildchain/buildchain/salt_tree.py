@@ -221,8 +221,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/ui/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/ui/deployed/ui.sls'),
 
-    Path('salt/metalk8s/addons/solutions/deployed.sls'),
-    Path('salt/metalk8s/addons/solutions/environment-crd.sls'),
+    Path('salt/metalk8s/addons/solutions/deployed/init.sls'),
+    Path('salt/metalk8s/addons/solutions/deployed/environment-crd.sls'),
+    Path('salt/metalk8s/addons/solutions/deployed/namespace.sls'),
+    Path('salt/metalk8s/addons/solutions/deployed/uis-configmap.sls'),
 
     Path('salt/metalk8s/addons/volumes/deployed.sls'),
     targets.TemplateFile(
@@ -319,7 +321,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/cni/loopback/init.sls'),
     Path('salt/metalk8s/kubernetes/cni/loopback/installed.sls'),
 
-
     Path('salt/metalk8s/kubernetes/controller-manager/init.sls'),
     Path('salt/metalk8s/kubernetes/controller-manager/installed.sls'),
     Path('salt/metalk8s/kubernetes/controller-manager/kubeconfig.sls'),
@@ -386,13 +387,14 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/register_etcd.sls'),
+    Path('salt/metalk8s/orchestrate/solutions/init.sls'),
+    Path('salt/metalk8s/orchestrate/solutions/deploy-components.sls'),
 
     Path('salt/metalk8s/archives/configured.sls'),
     Path('salt/metalk8s/archives/init.sls'),
     Path('salt/metalk8s/archives/mounted.sls'),
 
     Path('salt/metalk8s/solutions/available.sls'),
-    Path('salt/metalk8s/solutions/removed.sls'),
     Path('salt/metalk8s/solutions/init.sls'),
 
     Path('salt/metalk8s/repo/configured.sls'),
