@@ -41,53 +41,6 @@ def __virtual__():
     return __virtualname__
 
 
-def _is_solution_mount(mountpoint, mount_info):
-    """Return whether a mount is for a Solution archive.
-
-    Any ISO9660 mounted in `/srv/scality` that isn't for MetalK8s is considered
-    to be a Solution archive.
-    """
-    if not mountpoint.startswith('/srv/scality/'):
-        return False
-
-    if mountpoint.startswith('/srv/scality/metalk8s-'):
-        return False
-
-    if mount_info['fstype'] != 'iso9660':
-        return False
-
-    return True
-
-
-def list_available():
-    result = collections.defaultdict(list)
-
-    active_mounts = __salt__['mount.active']()
-    solutions_mounts = filter(_is_solution_mount, active_mounts.items())
-
-    active_solutions = list_active()
-
-    for mountpoint, mount_info in solution_mounts:
-        solution_info = __salt__['metalk8s.archive_info_from_iso'](
-            mount_info['alt_device']
-        )
-
-        machine_name = solution_info['name'].replace(' ', '-').lower()
-        version = solution_info['version']
-        active = active_solutions.get(machine_name) == version
-
-        result[machine_name].append({
-            'display_name': solution_info['name'],
-            'machine_id': '{}-{}'.format(machine_name, version),
-            'mountpoint': mountpoint,
-            'archive': mount_info['alt_device'],
-            'version': version,
-            'active': False,
-        })
-
-    return result
-
-
 def list_active(
     context="kubernetes-admin@kubernetes",
     kubeconfig="/etc/kubernetes/admin.conf",

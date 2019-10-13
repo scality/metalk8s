@@ -2,6 +2,7 @@
 '''
 Module for handling MetalK8s specific calls.
 '''
+import collections
 import logging
 import os.path
 import re
@@ -235,3 +236,54 @@ def get_archives(archives=None):
             )
         res.update({env_name: info})
     return res
+
+
+# Solution archives {{{
+# FIXME: move this to `metalk8s_solution` module, issue with __virtual__ (since
+# used on both master and minion... need to think a bit)
+
+def _is_solution_mount(mount_tuple):
+    """Return whether a mount is for a Solution archive.
+
+    Any ISO9660 mounted in `/srv/scality` that isn't for MetalK8s is considered
+    to be a Solution archive.
+    """
+    mountpoint, mount_info = mount_tuple
+
+    if not mountpoint.startswith('/srv/scality/'):
+        return False
+
+    if mountpoint.startswith('/srv/scality/metalk8s-'):
+        return False
+
+    if mount_info['fstype'] != 'iso9660':
+        return False
+
+    return True
+
+
+def list_available_solutions():
+    result = collections.defaultdict(list)
+
+    active_mounts = __salt__['mount.active']()
+
+    solution_mounts = filter(_is_solution_mount, active_mounts.items())
+
+    for mountpoint, mount_info in solution_mounts:
+        solution_info = archive_info_from_iso(mount_info['alt_device'])
+
+        machine_name = solution_info['name'].replace(' ', '-').lower()
+        version = solution_info['version']
+
+        result[machine_name].append({
+            'display_name': solution_info['name'],
+            'machine_id': '{}-{}'.format(machine_name, version),
+            'mountpoint': mountpoint,
+            'archive': mount_info['alt_device'],
+            'version': version,
+            'active': False,
+        })
+
+    return dict(result)
+
+# }}}
