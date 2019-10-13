@@ -30,7 +30,7 @@ class Command(six.with_metaclass(abc.ABCMeta, object)):
 
     # List of factory functions to create additional parent parsers for this
     # command and optional subcommands
-    EXTRA_PARENTS = []
+    PARENT_PARSERS = []
 
     def __init__(self, args):
         """Extract necessary arguments for execution in `run`."""

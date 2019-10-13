@@ -25,37 +25,28 @@ class AddSolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
         super(AddSolutionCommand, self).__init__(args)
         self.solutions_config = args.solutions_config
         self.archives = args.archives
+        self.check_role('bootstrap')
+        self.saltenv = self.get_saltenv()
 
-    def add_archive(self, archive):
-        # Write to config file
-        self.solutions_config.add_archive(archive)
+    def add_archives(self):
+        for archive in self.archives:
+            self.solutions_config.add_archive(archive)
         self.solutions_config.write_to_file()
-        self.logger.debug('Added archive "{}" to {} config file.'.format(
-            archive, self.solutions_config.filepath
-        ))
-
-        # Mount ISO archive
-        mounted_out = self.run_salt_minion(
-            'metalk8s.solutions.mounted',
-            local=True,
-            pillar={'archives': [archive]},
+        self.print_and_log(
+            'Added archives ({}) to config file ({}).'.format(
+                ', '.join(self.archives), self.solutions_config.filepath,
+            ),
+            level='DEBUG',
         )
-        self.logged.debug(mounted_out)
-
-        # Configure registry to serve images from this ISO
-        configured_out = self.run_salt_minion(
-            'metalk8s.solutions.configured',
-            local=True,
-            pillar={'archives': [archive]}
-        )
-        self.logger.debug(configured_out)
 
     def run(self):
         with self.log_active_run():
-            for archive in self.archives:
-                try:
-                    with self.log_step('Add archive "{}"'.format(archive)):
-                        self.add_archive(archive)
-                except CommandError as exc:
-                    self.logger.info("The script will now exit.")
-                    sys.exit(1)
+            with self.log_step('Editing configuration file'):
+                self.add_archives()
+
+            with self.log_step('Mounting archives and configuring registry'):
+                cmd_output = self.run_salt_minion(
+                    ['state.sls', 'metalk8s.solutions.available'],
+                    saltenv=self.saltenv,
+                )
+                self.print_and_log(cmd_output, level='DEBUG')

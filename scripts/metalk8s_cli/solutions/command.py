@@ -1,12 +1,12 @@
 from metalk8s_cli.solutions.add.command import AddSolutionCommand
-from metalk8s_cli.solutions.create_env.command import (
-    CreateEnvironmentCommand,
-)
+# from metalk8s_cli.solutions.create_env.command import (
+#     CreateEnvironmentCommand,
+# )
 from metalk8s_cli.solutions.deploy.command import DeploySolutionCommand
-from metalk8s_cli.solutions.list.command import ListSolutionCommand
-from metalk8s_cli.solutions.prepare_env.command import (
-    PrepareEnvironmentCommand,
-)
+# from metalk8s_cli.solutions.list.command import ListSolutionCommand
+# from metalk8s_cli.solutions.prepare_env.command import (
+#     PrepareEnvironmentCommand,
+# )
 from metalk8s_cli.solutions.remove.command import RemoveSolutionCommand
 
 from metalk8s_cli.solutions import config
@@ -19,10 +19,10 @@ class SolutionsCommand(utils.Command):
 
     SUBCOMMANDS = [
         AddSolutionCommand,
-        CreateEnvironmentCommand,
+        # CreateEnvironmentCommand,
         DeploySolutionCommand,
-        ListSolutionCommand,
-        PrepareEnvironmentCommand,
+        # ListSolutionCommand,
+        # PrepareEnvironmentCommand,
         RemoveSolutionCommand,
     ]
 

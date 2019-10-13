@@ -10,7 +10,7 @@ from metalk8s_cli.exceptions import CommandInitError
 class SolutionsConfiguration(object):
     KIND = 'SolutionsConfiguration'
 
-    # NOTE: first apiVersion in this list is used when creating the file
+    # NOTE: first apiVersion in this list is used when creating a new file
     API_VERSIONS = [
         'solutions.metalk8s.scality.com/{}'.format(version)
         for version in ['v1alpha1']
@@ -22,17 +22,15 @@ class SolutionsConfiguration(object):
         assert api_version and kind, (
             'SolutionsConfiguration must have a `kind` and `apiVersion`.'
         )
-
         assert kind == self.KIND, (
             'Wrong kind ({}), must be "{}".'.format(kind, self.KIND)
         )
-
         assert api_version in self.API_VERSIONS, (
             'API version not supported: {}'.format(api_version)
         )
         self.api_version = api_version
-
         self.archives = data.get('archives', [])
+        self.active_versions = data.get('active', {})
 
         self.filepath = filepath
 
@@ -45,6 +43,12 @@ class SolutionsConfiguration(object):
             self.archives.remove(archive)
         except ValueError:
             pass
+
+    def activate_solution_version(self, solution, version):
+        self.active_versions[solution] = version
+
+    def deactivate_solution(self, solution):
+        self.active_versions.pop(solution, None)
 
     @classmethod
     def read_from_file(cls, filepath, create=False):
@@ -69,12 +73,9 @@ class SolutionsConfiguration(object):
         if not os.path.isdir(dirpath):
             os.makedirs(dirpath)
 
-        config = cls({
-            'apiVersion': cls.API_VERSIONS[0],
-            'kind': cls.KIND,
-            'archives': [],
-        })
-        config.write_to_file(filepath)
+        data = {'apiVersion': cls.API_VERSIONS[0], 'kind': cls.KIND}
+        config = cls(data, filepath)
+        config.write_to_file()
         return config
 
     def write_to_file(self, filepath=None):
@@ -97,11 +98,12 @@ class SolutionsConfiguration(object):
             'apiVersion': self.api_version,
             'kind': self.KIND,
             'archives': self.archives,
+            'active': self.active_versions,
         }
 
 
 def config_from_file(filepath):
-    # NOTE: if the filepath is absent, we'll create one, but if it exists
+    # NOTE: if the file is absent, we'll create one, but if it exists
     # already, we won't overwrite it
     try:
         return SolutionsConfiguration.read_from_file(filepath, create=True)

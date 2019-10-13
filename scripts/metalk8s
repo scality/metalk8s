@@ -1,6 +1,7 @@
 #!/bin/bash
-
-set -ue -o pipefail
+# set -e
+set -u
+set -o pipefail
 
 pushd "$(dirname ${BASH_SOURCE[0]})" > /dev/null
 SCRIPTS_DIR="$(pwd)"
@@ -30,6 +31,21 @@ fi
 if [ ! -x "${PYTHON}" ]; then
     echo "No suitable Python interpreter (2.7 or 3.6) found" > /dev/stderr
     exit 1
+else
+    "${PYTHON}" -c "import sys; assert sys.version_info >= (2, 7, 9)" &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "Python version is too low, must be higher than 2.7.9" > /dev/stderr
+        exit 1
+    fi
 fi
 
-exec "${PYTHON}" -B -E -s -m metalk8s_cli "${@}"
+exec "${PYTHON}" -B -E - "${@}" << EOS
+import sys
+sys.path.insert(0, "${SCRIPTS_DIR}")
+
+assert sys.argv[0] == "-"
+sys.argv[0] = "${BASH_SOURCE[0]}"
+
+import metalk8s_cli.command
+metalk8s_cli.command.main()
+EOS

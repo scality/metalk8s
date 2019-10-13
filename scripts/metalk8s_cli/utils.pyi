@@ -11,7 +11,7 @@ class Command(metaclass=abc.ABCMeta):
     NAME: ClassVar[Optional[str]]
     SUBCOMMANDS: ClassVar[List[Type['Command']]]
     ARGUMENTS: ClassVar[Dict[Tuple[str, ...], Dict[str, Any]]]
-    EXTRA_PARENTS: ClassVar[List[Callable[[], argparse.ArgumentParser]]]
+    PARENT_PARSERS: ClassVar[List[Callable[[], argparse.ArgumentParser]]]
 
     def __init__(self, args: argparse.Namespace) -> None: ...
 

@@ -7,6 +7,8 @@ import logging.config
 import os.path
 import time
 
+import six
+
 from metalk8s_cli.exceptions import CommandError
 
 
@@ -35,7 +37,7 @@ DEFAULT_CONFIG = {
     },
     'root': {
         'handlers': ['console', 'file'],
-        'level': 'INFO',
+        'level': 'DEBUG',
     },
 }
 
@@ -53,16 +55,11 @@ class LoggingCommandMixin(object):
         self.logfile = os.path.abspath(args.logfile)
         self.verbose = args.verbose
         self.prepare_logfile()
-        self.configure_logging(args)
+        self.configure_logging()
 
-    def configure_logging(self, args):
+    def configure_logging(self):
         config = copy.deepcopy(DEFAULT_CONFIG)
-
-        if args.debug:
-            config['root']['level'] = 'DEBUG'
-
         config['handlers']['file']['filename'] = self.logfile
-
         logging.config.dictConfig(config)
 
     def prepare_logfile(self):
@@ -85,7 +82,7 @@ class LoggingCommandMixin(object):
     @contextlib.contextmanager
     def log_step(self, step_name):
         """Log a step execution."""
-        self.print_and_log('> %s...', step_name)
+        self.print_and_log('> {}...'.format(step_name))
         start = time.time()
         try:
             # Wrapped step should use `print_and_log` for success, and

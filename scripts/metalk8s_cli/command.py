@@ -15,9 +15,7 @@ class Metalk8sCommand(utils.Command):
         parsers.build_version_parser,
         parsers.build_verbosity_parser,
         parsers.build_logfile_parser,
-        # Could be in KubectlMixin, but kubectl allows `--kubeconfig` at every
-        # level in its invocation
-        parsers.build_kubeconfig_parser,
+        # parsers.build_kubeconfig_parser,
     ]
 
 

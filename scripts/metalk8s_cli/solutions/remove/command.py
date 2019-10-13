@@ -26,37 +26,39 @@ class RemoveSolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
         super(RemoveSolutionCommand, self).__init__(args)
         self.solutions_config = args.solutions_config
         self.archives = args.archives
+        self.check_role('bootstrap')
 
-    def remove_archive(self, archive):
-        # Write to config file
-        self.solutions_config.remove_archive(archive)
+    def remove_archives(self):
+        # Get view of current state before removing anything
+        # TODO: add other best-effort pre-checks, e.g. get info from
+        # Environments
+        available = self.get_from_pillar('metalk8s:solutions:available')
+        used_archives = [
+            solution['archive']
+            for solution in available.values() if solution['active']
+        ]
+
+        for archive in self.archives:
+            if archive in used_archives:
+                raise CommandError("Archive '{}' is in use, cannot remove it.")
+            self.solutions_config.remove_archive(archive)
+
         self.solutions_config.write_to_file()
-        self.logger.debug('Removed archive "{}" from {} config file.'.format(
-            archive, self.solutions_config.filepath
-        ))
-
-        # Unmount ISO archive
-        unmounted_out = self.run_salt_minion(
-            'metalk8s.solutions.unmounted',
-            local=True,
-            pillar={'archives': [archive]},
+        self.print_and_log(
+            'Removed archives ({}) from config file ({}).'.format(
+                ', '.join(self.archives), self.solutions_config.filepath,
+            ),
+            level='DEBUG',
         )
-        self.logged.debug(unmounted_out)
-
-        # Configure registry to stop serving images from this ISO
-        unconfigured_out = self.run_salt_minion(
-            'metalk8s.solutions.unconfigured',
-            local=True,
-            pillar={'archives': [archive]}
-        )
-        self.logger.debug(unconfigured_out)
 
     def run(self):
         with self.log_active_run():
-            for archive in self.archives:
-                try:
-                    with self.log_step('Remove archive "{}"'.format(archive)):
-                        self.add_archive(archive)
-                except CommandError as exc:
-                    self.logger.info("The script will now exit.")
-                    sys.exit(1)
+            with self.log_step('Editing configuration file'):
+                self.remove_archives()
+
+            with self.log_step('Unmounting archives and configuring registry'):
+                cmd_output = self.run_salt_minion(
+                    ['state.sls', 'metalk8s.solutions.available'],
+                    saltenv=self.saltenv
+                )
+                self.print_and_log(cmd_output, level='DEBUG')
