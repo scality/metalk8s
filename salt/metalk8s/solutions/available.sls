@@ -28,7 +28,8 @@ Cannot proceed with mounting of Solution archives:
     {%- set machine_name = lower_name ~ '-' ~ solution.version %}
     {%- set display_name = solution.name ~ ' ' ~ solution.version %}
     {%- set mount_path = "/srv/scality/" ~ machine_name -%}
-# Mount the archive
+
+{# Mount the archive #}
 Mountpoint for Solution {{ display_name }} exists:
   file.directory:
     - name: {{ mount_path }}
@@ -49,9 +50,9 @@ Archive of Solution {{ display_name }} is mounted at {{ mount_path }}:
     - require:
       - file: Mountpoint for Solution {{ display_name }} exists
 
-# Validate the archive contents
-# TODO: This should be moved before mounting the solution's ISO, using some
-# custom module
+{# Validate the archive contents
+   TODO: This should be moved before mounting the solution's ISO, using some
+   custom module #}
 Product information for Solution {{ display_name }} exists:
   file.exists:
     - name: {{ mount_path }}/product.txt
@@ -62,7 +63,7 @@ Container images for Solution {{ display_name }} exist:
   file.exists:
     - name: {{ mount_path }}/images
     - require:
-      - mount: Solution {{ archive_path }} is available at {{ mount_path }}
+      - mount: Archive of Solution {{ display_name }} is mounted at {{ mount_path }}
 
 Expose container images for Solution {{ display_name }}:
   file.managed:
