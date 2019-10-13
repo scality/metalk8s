@@ -1,45 +1,59 @@
+{%- from "metalk8s/map.jinja" import repo with context %}
+
 include:
   - metalk8s.addons.solutions.deployed
 
-{# Operation macros #}
-{%- macro deploy_solution_components(solution) %}
-  {%- set full_name = solution.name ~ '-' ~ solution.version %}
-  {%- set mount_path = "/srv/scality/" ~ full_name %}
+{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
+{%- set context = "kubernetes-admin@kubernetes" %}
+{%- set kubernetes_present_renderer =
+      "jinja | kubernetes kubeconfig=" ~ kubeconfig ~ "&context=" ~ context %}
+{%- set kubernetes_absent_renderer =
+      kubernetes_present_renderer ~ "&absent=True" %}
 
-  # Deploy the Admin UI
-  {%- set deploy_files_list = ["deployment.yaml", "service.yaml"] %}
-  {%- for deploy_file in deploy_files_list %}
-    {%- set filepath = "/srv/scality/" ~ fullname ~ "/ui/" ~ deploy_file %}
-    {%- set repository = repo_prefix ~ "/" ~ fullname %}
+{%- set ui_relpath = "ui" %}
+{%- set ui_files = ["deployment.yaml", "service.yaml"] %}
+{%- set crds_relpath = "operator/deploy/crds" %}
+{%- set crds_name_pattern = "*_crd.yaml" %}
+
+{# Operation macros #}
+{%- macro manipulate_solution_components(solution, present=true) %}
+  {%- if present %}
+    {%- set action = "Apply" %}
+    {%- set renderer = kubernetes_present_renderer %}
+  {%- else %}
+    {%- set action = "Remove" %}
+    {%- set renderer = kubernetes_absent_renderer %}
+  {%- endif %}
+
+  {# Admin UI management #}
+  {%- for ui_file in ui_files %}
+    {%- set filepath = salt.file.join(solution.mountpoint, ui_relpath, ui_file) %}
+    {%- set repository = repo.registry_endpoint ~ "/" ~ solution.machine_id %}
     {%- set sls_content = salt.saltutil.cmd(
-          tgt=pillar.bootstrap_id,
-          fun='slsutil.renderer',
-          kwarg={
-            'path': filepath,
-            'default_renderer': custom_renderer,
-            'repository': repository,
-          },
-        )[pillar.bootstrap_id]['ret']
+            tgt=pillar.bootstrap_id,
+            fun='slsutil.renderer',
+            kwarg={
+              'path': filepath,
+              'default_renderer': renderer,
+              'repository': repository,
+            },
+          )[pillar.bootstrap_id]['ret']
     %}
-Apply Admin UI "{{ deploy_file }}" for Solution {{ fullname }}:
+{{ action }} Admin UI "{{ ui_file }}" for Solution {{ solution.display_name }}:
   module.run:
     - state.template_str:
       - tem: "{{ sls_content | yaml }}"
-    - require:
-      - salt: Prepare registry configuration for declared Solutions
-    - require_in:
-      - module: Register Solution {{ fullname }} in ConfigMap
 
-  {%- endfor %} {# deploy_file in deploy_files_list #}
+  {%- endfor %} {# ui_file in ui_files #}
 
-  # Deploy the CRDs
-  {%- set crds_path = "/srv/scality/" ~ fullname ~ "/operator/deploy/crds" %}
+  {# CRDs management #}
+  {%- set crds_path = salt.file.join(solution.mountpoint, crds_relpath) %}
   {%- set crd_files = salt.saltutil.cmd(
           tgt=pillar.bootstrap_id,
           fun='file.find',
           kwarg={
             'path': crds_path,
-            'name': '*_crd.yaml'
+            'name': crds_name_pattern,
           },
         )[pillar.bootstrap_id]['ret'] %}
 
@@ -49,23 +63,25 @@ Apply Admin UI "{{ deploy_file }}" for Solution {{ fullname }}:
             fun='slsutil.renderer',
             kwarg={
                 'path': crd_file,
-                'default_renderer': custom_renderer
+                'default_renderer': renderer,
             },
           )[pillar.bootstrap_id]['ret'] %}
-Apply CRD "{{ crd_file }}" for Solution {{ fullname }}:
+{{ action }} CRD "{{ crd_file }}" for Solution {{ solution.display_name }}:
   module.run:
     - state.template_str:
       - tem: "{{ sls_content | yaml }}"
-    - require:
-      - salt: Prepare registry configuration for declared Solutions
-    - require_in:
-      - module: Register Solution {{ fullname }} in ConfigMap
 
     {%- endfor %} {# crd_file in crd_files #}
 {%- endmacro %}
 
+{# TODO: this can be improved using the state module from #1713 #}
+{%- macro deploy_solution_components(solution) %}
+  {{ manipulate_solution_components(solution, present=true) }}
+{%- endmacro %}
+
+{# TODO: only retrieve object names and delete them without the renderer #}
 {%- macro remove_solution_components(solution) %}
-{# TODO: !!! #}
+  {{ manipulate_solution_components(solution, present=false) }}
 {%- endmacro %}
 
 {%- macro fail_missing_version(name, version) %}
@@ -73,6 +89,20 @@ Cannot deploy desired version '{{ version }}' for Solution {{ name }}:
   test.fail_without_changes:
     - name: Solution {{ name }}-{{ version }} is not available
 
+{%- endmacro %}
+
+{# Helpers #}
+{%- macro get_latest(versions) %}
+  {# NOTE: would need Jinja 2.10 to have namespace objects #}
+  {%- set ns = {'candidate': none} %}
+  {%- for version in versions | map(attribute='version') %}
+    {%- if ns.candidate is none %}
+      {%- do ns.update({'candidate': version}) %}
+    {%- elif salt.pkg.version_cmp(version, ns.candidate) > 0 %}
+      {%- do ns.update({'candidate': version}) %}
+    {%- endif %}
+  {%- endfor -%}
+  {{ ns.candidate }}
 {%- endmacro %}
 
 {# Actual state formula #}
@@ -90,16 +120,23 @@ Cannot proceed with deployment of Solution cluster-wide components:
   {%- set available = pillar.metalk8s.solutions.available %}
 
   {%- for name, versions in available.items() %}
-    {%- set desired_version = desired.get('name') %}
+    {%- set desired_version = desired.get(name) %}
     {%- if desired_version == 'latest' %}
-      {%- set desired_version = get_latest(versions) %}
+      {%- set desired_version = get_latest(versions) | trim %}
     {%- endif %}
 
     {%- if desired_version is none %}
       {# Solution is not present in config.active #}
-      {{- remove_solution_components(name) }}
+      {%- set active_versions = versions
+                                | selectattr('active', 'equalto', true)
+                                | list %}
+      {%- if active_versions %}
+        {# There should only be one #}
+        {%- set solution = active_versions | first %}
+        {{- remove_solution_components(solution) }}
+      {%- endif %}
     {%- else %}
-      {%- if desired_version not in versions | attr('version') %}
+      {%- if desired_version not in versions | map(attribute='version') %}
         {{- fail_missing_version(name, desired_version) }}
       {%- else %}
         {%- set solution = versions
