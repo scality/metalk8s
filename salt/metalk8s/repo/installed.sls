@@ -4,7 +4,7 @@
 {%- set repositories_version = '1.0.0' %}
 
 {%- set archives = salt.metalk8s.get_archives() %}
-{%- set solutions = pillar.metalk8s.get('solutions', {}).get('deployed', {}) %}
+{%- set solutions = pillar.metalk8s.get('solutions', {}).get('available', {}) %}
 
 {%- set docker_repository = 'docker.io/library' %}
 {%- set image_name = 'nginx' %}
