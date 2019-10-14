@@ -7,41 +7,36 @@ __virtualname__ = "metalk8s_solutions"
 
 
 def __virtual__():
+    if 'metalk8s_solutions.read_config' not in __salt__:
+        return False, "Failed to load 'metalk8s_solution' module."
     return __virtualname__
 
 
 def _load_solutions():
     """Load Solutions from ConfigMap and config file."""
-    errors = []
+    try:
+        config_data = __salt__['metalk8s_solutions.read_config']()
+    except (IOError, CommandExecutionError) as exc:
+        config_data = __utils__['pillar_utils.errors_to_dict']([
+            "Error when reading Solutions config file: {}".format(exc)
+        ])
+
     try:
         deployed = __salt__['metalk8s_solutions.list_deployed']()
-    except KeyError:
-        return __utils__['pillar_utils.errors_to_dict']([
-            "Failed to load 'metalk8s_solutions' module."
-        ])
     except Exception as exc:
-        deployed = {}
-        errors.append(
+        deployed = __utils__['pillar_utils.errors_to_dict']([
             "Error when retrieving ConfigMap 'metalk8s-solutions': {}".format(
                 exc
             )
-        )
-
-    try:
-        configured = __salt__['metalk8s_solutions.list_configured']()
-    except (IOError, CommandExecutionError) as exc:
-        configured = []
-        errors.append(
-            "Error when reading Solutions config file: {}".format(exc)
-        )
+        ])
 
     result = {
-        'configured': configured,
+        'config': config_data,
         'deployed': deployed,
     }
 
-    if errors:
-        result.update(__utils__['pillar_utils.errors_to_dict'](errors))
+    for key in result:
+        __utils__['pillar_utils.promote_errors'](result, key)
 
     return result
 
