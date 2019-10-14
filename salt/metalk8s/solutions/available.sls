@@ -10,7 +10,6 @@ include:
   - metalk8s.repo.installed
 
 {%- macro extract_info(archive_path) %}
-  
   {{ machine_name }},{{ display_name }},{{ mount_path }}
 {%- endmacro %}
 
