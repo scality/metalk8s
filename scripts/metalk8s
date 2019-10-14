@@ -1,0 +1,39 @@
+#!/bin/bash
+# set -e
+set -u
+set -o pipefail
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPTS_DIR="$(cd "$(dirname "${SCRIPT_PATH}")" && pwd)"
+
+PYTHON36=$(command -v python3.6)
+if [ -z "${PYTHON36}" ]; then
+    PYTHON36=$(command -v python36)
+fi
+
+PYTHON27=$(command -v python2.7)
+if [ -z "${PYTHON27}" ]; then
+    PYTHON27=$(command -v python27)
+fi
+
+if [ -z "${PYTHON36}" ]; then
+    PYTHON="${PYTHON27}"
+else
+    PYTHON="${PYTHON36}"
+fi
+
+if [ ! -x "${PYTHON}" ]; then
+    echo "No suitable Python interpreter (2.7 or 3.6) found" > /dev/stderr
+    exit 1
+fi
+
+exec "${PYTHON}" -B -E - "${@}" << EOS
+import sys
+sys.path.insert(0, "${SCRIPTS_DIR}")
+
+assert sys.argv[0] == "-"
+sys.argv[0] = "${BASH_SOURCE[0]}"
+
+import metalk8s_cli.command
+metalk8s_cli.command.main()
+EOS
