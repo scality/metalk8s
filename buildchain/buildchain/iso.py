@@ -159,6 +159,9 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
             Path('metalk8s_cli/solutions/add/__init__.py'),
             Path('metalk8s_cli/solutions/add/command.py'),
 
+            Path('metalk8s_cli/solutions/deploy/__init__.py'),
+            Path('metalk8s_cli/solutions/deploy/command.py'),
+
             Path('metalk8s_cli/solutions/remove/__init__.py'),
             Path('metalk8s_cli/solutions/remove/command.py'),
         ),
