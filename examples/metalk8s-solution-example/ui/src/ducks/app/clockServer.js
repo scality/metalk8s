@@ -2,7 +2,7 @@ import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
 
-import { REFRESH_TIMEOUT } from '../../constants';
+import { REFRESH_TIMEOUT, SOLUTION_NAME } from '../../constants';
 
 // Actions
 const REFRESH_CLOCK_SERVER = 'REFRESH_CLOCK_SERVER';
@@ -71,7 +71,7 @@ export function* fetchClockServer(namespaces) {
 export function* createClockServer({ payload }) {
   const { name, environment, timezone, version } = payload;
   const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
+    apiVersion: `${SOLUTION_NAME}.metalk8s.scality.com/v1alpha1`,
     kind: 'ClockServer',
     metadata: {
       name
@@ -85,10 +85,10 @@ export function* createClockServer({ payload }) {
   const result = yield call(
     ApiK8s.createClockServer,
     body,
-    `${environment}-example-solution`
+    `${environment}-${SOLUTION_NAME}`
   );
   if (!result.error) {
-    yield call(fetchClockServer, `${environment}-example-solution`);
+    yield call(fetchClockServer, `${environment}-${SOLUTION_NAME}`);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -96,7 +96,7 @@ export function* createClockServer({ payload }) {
 export function* editClockServer({ payload }) {
   const { name, environment, timezone, version } = payload;
   const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
+    apiVersion: `${SOLUTION_NAME}.metalk8s.scality.com/v1alpha1`,
     kind: 'ClockServer',
     metadata: {
       name
@@ -110,12 +110,12 @@ export function* editClockServer({ payload }) {
   const result = yield call(
     ApiK8s.updateClockServer,
     body,
-    `${environment}-example-solution`,
+    `${environment}-${SOLUTION_NAME}`,
     name
   );
 
   if (!result.error) {
-    yield call(fetchClockServer, `${environment}-example-solution`);
+    yield call(fetchClockServer, `${environment}-${SOLUTION_NAME}`);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -126,7 +126,10 @@ export function* refreshClockServer({ environment }) {
       isRefreshing: true
     })
   );
-  const results = yield call(fetchClockServer, `${environment}-example-solution`);
+  const results = yield call(
+    fetchClockServer,
+    `${environment}-${SOLUTION_NAME}`
+  );
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(

@@ -7,7 +7,11 @@ import {
   RbacAuthorizationV1Api
 } from '@kubernetes/client-node';
 
-import { LABEL_PART_OF, SOLUTION_CONFIGMAP_NAME } from '../../constants';
+import {
+  LABEL_PART_OF,
+  SOLUTION_CONFIGMAP_NAME,
+  SOLUTION_NAME
+} from '../../constants';
 
 let config;
 let coreV1;
@@ -68,12 +72,12 @@ export async function updateEnvironment(body, name) {
   }
 }
 
-export async function getClockServer(namespaces) {
+export async function getClockServer(namespace) {
   try {
     return await customObjects.listNamespacedCustomObject(
-      'example-solution.metalk8s.scality.com',
+      `${SOLUTION_NAME}.metalk8s.scality.com`,
       'v1alpha1',
-      namespaces,
+      namespace,
       'clockservers'
     );
   } catch (error) {
@@ -81,12 +85,12 @@ export async function getClockServer(namespaces) {
   }
 }
 
-export async function getVersionServer(namespaces) {
+export async function getVersionServer(namespace) {
   try {
     return await customObjects.listNamespacedCustomObject(
-      'example-solution.metalk8s.scality.com',
+      `${SOLUTION_NAME}.metalk8s.scality.com`,
       'v1alpha1',
-      namespaces,
+      namespace,
       'versionservers'
     );
   } catch (error) {
@@ -94,12 +98,12 @@ export async function getVersionServer(namespaces) {
   }
 }
 
-export async function createClockServer(body, namespaces) {
+export async function createClockServer(body, namespace) {
   try {
     return await customObjects.createNamespacedCustomObject(
-      'example-solution.metalk8s.scality.com',
+      `${SOLUTION_NAME}.metalk8s.scality.com`,
       'v1alpha1',
-      namespaces,
+      namespace,
       'clockservers',
       body
     );
@@ -108,12 +112,12 @@ export async function createClockServer(body, namespaces) {
   }
 }
 
-export async function createVersionServer(body, namespaces) {
+export async function createVersionServer(body, namespace) {
   try {
     return await customObjects.createNamespacedCustomObject(
-      'example-solution.metalk8s.scality.com',
+      `${SOLUTION_NAME}.metalk8s.scality.com`,
       'v1alpha1',
-      namespaces,
+      namespace,
       'versionservers',
       body
     );
@@ -122,12 +126,12 @@ export async function createVersionServer(body, namespaces) {
   }
 }
 
-export async function updateClockServer(body, namespaces, name) {
+export async function updateClockServer(body, namespace, name) {
   try {
     return await customObjects.patchNamespacedCustomObject(
-      'example-solution.metalk8s.scality.com',
+      `${SOLUTION_NAME}.metalk8s.scality.com`,
       'v1alpha1',
-      namespaces,
+      namespace,
       'clockservers',
       name,
       body,
@@ -142,12 +146,12 @@ export async function updateClockServer(body, namespaces, name) {
   }
 }
 
-export async function updateVersionServer(body, namespaces, name) {
+export async function updateVersionServer(body, namespace, name) {
   try {
     return await customObjects.patchNamespacedCustomObject(
-      'example-solution.metalk8s.scality.com',
+      `${SOLUTION_NAME}.metalk8s.scality.com`,
       'v1alpha1',
-      namespaces,
+      namespace,
       'versionservers',
       name,
       body,
@@ -162,33 +166,33 @@ export async function updateVersionServer(body, namespaces, name) {
   }
 }
 
-export async function getOperatorDeployments(namespaces, name) {
+export async function getOperatorDeployments(namespace, name) {
   try {
     return await appsV1Api.listNamespacedDeployment(
-      namespaces,
+      namespace,
       null,
       null,
       null,
       `metadata.name=${name}`,
-      `${LABEL_PART_OF}=example-solution`
+      `${LABEL_PART_OF}=${SOLUTION_NAME}`
     );
   } catch (error) {
     return { error };
   }
 }
 
-export async function createNamespacedDeployment(namespaces, body) {
+export async function createNamespacedDeployment(namespace, body) {
   try {
-    return await appsV1Api.createNamespacedDeployment(namespaces, body);
+    return await appsV1Api.createNamespacedDeployment(namespace, body);
   } catch (error) {
     return { error };
   }
 }
 
-export async function listNamespacedServiceAccount(namespaces, name) {
+export async function listNamespacedServiceAccount(namespace, name) {
   try {
     return await coreV1.listNamespacedServiceAccount(
-      namespaces,
+      namespace,
       null,
       null,
       null,
@@ -199,18 +203,18 @@ export async function listNamespacedServiceAccount(namespaces, name) {
   }
 }
 
-export async function createNamespacedServiceAccount(namespaces, body) {
+export async function createNamespacedServiceAccount(namespace, body) {
   try {
-    return await coreV1.createNamespacedServiceAccount(namespaces, body);
+    return await coreV1.createNamespacedServiceAccount(namespace, body);
   } catch (error) {
     return { error };
   }
 }
 
-export async function listNamespacedRole(namespaces, name) {
+export async function listNamespacedRole(namespace, name) {
   try {
     return await rbacAuthorizationV1Api.listNamespacedRole(
-      namespaces,
+      namespace,
       null,
       null,
       null,
@@ -221,18 +225,18 @@ export async function listNamespacedRole(namespaces, name) {
   }
 }
 
-export async function createNamespacedRole(namespaces, body) {
+export async function createNamespacedRole(namespace, body) {
   try {
-    return await rbacAuthorizationV1Api.createNamespacedRole(namespaces, body);
+    return await rbacAuthorizationV1Api.createNamespacedRole(namespace, body);
   } catch (error) {
     return { error };
   }
 }
 
-export async function listNamespacedRoleBinding(namespaces, name) {
+export async function listNamespacedRoleBinding(namespace, name) {
   try {
     return await rbacAuthorizationV1Api.listNamespacedRoleBinding(
-      namespaces,
+      namespace,
       null,
       null,
       null,
@@ -243,10 +247,10 @@ export async function listNamespacedRoleBinding(namespaces, name) {
   }
 }
 
-export async function createNamespacedRoleBinding(namespaces, body) {
+export async function createNamespacedRoleBinding(namespace, body) {
   try {
     return await rbacAuthorizationV1Api.createNamespacedRoleBinding(
-      namespaces,
+      namespace,
       body
     );
   } catch (error) {
@@ -254,11 +258,11 @@ export async function createNamespacedRoleBinding(namespaces, body) {
   }
 }
 
-export async function updateDeployment(body, namespaces, name) {
+export async function updateDeployment(body, namespace, name) {
   try {
     return await appsV1Api.patchNamespacedDeployment(
       name,
-      namespaces,
+      namespace,
       body,
       undefined,
       undefined,

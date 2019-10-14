@@ -8,7 +8,7 @@ import {
   createNamespacedRole,
   createNamespacedRoleBinding,
   createOrUpdateOperatorDeployment,
-  fetchOpertorDeployments
+  fetchOpertorDeployment
 } from './deployment';
 import { LABEL_VERSION, SOLUTION_NAME } from '../../constants';
 
@@ -90,8 +90,8 @@ export function* fetchEnvironment() {
 }
 export function* updateEnvironment(environment) {
   const results = yield call(
-    fetchOpertorDeployments,
-    `${environment.metadata.name}-example-solution`
+    fetchOpertorDeployment,
+    `${environment.metadata.name}-${SOLUTION_NAME}`
   );
   // One operator per environment
   const operator = results.body.items.length ? results.body.items[0] : null;
@@ -138,7 +138,7 @@ export function* manageEnvironment(payload) {
   const environmentToPrepare = environments.find(item => item.name === name);
   // TODO: If the environment is up-to-date
   if (environmentToPrepare.version !== version) {
-    const namespaces = `${name}-example-solution`;
+    const namespaces = `${name}-${SOLUTION_NAME}`;
 
     //Create Namespace if not exists
     const resultsCreateNamespaces = yield call(createNamespaces, namespaces);

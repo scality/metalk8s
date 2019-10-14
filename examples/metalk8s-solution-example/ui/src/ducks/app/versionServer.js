@@ -1,7 +1,7 @@
 import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
-import { REFRESH_TIMEOUT } from '../../constants';
+import { REFRESH_TIMEOUT, SOLUTION_NAME } from '../../constants';
 
 // Actions
 const REFRESH_VERSION_SERVER = 'REFRESH_VERSION_SERVER';
@@ -70,7 +70,7 @@ export function* fetchVersionServer(namespaces) {
 export function* createVersionServer({ payload }) {
   const { name, environment, replicas, version } = payload;
   const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
+    apiVersion: `${SOLUTION_NAME}.metalk8s.scality.com/v1alpha1`,
     kind: 'VersionServer',
     metadata: {
       name: name
@@ -84,10 +84,10 @@ export function* createVersionServer({ payload }) {
   const result = yield call(
     ApiK8s.createVersionServer,
     body,
-    `${environment}-example-solution`
+    `${environment}-${SOLUTION_NAME}`
   );
   if (!result.error) {
-    yield call(fetchVersionServer, `${environment}-example-solution`);
+    yield call(fetchVersionServer, `${environment}-${SOLUTION_NAME}`);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -95,7 +95,7 @@ export function* createVersionServer({ payload }) {
 export function* editVersionServer({ payload }) {
   const { name, environment, replicas, version } = payload;
   const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
+    apiVersion: `${SOLUTION_NAME}.metalk8s.scality.com/v1alpha1`,
     kind: 'VersionServer',
     metadata: {
       name: name
@@ -108,12 +108,12 @@ export function* editVersionServer({ payload }) {
   const result = yield call(
     ApiK8s.updateVersionServer,
     body,
-    `${environment}-example-solution`,
+    `${environment}-${SOLUTION_NAME}`,
     name
   );
 
   if (!result.error) {
-    yield call(fetchVersionServer, `${environment}-example-solution`);
+    yield call(fetchVersionServer, `${environment}-${SOLUTION_NAME}`);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -124,7 +124,10 @@ export function* refreshVersionServer({ environment }) {
       isRefreshing: true
     })
   );
-  const results = yield call(fetchVersionServer, `${environment}-example-solution`);
+  const results = yield call(
+    fetchVersionServer,
+    `${environment}-${SOLUTION_NAME}`
+  );
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(

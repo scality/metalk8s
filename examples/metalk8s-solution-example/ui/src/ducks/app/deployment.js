@@ -23,7 +23,7 @@ export const editDeploymentAction = payload => {
 };
 
 // Sagas
-export function* fetchOpertorDeployments(namespaces) {
+export function* fetchOpertorDeployment(namespaces) {
   const result = yield call(
     ApiK8s.getOperatorDeployments,
     namespaces,
@@ -130,7 +130,7 @@ export function* createNamespacedRoleBinding(namespaces) {
 
 // Helpers
 const operatorImage = (registryPrefix, version) =>
-  `${registryPrefix}/${SOLUTION_NAME}-${version}/example-solution-operator:${version}`;
+  `${registryPrefix}/${SOLUTION_NAME}-${version}/${OPERATOR_NAME}:${version}`;
 
 const operatorLabels = version => ({
   app: DEPLOYMENT_NAME,
@@ -256,7 +256,7 @@ const roleBody = {
       verbs: ['get']
     },
     {
-      apiGroups: ['example-solution.metalk8s.scality.com'],
+      apiGroups: [`${SOLUTION_NAME}.metalk8s.scality.com`],
       resources: ['*'],
       verbs: ['*']
     }
