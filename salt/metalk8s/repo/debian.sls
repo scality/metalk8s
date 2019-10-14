@@ -6,15 +6,27 @@ Install python-apt:
     - name: python-apt
 
 {%- for repo_name, repo_config in repo.repositories.items() %}
+  {#- if repo.local_mode #}
+    {%- set repo_base_url = "file://" ~
+                            salt.metalk8s.get_archives()[saltenv].path ~ "/" ~
+                            repo.relative_path ~ "/" ~
+                            grains['os_family'].lower() ~
+                            "/" ~ repo_name %}
+  {#- else #}
+    {#- set repo_base_url = "http://" ~ repo_host ~ ':' ~ repo_port ~
+                            "/" ~ saltenv #}
+  {#- endif #}
 Configure {{ repo_name }} repository:
   pkgrepo.managed:
-    - name : {{ repo_config.name }}
+    - name : {{ repo_base_url }}
     - file: '/etc/apt/sources.list.d/{{ repo_name }}.list'
+    - dist: {{ grains['oscodename'] }}
+    - comps: {{ repo_config.comps | join(',') }}
     - require:
       - pkg: Install python-apt
 {%- endfor %}
 
-- file: Add APT metalk8s repositories preferences:
+Add APT metalk8s repositories preferences:
   file.managed:
     - name: /etc/apt/preferences.d/1001-metalk8s
     - contents: |
@@ -25,6 +37,7 @@ Configure {{ repo_name }} repository:
 Repositories configured:
   test.succeed_without_changes:
     - require:
+      - file: Add APT metalk8s repositories preferences
 {%- for repository_name in repo.repositories.keys() %}
       - pkgrepo: Configure {{ repository_name }} repository
 {%- endfor %}
