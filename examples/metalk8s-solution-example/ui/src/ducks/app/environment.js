@@ -13,14 +13,14 @@ import {
 import { LABEL_VERSION, SOLUTION_NAME } from '../../constants';
 
 // Actions
-const REFRESH_ENVIRONMENT = 'REFRESH_ENVIRONMENT';
-const STOP_REFRESH_ENVIRONMENT = 'STOP_REFRESH_ENVIRONMENT';
+const REFRESH = 'REFRESH_ENVIRONMENT';
+const STOP_REFRESH = 'STOP_REFRESH_ENVIRONMENT';
 
-const PREPARE_ENVIRONMENT = 'PREPARE_ENVIRONMENT';
-const UPGRADE_ENVIRONMENT = 'UPGRADE_ENVIRONMENT';
-const UPDATE_ENVIRONMENT = 'UPDATE_ENVIRONMENT';
-const ADD_ENVIRONMENT = 'ADD_ENVIRONMENT';
-const EDIT_ENVIRONMENT = 'EDIT_ENVIRONMENT';
+const PREPARE = 'PREPARE_ENVIRONMENT';
+const UPGRADE = 'UPGRADE_ENVIRONMENT';
+const UPDATE = 'UPDATE_ENVIRONMENT';
+const ADD = 'ADD_ENVIRONMENT';
+const EDIT = 'EDIT_ENVIRONMENT';
 
 // Reducer
 const defaultState = {
@@ -30,7 +30,7 @@ const defaultState = {
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
-    case ADD_ENVIRONMENT:
+    case ADD:
       const list = [...state.list];
       const index = state.list.findIndex(
         item => item.name === action.payload.name
@@ -40,7 +40,7 @@ export default function reducer(state = defaultState, action = {}) {
         return { ...state, list: [...list] };
       }
       return { ...state, list: [...state.list, action.payload] };
-    case UPDATE_ENVIRONMENT:
+    case UPDATE:
       return { ...state, ...action.payload };
     default:
       return state;
@@ -49,31 +49,31 @@ export default function reducer(state = defaultState, action = {}) {
 
 // Action Creators
 export const refreshEnvironmentAction = () => {
-  return { type: REFRESH_ENVIRONMENT };
+  return { type: REFRESH };
 };
 
 export const stopRefreshEnvironmentAction = () => {
-  return { type: STOP_REFRESH_ENVIRONMENT };
+  return { type: STOP_REFRESH };
 };
 
 export const updateEnvironmentAction = payload => {
-  return { type: UPDATE_ENVIRONMENT, payload };
+  return { type: UPDATE, payload };
 };
 
 export const addEnvironmentAction = payload => {
-  return { type: ADD_ENVIRONMENT, payload };
+  return { type: ADD, payload };
 };
 
 export const editEnvironmentAction = payload => {
-  return { type: EDIT_ENVIRONMENT, payload };
+  return { type: EDIT, payload };
 };
 
 export const prepareEnvironmentAction = payload => {
-  return { type: PREPARE_ENVIRONMENT, payload };
+  return { type: PREPARE, payload };
 };
 
 export const upgradeEnvironmentAction = payload => {
-  return { type: UPGRADE_ENVIRONMENT, payload };
+  return { type: UPGRADE, payload };
 };
 
 // Sagas
@@ -224,8 +224,8 @@ export function* stopRefreshEnvironment() {
 }
 
 export function* environmentSaga() {
-  yield takeEvery(REFRESH_ENVIRONMENT, refreshEnvironment);
-  yield takeEvery(STOP_REFRESH_ENVIRONMENT, stopRefreshEnvironment);
-  yield takeEvery(PREPARE_ENVIRONMENT, prepareEnvironment);
-  yield takeEvery(UPGRADE_ENVIRONMENT, upgradeEnvironment);
+  yield takeEvery(REFRESH, refreshEnvironment);
+  yield takeEvery(STOP_REFRESH, stopRefreshEnvironment);
+  yield takeEvery(PREPARE, prepareEnvironment);
+  yield takeEvery(UPGRADE, upgradeEnvironment);
 }

@@ -10,16 +10,16 @@ import {
   DEPLOYMENT_NAME,
   OPERATOR_NAME
 } from '../../constants';
-const CREATE_DEPLOYMENT = 'CREATE_DEPLOYMENT';
-const EDIT_DEPLOYMENT = 'EDIT_DEPLOYMENT';
+const CREATE = 'CREATE_DEPLOYMENT';
+const EDIT = 'EDIT_DEPLOYMENT';
 
 // Action Creators
 export const createDeploymentAction = () => {
-  return { type: CREATE_DEPLOYMENT };
+  return { type: CREATE };
 };
 
 export const editDeploymentAction = payload => {
-  return { type: EDIT_DEPLOYMENT, payload };
+  return { type: EDIT, payload };
 };
 
 // Sagas
@@ -282,6 +282,6 @@ const roleBindingBody = {
 };
 
 export function* deploymentSaga() {
-  yield takeEvery(CREATE_DEPLOYMENT, createDeployment);
-  yield takeEvery(EDIT_DEPLOYMENT, editDeployment);
+  yield takeEvery(CREATE, createDeployment);
+  yield takeEvery(EDIT, editDeployment);
 }

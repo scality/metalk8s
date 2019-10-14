@@ -5,12 +5,12 @@ import history from '../../history';
 import { REFRESH_TIMEOUT, SOLUTION_NAME } from '../../constants';
 
 // Actions
-const REFRESH_CLOCK_SERVER = 'REFRESH_CLOCK_SERVER';
-const STOP_REFRESH_CLOCK_SERVER = 'STOP_REFRESH_CLOCK_SERVER';
-const CREATE_CLOCK_SERVER = 'CREATE_CLOCK_SERVER';
+const REFRESH = 'REFRESH_CLOCK_SERVER';
+const STOP_REFRESH = 'STOP_REFRESH_CLOCK_SERVER';
+const CREATE = 'CREATE_CLOCK_SERVER';
 
-const UPDATE_CLOCK_SERVER = 'UPDATE_CLOCK_SERVER';
-const EDIT_CLOCK_SERVER = 'EDIT_CLOCK_SERVER';
+const UPDATE = 'UPDATE_CLOCK_SERVER';
+const EDIT = 'EDIT_CLOCK_SERVER';
 
 // Reducer
 const defaultState = {
@@ -20,7 +20,7 @@ const defaultState = {
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
-    case UPDATE_CLOCK_SERVER:
+    case UPDATE:
       return { ...state, ...action.payload };
     default:
       return state;
@@ -29,23 +29,23 @@ export default function reducer(state = defaultState, action = {}) {
 
 // Action Creators
 export const refreshClockServerAction = environment => {
-  return { type: REFRESH_CLOCK_SERVER, environment };
+  return { type: REFRESH, environment };
 };
 
 export const stopRefreshClockServerAction = () => {
-  return { type: STOP_REFRESH_CLOCK_SERVER };
+  return { type: STOP_REFRESH };
 };
 
 export const updateClockServerAction = payload => {
-  return { type: UPDATE_CLOCK_SERVER, payload };
+  return { type: UPDATE, payload };
 };
 
 export const editClockServerAction = payload => {
-  return { type: EDIT_CLOCK_SERVER, payload };
+  return { type: EDIT, payload };
 };
 
 export const createClockServerAction = payload => {
-  return { type: CREATE_CLOCK_SERVER, payload };
+  return { type: CREATE, payload };
 };
 
 // Sagas
@@ -150,8 +150,8 @@ export function* stopRefreshClockServer() {
 }
 
 export function* clockServerSaga() {
-  yield takeEvery(REFRESH_CLOCK_SERVER, refreshClockServer);
-  yield takeEvery(STOP_REFRESH_CLOCK_SERVER, stopRefreshClockServer);
-  yield takeEvery(CREATE_CLOCK_SERVER, createClockServer);
-  yield takeEvery(EDIT_CLOCK_SERVER, editClockServer);
+  yield takeEvery(REFRESH, refreshClockServer);
+  yield takeEvery(STOP_REFRESH, stopRefreshClockServer);
+  yield takeEvery(CREATE, createClockServer);
+  yield takeEvery(EDIT, editClockServer);
 }

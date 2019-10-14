@@ -4,12 +4,12 @@ import history from '../../history';
 import { REFRESH_TIMEOUT, SOLUTION_NAME } from '../../constants';
 
 // Actions
-const REFRESH_VERSION_SERVER = 'REFRESH_VERSION_SERVER';
-const STOP_REFRESH_VERSION_SERVER = 'STOP_REFRESH_VERSION_SERVER';
-const CREATE_VERSION_SERVER = 'CREATE_VERSION_SERVER';
+const REFRESH = 'REFRESH_VERSION_SERVER';
+const STOP_REFRESH = 'STOP_REFRESH_VERSION_SERVER';
+const CREATE = 'CREATE_VERSION_SERVER';
 
-const UPDATE_VERSION_SERVER = 'UPDATE_VERSION_SERVER';
-const EDIT_VERSION_SERVER = 'EDIT_VERSION_SERVER';
+const UPDATE = 'UPDATE_VERSION_SERVER';
+const EDIT = 'EDIT_VERSION_SERVER';
 
 // Reducer
 const defaultState = {
@@ -19,7 +19,7 @@ const defaultState = {
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
-    case UPDATE_VERSION_SERVER:
+    case UPDATE:
       return { ...state, ...action.payload };
     default:
       return state;
@@ -28,23 +28,23 @@ export default function reducer(state = defaultState, action = {}) {
 
 // Action Creators
 export const refreshVersionServerAction = environment => {
-  return { type: REFRESH_VERSION_SERVER, environment };
+  return { type: REFRESH, environment };
 };
 
 export const stopRefreshVersionServerAction = () => {
-  return { type: STOP_REFRESH_VERSION_SERVER };
+  return { type: STOP_REFRESH };
 };
 
 export const updateVersionServerAction = payload => {
-  return { type: UPDATE_VERSION_SERVER, payload };
+  return { type: UPDATE, payload };
 };
 
 export const editVersionServerAction = payload => {
-  return { type: EDIT_VERSION_SERVER, payload };
+  return { type: EDIT, payload };
 };
 
 export const createVersionServerAction = payload => {
-  return { type: CREATE_VERSION_SERVER, payload };
+  return { type: CREATE, payload };
 };
 
 // Sagas
@@ -148,8 +148,8 @@ export function* stopRefreshVersionServer() {
 }
 
 export function* versionServerSaga() {
-  yield takeEvery(REFRESH_VERSION_SERVER, refreshVersionServer);
-  yield takeEvery(STOP_REFRESH_VERSION_SERVER, stopRefreshVersionServer);
-  yield takeEvery(CREATE_VERSION_SERVER, createVersionServer);
-  yield takeEvery(EDIT_VERSION_SERVER, editVersionServer);
+  yield takeEvery(REFRESH, refreshVersionServer);
+  yield takeEvery(STOP_REFRESH, stopRefreshVersionServer);
+  yield takeEvery(CREATE, createVersionServer);
+  yield takeEvery(EDIT, editVersionServer);
 }
