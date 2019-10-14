@@ -25,7 +25,7 @@ export const editDeploymentAction = payload => {
 // Sagas
 export function* fetchOpertorDeployment(namespaces) {
   const result = yield call(
-    ApiK8s.getOperatorDeployments,
+    ApiK8s.getOperatorDeployment,
     namespaces,
     DEPLOYMENT_NAME
   );
@@ -83,7 +83,7 @@ export function* createNamespacedServiceAccount(namespaces) {
     namespaces,
     DEPLOYMENT_NAME
   );
-  if (results.body.items.length === 0) {
+  if (results.error) {
     const result = yield call(
       ApiK8s.createNamespacedServiceAccount,
       namespaces,
@@ -100,7 +100,7 @@ export function* createNamespacedRole(namespaces) {
     namespaces,
     DEPLOYMENT_NAME
   );
-  if (results.body.items.length === 0) {
+  if (results.error) {
     const result = yield call(
       ApiK8s.createNamespacedRole,
       namespaces,
@@ -117,7 +117,7 @@ export function* createNamespacedRoleBinding(namespaces) {
     namespaces,
     DEPLOYMENT_NAME
   );
-  if (results.body.items.length === 0) {
+  if (results.error) {
     const result = yield call(
       ApiK8s.createNamespacedRoleBinding,
       namespaces,

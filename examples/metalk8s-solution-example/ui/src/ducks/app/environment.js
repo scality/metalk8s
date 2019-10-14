@@ -94,7 +94,7 @@ export function* updateEnvironment(environment) {
     `${environment.metadata.name}-${SOLUTION_NAME}`
   );
   // One operator per environment
-  const operator = results.body.items.length ? results.body.items[0] : null;
+  const operator = results.body || null;
   yield put(
     addEnvironmentAction({
       name: environment.metadata.name,

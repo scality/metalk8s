@@ -8,3 +8,4 @@ export const SOLUTION_NAME = 'example-solution';
 export const DEPLOYMENT_NAME = 'example-operator';
 export const OPERATOR_NAME = 'example-solution-operator';
 export const SOLUTION_CONFIGMAP_NAME = 'metalk8s-solutions';
+export const SOLUTION_CONFIGMAP_NAMESPACE = 'metalk8s-solutions';

@@ -8,8 +8,8 @@ import {
 } from '@kubernetes/client-node';
 
 import {
-  LABEL_PART_OF,
   SOLUTION_CONFIGMAP_NAME,
+  SOLUTION_CONFIGMAP_NAMESPACE,
   SOLUTION_NAME
 } from '../../constants';
 
@@ -166,16 +166,9 @@ export async function updateVersionServer(body, namespace, name) {
   }
 }
 
-export async function getOperatorDeployments(namespace, name) {
+export async function getOperatorDeployment(namespace, name) {
   try {
-    return await appsV1Api.listNamespacedDeployment(
-      namespace,
-      null,
-      null,
-      null,
-      `metadata.name=${name}`,
-      `${LABEL_PART_OF}=${SOLUTION_NAME}`
-    );
+    return await appsV1Api.readNamespacedDeployment(name, namespace);
   } catch (error) {
     return { error };
   }
@@ -191,13 +184,7 @@ export async function createNamespacedDeployment(namespace, body) {
 
 export async function listNamespacedServiceAccount(namespace, name) {
   try {
-    return await coreV1.listNamespacedServiceAccount(
-      namespace,
-      null,
-      null,
-      null,
-      `metadata.name=${name}`
-    );
+    return await coreV1.readNamespacedServiceAccount(name, namespace);
   } catch (error) {
     return { error };
   }
@@ -213,13 +200,7 @@ export async function createNamespacedServiceAccount(namespace, body) {
 
 export async function listNamespacedRole(namespace, name) {
   try {
-    return await rbacAuthorizationV1Api.listNamespacedRole(
-      namespace,
-      null,
-      null,
-      null,
-      `metadata.name=${name}`
-    );
+    return await rbacAuthorizationV1Api.readNamespacedRole(name, namespace);
   } catch (error) {
     return { error };
   }
@@ -235,12 +216,9 @@ export async function createNamespacedRole(namespace, body) {
 
 export async function listNamespacedRoleBinding(namespace, name) {
   try {
-    return await rbacAuthorizationV1Api.listNamespacedRoleBinding(
-      namespace,
-      null,
-      null,
-      null,
-      `metadata.name=${name}`
+    return await rbacAuthorizationV1Api.readNamespacedRoleBinding(
+      name,
+      namespace
     );
   } catch (error) {
     return { error };
@@ -299,9 +277,9 @@ export async function getNamespaces(name) {
 }
 export async function getSolutionsConfigMap() {
   try {
-    return await coreV1.listConfigMapForAllNamespaces(
-      null,
-      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`
+    return await coreV1.readNamespacedConfigMap(
+      SOLUTION_CONFIGMAP_NAME,
+      SOLUTION_CONFIGMAP_NAMESPACE
     );
   } catch (error) {
     return { error };
