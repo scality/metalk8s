@@ -407,6 +407,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
+    Path('salt/metalk8s/repo/files/apt.sources.list.j2'),
     Path('salt/metalk8s/repo/files/nginx.conf.j2'),
     Path('salt/metalk8s/repo/files/metalk8s-registry-config.inc.j2'),
     Path('salt/metalk8s/repo/files/repositories-manifest.yaml.j2'),

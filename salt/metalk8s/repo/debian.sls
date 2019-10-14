@@ -4,10 +4,6 @@
 {%- set repo_host = pillar.metalk8s.endpoints['repositories'].ip %}
 {%- set repo_port = pillar.metalk8s.endpoints['repositories'].ports.http %}
 
-Install python-apt:
-  pkg.installed:
-    - name: python-apt
-
 {%- for repo_name, repo_config in repo.repositories.items() %}
   {%- if repo.local_mode %}
     {%- set repo_url = "file://" ~
@@ -25,15 +21,21 @@ Install python-apt:
     {%- do options.append(name ~ "=" ~ value) %}
   {%- endfor %}
 Configure {{ repo_name }} repository:
-  pkgrepo.managed:
-    - name: >
-        deb {{ "[" ~ options | join(" ") ~ "]" if options else "" }}
-        {{ repo_url }} {{ grains['oscodename'] }}
-    - file: '/etc/apt/sources.list.d/{{ repo_name }}.list'
-    - dist: {{ grains['oscodename'] }}
-    - comps: {{ repo_config.comps | join(',') }}
-    - require:
-      - pkg: Install python-apt
+  file.managed:
+    - name: '/etc/apt/sources.list.d/{{ repo_name }}.list'
+    - source: 'salt://{{ slspath }}/files/apt.sources.list.j2'
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 644
+    - context:
+        type: {{ repo_config.type }}
+        options: {{ options }}
+        url: {{ repo_url }}
+        distribution: {{ grains['oscodename'] }}
+        components: {{ repo_config.components }}
+    - require_in:
+      - test: Repositories configured
 {%- endfor %}
 
 Add APT metalk8s repositories preferences:
@@ -48,6 +50,3 @@ Repositories configured:
   test.succeed_without_changes:
     - require:
       - file: Add APT metalk8s repositories preferences
-{%- for repository_name in repo.repositories.keys() %}
-      - pkgrepo: Configure {{ repository_name }} repository
-{%- endfor %}
