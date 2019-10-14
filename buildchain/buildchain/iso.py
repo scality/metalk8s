@@ -129,7 +129,12 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
             ),
             Path('metalk8s_cli/base.py'),
             Path('metalk8s_cli/command.py'),
+            Path('metalk8s_cli/exceptions.py'),
             Path('metalk8s_cli/parsers.py'),
+
+            Path('metalk8s_cli/solutions/__init__.py'),
+            Path('metalk8s_cli/solutions/command.py'),
+            Path('metalk8s_cli/solutions/config.py'),
         ),
         destination_directory=constants.ISO_ROOT,
         source_prefix=Path('scripts'),

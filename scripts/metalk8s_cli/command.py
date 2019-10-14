@@ -3,6 +3,7 @@ import sys
 
 from metalk8s_cli import parsers
 from metalk8s_cli import base
+from metalk8s_cli.solutions.command import SolutionsCommand
 
 
 # Monkey-patch for old versions of argparse
@@ -43,6 +44,8 @@ if sys.version_info < (2, 7, 9):
 class Metalk8sCommand(base.Command):
     """Run commands to interact with MetalK8s."""
     NAME = 'metalk8s'
+
+    SUBCOMMANDS = [SolutionsCommand]
 
     PARENT_PARSERS = [
         parsers.build_version_parser,
