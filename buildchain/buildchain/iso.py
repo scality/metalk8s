@@ -122,7 +122,34 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
         destination_directory=constants.ISO_ROOT,
         source_prefix=Path('scripts'),
         task_dep=['_iso_mkdir_root']
-    )
+    ),
+    helper.FileTree(
+        basename='_iso_add_tree',
+        files=(
+            Path('metalk8s'),
+
+            Path('metalk8s_cli/__init__.py'),
+            Path('metalk8s_cli/__main__.py'),
+            helper.TemplateFile(
+                task_name='metalk8s_cli/__version__.py',
+                source=constants.ROOT.joinpath(
+                    'scripts', 'metalk8s_cli', '__version__.py.in',
+                ),
+                destination=constants.ISO_ROOT.joinpath(
+                    'metalk8s_cli', '__version__.py',
+                ),
+                context={'VERSION': versions.VERSION},
+                file_dep=[versions.VERSION_FILE],
+                task_dep=['_iso_mkdir_root'],
+            ),
+            Path('metalk8s_cli/base.py'),
+            Path('metalk8s_cli/command.py'),
+            Path('metalk8s_cli/parsers.py'),
+        ),
+        destination_directory=constants.ISO_ROOT,
+        source_prefix=Path('scripts'),
+        task_dep=['_iso_mkdir_root'],
+    ),
 )
 
 
