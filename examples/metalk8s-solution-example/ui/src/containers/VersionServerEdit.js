@@ -91,7 +91,7 @@ const VersionServerEditForm = props => {
   const versionServer = versionServers.find(cr => cr.name === match.params.id);
   const initialValues = {
     version: versionServer ? versionServer.version : '',
-    replicas: versionServer ? versionServer.replicas : '',
+    replicas: versionServer ? versionServer.replicas : 1,
     name: versionServer ? versionServer.name : '',
     environment
   };
