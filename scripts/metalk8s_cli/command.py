@@ -49,6 +49,8 @@ class Metalk8sCommand(base.Command):
 
     PARENT_PARSERS = [
         parsers.build_version_parser,
+        parsers.build_verbosity_parser,
+        parsers.build_logfile_parser,
     ]
 
 
