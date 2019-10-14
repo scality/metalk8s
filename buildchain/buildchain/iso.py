@@ -150,6 +150,7 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
 
             Path('metalk8s_cli/mixins/__init__.py'),
             Path('metalk8s_cli/mixins/log.py'),
+            Path('metalk8s_cli/mixins/salt.py'),
 
             Path('metalk8s_cli/solutions/__init__.py'),
             Path('metalk8s_cli/solutions/command.py'),
