@@ -192,8 +192,21 @@
 }, merge=defaults.get('containerd')) %}
 
 {% set kubelet = salt['grains.filter_by']({
-  'default': {}
-}, merge=defaults.get('kubelet')) %}
+  'Debian': {
+    'service': {
+      'options': {
+        'resolv-conf': '/run/systemd/resolve/resolv.conf'
+      }
+    }
+  },
+  'RedHat': {
+    'service': {
+      'options': {
+        'resolv-conf': '/etc/resolv.conf'
+      }
+    }
+  }
+}, grain='os_family', merge=defaults.get('kubelet')) %}
 
 {% set ca = salt['grains.filter_by']({
   'default': {}
