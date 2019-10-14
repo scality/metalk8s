@@ -3,14 +3,12 @@ Various utilities to manage Solutions.
 '''
 import json
 import logging
+
 import yaml
 
 from salt.exceptions import CommandExecutionError
 
 HAS_LIBS = True
-SOLUTIONS_CONFIG_MAP = 'metalk8s-solutions'
-SOLUTIONS_CONFIG_MAP_NAMESPACE = 'metalk8s-solutions'
-SOLUTIONS_CONFIG_FILE = '/etc/metalk8s/solutions.yaml'
 try:
     import kubernetes.client
     from kubernetes.client.rest import ApiException
@@ -20,6 +18,14 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+SOLUTIONS_CONFIG_MAP = 'metalk8s-solutions'
+SOLUTIONS_CONFIG_MAP_NAMESPACE = 'metalk8s-solutions'
+
+SOLUTIONS_CONFIG_FILE = '/etc/metalk8s/solutions.yaml'
+SUPPORTED_CONFIG_VERSIONS = frozenset((
+    'solutions.metalk8s.scality.com/{}'.format(version)
+    for version in ['v1alpha1']
+))
 
 __virtualname__ = 'metalk8s_solutions'
 
@@ -51,16 +57,49 @@ def list_deployed(
     }
 
 
-def list_configured():
-    """Get list of Solution archives paths defined in a config file."""
+def read_config():
+    """Read the SolutionsConfiguration file and return its contents.
+
+    Empty containers will be used for `archives` and `active` in the return
+    value.
+
+    The format should look like the following example:
+
+    ..code-block:: yaml
+
+      apiVersion: metalk8s.scality.com/v1alpha1
+      kind: SolutionsConfiguration
+      archives:
+        - /path/to/solution/archive.iso
+      active:
+        solution-name: X.Y.Z-suffix (or 'latest')
+    """
     try:
         with open(SOLUTIONS_CONFIG_FILE, 'r') as fd:
-            content = yaml.safe_load(fd)
+            config = yaml.safe_load(fd)
     except Exception as exc:
         msg = 'Failed to load "{}": {}'.format(SOLUTIONS_CONFIG_FILE, str(exc))
         raise CommandExecutionError(message=msg)
 
-    return content.get('archives', []) or []
+    if config.get('kind') != 'SolutionsConfiguration':
+        raise CommandExecutionError(
+            'Invalid `kind` in configuration ({}), '
+            'must be "SolutionsConfiguration"'.format(config.get('kind'))
+        )
+
+    if config.get('apiVersion') not in SUPPORTED_CONFIG_VERSIONS:
+        raise CommandExecutionError(
+            'Invalid `apiVersion` in configuration ({}), '
+            'must be one of: {}'.format(
+                config.get('apiVersion'),
+                ', '.join(SUPPORTED_CONFIG_VERSIONS)
+            )
+        )
+
+    config.setdefault('archives', [])
+    config.setdefault('active', {})
+
+    return config
 
 
 def register_solution_version(
