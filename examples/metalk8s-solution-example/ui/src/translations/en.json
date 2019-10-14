@@ -34,6 +34,7 @@
   "select_a_version_to_add": "Select a version of the solution to add to the environment",
   "add": "Add",
   "hyperdrive": "Hyperdrive",
+  "hyperdrives": "Hyperdrives",
   "create_hyperdrive": "Create a Hyperdrive",
   "create_hyperdrive_controller": "Create a Hyperdrive Controller",
   "node": "Node",

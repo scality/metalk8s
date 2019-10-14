@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { isEmpty } from 'lodash';
@@ -158,9 +158,8 @@ const HyperdriveCreation = props => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={values => {
-              // TODO
-              console.log('submit', values);
-              dispatch(createHyperdriveAction({}));
+              const newHyperdrive = { ...values, nodeName: values.node.value };
+              dispatch(createHyperdriveAction(newHyperdrive));
             }}
           >
             {formProps => {

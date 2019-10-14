@@ -16,6 +16,7 @@ import Environment from './Environment';
 import EnvironmentDetail from './EnvironmentDetail';
 import EnvironmentPreparation from './EnvironmentPreparation';
 import HyperdriveCreation from './HyperdriveCreation';
+import HyperdriveControllerCreation from './HyperdriveControllerCreation';
 import Welcome from '../components/Welcome';
 import PrivateRoute from './PrivateRoute';
 import { logoutAction } from '../ducks/login';
@@ -131,7 +132,7 @@ const Layout = props => {
           />
           <PrivateRoute
             path="/environments/:name/hyperdrive-controller/create"
-            component={HyperdriveCreation}
+            component={HyperdriveControllerCreation}
           />
           <PrivateRoute
             path="/environments/:name"

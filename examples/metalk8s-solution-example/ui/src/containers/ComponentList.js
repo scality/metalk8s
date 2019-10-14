@@ -51,7 +51,7 @@ const ComponentList = props => {
   const hyperdrives = useSelector(state => state.app.hyperdrive.list);
   const environment = match.params.name;
 
-  console.log('ComponentList hyperdrives', hyperdrives);
+  // console.log('ComponentList hyperdrives', hyperdrives);
 
   useEffect(() => {
     dispatch(refreshHyperdriveAction());
@@ -111,6 +111,39 @@ const ComponentList = props => {
     },
   ];
 
+  const hyperdriveColumns = [
+    {
+      label: intl.messages.name,
+      dataKey: 'name',
+      flexGrow: 1,
+    },
+    {
+      label: intl.messages.node,
+      dataKey: 'node',
+      flexGrow: 1,
+    },
+    {
+      label: 'Number of Volumes',
+      dataKey: 'volumeNb',
+      flexGrow: 1,
+    },
+    {
+      label: 'Creation Time',
+      dataKey: 'creationTime',
+      flexGrow: 1,
+    },
+  ];
+
+  console.log('hyperdrives', hyperdrives);
+
+  const hyperdriveData = hyperdrives.map(hyperdrive => ({
+    name: hyperdrive.metadata.name,
+    node: hyperdrive.spec.dataServers.nodeName,
+    volumeNb: hyperdrive.spec.dataServers.data.length,
+    creationTime: hyperdrive.metadata.creationTimestamp,
+  }));
+  console.log('hyperdriveData', hyperdriveData);
+
   const onSortVS = ({ sortBy, sortDirection }) => {
     setSortByVS(sortBy);
     setSortDirectionVS(sortDirection);
@@ -140,19 +173,14 @@ const ComponentList = props => {
         </ActionContainer>
         <TableContainer>
           <Table
-            list={versionServerstSortedList}
-            columns={columnsVS}
+            list={hyperdriveData}
+            columns={hyperdriveColumns}
             disableHeader={false}
             headerHeight={40}
             rowHeight={40}
             sortBy={sortByVS}
             sortDirection={sortDirectionVS}
             onSort={onSortVS}
-            onRowClick={row => {
-              history.push(
-                `/environments/${environment}/versionServer/${row.rowData.name}/edit`,
-              );
-            }}
             noRowsRenderer={() => (
               <NoRowsRenderer content={intl.messages.no_component_available} />
             )}

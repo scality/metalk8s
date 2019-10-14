@@ -5,7 +5,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "5.7.2",
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-0.10.2-62-g61d8543",
-    "@scality/core-ui": "github:scality/core-ui.git#69e90c",
+    "@scality/core-ui": "github:scality/core-ui.git#feature/merge-multiselect-list",
     "axios": "^0.18.0",
     "classnames": "2.2.6",
     "formik": "1.5.1",

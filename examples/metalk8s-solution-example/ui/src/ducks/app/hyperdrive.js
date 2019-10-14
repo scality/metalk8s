@@ -7,8 +7,9 @@ import {
   delay,
 } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
+import history from '../../history';
 
-import { REFRESH_TIMEOUT } from '../../constants';
+import { REFRESH_TIMEOUT, OPERATOR_NAMESPACE } from '../../constants';
 
 // Actions
 
@@ -66,6 +67,7 @@ export const updateHyperdriveAction = payload => {
 };
 
 export const createHyperdriveAction = newHyperdrive => {
+  console.log('createHyperdriveAction', newHyperdrive);
   return { type: CREATE_HYPERDRIVE, payload: newHyperdrive };
 };
 
@@ -179,20 +181,27 @@ export function* stopRefreshHyperdrive() {
 
 export function* createHyperdrive({ payload }) {
   console.log('createHyperdrive');
+  const { name, nodeName, dataVolumes, environment } = payload;
+  const namespace = `${environment}-${OPERATOR_NAMESPACE}`;
+  console.log('payload', payload);
+
+  /**
+   * FIXME The body is not stable
+   * Some fields will be replace or delete
+   */
   const body = {
     apiVersion: 'dataservice.scality.com/v1alpha1',
     kind: 'DataService',
     metadata: {
-      name: 'hd2',
+      name: name,
     },
-
     spec: {
       prometheus: {
         enable: false,
       },
       dataServers: {
-        service: 'hd2',
-        nodeName: 'node1',
+        service: name,
+        nodeName: nodeName,
         image: {
           repository: 'localhost:32000',
           name: 'hyperiod',
@@ -205,18 +214,18 @@ export function* createHyperdrive({ payload }) {
           extent_total_size: '16777216',
         },
         index: { hostPath: '/fake/index/path' },
-        data: [{ hostPath: '/fake/data/path' }],
+        data: dataVolumes.map(() => ({ hostPath: '/fake/data/path' })),
       },
     },
   };
 
   console.log('body', body);
 
-  const result = yield call(ApiK8s.createHyperdrive, body);
+  const result = yield call(ApiK8s.createHyperdrive, body, namespace);
   if (!result.error) {
     console.log('result', result);
     // yield call(createHyperdrive, `${environment}-example-solution`);
-    // yield call(history.push, `/environments/${environment}`);
+    yield call(history.push, `/environments/${environment}`);
   }
 }
 

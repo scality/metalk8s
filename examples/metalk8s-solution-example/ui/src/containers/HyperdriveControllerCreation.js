@@ -1,20 +1,25 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { isEmpty } from 'lodash';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
-import { Loader, Breadcrumb, Button, Input } from '@scality/core-ui';
+import {
+  Loader,
+  Breadcrumb,
+  Button,
+  Input,
+  Select,
+  MultiSelect,
+} from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 
 import { useRefreshEffect } from '../services/utils';
 import {
-  refreshVolumesAction,
-  stopRefreshVolumesAction,
-  refreshNodesAction,
-  stopRefreshNodesAction,
+  refreshHyperdriveAction,
+  stopRefreshHyperdriveAction,
 } from '../ducks/app/hyperdrive';
 import {
   BreadcrumbContainer,
@@ -23,7 +28,7 @@ import {
 } from '../components/BreadcrumbStyle';
 
 const HyperdriveCreationContainer = styled.div`
-  display: flex;
+  display: inline-block;
   flex-direction: column;
   box-sizing: border-box;
   height: 100%;
@@ -44,8 +49,11 @@ const HyperdriveCreationLayout = styled.div`
       }
       .sc-select,
       .sc-input-type {
-        width: 200px;
+        width: 350px;
         box-sizing: border-box;
+      }
+      .sc-multi-select-list {
+        padding: 0;
       }
     }
   }
@@ -80,54 +88,87 @@ const InputValue = styled(InputLabel)`
   padding: ${padding.small} 0;
 `;
 
-const HyperdriveControllerCreation = props => {
+const protectionOptions = [
+  {
+    label: 'Standard Durability Replication COS 2',
+    value: 'replication-2',
+    payload: {
+      type: 'replication',
+      copie: 2,
+    },
+  },
+  {
+    label: 'Standard Durability Replication COS 3',
+    value: 'replication-3',
+    payload: {
+      type: 'replication',
+      copie: 3,
+    },
+  },
+  {
+    label: 'Erasure Coding 2+1',
+    value: 'ec-2+1',
+    payload: {
+      type: 'isa-l',
+      k: 2,
+      n: 1,
+    },
+  },
+  {
+    label: 'Erasure Coding 4+2',
+    value: 'ec-4+2',
+    payload: {
+      type: 'isa-l',
+      k: 4,
+      n: 2,
+    },
+  },
+];
+
+const HyperdriveCreation = props => {
   const intl = useIntl();
   const history = useHistory();
   const params = useParams();
+  const dispatch = useDispatch();
 
   const config = useSelector(state => state.config);
-  const hyperdrives = useSelector(state => state.app.hyperdrive);
-  const nodes = useSelector(state => state.app.hyperdrive.nodes);
+  const hyperdrives = useSelector(state => state.app.hyperdrive.list);
   const volumes = useSelector(state => state.app.hyperdrive.volumes);
-  const [nodeVolumes, setNodeVolumes] = useState([]);
+  const environment = params.name;
 
-  // console.log('HyperdriveCreation', hyperdrives);
+  useRefreshEffect(refreshHyperdriveAction, stopRefreshHyperdriveAction);
 
-  useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
-  useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
-
-  const nodeOptions = nodes.map(node => ({
-    label: node.metadata.name,
-    value: node.metadata.name,
+  const hyperdriveOptions = hyperdrives.map(hyperdrive => ({
+    label: hyperdrive.metadata.name,
+    value: hyperdrive.metadata.name,
   }));
 
   const initialValues = {
-    name: '',
-    node: nodeOptions[0],
-    indexVolume: volumes.filter(
-      volume =>
-        volume.spec.nodeName === nodeOptions[0]?.label &&
-        volume.spec.storageClassName === 'hyperdrive-index',
-    ),
-    dataVolumes: volumes.filter(
-      volume =>
-        volume.spec.nodeName === nodeOptions[0]?.label &&
-        volume.spec.storageClassName === 'hyperdrive-data',
-    ),
+    name: 'hyperdrive-controller',
+    hyperdrives: hyperdriveOptions,
+    protections: [protectionOptions[0]],
+    // protections: [],
+    // Needed to create a ressource
+    environment,
   };
 
   const validationSchema = yup.object().shape({
     name: yup.string().required(),
-    node: yup.object().required(),
-    indexVolume: yup
+    hyperdrives: yup
       .array()
       .min(1)
       .max(1)
       .required(),
-    dataVolumes: yup.array().required(),
+    protections: yup
+      .array()
+      .min(1)
+      .max(1)
+      .required(),
   });
 
-  const isFormReady = nodes.length > 0;
+  // console.log('hyperdriveOptions', hyperdriveOptions);
+
+  const isFormReady = hyperdrives.length > 0;
 
   return (
     <HyperdriveCreationContainer>
@@ -142,7 +183,7 @@ const HyperdriveControllerCreation = props => {
               {params.name}
             </StyledLink>,
             <BreadcrumbLabel title={intl.messages.create_hyperdrive_controller}>
-              {intl.messages.create_hyperdrive}
+              {intl.messages.create_hyperdrive_controller}
             </BreadcrumbLabel>,
           ]}
         />
@@ -153,8 +194,8 @@ const HyperdriveControllerCreation = props => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={values => {
-              // TODO
-              console.log('values', values);
+              const newHyperdrive = { ...values, nodeName: values.node.value };
+              // dispatch(createHyperdriveAction(newHyperdrive));
             }}
           >
             {formProps => {
@@ -168,8 +209,10 @@ const HyperdriveControllerCreation = props => {
               } = formProps;
 
               //handleChange of the Formik props does not update 'values' when field value is empty
-              const handleChange = field => e => {
+              const handleChange = (field, test) => e => {
+                // console.log('field', field, test);
                 const { value, checked, type } = e.target;
+
                 setFieldValue(
                   field,
                   type === 'checkbox' ? checked : value,
@@ -177,33 +220,43 @@ const HyperdriveControllerCreation = props => {
                 );
               };
 
-              const handleNodeChange = selectedObj => {
-                setFieldValue('node', selectedObj);
-
+              const onRemoveSelectItem = field => value => {
                 setFieldValue(
-                  'indexVolume',
-                  volumes.filter(
-                    volume =>
-                      volume.spec.nodeName === selectedObj.label &&
-                      volume.spec.storageClassName === 'hyperdrive-index',
-                  ),
-                );
-
-                setFieldValue(
-                  'dataVolumes',
-                  volumes.filter(
-                    volume =>
-                      volume.spec.nodeName === selectedObj.label &&
-                      volume.spec.storageClassName === 'hyperdrive-data',
-                  ),
+                  field,
+                  values[field].filter(p => p.label !== value),
+                  true,
                 );
               };
+
+              const onSelectProtectionOption = value => {
+                const newProtectionSelection = [
+                  ...values.protections,
+                  protectionOptions.find(t => t.label === value.label),
+                ];
+                setFieldValue('protections', newProtectionSelection, true);
+              };
+
+              const onSelectHDOption = value => {
+                const newHyperdrivesSelection = [
+                  ...values.hyperdrives,
+                  hyperdriveOptions.find(hdo => hdo.label === value.label),
+                ];
+
+                setFieldValue('hyperdrives', newHyperdrivesSelection, true);
+              };
+
+              const availableProtections = protectionOptions.filter(
+                protection =>
+                  !values.protections.find(p => p.label === protection.label),
+              );
+
+              const availableHyperdrives = hyperdriveOptions.filter(
+                hdo => !values.hyperdrives.find(hd => hd.label === hdo.label),
+              );
 
               //touched is not "always" correctly set
               const handleOnBlur = e => setFieldTouched(e.target.name, true);
 
-              console.log('errors', errors);
-              console.log('values', values);
               return (
                 <Form>
                   <FormSection>
@@ -215,33 +268,54 @@ const HyperdriveControllerCreation = props => {
                       error={touched.name && errors.name}
                       onBlur={handleOnBlur}
                     />
-
-                    <Input
-                      name="node"
-                      label={intl.messages.node}
-                      type="select"
-                      options={nodeOptions}
-                      placeholder={intl.messages.node}
-                      onChange={handleNodeChange}
-                      value={values.node}
-                      error={touched.version && errors.version}
-                      onBlur={handleOnBlur}
-                    />
                     <InputContainer className="sc-input">
                       <InputLabel className="sc-input-label">
-                        {intl.messages.index_volume}
+                        {intl.messages.hyperdrives}
                       </InputLabel>
-                      <InputValue>
-                        {values?.indexVolume[0]?.metadata?.name}
-                      </InputValue>
+                      {/* <Select
+                        isMulti={true}
+                        name="hyperdrives"
+                        options={hyperdriveOptions}
+                        onChange={handleMultiSelectChange}
+                        placeholder="Select an item..."
+                        noOptionsMessage={() => 'Not found'}
+                        value={values.hyperdrives}
+                      /> */}
+                      <MultiSelect
+                        name="hyperdrives"
+                        items={values.hyperdrives}
+                        search={{
+                          options: availableHyperdrives,
+                          onSelect: onSelectHDOption,
+                          selectedOption: null,
+                        }}
+                        onItemRemove={onRemoveSelectItem('hyperdrives')}
+                      />
                     </InputContainer>
+
                     <InputContainer className="sc-input">
                       <InputLabel className="sc-input-label">
-                        {intl.messages.data_volumes}
+                        {'Protection Types'}
                       </InputLabel>
-                      <InputValue>
-                        {`${values?.dataVolumes?.length} volume(s) available on this node`}
-                      </InputValue>
+                      {/* <Select
+                        isMulti={true}
+                        name="protections"
+                        options={protectionOptions}
+                        onChange={handleMultiSelectChange}
+                        placeholder="Select an item..."
+                        noOptionsMessage={() => 'Not found'}
+                        value={values.protections}
+                      /> */}
+                      <MultiSelect
+                        name="protections"
+                        items={values.protections}
+                        search={{
+                          options: availableProtections,
+                          onSelect: onSelectProtectionOption,
+                          selectedOption: null,
+                        }}
+                        onItemRemove={onRemoveSelectItem('protections')}
+                      />
                     </InputContainer>
 
                     <ActionContainer>
@@ -274,4 +348,4 @@ const HyperdriveControllerCreation = props => {
   );
 };
 
-export default HyperdriveControllerCreation;
+export default HyperdriveCreation;
