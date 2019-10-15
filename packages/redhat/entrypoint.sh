@@ -101,7 +101,6 @@ download_packages() {
 
     get_rpm_gpg_keys
 
-    yum groups install "${yum_opts[@]}" base core
     yum install "${yum_opts[@]}" "${packages[@]}"
 
     chown -R "$TARGET_UID:$TARGET_GID" "/install_root/var"
