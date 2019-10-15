@@ -4,7 +4,7 @@ import * as ApiK8s from '../../services/k8s/api';
 // Sagas
 export function* createNamespaces(name) {
   const results = yield call(ApiK8s.getNamespaces, name);
-  if (results.body.items.length === 0) {
+  if (results.error) {
     const body = {
       metadata: {
         name: name

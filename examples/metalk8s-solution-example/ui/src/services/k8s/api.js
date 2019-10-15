@@ -265,12 +265,7 @@ export async function createNamespace(body) {
 
 export async function getNamespaces(name) {
   try {
-    return await coreV1.listNamespace(
-      null,
-      null,
-      null,
-      `metadata.name=${name}`
-    );
+    return await coreV1.readNamespace(name);
   } catch (error) {
     return { error };
   }
