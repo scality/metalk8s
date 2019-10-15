@@ -1,6 +1,13 @@
 include:
   - .installed
 
+Delay after etcd pod deployment:
+  module.wait:
+    - test.sleep:
+      - length: 10
+    - watch:
+      - metalk8s: Create local etcd Pod manifest
+
 Waiting for etcd running:
   http.wait_for_successful_query:
     - name: https://127.0.0.1:2379/health
@@ -12,4 +19,4 @@ Waiting for etcd running:
     - status: 200
     - match: '{"health":"true"}'
     - require:
-      - metalk8s: Create local etcd Pod manifest
+      - module: Delay after etcd pod deployment
