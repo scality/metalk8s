@@ -166,7 +166,7 @@ _init () {
 }
 
 precheck_downgrade () {
-    SALT_MASTER_CALL=(crictl exec -it "$(get_salt_container)")
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.downgrade.precheck \
         saltenv="$SALTENV" \
@@ -175,7 +175,7 @@ precheck_downgrade () {
 }
 
 launch_downgrade () {
-    SALT_MASTER_CALL=(crictl exec -it "$(get_salt_container)")
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.downgrade \
         saltenv="$SALTENV"
@@ -193,7 +193,7 @@ downgrade_bootstrap () {
         'repositories': $repo_endpoint}}}" \
         --retcode-passthrough
 
-    SALT_MASTER_CALL=(crictl exec -it "$(get_salt_container)")
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="metalk8s-$DESTINATION_VERSION"
     "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.sync_auth \
@@ -218,7 +218,7 @@ downgrade_bootstrap () {
 
 # patch the kube-system namespace annotation with <destination-version> input
 patch_kubesystem_namespace() {
-    SALT_MASTER_CALL=(crictl exec -it "$(get_salt_container)")
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     #update the annotation with the new destination value
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate_single \
         metalk8s_kubernetes.namespace_annotation_present \
