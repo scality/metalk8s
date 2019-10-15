@@ -6,110 +6,81 @@ import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import { sortSelector } from '../services/utils';
-import NoRowsRenderer from '../components/NoRowsRenderer';
+
+import { sortSelector, useRefreshEffect } from '../services/utils';
 import {
   refreshHyperdriveAction,
   stopRefreshHyperdriveAction,
+  startPollingHyperdriveControllerAction,
+  stopPollingHyperdriveControllerAction,
 } from '../ducks/app/hyperdrive';
 import {
   refreshVersionServerAction,
   stopRefreshVersionServerAction,
 } from '../ducks/app/versionServer';
+import NoRowsRenderer from '../components/NoRowsRenderer';
+import {
+  InformationListContainer,
+  InformationSpan,
+  InformationLabel,
+  InformationValue,
+  InformationMainValue,
+} from '../components/InformationList';
 
 const ComponentContainer = styled.div`
   box-sizing: border-box;
   display: flex;
+  justify-content: space-between;
   height: 350px;
 `;
 
 const ActionContainer = styled.div`
-  margin-bottom: ${padding.base};
   display: flex;
   align-items: center;
-  .sc-button {
-    margin-right: 15px;
-  }
+  justify-content: space-between;
 `;
 
 const TableContainer = styled.div`
   flex-grow: 1;
   display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
 `;
 
 const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  padding: ${padding.base};
+  width: calc(50% - 10px);
 `;
 
+const HyperdriveControllerInformations = styled(InformationListContainer)`
+  margin: 0;
+`;
+
+const HDInformationSpan = styled.span``;
+
 const ComponentList = props => {
-  const { intl, versionServers, match } = props;
-  const dispatch = useDispatch();
+  const { intl, match } = props;
   const history = useHistory();
   const hyperdrives = useSelector(state => state.app.hyperdrive.list);
   const environment = match.params.name;
+  const hdcontrollers = useSelector(
+    state => state.app.hyperdrive.hyperdriveControllers,
+  );
 
-  // console.log('ComponentList hyperdrives', hyperdrives);
+  // take the first hdcontrollers
 
-  useEffect(() => {
-    dispatch(refreshHyperdriveAction());
-    return () => {
-      dispatch(stopRefreshHyperdriveAction());
-    };
-  }, [refreshHyperdriveAction, stopRefreshHyperdriveAction]);
+  useRefreshEffect(refreshHyperdriveAction, stopRefreshHyperdriveAction, {
+    environment,
+  });
+  useRefreshEffect(
+    startPollingHyperdriveControllerAction,
+    stopPollingHyperdriveControllerAction,
+    { environment },
+  );
 
-  useEffect(() => {
-    props.refreshVersionServer(environment);
-    return () => {
-      props.stopRefreshVersionServer();
-    };
-  }, []);
-
-  const [sortByCS, setSortByCS] = useState('name');
-  const [sortDirectionCS, setSortDirectionCS] = useState('ASC');
-  const [sortByVS, setSortByVS] = useState('name');
-  const [sortDirectionVS, setSortDirectionVS] = useState('ASC');
-
-  const columnsVS = [
-    {
-      label: intl.messages.name,
-      dataKey: 'name',
-      flexGrow: 1,
-    },
-    {
-      label: intl.messages.version,
-      dataKey: 'version',
-    },
-    {
-      label: intl.messages.status,
-      dataKey: 'status',
-    },
-    {
-      label: intl.messages.replicas,
-      dataKey: 'replicas',
-    },
-  ];
-  const columnsCS = [
-    {
-      label: intl.messages.name,
-      dataKey: 'name',
-      flexGrow: 1,
-    },
-    {
-      label: intl.messages.version,
-      dataKey: 'version',
-    },
-    {
-      label: intl.messages.status,
-      dataKey: 'status',
-    },
-    {
-      label: intl.messages.timezone,
-      dataKey: 'timezone',
-    },
-  ];
+  const [HDSortBy, setHDSortBy] = useState('name');
+  const [HDSortDirection, setHDSortDirection] = useState('ASC');
 
   const hyperdriveColumns = [
     {
@@ -134,35 +105,33 @@ const ComponentList = props => {
     },
   ];
 
-  console.log('hyperdrives', hyperdrives);
-
   const hyperdriveData = hyperdrives.map(hyperdrive => ({
     name: hyperdrive.metadata.name,
     node: hyperdrive.spec.dataServers.nodeName,
     volumeNb: hyperdrive.spec.dataServers.data.length,
     creationTime: hyperdrive.metadata.creationTimestamp,
   }));
-  console.log('hyperdriveData', hyperdriveData);
 
-  const onSortVS = ({ sortBy, sortDirection }) => {
-    setSortByVS(sortBy);
-    setSortDirectionVS(sortDirection);
+  const onSortHD = ({ sortBy, sortDirection }) => {
+    setHDSortBy(sortBy);
+    setHDSortDirection(sortDirection);
   };
 
-  const onSortCS = ({ sortBy, sortDirection }) => {
-    setSortByCS(sortBy);
-    setSortDirectionCS(sortDirection);
-  };
-  const versionServerstSortedList = sortSelector(
-    versionServers,
-    sortByVS,
-    sortDirectionVS,
+  const sortedHyperdriveData = sortSelector(
+    hyperdriveData,
+    HDSortBy,
+    HDSortDirection,
   );
+
+  if (hdcontrollers.length > 0) {
+    console.log('hyperdrivesController', hdcontrollers[0]);
+  }
 
   return (
     <ComponentContainer>
       <ListContainer>
         <ActionContainer>
+          <h3>Hyperdrive</h3>
           <Button
             text={intl.messages.create_hyperdrive}
             onClick={() =>
@@ -173,14 +142,14 @@ const ComponentList = props => {
         </ActionContainer>
         <TableContainer>
           <Table
-            list={hyperdriveData}
+            list={sortedHyperdriveData}
             columns={hyperdriveColumns}
             disableHeader={false}
             headerHeight={40}
             rowHeight={40}
-            sortBy={sortByVS}
-            sortDirection={sortDirectionVS}
-            onSort={onSortVS}
+            sortBy={HDSortBy}
+            sortDirection={HDSortDirection}
+            onSort={onSortHD}
             noRowsRenderer={() => (
               <NoRowsRenderer content={intl.messages.no_component_available} />
             )}
@@ -189,6 +158,7 @@ const ComponentList = props => {
       </ListContainer>
       <ListContainer>
         <ActionContainer>
+          <h3>Hyperdrive Controller</h3>
           <Button
             text={intl.messages.create_hyperdrive_controller}
             onClick={() =>
@@ -200,24 +170,26 @@ const ComponentList = props => {
           />
         </ActionContainer>
         <TableContainer>
-          <Table
-            list={[]}
-            columns={columnsCS}
-            disableHeader={false}
-            headerHeight={40}
-            rowHeight={40}
-            sortBy={sortByCS}
-            sortDirection={sortDirectionCS}
-            onSort={onSortCS}
-            onRowClick={row => {
-              history.push(
-                `/environments/${environment}/clockServer/${row.rowData.name}/edit`,
-              );
-            }}
-            noRowsRenderer={() => (
-              <NoRowsRenderer content={intl.messages.no_component_available} />
-            )}
-          />
+          <HyperdriveControllerInformations>
+            <HDInformationSpan>
+              <InformationLabel>{intl.messages.name}</InformationLabel>
+              <InformationMainValue>{environment.name}</InformationMainValue>
+            </HDInformationSpan>
+            <HDInformationSpan>
+              <InformationLabel>{intl.messages.status}</InformationLabel>
+              <InformationValue>
+                {intl.messages[environment.status] || environment.status}
+              </InformationValue>
+            </HDInformationSpan>
+            <HDInformationSpan>
+              <InformationLabel>{intl.messages.version}</InformationLabel>
+              <InformationValue>toto</InformationValue>
+            </HDInformationSpan>
+            <HDInformationSpan>
+              <InformationLabel>{intl.messages.description}</InformationLabel>
+              <InformationValue>{environment.description}</InformationValue>
+            </HDInformationSpan>
+          </HyperdriveControllerInformations>
         </TableContainer>
       </ListContainer>
     </ComponentContainer>

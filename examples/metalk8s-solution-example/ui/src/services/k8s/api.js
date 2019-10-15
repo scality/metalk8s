@@ -317,13 +317,38 @@ export async function getHyperdrives() {
 }
 
 export async function createHyperdrive(body, namespace = 'default') {
-  console.log('beforeCall createHyperdrive ');
   try {
     return await customObjects.createNamespacedCustomObject(
       'dataservice.scality.com',
       'v1alpha1',
       namespace,
       'dataservices',
+      body,
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getHyperdriveControllers() {
+  try {
+    return await customObjects.listClusterCustomObject(
+      'hd.scality.com',
+      'v1alpha1',
+      'hdservices',
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createHyperdriveController(body, namespace = 'default') {
+  try {
+    return await customObjects.createNamespacedCustomObject(
+      'hd.scality.com',
+      'v1alpha1',
+      namespace,
+      'hdservices',
       body,
     );
   } catch (error) {

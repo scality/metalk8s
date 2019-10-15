@@ -13,14 +13,14 @@ import { isEmpty } from 'lodash';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
-  StyledLink
+  StyledLink,
 } from '../components/BreadcrumbStyle';
 import {
   InformationListContainer,
   InformationSpan,
   InformationLabel,
   InformationValue,
-  InformationMainValue
+  InformationMainValue,
 } from '../components/InformationList';
 import ComponentList from './ComponentList';
 import { upgradeEnvironmentAction } from '../ducks/app/environment';
@@ -35,6 +35,7 @@ const EnvironmentDetailContainer = styled.div`
 
 const ComponentContainer = styled.div`
   padding: 0 ${padding.larger};
+  height: 40%;
 `;
 
 const EditIcon = styled.span`
@@ -61,17 +62,17 @@ const EnvironmentEditForm = props => {
     onCancel,
     onSubmit,
     environment,
-    versions
+    versions,
   } = props;
   const initialValues = {
-    version: currentVersion
+    version: currentVersion,
   };
   const validationSchema = Yup.object().shape({
     version: Yup.string()
       .required()
       .test('is-version-valid', intl.messages.not_valid_version, value =>
-        semver.valid(value)
-      )
+        semver.valid(value),
+      ),
   });
 
   return (
@@ -90,7 +91,7 @@ const EnvironmentEditForm = props => {
             errors,
             dirty,
             setFieldTouched,
-            setFieldValue
+            setFieldValue,
           } = formProps;
 
           //touched is not "always" correctly set
@@ -105,7 +106,7 @@ const EnvironmentEditForm = props => {
           const availableVersions = versions.map(item => {
             return {
               label: item.version,
-              value: item.version
+              value: item.version,
             };
           });
           return (
@@ -148,7 +149,7 @@ const EnvironmentDetail = props => {
   const [environmentEditing, setEnvironmentEditing] = useState(false);
   const environmentName = match.params.name;
   const environment = environments.find(
-    environment => environment.name === environmentName
+    environment => environment.name === environmentName,
   );
 
   return environment ? (
@@ -162,7 +163,7 @@ const EnvironmentDetail = props => {
             </StyledLink>,
             <BreadcrumbLabel title={environment.name}>
               {environment.name}
-            </BreadcrumbLabel>
+            </BreadcrumbLabel>,
           ]}
         />
       </BreadcrumbContainer>
@@ -212,7 +213,6 @@ const EnvironmentDetail = props => {
         </InformationSpan>
       </InformationListContainer>
       <ComponentContainer>
-        <h3>{intl.messages.components}</h3>
         <ComponentList />
       </ComponentContainer>
     </EnvironmentDetailContainer>
@@ -221,12 +221,12 @@ const EnvironmentDetail = props => {
 
 const mapStateToProps = state => ({
   config: state.config,
-  environments: state.app.environment.list
+  environments: state.app.environment.list,
 });
 
 const mapDispatchToProps = dispatch => {
   return {
-    upgradeEnvironment: body => dispatch(upgradeEnvironmentAction(body))
+    upgradeEnvironment: body => dispatch(upgradeEnvironmentAction(body)),
   };
 };
 
@@ -234,7 +234,7 @@ export default injectIntl(
   withRouter(
     connect(
       mapStateToProps,
-      mapDispatchToProps
-    )(EnvironmentDetail)
-  )
+      mapDispatchToProps,
+    )(EnvironmentDetail),
+  ),
 );

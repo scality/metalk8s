@@ -11,7 +11,6 @@ import {
   Breadcrumb,
   Button,
   Input,
-  Select,
   MultiSelect,
 } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
@@ -20,6 +19,7 @@ import { useRefreshEffect } from '../services/utils';
 import {
   refreshHyperdriveAction,
   stopRefreshHyperdriveAction,
+  createHyperdriveControllerAction,
 } from '../ducks/app/hyperdrive';
 import {
   BreadcrumbContainer,
@@ -84,10 +84,6 @@ const InputLabel = styled.label`
   font-size: ${fontSize.base};
 `;
 
-const InputValue = styled(InputLabel)`
-  padding: ${padding.small} 0;
-`;
-
 const protectionOptions = [
   {
     label: 'Standard Durability Replication COS 2',
@@ -133,10 +129,11 @@ const HyperdriveCreation = props => {
 
   const config = useSelector(state => state.config);
   const hyperdrives = useSelector(state => state.app.hyperdrive.list);
-  const volumes = useSelector(state => state.app.hyperdrive.volumes);
   const environment = params.name;
 
-  useRefreshEffect(refreshHyperdriveAction, stopRefreshHyperdriveAction);
+  useRefreshEffect(refreshHyperdriveAction, stopRefreshHyperdriveAction, {
+    environment,
+  });
 
   const hyperdriveOptions = hyperdrives.map(hyperdrive => ({
     label: hyperdrive.metadata.name,
@@ -147,7 +144,6 @@ const HyperdriveCreation = props => {
     name: 'hyperdrive-controller',
     hyperdrives: hyperdriveOptions,
     protections: [protectionOptions[0]],
-    // protections: [],
     // Needed to create a ressource
     environment,
   };
@@ -157,16 +153,12 @@ const HyperdriveCreation = props => {
     hyperdrives: yup
       .array()
       .min(1)
-      .max(1)
       .required(),
     protections: yup
       .array()
       .min(1)
-      .max(1)
       .required(),
   });
-
-  // console.log('hyperdriveOptions', hyperdriveOptions);
 
   const isFormReady = hyperdrives.length > 0;
 
@@ -194,8 +186,12 @@ const HyperdriveCreation = props => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={values => {
-              const newHyperdrive = { ...values, nodeName: values.node.value };
-              // dispatch(createHyperdriveAction(newHyperdrive));
+              const newHyperdriveController = {
+                ...values,
+              };
+              dispatch(
+                createHyperdriveControllerAction(newHyperdriveController),
+              );
             }}
           >
             {formProps => {
@@ -209,8 +205,7 @@ const HyperdriveCreation = props => {
               } = formProps;
 
               //handleChange of the Formik props does not update 'values' when field value is empty
-              const handleChange = (field, test) => e => {
-                // console.log('field', field, test);
+              const handleChange = field => e => {
                 const { value, checked, type } = e.target;
 
                 setFieldValue(
@@ -272,15 +267,6 @@ const HyperdriveCreation = props => {
                       <InputLabel className="sc-input-label">
                         {intl.messages.hyperdrives}
                       </InputLabel>
-                      {/* <Select
-                        isMulti={true}
-                        name="hyperdrives"
-                        options={hyperdriveOptions}
-                        onChange={handleMultiSelectChange}
-                        placeholder="Select an item..."
-                        noOptionsMessage={() => 'Not found'}
-                        value={values.hyperdrives}
-                      /> */}
                       <MultiSelect
                         name="hyperdrives"
                         items={values.hyperdrives}
@@ -297,15 +283,6 @@ const HyperdriveCreation = props => {
                       <InputLabel className="sc-input-label">
                         {'Protection Types'}
                       </InputLabel>
-                      {/* <Select
-                        isMulti={true}
-                        name="protections"
-                        options={protectionOptions}
-                        onChange={handleMultiSelectChange}
-                        placeholder="Select an item..."
-                        noOptionsMessage={() => 'Not found'}
-                        value={values.protections}
-                      /> */}
                       <MultiSelect
                         name="protections"
                         items={values.protections}

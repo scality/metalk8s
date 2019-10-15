@@ -27,15 +27,26 @@ const SET_NODES_REFRESHING = 'SET_NODES_REFRESHING';
 const REFRESH_NODES = 'REFRESH_NODES';
 const STOP_REFRESH_NODES = 'STOP_REFRESH_NODES';
 
+const CREATE_HYPERDRIVE_CONTROLLER = 'CREATE_HYPERDRIVE_CONTROLLER';
+const START_POLLING_HYPERDRIVE_CONTROLLER =
+  'START_POLLING_HYPERDRIVE_CONTROLLER';
+const STOP_POLLING_HYPERDRIVE_CONTROLLER = 'STOP_POLLING_HYPERDRIVE_CONTROLLER';
+const SET_HYPERDRIVE_CONTROLLER = 'SET_HYPERDRIVE_CONTROLLER';
+const SET_HYPERDRIVE_CONTROLLER_REFRESHING =
+  'SET_HYPERDRIVE_CONTROLLER_REFRESHING';
+
 // Reducer
 
 const defaultState = {
   list: [],
+  hyperdriveControllers: [],
   nodes: [],
   volumes: [],
   isRefreshingHyperdrive: false,
   isNodesRefreshing: false,
   isVolumesRefreshing: false,
+  isHyperdriveControllerRefreshing: false,
+  isHyperdriveControllerPolling: false,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -48,6 +59,10 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, isNodesRefreshing: action.payload };
     case SET_VOLUMES:
       return { ...state, volumes: action.payload };
+    case SET_HYPERDRIVE_CONTROLLER:
+      return { ...state, hyperdriveControllers: action.payload };
+    case SET_HYPERDRIVE_CONTROLLER_REFRESHING:
+      return { ...state, isHyperdriveControllerRefreshing: action.payload };
     default:
       return state;
   }
@@ -67,7 +82,6 @@ export const updateHyperdriveAction = payload => {
 };
 
 export const createHyperdriveAction = newHyperdrive => {
-  console.log('createHyperdriveAction', newHyperdrive);
   return { type: CREATE_HYPERDRIVE, payload: newHyperdrive };
 };
 
@@ -97,6 +111,29 @@ export const stopRefreshNodesAction = () => {
   return { type: STOP_REFRESH_NODES };
 };
 
+export const createHyperdriveControllerAction = newHyperdriveController => {
+  return {
+    type: CREATE_HYPERDRIVE_CONTROLLER,
+    payload: newHyperdriveController,
+  };
+};
+
+export const setHyperdriveControllerAction = payload => {
+  return { type: SET_HYPERDRIVE_CONTROLLER, payload };
+};
+
+export const setHyperdriveControllerPollingAction = payload => {
+  return { type: SET_HYPERDRIVE_CONTROLLER_REFRESHING, payload };
+};
+
+export const startPollingHyperdriveControllerAction = () => {
+  return { type: START_POLLING_HYPERDRIVE_CONTROLLER };
+};
+
+export const stopPollingHyperdriveControllerAction = () => {
+  return { type: STOP_POLLING_HYPERDRIVE_CONTROLLER };
+};
+
 // Sagas
 
 export function* fetchHyperdrive() {
@@ -107,83 +144,9 @@ export function* fetchHyperdrive() {
   return results;
 }
 
-export function* fetchNodes() {
-  yield put(
-    updateHyperdriveAction({
-      isNodesLoading: true,
-    }),
-  );
-  const result = yield call(ApiK8s.getNodes);
-  if (!result.error) {
-    yield put(updateHyperdriveAction({ nodes: result?.body?.items ?? [] }));
-  }
-  yield delay(1000); // To make sur that the loader is visible for at least 1s
-  yield put(
-    updateHyperdriveAction({
-      isNodesLoading: false,
-    }),
-  );
-  return result;
-}
-
-export function* fetchVolumes() {
-  const result = yield call(ApiK8s.getVolumes);
-  if (!result.error) {
-    yield put(setVolumesAction(result?.body?.items ?? []));
-  }
-  return result;
-}
-
-export function* refreshVolumes() {
-  yield put(setVolumesRefreshingAction(true));
-  const result = yield call(fetchVolumes);
-  if (!result.error) {
-    yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(
-      state => state.app.hyperdrive.isVolumesRefreshing,
-    );
-    if (isRefreshing) {
-      yield call(refreshVolumes);
-    }
-  }
-}
-
-export function* stopRefreshVolumes() {
-  yield put(setVolumesRefreshingAction(false));
-}
-
-export function* refreshHyperdrive({ environment }) {
-  yield put(
-    updateHyperdriveAction({
-      isRefreshingHyperdrive: true,
-    }),
-  );
-
-  const results = yield call(fetchHyperdrive);
-  if (!results.error) {
-    yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(
-      state => state.app.hyperdrive.isRefreshingHyperdrive,
-    );
-    if (isRefreshing) {
-      yield call(refreshHyperdrive, { environment });
-    }
-  }
-}
-
-export function* stopRefreshHyperdrive() {
-  yield put(
-    updateHyperdriveAction({
-      isRefreshingHyperdrive: false,
-    }),
-  );
-}
-
 export function* createHyperdrive({ payload }) {
-  console.log('createHyperdrive');
   const { name, nodeName, dataVolumes, environment } = payload;
   const namespace = `${environment}-${OPERATOR_NAMESPACE}`;
-  console.log('payload', payload);
 
   /**
    * FIXME The body is not stable
@@ -219,14 +182,56 @@ export function* createHyperdrive({ payload }) {
     },
   };
 
-  console.log('body', body);
-
   const result = yield call(ApiK8s.createHyperdrive, body, namespace);
   if (!result.error) {
-    console.log('result', result);
-    // yield call(createHyperdrive, `${environment}-example-solution`);
     yield call(history.push, `/environments/${environment}`);
   }
+}
+
+export function* refreshHyperdrive({ environment }) {
+  yield put(
+    updateHyperdriveAction({
+      isRefreshingHyperdrive: true,
+    }),
+  );
+
+  const results = yield call(fetchHyperdrive);
+  if (!results.error) {
+    yield delay(REFRESH_TIMEOUT);
+    const isRefreshing = yield select(
+      state => state.app.hyperdrive.isRefreshingHyperdrive,
+    );
+    if (isRefreshing) {
+      yield call(refreshHyperdrive, { environment });
+    }
+  }
+}
+
+export function* stopRefreshHyperdrive() {
+  yield put(
+    updateHyperdriveAction({
+      isRefreshingHyperdrive: false,
+    }),
+  );
+}
+
+export function* fetchNodes() {
+  yield put(
+    updateHyperdriveAction({
+      isNodesLoading: true,
+    }),
+  );
+  const result = yield call(ApiK8s.getNodes);
+  if (!result.error) {
+    yield put(updateHyperdriveAction({ nodes: result?.body?.items ?? [] }));
+  }
+  yield delay(1000); // To make sur that the loader is visible for at least 1s
+  yield put(
+    updateHyperdriveAction({
+      isNodesLoading: false,
+    }),
+  );
+  return result;
 }
 
 export function* refreshNodes() {
@@ -248,6 +253,95 @@ export function* stopRefreshNodes() {
   yield put(setNodesRefreshingAction(false));
 }
 
+export function* fetchVolumes() {
+  const result = yield call(ApiK8s.getVolumes);
+  if (!result.error) {
+    yield put(setVolumesAction(result?.body?.items ?? []));
+  }
+  return result;
+}
+
+export function* refreshVolumes() {
+  yield put(setVolumesRefreshingAction(true));
+  const result = yield call(fetchVolumes);
+  if (!result.error) {
+    yield delay(REFRESH_TIMEOUT);
+    const isRefreshing = yield select(
+      state => state.app.hyperdrive.isVolumesRefreshing,
+    );
+    if (isRefreshing) {
+      yield call(refreshVolumes);
+    }
+  }
+}
+
+export function* stopRefreshVolumes() {
+  yield put(setVolumesRefreshingAction(false));
+}
+
+export function* fetchHyperdriveController() {
+  const result = yield call(ApiK8s.getHyperdriveControllers);
+  if (!result.error) {
+    yield put(setHyperdriveControllerAction(result?.body?.items ?? []));
+  }
+  return result;
+}
+
+export function* startPollingHyperdriveController({ environment }) {
+  yield put(setHyperdriveControllerPollingAction(true));
+  const result = yield call(fetchHyperdriveController);
+  if (!result.error) {
+    yield delay(REFRESH_TIMEOUT);
+    const isRefreshing = yield select(
+      state => state.app.hyperdrive.isHyperdriveControllerRefreshing,
+    );
+    if (isRefreshing) {
+      yield call(startPollingHyperdriveController, { environment });
+    }
+  }
+}
+
+export function* stopPollingHyperdriveController() {
+  yield put(setHyperdriveControllerPollingAction(false));
+}
+
+export function* createHyperdriveController({ payload }) {
+  const { name, environment, protections, hyperdrives } = payload;
+  const namespace = `${environment}-${OPERATOR_NAMESPACE}`;
+
+  const protection = protections.map(p => ({
+    schema: { ...p.payload, splitsize: 1000000 },
+  }));
+
+  const endpoints = hyperdrives.map(hd => ({ serviceName: hd.value }));
+
+  const body = {
+    apiVersion: 'hd.scality.com/v1alpha1',
+    kind: 'HdService',
+    metadata: {
+      name: name,
+    },
+    spec: {
+      replicas: { proxy: 1 },
+      prometheus: { enable: false },
+      repair: {
+        type: 'kafka',
+        brokers: ['my-kafka-headless:9092'],
+        topic: 'repair',
+        partition: 1,
+        replica: 1,
+      },
+      protection,
+      endpoints,
+    },
+  };
+
+  const result = yield call(ApiK8s.createHyperdriveController, body, namespace);
+  if (!result.error) {
+    yield call(history.push, `/environments/${environment}`);
+  }
+}
+
 export function* hyperdriveSaga() {
   yield takeEvery(REFRESH_HYPERDRIVE, refreshHyperdrive);
   yield takeEvery(STOP_REFRESH_HYPERDRIVE, stopRefreshHyperdrive);
@@ -256,4 +350,13 @@ export function* hyperdriveSaga() {
   yield takeLatest(STOP_REFRESH_VOLUMES, stopRefreshVolumes);
   yield takeLatest(REFRESH_NODES, refreshNodes);
   yield takeLatest(STOP_REFRESH_NODES, stopRefreshNodes);
+  yield takeEvery(CREATE_HYPERDRIVE_CONTROLLER, createHyperdriveController);
+  yield takeLatest(
+    START_POLLING_HYPERDRIVE_CONTROLLER,
+    startPollingHyperdriveController,
+  );
+  yield takeLatest(
+    STOP_POLLING_HYPERDRIVE_CONTROLLER,
+    stopPollingHyperdriveController,
+  );
 }

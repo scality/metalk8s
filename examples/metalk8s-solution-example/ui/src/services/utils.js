@@ -11,7 +11,7 @@ export const sortSelector = createSelector(
         return typeof item[sortBy] === 'string'
           ? item[sortBy].toLowerCase()
           : item[sortBy];
-      }
+      },
     ]);
 
     if (sortDirection === 'DESC') {
@@ -19,15 +19,19 @@ export const sortSelector = createSelector(
     }
     return sortedList;
   },
-  list => list
+  list => list,
 );
 
-export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
+export const useRefreshEffect = (
+  refreshAction,
+  stopRefreshAction,
+  payload = {},
+) => {
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(refreshAction());
+    dispatch(refreshAction(payload));
     return () => {
-      dispatch(stopRefreshAction());
+      dispatch(stopRefreshAction(payload));
     };
   }, [dispatch, refreshAction, stopRefreshAction]);
 };
@@ -55,11 +59,11 @@ export const isVersionSupported = envVersionStr => item => {
     envVersion.prerelease = []; // Reset pre-release info
     const minVersion = `${envVersion.major}.${Math.max(
       envVersion.minor - 1,
-      0
+      0,
     )}`;
     const versionRange = `${minVersion} - ${envVersion.format()}`;
     return semver.satisfies(item.version, versionRange, {
-      includePrerelease: true
+      includePrerelease: true,
     });
   } else {
     return true;

@@ -92,8 +92,6 @@ const HyperdriveCreation = props => {
   const volumes = useSelector(state => state.app.hyperdrive.volumes);
   const environment = params.name;
 
-  console.log('environment', environment);
-
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
@@ -118,8 +116,6 @@ const HyperdriveCreation = props => {
     // Needed to create a ressource
     environment,
   };
-
-  console.log('initialValues', initialValues);
 
   const validationSchema = yup.object().shape({
     name: yup.string().required(),
@@ -207,8 +203,6 @@ const HyperdriveCreation = props => {
               //touched is not "always" correctly set
               const handleOnBlur = e => setFieldTouched(e.target.name, true);
 
-              console.log('errors', errors);
-              console.log('values', values);
               return (
                 <Form>
                   <FormSection>
