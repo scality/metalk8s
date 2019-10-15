@@ -12,8 +12,7 @@ import {
 const REFRESH = 'REFRESH_CLOCK_SERVER';
 const STOP_REFRESH = 'STOP_REFRESH_CLOCK_SERVER';
 const CREATE = 'CREATE_CLOCK_SERVER';
-
-const UPDATE = 'UPDATE_CLOCK_SERVER';
+export const UPDATE = 'UPDATE_CLOCK_SERVER';
 const EDIT = 'EDIT_CLOCK_SERVER';
 
 // Reducer
@@ -25,7 +24,17 @@ const defaultState = {
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case UPDATE:
-      return { ...state, ...action.payload };
+      const environments = [...state.list];
+      const index = environments.findIndex(
+        item => item.name === action.payload.environment
+      );
+      if (index > -1) {
+        environments[index].clockServer = environments[index].clockServer
+          ? { ...environments[index].clockServer, ...action.payload }
+          : action.payload;
+        return { ...state, list: [...environments] };
+      }
+      return state;
     default:
       return state;
   }
@@ -36,8 +45,8 @@ export const refreshClockServerAction = environment => {
   return { type: REFRESH, environment };
 };
 
-export const stopRefreshClockServerAction = () => {
-  return { type: STOP_REFRESH };
+export const stopRefreshClockServerAction = environment => {
+  return { type: STOP_REFRESH, environment };
 };
 
 export const updateClockServerAction = payload => {
@@ -53,11 +62,15 @@ export const createClockServerAction = payload => {
 };
 
 // Sagas
-export function* fetchClockServer(namespaces) {
-  const results = yield call(ApiK8s.getClockServer, namespaces);
+export function* fetchClockServer(environment) {
+  const results = yield call(
+    ApiK8s.getClockServer,
+    `${environment}-${SOLUTION_NAME}`
+  );
   if (!results.error) {
     yield put(
       updateClockServerAction({
+        environment,
         list: results.body.items.map(cr => {
           return {
             name: cr.metadata.name,
@@ -92,7 +105,7 @@ export function* createClockServer({ payload }) {
     `${environment}-${SOLUTION_NAME}`
   );
   if (!result.error) {
-    yield call(fetchClockServer, `${environment}-${SOLUTION_NAME}`);
+    yield call(fetchClockServer, environment);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -119,7 +132,7 @@ export function* editClockServer({ payload }) {
   );
 
   if (!result.error) {
-    yield call(fetchClockServer, `${environment}-${SOLUTION_NAME}`);
+    yield call(fetchClockServer, environment);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -127,27 +140,27 @@ export function* editClockServer({ payload }) {
 export function* refreshClockServer({ environment }) {
   yield put(
     updateClockServerAction({
+      environment,
       isRefreshing: true
     })
   );
-  const results = yield call(
-    fetchClockServer,
-    `${environment}-${SOLUTION_NAME}`
-  );
+  const results = yield call(fetchClockServer, environment);
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(
-      state => state.app.clockServer.isRefreshing
-    );
-    if (isRefreshing) {
+    const environments = yield select(state => state.app.environment.list);
+    if (
+      environments.find(env => env.name === environment).clockServer
+        .isRefreshing
+    ) {
       yield call(refreshClockServer, { environment });
     }
   }
 }
 
-export function* stopRefreshClockServer() {
+export function* stopRefreshClockServer({ environment }) {
   yield put(
     updateClockServerAction({
+      environment,
       isRefreshing: false
     })
   );

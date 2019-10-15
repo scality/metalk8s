@@ -79,7 +79,7 @@ const InputValue = styled.label`
 `;
 
 const VersionServerEditForm = props => {
-  const { intl, match, versionServers, config, environments } = props;
+  const { intl, match, config, environments } = props;
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
@@ -88,7 +88,9 @@ const VersionServerEditForm = props => {
     ? currentEnvironment.version
     : '';
 
-  const versionServer = versionServers.find(cr => cr.name === match.params.id);
+  const versionServer = currentEnvironment.versionServers.list.find(
+    cr => cr.name === match.params.id
+  );
   const initialValues = {
     version: versionServer ? versionServer.version : '',
     replicas: versionServer ? versionServer.replicas : 1,
@@ -231,7 +233,6 @@ const VersionServerEditForm = props => {
 function mapStateToProps(state) {
   return {
     config: state.config,
-    versionServers: state.app.versionServer.list,
     environments: state.app.environment.list
   };
 }

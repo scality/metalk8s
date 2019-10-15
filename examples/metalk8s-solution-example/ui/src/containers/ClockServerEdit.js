@@ -79,7 +79,7 @@ const InputValue = styled.label`
 `;
 
 const ClockServerEditForm = props => {
-  const { intl, match, clockServers, config, environments } = props;
+  const { intl, match, config, environments } = props;
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
@@ -87,7 +87,9 @@ const ClockServerEditForm = props => {
   const currentEnvironmentVersion = currentEnvironment
     ? currentEnvironment.version
     : '';
-  const clockServer = clockServers.find(cr => cr.name === match.params.id);
+  const clockServer = currentEnvironment.clockServers.list.find(
+    cr => cr.name === match.params.id
+  );
   const initialValues = {
     version: clockServer ? clockServer.version : '',
     timezone: clockServer ? clockServer.timezone : '',
@@ -232,7 +234,6 @@ const ClockServerEditForm = props => {
 function mapStateToProps(state) {
   return {
     config: state.config,
-    clockServers: state.app.clockServer.list,
     environments: state.app.environment.list
   };
 }
