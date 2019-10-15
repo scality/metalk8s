@@ -8,7 +8,7 @@ import {
   createNamespacedRole,
   createNamespacedRoleBinding,
   createOrUpdateOperatorDeployment,
-  fetchOpertorDeployment
+  fetchOperatorDeployment
 } from './deployment';
 import { LABEL_VERSION, SOLUTION_NAME } from '../../constants';
 
@@ -90,7 +90,7 @@ export function* fetchEnvironment() {
 }
 export function* updateEnvironment(environment) {
   const results = yield call(
-    fetchOpertorDeployment,
+    fetchOperatorDeployment,
     `${environment.metadata.name}-${SOLUTION_NAME}`
   );
   // One operator per environment

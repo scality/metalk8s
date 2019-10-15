@@ -23,7 +23,7 @@ export const editDeploymentAction = payload => {
 };
 
 // Sagas
-export function* fetchOpertorDeployment(namespaces) {
+export function* fetchOperatorDeployment(namespaces) {
   const result = yield call(
     ApiK8s.getOperatorDeployment,
     namespaces,

@@ -1,7 +1,11 @@
 import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
-import { REFRESH_TIMEOUT, SOLUTION_NAME } from '../../constants';
+import {
+  REFRESH_TIMEOUT,
+  SOLUTION_NAME,
+  SOLUTION_GROUP
+} from '../../constants';
 
 // Actions
 const REFRESH = 'REFRESH_VERSION_SERVER';
@@ -70,7 +74,7 @@ export function* fetchVersionServer(namespaces) {
 export function* createVersionServer({ payload }) {
   const { name, environment, replicas, version } = payload;
   const body = {
-    apiVersion: `${SOLUTION_NAME}.metalk8s.scality.com/v1alpha1`,
+    apiVersion: `${SOLUTION_GROUP}/v1alpha1`,
     kind: 'VersionServer',
     metadata: {
       name: name
@@ -95,7 +99,7 @@ export function* createVersionServer({ payload }) {
 export function* editVersionServer({ payload }) {
   const { name, environment, replicas, version } = payload;
   const body = {
-    apiVersion: `${SOLUTION_NAME}.metalk8s.scality.com/v1alpha1`,
+    apiVersion: `${SOLUTION_GROUP}/v1alpha1`,
     kind: 'VersionServer',
     metadata: {
       name: name

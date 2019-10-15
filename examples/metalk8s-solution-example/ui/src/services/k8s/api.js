@@ -10,7 +10,7 @@ import {
 import {
   SOLUTION_CONFIGMAP_NAME,
   SOLUTION_CONFIGMAP_NAMESPACE,
-  SOLUTION_NAME
+  SOLUTION_GROUP
 } from '../../constants';
 
 let config;
@@ -75,7 +75,7 @@ export async function updateEnvironment(body, name) {
 export async function getClockServer(namespace) {
   try {
     return await customObjects.listNamespacedCustomObject(
-      `${SOLUTION_NAME}.metalk8s.scality.com`,
+      SOLUTION_GROUP,
       'v1alpha1',
       namespace,
       'clockservers'
@@ -88,7 +88,7 @@ export async function getClockServer(namespace) {
 export async function getVersionServer(namespace) {
   try {
     return await customObjects.listNamespacedCustomObject(
-      `${SOLUTION_NAME}.metalk8s.scality.com`,
+      SOLUTION_GROUP,
       'v1alpha1',
       namespace,
       'versionservers'
@@ -101,7 +101,7 @@ export async function getVersionServer(namespace) {
 export async function createClockServer(body, namespace) {
   try {
     return await customObjects.createNamespacedCustomObject(
-      `${SOLUTION_NAME}.metalk8s.scality.com`,
+      SOLUTION_GROUP,
       'v1alpha1',
       namespace,
       'clockservers',
@@ -115,7 +115,7 @@ export async function createClockServer(body, namespace) {
 export async function createVersionServer(body, namespace) {
   try {
     return await customObjects.createNamespacedCustomObject(
-      `${SOLUTION_NAME}.metalk8s.scality.com`,
+      SOLUTION_GROUP,
       'v1alpha1',
       namespace,
       'versionservers',
@@ -129,7 +129,7 @@ export async function createVersionServer(body, namespace) {
 export async function updateClockServer(body, namespace, name) {
   try {
     return await customObjects.patchNamespacedCustomObject(
-      `${SOLUTION_NAME}.metalk8s.scality.com`,
+      SOLUTION_GROUP,
       'v1alpha1',
       namespace,
       'clockservers',
@@ -149,7 +149,7 @@ export async function updateClockServer(body, namespace, name) {
 export async function updateVersionServer(body, namespace, name) {
   try {
     return await customObjects.patchNamespacedCustomObject(
-      `${SOLUTION_NAME}.metalk8s.scality.com`,
+      SOLUTION_GROUP,
       'v1alpha1',
       namespace,
       'versionservers',
