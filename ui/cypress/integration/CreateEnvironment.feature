@@ -1,3 +1,4 @@
+@skip
 Feature: Solutions
    Scenario: Environment Provision
      Given I log in

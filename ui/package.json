@@ -36,7 +36,7 @@
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
     "test:nowatch": "CI=true react-app-rewired test --env=jsdom --reporters=default --reporters=jest-junit",
-    "test:e2e": "cypress run --spec 'cypress/integration/**/*.feature'",
+    "test:e2e": "cypress-tags run -e TAGS='not @skip' --spec 'cypress/integration/**/*.feature'",
     "flow": "flow check"
   },
   "eslintConfig": {
