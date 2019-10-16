@@ -345,9 +345,6 @@ SCALITY_RPM_REPOSITORY : targets.RPMRepository = _rpm_repository(
 
 RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
     SCALITY_RPM_REPOSITORY,
-    _rpm_repository(name='base'),
-    _rpm_repository(name='extras'),
-    _rpm_repository(name='updates'),
     _rpm_repository(name='epel'),
     _rpm_repository(name='kubernetes'),
     _rpm_repository(name='saltstack'),

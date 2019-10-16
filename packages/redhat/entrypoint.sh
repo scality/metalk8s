@@ -4,6 +4,12 @@ set -e
 set -u
 set -o pipefail
 
+declare -r ENABLED_REPOS=(
+    epel
+    kubernetes
+    saltstack
+)
+
 buildmeta() {
     set -x
     chown build:build /home/build
@@ -64,6 +70,8 @@ buildrepo() {
 get_rpm_gpg_keys() {
     declare -gA RPM_GPG_KEYS
     local -r releasever=${RELEASEVER:-7}
+    # shellcheck disable=SC2034
+    # The variable is used in the `eval` below
     local -r basearch=${BASEARCH:-x86_64}
 
     while read -r repo gpg_keys; do
@@ -86,45 +94,94 @@ get_rpm_gpg_keys() {
     ' /etc/yum.repos.d/*)
 }
 
+in_dependencies() {
+    local -r search=$1
+    shift
+
+    for element; do
+        [[ $element =~ ^"$search"(-[0-9]+(\.[0-9]+)+)?$ ]] && break
+    done
+}
+
+join_array() {
+    IFS=$1
+    shift
+    echo "$*"
+}
+
+resolve_dependencies() {
+    local -ra packages=("$@")
+    local -a dependencies=("$@")
+
+    for package in "${packages[@]}"; do
+        while read -r dependency repo; do
+            if [[ $repo =~ $ENABLED_REPOS_RE ]] && \
+               ! in_dependencies "$dependency" "${dependencies[@]}"; then
+                dependencies+=("$dependency")
+            fi
+        done < <(
+            repoquery --requires --resolve --recursive \
+                      --queryformat='%{name} %{repoid}' "$package"
+        )
+    done
+
+    echo "${dependencies[@]}"
+}
+
+download_repository_gpg_keys() {
+    local -r repo_name=$1
+
+    if [[ ${RPM_GPG_KEYS[$repo_name]+_} ]]; then
+        read -ra gpg_keys <<< "${RPM_GPG_KEYS[$repo_name]}"
+        for key_id in "${!gpg_keys[@]}"; do
+            gpg_key=RPM-GPG-KEY-metalk8s-$repo_name-${releasever}_$((
+                key_id + 1 ))
+            curl -s "${gpg_keys[$key_id]}" > "$gpg_key"
+            chown "$TARGET_UID:$TARGET_GID" "$gpg_key"
+        done
+    fi
+}
+
 download_packages() {
     set -x
+    declare -g ENABLED_REPOS_RE
+    local enabled_repos_yum
     local -r releasever=${RELEASEVER:-7}
-    local -r basearch=${BASEARCH:-x86_64}
-    local -r repo_cache_root=/install_root/var/cache/yum/$basearch/$releasever
     local -a packages=("$@")
-    local -a yum_opts=(
-        "--assumeyes"
-        "--downloadonly"
-        "--releasever=$releasever"
-        "--installroot=/install_root"
-    )
+    local -a packages_to_download
+
+    ENABLED_REPOS_RE="^($(join_array '|' "${ENABLED_REPOS[@]}"))$"
+    enabled_repos_yum=$(join_array ',' "${ENABLED_REPOS[@]}")
 
     get_rpm_gpg_keys
 
-    yum install "${yum_opts[@]}" "${packages[@]}"
+    read -ra packages_to_download < <(resolve_dependencies "${packages[@]}")
 
-    chown -R "$TARGET_UID:$TARGET_GID" "/install_root/var"
+    local current_repo repo_dir gpg_key query_format
 
-    local repo_name repo_dest gpg_key
+    query_format='%{repoid} %{name}-%{epoch}:%{version}-%{release}.%{arch}'
 
-    while IFS=$'\n' read -r repo; do
-        repo_name=${repo##*/}
-        repo_dest=/repositories/metalk8s-$repo_name-el$releasever
-        cp -Ta "$repo/packages" "$repo_dest"
-        if [[ ${RPM_GPG_KEYS[$repo_name]+_} ]]; then
-            read -ra gpg_keys <<< "${RPM_GPG_KEYS[$repo_name]}"
-            for key_id in "${!gpg_keys[@]}"; do
-                gpg_key=$repo_dest/RPM-GPG-KEY-metalk8s-$repo_name-${releasever}_$((
-                    key_id + 1 ))
-                curl -s "${gpg_keys[$key_id]}" > "$gpg_key"
-                chown "$TARGET_UID:$TARGET_GID" "$gpg_key"
-            done
+    while read -r repo_name package; do
+        if [[ $repo_name != "${current_repo:-}" ]]; then
+            current_repo=$repo_name
+            repo_dir=/repositories/metalk8s-$repo_name-el$releasever
+            mkdir -p "$repo_dir"
+            pushd "$repo_dir" > /dev/null
+            download_repository_gpg_keys "$repo_name"
         fi
-    done < <(find "$repo_cache_root" -maxdepth 1 -type d \
-        -not -path "$repo_cache_root")
+        yumdownloader --disablerepo="*" \
+                      --enablerepo="$repo_name" "$package"
+    done < <(
+        repoquery --queryformat="$query_format" \
+                  --disablerepo="*" \
+                  --enablerepo="$enabled_repos_yum" \
+                  "${packages_to_download[@]}" | sort
+    )
+
+    chown -R "$TARGET_UID:$TARGET_GID" "/repositories"
 }
 
-case ${1:- } in
+case ${1:-} in
     buildmeta)
         buildmeta
         ;;
