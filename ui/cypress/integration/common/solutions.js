@@ -48,6 +48,13 @@ Then(
 When(
   'I click on the Add Solution button to add a solution to the environment',
   () => {
+    //Check if the solution have been imported
+    cy.get('.sc-table:last .sc-table-row')
+      .should('have.length', 2)
+      .eq(1)
+      .find('.sc-table-column-cell-name')
+      .should('contain', 'example-solution'); //contains example-solution
+
     cy.get(`[data-cy="add_solution_to_${environmentName}_button"]`).click();
     cy.get('.sc-modal').should('have.length', 1);
   },
