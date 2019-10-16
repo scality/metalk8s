@@ -17,7 +17,7 @@ import {
 } from '../components/BreadcrumbStyle';
 import { isVersionSupported } from '../services/utils';
 
-const CreateVersionServerContainter = styled.div`
+const CreateVersionServerContainer = styled.div`
   height: 100%;
   padding: ${padding.base};
   display: inline-block;
@@ -91,7 +91,7 @@ const VersionServerEditForm = props => {
   const versionServer = versionServers.find(cr => cr.name === match.params.id);
   const initialValues = {
     version: versionServer ? versionServer.version : '',
-    replicas: versionServer ? versionServer.replicas : '',
+    replicas: versionServer ? versionServer.replicas : 1,
     name: versionServer ? versionServer.name : '',
     environment
   };
@@ -106,7 +106,7 @@ const VersionServerEditForm = props => {
   });
 
   return (
-    <CreateVersionServerContainter>
+    <CreateVersionServerContainer>
       <BreadcrumbContainer>
         <Breadcrumb
           activeColor={config.theme.brand.secondary}
@@ -224,7 +224,7 @@ const VersionServerEditForm = props => {
           </Formik>
         ) : null}
       </CreateVersionServerLayout>
-    </CreateVersionServerContainter>
+    </CreateVersionServerContainer>
   );
 };
 

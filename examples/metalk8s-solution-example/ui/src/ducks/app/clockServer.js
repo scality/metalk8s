@@ -2,15 +2,19 @@ import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
 
-import { REFRESH_TIMEOUT } from '../../constants';
+import {
+  REFRESH_TIMEOUT,
+  SOLUTION_NAME,
+  SOLUTION_API_GROUP
+} from '../../constants';
 
 // Actions
-const REFRESH_CLOCK_SERVER = 'REFRESH_CLOCK_SERVER';
-const STOP_REFRESH_CLOCK_SERVER = 'STOP_REFRESH_CLOCK_SERVER';
-const CREATE_CLOCK_SERVER = 'CREATE_CLOCK_SERVER';
+const REFRESH = 'REFRESH_CLOCK_SERVER';
+const STOP_REFRESH = 'STOP_REFRESH_CLOCK_SERVER';
+const CREATE = 'CREATE_CLOCK_SERVER';
 
-const UPDATE_CLOCK_SERVER = 'UPDATE_CLOCK_SERVER';
-const EDIT_CLOCK_SERVER = 'EDIT_CLOCK_SERVER';
+const UPDATE = 'UPDATE_CLOCK_SERVER';
+const EDIT = 'EDIT_CLOCK_SERVER';
 
 // Reducer
 const defaultState = {
@@ -20,7 +24,7 @@ const defaultState = {
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
-    case UPDATE_CLOCK_SERVER:
+    case UPDATE:
       return { ...state, ...action.payload };
     default:
       return state;
@@ -29,23 +33,23 @@ export default function reducer(state = defaultState, action = {}) {
 
 // Action Creators
 export const refreshClockServerAction = environment => {
-  return { type: REFRESH_CLOCK_SERVER, environment };
+  return { type: REFRESH, environment };
 };
 
 export const stopRefreshClockServerAction = () => {
-  return { type: STOP_REFRESH_CLOCK_SERVER };
+  return { type: STOP_REFRESH };
 };
 
 export const updateClockServerAction = payload => {
-  return { type: UPDATE_CLOCK_SERVER, payload };
+  return { type: UPDATE, payload };
 };
 
 export const editClockServerAction = payload => {
-  return { type: EDIT_CLOCK_SERVER, payload };
+  return { type: EDIT, payload };
 };
 
 export const createClockServerAction = payload => {
-  return { type: CREATE_CLOCK_SERVER, payload };
+  return { type: CREATE, payload };
 };
 
 // Sagas
@@ -71,7 +75,7 @@ export function* fetchClockServer(namespaces) {
 export function* createClockServer({ payload }) {
   const { name, environment, timezone, version } = payload;
   const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
+    apiVersion: `${SOLUTION_API_GROUP}/v1alpha1`,
     kind: 'ClockServer',
     metadata: {
       name
@@ -85,10 +89,10 @@ export function* createClockServer({ payload }) {
   const result = yield call(
     ApiK8s.createClockServer,
     body,
-    `${environment}-example-solution`
+    `${environment}-${SOLUTION_NAME}`
   );
   if (!result.error) {
-    yield call(fetchClockServer, `${environment}-example-solution`);
+    yield call(fetchClockServer, `${environment}-${SOLUTION_NAME}`);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -96,7 +100,7 @@ export function* createClockServer({ payload }) {
 export function* editClockServer({ payload }) {
   const { name, environment, timezone, version } = payload;
   const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
+    apiVersion: `${SOLUTION_API_GROUP}/v1alpha1`,
     kind: 'ClockServer',
     metadata: {
       name
@@ -110,12 +114,12 @@ export function* editClockServer({ payload }) {
   const result = yield call(
     ApiK8s.updateClockServer,
     body,
-    `${environment}-example-solution`,
+    `${environment}-${SOLUTION_NAME}`,
     name
   );
 
   if (!result.error) {
-    yield call(fetchClockServer, `${environment}-example-solution`);
+    yield call(fetchClockServer, `${environment}-${SOLUTION_NAME}`);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -126,7 +130,10 @@ export function* refreshClockServer({ environment }) {
       isRefreshing: true
     })
   );
-  const results = yield call(fetchClockServer, `${environment}-example-solution`);
+  const results = yield call(
+    fetchClockServer,
+    `${environment}-${SOLUTION_NAME}`
+  );
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(
@@ -147,8 +154,8 @@ export function* stopRefreshClockServer() {
 }
 
 export function* clockServerSaga() {
-  yield takeEvery(REFRESH_CLOCK_SERVER, refreshClockServer);
-  yield takeEvery(STOP_REFRESH_CLOCK_SERVER, stopRefreshClockServer);
-  yield takeEvery(CREATE_CLOCK_SERVER, createClockServer);
-  yield takeEvery(EDIT_CLOCK_SERVER, editClockServer);
+  yield takeEvery(REFRESH, refreshClockServer);
+  yield takeEvery(STOP_REFRESH, stopRefreshClockServer);
+  yield takeEvery(CREATE, createClockServer);
+  yield takeEvery(EDIT, editClockServer);
 }

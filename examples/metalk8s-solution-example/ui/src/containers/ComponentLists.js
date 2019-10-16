@@ -43,7 +43,7 @@ const ListContainer = styled.div`
   padding: ${padding.base};
 `;
 
-const Component = props => {
+const ComponentLists = props => {
   const { intl, history, versionServers, clockServers, match } = props;
   const environment = match.params.name;
 
@@ -133,7 +133,7 @@ const Component = props => {
           <Button
             text={intl.messages.create_version_server}
             onClick={() =>
-              history.push(`/environments/${environment}/versionServer/create`)
+              history.push(`/environments/${environment}/version-server/create`)
             }
             icon={<i className="fas fa-plus" />}
           />
@@ -150,7 +150,7 @@ const Component = props => {
             onSort={onSortVS}
             onRowClick={row => {
               history.push(
-                `/environments/${environment}/versionServer/${row.rowData.name}/edit`
+                `/environments/${environment}/version-server/${row.rowData.name}/edit`
               );
             }}
             noRowsRenderer={() => (
@@ -163,7 +163,9 @@ const Component = props => {
         <ActionContainer>
           <Button
             text={intl.messages.create_clock_server}
-            onClick={() => history.push(`/environments/${environment}/clockServer/create`)}
+            onClick={() =>
+              history.push(`/environments/${environment}/clock-server/create`)
+            }
             icon={<i className="fas fa-plus" />}
           />
         </ActionContainer>
@@ -179,7 +181,7 @@ const Component = props => {
             onSort={onSortCS}
             onRowClick={row => {
               history.push(
-                `/environments/${environment}/clockServer/${row.rowData.name}/edit`
+                `/environments/${environment}/clock-server/${row.rowData.name}/edit`
               );
             }}
             noRowsRenderer={() => (
@@ -200,8 +202,10 @@ function mapStateToProps(state) {
 }
 const mapDispatchToProps = dispatch => {
   return {
-    refreshClockServer: environment => dispatch(refreshClockServerAction(environment)),
-    refreshVersionServer: environment => dispatch(refreshVersionServerAction(environment)),
+    refreshClockServer: environment =>
+      dispatch(refreshClockServerAction(environment)),
+    refreshVersionServer: environment =>
+      dispatch(refreshVersionServerAction(environment)),
     stopRefreshClockServer: () => dispatch(stopRefreshClockServerAction()),
     stopRefreshVersionServer: () => dispatch(stopRefreshVersionServerAction())
   };
@@ -212,6 +216,6 @@ export default injectIntl(
     connect(
       mapStateToProps,
       mapDispatchToProps
-    )(Component)
+    )(ComponentLists)
   )
 );

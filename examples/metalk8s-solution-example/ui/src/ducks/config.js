@@ -89,7 +89,7 @@ export function* fetchConfig() {
 export function* fetchVersions() {
   const result = yield call(ApiK8s.getSolutionsConfigMap);
   if (!result.error) {
-    const solutionsConfigMap = result.body.items[0];
+    const solutionsConfigMap = result.body;
     if (solutionsConfigMap && solutionsConfigMap.data) {
       const solution = solutionsConfigMap.data[SOLUTION_NAME];
       if (solution) {

@@ -72,7 +72,7 @@ const VersionServerCreationForm = props => {
     : '';
   const initialValues = {
     version: '',
-    replicas: '',
+    replicas: 1,
     name: '',
     environment
   };

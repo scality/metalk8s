@@ -1,15 +1,19 @@
 import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
-import { REFRESH_TIMEOUT } from '../../constants';
+import {
+  REFRESH_TIMEOUT,
+  SOLUTION_NAME,
+  SOLUTION_API_GROUP
+} from '../../constants';
 
 // Actions
-const REFRESH_VERSION_SERVER = 'REFRESH_VERSION_SERVER';
-const STOP_REFRESH_VERSION_SERVER = 'STOP_REFRESH_VERSION_SERVER';
-const CREATE_VERSION_SERVER = 'CREATE_VERSION_SERVER';
+const REFRESH = 'REFRESH_VERSION_SERVER';
+const STOP_REFRESH = 'STOP_REFRESH_VERSION_SERVER';
+const CREATE = 'CREATE_VERSION_SERVER';
 
-const UPDATE_VERSION_SERVER = 'UPDATE_VERSION_SERVER';
-const EDIT_VERSION_SERVER = 'EDIT_VERSION_SERVER';
+const UPDATE = 'UPDATE_VERSION_SERVER';
+const EDIT = 'EDIT_VERSION_SERVER';
 
 // Reducer
 const defaultState = {
@@ -19,7 +23,7 @@ const defaultState = {
 
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
-    case UPDATE_VERSION_SERVER:
+    case UPDATE:
       return { ...state, ...action.payload };
     default:
       return state;
@@ -28,23 +32,23 @@ export default function reducer(state = defaultState, action = {}) {
 
 // Action Creators
 export const refreshVersionServerAction = environment => {
-  return { type: REFRESH_VERSION_SERVER, environment };
+  return { type: REFRESH, environment };
 };
 
 export const stopRefreshVersionServerAction = () => {
-  return { type: STOP_REFRESH_VERSION_SERVER };
+  return { type: STOP_REFRESH };
 };
 
 export const updateVersionServerAction = payload => {
-  return { type: UPDATE_VERSION_SERVER, payload };
+  return { type: UPDATE, payload };
 };
 
 export const editVersionServerAction = payload => {
-  return { type: EDIT_VERSION_SERVER, payload };
+  return { type: EDIT, payload };
 };
 
 export const createVersionServerAction = payload => {
-  return { type: CREATE_VERSION_SERVER, payload };
+  return { type: CREATE, payload };
 };
 
 // Sagas
@@ -70,7 +74,7 @@ export function* fetchVersionServer(namespaces) {
 export function* createVersionServer({ payload }) {
   const { name, environment, replicas, version } = payload;
   const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
+    apiVersion: `${SOLUTION_API_GROUP}/v1alpha1`,
     kind: 'VersionServer',
     metadata: {
       name: name
@@ -84,10 +88,10 @@ export function* createVersionServer({ payload }) {
   const result = yield call(
     ApiK8s.createVersionServer,
     body,
-    `${environment}-example-solution`
+    `${environment}-${SOLUTION_NAME}`
   );
   if (!result.error) {
-    yield call(fetchVersionServer, `${environment}-example-solution`);
+    yield call(fetchVersionServer, `${environment}-${SOLUTION_NAME}`);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -95,7 +99,7 @@ export function* createVersionServer({ payload }) {
 export function* editVersionServer({ payload }) {
   const { name, environment, replicas, version } = payload;
   const body = {
-    apiVersion: 'example-solution.metalk8s.scality.com/v1alpha1',
+    apiVersion: `${SOLUTION_API_GROUP}/v1alpha1`,
     kind: 'VersionServer',
     metadata: {
       name: name
@@ -108,12 +112,12 @@ export function* editVersionServer({ payload }) {
   const result = yield call(
     ApiK8s.updateVersionServer,
     body,
-    `${environment}-example-solution`,
+    `${environment}-${SOLUTION_NAME}`,
     name
   );
 
   if (!result.error) {
-    yield call(fetchVersionServer, `${environment}-example-solution`);
+    yield call(fetchVersionServer, `${environment}-${SOLUTION_NAME}`);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -124,7 +128,10 @@ export function* refreshVersionServer({ environment }) {
       isRefreshing: true
     })
   );
-  const results = yield call(fetchVersionServer, `${environment}-example-solution`);
+  const results = yield call(
+    fetchVersionServer,
+    `${environment}-${SOLUTION_NAME}`
+  );
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(
@@ -145,8 +152,8 @@ export function* stopRefreshVersionServer() {
 }
 
 export function* versionServerSaga() {
-  yield takeEvery(REFRESH_VERSION_SERVER, refreshVersionServer);
-  yield takeEvery(STOP_REFRESH_VERSION_SERVER, stopRefreshVersionServer);
-  yield takeEvery(CREATE_VERSION_SERVER, createVersionServer);
-  yield takeEvery(EDIT_VERSION_SERVER, editVersionServer);
+  yield takeEvery(REFRESH, refreshVersionServer);
+  yield takeEvery(STOP_REFRESH, stopRefreshVersionServer);
+  yield takeEvery(CREATE, createVersionServer);
+  yield takeEvery(EDIT, editVersionServer);
 }
