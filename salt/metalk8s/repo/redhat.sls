@@ -7,7 +7,6 @@
 Install yum-plugin-versionlock:
   pkg.installed:
     - name: yum-plugin-versionlock
-    - fromrepo: {{ repo.repositories.keys() | join(',') }}
     - require:
       - test: Repositories configured
 
@@ -47,12 +46,9 @@ Configure {{ repo_name }} repository:
 Refresh yum cache:
   # Refresh_db not enough as it's only expire-cache
   cmd.run:
-  - name: "yum clean all --disablerepo='*'
-           --enablerepo='{{ repo.repositories.keys() | join(',') }}'"
+    - name: yum clean all
   module.run:
-    - pkg.refresh_db:
-      - disablerepo: '*'
-      - enablerepo: {{ repo.repositories.keys() | tojson }}
+    - pkg.refresh_db: []
     - onchanges:
       - cmd: Refresh yum cache
 

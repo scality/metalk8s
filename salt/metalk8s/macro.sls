@@ -7,9 +7,6 @@
   {%- if package %}
   metalk8s_package_manager.installed:
     - name: {{ package_name }}
-    {%- if grains['os_family'].lower() == 'redhat' %}
-    - fromrepo: {{ repo.repositories.keys() | join(',') }}
-    {%- endif %}
     - pkgs_info: {{ repo.packages }}
     {%- if package.version | default(None) %}
     - version: {{ package.version }}

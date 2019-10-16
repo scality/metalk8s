@@ -79,10 +79,7 @@ declare -a PACKAGES=(
 )
 
 declare -A GPGCHECK_YUM_REPOSITORIES=(
-    [metalk8s-base]=1
     [metalk8s-epel]=1
-    [metalk8s-extras]=1
-    [metalk8s-updates]=1
     [metalk8s-kubernetes]=1
     [metalk8s-saltstack]=1
     [metalk8s-scality]=0
@@ -247,7 +244,7 @@ configure_yum_local_repository() {
 [$repo_name]
 name=$repo_name
 baseurl=file://$repo_path
-enabled=0
+enabled=1
 gpgcheck=$gpgcheck
 ${gpg_keys:+gpgkey=${gpg_keys%?}}
 EOF
@@ -268,8 +265,6 @@ install_packages() {
         centos)
             local -a yum_opts=(
                 '--assumeyes'
-                '--disablerepo=*'
-                '--enablerepo=metalk8s-*'
             )
             "$YUM" install "${yum_opts[@]}" "${packages[@]}"
             ;;
