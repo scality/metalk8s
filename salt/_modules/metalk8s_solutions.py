@@ -110,8 +110,8 @@ def list_available():
         version = solution_info['version']
 
         result[machine_name].append({
-            'display_name': name,
-            'machine_id': '{}-{}'.format(machine_name, version),
+            'name': name,
+            'id': '{}-{}'.format(machine_name, version),
             'mountpoint': mountpoint,
             'archive': mount_info['alt_device'],
             'version': version,
