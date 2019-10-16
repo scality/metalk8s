@@ -13,3 +13,40 @@ export const OPERATOR_NAME = 'example-solution-operator';
 export const SOLUTION_CONFIGMAP_NAME = 'metalk8s-solutions';
 
 export const OPERATOR_NAMESPACE = 'hyperdrive';
+
+export const protectionOptions = [
+  {
+    label: 'Standard Durability Replication COS 2',
+    value: 'replication-2',
+    payload: {
+      type: 'replication',
+      copie: 2,
+    },
+  },
+  {
+    label: 'Standard Durability Replication COS 3',
+    value: 'replication-3',
+    payload: {
+      type: 'replication',
+      copie: 3,
+    },
+  },
+  {
+    label: 'Erasure Coding 2+1',
+    value: 'ec-2+1',
+    payload: {
+      type: 'isa-l',
+      k: 2,
+      n: 1,
+    },
+  },
+  {
+    label: 'Erasure Coding 4+2',
+    value: 'ec-4+2',
+    payload: {
+      type: 'isa-l',
+      k: 4,
+      n: 2,
+    },
+  },
+];

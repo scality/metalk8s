@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { connect, useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import { connect, useSelector } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
 
 import { sortSelector, useRefreshEffect } from '../services/utils';
 import {
@@ -21,10 +20,8 @@ import {
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
   InformationListContainer,
-  InformationSpan,
   InformationLabel,
   InformationValue,
-  InformationMainValue,
 } from '../components/InformationList';
 
 const ComponentContainer = styled.div`
@@ -57,7 +54,27 @@ const HyperdriveControllerInformations = styled(InformationListContainer)`
   margin: 0;
 `;
 
-const HDInformationSpan = styled.span``;
+const HDInformationSpan = styled.span`
+  margin: 5px 0;
+  display: flex;
+`;
+
+const SpanList = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const SpanListItem = styled(InformationValue)`
+  margin-bottom: 5px;
+`;
+
+const NoHyperdriveControllerContainer = styled.div`
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
 
 const ComponentList = props => {
   const { intl, match } = props;
@@ -123,10 +140,6 @@ const ComponentList = props => {
     HDSortDirection,
   );
 
-  if (hdcontrollers.length > 0) {
-    console.log('hyperdrivesController', hdcontrollers[0]);
-  }
-
   return (
     <ComponentContainer>
       <ListContainer>
@@ -159,38 +172,70 @@ const ComponentList = props => {
       <ListContainer>
         <ActionContainer>
           <h3>Hyperdrive Controller</h3>
-          <Button
-            text={intl.messages.create_hyperdrive_controller}
-            onClick={() =>
-              history.push(
-                `/environments/${environment}/hyperdrive-controller/create`,
-              )
-            }
-            icon={<i className="fas fa-plus" />}
-          />
+          {hdcontrollers?.length > 0 ? (
+            <Button
+              text={'Edit Hyperdrive Controller'}
+              onClick={() => {
+                // TODO
+              }}
+              icon={<i className="fas fa-edit" />}
+              disabled
+            />
+          ) : null}
         </ActionContainer>
-        <TableContainer>
+        {hdcontrollers.length > 0 ? (
           <HyperdriveControllerInformations>
             <HDInformationSpan>
               <InformationLabel>{intl.messages.name}</InformationLabel>
-              <InformationMainValue>{environment.name}</InformationMainValue>
-            </HDInformationSpan>
-            <HDInformationSpan>
-              <InformationLabel>{intl.messages.status}</InformationLabel>
               <InformationValue>
-                {intl.messages[environment.status] || environment.status}
+                {hdcontrollers?.[0]?.metadata?.name}
               </InformationValue>
             </HDInformationSpan>
+            {/* FIXME
+              It's a bit complicated to get the protection,
+              we might might want to improve that in the payload before display
+              the information on the UI.
+             */}
+
+            {/* 
             <HDInformationSpan>
-              <InformationLabel>{intl.messages.version}</InformationLabel>
-              <InformationValue>toto</InformationValue>
+              <InformationLabel>Protection Type</InformationLabel>
+              <SpanList>
+                <SpanListItem>
+                  Standard Durability Replication COS 2
+                </SpanListItem>
+                <SpanListItem>Erasure Coding 2+1</SpanListItem>
+              </SpanList>
             </HDInformationSpan>
+            */}
             <HDInformationSpan>
-              <InformationLabel>{intl.messages.description}</InformationLabel>
-              <InformationValue>{environment.description}</InformationValue>
+              <InformationLabel>Hyperdrives</InformationLabel>
+              <SpanList>
+                {hdcontrollers[0]?.spec?.endpoints?.map((hd, idx) => (
+                  <SpanListItem key={`${idx}_${hd?.serviceName}`}>
+                    {hd?.serviceName}
+                  </SpanListItem>
+                ))}
+              </SpanList>
             </HDInformationSpan>
           </HyperdriveControllerInformations>
-        </TableContainer>
+        ) : (
+          <NoHyperdriveControllerContainer>
+            <HDInformationSpan>
+              Please create a Hyperdrive Controller
+              {/* FIXME Improve this text */}
+            </HDInformationSpan>
+            <Button
+              text={intl.messages.create_hyperdrive_controller}
+              onClick={() =>
+                history.push(
+                  `/environments/${environment}/hyperdrive-controller/create`,
+                )
+              }
+              icon={<i className="fas fa-plus" />}
+            />
+          </NoHyperdriveControllerContainer>
+        )}
       </ListContainer>
     </ComponentContainer>
   );

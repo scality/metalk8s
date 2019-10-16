@@ -163,7 +163,6 @@ const HyperdriveCreation = props => {
                 values,
                 touched,
                 errors,
-                dirty,
                 setFieldTouched,
                 setFieldValue,
               } = formProps;

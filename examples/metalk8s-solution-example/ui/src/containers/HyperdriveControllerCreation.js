@@ -16,6 +16,7 @@ import {
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 
 import { useRefreshEffect } from '../services/utils';
+import { protectionOptions } from '../constants';
 import {
   refreshHyperdriveAction,
   stopRefreshHyperdriveAction,
@@ -83,43 +84,6 @@ const InputLabel = styled.label`
   padding: ${padding.small};
   font-size: ${fontSize.base};
 `;
-
-const protectionOptions = [
-  {
-    label: 'Standard Durability Replication COS 2',
-    value: 'replication-2',
-    payload: {
-      type: 'replication',
-      copie: 2,
-    },
-  },
-  {
-    label: 'Standard Durability Replication COS 3',
-    value: 'replication-3',
-    payload: {
-      type: 'replication',
-      copie: 3,
-    },
-  },
-  {
-    label: 'Erasure Coding 2+1',
-    value: 'ec-2+1',
-    payload: {
-      type: 'isa-l',
-      k: 2,
-      n: 1,
-    },
-  },
-  {
-    label: 'Erasure Coding 4+2',
-    value: 'ec-4+2',
-    payload: {
-      type: 'isa-l',
-      k: 4,
-      n: 2,
-    },
-  },
-];
 
 const HyperdriveCreation = props => {
   const intl = useIntl();
@@ -199,7 +163,6 @@ const HyperdriveCreation = props => {
                 values,
                 touched,
                 errors,
-                dirty,
                 setFieldTouched,
                 setFieldValue,
               } = formProps;
