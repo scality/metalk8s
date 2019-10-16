@@ -5,7 +5,7 @@ import history from '../../history';
 import {
   REFRESH_TIMEOUT,
   SOLUTION_NAME,
-  SOLUTION_GROUP
+  SOLUTION_API_GROUP
 } from '../../constants';
 
 // Actions
@@ -75,7 +75,7 @@ export function* fetchClockServer(namespaces) {
 export function* createClockServer({ payload }) {
   const { name, environment, timezone, version } = payload;
   const body = {
-    apiVersion: `${SOLUTION_GROUP}/v1alpha1`,
+    apiVersion: `${SOLUTION_API_GROUP}/v1alpha1`,
     kind: 'ClockServer',
     metadata: {
       name
@@ -100,7 +100,7 @@ export function* createClockServer({ payload }) {
 export function* editClockServer({ payload }) {
   const { name, environment, timezone, version } = payload;
   const body = {
-    apiVersion: `${SOLUTION_GROUP}/v1alpha1`,
+    apiVersion: `${SOLUTION_API_GROUP}/v1alpha1`,
     kind: 'ClockServer',
     metadata: {
       name
