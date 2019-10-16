@@ -76,10 +76,10 @@ def task_packaging() -> types.TaskDict:
             '_package_mkdir_iso_root',
             '_download_rpm_packages',
             '_build_rpm_packages:*',
-            '_build_rpm_repositories:*',
+            '_build_rpm_repositories',
             '_build_deb_packages:*',
             '_download_deb_packages',
-            '_build_deb_repositories:*',
+            '_build_deb_repositories',
         ],
     }
 
