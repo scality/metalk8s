@@ -103,7 +103,7 @@ class FileTree(base.CompositeTarget):
                 continue
             task = target.task
             task['basename'] = self.basename
-            task['name'] = '{}_{}'.format(self._root, task['name'])
+            task['name'] = '{}/{}'.format(self._root, task['name'])
             task['task_dep'].extend(self._get_task_dep_for_copy())
             tasks.append(task)
         return tasks
@@ -116,7 +116,7 @@ class FileTree(base.CompositeTarget):
 
         task = self.basic_task
         task.update({
-            'name': '{}_{}'.format(self._root, MAKE_TASK_NAME),
+            'name': '{}/{}'.format(self._root, MAKE_TASK_NAME),
             'doc': 'Create directory hierarchy for {}.'.format(self._root),
             'title': utils.title_with_target1('MKTREE'),
             'actions': [mkdirs],
@@ -134,7 +134,7 @@ class FileTree(base.CompositeTarget):
 
         task = self.basic_task
         task.update({
-            'name': '{}_copy_tree'.format(self._root),
+            'name': '{}/copy_tree'.format(self._root),
             'doc': 'Copy files tree to {}.'.format(self._root),
             'title': show
         })
@@ -167,7 +167,7 @@ class FileTree(base.CompositeTarget):
         # If we have no directory hierarchy to create, then no task dependency!
         if not self.directories:
             return []
-        return ['{base}:{name}_{task}'.format(
+        return ['{base}:{name}/{task}'.format(
             base=self.basename, name=self._root, task=MAKE_TASK_NAME
         )]
 

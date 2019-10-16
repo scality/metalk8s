@@ -78,7 +78,7 @@ class Package(base.CompositeTarget):
         Use the given basename if any.
         """
         prefix = '{}:'.format(self.basename) if with_basename else ''
-        return '{base}{name}_{task}'.format(
+        return '{base}{name}/{task}'.format(
             base=prefix, name=self.name, task=taskname
         )
 

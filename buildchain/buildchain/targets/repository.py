@@ -116,7 +116,7 @@ class Repository(base.CompositeTarget):
         Use the given basename if any.
         """
         prefix = '{}:'.format(self.basename) if with_basename else ''
-        return '{base}{name}_{task}'.format(
+        return '{base}{name}/{task}'.format(
             base=prefix, name=self.name, task=taskname
         )
 
@@ -223,7 +223,7 @@ class RPMRepository(Repository):
 
             task = self.basic_task
             task.update({
-                'name': self._get_task_name('build_rpm_{}'.format(pkg.name)),
+                'name': self._get_task_name('build_rpm/{}'.format(pkg.name)),
                 'actions': [buildrpm_callable],
                 'doc': 'Build {pkg} RPM for the {repo} repository.'.format(
                     pkg=pkg.name, repo=self.name
