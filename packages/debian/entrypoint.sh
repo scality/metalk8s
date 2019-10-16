@@ -45,9 +45,7 @@ buildrepo() {
     cp /distributions /repository/conf
     sed -i 's/_REPONAME_/'"${reponame}"'/g' /repository/conf/distributions
     reprepro -b /repository/ export
-    if ls /packages/*.deb ; then
-        reprepro -C "$reponame" -b /repository/ includedeb bionic /packages/*.deb
-    fi
+    reprepro -C "$reponame" -b /repository/ includedeb bionic /packages/*.deb
     chown -R "${TARGET_UID}:${TARGET_GID}" /repository
 }
 
