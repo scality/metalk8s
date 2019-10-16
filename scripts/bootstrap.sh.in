@@ -160,7 +160,7 @@ die() {
 
 check_package_managers() {
     case $OS in
-        centos)
+        centos|rhel)
             test -n "$RPM" || die "rpm not found"
             test -x "$RPM" || die "rpm at '$RPM' is not executable"
             test -n "$YUM" || die "yum not found"
@@ -194,7 +194,7 @@ stop_salt_minion_service() {
 
 configure_repositories() {
     case "$OS" in
-        centos)
+        centos|rhel)
             configure_yum_repositories
             ;;
         ubuntu)
@@ -262,7 +262,7 @@ install_packages() {
     local -a repo_list=(/etc/apt/sources.list)
 
     case "$OS" in
-        centos)
+        centos|rhel)
             local -a yum_opts=(
                 '--assumeyes'
             )
