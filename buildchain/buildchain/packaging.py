@@ -31,7 +31,7 @@ from typing import (
     Dict, FrozenSet, Iterator, List, Mapping, Optional, Sequence, Tuple
 )
 
-from doit.tools import config_changed  # type: ignore
+import doit  # type: ignore
 
 from buildchain import builder
 from buildchain import config
@@ -159,7 +159,7 @@ def task__download_rpm_packages() -> types.TaskDict:
             '_build_builder:{}'.format(builder.RPM_BUILDER.name),
         ],
         'clean': [clean],
-        'uptodate': [config_changed(_TO_DOWNLOAD_RPM_CONFIG)],
+        'uptodate': [doit.tools.config_changed(_TO_DOWNLOAD_RPM_CONFIG)],
         # Prevent Docker from polluting our output.
         'verbosity': 0,
     }
@@ -215,7 +215,7 @@ def task__download_deb_packages() -> types.TaskDict:
             '_build_builder:{}'.format(builder.DEB_BUILDER.name),
         ],
         'clean': [clean],
-        'uptodate': [config_changed(_TO_DOWNLOAD_DEB_CONFIG)],
+        'uptodate': [doit.tools.config_changed(_TO_DOWNLOAD_DEB_CONFIG)],
         # Prevent Docker from polluting our output.
         'verbosity': 0,
     }
@@ -241,10 +241,12 @@ def task__build_rpm_repositories() -> Iterator[types.TaskDict]:
         yield from repository.execution_plan
 
 
+@doit.create_after(executed='_download_deb_packages')  # type: ignore
 def task__build_deb_repositories() -> Iterator[types.TaskDict]:
     """Build a DEB repository."""
     for repository in DEB_REPOSITORIES:
-        yield from repository.execution_plan
+        if next(repository.pkgdir.glob('*.deb'), False):
+            yield from repository.execution_plan
 
 # }}}
 # RPM packages and repository {{{
