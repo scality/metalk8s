@@ -47,7 +47,7 @@ from . import image
 class Package(base.CompositeTarget):
     """Base class to build a software package."""
 
-    MKDIR_TASK_NAME = 'pkg_mkdir'
+    MKDIR_TASK_NAME = 'mkdir'
 
     def __init__(
         self,
@@ -64,15 +64,23 @@ class Package(base.CompositeTarget):
         self._build_id = build_id
         self._builder = builder
         self._pkg_root = pkg_root
-        super().__init__(
-            basename='{base}:{name}'.format(base=basename, name=self.name),
-            **kwargs
-        )
+        super().__init__(basename=basename, **kwargs)
 
     name     = property(operator.attrgetter('_name'))
     version  = property(operator.attrgetter('_version'))
     build_id = property(operator.attrgetter('_build_id'))
     builder  = property(operator.attrgetter('_builder'))
+
+    def _get_task_name(self, taskname: str, with_basename: bool=False) -> str:
+        """Return a fully qualified task name.
+
+        The task name is prefixed by the package name.
+        Use the given basename if any.
+        """
+        prefix = '{}:'.format(self.basename) if with_basename else ''
+        return '{base}{name}_{task}'.format(
+            base=prefix, name=self.name, task=taskname
+        )
 
 
 class RPMPackage(Package):
@@ -154,7 +162,7 @@ class RPMPackage(Package):
         task = self.basic_task
         mkdir = directory.Mkdir(directory=self.rootdir).task
         task.update({
-            'name': self.MKDIR_TASK_NAME,
+            'name': self._get_task_name(self.MKDIR_TASK_NAME),
             'doc': 'Create directory for {}.'.format(self.name),
             'title': mkdir['title'],
             'actions': mkdir['actions'],
@@ -191,15 +199,15 @@ class RPMPackage(Package):
         )
         task = self.basic_task
         task.update({
-            'name': 'pkg_rpmspec',
+            'name': self._get_task_name('rpmspec'),
             'actions': [buildmeta_callable],
             'doc': 'Generate {}.meta'.format(self.name),
             'title': utils.title_with_target1('RPMSPEC'),
             'targets': [self.meta],
         })
         task['file_dep'].extend([self.spec])
-        task['task_dep'].append('{}:{}'.format(self.basename,
-                                               self.MKDIR_TASK_NAME))
+        task['task_dep'].append(self._get_task_name(self.MKDIR_TASK_NAME,
+                                                    with_basename=True))
         return task
 
     def get_source_files(self) -> types.TaskDict:
@@ -210,15 +218,15 @@ class RPMPackage(Package):
         actions.append(self._get_sources)
         task = self.basic_task
         task.update({
-            'name': 'pkg_get_source',
+            'name': self._get_task_name('get_source'),
             'actions': actions,
             'doc': 'Download source files for {}.'.format(self.name),
             'title': utils.title_with_target1('GET_SRC'),
             'targets': targets,
         })
         task['file_dep'].append(self.meta)
-        task['task_dep'].append('{}:{}'.format(self.basename,
-                                               self.MKDIR_TASK_NAME))
+        task['task_dep'].append(self._get_task_name(self.MKDIR_TASK_NAME,
+                                                    with_basename=True))
         return task
 
     def build_srpm(self) -> types.TaskDict:
@@ -243,7 +251,7 @@ class RPMPackage(Package):
 
         task = self.basic_task
         task.update({
-            'name': 'pkg_srpm',
+            'name': self._get_task_name('srpm'),
             'actions': [buildsrpm_callable],
             'doc': 'Build {}'.format(self.srpm.name),
             'title': utils.title_with_target1('BUILD SRPM'),
@@ -253,8 +261,8 @@ class RPMPackage(Package):
         })
         task['file_dep'].extend([self.spec])
         task['file_dep'].extend(self.sources)
-        task['task_dep'].append('{}:{}'.format(self.basename,
-                                               self.MKDIR_TASK_NAME))
+        task['task_dep'].append(self._get_task_name(self.MKDIR_TASK_NAME,
+                                                    with_basename=True))
         return task
 
     def _get_sources(self) -> None:
@@ -391,7 +399,7 @@ class DEBPackage(Package):
         )
         task = self.basic_task
         task.update({
-            'name': 'build_deb_pkg',
+            'name': self._get_task_name('build_deb'),
             'actions': [builddeb_callable],
             'doc': 'Build DEB package from sources for {}'.format(self.name),
             'title': utils.title_with_target1('BUILD DEB'),
@@ -419,7 +427,7 @@ class DEBPackage(Package):
         )
         task = self.basic_task
         task.update({
-            'name': 'convert_rpm_pkg_to_deb',
+            'name': self._get_task_name('rpm_to_deb'),
             'actions': [builddeb_callable],
             'doc': 'Build DEB package from RPM for {}'.format(self.name),
             'title': utils.title_with_target1('RPM2DEB'),
