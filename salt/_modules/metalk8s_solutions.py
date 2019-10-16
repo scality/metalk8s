@@ -104,17 +104,17 @@ def list_available():
     solution_mounts = filter(_is_solution_mount, active_mounts.items())
 
     for mountpoint, mount_info in solution_mounts:
-        solution_info = __salt__['metalk8s.archive_info_from_iso'](
-            mount_info['alt_device']
-        )
-        machine_name = solution_info['name'].replace(' ', '-').lower()
+        archive = mount_info['alt_device']
+        solution_info = __salt__['metalk8s.archive_info_from_iso'](archive)
+        name = solution_info['name']
+        machine_name = name.replace(' ', '-').lower()
         version = solution_info['version']
 
         result[machine_name].append({
-            'display_name': solution_info['name'],
-            'machine_id': '{}-{}'.format(machine_name, version),
+            'name': name,
+            'id': '{}-{}'.format(machine_name, version),
             'mountpoint': mountpoint,
-            'archive': mount_info['alt_device'],
+            'archive': archive,
             'version': version,
         })
 
