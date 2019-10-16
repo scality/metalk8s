@@ -34,9 +34,9 @@ Install repositories manifest:
       - {{ salt.file.join(repo.config.directory, repo.config.common_registry) }}
       - {{ salt.file.join(repo.config.directory, '99-' ~ saltenv ~ '-registry.inc') }}
     {%- for name, versions in solutions.items() | sort(attribute='0') %}
-      {%- for version_info in versions | sort(attribute='version') %}
+      {%- for info in versions | sort(attribute='version') %}
       - {{ salt.file.join(repo.config.directory,
-                          name ~ '-' ~ version_info.version ~ '-registry-config.inc') }}
+                          info.id ~ '-registry-config.inc') }}
       {%- endfor %}
     {%- endfor %}
     - config_files_opt:

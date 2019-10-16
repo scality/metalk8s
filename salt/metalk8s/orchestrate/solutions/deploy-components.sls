@@ -25,7 +25,7 @@ include:
   {# Admin UI management #}
   {%- for ui_file in ui_files %}
     {%- set filepath = salt.file.join(solution.mountpoint, ui_relpath, ui_file) %}
-    {%- set repository = repo.registry_endpoint ~ "/" ~ solution.machine_id %}
+    {%- set repository = repo.registry_endpoint ~ "/" ~ solution.id %}
     {%- set sls_content = salt.saltutil.cmd(
             tgt=pillar.bootstrap_id,
             fun='slsutil.renderer',
@@ -36,7 +36,7 @@ include:
             },
           )[pillar.bootstrap_id]['ret']
     %}
-{{ action }} Admin UI "{{ ui_file }}" for Solution {{ solution.display_name }}:
+{{ action }} Admin UI "{{ ui_file }}" for Solution {{ solution.name }}:
   module.run:
     - state.template_str:
       - tem: "{{ sls_content | yaml }}"
@@ -65,7 +65,7 @@ include:
                 'default_renderer': renderer,
             },
           )[pillar.bootstrap_id]['ret'] %}
-{{ action }} CRD "{{ crd_file }}" for Solution {{ solution.display_name }}:
+{{ action }} CRD "{{ crd_file }}" for Solution {{ solution.name }}:
   module.run:
     - state.template_str:
       - tem: "{{ sls_content | yaml }}"

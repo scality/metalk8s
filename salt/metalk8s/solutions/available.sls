@@ -23,10 +23,10 @@ Cannot proceed with mounting of Solution archives:
   {%- set configured = pillar.metalk8s.solutions.config.archives %}
   {%- for archive_path in configured %}
     {%- set solution = salt['metalk8s.archive_info_from_iso'](archive_path) %}
-    {%- set lower_name = solution.name | replace(' ', '-') | lower %}
-    {%- set machine_name = lower_name ~ '-' ~ solution.version %}
+    {%- set machine_name = solution.name | replace(' ', '-') | lower %}
+    {%- set id = machine_name ~ '-' ~ solution.version %}
     {%- set display_name = solution.name ~ ' ' ~ solution.version %}
-    {%- set mount_path = "/srv/scality/" ~ machine_name -%}
+    {%- set mount_path = "/srv/scality/" ~ id -%}
 
 {# Mount the archive #}
 Mountpoint for Solution {{ display_name }} exists:
@@ -67,10 +67,10 @@ Container images for Solution {{ display_name }} exist:
 Expose container images for Solution {{ display_name }}:
   file.managed:
     - source: {{ mount_path }}/registry-config.inc.j2
-    - name: {{ repo.config.directory }}/{{ machine_name }}-registry-config.inc
+    - name: {{ repo.config.directory }}/{{ id }}-registry-config.inc
     - template: jinja
     - defaults:
-        repository: {{ machine_name }}
+        repository: {{ id }}
         registry_root: {{ mount_path }}/images
     - require:
       - file: Container images for Solution {{ display_name }} exist
@@ -82,10 +82,10 @@ Expose container images for Solution {{ display_name }}:
   {#- Unmount all Solution ISOs mounted in /srv/scality not referenced in
       the configuration file #}
   {%- set available = pillar.metalk8s.solutions.available %}
-  {%- for name, versions in available.items() %}
+  {%- for machine_name, versions in available.items() %}
     {%- for info in versions %}
       {%- if info.archive not in configured %}
-        {%- set display_name = info.display_name ~ ' ' ~ info.version %}
+        {%- set display_name = info.name ~ ' ' ~ info.version %}
         {%- if info.active %}
 Cannot remove archive for active Solution {{ display_name }}:
   test.fail_without_changes:
@@ -94,7 +94,7 @@ Cannot remove archive for active Solution {{ display_name }}:
         {%- else %}
 Remove container images for Solution {{ display_name }}:
   file.absent:
-    - name: {{ repo.config.directory }}/{{ name }}-registry-config.inc
+    - name: {{ repo.config.directory }}/{{ info.id }}-registry-config.inc
     - require_in:
       - sls: metalk8s.repo.installed
 
