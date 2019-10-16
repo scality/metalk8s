@@ -78,6 +78,7 @@ Run the highstate:
   salt.state:
     - tgt: {{ node_name }}
     - highstate: True
+    - saltenv: metalk8s-{{ version }}
     - require:
       - salt: Set grains
       - salt: Refresh the mine
