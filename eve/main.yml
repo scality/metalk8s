@@ -31,7 +31,7 @@ stages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
             - single-node
-            #- single-node-upgrade-test
+            - single-node-upgrade-test
             - multiple-nodes
 
   build:
