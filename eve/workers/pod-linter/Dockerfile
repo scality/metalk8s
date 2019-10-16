@@ -10,6 +10,7 @@ ENV LANG=en_US.utf8
 WORKDIR /home/eve/workspace
 
 RUN dnf install -y git \
+  sudo \
   gcc \
   make \
   enchant \
@@ -26,6 +27,9 @@ RUN dnf install -y git \
   && chown -R eve:eve /home/eve \
   && pip install tox \
   && pip install buildbot-worker==${BUILDBOT_VERSION}
+
+# Add eve to sudoers.
+RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve
 
 # Install Go tooling to lint the Kubernetes Operators.
 ENV GOROOT /usr/local/go

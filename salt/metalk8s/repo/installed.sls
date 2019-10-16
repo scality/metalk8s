@@ -33,6 +33,12 @@ Install repositories manifest:
       - {{ salt.file.join(repo.config.directory, repo.config.registry) }}
       - {{ salt.file.join(repo.config.directory, repo.config.common_registry) }}
       - {{ salt.file.join(repo.config.directory, '99-' ~ saltenv ~ '-registry.inc') }}
+    {%- for name, versions in solutions.items() | sort(attribute='0') %}
+      {%- for version_info in versions | sort(attribute='version') %}
+      - {{ salt.file.join(repo.config.directory,
+                          name ~ '-' ~ version_info.version ~ '-registry-config.inc') }}
+      {%- endfor %}
+    {%- endfor %}
     - config_files_opt:
     {%- for env in archives.keys() %}
       {%- if env != saltenv %}
@@ -55,7 +61,7 @@ Install repositories manifest:
       - file: Deploy container registry nginx configuration
       - file: Generate container registry configuration
 
-Delay after new nginx pod deployment:
+Delay after repositories pod deployment:
   module.wait:
     - test.sleep:
       - length: 10
@@ -72,4 +78,12 @@ Ensure repositories container is up:
       - file: Deploy container registry nginx configuration
       - file: Generate container registry configuration
       - metalk8s: Install repositories manifest
-      - module: Delay after new nginx pod deployment
+    - require:
+      - module: Delay after repositories pod deployment
+
+Wait for Repositories container to answer:
+  http.wait_for_successful_query:
+   - name: http://127.0.0.1:{{ repo.port }}/{{ saltenv }}/
+   - status: 200
+   - require:
+     - module: Ensure repositories container is up

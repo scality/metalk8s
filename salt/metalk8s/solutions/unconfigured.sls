@@ -1,3 +1,5 @@
+{%- from "metalk8s/map.jinja" import repo with context %}
+
 {%- set configured = pillar.metalk8s.solutions.configured or [] %}
 {%- set deployed = pillar.metalk8s.solutions.deployed or {} %}
 {%- if deployed %}
@@ -8,7 +10,7 @@
     {%- if version_info.iso not in configured %}
 Unconfigure nginx for solution {{ full_name }}:
   file.absent:
-    - name: /var/lib/metalk8s/repositories/conf.d/{{ full_name }}-registry-config.inc
+    - name: {{ repo.config.directory }}/{{ full_name }}-registry-config.inc
 
     {%- else %}
 Keeping configuration for solution {{ full_name }}:

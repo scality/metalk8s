@@ -2,6 +2,8 @@ import re
 
 from pytest_bdd import scenario, then
 
+from tests import kube_utils, utils
+
 # Scenarios
 @scenario('../features/log_accessible.feature',
           'check logs from all containers')
@@ -19,10 +21,12 @@ SKIP_CONTAINERS = frozenset((
     'nginx-ingress-default-backend',
 ))
 
+
 @then("all Pod logs should be non-empty")
 def check_logs(k8s_client):
+    pod_status = 'Running'
     all_pods = k8s_client.list_pod_for_all_namespaces()
-    
+
     for pod in all_pods.items:
         pod_name = pod.metadata.name
         namespace = pod.metadata.namespace
@@ -31,6 +35,19 @@ def check_logs(k8s_client):
             if container.name in SKIP_CONTAINERS:
                 continue
 
+            if pod.status.phase != pod_status:
+                # Wait for the Pod to be ready
+                utils.retry(
+                    kube_utils.wait_for_pod(
+                        k8s_client,
+                        name=pod_name,
+                        namespace=namespace,
+                        state=pod_status
+                    ),
+                    times=12,
+                    wait=5,
+                    name="wait for Pod '{}'".format(pod_name),
+                )
             logs = k8s_client.read_namespaced_pod_log(
                 pod_name,
                 namespace,

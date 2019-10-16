@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 def retry(operation, times=1, wait=1, error_msg=None, name="default"):
     for idx in range(times):
         try:
-            operation()
+            res = operation()
         except AssertionError as exc:
             LOGGER.info(
                 "[%s] Attempt %d/%d failed: %s", name, idx, times, str(exc)
@@ -22,7 +22,7 @@ def retry(operation, times=1, wait=1, error_msg=None, name="default"):
             time.sleep(wait)
         else:
             LOGGER.info("[%s] Attempt %d/%d succeeded", name, idx, times)
-            break
+            return res
     else:
         if error_msg is None:
             error_msg = (

@@ -8,7 +8,6 @@ LOGFILE=/var/log/metalk8s/downgrade.log
 DRY_RUN=0
 SALTENV=""
 DESTINATION_VERSION=""
-SALT=""
 SALT_CALL=${SALT_CALL:-salt-call}
 CRICTL=${CRICTL:-crictl}
 
@@ -142,77 +141,98 @@ _set_env() {
     fi
 }
 
-_check_salt_master() {
-  [ -z "$SALTENV" ] && die "Cannot detect current salt env"
-  # check if salt master is up
-  master_ps=$($CRICTL ps -q --label io.kubernetes.container.name=salt-master)
-  [ -z "$master_ps" ] && die "Cannot find salt master container"
-  SALT="$CRICTL exec $master_ps "
-  return 0
+get_salt_container() {
+    local -r max_retries=10
+    local salt_container='' attempts=0
+
+    while [ -z "$salt_container" ] && [ $attempts -lt $max_retries ]; do
+        salt_container="$(crictl ps -q \
+            --label io.kubernetes.pod.namespace=kube-system \
+            --label io.kubernetes.container.name=salt-master \
+            --state Running)"
+        (( attempts++ ))
+    done
+
+    if [ -z "$salt_container" ]; then
+        echo "Failed to find a running 'salt-master' container" >&2
+        exit 1
+    fi
+
+    echo "$salt_container"
 }
 
 _init () {
     _set_env
-    _check_salt_master
 }
 
 precheck_downgrade () {
-  $SALT salt-run state.orchestrate metalk8s.orchestrate.downgrade.precheck \
-      saltenv="$SALTENV" \
-      pillar="{'metalk8s': {'cluster_version': '$DESTINATION_VERSION'}}"
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.downgrade.precheck \
+        saltenv="$SALTENV" \
+        pillar="{'metalk8s': {'cluster_version': '$DESTINATION_VERSION'}}"
 
 }
 
 launch_downgrade () {
-  $SALT salt-run state.orchestrate metalk8s.orchestrate.downgrade \
-    saltenv="$SALTENV"
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.downgrade \
+        saltenv="$SALTENV"
 }
 
 downgrade_bootstrap () {
-  local saltmaster_endpoint repo_endpoint
-  saltmaster_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:salt-master --out txt \
-      | cut -d' ' -f2- )"
-  repo_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:repositories --out txt \
-      | cut -d' ' -f2- )"
-  $SALT_CALL --local state.sls metalk8s.roles.bootstrap \
-    saltenv="metalk8s-$DESTINATION_VERSION" \
-    pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
-    'repositories': $repo_endpoint}}}" \
-    --retcode-passthrough
-  _check_salt_master
-  $SALT salt-run saltutil.sync_all saltenv="metalk8s-$DESTINATION_VERSION"
-  $SALT salt-run metalk8s_saltutil.sync_auth saltenv="metalk8s-$DESTINATION_VERSION"
-  $SALT salt-run saltutil.sync_roster saltenv="metalk8s-$DESTINATION_VERSION"
+    local saltmaster_endpoint repo_endpoint
+    saltmaster_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:salt-master --out txt \
+        | cut -d' ' -f2- )"
+    repo_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:repositories --out txt \
+        | cut -d' ' -f2- )"
+    $SALT_CALL --local state.sls metalk8s.roles.bootstrap \
+        saltenv="metalk8s-$DESTINATION_VERSION" \
+        pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
+        'repositories': $repo_endpoint}}}" \
+        --retcode-passthrough
 
-  local bootstrap_id
-  bootstrap_id=$(
-    $SALT_CALL grains.get id --out txt \
-    | awk '/^local\: /{ print $2 }')
-  [ -z "$bootstrap_id" ] && die "Cannot retrieve bootstrap id"
-  $SALT salt-run salt.cmd state.single metalk8s_kubernetes.node_label_present \
-    metalk8s.scality.com/version \
-    node="$bootstrap_id" value="$DESTINATION_VERSION" \
-    kubeconfig=/etc/kubernetes/admin.conf
-  $SALT salt-run state.sls metalk8s.orchestrate.deploy_node saltenv="$SALTENV" \
-    pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
+        saltenv="metalk8s-$DESTINATION_VERSION"
+    "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.sync_auth \
+        saltenv="metalk8s-$DESTINATION_VERSION"
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_roster \
+        saltenv="metalk8s-$DESTINATION_VERSION"
+
+    local bootstrap_id
+    bootstrap_id=$(
+        $SALT_CALL grains.get id --out txt \
+        | awk '/^local\: /{ print $2 }')
+    [ -z "$bootstrap_id" ] && die "Cannot retrieve bootstrap id"
+    "${SALT_MASTER_CALL[@]}" salt-run salt.cmd \
+        state.single metalk8s_kubernetes.node_label_present \
+        metalk8s.scality.com/version \
+        node="$bootstrap_id" value="$DESTINATION_VERSION" \
+        kubeconfig=/etc/kubernetes/admin.conf
+    "${SALT_MASTER_CALL[@]}" salt-run state.sls \
+        metalk8s.orchestrate.deploy_node saltenv="$SALTENV" \
+        pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
 }
 
 # patch the kube-system namespace annotation with <destination-version> input
 patch_kubesystem_namespace() {
-  #update the annotation with the new destination value
-  $SALT salt-run state.orchestrate_single \
-      metalk8s_kubernetes.namespace_annotation_present \
-      "kube-system" \
-      kubeconfig="/etc/kubernetes/admin.conf" \
-      context="kubernetes-admin@kubernetes" \
-      annotation_key="metalk8s.scality.com/cluster-version" \
-      annotation_value="$DESTINATION_VERSION" \
-      test="$DRY_RUN"
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    #update the annotation with the new destination value
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate_single \
+        metalk8s_kubernetes.namespace_annotation_present \
+        "kube-system" \
+        kubeconfig="/etc/kubernetes/admin.conf" \
+        context="kubernetes-admin@kubernetes" \
+        annotation_key="metalk8s.scality.com/cluster-version" \
+        annotation_value="$DESTINATION_VERSION" \
+        test="$DRY_RUN"
 }
 
 get_cluster_version() {
-  DESTINATION_VERSION=$($SALT_CALL \
-      pillar.get metalk8s:cluster_version --out txt | cut -c 8-)
+    DESTINATION_VERSION=$($SALT_CALL \
+        pillar.get metalk8s:cluster_version --out txt | cut -c 8-)
 }
 
 # Main

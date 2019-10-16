@@ -43,7 +43,8 @@ Create metalk8s-ui ConfigMap:
           {
             "url": "/api/kubernetes",
             "url_salt": "/api/salt",
-            "url_prometheus": "/api/prometheus"
+            "url_prometheus": "/api/prometheus",
+            "url_grafana": "/grafana"
           }
 
 Create ui-branding ConfigMap:

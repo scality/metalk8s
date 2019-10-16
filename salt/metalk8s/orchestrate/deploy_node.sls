@@ -69,6 +69,11 @@ Drain the node:
 
 {%- endif %}
 
+Refresh pillar before highstate:
+  salt.function:
+    - name: saltutil.refresh_pillar
+    - tgt: {{ node_name }}
+
 Run the highstate:
   salt.state:
     - tgt: {{ node_name }}
@@ -77,6 +82,7 @@ Run the highstate:
       - salt: Set grains
       - salt: Refresh the mine
       - metalk8s_cordon: Cordon the node
+      - salt: Refresh pillar before highstate
 
 Wait for API server to be available:
   http.wait_for_successful_query:

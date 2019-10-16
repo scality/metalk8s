@@ -1,0 +1,7 @@
+apiVersion: example-solution.metalk8s.scality.com/v1alpha1
+kind: VersionServer
+metadata:
+  name: example-versionserver
+spec:
+  version: '0.1.0-dev'
+  replicas: 3

@@ -59,6 +59,12 @@ stages:
           method: clobber
           retryFetch: true
           haltOnFailure: true
+      - ShellCommand: &setup_cache
+          name: Setup proxy cache
+          command: >
+              curl -s http://proxy-cache/setup.sh | sudo sh &&
+              . /usr/local/bin/use_scality_proxy_cache
+          haltOnFailure: true
       - ShellCommand:
           name: build everything
           env:
@@ -106,6 +112,7 @@ stages:
             echo "Could not reach Docker daemon from buildbot worker" >&2
             exit 1'
           haltOnFailure: true
+      - ShellCommand: *setup_cache
       - SetPropertyFromCommand: &product_version_prev
           name: set product_version_prev
           property: product_version_prev
@@ -159,6 +166,7 @@ stages:
           dockerfile: docs/Dockerfile
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand:
           name: Build documentation
           env:
@@ -183,6 +191,7 @@ stages:
           dockerfile: eve/workers/pod-linter/Dockerfile
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all linting targets
           command: ./doit.sh lint
@@ -199,6 +208,7 @@ stages:
           dockerfile: eve/workers/pod-unit-tests/Dockerfile
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all UI unit tests
           workdir: build/ui
@@ -234,6 +244,7 @@ stages:
       path: eve/workers/openstack-single-node
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand: &ssh_ip_setup
           name: Report IP and install SSH keys
           command: >
@@ -365,6 +376,7 @@ stages:
       path: eve/workers/openstack-single-node
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       - SetPropertyFromCommand: *product_version_prev
       - SetPropertyFromCommand: &set_prev_version
@@ -494,6 +506,7 @@ stages:
       path: eve/workers/openstack-multiple-nodes
     steps:
       - Git: *git_pull
+      - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
@@ -531,7 +544,15 @@ stages:
           haltOnFailure: true
       - ShellCommand:
           name: Init terraform
-          command: terraform init
+          command: |-
+            for _ in $(seq 1 12); do
+              if terraform init; then
+                break
+              else
+                rm -rf .terraform/
+                sleep 5
+              fi
+            done;
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
