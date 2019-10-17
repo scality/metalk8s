@@ -152,6 +152,7 @@ if ! grep -Fxq "$(cat .ssh/#{PRESHARED_SSH_KEY_NAME}.pub)" .ssh/authorized_keys 
 fi
 SCRIPT
 
+UPDATE_REPO = 'DEBIAN_FRONTEND=noninteractive apt update -yq'
 INSTALL_PYTHON = 'DEBIAN_FRONTEND=noninteractive apt install python -yq'
 
 # To support VirtualBox linked clones
@@ -204,6 +205,11 @@ Vagrant.configure("2") do |config|
       name: 'ubuntu/bionic64',
       version: '20190514.0.0',
       scripts: [
+        {
+          name: 'update-repository-list',
+          type: 'shell',
+          data: UPDATE_REPO,
+        },
         {
           name: 'install-python',
           type: 'shell',
@@ -265,6 +271,9 @@ Vagrant.configure("2") do |config|
           inline: DEPLOY_SSH_PUBLIC_KEY
 
         if os == :ubuntu
+          node.vm.provision "update-repository-list",
+            type: "shell",
+            inline: UPDATE_REPO
           node.vm.provision "install-python",
             type: "shell",
             inline: INSTALL_PYTHON
