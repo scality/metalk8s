@@ -31,7 +31,8 @@ stages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
             - single-node-upgrade-test
-            - single-node-downgrade-test
+# Downgrade is deactivated on this branch due to #1750
+#           - single-node-downgrade-test
             - multiple-nodes
 
   build:
