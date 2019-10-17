@@ -59,10 +59,13 @@ class DeploySolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
             with self.log_step('{verb}ing Solution components'.format(
                 verb='Remov' if self.delete else 'Deploy'
             )):
-                cmd_output = self.run_salt_master([
-                    'state.orchestrate',
-                    'metalk8s.orchestrate.solutions.deploy-components',
-                    'saltenv={}'.format(self.saltenv),
-                    "pillar='{{bootstrap_id: {}}}'".format(self.minion_id),
-                ])
-                self.print_and_log(cmd_output.decode('utf-8'), level='DEBUG')
+                result = self.run_salt_master(
+                    ['state.orchestrate',
+                     'metalk8s.orchestrate.solutions.deploy-components'],
+                    saltenv=self.saltenv,
+                    pillar={'bootstrap_id': self.minion_id},
+                )
+                self.print_and_log(
+                    result.stdout.decode('utf-8'),
+                    level='DEBUG'
+                )

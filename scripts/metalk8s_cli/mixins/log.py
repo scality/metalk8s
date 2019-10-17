@@ -190,7 +190,9 @@ class LoggingCommandMixin(object):
 
     def _format_error(self, error, step_name):
         """Format a subclass of `CommandError`."""
-        return 'Failure while running step "{}":\n{}'.format(step_name, error)
+        return 'Failure while running step "{}":\n{}'.format(
+            step_name, error.format_error()
+        )
 
     def _append_run_limit(self, message):
         with open(self.logfile, 'a') as file_handle:

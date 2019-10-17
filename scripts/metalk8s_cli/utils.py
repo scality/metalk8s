@@ -1,5 +1,57 @@
 """Unstructured module for re-usable helpers in commands and mixins."""
+from collections import namedtuple
+import subprocess
+import shlex
 
+import six
+
+from metalk8s_cli.exceptions import CommandSubprocessError
+
+
+# Helpers for `subprocess` usage in `Command`s {{{
+# NOTE: this is done to compensate for the missing `subprocess.run` in Python 2
+CompletedProcess = namedtuple('CompletedProcess',
+                              ('args', 'returncode', 'stdout', 'stderr'))
+
+
+def run_process(args, **kwargs):
+    """Run a command-line process using subprocess.Popen from a `Command`.
+
+    This raises a `CommandSubprocessError` if the return code of the process
+    was not 0.
+    A poor man's `subprocess.run` in a Python 2 world.
+    """
+    kwargs.setdefault('stdout', subprocess.PIPE)
+    kwargs.setdefault('stderr', subprocess.PIPE)
+    process = subprocess.Popen(args, **kwargs)
+    try:
+        stdout, stderr = process.communicate()
+    finally:
+        if process.stdout is not None:
+            process.stdout.close()
+        if process.stderr is not None:
+            process.stderr.close()
+
+    result = CompletedProcess(
+        args=args,
+        returncode=process.returncode,
+        stdout=stdout,
+        stderr=stderr,
+    )
+
+    if result.returncode:
+        raise CommandSubprocessError(**result._asdict())
+
+    return result
+
+
+def build_args(cmd):
+    if isinstance(cmd, six.string_types):
+        return shlex.split(cmd)
+    return cmd
+
+
+# }}}
 # ANSI escape codes {{{
 ANSI_ESCAPE_CODES = {
     'reset': '\x1b[0m',

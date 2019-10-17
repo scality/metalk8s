@@ -4,7 +4,8 @@ import subprocess
 
 import six
 
-from metalk8s_cli.exceptions import CommandError, CommandInitError
+from metalk8s_cli.exceptions import CommandInitError
+from metalk8s_cli import utils
 
 
 class SaltCommandMixin(object):
@@ -24,21 +25,14 @@ class SaltCommandMixin(object):
         if color:
             full_cmd.append('--force-color')
 
-        full_cmd.extend(self._build_args(command))
+        full_cmd.extend(utils.build_args(command))
 
         if saltenv is not None:
             full_cmd.append('saltenv={}'.format(saltenv))
         if pillar is not None:
             full_cmd.append("pillar='{}'".format(json.dumps(pillar)))
 
-        try:
-            return subprocess.check_output(full_cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            raise CommandError(
-                'Failed to execute "{}" [retcode {}]:\n{}'.format(
-                    ' '.join(full_cmd), exc.returncode, exc.output
-                )
-            )
+        return utils.run_process(full_cmd)
 
     def run_salt_master(self, command, color=True, saltenv=None, pillar=None,
                         container_id=None):
@@ -57,18 +51,10 @@ class SaltCommandMixin(object):
         if pillar is not None:
             full_cmd.append("pillar='{}'".format(json.dumps(pillar)))
 
-        try:
-            return subprocess.check_output(
-                # FIXME: pillar args... need to escape?
-                ' '.join(full_cmd), shell=True,
-                stderr=subprocess.STDOUT,
-            )
-        except subprocess.CalledProcessError as exc:
-            raise CommandError(
-                'Failed to run "{}" on Salt master:\n{}'.format(
-                    ' '.join(master_cmd), exc.output
-                )
-            )
+        # FIXME: cannot run with list of strings through crictl, Salt fails
+        # (with retcode 0, of course) with an error about Pillar data format
+        # return _run_process(full_cmd)
+        return utils.run_process(' '.join(full_cmd), shell=True)
 
     def get_from_pillar(self, pillar_key):
         return self._get_json_from_minion('pillar.get {}'.format(pillar_key))
@@ -93,17 +79,12 @@ class SaltCommandMixin(object):
 
     @staticmethod
     def get_salt_master_container():
-        try:
-            output = subprocess.check_output([
+        result = utils.run_process([
                 'crictl', 'ps', '-q',
                 '--label', 'io.kubernetes.container.name=salt-master'
             ])
-        except subprocess.CalledProcessError as exc:
-            raise CommandError(
-                'Failed to find salt-master container: {}'.format(exc)
-            )
 
-        return output.strip().decode('utf-8')
+        return result.stdout.strip().decode('utf-8')
 
     def check_role(self, role):
         """Ensure this command runs on a Node with this role."""
@@ -116,13 +97,8 @@ class SaltCommandMixin(object):
                 "Can only run this command on a '{}' Node.".format(role)
             )
 
-    def _build_args(self, cmd):
-        if isinstance(cmd, six.string_types):
-            return shlex.split(cmd)
-        return cmd
-
     def _get_json_from_minion(self, command, **kwargs):
-        out_string = self.run_salt_minion(
+        result = self.run_salt_minion(
             command, outputter='json', color=False, **kwargs
         )
-        return json.loads(out_string)["local"]
+        return json.loads(result.stdout)["local"]

@@ -42,8 +42,11 @@ class AddSolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
                 self.add_archives()
 
             with self.log_step('Mounting archives and configuring registry'):
-                cmd_output = self.run_salt_minion(
+                result = self.run_salt_minion(
                     ['state.sls', 'metalk8s.solutions.available'],
                     saltenv=self.saltenv,
                 )
-                self.print_and_log(cmd_output, level='DEBUG')
+                self.print_and_log(
+                    result.stdout.decode('utf-8'),
+                    level='DEBUG'
+                )
