@@ -28,8 +28,8 @@ stages:
       - TriggerStages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
-            - single-node
             - single-node-upgrade-test
+            - single-node-downgrade-test
             - multiple-nodes
 
   build:
@@ -188,7 +188,7 @@ stages:
           usePTY: true
           haltOnFailure: false
 
-  single-node:
+  single-node-downgrade-test:
     worker:
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
@@ -197,6 +197,15 @@ stages:
     steps:
       - Git: *git_pull
       - ShellCommand: *setup_cache
+      - SetPropertyFromCommand: *product_version_prev
+      - SetPropertyFromCommand: &set_prev_version
+          name: Set previous version
+          property: metalk8s_prev_version
+          command: >
+            bash -c '
+              git checkout development/%(prop:product_version_prev)s --quiet &&
+              source VERSION ;
+              echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
       - ShellCommand: &ssh_ip_setup
           name: Report IP and install SSH keys
           command: >
@@ -204,7 +213,7 @@ stages:
             mkdir -p ~/.ssh &&
             echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys
       - ShellCommand: &retrieve_iso
-          name: Retrieve ISO image
+          name: Retrieve ISO version N image
           command: >
             curl -s -XGET -o metalk8s.iso
             "%(prop:artifacts_private_url)s/metalk8s.iso"
@@ -218,6 +227,24 @@ stages:
       - ShellCommand: &check_iso_checksum
           name: Check image with checksum
           command: sha256sum -c SHA256SUM
+          haltOnFailure: true
+      - ShellCommand: &get_prev_iso
+          name: Retrieve ISO version N-1 image
+          command: >
+            isourl="/pre/metalk8s-%(prop:metalk8s_prev_version)s.iso";
+            curl -s -XGET -o /tmp/metalk8s.iso
+            "%(prop:artifacts_private_url)s$isourl"
+          haltOnFailure: true
+      - ShellCommand: &get_prev_iso_checksum
+          name: Retrieve ISO N-1 image checksum
+          command: >
+            shasumurl="/pre/SHA256SUM-%(prop:metalk8s_prev_version)s";
+            curl -s -XGET -o /tmp/SHA256SUM
+            "%(prop:artifacts_private_url)s$shasumurl"
+          haltOnFailure: true
+      - ShellCommand: &verify_prev_iso_checksum
+          name: Check N-1 image with checksum
+          command: cd /tmp && sha256sum -c SHA256SUM
           haltOnFailure: true
       - ShellCommand:
           name: Create mountpoint
@@ -261,10 +288,31 @@ stages:
             ISO_MOUNTPOINT: >
               /srv/scality/metalk8s-%(prop:metalk8s_version)s
           command: >
+            git checkout %(prop:branch)s &&
             tox -e tests-local --
             -m "post and ci and not multinode and not slow" &&
             tox -e tests-local --
             -m "post and ci and not multinode and slow"
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run downgrade
+          command: >
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/iso-manager.sh
+            --archive /tmp/metalk8s.iso &&
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
+            --destination-version %(prop:metalk8s_prev_version)s
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run fast tests locally
+          env:
+            ISO_MOUNTPOINT: >
+              /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
+          command: >
+            git checkout "development/%(prop:product_version_prev)s" &&
+            tox -e tests-local --
+            -m "post and ci and not multinode and not slow"
           haltOnFailure: true
       - ShellCommand: &collect_sosreport
           name: Collect logs using sosreport
@@ -302,32 +350,10 @@ stages:
       - Git: *git_pull
       - ShellCommand: *ssh_ip_setup
       - SetPropertyFromCommand: *product_version_prev
-      - SetPropertyFromCommand: &set_prev_version
-          name: Set previous version
-          property: metalk8s_prev_version
-          command: >
-            bash -c '
-              git checkout development/%(prop:product_version_prev)s --quiet &&
-              source VERSION ;
-              echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
-      - ShellCommand: &get_prev_iso
-          name: Get %(prop:metalk8s_prev_version)s image
-          command: >
-            isourl="/pre/metalk8s-%(prop:metalk8s_prev_version)s.iso";
-            curl -s -XGET -o /tmp/metalk8s.iso
-            "%(prop:artifacts_private_url)s$isourl"
-          haltOnFailure: true
-      - ShellCommand: &get_prev_iso_checksum
-          name: Get %(prop:metalk8s_prev_version)s checksum
-          command: >
-            shasumurl="/pre/SHA256SUM-%(prop:metalk8s_prev_version)s";
-            curl -s -XGET -o /tmp/SHA256SUM
-            "%(prop:artifacts_private_url)s$shasumurl"
-          haltOnFailure: true
-      - ShellCommand: &verify_prev_iso_checksum
-          name: Verify %(prop:metalk8s_prev_version)s checksum
-          command: cd /tmp && sha256sum -c SHA256SUM
-          haltOnFailure: true
+      - SetPropertyFromCommand: *set_prev_version
+      - ShellCommand: *get_prev_iso
+      - ShellCommand: *get_prev_iso_checksum
+      - ShellCommand: *verify_prev_iso_checksum
       - ShellCommand: &create_prev_iso_mountpoint
           name: Create %(prop:metalk8s_prev_version)s mountpoint
           command: >
