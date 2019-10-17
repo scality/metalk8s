@@ -8,7 +8,8 @@ import {
   LABEL_VERSION,
   SOLUTION_NAME,
   DEPLOYMENT_NAME,
-  OPERATOR_NAME
+  OPERATOR_NAME,
+  SOLUTION_API_GROUP
 } from '../../constants';
 const CREATE = 'CREATE_DEPLOYMENT';
 const EDIT = 'EDIT_DEPLOYMENT';
@@ -256,7 +257,7 @@ const roleBody = {
       verbs: ['get']
     },
     {
-      apiGroups: [`${SOLUTION_NAME}.metalk8s.scality.com`],
+      apiGroups: [SOLUTION_API_GROUP],
       resources: ['*'],
       verbs: ['*']
     }

@@ -4,7 +4,7 @@ import history from '../../history';
 import {
   REFRESH_TIMEOUT,
   SOLUTION_NAME,
-  SOLUTION_GROUP
+  SOLUTION_API_GROUP
 } from '../../constants';
 
 // Actions
@@ -88,7 +88,7 @@ export function* fetchVersionServer(environment) {
 export function* createVersionServer({ payload }) {
   const { name, environment, replicas, version } = payload;
   const body = {
-    apiVersion: `${SOLUTION_GROUP}/v1alpha1`,
+    apiVersion: `${SOLUTION_API_GROUP}/v1alpha1`,
     kind: 'VersionServer',
     metadata: {
       name: name
@@ -113,7 +113,7 @@ export function* createVersionServer({ payload }) {
 export function* editVersionServer({ payload }) {
   const { name, environment, replicas, version } = payload;
   const body = {
-    apiVersion: `${SOLUTION_GROUP}/v1alpha1`,
+    apiVersion: `${SOLUTION_API_GROUP}/v1alpha1`,
     kind: 'VersionServer',
     metadata: {
       name: name
