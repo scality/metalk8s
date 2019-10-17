@@ -13,7 +13,9 @@ const REFRESH = 'REFRESH_CLOCK_SERVER';
 const STOP_REFRESH = 'STOP_REFRESH_CLOCK_SERVER';
 const CREATE = 'CREATE_CLOCK_SERVER';
 export const UPDATE = 'UPDATE_CLOCK_SERVER';
+export const ADD = 'ADD_CLOCK_SERVER';
 const EDIT = 'EDIT_CLOCK_SERVER';
+const GET = 'GET_CLOCK_SERVER';
 
 // Reducer
 const defaultState = {
@@ -22,16 +24,41 @@ const defaultState = {
 };
 
 export default function reducer(state = defaultState, action = {}) {
+  const environments = [...state.list];
+  let index;
   switch (action.type) {
     case UPDATE:
-      const environments = [...state.list];
-      const index = environments.findIndex(
+      index = environments.findIndex(
         item => item.name === action.payload.environment
       );
       if (index > -1) {
         environments[index].clockServer = environments[index].clockServer
           ? { ...environments[index].clockServer, ...action.payload }
           : action.payload;
+        return { ...state, list: [...environments] };
+      }
+      return state;
+    case ADD:
+      index = environments.findIndex(
+        item => item.name === action.payload.environment
+      );
+      if (index > -1) {
+        if (
+          environments[index].clockServer &&
+          environments[index].clockServer.list
+        ) {
+          const indexClockServerToAddOrUpdate = environments[
+            index
+          ].clockServer.list.findIndex(
+            item => item.name === action.payload.item.name
+          );
+          environments[index].clockServer.list[indexClockServerToAddOrUpdate] =
+            action.payload.item;
+        } else {
+          environments[index].clockServer = {
+            list: [action.payload.item]
+          };
+        }
         return { ...state, list: [...environments] };
       }
       return state;
@@ -53,12 +80,20 @@ export const updateClockServerAction = payload => {
   return { type: UPDATE, payload };
 };
 
+export const addClockServerAction = payload => {
+  return { type: ADD, payload };
+};
+
 export const editClockServerAction = payload => {
   return { type: EDIT, payload };
 };
 
 export const createClockServerAction = payload => {
   return { type: CREATE, payload };
+};
+
+export const getClockServerAction = payload => {
+  return { type: GET, payload };
 };
 
 // Sagas
@@ -79,6 +114,29 @@ export function* fetchClockServers(environment) {
             kind: results.body.kind
           };
         })
+      })
+    );
+  }
+  return results;
+}
+
+export function* getClockServer({ payload }) {
+  const { environment, name } = payload;
+  const results = yield call(
+    ApiK8s.getClockServer,
+    `${environment}-${SOLUTION_NAME}`,
+    name
+  );
+  if (!results.error) {
+    yield put(
+      addClockServerAction({
+        environment,
+        item: {
+          name: results.body.metadata.name,
+          timezone: results.body.spec.timezone,
+          version: results.body.spec.version,
+          kind: results.body.kind
+        }
       })
     );
   }
@@ -171,4 +229,5 @@ export function* clockServerSaga() {
   yield takeEvery(STOP_REFRESH, stopRefreshClockServer);
   yield takeEvery(CREATE, createClockServer);
   yield takeEvery(EDIT, editClockServer);
+  yield takeEvery(GET, getClockServer);
 }

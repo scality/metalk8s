@@ -85,6 +85,20 @@ export async function getClockServers(namespace) {
   }
 }
 
+export async function getClockServer(namespace, name) {
+  try {
+    return await customObjects.getNamespacedCustomObject(
+      SOLUTION_API_GROUP,
+      'v1alpha1',
+      namespace,
+      'clockservers',
+      name
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
 export async function getVersionServers(namespace) {
   try {
     return await customObjects.listNamespacedCustomObject(
@@ -92,6 +106,20 @@ export async function getVersionServers(namespace) {
       'v1alpha1',
       namespace,
       'versionservers'
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getVersionServer(namespace, name) {
+  try {
+    return await customObjects.getNamespacedCustomObject(
+      SOLUTION_API_GROUP,
+      'v1alpha1',
+      namespace,
+      'versionservers',
+      name
     );
   } catch (error) {
     return { error };

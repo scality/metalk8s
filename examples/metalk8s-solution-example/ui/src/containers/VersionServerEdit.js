@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
@@ -9,7 +9,10 @@ import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import semver from 'semver';
-import { editVersionServerAction } from '../ducks/app/versionServer';
+import {
+  editVersionServerAction,
+  getVersionServerAction
+} from '../ducks/app/versionServer';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
@@ -84,13 +87,22 @@ const VersionServerEditForm = props => {
   const currentEnvironment = environments.find(
     item => item.name === environment
   );
+
+  useEffect(() => {
+    props.getVersionServer(environment, match.params.id);
+  }, [currentEnvironment]);
+
   const currentEnvironmentVersion = currentEnvironment
     ? currentEnvironment.version
     : '';
 
-  const versionServer = currentEnvironment.versionServers.list.find(
-    cr => cr.name === match.params.id
-  );
+  const versionServer =
+    currentEnvironment &&
+    currentEnvironment.versionServer &&
+    currentEnvironment.versionServer.list &&
+    currentEnvironment.versionServer.list.find(
+      cr => cr.name === match.params.id
+    );
   const initialValues = {
     version: versionServer ? versionServer.version : '',
     replicas: versionServer ? versionServer.replicas : 1,
@@ -239,7 +251,9 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = dispatch => {
   return {
-    editversionServer: body => dispatch(editVersionServerAction(body))
+    editversionServer: body => dispatch(editVersionServerAction(body)),
+    getVersionServer: (environment, name) =>
+      dispatch(getVersionServerAction({ environment, name }))
   };
 };
 

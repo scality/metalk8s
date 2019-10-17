@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
@@ -9,7 +9,10 @@ import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import semver from 'semver';
-import { editClockServerAction } from '../ducks/app/clockServer';
+import {
+  editClockServerAction,
+  getClockServerAction
+} from '../ducks/app/clockServer';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
@@ -84,12 +87,19 @@ const ClockServerEditForm = props => {
   const currentEnvironment = environments.find(
     item => item.name === environment
   );
+  useEffect(() => {
+    props.getClockServer(environment, match.params.id);
+  }, [currentEnvironment]);
+
   const currentEnvironmentVersion = currentEnvironment
     ? currentEnvironment.version
     : '';
-  const clockServer = currentEnvironment.clockServers.list.find(
-    cr => cr.name === match.params.id
-  );
+  const clockServer =
+    currentEnvironment &&
+    currentEnvironment.clockServer &&
+    currentEnvironment.clockServer.list &&
+    currentEnvironment.clockServer.list.find(cr => cr.name === match.params.id);
+
   const initialValues = {
     version: clockServer ? clockServer.version : '',
     timezone: clockServer ? clockServer.timezone : '',
@@ -240,7 +250,9 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = dispatch => {
   return {
-    editClockServer: body => dispatch(editClockServerAction(body))
+    editClockServer: body => dispatch(editClockServerAction(body)),
+    getClockServer: (environment, name) =>
+      dispatch(getClockServerAction({ environment, name }))
   };
 };
 

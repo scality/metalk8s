@@ -13,10 +13,12 @@ import {
 import { LABEL_VERSION, SOLUTION_NAME } from '../../constants';
 
 import clockServerReducer, {
+  ADD as ADD_CLOCK_SERVER,
   UPDATE as UPDATE_CLOCK_SERVER
 } from './clockServer.js';
 
 import versionServerReducer, {
+  ADD as ADD_VERSION_SERVER,
   UPDATE as UPDATE_VERSION_SERVER
 } from './versionServer.js';
 
@@ -51,7 +53,9 @@ export default function reducer(state = defaultState, action = {}) {
     case UPDATE:
       return { ...state, ...action.payload };
     case UPDATE_CLOCK_SERVER:
+    case ADD_CLOCK_SERVER:
       return clockServerReducer(state, action);
+    case ADD_VERSION_SERVER:
     case UPDATE_VERSION_SERVER:
       return versionServerReducer(state, action);
     default:
