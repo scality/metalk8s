@@ -1,2 +1,2 @@
 include:
-  - .offline
+  - .{{ grains['os_family'] | lower }}

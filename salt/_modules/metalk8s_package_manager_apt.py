@@ -4,20 +4,27 @@ so that we can support downgrade in metalk8s
 '''
 import logging
 
-log = logging.getLogger(__name__)
+try:
+    import apt
+    HAS_APT_LIBS = True
+except ImportError:
+    HAS_APT_LIBS = False
 
+log = logging.getLogger(__name__)
 
 __virtualname__ = 'metalk8s_package_manager'
 
 
 def __virtual__():
-    return __virtualname__
+    if __grains__['os_family'] == 'Debian' and HAS_APT_LIBS :
+        return __virtualname__
+    return False
 
 
 def _list_dependents(
     name, version, fromrepo=None, allowed_versions=None
 ):
-    '''List and filter all packages requiring package `{name}-{version}`.
+    '''List and filter all packages requiring package `{name}={version}`.
 
     Filter based on the `allowed_versions` provided, within the provided
     `fromrepo` repositories.
@@ -28,41 +35,31 @@ def _list_dependents(
         str(version)
     )
 
-    allowed_versions = allowed_versions or {}
+    cache = apt.cache.Cache()
+    root_package = cache[name]
+    stack = [root_package]
 
-    command = [
-        'repoquery', '--whatrequires', '--recursive',
-        '--qf', '%{NAME} %{VERSION}-%{RELEASE}',
-        '{}-{}'.format(name, version)
-    ]
-
-    if fromrepo:
-        command.extend(['--disablerepo', '*', '--enablerepo', fromrepo])
-
-    ret = __salt__['cmd.run_all'](command)
-
-    if ret['retcode'] != 0:
-        log.error(
-            'Failed to list packages requiring "%s": %s',
-            '{}-{}'.format(name, version),
-            ret['stderr'] or ret['stdout']
+    while stack:
+        package = stack.pop()
+        candidate = select_package_version(
+            package, version if package is root_package else None
         )
-        return None
-
-    dependents = {}
-    for line in ret['stdout'].splitlines():
-        req_name, req_version = line.strip().split()
-
-        # NOTE: The following test filters out unknown packages and versions
-        #       not referenced in `allowed_versions` (there can be only one)
-        if req_version == allowed_versions.get(req_name):
-            dependents[req_name] = req_version
+        # Skip already added dependency.
+        if candidate.sha256 in dependencies:
+            continue
+        dependencies[candidate.sha256] = candidate
+        # `dependencies` is a list of Or-Group, let's flatten it.
+        for dep in itertools.chain(*candidate.dependencies):
+            # Skip virtual package (there is no corresponding DEB).
+            if cache.is_virtual_package(dep.name):
+                continue
+            stack.append(cache[dep.name])
 
     return dependents
 
 
 def list_pkg_dependents(
-    name, version=None, fromrepo=None, pkgs_info=None
+    name, version=None, fromrepo=None, pkgs_info=None, strict_version=False
 ):
     '''
     Check dependents of the package `name`-`version` to install, to add in a
@@ -115,30 +112,8 @@ def list_pkg_dependents(
         )
         return None
 
-    dependents = _list_dependents(
-        name,
-        version,
-        fromrepo=fromrepo,
-        allowed_versions=versions_dict,
-    )
-
-    all_pkgs.update(dependents)
-
     for pkg_name, desired_version in all_pkgs.items():
-        ret = __salt__['cmd.run_all'](['rpm', '-qa', pkg_name])
-
-        if ret['retcode'] != 0:
-            log.error(
-                'Failed to check if package "%s" is installed: %s',
-                pkg_name,
-                ret['stderr'] or ret['stdout']
-            )
-            return None
-
-        is_installed = bool(ret['stdout'].strip())
-        if not is_installed and pkg_name != name:
-            # Any package requiring the target `name` that is not yet installed
-            # should not be installed
-            del all_pkgs[pkg_name]
+        if not strict_version:
+            all_pkgs[pkg_name] += '*'
 
     return all_pkgs

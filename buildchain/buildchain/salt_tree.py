@@ -194,8 +194,14 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         data={
             'kubernetes': {'version': versions.K8S_VERSION},
             'packages': {
-                pkg.name: {'version': pkg.full_version}
-                for pkg in versions.RPM_PACKAGES
+                'centos': {
+                    pkg.name: {'version': pkg.full_version}
+                    for pkg in versions.RPM_PACKAGES
+                },
+                'ubuntu': {
+                    pkg.name: {'version': pkg.full_version}
+                    for pkg in versions.DEB_PACKAGES
+                },
             },
             'images': {
                 img.name: {'version': img.version}
@@ -401,13 +407,15 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
+    Path('salt/metalk8s/repo/files/apt.sources.list.j2'),
     Path('salt/metalk8s/repo/files/nginx.conf.j2'),
     Path('salt/metalk8s/repo/files/metalk8s-registry-config.inc.j2'),
     Path('salt/metalk8s/repo/files/repositories-manifest.yaml.j2'),
     Path('salt/metalk8s/repo/init.sls'),
     Path('salt/metalk8s/repo/installed.sls'),
     Path('salt/metalk8s/repo/macro.sls'),
-    Path('salt/metalk8s/repo/offline.sls'),
+    Path('salt/metalk8s/repo/redhat.sls'),
+    Path('salt/metalk8s/repo/debian.sls'),
 
     Path('salt/metalk8s/roles/bootstrap/absent.sls'),
     Path('salt/metalk8s/roles/bootstrap/init.sls'),
@@ -459,7 +467,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s_kubernetes_utils.py'),
     Path('salt/_modules/metalk8s.py'),
     Path('salt/_modules/metalk8s_network.py'),
-    Path('salt/_modules/metalk8s_package_manager.py'),
+    Path('salt/_modules/metalk8s_package_manager_yum.py'),
+    Path('salt/_modules/metalk8s_package_manager_apt.py'),
     Path('salt/_modules/metalk8s_volumes.py'),
     Path('salt/_modules/metalk8s_solutions.py'),
 
