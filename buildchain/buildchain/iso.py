@@ -142,7 +142,7 @@ def task_populate_iso() -> types.TaskDict:
         # Aggregate here the tasks that put files into ISO_ROOT.
         'task_dep': [
             '_iso_mkdir_root',
-            '_iso_add_tree:*',
+            '_iso_add_tree',
             'images',
             'salt_tree',
             'packaging',

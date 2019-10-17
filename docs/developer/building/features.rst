@@ -59,27 +59,27 @@ Example:
 
 ::
 
-   % ./doit.sh info _build_packages:calico-cni-plugin:pkg_srpm
+   % ./doit.sh info _build_rpm_packages:calico-cni-plugin/srpm
 
-   _build_packages:calico-cni-plugin:pkg_srpm
+   _build_rpm_packages:calico-cni-plugin/srpm
 
-   Build calico-cni-plugin-3.5.1-1.el7.src.rpm
+   Build calico-cni-plugin-3.8.2-1.el7.src.rpm
 
    status     : up-to-date
 
    file_dep   :
-    - /home/foo/dev/metalk8s/_build/metalk8s-build-latest.tar.gz
-    - /home/foo/dev/metalk8s/_build/packages/calico-cni-plugin/SOURCES/v3.5.1.tar.gz
-    - /home/foo/dev/metalk8s/_build/packages/calico-cni-plugin/SOURCES/calico-ipam-amd64
-    - /home/foo/dev/metalk8s/packages/calico-cni-plugin.spec
-    - /home/foo/dev/metalk8s/_build/packages/calico-cni-plugin/SOURCES/calico-amd64
+    - /home/foo/dev/metalk8s/_build/packages/redhat/calico-cni-plugin/SOURCES/calico-ipam-amd64
+    - /home/foo/dev/metalk8s/_build/packages/redhat/calico-cni-plugin/SOURCES/v3.8.2.tar.gz
+    - /home/foo/dev/metalk8s/packages/redhat/calico-cni-plugin.spec
+    - /home/foo/dev/metalk8s/_build/packages/redhat/calico-cni-plugin/SOURCES/calico-amd64
 
    task_dep   :
-    - _package_mkdir_root
-    - _build_packages:calico-cni-plugin:pkg_mkdir
+    - _package_mkdir_rpm_root
+    - _build_builder:metalk8s-rpm-builder
+    - _build_rpm_packages:calico-cni-plugin/mkdir
 
    targets    :
-    - /home/foo/dev/metalk8s/_build/packages/calico-cni-plugin-3.5.1-1.el7.src.rpm
+    - /home/foo/dev/metalk8s/_build/packages/redhat/calico-cni-plugin-3.8.2-1.el7.src.rpm
 
 Wildcard selection
 ------------------
@@ -87,8 +87,8 @@ Wildcard selection
 You can use wildcard in task names, which allows you to either:
 
 - execute all the sub-tasks of a specific task:
-  ``_build_packages:calico-cni-plugin:*`` will execute all the tasks required
-  to build the package.
+  ``_build_rpm_packages:calico-cni-plugin/*`` will execute all the tasks
+  required to build the package.
 - execute a specific sub-task for all the tasks:
-  ``_build_packages:*:pkg_get_source`` will retrieve the source files for all
+  ``_build_rpm_packages:*/get_source`` will retrieve the source files for all
   the packages.

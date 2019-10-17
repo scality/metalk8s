@@ -79,10 +79,7 @@ class Repository(base.CompositeTarget):
         self._builder = builder
         self._packages = packages or []
         self._repo_root = repo_root
-        super().__init__(
-            basename='{base}:{name}'.format(base=basename, name=self.name),
-            **kwargs
-        )
+        super().__init__(basename=basename, **kwargs)
 
     name     = property(operator.attrgetter('_name'))
     builder  = property(operator.attrgetter('_builder'))
@@ -112,12 +109,23 @@ class Repository(base.CompositeTarget):
     def build_packages(self) -> List[types.TaskDict]:
         """Build the packages for the repository."""
 
+    def _get_task_name(self, taskname: str, with_basename: bool=False) -> str:
+        """Return a fully qualified task name.
+
+        The task name is prefixed by the repository name.
+        Use the given basename if any.
+        """
+        prefix = '{}:'.format(self.basename) if with_basename else ''
+        return '{base}{name}/{task}'.format(
+            base=prefix, name=self.name, task=taskname
+        )
+
     def _mkdir_repo_root(self) -> types.TaskDict:
         """Create the root directory for the repository."""
         task = self.basic_task
         mkdir = directory.Mkdir(directory=self.rootdir).task
         task.update({
-            'name': MKDIR_ROOT_TASK_NAME,
+            'name': self._get_task_name(MKDIR_ROOT_TASK_NAME),
             'doc': 'Create root directory for the {} repository.'.format(
                 self.name
             ),
@@ -144,8 +152,7 @@ class RPMRepository(Repository):
         **kwargs: Any
     ):
         super ().__init__(
-            basename, name, builder, constants.REPO_RPM_ROOT, packages,
-            **kwargs
+            basename, name, builder, constants.REPO_RPM_ROOT, packages, **kwargs
         )
 
     @property
@@ -175,7 +182,7 @@ class RPMRepository(Repository):
 
         task = self.basic_task
         task.update({
-            'name': 'build_repodata',
+            'name': self._get_task_name('build_repodata'),
             'actions': actions,
             'doc': 'Build the {} repository metadata.'.format(self.name),
             'title': utils.title_with_target1('BUILD RPM REPO'),
@@ -186,9 +193,8 @@ class RPMRepository(Repository):
             'verbosity': 0,
         })
         if self.packages:
-            task['task_dep'].append('{base}:{name}'.format(
-                base=self.basename, name=MKDIR_ROOT_TASK_NAME
-            ))
+            task['task_dep'].append(self._get_task_name(MKDIR_ROOT_TASK_NAME,
+                                                        with_basename=True))
             task['file_dep'].extend([
                 self.get_rpm_path(pkg) for pkg in self.packages
             ])
@@ -217,7 +223,7 @@ class RPMRepository(Repository):
 
             task = self.basic_task
             task.update({
-                'name': 'build_rpm:{}'.format(pkg.name),
+                'name': self._get_task_name('build_rpm/{}'.format(pkg.name)),
                 'actions': [buildrpm_callable],
                 'doc': 'Build {pkg} RPM for the {repo} repository.'.format(
                     pkg=pkg.name, repo=self.name
@@ -228,9 +234,8 @@ class RPMRepository(Repository):
                 'verbosity': 0,
             })
             task['file_dep'].append(pkg.srpm)
-            task['task_dep'].append('{base}:{name}'.format(
-                base=self.basename, name=MKDIR_ARCH_TASK_NAME,
-            ))
+            task['task_dep'].append(self._get_task_name(MKDIR_ARCH_TASK_NAME,
+                                                        with_basename=True))
             task['task_dep'].append(
                 '_build_builder:{}'.format(self.builder.name)
             )
@@ -242,7 +247,7 @@ class RPMRepository(Repository):
         task = self.basic_task
         mkdir = directory.Mkdir(directory=self.rootdir/self.ARCH).task
         task.update({
-            'name': MKDIR_ARCH_TASK_NAME,
+            'name': self._get_task_name(MKDIR_ARCH_TASK_NAME),
             'doc': 'Create arch directory for the {} repository.'.format(
                 self.name
             ),
@@ -251,9 +256,8 @@ class RPMRepository(Repository):
             'uptodate': [True],
             'targets': mkdir['targets'],
         })
-        task['task_dep'].append('{base}:{name}'.format(
-            base=self.basename, name=MKDIR_ROOT_TASK_NAME
-        ))
+        task['task_dep'].append(self._get_task_name(MKDIR_ROOT_TASK_NAME,
+                                                    with_basename=True))
         return task
 
     def get_rpm_path(self, pkg: package.RPMPackage) -> Path:
@@ -318,9 +322,8 @@ class DEBRepository(Repository):
         builder: image.ContainerImage,
         **kwargs: Any
     ):
-        super ().__init__(
-            basename, name, builder, constants.REPO_DEB_ROOT,
-            **kwargs
+        super().__init__(
+            basename, name, builder, constants.REPO_DEB_ROOT, **kwargs
         )
         task = self.basic_task
         task['task_dep'].append('_download_deb_packages')
@@ -360,7 +363,7 @@ class DEBRepository(Repository):
 
         task = self.basic_task
         task.update({
-            'name': 'build_repo',
+            'name': self._get_task_name('build_repo'),
             'actions': actions,
             'doc': 'Build the {} repository.'.format(self.name),
             'title': utils.title_with_target1('BUILD DEB REPO'),

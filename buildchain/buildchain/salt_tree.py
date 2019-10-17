@@ -50,7 +50,7 @@ def task_salt_tree() -> types.TaskDict:
     return {
         'actions': None,
         'task_dep': [
-            '_deploy_salt_tree:*',
+            '_deploy_salt_tree',
         ],
     }
 
