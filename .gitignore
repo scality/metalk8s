@@ -29,3 +29,5 @@ junit/
 
 # Buildchain artifacts
 /_build/
+
+vagrant_config.rb

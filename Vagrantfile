@@ -4,6 +4,14 @@
 
 require 'ipaddr'
 
+if File.exists?('vagrant_config.rb')
+  require_relative 'vagrant_config'
+else
+  RHSM_USERNAME = ''
+  RHSM_PASSWORD = ''
+  RHSM_POOL = ''
+end
+
 # $ ipcalc 172.21.254.0/255.255.255.240
 # Network:        172.21.254.0/28
 # Netmask:        255.255.255.240 = 28
@@ -155,6 +163,25 @@ SCRIPT
 UPDATE_REPO = 'DEBIAN_FRONTEND=noninteractive apt update -yq'
 INSTALL_PYTHON = 'DEBIAN_FRONTEND=noninteractive apt install python -yq'
 
+RHSM_REGISTER = <<-SCRIPT
+#!/bin/bash
+
+set -eu
+
+if ! [[ "#{RHSM_USERNAME}" && "#{RHSM_PASSWORD}" && "#{RHSM_POOL}" ]]; then
+    echo "You must set RHSM_USERNAME, RHSM_PASSWORD & RHSM_POOL" \
+         "in vagrant_config.rb in order to spawn VM on RedHat." >&2
+    exit 1
+fi
+
+subscription-manager register --username="#{RHSM_USERNAME}" \
+                              --password="#{RHSM_PASSWORD}"
+subscription-manager attach --pool="#{RHSM_POOL}"
+subscription-manager repos --enable=rhel-7-server-optional-rpms \
+                           --enable=rhel-7-server-extras-rpms
+SCRIPT
+RHSM_UNREGISTER = 'subscription-manager unregister || true'
+
 # To support VirtualBox linked clones
 Vagrant.require_version(">= 1.8")
 
@@ -173,6 +200,13 @@ def declare_bootstrap(machine, os_data)
          type: script[:type],
          inline: script[:data]
      end
+  end
+
+  if os_data.fetch(:triggers_before, []).each do |trigger|
+        machine.trigger.before trigger[:on].to_sym,
+          info: trigger[:info],
+          run_remote: trigger[:run]
+      end
   end
 
   machine.vm.provision "import-release",
@@ -216,6 +250,24 @@ Vagrant.configure("2") do |config|
           data: INSTALL_PYTHON
         }
       ]
+    },
+    redhat: {
+      name: 'generic/rhel7',
+      version: '1.9.36',
+      scripts: [
+        {
+          name: 'rhsm-register',
+          type: 'shell',
+          data: RHSM_REGISTER
+        }
+      ],
+      triggers_before: [
+        {
+          on: 'destroy',
+          info: 'Unregistering host from RHSM',
+          run: {inline: RHSM_UNREGISTER}
+        }
+      ]
     }
   }
 
@@ -246,6 +298,10 @@ Vagrant.configure("2") do |config|
     declare_bootstrap machine, os_data[:ubuntu]
   end
 
+  config.vm.define :bootstrap_redhat, autostart: false do |machine|
+    declare_bootstrap machine, os_data[:redhat]
+  end
+
   os_data.each do |os, os_data|
     (1..5).each do |i|
       node_name = "#{os}#{i}"
@@ -270,13 +326,18 @@ Vagrant.configure("2") do |config|
           type: "shell",
           inline: DEPLOY_SSH_PUBLIC_KEY
 
-        if os == :ubuntu
-          node.vm.provision "update-repository-list",
-            type: "shell",
-            inline: UPDATE_REPO
-          node.vm.provision "install-python",
-            type: "shell",
-            inline: INSTALL_PYTHON
+        if os_data.fetch(:scripts, []).each do |script|
+             node.vm.provision script[:name],
+               type: script[:type],
+               inline: script[:data]
+           end
+        end
+
+        if os_data.fetch(:triggers_before, []).each do |trigger|
+              node.trigger.before trigger[:on].to_sym,
+                info: trigger[:info],
+                run_remote: trigger[:run]
+            end
         end
       end
     end
