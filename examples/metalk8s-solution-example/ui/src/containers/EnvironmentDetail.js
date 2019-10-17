@@ -22,7 +22,7 @@ import {
   InformationValue,
   InformationMainValue
 } from '../components/InformationList';
-import ComponentsList from './Component';
+import ComponentsList from './ComponentLists';
 import { upgradeEnvironmentAction } from '../ducks/app/environment';
 
 const EnvironmentDetailContainer = styled.div`

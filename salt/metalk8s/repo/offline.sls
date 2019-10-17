@@ -13,12 +13,14 @@ Install yum-plugin-versionlock:
 
 {%- for repo_name, repo_config in repo.repositories.items() %}
   {%- if repo.local_mode %}
-    {%- set repo_base_url = "file://" ~ 
+    {%- set repo_base_url = "file://" ~
                             salt.metalk8s.get_archives()[saltenv].path ~ "/" ~
-                            repo.relative_path %}
+                            repo.relative_path ~ "/" ~
+                            grains['os_family'].lower() %}
   {%- else %}
-    {%- set repo_base_url = "http://" ~ repo_host ~ ':' ~ repo_port ~ 
-                            "/" ~ saltenv %}
+    {%- set repo_base_url = "http://" ~ repo_host ~ ':' ~ repo_port ~
+                            "/" ~ saltenv ~ "/" ~
+                            grains['os_family'].lower() %}
   {%- endif %}
   {%- set repo_url = repo_base_url ~ "/" ~ repo_name ~ "-el$releasever" %}
   {%- set gpg_keys = [] %}

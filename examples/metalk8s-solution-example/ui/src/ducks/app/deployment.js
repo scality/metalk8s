@@ -8,24 +8,25 @@ import {
   LABEL_VERSION,
   SOLUTION_NAME,
   DEPLOYMENT_NAME,
-  OPERATOR_NAME
+  OPERATOR_NAME,
+  SOLUTION_API_GROUP
 } from '../../constants';
-const CREATE_DEPLOYMENT = 'CREATE_DEPLOYMENT';
-const EDIT_DEPLOYMENT = 'EDIT_DEPLOYMENT';
+const CREATE = 'CREATE_DEPLOYMENT';
+const EDIT = 'EDIT_DEPLOYMENT';
 
 // Action Creators
 export const createDeploymentAction = () => {
-  return { type: CREATE_DEPLOYMENT };
+  return { type: CREATE };
 };
 
 export const editDeploymentAction = payload => {
-  return { type: EDIT_DEPLOYMENT, payload };
+  return { type: EDIT, payload };
 };
 
 // Sagas
-export function* fetchOpertorDeployments(namespaces) {
+export function* fetchOperatorDeployment(namespaces) {
   const result = yield call(
-    ApiK8s.getOperatorDeployments,
+    ApiK8s.getOperatorDeployment,
     namespaces,
     DEPLOYMENT_NAME
   );
@@ -83,7 +84,7 @@ export function* createNamespacedServiceAccount(namespaces) {
     namespaces,
     DEPLOYMENT_NAME
   );
-  if (results.body.items.length === 0) {
+  if (results.error) {
     const result = yield call(
       ApiK8s.createNamespacedServiceAccount,
       namespaces,
@@ -100,7 +101,7 @@ export function* createNamespacedRole(namespaces) {
     namespaces,
     DEPLOYMENT_NAME
   );
-  if (results.body.items.length === 0) {
+  if (results.error) {
     const result = yield call(
       ApiK8s.createNamespacedRole,
       namespaces,
@@ -117,7 +118,7 @@ export function* createNamespacedRoleBinding(namespaces) {
     namespaces,
     DEPLOYMENT_NAME
   );
-  if (results.body.items.length === 0) {
+  if (results.error) {
     const result = yield call(
       ApiK8s.createNamespacedRoleBinding,
       namespaces,
@@ -130,7 +131,7 @@ export function* createNamespacedRoleBinding(namespaces) {
 
 // Helpers
 const operatorImage = (registryPrefix, version) =>
-  `${registryPrefix}/${SOLUTION_NAME}-${version}/example-solution-operator:${version}`;
+  `${registryPrefix}/${SOLUTION_NAME}-${version}/${OPERATOR_NAME}:${version}`;
 
 const operatorLabels = version => ({
   app: DEPLOYMENT_NAME,
@@ -256,7 +257,7 @@ const roleBody = {
       verbs: ['get']
     },
     {
-      apiGroups: ['example-solution.metalk8s.scality.com'],
+      apiGroups: [SOLUTION_API_GROUP],
       resources: ['*'],
       verbs: ['*']
     }
@@ -282,6 +283,6 @@ const roleBindingBody = {
 };
 
 export function* deploymentSaga() {
-  yield takeEvery(CREATE_DEPLOYMENT, createDeployment);
-  yield takeEvery(EDIT_DEPLOYMENT, editDeployment);
+  yield takeEvery(CREATE, createDeployment);
+  yield takeEvery(EDIT, editDeployment);
 }

@@ -41,7 +41,7 @@ const ModalBodyTitle = styled.div`
   padding-bottom: ${padding.base};
 `;
 
-const Environment = props => {
+const EnvironmentsList = props => {
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const [openModal, setOpenModal] = useState(false);
@@ -185,4 +185,6 @@ function mapStateToProps(state) {
   };
 }
 
-export default injectIntl(withRouter(connect(mapStateToProps)(Environment)));
+export default injectIntl(
+  withRouter(connect(mapStateToProps)(EnvironmentsList))
+);

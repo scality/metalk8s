@@ -12,7 +12,7 @@ import ClockServerCreation from './ClockServerCreation';
 import ClockServerEdit from './ClockServerEdit';
 import VersionServerCreation from './VersionServerCreation';
 import VersionServerEdit from './VersionServerEdit';
-import Environment from './Environment';
+import Environment from './EnvironmentsList';
 import EnvironmentDetail from './EnvironmentDetail';
 import EnvironmentPreparation from './EnvironmentPreparation';
 import Welcome from '../components/Welcome';
@@ -101,22 +101,22 @@ const Layout = props => {
           <PrivateRoute exact path="/about" component={Welcome} />
           <PrivateRoute
             exact
-            path="/environments/:name/clockServer/create"
+            path="/environments/:name/clock-server/create"
             component={ClockServerCreation}
           />
           <PrivateRoute
             exact
-            path="/environments/:name/clockServer/:id/edit"
+            path="/environments/:name/clock-server/:id/edit"
             component={ClockServerEdit}
           />
           <PrivateRoute
             exact
-            path="/environments/:name/versionServer/create"
+            path="/environments/:name/version-server/create"
             component={VersionServerCreation}
           />
           <PrivateRoute
             exact
-            path="/environments/:name/versionServer/:id/edit"
+            path="/environments/:name/version-server/:id/edit"
             component={VersionServerEdit}
           />
           <PrivateRoute
