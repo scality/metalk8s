@@ -62,9 +62,9 @@ export const createClockServerAction = payload => {
 };
 
 // Sagas
-export function* fetchClockServer(environment) {
+export function* fetchClockServers(environment) {
   const results = yield call(
-    ApiK8s.getClockServer,
+    ApiK8s.getClockServers,
     `${environment}-${SOLUTION_NAME}`
   );
   if (!results.error) {
@@ -105,7 +105,7 @@ export function* createClockServer({ payload }) {
     `${environment}-${SOLUTION_NAME}`
   );
   if (!result.error) {
-    yield call(fetchClockServer, environment);
+    yield call(fetchClockServers, environment);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -132,7 +132,7 @@ export function* editClockServer({ payload }) {
   );
 
   if (!result.error) {
-    yield call(fetchClockServer, environment);
+    yield call(fetchClockServers, environment);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -144,7 +144,7 @@ export function* refreshClockServer({ environment }) {
       isRefreshing: true
     })
   );
-  const results = yield call(fetchClockServer, environment);
+  const results = yield call(fetchClockServers, environment);
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const environments = yield select(state => state.app.environment.list);

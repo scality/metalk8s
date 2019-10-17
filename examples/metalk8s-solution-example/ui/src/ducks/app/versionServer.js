@@ -62,9 +62,9 @@ export const createVersionServerAction = payload => {
 };
 
 // Sagas
-export function* fetchVersionServer(environment) {
+export function* fetchVersionServers(environment) {
   const results = yield call(
-    ApiK8s.getVersionServer,
+    ApiK8s.getVersionServers,
     `${environment}-${SOLUTION_NAME}`
   );
   if (!results.error) {
@@ -105,7 +105,7 @@ export function* createVersionServer({ payload }) {
     `${environment}-${SOLUTION_NAME}`
   );
   if (!result.error) {
-    yield call(fetchVersionServer, environment);
+    yield call(fetchVersionServers, environment);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -131,7 +131,7 @@ export function* editVersionServer({ payload }) {
   );
 
   if (!result.error) {
-    yield call(fetchVersionServer, environment);
+    yield call(fetchVersionServers, environment);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -143,7 +143,7 @@ export function* refreshVersionServer({ environment }) {
       isRefreshing: true
     })
   );
-  const results = yield call(fetchVersionServer, environment);
+  const results = yield call(fetchVersionServers, environment);
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
     const environments = yield select(state => state.app.environment.list);

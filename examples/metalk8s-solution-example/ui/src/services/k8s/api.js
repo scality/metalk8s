@@ -72,7 +72,7 @@ export async function updateEnvironment(body, name) {
   }
 }
 
-export async function getClockServer(namespace) {
+export async function getClockServers(namespace) {
   try {
     return await customObjects.listNamespacedCustomObject(
       SOLUTION_API_GROUP,
@@ -85,7 +85,7 @@ export async function getClockServer(namespace) {
   }
 }
 
-export async function getVersionServer(namespace) {
+export async function getVersionServers(namespace) {
   try {
     return await customObjects.listNamespacedCustomObject(
       SOLUTION_API_GROUP,
