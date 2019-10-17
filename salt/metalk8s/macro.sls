@@ -4,7 +4,6 @@
 {%- macro pkg_installed(name='') -%}
   {%- set package_name = packages.get(name, name) %}
   {%- set package = repo.packages.get(package_name, {}) %}
-  {%- if package %}
   metalk8s_package_manager.installed:
     - name: {{ package_name }}
     - pkgs_info: {{ repo.packages }}
@@ -18,7 +17,4 @@
     {%- if grains['os_family'].lower() == 'debian' %}
     - refresh: True
     {%- endif %}
-  {%- else %}
-  {{ raise('Missing information for package "' ~ name ~ '"') }}
-  {%- endif %}
 {%- endmacro -%}
