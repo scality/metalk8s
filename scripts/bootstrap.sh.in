@@ -53,7 +53,8 @@ determine_os() {
         # shellcheck disable=SC1091
         . /etc/os-release
         OS=$ID
-        if [[ $OS =~ ^(rhel|centos)$ ]]; then
+        [[ $OS = rhel ]] && OS=redhat
+        if [[ $OS =~ ^(redhat|centos)$ ]]; then
             OS_FAMILY=redhat
         elif [[ $OS =~ ^(debian|ubuntu)$ ]]; then
             OS_FAMILY=debian
@@ -177,11 +178,56 @@ check_package_manager_apt() {
     test -x "$APT" || die "apt '$APT' is not executable"
 }
 
+get_packages_list() {
+    python -c "
+import json
+
+with open('$BASE_DIR/salt/metalk8s/versions.json', 'r') as fd:
+    versions = json.load(fd)
+
+packages = versions.get('packages', {}).get('$OS', {})
+for pkg, pkg_info in packages.items():
+    print('{0}{1}'.format(
+        pkg, '-' + pkg_info['version'] if pkg_info.get('version') else '')
+    )
+"
+}
+
+check_packages_presence() {
+    local -a packages
+    local -a pkg_manager_opts=()
+
+    case "$OS_FAMILY" in
+        redhat)
+            pkg_manager_opts=(
+                "$YUM"
+                install
+                --assumeyes
+                --setopt 'tsflags=test'
+                --setopt 'skip_missing_names_on_install=False'
+            )
+            ;;
+        debian)
+            pkg_manager_opts=(
+                "$APT"
+                install
+                --dry-run
+            )
+            ;;
+    esac
+
+    if read -ra packages < <(get_packages_list); then
+        "${pkg_manager_opts[@]}" "${packages[@]}" || \
+            die "some packages or dependencies are missing in the configured" \
+                "repositories"
+    fi
+}
+
 check_dist_centos() {
     check_package_manager_yum
 }
 
-check_dist_rhel() {
+check_dist_redhat() {
     check_package_manager_yum
     command -v subscription-manager || die "subscription-manager not found"
     subscription-manager status || \
@@ -434,9 +480,9 @@ main() {
     run "Determine the OS" determine_os
     run "Pre-minion system tests" pre_minion_checks
     run "Configure internal repositories" configure_repositories
+    run "Check mandatory packages presence" check_packages_presence
     run "Disabling Salt minion service" disable_salt_minion_service
     run "Stopping Salt minion service" stop_salt_minion_service
-    run "Configuring local repositories" configure_repositories
     run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
