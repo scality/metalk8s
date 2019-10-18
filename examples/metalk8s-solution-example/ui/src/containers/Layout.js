@@ -121,7 +121,7 @@ const Layout = props => {
           />
           <PrivateRoute
             exact
-            path="/environments/:name/version/:version/prepare"
+            path="/environments/:name/prepare"
             component={EnvironmentPreparation}
           />
           <PrivateRoute

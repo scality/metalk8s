@@ -1,4 +1,4 @@
-import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
+import { all, call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
@@ -14,6 +14,7 @@ export const SET_ENVIRONMENTS = 'SET_ENVIRONMENTS';
 const CREATE_ENVIRONMENT = 'CREATE_ENVIRONMENT';
 const REFRESH_SOLUTIONS = 'REFRESH_SOLUTIONS';
 const STOP_REFRESH_SOLUTIONS = 'STOP_REFRESH_SOLUTIONS';
+const PREPARE_ENVIRONMENT = 'PREPARE_ENVIRONMENT';
 
 // Reducer
 const defaultState = {
@@ -68,6 +69,10 @@ export function createEnvironmentAction(newEnvironment) {
   return { type: CREATE_ENVIRONMENT, payload: newEnvironment };
 }
 
+export function prepareEnvironmentAction(payload) {
+  return { type: PREPARE_ENVIRONMENT, payload };
+}
+
 export function* createEnvironment(action) {
   const newEnvironment = action.payload;
 
@@ -89,6 +94,47 @@ export function* createEnvironment(action) {
     history.push('/solutions');
   }
   return result;
+}
+
+export function* updateSolutionVersion(environment, solution, version) {
+  const environments = yield select(state => state.app.solutions.environments);
+  const environmentToUpdate = environments.find(
+    item => item.metadata.name === environment,
+  );
+  if (environmentToUpdate) {
+    let solutions = environmentToUpdate.spec.solutions;
+    const solutionToUpdate = solutions.find(sol => sol.name === solution);
+    if (solutionToUpdate) {
+      solutionToUpdate.version = version;
+    } else {
+      solutions = [...solutions, { name: solution, version }];
+    }
+    const body = {
+      apiVersion: 'solutions.metalk8s.scality.com/v1alpha1',
+      kind: 'Environment',
+      metadata: {
+        name: environment,
+      },
+      spec: {
+        solutions,
+      },
+    };
+    return yield call(ApiK8s.updateEnvironment, body, environment);
+  }
+}
+
+export function* prepareEnvironment({ payload }) {
+  const { environment, version, url, solution } = payload;
+  const namespaces = `${environment}-${solution}`;
+
+  const results = yield all([
+    yield call(createNamespace, namespaces), //Create Namespace if not exists
+    yield call(updateSolutionVersion, environment, solution, version), // Update the desired solution version in the environment
+  ]);
+
+  if (!results.find(result => result && result.error)) {
+    window.open(url, '_blank');
+  }
 }
 
 export function* fetchUIServices() {
@@ -168,9 +214,24 @@ export function* stopRefreshSolutions() {
   yield put(setSolutionsRefeshingAction(false));
 }
 
+export function* createNamespace(name) {
+  const results = yield call(ApiK8s.getNamespaces, name);
+  if (results.error) {
+    const body = {
+      metadata: {
+        name: name,
+      },
+    };
+    const result = yield call(ApiK8s.createNamespace, body);
+    return result;
+  }
+  return results;
+}
+
 // Sagas
 export function* solutionsSaga() {
   yield takeEvery(REFRESH_SOLUTIONS, refreshSolutions);
   yield takeEvery(STOP_REFRESH_SOLUTIONS, stopRefreshSolutions);
   yield takeEvery(CREATE_ENVIRONMENT, createEnvironment);
+  yield takeEvery(PREPARE_ENVIRONMENT, prepareEnvironment);
 }

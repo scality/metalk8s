@@ -18,10 +18,9 @@ const LoaderContainer = styled.div`
 const EnvironmentPreparation = props => {
   const { match, intl, prepareEnvironment } = props;
   const environmentName = match.params.name;
-  const environmentVersion = match.params.version;
 
   useEffect(() => {
-    prepareEnvironment({ name: environmentName, version: environmentVersion });
+    prepareEnvironment({ name: environmentName });
   }, []);
 
   return (

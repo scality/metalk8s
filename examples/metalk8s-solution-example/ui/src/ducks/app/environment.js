@@ -120,60 +120,76 @@ export function* updateEnvironment(environment) {
   );
 }
 export function* prepareEnvironment({ payload }) {
-  yield call(manageEnvironment, payload);
-  yield delay(1000);
-  yield call(history.push, `/environments/${payload.name}`);
+  const results = yield call(manageEnvironment, payload);
+  if (results && !results.error) {
+    yield delay(1000);
+    yield call(history.push, `/environments/${payload.name}`);
+  } else {
+    yield call(history.push, '/environments'); // If the desired version of the solution is not set in the Environment
+  }
 }
 
 export function* upgradeEnvironment({ payload }) {
-  yield call(manageEnvironment, payload);
+  const results = yield call(
+    addOrUpdateSolutionInEnvironment,
+    payload.name,
+    payload.version
+  );
+  if (!results.error) {
+    yield call(manageEnvironment, payload);
+  }
 }
 
 export function* manageEnvironment(payload) {
-  const { name, version } = payload;
-
+  const { name } = payload;
+  let results = null;
   //Prepare environment if not done yet
   yield call(fetchEnvironment);
   const environments = yield select(state => state.app.environment.list);
   const environmentToPrepare = environments.find(item => item.name === name);
-  // TODO: If the environment is up-to-date
-  if (environmentToPrepare.version !== version) {
-    const namespaces = `${name}-${SOLUTION_NAME}`;
+  const environmentSolution = environmentToPrepare.solutions.find(
+    sol => sol.name === SOLUTION_NAME
+  );
+  const desiredVersion = environmentSolution ? environmentSolution.version : '';
 
+  //If the operator is not created yet and the version of the operator of the environment is not up-to-date
+  if (desiredVersion && environmentToPrepare.version !== desiredVersion) {
     //Create Namespace if not exists
+    const namespaces = `${name}-${SOLUTION_NAME}`;
     const resultsCreateNamespaces = yield call(createNamespaces, namespaces);
 
+    let resultsRBAC;
     //Create ServiceAccount, Role, et RoleBinding for Operator if not exist
-    const resultsRBAC = yield all([
-      yield call(createNamespacedServiceAccount, namespaces),
-      yield call(createNamespacedRole, namespaces),
-      yield call(createNamespacedRoleBinding, namespaces)
-    ]);
+    if (!resultsCreateNamespaces.error) {
+      resultsRBAC = yield all([
+        yield call(createNamespacedServiceAccount, namespaces),
+        yield call(createNamespacedRole, namespaces),
+        yield call(createNamespacedRoleBinding, namespaces)
+      ]);
+    }
 
     // Create or upgrade Operator
-    const resultsOperatorDeployments = yield call(
-      createOrUpdateOperatorDeployment,
-      namespaces,
-      name,
-      version
-    );
+    if (!resultsRBAC.error) {
+      results = yield call(
+        createOrUpdateOperatorDeployment,
+        namespaces,
+        name,
+        desiredVersion
+      );
+    }
 
-    // Update Solution of Environment
-    if (
-      !resultsCreateNamespaces.error &&
-      !resultsOperatorDeployments.error &&
-      !resultsRBAC.find(result => result.error)
-    ) {
-      yield call(addOrUpdateSolutionInEnvironment, name, version);
+    if (results && !results.error) {
       yield call(fetchEnvironment);
     }
   }
+  return results;
 }
 
 export function* addOrUpdateSolutionInEnvironment(name, version) {
   yield call(fetchEnvironment);
   const environments = yield select(state => state.app.environment.list);
   const environmentToUpdate = environments.find(item => item.name === name);
+  let results = null;
 
   if (environmentToUpdate) {
     let solutions = environmentToUpdate.solutions;
@@ -193,8 +209,9 @@ export function* addOrUpdateSolutionInEnvironment(name, version) {
         solutions
       }
     };
-    yield call(ApiK8s.updateEnvironment, body, name);
+    results = yield call(ApiK8s.updateEnvironment, body, name);
   }
+  return results;
 }
 
 export function* refreshEnvironment() {

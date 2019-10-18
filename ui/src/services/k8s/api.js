@@ -183,3 +183,38 @@ export async function createEnvironment(body) {
     return { error };
   }
 }
+
+export async function updateEnvironment(body, name) {
+  try {
+    return await customObjects.patchClusterCustomObject(
+      'solutions.metalk8s.scality.com',
+      'v1alpha1',
+      'environments',
+      name,
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/merge-patch+json',
+        },
+      },
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function createNamespace(body) {
+  try {
+    return await coreV1.createNamespace(body);
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getNamespaces(name) {
+  try {
+    return await coreV1.readNamespace(name);
+  } catch (error) {
+    return { error };
+  }
+}

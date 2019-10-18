@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
@@ -15,6 +15,8 @@ import {
   BreadcrumbContainer,
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
+
+import { prepareEnvironmentAction } from '../ducks/app/solutions';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -91,6 +93,7 @@ const SolutionsList = props => {
   const solutions = useSelector(state => state.app.solutions.solutions);
   const environments = useSelector(state => state.app.solutions.environments);
   const history = useHistory();
+  const dispatch = useDispatch();
   const { intl } = props;
 
   const onSort = (setSortBy, setSortDirection) => ({
@@ -308,8 +311,17 @@ const SolutionsList = props => {
                 selectedEnvironment &&
                 selectedVersion.version
               ) {
-                const url = `${selectedVersion.ui_url}/environments/${selectedEnvironment}/version/${selectedVersion.version}/prepare`;
-                window.open(url, '_blank');
+                const url = `${selectedVersion.ui_url}/environments/${selectedEnvironment}/prepare`;
+                dispatch(
+                  prepareEnvironmentAction({
+                    environment: selectedEnvironment,
+                    version: selectedVersion.version,
+                    url,
+                    solution: selectedSolution.name,
+                  }),
+                );
+                setisAddSolutionModalOpen(false);
+                setSelectedEnvironment('');
               }
             }}
           >

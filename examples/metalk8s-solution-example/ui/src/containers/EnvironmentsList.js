@@ -129,9 +129,7 @@ const EnvironmentsList = props => {
               text={intl.messages.add}
               onClick={e => {
                 e.stopPropagation();
-                history.push(
-                  `/environments/${selectedEnvironment}/version/${selectedVersion.value}/prepare`
-                );
+                history.push(`/environments/${selectedEnvironment}/prepare`);
               }}
             />
           </ButtonGroup>
