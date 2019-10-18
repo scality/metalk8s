@@ -18,8 +18,6 @@ class SolutionsCommand(base.Command):
         RemoveSolutionCommand,
     ]
 
-    PARENT_PARSERS = [config.build_solutions_config_parser]
-
     DEFAULTS = {
         'logfile': os.path.join(log.DEFAULT_LOG_DIR, 'solutions.log'),
     }

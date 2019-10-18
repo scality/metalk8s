@@ -25,7 +25,6 @@ class DeploySolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
 
     def __init__(self, args):
         super(DeploySolutionCommand, self).__init__(args)
-        self.solutions_config = args.solutions_config
         self.solution = args.solution
         if args.latest:
             self.version = 'latest'
@@ -36,19 +35,16 @@ class DeploySolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
 
     def edit_config(self):
         if self.delete:
-            self.solutions_config.deactivate_solution(self.solution)
+            self.deactivate_solution(self.solution)
             message = 'Disabled Solution "{}" in configuration file.'.format(
                 self.solution
             )
         else:
-            self.solutions_config.activate_solution_version(
-                self.solution, self.version
-            )
+            self.activate_solution_version(self.solution, self.version)
             message = (
                 'Enabled version "{}" for Solution "{}" in configuration file.'
             ).format(self.version, self.solution)
 
-        self.solutions_config.write_to_file()
         self.print_and_log(message, level='DEBUG')
 
     def run(self):
