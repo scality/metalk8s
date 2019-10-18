@@ -178,6 +178,10 @@ check_dist_centos() {
 
 check_dist_rhel() {
     check_package_manager_yum
+    command -v subscription-manager || die "subscription-manager not found"
+    subscription-manager status || \
+        echo "Warning: system does not seem to be registered to any" \
+             "subscription management service" >&2
 }
 
 check_dist_ubuntu() {
