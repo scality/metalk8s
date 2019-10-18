@@ -158,27 +158,39 @@ die() {
     return 1
 }
 
-check_package_managers() {
-    case $OS in
-        centos|rhel)
-            test -n "$RPM" || die "rpm not found"
-            test -x "$RPM" || die "rpm at '$RPM' is not executable"
-            test -n "$YUM" || die "yum not found"
-            test -x "$YUM" || die "yum at '$YUM' is not executable"
-            ;;
-        ubuntu)
-            test -n "$DPKG" || die "dpkg not found"
-            test -x "$DPKG" || die "dpkg at '$DPKG' is not executable"
-            test -n "$APT" || die "apt not found"
-            test -x "$APT" || die "apt '$APT' is not executable"
-            ;;
-        *)
-            die "OS $OS not supported";;
-    esac
+check_package_manager_yum() {
+    test -n "$RPM" || die "rpm not found"
+    test -x "$RPM" || die "rpm at '$RPM' is not executable"
+    test -n "$YUM" || die "yum not found"
+    test -x "$YUM" || die "yum at '$YUM' is not executable"
+}
+
+check_package_manager_apt() {
+    test -n "$DPKG" || die "dpkg not found"
+    test -x "$DPKG" || die "dpkg at '$DPKG' is not executable"
+    test -n "$APT" || die "apt not found"
+    test -x "$APT" || die "apt '$APT' is not executable"
+}
+
+check_dist_centos() {
+    check_package_manager_yum
+}
+
+check_dist_rhel() {
+    check_package_manager_yum
+}
+
+check_dist_ubuntu() {
+    check_package_manager_apt
 }
 
 pre_minion_checks() {
-    check_package_managers
+    if declare -f "check_dist_$OS" &> /dev/null; then 
+        "check_dist_$OS"
+    else
+        die "OS $OS not supported"
+    fi
+
     test "x$(whoami)" = "xroot" || die "Script must run as root"
     test -n "$SYSTEMCTL" || die "systemctl not found"
     test -x "$SYSTEMCTL" || die "systemctl at '$SYSTEMCTL' is not executable"
