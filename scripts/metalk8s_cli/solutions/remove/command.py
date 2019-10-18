@@ -2,10 +2,15 @@ from metalk8s_cli import base
 from metalk8s_cli.exceptions import CommandError
 from metalk8s_cli.mixins import log
 from metalk8s_cli.mixins import salt
+from metalk8s_cli.solutions import config
 
 
-class RemoveSolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
-                            base.Command):
+class RemoveSolutionCommand(
+    config.SolutionsConfigMixin,
+    salt.SaltCommandMixin,
+    log.LoggingCommandMixin,
+    base.Command
+):
     """Remove a Solution archive, and its images, from the cluster.
 
     This will not remove active components, though can lead to unstable
@@ -22,7 +27,6 @@ class RemoveSolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
 
     def __init__(self, args):
         super(RemoveSolutionCommand, self).__init__(args)
-        self.solutions_config = args.solutions_config
         self.archives = args.archives
         self.check_role('bootstrap')
         self.saltenv = self.get_saltenv()
@@ -43,12 +47,11 @@ class RemoveSolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
                 raise CommandError(
                     "Archive '{}' is in use, cannot remove it.".format(archive)
                 )
-            self.solutions_config.remove_archive(archive)
+            self.remove_solution_archive(archive)
 
-        self.solutions_config.write_to_file()
         self.print_and_log(
-            'Removed archives ({}) from config file ({}).'.format(
-                ', '.join(self.archives), self.solutions_config.filepath,
+            'Removed archives ({}) from config file.'.format(
+                ', '.join(self.archives),
             ),
             level='DEBUG',
         )

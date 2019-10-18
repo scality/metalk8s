@@ -4,6 +4,7 @@ This module contains minion-local operations, see `metalk8s_solutions_k8s.py`
 for the K8s operations in the virtual `metalk8s_solutions` module.
 """
 import collections
+import errno
 import logging
 
 from salt.exceptions import CommandExecutionError
@@ -11,11 +12,12 @@ import yaml
 
 log = logging.getLogger(__name__)
 
-SOLUTIONS_CONFIG_FILE = '/etc/metalk8s/solutions.yaml'
-SUPPORTED_CONFIG_VERSIONS = frozenset((
+CONFIG_FILE = '/etc/metalk8s/solutions.yaml'
+CONFIG_KIND = 'SolutionsConfiguration'
+SUPPORTED_CONFIG_VERSIONS = [
     'solutions.metalk8s.scality.com/{}'.format(version)
     for version in ['v1alpha1']
-))
+]
 
 __virtualname__ = 'metalk8s_solutions'
 
@@ -26,7 +28,40 @@ def __virtual__():
     return __virtualname__
 
 
-def read_config():
+def _load_config_file(create=False):
+    try:
+        with open(CONFIG_FILE, 'r') as fd:
+            return yaml.safe_load(fd)
+    except IOError as exc:
+        if create and exc.errno == errno.ENOENT:
+            return _create_config_file()
+        msg = 'Failed to load "{}": {}'.format(CONFIG_FILE, str(exc))
+        raise CommandExecutionError(message=msg)
+
+
+def _write_config_file(data):
+    try:
+        with open(CONFIG_FILE, 'w') as fd:
+            yaml.safe_dump(data, fd)
+    except Exception as exc:
+        msg = 'Failed to write Solutions config file at "{}": {}'.format(
+            CONFIG_FILE, exc
+        )
+        raise CommandExecutionError(message=msg)
+
+
+def _create_config_file():
+    default_data = {
+        'apiVersion': SUPPORTED_CONFIG_VERSIONS[0],
+        'kind': CONFIG_KIND,
+        'archives': [],
+        'active': {},
+    }
+    _write_config_file(default_data)
+    return default_data
+
+
+def read_config(create=False):
     """Read the SolutionsConfiguration file and return its contents.
 
     Empty containers will be used for `archives` and `active` in the return
@@ -42,13 +77,11 @@ def read_config():
         - /path/to/solution/archive.iso
       active:
         solution-name: X.Y.Z-suffix (or 'latest')
+
+    If `create` is set to True, this will create an empty configuration file
+    if it does not exist yet.
     """
-    try:
-        with open(SOLUTIONS_CONFIG_FILE, 'r') as fd:
-            config = yaml.safe_load(fd)
-    except Exception as exc:
-        msg = 'Failed to load "{}": {}'.format(SOLUTIONS_CONFIG_FILE, str(exc))
-        raise CommandExecutionError(message=msg)
+    config = _load_config_file(create=create)
 
     if config.get('kind') != 'SolutionsConfiguration':
         raise CommandExecutionError(
@@ -69,6 +102,55 @@ def read_config():
     config.setdefault('active', {})
 
     return config
+
+
+def configure_archive(archive, create_config=False, removed=False):
+    """Add (or remove) a Solution archive in the config file."""
+    config = read_config(create=create_config)
+
+    if removed:
+        try:
+            config['archives'].remove(archive)
+        except ValueError:
+            pass
+    else:
+        if archive not in config['archives']:
+            config['archives'].append(archive)
+
+    _write_config_file(config)
+    return True
+
+
+def activate_solution(solution, version='latest'):
+    """Set a `version` of a `solution` as being "active"."""
+    available = list_available()
+    if solution not in available:
+        raise CommandExecutionError(
+            'Cannot activate Solution "{}": not available'.format(solution)
+        )
+
+    # NOTE: this doesn't create a config file, since you can't activate a non-
+    #       available version
+    config = read_config(create=False)
+
+    if version != 'latest':
+        if version not in (info['version'] for info in available[solution]):
+            raise CommandExecutionError(
+                'Cannot activate version "{}" for Solution "{}": '
+                'not available'.format(version, solution)
+            )
+
+    config['active'][solution] = version
+    _write_config_file(config)
+    return True
+
+
+def deactivate_solution(solution):
+    """Remove a `solution` from the "active" section in configuration."""
+    config = read_config(create=False)
+    config['active'].pop(solution, None)
+    _write_config_file(config)
+    return True
 
 
 def _is_solution_mount(mount_tuple):
