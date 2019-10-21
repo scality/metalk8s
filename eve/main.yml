@@ -119,6 +119,8 @@ models:
       name: Retrieve ISO image checksum
       command: >
         curl -s -XGET -o "${DEST_DIR}/SHA256SUM" "${BASE_URL}/SHA256SUM"
+      # Three minutes should be enough for this small file
+      timeout: 180
   - ShellCommand: &create_mountpoint
       name: Create mountpoint
       env:
