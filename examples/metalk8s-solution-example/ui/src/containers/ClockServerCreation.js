@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
@@ -62,7 +62,12 @@ const FormSection = styled.div`
 `;
 
 const ClockServerCreationForm = props => {
-  const { intl, match, config, environments } = props;
+  const config = useSelector(state => state.config);
+  const environments = useSelector(state => state.app.environment.list);
+  const dispatch = useDispatch();
+  const createClockServer = body => dispatch(createClockServerAction(body));
+
+  const { intl, match } = props;
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
@@ -110,7 +115,7 @@ const ClockServerCreationForm = props => {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={props.createClockServer}
+          onSubmit={createClockServer}
         >
           {formProps => {
             const {
@@ -214,24 +219,4 @@ const ClockServerCreationForm = props => {
   );
 };
 
-function mapStateToProps(state) {
-  return {
-    config: state.config,
-    environments: state.app.environment.list
-  };
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    createClockServer: body => dispatch(createClockServerAction(body))
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(ClockServerCreationForm)
-  )
-);
+export default injectIntl(withRouter(ClockServerCreationForm));
