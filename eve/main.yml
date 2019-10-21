@@ -111,6 +111,8 @@ models:
       command: >
         curl -s -XGET -o "${DEST_DIR}/metalk8s.iso" "${BASE_URL}/metalk8s.iso"
       haltOnFailure: true
+      # Increase default timeout for ISOs, as artifacts may be too slow
+      timeout: 2400
   - ShellCommand: &retrieve_iso_checksum
       <<: *retrieve_iso
       name: Retrieve ISO image checksum
