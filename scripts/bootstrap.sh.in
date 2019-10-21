@@ -10,7 +10,7 @@ if test -z "$(type -p)"; then set -o pipefail; fi
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/bootstrap.log
 
-declare OS
+declare OS OS_FAMILY
 
 if ! options=$(getopt --options v --long verbose,log-file: -- "$@"); then
     echo 1>&2 "Incorrect arguments provided"
@@ -53,6 +53,11 @@ determine_os() {
         # shellcheck disable=SC1091
         . /etc/os-release
         OS=$ID
+        if [[ $OS =~ ^(rhel|centos)$ ]]; then
+            OS_FAMILY=redhat
+        elif [[ $OS =~ ^(debian|ubuntu)$ ]]; then
+            OS_FAMILY=debian
+        fi
     else
         die "Impossible to determine the OS"
     fi
@@ -209,11 +214,11 @@ stop_salt_minion_service() {
 }
 
 configure_repositories() {
-    case "$OS" in
-        centos|rhel)
+    case "$OS_FAMILY" in
+        redhat)
             configure_yum_repositories
             ;;
-        ubuntu)
+        debian)
             configure_apt_repositories
             ;;
         *)
@@ -277,14 +282,14 @@ install_packages() {
     local -ra packages=("$@")
     local -a repo_list=(/etc/apt/sources.list)
 
-    case "$OS" in
-        centos|rhel)
+    case "$OS_FAMILY" in
+        redhat)
             local -a yum_opts=(
                 '--assumeyes'
             )
             "$YUM" install "${yum_opts[@]}" "${packages[@]}"
             ;;
-        ubuntu)
+        debian)
             mapfile -O 1 -t repo_list < <(find \
                 /etc/apt/sources.list.d/ \
                 ! -name 'metalk8s-*' -a -name '*.list')
