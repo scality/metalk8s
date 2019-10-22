@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 const Title = styled.h3`
   margin-top: 25px;
@@ -15,17 +15,16 @@ const AboutContainer = styled.div`
   align-items: center;
 `;
 
-const About = props => (
-  <AboutContainer>
-    <Title>
-      <FormattedMessage id="product_name" />
-    </Title>
-    {`${props.intl.messages.cluster_version}: ${props.clusterVersion}`}
-  </AboutContainer>
-);
+const About = props => {
+  const clusterVersion = useSelector(state => state.app.nodes.clusterVersion);
+  return (
+    <AboutContainer>
+      <Title>
+        <FormattedMessage id="product_name" />
+      </Title>
+      {`${props.intl.messages.cluster_version}: ${clusterVersion}`}
+    </AboutContainer>
+  );
+};
 
-const mapStateToProps = state => ({
-  clusterVersion: state.app.nodes.clusterVersion
-});
-
-export default injectIntl(connect(mapStateToProps)(About));
+export default injectIntl(About);
