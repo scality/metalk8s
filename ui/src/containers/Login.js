@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { Button, Input } from '@scality/core-ui';
@@ -47,7 +47,6 @@ const LogoContainer = styled.div`
   position: absolute;
   top: 45px;
 `;
-
 
 const LoginForm = props => {
   const {
@@ -116,42 +115,28 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required(),
 });
 
-class Login extends React.Component {
-  render() {
-    return (
-      <LoginFormContainer>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={this.props.authenticate}
-          render={props => {
-            const formikProps = {
-              ...props,
-              ...this.props,
-              asyncErrors: this.props.asyncErrors,
-            };
-            return <LoginForm {...formikProps} />;
-          }}
-        />
-      </LoginFormContainer>
-    );
-  }
-}
+const Login = props => {
+  const asyncErrors = useSelector(state => state.login.errors);
+  const dispatch = useDispatch();
+  const authenticate = values => dispatch(authenticateAction(values));
 
-const mapStateToProps = state => ({
-  asyncErrors: state.login.errors,
-  config: state.config.api,
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    authenticate: values => dispatch(authenticateAction(values)),
-  };
+  return (
+    <LoginFormContainer>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={authenticate}
+        render={renderProps => {
+          const formikProps = {
+            ...renderProps,
+            ...props,
+            asyncErrors: asyncErrors,
+          };
+          return <LoginForm {...formikProps} />;
+        }}
+      />
+    </LoginFormContainer>
+  );
 };
 
-export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps,
-  )(Login),
-);
+export default injectIntl(Login);
