@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
-import { matchPath } from 'react-router';
+import { useRouteMatch, useHistory } from 'react-router';
 import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
-import { withRouter, Switch } from 'react-router-dom';
+import { Switch } from 'react-router-dom';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
 
@@ -29,9 +29,21 @@ import { useRefreshEffect } from '../services/utils';
 import { fetchVersionsAction } from '../ducks/config';
 
 const Layout = props => {
+  const user = useSelector(state => state.login.user);
+  const sidebar = useSelector(state => state.app.layout.sidebar);
+  const theme = useSelector(state => state.config.theme);
+  const notifications = useSelector(state => state.app.notifications.list);
+  const dispatch = useDispatch();
+  const logout = () => dispatch(logoutAction());
+  const toggleSidebar = () => dispatch(toggleSidebarAction());
+  const removeNotification = uid => dispatch(removeNotificationAction(uid));
+  const fetchVersions = () => dispatch(fetchVersionsAction());
+  const { intl } = props;
+  const history = useHistory();
+
   useRefreshEffect(refreshEnvironmentAction, stopRefreshEnvironmentAction);
   useEffect(() => {
-    props.fetchVersions();
+    fetchVersions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -39,34 +51,34 @@ const Layout = props => {
 
   const help = [
     {
-      label: props.intl.messages.about,
+      label: intl.messages.about,
       onClick: () => {
-        props.history.push('/about');
+        history.push('/about');
       }
     }
   ];
 
-  const user = {
-    name: props.user && props.user.username,
-    actions: [{ label: props.intl.messages.log_out, onClick: props.logout }]
+  const userConfig = {
+    name: user && user.username,
+    actions: [{ label: intl.messages.log_out, onClick: logout }]
   };
 
-  const sidebar = {
-    expanded: props.sidebar.expanded,
+  const sidebarConfig = {
+    expanded: sidebar.expanded,
     actions: [
       {
-        label: props.intl.messages.environments,
+        label: intl.messages.environments,
         icon: <i className="fas fa-server" />,
         onClick: () => {
-          props.history.push('/');
+          history.push('/');
         },
         active:
-          matchPath(props.history.location.pathname, {
+          useRouteMatch({
             path: '/',
             exact: true,
             strict: true
           }) ||
-          matchPath(props.history.location.pathname, {
+          useRouteMatch({
             path: '/environments',
             exact: false,
             strict: true
@@ -76,12 +88,12 @@ const Layout = props => {
   };
 
   const navbar = {
-    onToggleClick: props.toggleSidebar,
+    onToggleClick: toggleSidebar,
     toggleVisible: true,
-    productName: props.intl.messages.product_name,
+    productName: intl.messages.product_name,
     applications,
     help,
-    user: props.user && user,
+    user: user && userConfig,
     logo: (
       <img
         alt="logo"
@@ -91,11 +103,11 @@ const Layout = props => {
   };
 
   return (
-    <ThemeProvider theme={props.theme}>
-      <CoreUILayout sidebar={sidebar} navbar={navbar}>
+    <ThemeProvider theme={theme}>
+      <CoreUILayout sidebar={sidebarConfig} navbar={navbar}>
         <Notifications
-          notifications={props.notifications}
-          onDismiss={props.removeNotification}
+          notifications={notifications}
+          onDismiss={removeNotification}
         />
         <Switch>
           <PrivateRoute exact path="/about" component={Welcome} />
@@ -136,27 +148,4 @@ const Layout = props => {
   );
 };
 
-const mapStateToProps = state => ({
-  user: state.login.user,
-  sidebar: state.app.layout.sidebar,
-  theme: state.config.theme,
-  notifications: state.app.notifications.list
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    logout: () => dispatch(logoutAction()),
-    toggleSidebar: () => dispatch(toggleSidebarAction()),
-    removeNotification: uid => dispatch(removeNotificationAction(uid)),
-    fetchVersions: () => dispatch(fetchVersionsAction())
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(Layout)
-  )
-);
+export default injectIntl(Layout);
