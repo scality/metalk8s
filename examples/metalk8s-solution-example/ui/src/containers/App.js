@@ -2,7 +2,7 @@ import '@fortawesome/fontawesome-free/css/all.css';
 
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { withRouter, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import { IntlProvider, addLocaleData } from 'react-intl';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
@@ -43,4 +43,4 @@ const App = props => {
   );
 };
 
-export default withRouter(App);
+export default App;
