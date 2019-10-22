@@ -729,6 +729,12 @@ stages:
             PYTEST_FILTERS: "install and ci and multinodes"
       - ShellCommand:
           <<: *bastion_tests
+          name: Run operational scenarii on the bastion
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "ops and ci and multinodes"
+      - ShellCommand:
+          <<: *bastion_tests
           name: Run fast tests on the bastion
           env:
             <<: *_env_bastion_tests
