@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
-import { withRouter } from 'react-router-dom';
+import { useRouteMatch } from 'react-router';
 import { Breadcrumb, Button, Input } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { Formik, Form } from 'formik';
@@ -142,8 +142,12 @@ const EnvironmentEditForm = props => {
     </EnvironmentEditFormContainer>
   );
 };
-const EnvironmentDetail = props => {
-  const { match, intl, config, environments, upgradeEnvironment } = props;
+const EnvironmentDetail = ({ intl }) => {
+  const config = useSelector(state => state.config);
+  const environments = useSelector(state => state.app.environment.list);
+  const dispatch = useDispatch();
+  const upgradeEnvironment = body => dispatch(upgradeEnvironmentAction(body));
+  const match = useRouteMatch();
   const [environmentEditing, setEnvironmentEditing] = useState(false);
   const environmentName = match.params.name;
   const environment = environments.find(
@@ -217,22 +221,4 @@ const EnvironmentDetail = props => {
   ) : null;
 };
 
-const mapStateToProps = state => ({
-  config: state.config,
-  environments: state.app.environment.list
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    upgradeEnvironment: body => dispatch(upgradeEnvironmentAction(body))
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(EnvironmentDetail)
-  )
-);
+export default injectIntl(EnvironmentDetail);
