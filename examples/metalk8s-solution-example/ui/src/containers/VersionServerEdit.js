@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
+import { useRouteMatch, useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
@@ -81,15 +81,20 @@ const InputValue = styled.label`
   font-size: ${fontSize.large};
 `;
 
-const VersionServerEditForm = props => {
-  const { intl, match, config, environments } = props;
+const VersionServerEditForm = ({ intl }) => {
+  const config = useSelector(state => state.config);
+  const environments = useSelector(state => state.app.environment.list);
+  const dispatch = useDispatch();
+  const editversionServer = body => dispatch(editVersionServerAction(body));
+  const history = useHistory();
+  const match = useRouteMatch();
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
   );
 
   useEffect(() => {
-    props.getVersionServer(environment, match.params.id);
+    dispatch(getVersionServerAction({ environment, name: match.params.id }));
   }, [currentEnvironment]);
 
   const currentEnvironmentVersion = currentEnvironment
@@ -142,7 +147,7 @@ const VersionServerEditForm = props => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={props.editversionServer}
+            onSubmit={editversionServer}
           >
             {formProps => {
               const {
@@ -220,7 +225,7 @@ const VersionServerEditForm = props => {
                             type="button"
                             outlined
                             onClick={() =>
-                              props.history.push(`/environments/${environment}`)
+                              history.push(`/environments/${environment}`)
                             }
                           />
                           <Button
@@ -242,26 +247,4 @@ const VersionServerEditForm = props => {
   );
 };
 
-function mapStateToProps(state) {
-  return {
-    config: state.config,
-    environments: state.app.environment.list
-  };
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    editversionServer: body => dispatch(editVersionServerAction(body)),
-    getVersionServer: (environment, name) =>
-      dispatch(getVersionServerAction({ environment, name }))
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(VersionServerEditForm)
-  )
-);
+export default injectIntl(VersionServerEditForm);
