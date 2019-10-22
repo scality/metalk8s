@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { useRouteMatch } from 'react-router';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
@@ -54,9 +54,9 @@ const VolumeInformationTitle = styled.div`
 `;
 
 const VolumeInformation = props => {
-  const { intl, match } = props;
+  const { intl } = props;
   const dispatch = useDispatch();
-
+  const match = useRouteMatch();
   useEffect(() => {
     dispatch(fetchNodesAction());
     dispatch(fetchVolumesAction());
@@ -78,7 +78,8 @@ const VolumeInformation = props => {
     SC => SC.metadata.name === volume?.spec?.storageClassName,
   );
   const volumeStatus = computeVolumeGlobalStatus(
-    volume.metadata.name, volume?.status
+    volume.metadata.name,
+    volume?.status,
   );
   const [errorCode, errorMessage] = volumeGetError(volume?.status);
 
@@ -192,4 +193,4 @@ const VolumeInformation = props => {
   );
 };
 
-export default injectIntl(withRouter(VolumeInformation));
+export default injectIntl(VolumeInformation);
