@@ -3,21 +3,28 @@
 
 {# First merge the basic defaults with versions information #}
 {% set version_defaults = salt['grains.filter_by']({
-  'RedHat': {
+  'CentOS': {
     'kubernetes': versions.kubernetes,
     'repo': {
       'packages': versions.packages.centos,
       'images': versions.images,
     },
   },
-  'Debian': {
+  'RedHat': {
+    'kubernetes': versions.kubernetes,
+    'repo': {
+      'packages': versions.packages.redhat,
+      'images': versions.images,
+    },
+  },
+  'Ubuntu': {
     'kubernetes': versions.kubernetes,
     'repo': {
       'packages': versions.packages.ubuntu,
       'images': versions.images,
     },
   },
-}, grain='os_family', merge=defaults.get('version_defaults')) %}
+}, grain='os', merge=defaults.get('version_defaults')) %}
 
 {% set packages = salt['grains.filter_by']({
   'RedHat': {},
