@@ -50,6 +50,8 @@ Configure {{ repo_name }} repository:
       - file: Set metalk8s_osmajorrelease in yum vars
     - require_in:
       - test: Repositories configured
+    - watch_in:
+      - module: Check packages availability
 {%- endfor %}
 
 # Refresh cache manually as we use the same repo name for all versions
@@ -61,6 +63,13 @@ Refresh yum cache:
     - pkg.refresh_db: []
     - onchanges:
       - cmd: Refresh yum cache
+
+Check packages availability:
+  module.wait:
+    - metalk8s_package_manager.check_pkg_availability:
+      - pkgs_info: {{ repo.packages | tojson }}
+    - require_in:
+      - test: Repositories configured
 
 Repositories configured:
   test.succeed_without_changes: []
