@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
@@ -96,22 +96,22 @@ const ControlPlaneStatusLabel = styled.span`
 `;
 
 const ClusterMonitoring = props => {
-  const {
-    refreshAlerts,
-    stopRefreshAlerts,
-    refreshClusterStatus,
-    stopRefreshClusterStatus,
-  } = props;
+  const dispatch = useDispatch();
+  const alerts = useSelector(state => state.app.monitoring.alert);
+  const clusterStatus = useSelector(state => makeClusterStatus(state, props));
+  const cluster = useSelector(state => state.app.monitoring.cluster);
+  const config = useSelector(state => state.config);
+  const { intl } = props;
 
   useEffect(() => {
-    refreshAlerts();
-    return () => stopRefreshAlerts();
-  }, [refreshAlerts, stopRefreshAlerts]);
+    dispatch(refreshAlertsAction());
+    return () => dispatch(stopRefreshAlertsAction());
+  }, [dispatch]);
 
   useEffect(() => {
-    refreshClusterStatus();
-    return () => stopRefreshClusterStatus();
-  }, [refreshClusterStatus, stopRefreshClusterStatus]);
+    dispatch(refreshClusterStatusAction());
+    return () => dispatch(stopRefreshClusterStatusAction());
+  }, [dispatch]);
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
@@ -123,12 +123,12 @@ const ClusterMonitoring = props => {
 
   const columns = [
     {
-      label: props.intl.messages.name,
+      label: intl.messages.name,
       dataKey: 'name',
       width: 250,
     },
     {
-      label: props.intl.messages.severity,
+      label: intl.messages.severity,
       dataKey: 'severity',
       width: 100,
       renderer: data => {
@@ -136,12 +136,12 @@ const ClusterMonitoring = props => {
       },
     },
     {
-      label: props.intl.messages.message,
+      label: intl.messages.message,
       dataKey: 'message',
       flexGrow: 1,
     },
     {
-      label: props.intl.messages.active_at,
+      label: intl.messages.active_at,
       dataKey: 'activeAt',
       width: 200,
       renderer: data => (
@@ -158,7 +158,7 @@ const ClusterMonitoring = props => {
     },
   ];
 
-  const alerts = props.alerts.list
+  const alertsList = alerts.list
     .filter(alert => alert.state !== 'pending')
     .map(alert => {
       return {
@@ -172,29 +172,23 @@ const ClusterMonitoring = props => {
   const checkControlPlaneStatus = jobCount =>
     jobCount > 0 ? STATUS_SUCCESS : STATUS_CRITICAL;
 
-  const apiServerStatus = checkControlPlaneStatus(
-    props.cluster.apiServerStatus,
-  );
+  const apiServerStatus = checkControlPlaneStatus(cluster.apiServerStatus);
   const kubeSchedulerStatus = checkControlPlaneStatus(
-    props.cluster.kubeSchedulerStatus,
+    cluster.kubeSchedulerStatus,
   );
   const kubeControllerManagerStatus = checkControlPlaneStatus(
-    props.cluster.kubeControllerManagerStatus,
+    cluster.kubeControllerManagerStatus,
   );
 
-  const sortedAlerts = sortSelector(alerts, sortBy, sortDirection);
+  const sortedAlerts = sortSelector(alertsList, sortBy, sortDirection);
 
   return (
     <PageContainer>
       <ClusterStatusTitleContainer>
         <LeftClusterStatusContainer>
-          <PageSubtitle>
-            {props.intl.messages.cluster_status + ' :'}
-          </PageSubtitle>
-          <ClusterStatusValue
-            isUp={props.clusterStatus.value === CLUSTER_STATUS_UP}
-          >
-            {props.clusterStatus.label}
+          <PageSubtitle>{intl.messages.cluster_status + ' :'}</PageSubtitle>
+          <ClusterStatusValue isUp={clusterStatus.value === CLUSTER_STATUS_UP}>
+            {clusterStatus.label}
           </ClusterStatusValue>
           <Tooltip
             placement="right"
@@ -203,19 +197,19 @@ const ClusterMonitoring = props => {
                 <div>
                   <CircleStatus status={apiServerStatus} />
                   <ControlPlaneStatusLabel>
-                    {props.intl.messages.api_server}
+                    {intl.messages.api_server}
                   </ControlPlaneStatusLabel>
                 </div>
                 <div>
                   <CircleStatus status={kubeSchedulerStatus} />
                   <ControlPlaneStatusLabel>
-                    {props.intl.messages.kube_scheduler}
+                    {intl.messages.kube_scheduler}
                   </ControlPlaneStatusLabel>
                 </div>
                 <div>
                   <CircleStatus status={kubeControllerManagerStatus} />
                   <ControlPlaneStatusLabel>
-                    {props.intl.messages.kube_controller_manager}
+                    {intl.messages.kube_controller_manager}
                   </ControlPlaneStatusLabel>
                 </div>
               </TooltipContent>
@@ -223,20 +217,20 @@ const ClusterMonitoring = props => {
           >
             <QuestionMarkIcon className="fas fa-question-circle" />
           </Tooltip>
-          {props.clusterStatus.isLoading ? <LoaderCoreUI size="small" /> : null}
+          {clusterStatus.isLoading ? <LoaderCoreUI size="small" /> : null}
         </LeftClusterStatusContainer>
         <RightClusterStatusContainer>
           <Tooltip
             placement="left"
             overlay={
               <TooltipContent>
-                {props.intl.messages.advanced_monitoring}
+                {intl.messages.advanced_monitoring}
               </TooltipContent>
             }
           >
             <div
               onClick={() => {
-                window.open(props.config.api.url_grafana, '_blank');
+                window.open(config.api.url_grafana, '_blank');
               }}
             >
               <i className="fas fa-chart-line" />
@@ -246,8 +240,8 @@ const ClusterMonitoring = props => {
       </ClusterStatusTitleContainer>
 
       <PageSubtitle>
-        {props.intl.messages.alerts}
-        {props.alerts.isLoading ? <LoaderCoreUI size="small" /> : null}
+        {intl.messages.alerts}
+        {alerts.isLoading ? <LoaderCoreUI size="small" /> : null}
       </PageSubtitle>
       <TableContainer>
         <Table
@@ -259,7 +253,7 @@ const ClusterMonitoring = props => {
           sortDirection={sortDirection}
           onSort={onSort}
           noRowsRenderer={() => (
-            <NoRowsRenderer content={props.intl.messages.no_data_available} />
+            <NoRowsRenderer content={intl.messages.no_data_available} />
           )}
         />
       </TableContainer>
@@ -267,18 +261,10 @@ const ClusterMonitoring = props => {
   );
 };
 
-const mapStateToProps = (state, props) => {
-  return {
-    alerts: state.app.monitoring.alert,
-    clusterStatus: makeClusterStatus(state, props),
-    cluster: state.app.monitoring.cluster,
-    config: state.config,
-  };
-};
-
 const makeClusterStatus = (state, props) => {
+  const { intl } = props;
   const cluster = state.app.monitoring.cluster;
-  let label = props.intl.messages.down;
+  let label = intl.messages.down;
   let value = CLUSTER_STATUS_DOWN;
 
   if (
@@ -287,29 +273,15 @@ const makeClusterStatus = (state, props) => {
     cluster.kubeControllerManagerStatus > 0
   ) {
     value = CLUSTER_STATUS_UP;
-    label = props.intl.messages.cluster_up_and_running;
+    label = intl.messages.cluster_up_and_running;
   }
 
   if (cluster.error) {
     value = CLUSTER_STATUS_DOWN;
-    label = props.intl.messages[cluster.error] || cluster.error;
+    label = intl.messages[cluster.error] || cluster.error;
   }
 
   return { value, label, isLoading: cluster.isLoading };
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    refreshClusterStatus: () => dispatch(refreshClusterStatusAction()),
-    refreshAlerts: () => dispatch(refreshAlertsAction()),
-    stopRefreshAlerts: () => dispatch(stopRefreshAlertsAction()),
-    stopRefreshClusterStatus: () => dispatch(stopRefreshClusterStatusAction()),
-  };
-};
-
-export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps,
-  )(ClusterMonitoring),
-);
+export default injectIntl(ClusterMonitoring);
