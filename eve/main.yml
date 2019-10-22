@@ -103,23 +103,36 @@ models:
         DEST_DIR: sosreport/sosreport
       command: mkdir -p "${DEST_DIR}" && cp /var/tmp/sosreport* "${DEST_DIR}"
       alwaysRun: true
-  - ShellCommand: &retrieve_iso
-      name: Retrieve ISO image
-      env:
+  - ShellCommand: &retrieve_iso_checksum
+      name: Retrieve ISO image checksum
+      env: &_env_retrieve_artifact
         BASE_URL: "%(prop:artifacts_private_url)s"
         DEST_DIR: "."
-      command: >
-        curl -s -XGET -o "${DEST_DIR}/metalk8s.iso" "${BASE_URL}/metalk8s.iso"
-      haltOnFailure: true
-      # Increase default timeout for ISOs, as artifacts may be too slow
-      timeout: 2400
-  - ShellCommand: &retrieve_iso_checksum
-      <<: *retrieve_iso
-      name: Retrieve ISO image checksum
       command: >
         curl -s -XGET -o "${DEST_DIR}/SHA256SUM" "${BASE_URL}/SHA256SUM"
       # Three minutes should be enough for this small file
       timeout: 180
+  - ShellCommand: &retrieve_iso
+      name: Retrieve ISO image
+      env: &_env_retrieve_artifact_retry
+        <<: *_env_retrieve_artifact
+        MAX_ATTEMPTS: "300" # retry every 2 seconds for 10 minutes total
+      command: |
+        bash -c '
+        in_url="${BASE_URL}/metalk8s.iso"
+        out_path="${DEST_DIR}/metalk8s.iso"
+        for ((i=1;i<=MAX_ATTEMPTS;i++)); do
+          if [ $(( $i % 10 )) -eq 1 ]; then
+            echo "Attempt $i out of ${MAX_ATTEMPTS}"
+          fi
+          curl -s -XGET -o "${out_path}" "${in_url}" && exit
+          sleep 2
+        done
+        echo "Could not retrieve ISO after ${MAX_ATTEMPTS} attempts" >&2
+        exit 1'
+      haltOnFailure: true
+      # Increase default timeout for ISOs, as artifacts may be too slow
+      timeout: 2400
   - ShellCommand: &create_mountpoint
       name: Create mountpoint
       env:
@@ -272,7 +285,7 @@ stages:
           haltOnFailure: false
 
   single-node:
-    worker:
+    worker: &single_node_worker
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.large
@@ -282,8 +295,8 @@ stages:
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Retrieve ISO ---
-      - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *retrieve_iso
       - ShellCommand: *check_iso_checksum
       # --- Prepare for Bootstrap ---
       - ShellCommand: *create_mountpoint
