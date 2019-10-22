@@ -1,8 +1,8 @@
 import '@fortawesome/fontawesome-free/css/all.css';
 
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { withRouter, Route, Switch } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Route, Switch } from 'react-router-dom';
 import { IntlProvider, addLocaleData } from 'react-intl';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
@@ -25,47 +25,30 @@ const messages = {
 
 addLocaleData([...locale_en, ...locale_fr]);
 
-class App extends Component {
-  componentDidMount() {
-    document.title = messages[this.props.config.language].product_name;
-    this.props.fetchConfig();
-    this.props.setInitialLanguage();
-    this.props.initToggleSideBar();
-  }
+const App = props => {
+  const { language, api, theme } = useSelector(state => state.config);
+  const isUserInfoLoaded = useSelector(state => state.login.isUserInfoLoaded);
+  const dispatch = useDispatch();
 
-  render() {
-    const { language, api, theme } = this.props.config;
-    return api && theme && this.props.isUserInfoLoaded ? (
-      <IntlProvider locale={language} messages={messages[language]}>
-        <IntlGlobalProvider>
-          <Switch>
-            <Route path="/login" component={Login} />
-            <Route component={Layout} />
-          </Switch>
-        </IntlGlobalProvider>
-      </IntlProvider>
-    ) : (
-      <Loader />
-    );
-  }
-}
+  useEffect(() => {
+    document.title = messages[language].product_name;
+    dispatch(fetchConfigAction());
+    dispatch(setInitialLanguageAction());
+    dispatch(initToggleSideBarAction());
+  }, [language, dispatch]);
 
-const mapStateToProps = state => ({
-  config: state.config,
-  isUserInfoLoaded: state.login.isUserInfoLoaded,
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    fetchConfig: () => dispatch(fetchConfigAction()),
-    setInitialLanguage: () => dispatch(setInitialLanguageAction()),
-    initToggleSideBar: () => dispatch(initToggleSideBarAction()),
-  };
+  return api && theme && isUserInfoLoaded ? (
+    <IntlProvider locale={language} messages={messages[language]}>
+      <IntlGlobalProvider>
+        <Switch>
+          <Route path="/login" component={Login} />
+          <Route component={Layout} />
+        </Switch>
+      </IntlGlobalProvider>
+    </IntlProvider>
+  ) : (
+    <Loader />
+  );
 };
 
-export default withRouter(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps,
-  )(App),
-);
+export default App;
