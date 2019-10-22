@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
+import { useRouteMatch, useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -61,13 +61,14 @@ const FormSection = styled.div`
   flex-direction: column;
 `;
 
-const ClockServerCreationForm = props => {
+const ClockServerCreationForm = ({ intl }) => {
   const config = useSelector(state => state.config);
   const environments = useSelector(state => state.app.environment.list);
   const dispatch = useDispatch();
   const createClockServer = body => dispatch(createClockServerAction(body));
 
-  const { intl, match } = props;
+  const history = useHistory();
+  const match = useRouteMatch();
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
@@ -196,9 +197,7 @@ const ClockServerCreationForm = props => {
                           type="button"
                           outlined
                           onClick={() =>
-                            props.history.push(
-                              `/environments/${match.params.name}`
-                            )
+                            history.push(`/environments/${match.params.name}`)
                           }
                         />
                         <Button
@@ -219,4 +218,4 @@ const ClockServerCreationForm = props => {
   );
 };
 
-export default injectIntl(withRouter(ClockServerCreationForm));
+export default injectIntl(ClockServerCreationForm);
