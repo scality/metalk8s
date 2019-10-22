@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { DebounceInput } from 'react-debounce-input';
@@ -158,7 +158,7 @@ const TextInput = ({
 };
 
 const LoginForm = props => {
-  const { values, touched, errors, handleChange, isSubmitting, intl } = props;
+  const { values, touched, handleChange, isSubmitting, intl, errors } = props;
   return (
     <Form autoComplete="off">
       <LogoContainer>
@@ -204,43 +204,29 @@ const validationSchema = Yup.object().shape({
   password: Yup.string().required()
 });
 
-class Login extends React.Component {
-  render() {
-    return (
-      <LoginFormContainer>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          validateOnBlur={false}
-          validateOnChange={false}
-          onSubmit={this.props.authenticate}
-          render={props => {
-            const formikProps = {
-              ...props,
-              ...this.props,
-              errors: { ...props.errors, ...this.props.errors }
-            };
-            return <LoginForm {...formikProps} />;
-          }}
-        />
-      </LoginFormContainer>
-    );
-  }
-}
-
-const mapStateToProps = state => ({
-  errors: state.login.errors
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    authenticate: values => dispatch(authenticateAction(values))
-  };
+const Login = loginProps => {
+  const errors = useSelector(state => state.login.errors);
+  const dispatch = useDispatch();
+  const authenticate = values => dispatch(authenticateAction(values));
+  return (
+    <LoginFormContainer>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        validateOnBlur={false}
+        validateOnChange={false}
+        onSubmit={authenticate}
+        render={props => {
+          const formikProps = {
+            ...props,
+            ...loginProps,
+            errors: { ...props.errors, ...errors }
+          };
+          return <LoginForm {...formikProps} />;
+        }}
+      />
+    </LoginFormContainer>
+  );
 };
 
-export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(Login)
-);
+export default injectIntl(Login);
