@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { connect, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
-import { withRouter } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import {
   Button,
   Table,
@@ -111,12 +111,15 @@ const LoaderContainer = styled(Loader)`
 
 const NodeVolumes = props => {
   const { intl } = props;
-
+  const dispatch = useDispatch();
+  const deleteVolume = deleteVolumeName =>
+    dispatch(deleteVolumeAction(deleteVolumeName));
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
     refreshPersistentVolumesAction,
     stopRefreshPersistentVolumesAction,
   );
+  const history = useHistory();
 
   const volumes = useSelector(state => state.app.volumes);
   const persistentVolumes = useSelector(state => state.app.volumes.pVList);
@@ -239,9 +242,7 @@ const NodeVolumes = props => {
 
   const onRowClick = row => {
     if (row.rowData && row.rowData.name) {
-      props.history.push(
-        `/nodes/${props.nodeName}/volumes/${row.rowData.name}`,
-      );
+      history.push(`/nodes/${props.nodeName}/volumes/${row.rowData.name}`);
     }
   };
 
@@ -258,7 +259,7 @@ const NodeVolumes = props => {
   }
 
   const onClickDeleteButton = deleteVolumeName => {
-    props.deleteVolume(deleteVolumeName);
+    deleteVolume(deleteVolumeName);
     setisDeleteConfirmationModalOpen(false);
   };
 
@@ -320,7 +321,7 @@ const NodeVolumes = props => {
               text={<i className="fas fa-plus "></i>}
               type="button"
               onClick={() => {
-                props.history.push('createVolume');
+                history.push('createVolume');
               }}
               data-cy="create-volume-button"
             />
@@ -356,18 +357,4 @@ const NodeVolumes = props => {
   );
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    deleteVolume: deleteVolumeName =>
-      dispatch(deleteVolumeAction(deleteVolumeName)),
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      null,
-      mapDispatchToProps,
-    )(NodeVolumes),
-  ),
-);
+export default injectIntl(NodeVolumes);
