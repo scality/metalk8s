@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
-import { withRouter, Switch, Route } from 'react-router-dom';
+import { useLocation, useHistory, useRouteMatch } from 'react-router';
+import { Switch, Route } from 'react-router-dom';
 import { Table, Breadcrumb, Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
@@ -69,8 +70,10 @@ const PodsContainer = styled.div`
 `;
 
 const NodeInformation = props => {
-  const { match, history, location, intl } = props;
-
+  const { intl } = props;
+  const history = useHistory();
+  const match = useRouteMatch();
+  const location = useLocation();
   const dispatch = useDispatch();
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
@@ -238,4 +241,4 @@ const NodeInformation = props => {
   );
 };
 
-export default injectIntl(withRouter(NodeInformation));
+export default injectIntl(NodeInformation);
