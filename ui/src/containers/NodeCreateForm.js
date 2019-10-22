@@ -1,9 +1,9 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Checkbox, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize, gray } from '@scality/core-ui/dist/style/theme';
@@ -116,222 +116,202 @@ const validationSchema = Yup.object().shape({
   infra: Yup.boolean().required(),
 });
 
-class NodeCreateForm extends React.Component {
-  componentWillUnmount() {
-    this.props.clearCreateNodeError();
-  }
+const NodeCreateForm = ({ intl }) => {
+  const asyncErrors = useSelector(state => state.app.nodes.errors);
+  const clusterVersion = useSelector(state => state.app.nodes.clusterVersion);
+  const theme = useSelector(state => state.config.theme);
+  const dispatch = useDispatch();
+  const createNode = body => dispatch(createNodeAction(body));
+  const history = useHistory();
 
-  render() {
-    const { intl, asyncErrors, theme } = this.props;
-    return (
-      <CreateNodeContainter>
-        <BreadcrumbContainer>
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-              <BreadcrumbLabel>
-                {intl.messages.create_new_node}
-              </BreadcrumbLabel>,
-            ]}
-          />
-        </BreadcrumbContainer>
-        <CreateNodeLayout>
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={this.props.createNode}
-          >
-            {props => {
-              const {
-                values,
-                touched,
-                errors,
-                dirty,
-                setFieldTouched,
-                setFieldValue,
-              } = props;
+  useEffect(() => {
+    return () => {
+      dispatch(clearCreateNodeErrorAction());
+    };
+  }, [dispatch]);
 
-              //handleChange of the Formik props does not update 'values' when field value is empty
-              const handleChange = field => e => {
-                const { value, checked, type } = e.target;
-                setFieldValue(
-                  field,
-                  type === 'checkbox' ? checked : value,
-                  true,
-                );
-              };
-              //touched is not "always" correctly set
-              const handleOnBlur = e => setFieldTouched(e.target.name, true);
+  return (
+    <CreateNodeContainter>
+      <BreadcrumbContainer>
+        <Breadcrumb
+          activeColor={theme.brand.secondary}
+          paths={[
+            <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
+            <BreadcrumbLabel>{intl.messages.create_new_node}</BreadcrumbLabel>,
+          ]}
+        />
+      </BreadcrumbContainer>
+      <CreateNodeLayout>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={createNode}
+        >
+          {props => {
+            const {
+              values,
+              touched,
+              errors,
+              dirty,
+              setFieldTouched,
+              setFieldValue,
+            } = props;
 
-              return (
-                <Form>
-                  <FormSection>
-                    <FormSectionTitle>
-                      {intl.messages.new_node_data}
-                    </FormSectionTitle>
-                    <Input
-                      name="name"
-                      label={intl.messages.name}
-                      value={values.name}
-                      onChange={handleChange('name')}
-                      error={touched.name && errors.name}
-                      onBlur={handleOnBlur}
-                    />
-                    <InputContainer className="sc-input">
-                      <InputLabel className="sc-input-label">
-                        {intl.messages.version}
-                      </InputLabel>
-                      <InputValue>{this.props.clusterVersion}</InputValue>
-                    </InputContainer>
-                    <InputContainer className="sc-input">
-                      <InputLabel className="sc-input-label">
-                        {intl.messages.roles}
-                      </InputLabel>
-                      <CheckboxGroup>
-                        <Checkbox
-                          name="workload_plane"
-                          label={intl.messages.workload_plane}
-                          checked={values.workload_plane}
-                          value={values.workload_plane}
-                          onChange={handleChange('workload_plane')}
-                          onBlur={handleOnBlur}
-                        />
-                        <Checkbox
-                          name="control_plane"
-                          label={intl.messages.control_plane}
-                          checked={values.control_plane}
-                          value={values.control_plane}
-                          onChange={handleChange('control_plane')}
-                          onBlur={handleOnBlur}
-                        />
-                        <Checkbox
-                          name="infra"
-                          label={intl.messages.infra}
-                          checked={values.infra}
-                          value={values.infra}
-                          onChange={handleChange('infra')}
-                          onBlur={handleOnBlur}
-                        />
-                        <ErrorMessage
-                          visible={
-                            !(
-                              values.workload_plane ||
-                              values.control_plane ||
-                              values.infra
-                            )
-                          }
-                        >
-                          {intl.messages.role_values_error}
-                        </ErrorMessage>
-                      </CheckboxGroup>
-                    </InputContainer>
-                  </FormSection>
+            //handleChange of the Formik props does not update 'values' when field value is empty
+            const handleChange = field => e => {
+              const { value, checked, type } = e.target;
+              setFieldValue(field, type === 'checkbox' ? checked : value, true);
+            };
+            //touched is not "always" correctly set
+            const handleOnBlur = e => setFieldTouched(e.target.name, true);
 
-                  <FormSection>
-                    <FormSectionTitle>
-                      {intl.messages.new_node_access}
-                    </FormSectionTitle>
-                    <Input
-                      name="ssh_user"
-                      label={intl.messages.ssh_user}
-                      value={values.ssh_user}
-                      onChange={handleChange('ssh_user')}
-                      error={touched.ssh_user && errors.ssh_user}
-                      onBlur={handleOnBlur}
-                    />
-                    <Input
-                      name="hostName_ip"
-                      label={intl.messages.hostName_ip}
-                      value={values.hostName_ip}
-                      onChange={handleChange('hostName_ip')}
-                      error={touched.hostName_ip && errors.hostName_ip}
-                      onBlur={handleOnBlur}
-                    />
-                    <Input
-                      name="ssh_port"
-                      label={intl.messages.ssh_port}
-                      value={values.ssh_port}
-                      onChange={handleChange('ssh_port')}
-                      error={touched.ssh_port && errors.ssh_port}
-                      onBlur={handleOnBlur}
-                    />
-                    <Input
-                      name="ssh_key_path"
-                      label={intl.messages.ssh_key_path}
-                      value={values.ssh_key_path}
-                      onChange={handleChange('ssh_key_path')}
-                      error={touched.ssh_key_path && errors.ssh_key_path}
-                      onBlur={handleOnBlur}
-                    />
-                    <Input
-                      name="sudo_required"
-                      type="checkbox"
-                      label={intl.messages.sudo_required}
-                      value={values.sudo_required}
-                      checked={values.sudo_required}
-                      onChange={handleChange('sudo_required')}
-                      onBlur={handleOnBlur}
-                    />
-                  </FormSection>
-                  <ActionContainer>
-                    <div>
-                      <div>
-                        <Button
-                          text={intl.messages.cancel}
-                          type="button"
-                          outlined
-                          onClick={() => this.props.history.push('/nodes')}
-                        />
-                        <Button
-                          text={intl.messages.create}
-                          type="submit"
-                          disabled={
-                            !dirty ||
-                            !isEmpty(errors) ||
-                            !(
-                              values.workload_plane ||
-                              values.control_plane ||
-                              values.infra
-                            )
-                          }
-                        />
-                      </div>
+            return (
+              <Form>
+                <FormSection>
+                  <FormSectionTitle>
+                    {intl.messages.new_node_data}
+                  </FormSectionTitle>
+                  <Input
+                    name="name"
+                    label={intl.messages.name}
+                    value={values.name}
+                    onChange={handleChange('name')}
+                    error={touched.name && errors.name}
+                    onBlur={handleOnBlur}
+                  />
+                  <InputContainer className="sc-input">
+                    <InputLabel className="sc-input-label">
+                      {intl.messages.version}
+                    </InputLabel>
+                    <InputValue>{clusterVersion}</InputValue>
+                  </InputContainer>
+                  <InputContainer className="sc-input">
+                    <InputLabel className="sc-input-label">
+                      {intl.messages.roles}
+                    </InputLabel>
+                    <CheckboxGroup>
+                      <Checkbox
+                        name="workload_plane"
+                        label={intl.messages.workload_plane}
+                        checked={values.workload_plane}
+                        value={values.workload_plane}
+                        onChange={handleChange('workload_plane')}
+                        onBlur={handleOnBlur}
+                      />
+                      <Checkbox
+                        name="control_plane"
+                        label={intl.messages.control_plane}
+                        checked={values.control_plane}
+                        value={values.control_plane}
+                        onChange={handleChange('control_plane')}
+                        onBlur={handleOnBlur}
+                      />
+                      <Checkbox
+                        name="infra"
+                        label={intl.messages.infra}
+                        checked={values.infra}
+                        value={values.infra}
+                        onChange={handleChange('infra')}
+                        onBlur={handleOnBlur}
+                      />
                       <ErrorMessage
-                        visible={asyncErrors && asyncErrors.create_node}
+                        visible={
+                          !(
+                            values.workload_plane ||
+                            values.control_plane ||
+                            values.infra
+                          )
+                        }
                       >
-                        {asyncErrors && asyncErrors.create_node}
+                        {intl.messages.role_values_error}
                       </ErrorMessage>
+                    </CheckboxGroup>
+                  </InputContainer>
+                </FormSection>
+
+                <FormSection>
+                  <FormSectionTitle>
+                    {intl.messages.new_node_access}
+                  </FormSectionTitle>
+                  <Input
+                    name="ssh_user"
+                    label={intl.messages.ssh_user}
+                    value={values.ssh_user}
+                    onChange={handleChange('ssh_user')}
+                    error={touched.ssh_user && errors.ssh_user}
+                    onBlur={handleOnBlur}
+                  />
+                  <Input
+                    name="hostName_ip"
+                    label={intl.messages.hostName_ip}
+                    value={values.hostName_ip}
+                    onChange={handleChange('hostName_ip')}
+                    error={touched.hostName_ip && errors.hostName_ip}
+                    onBlur={handleOnBlur}
+                  />
+                  <Input
+                    name="ssh_port"
+                    label={intl.messages.ssh_port}
+                    value={values.ssh_port}
+                    onChange={handleChange('ssh_port')}
+                    error={touched.ssh_port && errors.ssh_port}
+                    onBlur={handleOnBlur}
+                  />
+                  <Input
+                    name="ssh_key_path"
+                    label={intl.messages.ssh_key_path}
+                    value={values.ssh_key_path}
+                    onChange={handleChange('ssh_key_path')}
+                    error={touched.ssh_key_path && errors.ssh_key_path}
+                    onBlur={handleOnBlur}
+                  />
+                  <Input
+                    name="sudo_required"
+                    type="checkbox"
+                    label={intl.messages.sudo_required}
+                    value={values.sudo_required}
+                    checked={values.sudo_required}
+                    onChange={handleChange('sudo_required')}
+                    onBlur={handleOnBlur}
+                  />
+                </FormSection>
+                <ActionContainer>
+                  <div>
+                    <div>
+                      <Button
+                        text={intl.messages.cancel}
+                        type="button"
+                        outlined
+                        onClick={() => history.push('/nodes')}
+                      />
+                      <Button
+                        text={intl.messages.create}
+                        type="submit"
+                        disabled={
+                          !dirty ||
+                          !isEmpty(errors) ||
+                          !(
+                            values.workload_plane ||
+                            values.control_plane ||
+                            values.infra
+                          )
+                        }
+                      />
                     </div>
-                  </ActionContainer>
-                </Form>
-              );
-            }}
-          </Formik>
-        </CreateNodeLayout>
-      </CreateNodeContainter>
-    );
-  }
-}
-
-const mapStateToProps = state => ({
-  asyncErrors: state.app.nodes.errors,
-  clusterVersion: state.app.nodes.clusterVersion,
-  theme: state.config.theme,
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    createNode: body => dispatch(createNodeAction(body)),
-    clearCreateNodeError: () => dispatch(clearCreateNodeErrorAction()),
-  };
+                    <ErrorMessage
+                      visible={asyncErrors && asyncErrors.create_node}
+                    >
+                      {asyncErrors && asyncErrors.create_node}
+                    </ErrorMessage>
+                  </div>
+                </ActionContainer>
+              </Form>
+            );
+          }}
+        </Formik>
+      </CreateNodeLayout>
+    </CreateNodeContainter>
+  );
 };
 
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps,
-    )(NodeCreateForm),
-  ),
-);
+export default injectIntl(NodeCreateForm);
