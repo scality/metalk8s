@@ -1,8 +1,8 @@
 //@flow
 
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
@@ -64,12 +64,17 @@ const TableContainer = styled.div`
   }
 `;
 
-const NodeList = props => {
+const NodeList = ({ intl }) => {
+  const nodes = useSelector(state => state.app.nodes);
+  const theme = useSelector(state => state.config.theme);
+  const dispatch = useDispatch();
+  const deployNode = payload => dispatch(deployNodeAction(payload));
+
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
-  const { intl, history, nodes, theme } = props;
+  const history = useHistory();
   const columns = [
     {
       label: intl.messages.name,
@@ -95,7 +100,7 @@ const NodeList = props => {
                 text={intl.messages.deploy}
                 onClick={event => {
                   event.stopPropagation();
-                  props.deployNode(rowData);
+                  deployNode(rowData);
                 }}
                 size="smaller"
               />
@@ -189,24 +194,4 @@ const NodeList = props => {
   );
 };
 
-function mapStateToProps(state) {
-  return {
-    nodes: state.app.nodes,
-    theme: state.config.theme,
-  };
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    deployNode: payload => dispatch(deployNodeAction(payload)),
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps,
-    )(NodeList),
-  ),
-);
+export default injectIntl(NodeList);
