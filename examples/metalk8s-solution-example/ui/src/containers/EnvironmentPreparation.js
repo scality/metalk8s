@@ -1,9 +1,9 @@
 //@flow
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
-import { withRouter } from 'react-router-dom';
+import { useRouteMatch } from 'react-router';
 
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
 import { prepareEnvironmentAction } from '../ducks/app/environment';
@@ -15,10 +15,12 @@ const LoaderContainer = styled.div`
   height: 100vh;
 `;
 
-const EnvironmentPreparation = props => {
-  const { match, intl, prepareEnvironment } = props;
+const EnvironmentPreparation = ({ intl }) => {
+  const match = useRouteMatch();
   const environmentName = match.params.name;
   const environmentVersion = match.params.version;
+  const dispatch = useDispatch();
+  const prepareEnvironment = body => dispatch(prepareEnvironmentAction(body));
 
   useEffect(() => {
     prepareEnvironment({ name: environmentName, version: environmentVersion });
@@ -33,17 +35,4 @@ const EnvironmentPreparation = props => {
   );
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    prepareEnvironment: body => dispatch(prepareEnvironmentAction(body))
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      null,
-      mapDispatchToProps
-    )(EnvironmentPreparation)
-  )
-);
+export default injectIntl(EnvironmentPreparation);
