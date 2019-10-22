@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
-import { matchPath } from 'react-router';
+import { useRouteMatch, useHistory } from 'react-router';
 import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
-import { withRouter, Switch } from 'react-router-dom';
+import { Switch } from 'react-router-dom';
 
 import NodeCreateForm from './NodeCreateForm';
 import NodeList from './NodeList';
@@ -31,60 +31,73 @@ import {
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
 
 const Layout = props => {
-  const { fetchClusterVersion } = props;
+  const user = useSelector(state => state.login.user);
+  const sidebar = useSelector(state => state.app.layout.sidebar);
+  const theme = useSelector(state => state.config.theme);
+  const notifications = useSelector(state => state.app.notifications.list);
+  const language = useSelector(state => state.config.language);
+  const solutions = useSelector(state => state.app.solutions.solutions);
+  const dispatch = useDispatch();
+  const logout = () => dispatch(logoutAction());
+  const removeNotification = uid => dispatch(removeNotificationAction(uid));
+  const updateLanguage = language => dispatch(updateLanguageAction(language));
+  const toggleSidebar = () => dispatch(toggleSideBarAction());
+  const { intl } = props;
+  const history = useHistory();
+
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
-    fetchClusterVersion();
-  }, [fetchClusterVersion]);
+    dispatch(fetchClusterVersionAction());
+  }, [dispatch]);
 
   const help = [
     {
-      label: props.intl.messages.about,
+      label: intl.messages.about,
       onClick: () => {
-        props.history.push('/about');
+        history.push('/about');
       },
     },
   ];
 
-  const user = {
-    name: props.user && props.user.username,
-    actions: [{ label: props.intl.messages.log_out, onClick: props.logout }],
+  const userConfig = {
+    name: user && user.username,
+    actions: [{ label: intl.messages.log_out, onClick: logout }],
   };
 
-  const sidebar = {
-    expanded: props.sidebar.expanded,
+  const sidebarConfig = {
+    expanded: sidebar.expanded,
     actions: [
       {
-        label: props.intl.messages.monitoring,
+        label: intl.messages.monitoring,
         icon: <i className="fas fa-desktop" />,
         onClick: () => {
-          props.history.push('/');
+          history.push('/');
         },
-        active: matchPath(props.history.location.pathname, {
+        active: useRouteMatch({
           path: '/',
           exact: true,
           strict: true,
         }),
       },
       {
-        label: props.intl.messages.nodes,
+        label: intl.messages.nodes,
         icon: <i className="fas fa-server" />,
         onClick: () => {
-          props.history.push('/nodes');
+          history.push('/nodes');
         },
-        active: matchPath(props.history.location.pathname, {
+        active: useRouteMatch({
           path: '/nodes',
           exact: false,
           strict: true,
         }),
       },
       {
-        label: props.intl.messages.solutions,
+        label: intl.messages.solutions,
         icon: <i className="fas fa-th" />,
         onClick: () => {
-          props.history.push('/solutions');
+          history.push('/solutions');
         },
-        active: matchPath(props.history.location.pathname, {
+        active: useRouteMatch({
           path: '/solutions',
           exact: false,
           strict: true,
@@ -94,8 +107,8 @@ const Layout = props => {
   };
 
   let applications = null;
-  if (props?.solutions?.length) {
-    applications = props?.solutions?.reduce((prev, solution) => {
+  if (solutions?.length) {
+    applications = solutions?.reduce((prev, solution) => {
       let solutionDeployedVersions = solution?.versions?.filter(
         version => version?.deployed && version?.ui_url,
       );
@@ -114,29 +127,29 @@ const Layout = props => {
       label: 'Français',
       name: FR_LANG,
       onClick: () => {
-        props.updateLanguage(FR_LANG);
+        updateLanguage(FR_LANG);
       },
-      selected: props.language === FR_LANG,
+      selected: language === FR_LANG,
       'data-cy': FR_LANG,
     },
     {
       label: 'English',
       name: EN_LANG,
       onClick: () => {
-        props.updateLanguage(EN_LANG);
+        updateLanguage(EN_LANG);
       },
-      selected: props.language === EN_LANG,
+      selected: language === EN_LANG,
       'data-cy': EN_LANG,
     },
   ];
 
   const navbar = {
-    onToggleClick: props.toggleSidebar,
+    onToggleClick: toggleSidebar,
     toggleVisible: true,
-    productName: props.intl.messages.product_name,
+    productName: intl.messages.product_name,
     applications,
     help,
-    user: props.user && user,
+    user: user && userConfig,
     languages,
     logo: (
       <img
@@ -147,11 +160,11 @@ const Layout = props => {
   };
 
   return (
-    <ThemeProvider theme={props.theme}>
-      <CoreUILayout sidebar={sidebar} navbar={navbar}>
+    <ThemeProvider theme={theme}>
+      <CoreUILayout sidebar={sidebarConfig} navbar={navbar}>
         <Notifications
-          notifications={props.notifications}
-          onDismiss={props.removeNotification}
+          notifications={notifications}
+          onDismiss={removeNotification}
         />
         <Switch>
           <PrivateRoute exact path="/nodes/create" component={NodeCreateForm} />
@@ -184,30 +197,4 @@ const Layout = props => {
   );
 };
 
-const mapStateToProps = state => ({
-  user: state.login.user,
-  sidebar: state.app.layout.sidebar,
-  theme: state.config.theme,
-  notifications: state.app.notifications.list,
-  language: state.config.language,
-  solutions: state.app.solutions.solutions,
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    logout: () => dispatch(logoutAction()),
-    removeNotification: uid => dispatch(removeNotificationAction(uid)),
-    updateLanguage: language => dispatch(updateLanguageAction(language)),
-    toggleSidebar: () => dispatch(toggleSideBarAction()),
-    fetchClusterVersion: () => dispatch(fetchClusterVersionAction()),
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps,
-    )(Layout),
-  ),
-);
+export default injectIntl(Layout);
