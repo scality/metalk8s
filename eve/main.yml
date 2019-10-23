@@ -771,6 +771,7 @@ stages:
           <<: *wait_debug
           timeout: 14400
           command: sleep 14400
+          doStepIf: true
       - ShellCommand:
           name: Destroy openstack virtual infra
           command: |-
