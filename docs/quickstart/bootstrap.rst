@@ -104,6 +104,12 @@ Bootstrap node.
 
    root@bootstrap $ /srv/scality/metalk8s-|release|/bootstrap.sh
 
+.. warning::
+
+    In case of virtual network (or any network which enforces source and
+    destination fields of IP packets to correspond to the MAC address(es))
+    :ref:`IP-in-IP needs to be enabled<enable IP-in-IP>`.
+
 Provision storage for Prometheus services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After bootstrapping the cluster, the Prometheus and AlertManager services used
