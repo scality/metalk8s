@@ -12,6 +12,16 @@ import {
 } from './deployment';
 import { LABEL_VERSION, SOLUTION_NAME } from '../../constants';
 
+import clockServerReducer, {
+  ADD as ADD_CLOCK_SERVER,
+  UPDATE as UPDATE_CLOCK_SERVER
+} from './clockServer.js';
+
+import versionServerReducer, {
+  ADD as ADD_VERSION_SERVER,
+  UPDATE as UPDATE_VERSION_SERVER
+} from './versionServer.js';
+
 // Actions
 const REFRESH = 'REFRESH_ENVIRONMENT';
 const STOP_REFRESH = 'STOP_REFRESH_ENVIRONMENT';
@@ -36,12 +46,18 @@ export default function reducer(state = defaultState, action = {}) {
         item => item.name === action.payload.name
       );
       if (index > -1) {
-        list[index] = action.payload;
+        list[index] = { ...list[index], ...action.payload };
         return { ...state, list: [...list] };
       }
       return { ...state, list: [...state.list, action.payload] };
     case UPDATE:
       return { ...state, ...action.payload };
+    case UPDATE_CLOCK_SERVER:
+    case ADD_CLOCK_SERVER:
+      return clockServerReducer(state, action);
+    case ADD_VERSION_SERVER:
+    case UPDATE_VERSION_SERVER:
+      return versionServerReducer(state, action);
     default:
       return state;
   }

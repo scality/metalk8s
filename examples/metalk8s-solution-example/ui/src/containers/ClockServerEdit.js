@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
@@ -9,7 +9,10 @@ import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { isEmpty } from 'lodash';
 import semver from 'semver';
-import { editClockServerAction } from '../ducks/app/clockServer';
+import {
+  editClockServerAction,
+  getClockServerAction
+} from '../ducks/app/clockServer';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
@@ -79,15 +82,24 @@ const InputValue = styled.label`
 `;
 
 const ClockServerEditForm = props => {
-  const { intl, match, clockServers, config, environments } = props;
+  const { intl, match, config, environments } = props;
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
   );
+  useEffect(() => {
+    props.getClockServer(environment, match.params.id);
+  }, [currentEnvironment]);
+
   const currentEnvironmentVersion = currentEnvironment
     ? currentEnvironment.version
     : '';
-  const clockServer = clockServers.find(cr => cr.name === match.params.id);
+  const clockServer =
+    currentEnvironment &&
+    currentEnvironment.clockServer &&
+    currentEnvironment.clockServer.list &&
+    currentEnvironment.clockServer.list.find(cr => cr.name === match.params.id);
+
   const initialValues = {
     version: clockServer ? clockServer.version : '',
     timezone: clockServer ? clockServer.timezone : '',
@@ -232,14 +244,15 @@ const ClockServerEditForm = props => {
 function mapStateToProps(state) {
   return {
     config: state.config,
-    clockServers: state.app.clockServer.list,
     environments: state.app.environment.list
   };
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    editClockServer: body => dispatch(editClockServerAction(body))
+    editClockServer: body => dispatch(editClockServerAction(body)),
+    getClockServer: (environment, name) =>
+      dispatch(getClockServerAction({ environment, name }))
   };
 };
 

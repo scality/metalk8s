@@ -44,20 +44,29 @@ const ListContainer = styled.div`
 `;
 
 const ComponentLists = props => {
-  const { intl, history, versionServers, clockServers, match } = props;
+  const { intl, history, match, environments } = props;
   const environment = match.params.name;
+  const currentEnvironment = environments.find(
+    item => item.name === environment
+  );
+  const versionServers = currentEnvironment.versionServer
+    ? currentEnvironment.versionServer.list
+    : [];
+  const clockServers = currentEnvironment.clockServer
+    ? currentEnvironment.clockServer.list
+    : [];
 
   useEffect(() => {
     props.refreshClockServer(environment);
     return () => {
-      props.stopRefreshClockServer();
+      props.stopRefreshClockServer(environment);
     };
   }, []);
 
   useEffect(() => {
     props.refreshVersionServer(environment);
     return () => {
-      props.stopRefreshVersionServer();
+      props.stopRefreshVersionServer(environment);
     };
   }, []);
 
@@ -196,8 +205,7 @@ const ComponentLists = props => {
 
 function mapStateToProps(state) {
   return {
-    clockServers: state.app.clockServer.list,
-    versionServers: state.app.versionServer.list
+    environments: state.app.environment.list
   };
 }
 const mapDispatchToProps = dispatch => {
@@ -206,8 +214,10 @@ const mapDispatchToProps = dispatch => {
       dispatch(refreshClockServerAction(environment)),
     refreshVersionServer: environment =>
       dispatch(refreshVersionServerAction(environment)),
-    stopRefreshClockServer: () => dispatch(stopRefreshClockServerAction()),
-    stopRefreshVersionServer: () => dispatch(stopRefreshVersionServerAction())
+    stopRefreshClockServer: environment =>
+      dispatch(stopRefreshClockServerAction(environment)),
+    stopRefreshVersionServer: environment =>
+      dispatch(stopRefreshVersionServerAction(environment))
   };
 };
 

@@ -11,9 +11,10 @@ import {
 const REFRESH = 'REFRESH_VERSION_SERVER';
 const STOP_REFRESH = 'STOP_REFRESH_VERSION_SERVER';
 const CREATE = 'CREATE_VERSION_SERVER';
-
-const UPDATE = 'UPDATE_VERSION_SERVER';
+export const ADD = 'ADD_VERSION_SERVER';
+export const UPDATE = 'UPDATE_VERSION_SERVER';
 const EDIT = 'EDIT_VERSION_SERVER';
+const GET = 'GET_VERSION_SERVER';
 
 // Reducer
 const defaultState = {
@@ -22,9 +23,45 @@ const defaultState = {
 };
 
 export default function reducer(state = defaultState, action = {}) {
+  const environments = [...state.list];
+  let index;
   switch (action.type) {
     case UPDATE:
-      return { ...state, ...action.payload };
+      index = environments.findIndex(
+        item => item.name === action.payload.environment
+      );
+      if (index > -1) {
+        environments[index].versionServer = environments[index].versionServer
+          ? { ...environments[index].versionServer, ...action.payload }
+          : action.payload;
+        return { ...state, list: [...environments] };
+      }
+      return state;
+    case ADD:
+      index = environments.findIndex(
+        item => item.name === action.payload.environment
+      );
+      if (index > -1) {
+        if (
+          environments[index].versionServer &&
+          environments[index].versionServer.list
+        ) {
+          const indexVersionServerToAddOrUpdate = environments[
+            index
+          ].versionServer.list.findIndex(
+            item => item.name === action.payload.item.name
+          );
+          environments[index].versionServer.list[
+            indexVersionServerToAddOrUpdate
+          ] = action.payload.item;
+        } else {
+          environments[index].versionServer = {
+            list: [action.payload.item]
+          };
+        }
+        return { ...state, list: [...environments] };
+      }
+      return state;
     default:
       return state;
   }
@@ -35,12 +72,16 @@ export const refreshVersionServerAction = environment => {
   return { type: REFRESH, environment };
 };
 
-export const stopRefreshVersionServerAction = () => {
-  return { type: STOP_REFRESH };
+export const stopRefreshVersionServerAction = environment => {
+  return { type: STOP_REFRESH, environment };
 };
 
 export const updateVersionServerAction = payload => {
   return { type: UPDATE, payload };
+};
+
+export const addVersionServerAction = payload => {
+  return { type: ADD, payload };
 };
 
 export const editVersionServerAction = payload => {
@@ -51,12 +92,20 @@ export const createVersionServerAction = payload => {
   return { type: CREATE, payload };
 };
 
+export const getVersionServerAction = payload => {
+  return { type: GET, payload };
+};
+
 // Sagas
-export function* fetchVersionServer(namespaces) {
-  const results = yield call(ApiK8s.getVersionServer, namespaces);
+export function* fetchVersionServers(environment) {
+  const results = yield call(
+    ApiK8s.getVersionServers,
+    `${environment}-${SOLUTION_NAME}`
+  );
   if (!results.error) {
     yield put(
       updateVersionServerAction({
+        environment,
         list: results.body.items.map(cr => {
           return {
             name: cr.metadata.name,
@@ -65,6 +114,29 @@ export function* fetchVersionServer(namespaces) {
             kind: results.body.kind
           };
         })
+      })
+    );
+  }
+  return results;
+}
+
+export function* getVersionServer({ payload }) {
+  const { environment, name } = payload;
+  const results = yield call(
+    ApiK8s.getVersionServer,
+    `${environment}-${SOLUTION_NAME}`,
+    name
+  );
+  if (!results.error) {
+    yield put(
+      addVersionServerAction({
+        environment,
+        item: {
+          name: results.body.metadata.name,
+          replicas: results.body.spec.replicas,
+          version: results.body.spec.version,
+          kind: results.body.kind
+        }
       })
     );
   }
@@ -91,7 +163,7 @@ export function* createVersionServer({ payload }) {
     `${environment}-${SOLUTION_NAME}`
   );
   if (!result.error) {
-    yield call(fetchVersionServer, `${environment}-${SOLUTION_NAME}`);
+    yield call(fetchVersionServers, environment);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -117,7 +189,7 @@ export function* editVersionServer({ payload }) {
   );
 
   if (!result.error) {
-    yield call(fetchVersionServer, `${environment}-${SOLUTION_NAME}`);
+    yield call(fetchVersionServers, environment);
     yield call(history.push, `/environments/${environment}`);
   }
 }
@@ -125,27 +197,27 @@ export function* editVersionServer({ payload }) {
 export function* refreshVersionServer({ environment }) {
   yield put(
     updateVersionServerAction({
+      environment,
       isRefreshing: true
     })
   );
-  const results = yield call(
-    fetchVersionServer,
-    `${environment}-${SOLUTION_NAME}`
-  );
+  const results = yield call(fetchVersionServers, environment);
   if (!results.error) {
     yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(
-      state => state.app.versionServer.isRefreshing
-    );
-    if (isRefreshing) {
+    const environments = yield select(state => state.app.environment.list);
+    if (
+      environments.find(env => env.name === environment).versionServer
+        .isRefreshing
+    ) {
       yield call(refreshVersionServer, { environment });
     }
   }
 }
 
-export function* stopRefreshVersionServer() {
+export function* stopRefreshVersionServer({ environment }) {
   yield put(
     updateVersionServerAction({
+      environment,
       isRefreshing: false
     })
   );
@@ -156,4 +228,5 @@ export function* versionServerSaga() {
   yield takeEvery(STOP_REFRESH, stopRefreshVersionServer);
   yield takeEvery(CREATE, createVersionServer);
   yield takeEvery(EDIT, editVersionServer);
+  yield takeEvery(GET, getVersionServer);
 }
