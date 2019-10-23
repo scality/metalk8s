@@ -154,6 +154,7 @@ get_salt_container() {
 
 upgrade_bootstrap () {
     local saltmaster_endpoint repo_endpoint
+    "$SALT_CALL" saltutil.sync_all saltenv="metalk8s-$DESTINATION_VERSION"
     saltmaster_endpoint="$($SALT_CALL pillar.get \
         metalk8s:endpoints:salt-master --out txt | cut -d' ' -f2- )"
     repo_endpoint="$($SALT_CALL pillar.get \
