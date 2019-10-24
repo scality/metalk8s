@@ -1,4 +1,7 @@
-"""Utility methods for manipulation of Kubernetes objects in Python."""
+"""Utility methods for manipulation of Kubernetes objects in Python.
+
+TODO: split this module into multiple ones? 
+"""
 import datetime
 from functools import partial
 import inspect
@@ -50,6 +53,14 @@ class ObjectScope:
 
 
 class ApiClient(object):
+    CRUD_METHODS = {
+        'create': 'create',
+        'retrieve': 'read',
+        'update': 'patch',
+        'delete': 'delete',
+        'replace': 'replace',
+    }
+
     def __init__(self, api_cls, name)
         if api_cls not in ALL_APIS:
             raise ValueError(
@@ -60,12 +71,19 @@ class ApiClient(object):
         self._api = None
         self._client = None
 
+        # Attach the API CRUD methods at construction, so we can fail at
+        # import-time instead of runtime
+        self._api_methods = {
+            method: getattr(api_cls, self._method_name(verb))
+            for method, verb in self.CRUD_METHODS.items()
+        }
+
     api_cls = property(operator.attrgetter('_api_cls'))
     name = property(operator.attrgetter('_name'))
 
     create = property(lambda self: self._method('create'))
-    retrieve = property(lambda self: self._method('read'))
-    update = property(lambda self: self._method('patch'))
+    retrieve = property(lambda self: self._method('retrieve'))
+    update = property(lambda self: self._method('update'))
     delete = property(lambda self: self._method('delete'))
     replace = property(lambda self: self._method('replace'))
 
@@ -83,9 +101,13 @@ class ApiClient(object):
             self._api = self.api_cls(api_client=self._client)
         return self._api
 
-    def _method(self, verb):
-        method_name = '{}_{}'.format(verb, self.name)
-        return getattr(self.api, method_name)
+    def _method_name(self, verb):
+        return '{}_{}'.format(verb, self.name)
+
+    def _method(self, method):
+        # Inject the API instance as the first argument, since those methods
+        # are not classmethods, yet stored unbound
+        return partial(self._api_methods[method], self.api)
 
 
 class KindInfo:
@@ -251,6 +273,14 @@ KNOWN_STD_KINDS = {
 # management is treated differently from "standard" objects.
 
 class CustomApiClient(ApiClient):
+    CRUD_METHODS = {
+        'create': 'create',
+        'retrieve': 'get',
+        'update': 'patch',
+        'delete': 'delete',
+        'replace': 'replace',
+    }
+
     def __init__(self, group, version, kind, plural, scope):
         self._group = group
         self._version = version
@@ -269,9 +299,6 @@ class CustomApiClient(ApiClient):
     kind = property(operator.attrgetter('_kind'))
     plural = property(operator.attrgetter('_plural'))
 
-    # NOTE: for some reason, it's not named as for other APIs
-    retrieve = property(lambda self: self._method('get'))
-
     def _method(self, verb):
         """Return a CRUD method for this CustomApiClient.
 
@@ -279,8 +306,7 @@ class CustomApiClient(ApiClient):
         method from the `CustomObjectsApi`, and casts the resulting dict as
         a `CustomObject`.
         """
-        method_name = '{}_{}'.format(verb, self.name)
-        base_method = getattr(self.api, method_name)
+        base_method = super(CustomApiClient, self)._method(verb)
 
         def method(*args, **kwargs):
             kwargs.update({

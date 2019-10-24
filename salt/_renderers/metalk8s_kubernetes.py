@@ -1,327 +1,107 @@
-'''
-A renderer for Kubernetes YAML manifests
+"""A renderer for Kubernetes YAML manifests.
 
 Given a Kubernetes YAML file (which may be a stream of objects, i.e. YAML
-snippets separated by `---` lines), this will render an SLS which calls Salt
-`*_present` states for every such object.
+snippets separated by `---` lines), this will render a sequence of states
+(represented as an OrderedDict), mapping every such object to an invocation
+of our custom `object_[present|absent]` state function.
 
-To use it, add a shebang like `#!kubernetes` as the first line of your manifests
-SLS file. Optionally, you can use rendering pipelines (if templating is
-required), e.g. `#!jinja | kubernetes`.
-'''
+To use it, add a shebang like `#!kubernetes` as the first line of your
+manifests SLS file. Optionally, you can use rendering pipelines (if templating
+is required), e.g. `#!jinja | metalk8s_kubernetes`.
 
-import base64
+The shebang also supports passing options to this renderer, in the format
+`#!metalk8s_kubernetes argument1=value1&argument2=value2` (basically, a query
+string in the `application/x-www-form-urlencoded` format).
+The supported options are:
+- `kubeconfig`, the path to the kubeconfig file to use for communicating with
+  K8s API
+- `context`, the context from the kubeconfig to use
+- `absent`, a boolean to toggle which state function variant (`object_present`
+  or `object_absent`) to use (defaults to False)
+
+TODO: improve management of `kubeconfig` and `context` parameters, relying on
+      master configuration and sane defaults - look into `__opts__`
+"""
+from salt.exceptions import SaltRenderError
+from salt.ext import six
+from salt.utils.yaml import SaltYamlSafeLoader
+from salt.utils.odict import OrderedDict
 import yaml
 
-import salt.utils.yaml
-from salt.utils.odict import OrderedDict
-
-from salt.ext import six
-
-__virtualname__ = 'kubernetes'
+__virtualname__ = 'metalk8s_kubernetes'
 
 
 def __virtual__():
     return __virtualname__
 
 
-def _step_name(obj):
-    namespace = obj['metadata'].get('namespace')
+def _step_name(obj, absent=False):
+    try:
+        name = obj.metadata.name
+    except AttributeError:
+        raise SaltRenderError('Object `metadata.name` must be set.')
 
-    if namespace:
-        name = '{}/{}'.format(
-            namespace,
-            obj['metadata']['name'],
-        )
+    namespace = getattr(obj.metadata, 'namespace', None)
+    if namespace is not None:
+        full_name = '{}/{}'.format(namespace, name)
     else:
-        name = obj['metadata']['name']
+        full_name = name
 
-    return "Apply {}/{} '{}'".format(
-        obj['apiVersion'],
-        obj['kind'],
-        name,
+    return "{verb} {api_version}/{kind} '{name}'".format(
+        verb='Remove' if absent else 'Apply',
+        api_version=obj.api_version,
+        kind=obj.kind,
+        name=full_name,
     )
 
 
-_HANDLERS = {}
+def _step(manifest, kubeconfig=None, context=None, absent=False):
+    """Render a single Kubernetes object into a state 'step'."""
+    try:
+        obj = __utils__['metalk8s_kubernetes.convert_manifest_into_object'](
+            manifest
+        )
+    except ValueError as exc:
+        raise SaltRenderError('Invalid manifest: {!s}'.format(exc))
 
-def handle(api_version, kind):
-    '''
-    Register a 'handler' (object -> state mapping) for `apiVersion` and `kind`
-    '''
-    tag = (api_version, kind)
+    valid, diff = __utils__['metalk8s_kubernetes.validate_conversion'](
+        obj, manifest
+    )
+    if not valid:
+        raise SaltRenderError(
+            'Conversion of manifest is invalid. '
+            'Removed fields: {}. Changed fields: {}.'.format(
+                ', '.join(diff.removed()), ', '.join(diff.changed())
+            )
+        )
 
-    def register(f):
-        assert tag not in _HANDLERS
+    step_name = _step_name(obj, absent)
+    state_func = 'metalk8s_kubernetes.object_{}'.format(
+        'absent' if absent else 'present'
+    )
+    state_args = [
+        {'name': obj.metadata.name},
+        {'kubeconfig': kubeconfig},
+        {'context': context},
+        {'manifest': manifest},
+    ]
 
-        _HANDLERS[tag] = f
-
-        return f
-
-    return register
-
-
-@handle('v1', 'Service')
-def _handle_v1_service(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.service_present': [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'namespace': obj['metadata']['namespace']},
-            {'metadata': obj['metadata']},
-            {'spec': obj['spec']},
-        ],
-    }
-
-
-@handle('v1', 'ServiceAccount')
-def _handle_v1_serviceaccount(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.serviceaccount_present': [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'namespace': obj['metadata']['namespace']},
-        ],
-    }
+    return step_name, {state_func: state_args}
 
 
-@handle('v1', 'ConfigMap')
-def _handle_v1_configmap(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.configmap_present': [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'namespace': obj['metadata']['namespace']},
-            {'metadata': obj['metadata']},
-            {'data': obj['data']},
-        ],
-    }
-
-
-@handle('apiextensions.k8s.io/v1beta1', 'CustomResourceDefinition')
-def _handle_apiextensions_v1beta1_customresourcedefinition(
-        obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.customresourcedefinition_present': [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'spec': obj['spec']},
-        ],
-    }
-
-
-@handle('rbac.authorization.k8s.io/v1', 'ClusterRole')
-@handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRole')
-def _handle_rbac_v1beta1_clusterrole(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.clusterrole_present': [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'rules': obj['rules']},
-        ],
-    }
-
-
-@handle('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding')
-@handle('rbac.authorization.k8s.io/v1beta1', 'ClusterRoleBinding')
-def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.clusterrolebinding_present': [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'role_ref': obj['roleRef']},
-            {'subjects': obj['subjects']},
-        ],
-    }
-
-
-@handle('rbac.authorization.k8s.io/v1', 'Role')
-@handle('rbac.authorization.k8s.io/v1beta1', 'Role')
-def _handle_rbac_v1beta1_role(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.role_present': [
-            {'name': obj['metadata']['name']},
-            {'namespace': obj['metadata']['namespace']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'rules': obj['rules']},
-        ],
-    }
-
-
-@handle('rbac.authorization.k8s.io/v1', 'RoleBinding')
-@handle('rbac.authorization.k8s.io/v1beta1', 'RoleBinding')
-def _handle_rbac_v1beta1_rolebinding(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.rolebinding_present': [
-            {'name': obj['metadata']['name']},
-            {'namespace': obj['metadata']['namespace']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'role_ref': obj['roleRef']},
-            {'subjects': obj['subjects']},
-        ],
-    }
-
-
-@handle('extensions/v1beta1', 'DaemonSet')
-@handle('apps/v1beta2', 'DaemonSet')
-@handle('apps/v1', 'DaemonSet')
-def _handle_extensions_v1beta1_daemonset(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.daemonset_present': [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'namespace': obj['metadata']['namespace']},
-            {'metadata': obj['metadata']},
-            {'spec': obj['spec']},
-        ],
-    }
-
-
-@handle('extensions/v1beta1', 'Deployment')
-@handle('apps/v1beta2', 'Deployment')
-@handle('apps/v1', 'Deployment')
-def _handle_extensions_v1beta1_deployment(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.deployment_present': [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'namespace': obj['metadata']['namespace']},
-            {'metadata': obj['metadata']},
-            {'spec': obj['spec']},
-        ],
-    }
-
-
-@handle('v1', 'Namespace')
-def _handle_v1_namespace(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.namespace_present': [
-            {'name': obj['metadata']['name']},
-            {'body': obj},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-        ],
-    }
-
-
-@handle('v1', 'Secret')
-def _handle_v1_secret(obj, kubeconfig, context):
-    # FIXME #1183: this is a compatibility band-aid for the vendored salt module
-    if 'data' in obj:
-        data = {
-            key: base64.b64decode(value)
-            for key, value in obj['data'].items()
-        }
-    elif 'stringData' in obj:
-        data = obj['stringData']
-    else:
-        data = None
-    return {
-        'metalk8s_kubernetes.secret_present': [
-            {'name': obj['metadata']['name']},
-            {'namespace': obj['metadata']['namespace']},
-            {'data': data},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-        ],
-    }
-
-
-@handle('monitoring.coreos.com/v1', 'Alertmanager')
-@handle('monitoring.coreos.com/v1', 'Prometheus')
-@handle('monitoring.coreos.com/v1', 'PrometheusRule')
-@handle('monitoring.coreos.com/v1', 'ServiceMonitor')
-def _handle_monitoring_coreos_com_v1_customresource(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.customresource_present': [
-            {'name': obj['metadata']['name']},
-            {'body': obj},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'namespace': obj['metadata']['namespace']},
-        ],
-    }
-
-
-@handle('apiregistration.k8s.io/v1', 'APIService')
-@handle('apiregistration.k8s.io/v1beta1', 'APIService')
-def _handle_apiregistration_v1_apiservice(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.apiservice_present': [
-            {'name': obj['metadata']['name']},
-            {'metadata': obj['metadata']},
-            {'spec': obj['spec']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-        ]
-    }
-
-
-@handle('policy/v1beta1', 'PodSecurityPolicy')
-@handle('extensions/v1beta1', 'PodSecurityPolicy')
-def _handle_extensions_v1beta1_podsecuritypolicy(obj, kubeconfig, context):
-    return {
-        'metalk8s_kubernetes.podsecuritypolicy_present': [
-            {'name': obj['metadata']['name']},
-            {'metadata': obj['metadata']},
-            {'spec': obj['spec']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-        ]
-    }
-
-
-del handle
-
-
-def _step(obj, kubeconfig=None, context=None):
-    '''
-    Handle a single Kubernetes object, rendering it into a state 'step'
-    '''
-    name = _step_name(obj)
-    api_version = obj['apiVersion']
-    kind = obj['kind']
-
-    handler = _HANDLERS.get((api_version, kind))
-    if not handler:
-        raise ValueError('No handler for {}/{}'.format(api_version, kind))
-
-    state = handler(obj, kubeconfig=kubeconfig, context=context)
-
-    return (name, state)
-
-
-def render(yaml_data, saltenv='', sls='', **kwargs):
-    args = six.moves.urllib.parse.parse_qs(kwargs.get('argline', ''))
+def render(source, saltenv='', sls='', argline='', **kwargs):
+    args = six.moves.urllib.parse.parse_qs(argline)
 
     kubeconfig = args.get('kubeconfig', [None])[0]
     context = args.get('context', [None])[0]
 
-    if not isinstance(yaml_data, six.string_types):
-        yaml_data = yaml_data.read()
+    if not isinstance(source, six.string_types):
+        # Assume it is a file handle
+        source = source.read()
 
-    data = yaml.load_all(yaml_data, Loader=salt.utils.yaml.SaltYamlSafeLoader)
-
-    objects = []
-    for obj in data:
-        if not obj:
-            continue
-        if isinstance(obj.get('items'), list):
-            objects.extend(obj['items'])
-        else:
-            objects.append(obj)
+    data = yaml.load_all(source, Loader=SaltYamlSafeLoader)
 
     return OrderedDict(
-        _step(obj, kubeconfig=kubeconfig, context=context)
-        for obj in objects
+        _step(manifest, kubeconfig=kubeconfig, context=context, absent=absent)
+        for manifest in data if manifest
     )
