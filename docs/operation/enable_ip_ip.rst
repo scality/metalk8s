@@ -10,6 +10,9 @@ Enable IP-in-IP encapsulation
 By default Calico_ in MetalK8s is configured to use IP-in-IP_ encapsulation
 only for cross-subnet communication.
 
+IP-in-IP_ is needed for any network which enforces source and
+destination fields of IP packets to correspond to the MAC address(es).
+
 To always use IP-in-IP_ encapsulation run the following command:
 
 .. code-block:: shell
