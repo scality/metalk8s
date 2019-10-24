@@ -11,6 +11,7 @@ do not have a working MetalK8s_ setup.
 .. toctree::
 
    bootstrap_backup_restore
+   enable_ip_ip
    preparation
    upgrade
    downgrade
