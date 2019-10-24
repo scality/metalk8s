@@ -4,6 +4,10 @@ This module relies on the `metalk8s_kubernetes` custom Salt utils module for
 parsing K8s object manifests, and providing direct bindings to the Python
 `kubernetes.client` models and APIs.
 
+Core methods (create_, get_, remove_, and replace_object) are defined in this
+module, while other methods can be found in `metalk8s_kubernetes_utils.py`,
+`metalk8s_drain.py` and `metalk8s_cordon.py`.
+
 TODO:
 - add some logging for debug purposes
 - support giving a `path` to a file instead of directly the `manifest` data
@@ -139,3 +143,45 @@ create_object = _object_manipulation_function('create')
 delete_object = _object_manipulation_function('delete')
 replace_object = _object_manipulation_function('replace')
 get_object = _object_manipulation_function('retrieve')
+
+
+# Listing resources can benefit from a simpler signature
+# NOTE: delete/get as well, but not done for now
+
+def list_objects(kind, api_version, namespace=None,
+                 kubeconfig=None, context=None):
+    try:
+        kind_info = __utils__['metalk8s_kubernetes.get_kind_info']({
+            'kind': kind,
+            'apiVersion': api_version,
+        })
+    except ValueError as exc:
+        raise CommandExecutionError(
+            'Unsupported resource "{}/{}": {!s}'.format(
+                api_version, kind, exc
+            )
+        )
+
+    if kind_info.scope == 'namespaced':
+        if namespace is None:
+            raise CommandExecutionError(
+                'Must provide a namespace for listing resources {}/{}'.format(
+                    api_version, kind
+                )
+            )
+        kwargs = {'namespace': namespace}
+    else:
+        kwargs = {}
+
+    client = kind_info.client
+    client.configure(kubeconfig=kubeconfig, context=context)
+
+    try:
+        result = client.list(**kwargs)
+    except (ApiException, HTTPError) as exc:
+        base_msg = 'Failed to list resources "{}/{}"'.format(api_version, kind)
+        if 'namespace' in kwargs:
+            base_msg += ' in namespace "{}"'.format(namespace)
+        raise CommandExecutionError('{}: {!s}'.format(base_msg, exc))
+
+    return [obj.to_dict() for obj in result.items]

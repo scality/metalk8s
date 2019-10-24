@@ -59,6 +59,7 @@ class ApiClient(object):
         'update': 'patch',
         'delete': 'delete',
         'replace': 'replace',
+        'list': 'list',
     }
 
     def __init__(self, api_cls, name)
@@ -86,6 +87,7 @@ class ApiClient(object):
     update = property(lambda self: self._method('update'))
     delete = property(lambda self: self._method('delete'))
     replace = property(lambda self: self._method('replace'))
+    list = property(lambda self: self._method('list'))
 
     def configure(self, config_file=None, context=None, persist_config=False):
         self._client = kubernetes.config.new_client_from_config(
@@ -120,7 +122,7 @@ class KindInfo:
         self._model = model
         self._client = ApiClient(api_cls, name)
         self._scope = (
-            ObjectScope('namespace') if name.startswith('namespaced_')
+            ObjectScope('namespaced') if name.startswith('namespaced_')
             else ObjectScope('cluster')
         )
 
@@ -273,13 +275,7 @@ KNOWN_STD_KINDS = {
 # management is treated differently from "standard" objects.
 
 class CustomApiClient(ApiClient):
-    CRUD_METHODS = {
-        'create': 'create',
-        'retrieve': 'get',
-        'update': 'patch',
-        'delete': 'delete',
-        'replace': 'replace',
-    }
+    CRUD_METHODS = dict(ApiClient.CRUD_METHODS, retrieve='get')
 
     def __init__(self, group, version, kind, plural, scope):
         self._group = group
@@ -315,10 +311,17 @@ class CustomApiClient(ApiClient):
                 'plural': self.plural,
             })
 
-            result_dict = base_method(*args, **kwargs)
-            # TODO: do we have a result for `delete` methods? what if we want
-            #       to support `list` methods?
-            return CustomObject(result_dict)
+            result = base_method(*args, **kwargs)
+
+            if verb == 'list':
+                return CustomObject({
+                    'kind': '{}List'.format(self.kind),
+                    'apiVersion': '{s.group}/{s.version}'.format(s=self),
+                    'items': [CustomObject(obj) for obj in result],
+                })
+
+            # TODO: do we have a result for `delete` methods?
+            return CustomObject(result)
 
         method.__doc__ = '{verb} a {kind} {scope} object.'.format(
             verb=verb.capitalize(),
