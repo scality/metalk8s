@@ -28,7 +28,6 @@ else:
 __virtualname__ = 'metalk8s_kubernetes'
 
 
-
 # Roughly equivalent to an Enum, for Python 2
 class ObjectScope:
     NAMESPACE = 'namespaced'
