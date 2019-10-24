@@ -6,3 +6,4 @@ Architecture Documents
    deployment
    monitoring
    requirements
+   authentication
