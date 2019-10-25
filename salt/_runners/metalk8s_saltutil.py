@@ -1,5 +1,6 @@
 from __future__ import absolute_import, print_function, unicode_literals
 import logging
+import time
 
 import salt.client
 import salt.utils.extmods
@@ -61,11 +62,57 @@ def wait_minions(tgt='*', retry=10):
             'error': error_message
         }
 
+    # Waiting for running states to complete
+    state_running = client.cmd(tgt, 'saltutil.is_running', arg=['state.*'])
+    attempts = 1
+
+    # If we got only empty result then no state running
+    while attempts <= retry and any(state_running.values()):
+        log.info(
+            "[Attempt %d/%d] Waiting for running jobs to complete: %s",
+            attempts,
+            retry,
+            ' - '.join(
+                'State on minion "{minion}": {states}'.format(
+                    minion=minion,
+                    states=', '.join(
+                        "PID={state[pid]} JID={state[jid]}".format(state=state)
+                        for state in running_states
+                    )
+                )
+                for minion, running_states in state_running.items()
+                if running_states
+            )
+        )
+        time.sleep(5)
+        state_running = client.cmd(tgt, 'saltutil.is_running', arg=['state.*'])
+        attempts += 1
+
+    if any(state_running.values()):
+        error_message = (
+            'Minion{plural} still have running state after {retry} retries: '
+            '{minions}'
+        ).format(
+            plural='s' if len(state_running) > 1 else '',
+            retry=retry,
+            minions=', '.join(
+                minion for minion, running_state in state_running.items()
+                if running_state
+            )
+        )
+        log.error(error_message)
+        return {
+            'result': False,
+            'error': error_message
+        }
+
     return {
         'result': True,
-        'comment': 'All minions matching "{}" responded: {}'.format(
-            tgt, ', '.join(minions)
-        )
+        'comment':
+            'All minions matching "{}" responded and finished startup '
+            'state: {}'.format(
+                tgt, ', '.join(minions)
+            )
     }
 
 
