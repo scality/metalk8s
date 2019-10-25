@@ -42,11 +42,17 @@ models:
       usePTY: true
       haltOnFailure: true
   - ShellCommand: &ssh_ip_setup
-      name: Report IP and install SSH keys
-      command: >
-        ip a &&
-        mkdir -p ~/.ssh &&
+      name: Install SSH keys and report connection info
+      command: |
+        mkdir -p ~/.ssh
         echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys
+        IP=$(
+          ip -f inet addr show eth0 | sed -En 's/^.*inet ([0-9.]+).*$/\1/p'
+        )
+        cat << END
+        Connect to this worker using:
+            ssh eve@$IP
+        END
   - ShellCommand: &check_iso_checksum
       name: Check image with checksum
       command: sha256sum -c SHA256SUM
