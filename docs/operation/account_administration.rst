@@ -24,8 +24,8 @@ perform the following procedures:
    .. code-block:: yaml
 
       stringData:
-        admin-password: <password-in-clear>
         admin-user: <username-in-clear>
+        admin-password: <password-in-clear>
 
 #. Apply the patch file by running:
 
@@ -33,7 +33,7 @@ perform the following procedures:
 
       $ kubectl --kubeconfig /etc/kubernetes/admin.conf patch secrets prometheus-operator-grafana --patch "$(cat patch-secret.yaml)" -n metalk8s-monitoring
 
-#. Now, roll out the new updates for Grafana.
+#. Now, roll out the new updates for Grafana:
 
    .. code-block:: shell
 
@@ -43,40 +43,43 @@ perform the following procedures:
    credentials.
 
 
-Administering MetalK8s GUI, Kubernetes(K8S) and Salt API
-********************************************************
+Administering MetalK8s GUI, Kubernetes API and Salt API
+*******************************************************
 
-A fresh install of MetalK8s has a GUI instance with default credentials:
-``admin`` / ``admin``. For more information on how to access the GUI, please
-refer to :ref:`this procedure <quickstart-services-admin-ui>`
+During installation, MetalK8s configures the Kubernetes API to accept Basic
+authentication, with default credentials ``admin`` / ``admin``.
 
-Managing MetalK8s GUI, K8S and Salt API username and password
--------------------------------------------------------------
+Services exposed by MetalK8s, such as
+:ref:`its GUI <quickstart-services-admin-ui>` or
+:ref:`Salt API <quickstart-services-salt>`, rely on the Kubernetes API for
+authenticating their users. As such, changing the credentials of a
+Kubernetes API user will also change the credentials required to
+connect to either one of these services.
+
+Managing Kubernetes API username and password
+---------------------------------------------
 
   .. warning::
 
-     #. In a typical **Metalk8s** cluster, ``/etc/kubernetes/htpasswd``
-        provides access control credentials to the following 3 components:
-        **MetalK8s GUI**, **K8S** and **Salt API**. Any changes made to this
-        file will directly impact authentication for the 3 mentioned components.
+     The procedures mentioned below must be carried out on every control-plane
+     :term:`Node`, or more specifically, any Node bearing the
+     ``node-role.kubernetes.io/master`` label.
 
-     #. The procedures mentioned below must be carried out on every cluster
-        node having an instance of the Kubernetes API server.
-
-#. From a node running an instance of the Kubernetes API server,
-   edit the file ``/etc/kubernetes/htpasswd`` replacing the
-   username and/or password fields as below.
+#. Edit the credentials file located at ``/etc/kubernetes/htpasswd``, replacing
+   the username and/or password fields as below:
 
    .. code-block:: shell
 
       <username-in-clear>,<password-in-clear>,123,"system:masters"
 
-#. From a node running an instance of the Kubernetes API server,
-   force a restart of the Kubernetes API server.
+#. Force a restart of the Kubernetes API server:
 
    .. code-block:: shell
 
-      $ crictl stop $(crictl ps -q --label io.kubernetes.pod.namespace=kube-system --label io.kubernetes.container.name=kube-apiserver --state Running)
+      $ crictl stop \
+          $(crictl ps -q --label io.kubernetes.pod.namespace=kube-system \
+                         --label io.kubernetes.container.name=kube-apiserver \
+                         --state Running)
 
 #. Access a service (for example, MetalK8s GUI) and authenticate yourself
    using the new Account credentials.
@@ -85,4 +88,3 @@ Managing MetalK8s GUI, K8S and Salt API username and password
 
       Upon changing the username and/or password, a fresh logout then login is
       required for accessing the MetalK8s GUI.
-
