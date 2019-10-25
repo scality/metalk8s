@@ -213,8 +213,6 @@ EOF
 install_salt_minion() {
     local -a yum_opts=(
         '--assumeyes'
-        '--disablerepo=*'
-        '--enablerepo=metalk8s-*'
     )
 
     "$YUM" install "${yum_opts[@]}" salt-minion
@@ -223,8 +221,6 @@ install_salt_minion() {
 install_genisoimage() {
     local -a yum_opts=(
         '--assumeyes'
-        '--disablerepo=*'
-        '--enablerepo=metalk8s-*'
     )
 
     "$YUM" install "${yum_opts[@]}" genisoimage

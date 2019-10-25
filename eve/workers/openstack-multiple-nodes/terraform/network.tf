@@ -32,7 +32,7 @@ variable "openstack_link_local_ip" {
 resource "openstack_networking_secgroup_v2" "nodes" {
   name                 = "${local.prefix}-nodes"
   description          = "Security group for MetalK8s nodes"
-  delete_default_rules = true # Removes default (open) egress rules
+#  delete_default_rules = true # Removes default (open) egress rules
 }
 
 resource "openstack_networking_secgroup_rule_v2" "nodes_ssh" {

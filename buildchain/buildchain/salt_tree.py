@@ -198,6 +198,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
                     pkg.name: {'version': pkg.full_version}
                     for pkg in versions.RPM_PACKAGES
                 },
+                'redhat': {
+                    pkg.name: {'version': pkg.full_version}
+                    for pkg in versions.RPM_PACKAGES
+                },
                 'ubuntu': {
                     pkg.name: {'version': pkg.full_version}
                     for pkg in versions.DEB_PACKAGES

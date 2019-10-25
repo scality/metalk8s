@@ -10,7 +10,7 @@ if test -z "$(type -p)"; then set -o pipefail; fi
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/bootstrap.log
 
-declare OS
+declare OS OS_FAMILY
 
 if ! options=$(getopt --options v --long verbose,log-file: -- "$@"); then
     echo 1>&2 "Incorrect arguments provided"
@@ -53,6 +53,12 @@ determine_os() {
         # shellcheck disable=SC1091
         . /etc/os-release
         OS=$ID
+        [[ $OS = rhel ]] && OS=redhat
+        if [[ $OS =~ ^(redhat|centos)$ ]]; then
+            OS_FAMILY=redhat
+        elif [[ $OS =~ ^(debian|ubuntu)$ ]]; then
+            OS_FAMILY=debian
+        fi
     else
         die "Impossible to determine the OS"
     fi
@@ -79,10 +85,7 @@ declare -a PACKAGES=(
 )
 
 declare -A GPGCHECK_YUM_REPOSITORIES=(
-    [metalk8s-base]=1
     [metalk8s-epel]=1
-    [metalk8s-extras]=1
-    [metalk8s-updates]=1
     [metalk8s-kubernetes]=1
     [metalk8s-saltstack]=1
     [metalk8s-scality]=0
@@ -161,27 +164,88 @@ die() {
     return 1
 }
 
-check_package_managers() {
-    case $OS in
-        centos)
-            test -n "$RPM" || die "rpm not found"
-            test -x "$RPM" || die "rpm at '$RPM' is not executable"
-            test -n "$YUM" || die "yum not found"
-            test -x "$YUM" || die "yum at '$YUM' is not executable"
+check_package_manager_yum() {
+    test -n "$RPM" || die "rpm not found"
+    test -x "$RPM" || die "rpm at '$RPM' is not executable"
+    test -n "$YUM" || die "yum not found"
+    test -x "$YUM" || die "yum at '$YUM' is not executable"
+}
+
+check_package_manager_apt() {
+    test -n "$DPKG" || die "dpkg not found"
+    test -x "$DPKG" || die "dpkg at '$DPKG' is not executable"
+    test -n "$APT" || die "apt not found"
+    test -x "$APT" || die "apt '$APT' is not executable"
+}
+
+get_packages_list() {
+    python -c "
+import json
+
+with open('$BASE_DIR/salt/metalk8s/versions.json', 'r') as fd:
+    versions = json.load(fd)
+
+packages = versions.get('packages', {}).get('$OS', {})
+for pkg, pkg_info in packages.items():
+    print('{0}{1}'.format(
+        pkg, '-' + pkg_info['version'] if pkg_info.get('version') else '')
+    )
+"
+}
+
+check_packages_presence() {
+    local -a packages
+    local -a pkg_manager_opts=()
+
+    case "$OS_FAMILY" in
+        redhat)
+            pkg_manager_opts=(
+                "$YUM"
+                install
+                --assumeyes
+                --setopt 'tsflags=test'
+                --setopt 'skip_missing_names_on_install=False'
+            )
             ;;
-        ubuntu)
-            test -n "$DPKG" || die "dpkg not found"
-            test -x "$DPKG" || die "dpkg at '$DPKG' is not executable"
-            test -n "$APT" || die "apt not found"
-            test -x "$APT" || die "apt '$APT' is not executable"
+        debian)
+            pkg_manager_opts=(
+                "$APT"
+                install
+                --dry-run
+            )
             ;;
-        *)
-            die "OS $OS not supported";;
     esac
+
+    if read -ra packages < <(get_packages_list); then
+        "${pkg_manager_opts[@]}" "${packages[@]}" || \
+            die "some packages or dependencies are missing in the configured" \
+                "repositories"
+    fi
+}
+
+check_dist_centos() {
+    check_package_manager_yum
+}
+
+check_dist_redhat() {
+    check_package_manager_yum
+    command -v subscription-manager || die "subscription-manager not found"
+    subscription-manager status || \
+        echo "Warning: system does not seem to be registered to any" \
+             "subscription management service" >&2
+}
+
+check_dist_ubuntu() {
+    check_package_manager_apt
 }
 
 pre_minion_checks() {
-    check_package_managers
+    if declare -f "check_dist_$OS" &> /dev/null; then 
+        "check_dist_$OS"
+    else
+        die "OS $OS not supported"
+    fi
+
     test "x$(whoami)" = "xroot" || die "Script must run as root"
     test -n "$SYSTEMCTL" || die "systemctl not found"
     test -x "$SYSTEMCTL" || die "systemctl at '$SYSTEMCTL' is not executable"
@@ -196,11 +260,11 @@ stop_salt_minion_service() {
 }
 
 configure_repositories() {
-    case "$OS" in
-        centos)
+    case "$OS_FAMILY" in
+        redhat)
             configure_yum_repositories
             ;;
-        ubuntu)
+        debian)
             configure_apt_repositories
             ;;
         *)
@@ -247,7 +311,7 @@ configure_yum_local_repository() {
 [$repo_name]
 name=$repo_name
 baseurl=file://$repo_path
-enabled=0
+enabled=1
 gpgcheck=$gpgcheck
 ${gpg_keys:+gpgkey=${gpg_keys%?}}
 EOF
@@ -264,16 +328,14 @@ install_packages() {
     local -ra packages=("$@")
     local -a repo_list=(/etc/apt/sources.list)
 
-    case "$OS" in
-        centos)
+    case "$OS_FAMILY" in
+        redhat)
             local -a yum_opts=(
                 '--assumeyes'
-                '--disablerepo=*'
-                '--enablerepo=metalk8s-*'
             )
             "$YUM" install "${yum_opts[@]}" "${packages[@]}"
             ;;
-        ubuntu)
+        debian)
             mapfile -O 1 -t repo_list < <(find \
                 /etc/apt/sources.list.d/ \
                 ! -name 'metalk8s-*' -a -name '*.list')
@@ -418,9 +480,9 @@ main() {
     run "Determine the OS" determine_os
     run "Pre-minion system tests" pre_minion_checks
     run "Configure internal repositories" configure_repositories
+    run "Check mandatory packages presence" check_packages_presence
     run "Disabling Salt minion service" disable_salt_minion_service
     run "Stopping Salt minion service" stop_salt_minion_service
-    run "Configuring local repositories" configure_repositories
     run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 

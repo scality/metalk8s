@@ -3,21 +3,28 @@
 
 {# First merge the basic defaults with versions information #}
 {% set version_defaults = salt['grains.filter_by']({
-  'RedHat': {
+  'CentOS': {
     'kubernetes': versions.kubernetes,
     'repo': {
       'packages': versions.packages.centos,
       'images': versions.images,
     },
   },
-  'Debian': {
+  'RedHat': {
+    'kubernetes': versions.kubernetes,
+    'repo': {
+      'packages': versions.packages.redhat,
+      'images': versions.images,
+    },
+  },
+  'Ubuntu': {
     'kubernetes': versions.kubernetes,
     'repo': {
       'packages': versions.packages.ubuntu,
       'images': versions.images,
     },
   },
-}, grain='os_family', merge=defaults.get('version_defaults')) %}
+}, grain='os', merge=defaults.get('version_defaults')) %}
 
 {% set packages = salt['grains.filter_by']({
   'RedHat': {},
@@ -57,15 +64,6 @@
       'name': 'kubernetes'
     },
     'repositories': {
-      'metalk8s-base': {
-         'humanname': 'CentOS - Base',
-         'gpgcheck': 1,
-         'gpgkeys': [
-             'RPM-GPG-KEY-metalk8s-base-7_1',
-         ],
-         'repo_gpg_check': 0,
-         'enabled': 0,
-      },
       'metalk8s-epel': {
         'humanname': 'EPEL',
         'gpgcheck': 1,
@@ -73,16 +71,7 @@
             'RPM-GPG-KEY-metalk8s-epel-7_1',
         ],
         'repo_gpg_check': 0,
-        'enabled': 0,
-      },
-      'metalk8s-extras': {
-        'humanname': 'CentOS - Extras',
-        'gpgcheck': 1,
-        'gpgkeys': [
-            'RPM-GPG-KEY-metalk8s-extras-7_1',
-        ],
-        'repo_gpg_check': 0,
-        'enabled': 0,
+        'enabled': 1,
       },
       'metalk8s-kubernetes': {
         'humanname': 'Kubernetes',
@@ -92,7 +81,7 @@
             'RPM-GPG-KEY-metalk8s-kubernetes-7_2',
         ],
         'repo_gpg_check': 0,
-        'enabled': 0,
+        'enabled': 1,
       },
       'metalk8s-saltstack': {
         'humanname': 'SaltStack',
@@ -101,23 +90,14 @@
             'RPM-GPG-KEY-metalk8s-saltstack-7_1',
         ],
         'repo_gpg_check': 0,
-        'enabled': 0,
+        'enabled': 1,
       },
       'metalk8s-scality': {
         'humanname': 'Scality',
         'gpgcheck': 0,
         'gpgkeys': [],
         'repo_gpg_check': 0,
-        'enabled': 0,
-      },
-      'metalk8s-updates': {
-        'humanname': 'CentOS - Updates',
-        'gpgcheck': 1,
-        'gpgkeys': [
-            'RPM-GPG-KEY-metalk8s-updates-7_1',
-        ],
-        'repo_gpg_check': 0,
-        'enabled': 0,
+        'enabled': 1,
       },
     }
   },
