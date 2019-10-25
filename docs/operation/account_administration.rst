@@ -70,7 +70,7 @@ Managing Kubernetes API username and password
 
    .. code-block:: shell
 
-      <username-in-clear>,<password-in-clear>,123,"system:masters"
+      <password-in-clear>,<username-in-clear>,123,"system:masters"
 
 #. Force a restart of the Kubernetes API server:
 
