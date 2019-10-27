@@ -72,10 +72,55 @@ models:
         --batch --tmp-dir /var/tmp &&
         sudo chown eve:eve /var/tmp/sosreport*
   - ShellCommand: &wait_debug
-      name: Debug step - wait befor allowing resource destruction
+      name: Debug step - wait before allowing resource destruction
+      env:
+        # Use this step with STEP_NAME and DURATION environment values to
+        # customize the command behaviour. DURATION default value is 3600
+        # (wait duration, in seconds).
+        STEP_NAME: default
       timeout: 3600
-      command: sleep 3600
-      doStepIf: false
+      command: |
+        bash -c '
+        DEBUG_STEPS="%(prop:debug)s"
+        DURATION="${DURATION:-3600}"
+        RUN_STEP=0
+        REASON=""
+        if [ -z "$DEBUG_STEPS" ]; then
+          REASON="\"debug\" build property not set"
+        elif [ "$DEBUG_STEPS" = all ]; then
+          RUN_STEP=1
+          REASON="\"debug\" property set to \"all\""
+        elif [[ "$DEBUG_STEPS" =~ ^[a-z\-]+(~[a-z\-]+)*$ ]]; then
+          IFS="~" read -ra SELECTED <<< "$DEBUG_STEPS"
+          for selected in "${SELECTED[@]}"; do
+            if [ "$selected" = "$STEP_NAME" ]; then
+              RUN_STEP=1
+              REASON="step selected in \"$DEBUG_STEPS\""
+              break
+            fi
+          done
+          if [ "$RUN_STEP" -eq 0 ]; then
+            REASON="step not in \"$DEBUG_STEPS\""
+          fi
+        else
+          REASON="invalid \"debug\" property value"
+          cat >&2 << EOF
+        Invalid "debug" build property value "$DEBUG_STEPS".
+        Must use either:
+          - "all", to select all debug steps
+          - a single step name
+          - a list of step names, separated by tilde signs "~",
+            e.g. "single-node~multiple-nodes".
+        EOF
+        fi
+        if [ "$RUN_STEP" -eq 1 ]; then
+          echo "Step $STEP_NAME - wait $DURATION seconds"
+          echo "Reason: $REASON"
+          sleep "$DURATION"
+        else
+          echo "Step $STEP_NAME - skip debug"
+          echo "Reason: $REASON"
+        fi'
       alwaysRun: true
 
   # --- Re-usable steps (with parameters) ---
@@ -330,7 +375,10 @@ stages:
           env:
             DEST_DIR: sosreport/sosreport/single-node-downgrade
       - Upload: *upload_report_artifacts
-      - ShellCommand: *wait_debug
+      - ShellCommand:
+          <<: *wait_debug
+          env:
+            STEP_NAME: single-node
 
   multiple-nodes:
     worker:
@@ -543,7 +591,9 @@ stages:
       - ShellCommand:
           <<: *wait_debug
           timeout: 14400
-          command: sleep 14400
+          env:
+            STEP_NAME: multiple-nodes
+            DURATION: "14400"
       - ShellCommand:
           name: Destroy openstack virtual infra
           command: |-
