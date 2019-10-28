@@ -305,10 +305,22 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(name='kubelet', version=K8S_VERSION),
         # Latest packages
         PackageVersion(name='containerd'),
+        PackageVersion(name='coreutils'),
         PackageVersion(name='cri-tools'),
+        PackageVersion(name='e2fsprogs'),
+        PackageVersion(name='ebtables'),
+        PackageVersion(name='ethtool'),
+        PackageVersion(name='genisoimage'),
+        PackageVersion(name='iproute'),
+        PackageVersion(name='iptables'),
         PackageVersion(name='kubernetes-cni'),
         PackageVersion(name='m2crypto'),
+        PackageVersion(name='runc'),
         PackageVersion(name='salt-minion', version=SALT_VERSION),
+        PackageVersion(name='socat'),
+        PackageVersion(name='sos'),  # TODO download built package dependencies
+        PackageVersion(name='util-linux'),
+        PackageVersion(name='xfsprogs'),
     ),
     'redhat': (
         PackageVersion(
@@ -316,11 +328,13 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             version=CALICO_VERSION,
             release='1.el7'
         ),
+        PackageVersion(name='container-selinux'),  # TODO #1710
         PackageVersion(
             name='metalk8s-sosreport',
             version=SHORT_VERSION,
             release='1.el7'
         ),
+        PackageVersion(name='yum-plugin-versionlock'),
     ),
     'debian': (
         PackageVersion(
