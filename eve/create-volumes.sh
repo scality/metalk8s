@@ -39,7 +39,7 @@ check_pod_is_in_phase() {
 
 BOOTSTRAP_NODE_NAME=${BOOTSTRAP_NODE_NAME:-$(hostname)}
 PRODUCT_TXT=${PRODUCT_TXT:-/vagrant/_build/root/product.txt}
-MAX_TRIES=60
+MAX_TRIES=300
 
 # shellcheck disable=SC1090
 source "${PRODUCT_TXT}"
