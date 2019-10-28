@@ -7,3 +7,4 @@ Architecture Documents
    monitoring
    requirements
    authentication
+   storage
