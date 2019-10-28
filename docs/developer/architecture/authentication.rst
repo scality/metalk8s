@@ -28,7 +28,7 @@ for both local identity provider or proxy to external identity provider.
 Integration with LDAP or Microsoft AD are the most important ones to support.
 
 We may want to keep the concept of pre provisioned superadmin user
-whatever Identity provider method we use ... to be discussed. 
+whatever Identity provider method we use ... to be discussed.
 
 User Stories:
 -------------
@@ -63,9 +63,26 @@ already provisioned users & groups.
 The way we do that integration is ideally through a page in MetalK8s UI, but
 probably acceptable to make the feature available through CLI only.
 
-**configuration persistence**
+**Authentication check**
+
+UI should make sure user is well authenticated and if not, redirect to
+the login page (internal or external)
+
+**Dex as Identity Provider and login page**
+
+Dex login page theme should be as closed as possible as the rest of UIs themes.
+
+**Configuration persistence**
 
 Upgrading MetalK8s should not affect configuration that was done earlier. If
 embedded Identity Provider was used and a list of users created, they still
 exist after an upgrade. If configuration to integrate with external identity
 provider was set up, it should remain after an Upgrade.
+
+Open questions:
+---------------
+
+Should we define default role binding for this first iteration?
+If we don't, new created users or the once retrieved from external
+Identity Provider won't be able to do anything with UIs or APIs, except
+maybe accessing Grafana, Prometheus and Alert Manager
