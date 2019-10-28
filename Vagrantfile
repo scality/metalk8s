@@ -205,7 +205,8 @@ def declare_bootstrap(machine, os_data)
   if os_data.fetch(:triggers_before, []).each do |trigger|
         machine.trigger.before trigger[:on].to_sym,
           info: trigger[:info],
-          run_remote: trigger[:run]
+          run_remote: trigger[:run],
+          on_error: :continue
       end
   end
 
@@ -336,7 +337,8 @@ Vagrant.configure("2") do |config|
         if os_data.fetch(:triggers_before, []).each do |trigger|
               node.trigger.before trigger[:on].to_sym,
                 info: trigger[:info],
-                run_remote: trigger[:run]
+                run_remote: trigger[:run],
+                on_error: :continue
             end
         end
       end
