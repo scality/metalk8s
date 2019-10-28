@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
+import * as yup from 'yup';
 import { DebounceInput } from 'react-debounce-input';
 import { Button } from '@scality/core-ui';
 import {
@@ -199,9 +199,9 @@ const initialValues = {
   password: ''
 };
 
-const validationSchema = Yup.object().shape({
-  username: Yup.string().required(),
-  password: Yup.string().required()
+const validationSchema = yup.object().shape({
+  username: yup.string().required(),
+  password: yup.string().required()
 });
 
 const Login = loginProps => {

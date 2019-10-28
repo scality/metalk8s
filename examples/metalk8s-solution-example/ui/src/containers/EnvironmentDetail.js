@@ -7,7 +7,7 @@ import { Breadcrumb, Button, Input } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { Formik, Form } from 'formik';
 import semver from 'semver';
-import * as Yup from 'yup';
+import * as yup from 'yup';
 import { isEmpty } from 'lodash';
 
 import {
@@ -66,8 +66,9 @@ const EnvironmentEditForm = props => {
   const initialValues = {
     version: currentVersion
   };
-  const validationSchema = Yup.object().shape({
-    version: Yup.string()
+  const validationSchema = yup.object().shape({
+    version: yup
+      .string()
       .required()
       .test('is-version-valid', intl.messages.not_valid_version, value =>
         semver.valid(value)

@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
+import * as yup from 'yup';
 import { useRouteMatch, useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Breadcrumb } from '@scality/core-ui';
@@ -82,14 +82,15 @@ const VersionServerCreationForm = ({ intl }) => {
     environment
   };
 
-  const validationSchema = Yup.object().shape({
-    version: Yup.string()
+  const validationSchema = yup.object().shape({
+    version: yup
+      .string()
       .required()
       .test('is-version-valid', intl.messages.not_valid_version, value =>
         semver.valid(value)
       ),
-    replicas: Yup.number().required(),
-    name: Yup.string().required()
+    replicas: yup.number().required(),
+    name: yup.string().required()
   });
 
   return (

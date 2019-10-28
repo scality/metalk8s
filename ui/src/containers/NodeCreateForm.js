@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
+import * as yup from 'yup';
 import { useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Checkbox, Breadcrumb } from '@scality/core-ui';
@@ -101,19 +101,20 @@ const initialValues = {
   infra: false,
 };
 
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required(),
-  ssh_user: Yup.string().required(),
-  hostName_ip: Yup.string().required(),
-  ssh_port: Yup.number()
+const validationSchema = yup.object().shape({
+  name: yup.string().required(),
+  ssh_user: yup.string().required(),
+  hostName_ip: yup.string().required(),
+  ssh_port: yup
+    .number()
     .min(0)
     .max(65535)
     .required(),
-  ssh_key_path: Yup.string().required(),
-  sudo_required: Yup.boolean().required(),
-  workload_plane: Yup.boolean().required(),
-  control_plane: Yup.boolean().required(),
-  infra: Yup.boolean().required(),
+  ssh_key_path: yup.string().required(),
+  sudo_required: yup.boolean().required(),
+  workload_plane: yup.boolean().required(),
+  control_plane: yup.boolean().required(),
+  infra: yup.boolean().required(),
 });
 
 const NodeCreateForm = ({ intl }) => {
