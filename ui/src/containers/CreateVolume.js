@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { connect, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useRouteMatch, useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { injectIntl } from 'react-intl';
@@ -88,16 +89,22 @@ const SizeUnitFieldSelectContainer = styled.div`
 `;
 
 const CreateVolume = props => {
-  const { theme, intl, match, history, fetchStorageClass } = props;
+  const { intl } = props;
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const match = useRouteMatch();
+  const createVolume = (body, nodeName) =>
+    dispatch(createVolumeAction(body, nodeName));
+
+  const storageClass = useSelector(state => state.app.volumes.storageClass);
+  const theme = useSelector(state => state.config.theme);
 
   useEffect(() => {
-    fetchStorageClass();
-  }, [fetchStorageClass]);
+    dispatch(fetchStorageClassAction());
+  }, [dispatch]);
 
-  const nodeName = props.match.params.id;
-  const storageClassesName = props.storageClass.map(
-    storageClass => storageClass.metadata.name,
-  );
+  const nodeName = match.params.id;
+  const storageClassesName = storageClass.map(item => item.metadata.name);
   const isStorageClassLoading = useSelector(
     state => state.app.volumes.isSCLoading,
   );
@@ -217,7 +224,7 @@ const CreateVolume = props => {
           onSubmit={values => {
             const newVolume = { ...values };
             newVolume.size = `${values.sizeInput}${values.selectedUnit}`;
-            props.createVolume(newVolume, nodeName);
+            createVolume(newVolume, nodeName);
           }}
         >
           {formikProps => {
@@ -380,22 +387,4 @@ const CreateVolume = props => {
   );
 };
 
-const mapStateToProps = state => ({
-  storageClass: state.app.volumes.storageClass,
-  theme: state.config.theme,
-});
-
-const mapDispatchToProps = dispatch => {
-  return {
-    fetchStorageClass: () => dispatch(fetchStorageClassAction()),
-    createVolume: (body, nodeName) =>
-      dispatch(createVolumeAction(body, nodeName)),
-  };
-};
-
-export default injectIntl(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps,
-  )(CreateVolume),
-);
+export default injectIntl(CreateVolume);
