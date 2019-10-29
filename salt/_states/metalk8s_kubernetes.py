@@ -17,21 +17,29 @@ __virtualname__ = 'metalk8s_kubernetes'
 
 
 def __virtual__():
-    if 'metalk8s_kubernetes.object_present' not in __salt__:
+    if 'metalk8s_kubernetes.create_object' not in __salt__:
         return False, 'Missing `metalk8s_kubernetes` execution module'
     return __virtualname__
 
 
-def object_absent(name, kubeconfig, context, manifest):
-    """Ensure that the object is absent."""
-    ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
+def object_absent(name, manifest=None, **kwargs):
+    """Ensure that the object is absent.
+
+    Arguments:
+        name (str): Path to a manifest yaml file or just a name
+        manifest (dict): Manifest content
+    """
+    ret = {'name': name, 'changes': {}, 'result': True, 'comment': ''}
+
+    # Only pass `name` if we have no manifest
+    name_arg = None if manifest else name
 
     obj = __salt__['metalk8s_kubernetes.get_object'](
-        name, kubeconfig, context, manifest
-    )
+        name=name_arg, manifest=manifest,
+        **kwargs)
 
     if obj is None:
-        ret['result'] = True if not __opts__['test'] else None
+        ret['result'] = True
         ret['comment'] = 'The object does not exist'
         return ret
 
@@ -40,29 +48,36 @@ def object_absent(name, kubeconfig, context, manifest):
         ret['comment'] = 'The object is going to be deleted'
         return ret
 
-    try:
-        result = __salt__['metalk8s_kubernetes.delete_object'](obj)
-    except CommandExecutionError as exc:
-        ret['comment'] = 'Failed to delete object: {}'.format(exc)
-    else:
-        ret['result'] = True
+    result = __salt__['metalk8s_kubernetes.delete_object'](
+        name=name_arg, manifest=manifest,
+        **kwargs)
 
-        if result is not None:
-            ret['changes'] = {'old': 'present', 'new': 'absent'}
-            ret['comment'] = 'The object was deleted'
-        else:
-            # This happens if the DELETE call fails with a 404 status
-            ret['comment'] = 'The object does not exist'
+    if result is not None:
+        ret['changes'] = {'old': 'present', 'new': 'absent'}
+        ret['comment'] = 'The object was deleted'
+    else:
+        # This happens if the DELETE call fails with a 404 status
+        ret['comment'] = 'The object does not exist'
 
     return ret
 
 
-def object_present(name, kubeconfig, context, manifest):
-    """Ensure that the object is present."""
-    ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
+def object_present(name, manifest=None, **kwargs):
+    """Ensure that the object is present.
+
+    Arguments:
+        name (str): Path to a manifest yaml file
+                    or just a name if manifest provided
+        manifest (dict): Manifest content
+    """
+    ret = {'name': name, 'changes': {}, 'result': True, 'comment': ''}
+
+    # Only pass `name` if we have no manifest
+    name_arg = None if manifest else name
 
     obj = __salt__['metalk8s_kubernetes.get_object'](
-        name, kubeconfig, context, manifest
+        name=name_arg, manifest=manifest,
+        **kwargs
     )
     if __opts__['test']:
         ret['result'] = None
@@ -72,16 +87,12 @@ def object_present(name, kubeconfig, context, manifest):
         return ret
 
     if obj is None:
-        try:
-            __salt__['metalk8s_kubernetes.create_object'](
-                name, kubeconfig, context, manifest
-            )
-        except CommandExecutionError as exc:
-            ret['comment'] = 'Failed to create object: {}'.format(exc)
-        else:
-            ret['result'] = True
-            ret['changes'] = {'old': 'absent', 'new': 'present'}
-            ret['comment'] = 'The object was created'
+        __salt__['metalk8s_kubernetes.create_object'](
+            name=name_arg, manifest=manifest,
+            **kwargs
+        )
+        ret['changes'] = {'old': 'absent', 'new': 'present'}
+        ret['comment'] = 'The object was created'
 
         return ret
 
@@ -90,16 +101,12 @@ def object_present(name, kubeconfig, context, manifest):
     #       don't know how to achieve this, since some fields may be set by
     #       api-server or by the user without us being able to distinguish
     #       them.
-    try:
-        new = __salt__['metalk8s_kubernetes.replace_object'](
-            name, kubeconfig, context, manifest
-        )
-    except CommandExecutionError as exc:
-        ret['comment'] = 'Failed to replace object: {}'.format(exc)
-    else:
-        ret['result'] = True
-        diff = __utils__['dictdiffer.recursive_diff'](obj, new)
-        ret['changes'] = {'diff': diff.change_str}
-        ret['comment'] = 'The object was replaced'
+    new = __salt__['metalk8s_kubernetes.replace_object'](
+        name=name_arg, manifest=manifest,
+        **kwargs
+    )
+    diff = __utils__['dictdiffer.recursive_diff'](obj, new)
+    ret['changes'] = diff.diffs
+    ret['comment'] = 'The object was replaced'
 
     return ret

@@ -38,7 +38,7 @@ def __virtual__():
         error_msg = 'Missing dependencies: {}'.format(', '.join(MISSING_DEPS))
         return False, error_msg
 
-    if not 'metalk8s_kubernetes.get_kind_info' in __utils__:
+    if 'metalk8s_kubernetes.get_kind_info' not in __utils__:
         return False, 'Missing `metalk8s_kubernetes` utils module'
 
     return __virtualname__
@@ -46,83 +46,108 @@ def __virtual__():
 
 def _extract_obj_and_kind_info(manifest):
     try:
-        kind_info = __utils__['kubernetes.get_kind_info'](manifest)
-        obj = __utils__['kubernetes.convert_manifest_into_object'](manifest)
+        kind_info = __utils__['metalk8s_kubernetes.get_kind_info'](manifest)
+        obj = __utils__['metalk8s_kubernetes.convert_manifest_into_object'](
+            manifest
+        )
     except ValueError as exc:
         raise CommandExecutionError('Invalid manifest: {!s}'.format(exc))
 
     return obj, kind_info
 
 
-def _handle_error(exception, method):
+def _handle_error(exception, action):
     """Wrap an exception raised during a call to the K8s API.
 
     Note that 'retrieve' and 'delete' will not re-raise if the error is just
     a "404 NOT FOUND", and instead return `None`.
     """
-    base_msg = 'Failed to {} object: '.format(method)
+    base_msg = 'Failed to {} object: '.format(action)
 
-    if method in ('create', 'replace'):
-        raise CommandExecutionError(base_msg + str(exception))
+    if action in ('create', 'replace'):
+        raise CommandExecutionError(base_msg + str(exception).decode('utf-8'))
 
     if isinstance(exception, ApiException) and exception.status == 404:
         return None
     else:
-        raise CommandExecutionError(base_msg + str(exception))
+        raise CommandExecutionError(base_msg + str(exception).decode('utf-8'))
 
 
-def _object_manipulation_function(method):
+def _object_manipulation_function(action):
     """Generate an execution function based on a CRUD method to use."""
 
     # NOTE: `update` is not yet supported, since not used
-    assert method in ('create', 'retrieve', 'replace', 'delete'), (
-        'Method "{}" is not supported'.format(method)
+    assert action in ('create', 'retrieve', 'replace', 'delete'), (
+        'Method "{}" is not supported'.format(action)
     )
 
-    def method(manifest=None, source=None, kubeconfig=None, context=None):
-        if source is not None:
-            if manifest is not None:
-                raise CommandExecutionError(
-                    'Cannot use both "manifest" and "source"'
-                )
-
-            try:
-                with open(source, 'r') as stream:
-                    manifest = yaml.safe_load(stream)
-            except IOError as exc:
-                raise CommandExecutionError(
-                    'Failed to read file "{}": {}'.format(source, str(exc))
-                )
-            except yaml.YAMLError as exc:
-                raise CommandExecutionError(
-                    'Invalid YAML in file "{}": {}'.format(source, str(exc))
-                )
-        elif manifest is None:
+    def method(manifest=None, kubeconfig=None, context=None, name=None,
+               kind=None, apiVersion=None, namespace=None):
+        if manifest is None:
+            if action in ['retrieve', 'delete'] and \
+                    name and kind and apiVersion:
+                # Build a simple manifest using kwargs informations as
+                # get/delete do not need a full body
+                manifest = {
+                    'apiVersion': apiVersion,
+                    'kind': kind,
+                    'metadata': {
+                        'name': name,
+                        'namespace': namespace or 'default'
+                    }
+                }
+            elif name and not kind and not apiVersion:
+                try:
+                    with open(name, 'r') as stream:
+                        manifest = yaml.safe_load(stream)
+                except IOError as exc:
+                    raise CommandExecutionError(
+                        'Failed to read file "{}": {}'
+                        .format(name, str(exc))
+                    )
+                except yaml.YAMLError as exc:
+                    raise CommandExecutionError(
+                        'Invalid YAML in file "{}": {}'
+                        ''.format(name, str(exc))
+                    )
+        elif name is not None:
             raise CommandExecutionError(
-                'Must provide one of "manifest" or "source"'
+                'Cannot use both "manifest" and "name".'
+            )
+
+        if not manifest:
+            needed_params = ['"manifest"', '"name" (path to a file)']
+            if action in ['retrieve', 'delete']:
+                needed_params.append('"name" and "kind" and "apiVersion"')
+            raise CommandExecutionError(
+                'Must provide one of {} to {} object.'.format(
+                    ' or '.join(needed_params),
+                    action
+                )
             )
 
         obj, kind_info = _extract_obj_and_kind_info(manifest)
 
         kwargs = {}
-        if method != 'create':
+        if action != 'create':
             kwargs['name'] = obj.metadata.name
         if kind_info.scope == 'namespaced':
-            kwargs['namespace'] = obj.metadata.namespace
-        if method == 'delete':
-            kwargs['body'] = kubernetes.client.V1DeleteOptions()
-        else:
-            # TODO: check whether we should use `manifest` or `obj.to_dict()`
-            kwargs['body'] = manifest
+            kwargs['namespace'] = obj.metadata.namespace or 'default'
+        if action == 'delete':
+            kwargs['body'] = k8s_client.V1DeleteOptions(
+                propagation_policy='Foreground'
+            )
+        elif action != 'retrieve':
+            kwargs['body'] = obj.to_dict()
 
         client = kind_info.client
         client.configure(config_file=kubeconfig, context=context)
-        method_func = getattr(client, method)
+        method_func = getattr(client, action)
 
         try:
             result = method_func(**kwargs)
         except (ApiException, HTTPError) as exc:
-            return _handle_error(exc, method)
+            return _handle_error(exc, action)
 
         # NOTE: result is always either a standard `kubernetes.client` model,
         # or a `CustomObject` as defined in the __utils__ module.
@@ -134,7 +159,7 @@ def _object_manipulation_function(method):
     or through a filepath.
 
     TODO: standard Salt module examples and docstring...
-    """.format(verb=method.capitalize())
+    """.format(verb=action.capitalize())
 
     return method
 
@@ -174,7 +199,7 @@ def list_objects(kind, api_version, namespace=None,
         kwargs = {}
 
     client = kind_info.client
-    client.configure(kubeconfig=kubeconfig, context=context)
+    client.configure(config_file=kubeconfig, context=context)
 
     try:
         result = client.list(**kwargs)

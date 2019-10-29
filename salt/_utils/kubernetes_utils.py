@@ -16,7 +16,7 @@ from salt.utils.dictdiffer import recursive_diff
 try:
     import kubernetes.config
     import kubernetes.client as k8s_client
-    import kubernetes.client.apis import k8s_apis
+    import kubernetes.client.apis as k8s_apis
 except ImportError:
     HAS_LIBS = False
 else:
@@ -28,8 +28,15 @@ else:
 __virtualname__ = 'metalk8s_kubernetes'
 
 
+def __virtual__():
+    if not HAS_LIBS:
+        return False, 'Missing dependencies: kubernetes'
+
+    return __virtualname__
+
+
 # Roughly equivalent to an Enum, for Python 2
-class ObjectScope:
+class ObjectScoped:
     NAMESPACE = 'namespaced'
     CLUSTER = 'cluster'
 
@@ -37,11 +44,13 @@ class ObjectScope:
 
     def __init__(self, value):
         if value not in self.ALL_VALUES:
-            raise ValueError('Value must be one of {}.'.format(allowed_values))
+            raise ValueError(
+                'Value must be one of {}.'.format(self.ALL_VALUES)
+            )
         self.value = value
 
     def __eq__(self, other):
-        if isinstance(other, ObjectScope):
+        if isinstance(other, ObjectScoped):
             return self.value == other.value
         if isinstance(other, six.string_types):
             return self.value == other
@@ -61,7 +70,7 @@ class ApiClient(object):
         'list': 'list',
     }
 
-    def __init__(self, api_cls, name)
+    def __init__(self, api_cls, name):
         if api_cls not in ALL_APIS:
             raise ValueError(
                 '`api_cls` must be an API from `kubernetes.client.apis`'
@@ -111,7 +120,7 @@ class ApiClient(object):
         return partial(self._api_methods[method], self.api)
 
 
-class KindInfo:
+class KindInfo(object):
     """Wrapper for holding attributes related to an object kind.
 
     In particular, it holds a model class, and a wrapper `ApiClient` to use the
@@ -121,8 +130,8 @@ class KindInfo:
         self._model = model
         self._client = ApiClient(api_cls, name)
         self._scope = (
-            ObjectScope('namespaced') if name.startswith('namespaced_')
-            else ObjectScope('cluster')
+            ObjectScoped('namespaced') if name.startswith('namespaced_')
+            else ObjectScoped('cluster')
         )
 
     model = property(operator.attrgetter('_model'))
@@ -134,63 +143,63 @@ KNOWN_STD_KINDS = {
     # /api/v1/ {{{
     ('v1', 'ConfigMap'): KindInfo(
         model=k8s_client.V1ConfigMap,
-        api=k8s_client.CoreV1Api,
+        api_cls=k8s_client.CoreV1Api,
         name='namespaced_config_map',
     ),
     ('v1', 'Namespace'): KindInfo(
         model=k8s_client.V1Namespace,
-        api=k8s_client.CoreV1Api,
+        api_cls=k8s_client.CoreV1Api,
         name='namespace',
     ),
     ('v1', 'Secret'): KindInfo(
         model=k8s_client.V1Secret,
-        api=k8s_client.CoreV1Api,
+        api_cls=k8s_client.CoreV1Api,
         name='namespaced_secret',
     ),
     ('v1', 'Service'): KindInfo(
         model=k8s_client.V1Service,
-        api=k8s_client.CoreV1Api,
+        api_cls=k8s_client.CoreV1Api,
         name='namespaced_service',
     ),
     ('v1', 'ServiceAccount'): KindInfo(
         model=k8s_client.V1ServiceAccount,
-        api=k8s_client.CoreV1Api,
+        api_cls=k8s_client.CoreV1Api,
         name='namespaced_service_account',
     ),
     # }}}
     # /apis/apps/v1/ {{{
     ('apps/v1', 'DaemonSet'): KindInfo(
         model=k8s_client.V1DaemonSet,
-        api=k8s_client.AppsV1Api,
+        api_cls=k8s_client.AppsV1Api,
         name='namespaced_daemon_set',
     ),
     ('apps/v1', 'Deployment'): KindInfo(
         model=k8s_client.V1Deployment,
-        api=k8s_client.AppsV1Api,
+        api_cls=k8s_client.AppsV1Api,
         name='namespaced_deployment',
     ),
     # }}}
     # /apis/apps/v1beta1/ {{{
     ('apps/v1beta2', 'DaemonSet'): KindInfo(
         model=k8s_client.V1beta2DaemonSet,
-        api=k8s_client.AppsV1beta2Api,
+        api_cls=k8s_client.AppsV1beta2Api,
         name='namespaced_daemon_set',
     ),
     ('apps/v1beta2', 'Deployment'): KindInfo(
         model=k8s_client.V1beta2Deployment,
-        api=k8s_client.AppsV1beta2Api,
+        api_cls=k8s_client.AppsV1beta2Api,
         name='namespaced_deployment',
     ),
     # }}}
     # /apis/extensions/v1beta1/ {{{
     ('extensions/v1beta1', 'DaemonSet'): KindInfo(
         model=k8s_client.V1beta1DaemonSet,
-        api=k8s_client.ExtensionsV1beta1Api,
+        api_cls=k8s_client.ExtensionsV1beta1Api,
         name='namespaced_daemon_set',
     ),
     ('extensions/v1beta1', 'Deployment'): KindInfo(
         model=k8s_client.ExtensionsV1beta1Deployment,
-        api=k8s_client.ExtensionsV1beta1Api,
+        api_cls=k8s_client.ExtensionsV1beta1Api,
         name='namespaced_deployment',
     ),
     # }}}
@@ -198,72 +207,72 @@ KNOWN_STD_KINDS = {
     ('apiextensions.k8s.io/v1beta1', 'CustomResourceDefinition'): \
     KindInfo(
         model=k8s_client.V1beta1CustomResourceDefinition,
-        api=k8s_client.ApiextensionsV1beta1Api,
+        api_cls=k8s_client.ApiextensionsV1beta1Api,
         name='custom_resource_definition',
     ),
     # }}}
     # /apis/apiregistration.k8s.io/v1/ {{{
     ('apiregistration.k8s.io/v1', 'APIService'): KindInfo(
         model=k8s_client.V1APIService,
-        api=k8s_client.ApiregistrationV1Api,
+        api_cls=k8s_client.ApiregistrationV1Api,
         name='api_service',
     ),
     # }}}
     # /apis/apiregistration.k8s.io/v1beta1/ {{{
     ('apiregistration.k8s.io/v1beta1', 'APIService'): KindInfo(
         model=k8s_client.V1beta1APIService,
-        api=k8s_client.ApiregistrationV1beta1Api,
+        api_cls=k8s_client.ApiregistrationV1beta1Api,
         name='api_service',
     ),
     # }}}
     # /apis/rbac.authorization.k8s.io/v1/ {{{
     ('rbac.authorization.k8s.io/v1', 'ClusterRole'): KindInfo(
         model=k8s_client.V1ClusterRole,
-        api=k8s_client.RbacAuthorizationV1Api,
+        api_cls=k8s_client.RbacAuthorizationV1Api,
         name='cluster_role',
     ),
     ('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding'): KindInfo(
         model=k8s_client.V1ClusterRoleBinding,
-        api=k8s_client.RbacAuthorizationV1Api,
+        api_cls=k8s_client.RbacAuthorizationV1Api,
         name='cluster_role_binding',
     ),
     ('rbac.authorization.k8s.io/v1', 'Role'): KindInfo(
         model=k8s_client.V1Role,
-        api=k8s_client.RbacAuthorizationV1Api,
+        api_cls=k8s_client.RbacAuthorizationV1Api,
         name='namespaced_role',
     ),
     ('rbac.authorization.k8s.io/v1', 'RoleBinding'): KindInfo(
         model=k8s_client.V1RoleBinding,
-        api=k8s_client.RbacAuthorizationV1Api,
+        api_cls=k8s_client.RbacAuthorizationV1Api,
         name='namespaced_role_binding',
     ),
     # }}}
     # /apis/rbac.authorization.k8s.io/v1beta1/ {{{
     ('rbac.authorization.k8s.io/v1beta1', 'ClusterRole'): KindInfo(
         model=k8s_client.V1beta1ClusterRole,
-        api=k8s_client.RbacAuthorizationV1beta1Api,
+        api_cls=k8s_client.RbacAuthorizationV1beta1Api,
         name='cluster_role',
     ),
     ('rbac.authorization.k8s.io/v1beta1', 'ClusterRoleBinding'): KindInfo(
         model=k8s_client.V1beta1ClusterRoleBinding,
-        api=k8s_client.RbacAuthorizationV1beta1Api,
+        api_cls=k8s_client.RbacAuthorizationV1beta1Api,
         name='cluster_role_binding',
     ),
     ('rbac.authorization.k8s.io/v1beta1', 'Role'): KindInfo(
         model=k8s_client.V1beta1Role,
-        api=k8s_client.RbacAuthorizationV1beta1Api,
+        api_cls=k8s_client.RbacAuthorizationV1beta1Api,
         name='namespaced_role',
     ),
     ('rbac.authorization.k8s.io/v1beta1', 'RoleBinding'): KindInfo(
         model=k8s_client.V1beta1RoleBinding,
-        api=k8s_client.RbacAuthorizationV1beta1Api,
+        api_cls=k8s_client.RbacAuthorizationV1beta1Api,
         name='namespaced_role_binding',
     ),
     # }}}
     # /apis/storage.k8s.io/v1/ {{{
     ('storage.k8s.io/v1', 'StorageClass'): KindInfo(
         model=k8s_client.V1StorageClass,
-        api=k8s_client.StorageV1Api,
+        api_cls=k8s_client.StorageV1Api,
         name='storage_class',
     ),
     # }}}
@@ -279,7 +288,7 @@ class CustomApiClient(ApiClient):
     def __init__(self, group, version, kind, plural, scope):
         self._group = group
         self._version = version
-        self._scope = ObjectScope(scope)
+        self._scope = ObjectScoped(scope)
         self._kind = kind
         self._plural = plural
 
@@ -331,7 +340,7 @@ class CustomApiClient(ApiClient):
         return method
 
 
-class CRKindInfo:
+class CRKindInfo(object):
     """Equivalent of `KindInfo` for custom objects.
 
     Note that CRUD methods are partial applications of the `kubernetes.client`
@@ -347,7 +356,13 @@ class CRKindInfo:
             )
 
         self._api_version = api_version
-        self._client = CustomApiClient(group, version, plural, scope)
+        self._client = CustomApiClient(
+            group=group,
+            version=version,
+            kind=kind,
+            plural=plural,
+            scope=scope
+        )
         self._kind = kind
 
     api_version = property(operator.attrgetter('_api_version'))
@@ -462,8 +477,6 @@ class CustomObject(object):
             return getattr(self._attr_dict, name)
 
 
-def __virtual__():
-    return __virtualname__
 
 
 def get_kind_info(manifest):
@@ -476,6 +489,7 @@ def get_kind_info(manifest):
             ' `kind` and `apiVersion` fields.'
         )
 
+    # Check for custom Kinds first and then standard Kinds
     kind_info = KNOWN_CUSTOM_KINDS.get(
         (api_version, kind),
         KNOWN_STD_KINDS.get((api_version, kind))
@@ -502,7 +516,7 @@ def convert_manifest_into_object(manifest):
     kind_info = get_kind_info(manifest)
 
     if isinstance(kind_info, CRKindInfo):
-        return CustomObject(kind_info, manifest)
+        return CustomObject(manifest)
 
     return _build_standard_object(kind_info.model, manifest)
 
@@ -513,6 +527,12 @@ def _build_standard_object(model, manifest):
     This method assumes `model` to be a member of `kubernetes.client.models`,
     so that it can use its `attribute_map` and `swagger_types` attributes.
     """
+    # `model.attribute_map` contain all attribute correspondance between
+    # snake case and YAML style (camel case) so we need to reverse it
+    # e.g.: {
+    #   'status': 'status', 'kind': 'kind', 'spec': 'spec',
+    #   'api_version': 'apiVersion', 'metadata': 'metadata'
+    # }
     reverse_attr_map = {
         value: key for key, value in model.attribute_map.items()
     }

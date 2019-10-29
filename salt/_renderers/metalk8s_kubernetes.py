@@ -94,6 +94,7 @@ def render(source, saltenv='', sls='', argline='', **kwargs):
 
     kubeconfig = args.get('kubeconfig', [None])[0]
     context = args.get('context', [None])[0]
+    absent = args.get('absent', [False])[0]
 
     if not isinstance(source, six.string_types):
         # Assume it is a file handle
