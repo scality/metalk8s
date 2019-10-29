@@ -6,11 +6,287 @@ branches:
   user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
     stage: pre-merge
 
+models:
+  # --- Re-usable steps (no parameters) ---
+  - Git: &git_pull
+      name: git pull
+      repourl: "%(prop:git_reference)s"
+      method: clobber
+      retryFetch: true
+      haltOnFailure: true
+  - ShellCommand: &setup_cache
+      name: Setup proxy cache
+      command: >
+          curl -s http://proxy-cache/setup.sh | sudo sh &&
+          . /usr/local/bin/use_scality_proxy_cache
+      haltOnFailure: true
+  - ShellCommand: &wait_for_docker
+      name: Wait for Docker daemon to be ready
+      command: |
+        bash -c '
+        for i in {1..150}
+        do
+          docker info &> /dev/null && exit
+          sleep 2
+        done
+        echo "Could not reach Docker daemon from buildbot worker" >&2
+        exit 1'
+      haltOnFailure: true
+  - ShellCommand: &build_all
+      name: Build everything
+      env:
+        PYTHON_SYS: python3.6
+      # There are 3 CPUs available for Docker, and 1 for `doit` in the Pod.
+      # Given the network IO-bound nature of some of the build steps, and
+      # most build steps running in Docker, set concurrency to 4.
+      command: ./doit.sh -n 4
+      usePTY: true
+      haltOnFailure: true
+  - ShellCommand: &ssh_ip_setup
+      name: Install SSH keys and report connection info
+      command: |
+        mkdir -p ~/.ssh
+        echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys
+        IP=$(
+          ip -f inet addr show eth0 | sed -En 's/^.*inet ([0-9.]+).*$/\1/p'
+        )
+        cat << END
+        Connect to this worker using:
+            ssh eve@$IP
+        END
+  - ShellCommand: &check_iso_checksum
+      name: Check image with checksum
+      command: sha256sum -c SHA256SUM
+      haltOnFailure: true
+  - Upload: &upload_artifacts
+      name: Upload artifacts
+      source: artifacts
+  - Upload: &upload_report_artifacts
+      name: Upload sosreport logs to artifacts
+      source: sosreport
+  - ShellCommand: &collect_sosreport
+      name: Collect logs using sosreport
+      command: >
+        sudo sosreport --all-logs
+        -o metalk8s -kmetalk8s.podlogs=True
+        -o containerd -kcontainerd.all=True -kcontainerd.logs=True
+        --batch --tmp-dir /var/tmp &&
+        sudo chown eve:eve /var/tmp/sosreport*
+  - ShellCommand: &wait_debug
+      name: Debug step - wait before allowing resource destruction
+      env:
+        # Use this step with STEP_NAME and DURATION environment values to
+        # customize the command behaviour. DURATION default value is 3600
+        # (wait duration, in seconds).
+        STEP_NAME: default
+      timeout: 3600
+      command: |
+        bash -c '
+        DEBUG_STEPS="%(prop:debug)s"
+        DURATION="${DURATION:-3600}"
+        RUN_STEP=0
+        REASON=""
+        if [ -z "$DEBUG_STEPS" ]; then
+          REASON="\"debug\" build property not set"
+        elif [ "$DEBUG_STEPS" = all ]; then
+          RUN_STEP=1
+          REASON="\"debug\" property set to \"all\""
+        elif [[ "$DEBUG_STEPS" =~ ^[a-z\-]+(~[a-z\-]+)*$ ]]; then
+          IFS="~" read -ra SELECTED <<< "$DEBUG_STEPS"
+          for selected in "${SELECTED[@]}"; do
+            if [ "$selected" = "$STEP_NAME" ]; then
+              RUN_STEP=1
+              REASON="step selected in \"$DEBUG_STEPS\""
+              break
+            fi
+          done
+          if [ "$RUN_STEP" -eq 0 ]; then
+            REASON="step not in \"$DEBUG_STEPS\""
+          fi
+        else
+          REASON="invalid \"debug\" property value"
+          cat >&2 << EOF
+        Invalid "debug" build property value "$DEBUG_STEPS".
+        Must use either:
+          - "all", to select all debug steps
+          - a single step name
+          - a list of step names, separated by tilde signs "~",
+            e.g. "single-node~multiple-nodes".
+        EOF
+        fi
+        if [ "$RUN_STEP" -eq 1 ]; then
+          echo "Step $STEP_NAME - wait $DURATION seconds"
+          echo "Reason: $REASON"
+          sleep "$DURATION"
+        else
+          echo "Step $STEP_NAME - skip debug"
+          echo "Reason: $REASON"
+        fi'
+      alwaysRun: true
+
+  # --- Re-usable steps (with parameters) ---
+  - SetPropertyFromCommand: &set_version_prop
+      name: Set version as property from built artifacts
+      property: metalk8s_version
+      env:
+        BASE_URL: "%(prop:artifacts_private_url)s"
+      command: >
+        bash -c '
+        . <(curl -s "${BASE_URL}/product.txt") &&
+        echo $VERSION'
+  - ShellCommand: &copy_artifacts
+      name: Put the artifacts to upload in a separate directory
+      env: &_env_copy_artifacts
+        DEST_DIR: "artifacts"
+        ARTIFACTS: >-
+          _build/metalk8s.iso
+          _build/SHA256SUM
+          _build/root/product.txt
+      command: |
+        bash -c '
+        mkdir "${DEST_DIR}" -p
+        for artifact in ${ARTIFACTS}; do
+          cp "$artifact" "${DEST_DIR}"
+        done'
+      haltOnFailure: true
+  - ShellCommand: &copy_report_artifacts
+      name: Put the sosreport logs to upload in a separate directory
+      env:
+        DEST_DIR: sosreport/sosreport
+      command: mkdir -p "${DEST_DIR}" && cp /var/tmp/sosreport* "${DEST_DIR}"
+      alwaysRun: true
+  - ShellCommand: &retrieve_iso_checksum
+      name: Retrieve ISO image checksum
+      env: &_env_retrieve_artifact
+        BASE_URL: "%(prop:artifacts_private_url)s"
+        DEST_DIR: "."
+      command: >
+        curl -s -XGET -o "${DEST_DIR}/SHA256SUM" "${BASE_URL}/SHA256SUM"
+      # Three minutes should be enough for this small file
+      timeout: 180
+  - ShellCommand: &retrieve_iso
+      name: Retrieve ISO image
+      env: &_env_retrieve_artifact_retry
+        <<: *_env_retrieve_artifact
+        MAX_ATTEMPTS: "300"  # retry every 2 seconds for 10 minutes total
+      command: |
+        bash -c '
+        in_url="${BASE_URL}/metalk8s.iso"
+        out_path="${DEST_DIR}/metalk8s.iso"
+        for ((i=1;i<=MAX_ATTEMPTS;i++)); do
+          if [ $(( $i % 10 )) -eq 1 ]; then
+            echo "Attempt $i out of ${MAX_ATTEMPTS}"
+          fi
+          curl -s -XGET -o "${out_path}" "${in_url}" && exit
+          sleep 2
+        done
+        echo "Could not retrieve ISO after ${MAX_ATTEMPTS} attempts" >&2
+        exit 1'
+      haltOnFailure: true
+      # Increase default timeout for ISOs, as artifacts may be too slow
+      timeout: 2400
+  - ShellCommand: &create_mountpoint
+      name: Create mountpoint
+      env:
+        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+      command: sudo mkdir -p "/srv/scality/metalk8s-${PRODUCT_VERSION}"
+  - ShellCommand: &mount_iso
+      name: Mount ISO image
+      env:
+        ISO_PATH: metalk8s.iso
+        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+      command: >
+        sudo mount -o loop "${ISO_PATH}"
+        "/srv/scality/metalk8s-${PRODUCT_VERSION}"
+  - ShellCommand: &bootstrap_config
+      name: Create bootstrap configuration file
+      env:
+        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+      command: |
+        sudo bash << EOF
+        mkdir -p /etc/metalk8s
+        cat > /etc/metalk8s/bootstrap.yaml << END
+        apiVersion: metalk8s.scality.com/v1alpha2
+        kind: BootstrapConfiguration
+        networks:
+          controlPlane: 10.100.0.0/16
+          workloadPlane: 10.100.0.0/16
+        ca:
+          minion: $(hostname)
+        apiServer:
+          host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
+        archives:
+          - "/srv/scality/metalk8s-${PRODUCT_VERSION}"
+        END
+        EOF
+      haltOnFailure: true
+  - ShellCommand: &run_bootstrap
+      name: Start the bootstrap process
+      env:
+        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+      command: >
+        sudo bash
+        "/srv/scality/metalk8s-${PRODUCT_VERSION}/bootstrap.sh"
+        --verbose
+      haltOnFailure: true
+  - ShellCommand: &add_archive
+      name: Add ISO to cluster
+      env: &_env_add_archive
+        ISO_PATH: metalk8s.iso
+        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+      command: >
+        sudo bash
+        "/srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh"
+        --archive "$(readlink -f "${ISO_PATH}")"
+      haltOnFailure: true
+  - ShellCommand: &local_tests
+      name: Run tests locally
+      env: &_env_local_tests
+        BRANCH: "%(prop:branch)s"
+        ISO_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+        PYTEST_FILTERS: "post and ci and not multinodes"
+      command: >
+        git checkout "${BRANCH}" &&
+        tox -e tests-local -- -m "${PYTEST_FILTERS}"
+      haltOnFailure: true
+  - ShellCommand: &bastion_tests
+      name: Run tests on Bastion
+      env: &_env_bastion_tests
+        SSH_CONFIG_FILE: "/home/centos/ssh_config"
+        ISO_MOUNTPOINT: "/var/tmp/metalk8s"
+        TEST_HOSTS_LIST: "bootstrap"
+        PYTEST_FILTERS: "post and ci"
+      command: >
+        ssh -F ssh_config bastion --
+        "cd metalk8s &&
+        export SSH_CONFIG_FILE=\"${SSH_CONFIG_FILE}\" &&
+        export ISO_MOUNTPOINT=\"${ISO_MOUNTPOINT}\" &&
+        export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
+        tox -e tests -- -m \"${PYTEST_FILTERS}\""
+      workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      haltOnFailure: true
+
+  # --- Previous version (for Upgrade/Downgrade) ---
+  - Git: &git_pull_prev
+      name: clone previous version branch
+      command: >
+          git clone "%(prop:repository)s"
+          --branch "development/%(prop:product_version_prev)s"
+          metalk8s-"%(prop:product_version_prev)s"
+      haltOnFailure: true
+
 stages:
   pre-merge:
     worker:
       type: local
     steps:
+      - SetPropertyFromCommand:
+          name: Set previous version to upgrade from and downgrade to
+          property: product_version_prev
+          command: >
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+              echo "$major.$(( $minor-1 ))"
       - TriggerStages:
           name: Trigger build, docs and lint stages simultaneously
           stage_names:
@@ -20,141 +296,58 @@ stages:
             - lint
             - unit_tests
           haltOnFailure: true
+      - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand:
-          name: Set version as property from built artifacts
-          property: metalk8s_version
-          command: >
-            bash -c '
-            . <(curl -s "%(prop:artifacts_private_url)s/product.txt") &&
-            echo $VERSION'
+          <<: *set_version_prop
+          name: Set previous version as property from built artifacts
+          property: metalk8s_version_prev
+          env:
+            BASE_URL: "%(prop:artifacts_private_url)s/pre"
       - TriggerStages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
-            - single-node-upgrade-test
-            - single-node-downgrade-test
+            - single-node-upgrade
+            - single-node-downgrade
             - multiple-nodes
 
   build:
-    worker:
+    worker: &build_worker
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
         docker-builder: eve/workers/pod-builder
     steps:
+      - ShellCommand: *wait_for_docker
+      - Git: *git_pull
+      - ShellCommand: *setup_cache
+      - ShellCommand: *build_all
       - ShellCommand:
-          name: Wait for Docker daemon to be ready
-          command: |
-            bash -c '
-            for i in {1..150}
-            do
-              docker info &> /dev/null && exit
-              sleep 2
-            done
-            echo "Could not reach Docker daemon from buildbot worker" >&2
-            exit 1'
-          haltOnFailure: true
-      - Git: &git_pull
-          name: git pull
-          repourl: "%(prop:git_reference)s"
-          method: clobber
-          retryFetch: true
-          haltOnFailure: true
-      - ShellCommand: &setup_cache
-          name: Setup proxy cache
-          command: >
-              curl -s http://proxy-cache/setup.sh | sudo sh &&
-              . /usr/local/bin/use_scality_proxy_cache
-          haltOnFailure: true
-      - ShellCommand:
-          name: build everything
+          <<: *copy_artifacts
           env:
-            PYTHON_SYS: python3.6
-          # There are 3 CPUs available for Docker, and 1 for `doit` in the Pod.
-          # Given the network IO-bound nature of some of the build steps, and
-          # most build steps running in Docker, set concurrency to 4.
-          command: ./doit.sh -n 4
-          usePTY: true
-          haltOnFailure: true
-      - ShellCommand:
-          name: Put the artifacts to upload in a separate folder
-          command: >
-            mkdir artifacts &&
-            cp build.log artifacts &&
-            cp _build/SHA256SUM artifacts &&
-            cp _build/metalk8s.iso artifacts &&
-            cp _build/root/product.txt artifacts
-          haltOnFailure: true
-      - Upload:
-          name: upload artifacts
-          source: artifacts/
-          urls:
-            - "*.iso"
-            - SHA256SUM
-            - product.txt
-            - build.log
+            <<: *_env_copy_artifacts
+            ARTIFACTS: >-
+              build.log
+              _build/metalk8s.iso
+              _build/SHA256SUM
+              _build/root/product.txt
+      - Upload: *upload_artifacts
 
   buildprev:
-    worker:
-      type: kube_pod
-      path: eve/workers/pod-builder/pod.yaml
-      images:
-        docker-builder: eve/workers/pod-builder
+    worker: *build_worker
     steps:
-      - ShellCommand:
-          name: Wait for Docker daemon to be ready
-          command: |
-            bash -c '
-            for i in {1..150}
-            do
-              docker info &> /dev/null && exit
-              sleep 2
-            done
-            echo "Could not reach Docker daemon from buildbot worker" >&2
-            exit 1'
-          haltOnFailure: true
+      - ShellCommand: *wait_for_docker
       - ShellCommand: *setup_cache
-      - SetPropertyFromCommand: &product_version_prev
-          name: set product_version_prev
-          property: product_version_prev
-          command: >
-              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
-              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
-              echo "$major.$(( $minor-1 ))"
+      - ShellCommand: *git_pull_prev
       - ShellCommand:
-          name: clone previous version branch
-          command: >
-              git clone "%(prop:repository)s" \
-                  --branch "development/%(prop:product_version_prev)s" \
-                  metalk8s-"%(prop:product_version_prev)s"
-      - SetPropertyFromCommand:
-          name: set product_full_version
-          property: product_full_version
-          command: >
-              bash -c '
-              source metalk8s-%(prop:product_version_prev)s/VERSION &&
-              echo %(prop:product_version_prev)s.$VERSION_PATCH$VERSION_SUFFIX'
+          <<: *build_all
+          workdir: "build/metalk8s-%(prop:product_version_prev)s"
       - ShellCommand:
-          name: build everything
+          <<: *copy_artifacts
+          workdir: "build/metalk8s-%(prop:product_version_prev)s"
           env:
-            PYTHON_SYS: python3.6
-          # There are 3 CPUs available for Docker, and 1 for `doit` in the Pod.
-          # Given the network IO-bound nature of some of the build steps, and
-          # most build steps running in Docker, set concurrency to 4.
-          command: cd metalk8s-%(prop:product_version_prev)s && ./doit.sh -n 4
-          usePTY: true
-      - ShellCommand:
-          name: Put the iso file in a separate folder
-          command: >
-            mkdir iso/pre -p &&
-            cp metalk8s-%(prop:product_version_prev)s/_build/metalk8s.iso \
-              iso/pre/metalk8s-%(prop:product_full_version)s.iso &&
-            cp metalk8s-%(prop:product_version_prev)s/_build/SHA256SUM \
-              iso/pre/SHA256SUM-%(prop:product_full_version)s &&
-            cp metalk8s-%(prop:product_version_prev)s/_build/root/product.txt \
-              iso/pre/product-%(prop:product_full_version)s.txt
-      - Upload:
-          name: upload artifacts
-          source: iso/
+            <<: *_env_copy_artifacts
+            DEST_DIR: "../artifacts/pre"
+      - Upload: *upload_artifacts
 
   docs:
     worker:
@@ -236,8 +429,8 @@ stages:
           command: go test -cover -v ./...
           haltOnFailure: false
 
-  single-node-downgrade-test:
-    worker:
+  single-node-downgrade:
+    worker: &single_node_worker
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.large
@@ -245,92 +438,35 @@ stages:
     steps:
       - Git: *git_pull
       - ShellCommand: *setup_cache
-      - SetPropertyFromCommand: *product_version_prev
-      - SetPropertyFromCommand: &set_prev_version
-          name: Set previous version
-          property: metalk8s_prev_version
-          command: >
-            bash -c '
-              git checkout development/%(prop:product_version_prev)s --quiet &&
-              source VERSION ;
-              echo $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX'
-      - ShellCommand: &ssh_ip_setup
-          name: Report IP and install SSH keys
-          command: >
-            ip a &&
-            mkdir -p ~/.ssh &&
-            echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys
-      - ShellCommand: &retrieve_iso
-          name: Retrieve ISO version N image
-          command: >
-            curl -s -XGET -o metalk8s.iso
-            "%(prop:artifacts_private_url)s/metalk8s.iso"
-          haltOnFailure: true
-      - ShellCommand: &retrieve_iso_checksum
-          name: Retrieve ISO image checksum
-          command: >
-            curl -s -XGET -o SHA256SUM
-            "%(prop:artifacts_private_url)s/SHA256SUM"
-          haltOnFailure: true
-      - ShellCommand: &check_iso_checksum
-          name: Check image with checksum
-          command: sha256sum -c SHA256SUM
-          haltOnFailure: true
-      - ShellCommand: &get_prev_iso
-          name: Retrieve ISO version N-1 image
-          command: >
-            isourl="/pre/metalk8s-%(prop:metalk8s_prev_version)s.iso";
-            curl -s -XGET -o /tmp/metalk8s.iso
-            "%(prop:artifacts_private_url)s$isourl"
-          haltOnFailure: true
-      - ShellCommand: &get_prev_iso_checksum
-          name: Retrieve ISO N-1 image checksum
-          command: >
-            shasumurl="/pre/SHA256SUM-%(prop:metalk8s_prev_version)s";
-            curl -s -XGET -o /tmp/SHA256SUM
-            "%(prop:artifacts_private_url)s$shasumurl"
-          haltOnFailure: true
-      - ShellCommand: &verify_prev_iso_checksum
-          name: Check N-1 image with checksum
-          command: cd /tmp && sha256sum -c SHA256SUM
-          haltOnFailure: true
-      - ShellCommand:
-          name: Create mountpoint
-          command: >
-            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_version)s
-      - ShellCommand:
-          name: Mount ISO image
-          command: >
-            sudo mount -o loop metalk8s.iso
-            /srv/scality/metalk8s-%(prop:metalk8s_version)s
-          haltOnFailure: true
-      - ShellCommand:
-          name: Create bootstrap configuration file
-          command: |
-            sudo bash << EOF
-            mkdir -p /etc/metalk8s
-            cat > /etc/metalk8s/bootstrap.yaml << END
-            apiVersion: metalk8s.scality.com/v1alpha2
-            kind: BootstrapConfiguration
-            networks:
-              controlPlane: 10.100.0.0/16
-              workloadPlane: 10.100.0.0/16
-            ca:
-              minion: $(hostname)
-            apiServer:
-              host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
-            archives:
-              - /srv/scality/metalk8s-%(prop:metalk8s_version)s
-            END
-            EOF
-      - ShellCommand:
-          name: Start the bootstrap process
-          command: >
-            sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_version)s/bootstrap.sh
-            --verbose
-          haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: *ssh_ip_setup
+      # --- Get ISO for version N ---
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *check_iso_checksum
+      # --- Get ISO for version N-1 ---
+      - ShellCommand: &retrieve_prev_iso_checksum
+          <<: *retrieve_iso_checksum
+          env: &_env_previous_artifact
+            DEST_DIR: "/tmp"
+            BASE_URL: "%(prop:artifacts_private_url)s/pre"
+          name: Retrieve previous ISO image checksum
+      - ShellCommand: &retrieve_prev_iso
+          <<: *retrieve_iso
+          name: Retrieve previous ISO image
+          env:
+            <<: *_env_previous_artifact
+            MAX_ATTEMPTS: "300"
+      - ShellCommand: &check_prev_iso_checksum
+          <<: *check_iso_checksum
+          name: Check previous ISO image with checksum
+          workdir: "/tmp"
+      # --- Prepare for Bootstrap in version N ---
+      - ShellCommand: *create_mountpoint
+      - ShellCommand: *mount_iso
+      - ShellCommand: *bootstrap_config
+      # --- Install version N ---
+      - ShellCommand: *run_bootstrap
+      - ShellCommand: &provision_prometheus_volumes
           name: Provision Prometheus and AlertManager storage
           command: >
             git checkout %(prop:branch)s --quiet &&
@@ -339,18 +475,19 @@ stages:
             PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
             eve/create-volumes.sh
           haltOnFailure: true
+      # --- Test version N ---
+      - ShellCommand: &fast_tests
+          <<: *local_tests
+          name: Run fast tests locally
+          env: &_env_fast_tests
+            <<: *_env_local_tests
+            PYTEST_FILTERS: "post and ci and not multinode and not slow"
       - ShellCommand:
-          name: Run tests locally
+          <<: *local_tests
+          name: Run slow tests locally
           env:
-            ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:metalk8s_version)s
-          command: >
-            git checkout %(prop:branch)s &&
-            tox -e tests-local --
-            -m "post and ci and not multinode and not slow" &&
-            tox -e tests-local --
-            -m "post and ci and not multinode and slow"
-          haltOnFailure: true
+            <<: *_env_local_tests
+            PYTEST_FILTERS: "post and ci and not multinode and slow"
       - ShellCommand:
           name: Cypress test
           command: bash cypress.sh
@@ -371,164 +508,106 @@ stages:
           name: Upload cypress and junit folder
           source: ui/upload
           alwaysRun: true
+      # --- Downgrade to version N-1 ---
       - ShellCommand:
-          name: Run downgrade
+          <<: *add_archive
+          name: Add previous ISO to cluster
+          env:
+            <<: *_env_add_archive
+            ISO_PATH: /tmp/metalk8s.iso
+      - ShellCommand:
+          name: Run downgrade to previous version
           command: >
-            sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_version)s/iso-manager.sh
-            --archive /tmp/metalk8s.iso &&
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:metalk8s_prev_version)s
+            --destination-version %(prop:metalk8s_version_prev)s
           haltOnFailure: true
-      - ShellCommand:
-          name: Run fast tests locally
+      # --- Test version N-1 ---
+      - ShellCommand: &fast_tests_prev
+          <<: *local_tests
+          name: Run fast tests locally for previous version
           env:
+            <<: *_env_fast_tests
+            BRANCH: "development/%(prop:product_version_prev)s"
             ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
-          command: >
-            git checkout "development/%(prop:product_version_prev)s" &&
-            tox -e tests-local --
-            -m "post and ci and not multinode and not slow"
-          haltOnFailure: true
-      - ShellCommand: &collect_sosreport
-          name: Collect logs using sosreport
-          command: >
-            sudo sosreport --all-logs
-            -o metalk8s -kmetalk8s.podlogs=True
-            -o containerd -kcontainerd.all=True -kcontainerd.logs=True
-            --batch --tmp-dir /var/tmp &&
-            sudo chown eve:eve /var/tmp/sosreport*
-          alwaysRun: true
+              /srv/scality/metalk8s-%(prop:metalk8s_version_prev)s
+      # --- Collect logs ---
+      - ShellCommand: *collect_sosreport
       - ShellCommand:
-          name: Copy sosreport to correct directory structure
-          command: >
-            mkdir -p sosreport/sosreport/single-node &&
-            cp /var/tmp/sosreport* sosreport/sosreport/single-node
-          alwaysRun: true
-      - Upload: &upload_report_artifact
-          name: upload artifacts
-          source: sosreport
-          alwaysRun: true
+          <<: *copy_report_artifacts
+          env:
+            DEST_DIR: sosreport/sosreport/single-node-downgrade
+      - Upload: *upload_report_artifacts
       - ShellCommand:
-          name: Debug step - wait 1 hour before allowing resource destruction
-          timeout: 3600
-          command: sleep 3600
-          doStepIf: false
-          alwaysRun: true
+          <<: *wait_debug
+          env:
+            STEP_NAME: single-node-downgrade
 
-  single-node-upgrade-test:
-    worker:
-      type: openstack
-      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
-      flavor: m1.large
-      path: eve/workers/openstack-single-node
+  single-node-upgrade:
+    worker: *single_node_worker
     steps:
       - Git: *git_pull
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
-      - SetPropertyFromCommand: *product_version_prev
-      - SetPropertyFromCommand: *set_prev_version
-      - ShellCommand: *get_prev_iso
-      - ShellCommand: *get_prev_iso_checksum
-      - ShellCommand: *verify_prev_iso_checksum
-      - ShellCommand: &create_prev_iso_mountpoint
-          name: Create %(prop:metalk8s_prev_version)s mountpoint
-          command: >
-            sudo mkdir -p /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
-      - ShellCommand: &mount_prev_iso
-          name: Mount %(prop:metalk8s_prev_version)s image
-          command: >
-            sudo mount -o loop /tmp/metalk8s.iso
-            /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
-          haltOnFailure: true
-      - ShellCommand: *retrieve_iso
+      # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *retrieve_iso
       - ShellCommand: *check_iso_checksum
+      # --- Get ISO for version N-1 ---
+      - ShellCommand: *retrieve_prev_iso_checksum
+      - ShellCommand: *retrieve_prev_iso
+      - ShellCommand: *check_prev_iso_checksum
+      # --- Prepare for Bootstrap in version N-1 ---
       - ShellCommand:
-          name: Create bootstrap configuration file
-          command: |
-            sudo bash << EOF
-            mkdir -p /etc/metalk8s
-            cat > /etc/metalk8s/bootstrap.yaml << END
-            apiVersion: metalk8s.scality.com/v1alpha2
-            kind: BootstrapConfiguration
-            networks:
-              controlPlane: 10.100.0.0/16
-              workloadPlane: 10.100.0.0/16
-            ca:
-              minion: $(hostname)
-            apiServer:
-              host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
-            archives:
-              - /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
-            END
-            EOF
+          <<: *create_mountpoint
+          env: &_env_version_prev
+            PRODUCT_VERSION: "%(prop:metalk8s_version_prev)s"
       - ShellCommand:
-          name: Start %(prop:metalk8s_prev_version)s bootstrap
-          command: >
-            sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s/bootstrap.sh
-            --verbose
-          haltOnFailure: true
-      - ShellCommand:
-          name: Run fast tests locally
+          <<: *mount_iso
           env:
-            ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s
-          command: >
-            git checkout "development/%(prop:product_version_prev)s" &&
-            tox -e tests-local --
-            -m "post and ci and not multinode and not slow"
-          haltOnFailure: true
+            <<: *_env_version_prev
+            ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
-          name: Run upgrade to %(prop:metalk8s_version)s
+          <<: *bootstrap_config
+          env: *_env_version_prev
+      # --- Install version N-1 ---
+      - ShellCommand:
+          <<: *run_bootstrap
+          env: *_env_version_prev
+      # --- Test version N-1 ---
+      - ShellCommand: *fast_tests_prev
+      # --- Upgrade to version N ---
+      - ShellCommand:
+          <<: *add_archive
+          name: Add current ISO to cluster
+          env:
+            <<: *_env_add_archive
+            PRODUCT_VERSION: "%(prop:metalk8s_version_prev)s"
+      - ShellCommand:
+          name: Run upgrade from previous version
           command: >
-            sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_prev_version)s/iso-manager.sh
-            --archive "$(readlink -f metalk8s.iso)" &&
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
             --destination-version %(prop:metalk8s_version)s
           haltOnFailure: true
-      - ShellCommand:
-          name: Provision Prometheus and AlertManager storage after upgrade
-          command: >
-            git checkout %(prop:branch)s --quiet &&
-            sudo env
-            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
-            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
-            eve/create-volumes.sh
-          haltOnFailure: true
-      - ShellCommand:
-          name: Run fast tests locally
-          env:
-            ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:metalk8s_version)s
-          command: >
-            git checkout %(prop:branch)s &&
-            tox -e tests-local --
-            -m "post and ci and not multinode and not slow"
-          haltOnFailure: true
+      - ShellCommand: *provision_prometheus_volumes
+      # --- Test version N ---
+      - ShellCommand: *fast_tests
+      # --- Collect logs ---
       - ShellCommand: *collect_sosreport
       - ShellCommand:
-          name: Copy sosreport to correct directory structure
-          command: >
-            mkdir -p sosreport/sosreport/single-node-upgrade-test &&
-            cp /var/tmp/sosreport* sosreport/sosreport/single-node-upgrade-test
-          alwaysRun: true
-      - Upload: *upload_report_artifact
+          <<: *copy_report_artifacts
+          env:
+            DEST_DIR: sosreport/sosreport/single-node-upgrade
+      - Upload: *upload_report_artifacts
       - ShellCommand:
-          name: Debug step - wait 1 hour before allowing resource destruction
-          timeout: 3600
-          command: sleep 3600
-          doStepIf: false
-          alwaysRun: true
+          <<: *wait_debug
+          env:
+            STEP_NAME: single-node-upgrade
 
   multiple-nodes:
     worker:
-      type: openstack
-      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
+      <<: *single_node_worker
       flavor: m1.medium
       path: eve/workers/openstack-multiple-nodes
     steps:
@@ -591,7 +670,7 @@ stages:
           name: Spawn openstack virtual infra
           command: terraform apply -auto-approve
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          env: &terraform_spawn_multiple_nodes
+          env: &_env_terraform
             OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
             OS_REGION_NAME: "%(secret:scality_cloud_region)s"
             OS_USERNAME: "%(secret:scality_cloud_username)s"
@@ -702,19 +781,23 @@ stages:
             tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
             | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
       - ShellCommand:
-          name: Run tests on the bastion
-          # yamllint disable rule:line-length
-          command: >
-            ssh -F ssh_config bastion --
-            'cd metalk8s &&
-            export SSH_CONFIG_FILE=/home/centos/ssh_config &&
-            export ISO_MOUNTPOINT=/var/tmp/metalk8s &&
-            export TEST_HOSTS_LIST=bootstrap &&
-            tox -e tests -- -m "ci and not slow" &&
-            tox -e tests -- -m "ci and slow"'
-          # yamllint enable rule:line-length
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
+          <<: *bastion_tests
+          name: Run installation scenarii on the bastion
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "install and ci and multinodes"
+      - ShellCommand:
+          <<: *bastion_tests
+          name: Run fast tests on the bastion
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "post and ci and not slow"
+      - ShellCommand:
+          <<: *bastion_tests
+          name: Run slow tests on the bastion
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "post and ci and slow"
       - ShellCommand:
           name: Generate sosreport on every machine
           env:
@@ -742,16 +825,13 @@ stages:
               sosreport/sosreport/multi-node/$host-sosreport.tar.xz
             done
           alwaysRun: true
-      - Upload:
-          name: Upload sosreport tarballs
-          source: sosreport
-          alwaysRun: true
+      - Upload: *upload_report_artifacts
       - ShellCommand:
-          name: Debug step - wait 4 hours before allowing resource destruction
+          <<: *wait_debug
           timeout: 14400
-          command: sleep 14400
-          alwaysRun: true
-          doStepIf: false
+          env:
+            STEP_NAME: multiple-nodes
+            DURATION: "14400"
       - ShellCommand:
           name: Destroy openstack virtual infra
           command: |-
@@ -759,6 +839,6 @@ stages:
                terraform destroy -auto-approve && break
             done;
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          env: *terraform_spawn_multiple_nodes
+          env: *_env_terraform
           alwaysRun: true
           sigtermTime: 600
