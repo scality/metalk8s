@@ -22,7 +22,7 @@ is not part of this specification.
 Requirements:
 -------------
 
-Basically we are talking about
+Basically we are talking about:
 
 - Being able to provision users with an embedded Identity provider (IDP)
 - Being able to integrate with an external IDP
@@ -38,6 +38,7 @@ User Stories:
 As an IT Generalist, I want to provision/edit usersa and high level roles.
 group provisioning not supported by Dex from what I understand.
 The Product high level roles are:
+
 - Cluster Admin role
 - Solution Admin role
 - Read Only
