@@ -4,6 +4,7 @@ so that we can support downgrade in metalk8s
 '''
 import logging
 
+from contextlib import contextmanager
 from salt.exceptions import CommandExecutionError
 
 try:
@@ -168,6 +169,16 @@ def _disable_yum_loggers():
         yum_logger.setLevel(yum.logginglevels.__NO_LOGGING)
 
 
+@contextmanager
+def _get_yum_base():
+    ybase = yum.YumBase()
+    try:
+        yield ybase
+    finally:
+        ybase.closeRpmDB()
+        ybase.close()
+
+
 def check_pkg_availability(pkgs_info):
     '''
     Check that provided packages and their dependencies are available
@@ -176,38 +187,39 @@ def check_pkg_availability(pkgs_info):
         Value of pillar key `repo:packages` to consider for the requiring
         packages to check (format {"<name>": {"version": "<version>"}, ...})
     '''
-    ybase = yum.YumBase()
-    ybase.preconf.errorlevel = 0
-    ybase.preconf.debuglevel = 0
-    ybase.conf.tsflags = 'test'
-    ybase.conf.assumeyes = True
+    with _get_yum_base() as ybase:
+        ybase.preconf.errorlevel = 0
+        ybase.preconf.debuglevel = 0
+        ybase.conf.tsflags = 'test'
+        ybase.conf.assumeyes = True
 
-    _disable_yum_loggers()
+        _disable_yum_loggers()
 
-    for name, info in pkgs_info.items():
+        for name, info in pkgs_info.items():
 
-        version = info.get('version')
-        release = None
+            version = info.get('version')
+            release = None
 
-        if version:
-            version_with_release = version.split('-', 1)
-            if len(version_with_release) == 2:
-                version = version_with_release[0]
-                release = version_with_release[1]
+            if version:
+                version_with_release = version.split('-', 1)
+                if len(version_with_release) == 2:
+                    version = version_with_release[0]
+                    release = version_with_release[1]
+
+            try:
+                ybase.install(name=name, version=version, release=release)
+            except yum.Errors.InstallError as exc:
+                error = 'No candidate found for package: {0}{1}'.format(
+                    name, '-' + str(version) if version else ''
+                )
+                raise CommandExecutionError(error)
+
+        ybase.resolveDeps()
+        ybase.buildTransaction()
 
         try:
-            ybase.install(name=name, version=version, release=release)
-        except yum.Errors.InstallError as exc:
-            error = 'No candidate found for package: {0}{1}'.format(
-                name, '-' + str(version) if version else ''
-            )
+            ybase.processTransaction()
+        except (yum.Errors.YumDownloadError,
+                yum.Errors.YumRPMCheckError) as exc:
+            error = 'Some package dependencies are missing: {0}'.format(exc)
             raise CommandExecutionError(error)
-
-    ybase.resolveDeps()
-    ybase.buildTransaction()
-
-    try:
-        ybase.processTransaction()
-    except (yum.Errors.YumDownloadError, yum.Errors.YumRPMCheckError) as exc:
-        error = 'Some package dependencies are missing: {0}'.format(exc)
-        raise CommandExecutionError(error)
