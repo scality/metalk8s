@@ -266,6 +266,64 @@ models:
       workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       haltOnFailure: true
 
+  # --- Re-usable steps related to terraform actions ---
+  - ShellCommand: &terraform_install
+      name: Download and install terraform
+      env:
+        TF_VERSION: "0.12.3"
+      command: >
+        TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/";
+        TF_FILE="terraform_${TF_VERSION}_linux_amd64.zip";
+        curl --retry 5 -O "${TF_URL}${TF_FILE}" &&
+        sudo unzip "${TF_FILE}" -d /usr/local/sbin/ &&
+        rm -f "${TF_FILE}"
+      haltOnFailure: true
+  - ShellCommand: &terraform_install_check
+      name: Check that terraform was installed
+      command: |-
+        if ! terraform --version 2&> /dev/null; then
+          echo "aborting - terraform not installed and required" >&2
+          exit 1
+        fi
+      haltOnFailure: true
+  - ShellCommand: &terraform_init
+      name: Init terraform
+      command: |-
+        for _ in $(seq 1 12); do
+          if terraform init; then
+            break
+          else
+            rm -rf .terraform/
+            sleep 5
+          fi
+        done;
+      haltOnFailure: true
+  - ShellCommand: &terraform_validate
+      name: Validate terraform definition
+      command: terraform validate
+      haltOnFailure: true
+  - ShellCommand: &terraform_apply
+      name: Spawn openstack virtual infra
+      command: terraform apply -auto-approve
+      env: &_env_terraform
+        OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
+        OS_REGION_NAME: "%(secret:scality_cloud_region)s"
+        OS_USERNAME: "%(secret:scality_cloud_username)s"
+        OS_PASSWORD: "%(secret:scality_cloud_password)s"
+        OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
+        # FIXME: this makes hostnames too long
+        # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
+      haltOnFailure: true
+  - ShellCommand: &terraform_destroy
+      name: Destroy openstack virtual infra
+      command: |-
+        for _ in $(seq 1 3); do
+           terraform destroy -auto-approve && break
+        done;
+      env: *_env_terraform
+      alwaysRun: true
+      sigtermTime: 600
+
   # --- Previous version (for Upgrade/Downgrade) ---
   - Git: &git_pull_prev
       name: clone previous version branch
@@ -274,6 +332,37 @@ models:
           --branch "development/%(prop:product_version_prev)s"
           metalk8s-"%(prop:product_version_prev)s"
       haltOnFailure: true
+
+  - ShellCommand: &generate_report_over_ssh
+      name: Generate sosreport on every machine
+      env: &_env_generate_report_over_ssh
+        HOSTS_LIST: "bootstrap"
+        SSH_CONFIG: ssh_config
+        REPORT_OWNER: centos
+        REPORT_GROUP: centos
+      command: >
+        for host in $HOSTS_LIST; do
+          ssh -F "$SSH_CONFIG" $host \
+          "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
+          -o containerd -kcontainerd.all=True -kcontainerd.logs=True\
+          --batch --tmp-dir /var/tmp && \
+          sudo chown '$REPORT_OWNER:$REPORT_GROUP' /var/tmp/sosreport*"
+        done
+      alwaysRun: true
+  - ShellCommand: &collect_report_over_ssh
+      name: Download every sosreports on worker
+      env: &_env_collect_report_over_ssh
+        HOSTS_LIST: "bootstrap"
+        SSH_CONFIG: ssh_config
+        STEP_NAME: ''
+      command: >
+        mkdir -p "sosreport/sosreport/$STEP_NAME" &&
+        for host in $HOSTS_LIST; do
+          scp -F "$SSH_CONFIG" \
+          $host:/var/tmp/sosreport-* \
+          "sosreport/sosreport/$STEP_NAME/$host-sosreport.tar.xz"
+        done
+      alwaysRun: true
 
 stages:
   pre-merge:
@@ -306,9 +395,10 @@ stages:
       - TriggerStages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
-            - single-node-upgrade
-            - single-node-downgrade
-            - multiple-nodes
+            - single-node-upgrade-centos
+            - single-node-downgrade-centos
+            - single-node-install-rhel
+            - multiple-nodes-centos
 
   build:
     worker: &build_worker
@@ -429,7 +519,7 @@ stages:
           command: go test -cover -v ./...
           haltOnFailure: false
 
-  single-node-downgrade:
+  single-node-downgrade-centos:
     worker: &single_node_worker
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
@@ -536,14 +626,14 @@ stages:
       - ShellCommand:
           <<: *copy_report_artifacts
           env:
-            DEST_DIR: sosreport/sosreport/single-node-downgrade
+            DEST_DIR: sosreport/sosreport/single-node-downgrade-centos
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *wait_debug
           env:
-            STEP_NAME: single-node-downgrade
+            STEP_NAME: single-node-downgrade-centos
 
-  single-node-upgrade:
+  single-node-upgrade-centos:
     worker: *single_node_worker
     steps:
       - Git: *git_pull
@@ -598,14 +688,119 @@ stages:
       - ShellCommand:
           <<: *copy_report_artifacts
           env:
-            DEST_DIR: sosreport/sosreport/single-node-upgrade
+            DEST_DIR: sosreport/sosreport/single-node-upgrade-centos
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *wait_debug
           env:
-            STEP_NAME: single-node-upgrade
+            STEP_NAME: single-node-upgrade-centos
 
-  multiple-nodes:
+  single-node-install-rhel:
+    worker:
+      <<: *single_node_worker
+      flavor: m1.medium
+      path: eve/workers/openstack-single-node-rhel
+    steps:
+      - Git: *git_pull
+      - ShellCommand: *setup_cache
+      - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
+      - ShellCommand: *terraform_install
+      - ShellCommand: *terraform_install_check
+      - ShellCommand:
+          <<: *terraform_init
+          workdir: build/eve/workers/openstack-single-node-rhel/terraform
+      - ShellCommand:
+          <<: *terraform_validate
+          workdir: build/eve/workers/openstack-single-node-rhel/terraform
+      - ShellCommand:
+          <<: *terraform_apply
+          workdir: build/eve/workers/openstack-single-node-rhel/terraform
+          env:
+            <<: *_env_terraform
+            TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
+            TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
+      - ShellCommand:
+          name: Copy ISO to bootstrap node
+          command: >
+            scp -F ssh_config ../../../../metalk8s.iso bootstrap:/tmp/metalk8s.iso
+          workdir: build/eve/workers/openstack-single-node-rhel/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Create ISO mountpoint in bootstrap node
+          command: >
+            ssh -F ssh_config bootstrap
+            sudo mkdir -p /var/tmp/metalk8s
+          workdir: build/eve/workers/openstack-single-node-rhel/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Mount ISO in bootstrap node
+          command: >
+            ssh -F ssh_config bootstrap
+            sudo mount -o loop /tmp/metalk8s.iso /var/tmp/metalk8s
+          workdir: build/eve/workers/openstack-single-node-rhel/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Start the bootstrap process
+          command: >
+            ssh -F ssh_config bootstrap
+            sudo bash /var/tmp/metalk8s/bootstrap.sh --verbose
+          workdir: build/eve/workers/openstack-single-node-rhel/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Provision Prometheus and AlertManager storage
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-single-node-rhel/terraform/ssh_config
+          command: >
+            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
+            ssh -F $SSH_CONFIG bootstrap
+            sudo env
+            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
+            PRODUCT_MOUNT=/var/tmp/metalk8s
+            /tmp/create-volumes.sh
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run fast tests
+          env:
+            SSH_CONFIG_FILE: "eve/workers/openstack-single-node-rhel/terraform/ssh_config"
+            ISO_MOUNTPOINT: "/var/tmp/metalk8s"
+            TEST_HOSTS_LIST: "bootstrap"
+            PYTEST_FILTERS: "post and ci and not multinodes and not slow"
+          command: >
+            tox -e tests -- -m "${PYTEST_FILTERS}"
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *generate_report_over_ssh
+          env:
+            <<: *_env_generate_report_over_ssh
+            REPORT_OWNER: cloud-user
+            REPORT_GROUP: cloud-user
+            SSH_CONFIG: >-
+              eve/workers/openstack-single-node-rhel/terraform/ssh_config
+      - ShellCommand:
+          <<: *collect_report_over_ssh
+          env:
+            <<: *_env_collect_report_over_ssh
+            SSH_CONFIG: >-
+              eve/workers/openstack-single-node-rhel/terraform/ssh_config
+            STEP_NAME: single-node-install-rhel
+      - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *wait_debug
+          env:
+            STEP_NAME: single-node-install-rhel
+      - ShellCommand:
+          <<: *terraform_destroy
+          env:
+            <<: *_env_terraform
+            TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
+            TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
+          workdir: build/eve/workers/openstack-single-node-rhel/terraform
+
+  multiple-nodes-centos:
     worker:
       <<: *single_node_worker
       flavor: m1.medium
@@ -629,57 +824,20 @@ stages:
               exit 1
             fi
           haltOnFailure: true
+      - ShellCommand: *terraform_install
+      - ShellCommand: *terraform_install_check
       - ShellCommand:
-          name: Download and install terraform
+          <<: *terraform_init
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      - ShellCommand:
+          <<: *terraform_validate
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      - ShellCommand:
+          <<: *terraform_apply
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           env:
-            TF_VERSION: "0.12.3"
-          command: >
-            TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/";
-            TF_FILE="terraform_${TF_VERSION}_linux_amd64.zip";
-            curl --retry 5 -O "${TF_URL}${TF_FILE}" &&
-            sudo unzip "${TF_FILE}" -d /usr/local/sbin/ &&
-            rm -f "${TF_FILE}"
-          haltOnFailure: true
-      - ShellCommand:
-          name: Check that terraform was installed
-          command: |-
-            if ! terraform --version 2&> /dev/null; then
-              echo "aborting - terraform not installed and required" >&2
-              exit 1
-            fi
-          haltOnFailure: true
-      - ShellCommand:
-          name: Init terraform
-          command: |-
-            for _ in $(seq 1 12); do
-              if terraform init; then
-                break
-              else
-                rm -rf .terraform/
-                sleep 5
-              fi
-            done;
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Validate terraform definition
-          command: terraform validate
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Spawn openstack virtual infra
-          command: terraform apply -auto-approve
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          env: &_env_terraform
-            OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
-            OS_REGION_NAME: "%(secret:scality_cloud_region)s"
-            OS_USERNAME: "%(secret:scality_cloud_username)s"
-            OS_PASSWORD: "%(secret:scality_cloud_password)s"
-            OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
-            # FIXME: this makes hostnames too long
-            # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
+            <<: *_env_terraform
             TF_VAR_nodes_count: "2"
-          haltOnFailure: true
       - ShellCommand:
           name: Check SSH config for bootstrap node
           command: |-
@@ -799,46 +957,27 @@ stages:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "post and ci and slow"
       - ShellCommand:
-          name: Generate sosreport on every machine
+          <<: *generate_report_over_ssh
           env:
+            <<: *_env_generate_report_over_ssh
+            HOSTS_LIST: "bootstrap node1"
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
-          command: >
-            for host in bootstrap node1; do
-              ssh -F $SSH_CONFIG $host \
-              "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
-              -o containerd -kcontainerd.all=True -kcontainerd.logs=True\
-              --batch --tmp-dir /var/tmp && \
-              sudo chown centos:centos /var/tmp/sosreport*"
-            done
-          alwaysRun: true
       - ShellCommand:
-          name: Download every sosreport to the bastion
+          <<: *collect_report_over_ssh
           env:
+            <<: *_env_collect_report_over_ssh
+            HOSTS_LIST: "bootstrap node1"
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
-          command: >
-            mkdir -p sosreport/sosreport/multi-node &&
-            for host in bootstrap node1; do
-              scp -F $SSH_CONFIG \
-              $host:/var/tmp/sosreport-* \
-              sosreport/sosreport/multi-node/$host-sosreport.tar.xz
-            done
-          alwaysRun: true
+            STEP_NAME: multiple-nodes-centos
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *wait_debug
           timeout: 14400
           env:
-            STEP_NAME: multiple-nodes
+            STEP_NAME: multiple-nodes-centos
             DURATION: "14400"
       - ShellCommand:
-          name: Destroy openstack virtual infra
-          command: |-
-            for _ in $(seq 1 3); do
-               terraform destroy -auto-approve && break
-            done;
+          <<: *terraform_destroy
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          env: *_env_terraform
-          alwaysRun: true
-          sigtermTime: 600
