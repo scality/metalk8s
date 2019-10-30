@@ -18,7 +18,7 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 # Project-wide versions {{{
 
 CALICO_VERSION     : str = '3.8.2'
-K8S_VERSION        : str = '1.13.10'
+K8S_VERSION        : str = '1.13.12'
 KEEPALIVED_VERSION : str = '1.3.5-16.el7'
 SALT_VERSION       : str = '2018.3.4'
 
@@ -126,17 +126,17 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='kube-apiserver',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:4ea66cab631a440bb0437dc7ea3d7c8aedfbed979656cf400a503d9b10c8543e',
+        digest='sha256:4701287dc0a197c74be1b41415932fc121762053af6f61f72d5def4a60c27e0b',
     ),
     Image(
         name='kube-controller-manager',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:02836aaadfa17c95ca7a45b69068759ced65ae1cc144a04006db3f9feb9b7de0',
+        digest='sha256:cd8f801a7c258ec34d81cd609f442e82dbba36fc226becbbea096a66b74e7044',
     ),
     Image(
         name='kube-proxy',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:a12133a4cb68e1b8b4794ed1d662956e819ab8f295d5b728601c29f112e838d5',
+        digest='sha256:e8bc9fb681e0b012526f58eafe7c6b23cae87f0d57e908c84022995628f85686',
     ),
     Image(
         name='kube-rbac-proxy',
@@ -146,7 +146,7 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='kube-scheduler',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:8260899a384324b57716fd95df4b3d3627065d9af2c3c2358101676d6718d05b',
+        digest='sha256:fb4ebd88e0f9acb978ef577cb4a291b7e5fb0bc9b1dd01eab86b1a1e6f6fe114',
     ),
     Image(
         name='kube-state-metrics',
