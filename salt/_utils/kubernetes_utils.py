@@ -141,6 +141,11 @@ class KindInfo(object):
 
 KNOWN_STD_KINDS = {
     # /api/v1/ {{{
+    ('v1', 'Node'): KindInfo(
+        model=k8s_client.V1Node,
+        api_cls=k8s_client.CoreV1Api,
+        name='node',
+    ),
     ('v1', 'ConfigMap'): KindInfo(
         model=k8s_client.V1ConfigMap,
         api_cls=k8s_client.CoreV1Api,
@@ -477,8 +482,6 @@ class CustomObject(object):
             return getattr(self._attr_dict, name)
 
 
-
-
 def get_kind_info(manifest):
     try:
         api_version = manifest['apiVersion']
@@ -573,6 +576,10 @@ def _cast_value(value, type_string):
     Used exclusively by `_build_standard_object`, relying on the models
     `swagger_types` declarations for converting manifests into Python objects.
     """
+    # Special case for None used for exemple when patching to remove key
+    if value is None:
+        return value
+
     if type_string == 'str':
         if not isinstance(value, six.string_types):
             raise _type_error(value, expected='a string')
@@ -745,3 +752,9 @@ def _convert_attribute_name(key):
     for pattern in ['([a-z])([A-Z0-9])', '([A-Z0-9])([A-Z0-9][a-z])']:
         key = re.sub(pattern, r'\1_\2', key)
     return key.lower()
+
+
+def caml_to_snake(source):
+    """Translation of attribute names from K8s YAML style to Python snake case.
+    """
+    return _cast_dict_keys(source, _convert_attribute_name)

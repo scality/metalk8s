@@ -12,6 +12,7 @@ execution module, only managing simple dicts in this state module.
      support the common Salt templating arguments
 """
 from salt.exceptions import CommandExecutionError
+from salt.utils import yaml
 
 __virtualname__ = 'metalk8s_kubernetes'
 
@@ -39,7 +40,6 @@ def object_absent(name, manifest=None, **kwargs):
         **kwargs)
 
     if obj is None:
-        ret['result'] = True
         ret['comment'] = 'The object does not exist'
         return ret
 
@@ -108,5 +108,57 @@ def object_present(name, manifest=None, **kwargs):
     diff = __utils__['dictdiffer.recursive_diff'](obj, new)
     ret['changes'] = diff.diffs
     ret['comment'] = 'The object was replaced'
+
+    return ret
+
+
+def object_updated(name, manifest=None, **kwargs):
+    """Update an existing object.
+
+    Arguments:
+        name (str): Path to a manifest yaml file
+                    or just a name if manifest provided
+        manifest (dict): Manifest content
+    """
+    ret = {'name': name, 'changes': {}, 'result': True, 'comment': ''}
+
+    # Only pass `name` if we have no manifest
+    name_arg = None if manifest else name
+
+    obj = __salt__['metalk8s_kubernetes.get_object'](
+        name=name_arg, manifest=manifest,
+        **kwargs
+    )
+
+    cmp_manifest = manifest
+    if not cmp_manifest:
+        try:
+            with open(name, 'r') as stream:
+                cmp_manifest = yaml.safe_load(stream)
+        except (IOError, yaml.YAMLError):
+            # Do not fail if we are not able to load the YAML,
+            # consider that the object need to be updated and let the module
+            # raise if needed
+            cmp_manifest = None
+
+    if cmp_manifest:
+        new_obj = __utils__['metalk8s_kubernetes.caml_to_snake'](cmp_manifest)
+
+        if not __utils__['dictdiffer.recursive_diff'](obj, new_obj).diffs:
+            ret['comment'] = 'The object is already good'
+            return ret
+
+    if __opts__['test']:
+        ret['result'] = None
+        ret['comment'] = 'The object is going to be updated'
+        return ret
+
+    new = __salt__['metalk8s_kubernetes.update_object'](
+        name=name_arg, manifest=manifest,
+        **kwargs
+    )
+    diff = __utils__['dictdiffer.recursive_diff'](obj, new, False)
+    ret['changes'] = diff.diffs
+    ret['comment'] = 'The object was updated'
 
     return ret

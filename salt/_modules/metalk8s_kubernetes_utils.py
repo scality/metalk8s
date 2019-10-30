@@ -7,7 +7,6 @@ from __future__ import absolute_import
 
 from salt.exceptions import CommandExecutionError
 
-
 MISSING_DEPS = []
 try:
     import kubernetes.client

@@ -64,10 +64,8 @@ def _handle_error(exception, action):
     """
     base_msg = 'Failed to {} object: '.format(action)
 
-    if action in ('create', 'replace'):
-        raise CommandExecutionError(base_msg + str(exception).decode('utf-8'))
-
-    if isinstance(exception, ApiException) and exception.status == 404:
+    if action in ['delete', 'retrieve'] and \
+            isinstance(exception, ApiException) and exception.status == 404:
         return None
     else:
         raise CommandExecutionError(base_msg + str(exception).decode('utf-8'))
@@ -77,7 +75,7 @@ def _object_manipulation_function(action):
     """Generate an execution function based on a CRUD method to use."""
 
     # NOTE: `update` is not yet supported, since not used
-    assert action in ('create', 'retrieve', 'replace', 'delete'), (
+    assert action in ('create', 'retrieve', 'replace', 'delete', 'update'), (
         'Method "{}" is not supported'.format(action)
     )
 
@@ -137,6 +135,14 @@ def _object_manipulation_function(action):
             kwargs['body'] = k8s_client.V1DeleteOptions(
                 propagation_policy='Foreground'
             )
+        elif action == 'update':
+            kwargs['body'] = manifest
+            # When patching remove "searching" key like kind and apiVersion
+            kwargs['body'].pop('kind')
+            kwargs['body'].pop('apiVersion')
+            kwargs['body']['metadata'].pop('name')
+            # Namespace may be empty so add a default to not failing
+            kwargs['body']['metadata'].pop('namespace', None)
         elif action != 'retrieve':
             kwargs['body'] = obj.to_dict()
 
@@ -168,11 +174,10 @@ create_object = _object_manipulation_function('create')
 delete_object = _object_manipulation_function('delete')
 replace_object = _object_manipulation_function('replace')
 get_object = _object_manipulation_function('retrieve')
+update_object = _object_manipulation_function('update')
 
 
 # Listing resources can benefit from a simpler signature
-# NOTE: delete/get as well, but not done for now
-
 def list_objects(kind, api_version, namespace=None,
                  kubeconfig=None, context=None):
     try:
