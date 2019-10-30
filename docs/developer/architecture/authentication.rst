@@ -19,62 +19,70 @@ identity provider.
 Managing K8S role binding between user / groups High level roles and K8S roles
 is not part of this specification.
 
+
 Requirements:
 -------------
 
 Basically we are talking about:
 
-- Being able to provision users with an embedded Identity provider (IDP)
+- Being able to provision users with an local Identity provider (IDP)
 - Being able to integrate with an external IDP
 
-`Dex <https://github.com/dexidp/dex>`_ seems to be the preferred solution for
-now, for both local identity provider or proxy to external IDP.
 Integration with LDAP or Microsoft AD are the most important ones to support.
 
 User Stories:
 -------------
-**User Management with Dex as an IDP**
 
-As an IT Generalist, I want to provision/edit usersa and high level roles.
-group provisioning not supported by Dex from what I understand.
-The Product high level roles are:
+**Pre provisioned user and password change**
+
+In order to stay aligned with many other applications, it would make sense to
+have a pre-provisioned user with all privileges (kind of super admin) and
+pre-provisioned password so that it is easy to start interacting with the
+system through various admin UIs.
+Whatever UI this user open for the first time, the system should ask him to
+change the password for obvious security reasons.
+
+
+**User Management with local IDP**
+
+As an IT Generalist, I want to provision/edit users and high level roles.
+The MetalK8s high level roles are:
 
 - Cluster Admin role
 - Solution Admin role
 - Read Only
 
 This is done from CLI with well documented procedure.
-Entered passwords are never visible and encrypted when stored in DEX DB.
+Entered passwords are never visible and encrypted when stored in local IDP DB.
 The CLI tool enables to add / delete and edit passwords and roles.
-
-The CLI tool is used right after bootstrap node deployment to provision the
-very first user (which won't be provisioned anymore by default)
 
 
 **External IDP Integration**
 
-As an IT Generalist, I want to leverage my IDP in order to reuse already
-provisioned users & groups.
-The way we do that integration is through a CLI tool. This CLI tool will take
-LDAP or AD integration configuration file as an input.
-When External IDP Integration is set up, we can always use embedded IDP to
+As an IT Generalist, I want to leverage my organisation IDP in order to reuse
+already provisioned users & groups.
+The way we do that integration is through a CLI tool which does not require to
+have deep knowledge in K8S or in any local IDP specifics.
+When External IDP Integration is set up, we can always use local IDP to
 authenticate.
 
 
 **Authentication check**
 
 UI should make sure user is well authenticated and if not, redirect to
-the DEX login page. In that DEX login page, the user should choose between
-authenticating with DEX local users or with external IDP.
+the local IDP login page. In that local IDP login page, the user should choose
+between authenticating with local IDP or with external IDP.
 If no external IDP is configured, no choice is presented to the user.
-This DEX login page should be styled so that it looks like any other Scality
-web pages.
+This local IDP login page should be styled so that it looks like any other
+MetalK8s or solutions web pages. All admin UIs should share the same IDP.
+
 
 **Configuration persistence**
 
 Upgrading or redeploying MetalK8s should not affect configuration that was done
 earlier (i.e. local users and credentials as well as external IDP integration
 and configuration)
+
 
 **Securing access to stats and alerts**
 
@@ -84,14 +92,15 @@ drive administration of the system. Those APIs should be secured enough either
 through OIDC, Service account or because only accessible through control plane
 Network.
 
+
 **SSO between Admin UIs**
 
-Once DEX is in place and user are provisioned through external IDP one
-authenticated user can easily navigate to the other admin UIs without having
-to re-authenticate.
+Once IDP is in place and user are provisioned, one authenticated user can
+easily navigate to the other admin UIs without having to re-authenticate.
+
 
 Open questions:
 ---------------
 
 - Authentication across multiple sites
-- SSO across Admin UIs (control plane) and Zenko Management UIs (on data plane)
+- SSO across MetalK8s and solutions Admin UIs and other workload Management UIs
