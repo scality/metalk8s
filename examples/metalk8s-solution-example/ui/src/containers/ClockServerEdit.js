@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
+import * as yup from 'yup';
+import { useRouteMatch, useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
@@ -81,14 +81,21 @@ const InputValue = styled.label`
   font-size: ${fontSize.large};
 `;
 
-const ClockServerEditForm = props => {
-  const { intl, match, config, environments } = props;
+const ClockServerEditForm = ({ intl }) => {
+  const config = useSelector(state => state.config);
+  const environments = useSelector(state => state.app.environment.list);
+  const dispatch = useDispatch();
+  const editClockServer = body => dispatch(editClockServerAction(body));
+
+  const history = useHistory();
+  const match = useRouteMatch();
+
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
   );
   useEffect(() => {
-    props.getClockServer(environment, match.params.id);
+    dispatch(getClockServerAction({ environment, name: match.params.id }));
   }, [currentEnvironment]);
 
   const currentEnvironmentVersion = currentEnvironment
@@ -107,13 +114,14 @@ const ClockServerEditForm = props => {
     environment
   };
 
-  const validationSchema = Yup.object().shape({
-    version: Yup.string()
+  const validationSchema = yup.object().shape({
+    version: yup
+      .string()
       .required()
       .test('is-version-valid', intl.messages.not_valid_version, value =>
         semver.valid(value)
       ),
-    timezone: Yup.string().required()
+    timezone: yup.string().required()
   });
 
   return (
@@ -139,7 +147,7 @@ const ClockServerEditForm = props => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={props.editClockServer}
+            onSubmit={editClockServer}
           >
             {formProps => {
               const {
@@ -219,7 +227,7 @@ const ClockServerEditForm = props => {
                             type="button"
                             outlined
                             onClick={() =>
-                              props.history.push(`/environments/${environment}`)
+                              history.push(`/environments/${environment}`)
                             }
                           />
                           <Button
@@ -241,26 +249,4 @@ const ClockServerEditForm = props => {
   );
 };
 
-function mapStateToProps(state) {
-  return {
-    config: state.config,
-    environments: state.app.environment.list
-  };
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    editClockServer: body => dispatch(editClockServerAction(body)),
-    getClockServer: (environment, name) =>
-      dispatch(getClockServerAction({ environment, name }))
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(ClockServerEditForm)
-  )
-);
+export default injectIntl(ClockServerEditForm);

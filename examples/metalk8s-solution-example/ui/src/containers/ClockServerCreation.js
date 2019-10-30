@@ -1,9 +1,9 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
+import * as yup from 'yup';
+import { useRouteMatch, useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -61,8 +61,14 @@ const FormSection = styled.div`
   flex-direction: column;
 `;
 
-const ClockServerCreationForm = props => {
-  const { intl, match, config, environments } = props;
+const ClockServerCreationForm = ({ intl }) => {
+  const config = useSelector(state => state.config);
+  const environments = useSelector(state => state.app.environment.list);
+  const dispatch = useDispatch();
+  const createClockServer = body => dispatch(createClockServerAction(body));
+
+  const history = useHistory();
+  const match = useRouteMatch();
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
@@ -78,14 +84,15 @@ const ClockServerCreationForm = props => {
     environment
   };
 
-  const validationSchema = Yup.object().shape({
-    version: Yup.string()
+  const validationSchema = yup.object().shape({
+    version: yup
+      .string()
       .required()
       .test('is-version-valid', intl.messages.not_valid_version, value =>
         semver.valid(value)
       ),
-    timezone: Yup.string().required(),
-    name: Yup.string().required()
+    timezone: yup.string().required(),
+    name: yup.string().required()
   });
 
   return (
@@ -110,7 +117,7 @@ const ClockServerCreationForm = props => {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={props.createClockServer}
+          onSubmit={createClockServer}
         >
           {formProps => {
             const {
@@ -191,9 +198,7 @@ const ClockServerCreationForm = props => {
                           type="button"
                           outlined
                           onClick={() =>
-                            props.history.push(
-                              `/environments/${match.params.name}`
-                            )
+                            history.push(`/environments/${match.params.name}`)
                           }
                         />
                         <Button
@@ -214,24 +219,4 @@ const ClockServerCreationForm = props => {
   );
 };
 
-function mapStateToProps(state) {
-  return {
-    config: state.config,
-    environments: state.app.environment.list
-  };
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    createClockServer: body => dispatch(createClockServerAction(body))
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(ClockServerCreationForm)
-  )
-);
+export default injectIntl(ClockServerCreationForm);

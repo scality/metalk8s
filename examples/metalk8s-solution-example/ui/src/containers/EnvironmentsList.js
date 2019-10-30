@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button, Modal, Input } from '@scality/core-ui';
@@ -41,14 +41,15 @@ const ModalBodyTitle = styled.div`
   padding-bottom: ${padding.base};
 `;
 
-const EnvironmentsList = props => {
+const EnvironmentsList = ({ intl }) => {
+  const environment = useSelector(state => state.app.environment);
+  const versions = useSelector(state => state.config.versions);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const [openModal, setOpenModal] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('');
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
-  const { intl, history, environment, versions } = props;
-
+  const history = useHistory();
   const availableVersions = versions.map(item => {
     return {
       label: item.version,
@@ -178,13 +179,4 @@ const EnvironmentsList = props => {
   );
 };
 
-function mapStateToProps(state) {
-  return {
-    environment: state.app.environment,
-    versions: state.config.versions
-  };
-}
-
-export default injectIntl(
-  withRouter(connect(mapStateToProps)(EnvironmentsList))
-);
+export default injectIntl(EnvironmentsList);

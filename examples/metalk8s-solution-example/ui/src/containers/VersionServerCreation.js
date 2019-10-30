@@ -1,9 +1,9 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
+import * as yup from 'yup';
+import { useRouteMatch, useHistory } from 'react-router';
 import { injectIntl } from 'react-intl';
 import { Button, Input, Breadcrumb } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -61,8 +61,13 @@ const FormSection = styled.div`
   flex-direction: column;
 `;
 
-const VersionServerCreationForm = props => {
-  const { intl, match, config, environments } = props;
+const VersionServerCreationForm = ({ intl }) => {
+  const config = useSelector(state => state.config);
+  const environments = useSelector(state => state.app.environment.list);
+  const dispatch = useDispatch();
+  const createVersionServer = body => dispatch(createVersionServerAction(body));
+  const history = useHistory();
+  const match = useRouteMatch();
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
@@ -77,14 +82,15 @@ const VersionServerCreationForm = props => {
     environment
   };
 
-  const validationSchema = Yup.object().shape({
-    version: Yup.string()
+  const validationSchema = yup.object().shape({
+    version: yup
+      .string()
       .required()
       .test('is-version-valid', intl.messages.not_valid_version, value =>
         semver.valid(value)
       ),
-    replicas: Yup.number().required(),
-    name: Yup.string().required()
+    replicas: yup.number().required(),
+    name: yup.string().required()
   });
 
   return (
@@ -109,7 +115,7 @@ const VersionServerCreationForm = props => {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={props.createVersionServer}
+          onSubmit={createVersionServer}
         >
           {formProps => {
             const {
@@ -189,7 +195,7 @@ const VersionServerCreationForm = props => {
                           type="button"
                           outlined
                           onClick={() =>
-                            props.history.push(`/environments/${environment}`)
+                            history.push(`/environments/${environment}`)
                           }
                         />
                         <Button
@@ -210,21 +216,4 @@ const VersionServerCreationForm = props => {
   );
 };
 
-function mapStateToProps(state) {
-  return { config: state.config, environments: state.app.environment.list };
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    createVersionServer: body => dispatch(createVersionServerAction(body))
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(VersionServerCreationForm)
-  )
-);
+export default injectIntl(VersionServerCreationForm);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { useRouteMatch, useHistory } from 'react-router';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
 import { Table, Button } from '@scality/core-ui';
@@ -43,8 +43,20 @@ const ListContainer = styled.div`
   padding: ${padding.base};
 `;
 
-const ComponentLists = props => {
-  const { intl, history, match, environments } = props;
+const ComponentLists = ({ intl }) => {
+  const environments = useSelector(state => state.app.environment.list);
+  const dispatch = useDispatch();
+  const refreshClockServer = environment =>
+    dispatch(refreshClockServerAction(environment));
+  const refreshVersionServer = environment =>
+    dispatch(refreshVersionServerAction(environment));
+  const stopRefreshClockServer = environment =>
+    dispatch(stopRefreshClockServerAction(environment));
+  const stopRefreshVersionServer = environment =>
+    dispatch(stopRefreshVersionServerAction(environment));
+
+  const history = useHistory();
+  const match = useRouteMatch();
   const environment = match.params.name;
   const currentEnvironment = environments.find(
     item => item.name === environment
@@ -57,16 +69,16 @@ const ComponentLists = props => {
     : [];
 
   useEffect(() => {
-    props.refreshClockServer(environment);
+    refreshClockServer(environment);
     return () => {
-      props.stopRefreshClockServer(environment);
+      stopRefreshClockServer(environment);
     };
   }, []);
 
   useEffect(() => {
-    props.refreshVersionServer(environment);
+    refreshVersionServer(environment);
     return () => {
-      props.stopRefreshVersionServer(environment);
+      stopRefreshVersionServer(environment);
     };
   }, []);
 
@@ -203,29 +215,4 @@ const ComponentLists = props => {
   );
 };
 
-function mapStateToProps(state) {
-  return {
-    environments: state.app.environment.list
-  };
-}
-const mapDispatchToProps = dispatch => {
-  return {
-    refreshClockServer: environment =>
-      dispatch(refreshClockServerAction(environment)),
-    refreshVersionServer: environment =>
-      dispatch(refreshVersionServerAction(environment)),
-    stopRefreshClockServer: environment =>
-      dispatch(stopRefreshClockServerAction(environment)),
-    stopRefreshVersionServer: environment =>
-      dispatch(stopRefreshVersionServerAction(environment))
-  };
-};
-
-export default injectIntl(
-  withRouter(
-    connect(
-      mapStateToProps,
-      mapDispatchToProps
-    )(ComponentLists)
-  )
-);
+export default injectIntl(ComponentLists);
