@@ -124,5 +124,9 @@
   "add_solution_to_environment": "Add solution to the environment {environment}",
   "version_env": "Versions",
   "add_solution": "Add the solution",
-  "advanced_monitoring": "Advanced Monitoring"
+  "advanced_monitoring": "Advanced Monitoring",
+  "add": "Add",
+  "labels": "Labels",
+  "enter_label_name": "Enter label name…",
+  "enter_label_value": "Enter label value…"
 }

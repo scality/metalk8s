@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouteMatch, useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
@@ -13,7 +13,11 @@ import {
   fetchStorageClassAction,
   createVolumeAction,
 } from '../ducks/app/volumes';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import {
+  padding,
+  fontSize,
+  fontWeight,
+} from '@scality/core-ui/dist/style/theme';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
@@ -60,7 +64,7 @@ const CreateVolumeLayout = styled.div`
       display: inline-flex;
       margin: ${padding.smaller} 0;
       .sc-input-label {
-        width: 200px;
+        width: 150px;
       }
     }
   }
@@ -88,6 +92,47 @@ const SizeUnitFieldSelectContainer = styled.div`
   }
 `;
 
+const InputContainer = styled.div`
+  display: inline-flex;
+`;
+
+const InputLabel = styled.label`
+  padding: ${padding.small};
+  font-size: ${fontSize.base};
+`;
+
+const LabelsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const LabelsForm = styled.div`
+  display: inline-block;
+  .sc-input-wrapper {
+    margin-right: ${padding.small};
+  }
+`;
+
+const LabelsList = styled.div`
+  margin: ${padding.small} 0;
+  max-height: 200px;
+  overflow: auto;
+`;
+
+const LabelsKeyValue = styled.div`
+  display: flex;
+`;
+
+const LabelsValue = styled.div`
+  width: 200px;
+  padding: ${padding.small} 0;
+  margin-right: ${padding.small};
+`;
+
+const LabelsName = styled(LabelsValue)`
+  font-weight: ${fontWeight.bold};
+`;
+
 const CreateVolume = props => {
   const { intl } = props;
   const dispatch = useDispatch();
@@ -108,6 +153,10 @@ const CreateVolume = props => {
   const isStorageClassLoading = useSelector(
     state => state.app.volumes.isSCLoading,
   );
+
+  const [labelName, setLabelName] = useState('');
+  const [labelValue, setLabelValue] = useState('');
+
   // Hardcoded
   const types = [
     {
@@ -127,6 +176,7 @@ const CreateVolume = props => {
     path: '',
     selectedUnit: sizeUnits[3].value,
     sizeInput: '',
+    labels: {},
   };
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   const positiveIntegerRegex = /^[1-9][0-9]*$/;
@@ -173,6 +223,7 @@ const CreateVolume = props => {
       is: SPARSE_LOOP_DEVICE,
       then: yup.string(),
     }),
+    labels: yup.object(),
   });
   const isStorageClassExist = storageClassesName.length > 0;
 
@@ -248,6 +299,20 @@ const CreateVolume = props => {
               return items.find(item => item.value === selectedValue);
             };
 
+            const addLabel = () => {
+              const labels = values.labels;
+              labels[labelName] = labelValue;
+              setFieldValue('labels', labels);
+              setLabelName('');
+              setLabelValue('');
+            };
+
+            const removeLabel = key => {
+              const labels = values.labels;
+              delete labels[key];
+              setFieldValue('labels', labels);
+            };
+
             const optionsStorageClasses = storageClassesName.map(SCName => {
               return {
                 label: SCName,
@@ -289,6 +354,52 @@ const CreateVolume = props => {
                     error={touched.name && errors.name}
                     onBlur={handleOnBlur}
                   />
+                  <InputContainer className="sc-input">
+                    <InputLabel className="sc-input-label">
+                      {intl.messages.labels}
+                    </InputLabel>
+                    <LabelsContainer>
+                      <LabelsForm>
+                        <Input
+                          name="labelName"
+                          placeholder={intl.messages.enter_label_name}
+                          value={labelName}
+                          onChange={e => {
+                            setLabelName(e.target.value);
+                          }}
+                        />
+                        <Input
+                          name="labelValue"
+                          placeholder={intl.messages.enter_label_value}
+                          value={labelValue}
+                          onChange={e => {
+                            setLabelValue(e.target.value);
+                          }}
+                        />
+                        <Button
+                          text={intl.messages.add}
+                          type="button"
+                          onClick={addLabel}
+                        />
+                      </LabelsForm>
+                      {!!Object.keys(values.labels).length && (
+                        <LabelsList>
+                          {Object.keys(values.labels).map((key, index) => (
+                            <LabelsKeyValue key={`labelKeyValue_${index}`}>
+                              <LabelsName>{key}</LabelsName>
+                              <LabelsValue>{values.labels[key]}</LabelsValue>
+                              <Button
+                                icon={<i className="fas fa-lg fa-trash" />}
+                                inverted={true}
+                                type="button"
+                                onClick={() => removeLabel(key)}
+                              />
+                            </LabelsKeyValue>
+                          ))}
+                        </LabelsList>
+                      )}
+                    </LabelsContainer>
+                  </InputContainer>
                   <Input
                     id="storageClass_input"
                     label={intl.messages.storageClass}

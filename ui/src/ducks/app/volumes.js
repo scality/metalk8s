@@ -212,6 +212,7 @@ export function* createVolumes({ payload }) {
     kind: 'Volume',
     metadata: {
       name: newVolume.name,
+      labels: newVolume.labels,
     },
     spec: {
       nodeName,
