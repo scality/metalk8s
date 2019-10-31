@@ -21,6 +21,7 @@ identity provider.
 Managing K8S role binding between user/groups High level roles and K8S roles
 is not part of this specification.
 
+.. _authentication-requirements:
 
 Requirements
 ------------
@@ -108,3 +109,183 @@ Open questions
   - the fact that most consumers of Prometheus stats are not human
     (e.g. Grafana, a federating Prometheus, scripts and others), hence not
     well-suited for performing the OIDC flow
+
+Design Choices
+--------------
+
+`Dex <https://github.com/dexidp/dex/>`_ is chosen as an Identity Provider(IdP)
+in MetalK8s based on the above :ref:`authentication-requirements` for the
+following reasons:
+
+* Dex's support for multiple plugins enable integrating the OIDC flow
+  with existing user management systems such as Active Directory,
+  LDAP, SAML and others.
+* Dex can be seamlessly deployed in a Kubernetes cluster.
+* Dex provides access to a highly customizable UI which is a step closer to
+  good user experience which we advocate for.
+* Dex can act as a fallback Identity Provider in cases where the external
+  providers become unavailable or are not configured.
+
+Rejected design choices
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Static password file Vs OpenID Connect
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using static password files involves adding new users by updating a static file
+located on every control-plane Node. This method requires restarting the
+Kubernetes API server for every new change introduced.
+
+This was rejected since it is inflexible to operate, requires storing user
+credentials and there is no support for a pluggable external identity provider
+such as LDAP.
+
+X.509 certificates Vs OpenID Connect
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here, each user owns a signed certificate that is validated by the Kubernetes
+API server.
+
+This approach is not user-friendly that is each certificate has to be manually
+signed. Providing certificates for accessing the MetalK8s UI needs
+much more efforts since these certificates are browser incompatible.
+Using certificates is tedious since the certificate revocation process is also
+cumbersome.
+
+Keycloak Vs Dex
+~~~~~~~~~~~~~~~
+
+Both systems use OpenID Connect(OIDC) to authenticate a user using a
+standard OAuth2 flow.
+
+They both offer the ability to have short lived sessions so that user access
+can be rotated with minimum efforts.
+
+Finally, they both provide a means for identity management to be handled by an
+external service such as LDAP, Active Directory, SAML and others.
+
+Why not `Keycloak <https://www.keycoak.org/>`_?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Keycloak while offering similar features as Dex and even much more was rejected
+for the following reasons:
+
+- Keycloak is complex to operate(requires its own standalone database) and
+  manage(frequent database backups are required).
+
+- Currently, no use case exist for implementing a sophisticated Identity
+  Provider like Keycloak when the minimal Identity Provider from Dex is
+  sufficient.
+
+Note that, Keycloak is considered a future fallback Identity Provider if
+the need ever arises from a customer standpoint.
+
+Unexploited choices
+~~~~~~~~~~~~~~~~~~~
+
+* `Guard <https://github.com/appscode/guard/>`_
+
+A Kubernetes webhook authentication server by AppsCode, allowing you to
+log into your Kubernetes cluster by using various identity providers such as
+LDAP.
+
+* `ORY Hydra <https://github.com/ory/hydra/>`_
+
+It's an OpenID Connect provider optimized for low resource consumption.
+ORY Hydra is not an identity provider but it is able to connect to existing
+identity providers.
+
+Implementation Details
+----------------------
+
+Iteration 1
+~~~~~~~~~~~
+
+- Using Salt, generate self-signed certificates needed for Dex deployment
+- Deploy Dex in MetalK8s from the official **Dex Charts** while making use of
+  the generated certificates above
+- Provision an admin superuser
+- Configure Kubernetes API server flags to use Dex
+- Expose Dex on the control-plane using Ingress
+- Print the admin super user credentials to the CLI after MetalK8s bootstrap is
+  complete
+- Implement MetalK8s UI integration with Dex
+- Theme the Dex GUI to match MetalK8s UI specs(optional for iteration 1)
+
+Iteration 2
+~~~~~~~~~~~
+
+- Provide documentation on how to integrate with these external Identity
+  Providers especially LDAP and Microsoft Active Directory.
+
+Iteration 3
+~~~~~~~~~~~
+
+- Provide Single sign-on(SSO) for Grafana
+- Provide SSO between admin UIs
+
+Iteration 4
+~~~~~~~~~~~
+
+- Provide a CLI command to change the default superuser password as a prompt
+  after bootstrap
+- Provide a CLI for user management and provisioning
+
+The following operations will be supported using the CLI tool:
+
+- Create users password
+- List existing passwords
+- Delete users password
+- Edit existing password
+
+The CLI tool will also be used to create MetalK8s dedicated roles as already
+specified in the requirements section of this document.
+(see high-level roles from the requirements document)
+
+Since it is not advisable to perform the above mentioned operations at the Dex
+ConfigMap level, using the Dex gRPC API could be the way to go.
+
+Iteration 5
+~~~~~~~~~~~
+
+- Demand for a superuser's default password change upon first UI access
+- Provide UI integration that performs similar CLI operations for user
+  management and provisioning
+
+This means from the MetalK8s UI, a Cluster administrator should be able to do
+the following:
+
+- Create passwords for users
+- List existing passwords
+- Delete users password
+- Edit existing password
+
+.. note::
+
+   This iteration is completely optional for reasons being that the Identity
+   Provider from Dex acts as a fallback for Kubernetes Administrators who do
+   not want to use an external Identity Provider(mostly because they
+   have a very small user store).
+
+Documentation
+-------------
+
+In the Operational Guide:
+
+* Document the predefined dex roles(Cluster Admin role, Solution Admin role,
+  Read Only role), their access levels and how to create them.
+* Document how to create users and the secrets associated to them.
+* Document how to integrate Dex with external Identity Providers such as LDAP
+  and Microsoft Active Directory.
+
+In the Installation/Quickstart Guide
+
+* Document how to setup/change the superuser password
+
+
+Test Plan
+---------
+
+We could add some automated end-to-end tests for Dex user creation,
+and deletion using the CLI and then setup a mini-lab on scality cloud to try
+out the UI integration.
