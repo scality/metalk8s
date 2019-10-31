@@ -84,15 +84,6 @@ earlier (i.e. local users and credentials as well as external IDP integration
 and configuration)
 
 
-**Securing access to stats and alerts**
-
-Our customers, may want to collect some statistics out of our Prometheus and
-Alert Manager instances. Some other may want to leverage K8S / Salt APIs to
-drive administration of the system. Those APIs should be secured enough either
-through OIDC, Service account or because only accessible through control plane
-Network.
-
-
 **SSO between Admin UIs**
 
 Once IDP is in place and user are provisioned, one authenticated user can
@@ -104,3 +95,8 @@ Open questions:
 
 - Authentication across multiple sites
 - SSO across MetalK8s and solutions Admin UIs and other workload Management UIs
+- Our customers, may want to collect some statistics out of our Prometheus and
+  Alert Manager instances. Some other may want to leverage K8S / Salt APIs to
+  drive administration of the system. Those APIs should be secured enough
+  either through OIDC, Service account or because only accessible through
+  control plan Network.
