@@ -25,7 +25,7 @@ def __virtual__():
     return __virtualname__
 
 
-def _step_name(obj):
+def _step_name(obj, absent):
     namespace = obj['metadata'].get('namespace')
 
     if namespace:
@@ -36,7 +36,8 @@ def _step_name(obj):
     else:
         name = obj['metadata']['name']
 
-    return "Apply {}/{} '{}'".format(
+    return "{} {}/{} '{}'".format(
+        'Apply' if not absent else 'Remove',
         obj['apiVersion'],
         obj['kind'],
         name,
@@ -338,7 +339,7 @@ def _step(obj, kubeconfig=None, context=None, absent=False):
     '''
     Handle a single Kubernetes object, rendering it into a state 'step'
     '''
-    name = _step_name(obj)
+    name = _step_name(obj, absent)
     api_version = obj['apiVersion']
     kind = obj['kind']
 
