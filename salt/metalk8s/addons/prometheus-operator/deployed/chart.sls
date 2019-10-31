@@ -3,7 +3,7 @@
 
 {% raw %}
 
-apiVersion: extensions/v1beta1
+apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   annotations:
@@ -16,7 +16,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -57,40 +57,6 @@ spec:
   - downwardAPI
   - persistentVolumeClaim
 ---
-apiVersion: extensions/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app: grafana
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
-    heritage: metalk8s
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: metalk8s-monitoring
-spec:
-  allowPrivilegeEscalation: true
-  fsGroup:
-    rule: RunAsAny
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
-  privileged: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
-  volumes:
-  - configMap
-  - downwardAPI
-  - emptyDir
-  - projected
-  - secret
----
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -99,7 +65,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.3.1
+    helm.sh/chart: kube-state-metrics-2.4.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -126,7 +92,7 @@ spec:
   volumes:
   - secret
 ---
-apiVersion: extensions/v1beta1
+apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   labels:
@@ -134,7 +100,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.5.2
+    chart: prometheus-node-exporter-1.7.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -180,7 +146,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -221,7 +187,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -262,7 +228,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -307,7 +273,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -324,7 +290,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: alertmanager-prometheus-operator-alertmanager
@@ -341,7 +307,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana-config-dashboards
@@ -385,28 +351,10 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
----
-apiVersion: v1
-data:
-  run.sh: "@test \"Test Health\" {\n  url=\"http://prometheus-operator-grafana/api/health\"\
-    \n\n  code=$(curl -s -o /dev/null -I -w \"%{http_code}\" $url)\n  [ \"$code\"\
-    \ == \"200\" ]\n}"
-kind: ConfigMap
-metadata:
-  labels:
-    app: prometheus-operator-grafana
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-grafana
-    app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
-    heritage: metalk8s
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
@@ -421,7 +369,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_datasource: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -1040,7 +988,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -1574,7 +1522,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -2161,7 +2109,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -2351,27 +2299,27 @@ data:
     \            \"nullPointMode\": \"connected\",\n            \"percentage\": false,\n\
     \            \"pointradius\": 5,\n            \"points\": false,\n           \
     \ \"renderer\": \"flot\",\n            \"seriesOverrides\": [\n              \
-    \  {\n                    \"alias\": \"tcp:90\",\n                    \"yaxis\"\
+    \  {\n                    \"alias\": \"tcp:90%\",\n                    \"yaxis\"\
     : 2\n                },\n                {\n                    \"alias\": \"\
-    tcp:99 \",\n                    \"yaxis\": 2\n                },\n           \
-    \     {\n                    \"alias\": \"tcp:50\",\n                    \"yaxis\"\
+    tcp:99%\",\n                    \"yaxis\": 2\n                },\n           \
+    \     {\n                    \"alias\": \"tcp:50%\",\n                    \"yaxis\"\
     : 2\n                }\n            ],\n            \"spaceLength\": 10,\n   \
     \         \"stack\": false,\n            \"steppedLine\": false,\n           \
     \ \"targets\": [\n                {\n                    \"expr\": \"histogram_quantile(0.99,\
     \ sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\\\"$instance\\\",proto=\\\
     \"udp\\\"}[5m])) by (le,proto))\",\n                    \"intervalFactor\": 2,\n\
-    \                    \"legendFormat\": \"{{proto}}:99 \",\n                  \
+    \                    \"legendFormat\": \"{{proto}}:99%\",\n                  \
     \  \"refId\": \"A\",\n                    \"step\": 60\n                },\n \
     \               {\n                    \"expr\": \"histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\\\
     \"$instance\\\",proto=\\\"udp\\\"}[5m])) by (le,proto))\",\n                 \
-    \   \"intervalFactor\": 2,\n                    \"legendFormat\": \"{{proto}}:90\"\
+    \   \"intervalFactor\": 2,\n                    \"legendFormat\": \"{{proto}}:90%\"\
     ,\n                    \"refId\": \"B\",\n                    \"step\": 60\n \
     \               },\n                {\n                    \"expr\": \"histogram_quantile(0.50,\
     \ sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\\\"$instance\\\",proto=\\\
     \"udp\\\"}[5m])) by (le,proto))\",\n                    \"intervalFactor\": 2,\n\
-    \                    \"legendFormat\": \"{{proto}}:50\",\n                   \
-    \ \"refId\": \"C\",\n                    \"step\": 60\n                }\n   \
-    \         ],\n            \"thresholds\": [],\n            \"timeFrom\": null,\n\
+    \                    \"legendFormat\": \"{{proto}}:50%\",\n                  \
+    \  \"refId\": \"C\",\n                    \"step\": 60\n                }\n  \
+    \          ],\n            \"thresholds\": [],\n            \"timeFrom\": null,\n\
     \            \"timeShift\": null,\n            \"title\": \"Requests (size, udp)\"\
     ,\n            \"tooltip\": {\n                \"shared\": true,\n           \
     \     \"sort\": 0,\n                \"value_type\": \"cumulative\"\n         \
@@ -2400,29 +2348,29 @@ data:
     \            \"links\": [],\n            \"nullPointMode\": \"connected\",\n \
     \           \"percentage\": false,\n            \"pointradius\": 5,\n        \
     \    \"points\": false,\n            \"renderer\": \"flot\",\n            \"seriesOverrides\"\
-    : [\n                {\n                    \"alias\": \"tcp:90\",\n         \
-    \           \"yaxis\": 1\n                },\n                {\n            \
-    \        \"alias\": \"tcp:99 \",\n                    \"yaxis\": 1\n         \
-    \       },\n                {\n                    \"alias\": \"tcp:50\",\n  \
-    \                  \"yaxis\": 1\n                }\n            ],\n         \
-    \   \"spaceLength\": 10,\n            \"stack\": false,\n            \"steppedLine\"\
+    : [\n                {\n                    \"alias\": \"tcp:90%\",\n        \
+    \            \"yaxis\": 1\n                },\n                {\n           \
+    \         \"alias\": \"tcp:99%\",\n                    \"yaxis\": 1\n        \
+    \        },\n                {\n                    \"alias\": \"tcp:50%\",\n\
+    \                    \"yaxis\": 1\n                }\n            ],\n       \
+    \     \"spaceLength\": 10,\n            \"stack\": false,\n            \"steppedLine\"\
     : false,\n            \"targets\": [\n                {\n                    \"\
     expr\": \"histogram_quantile(0.99, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\\\
     \"$instance\\\",proto=\\\"tcp\\\"}[5m])) by (le,proto))\",\n                 \
-    \   \"intervalFactor\": 2,\n                    \"legendFormat\": \"{{proto}}:99\
-    \ \",\n                    \"refId\": \"A\",\n                    \"step\": 60\n\
-    \                },\n                {\n                    \"expr\": \"histogram_quantile(0.90,\
+    \   \"intervalFactor\": 2,\n                    \"legendFormat\": \"{{proto}}:99%\"\
+    ,\n                    \"refId\": \"A\",\n                    \"step\": 60\n \
+    \               },\n                {\n                    \"expr\": \"histogram_quantile(0.90,\
     \ sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\\\"$instance\\\",proto=\\\
     \"tcp\\\"}[5m])) by (le,proto))\",\n                    \"intervalFactor\": 2,\n\
-    \                    \"legendFormat\": \"{{proto}}:90\",\n                   \
-    \ \"refId\": \"B\",\n                    \"step\": 60\n                },\n  \
-    \              {\n                    \"expr\": \"histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\\\
+    \                    \"legendFormat\": \"{{proto}}:90%\",\n                  \
+    \  \"refId\": \"B\",\n                    \"step\": 60\n                },\n \
+    \               {\n                    \"expr\": \"histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\\\
     \"$instance\\\",proto=\\\"tcp\\\"}[5m])) by (le,proto))\",\n                 \
-    \   \"intervalFactor\": 2,\n                    \"legendFormat\": \"{{proto}}:50\"\
+    \   \"intervalFactor\": 2,\n                    \"legendFormat\": \"{{proto}}:50%\"\
     ,\n                    \"refId\": \"C\",\n                    \"step\": 60\n \
     \               }\n            ],\n            \"thresholds\": [],\n         \
     \   \"timeFrom\": null,\n            \"timeShift\": null,\n            \"title\"\
-    : \"Requests (size,tcp)\",\n            \"tooltip\": {\n                \"shared\"\
+    : \"Requests (size, tcp)\",\n            \"tooltip\": {\n                \"shared\"\
     : true,\n                \"sort\": 0,\n                \"value_type\": \"cumulative\"\
     \n            },\n            \"type\": \"graph\",\n            \"xaxis\": {\n\
     \                \"buckets\": null,\n                \"mode\": \"time\",\n   \
@@ -2542,7 +2490,7 @@ data:
     ,proto=\\\"udp\\\"}[5m])) by (le,proto)) \",\n                    \"intervalFactor\"\
     : 2,\n                    \"legendFormat\": \"{{proto}}:99%\",\n             \
     \       \"refId\": \"A\",\n                    \"step\": 40\n                },\n\
-    \                {\n                    \"expr\": \"histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{instance=\\\
+    \                {\n                    \"expr\": \"histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{instance=~\\\
     \"$instance\\\",proto=\\\"udp\\\"}[5m])) by (le,proto)) \",\n                \
     \    \"intervalFactor\": 2,\n                    \"legendFormat\": \"{{proto}}:90%\"\
     ,\n                    \"refId\": \"B\",\n                    \"step\": 40\n \
@@ -2726,7 +2674,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -3012,7 +2960,7 @@ data:
     \                    \"spaceLength\": 10,\n                    \"span\": 12,\n\
     \                    \"stack\": true,\n                    \"steppedLine\": false,\n\
     \                    \"targets\": [\n                        {\n             \
-    \               \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \               \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\"}) by (namespace)\",\n                            \"format\": \"\
     time_series\",\n                            \"intervalFactor\": 2,\n         \
     \                   \"legendFormat\": \"{{namespace}}\",\n                   \
@@ -3066,7 +3014,7 @@ data:
     \     ],\n                            \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\"\
     ,\n                            \"decimals\": 0,\n                            \"\
     link\": true,\n                            \"linkTooltip\": \"Drill down to pods\"\
-    ,\n                            \"linkUrl\": \"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1\"\
+    ,\n                            \"linkUrl\": \"./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1\"\
     ,\n                            \"pattern\": \"Value #A\",\n                  \
     \          \"thresholds\": [\n\n                            ],\n             \
     \               \"type\": \"number\",\n                            \"unit\": \"\
@@ -3076,7 +3024,7 @@ data:
     \     ],\n                            \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\"\
     ,\n                            \"decimals\": 0,\n                            \"\
     link\": true,\n                            \"linkTooltip\": \"Drill down to workloads\"\
-    ,\n                            \"linkUrl\": \"/d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1\"\
+    ,\n                            \"linkUrl\": \"./d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1\"\
     ,\n                            \"pattern\": \"Value #B\",\n                  \
     \          \"thresholds\": [\n\n                            ],\n             \
     \               \"type\": \"number\",\n                            \"unit\": \"\
@@ -3134,7 +3082,7 @@ data:
     : [\n\n                            ],\n                            \"dateFormat\"\
     : \"YYYY-MM-DD HH:mm:ss\",\n                            \"decimals\": 2,\n   \
     \                         \"link\": true,\n                            \"linkTooltip\"\
-    : \"Drill down to pods\",\n                            \"linkUrl\": \"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell\"\
+    : \"Drill down to pods\",\n                            \"linkUrl\": \"./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell\"\
     ,\n                            \"pattern\": \"namespace\",\n                 \
     \           \"thresholds\": [\n\n                            ],\n            \
     \                \"type\": \"number\",\n                            \"unit\":\
@@ -3159,7 +3107,7 @@ data:
     : true,\n                            \"intervalFactor\": 2,\n                \
     \            \"legendFormat\": \"\",\n                            \"refId\": \"\
     B\",\n                            \"step\": 10\n                        },\n \
-    \                       {\n                            \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                       {\n                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\"}) by (namespace)\",\n                            \"format\": \"\
     table\",\n                            \"instant\": true,\n                   \
     \         \"intervalFactor\": 2,\n                            \"legendFormat\"\
@@ -3171,7 +3119,7 @@ data:
     \         \"intervalFactor\": 2,\n                            \"legendFormat\"\
     : \"\",\n                            \"refId\": \"D\",\n                     \
     \       \"step\": 10\n                        },\n                        {\n\
-    \                            \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\"}) by (namespace) / sum(kube_pod_container_resource_requests_cpu_cores{cluster=\\\
     \"$cluster\\\"}) by (namespace)\",\n                            \"format\": \"\
     table\",\n                            \"instant\": true,\n                   \
@@ -3184,7 +3132,7 @@ data:
     \         \"intervalFactor\": 2,\n                            \"legendFormat\"\
     : \"\",\n                            \"refId\": \"F\",\n                     \
     \       \"step\": 10\n                        },\n                        {\n\
-    \                            \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\"}) by (namespace) / sum(kube_pod_container_resource_limits_cpu_cores{cluster=\\\
     \"$cluster\\\"}) by (namespace)\",\n                            \"format\": \"\
     table\",\n                            \"instant\": true,\n                   \
@@ -3287,7 +3235,7 @@ data:
     \                ],\n                            \"dateFormat\": \"YYYY-MM-DD\
     \ HH:mm:ss\",\n                            \"decimals\": 0,\n                \
     \            \"link\": true,\n                            \"linkTooltip\": \"\
-    Drill down to pods\",\n                            \"linkUrl\": \"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1\"\
+    Drill down to pods\",\n                            \"linkUrl\": \"./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1\"\
     ,\n                            \"pattern\": \"Value #A\",\n                  \
     \          \"thresholds\": [\n\n                            ],\n             \
     \               \"type\": \"number\",\n                            \"unit\": \"\
@@ -3297,7 +3245,7 @@ data:
     \     ],\n                            \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\"\
     ,\n                            \"decimals\": 0,\n                            \"\
     link\": true,\n                            \"linkTooltip\": \"Drill down to workloads\"\
-    ,\n                            \"linkUrl\": \"/d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1\"\
+    ,\n                            \"linkUrl\": \"./d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1\"\
     ,\n                            \"pattern\": \"Value #B\",\n                  \
     \          \"thresholds\": [\n\n                            ],\n             \
     \               \"type\": \"number\",\n                            \"unit\": \"\
@@ -3355,7 +3303,7 @@ data:
     : [\n\n                            ],\n                            \"dateFormat\"\
     : \"YYYY-MM-DD HH:mm:ss\",\n                            \"decimals\": 2,\n   \
     \                         \"link\": true,\n                            \"linkTooltip\"\
-    : \"Drill down to pods\",\n                            \"linkUrl\": \"/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell\"\
+    : \"Drill down to pods\",\n                            \"linkUrl\": \"./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell\"\
     ,\n                            \"pattern\": \"namespace\",\n                 \
     \           \"thresholds\": [\n\n                            ],\n            \
     \                \"type\": \"number\",\n                            \"unit\":\
@@ -3472,7 +3420,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -3503,7 +3451,7 @@ data:
     \  ],\n                    \"spaceLength\": 10,\n                    \"span\"\
     : 12,\n                    \"stack\": true,\n                    \"steppedLine\"\
     : false,\n                    \"targets\": [\n                        {\n    \
-    \                        \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                        \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}) by (pod)\",\n                 \
     \           \"format\": \"time_series\",\n                            \"intervalFactor\"\
     : 2,\n                            \"legendFormat\": \"{{pod}}\",\n           \
@@ -3606,7 +3554,7 @@ data:
     \          \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                        \
     \    \"decimals\": 2,\n                            \"link\": true,\n         \
     \                   \"linkTooltip\": \"Drill down\",\n                       \
-    \     \"linkUrl\": \"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell\"\
+    \     \"linkUrl\": \"./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell\"\
     ,\n                            \"pattern\": \"pod\",\n                       \
     \     \"thresholds\": [\n\n                            ],\n                  \
     \          \"type\": \"number\",\n                            \"unit\": \"short\"\
@@ -3619,7 +3567,7 @@ data:
     \             ],\n                            \"type\": \"string\",\n        \
     \                    \"unit\": \"short\"\n                        }\n        \
     \            ],\n                    \"targets\": [\n                        {\n\
-    \                            \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}) by (pod)\",\n                 \
     \           \"format\": \"table\",\n                            \"instant\": true,\n\
     \                            \"intervalFactor\": 2,\n                        \
@@ -3631,7 +3579,7 @@ data:
     \                            \"intervalFactor\": 2,\n                        \
     \    \"legendFormat\": \"\",\n                            \"refId\": \"B\",\n\
     \                            \"step\": 10\n                        },\n      \
-    \                  {\n                            \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                  {\n                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}) by (pod) / sum(kube_pod_container_resource_requests_cpu_cores{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}) by (pod)\",\n                 \
     \           \"format\": \"table\",\n                            \"instant\": true,\n\
@@ -3644,7 +3592,7 @@ data:
     \                            \"intervalFactor\": 2,\n                        \
     \    \"legendFormat\": \"\",\n                            \"refId\": \"D\",\n\
     \                            \"step\": 10\n                        },\n      \
-    \                  {\n                            \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                  {\n                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}) by (pod) / sum(kube_pod_container_resource_limits_cpu_cores{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}) by (pod)\",\n                 \
     \           \"format\": \"table\",\n                            \"instant\": true,\n\
@@ -3825,7 +3773,7 @@ data:
     \                    ],\n                            \"dateFormat\": \"YYYY-MM-DD\
     \ HH:mm:ss\",\n                            \"decimals\": 2,\n                \
     \            \"link\": true,\n                            \"linkTooltip\": \"\
-    Drill down\",\n                            \"linkUrl\": \"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell\"\
+    Drill down\",\n                            \"linkUrl\": \"./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell\"\
     ,\n                            \"pattern\": \"pod\",\n                       \
     \     \"thresholds\": [\n\n                            ],\n                  \
     \          \"type\": \"number\",\n                            \"unit\": \"short\"\
@@ -3963,11 +3911,498 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-k8s-resources-namespace
+  namespace: metalk8s-monitoring
+---
+apiVersion: v1
+data:
+  k8s-resources-node.json: "{\n    \"annotations\": {\n        \"list\": [\n\n   \
+    \     ]\n    },\n    \"editable\": true,\n    \"gnetId\": null,\n    \"graphTooltip\"\
+    : 0,\n    \"hideControls\": false,\n    \"links\": [\n\n    ],\n    \"refresh\"\
+    : \"10s\",\n    \"rows\": [\n        {\n            \"collapse\": false,\n   \
+    \         \"height\": \"250px\",\n            \"panels\": [\n                {\n\
+    \                    \"aliasColors\": {\n\n                    },\n          \
+    \          \"bars\": false,\n                    \"dashLength\": 10,\n       \
+    \             \"dashes\": false,\n                    \"datasource\": \"$datasource\"\
+    ,\n                    \"fill\": 10,\n                    \"id\": 1,\n       \
+    \             \"legend\": {\n                        \"avg\": false,\n       \
+    \                 \"current\": false,\n                        \"max\": false,\n\
+    \                        \"min\": false,\n                        \"show\": true,\n\
+    \                        \"total\": false,\n                        \"values\"\
+    : false\n                    },\n                    \"lines\": true,\n      \
+    \              \"linewidth\": 0,\n                    \"links\": [\n\n       \
+    \             ],\n                    \"nullPointMode\": \"null as zero\",\n \
+    \                   \"percentage\": false,\n                    \"pointradius\"\
+    : 5,\n                    \"points\": false,\n                    \"renderer\"\
+    : \"flot\",\n                    \"seriesOverrides\": [\n\n                  \
+    \  ],\n                    \"spaceLength\": 10,\n                    \"span\"\
+    : 12,\n                    \"stack\": true,\n                    \"steppedLine\"\
+    : false,\n                    \"targets\": [\n                        {\n    \
+    \                        \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod)\",\n                           \
+    \ \"format\": \"time_series\",\n                            \"intervalFactor\"\
+    : 2,\n                            \"legendFormat\": \"{{pod}}\",\n           \
+    \                 \"legendLink\": null,\n                            \"step\"\
+    : 10\n                        }\n                    ],\n                    \"\
+    thresholds\": [\n\n                    ],\n                    \"timeFrom\": null,\n\
+    \                    \"timeShift\": null,\n                    \"title\": \"CPU\
+    \ Usage\",\n                    \"tooltip\": {\n                        \"shared\"\
+    : false,\n                        \"sort\": 0,\n                        \"value_type\"\
+    : \"individual\"\n                    },\n                    \"type\": \"graph\"\
+    ,\n                    \"xaxis\": {\n                        \"buckets\": null,\n\
+    \                        \"mode\": \"time\",\n                        \"name\"\
+    : null,\n                        \"show\": true,\n                        \"values\"\
+    : [\n\n                        ]\n                    },\n                   \
+    \ \"yaxes\": [\n                        {\n                            \"format\"\
+    : \"short\",\n                            \"label\": null,\n                 \
+    \           \"logBase\": 1,\n                            \"max\": null,\n    \
+    \                        \"min\": 0,\n                            \"show\": true\n\
+    \                        },\n                        {\n                     \
+    \       \"format\": \"short\",\n                            \"label\": null,\n\
+    \                            \"logBase\": 1,\n                            \"max\"\
+    : null,\n                            \"min\": null,\n                        \
+    \    \"show\": false\n                        }\n                    ]\n     \
+    \           }\n            ],\n            \"repeat\": null,\n            \"repeatIteration\"\
+    : null,\n            \"repeatRowId\": null,\n            \"showTitle\": true,\n\
+    \            \"title\": \"CPU Usage\",\n            \"titleSize\": \"h6\"\n  \
+    \      },\n        {\n            \"collapse\": false,\n            \"height\"\
+    : \"250px\",\n            \"panels\": [\n                {\n                 \
+    \   \"aliasColors\": {\n\n                    },\n                    \"bars\"\
+    : false,\n                    \"dashLength\": 10,\n                    \"dashes\"\
+    : false,\n                    \"datasource\": \"$datasource\",\n             \
+    \       \"fill\": 1,\n                    \"id\": 2,\n                    \"legend\"\
+    : {\n                        \"avg\": false,\n                        \"current\"\
+    : false,\n                        \"max\": false,\n                        \"\
+    min\": false,\n                        \"show\": true,\n                     \
+    \   \"total\": false,\n                        \"values\": false\n           \
+    \         },\n                    \"lines\": true,\n                    \"linewidth\"\
+    : 1,\n                    \"links\": [\n\n                    ],\n           \
+    \         \"nullPointMode\": \"null as zero\",\n                    \"percentage\"\
+    : false,\n                    \"pointradius\": 5,\n                    \"points\"\
+    : false,\n                    \"renderer\": \"flot\",\n                    \"\
+    seriesOverrides\": [\n\n                    ],\n                    \"spaceLength\"\
+    : 10,\n                    \"span\": 12,\n                    \"stack\": false,\n\
+    \                    \"steppedLine\": false,\n                    \"styles\":\
+    \ [\n                        {\n                            \"alias\": \"Time\"\
+    ,\n                            \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n    \
+    \                        \"pattern\": \"Time\",\n                            \"\
+    type\": \"hidden\"\n                        },\n                        {\n  \
+    \                          \"alias\": \"CPU Usage\",\n                       \
+    \     \"colorMode\": null,\n                            \"colors\": [\n\n    \
+    \                        ],\n                            \"dateFormat\": \"YYYY-MM-DD\
+    \ HH:mm:ss\",\n                            \"decimals\": 2,\n                \
+    \            \"link\": false,\n                            \"linkTooltip\": \"\
+    Drill down\",\n                            \"linkUrl\": \"\",\n              \
+    \              \"pattern\": \"Value #A\",\n                            \"thresholds\"\
+    : [\n\n                            ],\n                            \"type\": \"\
+    number\",\n                            \"unit\": \"short\"\n                 \
+    \       },\n                        {\n                            \"alias\":\
+    \ \"CPU Requests\",\n                            \"colorMode\": null,\n      \
+    \                      \"colors\": [\n\n                            ],\n     \
+    \                       \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n           \
+    \                 \"decimals\": 2,\n                            \"link\": false,\n\
+    \                            \"linkTooltip\": \"Drill down\",\n              \
+    \              \"linkUrl\": \"\",\n                            \"pattern\": \"\
+    Value #B\",\n                            \"thresholds\": [\n\n               \
+    \             ],\n                            \"type\": \"number\",\n        \
+    \                    \"unit\": \"short\"\n                        },\n       \
+    \                 {\n                            \"alias\": \"CPU Requests %\"\
+    ,\n                            \"colorMode\": null,\n                        \
+    \    \"colors\": [\n\n                            ],\n                       \
+    \     \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                            \"\
+    decimals\": 2,\n                            \"link\": false,\n               \
+    \             \"linkTooltip\": \"Drill down\",\n                            \"\
+    linkUrl\": \"\",\n                            \"pattern\": \"Value #C\",\n   \
+    \                         \"thresholds\": [\n\n                            ],\n\
+    \                            \"type\": \"number\",\n                         \
+    \   \"unit\": \"percentunit\"\n                        },\n                  \
+    \      {\n                            \"alias\": \"CPU Limits\",\n           \
+    \                 \"colorMode\": null,\n                            \"colors\"\
+    : [\n\n                            ],\n                            \"dateFormat\"\
+    : \"YYYY-MM-DD HH:mm:ss\",\n                            \"decimals\": 2,\n   \
+    \                         \"link\": false,\n                            \"linkTooltip\"\
+    : \"Drill down\",\n                            \"linkUrl\": \"\",\n          \
+    \                  \"pattern\": \"Value #D\",\n                            \"\
+    thresholds\": [\n\n                            ],\n                          \
+    \  \"type\": \"number\",\n                            \"unit\": \"short\"\n  \
+    \                      },\n                        {\n                       \
+    \     \"alias\": \"CPU Limits %\",\n                            \"colorMode\"\
+    : null,\n                            \"colors\": [\n\n                       \
+    \     ],\n                            \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\"\
+    ,\n                            \"decimals\": 2,\n                            \"\
+    link\": false,\n                            \"linkTooltip\": \"Drill down\",\n\
+    \                            \"linkUrl\": \"\",\n                            \"\
+    pattern\": \"Value #E\",\n                            \"thresholds\": [\n\n  \
+    \                          ],\n                            \"type\": \"number\"\
+    ,\n                            \"unit\": \"percentunit\"\n                   \
+    \     },\n                        {\n                            \"alias\": \"\
+    Pod\",\n                            \"colorMode\": null,\n                   \
+    \         \"colors\": [\n\n                            ],\n                  \
+    \          \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                        \
+    \    \"decimals\": 2,\n                            \"link\": false,\n        \
+    \                    \"linkTooltip\": \"Drill down\",\n                      \
+    \      \"linkUrl\": \"\",\n                            \"pattern\": \"pod\",\n\
+    \                            \"thresholds\": [\n\n                           \
+    \ ],\n                            \"type\": \"number\",\n                    \
+    \        \"unit\": \"short\"\n                        },\n                   \
+    \     {\n                            \"alias\": \"\",\n                      \
+    \      \"colorMode\": null,\n                            \"colors\": [\n\n   \
+    \                         ],\n                            \"dateFormat\": \"YYYY-MM-DD\
+    \ HH:mm:ss\",\n                            \"decimals\": 2,\n                \
+    \            \"pattern\": \"/.*/\",\n                            \"thresholds\"\
+    : [\n\n                            ],\n                            \"type\": \"\
+    string\",\n                            \"unit\": \"short\"\n                 \
+    \       }\n                    ],\n                    \"targets\": [\n      \
+    \                  {\n                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod)\",\n                           \
+    \ \"format\": \"table\",\n                            \"instant\": true,\n   \
+    \                         \"intervalFactor\": 2,\n                           \
+    \ \"legendFormat\": \"\",\n                            \"refId\": \"A\",\n   \
+    \                         \"step\": 10\n                        },\n         \
+    \               {\n                            \"expr\": \"sum(kube_pod_container_resource_requests_cpu_cores{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod)\",\n                           \
+    \ \"format\": \"table\",\n                            \"instant\": true,\n   \
+    \                         \"intervalFactor\": 2,\n                           \
+    \ \"legendFormat\": \"\",\n                            \"refId\": \"B\",\n   \
+    \                         \"step\": 10\n                        },\n         \
+    \               {\n                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod) / sum(kube_pod_container_resource_requests_cpu_cores{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod)\",\n                           \
+    \ \"format\": \"table\",\n                            \"instant\": true,\n   \
+    \                         \"intervalFactor\": 2,\n                           \
+    \ \"legendFormat\": \"\",\n                            \"refId\": \"C\",\n   \
+    \                         \"step\": 10\n                        },\n         \
+    \               {\n                            \"expr\": \"sum(kube_pod_container_resource_limits_cpu_cores{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod)\",\n                           \
+    \ \"format\": \"table\",\n                            \"instant\": true,\n   \
+    \                         \"intervalFactor\": 2,\n                           \
+    \ \"legendFormat\": \"\",\n                            \"refId\": \"D\",\n   \
+    \                         \"step\": 10\n                        },\n         \
+    \               {\n                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod) / sum(kube_pod_container_resource_limits_cpu_cores{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod)\",\n                           \
+    \ \"format\": \"table\",\n                            \"instant\": true,\n   \
+    \                         \"intervalFactor\": 2,\n                           \
+    \ \"legendFormat\": \"\",\n                            \"refId\": \"E\",\n   \
+    \                         \"step\": 10\n                        }\n          \
+    \          ],\n                    \"thresholds\": [\n\n                    ],\n\
+    \                    \"timeFrom\": null,\n                    \"timeShift\": null,\n\
+    \                    \"title\": \"CPU Quota\",\n                    \"tooltip\"\
+    : {\n                        \"shared\": false,\n                        \"sort\"\
+    : 0,\n                        \"value_type\": \"individual\"\n               \
+    \     },\n                    \"transform\": \"table\",\n                    \"\
+    type\": \"table\",\n                    \"xaxis\": {\n                       \
+    \ \"buckets\": null,\n                        \"mode\": \"time\",\n          \
+    \              \"name\": null,\n                        \"show\": true,\n    \
+    \                    \"values\": [\n\n                        ]\n            \
+    \        },\n                    \"yaxes\": [\n                        {\n   \
+    \                         \"format\": \"short\",\n                           \
+    \ \"label\": null,\n                            \"logBase\": 1,\n            \
+    \                \"max\": null,\n                            \"min\": 0,\n   \
+    \                         \"show\": true\n                        },\n       \
+    \                 {\n                            \"format\": \"short\",\n    \
+    \                        \"label\": null,\n                            \"logBase\"\
+    : 1,\n                            \"max\": null,\n                           \
+    \ \"min\": null,\n                            \"show\": false\n              \
+    \          }\n                    ]\n                }\n            ],\n     \
+    \       \"repeat\": null,\n            \"repeatIteration\": null,\n          \
+    \  \"repeatRowId\": null,\n            \"showTitle\": true,\n            \"title\"\
+    : \"CPU Quota\",\n            \"titleSize\": \"h6\"\n        },\n        {\n \
+    \           \"collapse\": false,\n            \"height\": \"250px\",\n       \
+    \     \"panels\": [\n                {\n                    \"aliasColors\": {\n\
+    \n                    },\n                    \"bars\": false,\n             \
+    \       \"dashLength\": 10,\n                    \"dashes\": false,\n        \
+    \            \"datasource\": \"$datasource\",\n                    \"fill\": 10,\n\
+    \                    \"id\": 3,\n                    \"legend\": {\n         \
+    \               \"avg\": false,\n                        \"current\": false,\n\
+    \                        \"max\": false,\n                        \"min\": false,\n\
+    \                        \"show\": true,\n                        \"total\": false,\n\
+    \                        \"values\": false\n                    },\n         \
+    \           \"lines\": true,\n                    \"linewidth\": 0,\n        \
+    \            \"links\": [\n\n                    ],\n                    \"nullPointMode\"\
+    : \"null as zero\",\n                    \"percentage\": false,\n            \
+    \        \"pointradius\": 5,\n                    \"points\": false,\n       \
+    \             \"renderer\": \"flot\",\n                    \"seriesOverrides\"\
+    : [\n\n                    ],\n                    \"spaceLength\": 10,\n    \
+    \                \"span\": 12,\n                    \"stack\": true,\n       \
+    \             \"steppedLine\": false,\n                    \"targets\": [\n  \
+    \                      {\n                            \"expr\": \"sum(container_memory_working_set_bytes{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\", container!=\\\"\\\"}) by (pod)\",\n      \
+    \                      \"format\": \"time_series\",\n                        \
+    \    \"intervalFactor\": 2,\n                            \"legendFormat\": \"\
+    {{pod}}\",\n                            \"legendLink\": null,\n              \
+    \              \"step\": 10\n                        }\n                    ],\n\
+    \                    \"thresholds\": [\n\n                    ],\n           \
+    \         \"timeFrom\": null,\n                    \"timeShift\": null,\n    \
+    \                \"title\": \"Memory Usage (w/o cache)\",\n                  \
+    \  \"tooltip\": {\n                        \"shared\": false,\n              \
+    \          \"sort\": 0,\n                        \"value_type\": \"individual\"\
+    \n                    },\n                    \"type\": \"graph\",\n         \
+    \           \"xaxis\": {\n                        \"buckets\": null,\n       \
+    \                 \"mode\": \"time\",\n                        \"name\": null,\n\
+    \                        \"show\": true,\n                        \"values\":\
+    \ [\n\n                        ]\n                    },\n                   \
+    \ \"yaxes\": [\n                        {\n                            \"format\"\
+    : \"bytes\",\n                            \"label\": null,\n                 \
+    \           \"logBase\": 1,\n                            \"max\": null,\n    \
+    \                        \"min\": 0,\n                            \"show\": true\n\
+    \                        },\n                        {\n                     \
+    \       \"format\": \"short\",\n                            \"label\": null,\n\
+    \                            \"logBase\": 1,\n                            \"max\"\
+    : null,\n                            \"min\": null,\n                        \
+    \    \"show\": false\n                        }\n                    ]\n     \
+    \           }\n            ],\n            \"repeat\": null,\n            \"repeatIteration\"\
+    : null,\n            \"repeatRowId\": null,\n            \"showTitle\": true,\n\
+    \            \"title\": \"Memory Usage\",\n            \"titleSize\": \"h6\"\n\
+    \        },\n        {\n            \"collapse\": false,\n            \"height\"\
+    : \"250px\",\n            \"panels\": [\n                {\n                 \
+    \   \"aliasColors\": {\n\n                    },\n                    \"bars\"\
+    : false,\n                    \"dashLength\": 10,\n                    \"dashes\"\
+    : false,\n                    \"datasource\": \"$datasource\",\n             \
+    \       \"fill\": 1,\n                    \"id\": 4,\n                    \"legend\"\
+    : {\n                        \"avg\": false,\n                        \"current\"\
+    : false,\n                        \"max\": false,\n                        \"\
+    min\": false,\n                        \"show\": true,\n                     \
+    \   \"total\": false,\n                        \"values\": false\n           \
+    \         },\n                    \"lines\": true,\n                    \"linewidth\"\
+    : 1,\n                    \"links\": [\n\n                    ],\n           \
+    \         \"nullPointMode\": \"null as zero\",\n                    \"percentage\"\
+    : false,\n                    \"pointradius\": 5,\n                    \"points\"\
+    : false,\n                    \"renderer\": \"flot\",\n                    \"\
+    seriesOverrides\": [\n\n                    ],\n                    \"spaceLength\"\
+    : 10,\n                    \"span\": 12,\n                    \"stack\": false,\n\
+    \                    \"steppedLine\": false,\n                    \"styles\":\
+    \ [\n                        {\n                            \"alias\": \"Time\"\
+    ,\n                            \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n    \
+    \                        \"pattern\": \"Time\",\n                            \"\
+    type\": \"hidden\"\n                        },\n                        {\n  \
+    \                          \"alias\": \"Memory Usage\",\n                    \
+    \        \"colorMode\": null,\n                            \"colors\": [\n\n \
+    \                           ],\n                            \"dateFormat\": \"\
+    YYYY-MM-DD HH:mm:ss\",\n                            \"decimals\": 2,\n       \
+    \                     \"link\": false,\n                            \"linkTooltip\"\
+    : \"Drill down\",\n                            \"linkUrl\": \"\",\n          \
+    \                  \"pattern\": \"Value #A\",\n                            \"\
+    thresholds\": [\n\n                            ],\n                          \
+    \  \"type\": \"number\",\n                            \"unit\": \"bytes\"\n  \
+    \                      },\n                        {\n                       \
+    \     \"alias\": \"Memory Requests\",\n                            \"colorMode\"\
+    : null,\n                            \"colors\": [\n\n                       \
+    \     ],\n                            \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\"\
+    ,\n                            \"decimals\": 2,\n                            \"\
+    link\": false,\n                            \"linkTooltip\": \"Drill down\",\n\
+    \                            \"linkUrl\": \"\",\n                            \"\
+    pattern\": \"Value #B\",\n                            \"thresholds\": [\n\n  \
+    \                          ],\n                            \"type\": \"number\"\
+    ,\n                            \"unit\": \"bytes\"\n                        },\n\
+    \                        {\n                            \"alias\": \"Memory Requests\
+    \ %\",\n                            \"colorMode\": null,\n                   \
+    \         \"colors\": [\n\n                            ],\n                  \
+    \          \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                        \
+    \    \"decimals\": 2,\n                            \"link\": false,\n        \
+    \                    \"linkTooltip\": \"Drill down\",\n                      \
+    \      \"linkUrl\": \"\",\n                            \"pattern\": \"Value #C\"\
+    ,\n                            \"thresholds\": [\n\n                         \
+    \   ],\n                            \"type\": \"number\",\n                  \
+    \          \"unit\": \"percentunit\"\n                        },\n           \
+    \             {\n                            \"alias\": \"Memory Limits\",\n \
+    \                           \"colorMode\": null,\n                           \
+    \ \"colors\": [\n\n                            ],\n                          \
+    \  \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                            \"decimals\"\
+    : 2,\n                            \"link\": false,\n                         \
+    \   \"linkTooltip\": \"Drill down\",\n                            \"linkUrl\"\
+    : \"\",\n                            \"pattern\": \"Value #D\",\n            \
+    \                \"thresholds\": [\n\n                            ],\n       \
+    \                     \"type\": \"number\",\n                            \"unit\"\
+    : \"bytes\"\n                        },\n                        {\n         \
+    \                   \"alias\": \"Memory Limits %\",\n                        \
+    \    \"colorMode\": null,\n                            \"colors\": [\n\n     \
+    \                       ],\n                            \"dateFormat\": \"YYYY-MM-DD\
+    \ HH:mm:ss\",\n                            \"decimals\": 2,\n                \
+    \            \"link\": false,\n                            \"linkTooltip\": \"\
+    Drill down\",\n                            \"linkUrl\": \"\",\n              \
+    \              \"pattern\": \"Value #E\",\n                            \"thresholds\"\
+    : [\n\n                            ],\n                            \"type\": \"\
+    number\",\n                            \"unit\": \"percentunit\"\n           \
+    \             },\n                        {\n                            \"alias\"\
+    : \"Memory Usage (RSS)\",\n                            \"colorMode\": null,\n\
+    \                            \"colors\": [\n\n                            ],\n\
+    \                            \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n      \
+    \                      \"decimals\": 2,\n                            \"link\"\
+    : false,\n                            \"linkTooltip\": \"Drill down\",\n     \
+    \                       \"linkUrl\": \"\",\n                            \"pattern\"\
+    : \"Value #F\",\n                            \"thresholds\": [\n\n           \
+    \                 ],\n                            \"type\": \"number\",\n    \
+    \                        \"unit\": \"bytes\"\n                        },\n   \
+    \                     {\n                            \"alias\": \"Memory Usage\
+    \ (Cache)\",\n                            \"colorMode\": null,\n             \
+    \               \"colors\": [\n\n                            ],\n            \
+    \                \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                  \
+    \          \"decimals\": 2,\n                            \"link\": false,\n  \
+    \                          \"linkTooltip\": \"Drill down\",\n                \
+    \            \"linkUrl\": \"\",\n                            \"pattern\": \"Value\
+    \ #G\",\n                            \"thresholds\": [\n\n                   \
+    \         ],\n                            \"type\": \"number\",\n            \
+    \                \"unit\": \"bytes\"\n                        },\n           \
+    \             {\n                            \"alias\": \"Memory Usage (Swap)\"\
+    ,\n                            \"colorMode\": null,\n                        \
+    \    \"colors\": [\n\n                            ],\n                       \
+    \     \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                            \"\
+    decimals\": 2,\n                            \"link\": false,\n               \
+    \             \"linkTooltip\": \"Drill down\",\n                            \"\
+    linkUrl\": \"\",\n                            \"pattern\": \"Value #H\",\n   \
+    \                         \"thresholds\": [\n\n                            ],\n\
+    \                            \"type\": \"number\",\n                         \
+    \   \"unit\": \"bytes\"\n                        },\n                        {\n\
+    \                            \"alias\": \"Pod\",\n                           \
+    \ \"colorMode\": null,\n                            \"colors\": [\n\n        \
+    \                    ],\n                            \"dateFormat\": \"YYYY-MM-DD\
+    \ HH:mm:ss\",\n                            \"decimals\": 2,\n                \
+    \            \"link\": false,\n                            \"linkTooltip\": \"\
+    Drill down\",\n                            \"linkUrl\": \"\",\n              \
+    \              \"pattern\": \"pod\",\n                            \"thresholds\"\
+    : [\n\n                            ],\n                            \"type\": \"\
+    number\",\n                            \"unit\": \"short\"\n                 \
+    \       },\n                        {\n                            \"alias\":\
+    \ \"\",\n                            \"colorMode\": null,\n                  \
+    \          \"colors\": [\n\n                            ],\n                 \
+    \           \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                       \
+    \     \"decimals\": 2,\n                            \"pattern\": \"/.*/\",\n \
+    \                           \"thresholds\": [\n\n                            ],\n\
+    \                            \"type\": \"string\",\n                         \
+    \   \"unit\": \"short\"\n                        }\n                    ],\n \
+    \                   \"targets\": [\n                        {\n              \
+    \              \"expr\": \"sum(container_memory_working_set_bytes{cluster=\\\"\
+    $cluster\\\", node=\\\"$node\\\",container!=\\\"\\\"}) by (pod)\",\n         \
+    \                   \"format\": \"table\",\n                            \"instant\"\
+    : true,\n                            \"intervalFactor\": 2,\n                \
+    \            \"legendFormat\": \"\",\n                            \"refId\": \"\
+    A\",\n                            \"step\": 10\n                        },\n \
+    \                       {\n                            \"expr\": \"sum(kube_pod_container_resource_requests_memory_bytes{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod)\",\n                           \
+    \ \"format\": \"table\",\n                            \"instant\": true,\n   \
+    \                         \"intervalFactor\": 2,\n                           \
+    \ \"legendFormat\": \"\",\n                            \"refId\": \"B\",\n   \
+    \                         \"step\": 10\n                        },\n         \
+    \               {\n                            \"expr\": \"sum(container_memory_working_set_bytes{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\",container!=\\\"\\\"}) by (pod) / sum(kube_pod_container_resource_requests_memory_bytes{node=\\\
+    \"$node\\\"}) by (pod)\",\n                            \"format\": \"table\",\n\
+    \                            \"instant\": true,\n                            \"\
+    intervalFactor\": 2,\n                            \"legendFormat\": \"\",\n  \
+    \                          \"refId\": \"C\",\n                            \"step\"\
+    : 10\n                        },\n                        {\n                \
+    \            \"expr\": \"sum(kube_pod_container_resource_limits_memory_bytes{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\"}) by (pod)\",\n                           \
+    \ \"format\": \"table\",\n                            \"instant\": true,\n   \
+    \                         \"intervalFactor\": 2,\n                           \
+    \ \"legendFormat\": \"\",\n                            \"refId\": \"D\",\n   \
+    \                         \"step\": 10\n                        },\n         \
+    \               {\n                            \"expr\": \"sum(container_memory_working_set_bytes{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\",container!=\\\"\\\"}) by (pod) / sum(kube_pod_container_resource_limits_memory_bytes{node=\\\
+    \"$node\\\"}) by (pod)\",\n                            \"format\": \"table\",\n\
+    \                            \"instant\": true,\n                            \"\
+    intervalFactor\": 2,\n                            \"legendFormat\": \"\",\n  \
+    \                          \"refId\": \"E\",\n                            \"step\"\
+    : 10\n                        },\n                        {\n                \
+    \            \"expr\": \"sum(container_memory_rss{cluster=\\\"$cluster\\\", node=\\\
+    \"$node\\\",container!=\\\"\\\"}) by (pod)\",\n                            \"\
+    format\": \"table\",\n                            \"instant\": true,\n       \
+    \                     \"intervalFactor\": 2,\n                            \"legendFormat\"\
+    : \"\",\n                            \"refId\": \"F\",\n                     \
+    \       \"step\": 10\n                        },\n                        {\n\
+    \                            \"expr\": \"sum(container_memory_cache{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\",container!=\\\"\\\"}) by (pod)\",\n       \
+    \                     \"format\": \"table\",\n                            \"instant\"\
+    : true,\n                            \"intervalFactor\": 2,\n                \
+    \            \"legendFormat\": \"\",\n                            \"refId\": \"\
+    G\",\n                            \"step\": 10\n                        },\n \
+    \                       {\n                            \"expr\": \"sum(container_memory_swap{cluster=\\\
+    \"$cluster\\\", node=\\\"$node\\\",container!=\\\"\\\"}) by (pod)\",\n       \
+    \                     \"format\": \"table\",\n                            \"instant\"\
+    : true,\n                            \"intervalFactor\": 2,\n                \
+    \            \"legendFormat\": \"\",\n                            \"refId\": \"\
+    H\",\n                            \"step\": 10\n                        }\n  \
+    \                  ],\n                    \"thresholds\": [\n\n             \
+    \       ],\n                    \"timeFrom\": null,\n                    \"timeShift\"\
+    : null,\n                    \"title\": \"Memory Quota\",\n                  \
+    \  \"tooltip\": {\n                        \"shared\": false,\n              \
+    \          \"sort\": 0,\n                        \"value_type\": \"individual\"\
+    \n                    },\n                    \"transform\": \"table\",\n    \
+    \                \"type\": \"table\",\n                    \"xaxis\": {\n    \
+    \                    \"buckets\": null,\n                        \"mode\": \"\
+    time\",\n                        \"name\": null,\n                        \"show\"\
+    : true,\n                        \"values\": [\n\n                        ]\n\
+    \                    },\n                    \"yaxes\": [\n                  \
+    \      {\n                            \"format\": \"short\",\n               \
+    \             \"label\": null,\n                            \"logBase\": 1,\n\
+    \                            \"max\": null,\n                            \"min\"\
+    : 0,\n                            \"show\": true\n                        },\n\
+    \                        {\n                            \"format\": \"short\"\
+    ,\n                            \"label\": null,\n                            \"\
+    logBase\": 1,\n                            \"max\": null,\n                  \
+    \          \"min\": null,\n                            \"show\": false\n     \
+    \                   }\n                    ]\n                }\n            ],\n\
+    \            \"repeat\": null,\n            \"repeatIteration\": null,\n     \
+    \       \"repeatRowId\": null,\n            \"showTitle\": true,\n           \
+    \ \"title\": \"Memory Quota\",\n            \"titleSize\": \"h6\"\n        }\n\
+    \    ],\n    \"schemaVersion\": 14,\n    \"style\": \"dark\",\n    \"tags\": [\n\
+    \        \"kubernetes-mixin\"\n    ],\n    \"templating\": {\n        \"list\"\
+    : [\n            {\n                \"current\": {\n                    \"text\"\
+    : \"Prometheus\",\n                    \"value\": \"Prometheus\"\n           \
+    \     },\n                \"hide\": 0,\n                \"label\": null,\n   \
+    \             \"name\": \"datasource\",\n                \"options\": [\n\n  \
+    \              ],\n                \"query\": \"prometheus\",\n              \
+    \  \"refresh\": 1,\n                \"regex\": \"\",\n                \"type\"\
+    : \"datasource\"\n            },\n            {\n                \"allValue\"\
+    : null,\n                \"current\": {\n                    \"text\": \"prod\"\
+    ,\n                    \"value\": \"prod\"\n                },\n             \
+    \   \"datasource\": \"$datasource\",\n                \"hide\": 2,\n         \
+    \       \"includeAll\": false,\n                \"label\": \"cluster\",\n    \
+    \            \"multi\": false,\n                \"name\": \"cluster\",\n     \
+    \           \"options\": [\n\n                ],\n                \"query\": \"\
+    label_values(kube_pod_info, cluster)\",\n                \"refresh\": 1,\n   \
+    \             \"regex\": \"\",\n                \"sort\": 2,\n               \
+    \ \"tagValuesQuery\": \"\",\n                \"tags\": [\n\n                ],\n\
+    \                \"tagsQuery\": \"\",\n                \"type\": \"query\",\n\
+    \                \"useTags\": false\n            },\n            {\n         \
+    \       \"allValue\": null,\n                \"current\": {\n                \
+    \    \"text\": \"prod\",\n                    \"value\": \"prod\"\n          \
+    \      },\n                \"datasource\": \"$datasource\",\n                \"\
+    hide\": 0,\n                \"includeAll\": false,\n                \"label\"\
+    : \"node\",\n                \"multi\": false,\n                \"name\": \"node\"\
+    ,\n                \"options\": [\n\n                ],\n                \"query\"\
+    : \"label_values(kube_pod_info{cluster=\\\"$cluster\\\"}, node)\",\n         \
+    \       \"refresh\": 1,\n                \"regex\": \"\",\n                \"\
+    sort\": 2,\n                \"tagValuesQuery\": \"\",\n                \"tags\"\
+    : [\n\n                ],\n                \"tagsQuery\": \"\",\n            \
+    \    \"type\": \"query\",\n                \"useTags\": false\n            }\n\
+    \        ]\n    },\n    \"time\": {\n        \"from\": \"now-1h\",\n        \"\
+    to\": \"now\"\n    },\n    \"timepicker\": {\n        \"refresh_intervals\": [\n\
+    \            \"5s\",\n            \"10s\",\n            \"30s\",\n           \
+    \ \"1m\",\n            \"5m\",\n            \"15m\",\n            \"30m\",\n \
+    \           \"1h\",\n            \"2h\",\n            \"1d\"\n        ],\n   \
+    \     \"time_options\": [\n            \"5m\",\n            \"15m\",\n       \
+    \     \"1h\",\n            \"6h\",\n            \"12h\",\n            \"24h\"\
+    ,\n            \"2d\",\n            \"7d\",\n            \"30d\"\n        ]\n\
+    \    },\n    \"timezone\": \"\",\n    \"title\": \"Kubernetes / Compute Resources\
+    \ / Node (Pods)\",\n    \"uid\": \"200ac8fdbfbb74b39aff88118e4d1c2c\",\n    \"\
+    version\": 0\n}"
+kind: ConfigMap
+metadata:
+  labels:
+    app: prometheus-operator-grafana
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator-grafana
+    app.kubernetes.io/part-of: metalk8s
+    chart: prometheus-operator-7.1.1
+    grafana_dashboard: '1'
+    heritage: metalk8s
+    release: prometheus-operator
+  name: prometheus-operator-k8s-resources-node
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
@@ -3994,7 +4429,7 @@ data:
     \  ],\n                    \"spaceLength\": 10,\n                    \"span\"\
     : 12,\n                    \"stack\": true,\n                    \"steppedLine\"\
     : false,\n                    \"targets\": [\n                        {\n    \
-    \                        \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=\\\
+    \                        \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{namespace=\\\
     \"$namespace\\\", pod=\\\"$pod\\\", container!=\\\"POD\\\", cluster=\\\"$cluster\\\
     \"}) by (container)\",\n                            \"format\": \"time_series\"\
     ,\n                            \"intervalFactor\": 2,\n                      \
@@ -4110,7 +4545,7 @@ data:
     : [\n\n                            ],\n                            \"type\": \"\
     string\",\n                            \"unit\": \"short\"\n                 \
     \       }\n                    ],\n                    \"targets\": [\n      \
-    \                  {\n                            \"expr\": \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                  {\n                            \"expr\": \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\", pod=\\\"$pod\\\", container!=\\\"\
     POD\\\"}) by (container)\",\n                            \"format\": \"table\"\
     ,\n                            \"instant\": true,\n                          \
@@ -4124,7 +4559,7 @@ data:
     \                            \"legendFormat\": \"\",\n                       \
     \     \"refId\": \"B\",\n                            \"step\": 10\n          \
     \              },\n                        {\n                            \"expr\"\
-    : \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    : \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\", pod=\\\"$pod\\\"}) by (container)\
     \ / sum(kube_pod_container_resource_requests_cpu_cores{cluster=\\\"$cluster\\\"\
     , namespace=\\\"$namespace\\\", pod=\\\"$pod\\\"}) by (container)\",\n       \
@@ -4139,7 +4574,7 @@ data:
     \                            \"legendFormat\": \"\",\n                       \
     \     \"refId\": \"D\",\n                            \"step\": 10\n          \
     \              },\n                        {\n                            \"expr\"\
-    : \"sum(namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    : \"sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\", pod=\\\"$pod\\\"}) by (container)\
     \ / sum(kube_pod_container_resource_limits_cpu_cores{cluster=\\\"$cluster\\\"\
     , namespace=\\\"$namespace\\\", pod=\\\"$pod\\\"}) by (container)\",\n       \
@@ -4320,7 +4755,7 @@ data:
     \ #G\",\n                            \"thresholds\": [\n\n                   \
     \         ],\n                            \"type\": \"number\",\n            \
     \                \"unit\": \"bytes\"\n                        },\n           \
-    \             {\n                            \"alias\": \"Memory Usage (Swap\"\
+    \             {\n                            \"alias\": \"Memory Usage (Swap)\"\
     ,\n                            \"colorMode\": null,\n                        \
     \    \"colors\": [\n\n                            ],\n                       \
     \     \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                            \"\
@@ -4488,7 +4923,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -4519,7 +4954,7 @@ data:
     \  ],\n                    \"spaceLength\": 10,\n                    \"span\"\
     : 12,\n                    \"stack\": true,\n                    \"steppedLine\"\
     : false,\n                    \"targets\": [\n                        {\n    \
-    \                        \"expr\": \"sum(\\n    namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                        \"expr\": \"sum(\\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}\\n  * on(namespace,pod)\\n    group_left(workload,\
     \ workload_type) mixin_pod_workload{cluster=\\\"$cluster\\\", namespace=\\\"$namespace\\\
     \", workload=\\\"$workload\\\", workload_type=\\\"$type\\\"}\\n) by (pod)\\n\"\
@@ -4625,7 +5060,7 @@ data:
     \          \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                        \
     \    \"decimals\": 2,\n                            \"link\": true,\n         \
     \                   \"linkTooltip\": \"Drill down\",\n                       \
-    \     \"linkUrl\": \"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell\"\
+    \     \"linkUrl\": \"./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell\"\
     ,\n                            \"pattern\": \"pod\",\n                       \
     \     \"thresholds\": [\n\n                            ],\n                  \
     \          \"type\": \"number\",\n                            \"unit\": \"short\"\
@@ -4638,7 +5073,7 @@ data:
     \             ],\n                            \"type\": \"string\",\n        \
     \                    \"unit\": \"short\"\n                        }\n        \
     \            ],\n                    \"targets\": [\n                        {\n\
-    \                            \"expr\": \"sum(\\n    namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                            \"expr\": \"sum(\\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}\\n  * on(namespace,pod)\\n    group_left(workload,\
     \ workload_type) mixin_pod_workload{cluster=\\\"$cluster\\\", namespace=\\\"$namespace\\\
     \", workload=\\\"$workload\\\", workload_type=\\\"$type\\\"}\\n) by (pod)\\n\"\
@@ -4656,7 +5091,7 @@ data:
     \                            \"legendFormat\": \"\",\n                       \
     \     \"refId\": \"B\",\n                            \"step\": 10\n          \
     \              },\n                        {\n                            \"expr\"\
-    : \"sum(\\n    namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    : \"sum(\\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}\\n  * on(namespace,pod)\\n    group_left(workload,\
     \ workload_type) mixin_pod_workload{cluster=\\\"$cluster\\\", namespace=\\\"$namespace\\\
     \", workload=\\\"$workload\\\", workload_type=\\\"$type\\\"}\\n) by (pod)\\n/sum(\\\
@@ -4678,7 +5113,7 @@ data:
     \                            \"legendFormat\": \"\",\n                       \
     \     \"refId\": \"D\",\n                            \"step\": 10\n          \
     \              },\n                        {\n                            \"expr\"\
-    : \"sum(\\n    namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    : \"sum(\\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}\\n  * on(namespace,pod)\\n    group_left(workload,\
     \ workload_type) mixin_pod_workload{cluster=\\\"$cluster\\\", namespace=\\\"$namespace\\\
     \", workload=\\\"$workload\\\", workload_type=\\\"$type\\\"}\\n) by (pod)\\n/sum(\\\
@@ -4837,7 +5272,7 @@ data:
     \              \"dateFormat\": \"YYYY-MM-DD HH:mm:ss\",\n                    \
     \        \"decimals\": 2,\n                            \"link\": true,\n     \
     \                       \"linkTooltip\": \"Drill down\",\n                   \
-    \         \"linkUrl\": \"/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell\"\
+    \         \"linkUrl\": \"./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell\"\
     ,\n                            \"pattern\": \"pod\",\n                       \
     \     \"thresholds\": [\n\n                            ],\n                  \
     \          \"type\": \"number\",\n                            \"unit\": \"short\"\
@@ -4998,7 +5433,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -5029,7 +5464,7 @@ data:
     : [\n\n                    ],\n                    \"spaceLength\": 10,\n    \
     \                \"span\": 12,\n                    \"stack\": true,\n       \
     \             \"steppedLine\": false,\n                    \"targets\": [\n  \
-    \                      {\n                            \"expr\": \"sum(\\n  namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                      {\n                            \"expr\": \"sum(\\n  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}\\n* on(namespace,pod)\\n  group_left(workload,\
     \ workload_type) mixin_pod_workload{cluster=\\\"$cluster\\\", namespace=\\\"$namespace\\\
     \"}\\n) by (workload, workload_type)\\n\",\n                            \"format\"\
@@ -5144,7 +5579,7 @@ data:
     : [\n\n                            ],\n                            \"dateFormat\"\
     : \"YYYY-MM-DD HH:mm:ss\",\n                            \"decimals\": 2,\n   \
     \                         \"link\": true,\n                            \"linkTooltip\"\
-    : \"Drill down\",\n                            \"linkUrl\": \"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2\"\
+    : \"Drill down\",\n                            \"linkUrl\": \"./d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2\"\
     ,\n                            \"pattern\": \"workload\",\n                  \
     \          \"thresholds\": [\n\n                            ],\n             \
     \               \"type\": \"number\",\n                            \"unit\": \"\
@@ -5174,7 +5609,7 @@ data:
     \                            \"legendFormat\": \"\",\n                       \
     \     \"refId\": \"A\",\n                            \"step\": 10\n          \
     \              },\n                        {\n                            \"expr\"\
-    : \"sum(\\n  namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    : \"sum(\\n  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}\\n* on(namespace,pod)\\n  group_left(workload,\
     \ workload_type) mixin_pod_workload{cluster=\\\"$cluster\\\", namespace=\\\"$namespace\\\
     \"}\\n) by (workload, workload_type)\\n\",\n                            \"format\"\
@@ -5190,7 +5625,7 @@ data:
     \             \"intervalFactor\": 2,\n                            \"legendFormat\"\
     : \"\",\n                            \"refId\": \"C\",\n                     \
     \       \"step\": 10\n                        },\n                        {\n\
-    \                            \"expr\": \"sum(\\n  namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                            \"expr\": \"sum(\\n  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}\\n* on(namespace,pod)\\n  group_left(workload,\
     \ workload_type) mixin_pod_workload{cluster=\\\"$cluster\\\", namespace=\\\"$namespace\\\
     \"}\\n) by (workload, workload_type)\\n/sum(\\n  kube_pod_container_resource_requests_cpu_cores{cluster=\\\
@@ -5209,7 +5644,7 @@ data:
     \             \"intervalFactor\": 2,\n                            \"legendFormat\"\
     : \"\",\n                            \"refId\": \"E\",\n                     \
     \       \"step\": 10\n                        },\n                        {\n\
-    \                            \"expr\": \"sum(\\n  namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
+    \                            \"expr\": \"sum(\\n  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate{cluster=\\\
     \"$cluster\\\", namespace=\\\"$namespace\\\"}\\n* on(namespace,pod)\\n  group_left(workload,\
     \ workload_type) mixin_pod_workload{cluster=\\\"$cluster\\\", namespace=\\\"$namespace\\\
     \"}\\n) by (workload, workload_type)\\n/sum(\\n  kube_pod_container_resource_limits_cpu_cores{cluster=\\\
@@ -5376,7 +5811,7 @@ data:
     : [\n\n                            ],\n                            \"dateFormat\"\
     : \"YYYY-MM-DD HH:mm:ss\",\n                            \"decimals\": 2,\n   \
     \                         \"link\": true,\n                            \"linkTooltip\"\
-    : \"Drill down\",\n                            \"linkUrl\": \"/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2\"\
+    : \"Drill down\",\n                            \"linkUrl\": \"./d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2\"\
     ,\n                            \"pattern\": \"workload\",\n                  \
     \          \"thresholds\": [\n\n                            ],\n             \
     \               \"type\": \"number\",\n                            \"unit\": \"\
@@ -5525,7 +5960,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -6718,7 +7153,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -7136,54 +7571,55 @@ data:
     \                    \"targets\": [\n                        {\n             \
     \               \"expr\": \"(\\n  sum without (device) (\\n    max without (fstype,\
     \ mountpoint) (\\n      node_filesystem_size_bytes{job=\\\"node-exporter\\\",\
-    \ } - node_filesystem_avail_bytes{job=\\\"node-exporter\\\", }\\n    )\\n  ) \\\
-    n/ ignoring (instance) group_left\\n  sum without (instance, device) (\\n    max\
-    \ without (fstype, mountpoint) (\\n      node_filesystem_size_bytes{job=\\\"node-exporter\\\
-    \", }\\n    )\\n  )\\n)  \\n\",\n                            \"format\": \"time_series\"\
-    ,\n                            \"intervalFactor\": 2,\n                      \
-    \      \"legendFormat\": \"{{instance}}\",\n                            \"legendLink\"\
-    : \"/dashboard/file/node-rsrc-use.json\",\n                            \"step\"\
-    : 10\n                        }\n                    ],\n                    \"\
-    thresholds\": [\n\n                    ],\n                    \"timeFrom\": null,\n\
-    \                    \"timeShift\": null,\n                    \"title\": \"Disk\
-    \ Space Utilisation\",\n                    \"tooltip\": {\n                 \
-    \       \"shared\": false,\n                        \"sort\": 0,\n           \
-    \             \"value_type\": \"individual\"\n                    },\n       \
-    \             \"type\": \"graph\",\n                    \"xaxis\": {\n       \
-    \                 \"buckets\": null,\n                        \"mode\": \"time\"\
-    ,\n                        \"name\": null,\n                        \"show\":\
-    \ true,\n                        \"values\": [\n\n                        ]\n\
-    \                    },\n                    \"yaxes\": [\n                  \
-    \      {\n                            \"format\": \"percentunit\",\n         \
-    \                   \"label\": null,\n                            \"logBase\"\
-    : 1,\n                            \"max\": 1,\n                            \"\
-    min\": 0,\n                            \"show\": true\n                      \
-    \  },\n                        {\n                            \"format\": \"short\"\
-    ,\n                            \"label\": null,\n                            \"\
-    logBase\": 1,\n                            \"max\": null,\n                  \
-    \          \"min\": null,\n                            \"show\": false\n     \
-    \                   }\n                    ]\n                }\n            ],\n\
-    \            \"repeat\": null,\n            \"repeatIteration\": null,\n     \
-    \       \"repeatRowId\": null,\n            \"showTitle\": true,\n           \
-    \ \"title\": \"Disk Space\",\n            \"titleSize\": \"h6\"\n        }\n \
-    \   ],\n    \"schemaVersion\": 14,\n    \"style\": \"dark\",\n    \"tags\": [\n\
-    \n    ],\n    \"templating\": {\n        \"list\": [\n            {\n        \
-    \        \"current\": {\n                    \"text\": \"Prometheus\",\n     \
-    \               \"value\": \"Prometheus\"\n                },\n              \
-    \  \"hide\": 0,\n                \"label\": null,\n                \"name\": \"\
-    datasource\",\n                \"options\": [\n\n                ],\n        \
-    \        \"query\": \"prometheus\",\n                \"refresh\": 1,\n       \
-    \         \"regex\": \"\",\n                \"type\": \"datasource\"\n       \
-    \     }\n        ]\n    },\n    \"time\": {\n        \"from\": \"now-1h\",\n \
-    \       \"to\": \"now\"\n    },\n    \"timepicker\": {\n        \"refresh_intervals\"\
-    : [\n            \"5s\",\n            \"10s\",\n            \"30s\",\n       \
-    \     \"1m\",\n            \"5m\",\n            \"15m\",\n            \"30m\"\
-    ,\n            \"1h\",\n            \"2h\",\n            \"1d\"\n        ],\n\
-    \        \"time_options\": [\n            \"5m\",\n            \"15m\",\n    \
-    \        \"1h\",\n            \"6h\",\n            \"12h\",\n            \"24h\"\
-    ,\n            \"2d\",\n            \"7d\",\n            \"30d\"\n        ]\n\
-    \    },\n    \"timezone\": \"\",\n    \"title\": \"USE Method / Cluster\",\n \
-    \   \"uid\": \"3e97d1d02672cdd0861f4c97c64f89b2\",\n    \"version\": 0\n}"
+    \ fstype!=\\\"\\\"} - node_filesystem_avail_bytes{job=\\\"node-exporter\\\", fstype!=\\\
+    \"\\\"}\\n    )\\n  ) \\n/ ignoring (instance) group_left\\n  sum without (instance,\
+    \ device) (\\n    max without (fstype, mountpoint) (\\n      node_filesystem_size_bytes{job=\\\
+    \"node-exporter\\\", fstype!=\\\"\\\"}\\n    )\\n  )\\n)  \\n\",\n           \
+    \                 \"format\": \"time_series\",\n                            \"\
+    intervalFactor\": 2,\n                            \"legendFormat\": \"{{instance}}\"\
+    ,\n                            \"legendLink\": \"/dashboard/file/node-rsrc-use.json\"\
+    ,\n                            \"step\": 10\n                        }\n     \
+    \               ],\n                    \"thresholds\": [\n\n                \
+    \    ],\n                    \"timeFrom\": null,\n                    \"timeShift\"\
+    : null,\n                    \"title\": \"Disk Space Utilisation\",\n        \
+    \            \"tooltip\": {\n                        \"shared\": false,\n    \
+    \                    \"sort\": 0,\n                        \"value_type\": \"\
+    individual\"\n                    },\n                    \"type\": \"graph\"\
+    ,\n                    \"xaxis\": {\n                        \"buckets\": null,\n\
+    \                        \"mode\": \"time\",\n                        \"name\"\
+    : null,\n                        \"show\": true,\n                        \"values\"\
+    : [\n\n                        ]\n                    },\n                   \
+    \ \"yaxes\": [\n                        {\n                            \"format\"\
+    : \"percentunit\",\n                            \"label\": null,\n           \
+    \                 \"logBase\": 1,\n                            \"max\": 1,\n \
+    \                           \"min\": 0,\n                            \"show\"\
+    : true\n                        },\n                        {\n              \
+    \              \"format\": \"short\",\n                            \"label\":\
+    \ null,\n                            \"logBase\": 1,\n                       \
+    \     \"max\": null,\n                            \"min\": null,\n           \
+    \                 \"show\": false\n                        }\n               \
+    \     ]\n                }\n            ],\n            \"repeat\": null,\n  \
+    \          \"repeatIteration\": null,\n            \"repeatRowId\": null,\n  \
+    \          \"showTitle\": true,\n            \"title\": \"Disk Space\",\n    \
+    \        \"titleSize\": \"h6\"\n        }\n    ],\n    \"schemaVersion\": 14,\n\
+    \    \"style\": \"dark\",\n    \"tags\": [\n\n    ],\n    \"templating\": {\n\
+    \        \"list\": [\n            {\n                \"current\": {\n        \
+    \            \"text\": \"Prometheus\",\n                    \"value\": \"Prometheus\"\
+    \n                },\n                \"hide\": 0,\n                \"label\"\
+    : null,\n                \"name\": \"datasource\",\n                \"options\"\
+    : [\n\n                ],\n                \"query\": \"prometheus\",\n      \
+    \          \"refresh\": 1,\n                \"regex\": \"\",\n               \
+    \ \"type\": \"datasource\"\n            }\n        ]\n    },\n    \"time\": {\n\
+    \        \"from\": \"now-1h\",\n        \"to\": \"now\"\n    },\n    \"timepicker\"\
+    : {\n        \"refresh_intervals\": [\n            \"5s\",\n            \"10s\"\
+    ,\n            \"30s\",\n            \"1m\",\n            \"5m\",\n          \
+    \  \"15m\",\n            \"30m\",\n            \"1h\",\n            \"2h\",\n\
+    \            \"1d\"\n        ],\n        \"time_options\": [\n            \"5m\"\
+    ,\n            \"15m\",\n            \"1h\",\n            \"6h\",\n          \
+    \  \"12h\",\n            \"24h\",\n            \"2d\",\n            \"7d\",\n\
+    \            \"30d\"\n        ]\n    },\n    \"timezone\": \"\",\n    \"title\"\
+    : \"USE Method / Cluster\",\n    \"uid\": \"3e97d1d02672cdd0861f4c97c64f89b2\"\
+    ,\n    \"version\": 0\n}"
 kind: ConfigMap
 metadata:
   labels:
@@ -7191,7 +7627,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -7598,64 +8034,65 @@ data:
     \                    \"steppedLine\": false,\n                    \"targets\"\
     : [\n                        {\n                            \"expr\": \"1 -\\\
     n(\\n  max without (mountpoint, fstype) (node_filesystem_avail_bytes{job=\\\"\
-    node-exporter\\\", , instance=\\\"$instance\\\"}}`}})\\n/\\n  max without (mountpoint,\
-    \ fstype) (node_filesystem_size_bytes{job=\\\"node-exporter\\\", , instance=\\\
-    \"$instance\\\"}}`}})\\n)\\n\",\n                            \"format\": \"time_series\"\
-    ,\n                            \"intervalFactor\": 2,\n                      \
-    \      \"legendFormat\": \"{{device}}\",\n                            \"legendLink\"\
-    : null,\n                            \"step\": 10\n                        }\n\
-    \                    ],\n                    \"thresholds\": [\n\n           \
-    \         ],\n                    \"timeFrom\": null,\n                    \"\
-    timeShift\": null,\n                    \"title\": \"Disk Space Utilisation\"\
-    ,\n                    \"tooltip\": {\n                        \"shared\": false,\n\
-    \                        \"sort\": 0,\n                        \"value_type\"\
-    : \"individual\"\n                    },\n                    \"type\": \"graph\"\
-    ,\n                    \"xaxis\": {\n                        \"buckets\": null,\n\
-    \                        \"mode\": \"time\",\n                        \"name\"\
-    : null,\n                        \"show\": true,\n                        \"values\"\
-    : [\n\n                        ]\n                    },\n                   \
-    \ \"yaxes\": [\n                        {\n                            \"format\"\
-    : \"percentunit\",\n                            \"label\": null,\n           \
-    \                 \"logBase\": 1,\n                            \"max\": null,\n\
-    \                            \"min\": 0,\n                            \"show\"\
-    : true\n                        },\n                        {\n              \
-    \              \"format\": \"short\",\n                            \"label\":\
-    \ null,\n                            \"logBase\": 1,\n                       \
-    \     \"max\": null,\n                            \"min\": null,\n           \
-    \                 \"show\": false\n                        }\n               \
-    \     ]\n                }\n            ],\n            \"repeat\": null,\n  \
-    \          \"repeatIteration\": null,\n            \"repeatRowId\": null,\n  \
-    \          \"showTitle\": true,\n            \"title\": \"Disk Space\",\n    \
-    \        \"titleSize\": \"h6\"\n        }\n    ],\n    \"schemaVersion\": 14,\n\
-    \    \"style\": \"dark\",\n    \"tags\": [\n\n    ],\n    \"templating\": {\n\
-    \        \"list\": [\n            {\n                \"current\": {\n        \
-    \            \"text\": \"Prometheus\",\n                    \"value\": \"Prometheus\"\
-    \n                },\n                \"hide\": 0,\n                \"label\"\
-    : null,\n                \"name\": \"datasource\",\n                \"options\"\
-    : [\n\n                ],\n                \"query\": \"prometheus\",\n      \
-    \          \"refresh\": 1,\n                \"regex\": \"\",\n               \
-    \ \"type\": \"datasource\"\n            },\n            {\n                \"\
-    allValue\": null,\n                \"current\": {\n                    \"text\"\
-    : \"prod\",\n                    \"value\": \"prod\"\n                },\n   \
-    \             \"datasource\": \"$datasource\",\n                \"hide\": 0,\n\
-    \                \"includeAll\": false,\n                \"label\": \"instance\"\
-    ,\n                \"multi\": false,\n                \"name\": \"instance\",\n\
-    \                \"options\": [\n\n                ],\n                \"query\"\
-    : \"label_values(up{job=\\\"node-exporter\\\"}, instance)\",\n               \
-    \ \"refresh\": 1,\n                \"regex\": \"\",\n                \"sort\"\
-    : 2,\n                \"tagValuesQuery\": \"\",\n                \"tags\": [\n\
-    \n                ],\n                \"tagsQuery\": \"\",\n                \"\
-    type\": \"query\",\n                \"useTags\": false\n            }\n      \
-    \  ]\n    },\n    \"time\": {\n        \"from\": \"now-1h\",\n        \"to\":\
-    \ \"now\"\n    },\n    \"timepicker\": {\n        \"refresh_intervals\": [\n \
-    \           \"5s\",\n            \"10s\",\n            \"30s\",\n            \"\
-    1m\",\n            \"5m\",\n            \"15m\",\n            \"30m\",\n     \
-    \       \"1h\",\n            \"2h\",\n            \"1d\"\n        ],\n       \
-    \ \"time_options\": [\n            \"5m\",\n            \"15m\",\n           \
-    \ \"1h\",\n            \"6h\",\n            \"12h\",\n            \"24h\",\n \
-    \           \"2d\",\n            \"7d\",\n            \"30d\"\n        ]\n   \
-    \ },\n    \"timezone\": \"\",\n    \"title\": \"USE Method / Node\",\n    \"uid\"\
-    : \"fac67cfbe174d3ef53eb473d73d9212f\",\n    \"version\": 0\n}"
+    node-exporter\\\", fstype!=\\\"\\\", instance=\\\"$instance\\\"})\\n/\\n  max\
+    \ without (mountpoint, fstype) (node_filesystem_size_bytes{job=\\\"node-exporter\\\
+    \", fstype!=\\\"\\\", instance=\\\"$instance\\\"})\\n)\\n\",\n               \
+    \             \"format\": \"time_series\",\n                            \"intervalFactor\"\
+    : 2,\n                            \"legendFormat\": \"{{device}}\",\n        \
+    \                    \"legendLink\": null,\n                            \"step\"\
+    : 10\n                        }\n                    ],\n                    \"\
+    thresholds\": [\n\n                    ],\n                    \"timeFrom\": null,\n\
+    \                    \"timeShift\": null,\n                    \"title\": \"Disk\
+    \ Space Utilisation\",\n                    \"tooltip\": {\n                 \
+    \       \"shared\": false,\n                        \"sort\": 0,\n           \
+    \             \"value_type\": \"individual\"\n                    },\n       \
+    \             \"type\": \"graph\",\n                    \"xaxis\": {\n       \
+    \                 \"buckets\": null,\n                        \"mode\": \"time\"\
+    ,\n                        \"name\": null,\n                        \"show\":\
+    \ true,\n                        \"values\": [\n\n                        ]\n\
+    \                    },\n                    \"yaxes\": [\n                  \
+    \      {\n                            \"format\": \"percentunit\",\n         \
+    \                   \"label\": null,\n                            \"logBase\"\
+    : 1,\n                            \"max\": null,\n                           \
+    \ \"min\": 0,\n                            \"show\": true\n                  \
+    \      },\n                        {\n                            \"format\":\
+    \ \"short\",\n                            \"label\": null,\n                 \
+    \           \"logBase\": 1,\n                            \"max\": null,\n    \
+    \                        \"min\": null,\n                            \"show\"\
+    : false\n                        }\n                    ]\n                }\n\
+    \            ],\n            \"repeat\": null,\n            \"repeatIteration\"\
+    : null,\n            \"repeatRowId\": null,\n            \"showTitle\": true,\n\
+    \            \"title\": \"Disk Space\",\n            \"titleSize\": \"h6\"\n \
+    \       }\n    ],\n    \"schemaVersion\": 14,\n    \"style\": \"dark\",\n    \"\
+    tags\": [\n\n    ],\n    \"templating\": {\n        \"list\": [\n            {\n\
+    \                \"current\": {\n                    \"text\": \"Prometheus\"\
+    ,\n                    \"value\": \"Prometheus\"\n                },\n       \
+    \         \"hide\": 0,\n                \"label\": null,\n                \"name\"\
+    : \"datasource\",\n                \"options\": [\n\n                ],\n    \
+    \            \"query\": \"prometheus\",\n                \"refresh\": 1,\n   \
+    \             \"regex\": \"\",\n                \"type\": \"datasource\"\n   \
+    \         },\n            {\n                \"allValue\": null,\n           \
+    \     \"current\": {\n                    \"text\": \"prod\",\n              \
+    \      \"value\": \"prod\"\n                },\n                \"datasource\"\
+    : \"$datasource\",\n                \"hide\": 0,\n                \"includeAll\"\
+    : false,\n                \"label\": \"instance\",\n                \"multi\"\
+    : false,\n                \"name\": \"instance\",\n                \"options\"\
+    : [\n\n                ],\n                \"query\": \"label_values(up{job=\\\
+    \"node-exporter\\\"}, instance)\",\n                \"refresh\": 1,\n        \
+    \        \"regex\": \"\",\n                \"sort\": 2,\n                \"tagValuesQuery\"\
+    : \"\",\n                \"tags\": [\n\n                ],\n                \"\
+    tagsQuery\": \"\",\n                \"type\": \"query\",\n                \"useTags\"\
+    : false\n            }\n        ]\n    },\n    \"time\": {\n        \"from\":\
+    \ \"now-1h\",\n        \"to\": \"now\"\n    },\n    \"timepicker\": {\n      \
+    \  \"refresh_intervals\": [\n            \"5s\",\n            \"10s\",\n     \
+    \       \"30s\",\n            \"1m\",\n            \"5m\",\n            \"15m\"\
+    ,\n            \"30m\",\n            \"1h\",\n            \"2h\",\n          \
+    \  \"1d\"\n        ],\n        \"time_options\": [\n            \"5m\",\n    \
+    \        \"15m\",\n            \"1h\",\n            \"6h\",\n            \"12h\"\
+    ,\n            \"24h\",\n            \"2d\",\n            \"7d\",\n          \
+    \  \"30d\"\n        ]\n    },\n    \"timezone\": \"\",\n    \"title\": \"USE Method\
+    \ / Node\",\n    \"uid\": \"fac67cfbe174d3ef53eb473d73d9212f\",\n    \"version\"\
+    : 0\n}"
 kind: ConfigMap
 metadata:
   labels:
@@ -7663,7 +8100,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -7984,40 +8421,40 @@ data:
     : 6,\n                    \"stack\": true,\n                    \"steppedLine\"\
     : false,\n                    \"targets\": [\n                        {\n    \
     \                        \"expr\": \"sum(\\n  max by (device) (\\n    node_filesystem_size_bytes{job=\\\
-    \"node-exporter\\\", instance=\\\"$instance\\\", }\\n  -\\n    node_filesystem_avail_bytes{job=\\\
-    \"node-exporter\\\", instance=\\\"$instance\\\", }\\n  )\\n)\\n\",\n         \
-    \                   \"format\": \"time_series\",\n                           \
-    \ \"intervalFactor\": 2,\n                            \"legendFormat\": \"used\"\
-    ,\n                            \"refId\": \"A\"\n                        },\n\
-    \                        {\n                            \"expr\": \"sum(\\n  max\
-    \ by (device) (\\n    node_filesystem_avail_bytes{job=\\\"node-exporter\\\", instance=\\\
-    \"$instance\\\", }\\n  )\\n)\\n\",\n                            \"format\": \"\
-    time_series\",\n                            \"intervalFactor\": 2,\n         \
-    \                   \"legendFormat\": \"available\",\n                       \
-    \     \"refId\": \"B\"\n                        }\n                    ],\n  \
-    \                  \"thresholds\": [\n\n                    ],\n             \
-    \       \"timeFrom\": null,\n                    \"timeShift\": null,\n      \
-    \              \"title\": \"Disk Space Usage\",\n                    \"tooltip\"\
-    : {\n                        \"shared\": false,\n                        \"sort\"\
-    : 0,\n                        \"value_type\": \"individual\"\n               \
-    \     },\n                    \"type\": \"graph\",\n                    \"xaxis\"\
-    : {\n                        \"buckets\": null,\n                        \"mode\"\
-    : \"time\",\n                        \"name\": null,\n                       \
-    \ \"show\": true,\n                        \"values\": [\n\n                 \
-    \       ]\n                    },\n                    \"yaxes\": [\n        \
-    \                {\n                            \"format\": \"bytes\",\n     \
-    \                       \"label\": null,\n                            \"logBase\"\
-    : 1,\n                            \"max\": null,\n                           \
-    \ \"min\": 0,\n                            \"show\": true\n                  \
-    \      },\n                        {\n                            \"format\":\
-    \ \"bytes\",\n                            \"label\": null,\n                 \
+    \"node-exporter\\\", instance=\\\"$instance\\\", fstype!=\\\"\\\"}\\n  -\\n  \
+    \  node_filesystem_avail_bytes{job=\\\"node-exporter\\\", instance=\\\"$instance\\\
+    \", fstype!=\\\"\\\"}\\n  )\\n)\\n\",\n                            \"format\"\
+    : \"time_series\",\n                            \"intervalFactor\": 2,\n     \
+    \                       \"legendFormat\": \"used\",\n                        \
+    \    \"refId\": \"A\"\n                        },\n                        {\n\
+    \                            \"expr\": \"sum(\\n  max by (device) (\\n    node_filesystem_avail_bytes{job=\\\
+    \"node-exporter\\\", instance=\\\"$instance\\\", fstype!=\\\"\\\"}\\n  )\\n)\\\
+    n\",\n                            \"format\": \"time_series\",\n             \
+    \               \"intervalFactor\": 2,\n                            \"legendFormat\"\
+    : \"available\",\n                            \"refId\": \"B\"\n             \
+    \           }\n                    ],\n                    \"thresholds\": [\n\
+    \n                    ],\n                    \"timeFrom\": null,\n          \
+    \          \"timeShift\": null,\n                    \"title\": \"Disk Space Usage\"\
+    ,\n                    \"tooltip\": {\n                        \"shared\": false,\n\
+    \                        \"sort\": 0,\n                        \"value_type\"\
+    : \"individual\"\n                    },\n                    \"type\": \"graph\"\
+    ,\n                    \"xaxis\": {\n                        \"buckets\": null,\n\
+    \                        \"mode\": \"time\",\n                        \"name\"\
+    : null,\n                        \"show\": true,\n                        \"values\"\
+    : [\n\n                        ]\n                    },\n                   \
+    \ \"yaxes\": [\n                        {\n                            \"format\"\
+    : \"bytes\",\n                            \"label\": null,\n                 \
     \           \"logBase\": 1,\n                            \"max\": null,\n    \
     \                        \"min\": 0,\n                            \"show\": true\n\
-    \                        }\n                    ]\n                }\n       \
-    \     ],\n            \"repeat\": null,\n            \"repeatIteration\": null,\n\
-    \            \"repeatRowId\": null,\n            \"showTitle\": false,\n     \
-    \       \"title\": \"Dashboard Row\",\n            \"titleSize\": \"h6\",\n  \
-    \          \"type\": \"row\"\n        },\n        {\n            \"collapse\"\
+    \                        },\n                        {\n                     \
+    \       \"format\": \"bytes\",\n                            \"label\": null,\n\
+    \                            \"logBase\": 1,\n                            \"max\"\
+    : null,\n                            \"min\": 0,\n                           \
+    \ \"show\": true\n                        }\n                    ]\n         \
+    \       }\n            ],\n            \"repeat\": null,\n            \"repeatIteration\"\
+    : null,\n            \"repeatRowId\": null,\n            \"showTitle\": false,\n\
+    \            \"title\": \"Dashboard Row\",\n            \"titleSize\": \"h6\"\
+    ,\n            \"type\": \"row\"\n        },\n        {\n            \"collapse\"\
     : false,\n            \"collapsed\": false,\n            \"panels\": [\n     \
     \           {\n                    \"aliasColors\": {\n\n                    },\n\
     \                    \"bars\": false,\n                    \"dashLength\": 10,\n\
@@ -8147,7 +8584,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -8428,7 +8865,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -8757,7 +9194,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -9220,7 +9657,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -9807,7 +10244,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -10378,7 +10815,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -10892,7 +11329,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -11320,7 +11757,7 @@ data:
     : false,\n                \"label\": \"Namespace\",\n                \"multi\"\
     : false,\n                \"name\": \"namespace\",\n                \"options\"\
     : [\n\n                ],\n                \"query\": \"label_values(kube_statefulset_metadata_generation{job=\\\
-    \"kube-state-metrics\\\"}, cluster=\\\"$cluster\\\", namespace)\",\n         \
+    \"kube-state-metrics\\\", cluster=\\\"$cluster\\\"}, namespace)\",\n         \
     \       \"refresh\": 2,\n                \"regex\": \"\",\n                \"\
     sort\": 0,\n                \"tagValuesQuery\": \"\",\n                \"tags\"\
     : [\n\n                ],\n                \"tagsQuery\": \"\",\n            \
@@ -11353,7 +11790,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     grafana_dashboard: '1'
     heritage: metalk8s
     release: prometheus-operator
@@ -11368,24 +11805,10 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  labels:
-    app: grafana
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
-    heritage: metalk8s
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
@@ -11397,7 +11820,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.3.1
+    helm.sh/chart: kube-state-metrics-2.4.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -11411,7 +11834,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.5.2
+    chart: prometheus-node-exporter-1.7.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-node-exporter
@@ -11426,7 +11849,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -11441,7 +11864,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -11456,7 +11879,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -11473,7 +11896,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: alertmanagers.monitoring.coreos.com
@@ -13957,7 +14380,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: podmonitors.monitoring.coreos.com
@@ -14204,7 +14627,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheuses.monitoring.coreos.com
@@ -17752,7 +18175,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheusrules.monitoring.coreos.com
@@ -18189,7 +18612,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: servicemonitors.monitoring.coreos.com
@@ -18501,7 +18924,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana-clusterrole
@@ -18525,7 +18948,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.3.1
+    helm.sh/chart: kube-state-metrics-2.4.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -18704,7 +19127,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.3.1
+    helm.sh/chart: kube-state-metrics-2.4.1
     heritage: metalk8s
   name: psp-prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -18718,7 +19141,7 @@ rules:
   verbs:
   - use
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
@@ -18726,7 +19149,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.5.2
+    chart: prometheus-node-exporter-1.7.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -18750,7 +19173,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -18773,7 +19196,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -18853,7 +19276,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator-psp
@@ -18876,7 +19299,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -18924,7 +19347,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-psp
@@ -18947,7 +19370,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana-clusterrolebinding
@@ -18969,7 +19392,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.3.1
+    helm.sh/chart: kube-state-metrics-2.4.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -18990,7 +19413,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.3.1
+    helm.sh/chart: kube-state-metrics-2.4.1
     heritage: metalk8s
   name: psp-prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -19003,7 +19426,7 @@ subjects:
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
@@ -19011,7 +19434,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.5.2
+    chart: prometheus-node-exporter-1.7.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -19034,7 +19457,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -19056,7 +19479,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -19078,7 +19501,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator-psp
@@ -19100,7 +19523,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -19122,7 +19545,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-psp
@@ -19144,7 +19567,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -19159,29 +19582,6 @@ rules:
   verbs:
   - use
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    app: grafana
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
-    heritage: metalk8s
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: metalk8s-monitoring
-rules:
-- apiGroups:
-  - policy
-  resourceNames:
-  - prometheus-operator-grafana-test
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
@@ -19190,7 +19590,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -19202,28 +19602,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    app: grafana
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
-    heritage: metalk8s
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: metalk8s-monitoring
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: prometheus-operator-grafana-test
-subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-grafana-test
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
@@ -19234,7 +19612,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -19260,7 +19638,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.3.1
+    helm.sh/chart: kube-state-metrics-2.4.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -19285,7 +19663,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.5.2
+    chart: prometheus-node-exporter-1.7.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -19310,7 +19688,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -19334,7 +19712,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     jobLabel: coredns
     release: prometheus-operator
@@ -19358,7 +19736,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     jobLabel: kube-controller-manager
     release: prometheus-operator
@@ -19383,7 +19761,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     jobLabel: kube-etcd
     release: prometheus-operator
@@ -19408,7 +19786,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     jobLabel: kube-proxy
     release: prometheus-operator
@@ -19433,7 +19811,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     jobLabel: kube-scheduler
     release: prometheus-operator
@@ -19458,7 +19836,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -19481,9 +19859,10 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
+    self-monitor: 'true'
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
 spec:
@@ -19496,7 +19875,7 @@ spec:
     prometheus: prometheus-operator-prometheus
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
@@ -19504,7 +19883,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.5.2
+    chart: prometheus-node-exporter-1.7.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -19522,7 +19901,7 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
-        chart: prometheus-node-exporter-1.5.2
+        chart: prometheus-node-exporter-1.7.0
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
@@ -19579,7 +19958,7 @@ spec:
       maxUnavailable: 1
     type: RollingUpdate
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -19587,7 +19966,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -19603,10 +19982,10 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: d5c37d9d864b156886df6835be5bfcb25e41f3b81d9d93f74265789ba70193d9
+        checksum/config: 4ef64c5af631281e58a518e9084a1f21b19f5cd06063e431e8f159cc77f82cb1
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/sc-dashboard-provider-config: dc7735583397252c24f82d71d355833fc1e7986140b063616adf9b06236effe3
-        checksum/secret: c112788a78dfad681482268907a2d2866bfef2fcfad86bca7a9daf2a126a2cc6
+        checksum/sc-dashboard-provider-config: f1561245c2282f5bfe840742257ff13317de32992f280a59bffa7d51c06d83ca
+        checksum/secret: 4f5a6aa7e13b7572e94b117c1cd3948b7bd68841f122542c5d0ab2b9a5a59f5e
       labels:
         app: grafana
         release: prometheus-operator
@@ -19638,7 +20017,7 @@ spec:
             secretKeyRef:
               key: admin-password
               name: prometheus-operator-grafana
-        image: '{%- endraw -%}{{ build_image_name("grafana", False) }}{%- raw -%}:6.3.5'
+        image: '{%- endraw -%}{{ build_image_name("grafana", False) }}{%- raw -%}:6.4.2'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -19664,9 +20043,6 @@ spec:
         - mountPath: /etc/grafana/grafana.ini
           name: config
           subPath: grafana.ini
-        - mountPath: /etc/grafana/ldap.toml
-          name: ldap
-          subPath: ldap.toml
         - mountPath: /var/lib/grafana
           name: storage
         - mountPath: /tmp/dashboards
@@ -19711,12 +20087,6 @@ spec:
       - configMap:
           name: prometheus-operator-grafana
         name: config
-      - name: ldap
-        secret:
-          items:
-          - key: ldap-toml
-            path: ldap.toml
-          secretName: prometheus-operator-grafana
       - emptyDir: {}
         name: storage
       - emptyDir: {}
@@ -19735,7 +20105,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.3.1
+    helm.sh/chart: kube-state-metrics-2.4.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -19776,7 +20146,7 @@ spec:
         - --collectors=statefulsets
         - --collectors=storageclasses
         image: '{%- endraw -%}{{ build_image_name("kube-state-metrics", False) }}{%-
-          raw -%}:v1.7.2'
+          raw -%}:v1.8.0'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -19793,7 +20163,6 @@ spec:
             port: 8080
           initialDelaySeconds: 5
           timeoutSeconds: 5
-        resources: null
       hostNetwork: false
       nodeSelector:
         node-role.kubernetes.io/infra: ''
@@ -19817,7 +20186,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -19835,7 +20204,7 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        chart: prometheus-operator-6.11.0
+        chart: prometheus-operator-7.1.1
         heritage: metalk8s
         release: prometheus-operator
     spec:
@@ -19849,6 +20218,8 @@ spec:
           False) }}{%- raw -%}:v0.32.0
         - --config-reloader-image={%- endraw -%}{{ build_image_name("configmap-reload",
           False) }}{%- raw -%}:v0.0.1
+        - --config-reloader-cpu=100m
+        - --config-reloader-memory=25Mi
         image: '{%- endraw -%}{{ build_image_name("prometheus-operator", False) }}{%-
           raw -%}:v0.32.0'
         imagePullPolicy: IfNotPresent
@@ -19885,7 +20256,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: grafana-3.8.11
+    chart: grafana-4.0.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -19908,7 +20279,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -19969,7 +20340,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -20000,6 +20371,10 @@ spec:
   nodeSelector:
     node-role.kubernetes.io/infra: ''
   paused: false
+  podMonitorNamespaceSelector: {}
+  podMonitorSelector:
+    matchLabels:
+      release: prometheus-operator
   replicas: 1
   retention: 10d
   routePrefix: /
@@ -20046,7 +20421,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager.rules
@@ -20094,7 +20469,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-etcd
@@ -20238,7 +20613,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-general.rules
@@ -20283,7 +20658,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-k8s.rules
@@ -20342,7 +20717,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-apiserver.rules
@@ -20375,7 +20750,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-prometheus-node-recording.rules
@@ -20412,7 +20787,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-scheduler.rules
@@ -20475,7 +20850,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-absent
@@ -20568,7 +20943,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-apps
@@ -20720,7 +21095,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-resources
@@ -20801,7 +21176,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-storage
@@ -20853,7 +21228,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubernetes-system
@@ -21002,7 +21377,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-exporter.rules
@@ -21051,7 +21426,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-exporter
@@ -21067,10 +21442,11 @@ spec:
           up.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemspacefillingup
         summary: Filesystem is predicted to run out of space within the next 24 hours.
-      expr: "(\n  node_filesystem_avail_bytes{job=\"node-exporter\",} / node_filesystem_size_bytes{job=\"\
-        node-exporter\",} < 0.4\nand\n  predict_linear(node_filesystem_avail_bytes{job=\"\
-        node-exporter\",}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
-        node-exporter\",} == 0\n)"
+      expr: "(\n  node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"\"}\
+        \ / node_filesystem_size_bytes{job=\"node-exporter\",fstype!=\"\"} < 0.4\n\
+        and\n  predict_linear(node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"\
+        \"}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
+        ,fstype!=\"\"} == 0\n)"
       for: 1h
       labels:
         severity: warning
@@ -21081,10 +21457,11 @@ spec:
           up fast.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemspacefillingup
         summary: Filesystem is predicted to run out of space within the next 4 hours.
-      expr: "(\n  node_filesystem_avail_bytes{job=\"node-exporter\",} / node_filesystem_size_bytes{job=\"\
-        node-exporter\",} < 0.2\nand\n  predict_linear(node_filesystem_avail_bytes{job=\"\
-        node-exporter\",}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
-        node-exporter\",} == 0\n)"
+      expr: "(\n  node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"\"}\
+        \ / node_filesystem_size_bytes{job=\"node-exporter\",fstype!=\"\"} < 0.2\n\
+        and\n  predict_linear(node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"\
+        \"}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
+        ,fstype!=\"\"} == 0\n)"
       for: 1h
       labels:
         severity: critical
@@ -21094,9 +21471,10 @@ spec:
           has only {{ printf "%.2f" $value }}% available space left.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemalmostoutofspace
         summary: Filesystem has less than 5% space left.
-      expr: "(\n  node_filesystem_avail_bytes{job=\"node-exporter\",} / node_filesystem_size_bytes{job=\"\
-        node-exporter\",} * 100 < 5\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
-        ,} == 0\n)"
+      expr: "(\n  node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"\"}\
+        \ / node_filesystem_size_bytes{job=\"node-exporter\",fstype!=\"\"} * 100 <\
+        \ 5\nand\n  node_filesystem_readonly{job=\"node-exporter\",fstype!=\"\"} ==\
+        \ 0\n)"
       for: 1h
       labels:
         severity: warning
@@ -21106,9 +21484,10 @@ spec:
           has only {{ printf "%.2f" $value }}% available space left.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemalmostoutofspace
         summary: Filesystem has less than 3% space left.
-      expr: "(\n  node_filesystem_avail_bytes{job=\"node-exporter\",} / node_filesystem_size_bytes{job=\"\
-        node-exporter\",} * 100 < 3\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
-        ,} == 0\n)"
+      expr: "(\n  node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"\"}\
+        \ / node_filesystem_size_bytes{job=\"node-exporter\",fstype!=\"\"} * 100 <\
+        \ 3\nand\n  node_filesystem_readonly{job=\"node-exporter\",fstype!=\"\"} ==\
+        \ 0\n)"
       for: 1h
       labels:
         severity: critical
@@ -21119,10 +21498,11 @@ spec:
           up.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemfilesfillingup
         summary: Filesystem is predicted to run out of inodes within the next 24 hours.
-      expr: "(\n  node_filesystem_files_free{job=\"node-exporter\",} / node_filesystem_files{job=\"\
-        node-exporter\",} < 0.4\nand\n  predict_linear(node_filesystem_files_free{job=\"\
-        node-exporter\",}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
-        node-exporter\",} == 0\n)"
+      expr: "(\n  node_filesystem_files_free{job=\"node-exporter\",fstype!=\"\"} /\
+        \ node_filesystem_files{job=\"node-exporter\",fstype!=\"\"} < 0.4\nand\n \
+        \ predict_linear(node_filesystem_files_free{job=\"node-exporter\",fstype!=\"\
+        \"}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
+        ,fstype!=\"\"} == 0\n)"
       for: 1h
       labels:
         severity: warning
@@ -21133,10 +21513,11 @@ spec:
           up fast.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemfilesfillingup
         summary: Filesystem is predicted to run out of inodes within the next 4 hours.
-      expr: "(\n  node_filesystem_files_free{job=\"node-exporter\",} / node_filesystem_files{job=\"\
-        node-exporter\",} < 0.2\nand\n  predict_linear(node_filesystem_files_free{job=\"\
-        node-exporter\",}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
-        node-exporter\",} == 0\n)"
+      expr: "(\n  node_filesystem_files_free{job=\"node-exporter\",fstype!=\"\"} /\
+        \ node_filesystem_files{job=\"node-exporter\",fstype!=\"\"} < 0.2\nand\n \
+        \ predict_linear(node_filesystem_files_free{job=\"node-exporter\",fstype!=\"\
+        \"}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
+        ,fstype!=\"\"} == 0\n)"
       for: 1h
       labels:
         severity: critical
@@ -21146,9 +21527,9 @@ spec:
           has only {{ printf "%.2f" $value }}% available inodes left.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemalmostoutoffiles
         summary: Filesystem has less than 5% inodes left.
-      expr: "(\n  node_filesystem_files_free{job=\"node-exporter\",} / node_filesystem_files{job=\"\
-        node-exporter\",} * 100 < 5\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
-        ,} == 0\n)"
+      expr: "(\n  node_filesystem_files_free{job=\"node-exporter\",fstype!=\"\"} /\
+        \ node_filesystem_files{job=\"node-exporter\",fstype!=\"\"} * 100 < 5\nand\n\
+        \  node_filesystem_readonly{job=\"node-exporter\",fstype!=\"\"} == 0\n)"
       for: 1h
       labels:
         severity: warning
@@ -21158,9 +21539,9 @@ spec:
           has only {{ printf "%.2f" $value }}% available inodes left.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemalmostoutoffiles
         summary: Filesystem has less than 3% inodes left.
-      expr: "(\n  node_filesystem_files_free{job=\"node-exporter\",} / node_filesystem_files{job=\"\
-        node-exporter\",} * 100 < 3\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
-        ,} == 0\n)"
+      expr: "(\n  node_filesystem_files_free{job=\"node-exporter\",fstype!=\"\"} /\
+        \ node_filesystem_files{job=\"node-exporter\",fstype!=\"\"} * 100 < 3\nand\n\
+        \  node_filesystem_readonly{job=\"node-exporter\",fstype!=\"\"} == 0\n)"
       for: 1h
       labels:
         severity: critical
@@ -21193,7 +21574,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-network
@@ -21219,7 +21600,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-time
@@ -21245,7 +21626,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node.rules
@@ -21275,7 +21656,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-operator
@@ -21310,7 +21691,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -21510,7 +21891,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-alertmanager
@@ -21535,7 +21916,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-coredns
@@ -21561,7 +21942,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-apiserver
@@ -21592,7 +21973,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-controller-manager
@@ -21618,7 +21999,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-etcd
@@ -21644,7 +22025,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-proxy
@@ -21670,7 +22051,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-scheduler
@@ -21696,7 +22077,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -21719,7 +22100,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kubelet
@@ -21757,7 +22138,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-node-exporter
@@ -21779,7 +22160,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-grafana
@@ -21804,7 +22185,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-operator
@@ -21829,7 +22210,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-6.11.0
+    chart: prometheus-operator-7.1.1
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus
@@ -21845,5 +22226,6 @@ spec:
     matchLabels:
       app: prometheus-operator-prometheus
       release: prometheus-operator
+      self-monitor: 'true'
 
 {% endraw %}

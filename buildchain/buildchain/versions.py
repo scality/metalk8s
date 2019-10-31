@@ -110,8 +110,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='grafana',
-        version='6.3.5',
-        digest='sha256:f398faf159712dbfddada80679f1411b1baa6fca3ee08317d785c41a2972124a',
+        version='6.4.2',
+        digest='sha256:8c2238eea9d3d39aeb6174db2e30b233fd2546128ec1fa1bc64f8058afd51e68',
     ),
     Image(
         name='k8s-sidecar',
@@ -140,8 +140,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='kube-state-metrics',
-        version='v1.7.2',
-        digest='sha256:99a3e3297e281fec09fe850d6d4bccf4d9fd58ff62a5b37764d8a8bd1e79bd14',
+        version='v1.8.0',
+        digest='sha256:f75c3e5c5c7f65846ddd6883d6187b38f77721a3938f241c9e5d0ebe7beb8e19',
     ),
     Image(
         name='nginx',
