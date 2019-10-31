@@ -1285,6 +1285,48 @@ def serviceaccount_present(
     return ret
 
 
+def serviceaccount_absent(name, namespace='default', **kwargs):
+    '''
+    Ensures that the named serviceaccount is absent from the given namespace.
+
+    name
+        The name of the serviceaccount
+
+    namespace
+        The namespace holding the serviceaccount. The 'default' one is going to be
+        used unless a different one is specified.
+    '''
+
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    rolebinding = __salt__['metalk8s_kubernetes.show_serviceaccount'](name, namespace, **kwargs)
+
+    if rolebinding is None:
+        ret['result'] = True if not __opts__['test'] else None
+        ret['comment'] = 'The serviceaccount does not exist'
+        return ret
+
+    if __opts__['test']:
+        ret['comment'] = 'The serviceaccount is going to be deleted'
+        ret['result'] = None
+        return ret
+
+    __salt__['metalk8s_kubernetes.delete_serviceaccount'](name, namespace, **kwargs)
+    # As for kubernetes 1.6.4 doesn't set a code when deleting a serviceaccount
+    # The kubernetes module will raise an exception if the kubernetes
+    # server will return an error
+    ret['result'] = True
+    ret['changes'] = {
+        'metalk8s_kubernetes.serviceaccount': {
+            'new': 'absent', 'old': 'present'}}
+    ret['comment'] = 'ServiceAccount deleted'
+
+    return ret
+
+
 def clusterrolebinding_present(
         name,
         role_ref,
@@ -1383,6 +1425,48 @@ def role_present(
     return ret
 
 
+def role_absent(name, namespace='default', **kwargs):
+    '''
+    Ensures that the named role is absent from the given namespace.
+
+    name
+        The name of the role
+
+    namespace
+        The namespace holding the role. The 'default' one is going to be
+        used unless a different one is specified.
+    '''
+
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    role = __salt__['metalk8s_kubernetes.show_role'](name, namespace, **kwargs)
+
+    if role is None:
+        ret['result'] = True if not __opts__['test'] else None
+        ret['comment'] = 'The role does not exist'
+        return ret
+
+    if __opts__['test']:
+        ret['comment'] = 'The role is going to be deleted'
+        ret['result'] = None
+        return ret
+
+    __salt__['metalk8s_kubernetes.delete_role'](name, namespace, **kwargs)
+    # As for kubernetes 1.6.4 doesn't set a code when deleting a role
+    # The kubernetes module will raise an exception if the kubernetes
+    # server will return an error
+    ret['result'] = True
+    ret['changes'] = {
+        'metalk8s_kubernetes.role': {
+            'new': 'absent', 'old': 'present'}}
+    ret['comment'] = 'Role deleted'
+
+    return ret
+
+
 def rolebinding_present(
         name,
         namespace,
@@ -1431,6 +1515,48 @@ def rolebinding_present(
         ret['changes']['{0}.{1}'.format(namespace, name)] = {
             'old': rolebinding,
             'new': res}
+
+    return ret
+
+
+def rolebinding_absent(name, namespace='default', **kwargs):
+    '''
+    Ensures that the named rolebinding is absent from the given namespace.
+
+    name
+        The name of the rolebinding
+
+    namespace
+        The namespace holding the role. The 'default' one is going to be
+        used unless a different one is specified.
+    '''
+
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    rolebinding = __salt__['metalk8s_kubernetes.show_rolebinding'](name, namespace, **kwargs)
+
+    if rolebinding is None:
+        ret['result'] = True if not __opts__['test'] else None
+        ret['comment'] = 'The rolebinding does not exist'
+        return ret
+
+    if __opts__['test']:
+        ret['comment'] = 'The rolebinding is going to be deleted'
+        ret['result'] = None
+        return ret
+
+    __salt__['metalk8s_kubernetes.delete_rolebinding'](name, namespace, **kwargs)
+    # As for kubernetes 1.6.4 doesn't set a code when deleting a rolebinding
+    # The kubernetes module will raise an exception if the kubernetes
+    # server will return an error
+    ret['result'] = True
+    ret['changes'] = {
+        'metalk8s_kubernetes.rolebinding': {
+            'new': 'absent', 'old': 'present'}}
+    ret['comment'] = 'RoleBinding deleted'
 
     return ret
 
@@ -2044,6 +2170,48 @@ def podsecuritypolicy_present(
         ret['changes'][name] = {
             'old': podsecuritypolicy,
             'new': res}
+
+    return ret
+
+
+def podsecuritypolicy_absent(name, **kwargs):
+    '''
+    Ensures that the named podsecuritypolicy is absent from the given namespace.
+
+    name
+        The name of the podsecuritypolicy
+
+    namespace
+        The namespace holding the podsecuritypolicy. The 'default' one is going to be
+        used unless a different one is specified.
+    '''
+
+    ret = {'name': name,
+           'changes': {},
+           'result': False,
+           'comment': ''}
+
+    psp = __salt__['metalk8s_kubernetes.show_podsecuritypolicy'](name, **kwargs)
+
+    if psp is None:
+        ret['result'] = True if not __opts__['test'] else None
+        ret['comment'] = 'The podsecuritypolicy does not exist'
+        return ret
+
+    if __opts__['test']:
+        ret['comment'] = 'The podsecuritypolicy is going to be deleted'
+        ret['result'] = None
+        return ret
+
+    __salt__['metalk8s_kubernetes.delete_podsecuritypolicy'](name, **kwargs)
+    # As for kubernetes 1.6.4 doesn't set a code when deleting a podsecuritypolicy
+    # The kubernetes module will raise an exception if the kubernetes
+    # server will return an error
+    ret['result'] = True
+    ret['changes'] = {
+        'metalk8s_kubernetes.podsecuritypolicy': {
+            'new': 'absent', 'old': 'present'}}
+    ret['comment'] = 'PodSecurityPolicy deleted'
 
     return ret
 

@@ -92,15 +92,23 @@ def _handle_v1_serviceaccount(obj, kubeconfig, context, absent):
 
 @handle('v1', 'ConfigMap')
 def _handle_v1_configmap(obj, kubeconfig, context, absent):
+    state = 'metalk8s_kubernetes.configmap_{}'.format(
+                'absent' if absent else 'present')
+    args = {
+        'name': obj['metadata']['name'],
+        'kubeconfig': kubeconfig,
+        'context': context,
+        'namespace': obj['metadata']['namespace'],
+        'metadata': obj['metadata'],
+    }
+    if not absent:
+        args.update({
+            'data': obj['data'],
+        })
+
     return {
-        'metalk8s_kubernetes.configmap_{}'.format(
-            'absent' if absent else 'present'): [
-            {'name': obj['metadata']['name']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'namespace': obj['metadata']['namespace']},
-            {'metadata': obj['metadata']},
-            {'data': obj['data']},
+        state: [
+            {name: value} for (name, value) in args.items()
         ],
     }
 
@@ -151,14 +159,22 @@ def _handle_rbac_v1beta1_clusterrolebinding(obj, kubeconfig, context, absent):
 @handle('rbac.authorization.k8s.io/v1', 'Role')
 @handle('rbac.authorization.k8s.io/v1beta1', 'Role')
 def _handle_rbac_v1beta1_role(obj, kubeconfig, context, absent):
+    state = 'metalk8s_kubernetes.role_{}'.format(
+                'absent' if absent else 'present')
+    args = {
+        'name': obj['metadata']['name'],
+        'namespace': obj['metadata']['namespace'],
+        'kubeconfig': kubeconfig,
+        'context': context,
+    }
+    if not absent:
+        args.update({
+            'rules': obj['rules'],
+        })
+
     return {
-        'metalk8s_kubernetes.role_{}'.format(
-            'absent' if absent else 'present'): [
-            {'name': obj['metadata']['name']},
-            {'namespace': obj['metadata']['namespace']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'rules': obj['rules']},
+        state: [
+            {name: value} for (name, value) in args.items()
         ],
     }
 
@@ -166,15 +182,23 @@ def _handle_rbac_v1beta1_role(obj, kubeconfig, context, absent):
 @handle('rbac.authorization.k8s.io/v1', 'RoleBinding')
 @handle('rbac.authorization.k8s.io/v1beta1', 'RoleBinding')
 def _handle_rbac_v1beta1_rolebinding(obj, kubeconfig, context, absent):
+    state = 'metalk8s_kubernetes.rolebinding_{}'.format(
+                'absent' if absent else 'present')
+    args = {
+        'name': obj['metadata']['name'],
+        'namespace': obj['metadata']['namespace'],
+        'kubeconfig': kubeconfig,
+        'context': context,
+    }
+    if not absent:
+        args.update({
+            'role_ref': obj['roleRef'],
+            'subjects': obj['subjects'],
+        })
+
     return {
-        'metalk8s_kubernetes.rolebinding_{}'.format(
-            'absent' if absent else 'present'): [
-            {'name': obj['metadata']['name']},
-            {'namespace': obj['metadata']['namespace']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-            {'role_ref': obj['roleRef']},
-            {'subjects': obj['subjects']},
+        state: [
+            {name: value} for (name, value) in args.items()
         ],
     }
 
@@ -304,15 +328,23 @@ def _handle_storage_v1_storageclass(obj, kubeconfig, context, absent):
 @handle('extensions/v1beta1', 'PodSecurityPolicy')
 def _handle_extensions_v1beta1_podsecuritypolicy(obj, kubeconfig, context,
         absent):
+    state = 'metalk8s_kubernetes.podsecuritypolicy_{}'.format(
+                'absent' if absent else 'present')
+    args = {
+        'name': obj['metadata']['name'],
+        'metadata': obj['metadata'],
+        'kubeconfig': kubeconfig,
+        'context': context,
+    }
+    if not absent:
+        args.update({
+            'spec': obj['spec'],
+        })
+
     return {
-        'metalk8s_kubernetes.podsecuritypolicy_{}'.format(
-            'absent' if absent else 'present'): [
-            {'name': obj['metadata']['name']},
-            {'metadata': obj['metadata']},
-            {'spec': obj['spec']},
-            {'kubeconfig': kubeconfig},
-            {'context': context},
-        ]
+        state: [
+            {name: value} for (name, value) in args.items()
+        ],
     }
 
 
