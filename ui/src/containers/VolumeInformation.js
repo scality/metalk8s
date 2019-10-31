@@ -3,8 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useRouteMatch } from 'react-router';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-import { Breadcrumb } from '@scality/core-ui';
+import { padding } from '@scality/core-ui/dist/style/theme';
+import { Breadcrumb, Table } from '@scality/core-ui';
 import { makeGetNodeFromUrl, makeGetVolumesFromUrl } from '../services/utils';
 import {
   SPARSE_LOOP_DEVICE,
@@ -30,6 +30,7 @@ import {
   InformationSpan,
   InformationLabel,
   InformationValue,
+  InformationMainValue,
 } from '../components/InformationList';
 import {
   computeVolumeGlobalStatus,
@@ -37,7 +38,7 @@ import {
 } from '../services/NodeVolumesUtils';
 
 const VolumeInformationListContainer = styled(InformationListContainer)`
-  margin-left: ${padding.larger};
+  margin: ${padding.larger};
 `;
 
 const VolumeInformationContainer = styled.div`
@@ -45,12 +46,18 @@ const VolumeInformationContainer = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   padding: ${padding.base};
-  width: 750px;
+  .sc-banner {
+    margin: ${padding.base} ${padding.larger} 0 ${padding.larger};
+  }
+`;
+const InformationContainer = styled.div`
+  display: flex;
+  padding: ${padding.small} 0;
 `;
 
-const VolumeInformationTitle = styled.div`
-  font-size: ${fontSize.larger};
-  margin-left: ${padding.larger};
+const InformationValueSection = styled.div`
+  height: 200px;
+  min-width: 500px;
 `;
 
 const VolumeInformation = props => {
@@ -82,7 +89,24 @@ const VolumeInformation = props => {
     volume?.status,
   );
   const [errorCode, errorMessage] = volumeGetError(volume?.status);
-
+  const columns = [
+    {
+      label: intl.messages.name,
+      dataKey: 'name',
+    },
+    {
+      label: intl.messages.value,
+      dataKey: 'value',
+    },
+  ];
+  const labels = volume?.metadata?.labels
+    ? Object.keys(volume.metadata.labels).map(key => {
+        return {
+          name: key,
+          value: volume.metadata.labels[key],
+        };
+      })
+    : [];
   return (
     <VolumeInformationContainer>
       <BreadcrumbContainer>
@@ -90,8 +114,14 @@ const VolumeInformation = props => {
           activeColor={theme.brand.secondary}
           paths={[
             <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-            <StyledLink to={`/nodes/${node.name}/volumes`} title={node.name}>
+            <StyledLink to={`/nodes/${node.name}`} title={node.name}>
               {node.name}
+            </StyledLink>,
+            <StyledLink
+              to={`/nodes/${node.name}/volumes`}
+              title={intl.messages.volumes}
+            >
+              {intl.messages.volumes}
             </StyledLink>,
             <BreadcrumbLabel title={match.params.volumeName}>
               {match.params.volumeName}
@@ -99,9 +129,6 @@ const VolumeInformation = props => {
           ]}
         />
       </BreadcrumbContainer>
-      <VolumeInformationTitle>
-        {intl.messages.detailed_information}
-      </VolumeInformationTitle>
 
       {volumeStatus === STATUS_FAILED ? (
         <Banner
@@ -119,7 +146,7 @@ const VolumeInformation = props => {
       <VolumeInformationListContainer>
         <InformationSpan>
           <InformationLabel>{intl.messages.name}</InformationLabel>
-          <InformationValue>{volume?.metadata?.name}</InformationValue>
+          <InformationMainValue>{volume?.metadata?.name}</InformationMainValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.messages.status}</InformationLabel>
@@ -188,6 +215,20 @@ const VolumeInformation = props => {
             ''
           )}
         </InformationSpan>
+        {!!labels?.length && (
+          <InformationContainer>
+            <InformationLabel>{intl.messages.labels}</InformationLabel>
+            <InformationValueSection>
+              <Table
+                list={labels}
+                columns={columns}
+                disableHeader={false}
+                headerHeight={40}
+                rowHeight={40}
+              />
+            </InformationValueSection>
+          </InformationContainer>
+        )}
       </VolumeInformationListContainer>
     </VolumeInformationContainer>
   );

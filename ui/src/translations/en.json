@@ -115,7 +115,6 @@
   "select_a_type": "Select a type of volume…",
   "no_results": "No results",
   "search": "Search…",
-  "detailed_information": "Detailed Information",
   "failed_to_create_volume":"Failed to create volume.",
   "not_applicable": "Not applicable",
   "environments": "Environments",
@@ -128,5 +127,6 @@
   "add": "Add",
   "labels": "Labels",
   "enter_label_name": "Enter label name…",
-  "enter_label_value": "Enter label value…"
+  "enter_label_value": "Enter label value…",
+  "value": "Value"
 }
