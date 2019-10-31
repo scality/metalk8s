@@ -78,7 +78,7 @@ const VolumeInformation = props => {
     SC => SC.metadata.name === volume?.spec?.storageClassName,
   );
   const volumeStatus = computeVolumeGlobalStatus(
-    volume.metadata.name,
+    volume?.metadata?.name,
     volume?.status,
   );
   const [errorCode, errorMessage] = volumeGetError(volume?.status);
