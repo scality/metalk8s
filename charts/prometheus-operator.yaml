@@ -134,6 +134,9 @@ grafana:
       reporting_enabled: false
       check_for_updates: false
 
+  testFramework:
+    enabled: false
+
 
 kube-state-metrics:
   image:

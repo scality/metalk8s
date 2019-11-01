@@ -1766,6 +1766,34 @@ def create_serviceaccount(
         _cleanup(**cfg)
 
 
+def delete_serviceaccount(name, namespace='default', **kwargs):
+    '''
+    Deletes the kubernetes serviceaccount defined by name and namespace
+    '''
+    cfg = _setup_conn(**kwargs)
+    body = kubernetes.client.V1DeleteOptions(orphan_dependents=True)
+
+    try:
+        api_instance = kubernetes.client.CoreV1Api()
+        api_response = api_instance.delete_namespaced_service_account(
+            name=name,
+            namespace=namespace,
+            body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'CoreV1Api->delete_namespaced_service_account'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
 def show_clusterrolebinding(name, **kwargs):
     cfg = _setup_conn(**kwargs)
     try:
@@ -1923,6 +1951,34 @@ def replace_role(
         _cleanup(**cfg)
 
 
+def delete_role(name, namespace='default', **kwargs):
+    '''
+    Deletes the kubernetes role defined by name and namespace
+    '''
+    cfg = _setup_conn(**kwargs)
+    body = kubernetes.client.V1DeleteOptions(orphan_dependents=True)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.delete_namespaced_role(
+            name=name,
+            namespace=namespace,
+            body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->delete_namespaced_role'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
 def show_rolebinding(name, namespace, **kwargs):
     cfg = _setup_conn(**kwargs)
     try:
@@ -1998,6 +2054,34 @@ def replace_rolebinding(
             log.exception(
                 'Exception when calling '
                 'RbacAuthorizationV1Api->replace_namespaced_role_binding'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def delete_rolebinding(name, namespace='default', **kwargs):
+    '''
+    Deletes the kubernetes rolebinding defined by name and namespace
+    '''
+    cfg = _setup_conn(**kwargs)
+    body = kubernetes.client.V1DeleteOptions(orphan_dependents=True)
+
+    try:
+        api_instance = kubernetes.client.RbacAuthorizationV1Api()
+        api_response = api_instance.delete_namespaced_role_binding(
+            name=name,
+            namespace=namespace,
+            body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'RbacAuthorizationV1Api->delete_namespaced_role_binding'
             )
             raise CommandExecutionError(exc)
     finally:
@@ -2867,6 +2951,33 @@ def replace_podsecuritypolicy(
             log.exception(
                 'Exception when calling '
                 'ExtensionsV1beta1Api->replace_pod_security_policy'
+            )
+            raise CommandExecutionError(exc)
+    finally:
+        _cleanup(**cfg)
+
+
+def delete_podsecuritypolicy(name, **kwargs):
+    '''
+    Deletes the kubernetes podsecuritypolicy defined by name and namespace
+    '''
+    cfg = _setup_conn(**kwargs)
+    body = kubernetes.client.V1DeleteOptions(orphan_dependents=True)
+
+    try:
+        api_instance = kubernetes.client.ExtensionsV1beta1Api()
+        api_response = api_instance.delete_pod_security_policy(
+            name=name,
+            body=body)
+
+        return api_response.to_dict()
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+        else:
+            log.exception(
+                'Exception when calling '
+                'ExtensionsV1beta1Api.delete_pod_security_policy'
             )
             raise CommandExecutionError(exc)
     finally:
