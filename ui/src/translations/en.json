@@ -126,7 +126,7 @@
   "advanced_monitoring": "Advanced Monitoring",
   "add": "Add",
   "labels": "Labels",
-  "enter_label_name": "Enter label name…",
-  "enter_label_value": "Enter label value…",
+  "enter_label_name": "Enter label name",
+  "enter_label_value": "Enter label value",
   "value": "Value"
 }
