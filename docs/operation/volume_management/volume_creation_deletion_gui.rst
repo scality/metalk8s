@@ -48,8 +48,8 @@ To access the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`
 
     .. image:: /operation/volume_management/img/volume_created.png
 
-#. If you click the new volume listed in the **Volume list**,
-   you can get more information about this volume
+#. If you click on any volume in the Volume list,
+   you will see more information in the Volume detail view:
 
     .. image:: /operation/volume_management/img/volume_detail.png
 
