@@ -254,6 +254,34 @@ models:
         tox -e tests -- -m \"${PYTEST_FILTERS}\""
       workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       haltOnFailure: true
+  - ShellCommand: &add_final_status_artifact
+      name: Add final status to artifacts
+      command: |-
+        bash -c '
+          declare -r BUILD_STATUS_DIR=build_status/build_status/${STEP_NAME:-}
+          mkdir -p "$BUILD_STATUS_DIR"
+          echo -n "$FINAL_STATUS" > "$BUILD_STATUS_DIR/.final_status"
+        '
+      env: &_env_final_status_artifact
+        STEP_NAME: ''
+        FINAL_STATUS: ''
+      haltOnFailure: True
+  - ShellCommand: &add_final_status_artifact_success
+      <<: *add_final_status_artifact
+      name: Add successful status to artifacts
+      env: &_env_final_status_artifact_success
+        <<: *_env_final_status_artifact
+        FINAL_STATUS: "SUCCESSFUL"
+  - ShellCommand: &add_final_status_artifact_failed
+      <<: *add_final_status_artifact
+      name: Add failed status to artifacts
+      env: &_env_final_status_artifact_failed
+        <<: *_env_final_status_artifact
+        FINAL_STATUS: "FAILED"
+  - Upload: &upload_final_status_artifact
+      name: Upload final status to artifacts
+      source: build_status
+      alwaysRun: True
 
 stages:
   pre-merge:
