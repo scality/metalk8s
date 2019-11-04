@@ -11,6 +11,7 @@ import {
 } from './monitoring';
 import { REFRESH_TIMEOUT } from '../../constants';
 import { queryPrometheus, getAlerts } from '../../services/prometheus/api';
+import * as ApiK8s from '../../services/k8s/api';
 
 const alertsResult = {
   data: {
@@ -289,7 +290,7 @@ it('should set cluster status as DOWN because api-server value is []', () => {
   );
 });
 
-it('should set cluster error if a query failed', () => {
+it('should set cluster error if a query failed and it is not due to Prometheus volume provision', () => {
   const gen = fetchClusterStatus();
   expect(gen.next().value).toEqual(
     put({
