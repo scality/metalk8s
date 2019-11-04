@@ -288,6 +288,7 @@ stages:
     worker:
       type: local
     steps:
+      - ShellCommand: *add_final_status_artifact_failed
       - TriggerStages:
           name: Trigger build, docs and lint stages simultaneously
           stage_names:
@@ -301,6 +302,8 @@ stages:
           stage_names:
             - single-node
             - multiple-nodes
+      - ShellCommand: *add_final_status_artifact_success
+      - Upload: *upload_final_status_artifact
 
   build:
     worker: &build_worker
