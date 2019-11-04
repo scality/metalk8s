@@ -345,6 +345,11 @@ stages:
           dockerfile: docs/Dockerfile
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: docs
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Build documentation
@@ -358,6 +363,12 @@ stages:
           source: docs/_build
           urls:
             - ['docs/\1', '*']
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: docs
+      - Upload: *upload_final_status_artifact
 
   lint:
     worker:
