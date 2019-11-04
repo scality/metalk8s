@@ -183,3 +183,18 @@ export async function createEnvironment(body) {
     return { error };
   }
 }
+
+export async function getPodInNamespace(namespace, podLabel) {
+  try {
+    return await coreV1.listNamespacedPod(
+      namespace,
+      null,
+      null,
+      null,
+      null,
+      `app=${podLabel}`,
+    );
+  } catch (error) {
+    return { error };
+  }
+}

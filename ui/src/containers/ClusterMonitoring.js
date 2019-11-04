@@ -17,10 +17,16 @@ import {
   stopRefreshClusterStatusAction,
   CLUSTER_STATUS_UP,
   CLUSTER_STATUS_DOWN,
+  CLUSTER_STATUS_UNKNOWN,
 } from '../ducks/app/monitoring';
-import { STATUS_CRITICAL, STATUS_SUCCESS } from '../constants';
+import {
+  STATUS_CRITICAL,
+  STATUS_SUCCESS,
+  STATUS_BANNER_WARNING,
+} from '../constants';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
+import Banner from '../components/Banner';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -78,8 +84,16 @@ const RightClusterStatusContainer = styled.div`
 const ClusterStatusValue = styled.span`
   margin: 0 ${padding.small};
   font-weight: bold;
-  color: ${props =>
-    props.isUp ? props.theme.brand.success : props.theme.brand.danger};
+  color: ${props => {
+    switch (props.value) {
+      case CLUSTER_STATUS_UNKNOWN:
+        return props.theme.brand.warning;
+      case CLUSTER_STATUS_UP:
+        return props.theme.brand.success;
+      default:
+        return props.theme.brand.danger;
+    }
+  }};
 `;
 
 const QuestionMarkIcon = styled.i`
@@ -187,7 +201,7 @@ const ClusterMonitoring = props => {
       <ClusterStatusTitleContainer>
         <LeftClusterStatusContainer>
           <PageSubtitle>{intl.messages.cluster_status + ' :'}</PageSubtitle>
-          <ClusterStatusValue isUp={clusterStatus.value === CLUSTER_STATUS_UP}>
+          <ClusterStatusValue value={clusterStatus.value}>
             {clusterStatus.label}
           </ClusterStatusValue>
           <Tooltip
@@ -238,7 +252,22 @@ const ClusterMonitoring = props => {
           </Tooltip>
         </RightClusterStatusContainer>
       </ClusterStatusTitleContainer>
-
+      {clusterStatus.value === CLUSTER_STATUS_UNKNOWN &&
+      cluster.prometheusPodStatusMessage ===
+        `0/1 nodes are available: 1 node(s) didn't find available persistent volumes to bind.` ? (
+        <Banner
+          type={STATUS_BANNER_WARNING}
+          icon={<i className="fas fa-exclamation-triangle" />}
+          title={'Prometheus is not available.'}
+          messages={[
+            <>
+              {
+                'Please refer to MetalK8s Quickstart Guide > Deployment of the Bootstrap node > Installation > Provision storage for Prometheus services'
+              }
+            </>,
+          ]}
+        />
+      ) : null}
       <PageSubtitle>
         {intl.messages.alerts}
         {alerts.isLoading ? <LoaderCoreUI size="small" /> : null}
@@ -266,7 +295,6 @@ const makeClusterStatus = (state, props) => {
   const cluster = state.app.monitoring.cluster;
   let label = intl.messages.down;
   let value = CLUSTER_STATUS_DOWN;
-
   if (
     cluster.apiServerStatus > 0 &&
     cluster.kubeSchedulerStatus > 0 &&
@@ -275,12 +303,14 @@ const makeClusterStatus = (state, props) => {
     value = CLUSTER_STATUS_UP;
     label = intl.messages.cluster_up_and_running;
   }
-
   if (cluster.error) {
     value = CLUSTER_STATUS_DOWN;
     label = intl.messages[cluster.error] || cluster.error;
   }
-
+  if (cluster.prometheusPodStatusMessage) {
+    value = CLUSTER_STATUS_UNKNOWN;
+    label = intl.messages[cluster.error] || cluster.error;
+  }
   return { value, label, isLoading: cluster.isLoading };
 };
 
