@@ -1,18 +1,34 @@
 #!jinja | kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
+{% raw %}
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
     app: nginx-ingress
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress
   name: nginx-ingress
+  namespace: metalk8s-ingress
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: nginx-ingress
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/part-of: metalk8s
+    chart: nginx-ingress-1.24.7
+    heritage: metalk8s
+    release: nginx-ingress
+  name: nginx-ingress-backend
   namespace: metalk8s-ingress
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -20,10 +36,10 @@ kind: ClusterRole
 metadata:
   labels:
     app: nginx-ingress
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress
   name: nginx-ingress
@@ -84,10 +100,10 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: nginx-ingress
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress
   name: nginx-ingress
@@ -106,10 +122,10 @@ kind: Role
 metadata:
   labels:
     app: nginx-ingress
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress
   name: nginx-ingress
@@ -193,10 +209,10 @@ kind: RoleBinding
 metadata:
   labels:
     app: nginx-ingress
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress
   name: nginx-ingress
@@ -216,10 +232,10 @@ metadata:
   labels:
     app: nginx-ingress
     app.kubernetes.io/component: controller
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     component: controller
     heritage: metalk8s
     release: nginx-ingress
@@ -248,10 +264,10 @@ metadata:
   labels:
     app: nginx-ingress
     app.kubernetes.io/component: default-backend
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     component: default-backend
     heritage: metalk8s
     release: nginx-ingress
@@ -270,16 +286,16 @@ spec:
     release: nginx-ingress
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
     app: nginx-ingress
     app.kubernetes.io/component: controller
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     component: controller
     heritage: metalk8s
     release: nginx-ingress
@@ -288,6 +304,10 @@ metadata:
 spec:
   minReadySeconds: 0
   revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nginx-ingress
+      release: nginx-ingress
   template:
     metadata:
       labels:
@@ -311,7 +331,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: '{{ build_image_name("nginx-ingress-controller") }}'
+        image: '{%- endraw -%}{{ build_image_name("nginx-ingress-controller", False)
+          }}{%- raw -%}:0.26.1'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -345,6 +366,7 @@ spec:
           timeoutSeconds: 1
         resources: {}
         securityContext:
+          allowPrivilegeEscalation: true
           capabilities:
             add:
             - NET_BIND_SERVICE
@@ -364,16 +386,16 @@ spec:
         operator: Exists
   updateStrategy: {}
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: nginx-ingress
     app.kubernetes.io/component: default-backend
-    app.kubernetes.io/managed-by: metalk8s
+    app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     component: default-backend
     heritage: metalk8s
     release: nginx-ingress
@@ -382,6 +404,10 @@ metadata:
 spec:
   replicas: 1
   revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nginx-ingress
+      release: nginx-ingress
   template:
     metadata:
       labels:
@@ -391,7 +417,8 @@ spec:
     spec:
       containers:
       - args: null
-        image: '{{ build_image_name("nginx-ingress-defaultbackend-amd64") }}'
+        image: '{%- endraw -%}{{ build_image_name("nginx-ingress-defaultbackend-amd64",
+          False) }}{%- raw -%}:1.5'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -423,6 +450,7 @@ spec:
           runAsUser: 65534
       nodeSelector:
         node-role.kubernetes.io/infra: ''
+      serviceAccountName: nginx-ingress-backend
       terminationGracePeriodSeconds: 60
       tolerations:
       - effect: NoSchedule
@@ -431,3 +459,5 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/infra
         operator: Exists
+
+{% endraw %}
