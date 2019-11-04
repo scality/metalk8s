@@ -311,6 +311,11 @@ stages:
     steps:
       - ShellCommand: *wait_for_docker
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: build
       - ShellCommand: *setup_cache
       - ShellCommand: *build_all
       - ShellCommand:
@@ -323,6 +328,12 @@ stages:
               _build/SHA256SUM
               _build/root/product.txt
       - Upload: *upload_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: build
+      - Upload: *upload_final_status_artifact
 
   docs:
     worker:
