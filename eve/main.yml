@@ -378,12 +378,23 @@ stages:
         docker-linter: eve/workers/pod-linter
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: lint
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all linting targets
           command: ./doit.sh lint
           usePTY: true
           haltOnFailure: false
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: lint
+      - Upload: *upload_final_status_artifact
 
   single-node:
     worker: &single_node_worker
