@@ -3,7 +3,7 @@ import {
   UPDATE_CLUSTER_STATUS,
   SET_PROMETHEUS_API_AVAILABLE,
   UPDATE_ALERTS,
-  handleClusterError,
+  handlePrometheusError,
   fetchAlerts,
   fetchClusterStatus,
   refreshAlerts,
@@ -111,7 +111,7 @@ it('should set cluster status as UP', () => {
         kubeControllerManagerStatus: 1,
         kubeSchedulerStatus: 1,
         error: null,
-        prometheusPodStatusMessage: null,
+        isPrometheusVolumeProvisioned: true,
       },
     }),
   );
@@ -194,7 +194,7 @@ it('should set cluster status as DOWN because there is no kube-controller-manage
         kubeControllerManagerStatus: 0,
         kubeSchedulerStatus: 1,
         error: null,
-        prometheusPodStatusMessage: null,
+        isPrometheusVolumeProvisioned: true,
       },
     }),
   );
@@ -277,7 +277,7 @@ it('should set cluster status as DOWN because api-server value is []', () => {
         kubeControllerManagerStatus: 1,
         kubeSchedulerStatus: 1,
         error: null,
-        prometheusPodStatusMessage: null,
+        isPrometheusVolumeProvisioned: true,
       },
     }),
   );
@@ -290,7 +290,7 @@ it('should set cluster status as DOWN because api-server value is []', () => {
   );
 });
 
-it('should set cluster error if a query failed and it is not due to Prometheus volume provision', () => {
+it('should set cluster error if a query failed', () => {
   const gen = fetchClusterStatus();
   expect(gen.next().value).toEqual(
     put({
@@ -342,13 +342,13 @@ it('should set cluster error if a query failed and it is not due to Prometheus v
 
   expect(gen.next(result).value).toEqual(
     call(
-      handleClusterError,
+      handlePrometheusError,
       {
         apiServerStatus: 0,
         error: null,
         kubeControllerManagerStatus: 0,
         kubeSchedulerStatus: 0,
-        prometheusPodStatusMessage: null,
+        isPrometheusVolumeProvisioned: true,
       },
       { error: { response: { statusText: 'Bad Request' } } },
     ),
@@ -362,7 +362,7 @@ it('should set cluster error if a query failed and it is not due to Prometheus v
         kubeControllerManagerStatus: 0,
         kubeSchedulerStatus: 0,
         error: null,
-        prometheusPodStatusMessage: null,
+        isPrometheusVolumeProvisioned: true,
       },
     }),
   );
@@ -375,9 +375,9 @@ it('should set cluster error if a query failed and it is not due to Prometheus v
   );
 });
 
-it('should handleClusterError when prometheus is up', () => {
+it('should handlePrometheusError when prometheus is up', () => {
   const result = { error: { response: { statusText: 'Bad Request' } } };
-  const gen = handleClusterError({}, result);
+  const gen = handlePrometheusError({}, result);
   expect(gen.next().value).toEqual(
     put({
       type: SET_PROMETHEUS_API_AVAILABLE,
@@ -386,15 +386,39 @@ it('should handleClusterError when prometheus is up', () => {
   );
 });
 
-it('should handleClusterError when prometheus is down', () => {
+it('should handlePrometheusError when prometheus is down, the error is unknown since prometheus volume already provisioned', () => {
   const result = { error: {} };
-  const gen = handleClusterError({}, result);
-  expect(gen.next().value).toEqual(
+  const gen = handlePrometheusError({}, result);
+  expect(gen.next(result).value).toEqual(
+    call(ApiK8s.queryPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
+  );
+
+  const prometheusPod = {
+    body: {
+      items: [
+        {
+          status: {
+            conditions: [
+              {
+                message: 'volume already provisioned',
+              },
+            ],
+          },
+        },
+      ],
+      kind: 'PodList',
+    },
+    response: {},
+  };
+
+  expect(gen.next(prometheusPod).value).toEqual(
     put({
       type: SET_PROMETHEUS_API_AVAILABLE,
       payload: false,
     }),
   );
+
+  expect(gen.next().done).toEqual(true);
 });
 
 it('should refresh Alerts if no error', () => {
@@ -477,28 +501,12 @@ it('should not refresh ClusterStatus if error', () => {
   expect(gen.next({ error: '404' }).done).toEqual(true);
 });
 
-it('should set the unknown status for cluster when there is no provision volume', () => {
-  const gen = fetchClusterStatus();
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_CLUSTER_STATUS,
-      payload: { isLoading: true },
-    }),
-  );
-  const result = [{ error: '504' }];
-
-  expect(gen.next().value).toEqual(
-    all([
-      call(queryPrometheus, 'sum(up{job="apiserver"})'),
-      call(queryPrometheus, 'sum(up{job="kube-scheduler"})'),
-      call(queryPrometheus, 'sum(up{job="kube-controller-manager"})'),
-    ]),
-  );
-
+it('should handlePrometheusError and set the Unknown status for cluster when there is no provision volume', () => {
+  const result = { error: {} };
+  const gen = handlePrometheusError({}, result);
   expect(gen.next(result).value).toEqual(
-    call(ApiK8s.getPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
+    call(ApiK8s.queryPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
   );
-
   const prometheusPod = {
     body: {
       items: [
@@ -522,37 +530,11 @@ it('should set the unknown status for cluster when there is no provision volume'
   };
 
   expect(gen.next(prometheusPod).value).toEqual(
-    call(
-      handleClusterError,
-      {
-        apiServerStatus: 0,
-        kubeControllerManagerStatus: 0,
-        kubeSchedulerStatus: 0,
-        error: null,
-        prometheusPodStatusMessage: `0/1 nodes are available: 1 node(s) didn't find available persistent volumes to bind.`,
-      },
-      { error: '504' },
-    ),
+    put({
+      type: SET_PROMETHEUS_API_AVAILABLE,
+      payload: false,
+    }),
   );
 
-  expect(gen.next(result).value).toEqual(
-    put({
-      type: UPDATE_CLUSTER_STATUS,
-      payload: {
-        apiServerStatus: 0,
-        kubeControllerManagerStatus: 0,
-        kubeSchedulerStatus: 0,
-        error: null,
-        prometheusPodStatusMessage: `0/1 nodes are available: 1 node(s) didn't find available persistent volumes to bind.`,
-      },
-    }),
-  );
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_CLUSTER_STATUS,
-      payload: { isLoading: false },
-    }),
-  );
   expect(gen.next().done).toEqual(true);
 });

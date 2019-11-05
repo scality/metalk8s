@@ -29,9 +29,9 @@ const defaultState = {
     kubeSchedulerStatus: 0,
     kubeControllerManagerStatus: 0,
     error: null,
-    prometheusPodStatusMessage: null,
     isLoading: false,
     isRefreshing: false,
+    isPrometheusVolumeProvisioned: true,
   },
   isPrometheusApiUp: false,
 };
@@ -89,14 +89,29 @@ function getClusterQueryStatus(result) {
     : 0;
 }
 
-export function* handleClusterError(clusterHealth, result) {
+export function* handlePrometheusError(clusterHealth, result) {
   if (result.error.response) {
     yield put(setPrometheusApiAvailable(true));
     clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
-  } else if (clusterHealth.prometheusPodStatusMessage) {
-    yield put(setPrometheusApiAvailable(false));
-    clusterHealth.error = 'Unknown';
   } else {
+    const prometheusPod = yield call(
+      ApiK8s.queryPodInNamespace,
+      'metalk8s-monitoring',
+      'prometheus',
+    );
+    if (!prometheusPod.error) {
+      const conditions = prometheusPod?.body?.items[0]?.status?.conditions;
+      const scheduledCondition = conditions?.find(
+        c => c.type === 'PodScheduled',
+      );
+      if (
+        scheduledCondition.message.includes(
+          `didn't find available persistent volumes to bind`,
+        )
+      ) {
+        clusterHealth.isPrometheusVolumeProvisioned = false;
+      }
+    }
     yield put(setPrometheusApiAvailable(false));
     clusterHealth.error = 'prometheus_unavailable';
   }
@@ -109,7 +124,7 @@ export function* fetchClusterStatus() {
     kubeSchedulerStatus: 0,
     kubeControllerManagerStatus: 0,
     error: null,
-    prometheusPodStatusMessage: null,
+    isPrometheusVolumeProvisioned: true,
   };
 
   const apiserverQuery = 'sum(up{job="apiserver"})';
@@ -132,24 +147,7 @@ export function* fetchClusterStatus() {
     );
     yield put(setPrometheusApiAvailable(true));
   } else {
-    const prometheusPod = yield call(
-      ApiK8s.getPodInNamespace,
-      'metalk8s-monitoring',
-      'prometheus',
-    );
-    if (!prometheusPod.error) {
-      const prometheusPodCondition =
-        prometheusPod?.body?.items[0]?.status?.conditions[0]?.type;
-      if (prometheusPodCondition === 'PodScheduled') {
-        clusterHealth.prometheusPodStatusMessage =
-          prometheusPod?.body?.items[0]?.status?.conditions[0]?.message;
-      } else {
-        console.error('This is an error in the cluster.');
-      }
-    } else {
-      console.error('Cannot find the Prometheus pod.');
-    }
-    yield call(handleClusterError, clusterHealth, errorResult);
+    yield call(handlePrometheusError, clusterHealth, errorResult);
   }
   yield put(updateClusterStatusAction(clusterHealth));
   yield delay(1000); // To make sure that the loader is visible for at least 1s
@@ -169,7 +167,7 @@ export function* fetchAlerts() {
     yield put(setPrometheusApiAvailable(true));
     alert.list = resultAlerts.data.alerts;
   } else {
-    yield call(handleClusterError, alert, resultAlerts);
+    yield call(handlePrometheusError, alert, resultAlerts);
   }
   yield put(updateAlertsAction(alert));
   yield delay(1000); // To make sure that the loader is visible for at least 1s

@@ -184,7 +184,7 @@ export async function createEnvironment(body) {
   }
 }
 
-export async function getPodInNamespace(namespace, podLabel) {
+export async function queryPodInNamespace(namespace, podLabel) {
   try {
     return await coreV1.listNamespacedPod(
       namespace,
