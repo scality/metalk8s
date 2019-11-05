@@ -561,6 +561,11 @@ stages:
     worker: *single_node_worker
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: single-node-upgrade
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
@@ -613,6 +618,12 @@ stages:
           env:
             DEST_DIR: sosreport/sosreport/single-node-upgrade
       - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: single-node-upgrade
+      - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           env:
