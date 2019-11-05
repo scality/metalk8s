@@ -105,7 +105,7 @@ export function* handlePrometheusError(clusterHealth, result) {
         c => c.type === 'PodScheduled',
       );
       if (
-        scheduledCondition.message.includes(
+        scheduledCondition?.message?.includes(
           `didn't find available persistent volumes to bind`,
         )
       ) {

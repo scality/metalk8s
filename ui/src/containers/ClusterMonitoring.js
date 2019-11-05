@@ -255,9 +255,7 @@ const ClusterMonitoring = props => {
           </Tooltip>
         </RightClusterStatusContainer>
       </ClusterStatusTitleContainer>
-      {clusterStatus.value === CLUSTER_STATUS_UNKNOWN &&
-      cluster.prometheusPodStatusMessage ===
-        `0/1 nodes are available: 1 node(s) didn't find available persistent volumes to bind.` ? (
+      {cluster.isPrometheusVolumeProvisioned ? null : (
         <Banner
           type={STATUS_BANNER_WARNING}
           icon={<i className="fas fa-exclamation-triangle" />}
@@ -268,7 +266,7 @@ const ClusterMonitoring = props => {
             </>,
           ]}
         />
-      ) : null}
+      )}
       <PageSubtitle>
         {intl.messages.alerts}
         {alerts.isLoading ? <LoaderCoreUI size="small" /> : null}
@@ -308,7 +306,7 @@ const makeClusterStatus = (state, props) => {
     value = CLUSTER_STATUS_DOWN;
     label = intl.messages[cluster.error] || cluster.error;
   }
-  if (cluster.prometheusPodStatusMessage) {
+  if (!state.app.monitoring.isPrometheusApiUp) {
     value = CLUSTER_STATUS_UNKNOWN;
     label = intl.messages[cluster.error] || cluster.error;
   }
