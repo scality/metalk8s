@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 2.4.1 (in development)
+## Release 2.4.1
 
 ### Features added
 
