@@ -99,6 +99,7 @@ const InputContainer = styled.div`
 const InputLabel = styled.label`
   padding: ${padding.small};
   font-size: ${fontSize.base};
+  color: ${props => props.theme.brand.text};
 `;
 
 const LabelsContainer = styled.div`
