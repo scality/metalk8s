@@ -128,5 +128,7 @@
   "labels": "Labels",
   "enter_label_name": "Saisir le nom du label",
   "enter_label_value": "Saisir la valeur du label",
-  "value": "Valeur"
+  "value": "Valeur",
+  "prometheus_not_available":"Prometheus n'est pas disponible.",
+  "please_refer_to":"Veuillez vous référer à"
 }

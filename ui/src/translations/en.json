@@ -128,5 +128,7 @@
   "labels": "Labels",
   "enter_label_name": "Enter label name",
   "enter_label_value": "Enter label value",
-  "value": "Value"
+  "value": "Value",
+  "prometheus_not_available":"Prometheus is not available.",
+  "please_refer_to":"Please refer to"
 }

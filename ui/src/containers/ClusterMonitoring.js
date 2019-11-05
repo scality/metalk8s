@@ -28,6 +28,9 @@ import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import Banner from '../components/Banner';
 
+const VOLUME_PROVISION_DOC_REFERENCE =
+  'MetalK8s Quickstart Guide > Deployment of the Bootstrap node > Installation > Provision storage for Prometheus services';
+
 const PageContainer = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -258,12 +261,10 @@ const ClusterMonitoring = props => {
         <Banner
           type={STATUS_BANNER_WARNING}
           icon={<i className="fas fa-exclamation-triangle" />}
-          title={'Prometheus is not available.'}
+          title={intl.messages.prometheus_not_available}
           messages={[
             <>
-              {
-                'Please refer to MetalK8s Quickstart Guide > Deployment of the Bootstrap node > Installation > Provision storage for Prometheus services'
-              }
+              {`${intl.messages.please_refer_to} ${VOLUME_PROVISION_DOC_REFERENCE}`}
             </>,
           ]}
         />
