@@ -264,6 +264,34 @@ models:
         tox -e tests -- -m \"${PYTEST_FILTERS}\""
       workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       haltOnFailure: true
+  - ShellCommand: &add_final_status_artifact
+      name: Add final status to artifacts
+      command: |-
+        bash -c '
+          declare -r BUILD_STATUS_DIR=build_status/build_status/${STEP_NAME:-}
+          mkdir -p "$BUILD_STATUS_DIR"
+          echo -n "$FINAL_STATUS" > "$BUILD_STATUS_DIR/.final_status"
+        '
+      env: &_env_final_status_artifact
+        STEP_NAME: ''
+        FINAL_STATUS: ''
+      haltOnFailure: True
+  - ShellCommand: &add_final_status_artifact_success
+      <<: *add_final_status_artifact
+      name: Add successful status to artifacts
+      env: &_env_final_status_artifact_success
+        <<: *_env_final_status_artifact
+        FINAL_STATUS: "SUCCESSFUL"
+  - ShellCommand: &add_final_status_artifact_failed
+      <<: *add_final_status_artifact
+      name: Add failed status to artifacts
+      env: &_env_final_status_artifact_failed
+        <<: *_env_final_status_artifact
+        FINAL_STATUS: "FAILED"
+  - Upload: &upload_final_status_artifact
+      name: Upload final status to artifacts
+      source: build_status
+      alwaysRun: True
 
   # --- Previous version (for Upgrade/Downgrade) ---
   - Git: &git_pull_prev
@@ -279,6 +307,7 @@ stages:
     worker:
       type: local
     steps:
+      - ShellCommand: *add_final_status_artifact_failed
       - SetPropertyFromCommand:
           name: Set previous version to upgrade from and downgrade to
           property: product_version_prev
@@ -308,6 +337,8 @@ stages:
 # Downgrade is deactivated on this branch due to #1750
 #            - single-node-downgrade
             - multiple-nodes
+      - ShellCommand: *add_final_status_artifact_success
+      - Upload: *upload_final_status_artifact
 
   build:
     worker: &build_worker
@@ -318,6 +349,11 @@ stages:
     steps:
       - ShellCommand: *wait_for_docker
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: build
       - ShellCommand: *setup_cache
       - ShellCommand: *build_all
       - ShellCommand:
@@ -330,6 +366,12 @@ stages:
               _build/SHA256SUM
               _build/root/product.txt
       - Upload: *upload_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: build
+      - Upload: *upload_final_status_artifact
 
   buildprev:
     worker: *build_worker
@@ -358,6 +400,11 @@ stages:
           dockerfile: docs/Dockerfile
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: docs
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Build documentation
@@ -371,6 +418,12 @@ stages:
           source: docs/_build
           urls:
             - ['docs/\1', '*']
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: docs
+      - Upload: *upload_final_status_artifact
 
   lint:
     worker:
@@ -380,12 +433,23 @@ stages:
         docker-linter: eve/workers/pod-linter
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: lint
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all linting targets
           command: ./doit.sh lint
           usePTY: true
           haltOnFailure: false
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: lint
+      - Upload: *upload_final_status_artifact
 
   single-node-downgrade:
     worker: &single_node_worker
