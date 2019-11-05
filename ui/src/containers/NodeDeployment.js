@@ -10,7 +10,7 @@ import { subscribeDeployEventsAction } from '../ducks/app/nodes';
 import { getJobStatusFromEventRet } from '../../src/services/salt/utils';
 import {
   fontWeight,
-  grayLightest,
+  grayLighter,
   padding,
   fontSize,
 } from '@scality/core-ui/dist/style/theme';
@@ -24,13 +24,15 @@ const NodeDeploymentContainer = styled.div`
 `;
 
 const NodeDeploymentTitle = styled.div`
+  color: ${props => props.theme.brand.text};
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.large};
   margin: ${padding.base};
 `;
 
 const NodeDeploymentEvent = styled.div`
-  background-color: ${grayLightest};
+  background-color: ${grayLighter};
+  color: ${props => props.theme.brand.text} !important;
   padding: ${padding.base};
   margin: ${padding.base};
   border-radius: 5px;
