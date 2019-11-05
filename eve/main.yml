@@ -566,6 +566,11 @@ stages:
           dockerfile: eve/workers/pod-unit-tests/Dockerfile
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: unit_tests
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all UI unit tests
@@ -593,6 +598,12 @@ stages:
           workdir: build/storage-operator
           command: go test -cover -v ./...
           haltOnFailure: false
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: unit_tests
+      - Upload: *upload_final_status_artifact
 
   single-node-downgrade-centos:
     worker: &single_node_worker
