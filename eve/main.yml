@@ -473,7 +473,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            STEP_NAME: single-node
+            STEP_NAME: single-node-downgrade
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
@@ -550,7 +550,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            STEP_NAME: single-node
+            STEP_NAME: single-node-downgrade
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
