@@ -379,6 +379,11 @@ stages:
       - ShellCommand: *setup_cache
       - ShellCommand: *git_pull_prev
       - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: buildprev
+      - ShellCommand:
           <<: *build_all
           workdir: "build/metalk8s-%(prop:product_version_prev)s"
       - ShellCommand:
@@ -388,6 +393,12 @@ stages:
             <<: *_env_copy_artifacts
             DEST_DIR: "../artifacts/pre"
       - Upload: *upload_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: buildprev
+      - Upload: *upload_final_status_artifact
 
   docs:
     worker:
