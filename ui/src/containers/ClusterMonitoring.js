@@ -3,12 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
-import { Table, Tooltip } from '@scality/core-ui';
-import {
-  padding,
-  fontWeight,
-  fontSize,
-} from '@scality/core-ui/dist/style/theme';
+import { Table, Tooltip, Button } from '@scality/core-ui';
+import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
 import {
   refreshClusterStatusAction,
@@ -52,6 +48,7 @@ const TableContainer = styled.div`
 `;
 
 const PageSubtitle = styled.h3`
+  color: ${props => props.theme.brand.text};
   margin: ${padding.small} 0;
   display: flex;
   align-items: center;
@@ -74,14 +71,6 @@ const LeftClusterStatusContainer = styled.div`
 
 const RightClusterStatusContainer = styled.div`
   display: flex;
-  i {
-    font-size: ${fontSize.larger};
-    color: ${props => props.theme.brand.primary};
-    &:hover {
-      color: ${props => props.theme.brand.secondary};
-      cursor: pointer;
-    }
-  }
 `;
 
 const ClusterStatusValue = styled.span`
@@ -245,13 +234,14 @@ const ClusterMonitoring = props => {
               </TooltipContent>
             }
           >
-            <div
+            <Button
+              icon={<i className="fas fa-chart-line" />}
               onClick={() => {
                 window.open(config.api.url_grafana, '_blank');
               }}
-            >
-              <i className="fas fa-chart-line" />
-            </div>
+              size="larger"
+              inverted={true}
+            ></Button>
           </Tooltip>
         </RightClusterStatusContainer>
       </ClusterStatusTitleContainer>
