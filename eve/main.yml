@@ -810,6 +810,11 @@ stages:
       path: eve/workers/openstack-single-node-rhel
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: single-node-install-rhel
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
@@ -896,6 +901,12 @@ stages:
               eve/workers/openstack-single-node-rhel/terraform/ssh_config
             STEP_NAME: single-node-install-rhel
       - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: single-node-install-rhel
+      - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           env:
