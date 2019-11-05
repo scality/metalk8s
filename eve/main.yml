@@ -381,6 +381,11 @@ stages:
       - ShellCommand: *setup_cache
       - ShellCommand: *git_pull_prev
       - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: buildprev
+      - ShellCommand:
           <<: *build_all
           workdir: "build/metalk8s-%(prop:product_version_prev)s"
       - ShellCommand:
@@ -390,6 +395,12 @@ stages:
             <<: *_env_copy_artifacts
             DEST_DIR: "../artifacts/pre"
       - Upload: *upload_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: buildprev
+      - Upload: *upload_final_status_artifact
 
   docs:
     worker:
@@ -505,7 +516,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            STEP_NAME: single-node
+            STEP_NAME: single-node-downgrade
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
@@ -611,7 +622,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            STEP_NAME: single-node
+            STEP_NAME: single-node-downgrade
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
@@ -622,6 +633,11 @@ stages:
     worker: *single_node_worker
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: single-node-upgrade
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
@@ -675,6 +691,12 @@ stages:
           env:
             DEST_DIR: sosreport/sosreport/single-node-upgrade
       - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: single-node-upgrade
+      - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           env:
