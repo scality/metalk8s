@@ -501,6 +501,11 @@ stages:
       path: eve/workers/openstack-single-node
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: single-node
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
@@ -603,6 +608,12 @@ stages:
             DEST_DIR: sosreport/sosreport/single-node-downgrade
       - Upload: *upload_report_artifacts
       - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: single-node
+      - Upload: *upload_final_status_artifact
+      - ShellCommand:
           <<: *wait_debug
           env:
             STEP_NAME: single-node-downgrade
@@ -676,6 +687,11 @@ stages:
       path: eve/workers/openstack-multiple-nodes
     steps:
       - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: multiple-nodes
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
@@ -890,6 +906,12 @@ stages:
             done
           alwaysRun: true
       - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: multiple-nodes
+      - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           timeout: 14400
