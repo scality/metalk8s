@@ -194,12 +194,13 @@ patch_kubesystem_namespace() {
 
     #update the annotation with the new destination value
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate_single \
-        metalk8s_kubernetes.namespace_annotation_present \
+        metalk8s_kubernetes.object_updated \
         "kube-system" \
+        kind=Namespace apiVersion=v1 \
+        patch="{'metadata': {'annotations': \
+        {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}" \
         kubeconfig="/etc/kubernetes/admin.conf" \
         context="kubernetes-admin@kubernetes" \
-        annotation_key="metalk8s.scality.com/cluster-version" \
-        annotation_value="$DESTINATION_VERSION" \
         test="$DRY_RUN"
 }
 

@@ -54,10 +54,14 @@ Wait for API server to be available on {{ node }}:
   {%- endif %}
 
 Set node {{ node }} version to {{ dest_version }}:
-  metalk8s_kubernetes.node_label_present:
-    - name: metalk8s.scality.com/version
-    - node: {{ node }}
-    - value: "{{ dest_version }}"
+  metalk8s_kubernetes.object_updated:
+    - name: {{ node }}
+    - kind: Node
+    - apiVersion: v1
+    - patch:
+        metadata:
+          labels:
+            metalk8s.scality.com/version: "{{ dest_version }}"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - require:
