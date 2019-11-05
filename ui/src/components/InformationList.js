@@ -17,14 +17,14 @@ export const InformationSpan = styled.span`
 `;
 
 export const InformationLabel = styled.span`
-  font-size: ${fontSize.large};
+  font-size: ${fontSize.small};
   padding-right: ${padding.base};
   min-width: 150px;
   display: inline-block;
 `;
 
 export const InformationValue = styled.span`
-  font-size: ${fontSize.large};
+  font-size: ${fontSize.base};
 `;
 
 export const InformationMainValue = styled(InformationValue)`

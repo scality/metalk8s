@@ -30,9 +30,10 @@ To access the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`
 
 #. Fill out the respective fields
 
-    .. image:: /operation/volume_management/img/volume_detail.png
+    .. image:: /operation/volume_management/img/volume_creation.png
 
     - **Name**: Denotes the volume name.
+    - **Labels**: A set of key/value pairs that are used by Persistent Volume Claims to select the right Persistent Volumes.
     - **Storage Class**: Refer to the storage class creation page listed here:
       :doc:`/operation/volume_management/storageclass_creation`
     - **Type**: Metalk8s currently only supports **RawBlockDevice** and
@@ -46,6 +47,11 @@ To access the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`
 #. You should have a new volume listed in the **Volume list**
 
     .. image:: /operation/volume_management/img/volume_created.png
+
+#. If you click on any volume in the Volume list,
+   you will see more information in the Volume detail view:
+
+    .. image:: /operation/volume_management/img/volume_detail.png
 
 
 Volume Deletion

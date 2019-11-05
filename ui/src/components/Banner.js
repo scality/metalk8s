@@ -12,8 +12,7 @@ import { STATUS_BANNER_WARNING, STATUS_BANNER_ERROR } from '../constants';
 
 const BannerContainer = styled.div`
   display: flex;
-  margin: ${padding.base} 0 0 ${padding.larger};
-  padding: ${padding.small} ${padding.small} ${padding.small} 0;
+  padding: ${padding.small};
   font-size: ${fontSize.small};
 
   border: 1px solid;
@@ -72,7 +71,7 @@ const Banner = (props: Props) => {
   }
 
   return (
-    <BannerContainer themeBanner={themeBanner}>
+    <BannerContainer className="sc-banner" themeBanner={themeBanner}>
       {icon}
       <TextContainer>
         <Title>{title}</Title>
