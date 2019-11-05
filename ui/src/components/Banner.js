@@ -14,6 +14,9 @@ const BannerContainer = styled.div`
   display: flex;
   padding: ${padding.small};
   font-size: ${fontSize.small};
+  color: ${props => {
+    return props.theme.brand.text;
+  }};
 
   border: 1px solid;
   border-left: 5px solid;
