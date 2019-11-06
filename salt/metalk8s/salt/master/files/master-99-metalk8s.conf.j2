@@ -38,3 +38,9 @@ external_auth:
       - '@wheel'
       - '@runner'
       - '@jobs'
+
+# `kubeconfig` file and `context` used by salt to interact with apiserver
+kubernetes.kubeconfig: {{ kubeconfig }}
+{%- if kubecontext is defined and kubecontext %}
+kubernetes.context: {{ kubecontext }}
+{%- endif %}
