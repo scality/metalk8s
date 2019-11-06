@@ -12,7 +12,7 @@ import {
   SearchInput,
   Tooltip,
 } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, grayLight } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
   sortSelector,
@@ -45,6 +45,11 @@ const VolumeTable = styled.div`
   }
   .sc-table-column-cell-action {
     overflow: visible !important;
+  }
+  .remove-volume-button:disabled {
+    color: ${grayLight};
+    pointer-events: all;
+    cursor: not-allowed;
   }
 `;
 
@@ -198,6 +203,7 @@ const NodeVolumes = props => {
           <>
             <Tooltip placement="top" overlay={hintPopup()}>
               <Button
+                className="remove-volume-button"
                 onClick={e => {
                   e.stopPropagation();
                   if (isEnableClick) {
