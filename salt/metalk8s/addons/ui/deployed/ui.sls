@@ -55,4 +55,4 @@ Create ui-branding ConfigMap:
     - context: {{ context }}
     - data:
         theme.json: |
-          {"brand": {"primary": "#403e40", "secondary": "#e99121"}}
+          {"brand":{"base":"#19161D","baseContrast1":"#26232A","primary":"#e99121","secondary":"#2979ff","success":"#2bad8d","info":"#00B2A9","warning":"#F1B434","danger":"#EF3340","background":"#26232A","backgroundContrast1":"#2E2B32","backgroundContrast2":"#353239","text":"#ffffff","border":"#ffffff"}}
