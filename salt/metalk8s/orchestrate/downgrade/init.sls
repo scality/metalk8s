@@ -97,6 +97,11 @@ Downgrade etcd cluster:
     - require:
       - salt: Execute the downgrade prechecks
 
+Sync module on salt-master:
+  salt.runner:
+    - name: saltutil.sync_all
+    - saltenv: metalk8s-{{ dest_version }}
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate
@@ -104,4 +109,5 @@ Deploy Kubernetes objects:
       - metalk8s.deployed
     - saltenv: metalk8s-{{ dest_version }}
     - require:
+      - salt: Sync module on salt-master
       - salt: Downgrade etcd cluster
