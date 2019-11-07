@@ -1,6 +1,7 @@
 import { put, takeEvery, call, all, delay, select } from 'redux-saga/effects';
 import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 import { REFRESH_TIMEOUT } from '../../constants';
+import * as ApiK8s from '../../services/k8s/api';
 
 const REFRESH_CLUSTER_STATUS = 'REFRESH_CLUSTER_STATUS';
 const STOP_REFRESH_CLUSTER_STATUS = 'STOP_REFRESH_CLUSTER_STATUS';
@@ -12,6 +13,7 @@ export const UPDATE_ALERTS = 'UPDATE_ALERTS';
 
 export const CLUSTER_STATUS_UP = 'CLUSTER_STATUS_UP';
 export const CLUSTER_STATUS_DOWN = 'CLUSTER_STATUS_DOWN';
+export const CLUSTER_STATUS_UNKNOWN = 'CLUSTER_STATUS_UNKNOWN ';
 
 export const SET_PROMETHEUS_API_AVAILABLE = 'SET_PROMETHEUS_API_AVAILABLE';
 
@@ -20,7 +22,7 @@ const defaultState = {
     list: [],
     error: null,
     isLoading: false,
-    isRefreshing: false
+    isRefreshing: false,
   },
   cluster: {
     apiServerStatus: 0,
@@ -28,9 +30,10 @@ const defaultState = {
     kubeControllerManagerStatus: 0,
     error: null,
     isLoading: false,
-    isRefreshing: false
+    isRefreshing: false,
+    isPrometheusVolumeProvisioned: true,
   },
-  isPrometheusApiUp: false
+  isPrometheusApiUp: false,
 };
 
 export default function(state = defaultState, action = {}) {
@@ -42,7 +45,7 @@ export default function(state = defaultState, action = {}) {
     case UPDATE_CLUSTER_STATUS:
       return {
         ...state,
-        cluster: { ...state.cluster, ...action.payload }
+        cluster: { ...state.cluster, ...action.payload },
       };
     default:
       return state;
@@ -86,11 +89,29 @@ function getClusterQueryStatus(result) {
     : 0;
 }
 
-export function* handleClusterError(clusterHealth, result) {
+export function* handlePrometheusError(clusterHealth, result) {
   if (result.error.response) {
     yield put(setPrometheusApiAvailable(true));
     clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
   } else {
+    const prometheusPod = yield call(
+      ApiK8s.queryPodInNamespace,
+      'metalk8s-monitoring',
+      'prometheus',
+    );
+    if (!prometheusPod.error) {
+      const conditions = prometheusPod?.body?.items[0]?.status?.conditions;
+      const scheduledCondition = conditions?.find(
+        c => c.type === 'PodScheduled',
+      );
+      if (
+        scheduledCondition?.message?.includes(
+          `didn't find available persistent volumes to bind`,
+        )
+      ) {
+        clusterHealth.isPrometheusVolumeProvisioned = false;
+      }
+    }
     yield put(setPrometheusApiAvailable(false));
     clusterHealth.error = 'prometheus_unavailable';
   }
@@ -102,7 +123,8 @@ export function* fetchClusterStatus() {
     apiServerStatus: 0,
     kubeSchedulerStatus: 0,
     kubeControllerManagerStatus: 0,
-    error: null
+    error: null,
+    isPrometheusVolumeProvisioned: true,
   };
 
   const apiserverQuery = 'sum(up{job="apiserver"})';
@@ -112,7 +134,7 @@ export function* fetchClusterStatus() {
   const results = yield all([
     call(queryPrometheus, apiserverQuery),
     call(queryPrometheus, kubeSchedulerQuery),
-    call(queryPrometheus, kubeControllerManagerQuery)
+    call(queryPrometheus, kubeControllerManagerQuery),
   ]);
 
   const errorResult = results.find(result => result.error);
@@ -121,14 +143,14 @@ export function* fetchClusterStatus() {
     clusterHealth.apiServerStatus = getClusterQueryStatus(results[0]);
     clusterHealth.kubeSchedulerStatus = getClusterQueryStatus(results[1]);
     clusterHealth.kubeControllerManagerStatus = getClusterQueryStatus(
-      results[2]
+      results[2],
     );
     yield put(setPrometheusApiAvailable(true));
   } else {
-    yield call(handleClusterError, clusterHealth, errorResult);
+    yield call(handlePrometheusError, clusterHealth, errorResult);
   }
   yield put(updateClusterStatusAction(clusterHealth));
-  yield delay(1000); // To make sur that the loader is visible for at least 1s
+  yield delay(1000); // To make sure that the loader is visible for at least 1s
   yield put(updateClusterStatusAction({ isLoading: false }));
   return errorResult;
 }
@@ -138,17 +160,17 @@ export function* fetchAlerts() {
   const resultAlerts = yield call(getAlerts);
   let alert = {
     list: [],
-    error: null
+    error: null,
   };
 
   if (!resultAlerts.error) {
     yield put(setPrometheusApiAvailable(true));
     alert.list = resultAlerts.data.alerts;
   } else {
-    yield call(handleClusterError, alert, resultAlerts);
+    yield call(handlePrometheusError, alert, resultAlerts);
   }
   yield put(updateAlertsAction(alert));
-  yield delay(1000); // To make sur that the loader is visible for at least 1s
+  yield delay(1000); // To make sure that the loader is visible for at least 1s
   yield put(updateAlertsAction({ isLoading: false }));
   return resultAlerts;
 }
@@ -159,7 +181,7 @@ export function* refreshAlerts() {
   if (!resultAlerts.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(
-      state => state.app.monitoring.alert.isRefreshing
+      state => state.app.monitoring.alert.isRefreshing,
     );
     if (isRefreshing) {
       yield call(refreshAlerts);
@@ -177,7 +199,7 @@ export function* refreshClusterStatus() {
   if (!errorResult) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(
-      state => state.app.monitoring.cluster.isRefreshing
+      state => state.app.monitoring.cluster.isRefreshing,
     );
     if (isRefreshing) {
       yield call(refreshClusterStatus);

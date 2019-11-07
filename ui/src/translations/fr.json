@@ -115,7 +115,6 @@
   "select_a_type": "Sélectionner un type de volume…",
   "no_results": "Aucun résultat",
   "search": "Rechercher…",
-  "detailed_information": "Informations détaillées",
   "failed_to_create_volume":"Échec de la création du volume.",
   "not_applicable": "Non applicable",
   "environments": "Environnements",
@@ -124,5 +123,12 @@
   "add_solution_to_environment": "Ajout d'une solution à l'environnement {environment}",
   "version_env": "Versions",
   "add_solution": "Ajout de la solution",
-  "advanced_monitoring": "Supervision Avancée"
+  "advanced_monitoring": "Supervision avancée",
+  "add": "Ajouter",
+  "labels": "Labels",
+  "enter_label_name": "Saisir le nom du label",
+  "enter_label_value": "Saisir la valeur du label",
+  "value": "Valeur",
+  "prometheus_not_available":"Prometheus n'est pas disponible.",
+  "please_refer_to":"Veuillez vous référer à"
 }

@@ -146,7 +146,7 @@ models:
         bash -c '
         mkdir "${DEST_DIR}" -p
         for artifact in ${ARTIFACTS}; do
-          cp "$artifact" "${DEST_DIR}"
+          cp -r "$artifact" "${DEST_DIR}"
         done'
       haltOnFailure: true
   - ShellCommand: &copy_report_artifacts
@@ -515,12 +515,20 @@ stages:
             READTHEDOCS: 'True'
           command: tox --workdir /tmp/tox -e docs -- html latexpdf
           haltOnFailure: true
+      - ShellCommand:
+          <<: *copy_artifacts
+          env:
+            <<: *_env_copy_artifacts
+            DEST_DIR: "artifacts/docs"
+            ARTIFACTS: >-
+              docs/_build/*
+              CHANGELOG.md
       - Upload:
-          name: Upload documentation artifacts
-          source: docs/_build
+          <<: *upload_artifacts
           urls:
-            - html/index.html
-            - latex/MetalK8s.pdf
+            - docs/html/index.html
+            - docs/latex/MetalK8s.pdf
+            - docs/CHANGELOG.md
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
