@@ -46,6 +46,11 @@ const VolumeTable = styled.div`
   .sc-table-column-cell-action {
     overflow: visible !important;
   }
+  .remove-volume-button:disabled {
+    color: ${grayLight};
+    pointer-events: all;
+    cursor: not-allowed;
+  }
 `;
 
 const NotificationButtonGroup = styled.div`
@@ -59,30 +64,6 @@ const DeleteButton = styled(Button)`
 
 const ModalBody = styled.div`
   padding-bottom: ${padding.base};
-`;
-
-const IconButton = styled.button`
-  border-radius: 30px;
-  width: 30px;
-  height: 30px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  cursor: ${props => {
-    if (props.isEnableClick) {
-      return `pointer`;
-    } else {
-      return `not-allowed`;
-    }
-  }};
-
-  :hover {
-    background-color: ${props => {
-      if (props.isEnableClick) {
-        return grayLight;
-      }
-    }};
-  }
 `;
 
 const ActionContainer = styled.div`
@@ -221,7 +202,8 @@ const NodeVolumes = props => {
         return (
           <>
             <Tooltip placement="top" overlay={hintPopup()}>
-              <IconButton
+              <Button
+                className="remove-volume-button"
                 onClick={e => {
                   e.stopPropagation();
                   if (isEnableClick) {
@@ -229,10 +211,10 @@ const NodeVolumes = props => {
                     setisDeleteConfirmationModalOpen(true);
                   }
                 }}
-                isEnableClick={isEnableClick}
-              >
-                <i className="fas fa-lg fa-trash" />
-              </IconButton>
+                inverted={true}
+                icon={<i className="fas fa-lg fa-trash" />}
+                disabled={!isEnableClick}
+              ></Button>
             </Tooltip>
           </>
         );

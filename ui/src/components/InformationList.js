@@ -7,6 +7,7 @@ import {
 import styled from 'styled-components';
 
 export const InformationListContainer = styled.div`
+  color: ${props => props.theme.brand.text};
   display: flex;
   flex-direction: column;
   margin: ${padding.base};

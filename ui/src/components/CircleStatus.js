@@ -5,13 +5,13 @@ import {
   STATUS_WARNING,
   STATUS_CRITICAL,
   STATUS_SUCCESS,
-  STATUS_NONE
+  STATUS_NONE,
 } from '../constants.js';
 
 const Circle = styled.i`
   color: ${props => {
     const theme = props.theme.brand;
-    let color = theme.base;
+    let color = theme.text;
 
     switch (props.status) {
       case STATUS_SUCCESS:
@@ -24,10 +24,10 @@ const Circle = styled.i`
         color = theme.danger;
         break;
       case STATUS_NONE:
-        color = theme.base;
+        color = theme.text;
         break;
       default:
-        color = theme.base;
+        color = theme.text;
     }
 
     return color;
