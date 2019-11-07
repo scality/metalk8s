@@ -1,4 +1,4 @@
-#!kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+#! metalk8s_kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
 
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
