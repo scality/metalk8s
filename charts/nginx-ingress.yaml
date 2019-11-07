@@ -1,6 +1,6 @@
 controller:
   image:
-    repository: '{{ build_image_name("nginx-ingress-controller") }}'
+    repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-controller\", False) }}{%- raw -%}'
 
   daemonset:
     useHostPort: true
@@ -20,7 +20,7 @@ controller:
 
 defaultBackend:
   image:
-    repository: '{{ build_image_name("nginx-ingress-defaultbackend-amd64") }}'
+    repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-defaultbackend-amd64\", False) }}{%- raw -%}'
 
   tolerations:
     - key: "node-role.kubernetes.io/bootstrap"

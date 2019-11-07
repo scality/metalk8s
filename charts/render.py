@@ -114,6 +114,7 @@ def main():
             for doc in yaml.safe_load_all(template)
             if keep_doc(doc)),
         sys.stdout,
+        default_flow_style=False,
     )
 
     sys.stdout.write(BOILERPLATE_END)

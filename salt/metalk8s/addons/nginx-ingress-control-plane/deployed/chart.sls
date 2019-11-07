@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -25,7 +25,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -89,7 +89,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -111,7 +111,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -198,7 +198,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -221,7 +221,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     component: controller
     heritage: metalk8s
     release: nginx-ingress-control-plane
@@ -242,7 +242,7 @@ spec:
     release: nginx-ingress-control-plane
   type: ClusterIP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
@@ -251,7 +251,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.10.2
+    chart: nginx-ingress-1.24.7
     component: controller
     heritage: metalk8s
     release: nginx-ingress-control-plane
@@ -260,6 +260,10 @@ metadata:
 spec:
   minReadySeconds: 0
   revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nginx-ingress
+      release: nginx-ingress-control-plane
   template:
     metadata:
       labels:
@@ -284,7 +288,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         image: '{%- endraw -%}{{ build_image_name("nginx-ingress-controller", False)
-          }}{%- raw -%}:0.25.0'
+          }}{%- raw -%}:0.26.1'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -316,6 +320,7 @@ spec:
           timeoutSeconds: 1
         resources: {}
         securityContext:
+          allowPrivilegeEscalation: true
           capabilities:
             add:
             - NET_BIND_SERVICE
