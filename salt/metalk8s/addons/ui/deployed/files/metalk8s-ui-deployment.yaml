@@ -2,6 +2,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: metalk8s-ui
+  namespace: metalk8s-ui
   labels:
     app: metalk8s-ui
     heritage: metalk8s
