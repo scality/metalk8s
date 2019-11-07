@@ -170,6 +170,9 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
         'prometheus-config-reloader',
         'prometheus-operator',
     ],
+    constants.DEX_REPOSITORY: [
+        'dex',
+    ],
     constants.DOCKER_REPOSITORY: [
         'nginx',
     ],
