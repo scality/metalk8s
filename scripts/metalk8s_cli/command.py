@@ -1,8 +1,9 @@
 import argparse
 import sys
 
-from metalk8s_cli import parsers
 from metalk8s_cli import base
+from metalk8s_cli.exceptions import CommandInitError
+from metalk8s_cli import parsers
 from metalk8s_cli.solutions.command import SolutionsCommand
 
 
@@ -69,5 +70,12 @@ def main():
     )
 
     args = parser.parse_args()
-    cmd = args.cmd(args)
+
+    try:
+        cmd = args.cmd(args)
+    except CommandInitError as exc:
+        print('Failed to initialize command: {}'.format(str(exc)),
+              file=sys.stderr)
+        sys.exit(1)
+
     cmd.run()
