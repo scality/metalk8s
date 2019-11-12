@@ -62,6 +62,7 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
     helper.FileTree(
         basename='_iso_add_tree',
         files=(
+            Path('common.sh'),
             Path('iso-manager.sh'),
             Path('downgrade.sh'),
             Path('upgrade.sh'),
