@@ -56,84 +56,15 @@ trap cleanup EXIT
 
 BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
-RPM=${RPM:-$(command -v rpm)}
-SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
-YUM=${YUM:-$(command -v yum)}
 SALT_CALL=${SALT_CALL:-salt-call}
 
-declare -A GPGCHECK_REPOSITORIES=(
-    [metalk8s-base]=1
-    [metalk8s-epel]=1
-    [metalk8s-extras]=1
-    [metalk8s-updates]=1
-    [metalk8s-kubernetes]=1
-    [metalk8s-saltstack]=1
-    [metalk8s-scality]=0
+declare -a PACKAGES=(
+    salt-minion
+    genisoimage
 )
 
-run_quiet() {
-    local name=$1
-    shift 1
-
-    echo -n "> ${name}..."
-    local start
-    start=$(date +%s)
-    set +e
-    "$@" 2>&1 | tee -ia "${LOGFILE}" > "${TMPFILES}/out"
-    local RC=$?
-    set -e
-    local end
-    end=$(date +%s)
-
-    local duration=$(( end - start ))
-
-    if [ $RC -eq 0 ]; then
-        echo " done [${duration}s]"
-    else
-        echo " fail [${duration}s]"
-        cat >/dev/stderr << EOM
-
-Failure while running step '${name}'
-
-Command: $@
-
-Output:
-
-<< BEGIN >>
-EOM
-        cat "${TMPFILES}/out" > /dev/stderr
-
-        cat >/dev/stderr << EOM
-<< END >>
-
-This script will now exit
-
-EOM
-
-        exit 1
-    fi
-}
-
-run_verbose() {
-    local name=$1
-    shift 1
-
-    echo "> ${name}..."
-    "$@"
-}
-
-run() {
-    if [ "$VERBOSE" -eq 1 ]; then
-        run_verbose "${@}"
-    else
-        run_quiet "${@}"
-    fi
-}
-
-die() {
-    echo 1>&2 "$@"
-    return 1
-}
+# shellcheck disable=SC1090
+. "$BASE_DIR"/common.sh
 
 _save_cp() {
     local -r src="$(readlink -f "$1")"
@@ -159,57 +90,6 @@ extract_archive() {
     tar -C "$BACKUP_DIR" -xz -f "$BACKUP_ARCHIVE" ./
 }
 
-pre_minion_checks() {
-    test "x$(whoami)" = "xroot" || die "Script must run as root"
-    test -n "${RPM}" || die "rpm not found"
-    test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
-    test -n "${SYSTEMCTL}" || die "systemctl not found"
-    test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
-    test -n "${YUM}" || die "yum not found"
-    test -x "${YUM}" || die "yum at '${YUM}' is not executable"
-}
-
-disable_salt_minion_service() {
-    ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
-}
-
-stop_salt_minion_service() {
-    ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
-}
-
-configure_yum_repositories() {
-    configure_yum_local_repositories
-
-    "$YUM" clean all
-}
-
-configure_yum_local_repositories() {
-    for repository in "${!GPGCHECK_REPOSITORIES[@]}"; do
-        configure_yum_local_repository "$repository" \
-            "${GPGCHECK_REPOSITORIES[$repository]}"
-    done
-}
-
-configure_yum_local_repository() {
-    local -r repo_name=$1 gpgcheck=${2:-0}
-    local -r repo_path=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/packages/redhat/$repo_name-el7
-    local gpg_keys
-
-    gpg_keys=$(
-        find "$repo_path" -maxdepth 1 -name "RPM-GPG-KEY-*" \
-            -printf "file://%p "
-    )
-
-    cat > /etc/yum.repos.d/"$repo_name".repo << EOF
-[$repo_name]
-name=$repo_name
-baseurl=file://$repo_path
-enabled=0
-gpgcheck=$gpgcheck
-${gpg_keys:+gpgkey=${gpg_keys%?}}
-EOF
-}
-
 install_salt_minion() {
     local -a yum_opts=(
         '--assumeyes'
@@ -224,16 +104,6 @@ install_genisoimage() {
     )
 
     "$YUM" install "${yum_opts[@]}" genisoimage
-}
-
-configure_salt_minion_local_mode() {
-    local -r file_root="$BASE_DIR/salt"
-
-    "$SALT_CALL" --file-root="$file_root" \
-        --local --retcode-passthrough saltutil.sync_all saltenv=base
-    "$SALT_CALL" --file-root="$file_root" \
-        --local --retcode-passthrough state.sls metalk8s.salt.minion.local \
-        pillar="{'metalk8s': {'archives': '$BASE_DIR'}}" saltenv=base
 }
 
 restore_metalk8s_conf() {
@@ -264,26 +134,6 @@ restore_cas() {
     for ca in "${ca_files[@]}"; do
         _save_cp "${BACKUP_DIR}/pki/$ca" "${ca_dir}$ca"
     done
-}
-
-get_salt_container() {
-    local -r max_retries=10
-    local salt_container='' attempts=0
-
-    while [ -z "$salt_container" ] && [ $attempts -lt $max_retries ]; do
-        salt_container="$(crictl ps -q \
-            --label io.kubernetes.pod.namespace=kube-system \
-            --label io.kubernetes.container.name=salt-master \
-            --state Running)"
-        (( attempts++ ))
-    done
-
-    if [ -z "$salt_container" ]; then
-        echo "Failed to find a running 'salt-master' container" >&2
-        exit 1
-    fi
-
-    echo "$salt_container"
 }
 
 configure_salt_master() {
@@ -416,13 +266,13 @@ if [ ! -f "$BACKUP_ARCHIVE" ]; then
     exit 1
 fi
 
+run "Determine the OS" determine_os
 run "Extract backup archive '$BACKUP_ARCHIVE'" extract_archive
 run "Pre-minion system tests" pre_minion_checks
 run "Disabling Salt minion service" disable_salt_minion_service
 run "Stopping Salt minion service" stop_salt_minion_service
-run "Configuring local YUM repositories" configure_yum_repositories
-run "Installing Salt minion" install_salt_minion
-run "Installing genisoimage" install_genisoimage
+run "Configuring local repositories" configure_repositories
+run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
 run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
 run "Restoring MetalK8s configurations" restore_metalk8s_conf
