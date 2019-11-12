@@ -1,77 +1,15 @@
 from __future__ import print_function
 import contextlib
-import copy
-from datetime import datetime
 import logging
 import logging.config
-import os.path
-import re
 import sys
 import time
 
 import six
 
 from metalk8s_cli.exceptions import CommandError
+from metalk8s_cli import log
 from metalk8s_cli import utils
-
-
-class RemoveANSIFilter(logging.Filter):
-    # Credits to https://stackoverflow.com/a/14693789
-    ANSI_SEQUENCE_REGEX = re.compile(r'''
-        \x1b   # ESC
-        [@-_]  # 7-bit C1 Fe
-        [0-?]* # Parameter bytes
-        [ -/]* # Intermediate bytes
-        [@-~]  # Final byte
-    ''', re.VERBOSE)
-
-    @classmethod
-    def _remove_ansi(cls, message):
-        return cls.ANSI_SEQUENCE_REGEX.sub('', message)
-
-    def filter(self, record):
-        record.msg = self._remove_ansi(record.msg)
-        return True
-
-
-DEFAULT_LOG_DIR = '/var/log/metalk8s'
-
-DEFAULT_CONFIG = {
-    'version': 1,
-    'formatters': {
-        'console': {
-            'format': '[%(levelname)s] %(message)s',
-        },
-        'file': {
-            'format': '[%(levelname)-7s - %(asctime)s] (%(name)s) %(message)s',
-        },
-    },
-    'filters': {
-        'remove_ansi': {
-            '()': RemoveANSIFilter,
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://sys.stderr',
-            'level': 'WARNING',
-            'formatter': 'console',
-        },
-        'common-file': {
-            'class': 'logging.FileHandler',
-            'level': 'DEBUG',
-            'formatter': 'file',
-            'filename': os.path.join(DEFAULT_LOG_DIR, 'metalk8s.log'),
-            'filters': ['remove_ansi'],
-        },
-    },
-    'root': {
-        'handlers': ['console', 'common-file'],
-        'level': 'DEBUG',
-    },
-}
-
 
 class LoggingCommandMixin(object):
     """Provide methods to log messages from a command.
@@ -84,31 +22,8 @@ class LoggingCommandMixin(object):
         super(LoggingCommandMixin, self).__init__(args)
         self._logger = None
         self.logfile = args.logfile
-        self.verbose = args.verbose
-        self.prepare_logfile()
-        self.configure_logging()
-
-    def configure_logging(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-
-        if self.logfile is not None:
-            command_file_handler = copy.deepcopy(
-                config['handlers']['common-file']
-            )
-            command_file_handler['filename'] = os.path.abspath(self.logfile)
-
-            config['handlers']['specific-file'] = command_file_handler
-            config['root']['handlers'].append('specific-file')
-
-        logging.config.dictConfig(config)
-
-    def prepare_logfile(self):
-        if os.path.exists(self.logfile):
-            return
-
-        dirname = os.path.dirname(self.logfile)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
+        self.verbosity = args.verbosity
+        log.configure_logging(self.logfile, self.verbosity)
 
     @property
     def logger(self):
@@ -120,7 +35,8 @@ class LoggingCommandMixin(object):
     @contextlib.contextmanager
     def log_step(self, step_name):
         """Log a step execution."""
-        self.print_and_log('> {}...'.format(step_name), keep_line=True)
+        self.print('> {}...'.format(step_name), keep_line=True)
+        self.info('Starting step "{}"'.format(step_name), verbosity=9)
         start = time.time()
         try:
             # Wrapped step should use `print_and_log` for success, and
@@ -128,44 +44,58 @@ class LoggingCommandMixin(object):
             yield
         except CommandError as exc:
             duration = time.time() - start
-            self.print_and_log('{} [{:.2f}s]'.format(
+            self.print('{} [{:.2f}s]'.format(
                 utils.format_ansi('fail', color='red'), duration
             ))
-            self.logger.error(self._format_error(exc, step_name))
+            self.error('Step "{}" failed (after {:.2f} seconds)'.format(
+                step_name, duration
+            ), verbosity=9)
+            self.error(exc.format_error())
             # We re-raise here for the main `run` method to interrupt execution
             raise
         else:
             duration = time.time() - start
-            self.print_and_log('{} [{:.2f}s]'.format(
+            self.print('{} [{:.2f}s]'.format(
                 utils.format_ansi('done', color='green'), duration
             ))
+            self.info('Step "{}" succeeded (after {:.2f} seconds)'.format(
+                step_name, duration
+            ), verbosity=9)
 
     @contextlib.contextmanager
     def log_active_run(self):
         """Open and close a section in the logfile for a command run."""
-        self._init_run_log()
-        try:
-            # Errors should be caught and logged by the wrapped code, and
-            # re-raised as `CommandError`s
-            yield
-        except CommandError:
-            self.print_and_log('The script will now exit')
-            sys.exit(1)
-        finally:
-            self._stop_run_log()
+        with log.log_session(self.logfile, self.command_invocation):
+            try:
+                # Errors should be caught and logged by the wrapped code, and
+                # re-raised as `CommandError`s
+                yield
+            except CommandError:
+                self.warn('The script will now exit')
+                sys.exit(1)
 
-    def print_and_log(self, message, level=logging.INFO, keep_line=False):
-        """Print a message in stdout and log it as well.
+    def print(self, message, keep_line=False):
+        """Print a message in stdout.
 
-        Note that messages with a level strictly lower than `INFO` are only
-        printed if `verbose` mode is activated.
+        If `keep_line` is set to True, the print to stdout will attempt to
+        keep the cursor on the same line for the next print to occur (if
+        verbosity is higher than 0, this behaviour is disabled).
+        """
+        if keep_line and self.verbosity == 0:
+            print(message, end=' ')
+            sys.stdout.flush()
+        else:
+            print(message)
+
+    def log(self, level, message, *args, verbosity=0, **kwargs):
+        """Log a message through `self.logger`, adjusting verbosity.
+
+        A higher `verbosity` (between 0 and 9) will imply a lower logging
+        level, and this will be used in the configured handlers.
+        See `metalk8s_cli.log.VerbosityFilter` for more details.
 
         `level` can be provided as a string (given it is registered as a
         valid levelName in `logging`) or an integer.
-
-        If `keep_line` is set to True, the print to stdout will attempt to
-        keep the cursor on the same line for the next print to occur (disabled
-        in verbose mode).
         """
         if isinstance(level, six.string_types):
             # For some reason, that's the only stable API to retrieve a level
@@ -177,43 +107,27 @@ class LoggingCommandMixin(object):
                 )
             level = result
 
-        self.logger.log(level, message)
+        # Log levels from logging are integers, 10 apart from each other
+        # By default, a log(logging.INFO, ...) will actually log at INFO + 9
+        # Verbosity is then set as a negative offset from this value.
+        assert isinstance(verbosity, int), "`verbosity` must be an integer"
+        assert 0 <= verbosity <= 9, "`verbosity` must be between 0 and 9"
 
-        if level < logging.INFO and not self.verbose:
-            return
+        actual_level = level + 9 - verbosity
+        self.logger.log(actual_level, message, *args, **kwargs)
 
-        if keep_line and not self.verbose:
-            print(message, end=' ')
-            sys.stdout.flush()
-        else:
-            print(message)
+    def debug(self, message, *args, verbosity=0, **kwargs):
+        self.log(logging.DEBUG, message, *args,
+                 verbosity=verbosity, **kwargs)
 
-    def _format_error(self, error, step_name):
-        """Format a subclass of `CommandError`."""
-        return 'Failure while running step "{}":\n{}'.format(
-            step_name, error.format_error()
-        )
+    def info(self, message, *args, verbosity=0, **kwargs):
+        self.log(logging.INFO, message, *args,
+                 verbosity=verbosity, **kwargs)
 
-    def _append_run_limit(self, message):
-        with open(self.logfile, 'a') as file_handle:
-            file_handle.write(
-                '\n--- Command: "{}" {} ---\n\n'.format(
-                    self.command_invocation,
-                    message,
-                )
-            )
+    def warn(self, message, *args, verbosity=0, **kwargs):
+        self.log(logging.WARNING, message, *args,
+                 verbosity=verbosity, **kwargs)
 
-    def _init_run_log(self):
-        self._run_start = datetime.now()
-        self._append_run_limit("started on {}".format(
-            self._run_start.strftime('%Y-%m-%d %H:%M:%S')
-        ))
-
-    def _stop_run_log(self):
-        run_duration = datetime.now() - self._run_start
-        self._append_run_limit("completed in {:.2f}s".format(
-            run_duration.total_seconds())
-        )
-        self._run_start = None
-
-
+    def error(self, message, *args, verbosity=0, **kwargs):
+        self.log(logging.ERROR, message, *args,
+                 verbosity=verbosity, **kwargs)

@@ -45,7 +45,7 @@ class DeploySolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
                 'Enabled version "{}" for Solution "{}" in configuration file.'
             ).format(self.version, self.solution)
 
-        self.print_and_log(message, level='DEBUG')
+        self.info(message, verbosity=1)
 
     def run(self):
         with self.log_active_run():
@@ -61,7 +61,4 @@ class DeploySolutionCommand(salt.SaltCommandMixin, log.LoggingCommandMixin,
                     saltenv=self.saltenv,
                     pillar={'bootstrap_id': self.minion_id},
                 )
-                self.print_and_log(
-                    result.stdout.decode('utf-8'),
-                    level='DEBUG'
-                )
+                self.info(result.stdout.decode('utf-8'), verbosity=1)

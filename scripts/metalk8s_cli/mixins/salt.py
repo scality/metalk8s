@@ -5,13 +5,11 @@ import subprocess
 import six
 
 from metalk8s_cli.exceptions import CommandInitError
+from metalk8s_cli.mixins.log import LoggingCommandMixin
 from metalk8s_cli import utils
 
 
-class SaltCommandMixin(object):
-    def __init__(self, args):
-        super(SaltCommandMixin, self).__init__(args)
-
+class SaltCommandMixin(LoggingCommandMixin):
     def run_salt_minion(
         self, command, local=False, outputter=None, color=True,
         saltenv=None, pillar=None,
@@ -32,6 +30,9 @@ class SaltCommandMixin(object):
         if pillar is not None:
             full_cmd.append("pillar='{}'".format(json.dumps(pillar)))
 
+        self.debug(
+            'Running command "{}" on Salt minion'.format(' '.join(full_cmd))
+        )
         return utils.run_process(full_cmd)
 
     def run_salt_master(self, command, color=True, saltenv=None, pillar=None,
@@ -54,6 +55,9 @@ class SaltCommandMixin(object):
         # FIXME: cannot run with list of strings through crictl, Salt fails
         # (with retcode 0, of course) with an error about Pillar data format
         # return _run_process(full_cmd)
+        self.debug(
+            'Running command "{}" on Salt master'.format(' '.join(full_cmd))
+        )
         return utils.run_process(' '.join(full_cmd), shell=True)
 
     def get_from_pillar(self, pillar_key):
@@ -80,9 +84,9 @@ class SaltCommandMixin(object):
     @staticmethod
     def get_salt_master_container():
         result = utils.run_process([
-                'crictl', 'ps', '-q',
-                '--label', 'io.kubernetes.container.name=salt-master'
-            ])
+            'crictl', 'ps', '-q',
+            '--label', 'io.kubernetes.container.name=salt-master'
+        ])
 
         return result.stdout.strip().decode('utf-8')
 

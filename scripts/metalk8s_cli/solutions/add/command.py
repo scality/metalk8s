@@ -32,11 +32,11 @@ class AddSolutionCommand(
     def add_archives(self):
         for archive in self.archives:
             self.add_solution_archive(archive)
-        self.print_and_log(
+        self.info(
             'Added archives ({}) to config file.'.format(
                 ', '.join(self.archives),
             ),
-            level='DEBUG',
+            verbosity=1
         )
 
     def run(self):
@@ -49,7 +49,4 @@ class AddSolutionCommand(
                     ['state.sls', 'metalk8s.solutions.available'],
                     saltenv=self.saltenv,
                 )
-                self.print_and_log(
-                    result.stdout.decode('utf-8'),
-                    level='DEBUG'
-                )
+                self.info(result.stdout.decode('utf-8'), verbosity=1)

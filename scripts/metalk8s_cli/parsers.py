@@ -18,7 +18,7 @@ def build_version_parser():
 def build_verbosity_parser():
     """Allow toggling verbose mode."""
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-v', '--verbose', action='count', default=0)
     return parser
 
 
