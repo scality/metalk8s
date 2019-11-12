@@ -74,6 +74,23 @@ Refresh pillar before highstate:
     - name: saltutil.refresh_pillar
     - tgt: {{ node_name }}
 
+{%- if node_name in salt.saltutil.runner('manage.up') %}
+
+Reconfigure salt-minion:
+  salt.state:
+    - tgt: {{ node_name }}
+    - saltenv: metalk8s-{{ version }}
+    - sls:
+      - metalk8s.salt.minion.configured
+    - require:
+      - salt: Set grains
+      - salt: Refresh the mine
+      - salt: Refresh pillar before highstate
+    - require_in:
+      - salt: Run the highstate
+
+{%- endif %}
+
 Run the highstate:
   salt.state:
     - tgt: {{ node_name }}
