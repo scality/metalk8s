@@ -8,6 +8,7 @@ LOGFILE=/var/log/metalk8s/upgrade.log
 DRY_RUN=0
 DESTINATION_VERSION=""
 SALT_CALL=${SALT_CALL:-salt-call}
+BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
 
 _usage() {
@@ -67,90 +68,8 @@ cleanup() {
 
 trap cleanup EXIT
 
-
-run_quiet() {
-    local name=$1
-    shift 1
-
-    echo -n "> ${name}..."
-    local start
-    start=$(date +%s)
-    set +e
-    "$@" 2>&1 | tee -ia "${LOGFILE}" > "${TMPFILES}/out"
-    local RC=$?
-    set -e
-    local end
-    end=$(date +%s)
-
-    local duration=$(( end - start ))
-
-    if [ $RC -eq 0 ]; then
-        echo " done [${duration}s]"
-    else
-        echo " fail [${duration}s]"
-        cat >/dev/stderr << EOM
-
-Failure while running step '${name}'
-
-Command: $@
-
-Output:
-
-<< BEGIN >>
-EOM
-        cat "${TMPFILES}/out" > /dev/stderr
-
-        cat >/dev/stderr << EOM
-<< END >>
-
-This script will now exit
-
-EOM
-
-        exit 1
-    fi
-}
-
-run_verbose() {
-    local name=$1
-    shift 1
-
-    echo "> ${name}..."
-    "$@"
-}
-
-run() {
-    if [ "$VERBOSE" -eq 1 ]; then
-        run_verbose "${@}"
-    else
-        run_quiet "${@}"
-    fi
-}
-
-die() {
-    echo 1>&2 "$@"
-    return 1
-}
-
-get_salt_container() {
-    local -r max_retries=10
-    local salt_container='' attempts=0
-
-    while [ -z "$salt_container" ] && [ $attempts -lt $max_retries ]; do
-        salt_container="$(crictl ps -q \
-            --label io.kubernetes.pod.namespace=kube-system \
-            --label io.kubernetes.container.name=salt-master \
-            --state Running)"
-        (( attempts++ ))
-    done
-
-    if [ -z "$salt_container" ]; then
-        echo "Failed to find a running 'salt-master' container" >&2
-        exit 1
-    fi
-
-    echo "$salt_container"
-}
+# shellcheck disable=SC1090
+. "$BASE_DIR"/common.sh
 
 upgrade_bootstrap () {
     local saltmaster_endpoint repo_endpoint
