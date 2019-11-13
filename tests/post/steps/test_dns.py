@@ -59,7 +59,7 @@ def resolve_hostname(utils_pod, host, hostname):
         # test dns resolve
         result = host.run(
             "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
-            "exec -ti %s nslookup %s",
+            "exec %s nslookup %s",
             utils_pod,
             hostname,
         )
