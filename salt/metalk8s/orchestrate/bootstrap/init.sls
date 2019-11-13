@@ -156,11 +156,15 @@ Deploy Kubernetes objects:
     - http: Wait for API server to be available
 
 Store MetalK8s version in annotations:
-  metalk8s_kubernetes.namespace_annotation_present:
+  metalk8s_kubernetes.object_updated:
     - name: "kube-system"
+    - kind: Namespace
+    - apiVersion: v1
+    - patch:
+        metadata:
+          annotations:
+            metalk8s.scality.com/cluster-version: "{{ version }}"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - annotation_key: "metalk8s.scality.com/cluster-version"
-    - annotation_value: "{{ version }}"
     - require:
       - http: Wait for API server to be available

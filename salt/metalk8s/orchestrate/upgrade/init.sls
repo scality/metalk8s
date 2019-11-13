@@ -54,10 +54,14 @@ Wait for API server to be available on {{ node }}:
   {%- endif %}
 
 Set node {{ node }} version to {{ dest_version }}:
-  metalk8s_kubernetes.node_label_present:
-    - name: metalk8s.scality.com/version
-    - node: {{ node }}
-    - value: "{{ dest_version }}"
+  metalk8s_kubernetes.object_updated:
+    - name: {{ node }}
+    - kind: Node
+    - apiVersion: v1
+    - patch:
+        metadata:
+          labels:
+            metalk8s.scality.com/version: "{{ dest_version }}"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
     - require:
@@ -88,6 +92,11 @@ Deploy node {{ node }}:
 
 {%- endfor %}
 
+Sync module on salt-master:
+  salt.runner:
+    - name: saltutil.sync_all
+    - saltenv: metalk8s-{{ dest_version }}
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate
@@ -95,4 +104,5 @@ Deploy Kubernetes objects:
       - metalk8s.deployed
     - saltenv: metalk8s-{{ dest_version }}
     - require:
+      - salt: Sync module on salt-master
       - salt: Upgrade etcd cluster
