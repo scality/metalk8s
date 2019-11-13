@@ -1,10 +1,5 @@
 from __future__ import absolute_import
 
-import logging
-
-
-log = logging.getLogger(__name__)
-
 
 def _node_set_unschedulable(name, value, **kwargs):
     ret = {'name': name,
@@ -14,12 +9,12 @@ def _node_set_unschedulable(name, value, **kwargs):
 
     action = 'cordon' if value else 'uncordon'
 
-    unschedulable = __salt__[
-        'metalk8s_kubernetes.node_unschedulable'](name, **kwargs)
-
-    if unschedulable is None:
-        ret['comment'] = 'Unable to get node {0}'.format(name)
-        return ret
+    unschedulable = __salt__['metalk8s_kubernetes.get_object'](
+        name=name,
+        kind='Node',
+        apiVersion='v1',
+        **kwargs
+    )['spec'].get('unschedulable') or False
 
     if unschedulable == value:
         ret['result'] = True
@@ -37,7 +32,7 @@ def _node_set_unschedulable(name, value, **kwargs):
         ret['result'] = None
         return ret
 
-    res = __salt__['metalk8s_kubernetes.node_{0}'.format(action)](
+    res = __salt__['metalk8s_kubernetes.{0}_node'.format(action)](
         node_name=name,
         **kwargs
     )
