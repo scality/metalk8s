@@ -1,7 +1,7 @@
 import { put, takeEvery, call, all, delay, select } from 'redux-saga/effects';
 import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 import { REFRESH_TIMEOUT } from '../../constants';
-import * as ApiK8s from '../../services/k8s/api';
+import * as CoreApi from '../../services/k8s/core';
 
 const REFRESH_CLUSTER_STATUS = 'REFRESH_CLUSTER_STATUS';
 const STOP_REFRESH_CLUSTER_STATUS = 'STOP_REFRESH_CLUSTER_STATUS';
@@ -104,7 +104,7 @@ export function* handlePrometheusError(clusterHealth, result) {
     clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
   } else {
     const prometheusPod = yield call(
-      ApiK8s.queryPodInNamespace,
+      CoreApi.queryPodInNamespace,
       'metalk8s-monitoring',
       'prometheus',
     );

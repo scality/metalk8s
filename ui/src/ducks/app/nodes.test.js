@@ -1,6 +1,6 @@
 import { call, put, all, delay, select } from 'redux-saga/effects';
 import { cloneableGenerator } from '@redux-saga/testing-utils';
-import * as ApiK8s from '../../services/k8s/api';
+import * as CoreApi from '../../services/k8s/core';
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
 import {
@@ -137,7 +137,7 @@ describe('`fetchNodes` saga', () => {
     const clone = gen.clone();
 
     const jobs = [];
-    expect(clone.next(jobs).value).toEqual(call(ApiK8s.getNodes));
+    expect(clone.next(jobs).value).toEqual(call(CoreApi.getNodes));
 
     const apiResponse = { body: { items: [] } };
     expect(clone.next(apiResponse).value).toEqual(
@@ -163,7 +163,7 @@ describe('`fetchNodes` saga', () => {
       },
     ];
 
-    expect(clone.next(jobs).value).toEqual(call(ApiK8s.getNodes));
+    expect(clone.next(jobs).value).toEqual(call(CoreApi.getNodes));
 
     const apiResponse = { body: { items: [nodeForApi({})] } };
     const expectedNode = { ...defaultNodeForState, deploying: !completed };
@@ -258,7 +258,7 @@ describe('`fetchNodes` saga', () => {
     ],
   ])('handles Node roles (%j) and taints (%j)', (roles, taints, expected) => {
     const clone = gen.clone();
-    expect(clone.next([]).value).toEqual(call(ApiK8s.getNodes));
+    expect(clone.next([]).value).toEqual(call(CoreApi.getNodes));
 
     const apiResponse = {
       body: { items: [nodeForApi({ roles, taintRoles: taints })] },
@@ -289,7 +289,7 @@ describe('`createNode` saga', () => {
     expect(gen.next().value).toEqual(select(clusterVersionSelector));
     expect(gen.next(DEFAULT_CLUSTER_VERSION).value).toEqual(
       call(
-        ApiK8s.createNode,
+        CoreApi.createNode,
         nodeForApi({ showStatus: false, roles: ['node'] }),
       ),
     );
@@ -318,7 +318,7 @@ describe('`createNode` saga', () => {
     expect(gen.next().value).toEqual(select(clusterVersionSelector));
     expect(gen.next(DEFAULT_CLUSTER_VERSION).value).toEqual(
       call(
-        ApiK8s.createNode,
+        CoreApi.createNode,
         nodeForApi({ showStatus: false, roles: ['node'] }),
       ),
     );
@@ -367,7 +367,7 @@ describe('`createNode` saga', () => {
     expect(gen.next().value).toEqual(select(clusterVersionSelector));
     expect(gen.next(DEFAULT_CLUSTER_VERSION).value).toEqual(
       call(
-        ApiK8s.createNode,
+        CoreApi.createNode,
         nodeForApi({
           showStatus: false,
           roles: expected.roles,

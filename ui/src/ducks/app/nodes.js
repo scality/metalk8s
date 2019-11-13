@@ -8,7 +8,7 @@ import {
   takeLatest,
 } from 'redux-saga/effects';
 
-import * as ApiK8s from '../../services/k8s/api';
+import * as CoreApi from '../../services/k8s/core';
 import * as ApiSalt from '../../services/salt/api';
 import history from '../../history';
 import {
@@ -205,7 +205,7 @@ export const nodesRefreshingSelector = state => state.app.nodes.isRefreshing;
 
 // Sagas
 export function* fetchClusterVersion() {
-  const result = yield call(ApiK8s.getKubeSystemNamespace);
+  const result = yield call(CoreApi.getKubeSystemNamespace);
   if (!result.error) {
     yield put(
       updateNodesAction({
@@ -227,7 +227,7 @@ export function* fetchNodes() {
     .filter(job => job.type === 'deploy-node' && !job.completed)
     .map(job => job.node);
 
-  const result = yield call(ApiK8s.getNodes);
+  const result = yield call(CoreApi.getNodes);
   if (!result.error) {
     yield put(
       updateNodesAction({
@@ -327,7 +327,7 @@ export function* createNode({ payload }) {
     roleTaintMatched.roles.map(role => (body.metadata.labels[role] = ''));
   }
 
-  const result = yield call(ApiK8s.createNode, body);
+  const result = yield call(CoreApi.createNode, body);
 
   if (!result.error) {
     yield call(fetchNodes);

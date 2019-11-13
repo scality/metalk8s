@@ -1,12 +1,12 @@
 import { call, put } from 'redux-saga/effects';
 import { fetchSolutions, SET_SOLUTIONS } from './solutions';
-import * as ApiK8s from '../../services/k8s/api';
+import * as SoltuionsApi from '../../services/k8s/solutions';
 
 it('update the solutions list state when fetchSolutions', () => {
   const gen = fetchSolutions();
 
   expect(gen.next().value).toEqual(
-    call(ApiK8s.getSolutionsConfigMapForAllNamespaces),
+    call(SoltuionsApi.getSolutionsConfigMapForAllNamespaces),
   );
 
   const result = {

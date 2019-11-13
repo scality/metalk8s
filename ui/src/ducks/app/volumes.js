@@ -1,5 +1,5 @@
 import { takeLatest, call, put, delay, select } from 'redux-saga/effects';
-import * as ApiK8s from '../../services/k8s/api';
+import * as VolumesApi from '../../services/k8s/volumes';
 import history from '../../history';
 import { intl } from '../../translations/IntlGlobalProvider';
 import {
@@ -156,7 +156,7 @@ export function* fetchVolumes() {
       isLoading: true,
     }),
   );
-  const result = yield call(ApiK8s.getVolumes);
+  const result = yield call(VolumesApi.getVolumes);
   if (!result.error) {
     yield put(setVolumesAction(result?.body?.items ?? []));
   }
@@ -170,7 +170,7 @@ export function* fetchVolumes() {
 }
 
 export function* fetchPersistentVolumes() {
-  const result = yield call(ApiK8s.getPersistentVolumes);
+  const result = yield call(VolumesApi.getPersistentVolumes);
   if (!result.error) {
     yield put(setPersistentVolumesAction(result?.body?.items ?? []));
   }
@@ -179,7 +179,7 @@ export function* fetchPersistentVolumes() {
 
 export function* fetchStorageClass() {
   yield put(updateStorageClassAction(true));
-  const result = yield call(ApiK8s.getStorageClass);
+  const result = yield call(VolumesApi.getStorageClass);
   if (!result.error) {
     yield put(setStorageClassAction(result?.body?.items ?? []));
   }
@@ -249,7 +249,7 @@ export function* createVolumes({ payload }) {
       body.spec.rawBlockDevice = { devicePath: newVolume.path };
     }
 
-    const result = yield call(ApiK8s.createVolume, body);
+    const result = yield call(VolumesApi.createVolume, body);
     if (!result.error) {
       yield call(history.push, `/nodes/${nodeName}/volumes`);
       yield put(
@@ -298,7 +298,7 @@ export function* stopRefreshVolumes() {
 }
 
 export function* fetchPersistentVolumeClaims() {
-  const result = yield call(ApiK8s.getPersistentVolumeClaims);
+  const result = yield call(VolumesApi.getPersistentVolumeClaims);
   if (!result.error) {
     yield put(setPersistentVolumeClaimAction(result.body.items));
   }
@@ -321,7 +321,7 @@ export function* stopRefreshPersistentVolumes() {
 }
 
 export function* deleteVolume({ payload }) {
-  const result = yield call(ApiK8s.deleteVolume, payload);
+  const result = yield call(VolumesApi.deleteVolume, payload);
   if (!result.error) {
     yield put(
       addNotificationSuccessAction({
