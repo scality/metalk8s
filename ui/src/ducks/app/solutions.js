@@ -1,5 +1,5 @@
 import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
-import * as ApiK8s from '../../services/k8s/api';
+import * as SolutionsApi from '../../services/k8s/solutions';
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
 
@@ -83,7 +83,7 @@ export function* createEnvironment(action) {
     },
   };
 
-  const result = yield call(ApiK8s.createEnvironment, body);
+  const result = yield call(SolutionsApi.createEnvironment, body);
   if (!result.error) {
     yield call(fetchEnvironments);
     history.push('/solutions');
@@ -92,7 +92,7 @@ export function* createEnvironment(action) {
 }
 
 export function* fetchUIServices() {
-  const result = yield call(ApiK8s.getUIServiceForAllNamespaces);
+  const result = yield call(SolutionsApi.getUIServiceForAllNamespaces);
   if (!result.error) {
     yield put(setServicesAction(result.body.items));
   }
@@ -100,7 +100,7 @@ export function* fetchUIServices() {
 }
 
 export function* fetchSolutions() {
-  const result = yield call(ApiK8s.getSolutionsConfigMapForAllNamespaces);
+  const result = yield call(SolutionsApi.getSolutionsConfigMapForAllNamespaces);
   if (!result.error) {
     const solutionsConfigMap = result.body.items[0];
     if (solutionsConfigMap && solutionsConfigMap.data) {
@@ -135,7 +135,7 @@ export function* fetchSolutions() {
 }
 
 export function* fetchEnvironments() {
-  const result = yield call(ApiK8s.getEnvironments);
+  const result = yield call(SolutionsApi.getEnvironments);
   if (!result.error) {
     yield put(setEnvironmentsAction(result?.body?.items ?? []));
   }
