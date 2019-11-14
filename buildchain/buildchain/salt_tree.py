@@ -217,8 +217,11 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
 
     Path('salt/metalk8s/addons/dex/deployed/init.sls'),
-    Path('salt/metalk8s/addons/dex/deployed/chart.sls'),
     Path('salt/metalk8s/addons/dex/deployed/namespace.sls'),
+    Path('salt/metalk8s/addons/dex/deployed/dex-conf.sls'),
+    Path('salt/metalk8s/addons/dex/deployed/dex-service.sls'),
+    Path('salt/metalk8s/addons/dex/deployed/chart.sls'),
+    Path('salt/metalk8s/addons/dex/deployed/dex-tls-secret.sls'),
 
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/cleanup.sls'),
@@ -334,6 +337,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/ca/kubernetes/exported.sls'),
     Path('salt/metalk8s/kubernetes/ca/kubernetes/init.sls'),
     Path('salt/metalk8s/kubernetes/ca/kubernetes/installed.sls'),
+    Path('salt/metalk8s/kubernetes/ca/dex/init.sls'),
+    Path('salt/metalk8s/kubernetes/ca/dex/advertised.sls'),
+    Path('salt/metalk8s/kubernetes/ca/dex/dex-rootca.sls'),
+    Path('salt/metalk8s/kubernetes/ca/dex/dex-server.sls'),
 
     Path('salt/metalk8s/kubernetes/cni/calico/configured.sls'),
     Path('salt/metalk8s/kubernetes/cni/calico/deployed.sls'),
