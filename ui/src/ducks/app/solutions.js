@@ -60,22 +60,17 @@ export function createEnvironmentAction(newEnvironment) {
   return { type: CREATE_ENVIRONMENT, payload: newEnvironment };
 }
 
+// Sagas
+export function* fetchEnvironments() {
+  const result = yield call(SolutionsApi.listEnvironments);
+  if (!result.error) {
+    yield put(setEnvironmentsAction(result));
+  }
+  return result;
+}
+
 export function* createEnvironment(action) {
-  const newEnvironment = action.payload;
-
-  const body = {
-    apiVersion: 'solutions.metalk8s.scality.com/v1alpha1',
-    kind: 'Environment',
-    metadata: {
-      name: newEnvironment.name,
-    },
-    spec: {
-      description: newEnvironment.description,
-      solutions: [],
-    },
-  };
-
-  const result = yield call(SolutionsApi.createEnvironment, body);
+  const result = yield call(SolutionsApi.createEnvironment, action.payload);
   if (!result.error) {
     yield call(fetchEnvironments);
     history.push('/solutions');
@@ -114,14 +109,6 @@ export function* fetchSolutions() {
       });
       yield put(setSolutionsAction(solutions));
     }
-  }
-  return result;
-}
-
-export function* fetchEnvironments() {
-  const result = yield call(SolutionsApi.getEnvironments);
-  if (!result.error) {
-    yield put(setEnvironmentsAction(result?.body?.items ?? []));
   }
   return result;
 }
