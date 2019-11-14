@@ -33,6 +33,7 @@ const PageSubtitle = styled.h3`
 
 const VersionLabel = styled.label`
   padding: 0 ${padding.smaller};
+  ${props => (props.active ? 'font-weight: bold;' : '')}
 `;
 
 const ModalBody = styled.div``;
@@ -113,7 +114,7 @@ const SolutionsList = props => {
       dataKey: 'versions',
       renderer: versions =>
         versions.map((version, index) => (
-          <VersionLabel key={`version_${index}`}>
+          <VersionLabel key={`version_${index}`} active={version.active}>
             {version.version}
           </VersionLabel>
         )),
