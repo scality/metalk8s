@@ -154,6 +154,29 @@ Cannot proceed with deployment of Solution cluster-wide components:
         {{- deploy_solution_components(solution) }}
       {%- endif %}
     {%- endif %}
+
+    {# Prepare list of available versions to set in the ConfigMap #}
+    {%- set updated_versions = [] %}
+    {%- for version in versions %}
+      {%- set updated_version = version %}
+      {# `active` will always be false if `desired_version` is None or doesn't
+         match any available version #}
+      {%- do updated_version.update({
+        'active': version.version == desired_version
+      }) %}
+      {%- do updated_versions.append(updated_version)%}
+    {%- endfor %}
+
+Update metalk8s-solutions ConfigMap for Solution {{ name }}:
+  metalk8s_kubernetes.object_updated:
+    - name: metalk8s-solutions
+    - namespace: metalk8s-solutions
+    - kind: ConfigMap
+    - apiVersion: v1
+    - patch:
+        data:
+          {{ name }}: {{ updated_versions | tojson }}
+
   {%- endfor %}
 
   {%- for name in desired | difference(available) %}
