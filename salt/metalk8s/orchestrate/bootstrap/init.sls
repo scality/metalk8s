@@ -1,7 +1,5 @@
 {# Because of the grain lookup below, the bootstrap minion *must* be available
    before invoking this SLS, otherwise rendering will fail #}
-{% set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{% set context = "kubernetes-admin@kubernetes" %}
 {%- set bootstrap_control_plane_ip = salt.saltutil.cmd(
         tgt=pillar.bootstrap_id,
         fun='grains.get',
@@ -164,7 +162,5 @@ Store MetalK8s version in annotations:
         metadata:
           annotations:
             metalk8s.scality.com/cluster-version: "{{ version }}"
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - http: Wait for API server to be available
