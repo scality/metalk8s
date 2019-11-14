@@ -17,6 +17,7 @@ def _load_solutions(bootstrap_id):
     result = {
         'available': {},
         'config': {},
+        'environments': {},
     }
 
     try:
@@ -48,15 +49,23 @@ def _load_solutions(bootstrap_id):
         result['available'].update(
             __utils__['pillar_utils.errors_to_dict'](errors)
         )
-        return result
+    else:
+        # Set `active` flag on active Solution versions
+        for solution, versions in result['available'].items():
+            active_version = active.get(solution)
+            for version_info in versions:
+                version_info['active'] = \
+                    version_info['version'] == active_version
 
-    # Set `active` flag on active Solution versions
-    for solution, versions in result['available'].items():
-        active_version = active.get(solution)
-        for version_info in versions:
-            version_info['active'] = version_info['version'] == active_version
+    try:
+        result['environments'] = \
+            __salt__['metalk8s_solutions.list_environments']()
+    except Exception as exc:
+        result['environments'] = __utils__['pillar_utils.errors_to_dict']([
+            "Error when listing Solution Environments: {}".format(exc)
+        ])
 
-    for key in ['available', 'config']:
+    for key in ['available', 'config', 'environments']:
         __utils__['pillar_utils.promote_errors'](result, key)
 
     return result
