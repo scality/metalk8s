@@ -5,10 +5,12 @@ for the K8s operations in the virtual `metalk8s_solutions` module.
 """
 import collections
 import errno
+import os
 import logging
-
-from salt.exceptions import CommandExecutionError
 import yaml
+
+import salt
+from salt.exceptions import CommandExecutionError
 
 log = logging.getLogger(__name__)
 
@@ -173,6 +175,59 @@ def _is_solution_mount(mount_tuple):
     return True
 
 
+SOLUTION_CONFIG_KIND = 'SolutionConfig'
+SOLUTION_CONFIG_APIVERSIONS = [
+    'solutions.metalk8s.scality.com/v1alpha1',
+]
+
+
+def _default_solution_config(name, version):
+    return {
+        'kind': SOLUTION_CONFIG_KIND,
+        'apiVersion': SOLUTION_CONFIG_APIVERSIONS[0],
+        'operator': {
+            'image': {
+                'name': '{}-operator'.format(name),
+                'tag': version,
+            },
+        },
+        'ui': {
+            'image': {
+                'name': '{}-ui'.format(name),
+                'tag': version,
+            },
+        },
+        'customApiGroups': [],
+    }
+
+
+def read_solution_config(mountpoint, name, version):
+    log.debug('Reading Solution config from %r', mountpoint)
+    config = _default_solution_config(name, version)
+    config_path = os.path.join(mountpoint, 'config.yaml')
+
+    if not os.path.isfile(config_path):
+        log.debug('Solution mounted at %r has no "config.yaml"', mountpoint)
+        return config
+
+    with salt.utils.files.fopen(config_path, 'r') as stream:
+        provided_config = salt.utils.yaml.safe_load(stream)
+
+    provided_kind = provided_config.pop('kind', None)
+    provided_api_version = provided_config.pop('apiVersion', None)
+
+    if (
+        provided_kind != SOLUTION_CONFIG_KIND or
+        provided_api_version not in SOLUTION_CONFIG_APIVERSIONS
+    ):
+        raise CommandExecutionError(
+            'Wrong apiVersion/kind for {}'.format(config_path)
+        )
+
+    salt.utils.dictupdate.update(config, provided_config)
+    return config
+
+
 def list_available():
     """Get a view of mounted Solution archives.
 
@@ -197,6 +252,7 @@ def list_available():
             'mountpoint': mountpoint,
             'archive': mount_info['alt_device'],
             'version': version,
+            'config': read_solution_config(mountpoint, machine_name, version),
         })
 
     return dict(result)
