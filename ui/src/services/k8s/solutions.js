@@ -6,24 +6,24 @@ const _METAL = 'solutions.metalk8s.scality.com'
 
 const SOLUTIONS_NAMESPACE = 'metalk8s-solutions';
 const SOLUTIONS_CONFIGMAP_NAME = 'metalk8s-solutions';
-const ENVIRONMENT_CONFIGMAP_NAME = 'metalk8s-environment';
 const LABEL_K8S_COMPONENT = `${_K8S}/component`;
 const LABEL_K8S_PART_OF = `${_K8S}/part-of`;
 const LABEL_ENVIRONMENT_NAME = `${_METAL}/environment`;
 const ANNOTATION_ENVIRONMENT_DESCRIPTION = `${_METAL}/environment-description`;
 const ANNOTATION_INGRESS_PATH = `${_METAL}/ingress-path`;
 
-export async function getSolutionsConfigMapForAllNamespaces() {
+// Cluster-wide management {{{
+export async function getSolutionsConfigMap() {
   try {
-    return await coreV1.listConfigMapForAllNamespaces(
-      null,
-      `metadata.name=${SOLUTION_CONFIGMAP_NAME}`,
+    return await coreV1.readNamespacedConfigMap(
+      SOLUTIONS_CONFIGMAP_NAME,
+      SOLUTIONS_NAMESPACE,
     );
   } catch (error) {
     return { error };
   }
 }
-
+// }}}
 // Environment-scoped management {{{
 export async function listEnvironments() {
   const result = await listNamespaces({

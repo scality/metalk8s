@@ -3,9 +3,6 @@ import * as SolutionsApi from '../../services/k8s/solutions';
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
 
-const APP_K8S_PART_OF_SOLUTION_LABEL = 'app.kubernetes.io/part-of';
-const APP_K8S_VERSION_LABEL = 'app.kubernetes.io/version';
-
 // Actions
 export const SET_SOLUTIONS = 'SET_SOLUTIONS';
 export const SET_SOLUTIONS_REFRESHING = 'SET_SOLUTIONS_REFRESHING';
@@ -108,7 +105,7 @@ export function* createEnvironment(action) {
 }
 
 export function* fetchSolutions() {
-  const result = yield call(SolutionsApi.getSolutionsConfigMapForAllNamespaces);
+  const result = yield call(SolutionsApi.getSolutionsConfigMap);
   if (!result.error) {
     const configData = result?.body?.data;
     if (configData) {
