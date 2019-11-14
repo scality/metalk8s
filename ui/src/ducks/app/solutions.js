@@ -1,4 +1,4 @@
-import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
+import { all, call, put, takeEvery, select, delay } from 'redux-saga/effects';
 import * as SolutionsApi from '../../services/k8s/solutions';
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
@@ -64,7 +64,32 @@ export function createEnvironmentAction(newEnvironment) {
 export function* fetchEnvironments() {
   const result = yield call(SolutionsApi.listEnvironments);
   if (!result.error) {
-    yield put(setEnvironmentsAction(result));
+    const environmentsInfo = yield all(
+      result.reduce((environments, env) => {
+        return {
+        ...environments,
+        [env.name]: {
+          adminUIs: call(SolutionsApi.getEnvironmentAdminUIs, env),
+          config: call(SolutionsApi.getEnvironmentConfigMap, env),
+        },
+        };
+      }),
+      {},
+    );
+
+    const detailedEnvironments = result.map(env => {
+      const envInfo = environmentsInfo?.[env.name];
+      const envConfig = envInfo?.config ?? {};
+      const solutions = Object.keys(envConfig).map(solution => ({
+        name: solution,
+        version: envConfig?.[solution],
+        ui: envInfo?.uiServices?.find(svc => svc.solution === solution),
+      }));
+
+      return { ...env, solutions };
+    });
+
+    yield put(setEnvironmentsAction(detailedEnvironments));
   }
   return result;
 }
@@ -81,32 +106,12 @@ export function* createEnvironment(action) {
 export function* fetchSolutions() {
   const result = yield call(SolutionsApi.getSolutionsConfigMapForAllNamespaces);
   if (!result.error) {
-    const solutionsConfigMap = result.body.items[0];
-    if (solutionsConfigMap && solutionsConfigMap.data) {
-      const solutions = Object.keys(solutionsConfigMap.data).map(key => {
-        return {
-          name: key,
-          versions: JSON.parse(solutionsConfigMap.data[key]),
-        };
-      });
-      const services = yield select(state => state.app.solutions.services);
-      solutions.forEach(sol => {
-        sol.versions.forEach(version => {
-          if (version.deployed) {
-            const sol_service = services.find(
-              service =>
-                service.metadata.labels &&
-                service.metadata.labels[APP_K8S_PART_OF_SOLUTION_LABEL] ===
-                  sol.name &&
-                service.metadata.labels[APP_K8S_VERSION_LABEL] ===
-                  version.version,
-            );
-            version.ui_url = sol_service
-              ? `http://localhost:${sol_service.spec.ports[0].nodePort}` // TO BE IMPROVED: we can not get the Solution UI's IP so far
-              : '';
-          }
-        });
-      });
+    const configData = result?.body?.data;
+    if (configData) {
+      const solutions = Object.keys(configData).map(key => ({
+        name: key,
+        versions: JSON.parse(configData[key]),
+      }));
       yield put(setSolutionsAction(solutions));
     }
   }

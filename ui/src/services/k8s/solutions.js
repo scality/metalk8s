@@ -1,13 +1,17 @@
 import { coreV1 } from './api';
 import { listNamespaces } from './core';
 
-const SOLUTION_CONFIGMAP_NAME = 'metalk8s-solutions';
-const LABEL_K8S_COMPONENT = 'app.kubernetes.io/component';
-const LABEL_K8S_PART_OF = 'app.kubernetes.io/part-of';
-const LABEL_K8S_VERSION = 'app.kubernetes.io/version';
-const LABEL_ENVIRONMENT_NAME = 'solutions.metalk8s.scality.com/environment';
-const ANNOTATION_ENVIRONMENT_DESCRIPTION =
-  'solutions.metalk8s.scality.com/environment-description';
+const _K8S = 'app.kubernetes.io'
+const _METAL = 'solutions.metalk8s.scality.com'
+
+const SOLUTIONS_NAMESPACE = 'metalk8s-solutions';
+const SOLUTIONS_CONFIGMAP_NAME = 'metalk8s-solutions';
+const ENVIRONMENT_CONFIGMAP_NAME = 'metalk8s-environment';
+const LABEL_K8S_COMPONENT = `${_K8S}/component`;
+const LABEL_K8S_PART_OF = `${_K8S}/part-of`;
+const LABEL_ENVIRONMENT_NAME = `${_METAL}/environment`;
+const ANNOTATION_ENVIRONMENT_DESCRIPTION = `${_METAL}/environment-description`;
+const ANNOTATION_INGRESS_PATH = `${_METAL}/ingress-path`;
 
 export async function getSolutionsConfigMapForAllNamespaces() {
   try {
@@ -49,9 +53,9 @@ export async function createEnvironment({ name, description }) {
     apiVersion: 'v1',
     kind: 'Namespace',
     metadata: {
-    name,
-    labels: { [LABEL_ENVIRONMENT_NAME]: name },
-    annotations: { [ANNOTATION_ENVIRONMENT_DESCRIPTION]: description },
+      name,
+      labels: { [LABEL_ENVIRONMENT_NAME]: name },
+      annotations: { [ANNOTATION_ENVIRONMENT_DESCRIPTION]: description },
     },
   };
 
@@ -59,6 +63,50 @@ export async function createEnvironment({ name, description }) {
     return await coreV1.createNamespace(body);
   } catch (error) {
     return { error };
+  }
+}
+
+async function getUIServices(namespace) {
+  try {
+    return await coreV1.listNamespacedService(
+      namespace,
+      null, // pretty
+      null, // allowWatchBookmarks
+      null, // _continue
+      null, // fieldSelector
+      `${LABEL_K8S_COMPONENT}=ui`, // labelSelector
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
+export async function getEnvironmentAdminUIs(environment) {
+  const services = [];
+  for (const namespace of environment.namespaces) {
+    const result = await getUIServices(namespace);
+    if (result.error) { return result; }
+    services.push(...result.body.items);
+  }
+
+  return services.map(svc => ({
+    solution: svc?.metadata?.labels?.[LABEL_K8S_PART_OF],
+    ingressPath: svc?.metadata?.annotations?.[ANNOTATION_INGRESS_PATH],
+    service: svc,
+  }));
+}
+
+export async function getEnvironmentConfigMap(environment) {
+  for (const namespace of environment.namespaces) {
+    const result = await coreV1.readNamespacedConfigMap(
+      ENVIRONMENT_CONFIGMAP_NAME,
+      namespace,
+    );
+
+    if (!result.error) {
+      // Return the first one found among the Environment namespaces
+      return { ...result?.data };
+    }
   }
 }
 
