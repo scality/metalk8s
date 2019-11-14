@@ -414,18 +414,32 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/node/grains.sls'),
 
+    Path('salt/metalk8s/orchestrate/deploy_node.sls'),
+    Path('salt/metalk8s/orchestrate/etcd.sls'),
+    Path('salt/metalk8s/orchestrate/register_etcd.sls'),
+
     Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
-    Path('salt/metalk8s/orchestrate/deploy_node.sls'),
+
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/pre.sls'),
-    Path('salt/metalk8s/orchestrate/solutions/deploy-components.sls'),
-    Path('salt/metalk8s/orchestrate/etcd.sls'),
+
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/pre.sls'),
-    Path('salt/metalk8s/orchestrate/register_etcd.sls'),
+
+    Path('salt/metalk8s/orchestrate/solutions/prepare-environment.sls'),
+    Path('salt/metalk8s/orchestrate/solutions/deploy-components.sls'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/configmap.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/deployment.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/role.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/role_binding.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/service_account.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/ui/configmap.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/ui/deployment.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/ui/ingress.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/ui/service.yaml'),
 
     Path('salt/metalk8s/archives/configured.sls'),
     Path('salt/metalk8s/archives/init.sls'),
