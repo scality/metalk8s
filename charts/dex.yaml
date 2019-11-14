@@ -1,0 +1,94 @@
+image: '{%- endraw -%}{{ build_image_name(\"dex\", False) }}{%- raw -%}'
+
+nodeSelector:
+  node-role.kubernetes.io/infra: ''
+
+tolerations:
+  - key: "node-role.kubernetes.io/bootstrap"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/infra"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+replicas: 2
+
+# grpc support
+grpc: false
+
+# https termination by dex itself
+https: true
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: '/$2'
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    kubernetes.io/ingress.class: "nginx-control-plane"
+  path: /oidc(/|$)(.*)
+  hosts:
+    - null
+  tls:
+   - secretName: dex-tls-ingress
+
+# extraVolumes:
+#   - name: theme
+#     hostPath:
+#       path: '{%- endraw -%}/srv/scality/metalk8s-{{ pillar.metalk8s.cluster_version }}{%- raw -%}'
+
+# extraVolumeMounts:
+#   - name: theme
+#     mountPath: /web/themes/custom/
+
+certs:
+  web:
+    create: false
+  grpc:
+    create: false
+
+config:
+  issuer: '{%- endraw -%}https://{{ oidc_service_ip }}:32000{%- raw -%}'
+  web:
+    tlsCert: /etc/dex/tls/https/server/tls.crt
+    tlsKey: /etc/dex/tls/https/server/tls.key
+  frontend:
+    theme: "coreos" #metalk8s-ui
+    # dir: /web/themes/custom/
+
+  connectors: {}
+
+  oauth2:
+    alwaysShowLoginScreen: false
+    skipApprovalScreen: true
+
+  expiry:
+    signingKeys: "6h"
+    idTokens: "24h"
+
+  staticClients:
+  - id: oidc-auth-client
+    redirectURIs:
+    - 'urn:ietf:wg:oauth:2.0:oob'
+    name: 'oidc-auth-client'
+    secret: "lkfa9jaf3kfakqyeoikfjakf93k2l"
+    trustedPeers:
+    - metalk8s-ui
+    - grafana-ui
+  - id: metalk8s-ui
+    redirectURIs:
+    - '{%- endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback{%- raw -%}'
+    name: 'MetalK8s UI'
+    secret: "ybrMJpVMQxsiZw26MhJzCjA2ut"
+  - id: grafana-ui
+    name: 'Grafana UI'
+    redirectURIs:
+    - '{%- endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth{%- raw -%}'
+    secret: "4lqK98NcsWG5qBRHJUqYM1"
+
+  staticPasswords:
+    - email: "admin@metalk8s.invalid"
+      # bcrypt hash of the string "password"
+      hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+      username: "admin"
+      userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
