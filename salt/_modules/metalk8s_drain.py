@@ -15,8 +15,6 @@ import time
 from salt.exceptions import CommandExecutionError
 
 try:
-    import kubernetes
-    import kubernetes.client
     from kubernetes.client.rest import ApiException
     from kubernetes.client.models.v1_delete_options import V1DeleteOptions
     from kubernetes.client.models.v1_object_meta import V1ObjectMeta
@@ -69,7 +67,7 @@ def _mirrorpod_filter(pod):
     '''
     mirror_annotation = "kubernetes.io/config.mirror"
 
-    annotations = pod.metadata.annotations
+    annotations = pod['metadata']['annotations']
     if annotations and mirror_annotation in annotations:
         return False, ""
     return True, ""
@@ -82,8 +80,8 @@ def _has_local_storage(pod):
       - pod: kubernetes pod object
     Returns: True if the pod uses local storage, False if not
     '''
-    for volume in pod.spec.volumes:
-        if volume.empty_dir is not None:
+    for volume in pod['spec']['volumes']:
+        if volume['empty_dir'] is not None:
             return True
     return False
 
@@ -99,9 +97,9 @@ def _get_controller_of(pod):
       - pod: kubernetes pod object
     Returns: the reference to a controller object
     '''
-    if pod.metadata.owner_references:
-        for owner_ref in pod.metadata.owner_references:
-            if owner_ref.controller:
+    if pod['metadata']['owner_references']:
+        for owner_ref in pod['metadata']['owner_references']:
+            if owner_ref['controller']:
                 return owner_ref
     return None
 
@@ -119,32 +117,6 @@ def _message_from_pods_dict(errors_dict):
         for key, msg in errors_dict.items()
     ]
     return "; ".join(msg_list)
-
-
-def _get_pod_from_namespace(namespace, name):
-    '''Retrieve pod object from namespace.
-
-    Args:
-      - namespace: pod's namespace
-      - name: pod's name
-    Returns: the Kubernetes API pod object.
-    Raises:  CommandExecutionError in case of unexpected API error.
-    '''
-    try:
-        api_instance = kubernetes.client.CoreV1Api()
-        api_response = api_instance.list_namespaced_pod(
-            namespace=namespace,
-            field_selector='metadata.name={0}'.format(name)
-        )
-        return api_response
-    except (ApiException, HTTPError) as exc:
-        if isinstance(exc, ApiException) and exc.status == 404:
-            return None
-
-        log.exception(
-            'Exception when calling '
-            'CoreV1Api->list_namespaced_pod')
-        raise CommandExecutionError(exc)
 
 
 # pod statuses
@@ -183,13 +155,15 @@ class Drain(object):
                  grace_period=1,
                  ignore_daemonset=False,
                  timeout=0,
-                 delete_local_data=False):
+                 delete_local_data=False,
+                 **kwargs):
         self._node_name = node_name
         self._force = force
         self._grace_period = grace_period
         self._ignore_daemonset = ignore_daemonset
         self._timeout = timeout or (2 ** 64 - 1)
         self._delete_local_data = delete_local_data
+        self._kwargs = kwargs
 
     node_name = property(operator.attrgetter('_node_name'))
     force = property(operator.attrgetter('_force'))
@@ -222,7 +196,7 @@ class Drain(object):
                 option was not provided.
         '''
         # finished pods can be removed
-        if pod.status.phase in (POD_STATUS_SUCCEEDED, POD_STATUS_FAILED):
+        if pod['status']['phase'] in (POD_STATUS_SUCCEEDED, POD_STATUS_FAILED):
             return True, ""
 
         try:
@@ -238,8 +212,7 @@ class Drain(object):
             return True, ""
         return True, self.WARNING_MSG["unmanaged"]
 
-    @staticmethod
-    def get_controller(namespace, controller_ref):
+    def get_controller(self, namespace, controller_ref):
         '''Get the controller object from a reference to it
 
         Args:
@@ -250,56 +223,14 @@ class Drain(object):
           - None if not found
         Raises: CommandExecutionError if API fails
         '''
-        API_CONTROLLERS = {
-            "ReplicationController": {
-                "call": "CoreV1Api->list_namespaced_replication_controller",
-                "api_source": kubernetes.client.CoreV1Api,
-                "api_operation": "list_namespaced_replication_controller"
-            },
-            "DaemonSet": {
-                "call": "ExtensionsV1beta1Api->list_namespaced_daemon_set",
-                "api_source": kubernetes.client.ExtensionsV1beta1Api,
-                "api_operation": "list_namespaced_daemon_set"
-            },
-            "Job": {
-                "call": "CoreV1Api->list_namespaced_cron_job",
-                "api_source": kubernetes.client.BatchV1beta1Api,
-                "api_operation": "list_namespaced_cron_job"
-            },
-            "ReplicaSet": {
-                "call": "CoreV1Api->list_namespaced_replica_set",
-                "api_source": kubernetes.client.ExtensionsV1beta1Api,
-                "api_operation": "list_namespaced_replica_set"
-            },
-            "StatefulSet": {
-                "call": "AppsV1Api->list_namespaced_stateful_set",
-                "api_source": kubernetes.client.AppsV1Api,
-                "api_operation": "list_namespaced_stateful_set"
-            }
-        }
-
-        api_data = API_CONTROLLERS.get(controller_ref.kind)
-        if api_data is None:
-            raise CommandExecutionError(
-                "Unknown controller kind '{0}'".format(controller_ref.kind))
-
-        api_call = api_data["call"]
-        api_instance = api_data["api_source"]()
-
-        try:
-            return getattr(
-                api_instance,
-                api_data["api_operation"]
-            )(
-                namespace=namespace,
-                field_selector='metadata.name={0}'.format(controller_ref.name)
-            )
-        except (ApiException, HTTPError) as exc:
-            if isinstance(exc, ApiException) and exc.status == 404:
-                return None
-
-            log.exception('Exception when calling %s', api_call)
-            raise CommandExecutionError(str(exc))
+        return __salt__['metalk8s_kubernetes.get_object'](
+            name=controller_ref['name'],
+            kind=controller_ref['kind'],
+            apiVersion=controller_ref['api_version'],
+            namespace=namespace,
+            kubeconfig=self._kwargs.get('kubeconfig'),
+            context=self._kwargs.get('context')
+        )
 
     def get_pod_controller(self, pod):
         '''Get a pod's controller object reference
@@ -313,8 +244,10 @@ class Drain(object):
         controller_ref = _get_controller_of(pod)
         if controller_ref is None:
             return None
-        response = self.get_controller(pod.metadata.namespace, controller_ref)
-        if self.not_found(response):
+        response = self.get_controller(
+            pod['metadata']['namespace'], controller_ref
+        )
+        if not response:
             raise DrainException(
                 "Missing pod controller for '{0}'".format(controller_ref.name)
             )
@@ -335,12 +268,14 @@ class Drain(object):
         '''
         controller_ref = _get_controller_of(pod)
 
-        if controller_ref is None or controller_ref.kind != "DaemonSet":
+        if controller_ref is None or controller_ref['kind'] != "DaemonSet":
             return True, ""
 
-        controller = self.get_controller(pod.metadata.namespace, controller_ref)
+        controller = self.get_controller(
+            pod['metadata']['namespace'], controller_ref
+        )
 
-        if self.not_found(controller):
+        if not controller:
             if self.force:
                 # Not found and forcing: remove orphan pods with warning
                 return (
@@ -363,20 +298,16 @@ class Drain(object):
         failures = {}
         pods = []
 
-        try:
-            api_instance = kubernetes.client.CoreV1Api()
-            api_response = api_instance.list_pod_for_all_namespaces(
-                field_selector='spec.nodeName={0}'.format(self.node_name)
-            )
-        except (ApiException, HTTPError) as exc:
-            if isinstance(exc, ApiException) and exc.status == 404:
-                return []
-            log.exception(
-                'Exception when calling '
-                'CoreV1Api->list_pod_for_all_namespaces')
-            raise CommandExecutionError(exc)
+        all_pods = __salt__['metalk8s_kubernetes.list_objects'](
+            kind='Pod',
+            apiVersion='v1',
+            all_namespaces=True,
+            field_selector='spec.nodeName={0}'.format(self.node_name),
+            kubeconfig=self._kwargs.get('kubeconfig'),
+            context=self._kwargs.get('context')
+        )
 
-        for pod in api_response.items:
+        for pod in all_pods:
             is_deletable = True
             for pod_filter in (
                     _mirrorpod_filter,
@@ -388,11 +319,11 @@ class Drain(object):
                     filter_deletable, warning = pod_filter(pod)
                 except DrainException as exc:
                     failures.setdefault(
-                        exc.message, []).append(pod.metadata.name)
+                        exc.message, []).append(pod['metadata']['name'])
 
                 if warning:
                     warnings.setdefault(
-                        warning, []).append(pod.metadata.name)
+                        warning, []).append(pod['metadata']['name'])
                 is_deletable &= filter_deletable
             if is_deletable:
                 pods.append(pod)
@@ -431,7 +362,8 @@ class Drain(object):
 
         if dry_run:
             return "Prepared for eviction of pods: {0}".format(
-                ", ".join(pods) if pods else "no pods to evict."
+                ", ".join([pod['metadata']['name'] for pod in pods])
+                if pods else "no pods to evict."
             )
 
         try:
@@ -440,7 +372,7 @@ class Drain(object):
             remaining_pods = self.get_pods_for_eviction()
             raise CommandExecutionError(
                 "{0} List of remaining pods to follow".format(exc.message),
-                [pod.metadata.name for pod in remaining_pods]
+                [pod['metadata']['name'] for pod in remaining_pods]
             )
         except CommandExecutionError as exc:
             remaining_pods = self.get_pods_for_eviction()
@@ -448,7 +380,7 @@ class Drain(object):
                 "{0} List of remaining pods to follow".format(
                     exc.message
                 ),
-                [pod.metadata.name for pod in remaining_pods]
+                [pod['metadata']['name'] for pod in remaining_pods]
             )
         return "Eviction complete."
 
@@ -463,7 +395,13 @@ class Drain(object):
         '''
         for pod in pods:
             # TODO: "too many requests" error not handled
-            _ = self.evict_pod(pod)
+            _ = evict_pod(
+                name=pod['metadata']['name'],
+                namespace=pod['metadata']['namespace'],
+                grace_period=self.grace_period,
+                kubeconfig=self._kwargs.get('kubeconfig'),
+                context=self._kwargs.get('context')
+            )
 
         pending = self.wait_for_eviction(pods)
 
@@ -471,11 +409,6 @@ class Drain(object):
             raise DrainTimeoutException(
                 "Drain did not complete within {0}".format(self.timeout)
             )
-
-    @staticmethod
-    def not_found(response):
-        '''Check whether a K8s API response indicates a resource not found.'''
-        return response is None or len(response.items) == 0
 
     def wait_for_eviction(self, pods):
         '''Wait for pods deletion.
@@ -490,14 +423,17 @@ class Drain(object):
             pending = []
             iteration_start = time.time()    # For time processing pods
             for pod in pods:
-                response = _get_pod_from_namespace(
-                    pod.metadata.namespace, pod.metadata.name
+                response = __salt__['metalk8s_kubernetes.get_object'](
+                    kind='Pod',
+                    apiVersion='v1',
+                    name=pod['metadata']['name'],
+                    namespace=pod['metadata']['namespace'],
+                    kubeconfig=self._kwargs.get('kubeconfig'),
+                    context=self._kwargs.get('context')
                 )
-                if (
-                    self.not_found(response) or
-                    response.items[0].metadata.uid != pod.metadata.uid
-                ):
-                    log.info("%s evicted", pod.metadata.name)
+                if not response or \
+                        response['metadata']['uid'] != pod['metadata']['uid']:
+                    log.info("%s evicted", pod['metadata']['name'])
                 else:
                     pending.append(pod)
             iteration_duration = time.time() - iteration_start
@@ -507,41 +443,55 @@ class Drain(object):
             total_t += time.time() - iteration_start
         return pods
 
-    def evict_pod(self, pod):
-        '''Trigger the eviction process for a single pod.
 
-        Args:
-          - pod: the Kubernetes API pod object to evict
-        Returns: None
-        Raises: CommandExecutionError in case of API error
-        '''
-        delete_options = V1DeleteOptions()
-        if self.grace_period >= 0:
-            delete_options.grace_period = self.grace_period
+def evict_pod(name, namespace='default', grace_period=1,
+              kubeconfig=None, context=None):
+    '''Trigger the eviction process for a single pod.
 
-        object_meta = V1ObjectMeta(
-            name=pod.metadata.name,
-            namespace=pod.metadata.namespace)
+    Args:
+        - name          : the name of the pod to evict
+        - namespace     : the namespace of the pod to evict
+        - grace_period  : the time to wait before killing the pod
+    Returns: api response
+    Raises: CommandExecutionError in case of API error
+    '''
+    kind_info = __utils__['metalk8s_kubernetes.get_kind_info']({
+        'kind': 'PodEviction',
+        'apiVersion': 'v1'
+    })
 
-        eviction = V1beta1Eviction(
-            delete_options=delete_options,
-            metadata=object_meta,
+    delete_options = V1DeleteOptions()
+    if grace_period >= 0:
+        delete_options.grace_period = grace_period
+
+    object_meta = V1ObjectMeta(
+        name=name,
+        namespace=namespace
+    )
+
+    client = kind_info.client
+    client.configure(config_file=kubeconfig, context=context)
+
+    try:
+        result = client.create(
+            name=name,
+            namespace=namespace,
+            body=V1beta1Eviction(
+                delete_options=delete_options,
+                metadata=object_meta
+            )
+        )
+    except (ApiException, HTTPError) as exc:
+        if isinstance(exc, ApiException) and exc.status == 404:
+            return None
+
+        raise CommandExecutionError(
+            'Failed to evict pod "{}" in namespace "{}": {!s}'.format(
+                name, namespace, exc
+            )
         )
 
-        api_call = "CoreV1Api->create_namespaced_pod_eviction"
-        api_instance = kubernetes.client.CoreV1Api()
-        try:
-            return api_instance.create_namespaced_pod_eviction(
-                name=eviction.metadata.name,
-                namespace=eviction.metadata.namespace,
-                body=eviction,
-            )
-        except (ApiException, HTTPError) as exc:
-            if isinstance(exc, ApiException) and exc.status == 404:
-                return None
-
-            log.exception('Exception when calling %s', api_call)
-            raise CommandExecutionError(exc)
+    return result.to_dict()
 
 
 def node_drain(node_name,
@@ -568,22 +518,15 @@ def node_drain(node_name,
     Raises: CommandExecutionError if the drain process was unsuccessful/
     '''
 
-    cfg = __salt__['metalk8s_kubernetes.setup_conn'](**kwargs)
     drainer = Drain(
         node_name,
         force=force,
         grace_period=grace_period,
         ignore_daemonset=ignore_daemonset,
         timeout=timeout,
-        delete_local_data=delete_local_data
+        delete_local_data=delete_local_data,
+        **kwargs
     )
-    __salt__['metalk8s_kubernetes.node_cordon'](node_name, **kwargs)
-    try:
-        result = drainer.run_drain(dry_run=dry_run)
-    # CommandExecutionError should fall through, but we want cleanup regardless
-    except CommandExecutionError:
-        raise
-    finally:
-        __salt__['metalk8s_kubernetes.cleanup'](**cfg)
+    __salt__['metalk8s_kubernetes.cordon_node'](node_name, **kwargs)
 
-    return result
+    return drainer.run_drain(dry_run=dry_run)

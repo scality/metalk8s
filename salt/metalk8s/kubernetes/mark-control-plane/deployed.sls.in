@@ -1,65 +1,31 @@
-{% set node_name = pillar.bootstrap_id %}
+{%- from "metalk8s/map.jinja" import kubelet with context %}
 
-{% set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{% set context = "kubernetes-admin@kubernetes" %}
+{%- set node_name = pillar.bootstrap_id %}
+{%- set cri_socket = kubelet.service.options['container-runtime-endpoint'] %}
 
-Apply control-plane master role label:
-  metalk8s_kubernetes.node_label_present:
-    - name: "node-role.kubernetes.io/master"
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
-    - node: {{ node_name }}
-    - value: ""
+{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
+{%- set context = "kubernetes-admin@kubernetes" %}
 
-Apply control-plane etcd role label:
-  metalk8s_kubernetes.node_label_present:
-    - name: "node-role.kubernetes.io/etcd"
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
-    - node: {{ node_name }}
-    - value: ""
-
-Apply control-plane bootstrap role label:
-  metalk8s_kubernetes.node_label_present:
-    - name: "node-role.kubernetes.io/bootstrap"
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
-    - node: {{ node_name }}
-    - value: ""
-
-Apply control-plane infra role label:
-  metalk8s_kubernetes.node_label_present:
-    - name: "node-role.kubernetes.io/infra"
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
-    - node: {{ node_name }}
-    - value: ""
-
-Apply control-plane taints:
-  metalk8s_kubernetes.node_taints_present:
+Mark control plane node:
+  metalk8s_kubernetes.object_updated:
     - name: {{ node_name }}
+    - kind: Node
+    - apiVersion: v1
+    - patch:
+        metadata:
+          labels:
+            metalk8s.scality.com/version: "@@VERSION"
+            node-role.kubernetes.io/master: ""
+            node-role.kubernetes.io/etcd: ""
+            node-role.kubernetes.io/bootstrap: ""
+            node-role.kubernetes.io/infra: ""
+          annotations:
+            kubeadm.alpha.kubernetes.io/cri-socket: {{ cri_socket }}
+        spec:
+          taints:
+          - key: "node-role.kubernetes.io/bootstrap"
+            effect: "NoSchedule"
+          - key: "node-role.kubernetes.io/infra"
+            effect: "NoSchedule"
     - kubeconfig: {{ kubeconfig }}
     - context: {{ context }}
-    - taints:
-        - key: "node-role.kubernetes.io/bootstrap"
-          effect: "NoSchedule"
-        - key: "node-role.kubernetes.io/infra"
-          effect: "NoSchedule"
-
-Apply node version label:
-  metalk8s_kubernetes.node_label_present:
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
-    - name: "metalk8s.scality.com/version"
-    - node: {{ node_name }}
-    - value: "@@VERSION"
-
-Annotate with CRI socket information:
-  metalk8s_kubernetes.node_annotation_present:
-    - name: "kubeadm.alpha.kubernetes.io/cri-socket"
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
-    - node: {{ node_name }}
-    # TODO: the socket location may become configurable, we should make sure
-    #       this value is accurate (hardcoded to the default value for now)
-    - value: "/run/containerd/containerd.sock"

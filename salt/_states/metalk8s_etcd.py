@@ -8,8 +8,8 @@ __virtualname__ = 'metalk8s_etcd'
 
 
 def __virtual__():
-    if 'metalk8s_kubernetes.ping' not in __salt__:
-        return False, '`metalk8s_kubernetes.ping` not available'
+    if 'metalk8s_etcd.add_etcd_node' not in __salt__:
+        return False, '`metalk8s_etcd.add_etcd_node` not available'
     else:
         return __virtualname__
 
