@@ -10,7 +10,7 @@ __virtualname__ = 'metalk8s_endpoints'
 
 
 def __virtual__():
-    if 'metalk8s_kubernetes.show_endpoint' not in __salt__:
+    if 'metalk8s_kubernetes.get_object' not in __salt__:
         return False, 'Missing metalk8s_kubernetes module'
     else:
         return __virtualname__
@@ -18,8 +18,10 @@ def __virtual__():
 
 def service_endpoints(service, namespace, kubeconfig):
     try:
-        endpoint = __salt__['metalk8s_kubernetes.show_endpoint'](
+        endpoint = __salt__['metalk8s_kubernetes.get_object'](
             name=service,
+            kind='Endpoints',
+            apiVersion='v1',
             namespace=namespace,
             kubeconfig=kubeconfig,
         )
