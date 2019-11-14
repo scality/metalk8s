@@ -12,6 +12,10 @@ log = logging.getLogger(__name__)
 __virtualname__ = 'metalk8s_solutions'
 
 SOLUTIONS_NAMESPACE = 'metalk8s-solutions'
+ENVIRONMENT_LABEL = 'solutions.metalk8s.scality.com/environment'
+ENVIRONMENT_DESCRIPTION_ANNOTATION = \
+    'solutions.metalk8s.scality.com/environment-description'
+ENVIRONMENT_CONFIGMAP_NAME = 'metalk8s-environment'
 
 
 def __virtual__():
@@ -69,3 +73,50 @@ def list_active(
         result[solution_name] = solution_version
 
     return result
+
+
+def list_environments(
+    context="kubernetes-admin@kubernetes",
+    kubeconfig="/etc/kubernetes/admin.conf",
+):
+    """List all Environments (through labelled namespaces) and their config.
+
+    Each Environment can be made up of multiple namespaces, though only one
+    ConfigMap will be used to determine the Environment configuration (the
+    first one found will be selected).
+    """
+    env_namespaces = __salt__['metalk8s_kubernetes.list_objects'](
+        kind='Namespace',
+        apiVersion='v1',
+        # FIXME: add support for labelSelector
+        labelSelector=ENVIRONMENT_LABEL,  # just testing existence, not value
+        context=context,
+        kubeconfig=kubeconfig,
+    )
+
+    environments = {}
+    for namespace in env_namespaces:
+        name = namespace['metadata']['labels'][ENVIRONMENT_LABEL]
+        env = environments.setdefault(name, {'name': name})
+
+        description = namespace['metadata'].get('annotations', {}).get(
+            ENVIRONMENT_DESCRIPTION_ANNOTATION
+        )
+        if description is not None and 'description' not in env:
+            env['description'] = description
+
+        namespaces = env.setdefault('namespaces', [])
+        namespaces.append(namespace)
+
+        config = __salt__['metalk8s_kubernetes.get_object'](
+            kind='ConfigMap',
+            apiVersion='v1',
+            name=ENVIRONMENT_CONFIGMAP_NAME,
+            namespace=namespace['metadata']['name'],
+            context=context,
+            kubeconfig=kubeconfig,
+        )
+        if config is not None and 'config' not in env:
+            env['config'] = config.get('data', {})
+
+    return environments
