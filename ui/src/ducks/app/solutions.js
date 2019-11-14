@@ -9,7 +9,6 @@ const APP_K8S_VERSION_LABEL = 'app.kubernetes.io/version';
 // Actions
 export const SET_SOLUTIONS = 'SET_SOLUTIONS';
 export const SET_SOLUTIONS_REFRESHING = 'SET_SOLUTIONS_REFRESHING';
-export const SET_SERVICES = 'SET_SERVICES';
 export const SET_ENVIRONMENTS = 'SET_ENVIRONMENTS';
 const CREATE_ENVIRONMENT = 'CREATE_ENVIRONMENT';
 const REFRESH_SOLUTIONS = 'REFRESH_SOLUTIONS';
@@ -18,7 +17,6 @@ const STOP_REFRESH_SOLUTIONS = 'STOP_REFRESH_SOLUTIONS';
 // Reducer
 const defaultState = {
   solutions: [],
-  services: [],
   environments: [],
   isSolutionsRefreshing: false,
 };
@@ -27,8 +25,6 @@ export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_SOLUTIONS:
       return { ...state, solutions: action.payload };
-    case SET_SERVICES:
-      return { ...state, services: action.payload };
     case SET_ENVIRONMENTS:
       return { ...state, environments: action.payload };
     case SET_SOLUTIONS_REFRESHING:
@@ -38,7 +34,7 @@ export default function reducer(state = defaultState, action = {}) {
   }
 }
 
-// Actions Creator
+// Action Creators
 
 export function setSolutionsAction(solutions) {
   return { type: SET_SOLUTIONS, payload: solutions };
@@ -46,10 +42,6 @@ export function setSolutionsAction(solutions) {
 
 export function setSolutionsRefeshingAction(payload) {
   return { type: SET_SOLUTIONS_REFRESHING, payload };
-}
-
-export function setServicesAction(services) {
-  return { type: SET_SERVICES, payload: services };
 }
 
 export const setEnvironmentsAction = environments => {
@@ -87,14 +79,6 @@ export function* createEnvironment(action) {
   if (!result.error) {
     yield call(fetchEnvironments);
     history.push('/solutions');
-  }
-  return result;
-}
-
-export function* fetchUIServices() {
-  const result = yield call(SolutionsApi.getUIServiceForAllNamespaces);
-  if (!result.error) {
-    yield put(setServicesAction(result.body.items));
   }
   return result;
 }
@@ -145,7 +129,6 @@ export function* fetchEnvironments() {
 export function* refreshSolutions() {
   yield put(setSolutionsRefeshingAction(true));
 
-  const resultFetchUIServices = yield call(fetchUIServices);
   const resultFetchSolutions = yield call(fetchSolutions);
   const resultFetchEnvironments = yield call(fetchEnvironments);
 
