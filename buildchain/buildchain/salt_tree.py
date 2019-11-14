@@ -418,6 +418,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_states/metalk8s_kubernetes.py'),
     Path('salt/_states/metalk8s_package_manager.py'),
 
+    Path('salt/_utils/kubernetes_utils.py'),
     Path('salt/_utils/pillar_utils.py'),
 
     # This image is defined here and not in the `image` module since it is

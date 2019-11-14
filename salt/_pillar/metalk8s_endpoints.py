@@ -10,7 +10,7 @@ __virtualname__ = 'metalk8s_endpoints'
 
 
 def __virtual__():
-    if 'metalk8s_kubernetes.show_endpoint' not in __salt__:
+    if 'metalk8s_kubernetes.get_object' not in __salt__:
         return False, 'Missing metalk8s_kubernetes module'
     else:
         return __virtualname__
@@ -26,8 +26,10 @@ def service_endpoints_nodeport(service, namespace, kubeconfig):
         ])
 
     try:
-        node = __salt__['metalk8s_kubernetes.node'](
+        node = __salt__['metalk8s_kubernetes.get_object'](
             name=node_name,
+            kind='Node',
+            apiVersion='v1',
             kubeconfig=kubeconfig,
         )
     except Exception as exc:  # pylint: disable=broad-except
@@ -41,8 +43,10 @@ def service_endpoints_nodeport(service, namespace, kubeconfig):
     host_addr = host_net.split('/')[0]
 
     try:
-        service = __salt__['metalk8s_kubernetes.show_service'](
+        service = __salt__['metalk8s_kubernetes.get_object'](
             name=service,
+            kind='Service',
+            apiVersion='v1',
             namespace=namespace,
             kubeconfig=kubeconfig,
         )
@@ -63,8 +67,10 @@ def service_endpoints_nodeport(service, namespace, kubeconfig):
 
 def service_endpoints(service, namespace, kubeconfig):
     try:
-        endpoint = __salt__['metalk8s_kubernetes.show_endpoint'](
+        endpoint = __salt__['metalk8s_kubernetes.get_object'](
             name=service,
+            kind='Endpoints',
+            apiVersion='v1',
             namespace=namespace,
             kubeconfig=kubeconfig,
         )

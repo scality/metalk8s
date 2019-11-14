@@ -78,6 +78,8 @@ def task_populate_iso() -> types.TaskDict:
         # Aggregate here the tasks that put files into ISO_ROOT.
         'task_dep': [
             '_iso_mkdir_root',
+            '_iso_render_downgrade',
+            '_iso_render_upgrade',
             '_iso_render_bootstrap',
             '_iso_add_node_manifest',
             '_iso_generate_product_txt',
@@ -124,25 +126,38 @@ def task__iso_add_utilities_scripts() -> types.TaskDict:
     iso_manager_dest = constants.ISO_ROOT/'iso-manager.sh'
     iso_manager = [iso_manager_src, iso_manager_dest]
 
-    downgrade_src = constants.ROOT/'scripts'/'downgrade.sh'
-    downgrade_dest = constants.ISO_ROOT/'downgrade.sh'
-    downgrade = [downgrade_src, downgrade_dest]
-
-    upgrade_src = constants.ROOT/'scripts'/'upgrade.sh'
-    upgrade_dest = constants.ISO_ROOT/'upgrade.sh'
-    upgrade = [upgrade_src, upgrade_dest]
     return {
             'title': lambda task: utils.title_with_target1('COPY', task),
             'actions': [
-                    (coreutils.cp_file, iso_manager),
-                    (coreutils.cp_file, downgrade),
-                    (coreutils.cp_file, upgrade)
+                    (coreutils.cp_file, iso_manager)
                 ],
-            'targets': [iso_manager_dest, downgrade_dest, upgrade_dest],
+            'targets': [iso_manager_dest],
             'task_dep': ['_iso_mkdir_root'],
-            'file_dep': [iso_manager_src, downgrade_src, upgrade_src],
+            'file_dep': [iso_manager_src],
             'clean': True,
             }
+
+
+def task__iso_render_downgrade() -> types.TaskDict:
+    """Generate the downgrade script."""
+    return helper.TemplateFile(
+        source=constants.ROOT/'scripts'/'downgrade.sh.in',
+        destination=constants.ISO_ROOT/'downgrade.sh',
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
+        task_dep=['_iso_mkdir_root'],
+    ).task
+
+
+def task__iso_render_upgrade() -> types.TaskDict:
+    """Generate the upgrade script."""
+    return helper.TemplateFile(
+        source=constants.ROOT/'scripts'/'upgrade.sh.in',
+        destination=constants.ISO_ROOT/'upgrade.sh',
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
+        task_dep=['_iso_mkdir_root'],
+    ).task
 
 
 def task__iso_render_bootstrap() -> types.TaskDict:
