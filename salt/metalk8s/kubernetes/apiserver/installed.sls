@@ -3,6 +3,7 @@
 
 {%- set htpasswd_path = "/etc/kubernetes/htpasswd" %}
 {%- set encryption_k8s_path = "/etc/kubernetes/encryption.conf" %}
+{%- set oidc_service_ip = salt.metalk8s_network.get_oidc_service_ip() %}
 
 include:
   - metalk8s.kubernetes.ca.advertised
@@ -95,6 +96,7 @@ Create kube-apiserver Pod manifest:
         - /etc/kubernetes/pki/front-proxy-client.crt
         - /etc/kubernetes/pki/front-proxy-client.key
         - /etc/kubernetes/pki/sa.pub
+        - /etc/kubernetes/pki/dex-ca.crt
         - {{ htpasswd_path }}
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
         - /etc/keepalived/check-apiserver.sh
@@ -137,6 +139,11 @@ Create kube-apiserver Pod manifest:
           - --service-cluster-ip-range={{ networks.service }}
           - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+          - --oidc-issuer-url=https://{{ oidc_service_ip }}:32000
+          - --oidc-client-id=oidc-auth-client
+          - --oidc-ca-file=/etc/kubernetes/pki/dex-ca.crt
+          - --oidc-username-claim=email
+          - --oidc-groups-claim=groups
         requested_cpu: 250m
         volumes:
           - path: {{ encryption_k8s_path }}
@@ -215,6 +222,7 @@ Create kube-apiserver Pod manifest:
       - file: Ensure front-proxy CA cert is present
       - file: Ensure SA pub key is present
       - file: Set up default basic auth htpasswd
+      - file: Ensure dex CA cert is present
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
       - file: Create keepalived check script
       - file: Create keepalived configuration file generator
