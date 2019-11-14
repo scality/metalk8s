@@ -25,30 +25,8 @@ include:
     {%- set renderer = kubernetes_absent_renderer %}
   {%- endif %}
 
-  {# Admin UI management #}
-  {%- for ui_file in ui_files %}
-    {%- set filepath = salt.file.join(solution.mountpoint, ui_relpath, ui_file) %}
-    {%- set repository = repo.registry_endpoint ~ "/" ~ solution.id %}
-    {%- set sls_content = salt.saltutil.cmd(
-            tgt=pillar.bootstrap_id,
-            fun='slsutil.renderer',
-            kwarg={
-              'path': filepath,
-              'default_renderer': renderer,
-              'repository': repository,
-            },
-          )[pillar.bootstrap_id]['ret']
-    %}
-{{ action }} Admin UI "{{ ui_file }}" for Solution {{ solution.name }}:
-  module.run:
-    - state.template_str:
-      - tem: "{{ sls_content | yaml }}"
-    - require:
-      - sls: metalk8s.addons.solutions.deployed.namespace
-
-  {%- endfor %} {# ui_file in ui_files #}
-
   {# CRDs management #}
+  {# TODO: consider API version changes #}
   {%- set crds_path = salt.file.join(solution.mountpoint, crds_relpath) %}
   {%- set crd_files = salt.saltutil.cmd(
           tgt=pillar.bootstrap_id,
@@ -73,7 +51,9 @@ include:
     - state.template_str:
       - tem: "{{ sls_content | yaml }}"
 
-    {%- endfor %} {# crd_file in crd_files #}
+  {%- endfor %} {# crd_file in crd_files #}
+  
+  {# TODO: StorageClasses, Grafana dashboards, ... #}
 {%- endmacro %}
 
 {# TODO: this can be improved using the state module from #1713 #}
