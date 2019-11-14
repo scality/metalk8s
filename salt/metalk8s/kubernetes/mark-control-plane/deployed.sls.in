@@ -3,9 +3,6 @@
 {%- set node_name = pillar.bootstrap_id %}
 {%- set cri_socket = kubelet.service.options['container-runtime-endpoint'] %}
 
-{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{%- set context = "kubernetes-admin@kubernetes" %}
-
 Mark control plane node:
   metalk8s_kubernetes.object_updated:
     - name: {{ node_name }}
@@ -27,5 +24,3 @@ Mark control plane node:
             effect: "NoSchedule"
           - key: "node-role.kubernetes.io/infra"
             effect: "NoSchedule"
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
