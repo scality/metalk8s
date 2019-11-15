@@ -152,14 +152,14 @@ const SolutionsList = props => {
               v => v.version === solution.version,
             );
 
-            return solutionVersion?.ui_url ? (
-              <ButtonContainer key={`solution_${idx}`} marginLeft={idx !== 0}>
+            return solutionVersion?.ui?.ingressPath ? (
+              <ButtonContainer key={`solution_${idx}`} marginLeft={idx > 0}>
                 <Button
                   size="smaller"
                   text={`${solution.name} ${solution.version}`}
                   icon={<i className="fas fa-external-link-alt" />}
                   onClick={() => {
-                    const url = `${solutionVersion.ui_url}/environments/${row.name}`;
+                    const url = `${solution.ui.ingressPath}`;
                     window.open(url, '_blank');
                   }}
                 ></Button>
@@ -171,7 +171,7 @@ const SolutionsList = props => {
         return (
           <div>
             <span>{solutionsLinks}</span>
-            <ButtonContainer marginLeft={solutionsLinks.length !== 0}>
+            <ButtonContainer marginLeft={solutionsLinks.length > 0}>
               <Button
                 size="smaller"
                 icon={<i className="fas fa-plus" />}
@@ -194,15 +194,7 @@ const SolutionsList = props => {
   const sortedEnvironments =
     sortSelector(environments, envSortBy, envSortDirection) ?? [];
 
-  const formattedEnvironments = sortedEnvironments.map(environment => {
-    return {
-      name: environment?.metadata?.name ?? '',
-      description: environment?.spec?.description ?? '',
-      solutions: environment?.spec?.solutions ?? [],
-    };
-  });
-
-  const firstSolution = (sortedSolutions[0] && sortedSolutions[0].name) ?? '';
+  const firstSolution = sortedSolutions?.[0]?.name ?? '';
   const firstVersion = sortedSolutions?.[0]?.versions?.[0]?.version ?? '';
 
   const initialValues = {
@@ -253,7 +245,7 @@ const SolutionsList = props => {
           </EnvironmentHeader>
 
           <Table
-            list={formattedEnvironments}
+            list={sortedEnvironments}
             columns={environmentsColumn}
             disableHeader={false}
             headerHeight={40}
@@ -302,22 +294,7 @@ const SolutionsList = props => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={values => {
-              const selectedSolution = sortedSolutions.find(
-                solution => solution.name === values.solution.value,
-              );
-
-              const selectedVersion = selectedSolution.versions.find(
-                version => version.version === values.version.value,
-              );
-
-              if (
-                selectedVersion.ui_url &&
-                selectedEnvironment &&
-                selectedVersion.version
-              ) {
-                const url = `${selectedVersion.ui_url}/environments/${selectedEnvironment}/version/${selectedVersion.version}/prepare`;
-                window.open(url, '_blank');
-              }
+              // TODO: configure + prepare env + redirect to UI
             }}
           >
             {formikProps => {
