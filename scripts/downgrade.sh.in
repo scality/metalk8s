@@ -187,7 +187,7 @@ downgrade_bootstrap () {
         | cut -d' ' -f2- )"
     repo_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:repositories --out txt \
         | cut -d' ' -f2- )"
-    $SALT_CALL --local state.sls metalk8s.roles.bootstrap \
+    $SALT_CALL --local state.sls metalk8s.roles.bootstrap sync_mods="all" \
         saltenv="metalk8s-$DESTINATION_VERSION" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
         'repositories': $repo_endpoint}}}" \
