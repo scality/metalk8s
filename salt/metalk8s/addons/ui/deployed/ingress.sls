@@ -66,13 +66,15 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     heritage: metalk8s
   annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: '/$2'
+    nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     kubernetes.io/ingress.class: "nginx-control-plane"
 spec:
   rules:
   - http:
       paths:
-      - path: /
+      - path: /metalk8s(/|$)(.*)
         backend:
           serviceName: metalk8s-ui
           servicePort: 80
