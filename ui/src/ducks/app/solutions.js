@@ -1,4 +1,13 @@
-import { all, call, put, takeEvery, select, delay } from 'redux-saga/effects';
+import {
+  all,
+  call,
+  delay,
+  fork,
+  put,
+  race,
+  take,
+  takeEvery,
+} from 'redux-saga/effects';
 import * as SolutionsApi from '../../services/k8s/solutions';
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
@@ -120,31 +129,32 @@ export function* fetchSolutions() {
 }
 
 export function* refreshSolutions() {
-  yield put(setSolutionsRefeshingAction(true));
+  // Long-running saga, should be unique for the whole application
+  while (true) {
+    // Start refreshing on demand
+    yield take(REFRESH_SOLUTIONS);
+    yield put(setSolutionsRefeshingAction(true));
+    while (true) {
+      // Spawn the fetch actions in parallel
+      yield all([fork(fetchSolutions), fork(fetchEnvironments)]);
 
-  const resultFetchSolutions = yield call(fetchSolutions);
-  const resultFetchEnvironments = yield call(fetchEnvironments);
+      const { interrupt } = yield race({
+        interrupt: take(STOP_REFRESH_SOLUTIONS),
+        requeue: delay(REFRESH_TIMEOUT),
+      });
 
-  if (
-    !resultFetchSolutions.error &&
-    !resultFetchUIServices.error &&
-    !resultFetchEnvironments.error
-  ) {
-    yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(solutionsRefreshingSelector);
-    if (isRefreshing) {
-      yield call(refreshSolutions);
+      if (interrupt) {
+        yield put(setSolutionsRefeshingAction(false));
+        break;
+      }
     }
   }
 }
 
-export function* stopRefreshSolutions() {
-  yield put(setSolutionsRefeshingAction(false));
-}
-
 // Sagas
 export function* solutionsSaga() {
-  yield takeEvery(REFRESH_SOLUTIONS, refreshSolutions);
-  yield takeEvery(STOP_REFRESH_SOLUTIONS, stopRefreshSolutions);
-  yield takeEvery(CREATE_ENVIRONMENT, createEnvironment);
+  yield all([
+    fork(refreshSolutions),
+    takeEvery(CREATE_ENVIRONMENT, createEnvironment),
+  ]);
 }
