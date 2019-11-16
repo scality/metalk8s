@@ -18,10 +18,13 @@ It performs the following tasks:
   `app.kubernetes.io/component` fields
 '''
 
+import re
 import sys
 import subprocess
 
 import yaml
+from yaml.dumper import SafeDumper
+from yaml.representer import SafeRepresenter
 
 
 BOILERPLATE = '''
@@ -65,12 +68,35 @@ def fixup_dict(doc):
 
     return dict((key, fixup_doc(value)) for (key, value) in doc.items())
 
+# Represent multiline strings as literal blocks {{{
+class multiline_str(str): pass
+
+def representer_multiline_str(dumper, data):
+    scalar = SafeRepresenter.represent_str(dumper, data)
+    scalar.style = '|'
+    return scalar
+
+SafeDumper.add_representer(multiline_str, representer_multiline_str)
+
+def fixup_string(value):
+    if '\n' in value:
+        # Remove empty lines
+        value = '\n'.join(
+            line for line in value.splitlines()
+            if not re.match('^\s*$', line)
+        )
+        return multiline_str(value)
+    return value
+# }}}
+
 
 def fixup_doc(doc):
     if isinstance(doc, dict):
         return fixup_dict(doc)
     elif isinstance(doc, list):
         return [fixup_doc(d) for d in doc]
+    elif isinstance(doc, str):
+        return fixup_string(doc)
     else:
         return doc
 
