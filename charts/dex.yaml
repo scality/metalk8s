@@ -29,8 +29,6 @@ ingress:
   path: /oidc(/|$)(.*)
   hosts:
     - null
-  tls:
-   - secretName: dex-tls-ingress
 
 # extraVolumes:
 #   - name: theme
