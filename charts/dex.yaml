@@ -1,4 +1,4 @@
-image: '{%- endraw -%}{{ build_image_name(\"dex\", False) }}{%- raw -%}'
+image: '{% endraw %}{{ build_image_name(\"dex\", False) }}{% raw %}'
 
 nodeSelector:
   node-role.kubernetes.io/infra: ''
@@ -48,7 +48,7 @@ certs:
     create: false
 
 config:
-  issuer: '{%- endraw -%}https://{{ oidc_service_ip }}:32000{%- raw -%}'
+  issuer: '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc{% raw %}'
   web:
     tlsCert: /etc/dex/tls/https/server/tls.crt
     tlsKey: /etc/dex/tls/https/server/tls.key
@@ -77,13 +77,13 @@ config:
     - grafana-ui
   - id: metalk8s-ui
     redirectURIs:
-    - '{%- endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback{%- raw -%}'
+    - '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback{% raw %}'
     name: 'MetalK8s UI'
     secret: "ybrMJpVMQxsiZw26MhJzCjA2ut"
   - id: grafana-ui
     name: 'Grafana UI'
     redirectURIs:
-    - '{%- endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth{%- raw -%}'
+    - '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth{% raw %}'
     secret: "4lqK98NcsWG5qBRHJUqYM1"
 
   staticPasswords:
