@@ -213,3 +213,7 @@
 {% set kubeadm_kubeconfig = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('kubeadm_kubeconfig')) %}
+
+{% set nginx_ingress = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('nginx-ingress')) %}

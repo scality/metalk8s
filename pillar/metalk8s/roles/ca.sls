@@ -15,6 +15,10 @@ mine_functions:
     mine_function: hashutil.base64_encodefile
     fname: /etc/kubernetes/pki/sa.pub
 
+  ingress_ca_b64:
+    mine_function: hashutil.base64_encodefile
+    fname: /etc/metalk8s/pki/nginx-ingress/ca.crt
+
 x509_signing_policies:
   kube_apiserver_client_policy:
     - minions: '*'
