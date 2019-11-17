@@ -19,14 +19,17 @@ grpc: false
 # https termination by dex itself
 https: true
 
+service:
+  clusterIP: '{% endraw %}{{ salt.metalk8s_network.get_oidc_service_ip() }}{% raw %}'
+
 ingress:
   enabled: true
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: '/$2'
-    nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify: "on"
+    nginx.ingress.kubernetes.io/proxy-ssl-secret: "dex-ca-cert"
     kubernetes.io/ingress.class: "nginx-control-plane"
-  path: /oidc(/|$)(.*)
+  path: /oidc
   hosts:
     - null
 

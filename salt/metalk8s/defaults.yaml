@@ -89,6 +89,15 @@ dex:
   cert:
     server_signing_policy: dex_server_policy
 
+nginx-ingress:
+  ca:
+    cert:
+      days_valid: 3650
+    signing_policy:
+      days_valid: 365
+  cert:
+    server_signing_policy: ingress_server_policy
+
 coredns:
   cluster_domain: cluster.local
   reverse_cidrs: in-addr.arpa ip6.arpa

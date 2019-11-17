@@ -5,7 +5,7 @@ include:
 
 Create dex CA private key:
   x509.private_key_managed:
-    - name: /etc/kubernetes/pki/dex-ca.key
+    - name: /etc/metalk8s/pki/dex/ca.key
     - bits: 4096
     - verbose: False
     - user: root
@@ -18,8 +18,8 @@ Create dex CA private key:
 
 Generate dex CA certificate:
   x509.certificate_managed:
-    - name: /etc/kubernetes/pki/dex-ca.crt
-    - signing_private_key: /etc/kubernetes/pki/dex-ca.key
+    - name: /etc/metalk8s/pki/dex/ca.crt
+    - signing_private_key: /etc/metalk8s/pki/dex/ca.key
     - CN: dex-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
@@ -35,8 +35,8 @@ Generate dex CA certificate:
 Advertise dex CA certificate in the mine:
   module.wait:
     - mine.send:
-      - func: kubernetes_dex_ca_b64
+      - func: dex_ca_b64
       - mine_function: hashutil.base64_encodefile
-      - /etc/kubernetes/pki/dex-ca.crt
+      - /etc/metalk8s/pki/dex/ca.crt
     - watch:
       - x509: Generate dex CA certificate

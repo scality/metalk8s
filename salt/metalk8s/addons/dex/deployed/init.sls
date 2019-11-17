@@ -1,17 +1,14 @@
 #
-# State to manage dex
+# States to deploy Dex
 #
 # Available states
 # ================
 #
 # * namespace              -> creates a namespace metalk8s-auth
-# * dex-tls-secret         -> creates dex certificates stored as k8s secret
-# * chart                  -> charts used to deploy dex
-# * dex-conf               -> contains dex required configurations
+# * tls-secret             -> store Dex server cert and key in a Secret
+# * chart                  -> charts used to deploy Dex
 
 include:
 - .namespace
-- .dex-tls-secret
-- .dex-conf
-- .dex-service
+- .tls-secret
 - .chart

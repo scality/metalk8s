@@ -8,8 +8,8 @@
 # * salt-api              -> generate Salt API key and certificate
 #
 include:
-  # Some server certs are required to be published in K8s API by Salt master
-  - metalk8s.addons.nginx-ingress-control-plane.certs
   - metalk8s.addons.nginx-ingress.certs
+  - metalk8s.addons.nginx-ingress-control-plane.certs
+  - metalk8s.addons.dex.certs
   - .etcd-client
   - .salt-api

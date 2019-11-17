@@ -3,11 +3,41 @@
 
 {%- set htpasswd_path = "/etc/kubernetes/htpasswd" %}
 {%- set encryption_k8s_path = "/etc/kubernetes/encryption.conf" %}
-{%- set oidc_service_ip = salt.metalk8s_network.get_oidc_service_ip() %}
+
+{# This whole block is used to "know" the Ingress external IP used by Dex.
+   It will be removed once we can have a known LoadBalancer IP for Ingress. #}
+{% if '_errors' in pillar.metalk8s.nodes %}
+  {# Assume this is the bootstrap Node and we haven't an apiserver yet #}
+  {%- set bootstrap_id = grains.id %}
+{%- elif pillar.metalk8s.nodes | length <= 1 %}
+  {# Only one node (or even, zero) can/should only happen during bootstrap #}
+  {%- set bootstrap_id = grains.id %}
+{%- else %}
+  {%- set bootstrap_id = none %}
+  {%- for minion_id, node in pillar.metalk8s.nodes.items() %}
+    {%- if 'bootstrap' in node.roles %}
+      {%- set bootstrap_id = minion_id %}
+      {%- break %}
+    {%- endif %}
+  {%- endfor %}
+{%- endif %}
+
+{%- if bootstrap_id is none %}
+  {{ raise('Missing bootstrap Node in pillar, cannot proceed.') }}
+{%- elif bootstrap_id == grains.id %}
+  {%- set bootstrap_control_plane_ip = grains.metalk8s.control_plane_ip %}
+{%- else %}
+  {%- set bootstrap_control_plane_ip = salt['mine.get'](bootstrap_id,
+                                                        'control_plane_ip') %}
+{%- endif %}
+
+{%- set ingress_control_plane = bootstrap_control_plane_ip ~ ':8443' %}
+{# (end of Ingress URL retrieval) #}
 
 include:
   - metalk8s.kubernetes.ca.advertised
   - metalk8s.kubernetes.sa.advertised
+  - metalk8s.addons.nginx-ingress.ca.advertised
   - .certs
 
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
@@ -96,7 +126,7 @@ Create kube-apiserver Pod manifest:
         - /etc/kubernetes/pki/front-proxy-client.crt
         - /etc/kubernetes/pki/front-proxy-client.key
         - /etc/kubernetes/pki/sa.pub
-        - /etc/kubernetes/pki/dex-ca.crt
+        - /etc/metalk8s/pki/nginx-ingress/ca.crt
         - {{ htpasswd_path }}
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
         - /etc/keepalived/check-apiserver.sh
@@ -139,9 +169,9 @@ Create kube-apiserver Pod manifest:
           - --service-cluster-ip-range={{ networks.service }}
           - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
-          - --oidc-issuer-url=https://{{ oidc_service_ip }}:32000
+          - --oidc-issuer-url=https://{{ ingress_control_plane }}/oidc
           - --oidc-client-id=oidc-auth-client
-          - --oidc-ca-file=/etc/kubernetes/pki/dex-ca.crt
+          - --oidc-ca-file=/etc/metalk8s/pki/nginx-ingress/ca.crt
           - --oidc-username-claim=email
           - --oidc-groups-claim=groups
         requested_cpu: 250m
@@ -155,6 +185,8 @@ Create kube-apiserver Pod manifest:
           {%- endif %}
           - path: /etc/kubernetes/pki
             name: k8s-certs
+          - path: /etc/metalk8s/pki
+            name: metalk8s-certs
           - path: /etc/ssl/certs
             name: ca-certs
           - path: {{ htpasswd_path }}
@@ -222,7 +254,7 @@ Create kube-apiserver Pod manifest:
       - file: Ensure front-proxy CA cert is present
       - file: Ensure SA pub key is present
       - file: Set up default basic auth htpasswd
-      - file: Ensure dex CA cert is present
+      - file: Ensure Ingress CA cert is present
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
       - file: Create keepalived check script
       - file: Create keepalived configuration file generator

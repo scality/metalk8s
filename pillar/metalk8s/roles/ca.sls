@@ -15,13 +15,13 @@ mine_functions:
     mine_function: hashutil.base64_encodefile
     fname: /etc/kubernetes/pki/sa.pub
 
-  kubernetes_dex_ca_b64:
+  dex_ca_b64:
     mine_function: hashutil.base64_encodefile
-    fname: /etc/kubernetes/pki/dex-ca.crt
+    fname: /etc/metalk8s/pki/dex/ca.crt
 
-  kubernetes_dex_server_cert_b64:
+  ingress_ca_b64:
     mine_function: hashutil.base64_encodefile
-    fname: /etc/kubernetes/pki/dex-server.crt
+    fname: /etc/metalk8s/pki/nginx-ingress/ca.crt
 
 x509_signing_policies:
   kube_apiserver_client_policy:
@@ -61,8 +61,15 @@ x509_signing_policies:
     - days_valid: 365
   dex_server_policy:
     - minions: '*'
-    - signing_private_key: /etc/kubernetes/pki/dex-ca.key
-    - signing_cert: /etc/kubernetes/pki/dex-ca.crt
+    - signing_private_key: /etc/metalk8s/pki/dex/ca.key
+    - signing_cert: /etc/metalk8s/pki/dex/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
-    - extendedKeyUsage: serverAuth, clientAuth
+    - extendedKeyUsage: serverAuth
+    - days_valid: 365
+  ingress_server_policy:
+    - minions: '*'
+    - signing_private_key: /etc/metalk8s/pki/nginx-ingress/ca.key
+    - signing_cert: /etc/metalk8s/pki/nginx-ingress/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: serverAuth
     - days_valid: 365
