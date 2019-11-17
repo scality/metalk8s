@@ -268,6 +268,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/nginx-ingress/ca/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/ca/installed.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/ca/advertised.sls'),
+    Path('salt/metalk8s/addons/nginx-ingress/certs/init.sls'),
+    Path('salt/metalk8s/addons/nginx-ingress/certs/server.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/chart.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/namespace.sls'),

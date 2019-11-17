@@ -55,3 +55,10 @@ x509_signing_policies:
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: clientAuth
     - days_valid: 365
+  ingress_server_policy:
+    - minions: '*'
+    - signing_private_key: /etc/metalk8s/pki/nginx-ingress/ca.key
+    - signing_cert: /etc/metalk8s/pki/nginx-ingress/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: serverAuth
+    - days_valid: 365
