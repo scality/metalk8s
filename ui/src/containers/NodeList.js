@@ -92,7 +92,7 @@ const NodeList = ({ intl }) => {
       renderer: (data, rowData) => {
         if (
           (!rowData.status || rowData.status === API_STATUS_UNKNOWN) &&
-          !rowData.jid
+          !rowData.deploying
         ) {
           return (
             <span className="status">
@@ -107,14 +107,14 @@ const NodeList = ({ intl }) => {
             </span>
           );
         }
-        if (rowData.jid) {
+        if (rowData.deploying) {
           return (
             <span className="status">
               <Button
                 text={intl.messages.deploying}
                 onClick={event => {
                   event.stopPropagation();
-                  history.push(`/nodes/deploy/${rowData.jid}`);
+                  history.push(`/nodes/deploy/${rowData.name}`);
                 }}
                 icon={<Loader size="smaller" />}
                 size="smaller"
