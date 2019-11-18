@@ -15,7 +15,7 @@ export function authenticate(user) {
     eauth: 'kubernetes_rbac',
     username: user.username,
     token: user.token,
-    token_type: 'Basic'
+    token_type: 'Basic',
   });
 }
 
@@ -26,8 +26,8 @@ export async function deployNode(node, version) {
     arg: ['metalk8s.orchestrate.deploy_node'],
     kwarg: {
       saltenv: `metalk8s-${version}`,
-      pillar: { orchestrate: { node_name: node } }
-    }
+      pillar: { orchestrate: { node_name: node } },
+    },
   });
 }
 
@@ -35,6 +35,18 @@ export async function printJob(jid) {
   return saltApiClient.post('/', {
     client: 'runner',
     fun: 'jobs.print_job',
-    arg: [jid]
+    arg: [jid],
+  });
+}
+
+export async function prepareEnvironment(environment, version) {
+  return saltApiClient.post('/', {
+    client: 'runner_async',
+    fun: 'state.orchestrate',
+    arg: ['metalk8s.orchestrate.solutions.prepare-environment'],
+    kwarg: {
+      saltenv: `metalk8s-${version}`,
+      pillar: { orchestrate: { env_name: environment } },
+    },
   });
 }
