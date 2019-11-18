@@ -22,6 +22,11 @@ import {
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
 import { intl } from '../translations/IntlGlobalProvider';
+import { useRefreshEffect } from '../services/utils';
+import {
+  refreshSolutionsAction,
+  stopRefreshSolutionsAction,
+} from '../ducks/app/solutions';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -90,16 +95,20 @@ const SelectContainer = styled.div`
 `;
 
 const SolutionsList = props => {
+  const theme = useSelector(state => state.config.theme);
+  const solutions = useSelector(state => state.app.solutions.solutions);
+  const environments = useSelector(state => state.app.solutions.environments);
+  const history = useHistory();
+  const { intl } = props;
+
+  useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
+
   const [solutionSortBy, setSolutionSortBy] = useState('name');
   const [solutionSortDirection, setSolutionSortDirection] = useState('ASC');
   const [envSortBy, setEnvSortBy] = useState('name');
   const [envSortDirection, setEnvSortDirection] = useState('ASC');
   const [isAddSolutionModalOpen, setisAddSolutionModalOpen] = useState(false);
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
-  const theme = useSelector(state => state.config.theme);
-  const solutions = useSelector(state => state.app.solutions.solutions);
-  const environments = useSelector(state => state.app.solutions.environments);
-  const history = useHistory();
 
   const onSort = (setSortBy, setSortDirection) => ({
     sortBy,
