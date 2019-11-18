@@ -1,40 +1,31 @@
 import {
   all,
-  take,
   call,
+  delay,
+  fork,
   put,
-  takeLatest,
-  takeEvery,
   select,
-  delay
+  take,
+  takeEvery,
+  takeLatest,
 } from 'redux-saga/effects';
-import { eventChannel, END } from 'redux-saga';
 
 import * as CoreApi from '../../services/k8s/core';
 import * as ApiSalt from '../../services/salt/api';
 import history from '../../history';
 import {
   addNotificationSuccessAction,
-  addNotificationErrorAction
+  addNotificationErrorAction,
 } from './notifications';
 
 import { intl } from '../../translations/IntlGlobalProvider';
-import { addJobAction, removeJobAction } from './salt.js';
+import { addJobAction, JOB_COMPLETED } from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
-
-import {
-  getJobStatusFromPrintJob,
-  getJidFromNameLocalStorage,
-  addJobLocalStorage,
-  removeJobLocalStorage,
-  getJobStatusFromEventRet,
-  getNameFromJidLocalStorage
-} from '../../services/salt/utils';
 
 import {
   API_STATUS_READY,
   API_STATUS_NOT_READY,
-  API_STATUS_UNKNOWN
+  API_STATUS_UNKNOWN,
 } from '../../constants.js';
 
 // Actions
@@ -48,9 +39,6 @@ const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
-const CONNECT_SALT_API = 'CONNECT_SALT_API';
-const UPDATE_EVENTS = 'UPDATE_EVENTS';
-const SUBSCRIBE_DEPLOY_EVENTS = 'SUBSCRIBE_DEPLOY_EVENTS';
 
 export const ROLE_MASTER = 'node-role.kubernetes.io/master';
 export const ROLE_NODE = 'node-role.kubernetes.io/node';
@@ -72,13 +60,13 @@ export const roleTaintMap = [
     taints: [
       {
         key: ROLE_BOOTSTRAP,
-        effect: 'NoSchedule'
+        effect: 'NoSchedule',
       },
       {
         key: ROLE_INFRA,
-        effect: 'NoSchedule'
-      }
-    ]
+        effect: 'NoSchedule',
+      },
+    ],
   },
   {
     control_plane: true,
@@ -89,20 +77,20 @@ export const roleTaintMap = [
     taints: [
       {
         key: ROLE_MASTER,
-        effect: 'NoSchedule'
+        effect: 'NoSchedule',
       },
       {
         key: ROLE_ETCD,
-        effect: 'NoSchedule'
-      }
-    ]
+        effect: 'NoSchedule',
+      },
+    ],
   },
   {
     control_plane: false,
     workload_plane: true,
     bootstrap: false,
     infra: false,
-    roles: [ROLE_NODE]
+    roles: [ROLE_NODE],
   },
   {
     control_plane: false,
@@ -113,16 +101,16 @@ export const roleTaintMap = [
     taints: [
       {
         key: ROLE_INFRA,
-        effect: 'NoSchedule'
-      }
-    ]
+        effect: 'NoSchedule',
+      },
+    ],
   },
   {
     control_plane: true,
     workload_plane: true,
     bootstrap: false,
     infra: false,
-    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_NODE]
+    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_NODE],
   },
   {
     control_plane: true,
@@ -133,33 +121,32 @@ export const roleTaintMap = [
     taints: [
       {
         key: ROLE_INFRA,
-        effect: 'NoSchedule'
-      }
-    ]
+        effect: 'NoSchedule',
+      },
+    ],
   },
   {
     control_plane: false,
     workload_plane: true,
     bootstrap: false,
     infra: true,
-    roles: [ROLE_INFRA]
+    roles: [ROLE_INFRA],
   },
   {
     control_plane: true,
     workload_plane: true,
     bootstrap: false,
     infra: true,
-    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_INFRA]
-  }
+    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_INFRA],
+  },
 ];
 
 // Reducer
 const defaultState = {
   clusterVersion: '',
   list: [],
-  events: {},
   isRefreshing: false,
-  isLoading: false
+  isLoading: false,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -169,22 +156,12 @@ export default function reducer(state = defaultState, action = {}) {
     case CREATE_NODE_FAILED:
       return {
         ...state,
-        errors: { create_node: action.payload }
+        errors: { create_node: action.payload },
       };
     case CLEAR_CREATE_NODE_ERROR:
       return {
         ...state,
-        errors: { create_node: null }
-      };
-    case UPDATE_EVENTS:
-      return {
-        ...state,
-        events: {
-          ...state.events,
-          [action.payload.jid]: state.events[action.payload.jid]
-            ? [...state.events[action.payload.jid], action.payload.msg]
-            : [action.payload.msg]
-        }
+        errors: { create_node: null },
       };
     default:
       return state;
@@ -216,18 +193,6 @@ export const deployNodeAction = payload => {
   return { type: DEPLOY_NODE, payload };
 };
 
-export const connectSaltApiAction = payload => {
-  return { type: CONNECT_SALT_API, payload };
-};
-
-export const updateDeployEventsAction = payload => {
-  return { type: UPDATE_EVENTS, payload };
-};
-
-export const subscribeDeployEventsAction = jid => {
-  return { type: SUBSCRIBE_DEPLOY_EVENTS, jid };
-};
-
 export const refreshNodesAction = () => {
   return { type: REFRESH_NODES };
 };
@@ -246,18 +211,20 @@ export function* fetchClusterVersion() {
           ? result.body.items[0].metadata.annotations[
               CLUSTER_VERSION_ANNOTATION
             ]
-          : ''
-      })
+          : '',
+      }),
     );
   }
 }
 
 export function* fetchNodes() {
-  yield put(
-    updateNodesAction({
-      isLoading: true
-    })
-  );
+  yield put(updateNodesAction({ isLoading: true }));
+
+  const allJobs = yield select(state => state.app.salt.jobs);
+  const deployingNodes = allJobs
+    .filter(job => job.name.startsWith('deploy-node/') && !job.completed)
+    .map(job => job.name.replace(/^(deploy-node\/)/, ''));
+
   const result = yield call(CoreApi.getNodes);
   if (!result.error) {
     yield put(
@@ -277,7 +244,7 @@ export function* fetchNodes() {
 
           const roleTaintMatched = roleTaintMap.find(item => {
             const nodeRoles = Object.keys(node.metadata.labels).filter(role =>
-              role.includes(ROLE_PREFIX)
+              role.includes(ROLE_PREFIX),
             );
 
             return (
@@ -285,7 +252,7 @@ export function* fetchNodes() {
               nodeRoles.every(role => item.roles.includes(role)) &&
               (item.taints && node.spec.taints
                 ? node.spec.taints.every(taint =>
-                    item.taints.find(item => item.key === taint.key)
+                    item.taints.find(item => item.key === taint.key),
                   )
                 : item.taints === node.spec.taints)
             );
@@ -315,60 +282,16 @@ export function* fetchNodes() {
             workload_plane: roleTaintMatched && roleTaintMatched.workload_plane,
             bootstrap: roleTaintMatched && roleTaintMatched.bootstrap,
             infra: roleTaintMatched && roleTaintMatched.infra,
-            jid: getJidFromNameLocalStorage(node.metadata.name),
-            roles: rolesLabel.join(' / ')
+            roles: rolesLabel.join(' / '),
+            deploying: deployingNodes.includes(node.metadata.name),
           };
-        })
-      })
-    );
-
-    yield all(
-      result.body.items.map(node => {
-        return call(getJobStatus, node.metadata.name);
-      })
+        }),
+      }),
     );
   }
   yield delay(1000); // To make sur that the loader is visible for at least 1s
-  yield put(
-    updateNodesAction({
-      isLoading: false
-    })
-  );
+  yield put(updateNodesAction({ isLoading: false }));
   return result;
-}
-
-export function* getJobStatus(name) {
-  const jid = getJidFromNameLocalStorage(name);
-  if (jid) {
-    const result = yield call(ApiSalt.printJob, jid);
-    const status = {
-      name,
-      ...getJobStatusFromPrintJob(result, jid)
-    };
-    if (status.completed) {
-      yield put(removeJobAction(jid));
-      removeJobLocalStorage(jid);
-      if (status.success) {
-        yield put(
-          addNotificationSuccessAction({
-            title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_success', { name })
-          })
-        );
-      } else {
-        yield put(
-          addNotificationErrorAction({
-            title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_failed', {
-              name,
-              step: status.step_id,
-              reason: status.comment
-            })
-          })
-        );
-      }
-    }
-  }
 }
 
 export function* createNode({ payload }) {
@@ -377,24 +300,24 @@ export function* createNode({ payload }) {
     metadata: {
       name: payload.name,
       labels: {
-        'metalk8s.scality.com/version': clusterVersion
+        'metalk8s.scality.com/version': clusterVersion,
       },
       annotations: {
         'metalk8s.scality.com/ssh-user': payload.ssh_user,
         'metalk8s.scality.com/ssh-port': payload.ssh_port,
         'metalk8s.scality.com/ssh-host': payload.hostName_ip,
         'metalk8s.scality.com/ssh-key-path': payload.ssh_key_path,
-        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString()
-      }
+        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString(),
+      },
     },
-    spec: {}
+    spec: {},
   };
 
   const roleTaintMatched = roleTaintMap.find(
     role =>
       role.control_plane === payload.control_plane &&
       role.workload_plane === payload.workload_plane &&
-      role.infra === payload.infra
+      role.infra === payload.infra,
   );
 
   if (roleTaintMatched) {
@@ -410,19 +333,21 @@ export function* createNode({ payload }) {
     yield put(
       addNotificationSuccessAction({
         title: intl.translate('node_creation'),
-        message: intl.translate('node_creation_success', { name: payload.name })
-      })
+        message: intl.translate('node_creation_success', {
+          name: payload.name,
+        }),
+      }),
     );
   } else {
     yield put({
       type: CREATE_NODE_FAILED,
-      payload: result.error.body.message
+      payload: result.error.body.message,
     });
     yield put(
       addNotificationErrorAction({
         title: intl.translate('node_creation'),
-        message: intl.translate('node_creation_failed', { name: payload.name })
-      })
+        message: intl.translate('node_creation_failed', { name: payload.name }),
+      }),
     );
   }
 }
@@ -434,98 +359,60 @@ export function* deployNode({ payload }) {
     yield put(
       addNotificationErrorAction({
         title: intl.translate('node_deployment'),
-        message: result.error
-      })
+        message: result.error,
+      }),
     );
   } else {
-    yield call(subscribeDeployEvents, { jid: result.return[0].jid });
-    addJobLocalStorage(result.return[0].jid, payload.name);
+    yield put(
+      addJobAction({
+        name: `deploy-node/${payload.name}`,
+        jid: result.return[0].jid,
+      }),
+    );
     yield call(fetchNodes);
   }
 }
 
-export function subSSE(eventSrc) {
-  const subs = emitter => {
-    eventSrc.onmessage = msg => {
-      emitter(msg);
-    };
-    eventSrc.onerror = () => {
-      emitter(END);
-    };
-    return () => {
-      eventSrc.close();
-    };
-  };
-  return eventChannel(subs);
-}
-
-export function* sseSagas({ payload }) {
-  const eventSrc = new EventSource(
-    `${payload.url}/events?token=${payload.token}`
-  );
-  const channel = yield call(subSSE, eventSrc);
+export function* watchDeployJobs() {
   while (true) {
-    const msg = yield take(channel);
-    const data = JSON.parse(msg.data);
+    const completedJob = yield take(JOB_COMPLETED);
+    const {
+      payload: { jid, status },
+    } = completedJob;
     const jobs = yield select(state => state.app.salt.jobs);
-
-    yield all(
-      jobs.map(jid => {
-        if (data.tag.includes(jid)) {
-          return call(updateDeployEvents, jid, data);
-        }
-        return data;
-      })
-    );
-  }
-}
-
-export function* updateDeployEvents(jid, msg) {
-  yield put(updateDeployEventsAction({ jid, msg }));
-  if (msg.tag.includes('/ret')) {
-    const name = getNameFromJidLocalStorage(jid);
-    const status = {
-      name,
-      ...getJobStatusFromEventRet(msg.data)
-    };
-    if (status.completed) {
-      yield put(removeJobAction(jid));
-      removeJobLocalStorage(jid);
+    const jobName = jobs.find(job => job.jid === jid).name;
+    if (jobName.startsWith('deploy-node/')) {
+      const nodeName = jobName.replace(/^(deploy-node\/)/, '');
       if (status.success) {
         yield put(
           addNotificationSuccessAction({
             title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_success', { name })
-          })
+            message: intl.translate('node_deployment_success', {
+              name: nodeName,
+            }),
+          }),
         );
       } else {
         yield put(
           addNotificationErrorAction({
             title: intl.translate('node_deployment'),
             message: intl.translate('node_deployment_failed', {
-              name,
-              step: status.step_id,
-              reason: status.comment
-            })
-          })
+              name: nodeName,
+              step: status.step,
+              reason: status.comment,
+            }),
+          }),
         );
       }
     }
   }
 }
 
-export function* subscribeDeployEvents({ jid }) {
-  const jobs = yield select(state => state.app.salt.jobs);
-  if (!jobs.includes(jid)) {
-    yield put(addJobAction(jid));
-  }
-}
-
 export function* refreshNodes() {
   yield put(
     updateNodesAction({
-      isRefreshing: true
-    })
+      isRefreshing: true,
+    }),
   );
 
   const result = yield call(fetchNodes);
@@ -541,18 +428,19 @@ export function* refreshNodes() {
 export function* stopRefreshNodes() {
   yield put(
     updateNodesAction({
-      isRefreshing: false
-    })
+      isRefreshing: false,
+    }),
   );
 }
 
 export function* nodesSaga() {
-  yield takeEvery(FETCH_NODES, fetchNodes);
-  yield takeEvery(CREATE_NODE, createNode);
-  yield takeLatest(DEPLOY_NODE, deployNode);
-  yield takeEvery(CONNECT_SALT_API, sseSagas);
-  yield takeEvery(SUBSCRIBE_DEPLOY_EVENTS, subscribeDeployEvents);
-  yield takeEvery(REFRESH_NODES, refreshNodes);
-  yield takeEvery(STOP_REFRESH_NODES, stopRefreshNodes);
-  yield takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion);
+  yield all([
+    takeEvery(FETCH_NODES, fetchNodes),
+    takeEvery(CREATE_NODE, createNode),
+    takeLatest(DEPLOY_NODE, deployNode),
+    takeEvery(REFRESH_NODES, refreshNodes),
+    takeEvery(STOP_REFRESH_NODES, stopRefreshNodes),
+    takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion),
+    fork(watchDeployJobs),
+  ]);
 }

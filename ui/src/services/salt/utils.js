@@ -1,6 +1,49 @@
 const JOBS = 'JOBS';
 
-//Parse only first error level
+// Jobs in LocalStorage {{{
+
+export function listJobsFromLocalStorage() {
+  return JSON.parse(localStorage.getItem(JOBS)) || [];
+}
+
+export function addJobToLocalStorage(jid, name) {
+  const jobs = listJobsFromLocalStorage();
+  const job = jobs.find(item => item.name === name);
+  if (job) {
+    job.jid = jid;
+  } else {
+    jobs.push({ jid, name });
+  }
+  localStorage.setItem(JOBS, JSON.stringify(jobs));
+}
+
+export function removeJobFromLocalStorage(jid) {
+  let jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
+  jobs = jobs.filter(job => job.jid !== jid);
+  if (jobs.length) {
+    localStorage.setItem(JOBS, JSON.stringify(jobs));
+  } else {
+    localStorage.removeItem(JOBS);
+  }
+}
+
+export function getJidFromNameLocalStorage(name) {
+  const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
+  const job = jobs.find(job => job.name === name);
+  return job?.jid;
+}
+
+export function getNameFromJidLocalStorage(jid) {
+  const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
+  const job = jobs.find(job => job.jid === jid);
+  return job?.name;
+}
+
+// }}}
+
+// Status of a job {{{
+
+// Parse only first error level
 export function getJobErrorStatus(returner, status) {
   const steps = Object.values(returner.return.data)[0];
   let firstFailedStepIndex = Infinity;
@@ -14,11 +57,11 @@ export function getJobErrorStatus(returner, status) {
 
   if (firstFailedStepKey) {
     const failedStep = steps[firstFailedStepKey];
-    const step_id = firstFailedStepKey.split('_|-')[1];
-    status.step_id = step_id;
-    status.comment = failedStep.comment;
+    const stepID = firstFailedStepKey.split('_|-')[1];
+    return { step: stepID, comment: failedStep.comment };
   }
 }
+
 export function getJobStatusFromPrintJob(result, jid) {
   const status = {
     completed: false
@@ -49,36 +92,4 @@ export function getJobStatusFromEventRet(result) {
   }
   return status;
 }
-
-export function getJidFromNameLocalStorage(name) {
-  const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
-  const job = jobs.find(job => job.name === name);
-  return job && job.jid;
-}
-
-export function getNameFromJidLocalStorage(jid) {
-  const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
-  const job = jobs.find(job => job.jid === jid);
-  return job && job.name;
-}
-
-export function addJobLocalStorage(jid, name) {
-  const jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
-  const job = jobs.find(item => item.name === name);
-  if (job) {
-    job.jid = jid;
-  } else {
-    jobs.push({ jid, name });
-  }
-  localStorage.setItem(JOBS, JSON.stringify(jobs));
-}
-
-export function removeJobLocalStorage(jid) {
-  let jobs = JSON.parse(localStorage.getItem(JOBS)) || [];
-  jobs = jobs.filter(job => job.jid !== jid);
-  if (jobs.length) {
-    localStorage.setItem(JOBS, JSON.stringify(jobs));
-  } else {
-    localStorage.removeItem(JOBS);
-  }
-}
+// }}}
