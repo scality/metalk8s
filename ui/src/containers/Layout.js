@@ -23,11 +23,6 @@ import { updateLanguageAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import VolumeInformation from './VolumeInformation';
-import { useRefreshEffect } from '../services/utils';
-import {
-  refreshSolutionsAction,
-  stopRefreshSolutionsAction,
-} from '../ducks/app/solutions';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
 
 const Layout = props => {
@@ -45,7 +40,6 @@ const Layout = props => {
   const { intl } = props;
   const history = useHistory();
 
-  useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
