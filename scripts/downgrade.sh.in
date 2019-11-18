@@ -107,6 +107,17 @@ downgrade_bootstrap () {
         | cut -d' ' -f2- )"
     repo_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:repositories --out txt \
         | cut -d' ' -f2- )"
+
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    ca_minion="$($SALT_CALL pillar.get \
+        metalk8s:ca:minion --out txt | cut -c 8-)"
+
+    "${SALT_MASTER_CALL[@]}" salt "$ca_minion" state.sls \
+        metalk8s.roles.ca saltenv="metalk8s-$DESTINATION_VERSION"
+
+    $SALT_CALL state.sls metalk8s.salt.master.certs \
+        saltenv="metalk8s-$DESTINATION_VERSION" --retcode-passthrough
+
     $SALT_CALL --local state.sls metalk8s.roles.bootstrap \
         saltenv="metalk8s-$DESTINATION_VERSION" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
