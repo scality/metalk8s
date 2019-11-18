@@ -14,6 +14,11 @@
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <!--
+      brand/index.css is the entrypoint for "branded" assets and styles,
+      and can be overridden at runtime through a mounted ConfigMap
+    -->
+    <link rel="stylesheet" href="%PUBLIC_URL%/brand/index.css" />
+    <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
       Only files inside the `public` folder can be referenced from the HTML.
