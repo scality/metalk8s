@@ -115,7 +115,7 @@ Deploy kube-proxy (ConfigMap):
 Deploy kube-proxy (DaemonSet):
   metalk8s_kubernetes.object_present:
     - manifest:
-        apiVersion: extensions/v1beta1
+        apiVersion: apps/v1
         kind: DaemonSet
         metadata:
           name: kube-proxy

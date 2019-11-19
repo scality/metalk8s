@@ -109,7 +109,7 @@ Delete old nginx ingress daemon set:
     - name: nginx-ingress-controller
     - namespace: metalk8s-ingress
     - kind: DaemonSet
-    - apiVersion: extensions/v1beta1
+    - apiVersion: apps/v1
     - wait:
         attempts: 10
         sleep: 10
@@ -123,7 +123,7 @@ Delete old nginx ingress deployment:
     - name: nginx-ingress-default-backend
     - namespace: metalk8s-ingress
     - kind: Deployment
-    - apiVersion: extensions/v1beta1
+    - apiVersion: apps/v1
     - wait:
         attempts: 10
         sleep: 10

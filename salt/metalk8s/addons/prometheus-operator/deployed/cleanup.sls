@@ -7,7 +7,7 @@
 # corresponding entry may need to be removed here...
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: prometheus-operator-grafana-test
