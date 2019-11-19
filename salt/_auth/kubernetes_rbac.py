@@ -58,6 +58,40 @@ def _check_k8s_creds(kubeconfig, token):
         raise
 
 
+def _check_node_admin(kubeconfig):
+    client = kubernetes.client.ApiClient(configuration=kubeconfig)
+
+    authz_api = kubernetes.client.AuthorizationV1Api(api_client=client)
+
+    result = authz_api.create_self_subject_access_review(
+        body=kubernetes.client.V1SelfSubjectAccessReview(
+            spec=kubernetes.client.V1SelfSubjectAccessReviewSpec(
+                resource_attributes=kubernetes.client.V1ResourceAttributes(
+                    resource='nodes',
+                    verb='*',
+                ),
+            ),
+        ),
+    )
+
+    return result.status.allowed
+
+
+AVAILABLES_GROUPS = {
+    'node-admins': _check_node_admin
+}
+
+
+def _get_groups(kubeconfig):
+    groups = set()
+
+    for group, func in AVAILABLES_GROUPS.items():
+        if func(kubeconfig):
+            groups.add(group)
+
+    return list(groups)
+
+
 @_log_exceptions
 def _auth_basic(kubeconfig, username, token):
     decoded = base64.decodestring(token)
@@ -86,27 +120,7 @@ def _groups_basic(kubeconfig, username, token):
     kubeconfig.cert_file = None
     kubeconfig.key_file = None
 
-    client = kubernetes.client.ApiClient(configuration=kubeconfig)
-
-    authz_api = kubernetes.client.AuthorizationV1Api(api_client=client)
-
-    groups = set()
-
-    result = authz_api.create_self_subject_access_review(
-        body=kubernetes.client.V1SelfSubjectAccessReview(
-            spec=kubernetes.client.V1SelfSubjectAccessReviewSpec(
-                resource_attributes=kubernetes.client.V1ResourceAttributes(
-                    resource='nodes',
-                    verb='*',
-                ),
-            ),
-        ),
-    )
-
-    if result.status.allowed:
-        groups.add('node-admins')
-
-    return list(groups)
+    return _get_groups(kubeconfig)
 
 
 AUTH_HANDLERS['basic'] = {
@@ -114,13 +128,33 @@ AUTH_HANDLERS['basic'] = {
     'groups': _groups_basic,
 }
 
+
 @_log_exceptions
 def _auth_bearer(kubeconfig, username, token):
     return _check_k8s_creds(kubeconfig, 'Bearer {}'.format(token))
 
+
+@_log_exceptions
+def _groups_bearer(kubeconfig, _username, token):
+    kubeconfig.api_key = {
+        'authorization': token,
+    }
+    kubeconfig.api_key_prefix = {
+        'authorization': 'Bearer',
+    }
+    kubeconfig.username = None
+    kubeconfig.password = None
+    kubeconfig.cert_file = None
+    kubeconfig.key_file = None
+
+    return _get_groups(kubeconfig)
+
+
 AUTH_HANDLERS['bearer'] = {
     'auth': _auth_bearer,
+    'groups': _groups_bearer
 }
+
 
 @_log_exceptions
 def _load_kubeconfig(opts):
