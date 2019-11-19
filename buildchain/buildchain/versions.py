@@ -174,6 +174,11 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         digest='sha256:cd93b8711bb92eb9c437d74217311519e0a93bc55779aa664325dc83cd13cb3',
     ),
     Image(
+        name='k8s-prometheus-adapter-amd64',
+        version='v0.5.0',
+        digest='sha256:acf4c4dc6aaa51e3004eebdc410b509db45d1a6ebd255457c5745f0b4671678f',
+    ),
+    Image(
         name='prometheus-config-reloader',
         version='v0.32.0',
         digest='sha256:f1e57817dcfdb2c76e8a154b39180c6c8f3f16b990fe9cc41bee34cca0784a64',

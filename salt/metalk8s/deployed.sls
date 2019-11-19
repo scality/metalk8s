@@ -10,3 +10,4 @@ include:
   - metalk8s.addons.volumes.deployed
   - metalk8s.addons.solutions.deployed
   - metalk8s.addons.ui.deployed
+  - metalk8s.addons.prometheus-adapter.deployed
