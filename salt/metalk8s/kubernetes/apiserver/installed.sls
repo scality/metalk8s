@@ -1,5 +1,8 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
+{%- from "metalk8s/addons/nginx-ingress-control-plane/control-plane-ip.sls"
+    import ingress_control_plane with context
+%}
 
 {%- set htpasswd_path = "/etc/kubernetes/htpasswd" %}
 {%- set encryption_k8s_path = "/etc/kubernetes/encryption.conf" %}
@@ -7,6 +10,7 @@
 include:
   - metalk8s.kubernetes.ca.advertised
   - metalk8s.kubernetes.sa.advertised
+  - metalk8s.addons.nginx-ingress.ca.advertised
   - .certs
 
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
@@ -95,6 +99,7 @@ Create kube-apiserver Pod manifest:
         - /etc/kubernetes/pki/front-proxy-client.crt
         - /etc/kubernetes/pki/front-proxy-client.key
         - /etc/kubernetes/pki/sa.pub
+        - /etc/metalk8s/pki/nginx-ingress/ca.crt
         - {{ htpasswd_path }}
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
         - /etc/keepalived/check-apiserver.sh
@@ -137,6 +142,11 @@ Create kube-apiserver Pod manifest:
           - --service-cluster-ip-range={{ networks.service }}
           - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+          - --oidc-issuer-url=https://{{ ingress_control_plane }}/oidc
+          - --oidc-client-id=oidc-auth-client
+          - --oidc-ca-file=/etc/metalk8s/pki/nginx-ingress/ca.crt
+          - --oidc-username-claim=email
+          - --oidc-groups-claim=groups
         requested_cpu: 250m
         volumes:
           - path: {{ encryption_k8s_path }}
@@ -148,6 +158,8 @@ Create kube-apiserver Pod manifest:
           {%- endif %}
           - path: /etc/kubernetes/pki
             name: k8s-certs
+          - path: /etc/metalk8s/pki
+            name: metalk8s-certs
           - path: /etc/ssl/certs
             name: ca-certs
           - path: {{ htpasswd_path }}
@@ -215,6 +227,7 @@ Create kube-apiserver Pod manifest:
       - file: Ensure front-proxy CA cert is present
       - file: Ensure SA pub key is present
       - file: Set up default basic auth htpasswd
+      - file: Ensure Ingress CA cert is present
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
       - file: Create keepalived check script
       - file: Create keepalived configuration file generator
