@@ -282,30 +282,10 @@ if HAS_LIBS:
         ),
         # }}}
         # /apis/extensions/v1beta1/ {{{
-        ('extensions/v1beta1', 'DaemonSet'): KindInfo(
-            model=k8s_client.V1beta1DaemonSet,
-            api_cls=k8s_client.ExtensionsV1beta1Api,
-            name='namespaced_daemon_set',
-        ),
-        ('extensions/v1beta1', 'Deployment'): KindInfo(
-            model=k8s_client.ExtensionsV1beta1Deployment,
-            api_cls=k8s_client.ExtensionsV1beta1Api,
-            name='namespaced_deployment',
-        ),
         ('extensions/v1beta1', 'Ingress'): KindInfo(
             model=k8s_client.V1beta1Ingress,
             api_cls=k8s_client.ExtensionsV1beta1Api,
             name='namespaced_ingress'
-        ),
-        ('extensions/v1beta1', 'PodSecurityPolicy'): KindInfo(
-            model=k8s_client.ExtensionsV1beta1PodSecurityPolicy,
-            api_cls=k8s_client.ExtensionsV1beta1Api,
-            name='pod_security_policy',
-        ),
-        ('extensions/v1beta1', 'ReplicaSet'): KindInfo(
-            model=k8s_client.V1beta1ReplicaSet,
-            api_cls=k8s_client.ExtensionsV1beta1Api,
-            name='namespaced_replica_set',
         ),
         # }}}
         # /apis/apiextensions.k8s.io/v1beta1/ {{{
