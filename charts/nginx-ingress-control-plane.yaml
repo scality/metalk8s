@@ -38,5 +38,8 @@ controller:
     ports:
       https: 8443
 
+  extraArgs:
+    default-ssl-certificate: "metalk8s-ingress/ingress-control-plane-default-certificate"
+
 defaultBackend:
   enabled: false

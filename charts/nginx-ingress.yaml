@@ -18,6 +18,9 @@ controller:
   service:
     type: ClusterIP
 
+  extraArgs:
+    default-ssl-certificate: "metalk8s-ingress/ingress-workload-plane-default-certificate"
+
 defaultBackend:
   image:
     repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-defaultbackend-amd64\", False) }}{%- raw -%}'

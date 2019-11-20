@@ -15,6 +15,10 @@ mine_functions:
     mine_function: hashutil.base64_encodefile
     fname: /etc/kubernetes/pki/sa.pub
 
+  ingress_ca_b64:
+    mine_function: hashutil.base64_encodefile
+    fname: /etc/metalk8s/pki/nginx-ingress/ca.crt
+
 x509_signing_policies:
   kube_apiserver_client_policy:
     - minions: '*'
@@ -50,4 +54,11 @@ x509_signing_policies:
     - signing_cert: /etc/kubernetes/pki/front-proxy-ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: clientAuth
+    - days_valid: 365
+  ingress_server_policy:
+    - minions: '*'
+    - signing_private_key: /etc/metalk8s/pki/nginx-ingress/ca.key
+    - signing_cert: /etc/metalk8s/pki/nginx-ingress/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: serverAuth
     - days_valid: 365

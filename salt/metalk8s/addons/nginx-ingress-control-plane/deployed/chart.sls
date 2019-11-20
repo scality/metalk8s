@@ -278,6 +278,7 @@ spec:
         - --election-id=ingress-control-plane-controller-leader
         - --ingress-class=nginx-control-plane
         - --configmap=metalk8s-ingress/nginx-ingress-control-plane-controller
+        - --default-ssl-certificate=metalk8s-ingress/ingress-control-plane-default-certificate
         env:
         - name: POD_NAME
           valueFrom:
