@@ -33,6 +33,9 @@ spec:
 {{- if hasKey .Values.service "loadBalancerIP" }}
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
 {{- end }}
+{{- if hasKey .Values.service "clusterIP" }}
+  clusterIP: {{ .Values.service.clusterIP | quote }}
+{{- end }}
   selector:
     app.kubernetes.io/name: {{ include "dex.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
