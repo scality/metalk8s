@@ -29,6 +29,7 @@ Overview:
 
 
 import abc
+import base64
 import importlib
 from pathlib import Path
 import sys
@@ -44,6 +45,20 @@ from buildchain import versions
 sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
 container_registry : Any = importlib.import_module('static-container-registry')
 
+def salt_embed_text(path):
+    data = ['|']
+    with path.open(encoding='utf-8') as fp:
+        for line in fp:
+            data.append('    {}'.format(line.rstrip()))
+    return '\n'.join(data)
+
+def salt_embed_bytes(path):
+    data = ['|']
+    bytestring = path.read_bytes()
+    b64data = base64.encodebytes(bytestring).decode('utf-8')
+    for line in b64data.split('\n'):
+        data.append('    {}'.format(line.rstrip()))
+    return '\n'.join(data)
 
 def task_salt_tree() -> types.TaskDict:
     """Deploy the Salt tree in ISO_ROOT."""
@@ -178,6 +193,9 @@ OPERATOR_ROLE        : Path = OPERATOR_YAML_ROOT/'role.yaml'
 OPERATOR_ROLEBINDING : Path = OPERATOR_YAML_ROOT/'role_binding.yaml'
 OPERATOR_DEPLOYMENT  : Path = OPERATOR_YAML_ROOT/'operator.yaml'
 
+SCALITY_LOGO : Path = constants.ROOT/'ui-login/logo.png'
+SCALITY_FAVICON : Path = constants.ROOT/'ui-login/favicon.png'
+LOGIN_STYLE : Path = constants.ROOT/'ui-login/styles.css'
 # List of salt files to install.
 SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     targets.TemplateFile(
@@ -226,7 +244,21 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/dex/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/dex/deployed/tls-secret.sls'),
     Path('salt/metalk8s/addons/dex/deployed/clusterrolebinding.sls'),
-
+    targets.TemplateFile(
+        task_name='login.sls',
+        source=constants.ROOT.joinpath(
+            'salt/metalk8s/addons/dex/deployed/login.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/dex/deployed/login.sls'
+        ),
+        context={
+            'branding': salt_embed_bytes(SCALITY_LOGO),
+            'favicon': salt_embed_bytes(SCALITY_FAVICON),
+            'styles': salt_embed_text(LOGIN_STYLE),
+        },
+        file_dep=[SCALITY_LOGO, SCALITY_FAVICON, LOGIN_STYLE],
+    ),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/cleanup.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls'),

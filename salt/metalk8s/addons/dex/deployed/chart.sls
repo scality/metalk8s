@@ -36,6 +36,7 @@ stringData:
       - token
       - id_token
       skipApprovalScreen: true
+      responseTypes: ["code", "token", "id_token"]
     staticClients:
     - id: oidc-auth-client
       name: oidc-auth-client
@@ -67,7 +68,7 @@ stringData:
       idTokens: 24h
       signingKeys: 6h
     frontend:
-      theme: coreos
+      theme: scality
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -212,6 +213,9 @@ spec:
           name: config
         - mountPath: /etc/dex/tls/https/server
           name: https-tls
+        - mountPath: /web/themes/scality
+          name: dex-login
+          readOnly: true
       nodeSelector:
         node-role.kubernetes.io/infra: ''
       serviceAccountName: dex
@@ -234,6 +238,9 @@ spec:
         secret:
           defaultMode: 420
           secretName: dex-web-server-tls
+      - name: dex-login
+        configMap:
+          name: dex-login
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress

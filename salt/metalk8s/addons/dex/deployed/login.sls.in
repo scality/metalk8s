@@ -1,0 +1,13 @@
+#!jinja | metalk8s_kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dex-login
+  namespace: metalk8s-auth
+data:
+  styles.css: @@styles
+binaryData:
+  favicon.png: @@favicon
+  logo.png: @@branding
