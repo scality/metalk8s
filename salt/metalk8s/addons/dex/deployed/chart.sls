@@ -83,6 +83,7 @@ metadata:
   name: dex
   namespace: metalk8s-auth
 spec:
+  clusterIP: {% endraw -%}{{ salt.metalk8s_network.get_oidc_service_ip() }}{%- raw %}
   ports:
   - name: https
     port: 32000
