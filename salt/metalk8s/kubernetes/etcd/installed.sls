@@ -10,7 +10,7 @@ include:
 {%- set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
 
 {#- Get the list of existing etcd node. #}
-{%- set etcd_endpoints = salt['mine.get']('*', 'etcd_endpoints').values() %}
+{%- set etcd_endpoints = pillar.metalk8s.etcd.members %}
 
 {#- Compute the initial state according to the existing list of node. #}
 {%- set state = "existing" if etcd_endpoints else "new" %}
@@ -68,11 +68,3 @@ Create local etcd Pod manifest:
     - require:
       - file: Create etcd database directory
       - file: Ensure etcd CA cert is present
-
-Advertise etcd node in the mine:
-  module.run:
-    - mine.send:
-      - func: 'etcd_endpoints'
-      - mine_function: metalk8s.get_etcd_endpoint
-    - watch:
-      - metalk8s: Create local etcd Pod manifest
