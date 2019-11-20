@@ -775,6 +775,12 @@ stages:
       - ShellCommand:
           <<: *run_bootstrap
           env: *_env_version_prev
+      - ShellCommand:
+          <<: *provision_prometheus_volumes
+          env:
+            BRANCH: "development/%(prop:product_version_prev)s"
+            PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/product.txt"
+            PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s"
       # --- Test version N-1 ---
       - ShellCommand: *fast_tests_prev
       # --- Upgrade to version N ---
