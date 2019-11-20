@@ -3,8 +3,7 @@
 
 Check etcd cluster health:
   module.run:
-    - metalk8s_etcd.check_etcd_health:
-      - minion_id: {{ salt.network.get_hostname() }}
+    - metalk8s_etcd.check_etcd_health: []
 
 {%- for node in etcd_nodes | sort %}
 
