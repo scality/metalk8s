@@ -3,8 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { useRouteMatch, useHistory } from 'react-router';
+import { Route, Switch } from 'react-router-dom';
 import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
-import { Switch } from 'react-router-dom';
 
 import NodeCreateForm from './NodeCreateForm';
 import NodeList from './NodeList';
@@ -15,11 +15,10 @@ import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
 import About from './About';
 import PrivateRoute from './PrivateRoute';
-import { logoutAction } from '../ducks/login';
 import { toggleSideBarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
-import { updateLanguageAction } from '../ducks/config';
+import { updateLanguageAction, logoutAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import VolumeInformation from './VolumeInformation';
@@ -29,16 +28,21 @@ import {
   stopRefreshSolutionsAction,
 } from '../ducks/app/solutions';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
+import CallbackPage from './LoginCallback';
 
 const Layout = props => {
-  const user = useSelector(state => state.login.user);
+  const user = useSelector(state => state.oidc.user);
   const sidebar = useSelector(state => state.app.layout.sidebar);
-  const theme = useSelector(state => state.config.theme);
+  const { theme, language } = useSelector(state => state.config);
   const notifications = useSelector(state => state.app.notifications.list);
-  const language = useSelector(state => state.config.language);
   const solutions = useSelector(state => state.app.solutions.solutions);
   const dispatch = useDispatch();
-  const logout = () => dispatch(logoutAction());
+
+  const logout = event => {
+    event.preventDefault();
+    dispatch(logoutAction());
+  };
+
   const removeNotification = uid => dispatch(removeNotificationAction(uid));
   const updateLanguage = language => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
@@ -150,9 +154,11 @@ const Layout = props => {
     },
     {
       type: 'dropdown',
-      text: user && user.username,
+      text: user?.profile?.name,
       icon: <i className="fas fa-user" />,
-      items: [{ label: intl.messages.log_out, onClick: logout }],
+      items: [
+        { label: intl.messages.log_out, onClick: event => logout(event) },
+      ],
     },
   ];
 
@@ -210,6 +216,11 @@ const Layout = props => {
           />
           <PrivateRoute exact path="/about" component={About} />
           <PrivateRoute exact path="/" component={ClusterMonitoring} />
+          <Route
+            exact
+            path="/oauth2/callback"
+            component={() => <CallbackPage />}
+          />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>

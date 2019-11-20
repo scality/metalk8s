@@ -1,4 +1,5 @@
 import { combineReducers } from 'redux';
+import { reducer as oidcReducer } from 'redux-oidc';
 
 import config from './config';
 import nodes from './app/nodes';
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
     volumes,
     solutions,
   }),
+  oidc: oidcReducer,
 });
 
 export default rootReducer;

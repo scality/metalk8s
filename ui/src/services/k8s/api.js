@@ -1,5 +1,3 @@
-import ApiClient from '../ApiClient';
-
 import { Config } from '@kubernetes/client-node/dist/browser/config';
 import { CoreV1Api } from '@kubernetes/client-node/dist/gen/api/coreV1Api';
 import { CustomObjectsApi } from '@kubernetes/client-node/dist/gen/api/customObjectsApi';
@@ -9,26 +7,12 @@ let config;
 let coreV1;
 let customObjects;
 let storage;
-let k8sApiClient = null;
 
 const SOLUTION_CONFIGMAP_NAME = 'metalk8s-solutions';
 const APP_K8S_COMPONENT_LABEL = 'app.kubernetes.io/component';
 
-export function initialize(apiUrl) {
-  k8sApiClient = new ApiClient({ apiUrl });
-}
-
-//Basic Auth
-export function authenticate(token) {
-  return k8sApiClient.get('/api/v1', null, {
-    headers: {
-      Authorization: 'Basic ' + token,
-    },
-  });
-}
-
-export const updateApiServerConfig = (url, token) => {
-  config = new Config(url, token, 'Basic');
+export const updateApiServerConfig = (url, id_token, token_type) => {
+  config = new Config(url, id_token, token_type);
   coreV1 = config.makeApiClient(CoreV1Api);
   customObjects = config.makeApiClient(CustomObjectsApi);
   storage = config.makeApiClient(StorageV1Api);
