@@ -657,12 +657,13 @@ stages:
       - ShellCommand: *run_bootstrap
       - ShellCommand: &provision_prometheus_volumes
           name: Provision Prometheus and AlertManager storage
+          env:
+            BRANCH: "%(prop:branch)s"
+            PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt"
+            PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
           command: >
-            git checkout %(prop:branch)s --quiet &&
-            sudo env
-            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
-            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
-            eve/create-volumes.sh
+            git checkout "${BRANCH}" --quiet &&
+            sudo -E eve/create-volumes.sh
           haltOnFailure: true
       # --- Test version N ---
       - ShellCommand: &fast_tests
