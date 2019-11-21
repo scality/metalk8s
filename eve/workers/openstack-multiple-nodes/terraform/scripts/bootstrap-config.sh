@@ -7,7 +7,7 @@ OUTPUT_FILE="/etc/metalk8s/bootstrap.yaml"
 mkdir -p "$(dirname $OUTPUT_FILE)"
 
 mkdir -p /etc/salt
-hostname > /etc/salt/minion_id
+echo "bootstrap-node" > /etc/salt/minion_id
 
 cat > "$OUTPUT_FILE" << EOF
 apiVersion: metalk8s.scality.com/v1alpha2
