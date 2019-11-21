@@ -104,6 +104,11 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         digest='sha256:02382353821b12c21b062c59184e227e001079bb13ebd01f9d3270ba0fcbf1e4',
     ),
     Image(
+        name='dex',
+        version='v2.19.0',
+        digest='sha256:132523cc3e9402a5e12c3b7d837da6f0c96d8a05f27bf6ba42458c2a0d1c01f5',
+    ),
+    Image(
         name='etcd',
         version='3.3.15-0',
         digest='sha256:12c2c5e5731c3bcd56e6f1c05c0f9198b6f06793fa7fca2fb43aab9622dc4afa',
