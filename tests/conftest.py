@@ -43,6 +43,19 @@ def hostname(host):
 
 
 @pytest.fixture(scope="module")
+def nodename(host):
+    """Return the kubernetes node name of the `host`
+
+    Node name need to be equal to the salt minion id so just retrieve the
+    salt minion id
+    """
+    with host.sudo():
+        return host.check_output(
+            'salt-call --local --out txt grains.get id | cut -c 8-'
+        )
+
+
+@pytest.fixture(scope="module")
 def kubeconfig_data(request, host):
     """Fixture to generate a kubeconfig file for remote usage."""
     with host.sudo():

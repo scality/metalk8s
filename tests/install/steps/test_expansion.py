@@ -27,22 +27,20 @@ def ssh_config(request):
 # }}}
 # When {{{
 
-@when(parsers.parse('we declare a new "{node_type}" node on host "{hostname}"'))
+@when(parsers.parse('we declare a new "{node_type}" node on host "{node_name}"'))
 def declare_node(
-    ssh_config, version, k8s_client, node_type, hostname, bootstrap_config
+    ssh_config, version, k8s_client, node_type, node_name, bootstrap_config
 ):
     """Declare the given node in Kubernetes."""
-    node_ip = get_node_ip(hostname, ssh_config, bootstrap_config)
-    node_name = utils.resolve_hostname(hostname, ssh_config)
+    node_ip = get_node_ip(node_name, ssh_config, bootstrap_config)
     node_manifest = get_node_manifest(
         node_type, version, node_ip, node_name
     )
     k8s_client.create_node(body=node_from_manifest(node_manifest))
 
 
-@when(parsers.parse('we deploy the node "{name}"'))
-def deploy_node(host, ssh_config, version, name):
-    node_name = utils.resolve_hostname(name, ssh_config)
+@when(parsers.parse('we deploy the node "{node_name}"'))
+def deploy_node(host, ssh_config, version, node_name):
     accept_ssh_key = [
         'salt-ssh', '-i', node_name, 'test.ping', '--roster=kubernetes'
     ]
@@ -59,21 +57,18 @@ def deploy_node(host, ssh_config, version, name):
 # }}}
 # Then {{{
 
-@then(parsers.parse('node "{hostname}" is registered in Kubernetes'))
-def check_node_is_registered(ssh_config, k8s_client, hostname):
+@then(parsers.parse('node "{node_name}" is registered in Kubernetes'))
+def check_node_is_registered(k8s_client, node_name):
     """Check if the given node is registered in Kubernetes."""
-    node_name = utils.resolve_hostname(hostname, ssh_config)
     try:
         k8s_client.read_node(node_name)
     except k8s.client.rest.ApiException as exn:
         pytest.fail(str(exn))
 
 
-@then(parsers.parse('node "{hostname}" status is "{expected_status}"'))
-def check_node_status(ssh_config, k8s_client, hostname, expected_status):
+@then(parsers.parse('node "{node_name}" status is "{expected_status}"'))
+def check_node_status(k8s_client, node_name, expected_status):
     """Check if the given node has the expected status."""
-    node_name = utils.resolve_hostname(hostname, ssh_config)
-
     def _check_node_status():
         try:
             status = k8s_client.read_node_status(node_name).status
@@ -99,7 +94,6 @@ def check_node_status(ssh_config, k8s_client, hostname, expected_status):
 @then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
 def check_etcd_role(ssh_config, k8s_client, node_name):
     """Check if the given node is a member of the etcd cluster."""
-    node_name = utils.resolve_hostname(node_name, ssh_config)
     etcd_member_list = etcdctl(k8s_client, ['member', 'list'], ssh_config)
     assert node_name in etcd_member_list, \
         'node {} is not part of the etcd cluster'.format(node_name)
@@ -135,12 +129,12 @@ def kubectl_exec(
         )
         return output
 
-def get_node_ip(hostname, ssh_config, bootstrap_config):
-    """Return the IP of the node `hostname`.
+def get_node_ip(node_name, ssh_config, bootstrap_config):
+    """Return the IP of the node `node_name`.
     We have to jump through hoops because `testinfra` does not provide a simple
     way to get this information…
     """
-    infra_node = testinfra.get_host(hostname, ssh_config=ssh_config)
+    infra_node = testinfra.get_host(node_name, ssh_config=ssh_config)
     control_plane_cidr = bootstrap_config['networks']['controlPlane']
     return utils.get_ip_from_cidr(infra_node, control_plane_cidr)
 
@@ -163,7 +157,7 @@ def run_salt_command(host, command, ssh_config):
     """Run a command inside the salt-master container."""
 
     pod = 'salt-master-{}'.format(
-        utils.resolve_hostname('bootstrap', ssh_config)
+        utils.get_node_name('bootstrap', ssh_config)
     )
 
     output = kubectl_exec(
@@ -183,8 +177,9 @@ def run_salt_command(host, command, ssh_config):
 def etcdctl(k8s_client, command, ssh_config):
     """Run an etcdctl command inside the etcd container."""
     name = 'etcd-{}'.format(
-        utils.resolve_hostname('bootstrap', ssh_config)
+        utils.get_node_name('bootstrap', ssh_config)
     )
+
     etcd_command = [
         'etcdctl',
         '--endpoints', 'https://localhost:2379',
