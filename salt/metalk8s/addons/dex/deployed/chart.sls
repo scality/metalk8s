@@ -244,8 +244,6 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx-control-plane
     nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-    nginx.ingress.kubernetes.io/proxy-ssl-secret: dex-ca-cert
-    nginx.ingress.kubernetes.io/proxy-ssl-verify: 'on'
   labels:
     app.kubernetes.io/instance: dex
     app.kubernetes.io/managed-by: salt
