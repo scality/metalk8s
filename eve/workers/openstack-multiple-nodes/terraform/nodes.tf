@@ -14,8 +14,9 @@ resource "openstack_compute_instance_v2" "bastion" {
   }
 
   security_groups = [
-    openstack_networking_secgroup_v2.nodes.name,
     openstack_networking_secgroup_v2.bastion.name,
+    openstack_networking_secgroup_v2.nodes.name,
+    openstack_networking_secgroup_v2.control_plane.name,
   ]
 
   dynamic "network" {
@@ -28,8 +29,14 @@ resource "openstack_compute_instance_v2" "bastion" {
     }
   }
 
+  network {
+    access_network = "false"
+    port = openstack_networking_port_v2.control_plane_bastion.id
+  }
+
   # We need the subnets to be created before attempting to reach the DHCP server
   depends_on = [
+    openstack_networking_subnet_v2.control_plane,
   ]
 
   connection {
@@ -58,6 +65,7 @@ resource "openstack_compute_instance_v2" "bastion" {
       "sudo yum install -y epel-release",
       "sudo yum install -y python36-pip",
       "sudo pip3.6 install tox",
+      "sudo bash scripts/network-iface-config.sh eth1",
     ]
   }
 }
@@ -74,6 +82,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
 
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
+    openstack_networking_secgroup_v2.control_plane.name,
   ]
 
   dynamic "network" {
@@ -86,8 +95,14 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     }
   }
 
+  network {
+    access_network = "false"
+    port = openstack_networking_port_v2.control_plane[0].id
+  }
+
   # We need the subnets before attempting to reach their DHCP servers
   depends_on = [
+    openstack_networking_subnet_v2.control_plane,
   ]
 
   connection {
@@ -103,9 +118,12 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     destination = "/home/centos/scripts"
   }
 
-  # Generate BootstrapConfiguration
+  # Generate BootstrapConfiguration and setup eth1 configuration
   provisioner "remote-exec" {
-    inline = ["sudo bash scripts/bootstrap-config.sh"]
+    inline = [
+      "sudo bash scripts/network-iface-config.sh eth1",
+      "sudo bash scripts/bootstrap-config.sh",
+    ]
   }
 }
 
@@ -126,6 +144,7 @@ resource "openstack_compute_instance_v2" "nodes" {
 
   security_groups = [
     openstack_networking_secgroup_v2.nodes.name,
+    openstack_networking_secgroup_v2.control_plane.name,
   ]
 
   dynamic "network" {
@@ -138,8 +157,14 @@ resource "openstack_compute_instance_v2" "nodes" {
     }
   }
 
+  network {
+    access_network = "false"
+    port = openstack_networking_port_v2.control_plane[count.index + 1].id
+  }
+
   # We need the subnets to be created before attempting to reach the DHCP server
   depends_on = [
+    openstack_networking_subnet_v2.control_plane,
   ]
 
   connection {
@@ -153,6 +178,13 @@ resource "openstack_compute_instance_v2" "nodes" {
   provisioner "file" {
     source      = "${path.module}/scripts"
     destination = "/home/centos/scripts"
+  }
+
+  # Setup eth1 configuration
+  provisioner "remote-exec" {
+    inline = [
+      "sudo bash scripts/network-iface-config.sh eth1",
+    ]
   }
 
   count = var.nodes_count
@@ -176,11 +208,11 @@ locals {
   )
 }
 
-
 output "ips" {
   value = {
-    bastion   = local.bastion_ip
-    bootstrap = local.bootstrap_ip
-    nodes     = [for node in local.nodes : node.ip]
+    bastion           = local.bastion_ip
+    bootstrap         = local.bootstrap_ip
+    nodes             = [for node in local.nodes : node.ip]
+    control_plane_vip = local.control_plane_network.vip
   }
 }
