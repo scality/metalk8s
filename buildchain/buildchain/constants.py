@@ -73,3 +73,6 @@ def git_ref() -> Optional[str]:
 GIT_REF = git_ref()
 
 # }}}
+
+# For mypy, see `--no-implicit-reexport` documentation.
+__all__ = ['ROOT']
