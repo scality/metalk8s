@@ -2,6 +2,7 @@ import { call, put, takeEvery, select } from 'redux-saga/effects';
 import { mergeTheme } from '@scality/core-ui/dist/utils';
 import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import { loadUser, createUserManager } from 'redux-oidc';
+import { USER_FOUND } from 'redux-oidc';
 
 import { store } from '../index';
 import * as Api from '../services/api';
@@ -24,6 +25,7 @@ const SET_USER_MANAGER_CONFIG = 'SET_USER_MANAGER_CONFIG';
 const SET_USER_MANAGER = 'SET_USER_MANAGER';
 export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 const LOGOUT = 'LOGOUT';
+const SET_USER_LOADED = 'SET_USER_LOADED';
 
 // Reducer
 const defaultState = {
@@ -41,6 +43,7 @@ const defaultState = {
     post_logout_redirect_uri: '/',
   },
   userManager: null,
+  isUserLoaded: false,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -61,6 +64,8 @@ export default function reducer(state = defaultState, action = {}) {
       };
     case SET_USER_MANAGER:
       return { ...state, userManager: action.payload };
+    case SET_USER_LOADED:
+      return { ...state, isUserLoaded: action.payload };
     default:
       return state;
   }
@@ -103,6 +108,10 @@ export function setUserManagerAction(conf) {
   return { type: SET_USER_MANAGER, payload: conf };
 }
 
+export function setUserLoadedAction(isLoaded) {
+  return { type: SET_USER_LOADED, payload: isLoaded };
+}
+
 export function updateAPIConfigAction(payload) {
   return { type: UPDATE_API_CONFIG, payload };
 }
@@ -124,6 +133,10 @@ export function* fetchConfig() {
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error && result.url_oidc_provider && result.url_redirect) {
+    yield call(fetchTheme);
+    yield put(setApiConfigAction(result));
+    yield call(ApiSalt.initialize, result.url_salt);
+    yield call(ApiPrometheus.initialize, result.url_prometheus);
     yield put(
       setUserManagerConfigAction({
         authority: result.url_oidc_provider,
@@ -136,24 +149,21 @@ export function* fetchConfig() {
     yield put(setUserManagerAction(createUserManager(userManagerConfig)));
     const userManager = yield select(state => state.config.userManager);
     yield call(loadUser, store, userManager);
-
-    yield call(fetchTheme);
-    yield put(setApiConfigAction(result));
-    yield call(ApiSalt.initialize, result.url_salt);
-    yield call(ApiPrometheus.initialize, result.url_prometheus);
+    yield put(setUserLoadedAction(true));
   }
 }
 
 export function* updateApiServerConfig({ payload }) {
   const api = yield select(state => state.config.api);
-  yield call(
-    ApiK8s.updateApiServerConfig,
-    api.url,
-    payload.id_token,
-    payload.token_type,
-  );
-
-  yield call(authenticateSaltApi);
+  if (api) {
+    yield call(
+      ApiK8s.updateApiServerConfig,
+      api.url,
+      payload.id_token,
+      payload.token_type,
+    );
+    yield call(authenticateSaltApi);
+  }
 }
 
 export function* setInitialLanguage() {
@@ -184,11 +194,16 @@ export function* logout() {
   }
 }
 
+export function* userFoundHandle(payload) {
+  yield call(updateApiServerConfig, payload);
+}
+
 export function* configSaga() {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
   yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
   yield takeEvery(UPDATE_LANGUAGE, updateLanguage);
   yield takeEvery(UPDATE_API_CONFIG, updateApiServerConfig);
+  yield takeEvery(USER_FOUND, userFoundHandle);
   yield takeEvery(LOGOUT, logout);
 }

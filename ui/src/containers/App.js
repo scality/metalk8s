@@ -27,6 +27,7 @@ const App = props => {
   const { language, api, theme, userManager } = useSelector(
     state => state.config,
   );
+  const isUserLoaded = useSelector(state => state.config.isUserLoaded);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -36,7 +37,7 @@ const App = props => {
     dispatch(initToggleSideBarAction());
   }, [language, dispatch]);
 
-  return api && theme && userManager ? (
+  return api && theme && userManager && isUserLoaded ? (
     <OidcProvider store={store} userManager={userManager}>
       <IntlProvider locale={language} messages={messages[language]}>
         <IntlGlobalProvider>
