@@ -31,13 +31,13 @@ def sha256sum(input_files: Sequence[Path], output_file: Path) -> None:
     digests = []
     for filepath in input_files:
         hasher = hashlib.sha256()
-        with filepath.open('rb', buffering=BUFSIZE) as fp:
-            for chunk in iter(functools.partial(fp.read, BUFSIZE), b''):
+        with filepath.open('rb', buffering=BUFSIZE) as fp_in:
+            for chunk in iter(functools.partial(fp_in.read, BUFSIZE), b''):
                 hasher.update(chunk)
         digests.append(hasher.hexdigest())
-    with output_file.open('w', encoding='utf-8') as fp:
+    with output_file.open('w', encoding='utf-8') as fp_out:
         for filepath, digest in zip(input_files, digests):
-            fp.write('{}  {}\n'.format(digest, filepath.name))
+            fp_out.write('{}  {}\n'.format(digest, filepath.name))
 
 
 def gzip(input_file: Path, keep_input: bool=False, level: int=6) -> None:
