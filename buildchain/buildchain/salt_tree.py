@@ -216,6 +216,16 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         renderer=targets.Renderer.JSON,
     ),
 
+    Path('salt/metalk8s/addons/dex/ca/init.sls'),
+    Path('salt/metalk8s/addons/dex/ca/installed.sls'),
+    Path('salt/metalk8s/addons/dex/ca/advertised.sls'),
+    Path('salt/metalk8s/addons/dex/certs/init.sls'),
+    Path('salt/metalk8s/addons/dex/certs/server.sls'),
+    Path('salt/metalk8s/addons/dex/deployed/chart.sls'),
+    Path('salt/metalk8s/addons/dex/deployed/init.sls'),
+    Path('salt/metalk8s/addons/dex/deployed/namespace.sls'),
+    Path('salt/metalk8s/addons/dex/deployed/tls-secret.sls'),
+
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/cleanup.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls'),

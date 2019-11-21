@@ -80,6 +80,15 @@ front_proxy:
   cert:
     client_signing_policy: front_proxy_client_policy
 
+dex:
+  ca:
+    cert:
+      days_valid: 3650
+    signing_policy:
+      days_valid: 365
+  cert:
+    server_signing_policy: dex_server_policy
+
 nginx-ingress:
   ca:
     cert:

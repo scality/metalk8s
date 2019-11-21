@@ -7,6 +7,7 @@ from salt._compat import ipaddress
 from salt.exceptions import CommandExecutionError
 
 K8S_CLUSTER_ADDRESS_NUMBER = 0
+OIDC_ADDRESS_NUMBER = 6
 COREDNS_ADDRESS_NUMBER = 9
 
 
@@ -68,3 +69,13 @@ def get_cluster_dns_ip():
     range.
     '''
     return _pick_nth_service_ip(COREDNS_ADDRESS_NUMBER)
+
+
+def get_oidc_service_ip():
+    '''
+    Return the OIDC service cluster IP.
+
+    This IP is arbitrarily selected as the seventh IP from the usable hosts
+    range.
+    '''
+    return _pick_nth_service_ip(OIDC_ADDRESS_NUMBER)

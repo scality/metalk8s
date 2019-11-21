@@ -19,6 +19,7 @@ CMD_WIDTH : int = 14
 # URLs of the main container repositories.
 CALICO_REPOSITORY     : str = 'quay.io/calico'
 COREOS_REPOSITORY     : str = 'quay.io/coreos'
+DEX_REPOSITORY        : str = 'quay.io/dexidp'
 DOCKER_REPOSITORY     : str = 'docker.io/library'
 GOOGLE_REPOSITORY     : str = 'k8s.gcr.io'
 GRAFANA_REPOSITORY    : str = 'docker.io/grafana'
