@@ -217,6 +217,11 @@ export function* createVolumes({ payload }) {
     spec: {
       nodeName,
       storageClassName: newVolume.storageClass,
+      template: {
+        metadata: {
+          labels: newVolume.labels,
+        },
+      },
     },
   };
 

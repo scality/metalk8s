@@ -99,11 +99,11 @@ const VolumeInformation = props => {
       dataKey: 'value',
     },
   ];
-  const labels = volume?.metadata?.labels
-    ? Object.keys(volume.metadata.labels).map(key => {
+  const labels = pV?.metadata?.labels //persistent Volume labels
+    ? Object.keys(pV.metadata.labels).map(key => {
         return {
           name: key,
-          value: volume.metadata.labels[key],
+          value: pV.metadata.labels[key],
         };
       })
     : [];

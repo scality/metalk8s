@@ -284,6 +284,9 @@ it('create volume with the type sparseloopdevice', () => {
         storageClass: 'metalk8s-default',
         type: 'sparseLoopDevice',
         size: '1Gi',
+        labels: {
+          name: 'carlito',
+        },
       },
       nodeName: 'bootstrap',
     },
@@ -298,11 +301,22 @@ it('create volume with the type sparseloopdevice', () => {
     kind: 'Volume',
     metadata: {
       name: newVolume.name,
+      labels: {
+        name: 'carlito',
+      },
     },
     spec: {
       nodeName: nodeName,
       storageClassName: newVolume.storageClass,
       sparseLoopDevice: { size: newVolume.size },
+      storageClassName: 'metalk8s-default',
+      template: {
+        metadata: {
+          labels: {
+            name: 'carlito',
+          },
+        },
+      },
     },
   };
 
@@ -349,6 +363,9 @@ it('create a volume with the type rawBlockdevice', () => {
         storageClass: 'metalk8s-default',
         type: 'rawBlockDevice',
         path: '/dev/disk1',
+        labels: {
+          name: 'carlito',
+        },
       },
       nodeName: 'bootstrap',
     },
@@ -361,11 +378,21 @@ it('create a volume with the type rawBlockdevice', () => {
     kind: 'Volume',
     metadata: {
       name: newVolume.name,
+      labels: {
+        name: 'carlito',
+      },
     },
     spec: {
       nodeName: nodeName,
       storageClassName: newVolume.storageClass,
       rawBlockDevice: { devicePath: newVolume.path },
+      template: {
+        metadata: {
+          labels: {
+            name: 'carlito',
+          },
+        },
+      },
     },
   };
 
@@ -428,6 +455,9 @@ it('does not create a volume when there is an error', () => {
         storageClass: 'metalk8s-default',
         type: 'rawBlockDevice',
         path: '/dev/disk1',
+        labels: {
+          name: 'carlito',
+        },
       },
       nodeName: 'bootstrap',
     },
@@ -439,11 +469,21 @@ it('does not create a volume when there is an error', () => {
     kind: 'Volume',
     metadata: {
       name: newVolume.name,
+      labels: {
+        name: 'carlito',
+      },
     },
     spec: {
       nodeName: nodeName,
       storageClassName: newVolume.storageClass,
       rawBlockDevice: { devicePath: newVolume.path },
+      template: {
+        metadata: {
+          labels: {
+            name: 'carlito',
+          },
+        },
+      },
     },
   };
   expect(gen.next(body).value).toEqual(call(ApiK8s.createVolume, body));
