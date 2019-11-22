@@ -128,10 +128,12 @@ const LabelsValue = styled.div`
   width: 200px;
   padding: ${padding.small} 0;
   margin-right: ${padding.small};
+  color: ${props => props.theme.brand.text};
 `;
 
 const LabelsName = styled(LabelsValue)`
   font-weight: ${fontWeight.bold};
+  color: ${props => props.theme.brand.text};
 `;
 
 const CreateVolume = props => {
