@@ -29,6 +29,7 @@ Overview:
 
 
 import abc
+import base64
 import importlib
 from pathlib import Path
 import sys
@@ -43,7 +44,6 @@ from buildchain import versions
 
 sys.path.append(str(constants.STATIC_CONTAINER_REGISTRY))
 container_registry : Any = importlib.import_module('static-container-registry')
-
 
 def task_salt_tree() -> types.TaskDict:
     """Deploy the Salt tree in ISO_ROOT."""
@@ -153,6 +153,25 @@ class StaticContainerRegistry(_StaticContainerRegistryBase):
         return parts
 
 
+def salt_embed_text(path: Path, indent: int) -> str:
+    """Return the content a text file in usable form by Salt."""
+    data = ['|']
+    with path.open(encoding='utf-8') as fp:
+        for line in fp:
+            data.append('{}{}'.format(' '*indent, line.rstrip()))
+    return '\n'.join(data)
+
+
+def salt_embed_bytes(path: Path, indent: int) -> str:
+    """Return the content of a binary file in usable form by Salt."""
+    data = ['|']
+    bytestring = path.read_bytes()
+    b64data = base64.encodebytes(bytestring).decode('utf-8')
+    for line in b64data.split('\n'):
+        data.append('{}{}'.format(' '*indent, line.rstrip()))
+    return '\n'.join(data)
+
+
 PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('pillar/metalk8s/roles/bootstrap.sls'),
     Path('pillar/metalk8s/roles/ca.sls'),
@@ -177,6 +196,12 @@ OPERATOR_ACCOUNT     : Path = OPERATOR_YAML_ROOT/'service_account.yaml'
 OPERATOR_ROLE        : Path = OPERATOR_YAML_ROOT/'role.yaml'
 OPERATOR_ROLEBINDING : Path = OPERATOR_YAML_ROOT/'role_binding.yaml'
 OPERATOR_DEPLOYMENT  : Path = OPERATOR_YAML_ROOT/'operator.yaml'
+
+SCALITY_LOGO : Path = constants.ROOT/'ui/public/brand/assets/login/logo.png'
+SCALITY_FAVICON : Path = constants.ROOT.joinpath(
+    'ui/public/brand/assets/login/favicon.png'
+)
+LOGIN_STYLE : Path = constants.ROOT/'ui/public/brand/assets/login/styles.css'
 
 # List of salt files to install.
 SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
@@ -226,7 +251,21 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/dex/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/dex/deployed/tls-secret.sls'),
     Path('salt/metalk8s/addons/dex/deployed/clusterrolebinding.sls'),
-
+    targets.TemplateFile(
+        task_name='theme-configmap.sls',
+        source=constants.ROOT.joinpath(
+            'salt/metalk8s/addons/dex/deployed/theme-configmap.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/dex/deployed/theme-configmap.sls'
+        ),
+        context={
+            'branding': salt_embed_bytes(SCALITY_LOGO, indent=4),
+            'favicon': salt_embed_bytes(SCALITY_FAVICON, indent=4),
+            'styles': salt_embed_text(LOGIN_STYLE, indent=4),
+        },
+        file_dep=[SCALITY_LOGO, SCALITY_FAVICON, LOGIN_STYLE],
+    ),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/cleanup.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls'),
