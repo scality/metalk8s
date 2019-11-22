@@ -31,14 +31,14 @@ ingress:
   hosts:
     - null
 
-# extraVolumes:
-#   - name: theme
-#     configMap:
-#        name: dex-branding
+extraVolumes:
+  - name: dex-login
+    configMap:
+      name: dex-login
 
-# extraVolumeMounts:
-#   - name: theme
-#     mountPath: /web/themes/custom/
+extraVolumeMounts:
+  - name: dex-login
+    mountPath: /web/themes/scality
 
 certs:
   web:
@@ -52,8 +52,8 @@ config:
     tlsCert: /etc/dex/tls/https/server/tls.crt
     tlsKey: /etc/dex/tls/https/server/tls.key
   frontend:
-    theme: "coreos" #metalk8s-ui
-    # dir: /web/themes/custom/
+    theme: "scality"
+    issuer: "MetalK8s"
 
   connectors: {}
 
