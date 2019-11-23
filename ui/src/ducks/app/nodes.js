@@ -549,12 +549,13 @@ export function* stopRefreshNodes() {
 }
 
 export function* nodesSaga() {
-  yield takeEvery(FETCH_NODES, fetchNodes);
-  yield takeEvery(CREATE_NODE, createNode);
-  yield takeLatest(DEPLOY_NODE, deployNode);
-  yield takeEvery(CONNECT_SALT_API, sseSagas);
-  yield takeEvery(SUBSCRIBE_DEPLOY_EVENTS, subscribeDeployEvents);
-  yield takeEvery(REFRESH_NODES, refreshNodes);
-  yield takeEvery(STOP_REFRESH_NODES, stopRefreshNodes);
-  yield takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion);
+  yield all([
+    takeEvery(FETCH_NODES, fetchNodes),
+    takeEvery(CREATE_NODE, createNode),
+    takeLatest(DEPLOY_NODE, deployNode),
+    takeEvery(REFRESH_NODES, refreshNodes),
+    takeEvery(STOP_REFRESH_NODES, stopRefreshNodes),
+    takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion),
+    takeEvery(JOB_COMPLETED, notifyDeployJobCompleted),
+  ]);
 }
