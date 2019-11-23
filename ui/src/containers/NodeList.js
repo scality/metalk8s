@@ -114,7 +114,7 @@ const NodeList = ({ intl }) => {
                 text={intl.messages.deploying}
                 onClick={event => {
                   event.stopPropagation();
-                  history.push(`/nodes/deploy/${rowData.name}`);
+                  history.push(`/nodes/${rowData.name}/deploy`);
                 }}
                 icon={<Loader size="smaller" />}
                 size="smaller"
