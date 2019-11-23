@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import ReactJson from 'react-json-view';
 import { Button, Loader, Steppers } from '@scality/core-ui';
 import { useRouteMatch, useHistory } from 'react-router';
+import isEmpty from 'lodash.isempty';
 
 import {
   fontWeight,
@@ -19,6 +20,12 @@ const NodeDeploymentContainer = styled.div`
   flex-direction: column;
   padding: ${padding.larger};
   overflow: auto;
+`;
+
+const InfoMessage = styled.div`
+  color: ${props => props.theme.brand.text};
+  font-size: ${fontSize.base};
+  padding: ${padding.base};
 `;
 
 const NodeDeploymentTitle = styled.div`
@@ -122,6 +129,13 @@ const NodeDeployment = ({ intl }) => {
         <NodeDeploymentTitle>
           {intl.messages.node_deployment}
         </NodeDeploymentTitle>
+        {activeJob === undefined ? (
+          <InfoMessage>
+            {intl.translate('no_deployment_found', { name: nodeName })}
+          </InfoMessage>
+        ) : activeJob.completed && isEmpty(activeJob.status) ? (
+          <InfoMessage>{intl.messages.refreshing_job}</InfoMessage>
+        ) : (
           <NodeDeploymentContent>
             <NodeDeploymentStatus>
               <Steppers steps={steps} activeStep={activeStep} />
@@ -134,6 +148,7 @@ const NodeDeployment = ({ intl }) => {
               />
             </NodeDeploymentEvent>
           </NodeDeploymentContent>
+        )}
       </NodeDeploymentWrapper>
     </NodeDeploymentContainer>
   );
