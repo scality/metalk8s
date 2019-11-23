@@ -1,14 +1,12 @@
 import {
   all,
-  take,
   call,
+  delay,
   put,
-  takeLatest,
-  takeEvery,
   select,
-  delay
+  takeEvery,
+  takeLatest,
 } from 'redux-saga/effects';
-import { eventChannel, END } from 'redux-saga';
 
 import * as ApiK8s from '../../services/k8s/api';
 import * as ApiSalt from '../../services/salt/api';
@@ -19,17 +17,8 @@ import {
 } from './notifications';
 
 import { intl } from '../../translations/IntlGlobalProvider';
-import { addJobAction, removeJobAction } from './salt.js';
+import { addJobAction, JOB_COMPLETED } from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
-
-import {
-  getJobStatusFromPrintJob,
-  getJidFromNameLocalStorage,
-  addJobLocalStorage,
-  removeJobLocalStorage,
-  getJobStatusFromEventRet,
-  getNameFromJidLocalStorage
-} from '../../services/salt/utils';
 
 import {
   API_STATUS_READY,
@@ -48,9 +37,6 @@ const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
-const CONNECT_SALT_API = 'CONNECT_SALT_API';
-const UPDATE_EVENTS = 'UPDATE_EVENTS';
-const SUBSCRIBE_DEPLOY_EVENTS = 'SUBSCRIBE_DEPLOY_EVENTS';
 
 export const ROLE_MASTER = 'node-role.kubernetes.io/master';
 export const ROLE_NODE = 'node-role.kubernetes.io/node';
@@ -77,7 +63,7 @@ export const roleTaintMap = [
       {
         key: ROLE_INFRA,
         effect: 'NoSchedule',
-  },
+      },
     ],
   },
   {
@@ -157,7 +143,6 @@ export const roleTaintMap = [
 const defaultState = {
   clusterVersion: '',
   list: [],
-  events: {},
   isRefreshing: false,
   isLoading: false,
 };
@@ -175,16 +160,6 @@ export default function reducer(state = defaultState, action = {}) {
       return {
         ...state,
         errors: { create_node: null },
-      };
-    case UPDATE_EVENTS:
-      return {
-        ...state,
-        events: {
-          ...state.events,
-          [action.payload.jid]: state.events[action.payload.jid]
-            ? [...state.events[action.payload.jid], action.payload.msg]
-            : [action.payload.msg]
-        }
       };
     default:
       return state;
@@ -216,18 +191,6 @@ export const deployNodeAction = payload => {
   return { type: DEPLOY_NODE, payload };
 };
 
-export const connectSaltApiAction = payload => {
-  return { type: CONNECT_SALT_API, payload };
-};
-
-export const updateDeployEventsAction = payload => {
-  return { type: UPDATE_EVENTS, payload };
-};
-
-export const subscribeDeployEventsAction = jid => {
-  return { type: SUBSCRIBE_DEPLOY_EVENTS, jid };
-};
-
 export const refreshNodesAction = () => {
   return { type: REFRESH_NODES };
 };
@@ -253,11 +216,13 @@ export function* fetchClusterVersion() {
 }
 
 export function* fetchNodes() {
-  yield put(
-    updateNodesAction({
-      isLoading: true
-    })
-  );
+  yield put(updateNodesAction({ isLoading: true }));
+
+  const allJobs = yield select(state => state.app.salt.jobs);
+  const deployingNodes = allJobs
+    .filter(job => job.name.startsWith('deploy-node/') && !job.completed)
+    .map(job => job.name.replace(/^(deploy-node\/)/, ''));
+
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
     yield put(
@@ -315,60 +280,16 @@ export function* fetchNodes() {
             workload_plane: roleTaintMatched && roleTaintMatched.workload_plane,
             bootstrap: roleTaintMatched && roleTaintMatched.bootstrap,
             infra: roleTaintMatched && roleTaintMatched.infra,
-            jid: getJidFromNameLocalStorage(node.metadata.name),
-            roles: rolesLabel.join(' / ')
+            roles: rolesLabel.join(' / '),
+            deploying: deployingNodes.includes(node.metadata.name),
           };
         }),
       }),
     );
-
-    yield all(
-      result.body.items.map(node => {
-        return call(getJobStatus, node.metadata.name);
-      })
-    );
   }
-  yield delay(1000); // To make sur that the loader is visible for at least 1s
-  yield put(
-    updateNodesAction({
-      isLoading: false
-    })
-  );
+  yield delay(1000); // To make sure that the loader is visible for at least 1s
+  yield put(updateNodesAction({ isLoading: false }));
   return result;
-}
-
-export function* getJobStatus(name) {
-  const jid = getJidFromNameLocalStorage(name);
-  if (jid) {
-    const result = yield call(ApiSalt.printJob, jid);
-    const status = {
-      name,
-      ...getJobStatusFromPrintJob(result, jid)
-    };
-    if (status.completed) {
-      yield put(removeJobAction(jid));
-      removeJobLocalStorage(jid);
-      if (status.success) {
-        yield put(
-          addNotificationSuccessAction({
-            title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_success', { name })
-          })
-        );
-      } else {
-        yield put(
-          addNotificationErrorAction({
-            title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_failed', {
-              name,
-              step: status.step_id,
-              reason: status.comment
-            })
-          })
-        );
-      }
-    }
-  }
 }
 
 export function* createNode({ payload }) {
@@ -385,7 +306,7 @@ export function* createNode({ payload }) {
         'metalk8s.scality.com/ssh-host': payload.hostName_ip,
         'metalk8s.scality.com/ssh-key-path': payload.ssh_key_path,
         'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString(),
-    },
+      },
     },
     spec: {},
   };
@@ -440,86 +361,42 @@ export function* deployNode({ payload }) {
       }),
     );
   } else {
-    yield call(subscribeDeployEvents, { jid: result.return[0].jid });
-    addJobLocalStorage(result.return[0].jid, payload.name);
+    yield put(
+      addJobAction({
+        name: `deploy-node/${payload.name}`,
+        jid: result.return[0].jid,
+      }),
+    );
     yield call(fetchNodes);
   }
 }
 
-export function subSSE(eventSrc) {
-  const subs = emitter => {
-    eventSrc.onmessage = msg => {
-      emitter(msg);
-    };
-    eventSrc.onerror = () => {
-      emitter(END);
-    };
-    return () => {
-      eventSrc.close();
-    };
-  };
-  return eventChannel(subs);
-}
-
-export function* sseSagas({ payload }) {
-  const eventSrc = new EventSource(
-    `${payload.url}/events?token=${payload.token}`
-  );
-  const channel = yield call(subSSE, eventSrc);
-  while (true) {
-    const msg = yield take(channel);
-    const data = JSON.parse(msg.data);
-    const jobs = yield select(state => state.app.salt.jobs);
-
-    yield all(
-      jobs.map(jid => {
-        if (data.tag.includes(jid)) {
-          return call(updateDeployEvents, jid, data);
-        }
-        return data;
-      })
-    );
-  }
-}
-
-export function* updateDeployEvents(jid, msg) {
-  yield put(updateDeployEventsAction({ jid, msg }));
-  if (msg.tag.includes('/ret')) {
-    const name = getNameFromJidLocalStorage(jid);
-    const status = {
-      name,
-      ...getJobStatusFromEventRet(msg.data)
-    };
-    if (status.completed) {
-      yield put(removeJobAction(jid));
-      removeJobLocalStorage(jid);
-      if (status.success) {
-        yield put(
-          addNotificationSuccessAction({
-            title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_success', { name })
-          })
-        );
-      } else {
-        yield put(
-          addNotificationErrorAction({
-            title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_failed', {
-              name,
-              step: status.step_id,
-              reason: status.comment
-            })
-          })
-        );
-      }
-    }
-  }
-}
-
-export function* subscribeDeployEvents({ jid }) {
+export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
   const jobs = yield select(state => state.app.salt.jobs);
-  if (!jobs.includes(jid)) {
-    yield put(addJobAction(jid));
+  const jobName = jobs.find(job => job.jid === jid).name;
+  if (jobName.startsWith('deploy-node/')) {
+    const nodeName = jobName.replace(/^(deploy-node\/)/, '');
+    if (status.success) {
+      yield put(
+        addNotificationSuccessAction({
+          title: intl.translate('node_deployment'),
+          message: intl.translate('node_deployment_success', {
+            name: nodeName,
+          }),
+        }),
+      );
+    } else {
+      yield put(
+        addNotificationErrorAction({
+          title: intl.translate('node_deployment'),
+          message: intl.translate('node_deployment_failed', {
+            name: nodeName,
+            step: status.step,
+            reason: status.comment,
+          }),
+        }),
+      );
+    }
   }
 }
 

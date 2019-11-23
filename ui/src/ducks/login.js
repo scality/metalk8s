@@ -3,7 +3,7 @@ import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
 
 import history from '../history';
-import { connectSaltApiAction } from './app/nodes';
+import { connectSaltApiAction } from './app/salt';
 
 // Actions
 const AUTHENTICATE = 'AUTHENTICATE';
