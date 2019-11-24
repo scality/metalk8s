@@ -17,7 +17,7 @@ import {
 } from './notifications';
 
 import { intl } from '../../translations/IntlGlobalProvider';
-import { addJobAction, JOB_COMPLETED } from './salt';
+import { addJobAction, JOB_COMPLETED, allJobsSelector } from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
 
 import {
@@ -199,6 +199,10 @@ export const stopRefreshNodesAction = () => {
   return { type: STOP_REFRESH_NODES };
 };
 
+// Selectors
+export const clusterVersionSelector = state => state.app.nodes.clusterVersion;
+export const nodesRefreshingSelector = state => state.app.nodes.isRefreshing;
+
 // Sagas
 export function* fetchClusterVersion() {
   const result = yield call(ApiK8s.getKubeSystemNamespace);
@@ -218,7 +222,7 @@ export function* fetchClusterVersion() {
 export function* fetchNodes() {
   yield put(updateNodesAction({ isLoading: true }));
 
-  const allJobs = yield select(state => state.app.salt.jobs);
+  const allJobs = yield select(allJobsSelector);
   const deployingNodes = allJobs
     .filter(job => job.name.startsWith('deploy-node/') && !job.completed)
     .map(job => job.name.replace(/^(deploy-node\/)/, ''));
@@ -293,7 +297,7 @@ export function* fetchNodes() {
 }
 
 export function* createNode({ payload }) {
-  const clusterVersion = yield select(state => state.app.nodes.clusterVersion);
+  const clusterVersion = yield select(clusterVersionSelector);
   const body = {
     metadata: {
       name: payload.name,
@@ -410,7 +414,7 @@ export function* refreshNodes() {
   const result = yield call(fetchNodes);
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(state => state.app.nodes.isRefreshing);
+    const isRefreshing = yield select(nodesRefreshingSelector);
     if (isRefreshing) {
       yield call(refreshNodes);
     }

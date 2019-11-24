@@ -1,8 +1,9 @@
 import { call, takeEvery, put, select } from 'redux-saga/effects';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
-
 import history from '../history';
+
+import { apiConfigSelector } from './config';
 import { connectSaltApiAction } from './app/salt';
 
 // Actions
@@ -83,6 +84,9 @@ export const setSaltAuthenticationSuccessAction = payload => {
   };
 };
 
+// Selectors
+export const userSelector = state => state.login.user;
+
 // Sagas
 export function* authenticate({ payload }) {
   const { username, password } = payload;
@@ -95,7 +99,7 @@ export function* authenticate({ payload }) {
       payload: result.error.response.data,
     });
   } else {
-    const api_server = yield select(state => state.config.api);
+    const api_server = yield select(apiConfigSelector);
     yield call(ApiK8s.updateApiServerConfig, api_server.url, token);
     localStorage.setItem(HASH_KEY, token);
     yield put(
@@ -111,8 +115,8 @@ export function* authenticate({ payload }) {
 }
 
 export function* authenticateSaltApi(redirect) {
-  const api = yield select(state => state.config.api);
-  const user = yield select(state => state.login.user);
+  const api = yield select(apiConfigSelector);
+  const user = yield select(userSelector);
   const result = yield call(ApiSalt.authenticate, user);
   if (!result.error) {
     yield call(ApiSalt.getClient().setHeaders, {
@@ -141,7 +145,7 @@ export function* logout() {
 export function* fetchUserInfo() {
   const token = localStorage.getItem(HASH_KEY);
   if (token) {
-    const api_server = yield select(state => state.config.api);
+    const api_server = yield select(apiConfigSelector);
     yield call(ApiK8s.updateApiServerConfig, api_server.url, token);
 
     const decryptedToken = atob(token);

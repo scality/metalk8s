@@ -123,6 +123,9 @@ function setJobStatusAction(jid, status) {
   return { type: SET_JOB_STATUS, payload: { jid, status } };
 }
 
+// Selectors
+export const allJobsSelector = state => state.app.salt.jobs;
+
 // Sagas
 function* initialize(payload) {
   const savedJobs = listJobsFromLocalStorage();
@@ -214,7 +217,7 @@ export function* watchSaltEvents({ payload: { url, token } }) {
     const event = yield take(channel);
     const data = JSON.parse(event.data);
 
-    const jobs = yield select(state => state.app.salt.jobs);
+    const jobs = yield select(allJobsSelector);
     const relatedJob = jobs.find(job => data.tag.includes(job.jid));
 
     if (relatedJob !== undefined) {
@@ -241,7 +244,7 @@ function checkJobExpiry(job) {
 
 export function* garbageCollectJobs() {
   while (true) {
-    const jobs = yield select(state => state.app.salt.jobs);
+    const jobs = yield select(allJobsSelector);
     const toRemove = jobs.filter(checkJobExpiry);
     yield all(toRemove.map(job => put(removeJobAction(job))));
     yield delay(JOB_GC_DELAY);
