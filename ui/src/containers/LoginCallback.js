@@ -3,6 +3,7 @@ import { CallbackComponent } from 'redux-oidc';
 import { injectIntl } from 'react-intl';
 import { useHistory } from 'react-router';
 import { useSelector } from 'react-redux';
+import Loader from '../components/Loader';
 
 const CallbackPage = ({ intl }) => {
   const userManager = useSelector(state => state.config.userManager);
@@ -18,7 +19,7 @@ const CallbackPage = ({ intl }) => {
         history.push('/');
       }}
     >
-      <span>{intl.messages.redirecting}</span>
+      <Loader>{intl.messages.redirecting}</Loader>
     </CallbackComponent>
   );
 };

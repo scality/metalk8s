@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { useRouteMatch, useHistory } from 'react-router';
-import { Route, Switch } from 'react-router-dom';
+import { Switch } from 'react-router-dom';
 import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 
 import NodeCreateForm from './NodeCreateForm';
@@ -28,7 +28,6 @@ import {
   stopRefreshSolutionsAction,
 } from '../ducks/app/solutions';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
-import CallbackPage from './LoginCallback';
 
 const Layout = props => {
   const user = useSelector(state => state.oidc.user);
@@ -216,11 +215,6 @@ const Layout = props => {
           />
           <PrivateRoute exact path="/about" component={About} />
           <PrivateRoute exact path="/" component={ClusterMonitoring} />
-          <Route
-            exact
-            path="/oauth2/callback"
-            component={() => <CallbackPage />}
-          />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>

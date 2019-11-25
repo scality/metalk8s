@@ -6,11 +6,13 @@ import { IntlProvider, addLocaleData } from 'react-intl';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
 import { OidcProvider } from 'redux-oidc';
+import { Route, Switch } from 'react-router-dom';
+
 import translations_en from '../translations/en';
 import translations_fr from '../translations/fr';
 import Loader from '../components/Loader';
 import Layout from './Layout';
-
+import CallbackPage from './LoginCallback';
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
 import { fetchConfigAction, setInitialLanguageAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
@@ -41,7 +43,14 @@ const App = props => {
     <OidcProvider store={store} userManager={userManager}>
       <IntlProvider locale={language} messages={messages[language]}>
         <IntlGlobalProvider>
-          <Layout />
+          <Switch>
+            <Route
+              exact
+              path="/oauth2/callback"
+              component={() => <CallbackPage />}
+            />
+            <Route component={Layout} />
+          </Switch>
         </IntlGlobalProvider>
       </IntlProvider>
     </OidcProvider>
