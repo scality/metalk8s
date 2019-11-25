@@ -1,4 +1,4 @@
-#! metalk8s_kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+#! metalk8s_kubernetes
 
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress

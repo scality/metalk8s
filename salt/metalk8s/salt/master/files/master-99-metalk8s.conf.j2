@@ -44,3 +44,9 @@ external_auth:
         - 'disk.dump'
         - 'state.sls'
       - '@jobs'
+
+# `kubeconfig` file and `context` used by salt to interact with apiserver
+kubernetes.kubeconfig: {{ kubeconfig }}
+{%- if kubecontext is defined and kubecontext %}
+kubernetes.context: {{ kubecontext }}
+{%- endif %}

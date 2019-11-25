@@ -1,4 +1,4 @@
-#! metalk8s_kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes&absent=True
+#! metalk8s_kubernetes absent=True
 
 # This 'state' cleans up things that *used* to be deployed through `chart.sls`
 # when using some older version of the Chart, but are no longer in place when

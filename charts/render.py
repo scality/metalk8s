@@ -28,7 +28,7 @@ from yaml.representer import SafeRepresenter
 
 
 BOILERPLATE = '''
-#!jinja | metalk8s_kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+#!jinja | metalk8s_kubernetes
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {% raw %}

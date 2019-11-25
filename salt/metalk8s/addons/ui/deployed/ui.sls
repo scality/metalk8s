@@ -1,15 +1,10 @@
 include:
 - .namespace
 
-{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{%- set context = "kubernetes-admin@kubernetes" %}
-
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml
     - template: jinja
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Create metalk8s-ui service:
   metalk8s_kubernetes.object_present:
@@ -29,8 +24,6 @@ Create metalk8s-ui service:
           selector:
             app: metalk8s-ui
           type: ClusterIP
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Create metalk8s-ui ConfigMap:
   metalk8s_kubernetes.object_present:
@@ -48,8 +41,6 @@ Create metalk8s-ui ConfigMap:
               "url_prometheus": "/api/prometheus",
               "url_grafana": "/grafana"
             }
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Create ui-branding ConfigMap:
   metalk8s_kubernetes.object_present:
@@ -62,5 +53,3 @@ Create ui-branding ConfigMap:
         data:
           theme.json: |
             {"brand":{"base":"#19161D","baseContrast1":"#26232A","primary":"#e99121","secondary":"#2979ff","success":"#2bad8d","info":"#00B2A9","warning":"#F1B434","danger":"#EF3340","background":"#26232A","backgroundContrast1":"#2E2B32","backgroundContrast2":"#353239","text":"#ffffff","border":"#ffffff"}}
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
