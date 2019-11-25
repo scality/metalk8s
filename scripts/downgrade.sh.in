@@ -112,13 +112,13 @@ downgrade_bootstrap () {
     ca_minion="$($SALT_CALL pillar.get \
         metalk8s:ca:minion --out txt | cut -c 8-)"
 
-    "${SALT_MASTER_CALL[@]}" salt "$ca_minion" state.sls \
+    "${SALT_MASTER_CALL[@]}" salt "$ca_minion" state.sls sync_mods="all" \
         metalk8s.roles.ca saltenv="metalk8s-$DESTINATION_VERSION"
 
-    $SALT_CALL state.sls metalk8s.salt.master.certs \
+    $SALT_CALL state.sls metalk8s.salt.master.certs sync_mods="all" \
         saltenv="metalk8s-$DESTINATION_VERSION" --retcode-passthrough
 
-    $SALT_CALL --local state.sls metalk8s.roles.bootstrap \
+    $SALT_CALL --local state.sls metalk8s.roles.bootstrap sync_mods="all" \
         saltenv="metalk8s-$DESTINATION_VERSION" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
         'repositories': $repo_endpoint}}}" \
@@ -146,9 +146,7 @@ downgrade_bootstrap () {
         "$bootstrap_id" \
         kind=Node apiVersion=v1 \
         patch="{'metadata': {'labels': \
-        {'metalk8s.scality.com/version': '$DESTINATION_VERSION'}}}" \
-        kubeconfig="/etc/kubernetes/admin.conf" \
-        context="kubernetes-admin@kubernetes"
+        {'metalk8s.scality.com/version': '$DESTINATION_VERSION'}}}"
     "${SALT_MASTER_CALL[@]}" salt-run state.sls \
         metalk8s.orchestrate.deploy_node saltenv="$SALTENV" \
         pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
@@ -168,8 +166,6 @@ patch_kubesystem_namespace() {
         kind=Namespace apiVersion=v1 \
         patch="{'metadata': {'annotations': \
         {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}" \
-        kubeconfig="/etc/kubernetes/admin.conf" \
-        context="kubernetes-admin@kubernetes" \
         test="$DRY_RUN"
 }
 

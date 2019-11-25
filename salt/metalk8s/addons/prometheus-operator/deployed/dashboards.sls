@@ -1,4 +1,4 @@
-#!jinja | metalk8s_kubernetes kubeconfig=/etc/kubernetes/admin.conf&context=kubernetes-admin@kubernetes
+#!jinja | metalk8s_kubernetes
 
 {%- set dashboards = [
         {

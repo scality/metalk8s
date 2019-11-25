@@ -40,7 +40,42 @@ def __virtual__():
     return __virtualname__
 
 
-def get_version_info(kubeconfig=None, context=None):
+def get_kubeconfig(**kwargs):
+    """
+    Get the kubeconfig and context from args or directly pillar or from
+    salt-master configuration.
+
+    Pillar value from `metalk8s.api_server.kubeconfig` and
+    `metalk8s.api_server.context`
+
+    Salt master config from `kubernetes.kubeconfig` and `kubernetes.context`
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_kubernetes.get_kubeconfig kubeconfig="/etc/kubernetes/admin.conf"
+        salt-call metalk8s_kubernetes.get_kubeconfig
+
+    Code Example:
+
+    .. code-block:: python
+
+        kubeconfig, context = __salt__['metalk8s_kubernetes.get_kubeconfig'](**kwargs)
+    """
+    pillar_dict = __pillar__.get('metalk8s', {}).get('api_server', {})
+
+    kubeconfig = kwargs.get('kubeconfig') or \
+        pillar_dict.get('kubeconfig') or \
+        __salt__['config.option']('kubernetes.kubeconfig')
+    context = kwargs.get('context') or \
+        pillar_dict.get('context') or \
+        __salt__['config.option']('kubernetes.context') or None
+
+    return kubeconfig, context
+
+
+def get_version_info(**kwargs):
     """Retrieve the API server version information, as a dict.
 
     The result contains various version details to be as exhaustive as
@@ -49,6 +84,8 @@ def get_version_info(kubeconfig=None, context=None):
     CLI Example:
         salt '*' metalk8s_kubernetes.get_version_info
     """
+    kubeconfig, context = get_kubeconfig(**kwargs)
+
     api_client = kubernetes.config.new_client_from_config(
         config_file=kubeconfig, context=context
     )
@@ -65,7 +102,7 @@ def get_version_info(kubeconfig=None, context=None):
     return version_info.to_dict()
 
 
-def ping(kubeconfig=None, context=None):
+def ping(**kwargs):
     """Check connection with the API server.
 
     Returns True if a request could be made, False otherwise.
@@ -74,7 +111,7 @@ def ping(kubeconfig=None, context=None):
         salt '*' metalk8s_kubernetes.ping
     """
     try:
-        get_version_info(kubeconfig, context)
+        get_version_info(**kwargs)
     except CommandExecutionError:
         return False
     return True

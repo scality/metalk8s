@@ -1,7 +1,3 @@
-{% set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{% set context = "kubernetes-admin@kubernetes" %}
-
-
 Install and start salt master service manifest:
   metalk8s_kubernetes.object_present:
     - manifest:
@@ -36,5 +32,3 @@ Install and start salt master service manifest:
             app.kubernetes.io/component: salt
             app.kubernetes.io/name: salt-master
           type: ClusterIP
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}

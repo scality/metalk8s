@@ -3,9 +3,6 @@
 
 {%- set image = build_image_name("kube-proxy") -%}
 
-{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{%- set context = "kubernetes-admin@kubernetes" %}
-
 {%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
 
 Deploy kube-proxy (ServiceAccount):
@@ -16,8 +13,6 @@ Deploy kube-proxy (ServiceAccount):
         metadata:
           name: kube-proxy
           namespace: kube-system
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Deploy kube-proxy (ClusterRoleBinding):
   metalk8s_kubernetes.object_present:
@@ -34,8 +29,6 @@ Deploy kube-proxy (ClusterRoleBinding):
         - kind: ServiceAccount
           name: kube-proxy
           namespace: kube-system
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - metalk8s_kubernetes: Deploy kube-proxy (ServiceAccount)
 
@@ -108,8 +101,6 @@ Deploy kube-proxy (ConfigMap):
             - name: default
               user:
                 tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 
 Deploy kube-proxy (DaemonSet):
@@ -179,8 +170,6 @@ Deploy kube-proxy (DaemonSet):
                 name: lib-modules
           updateStrategy:
             type: RollingUpdate
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - metalk8s_kubernetes: Deploy kube-proxy (ServiceAccount)
       - metalk8s_kubernetes: Deploy kube-proxy (ClusterRoleBinding)
@@ -203,8 +192,6 @@ Deploy kube-proxy (Role):
           - configmaps
           verbs:
           - get
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Deploy kube-proxy (RoleBinding):
   metalk8s_kubernetes.object_present:
@@ -221,7 +208,5 @@ Deploy kube-proxy (RoleBinding):
         subjects:
         - kind: Group
           name: system:bootstrappers:kubeadm:default-node-token
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - metalk8s_kubernetes: Deploy kube-proxy (Role)
