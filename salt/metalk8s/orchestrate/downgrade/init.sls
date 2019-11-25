@@ -1,6 +1,4 @@
 {%- set dest_version = pillar.metalk8s.cluster_version %}
-{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{%- set context = "kubernetes-admin@kubernetes" %}
 
 Execute the downgrade prechecks:
   salt.runner:
@@ -55,8 +53,6 @@ Set node {{ node }} version to {{ dest_version }}:
         metadata:
           labels:
             metalk8s.scality.com/version: "{{ dest_version }}"
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - http: Wait for API server to be available on {{ node }}
 

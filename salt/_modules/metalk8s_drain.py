@@ -228,8 +228,7 @@ class Drain(object):
             kind=controller_ref['kind'],
             apiVersion=controller_ref['api_version'],
             namespace=namespace,
-            kubeconfig=self._kwargs.get('kubeconfig'),
-            context=self._kwargs.get('context')
+            **self._kwargs
         )
 
     def get_pod_controller(self, pod):
@@ -303,8 +302,7 @@ class Drain(object):
             apiVersion='v1',
             all_namespaces=True,
             field_selector='spec.nodeName={0}'.format(self.node_name),
-            kubeconfig=self._kwargs.get('kubeconfig'),
-            context=self._kwargs.get('context')
+            **self._kwargs
         )
 
         for pod in all_pods:
@@ -399,8 +397,7 @@ class Drain(object):
                 name=pod['metadata']['name'],
                 namespace=pod['metadata']['namespace'],
                 grace_period=self.grace_period,
-                kubeconfig=self._kwargs.get('kubeconfig'),
-                context=self._kwargs.get('context')
+                **self._kwargs
             )
 
         pending = self.wait_for_eviction(pods)
@@ -428,8 +425,7 @@ class Drain(object):
                     apiVersion='v1',
                     name=pod['metadata']['name'],
                     namespace=pod['metadata']['namespace'],
-                    kubeconfig=self._kwargs.get('kubeconfig'),
-                    context=self._kwargs.get('context')
+                    **self._kwargs
                 )
                 if not response or \
                         response['metadata']['uid'] != pod['metadata']['uid']:
@@ -445,7 +441,7 @@ class Drain(object):
 
 
 def evict_pod(name, namespace='default', grace_period=1,
-              kubeconfig=None, context=None):
+              **kwargs):
     '''Trigger the eviction process for a single pod.
 
     Args:
@@ -468,6 +464,10 @@ def evict_pod(name, namespace='default', grace_period=1,
         name=name,
         namespace=namespace
     )
+
+    kubeconfig, context = __salt__[
+        'metalk8s_kubernetes.get_kubeconfig'
+    ](**kwargs)
 
     client = kind_info.client
     client.configure(config_file=kubeconfig, context=context)
