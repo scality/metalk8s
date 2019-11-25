@@ -187,7 +187,7 @@ downgrade_bootstrap () {
         | cut -d' ' -f2- )"
     repo_endpoint="$($SALT_CALL pillar.get metalk8s:endpoints:repositories --out txt \
         | cut -d' ' -f2- )"
-    $SALT_CALL --local state.sls metalk8s.roles.bootstrap \
+    $SALT_CALL --local state.sls metalk8s.roles.bootstrap sync_mods="all" \
         saltenv="metalk8s-$DESTINATION_VERSION" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
         'repositories': $repo_endpoint}}}" \
@@ -215,9 +215,7 @@ downgrade_bootstrap () {
         "$bootstrap_id" \
         kind=Node apiVersion=v1 \
         patch="{'metadata': {'labels': \
-        {'metalk8s.scality.com/version': '$DESTINATION_VERSION'}}}" \
-        kubeconfig="/etc/kubernetes/admin.conf" \
-        context="kubernetes-admin@kubernetes"
+        {'metalk8s.scality.com/version': '$DESTINATION_VERSION'}}}"
     "${SALT_MASTER_CALL[@]}" salt-run state.sls \
         metalk8s.orchestrate.deploy_node saltenv="$SALTENV" \
         pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
@@ -237,8 +235,6 @@ patch_kubesystem_namespace() {
         kind=Namespace apiVersion=v1 \
         patch="{'metadata': {'annotations': \
         {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}" \
-        kubeconfig="/etc/kubernetes/admin.conf" \
-        context="kubernetes-admin@kubernetes" \
         test="$DRY_RUN"
 }
 

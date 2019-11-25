@@ -14,13 +14,11 @@ The shebang also supports passing options to this renderer, in the format
 string in the `application/x-www-form-urlencoded` format).
 The supported options are:
 - `kubeconfig`, the path to the kubeconfig file to use for communicating with
-  K8s API
-- `context`, the context from the kubeconfig to use
+  K8s API (defaults define in salt-master configuration)
+- `context`, the context from the kubeconfig to use (defaults define in
+  salt-master configuration
 - `absent`, a boolean to toggle which state function variant (`object_present`
   or `object_absent`) to use (defaults to False)
-
-TODO: improve management of `kubeconfig` and `context` parameters, relying on
-      master configuration and sane defaults - look into `__opts__`
 """
 import yaml
 

@@ -84,6 +84,7 @@ def _load_apiserver(config_data):
             'virtualRouterId': 1,
             'authPassword': 'MeTaLk8s',
         },
+        'kubeconfig': '/etc/kubernetes/admin.conf'
     }
 
     errors = __utils__['pillar_utils.assert_keys'](as_data, ['host'])
