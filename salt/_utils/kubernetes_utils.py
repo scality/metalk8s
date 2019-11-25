@@ -293,7 +293,7 @@ if HAS_LIBS:
             name='namespaced_deployment',
         ),
         ('extensions/v1beta1', 'Ingress'): KindInfo(
-            model=k8s_client.V1beta1Ingress,
+            model=k8s_client.ExtensionsV1beta1Ingress,
             api_cls=k8s_client.ExtensionsV1beta1Api,
             name='namespaced_ingress'
         ),
@@ -339,12 +339,8 @@ if HAS_LIBS:
         # }}}
         # /apis/networking.k8s.io/v1beta1/ {{{
         ('networking.k8s.io/v1beta1', 'Ingress'): KindInfo(
-            # NOTE: Use extensions instead of networking as networking not
-            # available with python-kubernetes provided by basic repositories.
-            # (Added in python-kubernetes v10.0.0a1)
-            # https://github.com/kubernetes-client/python/blob/master/CHANGELOG.md#v1000a1
-            model=k8s_client.V1beta1Ingress,
-            api_cls=k8s_client.ExtensionsV1beta1Api,
+            model=k8s_client.NetworkingV1beta1Ingress,
+            api_cls=k8s_client.NetworkingV1beta1Api,
             name='namespaced_ingress'
         ),
         # }}}
@@ -714,11 +710,6 @@ def _build_standard_object(model, manifest):
             )
 
         kwargs[key] = value
-
-    # NOTE: Use extensions instead of networking as networking not available
-    # with python-kubernetes provided by basic repositories
-    if kwargs.get('api_version') == 'networking.k8s.io/v1beta1':
-        kwargs['api_version'] = 'extensions/v1beta1'
 
     return model(**kwargs)
 
