@@ -66,6 +66,9 @@
     "nonGlobalStepDefinitions": true
   },
   "jest-junit": {
-    "output": "junit/jest-junit.xml"
+    "output": "junit/jest-junit.xml",
+    "suiteNameTemplate": "{filepath}",
+    "classNameTemplate": "{classname}",
+    "titleNameTemplate": "{classname} {title}"
   }
 }
