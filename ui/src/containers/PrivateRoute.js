@@ -10,6 +10,7 @@ const PrivateRoute = ({ component, ...rest }) => {
     userManager.signinRedirect({
       data: { path: window.location.pathname },
     }); //Go to Dex Login Form if not authenticated
+    return null;
   } else {
     return <Route {...rest} component={component} />;
   }

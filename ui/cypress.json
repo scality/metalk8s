@@ -1,8 +1,8 @@
 {
   "env": {
     "target_url": "http://localhost:3000",
-    "username": "admin",
-    "password": "admin",
+    "username": "admin@metalk8s.invalid",
+    "password": "password",
     "device_path": "/dev/disk1",
     "volume_capacity": "1",
     "storage_class":"metalk8s-prometheus"
