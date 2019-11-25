@@ -7,10 +7,6 @@ parsing K8s object manifests, and providing direct bindings to the Python
 Core methods (create_, get_, remove_, and replace_object) are defined in this
 module, while other methods can be found in `metalk8s_kubernetes_utils.py`,
 `metalk8s_drain.py` and `metalk8s_cordon.py`.
-
-TODO:
-- improve management of `kubeconfig` and `context` parameters, relying on
-  master configuration and sane defaults - look into `__opts__`
 """
 
 import logging
@@ -80,10 +76,9 @@ def _object_manipulation_function(action):
         'Method "{}" is not supported'.format(action)
     )
 
-    def method(manifest=None, kubeconfig=None, context=None, name=None,
-               kind=None, apiVersion=None, namespace='default', patch=None,
-               old_object=None, template='jinja', defaults=None,
-               saltenv='base', **kwargs):
+    def method(manifest=None, name=None, kind=None, apiVersion=None,
+               namespace='default', patch=None, old_object=None,
+               template='jinja', defaults=None, saltenv='base', **kwargs):
         if manifest is None:
             if action in ['retrieve', 'delete', 'update'] and \
                     name and kind and apiVersion and \
@@ -188,6 +183,10 @@ def _object_manipulation_function(action):
                 call_kwargs['body'].spec.cluster_ip = \
                     old_object['spec']['cluster_ip']
 
+        kubeconfig, context = __salt__[
+            'metalk8s_kubernetes.get_kubeconfig'
+        ](**kwargs)
+
         client = kind_info.client
         client.configure(config_file=kubeconfig, context=context)
         method_func = getattr(client, action)
@@ -291,7 +290,7 @@ update_object = _object_manipulation_function('update')
 
 # Listing resources can benefit from a simpler signature
 def list_objects(kind, apiVersion, namespace='default', all_namespaces=False,
-                 field_selector=None, kubeconfig=None, context=None, **kwargs):
+                 field_selector=None, **kwargs):
     """
     List all objects of a type using some object description.
 
@@ -322,6 +321,10 @@ def list_objects(kind, apiVersion, namespace='default', all_namespaces=False,
         call_kwargs['namespace'] = namespace
     if field_selector:
         call_kwargs['field_selector'] = field_selector
+
+    kubeconfig, context = __salt__[
+        'metalk8s_kubernetes.get_kubeconfig'
+    ](**kwargs)
 
     client = kind_info.client
     client.configure(config_file=kubeconfig, context=context)

@@ -1,5 +1,3 @@
-{%- from "metalk8s/map.jinja" import metalk8s with context %}
-
 {%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
 {%- set archives = salt.metalk8s.get_archives() %}
 
@@ -15,6 +13,10 @@ Configure salt master:
     - template: jinja
     - defaults:
         salt_ip: "{{ salt_ip }}"
+        kubeconfig: "{{ pillar['metalk8s']['api_server']['kubeconfig'] }}"
+        {%- if pillar['metalk8s']['api_server'].get('context') %}
+        kubecontext: "{{ pillar['metalk8s']['api_server']['context'] }}"
+        {%- endif %}
 
 Configure salt master roots paths:
   file.serialize:

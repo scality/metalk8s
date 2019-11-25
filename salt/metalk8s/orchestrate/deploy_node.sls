@@ -1,9 +1,6 @@
 {%- set node_name = pillar.orchestrate.node_name %}
 {%- set version = pillar.metalk8s.nodes[node_name].version %}
 
-{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{%- set context = "kubernetes-admin@kubernetes" %}
-
 {%- if node_name not in salt.saltutil.runner('manage.up') %}
 Deploy salt-minion on a new node:
   salt.state:
@@ -49,8 +46,6 @@ Refresh the mine:
 Cordon the node:
   metalk8s_cordon.node_cordoned:
     - name: {{ node_name }}
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 {%- if not pillar.orchestrate.get('skip_draining', False) %}
 
@@ -60,8 +55,6 @@ Drain the node:
     - ignore_daemonset: True
     - delete_local_data: True
     - force: True
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - metalk8s_cordon: Cordon the node
     - require_in:
@@ -112,8 +105,6 @@ Wait for API server to be available:
 Uncordon the node:
   metalk8s_cordon.node_uncordoned:
     - name: {{ node_name }}
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - salt: Run the highstate
       - http: Wait for API server to be available

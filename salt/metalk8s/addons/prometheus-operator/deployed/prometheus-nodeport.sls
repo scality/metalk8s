@@ -1,6 +1,3 @@
-{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{%- set context = "kubernetes-admin@kubernetes" %}
-
 Expose Prometheus:
   metalk8s_kubernetes.object_present:
     - manifest:
@@ -26,5 +23,3 @@ Expose Prometheus:
             app: prometheus
             prometheus: prometheus-operator-prometheus
           type: NodePort
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}

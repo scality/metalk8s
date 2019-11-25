@@ -2,9 +2,6 @@
 
 {%- set cluster_dns_ip = salt.metalk8s_network.get_cluster_dns_ip() %}
 
-{% set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{% set context = "kubernetes-admin@kubernetes" %}
-
 Create coredns ConfigMap:
   metalk8s_kubernetes.object_present:
     - manifest:
@@ -30,15 +27,11 @@ Create coredns ConfigMap:
                 reload
                 loadbalance
             }
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Create coredns deployment:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/coredns-deployment.yaml.j2
     - template: jinja
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - metalk8s_kubernetes: Create coredns ConfigMap
 
@@ -71,8 +64,6 @@ Create coredns service:
           - name: metrics
             port: 9153
             protocol: TCP
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
     - require:
       - metalk8s_kubernetes: Create coredns deployment
 
@@ -84,8 +75,6 @@ Create coredns service account:
         metadata:
           name: coredns
           namespace: kube-system
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Create coredns cluster role:
   metalk8s_kubernetes.object_present:
@@ -111,8 +100,6 @@ Create coredns cluster role:
           - nodes
           verbs:
           - get
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
 
 Create coredns cluster role binding:
   metalk8s_kubernetes.object_present:
@@ -129,6 +116,3 @@ Create coredns cluster role binding:
         - kind: ServiceAccount
           name: coredns
           namespace: kube-system
-    - kubeconfig: {{ kubeconfig }}
-    - context: {{ context }}
-
