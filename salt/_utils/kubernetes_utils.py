@@ -293,7 +293,7 @@ if HAS_LIBS:
             name='namespaced_deployment',
         ),
         ('extensions/v1beta1', 'Ingress'): KindInfo(
-            model=k8s_client.V1beta1Ingress,
+            model=k8s_client.ExtensionsV1beta1Ingress,
             api_cls=k8s_client.ExtensionsV1beta1Api,
             name='namespaced_ingress'
         ),
