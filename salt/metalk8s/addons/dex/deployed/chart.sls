@@ -67,7 +67,8 @@ stringData:
       idTokens: 24h
       signingKeys: 6h
     frontend:
-      theme: coreos
+      issuer: MetalK8s
+      theme: scality
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -187,7 +188,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 4fbe3973776c030cad8db8e2535206ba87b870089216d34b6a049f87d00697f5
+        checksum/config: 278f2b27e9441887e4070365aa3df2ccf668da0025ebf565605555c2b7b16042
       labels:
         app.kubernetes.io/component: dex
         app.kubernetes.io/instance: dex
@@ -212,6 +213,8 @@ spec:
           name: config
         - mountPath: /etc/dex/tls/https/server
           name: https-tls
+        - mountPath: /web/themes/scality
+          name: dex-login
       nodeSelector:
         node-role.kubernetes.io/infra: ''
       serviceAccountName: dex
@@ -234,6 +237,9 @@ spec:
         secret:
           defaultMode: 420
           secretName: dex-web-server-tls
+      - configMap:
+          name: dex-login
+        name: dex-login
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress

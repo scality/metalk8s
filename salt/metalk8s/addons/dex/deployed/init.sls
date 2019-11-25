@@ -12,5 +12,6 @@
 include:
 - .namespace
 - .tls-secret
+- .theme-configmap
 - .chart
 - .clusterrolebinding
