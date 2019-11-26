@@ -35,15 +35,19 @@ def render_envfile(variables: Mapping[str, str], filepath: Path) -> None:
 def render_yaml(data: Any, filepath: Path) -> None:
     """Serialize an object as YAML to a given file path."""
     with filepath.open('w', encoding='utf-8') as fp:
-        dumper = yaml.SafeDumper(fp, sort_keys=False)
-        dumper.add_representer(YAMLDocument.Literal, _literal_representer)
-        dumper.add_representer(YAMLDocument.ByteString, _bytestring_representer)
+        dumper = yaml.SafeDumper(fp, sort_keys=False) # type: ignore
+        dumper.add_representer( # type: ignore
+            YAMLDocument.Literal, _literal_representer
+        )
+        dumper.add_representer( # type: ignore
+            YAMLDocument.ByteString, _bytestring_representer
+        )
         try:
-            dumper.open()
-            dumper.represent(data)
-            dumper.close()
+            dumper.open()          # type: ignore
+            dumper.represent(data) # type: ignore
+            dumper.close()         # type: ignore
         finally:
-            dumper.dispose()
+            dumper.dispose() # type: ignore
 
 
 class Renderer(enum.Enum):
@@ -139,7 +143,9 @@ class YAMLDocument():
 
 
 def _literal_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
-    scalar = yaml.representer.SafeRepresenter.represent_str(dumper, data)
+    scalar = yaml.representer.SafeRepresenter.represent_str( # type: ignore
+        dumper, data
+    )
     scalar.style = '|'
     return scalar
 
