@@ -3,10 +3,11 @@
 """Targets to write files from Python objects."""
 
 import base64
+import collections
 import enum
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, Mapping
+from typing import Any, Callable, Dict, IO, Mapping
 
 import yaml
 
@@ -35,25 +36,26 @@ def render_envfile(variables: Mapping[str, str], filepath: Path) -> None:
 def render_yaml(data: Any, filepath: Path) -> None:
     """Serialize an object as YAML to a given file path."""
     with filepath.open('w', encoding='utf-8') as fp:
-        dumper = yaml.SafeDumper(fp, sort_keys=False) # type: ignore
-        dumper.add_representer( # type: ignore
-            YAMLDocument.Literal, _literal_representer
-        )
-        dumper.add_representer( # type: ignore
-            YAMLDocument.ByteString, _bytestring_representer
-        )
-        try:
-            dumper.open()          # type: ignore
-            dumper.represent(data) # type: ignore
-            dumper.close()         # type: ignore
-        finally:
-            dumper.dispose() # type: ignore
+        _yaml_dump(data, fp)
+
+
+def render_sls(sls: 'SaltState', filepath: Path) -> None:
+    """Serialize a Salt state to a given file path."""
+    with filepath.open('w', encoding='utf-8') as fp:
+        if sls.shebang:
+            fp.write(sls.shebang)
+            fp.write('\n'*2)
+        if sls.imports:
+            fp.write('\n'.join(sls.imports))
+            fp.write('\n'*2)
+        _yaml_dump(sls.content, fp)
 
 
 class Renderer(enum.Enum):
     """Supported rendering methods for `SerializedData` targets."""
     JSON = 'JSON'
     ENV  = 'ENV'
+    SLS  = 'SLS'
     YAML = 'YAML'
 
 
@@ -64,6 +66,7 @@ class SerializedData(base.AtomicTarget):
         Renderer.JSON: render_json,
         Renderer.ENV:  render_envfile,
         Renderer.YAML: render_yaml,
+        Renderer.SLS:  render_sls,
     }
 
     def __init__(
@@ -142,6 +145,11 @@ class YAMLDocument():
         return cls.ByteString(value)
 
 
+SaltState = collections.namedtuple(
+    'SaltState', ['content', 'shebang', 'imports']
+)
+
+
 def _literal_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
     scalar = yaml.representer.SafeRepresenter.represent_str( # type: ignore
         dumper, data
@@ -154,6 +162,22 @@ def _bytestring_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
     return _literal_representer(
         dumper, base64.encodebytes(data).decode('utf-8')
     )
+
+
+def _yaml_dump(data: Any, fp: IO[Any]) -> None:
+    dumper = yaml.SafeDumper(fp, sort_keys=False) # type: ignore
+    dumper.add_representer( # type: ignore
+        YAMLDocument.Literal, _literal_representer
+    )
+    dumper.add_representer( # type: ignore
+        YAMLDocument.ByteString, _bytestring_representer
+    )
+    try:
+        dumper.open()          # type: ignore
+        dumper.represent(data) # type: ignore
+        dumper.close()         # type: ignore
+    finally:
+        dumper.dispose() # type: ignore
 
 
 # }}}
