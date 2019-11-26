@@ -30,3 +30,11 @@ Feature: Monitoring is up and running
         And we have 1 running pod labeled 'name=prometheus-adapter' in namespace 'metalk8s-monitoring'
         And the 'v1beta1.metrics.k8s.io' APIService exists
         Then the 'v1beta1.metrics.k8s.io' APIService is Available
+
+    Scenario: Pod metrics can be retrieved using metrics.k8s.io/v1beta1
+        Given the Kubernetes API is available
+        Then a pod with label 'component=kube-apiserver' in namespace 'kube-system' has metrics
+
+    Scenario: Node metrics can be retrieved using metrics.k8s.io/v1beta1
+        Given the Kubernetes API is available
+        Then a node with label 'node-role.kubernetes.io/bootstrap=' has metrics
