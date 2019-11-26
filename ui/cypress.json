@@ -1,7 +1,8 @@
 {
   "env": {
     "target_url": "http://localhost:3000",
-    "username": "admin@metalk8s.invalid",
+    "email": "admin@metalk8s.invalid",
+    "username": "admin",
     "password": "password",
     "device_path": "/dev/disk1",
     "volume_capacity": "1",
@@ -11,5 +12,6 @@
   "reporterOptions": {
     "mochaFile": "junit/cypress-junit.xml",
     "toConsole": true
-  }
+  },
+  "chromeWebSecurity": false
 }
