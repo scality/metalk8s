@@ -149,7 +149,31 @@ describe('`fetchNodes` saga', () => {
 
   test.todo('handles API errors');
 
-  test.todo('maps deployment Jobs to Nodes');
+  test.each([
+    ['completed', true],
+    ['in progress', false],
+  ])('maps %s deployment Jobs to Nodes', (_, completed) => {
+    const clone = gen.clone();
+    const jobs = [
+      {
+        name: `deploy-node/${DEFAULT_NAME}`,
+        jid: '12345',
+        completed,
+      },
+    ];
+
+    expect(clone.next(jobs).value).toEqual(call(ApiK8s.getNodes));
+
+    const apiResponse = { body: { items: [nodeForApi({})] } };
+    const expectedNode = { ...defaultNodeForState, deploying: !completed };
+
+    expect(clone.next(apiResponse).value).toEqual(
+      put({ type: UPDATE_NODES, payload: { list: [expectedNode] } }),
+    );
+  });
+
+  test.todo('ignores Jobs not related to Nodes deployment');
+  test.todo('attaches Jobs based on Node name');
 
   // FIXME: this logic is wrong anyway, we don't want to infer roles from
   // taints, maybe display them, but that's all
