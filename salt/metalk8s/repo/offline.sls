@@ -8,7 +8,7 @@ Install yum-plugin-versionlock:
   pkg.installed:
     - name: yum-plugin-versionlock
     - fromrepo: {{ repo.repositories.keys() | join(',') }}
-    - require:
+    - require_in:
       - test: Repositories configured
 
 {%- for repo_name, repo_config in repo.repositories.items() %}
@@ -41,6 +41,9 @@ Configure {{ repo_name }} repository:
     - refresh: false
     - onchanges_in:
       - cmd: Refresh yum cache
+    - require_in:
+      - pkg: Install yum-plugin-versionlock
+      - test: Repositories configured
 {%- endfor %}
 
 # Refresh cache manually as we use the same repo name for all versions
@@ -57,8 +60,4 @@ Refresh yum cache:
       - cmd: Refresh yum cache
 
 Repositories configured:
-  test.succeed_without_changes:
-    - require:
-{%- for repository_name in repo.repositories.keys() %}
-      - pkgrepo: Configure {{ repository_name }} repository
-{%- endfor %}
+  test.succeed_without_changes
