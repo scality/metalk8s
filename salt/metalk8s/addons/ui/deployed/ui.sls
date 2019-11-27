@@ -1,8 +1,6 @@
 include:
 - .namespace
 
-{%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
-{%- set context = "kubernetes-admin@kubernetes" %}
 {%- from "metalk8s/addons/nginx-ingress-control-plane/control-plane-ip.sls"
     import ingress_control_plane with context
 %}
