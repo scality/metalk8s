@@ -1,4 +1,4 @@
-const JOBS = 'JOBS';
+export const JOBS = 'JOBS';
 
 // Jobs in LocalStorage {{{
 // A job in localStorage is represented as { name, jid, completedAt }
@@ -64,7 +64,7 @@ export function parseJobError(returner) {
 
 export function getJobStatusFromPrintJob(result, jid) {
   let status = {
-    completed: false
+    completed: false,
   };
 
   const job = result.return[0][jid];
@@ -84,7 +84,7 @@ export function getJobStatusFromPrintJob(result, jid) {
 
 export function getJobStatusFromEventRet(result) {
   let status = {
-    completed: true
+    completed: true,
   };
   status.success = result.success;
 

@@ -21,8 +21,8 @@ import {
 } from '../../services/salt/utils';
 
 // Actions
-const ADD_JOB = 'ADD_JOB';
-const REMOVE_JOB = 'REMOVE_JOB';
+export const ADD_JOB = 'ADD_JOB';
+export const REMOVE_JOB = 'REMOVE_JOB';
 const ADD_JOB_EVENT = 'ADD_JOB_EVENT';
 const CONNECT_SALT_API = 'CONNECT_SALT_API';
 const SET_JOB_STATUS = 'SET_JOB_STATUS';
@@ -115,11 +115,11 @@ function addJobEventAction(jid, event) {
   return { type: ADD_JOB_EVENT, payload: { jid, event } };
 }
 
-function setJobCompletedAction(jid, completedAt, status) {
+export function setJobCompletedAction(jid, completedAt, status) {
   return { type: JOB_COMPLETED, payload: { jid, completedAt, status } };
 }
 
-function setJobStatusAction(jid, status) {
+export function setJobStatusAction(jid, status) {
   return { type: SET_JOB_STATUS, payload: { jid, status } };
 }
 
@@ -127,7 +127,7 @@ function setJobStatusAction(jid, status) {
 export const allJobsSelector = state => state.app.salt.jobs;
 
 // Sagas
-function* initialize(payload) {
+export function* initialize(payload) {
   const savedJobs = listJobsFromLocalStorage();
   yield all(savedJobs.map(job => put(addJobAction(job))));
   yield all(savedJobs.map(job => call(refreshJobStatus, job)));
@@ -137,11 +137,11 @@ function* initialize(payload) {
   yield fork(watchSaltEvents, payload);
 }
 
-function* manageLocalStorage() {
+export function* manageLocalStorage() {
   // NOTE: instead of creating a saga per action type, since the operations on
   // localStorage rely on its previous state, we need to execute them serially.
   // We don't set up a buffer size as operations should be infrequent and fast.
-  const channel = actionChannel([ADD_JOB, REMOVE_JOB, JOB_COMPLETED]);
+  const channel = yield actionChannel([ADD_JOB, REMOVE_JOB, JOB_COMPLETED]);
   while (true) {
     const { type, payload: job } = yield take(channel);
     switch (type) {
@@ -160,14 +160,14 @@ function* manageLocalStorage() {
   }
 }
 
-function* refreshJobStatus(job) {
+export function* refreshJobStatus(job) {
   const result = yield call(ApiSalt.printJob, job.jid);
   // TODO: error handling?
   const status = getJobStatusFromPrintJob(result, job.jid);
   yield call(updateJobStatus, job, status);
 }
 
-function* updateJobStatus(job, status) {
+export function* updateJobStatus(job, status) {
   if (status.completed) {
     // We only have useful info for the status of a completed Job
     if (job.completedAt === null) {
@@ -194,7 +194,7 @@ function* readJobEvent(job, event) {
   }
 }
 
-function createChannelFromSource(eventSrc) {
+export function createChannelFromSource(eventSrc) {
   const subs = emitter => {
     eventSrc.onmessage = msg => {
       emitter(msg);
@@ -232,7 +232,7 @@ export function* watchSaltEvents({ payload: { url, token } }) {
 
 // Garbage collection of jobs in the Redux state {{{
 const JOB_EXPIRATION_MS = 5 * 60 * 1000; // 5 minutes
-const JOB_GC_DELAY = 5 * 1000; // 5 seconds
+export const JOB_GC_DELAY = 5 * 1000; // 5 seconds
 
 function checkJobExpiry(job) {
   if (!job.completed) {
