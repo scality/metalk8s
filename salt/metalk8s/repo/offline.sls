@@ -9,6 +9,15 @@ Install yum-plugin-versionlock:
     - name: yum-plugin-versionlock
     - fromrepo: {{ repo.repositories.keys() | join(',') }}
 
+Ensure yum plugins are enabled:
+  ini.options_present:
+    - name: /etc/yum.conf
+    - sections:
+        main:
+          plugins: 1
+    - require_in:
+      - test: Repositories configured
+
 Ensure yum versionlock plugin is enabled:
   ini.options_present:
     - name: /etc/yum/pluginconf.d/versionlock.conf
