@@ -8,8 +8,17 @@ Install yum-plugin-versionlock:
   pkg.installed:
     - name: yum-plugin-versionlock
     - fromrepo: {{ repo.repositories.keys() | join(',') }}
+
+Ensure yum versionlock plugin is enabled:
+  ini.options_present:
+    - name: /etc/yum/pluginconf.d/versionlock.conf
+    - sections:
+        main:
+          enabled: 1
     - require_in:
       - test: Repositories configured
+    - require:
+      - pkg: Install yum-plugin-versionlock
 
 {%- for repo_name, repo_config in repo.repositories.items() %}
   {%- if repo.local_mode %}
