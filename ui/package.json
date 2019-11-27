@@ -52,6 +52,7 @@
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.4.4",
     "@babel/plugin-proposal-optional-chaining": "^7.2.0",
     "@babel/preset-flow": "^7.0.0",
+    "@redux-saga/testing-utils": "^1.0.2",
     "compression-webpack-plugin": "^3.0.0",
     "customize-cra": "^0.4.1",
     "cypress": "^3.2.0",

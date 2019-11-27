@@ -1,4 +1,5 @@
 import { call, put, all, delay, select } from 'redux-saga/effects';
+import { cloneableGenerator } from '@redux-saga/testing-utils';
 import * as ApiK8s from '../../services/k8s/api';
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
@@ -116,28 +117,34 @@ const formPayload = ({
 // }}}
 
 describe('`fetchNodes` saga', () => {
-  test('has the correct nominal flow', () => {
-    // Assumes empty responses everywhere
-    const gen = fetchNodes();
-    expect(gen.next().value).toEqual(
-      put({ type: UPDATE_NODES, payload: { isLoading: true } }),
-    );
+  const gen = cloneableGenerator(fetchNodes)();
 
-    expect(gen.next().value).toEqual(select(allJobsSelector));
+  expect(gen.next().value).toEqual(
+    put({ type: UPDATE_NODES, payload: { isLoading: true } }),
+  );
+
+  expect(gen.next().value).toEqual(select(allJobsSelector));
+
+  const _checkCompletion = _gen => {
+    expect(_gen.next().value).toEqual(delay(1000));
+    expect(_gen.next().value).toEqual(
+      put({ type: UPDATE_NODES, payload: { isLoading: false } }),
+    );
+    expect(_gen.next().done).toBe(true);
+  };
+
+  test('has the correct nominal flow', () => {
+    const clone = gen.clone();
 
     const jobs = [];
-    expect(gen.next(jobs).value).toEqual(call(ApiK8s.getNodes));
+    expect(clone.next(jobs).value).toEqual(call(ApiK8s.getNodes));
 
     const apiResponse = { body: { items: [] } };
-    expect(gen.next(apiResponse).value).toEqual(
+    expect(clone.next(apiResponse).value).toEqual(
       put({ type: UPDATE_NODES, payload: { list: [] } }),
     );
 
-    expect(gen.next().value).toEqual(delay(1000));
-    expect(gen.next().value).toEqual(
-      put({ type: UPDATE_NODES, payload: { isLoading: false } }),
-    );
-    expect(gen.next().done).toBe(true);
+    _checkCompletion(clone);
   });
 
   test.todo('handles API errors');
@@ -225,12 +232,8 @@ describe('`fetchNodes` saga', () => {
       },
     ],
   ])('handles Node roles (%j) and taints (%j)', (roles, taints, expected) => {
-    const gen = fetchNodes();
-    expect(gen.next().value).toEqual(
-      put({ type: UPDATE_NODES, payload: { isLoading: true } }),
-    );
-    expect(gen.next().value).toEqual(select(allJobsSelector));
-    expect(gen.next([]).value).toEqual(call(ApiK8s.getNodes));
+    const clone = gen.clone();
+    expect(clone.next([]).value).toEqual(call(ApiK8s.getNodes));
 
     const apiResponse = {
       body: { items: [nodeForApi({ roles, taintRoles: taints })] },
@@ -245,17 +248,11 @@ describe('`fetchNodes` saga', () => {
       roles: expected.labels,
     };
 
-    expect(gen.next(apiResponse).value).toEqual(
+    expect(clone.next(apiResponse).value).toEqual(
       put({ type: UPDATE_NODES, payload: { list: [expectedNode] } }),
     );
-    expect(gen.next().value).toEqual(delay(1000));
-    expect(gen.next().value).toEqual(
-      put({
-        type: UPDATE_NODES,
-        payload: { isLoading: false },
-      }),
-    );
-    expect(gen.next().done).toEqual(true);
+
+    _checkCompletion(clone);
   });
 });
 
