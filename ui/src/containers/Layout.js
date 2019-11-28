@@ -44,26 +44,10 @@ const Layout = props => {
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const { intl } = props;
   const history = useHistory();
-
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
-
-  const help = [
-    {
-      label: intl.messages.about,
-      onClick: () => {
-        history.push('/about');
-      },
-    },
-  ];
-
-  const userConfig = {
-    name: user && user.username,
-    actions: [{ label: intl.messages.log_out, onClick: logout }],
-  };
-
   const sidebarConfig = {
     expanded: sidebar.expanded,
     actions: [
@@ -143,14 +127,49 @@ const Layout = props => {
     },
   ];
 
+  const filterLanguage = languages.filter(lang => lang.name !== language);
+
+  const rightActions = [
+    {
+      type: 'dropdown',
+      text: language,
+      icon: <i className="fas fa-globe" />,
+      items: filterLanguage,
+    },
+    {
+      type: 'dropdown',
+      icon: <i className="fas fa-question-circle" />,
+      items: [
+        {
+          label: intl.messages.about,
+          onClick: () => {
+            history.push('/about');
+          },
+        },
+      ],
+    },
+    {
+      type: 'dropdown',
+      text: user && user.username,
+      icon: <i className="fas fa-user" />,
+      items: [{ label: intl.messages.log_out, onClick: logout }],
+    },
+  ];
+
+  const applicationsAction = {
+    type: 'dropdown',
+    icon: <i className="fas fa-th" />,
+    items: applications,
+  };
+
+  if (applications && applications.length) {
+    rightActions.splice(1, 0, applicationsAction);
+  }
+
   const navbar = {
     onToggleClick: toggleSidebar,
-    toggleVisible: true,
     productName: intl.messages.product_name,
-    applications,
-    help,
-    user: user && userConfig,
-    languages,
+    rightActions,
     logo: (
       <img
         alt="logo"
