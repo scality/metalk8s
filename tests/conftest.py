@@ -102,6 +102,111 @@ def k8s_client(request, k8s_apiclient):
     return api_cls(api_client=k8s_apiclient)
 
 
+@pytest.fixture
+def admin_sa(k8s_client, k8s_apiclient):
+    """Fixture to create a ServiceAccount which is bind to `cluster-admin`
+    ClusterRole and return the ServiceAccount name
+    """
+    rbac_k8s_client = kubernetes.client.RbacAuthorizationV1Api(
+        api_client=k8s_apiclient
+    )
+    sa_name = 'test-admin'
+    sa_namespace = 'default'
+    sa_manifest = {
+        'apiVersion': 'v1',
+        'kind': 'ServiceAccount',
+        'metadata': {
+            'name': sa_name,
+            'namespace': sa_namespace
+        }
+    }
+    crb_manifest = {
+        'apiVersion': 'rbac.authorization.k8s.io/v1',
+        'kind': 'ClusterRoleBinding',
+        'metadata': {
+            'name': sa_name
+        },
+        'roleRef': {
+            'apiGroup': 'rbac.authorization.k8s.io',
+            'kind': 'ClusterRole',
+            'name': 'cluster-admin'
+        },
+        'subjects': [
+            {
+                'kind': 'ServiceAccount',
+                'name': sa_name,
+                'namespace': sa_namespace
+            }
+        ]
+    }
+
+    k8s_client.create_namespaced_service_account(
+        body=sa_manifest,
+        namespace=sa_namespace
+    )
+    rbac_k8s_client.create_cluster_role_binding(body=crb_manifest)
+
+    def _check_crb_exists():
+        try:
+            rbac_k8s_client.read_cluster_role_binding(name=sa_name)
+        except kubernetes.client.rest.ApiException as err:
+            if err.status == 404:
+                raise AssertionError('ClusterRoleBinding not yet created')
+            raise
+
+    def _check_sa_exists():
+        try:
+            sa_obj = k8s_client.read_namespaced_service_account(
+                name=sa_name,
+                namespace=sa_namespace
+            )
+        except kubernetes.client.rest.ApiException as err:
+            if err.status == 404:
+                raise AssertionError('ServiceAccount not yet created')
+            raise
+
+        assert sa_obj.secrets
+        assert sa_obj.secrets[0].name
+
+        try:
+            secret_obj = k8s_client.read_namespaced_secret(
+                sa_obj.secrets[0].name,
+                sa_namespace
+            )
+        except kubernetes.client.rest.ApiException as err:
+            if err.status == 404:
+                raise AssertionError('Secret not yet created')
+            raise
+
+        assert secret_obj.data.get('token')
+
+    # Wait for ClusterRoleBinding to exists
+    utils.retry(_check_crb_exists, times=20, wait=3)
+
+    # Wait for ServiceAccount to exists
+    utils.retry(_check_sa_exists, times=20, wait=3)
+
+    yield (sa_name, sa_namespace)
+
+    try:
+        rbac_k8s_client.delete_cluster_role_binding(
+            name=sa_name,
+            body=kubernetes.client.V1DeleteOptions(
+                propagation_policy='Foreground'
+            )
+        )
+    except kubernetes.client.rest.ApiException:
+        pass
+
+    k8s_client.delete_namespaced_service_account(
+        name=sa_name,
+        namespace=sa_namespace,
+        body=kubernetes.client.V1DeleteOptions(
+            propagation_policy='Foreground'
+        )
+    )
+
+
 @pytest.fixture(scope='module')
 def bootstrap_config(host):
     with host.sudo():
