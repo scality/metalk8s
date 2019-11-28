@@ -9,6 +9,15 @@ Feature: SaltAPI
         And we have '@runner' perms
         And we have '@jobs' perms
 
+    Scenario: Login to SaltAPI using an admin ServiceAccount
+        Given the Kubernetes API is available
+        When we login to SaltAPI with an admin ServiceAccount
+        Then we can ping all minions
+        And we can invoke '[".*"]' on '*'
+        And we have '@wheel' perms
+        And we have '@runner' perms
+        And we have '@jobs' perms
+
     Scenario: Login to SaltAPI using a ServiceAccount
         Given the Kubernetes API is available
         When we login to SaltAPI with the ServiceAccount 'storage-operator'
