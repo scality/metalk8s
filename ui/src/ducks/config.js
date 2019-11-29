@@ -3,7 +3,7 @@ import { mergeTheme } from '@scality/core-ui/dist/utils';
 import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import { loadUser, createUserManager } from 'redux-oidc';
 import { USER_FOUND } from 'redux-oidc';
-
+import { WebStorageStateStore } from 'oidc-client';
 import { store } from '../index';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
@@ -41,6 +41,7 @@ const defaultState = {
     authority: '',
     loadUserInfo: false,
     post_logout_redirect_uri: '/',
+    userStore: new WebStorageStateStore({ store: localStorage }),
   },
   userManager: null,
   isUserLoaded: false,
