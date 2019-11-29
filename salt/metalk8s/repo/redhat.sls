@@ -12,8 +12,26 @@ Set metalk8s_osmajorrelease in yum vars:
 Install yum-plugin-versionlock:
   pkg.installed:
     - name: yum-plugin-versionlock
-    - require:
+
+Ensure yum plugins are enabled:
+  ini.options_present:
+    - name: /etc/yum.conf
+    - sections:
+        main:
+          plugins: 1
+    - require_in:
       - test: Repositories configured
+
+Ensure yum versionlock plugin is enabled:
+  ini.options_present:
+    - name: /etc/yum/pluginconf.d/versionlock.conf
+    - sections:
+        main:
+          enabled: 1
+    - require_in:
+      - test: Repositories configured
+    - require:
+      - pkg: Install yum-plugin-versionlock
 
 {%- for repo_name, repo_config in repo.repositories.items() %}
   {%- if repo.local_mode %}
@@ -72,4 +90,4 @@ Check packages availability:
       - test: Repositories configured
 
 Repositories configured:
-  test.succeed_without_changes: []
+  test.succeed_without_changes
