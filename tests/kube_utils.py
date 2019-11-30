@@ -2,6 +2,12 @@ from kubernetes.client.rest import ApiException
 
 from tests import utils
 
+# See https://kubernetes.io/docs/concepts/architecture/nodes/#condition
+# And https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions
+MAP_STATUS = {
+    'True': 'Ready', 'False': 'NotReady', 'Unknown': 'Unknown'
+}
+
 
 def get_pods(
     k8s_client, ssh_config, label,
