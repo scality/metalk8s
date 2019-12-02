@@ -10,22 +10,32 @@ MAP_STATUS = {
 
 
 def get_pods(
-    k8s_client, ssh_config, label,
-    node='bootstrap', namespace='default', state='Running'
+    k8s_client, ssh_config, label=None,
+    node=None, namespace=None, state='Running'
 ):
     """Return the pod `component` from the specified node"""
+    field_selector = []
 
-    field_selector = ['status.phase={}'.format(state)]
+    if state:
+        field_selector.append('status.phase={}'.format(state))
 
     if node:
         nodename = utils.resolve_hostname(node, ssh_config)
         field_selector.append('spec.nodeName={}'.format(nodename))
 
-    return k8s_client.list_namespaced_pod(
-        namespace,
-        field_selector=','.join(field_selector),
-        label_selector=label
-    ).items
+    kwargs = {}
+
+    if field_selector:
+        kwargs['field_selector'] = ','.join(field_selector)
+
+    if label:
+        kwargs['label_selector'] = label
+
+    if namespace:
+        return k8s_client.list_namespaced_pod(
+            namespace=namespace, **kwargs
+        ).items
+    return k8s_client.list_pod_for_all_namespaces(**kwargs).items
 
 
 def wait_for_pod(k8s_client, name, namespace="default", state="Running"):
