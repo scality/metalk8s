@@ -1,1121 +1,1066 @@
----
-version: "0.2"
-
+version: '0.2'
 branches:
-  # yamllint disable rule:line-length
   user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
     stage: pre-merge
-
-models:
-  # --- Re-usable steps (no parameters) ---
-  - Git: &git_pull
-      name: git pull
-      repourl: "%(prop:git_reference)s"
-      method: clobber
-      retryFetch: true
-      haltOnFailure: true
-  - ShellCommand: &setup_cache
-      name: Setup proxy cache
-      command: >
-          curl -s http://proxy-cache/setup.sh | sudo sh &&
-          . /usr/local/bin/use_scality_proxy_cache
-      haltOnFailure: true
-  - ShellCommand: &wait_for_docker
-      name: Wait for Docker daemon to be ready
-      command: |
-        bash -c '
-        for i in {1..150}
-        do
-          docker info &> /dev/null && exit
-          sleep 2
-        done
-        echo "Could not reach Docker daemon from buildbot worker" >&2
-        exit 1'
-      haltOnFailure: true
-  - ShellCommand: &build_all
-      name: Build everything
-      env:
-        PYTHON_SYS: python3.6
-      # There are 3 CPUs available for Docker, and 1 for `doit` in the Pod.
-      # Given the network IO-bound nature of some of the build steps, and
-      # most build steps running in Docker, set concurrency to 4.
-      command: ./doit.sh -n 4
-      usePTY: true
-      haltOnFailure: true
-  - ShellCommand: &ssh_ip_setup
-      name: Install SSH keys and report connection info
-      command: |
-        mkdir -p ~/.ssh
-        echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys
-        IP=$(
-          ip -f inet addr show eth0 | sed -En 's/^.*inet ([0-9.]+).*$/\1/p'
-        )
-        cat << END
-        Connect to this worker using:
-            ssh eve@$IP
-        END
-  - ShellCommand: &check_iso_checksum
-      name: Check image with checksum
-      command: sha256sum -c SHA256SUM
-      haltOnFailure: true
-  - Upload: &upload_artifacts
-      name: Upload artifacts
-      source: artifacts
-  - Upload: &upload_report_artifacts
-      name: Upload sosreport logs to artifacts
-      source: sosreport
-  - ShellCommand: &collect_sosreport
-      name: Collect logs using sosreport
-      command: >
-        sudo sosreport --all-logs
-        -o metalk8s -kmetalk8s.podlogs=True
-        -o containerd -kcontainerd.all=True -kcontainerd.logs=True
-        --batch --tmp-dir /var/tmp &&
-        sudo chown eve:eve /var/tmp/sosreport*
-  - ShellCommand: &wait_debug
-      name: Debug step - wait before allowing resource destruction
-      env:
-        # Use this step with STEP_NAME and DURATION environment values to
-        # customize the command behaviour. DURATION default value is 3600
-        # (wait duration, in seconds).
-        STEP_NAME: default
-      timeout: 3600
-      command: |
-        bash -c '
-        DEBUG_STEPS="%(prop:debug)s"
-        DURATION="${DURATION:-3600}"
-        RUN_STEP=0
-        REASON=""
-        if [ -z "$DEBUG_STEPS" ]; then
-          REASON="\"debug\" build property not set"
-        elif [ "$DEBUG_STEPS" = all ]; then
-          RUN_STEP=1
-          REASON="\"debug\" property set to \"all\""
-        elif [[ "$DEBUG_STEPS" =~ ^[a-z\-]+(~[a-z\-]+)*$ ]]; then
-          IFS="~" read -ra SELECTED <<< "$DEBUG_STEPS"
-          for selected in "${SELECTED[@]}"; do
-            if [ "$selected" = "$STEP_NAME" ]; then
-              RUN_STEP=1
-              REASON="step selected in \"$DEBUG_STEPS\""
-              break
-            fi
-          done
-          if [ "$RUN_STEP" -eq 0 ]; then
-            REASON="step not in \"$DEBUG_STEPS\""
-          fi
-        else
-          REASON="invalid \"debug\" property value"
-          cat >&2 << EOF
-        Invalid "debug" build property value "$DEBUG_STEPS".
-        Must use either:
-          - "all", to select all debug steps
-          - a single step name
-          - a list of step names, separated by tilde signs "~",
-            e.g. "single-node~multiple-nodes".
-        EOF
-        fi
-        if [ "$RUN_STEP" -eq 1 ]; then
-          echo "Step $STEP_NAME - wait $DURATION seconds"
-          echo "Reason: $REASON"
-          sleep "$DURATION"
-        else
-          echo "Step $STEP_NAME - skip debug"
-          echo "Reason: $REASON"
-        fi'
-      alwaysRun: true
-
-  # --- Re-usable steps (with parameters) ---
-  - SetPropertyFromCommand: &set_version_prop
-      name: Set version as property from built artifacts
-      property: metalk8s_version
-      env:
-        BASE_URL: "%(prop:artifacts_private_url)s"
-      command: >
-        bash -c '
-        . <(curl -s "${BASE_URL}/product.txt") &&
-        echo $VERSION'
-  - ShellCommand: &copy_artifacts
-      name: Put the artifacts to upload in a separate directory
-      env: &_env_copy_artifacts
-        DEST_DIR: "artifacts"
-        ARTIFACTS: >-
-          _build/metalk8s.iso
-          _build/SHA256SUM
-          _build/root/product.txt
-      command: |
-        bash -c '
-        mkdir "${DEST_DIR}" -p
-        for artifact in ${ARTIFACTS}; do
-          cp -r "$artifact" "${DEST_DIR}"
-        done'
-      haltOnFailure: true
-  - ShellCommand: &copy_report_artifacts
-      name: Put the sosreport logs to upload in a separate directory
-      env:
-        DEST_DIR: sosreport/sosreport
-      command: mkdir -p "${DEST_DIR}" && cp /var/tmp/sosreport* "${DEST_DIR}"
-      alwaysRun: true
-  - ShellCommand: &retrieve_iso_checksum
-      name: Retrieve ISO image checksum
-      env: &_env_retrieve_artifact
-        BASE_URL: "%(prop:artifacts_private_url)s"
-        DEST_DIR: "."
-      command: >
-        curl -s -XGET -o "${DEST_DIR}/SHA256SUM" "${BASE_URL}/SHA256SUM"
-      # Three minutes should be enough for this small file
-      timeout: 180
-  - ShellCommand: &retrieve_iso
-      name: Retrieve ISO image
-      env: &_env_retrieve_artifact_retry
-        <<: *_env_retrieve_artifact
-        MAX_ATTEMPTS: "300"  # retry every 2 seconds for 10 minutes total
-      command: |
-        bash -c '
-        in_url="${BASE_URL}/metalk8s.iso"
-        out_path="${DEST_DIR}/metalk8s.iso"
-        for ((i=1;i<=MAX_ATTEMPTS;i++)); do
-          if [ $(( $i % 10 )) -eq 1 ]; then
-            echo "Attempt $i out of ${MAX_ATTEMPTS}"
-          fi
-          curl -s -XGET -o "${out_path}" "${in_url}" && exit
-          sleep 2
-        done
-        echo "Could not retrieve ISO after ${MAX_ATTEMPTS} attempts" >&2
-        exit 1'
-      haltOnFailure: true
-      # Increase default timeout for ISOs, as artifacts may be too slow
-      timeout: 2400
-  - ShellCommand: &create_mountpoint
-      name: Create mountpoint
-      env:
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
-      command: sudo mkdir -p "/srv/scality/metalk8s-${PRODUCT_VERSION}"
-  - ShellCommand: &mount_iso
-      name: Mount ISO image
-      env:
-        ISO_PATH: metalk8s.iso
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
-      command: >
-        sudo mount -o loop "${ISO_PATH}"
-        "/srv/scality/metalk8s-${PRODUCT_VERSION}"
-  - ShellCommand: &bootstrap_config
-      name: Create bootstrap configuration file
-      env:
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
-      command: |
-        sudo bash << EOF
-        mkdir -p /etc/metalk8s
-        cat > /etc/metalk8s/bootstrap.yaml << END
-        apiVersion: metalk8s.scality.com/v1alpha2
-        kind: BootstrapConfiguration
-        networks:
-          controlPlane: 10.100.0.0/16
-          workloadPlane: 10.100.0.0/16
-        ca:
-          minion: $(hostname)
-        apiServer:
-          host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
-        archives:
-          - "/srv/scality/metalk8s-${PRODUCT_VERSION}"
-        END
-        EOF
-      haltOnFailure: true
-  - ShellCommand: &run_bootstrap
-      name: Start the bootstrap process
-      env:
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
-      command: >
-        sudo bash
-        "/srv/scality/metalk8s-${PRODUCT_VERSION}/bootstrap.sh"
-        --verbose
-      haltOnFailure: true
-  - ShellCommand: &add_archive
-      name: Add ISO to cluster
-      env: &_env_add_archive
-        ISO_PATH: metalk8s.iso
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
-      command: >
-        sudo bash
-        "/srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh"
-        --archive "$(readlink -f "${ISO_PATH}")"
-      haltOnFailure: true
-  - ShellCommand: &local_tests
-      name: Run tests locally
-      env: &_env_local_tests
-        BRANCH: "%(prop:branch)s"
-        ISO_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
-        PYTEST_FILTERS: "post and ci and not multinodes"
-      command: >
-        git checkout "${BRANCH}" &&
-        tox -e tests-local -- -m "${PYTEST_FILTERS}"
-      haltOnFailure: true
-  - ShellCommand: &bastion_tests
-      name: Run tests on Bastion
-      env: &_env_bastion_tests
-        SSH_CONFIG_FILE: "/home/centos/ssh_config"
-        ISO_MOUNTPOINT: "/var/tmp/metalk8s"
-        TEST_HOSTS_LIST: "bootstrap"
-        PYTEST_FILTERS: "post and ci"
-      command: >
-        ssh -F ssh_config bastion --
-        "cd metalk8s &&
-        export SSH_CONFIG_FILE=\"${SSH_CONFIG_FILE}\" &&
-        export ISO_MOUNTPOINT=\"${ISO_MOUNTPOINT}\" &&
-        export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
-        tox -e tests -- -m \"${PYTEST_FILTERS}\""
-      workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      haltOnFailure: true
-  - ShellCommand: &add_final_status_artifact
-      name: Add final status to artifacts
-      command: |-
-        bash -c '
-          declare -r BUILD_STATUS_DIR=build_status/build_status/${STEP_NAME:-}
-          mkdir -p "$BUILD_STATUS_DIR"
-          echo -n "$FINAL_STATUS" > "$BUILD_STATUS_DIR/.final_status"
-        '
-      env: &_env_final_status_artifact
-        STEP_NAME: ''
-        FINAL_STATUS: ''
-      haltOnFailure: True
-  - ShellCommand: &add_final_status_artifact_success
-      <<: *add_final_status_artifact
-      name: Add successful status to artifacts
-      env: &_env_final_status_artifact_success
-        <<: *_env_final_status_artifact
-        FINAL_STATUS: "SUCCESSFUL"
-  - ShellCommand: &add_final_status_artifact_failed
-      <<: *add_final_status_artifact
-      name: Add failed status to artifacts
-      env: &_env_final_status_artifact_failed
-        <<: *_env_final_status_artifact
-        FINAL_STATUS: "FAILED"
-  - Upload: &upload_final_status_artifact
-      name: Upload final status to artifacts
-      source: build_status
-      alwaysRun: True
-
-  # --- Re-usable steps related to terraform actions ---
-  - ShellCommand: &terraform_install
-      name: Download and install terraform
-      env:
-        TF_VERSION: "0.12.3"
-      command: >
-        TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/";
-        TF_FILE="terraform_${TF_VERSION}_linux_amd64.zip";
-        curl --retry 5 -O "${TF_URL}${TF_FILE}" &&
-        sudo unzip "${TF_FILE}" -d /usr/local/sbin/ &&
-        rm -f "${TF_FILE}"
-      haltOnFailure: true
-  - ShellCommand: &terraform_install_check
-      name: Check that terraform was installed
-      command: |-
-        if ! terraform --version 2&> /dev/null; then
-          echo "aborting - terraform not installed and required" >&2
-          exit 1
-        fi
-      haltOnFailure: true
-  - ShellCommand: &terraform_init
-      name: Init terraform
-      command: |-
-        for _ in $(seq 1 12); do
-          if terraform init; then
-            break
-          else
-            rm -rf .terraform/
-            sleep 5
-          fi
-        done;
-      haltOnFailure: true
-  - ShellCommand: &terraform_validate
-      name: Validate terraform definition
-      command: terraform validate
-      haltOnFailure: true
-  - ShellCommand: &terraform_apply
-      name: Spawn openstack virtual infra
-      command: terraform apply -auto-approve
-      env: &_env_terraform
-        OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
-        OS_REGION_NAME: "%(secret:scality_cloud_region)s"
-        OS_USERNAME: "%(secret:scality_cloud_username)s"
-        OS_PASSWORD: "%(secret:scality_cloud_password)s"
-        OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
-        # FIXME: this makes hostnames too long
-        # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
-      haltOnFailure: true
-  - ShellCommand: &terraform_destroy
-      name: Destroy openstack virtual infra
-      command: |-
-        for _ in $(seq 1 3); do
-           terraform destroy -auto-approve && break
-        done;
-      env: *_env_terraform
-      alwaysRun: true
-      sigtermTime: 600
-
-  # --- Previous version (for Upgrade/Downgrade) ---
-  - Git: &git_pull_prev
-      name: clone previous version branch
-      command: >
-          git clone "%(prop:repository)s"
-          --branch "development/%(prop:product_version_prev)s"
-          metalk8s-"%(prop:product_version_prev)s"
-      haltOnFailure: true
-
-  - ShellCommand: &generate_report_over_ssh
-      name: Generate sosreport on every machine
-      env: &_env_generate_report_over_ssh
-        HOSTS_LIST: "bootstrap"
-        SSH_CONFIG: ssh_config
-        REPORT_OWNER: centos
-        REPORT_GROUP: centos
-      command: >
-        for host in $HOSTS_LIST; do
-          ssh -F "$SSH_CONFIG" $host \
-          "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
-          -o containerd -kcontainerd.all=True -kcontainerd.logs=True\
-          --batch --tmp-dir /var/tmp && \
-          sudo chown '$REPORT_OWNER:$REPORT_GROUP' /var/tmp/sosreport*"
-        done
-      alwaysRun: true
-  - ShellCommand: &collect_report_over_ssh
-      name: Download every sosreports on worker
-      env: &_env_collect_report_over_ssh
-        HOSTS_LIST: "bootstrap"
-        SSH_CONFIG: ssh_config
-        STEP_NAME: ''
-      command: >
-        mkdir -p "sosreport/sosreport/$STEP_NAME" &&
-        for host in $HOSTS_LIST; do
-          scp -F "$SSH_CONFIG" \
-          $host:/var/tmp/sosreport-* \
-          "sosreport/sosreport/$STEP_NAME/$host-sosreport.tar.xz"
-        done
-      alwaysRun: true
-
 stages:
   pre-merge:
     worker:
       type: local
     steps:
-      - ShellCommand: *add_final_status_artifact_failed
-      - SetPropertyFromCommand:
-          name: Set previous version to upgrade from and downgrade to
-          property: product_version_prev
-          command: >
-              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
-              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
-              echo "$major.$(( $minor-1 ))"
-      - TriggerStages:
-          name: Trigger build, docs and lint stages simultaneously
-          stage_names:
-            - build
-            - buildprev
-            - docs
-            - lint
-            - unit_tests
-          haltOnFailure: true
-      - SetPropertyFromCommand: *set_version_prop
-      - SetPropertyFromCommand:
-          <<: *set_version_prop
-          name: Set previous version as property from built artifacts
-          property: metalk8s_version_prev
-          env:
-            BASE_URL: "%(prop:artifacts_private_url)s/pre"
-      - TriggerStages:
-          name: Trigger single-node and multiple-nodes steps with built ISO
-          stage_names:
-            - single-node-upgrade-centos
-            - single-node-downgrade-centos
-            - single-node-install-rhel
-            - multiple-nodes-centos
-      - ShellCommand: *add_final_status_artifact_success
-      - Upload: *upload_final_status_artifact
-
+    - ShellCommand:
+        name: Set build status to 'FAILED'
+        command: mkdir -p build_status/build_status && echo 'FAILED' > build_status/build_status/final_status
+        haltOnFailure: true
+    - SetPropertyFromCommand:
+        name: Set previous version to upgrade from and downgrade to
+        property: product_version_prev
+        command: major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) && minor=$(echo
+          "%(prop:product_version)s" | cut -d'.' -f2) && echo "$major.$(( $minor -
+          1 ))"
+    - TriggerStages:
+        name: Trigger build, docs, lint and unit tests stages
+        stage_names:
+        - build
+        - buildprev
+        - docs
+        - lint
+        - unit-tests
+        haltOnFailure: true
+    - SetPropertyFromCommand:
+        name: Set version as property from built artifacts
+        property: metalk8s_version
+        command: bash -c '. <(curl -s "%(prop:artifacts_private_url)s/product.txt")
+          && echo $VERSION'
+    - SetPropertyFromCommand:
+        name: Set version as property from built artifacts
+        property: metalk8s_version_prev
+        command: bash -c '. <(curl -s "%(prop:artifacts_private_url)s/pre/product.txt")
+          && echo $VERSION'
+    - TriggerStages:
+        name: Trigger single-node and multiple-nodes stages
+        stage_names:
+        - single-node-upgrade-centos
+        - single-node-downgrade-centos
+        - single-node-install-rhel
+        - multiple-nodes
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL'
+        command: mkdir -p build_status/build_status && echo 'SUCCESSFUL' > build_status/build_status/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: &id001 build_status
   build:
-    worker: &build_worker
+    worker:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
         docker-builder: eve/workers/pod-builder
     steps:
-      - ShellCommand: *wait_for_docker
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: build
-      - ShellCommand: *setup_cache
-      - ShellCommand: *build_all
-      - ShellCommand:
-          <<: *copy_artifacts
-          env:
-            <<: *_env_copy_artifacts
-            ARTIFACTS: >-
-              build.log
-              _build/metalk8s.iso
-              _build/SHA256SUM
-              _build/root/product.txt
-      - Upload: *upload_artifacts
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: build
-      - Upload: *upload_final_status_artifact
-
+    - ShellCommand:
+        name: Set build status to 'FAILED' for build
+        command: mkdir -p build_status/build_status/build && echo 'FAILED' > build_status/build_status/build/final_status
+        haltOnFailure: true
+    - ShellCommand:
+        name: Wait for Docker daemon to be ready
+        command: "bash -c '\nfor i in {1..150}; do\n  docker info &> /dev/null &&\
+          \ exit\n  sleep 2\ndone\necho \"Could not reach Docker daemon from Buildbot\
+          \ worker\" >&2\nexit 1'"
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Build everything
+        command: ./doit.sh -n 4
+        env:
+          PYTHON_SYS: python3.6
+        usePTY: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Copy artifacts
+        command: mkdir -p artifacts; for artifact in "build.log _build/metalk8s.iso
+          _build/SHA256SUM _build/root/product.txt"; then cp -r "$artifact" artifacts;
+          done
+    - Upload:
+        name: Upload artifacts
+        source: &id002 artifacts
+        urls:
+        - metalk8s.iso
+        - SHA256SUM
+        - product.txt
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for build
+        command: mkdir -p build_status/build_status/build && echo 'SUCCESSFUL' > build_status/build_status/build/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
   buildprev:
-    worker: *build_worker
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-builder/pod.yaml
+      images:
+        docker-builder: eve/workers/pod-builder
     steps:
-      - ShellCommand: *wait_for_docker
-      - ShellCommand: *setup_cache
-      - ShellCommand: *git_pull_prev
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: buildprev
-      - ShellCommand:
-          <<: *build_all
-          workdir: "build/metalk8s-%(prop:product_version_prev)s"
-      - ShellCommand:
-          <<: *copy_artifacts
-          workdir: "build/metalk8s-%(prop:product_version_prev)s"
-          env:
-            <<: *_env_copy_artifacts
-            DEST_DIR: "../artifacts/pre"
-      - Upload: *upload_artifacts
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: buildprev
-      - Upload: *upload_final_status_artifact
-
+    - ShellCommand:
+        name: Set build status to 'FAILED' for buildprev
+        command: mkdir -p build_status/build_status/buildprev && echo 'FAILED' > build_status/build_status/buildprev/final_status
+        haltOnFailure: true
+    - ShellCommand:
+        name: Wait for Docker daemon to be ready
+        command: "bash -c '\nfor i in {1..150}; do\n  docker info &> /dev/null &&\
+          \ exit\n  sleep 2\ndone\necho \"Could not reach Docker daemon from Buildbot\
+          \ worker\" >&2\nexit 1'"
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Build everything
+        command: ./doit.sh -n 4
+        env:
+          PYTHON_SYS: python3.6
+        workdir: build/metalk8s-prev
+        usePTY: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Copy artifactsfor 'pre'
+        command: mkdir -p artifacts/pre; for artifact in "metalk8s-prev/build.log
+          metalk8s-prev/_build/metalk8s.iso metalk8s-prev/_build/SHA256SUM metalk8s-prev/_build/root/product.txt";
+          then cp -r "$artifact" artifacts/pre; done
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - pre/metalk8s.iso
+        - pre/SHA256SUM
+        - pre/product.txt
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for buildprev
+        command: mkdir -p build_status/build_status/buildprev && echo 'SUCCESSFUL'
+          > build_status/build_status/buildprev/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
   docs:
     worker:
       type: kube_pod
       path: eve/workers/pod-docs-builder/pod.yaml
       images:
         doc-builder:
-          context: '.'
+          context: .
           dockerfile: docs/Dockerfile
     steps:
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: docs
-      - ShellCommand: *setup_cache
-      - ShellCommand:
-          name: Build documentation
-          env:
-            # Fake that we are building in a ReadTheDocs environment
-            READTHEDOCS: 'True'
-          command: tox --workdir /tmp/tox -e docs -- html latexpdf
-          haltOnFailure: true
-      - ShellCommand:
-          <<: *copy_artifacts
-          env:
-            <<: *_env_copy_artifacts
-            DEST_DIR: "artifacts/docs"
-            ARTIFACTS: >-
-              docs/_build/*
-              CHANGELOG.md
-      - Upload:
-          <<: *upload_artifacts
-          urls:
-            - docs/html/index.html
-            - docs/latex/MetalK8s.pdf
-            - docs/CHANGELOG.md
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: docs
-      - Upload: *upload_final_status_artifact
-
+    - ShellCommand:
+        name: Set build status to 'FAILED' for docs
+        command: mkdir -p build_status/build_status/docs && echo 'FAILED' > build_status/build_status/docs/final_status
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Build documentation
+        command: tox --workdir /tmp/tox -e docs -- html latexpdf
+        env:
+          READTHEDOCS: 'True'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Copy artifactsfor 'docs'
+        command: mkdir -p artifacts/docs; for artifact in "docs/_build/* CHANGELOG.md";
+          then cp -r "$artifact" artifacts/docs; done
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - docs/html/index.html
+        - docs/latex/MetalK8s.pdf
+        - docs/CHANGELOG.md
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for docs
+        command: mkdir -p build_status/build_status/docs && echo 'SUCCESSFUL' > build_status/build_status/docs/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
   lint:
     worker:
       type: kube_pod
       path: eve/workers/pod-linter/pod.yaml
       images:
         docker-linter:
-          context: 'storage-operator'
+          context: storage-operator
           dockerfile: eve/workers/pod-linter/Dockerfile
     steps:
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: lint
-      - ShellCommand: *setup_cache
-      - ShellCommand:
-          name: Run all linting targets
-          command: ./doit.sh lint
-          usePTY: true
-          haltOnFailure: false
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: lint
-      - Upload: *upload_final_status_artifact
-
-  unit_tests:
+    - ShellCommand:
+        name: Set build status to 'FAILED' for lint
+        command: mkdir -p build_status/build_status/lint && echo 'FAILED' > build_status/build_status/lint/final_status
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run all linting targets
+        command: ./doit.sh lint
+        usePTY: true
+        haltOnFailure: false
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for lint
+        command: mkdir -p build_status/build_status/lint && echo 'SUCCESSFUL' > build_status/build_status/lint/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+  unit-tests:
     worker:
       type: kube_pod
       path: eve/workers/pod-unit-tests/pod.yaml
       images:
         docker-unit-tests:
-          context: 'storage-operator'
+          context: storage-operator
           dockerfile: eve/workers/pod-unit-tests/Dockerfile
     steps:
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: unit_tests
-      - ShellCommand: *setup_cache
-      - ShellCommand:
-          name: Run all UI unit tests
-          workdir: build/ui
-          command: >
-            npm ci
-            --no-cache
-            --no-save
-            -q
-            --no-update-notifier &&
-            npm run test:nowatch --no-update-notifier
-          haltOnFailure: false
-      - ShellCommand:
-          name: Prepare upload folder
-          command: >
-            mkdir upload && mv junit upload
-          workdir: build/ui
-          alwaysRun: true
-      - Upload:
-          name: Upload cypress and junit folder
-          source: ui/upload
-          alwaysRun: true
-      - ShellCommand:
-          name: Run all storage-operator unit tests
-          workdir: build/storage-operator
-          command: go test -cover -v ./...
-          haltOnFailure: false
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: unit_tests
-      - Upload: *upload_final_status_artifact
-
-  single-node-downgrade-centos:
-    worker: &single_node_worker
+    - ShellCommand:
+        name: Set build status to 'FAILED' for unit-tests
+        command: mkdir -p build_status/build_status/unit-tests && echo 'FAILED' >
+          build_status/build_status/unit-tests/final_status
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run all UI unit tests
+        command: npm ci --no-cache --no-save -q --no-update-notifier & npm run test:nowatch
+          --no-update-notifier
+        workdir: build/ui
+        haltOnFailure: false
+    - ShellCommand:
+        name: Run all storage-operator unit tests
+        command: go test -cover -v ./...
+        workdir: build/storage-operator
+        haltOnFailure: false
+    - ShellCommand:
+        name: Copy artifactsfor 'ui'
+        command: mkdir -p artifacts/ui; for artifact in "ui/junit"; then cp -r "$artifact"
+          artifacts/ui; done
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for unit-tests
+        command: mkdir -p build_status/build_status/unit-tests && echo 'SUCCESSFUL'
+          > build_status/build_status/unit-tests/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+  single-node-upgrade-centos:
+    worker:
       type: openstack
+      path: eve/workers/openstack-single-node
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.large
+    steps:
+    - ShellCommand:
+        name: Set build status to 'FAILED' for single-node-upgrade-centos
+        command: mkdir -p build_status/build_status/single-node-upgrade-centos &&
+          echo 'FAILED' > build_status/build_status/single-node-upgrade-centos/final_status
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Install SSH keys and report connection info
+        command: "bash -c '\nmkdir -p ~/.ssh\necho \"%(secret:ssh_pub_keys)s\" >>\
+          \ ~/.ssh/authorized_keys\nIP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet\
+          \ ([0-9.]+).*$/\x01/p' )\ncat << END\nConnect to this worker using:\n  \
+          \  ssh eve@$IP\nEND'"
+    - ShellCommand:
+        name: Retrieve ISO image checksum
+        command: curl -s -XGET -o "SHA256SUM" "%(prop:artifacts_private_url)s/SHA256SUM"
+    - ShellCommand:
+        name: Retrieve ISO image
+        command: "bash -c '\nfor ((i=1;i<=20;i++)); do\n  echo \"Attempt $i out of\
+          \ 20\"\n  curl -s -XGET -o \"metalk8s.iso\" \"%(prop:artifacts_private_url)s/metalk8s.iso\"\
+          \ && exit\n  sleep 2\ndone\necho \"Could not retrieve ISO after 20 attempts\"\
+          \ >&2\nexit 1'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check ISO image with checksum
+        command: sha256sum -c SHA256SUM
+        workdir: .
+    - ShellCommand:
+        name: Retrieve ISO image checksum (pre)
+        command: curl -s -XGET -o "/tmp/SHA256SUM" "%(prop:artifacts_private_url)s/SHA256SUM"
+    - ShellCommand:
+        name: Retrieve ISO image (pre)
+        command: "bash -c '\nfor ((i=1;i<=20;i++)); do\n  echo \"Attempt $i out of\
+          \ 20\"\n  curl -s -XGET -o \"/tmp/metalk8s.iso\" \"%(prop:artifacts_private_url)s/metalk8s.iso\"\
+          \ && exit\n  sleep 2\ndone\necho \"Could not retrieve ISO after 20 attempts\"\
+          \ >&2\nexit 1'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check ISO image with checksum (pre)
+        command: sha256sum -c SHA256SUM
+        workdir: /tmp
+    - ShellCommand:
+        name: Create ISO mountpoint
+        command: sudo mkdir -p "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Mount ISO image
+        command: sudo mount -o loop "/tmp/metalk8s.iso" "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Create bootstrap configuration file
+        command: "sudo bash -c '\nmkdir -p /etc/metalk8s\ncat > /etc/metalk8s/bootstrap.yaml\
+          \ << END\napiVersion: metalk8s.scality.com/v1alpha2\nkind: BootstrapConfiguration\n\
+          networks:\n  controlPlane: 10.100.0.0/16\n  workloadPlane: 10.100.0.0/16\n\
+          ca:\n  minion: $(hostname)\napiServer:\n  host: $(ip route get 10.100.0.0\
+          \ | awk '/10.100.0.0/{ print $6 }')\narchives:\n  - \"$(relpath '/tmp/metalk8s.iso')\"\
+          \nEND'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Start the bootstrap process
+        command: sudo bash "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/bootstrap.sh"
+          --verbose
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run fast tests locally for previous version
+        command: git checkout "$BRANCH" --quiet && tox -e tests-local  -- -m "post
+          and ci and not multinode and not slow"
+        env:
+          BRANCH: development/%(prop:product_version_prev)s
+          ISO_MOUNTPOINT: /srv/scality/metalk8s-%(prop:metalk8s_version_prev)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Copy artifacts for 'ui/cypress'
+        command: mkdir -p artifacts/ui/cypress; for artifact in "ui/cypress/screenshots
+          ui/cypress/videos"; then cp -r "$artifact" artifacts/ui/cypress; done
+    - ShellCommand:
+        name: Copy artifacts for 'ui'
+        command: mkdir -p artifacts/ui; for artifact in "ui/junit"; then cp -r "$artifact"
+          artifacts/ui; done
+    - ShellCommand:
+        name: Copy artifacts
+        command: mkdir -p artifacts; for artifact in "ui/cypress ui"; then cp -r "$artifact"
+          artifacts; done
+    - ShellCommand:
+        name: Add ISO to cluster
+        command: sudo bash "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/iso-manager.sh"
+          --archive "$(readlink -f "metalk8s.iso")"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run upgrade from previous version
+        command: sudo bash /srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/upgrade.sh
+          --destination-version %(prop:metalk8s_version)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Provision Prometheus and AlertManager storage
+        command: 'sudo env PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+          PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s bash eve/create-volumes.sh '
+        env:
+          PRODUCT_TXT: /srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+          PRODUCT_MOUNT: /srv/scality/metalk8s-%(prop:metalk8s_version)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run fast tests locally
+        command: git checkout "$BRANCH" --quiet && tox -e tests-local  -- -m "post
+          and ci and not multinode and not slow"
+        env:
+          BRANCH: '%(prop:branch)s'
+          ISO_MOUNTPOINT: &id003 /srv/scality/metalk8s-%(prop:metalk8s_version)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Collect logs using sosreport
+        command: sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True -o
+          containerd -kcontainerd.all=True -kcontainerd.logs=True --batch --tmp-dir
+          /var/tmp && sudo chown eve:eve /var/tmp/sosreport*
+    - ShellCommand:
+        name: Copy artifactsfor 'sosreport/single-node-upgrade-centos'
+        command: mkdir -p artifacts/sosreport/single-node-upgrade-centos; for artifact
+          in "/var/tmp/sosreport*"; then cp -r "$artifact" artifacts/sosreport/single-node-upgrade-centos;
+          done
+    - ShellCommand:
+        name: Debug step - wait before allowing resource destruction
+        command: "bash -c '\nDEBUG_STAGES=\"%(prop:debug)s\"\nDURATION=\"3600\"\n\
+          if [ -z \"$DEBUG_STAGES\" ]; then\n    REASON=\"\"debug\" build property\
+          \ not set\"\nelif [ \"$DEBUG_STAGES\" = all ]; then\n    RUN_STEP=1\n  \
+          \  REASON=\"\"debug\" property set to \"all\"\"\nelif [[ \"$DEBUG_STAGES\"\
+          \ =~ ^[a-z\\-]+(~[a-z\\-]+)*$ ]]; then\n    IFS=\"~\" read -ra SELECTED\
+          \ <<< \"$DEBUG_STAGES\"\n    for selected in \"${SELECTED[@]}\"; do\n  \
+          \  if [ \"$selected\" = \"single-node-upgrade-centos\" ]; then\n       \
+          \ RUN_STEP=1\n        REASON=\"stage selected in \"$DEBUG_STAGES\"\"\n \
+          \       break\n    fi\n    done\n    if [ \"$RUN_STEP\" -eq 0 ]; then\n\
+          \    REASON=\"stage not in \"$DEBUG_STAGES\"\"\n    fi\nelse\n    REASON=\"\
+          invalid \"debug\" property value\"\n    cat >&2 << EOF\nInvalid \"debug\"\
+          \ build property value \"$DEBUG_STAGES\".\nMust use either:\n    - \"all\"\
+          , to select all debug stages\n    - a single stage name\n    - a list of\
+          \ stage names, separated by tilde signs \"~\",\n    e.g. \"single-node~multiple-nodes\"\
+          .\nEOF\nfi\nif [ \"$RUN_STEP\" -eq 1 ]; then\n    echo \"Step $STEP_NAME\
+          \ - wait $DURATION seconds\"\n    echo \"Reason: $REASON\"\n    sleep \"\
+          $DURATION\"\nelse\n    echo \"Step $STEP_NAME - skip debug\"\n    echo \"\
+          Reason: $REASON\"\nfi'"
+        alwaysRun: true
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - sosreport/single-node-upgrade-centos
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for single-node-upgrade-centos
+        command: mkdir -p build_status/build_status/single-node-upgrade-centos &&
+          echo 'SUCCESSFUL' > build_status/build_status/single-node-upgrade-centos/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+  single-node-downgrade-centos:
+    worker:
+      type: openstack
       path: eve/workers/openstack-single-node
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
+      flavor: m1.large
     steps:
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: single-node-downgrade-centos
-      - ShellCommand: *setup_cache
-      - ShellCommand: *ssh_ip_setup
-      # --- Get ISO for version N ---
-      - ShellCommand: *retrieve_iso_checksum
-      - ShellCommand: *retrieve_iso
-      - ShellCommand: *check_iso_checksum
-      # --- Get ISO for version N-1 ---
-      - ShellCommand: &retrieve_prev_iso_checksum
-          <<: *retrieve_iso_checksum
-          env: &_env_previous_artifact
-            DEST_DIR: "/tmp"
-            BASE_URL: "%(prop:artifacts_private_url)s/pre"
-          name: Retrieve previous ISO image checksum
-      - ShellCommand: &retrieve_prev_iso
-          <<: *retrieve_iso
-          name: Retrieve previous ISO image
-          env:
-            <<: *_env_previous_artifact
-            MAX_ATTEMPTS: "300"
-      - ShellCommand: &check_prev_iso_checksum
-          <<: *check_iso_checksum
-          name: Check previous ISO image with checksum
-          workdir: "/tmp"
-      # --- Prepare for Bootstrap in version N ---
-      - ShellCommand: *create_mountpoint
-      - ShellCommand: *mount_iso
-      - ShellCommand: *bootstrap_config
-      # --- Install version N ---
-      - ShellCommand: *run_bootstrap
-      - ShellCommand: &provision_prometheus_volumes
-          name: Provision Prometheus and AlertManager storage
-          command: >
-            git checkout %(prop:branch)s --quiet &&
-            sudo env
-            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
-            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
-            eve/create-volumes.sh
-          haltOnFailure: true
-      # --- Test version N ---
-      - ShellCommand: &fast_tests
-          <<: *local_tests
-          name: Run fast tests locally
-          env: &_env_fast_tests
-            <<: *_env_local_tests
-            PYTEST_FILTERS: "post and ci and not multinode and not slow"
-      - ShellCommand:
-          <<: *local_tests
-          name: Run slow tests locally
-          env:
-            <<: *_env_local_tests
-            PYTEST_FILTERS: "post and ci and not multinode and slow"
-      - ShellCommand:
-          name: Cypress test
-          command: bash cypress.sh
-          workdir: build/ui
-          haltOnFailure: true
-          env:
-            IN_CI: 'True'
-      - ShellCommand:
-          name: Prepare upload folder
-          command: >
-            mkdir -p upload/cypress &&
-            (cp -r cypress/screenshots upload/cypress || true) &&
-            (cp -r cypress/videos upload/cypress || true) &&
-            (cp -r junit upload/ || true)
-          workdir: build/ui
-          alwaysRun: true
-      - Upload:
-          name: Upload cypress and junit folder
-          source: ui/upload
-          alwaysRun: true
-      # --- Downgrade to version N-1 ---
-      - ShellCommand:
-          <<: *add_archive
-          name: Add previous ISO to cluster
-          env:
-            <<: *_env_add_archive
-            ISO_PATH: /tmp/metalk8s.iso
-      - ShellCommand:
-          name: Run downgrade to previous version
-          command: >
-            sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:metalk8s_version_prev)s
-          haltOnFailure: true
-      # --- Test version N-1 ---
-      - ShellCommand: &fast_tests_prev
-          <<: *local_tests
-          name: Run fast tests locally for previous version
-          env:
-            <<: *_env_fast_tests
-            BRANCH: "development/%(prop:product_version_prev)s"
-            ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:metalk8s_version_prev)s
-      # --- Collect logs ---
-      - ShellCommand: *collect_sosreport
-      - ShellCommand:
-          <<: *copy_report_artifacts
-          env:
-            DEST_DIR: sosreport/sosreport/single-node-downgrade-centos
-      - Upload: *upload_report_artifacts
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: single-node-downgrade-centos
-      - Upload: *upload_final_status_artifact
-      - ShellCommand:
-          <<: *wait_debug
-          env:
-            STEP_NAME: single-node-downgrade-centos
-
-  single-node-upgrade-centos:
-    worker: *single_node_worker
-    steps:
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: single-node-upgrade-centos
-      - ShellCommand: *setup_cache
-      - ShellCommand: *ssh_ip_setup
-      # --- Get ISO for version N ---
-      - ShellCommand: *retrieve_iso_checksum
-      - ShellCommand: *retrieve_iso
-      - ShellCommand: *check_iso_checksum
-      # --- Get ISO for version N-1 ---
-      - ShellCommand: *retrieve_prev_iso_checksum
-      - ShellCommand: *retrieve_prev_iso
-      - ShellCommand: *check_prev_iso_checksum
-      # --- Prepare for Bootstrap in version N-1 ---
-      - ShellCommand:
-          <<: *create_mountpoint
-          env: &_env_version_prev
-            PRODUCT_VERSION: "%(prop:metalk8s_version_prev)s"
-      - ShellCommand:
-          <<: *mount_iso
-          env:
-            <<: *_env_version_prev
-            ISO_PATH: /tmp/metalk8s.iso
-      - ShellCommand:
-          <<: *bootstrap_config
-          env: *_env_version_prev
-      # --- Install version N-1 ---
-      - ShellCommand:
-          <<: *run_bootstrap
-          env: *_env_version_prev
-      # --- Test version N-1 ---
-      - ShellCommand: *fast_tests_prev
-      # --- Upgrade to version N ---
-      - ShellCommand:
-          <<: *add_archive
-          name: Add current ISO to cluster
-          env:
-            <<: *_env_add_archive
-            PRODUCT_VERSION: "%(prop:metalk8s_version_prev)s"
-      - ShellCommand:
-          name: Run upgrade from previous version
-          command: >
-            sudo bash
-            /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version %(prop:metalk8s_version)s
-          haltOnFailure: true
-      - ShellCommand: *provision_prometheus_volumes
-      # --- Test version N ---
-      - ShellCommand: *fast_tests
-      # --- Collect logs ---
-      - ShellCommand: *collect_sosreport
-      - ShellCommand:
-          <<: *copy_report_artifacts
-          env:
-            DEST_DIR: sosreport/sosreport/single-node-upgrade-centos
-      - Upload: *upload_report_artifacts
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: single-node-upgrade-centos
-      - Upload: *upload_final_status_artifact
-      - ShellCommand:
-          <<: *wait_debug
-          env:
-            STEP_NAME: single-node-upgrade-centos
-
+    - ShellCommand:
+        name: Set build status to 'FAILED' for single-node-downgrade-centos
+        command: mkdir -p build_status/build_status/single-node-downgrade-centos &&
+          echo 'FAILED' > build_status/build_status/single-node-downgrade-centos/final_status
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Install SSH keys and report connection info
+        command: "bash -c '\nmkdir -p ~/.ssh\necho \"%(secret:ssh_pub_keys)s\" >>\
+          \ ~/.ssh/authorized_keys\nIP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet\
+          \ ([0-9.]+).*$/\x01/p' )\ncat << END\nConnect to this worker using:\n  \
+          \  ssh eve@$IP\nEND'"
+    - ShellCommand:
+        name: Retrieve ISO image checksum
+        command: curl -s -XGET -o "SHA256SUM" "%(prop:artifacts_private_url)s/SHA256SUM"
+    - ShellCommand:
+        name: Retrieve ISO image
+        command: "bash -c '\nfor ((i=1;i<=20;i++)); do\n  echo \"Attempt $i out of\
+          \ 20\"\n  curl -s -XGET -o \"metalk8s.iso\" \"%(prop:artifacts_private_url)s/metalk8s.iso\"\
+          \ && exit\n  sleep 2\ndone\necho \"Could not retrieve ISO after 20 attempts\"\
+          \ >&2\nexit 1'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check ISO image with checksum
+        command: sha256sum -c SHA256SUM
+        workdir: .
+    - ShellCommand:
+        name: Retrieve ISO image checksum (pre)
+        command: curl -s -XGET -o "/tmp/SHA256SUM" "%(prop:artifacts_private_url)s/SHA256SUM"
+    - ShellCommand:
+        name: Retrieve ISO image (pre)
+        command: "bash -c '\nfor ((i=1;i<=20;i++)); do\n  echo \"Attempt $i out of\
+          \ 20\"\n  curl -s -XGET -o \"/tmp/metalk8s.iso\" \"%(prop:artifacts_private_url)s/metalk8s.iso\"\
+          \ && exit\n  sleep 2\ndone\necho \"Could not retrieve ISO after 20 attempts\"\
+          \ >&2\nexit 1'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check ISO image with checksum (pre)
+        command: sha256sum -c SHA256SUM
+        workdir: /tmp
+    - ShellCommand:
+        name: Create ISO mountpoint
+        command: sudo mkdir -p "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Mount ISO image
+        command: sudo mount -o loop "metalk8s.iso" "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Create bootstrap configuration file
+        command: "sudo bash -c '\nmkdir -p /etc/metalk8s\ncat > /etc/metalk8s/bootstrap.yaml\
+          \ << END\napiVersion: metalk8s.scality.com/v1alpha2\nkind: BootstrapConfiguration\n\
+          networks:\n  controlPlane: 10.100.0.0/16\n  workloadPlane: 10.100.0.0/16\n\
+          ca:\n  minion: $(hostname)\napiServer:\n  host: $(ip route get 10.100.0.0\
+          \ | awk '/10.100.0.0/{ print $6 }')\narchives:\n  - \"$(relpath 'metalk8s.iso')\"\
+          \nEND'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Start the bootstrap process
+        command: sudo bash "/srv/scality/metalk8s-%(prop:metalk8s_version)s/bootstrap.sh"
+          --verbose
+        haltOnFailure: true
+    - ShellCommand:
+        name: Provision Prometheus and AlertManager storage
+        command: 'sudo env PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+          PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s bash eve/create-volumes.sh '
+        env:
+          PRODUCT_TXT: /srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+          PRODUCT_MOUNT: /srv/scality/metalk8s-%(prop:metalk8s_version)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run fast tests locally
+        command: git checkout "$BRANCH" --quiet && tox -e tests-local  -- -m "post
+          and ci and not multinode and not slow"
+        env:
+          BRANCH: '%(prop:branch)s'
+          ISO_MOUNTPOINT: *id003
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run slow tests locally
+        command: git checkout "$BRANCH" --quiet && tox -e tests-local  -- -m "post
+          and ci and not multinode and slow"
+        env:
+          BRANCH: '%(prop:branch)s'
+          ISO_MOUNTPOINT: *id003
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run Cypress tests
+        command: bash cypress.sh
+        env:
+          IN_CI: 'True'
+        workdir: build/ui
+        haltOnFailure: true
+    - ShellCommand:
+        name: Copy artifacts for 'ui/cypress'
+        command: mkdir -p artifacts/ui/cypress; for artifact in "ui/cypress/screenshots
+          ui/cypress/videos"; then cp -r "$artifact" artifacts/ui/cypress; done
+    - ShellCommand:
+        name: Copy artifacts for 'ui'
+        command: mkdir -p artifacts/ui; for artifact in "ui/junit"; then cp -r "$artifact"
+          artifacts/ui; done
+    - ShellCommand:
+        name: Copy artifacts
+        command: mkdir -p artifacts; for artifact in "ui/cypress ui"; then cp -r "$artifact"
+          artifacts; done
+    - ShellCommand:
+        name: Add ISO to cluster
+        command: sudo bash "/srv/scality/metalk8s-%(prop:metalk8s_version)s/iso-manager.sh"
+          --archive "$(readlink -f "/tmp/metalk8s.iso")"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run downgrade to previous version
+        command: sudo bash /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
+          --destination-version %(prop:metalk8s_version_prev)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run fast tests locally for previous version
+        command: git checkout "$BRANCH" --quiet && tox -e tests-local  -- -m "post
+          and ci and not multinode and not slow"
+        env:
+          BRANCH: development/%(prop:product_version_prev)s
+          ISO_MOUNTPOINT: /srv/scality/metalk8s-%(prop:metalk8s_version_prev)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Collect logs using sosreport
+        command: sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True -o
+          containerd -kcontainerd.all=True -kcontainerd.logs=True --batch --tmp-dir
+          /var/tmp && sudo chown eve:eve /var/tmp/sosreport*
+    - ShellCommand:
+        name: Copy artifactsfor 'sosreport/single-node-downgrade-centos'
+        command: mkdir -p artifacts/sosreport/single-node-downgrade-centos; for artifact
+          in "/var/tmp/sosreport*"; then cp -r "$artifact" artifacts/sosreport/single-node-downgrade-centos;
+          done
+    - ShellCommand:
+        name: Debug step - wait before allowing resource destruction
+        command: "bash -c '\nDEBUG_STAGES=\"%(prop:debug)s\"\nDURATION=\"3600\"\n\
+          if [ -z \"$DEBUG_STAGES\" ]; then\n    REASON=\"\"debug\" build property\
+          \ not set\"\nelif [ \"$DEBUG_STAGES\" = all ]; then\n    RUN_STEP=1\n  \
+          \  REASON=\"\"debug\" property set to \"all\"\"\nelif [[ \"$DEBUG_STAGES\"\
+          \ =~ ^[a-z\\-]+(~[a-z\\-]+)*$ ]]; then\n    IFS=\"~\" read -ra SELECTED\
+          \ <<< \"$DEBUG_STAGES\"\n    for selected in \"${SELECTED[@]}\"; do\n  \
+          \  if [ \"$selected\" = \"single-node-downgrade-centos\" ]; then\n     \
+          \   RUN_STEP=1\n        REASON=\"stage selected in \"$DEBUG_STAGES\"\"\n\
+          \        break\n    fi\n    done\n    if [ \"$RUN_STEP\" -eq 0 ]; then\n\
+          \    REASON=\"stage not in \"$DEBUG_STAGES\"\"\n    fi\nelse\n    REASON=\"\
+          invalid \"debug\" property value\"\n    cat >&2 << EOF\nInvalid \"debug\"\
+          \ build property value \"$DEBUG_STAGES\".\nMust use either:\n    - \"all\"\
+          , to select all debug stages\n    - a single stage name\n    - a list of\
+          \ stage names, separated by tilde signs \"~\",\n    e.g. \"single-node~multiple-nodes\"\
+          .\nEOF\nfi\nif [ \"$RUN_STEP\" -eq 1 ]; then\n    echo \"Step $STEP_NAME\
+          \ - wait $DURATION seconds\"\n    echo \"Reason: $REASON\"\n    sleep \"\
+          $DURATION\"\nelse\n    echo \"Step $STEP_NAME - skip debug\"\n    echo \"\
+          Reason: $REASON\"\nfi'"
+        alwaysRun: true
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - sosreport/single-node-downgrade-centos
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for single-node-downgrade-centos
+        command: mkdir -p build_status/build_status/single-node-downgrade-centos &&
+          echo 'SUCCESSFUL' > build_status/build_status/single-node-downgrade-centos/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
   single-node-install-rhel:
     worker:
-      <<: *single_node_worker
-      flavor: m1.medium
+      type: openstack
       path: eve/workers/openstack-single-node-rhel
-    steps:
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: single-node-install-rhel
-      - ShellCommand: *setup_cache
-      - ShellCommand: *ssh_ip_setup
-      - ShellCommand: *retrieve_iso
-      - ShellCommand: *retrieve_iso_checksum
-      - ShellCommand: *check_iso_checksum
-      - ShellCommand: *terraform_install
-      - ShellCommand: *terraform_install_check
-      - ShellCommand:
-          <<: *terraform_init
-          workdir: build/eve/workers/openstack-single-node-rhel/terraform
-      - ShellCommand:
-          <<: *terraform_validate
-          workdir: build/eve/workers/openstack-single-node-rhel/terraform
-      - ShellCommand:
-          <<: *terraform_apply
-          workdir: build/eve/workers/openstack-single-node-rhel/terraform
-          env:
-            <<: *_env_terraform
-            TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
-            TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
-      - ShellCommand:
-          name: Copy ISO to bootstrap node
-          command: >
-            scp -F ssh_config ../../../../metalk8s.iso bootstrap:/tmp/metalk8s.iso
-          workdir: build/eve/workers/openstack-single-node-rhel/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Create ISO mountpoint in bootstrap node
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo mkdir -p /var/tmp/metalk8s
-          workdir: build/eve/workers/openstack-single-node-rhel/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Mount ISO in bootstrap node
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo mount -o loop /tmp/metalk8s.iso /var/tmp/metalk8s
-          workdir: build/eve/workers/openstack-single-node-rhel/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Start the bootstrap process
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo bash /var/tmp/metalk8s/bootstrap.sh --verbose
-          workdir: build/eve/workers/openstack-single-node-rhel/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Provision Prometheus and AlertManager storage
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-rhel/terraform/ssh_config
-          command: >
-            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
-            ssh -F $SSH_CONFIG bootstrap
-            sudo env
-            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
-            PRODUCT_MOUNT=/var/tmp/metalk8s
-            /tmp/create-volumes.sh
-          haltOnFailure: true
-      - ShellCommand:
-          name: Run fast tests
-          env:
-            SSH_CONFIG_FILE: "eve/workers/openstack-single-node-rhel/terraform/ssh_config"
-            ISO_MOUNTPOINT: "/var/tmp/metalk8s"
-            TEST_HOSTS_LIST: "bootstrap"
-            PYTEST_FILTERS: "post and ci and not multinodes and not slow"
-          command: >
-            tox -e tests -- -m "${PYTEST_FILTERS}"
-          haltOnFailure: true
-      - ShellCommand:
-          <<: *generate_report_over_ssh
-          env:
-            <<: *_env_generate_report_over_ssh
-            REPORT_OWNER: cloud-user
-            REPORT_GROUP: cloud-user
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-rhel/terraform/ssh_config
-      - ShellCommand:
-          <<: *collect_report_over_ssh
-          env:
-            <<: *_env_collect_report_over_ssh
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-rhel/terraform/ssh_config
-            STEP_NAME: single-node-install-rhel
-      - Upload: *upload_report_artifacts
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: single-node-install-rhel
-      - Upload: *upload_final_status_artifact
-      - ShellCommand:
-          <<: *wait_debug
-          env:
-            STEP_NAME: single-node-install-rhel
-      - ShellCommand:
-          <<: *terraform_destroy
-          env:
-            <<: *_env_terraform
-            TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
-            TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
-          workdir: build/eve/workers/openstack-single-node-rhel/terraform
-
-  multiple-nodes-centos:
-    worker:
-      <<: *single_node_worker
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.medium
-      path: eve/workers/openstack-multiple-nodes
     steps:
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            STEP_NAME: multiple-nodes-centos
-      - ShellCommand: *setup_cache
-      - ShellCommand: *ssh_ip_setup
-      - ShellCommand: *retrieve_iso
-      - ShellCommand: *retrieve_iso_checksum
-      - ShellCommand: *check_iso_checksum
-      - ShellCommand:
-          name: Check if unzip and curl are installed
-          command: |-
-            if ! unzip -h 2&> /dev/null; then
-              echo "aborting - unzip not installed and required" >&2
-              exit 1
-            fi
-            if ! curl -h 2&> /dev/null; then
-              echo "aborting - curl not installed and required" >&2
-              exit 1
-            fi
-          haltOnFailure: true
-      - ShellCommand: *terraform_install
-      - ShellCommand: *terraform_install_check
-      - ShellCommand:
-          <<: *terraform_init
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
-          <<: *terraform_validate
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
-          <<: *terraform_apply
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          env:
-            <<: *_env_terraform
-            TF_VAR_nodes_count: "2"
-      - ShellCommand:
-          name: Check SSH config for bootstrap node
-          command: |-
-            if [ ! -f ssh_config ]; then
-              echo "Missing SSH config file" >&2
-              exit 1
-            fi
-            for _ in $(seq 1 12); do
-              sleep 5
-              ssh -F ssh_config bootstrap id && break
-            done;
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          # FIXME: find a way to share bastion public key to all spawned
-          # instances from Terraform
-          name: Send bastion public key to nodes
-          command: >
-            scp -F ssh_config -3 bastion:.ssh/bastion.pub bootstrap:.ssh/ &&
-            ssh -F ssh_config bootstrap
-            "cat .ssh/bastion.pub >> .ssh/authorized_keys" &&
-            scp -F ssh_config -3 bastion:.ssh/bastion.pub node1:.ssh/ &&
-            ssh -F ssh_config node1
-            "cat .ssh/bastion.pub >> .ssh/authorized_keys"
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
-          # FIXME: find a cleaner way with Terraform.
-          name: Send bastion private key to bootstrap
-          command: >
-              ssh -F ssh_config bootstrap "sudo mkdir -p /etc/metalk8s/pki/" &&
-              scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
-              ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
-          name: Copy ISO to bootstrap node
-          command: >
-            scp -F ssh_config ../../../../metalk8s.iso bootstrap:
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Create mountpoint in bootstrap node
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo mkdir -p /var/tmp/metalk8s
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Mount ISO image in bootstrap node
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo mount -o loop metalk8s.iso /var/tmp/metalk8s
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Start the bootstrap process in bootstrap node
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo bash
-            /var/tmp/metalk8s/bootstrap.sh --verbose
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Provision Prometheus and AlertManager storage
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
-          command: >
-            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
-            ssh -F $SSH_CONFIG bootstrap
-            sudo env
-            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
-            PRODUCT_MOUNT=/var/tmp/metalk8s
-            /tmp/create-volumes.sh
-          haltOnFailure: true
-      - ShellCommand:
-          name: Install kubectl on the boostrap node
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo yum install -y kubectl --disablerepo=*
-            --enablerepo=metalk8s-kubernetes
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
-          name: Enable IPIP
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
-          command: >
-            ssh -F $SSH_CONFIG bootstrap
-            'bash /home/centos/scripts/enable_ipip.sh'
-      - ShellCommand:
-          # FIXME: should find a cleaner way to do this (git clone may be
-          # cumbersome, unless we assume the repo is public and don't use
-          # authentication)
-          name: Copy test sources to the bastion
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
-          command: >
-            tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
-            | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
-      - ShellCommand:
-          <<: *bastion_tests
-          name: Run installation scenarii on the bastion
-          env:
-            <<: *_env_bastion_tests
-            PYTEST_FILTERS: "install and ci and multinodes"
-      - ShellCommand:
-          <<: *bastion_tests
-          name: Run fast tests on the bastion
-          env:
-            <<: *_env_bastion_tests
-            PYTEST_FILTERS: "post and ci and not slow"
-      - ShellCommand:
-          <<: *bastion_tests
-          name: Run slow tests on the bastion
-          env:
-            <<: *_env_bastion_tests
-            PYTEST_FILTERS: "post and ci and slow"
-      - ShellCommand:
-          <<: *generate_report_over_ssh
-          env:
-            <<: *_env_generate_report_over_ssh
-            HOSTS_LIST: "bootstrap node1"
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
-      - ShellCommand:
-          <<: *collect_report_over_ssh
-          env:
-            <<: *_env_collect_report_over_ssh
-            HOSTS_LIST: "bootstrap node1"
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
-            STEP_NAME: multiple-nodes-centos
-      - Upload: *upload_report_artifacts
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            STEP_NAME: multiple-nodes-centos
-      - Upload: *upload_final_status_artifact
-      - ShellCommand:
-          <<: *wait_debug
-          timeout: 14400
-          env:
-            STEP_NAME: multiple-nodes-centos
-            DURATION: "14400"
-      - ShellCommand:
-          <<: *terraform_destroy
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+    - ShellCommand:
+        name: Set build status to 'FAILED' for single-node-install-rhel
+        command: mkdir -p build_status/build_status/single-node-install-rhel && echo
+          'FAILED' > build_status/build_status/single-node-install-rhel/final_status
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Install SSH keys and report connection info
+        command: "bash -c '\nmkdir -p ~/.ssh\necho \"%(secret:ssh_pub_keys)s\" >>\
+          \ ~/.ssh/authorized_keys\nIP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet\
+          \ ([0-9.]+).*$/\x01/p' )\ncat << END\nConnect to this worker using:\n  \
+          \  ssh eve@$IP\nEND'"
+    - ShellCommand:
+        name: Download and install Terraform
+        command: curl --retry 5 -O "https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip"
+          && sudo unzip "terraform_0.12.3_linux_amd64.zip" -d /usr/local/sbin/ &&
+          rm -f "terraform_0.12.3_linux_amd64.zip"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check that Terraform was installed
+        command: if ! terraform --version 2&> /dev/null; then  echo "Aborting - Terraform
+          not installed and required" >&2;  exit 1;fi
+        haltOnFailure: true
+    - ShellCommand:
+        name: Initialize Terraform
+        command: for _ in $(seq 1 12); do  if terraform init; then    break;  else    rm
+          -rf .terraform/;    sleep 5;  fi;done;
+        haltOnFailure: true
+    - ShellCommand:
+        name: Validate Terraform deployment description
+        command: terraform validate
+        haltOnFailure: true
+    - ShellCommand:
+        name: Spawn OpenStack virtual infrastructure with Terraform
+        command: terraform apply -auto-approve
+        env:
+          OS_AUTH_URL: '%(secret:scality_cloud_auth_url)s'
+          OS_REGION_NAME: '%(secret:scality_cloud_region)s'
+          OS_USERNAME: '%(secret:scality_cloud_username)s'
+          OS_PASSWORD: '%(secret:scality_cloud_password)s'
+          OS_TENANT_NAME: '%(secret:scality_cloud_tenant_name)s'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Retrieve ISO image checksum
+        command: ssh -F "eve/workers/openstack-single-node-rhel/terraform/ssh_config"
+          "bootstrap" "curl -s -XGET -o "SHA256SUM" "%(prop:artifacts_private_url)s/SHA256SUM""
+    - ShellCommand:
+        name: Retrieve ISO image
+        command: "ssh -F None None eve/workers/openstack-single-node-rhel/terraform/ssh_config\
+          \ bootstrap bash -c '\nfor ((i=1;i<=20;i++)); do\n  echo \"Attempt $i out\
+          \ of 20\"\n  curl -s -XGET -o \"metalk8s.iso\" \"%(prop:artifacts_private_url)s/metalk8s.iso\"\
+          \ && exit\n  sleep 2\ndone\necho \"Could not retrieve ISO after 20 attempts\"\
+          \ >&2\nexit 1'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check ISO image with checksum
+        command: ssh -F "eve/workers/openstack-single-node-rhel/terraform/ssh_config"
+          "bootstrap" "sha256sum -c SHA256SUM"
+        workdir: .
+    - ShellCommand:
+        name: Create ISO mountpoint
+        command: ssh -F "eve/workers/openstack-single-node-rhel/terraform/ssh_config"
+          "bootstrap" "sudo mkdir -p "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s""
+        haltOnFailure: true
+    - ShellCommand:
+        name: Mount ISO image
+        command: ssh -F "eve/workers/openstack-single-node-rhel/terraform/ssh_config"
+          "bootstrap" "sudo mount -o loop "/tmp/metalk8s.iso" "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s""
+        haltOnFailure: true
+    - ShellCommand:
+        name: Create bootstrap configuration file
+        command: "ssh -F None None eve/workers/openstack-single-node-rhel/terraform/ssh_config\
+          \ bootstrap sudo bash -c '\nmkdir -p /etc/metalk8s\ncat > /etc/metalk8s/bootstrap.yaml\
+          \ << END\napiVersion: metalk8s.scality.com/v1alpha2\nkind: BootstrapConfiguration\n\
+          networks:\n  controlPlane: 10.100.0.0/16\n  workloadPlane: 10.100.0.0/16\n\
+          ca:\n  minion: $(hostname)\napiServer:\n  host: $(ip route get 10.100.0.0\
+          \ | awk '/10.100.0.0/{ print $6 }')\narchives:\n  - \"$(relpath '/tmp/metalk8s.iso')\"\
+          \nEND'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Start the bootstrap process
+        command: ssh -F "eve/workers/openstack-single-node-rhel/terraform/ssh_config"
+          "bootstrap" "sudo bash "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/bootstrap.sh"
+          --verbose"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Provision Prometheus and AlertManager storage
+        command: 'ssh -F None None eve/workers/openstack-single-node-rhel/terraform/ssh_config
+          bootstrap [[ -f "eve/create-volumes.sh"]] || scp None -F eve/workers/openstack-single-node-rhel/terraform/ssh_config
+          eve/create-volumes.sh bootstrap:eve/create-volumes.sh && ssh -F None None
+          eve/workers/openstack-single-node-rhel/terraform/ssh_config bootstrap ssh
+          -F None None eve/workers/openstack-single-node-rhel/terraform/ssh_config
+          bootstrap sudo env PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+          PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s bash eve/create-volumes.sh '
+        env:
+          PRODUCT_TXT: /srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+          PRODUCT_MOUNT: /srv/scality/metalk8s-%(prop:metalk8s_version)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run fast tests
+        command: git checkout "$BRANCH" --quiet && tox -e tests  -- -m "post and ci
+          and not multinode and not slow"
+        env:
+          BRANCH: '%(prop:branch)s'
+          ISO_MOUNTPOINT: *id003
+          SSH_CONFIG: eve/workers/openstack-single-node-rhel/terraform/ssh_config
+        haltOnFailure: true
+    - ShellCommand:
+        name: Collect logs using sosreport
+        command: ssh -F "eve/workers/openstack-single-node-rhel/terraform/ssh_config"
+          "bootstrap" "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True
+          -o containerd -kcontainerd.all=True -kcontainerd.logs=True --batch --tmp-dir
+          /var/tmp && sudo chown cloud-user:cloud-user /var/tmp/sosreport*"
+    - ShellCommand:
+        name: Copy artifactsfor 'sosreport/single-node-install-rhel'
+        command: mkdir -p artifacts/sosreport/single-node-install-rhel; for artifact
+          in "/var/tmp/sosreport*"; then scp None -F eve/workers/openstack-single-node-rhel/terraform/ssh_config
+          bootstrap:$artifact artifacts/sosreport/single-node-install-rhel; done
+    - ShellCommand:
+        name: Debug step - wait before allowing resource destruction
+        command: "bash -c '\nDEBUG_STAGES=\"%(prop:debug)s\"\nDURATION=\"3600\"\n\
+          if [ -z \"$DEBUG_STAGES\" ]; then\n    REASON=\"\"debug\" build property\
+          \ not set\"\nelif [ \"$DEBUG_STAGES\" = all ]; then\n    RUN_STEP=1\n  \
+          \  REASON=\"\"debug\" property set to \"all\"\"\nelif [[ \"$DEBUG_STAGES\"\
+          \ =~ ^[a-z\\-]+(~[a-z\\-]+)*$ ]]; then\n    IFS=\"~\" read -ra SELECTED\
+          \ <<< \"$DEBUG_STAGES\"\n    for selected in \"${SELECTED[@]}\"; do\n  \
+          \  if [ \"$selected\" = \"single-node-install-rhel\" ]; then\n        RUN_STEP=1\n\
+          \        REASON=\"stage selected in \"$DEBUG_STAGES\"\"\n        break\n\
+          \    fi\n    done\n    if [ \"$RUN_STEP\" -eq 0 ]; then\n    REASON=\"stage\
+          \ not in \"$DEBUG_STAGES\"\"\n    fi\nelse\n    REASON=\"invalid \"debug\"\
+          \ property value\"\n    cat >&2 << EOF\nInvalid \"debug\" build property\
+          \ value \"$DEBUG_STAGES\".\nMust use either:\n    - \"all\", to select all\
+          \ debug stages\n    - a single stage name\n    - a list of stage names,\
+          \ separated by tilde signs \"~\",\n    e.g. \"single-node~multiple-nodes\"\
+          .\nEOF\nfi\nif [ \"$RUN_STEP\" -eq 1 ]; then\n    echo \"Step $STEP_NAME\
+          \ - wait $DURATION seconds\"\n    echo \"Reason: $REASON\"\n    sleep \"\
+          $DURATION\"\nelse\n    echo \"Step $STEP_NAME - skip debug\"\n    echo \"\
+          Reason: $REASON\"\nfi'"
+        alwaysRun: true
+    - ShellCommand:
+        name: Destroy Terraform-deployed infrastructure
+        command: for _ in $(seq 1 3); do  terraform destroy -auto-approve && break;done;
+        env:
+          OS_AUTH_URL: '%(secret:scality_cloud_auth_url)s'
+          OS_REGION_NAME: '%(secret:scality_cloud_region)s'
+          OS_USERNAME: '%(secret:scality_cloud_username)s'
+          OS_PASSWORD: '%(secret:scality_cloud_password)s'
+          OS_TENANT_NAME: '%(secret:scality_cloud_tenant_name)s'
+        workdir: eve/workers/openstack-single-node-rhel/terraform
+        sigtermTime: 600
+        alwaysRun: true
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - sosreport/single-node-install-rhel
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for single-node-install-rhel
+        command: mkdir -p build_status/build_status/single-node-install-rhel && echo
+          'SUCCESSFUL' > build_status/build_status/single-node-install-rhel/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+  multiple-nodes:
+    worker:
+      type: openstack
+      path: eve/workers/openstack-multiple-nodes
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
+      flavor: m1.medium
+    steps:
+    - ShellCommand:
+        name: Set build status to 'FAILED' for multiple-nodes
+        command: mkdir -p build_status/build_status/multiple-nodes && echo 'FAILED'
+          > build_status/build_status/multiple-nodes/final_status
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Install SSH keys and report connection info
+        command: "bash -c '\nmkdir -p ~/.ssh\necho \"%(secret:ssh_pub_keys)s\" >>\
+          \ ~/.ssh/authorized_keys\nIP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet\
+          \ ([0-9.]+).*$/\x01/p' )\ncat << END\nConnect to this worker using:\n  \
+          \  ssh eve@$IP\nEND'"
+    - ShellCommand:
+        name: Check if unzip and curl are installed
+        command: if "! {dep} -h 2&> /dev/null"; then echo "Aborting - {dep} not installed
+          and required" >&2; exit 1; None; done; if "! {dep} -h 2&> /dev/null"; then
+          echo "Aborting - {dep} not installed and required" >&2; exit 1; None; done
+        haltOnFailure: true
+    - ShellCommand:
+        name: Download and install Terraform
+        command: curl --retry 5 -O "https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip"
+          && sudo unzip "terraform_0.12.3_linux_amd64.zip" -d /usr/local/sbin/ &&
+          rm -f "terraform_0.12.3_linux_amd64.zip"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check that Terraform was installed
+        command: if ! terraform --version 2&> /dev/null; then  echo "Aborting - Terraform
+          not installed and required" >&2;  exit 1;fi
+        haltOnFailure: true
+    - ShellCommand:
+        name: Initialize Terraform
+        command: for _ in $(seq 1 12); do  if terraform init; then    break;  else    rm
+          -rf .terraform/;    sleep 5;  fi;done;
+        haltOnFailure: true
+    - ShellCommand:
+        name: Validate Terraform deployment description
+        command: terraform validate
+        haltOnFailure: true
+    - ShellCommand:
+        name: Spawn OpenStack virtual infrastructure with Terraform
+        command: terraform apply -auto-approve
+        env:
+          OS_AUTH_URL: '%(secret:scality_cloud_auth_url)s'
+          OS_REGION_NAME: '%(secret:scality_cloud_region)s'
+          OS_USERNAME: '%(secret:scality_cloud_username)s'
+          OS_PASSWORD: '%(secret:scality_cloud_password)s'
+          OS_TENANT_NAME: '%(secret:scality_cloud_tenant_name)s'
+          TF_VAR_nodes_count: '2'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Send bastion public key to nodes
+        command: for target_host in "bootstrap node1"; then scp -3 -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bastion:.ssh/bastion.pub $target_host:.ssh/ && ssh -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          $target_host cat .ssh/bastion.pub >> .ssh/authorized_keys; done
+    - ShellCommand:
+        name: Send bastion private key to bootstrap
+        command: ssh -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bootstrap sudo mkdir -p /etc/metalk8s/pki && scp -3 -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bastion:.ssh/bastion bootstrap:./ && ssh -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          $target_host sudo mv bastion /etc/metalk8s/pki/
+    - ShellCommand:
+        name: Retrieve ISO image checksum
+        command: ssh -F "eve/workers/openstack-multiple-nodes/terraform/ssh_config"
+          "bootstrap" "curl -s -XGET -o "SHA256SUM" "%(prop:artifacts_private_url)s/SHA256SUM""
+    - ShellCommand:
+        name: Retrieve ISO image
+        command: "ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config\
+          \ bootstrap bash -c '\nfor ((i=1;i<=20;i++)); do\n  echo \"Attempt $i out\
+          \ of 20\"\n  curl -s -XGET -o \"metalk8s.iso\" \"%(prop:artifacts_private_url)s/metalk8s.iso\"\
+          \ && exit\n  sleep 2\ndone\necho \"Could not retrieve ISO after 20 attempts\"\
+          \ >&2\nexit 1'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check ISO image with checksum
+        command: ssh -F "eve/workers/openstack-multiple-nodes/terraform/ssh_config"
+          "bootstrap" "sha256sum -c SHA256SUM"
+        workdir: .
+    - ShellCommand:
+        name: Create ISO mountpoint
+        command: ssh -F "eve/workers/openstack-multiple-nodes/terraform/ssh_config"
+          "bootstrap" "sudo mkdir -p "/srv/scality/metalk8s-%(prop:metalk8s_version)s""
+        haltOnFailure: true
+    - ShellCommand:
+        name: Mount ISO image
+        command: ssh -F "eve/workers/openstack-multiple-nodes/terraform/ssh_config"
+          "bootstrap" "sudo mount -o loop "metalk8s.iso" "/srv/scality/metalk8s-%(prop:metalk8s_version)s""
+        haltOnFailure: true
+    - ShellCommand:
+        name: Create bootstrap configuration file
+        command: "ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config\
+          \ bootstrap sudo bash -c '\nmkdir -p /etc/metalk8s\ncat > /etc/metalk8s/bootstrap.yaml\
+          \ << END\napiVersion: metalk8s.scality.com/v1alpha2\nkind: BootstrapConfiguration\n\
+          networks:\n  controlPlane: 10.100.0.0/16\n  workloadPlane: 10.100.0.0/16\n\
+          ca:\n  minion: $(hostname)\napiServer:\n  host: $(ip route get 10.100.0.0\
+          \ | awk '/10.100.0.0/{ print $6 }')\narchives:\n  - \"$(relpath 'metalk8s.iso')\"\
+          \nEND'"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Start the bootstrap process
+        command: ssh -F "eve/workers/openstack-multiple-nodes/terraform/ssh_config"
+          "bootstrap" "sudo bash "/srv/scality/metalk8s-%(prop:metalk8s_version)s/bootstrap.sh"
+          --verbose"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Provision Prometheus and AlertManager storage
+        command: 'ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bootstrap [[ -f "eve/create-volumes.sh"]] || scp None -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          eve/create-volumes.sh bootstrap:eve/create-volumes.sh && ssh -F None None
+          eve/workers/openstack-multiple-nodes/terraform/ssh_config bootstrap ssh
+          -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config bootstrap
+          sudo env PRODUCT_TXT=/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+          PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:metalk8s_version)s bash eve/create-volumes.sh '
+        env:
+          PRODUCT_TXT: /srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt
+          PRODUCT_MOUNT: /srv/scality/metalk8s-%(prop:metalk8s_version)s
+        haltOnFailure: true
+    - ShellCommand:
+        name: Install kubectl
+        command: ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bootstrap yum install -y kubectl --disablerepo=* --enablerepo=metalk8s-kubernetes
+    - ShellCommand:
+        name: Enable IP-in-IP encapsulation for Calico
+        command: 'ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bootstrap [[ -f "/home/centos/scripts/enable_ipip.sh"]] || scp None -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          /home/centos/scripts/enable_ipip.sh bootstrap:/home/centos/scripts/enable_ipip.sh
+          && ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bootstrap ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bootstrap bash /home/centos/scripts/enable_ipip.sh '
+    - ShellCommand:
+        name: Run installation scenarii
+        command: ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bastion git checkout "$BRANCH" --quiet && tox -e tests  -- -m "install and
+          ci and multinodes"
+        env:
+          BRANCH: '%(prop:branch)s'
+          ISO_MOUNTPOINT: *id003
+          SSH_CONFIG: eve/workers/openstack-multiple-nodes/terraform/ssh_config
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run fast tests
+        command: ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bastion git checkout "$BRANCH" --quiet && tox -e tests  -- -m "post and
+          ci and multinodes and not slow"
+        env:
+          BRANCH: '%(prop:branch)s'
+          ISO_MOUNTPOINT: *id003
+          SSH_CONFIG: eve/workers/openstack-multiple-nodes/terraform/ssh_config
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run slow tests
+        command: ssh -F None None eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bastion git checkout "$BRANCH" --quiet && tox -e tests  -- -m "post and
+          ci and multinodes and slow"
+        env:
+          BRANCH: '%(prop:branch)s'
+          ISO_MOUNTPOINT: *id003
+          SSH_CONFIG: eve/workers/openstack-multiple-nodes/terraform/ssh_config
+        haltOnFailure: true
+    - ShellCommand:
+        name: Collect logs using sosreport
+        command: ssh -F "eve/workers/openstack-multiple-nodes/terraform/ssh_config"
+          "bootstrap" "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True
+          -o containerd -kcontainerd.all=True -kcontainerd.logs=True --batch --tmp-dir
+          /var/tmp && sudo chown eve:eve /var/tmp/sosreport*"
+    - ShellCommand:
+        name: Copy artifactsfor 'sosreport/single-multiple-nodes/bootstrap'
+        command: mkdir -p artifacts/sosreport/single-multiple-nodes/bootstrap; for
+          artifact in "/var/tmp/sosreport*"; then scp None -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          bootstrap:$artifact artifacts/sosreport/single-multiple-nodes/bootstrap;
+          done
+    - ShellCommand:
+        name: Collect logs using sosreport
+        command: ssh -F "eve/workers/openstack-multiple-nodes/terraform/ssh_config"
+          "node1" "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True -o
+          containerd -kcontainerd.all=True -kcontainerd.logs=True --batch --tmp-dir
+          /var/tmp && sudo chown eve:eve /var/tmp/sosreport*"
+    - ShellCommand:
+        name: Copy artifactsfor 'sosreport/single-multiple-nodes/node1'
+        command: mkdir -p artifacts/sosreport/single-multiple-nodes/node1; for artifact
+          in "/var/tmp/sosreport*"; then scp None -F eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          node1:$artifact artifacts/sosreport/single-multiple-nodes/node1; done
+    - ShellCommand:
+        name: Debug step - wait before allowing resource destruction
+        command: "bash -c '\nDEBUG_STAGES=\"%(prop:debug)s\"\nDURATION=\"14400\"\n\
+          if [ -z \"$DEBUG_STAGES\" ]; then\n    REASON=\"\"debug\" build property\
+          \ not set\"\nelif [ \"$DEBUG_STAGES\" = all ]; then\n    RUN_STEP=1\n  \
+          \  REASON=\"\"debug\" property set to \"all\"\"\nelif [[ \"$DEBUG_STAGES\"\
+          \ =~ ^[a-z\\-]+(~[a-z\\-]+)*$ ]]; then\n    IFS=\"~\" read -ra SELECTED\
+          \ <<< \"$DEBUG_STAGES\"\n    for selected in \"${SELECTED[@]}\"; do\n  \
+          \  if [ \"$selected\" = \"multiple-nodes\" ]; then\n        RUN_STEP=1\n\
+          \        REASON=\"stage selected in \"$DEBUG_STAGES\"\"\n        break\n\
+          \    fi\n    done\n    if [ \"$RUN_STEP\" -eq 0 ]; then\n    REASON=\"stage\
+          \ not in \"$DEBUG_STAGES\"\"\n    fi\nelse\n    REASON=\"invalid \"debug\"\
+          \ property value\"\n    cat >&2 << EOF\nInvalid \"debug\" build property\
+          \ value \"$DEBUG_STAGES\".\nMust use either:\n    - \"all\", to select all\
+          \ debug stages\n    - a single stage name\n    - a list of stage names,\
+          \ separated by tilde signs \"~\",\n    e.g. \"single-node~multiple-nodes\"\
+          .\nEOF\nfi\nif [ \"$RUN_STEP\" -eq 1 ]; then\n    echo \"Step $STEP_NAME\
+          \ - wait $DURATION seconds\"\n    echo \"Reason: $REASON\"\n    sleep \"\
+          $DURATION\"\nelse\n    echo \"Step $STEP_NAME - skip debug\"\n    echo \"\
+          Reason: $REASON\"\nfi'"
+        alwaysRun: true
+    - ShellCommand:
+        name: Destroy Terraform-deployed infrastructure
+        command: for _ in $(seq 1 3); do  terraform destroy -auto-approve && break;done;
+        env:
+          OS_AUTH_URL: '%(secret:scality_cloud_auth_url)s'
+          OS_REGION_NAME: '%(secret:scality_cloud_region)s'
+          OS_USERNAME: '%(secret:scality_cloud_username)s'
+          OS_PASSWORD: '%(secret:scality_cloud_password)s'
+          OS_TENANT_NAME: '%(secret:scality_cloud_tenant_name)s'
+        workdir: eve/workers/openstack-multiple-nodes/terraform
+        sigtermTime: 600
+        alwaysRun: true
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - sosreport/multiple-nodes
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for multiple-nodes
+        command: mkdir -p build_status/build_status/multiple-nodes && echo 'SUCCESSFUL'
+          > build_status/build_status/multiple-nodes/final_status
+        haltOnFailure: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
