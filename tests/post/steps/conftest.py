@@ -4,17 +4,15 @@ from pytest_bdd import given, parsers
 from tests import kube_utils, utils
 
 
-# Given {{{
+# Helpers {{{
 
-@given(parsers.parse("pods with label '{label}' are '{expected_status}'"))
-def check_pod_status(request, host, k8s_client, label, expected_status):
-    ssh_config = request.config.getoption('--ssh-config')
-
+def _check_pods_status(k8s_client, expected_status, ssh_config,
+                       namespace=None, label=None):
     # Helper to use retry utils
     def _wait_for_status():
         pods = kube_utils.get_pods(
             k8s_client, ssh_config, label,
-            namespace="kube-system", state="Running"
+            namespace=namespace, state="Running"
         )
         assert pods
 
@@ -31,17 +29,40 @@ def check_pod_status(request, host, k8s_client, label, expected_status):
 
         return pods
 
+    name = "wait for pods"
+    if namespace:
+        name += " in namespace {}".format(namespace)
+    else:
+        name += " in all namespaces"
+    if label:
+        name += " with label '{}'".format(label)
+
     # Wait for pod to be in the correct state
     pods = utils.retry(
         _wait_for_status,
         times=12,
         wait=5,
-        name="wait for pods with label '{}'".format(label)
+        name=name
     )
 
-    assert pods, "No {} pod with label '{}' found".format(
-        expected_status.lower(), label
+# }}}
+# Given {{{
+
+
+@given(parsers.parse("pods with label '{label}' are '{expected_status}'"))
+def check_system_pod_status(request, host, k8s_client, label, expected_status):
+    ssh_config = request.config.getoption('--ssh-config')
+
+    _check_pods_status(
+        k8s_client, expected_status, ssh_config, 'kube-system', label
     )
 
 
+@given(parsers.parse("all Pod are '{expected_status}'"))
+def check_all_pods_status(request, host, k8s_client, expected_status):
+    ssh_config = request.config.getoption('--ssh-config')
+
+    _check_pods_status(
+        k8s_client, expected_status, ssh_config
+    )
 # }}}
