@@ -428,6 +428,7 @@ stages:
             - single-node-downgrade-centos
             - single-node-install-rhel
             - multiple-nodes-centos
+            - single-node-patch-version
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
 
@@ -926,6 +927,131 @@ stages:
             TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
             TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
           workdir: build/eve/workers/openstack-single-node-rhel/terraform
+
+  single-node-patch-version:
+    worker: *single_node_worker
+    steps:
+      - SetPropertyFromCommand:
+          name: Set previous patch version to upgrade from and downgrade to
+          property: product_version_prev_patch
+          command: >
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+              patch=$(echo "%(prop:product_version)s" | cut -d'.' -f3) &&
+              echo "$major.$minor.$(( patch>0 ? patch-1 : 0 ))"
+      - SetPropertyFromCommand:
+          name: Set the patch version flag
+          property: patch_present
+          env:
+            PRODUCT_VERSION: "%(prop:product_version)s"
+            PRODUCT_VERSION_PREV_patch: "%(prop:product_version_prev_patch)s"
+          command: |-
+              if [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV_patch" ]; then
+                echo "true"
+              else
+                echo "false"
+              fi
+      - TriggerStages:
+          name: Trigger single-node steps with patch Artifact ISO
+          doStepIf: "%(prop:patch_present)s"
+          stage_names:
+            - single-node-upgrade-patch-centos
+
+# --- Upgrade for patch versions ---
+  single-node-upgrade-patch-centos:
+    worker: *single_node_worker
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: single-node-upgrade-patch-centos
+      - ShellCommand: *setup_cache
+      - ShellCommand: *ssh_ip_setup
+      # --- Get ISO for version N ---
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
+      # --- Get VERSION patch ISO for version N-1 from Artefacts ---
+      - ShellCommand: &retrieve_prev_patch_version_iso_checksum
+          <<: *retrieve_iso_checksum
+          name: Retrieve previous patch ISO image checksum
+          env: &_env_previous_patch
+            DEST_DIR: "/tmp"
+            BASE_URL: "http://artifacts/builds/github:scality:metalk8s:\
+                      promoted-%(prop:product_version_prev_patch)s"
+      - ShellCommand: &retrieve_prev_patch_version_iso
+          <<: *retrieve_iso
+          name: Retrieve previous patch ISO image
+          env:
+            <<: *_env_previous_patch
+            MAX_ATTEMPTS: "300"
+      - ShellCommand: &check_prev_patch_version_iso_checksum
+          <<: *check_iso_checksum
+          name: Check previous patch ISO image with checksum
+          workdir: "/tmp"
+      # --- Prepare for Bootstrap with patch version N-1 ---
+      - ShellCommand:
+          <<: *create_mountpoint
+          env: &_env_prev_patch_version
+            PRODUCT_VERSION: "%(prop:product_version_prev_patch)s"
+      - ShellCommand:
+          <<: *mount_iso
+          env:
+            <<: *_env_prev_patch_version
+            ISO_PATH: /tmp/metalk8s.iso
+      - ShellCommand:
+          <<: *bootstrap_config
+          env: *_env_prev_patch_version
+      # --- Install patch version N-1 ---
+      - ShellCommand:
+          <<: *run_bootstrap
+          env: *_env_prev_patch_version
+      - ShellCommand:
+          name: Provision Prometheus and AlertManager storage
+          command: >
+            git checkout %(prop:product_version_prev_patch)s --quiet &&
+            sudo env
+            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:product_version_prev_patch)s/product.txt
+            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:product_version_prev_patch)s
+            eve/create-volumes.sh
+          haltOnFailure: true
+      # --- We do not need to Test patch version N-1 ---
+      # --- Upgrade to version N ---
+      - ShellCommand:
+          <<: *add_archive
+          name: Add current ISO to cluster
+          env:
+            <<: *_env_add_archive
+            PRODUCT_VERSION: "%(prop:product_version_prev_patch)s"
+      - ShellCommand:
+          name: Run upgrade from previous patch version
+          command: >
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
+            --destination-version %(prop:metalk8s_version)s
+          haltOnFailure: true
+      - ShellCommand: *provision_prometheus_volumes
+      # --- Test version N ---
+      - ShellCommand: *fast_tests
+      # --- Collect logs ---
+      - ShellCommand: *collect_sosreport
+      - ShellCommand:
+          <<: *copy_report_artifacts
+          env:
+            DEST_DIR: sosreport/sosreport/single-node-upgrade-patch-centos
+      - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: single-node-upgrade-patch-centos
+      - Upload: *upload_final_status_artifact
+      - ShellCommand:
+          <<: *wait_debug
+          env:
+            STEP_NAME: single-node-upgrade-patch-centos
 
   multiple-nodes-centos:
     worker:
