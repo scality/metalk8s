@@ -79,6 +79,13 @@ Reconfigure salt-minion:
       - salt: Set grains
       - salt: Refresh the mine
       - salt: Refresh pillar before highstate
+
+Wait minion available:
+  salt.runner:
+    - name: metalk8s_saltutil.wait_minions
+    - tgt: {{ node_name }}
+    - require:
+      - salt: Reconfigure salt-minion
     - require_in:
       - salt: Run the highstate
 
