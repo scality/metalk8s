@@ -62,10 +62,30 @@ Drain the node:
 
 {%- endif %}
 
-Refresh pillar before highstate:
+Sync module on the node:
   salt.function:
-    - name: saltutil.refresh_pillar
+    - name: saltutil.sync_all
     - tgt: {{ node_name }}
+    - kwarg:
+        saltenv: {{ saltenv }}
+
+Refresh and check pillar before highstate:
+  salt.function:
+    - name: metalk8s.check_pillar_keys
+    - tgt: {{ node_name }}
+    - kwarg:
+        keys:
+          - metalk8s.endpoints.salt-master.ip
+          - metalk8s.endpoints.repositories.ip
+          - metalk8s.endpoints.repositories.ports.http
+        # We cannot raise when using `salt.function` as we need to return
+        # `False` to have a failed state
+        # https://github.com/saltstack/salt/issues/55503
+        raise_error: False
+    - retry:
+        attempts: 5
+    - require:
+      - salt: Sync module on the node
 
 {%- if node_name in salt.saltutil.runner('manage.up') %}
 
@@ -78,7 +98,7 @@ Reconfigure salt-minion:
     - require:
       - salt: Set grains
       - salt: Refresh the mine
-      - salt: Refresh pillar before highstate
+      - salt: Refresh and check pillar before highstate
 
 Wait minion available:
   salt.runner:
@@ -100,7 +120,7 @@ Run the highstate:
       - salt: Set grains
       - salt: Refresh the mine
       - metalk8s_cordon: Cordon the node
-      - salt: Refresh pillar before highstate
+      - salt: Refresh and check pillar before highstate
 
 Wait for API server to be available:
   http.wait_for_successful_query:
