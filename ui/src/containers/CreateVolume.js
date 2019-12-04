@@ -383,6 +383,7 @@ const CreateVolume = props => {
                           text={intl.messages.add}
                           type="button"
                           onClick={addLabel}
+                          data-cy="add-volume-labels-button"
                         />
                       </LabelsForm>
                       {!!Object.keys(values.labels).length && (
