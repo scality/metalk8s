@@ -122,7 +122,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   provisioner "remote-exec" {
     inline = [
       "sudo bash scripts/network-iface-config.sh eth1",
-      "sudo bash scripts/bootstrap-config.sh",
+      "sudo bash scripts/bootstrap-config.sh ${local.control_plane_network.vip}",
     ]
   }
 }
