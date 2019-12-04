@@ -5,6 +5,7 @@ Higher-level concepts must use these blocks to generate a valid build plan.
 
 import abc
 import collections
+import enum
 import operator
 
 import yamlprint
@@ -104,6 +105,80 @@ class LocalWorker(Worker):
         return collections.OrderedDict([("type", "local")])
 
 
+class KubePodWorker(Worker):
+    """Worker defined as a Kubernetes Pod."""
+
+    class Image:
+        """Container image description for KubePod workers."""
+
+        def __init__(self, name, context, dockerfile=None):
+            self._name = name
+            self._context = context
+            self._dockerfile = dockerfile
+
+        name = property(operator.attrgetter("_name"))
+        context = property(operator.attrgetter("_context"))
+        dockerfile = property(operator.attrgetter("_dockerfile"))
+
+        @property
+        def info(self):
+            if self.dockerfile is None:
+                # Assume the context contains the Dockerfile, dump a string
+                return self.context
+
+            return collections.OrderedDict(
+                [("context", self.context), ("dockerfile", self.dockerfile)]
+            )
+
+    def __init__(self, path, images):
+        self._path = path
+        self._images = collections.OrderedDict(
+            (image.name, image.info) for image in images
+        )
+
+    path = property(operator.attrgetter("_path"))
+    images = property(operator.attrgetter("_images"))
+
+    def dump(self):
+        return collections.OrderedDict(
+            [
+                ("type", "kube_pod"),
+                ("path", self.path),
+                ("images", self.images),
+            ]
+        )
+
+
+class OpenStackWorker(Worker):
+    class Image(enum.Enum):
+        CENTOS7 = "CentOS-7-x86_64-GenericCloud-1809.qcow2"
+
+    class Flavor(enum.Enum):
+        SMALL = "m1.small"
+        MEDIUM = "m1.medium"
+        LARGE = "m1.large"
+        XLARGE = "m1.xlarge"
+
+    def __init__(self, path, image, flavor):
+        self._path = path
+        self._image = image
+        self._flavor = flavor
+
+    path = property(operator.attrgetter("_path"))
+    image = property(operator.attrgetter("_image"))
+    flavor = property(operator.attrgetter("_flavor"))
+
+    def dump(self):
+        return collections.OrderedDict(
+            [
+                ("type", "openstack"),
+                ("path", self.path),
+                ("image", self.image.value),
+                ("flavor", self.flavor.value),
+            ]
+        )
+
+
 # }}}
 # Steps {{{
 class Step(metaclass=abc.ABCMeta):
@@ -158,5 +233,17 @@ class TriggerStages(Step):
     def dump_arguments(self):
         return [("stage_names", [stage.name for stage in self.stages])]
 
+
+class SetPropertyFromCommand(Step):
+    def __init__(self, name, property_name, command, **kwargs):
+        super(SetPropertyFromCommand, self).__init__(name, **kwargs)
+        self._property_name = property_name
+        self._command = command
+
+    property_name = property(operator.attrgetter("_property_name"))
+    command = property(operator.attrgetter("_command"))
+
+    def dump_arguments(self):
+        return [("property", self.property_name), ("command", self.command)]
 
 # }}}

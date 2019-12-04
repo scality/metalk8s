@@ -145,16 +145,108 @@ class TestDump:
                     ]
                 ),
             ),
+            (
+                core.SetPropertyFromCommand(
+                    name="_name", property_name="_property", command="_command"
+                ),
+                OrderedDict(
+                    [
+                        (
+                            "SetPropertyFromCommand",
+                            OrderedDict(
+                                [
+                                    ("name", "_name"),
+                                    ("property", "_property"),
+                                    ("command", "_command"),
+                                ]
+                            ),
+                        )
+                    ]
+                ),
+            ),
         ),
-        ids=("trigger-stages",),
+        ids=("trigger-stages", "set-property"),
     )
     def test_step(self, step, expected):
         assert step.dump() == expected
 
     @pytest.mark.parametrize(
         "worker,expected",
-        ((core.LocalWorker(), OrderedDict([("type", "local")])),),
-        ids=("local",),
+        (
+            (core.LocalWorker(), OrderedDict([("type", "local")])),
+            (
+                core.KubePodWorker(
+                    path="_path",
+                    images=[
+                        core.KubePodWorker.Image(
+                            name="_image", context="_context"
+                        )
+                    ],
+                ),
+                OrderedDict(
+                    [
+                        ("type", "kube_pod"),
+                        ("path", "_path"),
+                        ("images", OrderedDict([("_image", "_context")])),
+                    ]
+                ),
+            ),
+            (
+                core.KubePodWorker(
+                    path="_path",
+                    images=[
+                        core.KubePodWorker.Image(
+                            name="_image",
+                            context="_context",
+                            dockerfile="_dockerfile",
+                        )
+                    ],
+                ),
+                OrderedDict(
+                    [
+                        ("type", "kube_pod"),
+                        ("path", "_path"),
+                        (
+                            "images",
+                            OrderedDict(
+                                [
+                                    (
+                                        "_image",
+                                        OrderedDict(
+                                            [
+                                                ("context", "_context"),
+                                                ("dockerfile", "_dockerfile"),
+                                            ]
+                                        ),
+                                    )
+                                ]
+                            ),
+                        ),
+                    ]
+                ),
+            ),
+            (
+                core.OpenStackWorker(
+                    path="_path",
+                    image=core.OpenStackWorker.Image.CENTOS7,
+                    flavor=core.OpenStackWorker.Flavor.SMALL,
+                ),
+                OrderedDict(
+                    [
+                        ("type", "openstack"),
+                        ("path", "_path"),
+                        ("image", core.OpenStackWorker.Image.CENTOS7.value),
+                        ("flavor", core.OpenStackWorker.Flavor.SMALL.value),
+                    ]
+                ),
+            ),
+        ),
+        ids=(
+            "local",
+            "kube-pod-no-dockerfile",
+            "kube-pod-with-dockerfile",
+            "openstack",
+        ),
     )
     def test_worker(self, worker, expected):
         assert worker.dump() == expected

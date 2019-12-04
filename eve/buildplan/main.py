@@ -11,6 +11,7 @@ def build_project():
     return project
 
 
+# Stages {{{
 def pre_merge():
     return core.Stage(
         name="pre-merge",
@@ -27,9 +28,109 @@ def pre_merge():
             "documentation/*",
             "release/*",
         ],
+        steps=[
+            core.TriggerStages(
+                "Trigger build, docs, and lint stages",
+                stages=[build(), docs(), lint()],
+                halt_on_failure=True,
+            ),
+            set_version_property(),
+            core.TriggerStages(
+                "Trigger single-node and multiple-nodes steps with built ISO",
+                stages=[single_node(), multiple_nodes()],
+                halt_on_failure=True,
+            ),
+        ],
+    )
+
+
+def build():
+    return core.Stage(
+        name="build",
+        worker=core.KubePodWorker(
+            path="eve/workers/pod-builder/pod.yaml",
+            images=[
+                core.KubePodWorker.Image(
+                    name="docker-builder", context="eve/workers/pod-builder"
+                )
+            ],
+        ),
         steps=[],
     )
 
+
+def docs():
+    return core.Stage(
+        name="docs",
+        worker=core.KubePodWorker(
+            path="eve/workers/pod-docs-builder/pod.yaml",
+            images=[
+                core.KubePodWorker.Image(
+                    name="doc-builder",
+                    context=".",
+                    dockerfile="docs/Dockerfile",
+                )
+            ],
+        ),
+        steps=[],
+    )
+
+
+def lint():
+    return core.Stage(
+        name="lint",
+        worker=core.KubePodWorker(
+            path="eve/workers/pod-linter/pod.yaml",
+            images=[
+                core.KubePodWorker.Image(
+                    name="docker-linter", context="eve/workers/pod-linter"
+                )
+            ],
+        ),
+        steps=[],
+    )
+
+
+def single_node():
+    return core.Stage(
+        name="single-node",
+        worker=core.OpenStackWorker(
+            path="eve/workers/openstack-single-node",
+            flavor=core.OpenStackWorker.Flavor.LARGE,
+            image=core.OpenStackWorker.Image.CENTOS7,
+        ),
+        steps=[],
+    )
+
+
+def multiple_nodes():
+    return core.Stage(
+        name="multiple-nodes",
+        worker=core.OpenStackWorker(
+            path="eve/workers/openstack-multiple-nodes",
+            flavor=core.OpenStackWorker.Flavor.MEDIUM,
+            image=core.OpenStackWorker.Image.CENTOS7,
+        ),
+        steps=[],
+    )
+
+
+# }}}
+# Steps {{{
+def set_version_property():
+    return core.SetPropertyFromCommand(
+        "Set version as property from built artifacts",
+        property_name="metalk8s_version",
+        command=(
+            "bash -c '"
+            '. <(curl -s "%(prop:artifacts_private_url)s/product.txt")'
+            " && echo $VERSION'"
+        ),
+        halt_on_failure=True,
+    )
+
+
+# }}}
 
 if __name__ == "__main__":
     build_plan = build_project().dump()
