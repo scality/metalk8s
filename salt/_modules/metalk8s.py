@@ -221,3 +221,53 @@ def get_archives(archives=None):
             )
         res.update({env_name: info})
     return res
+
+
+def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
+    """Check that some pillar keys are available and not empty, `None`, 0
+
+    Arguments:
+        keys (list): list of keys to check
+        refresh (bool): refresh pillar or not
+        pillar (dict): pillar dict to check
+    """
+    # Ignore `refresh` if pillar is provided
+    if not pillar and refresh:
+        __salt__['saltutil.refresh_pillar']()
+
+    if not pillar:
+        pillar = __pillar__
+
+    if not isinstance(keys, list):
+        keys = [keys]
+
+    errors = []
+
+    for key_list in keys:
+        value = pillar
+        if not isinstance(key_list, list):
+            key_list = key_list.split('.')
+
+        for key in key_list:
+            error = value.get('_errors')
+            value = value.get(key)
+            if not value:
+                if not error:
+                    error = ["Empty value for {}".format(key)]
+
+                errors.append(
+                    'Unable to get {}:\n\t{}'.format(
+                        '.'.join(key_list),
+                        '\n\t'.join(error)
+                    )
+                )
+                break
+
+    if errors:
+        if raise_error:
+            raise CommandExecutionError('\n'.join(errors))
+        else:
+            log.error('\n'.join(errors))
+            return False
+
+    return True
