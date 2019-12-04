@@ -13,3 +13,5 @@ buildchain/.venv/
 *.log
 
 junit/
+
+.coverage
