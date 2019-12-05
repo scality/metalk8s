@@ -288,4 +288,23 @@ class Upload(Step):
         return args
 
 
+class Git(Step):
+    def __init__(self, name, repourl, method, retry_fetch, **kwargs):
+        super(Git, self).__init__(name, **kwargs)
+        self._repourl = repourl
+        self._method = method
+        self._retry_fetch = retry_fetch
+
+    repourl = property(operator.attrgetter("_repourl"))
+    method = property(operator.attrgetter("_method"))
+    retry_fetch = property(operator.attrgetter("_retry_fetch"))
+
+    def dump_arguments(self):
+        return [
+            ("repourl", self.repourl),
+            ("method", self.method),
+            ("retryFetch", self.retry_fetch),
+        ]
+
+
 # }}}
