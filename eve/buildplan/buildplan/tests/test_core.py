@@ -325,3 +325,22 @@ class TestUpload:
             "Upload": OrderedDict([("name", "_name"), ("source", "_source"),]),
         }
         assert step.dump() == expected
+
+
+class TestGit:
+    def test_dump(self):
+        step = core.Git(
+            "_name", repourl="_repourl", method="_method", retry_fetch=True,
+        )
+        expected = {
+            "Git": OrderedDict(
+                [
+                    ("name", "_name"),
+                    ("repourl", "_repourl"),
+                    ("method", "_method"),
+                    ("retryFetch", True),
+                ]
+            ),
+        }
+        assert step.dump() == expected
+

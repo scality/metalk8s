@@ -54,6 +54,40 @@ stages:
         haltOnFailure: true
         hideStepIf: true
     - ShellCommand:
+        name: Wait for Docker daemon to be ready
+        command: bash -c 'for i in $(seq 1 150); do;   docker info &> /dev/null &&
+          exit;   sleep 2; done; echo "Could not reach Docker daemon from Buildbot
+          worker" >&2; exit 1'
+        haltOnFailure: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Build everything
+        command: ./doit.sh -n 4
+        haltOnFailure: true
+        env:
+          PYTHON_SYS: python3.6
+        usePTY: true
+    - ShellCommand:
+        name: Copy artifacts
+        command: mkdir -p artifacts; for artifact in _build/metalk8s.iso _build/SHA256SUM
+          _build/root/product.txt; do cp -r "$artifact" artifacts; done
+    - Upload:
+        name: Upload artifacts
+        source: artifacts
+        urls:
+        - metalk8s.iso
+        - SHA256SUM
+        - product.txt
+    - ShellCommand:
         name: Set build status to 'SUCCESSFUL' for build
         command: mkdir -p build_status/build_status/build && echo 'SUCCESSFUL' > build_status/build_status/build/.final_status
         haltOnFailure: true
