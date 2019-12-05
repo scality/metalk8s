@@ -224,8 +224,8 @@ export function* fetchNodes() {
 
   const allJobs = yield select(allJobsSelector);
   const deployingNodes = allJobs
-    .filter(job => job.name.startsWith('deploy-node/') && !job.completed)
-    .map(job => job.name.replace(/^(deploy-node\/)/, ''));
+    .filter(job => job.type === 'deploy-node' && !job.completed)
+    .map(job => job.node);
 
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
@@ -367,8 +367,9 @@ export function* deployNode({ payload }) {
   } else {
     yield put(
       addJobAction({
-        name: `deploy-node/${payload.name}`,
+        type: 'deploy-node',
         jid: result.return[0].jid,
+        node: payload.name,
       }),
     );
     yield call(fetchNodes);
@@ -377,15 +378,14 @@ export function* deployNode({ payload }) {
 
 export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
   const jobs = yield select(state => state.app.salt.jobs);
-  const jobName = jobs.find(job => job.jid === jid).name;
-  if (jobName.startsWith('deploy-node/')) {
-    const nodeName = jobName.replace(/^(deploy-node\/)/, '');
+  const job = jobs.find(job => job.jid === jid);
+  if (job?.type === 'deploy-node') {
     if (status.success) {
       yield put(
         addNotificationSuccessAction({
           title: intl.translate('node_deployment'),
           message: intl.translate('node_deployment_success', {
-            name: nodeName,
+            name: job.node,
           }),
         }),
       );
@@ -394,7 +394,7 @@ export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
         addNotificationErrorAction({
           title: intl.translate('node_deployment'),
           message: intl.translate('node_deployment_failed', {
-            name: nodeName,
+            name: job.node,
             step: status.step,
             reason: status.comment,
           }),

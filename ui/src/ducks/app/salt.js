@@ -87,7 +87,7 @@ export default function reducer(state = defaultState, action = {}) {
 
 // Action Creators
 const defaultJob = {
-  name: '',
+  type: '',
   jid: null,
   completed: false,
   completedAt: null,
@@ -146,7 +146,13 @@ export function* manageLocalStorage() {
     const { type, payload: job } = yield take(channel);
     switch (type) {
       case ADD_JOB:
-        addJobToLocalStorage(job);
+        addJobToLocalStorage({
+          ...job,
+          // remove live data only useful in Redux store
+          events: undefined,
+          status: undefined,
+          completed: undefined,
+        });
         break;
       case REMOVE_JOB:
         removeJobFromLocalStorage(job.jid);

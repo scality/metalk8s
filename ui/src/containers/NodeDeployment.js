@@ -68,7 +68,9 @@ const NodeDeployment = ({ intl }) => {
   const nodeName = match?.params?.id;
 
   const jobs = useSelector(state =>
-    state.app.salt.jobs.filter(job => job.name === `deploy-node/${nodeName}`),
+    state.app.salt.jobs.filter(
+      job => job.type === 'deploy-node' && job.node === nodeName,
+    ),
   );
 
   let activeJob = jobs.find(job => !job.completed);

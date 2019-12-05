@@ -156,7 +156,8 @@ describe('`fetchNodes` saga', () => {
     const clone = gen.clone();
     const jobs = [
       {
-        name: `deploy-node/${DEFAULT_NAME}`,
+        type: "deploy-node",
+        node: DEFAULT_NAME,
         jid: '12345',
         completed,
       },

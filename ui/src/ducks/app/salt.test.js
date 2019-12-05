@@ -33,7 +33,7 @@ import {
   createChannelFromSource,
 } from './salt';
 
-const exampleJob = { name: 'example', jid: '12345', completedAt: null };
+const exampleJob = { type: 'example', jid: '12345', completedAt: null };
 
 describe('`addJobAction` action creator', () => {
   test('handles a job in progress', () => {
@@ -57,6 +57,20 @@ describe('`addJobAction` action creator', () => {
         ...exampleJob,
         completedAt: 'now',
         completed: true,
+        status: {},
+        events: [],
+      },
+    });
+  });
+
+  test('keeps custom job props', () => {
+    const action = addJobAction({ ...exampleJob, node: 'some-node' });
+    expect(action).toEqual({
+      type: ADD_JOB,
+      payload: {
+        ...exampleJob,
+        node: 'some-node',
+        completed: false,
         status: {},
         events: [],
       },

@@ -1,7 +1,7 @@
 export const JOBS = 'JOBS';
 
 // Jobs in LocalStorage {{{
-// A job in localStorage is represented as { name, jid, completedAt }
+// A job in localStorage is represented as { type, jid, completedAt, ...props }
 
 export function listJobsFromLocalStorage() {
   return JSON.parse(localStorage.getItem(JOBS)) || [];
@@ -11,11 +11,16 @@ function saveJobsToLocalStorage(jobs) {
   localStorage.setItem(JOBS, JSON.stringify(jobs));
 }
 
-export function addJobToLocalStorage({ jid, name, completedAt = null }) {
+export function addJobToLocalStorage({
+  jid,
+  type,
+  completedAt = null,
+  ...props
+}) {
   const jobs = listJobsFromLocalStorage();
   const job = jobs.find(item => item.jid === jid);
   if (!job) {
-    jobs.push({ jid, name, completedAt });
+    jobs.push({ jid, type, completedAt, ...props });
     saveJobsToLocalStorage(jobs);
   }
 }
