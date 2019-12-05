@@ -7,6 +7,11 @@ stages:
     worker:
       type: local
     steps:
+    - ShellCommand:
+        name: Set build status to 'FAILED'
+        command: mkdir -p build_status && echo -n 'FAILED' > build_status/.final_status
+        haltOnFailure: true
+        hideStepIf: true
     - TriggerStages:
         name: Trigger build, docs, and lint stages
         stage_names:
@@ -26,13 +31,39 @@ stages:
         - single-node
         - multiple-nodes
         haltOnFailure: true
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL'
+        command: mkdir -p build_status && echo -n 'SUCCESSFUL' > build_status/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: &id001 build_status
+        alwaysRun: true
+        hideStepIf: true
   build:
     worker:
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
       images:
         docker-builder: eve/workers/pod-builder
-    steps: []
+    steps:
+    - ShellCommand:
+        name: Set build status to 'FAILED' for build
+        command: mkdir -p build_status/build_status/build && echo -n 'FAILED' > build_status/build_status/build/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for build
+        command: mkdir -p build_status/build_status/build && echo -n 'SUCCESSFUL'
+          > build_status/build_status/build/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+        alwaysRun: true
+        hideStepIf: true
   docs:
     worker:
       type: kube_pod
@@ -41,25 +72,91 @@ stages:
         doc-builder:
           context: .
           dockerfile: docs/Dockerfile
-    steps: []
+    steps:
+    - ShellCommand:
+        name: Set build status to 'FAILED' for docs
+        command: mkdir -p build_status/build_status/docs && echo -n 'FAILED' > build_status/build_status/docs/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for docs
+        command: mkdir -p build_status/build_status/docs && echo -n 'SUCCESSFUL' >
+          build_status/build_status/docs/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+        alwaysRun: true
+        hideStepIf: true
   lint:
     worker:
       type: kube_pod
       path: eve/workers/pod-linter/pod.yaml
       images:
         docker-linter: eve/workers/pod-linter
-    steps: []
+    steps:
+    - ShellCommand:
+        name: Set build status to 'FAILED' for lint
+        command: mkdir -p build_status/build_status/lint && echo -n 'FAILED' > build_status/build_status/lint/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for lint
+        command: mkdir -p build_status/build_status/lint && echo -n 'SUCCESSFUL' >
+          build_status/build_status/lint/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+        alwaysRun: true
+        hideStepIf: true
   single-node:
     worker:
       type: openstack
       path: eve/workers/openstack-single-node
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.large
-    steps: []
+    steps:
+    - ShellCommand:
+        name: Set build status to 'FAILED' for single-node
+        command: mkdir -p build_status/build_status/single-node && echo -n 'FAILED'
+          > build_status/build_status/single-node/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for single-node
+        command: mkdir -p build_status/build_status/single-node && echo -n 'SUCCESSFUL'
+          > build_status/build_status/single-node/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+        alwaysRun: true
+        hideStepIf: true
   multiple-nodes:
     worker:
       type: openstack
       path: eve/workers/openstack-multiple-nodes
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.medium
-    steps: []
+    steps:
+    - ShellCommand:
+        name: Set build status to 'FAILED' for multiple-nodes
+        command: mkdir -p build_status/build_status/multiple-nodes && echo -n 'FAILED'
+          > build_status/build_status/multiple-nodes/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Set build status to 'SUCCESSFUL' for multiple-nodes
+        command: mkdir -p build_status/build_status/multiple-nodes && echo -n 'SUCCESSFUL'
+          > build_status/build_status/multiple-nodes/.final_status
+        haltOnFailure: true
+        hideStepIf: true
+    - Upload:
+        name: Upload final status to artifacts
+        source: *id001
+        alwaysRun: true
+        hideStepIf: true
