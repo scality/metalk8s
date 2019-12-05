@@ -82,7 +82,7 @@ stages:
           _build/root/product.txt; do cp -r "$artifact" artifacts; done
     - Upload:
         name: Upload artifacts
-        source: artifacts
+        source: &id002 artifacts
         urls:
         - metalk8s.iso
         - SHA256SUM
@@ -111,6 +111,32 @@ stages:
         command: mkdir -p build_status/build_status/docs && echo 'FAILED' > build_status/build_status/docs/.final_status
         haltOnFailure: true
         hideStepIf: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Build documentation
+        command: tox --workdir /tmp/tox -e docs -- html latexpdf
+        haltOnFailure: true
+        env:
+          READTHEDOCS: 'True'
+    - ShellCommand:
+        name: Copy artifacts for 'docs'
+        command: mkdir -p artifacts/docs; for artifact in docs/_build/*; do cp -r
+          "$artifact" artifacts/docs; done
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - docs/html/index.html
+        - docs/latex/MetalK8s.pdf
     - ShellCommand:
         name: Set build status to 'SUCCESSFUL' for docs
         command: mkdir -p build_status/build_status/docs && echo 'SUCCESSFUL' > build_status/build_status/docs/.final_status
