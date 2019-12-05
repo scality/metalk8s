@@ -61,10 +61,15 @@ class TestStageDecorators:
     def test_with_setup(self):
         # TODO: test the result of each setup step
         decorated_factory = dsl.WithSetup(
-            [dsl.SetupStep.GIT, dsl.SetupStep.CACHE, dsl.SetupStep.DOCKER]
+            [
+                dsl.SetupStep.GIT,
+                dsl.SetupStep.CACHE,
+                dsl.SetupStep.DOCKER,
+                dsl.SetupStep.SSH,
+            ]
         )(self.stage_factory)
         decorated_stage = decorated_factory()
-        assert len(decorated_stage.steps) == 4
+        assert len(decorated_stage.steps) == 5
         assert (
             decorated_stage.dump()
             == core.Stage(
@@ -74,6 +79,7 @@ class TestStageDecorators:
                     dsl.SetupStep.git_pull(),
                     dsl.SetupStep.setup_cache(),
                     dsl.SetupStep.wait_for_docker(),
+                    dsl.SetupStep.setup_ssh(),
                     self.DEFAULT_STEP,
                 ],
             ).dump()

@@ -59,16 +59,19 @@ stages:
           exit;   sleep 2; done; echo "Could not reach Docker daemon from Buildbot
           worker" >&2; exit 1'
         haltOnFailure: true
+        hideStepIf: true
     - Git:
         name: git pull
         repourl: '%(prop:git_reference)s'
         method: clobber
         retryFetch: true
         haltOnFailure: true
+        hideStepIf: true
     - ShellCommand:
         name: Setup proxy cache
         command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
         haltOnFailure: true
+        hideStepIf: true
     - ShellCommand:
         name: Build everything
         command: ./doit.sh -n 4
@@ -118,10 +121,12 @@ stages:
         method: clobber
         retryFetch: true
         haltOnFailure: true
+        hideStepIf: true
     - ShellCommand:
         name: Setup proxy cache
         command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
         haltOnFailure: true
+        hideStepIf: true
     - ShellCommand:
         name: Build documentation
         command: tox --workdir /tmp/tox -e docs -- html latexpdf
@@ -167,10 +172,12 @@ stages:
         method: clobber
         retryFetch: true
         haltOnFailure: true
+        hideStepIf: true
     - ShellCommand:
         name: Setup proxy cache
         command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
         haltOnFailure: true
+        hideStepIf: true
     - ShellCommand:
         name: Run all linting targets
         command: ./doit.sh lint
@@ -200,6 +207,23 @@ stages:
           > build_status/build_status/single-node/.final_status
         haltOnFailure: true
         hideStepIf: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Install SSH keys and report connection info
+        command: "mkdir -p ~/.ssh; echo \"%(secret:ssh_pub_keys)s\" >> ~/.ssh/authorized_keys;\
+          \ IP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet ([0-9.]+).*$/\\1/p'\
+          \ ); echo \"Connect to this worker using:\n    ssh eve@$IP\""
     - ShellCommand:
         name: Set build status to 'SUCCESSFUL' for single-node
         command: mkdir -p build_status/build_status/single-node && echo -n 'SUCCESSFUL'
@@ -224,6 +248,23 @@ stages:
           > build_status/build_status/multiple-nodes/.final_status
         haltOnFailure: true
         hideStepIf: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Install SSH keys and report connection info
+        command: "mkdir -p ~/.ssh; echo \"%(secret:ssh_pub_keys)s\" >> ~/.ssh/authorized_keys;\
+          \ IP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet ([0-9.]+).*$/\\1/p'\
+          \ ); echo \"Connect to this worker using:\n    ssh eve@$IP\""
     - ShellCommand:
         name: Set build status to 'SUCCESSFUL' for multiple-nodes
         command: mkdir -p build_status/build_status/multiple-nodes && echo -n 'SUCCESSFUL'
