@@ -97,6 +97,7 @@ def docs():
 
 
 @dsl.WithStatus()
+@dsl.WithSetup([dsl.SetupStep.GIT, dsl.SetupStep.CACHE])
 def lint():
     return core.Stage(
         name="lint",
@@ -108,7 +109,7 @@ def lint():
                 )
             ],
         ),
-        steps=[],
+        steps=[lint_all()],
     )
 
 
@@ -169,6 +170,15 @@ def build_docs():
         command="tox --workdir /tmp/tox -e docs -- html latexpdf",
         env={"READTHEDOCS": "True"},
         halt_on_failure=True,
+    )
+
+
+def lint_all():
+    return core.ShellCommand(
+        "Run all linting targets",
+        command="./doit.sh lint",
+        use_pty=True,
+        halt_on_failure=False,
     )
 
 
