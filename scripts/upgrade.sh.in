@@ -201,8 +201,7 @@ patch_kubesystem_namespace() {
         "kube-system" \
         kind=Namespace apiVersion=v1 \
         patch="{'metadata': {'annotations': \
-        {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}" \
-        test="$DRY_RUN"
+        {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}"
 }
 
 get_cluster_version() {
@@ -210,9 +209,7 @@ get_cluster_version() {
         pillar.get metalk8s:cluster_version --out txt | cut -c 8-)
 }
 
-if [ -n "$DESTINATION_VERSION" ]; then
-    run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
-else
+if [ -z "$DESTINATION_VERSION" ]; then
     get_cluster_version
     run "Getting cluster version $DESTINATION_VERSION"
 fi
@@ -220,4 +217,5 @@ fi
 run "Performing Pre-Upgrade checks" precheck_upgrade
 [ $DRY_RUN -eq 1 ] && exit 0
 run "Upgrading bootstrap" upgrade_bootstrap
+run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the upgrade" launch_upgrade

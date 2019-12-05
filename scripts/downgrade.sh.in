@@ -234,8 +234,7 @@ patch_kubesystem_namespace() {
         "kube-system" \
         kind=Namespace apiVersion=v1 \
         patch="{'metadata': {'annotations': \
-        {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}" \
-        test="$DRY_RUN"
+        {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}"
 }
 
 get_cluster_version() {
@@ -245,14 +244,13 @@ get_cluster_version() {
 
 # Main
 _init
-if [ -n "$DESTINATION_VERSION" ]; then
-    run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
-else
+if [ -z "$DESTINATION_VERSION" ]; then
     get_cluster_version
     run "Getting cluster version $DESTINATION_VERSION"
 fi
 
 run "Performing Pre-Downgrade checks" precheck_downgrade
 [ $DRY_RUN -eq 1 ] && exit 0
+run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the downgrade" launch_downgrade
 run "Downgrading bootstrap" downgrade_bootstrap
