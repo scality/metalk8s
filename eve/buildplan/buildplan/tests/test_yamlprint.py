@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-import yamlprint
+from buildplan import yamlprint
 
 
 def test_dump_ordered_dict():

@@ -8,7 +8,7 @@ import collections
 import enum
 import operator
 
-import yamlprint
+from buildplan import yamlprint
 
 class Project:
     """The root document rendered in `eve/main.yml` file."""

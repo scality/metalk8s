@@ -1,8 +1,8 @@
 """Generate the Eve YAML description of build plan for MetalK8s."""
 import sys
 
-import core
-import yamlprint
+from buildplan import core
+from buildplan import yamlprint
 
 
 def build_project():

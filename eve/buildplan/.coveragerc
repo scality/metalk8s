@@ -1,6 +1,0 @@
-[run]
-omit=
-    # don't cover test files
-    eve/buildplan/test_*.py
-    # don't cover the main buildplan generation
-    eve/buildplan/main.py

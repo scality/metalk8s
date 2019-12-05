@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import pytest
 
-import core
+from buildplan import core
 
 
 class TestDump:
