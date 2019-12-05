@@ -159,6 +159,21 @@ stages:
         command: mkdir -p build_status/build_status/lint && echo 'FAILED' > build_status/build_status/lint/.final_status
         haltOnFailure: true
         hideStepIf: true
+    - Git:
+        name: git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+    - ShellCommand:
+        name: Setup proxy cache
+        command: curl -s http://proxy-cache/setup.sh | sudo sh && . /usr/local/bin/use_scality_proxy_cache
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run all linting targets
+        command: ./doit.sh lint
+        haltOnFailure: false
+        usePTY: true
     - ShellCommand:
         name: Set build status to 'SUCCESSFUL' for lint
         command: mkdir -p build_status/build_status/lint && echo 'SUCCESSFUL' > build_status/build_status/lint/.final_status
