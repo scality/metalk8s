@@ -2,6 +2,7 @@
 import sys
 
 from buildplan import core
+from buildplan import dsl
 from buildplan import yamlprint
 
 
@@ -12,6 +13,7 @@ def build_project():
 
 
 # Stages {{{
+@dsl.WithStatus(is_root=True)
 def pre_merge():
     return core.Stage(
         name="pre-merge",
@@ -44,6 +46,7 @@ def pre_merge():
     )
 
 
+@dsl.WithStatus()
 def build():
     return core.Stage(
         name="build",
@@ -59,6 +62,7 @@ def build():
     )
 
 
+@dsl.WithStatus()
 def docs():
     return core.Stage(
         name="docs",
@@ -76,6 +80,7 @@ def docs():
     )
 
 
+@dsl.WithStatus()
 def lint():
     return core.Stage(
         name="lint",
@@ -91,6 +96,7 @@ def lint():
     )
 
 
+@dsl.WithStatus()
 def single_node():
     return core.Stage(
         name="single-node",
@@ -103,6 +109,7 @@ def single_node():
     )
 
 
+@dsl.WithStatus()
 def multiple_nodes():
     return core.Stage(
         name="multiple-nodes",

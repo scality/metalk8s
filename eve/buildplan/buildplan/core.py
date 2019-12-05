@@ -10,6 +10,7 @@ import operator
 
 from buildplan import yamlprint
 
+
 class Project:
     """The root document rendered in `eve/main.yml` file."""
 
@@ -184,15 +185,20 @@ class OpenStackWorker(Worker):
 class Step(metaclass=abc.ABCMeta):
     """A step describes what needs to be executed within a stage."""
 
-    # TODO: consider changing halt_on_failure default value to True
-    def __init__(self, name, halt_on_failure=None, always_run=None):
+    OPTIONAL_ARGS = {
+        "halt_on_failure": "haltOnFailure",
+        "always_run": "alwaysRun",
+        "do_step_if": "doStepIf",
+        "hide_step_if": "hideStepIf",
+    }
+
+    def __init__(self, name, **kwargs):
         self._name = name
-        self._halt_on_failure = halt_on_failure
-        self._always_run = always_run
+
+        for key in self.OPTIONAL_ARGS:
+            setattr(self, key, kwargs.get(key))
 
     name = property(operator.attrgetter("_name"))
-    halt_on_failure = property(operator.attrgetter("_halt_on_failure"))
-    always_run = property(operator.attrgetter("_always_run"))
 
     @property
     def stages(self):
@@ -210,10 +216,10 @@ class Step(metaclass=abc.ABCMeta):
     def dump(self):
         args = [("name", self.name), *self.dump_arguments()]
 
-        if self.halt_on_failure is not None:
-            args.append(("haltOnFailure", self.halt_on_failure))
-        if self.always_run is not None:
-            args.append(("alwaysRun", self.always_run))
+        for key, name in self.OPTIONAL_ARGS.items():
+            value = getattr(self, key)
+            if value is not None:
+                args.append((name, value))
 
         return {self.step_name: collections.OrderedDict(args)}
 
@@ -245,5 +251,41 @@ class SetPropertyFromCommand(Step):
 
     def dump_arguments(self):
         return [("property", self.property_name), ("command", self.command)]
+
+
+class ShellCommand(Step):
+    OPTIONAL_ARGS = dict(
+        Step.OPTIONAL_ARGS,
+        env="env",
+        workdir="workdir",
+        sigterm_time="sigtermTime",
+        use_pty="usePTY",
+    )
+
+    def __init__(self, name, command, **kwargs):
+        super(ShellCommand, self).__init__(name, **kwargs)
+        self._command = command
+
+    command = property(operator.attrgetter("_command"))
+
+    def dump_arguments(self):
+        return [("command", self.command)]
+
+
+class Upload(Step):
+    OPTIONAL_ARGS = dict(
+        Step.OPTIONAL_ARGS,
+        urls="urls",
+    )
+    def __init__(self, name, source, **kwargs):
+        super(Upload, self).__init__(name, **kwargs)
+        self._source = source
+
+    source = property(operator.attrgetter("_source"))
+
+    def dump_arguments(self):
+        args = [("source", self.source)]
+        return args
+
 
 # }}}

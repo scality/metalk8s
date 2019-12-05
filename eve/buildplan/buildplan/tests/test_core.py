@@ -5,170 +5,32 @@ import pytest
 from buildplan import core
 
 
-class TestDump:
-    SINGLE_STAGE = core.Stage(
-        name="single-stage", worker=core.LocalWorker(), steps=[]
-    )
-    TRIGGER_STEP = core.TriggerStages(
-        "Trigger another stage", stages=[SINGLE_STAGE]
-    )
-    MULTI_STAGES = core.Stage(
-        name="multi-stages", worker=core.LocalWorker(), steps=[TRIGGER_STEP]
-    )
-    PRE_MERGE = core.Stage(
-        name="pre-merge",
-        worker=core.LocalWorker(),
-        steps=[],
-        branches=["development/*", "example-branch"],
-    )
+SINGLE_STAGE = core.Stage(
+    name="single-stage", worker=core.LocalWorker(), steps=[]
+)
+TRIGGER_STEP = core.TriggerStages(
+    "Trigger another stage", stages=[SINGLE_STAGE]
+)
+MULTI_STAGES = core.Stage(
+    name="multi-stages", worker=core.LocalWorker(), steps=[TRIGGER_STEP]
+)
+PRE_MERGE = core.Stage(
+    name="pre-merge",
+    worker=core.LocalWorker(),
+    steps=[],
+    branches=["development/*", "example-branch"],
+)
 
-    @pytest.mark.parametrize(
-        "stage,expected",
-        (
-            (
-                None,
-                OrderedDict(
-                    [
-                        ("version", "0.2"),
-                        ("branches", OrderedDict()),
-                        ("stages", OrderedDict()),
-                    ]
-                ),
-            ),
-            (
-                SINGLE_STAGE,
-                OrderedDict(
-                    [
-                        ("version", "0.2"),
-                        ("branches", OrderedDict()),
-                        (
-                            "stages",
-                            OrderedDict(
-                                [(SINGLE_STAGE.name, SINGLE_STAGE.dump())]
-                            ),
-                        ),
-                    ]
-                ),
-            ),
-            (
-                PRE_MERGE,
-                OrderedDict(
-                    [
-                        ("version", "0.2"),
-                        (
-                            "branches",
-                            OrderedDict(
-                                [
-                                    (
-                                        "development/*, example-branch",
-                                        {"stage": PRE_MERGE.name},
-                                    )
-                                ]
-                            ),
-                        ),
-                        (
-                            "stages",
-                            OrderedDict([(PRE_MERGE.name, PRE_MERGE.dump())]),
-                        ),
-                    ]
-                ),
-            ),
-            (
-                MULTI_STAGES,
-                OrderedDict(
-                    [
-                        ("version", "0.2"),
-                        ("branches", OrderedDict()),
-                        (
-                            "stages",
-                            OrderedDict(
-                                [
-                                    (MULTI_STAGES.name, MULTI_STAGES.dump()),
-                                    (SINGLE_STAGE.name, SINGLE_STAGE.dump()),
-                                ]
-                            ),
-                        ),
-                    ]
-                ),
-            ),
-        ),
-        ids=("empty", "no-branch", "single-stage", "multi-stages"),
-    )
-    def test_project(self, stage, expected):
-        project = core.Project()
 
-        if stage is not None:
-            project.add(stage)
-
-        assert project.dump() == expected
-
-    @pytest.mark.parametrize(
-        "stage,expected",
-        (
-            (
-                SINGLE_STAGE,
-                OrderedDict(
-                    [("worker", core.LocalWorker().dump()), ("steps", [])]
-                ),
-            ),
-            (
-                MULTI_STAGES,
-                OrderedDict(
-                    [
-                        ("worker", core.LocalWorker().dump()),
-                        ("steps", [TRIGGER_STEP.dump()]),
-                    ]
-                ),
-            ),
-        ),
-        ids=("single", "multiple"),
-    )
-    def test_stage(self, stage, expected):
+class TestStage:
+    def test_dump(self):
+        stage = core.Stage(
+            name="single-stage", worker=core.LocalWorker(), steps=[]
+        )
+        expected = OrderedDict(
+            [("worker", core.LocalWorker().dump()), ("steps", [])]
+        )
         assert stage.dump() == expected
-
-    @pytest.mark.parametrize(
-        "step,expected",
-        (
-            (
-                TRIGGER_STEP,
-                OrderedDict(
-                    [
-                        (
-                            "TriggerStages",
-                            OrderedDict(
-                                [
-                                    ("name", "Trigger another stage"),
-                                    ("stage_names", ["single-stage"]),
-                                ]
-                            ),
-                        )
-                    ]
-                ),
-            ),
-            (
-                core.SetPropertyFromCommand(
-                    name="_name", property_name="_property", command="_command"
-                ),
-                OrderedDict(
-                    [
-                        (
-                            "SetPropertyFromCommand",
-                            OrderedDict(
-                                [
-                                    ("name", "_name"),
-                                    ("property", "_property"),
-                                    ("command", "_command"),
-                                ]
-                            ),
-                        )
-                    ]
-                ),
-            ),
-        ),
-        ids=("trigger-stages", "set-property"),
-    )
-    def test_step(self, step, expected):
-        assert step.dump() == expected
 
     @pytest.mark.parametrize(
         "worker,expected",
@@ -253,6 +115,86 @@ class TestDump:
 
 
 class TestProject:
+    @pytest.mark.parametrize(
+        "stage,expected",
+        (
+            (
+                None,
+                OrderedDict(
+                    [
+                        ("version", "0.2"),
+                        ("branches", OrderedDict()),
+                        ("stages", OrderedDict()),
+                    ]
+                ),
+            ),
+            (
+                SINGLE_STAGE,
+                OrderedDict(
+                    [
+                        ("version", "0.2"),
+                        ("branches", OrderedDict()),
+                        (
+                            "stages",
+                            OrderedDict(
+                                [(SINGLE_STAGE.name, SINGLE_STAGE.dump())]
+                            ),
+                        ),
+                    ]
+                ),
+            ),
+            (
+                PRE_MERGE,
+                OrderedDict(
+                    [
+                        ("version", "0.2"),
+                        (
+                            "branches",
+                            OrderedDict(
+                                [
+                                    (
+                                        "development/*, example-branch",
+                                        {"stage": PRE_MERGE.name},
+                                    )
+                                ]
+                            ),
+                        ),
+                        (
+                            "stages",
+                            OrderedDict([(PRE_MERGE.name, PRE_MERGE.dump())]),
+                        ),
+                    ]
+                ),
+            ),
+            (
+                MULTI_STAGES,
+                OrderedDict(
+                    [
+                        ("version", "0.2"),
+                        ("branches", OrderedDict()),
+                        (
+                            "stages",
+                            OrderedDict(
+                                [
+                                    (MULTI_STAGES.name, MULTI_STAGES.dump()),
+                                    (SINGLE_STAGE.name, SINGLE_STAGE.dump()),
+                                ]
+                            ),
+                        ),
+                    ]
+                ),
+            ),
+        ),
+        ids=("empty", "no-branch", "single-stage", "multi-stages"),
+    )
+    def test_dump(self, stage, expected):
+        project = core.Project()
+
+        if stage is not None:
+            project.add(stage)
+
+        assert project.dump() == expected
+
     def test_add(self):
         project = core.Project()
 
@@ -285,33 +227,24 @@ class TestStep:
         step = self.ExampleStep("Example")
         assert step.stages == []
 
-        # TriggerStages overrides this property
-        stages = [
-            core.Stage(name="example-1", worker=core.LocalWorker(), steps=[]),
-            core.Stage(name="example-2", worker=core.LocalWorker(), steps=[]),
-        ]
-        step = core.TriggerStages("Example", stages)
-        assert step.stages == stages
-
     @pytest.mark.parametrize(
-        "value,present",
-        ((None, False), (False, True), (True, True)),
-        ids=("unset", "true", "false"),
+        "key,name,value,present",
+        (
+            ("halt_on_failure", "haltOnFailure", None, False),
+            ("halt_on_failure", "haltOnFailure", True, True),
+            ("unknown", "whatever", "some-value", False),
+        ),
+        ids=("known-set", "known-unset", "unknown"),
     )
-    @pytest.mark.parametrize(
-        "arg,key",
-        (("halt_on_failure", "haltOnFailure"), ("always_run", "alwaysRun")),
-        ids=("halt_on_failure", "always_run"),
-    )
-    def test_common_args(self, arg, key, value, present):
-        step = self.ExampleStep("Example", **{arg: value})
+    def test_optional_args(self, key, name, value, present):
+        step = self.ExampleStep("Example", **{key: value})
         result = step.dump()[step.step_name]
 
         if present:
-            assert key in result
-            assert result[key] == value
+            assert name in result
+            assert result[name] == value
         else:
-            assert key not in result
+            assert name not in result
 
     def test_step_name_inheritance(self):
         # We don't set the step name in our Step sub-class
@@ -326,3 +259,69 @@ class TestStep:
         step = CustomNameStep("Example")
         assert step.step_name == "Custom"
         assert "Custom" in step.dump()
+
+
+class TestSetPropertyFromCommand:
+    def test_dump(self):
+        step = core.SetPropertyFromCommand(
+            name="_name", property_name="_property", command="_command"
+        )
+        expected = {
+            "SetPropertyFromCommand": OrderedDict(
+                [
+                    ("name", "_name"),
+                    ("property", "_property"),
+                    ("command", "_command"),
+                ]
+            ),
+        }
+        assert step.dump() == expected
+
+
+class TestShellCommand:
+    @pytest.mark.parametrize(
+        "kwargs,expected_args",
+        (({}, []), (dict(sigterm_time=600), [("sigtermTime", 600)]),),
+    )
+    def test_dump(self, kwargs, expected_args):
+        step = core.ShellCommand(name="_name", command="_command", **kwargs)
+        expected = {
+            "ShellCommand": OrderedDict(
+                [("name", "_name"), ("command", "_command"), *expected_args,]
+            ),
+        }
+        assert step.dump() == expected
+
+
+class TestTriggerStages:
+    def test_dump(self):
+        step = core.TriggerStages(
+            "Trigger another stage", stages=[SINGLE_STAGE]
+        )
+        expected = {
+            "TriggerStages": OrderedDict(
+                [
+                    ("name", "Trigger another stage"),
+                    ("stage_names", [SINGLE_STAGE.name]),
+                ]
+            ),
+        }
+        assert step.dump() == expected
+
+    def test_stages(self):
+        # TriggerStages overrides the `stages` property
+        stages = [
+            core.Stage(name="example-1", worker=core.LocalWorker(), steps=[]),
+            core.Stage(name="example-2", worker=core.LocalWorker(), steps=[]),
+        ]
+        step = core.TriggerStages("Example", stages)
+        assert step.stages == stages
+
+
+class TestUpload:
+    def test_dump(self):
+        step = core.Upload("_name", source="_source",)
+        expected = {
+            "Upload": OrderedDict([("name", "_name"), ("source", "_source"),]),
+        }
+        assert step.dump() == expected
