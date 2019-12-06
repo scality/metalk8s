@@ -299,6 +299,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/internal/preflight/mandatory.sls'),
     Path('salt/metalk8s/internal/preflight/recommended.sls'),
 
+    Path('salt/metalk8s/internal/upgrade/apiserver-cert-localhost.sls'),
+
     Path('salt/metalk8s/sreport/init.sls'),
     Path('salt/metalk8s/sreport/installed.sls'),
 

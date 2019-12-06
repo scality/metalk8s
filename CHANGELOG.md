@@ -2,6 +2,12 @@
 
 ## Release 2.4.2 (in development)
 
+### Features added
+
+- [#2103](https://github.com/scality/metalk8s/issues/2103) - Add a host-local
+`nginx` on every node to provide highly-available and load-balanced access to
+`kube-apiserver` (PR [#2106](https://github.com/scality/metalk8s/pull/2106))
+
 ## Release 2.4.1
 
 ### Features added

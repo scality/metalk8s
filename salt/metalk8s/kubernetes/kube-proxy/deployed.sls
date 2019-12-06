@@ -3,7 +3,7 @@
 
 {%- set image = build_image_name("kube-proxy") -%}
 
-{%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
+{%- set apiserver = 'https://127.0.0.1:7443' %}
 
 Deploy kube-proxy (ServiceAccount):
   metalk8s_kubernetes.object_present:
