@@ -124,6 +124,18 @@ Delete old nginx ingress deployment:
     - require_in:
       - salt: Sync module on salt-master
 
+Delete old nginx ingress control plane controller daemon set:
+  metalk8s_kubernetes.object_absent:
+    - name: nginx-ingress-control-plane-controller
+    - namespace: metalk8s-ingress
+    - kind: DaemonSet
+    - apiVersion: extensions/v1beta1
+    - wait:
+        attempts: 10
+        sleep: 10
+    - require_in:
+      - salt: Sync module on salt-master
+
 {%- endif %}
 
 Sync module on salt-master:
