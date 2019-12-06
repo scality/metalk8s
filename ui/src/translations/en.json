@@ -130,5 +130,6 @@
   "enter_label_value": "Enter label value",
   "value": "Value",
   "prometheus_not_available":"Prometheus is not available.",
-  "please_refer_to":"Please refer to"
+  "please_refer_to":"Please refer to",
+  "import_solution_hint":"You should import a solution to prepare your environment"
 }
