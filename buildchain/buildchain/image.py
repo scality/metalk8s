@@ -219,21 +219,6 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
         build_args={'SALT_VERSION': versions.SALT_VERSION},
     ),
     _local_image(
-        name='keepalived',
-        build_args={
-            'KEEPALIVED_IMAGE': versions.CENTOS_BASE_IMAGE,
-            'KEEPALIVED_IMAGE_SHA256': versions.CENTOS_BASE_IMAGE_SHA256,
-            'KEEPALIVED_VERSION': versions.KEEPALIVED_VERSION,
-            'BUILD_DATE': datetime.datetime.now(datetime.timezone.utc)
-                            .astimezone()
-                            .isoformat(),
-            'VCS_REF': constants.GIT_REF or '<unknown>',
-            'VERSION': versions.CONTAINER_IMAGES_MAP['keepalived'].version,
-            'METALK8S_VERSION': versions.VERSION,
-        },
-        file_dep=[constants.ROOT/'images'/'keepalived'/'entrypoint.sh'],
-    ),
-    _local_image(
         name='metalk8s-ui',
         dockerfile=constants.ROOT/'ui'/'Dockerfile',
         build_args={

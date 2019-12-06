@@ -57,19 +57,6 @@ which can vary from one installation to another:
 
   Default: ``10.96.0.0/12``
 
-- VIP for the ``kube-apiserver`` and ``keepalived`` toggle
-
-  Used as the address of ``kube-apiserver`` where required. This can either be
-  a VIP managed by custom load-balancing/high-availability infrastructure, in
-  which case the ``keepalived`` toggle must be off, or one which our platform
-  will manage using ``keepalived``.
-
-  If ``keepalived`` is enabled, this VIP must sit in a control plane CIDR
-  shared by all control plane nodes.
-
-  Note: we run ``keepalived`` in unicast mode, which is an extension of classic
-  VRRP, but removes the need for multicast support on the network.
-
 Firewall
 ^^^^^^^^
 
@@ -81,7 +68,6 @@ We assume SSH access is not blocked by the host-based firewall.
 
 These services include:
 
-- VRRP if ``keepalived`` is enabled on control-plane nodes
 - HTTPS on the bootstrap node, for ``nginx`` fronting the OCI registry and
   serving the yum repository
 - ``salt-master`` on the bootstrap node

@@ -26,7 +26,6 @@ Create kube-apiserver private key:
     'kubernetes.default.svc.cluster.local',
     kubernetes_service_ip,
     grains['metalk8s']['control_plane_ip'],
-    pillar['metalk8s']['api_server']['host'],
     '127.0.0.1',
 ]
 %}

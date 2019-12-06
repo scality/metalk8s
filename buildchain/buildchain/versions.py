@@ -19,7 +19,6 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 
 CALICO_VERSION     : str = '3.8.2'
 K8S_VERSION        : str = '1.15.5'
-KEEPALIVED_VERSION : str = '1.3.5-16.el7'
 SALT_VERSION       : str = '2018.3.4'
 
 def load_version_information() -> None:
@@ -67,7 +66,6 @@ NODEJS_IMAGE_VERSION : str = '10.16.0'
 # This should be reset to 1 when the service exposed by the container changes
 # version.
 SALT_MASTER_BUILD_ID = 1
-KEEPALIVED_BUILD_ID  = 1
 
 
 def _version_prefix(version: str, prefix: str = 'v') -> str:
@@ -184,13 +182,6 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         digest='sha256:ed3ec0597c2d5b7102a7f62c661a23d8e4b34d910693fc23fd40bfb1d9404dcf',
     ),
     # Local images
-    Image(
-        name='keepalived',
-        version='{version}-{build_id}'.format(
-            version=KEEPALIVED_VERSION, build_id=KEEPALIVED_BUILD_ID
-        ),
-        digest=None,
-    ),
     Image(
         name='metalk8s-ui',
         version=VERSION,
