@@ -1,14 +1,18 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Route, Redirect } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 
-const PrivateRoute = props => {
-  const authenticated = useSelector(state => !!state.login.user);
-  const { component, ...rest } = props;
-  if (authenticated) {
-    return <Route {...rest} component={component} />;
+const PrivateRoute = ({ component, ...rest }) => {
+  const authenticated = useSelector(state => !!state.oidc.user);
+  const userManager = useSelector(state => state.config.userManager);
+
+  if (!authenticated) {
+    userManager.signinRedirect({
+      data: { path: window.location.pathname },
+    }); //Go to Dex Login Form if not authenticated
+    return null;
   } else {
-    return <Redirect to="/login" />;
+    return <Route {...rest} component={component} />;
   }
 };
 

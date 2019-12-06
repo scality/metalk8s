@@ -20,9 +20,19 @@
 {%- elif bootstrap_id == grains.id %}
   {%- set bootstrap_control_plane_ip = grains.metalk8s.control_plane_ip %}
 {%- else %}
-  {%- set bootstrap_control_plane_ip = salt['mine.get'](bootstrap_id,
-   'control_plane_ip')[bootstrap_id]
-  %}
+  {%- if opts.get('__role') == 'minion' %}
+    {%- set bootstrap_control_plane_ip = salt.mine.get(
+        tgt=bootstrap_id,
+        fun='control_plane_ip')[bootstrap_id]
+    %}
+  {%- else %}
+    {#- If we are on the master then use the runner #}
+    {%- set bootstrap_control_plane_ip = salt.saltutil.runner(
+        'mine.get',
+        tgt=bootstrap_id,
+        fun='control_plane_ip')[bootstrap_id]
+    %}
+  {%- endif %}
 {%- endif %}
 
 {%- set ingress_control_plane = bootstrap_control_plane_ip ~ ':8443' %}

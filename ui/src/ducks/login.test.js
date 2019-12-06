@@ -1,125 +1,74 @@
+// TO BE FIXED: Mock import { store } from '../index' in 'config.js'
+// Otherwise we have some issues to initialize reducers for testing
+jest.mock('../index.js', () => {
+  return {
+    store: 'store',
+  };
+});
+
 import { call, put } from 'redux-saga/effects';
 import history from '../history';
 import {
-  authenticate,
-  HASH_KEY,
-  AUTHENTICATION_FAILED,
-  AUTHENTICATION_SUCCESS,
-  SET_USER_INFO_LOADED,
-  fetchUserInfo,
+  SALT_AUTHENTICATION_FAILED,
+  SALT_AUTHENTICATION_SUCCESS,
   authenticateSaltApi,
 } from './login';
-import * as ApiK8s from '../services/k8s/api';
-
-it('authentication failed', () => {
-  const payload = { username: 'admin', password: 'admin' };
-  const gen = authenticate({ payload });
-  const token = btoa('admin:admin');
-
-  expect(gen.next().value).toEqual(call(ApiK8s.authenticate, token));
-
-  const result = {
-    error: {
-      response: {
-        data: 'Unauthorized',
-      },
-    },
-  };
-  expect(gen.next(result).value).toEqual(
-    put({
-      type: AUTHENTICATION_FAILED,
-      payload: 'Unauthorized',
-    }),
-  );
-  expect(gen.next(result).value).toEqual(
-    put({
-      type: SET_USER_INFO_LOADED,
-      payload: true,
-    }),
-  );
-});
-
-it('authentication success', () => {
-  const payload = { username: 'admin', password: 'admin' };
-  const gen = authenticate({ payload });
-  const token = btoa('admin:admin');
-
-  expect(gen.next().value).toEqual(call(ApiK8s.authenticate, token));
-
-  const result = {
-    data: {},
-  };
-
-  expect(gen.next(result).value.type).toEqual('SELECT');
-  expect(gen.next({ url: 'localhost:8080' }).value).toEqual(
-    call(ApiK8s.updateApiServerConfig, 'localhost:8080', token),
-  );
-
-  expect(gen.next().value).toEqual(
-    put({
-      type: AUTHENTICATION_SUCCESS,
-      payload: {
-        username: 'admin',
-        password: 'admin',
-        token,
-      },
-    }),
-  );
-
-  expect(gen.next().value).toEqual(call(authenticateSaltApi, true));
-
-  expect(gen.next(result).value).toEqual(
-    put({
-      type: SET_USER_INFO_LOADED,
-      payload: true,
-    }),
-  );
-});
-
-it('fetchUserInfo success', () => {
-  localStorage.setItem(HASH_KEY, 'dGVzdDp0ZXN0');
-
-  const gen = fetchUserInfo();
+import { CONNECT_SALT_API } from './app/nodes';
+import * as ApiSalt from '../services/salt/api';
+import { LOGOUT } from './config';
+it('Salt authentication success', () => {
+  ApiSalt.initialize('url');
+  const gen = authenticateSaltApi();
   expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next({ url: 'localhost:8080' }).value).toEqual(
-    call(ApiK8s.updateApiServerConfig, 'localhost:8080', 'dGVzdDp0ZXN0'),
-  );
+  const api = { url_salt: 'url_salt' };
+  expect(gen.next(api).value.type).toEqual('SELECT');
+  const user = {
+    name: 'carlito',
+  };
+  expect(gen.next(user).value).toEqual(call(ApiSalt.authenticate, user));
 
   const result = {
-    data: {},
+    return: [{ token: 'abc' }],
   };
+
+  expect(gen.next(result).value).toEqual(
+    call(ApiSalt.getClient().setHeaders, {
+      'X-Auth-Token': 'abc',
+    }),
+  );
   expect(gen.next(result).value).toEqual(
     put({
-      type: AUTHENTICATION_SUCCESS,
+      type: SALT_AUTHENTICATION_SUCCESS,
+      payload: result,
+    }),
+  );
+  expect(gen.next(result).value).toEqual(
+    put({
+      type: CONNECT_SALT_API,
       payload: {
-        username: 'test',
-        password: 'test',
-        token: 'dGVzdDp0ZXN0',
+        url: 'url_salt',
+        token: 'abc',
       },
     }),
   );
-
-  expect(gen.next().value).toEqual(call(authenticateSaltApi));
-
-  expect(gen.next(result).value).toEqual(
-    put({
-      type: SET_USER_INFO_LOADED,
-      payload: true,
-    }),
-  );
-  localStorage.removeItem(HASH_KEY);
+  expect(gen.next().done).toEqual(true);
 });
 
-it('fetchUserInfo failed', () => {
-  localStorage.removeItem(HASH_KEY);
+it('Salt authentication failed', () => {
+  ApiSalt.initialize('url');
+  const gen = authenticateSaltApi();
+  expect(gen.next().value.type).toEqual('SELECT');
+  const api = { url_salt: 'url_salt' };
+  expect(gen.next(api).value.type).toEqual('SELECT');
+  const user = {
+    name: 'carlito',
+  };
+  expect(gen.next(user).value).toEqual(call(ApiSalt.authenticate, user));
 
-  const gen = fetchUserInfo();
-  expect(gen.next().value).toEqual(call(history.push, '/login'));
+  const result = {
+    error: 'error',
+  };
 
-  expect(gen.next().value).toEqual(
-    put({
-      type: SET_USER_INFO_LOADED,
-      payload: true,
-    }),
-  );
+  expect(gen.next(result).value).toEqual(put({ type: LOGOUT }));
+  expect(gen.next().done).toEqual(true);
 });

@@ -6,7 +6,7 @@ import {
   takeLatest,
   takeEvery,
   select,
-  delay
+  delay,
 } from 'redux-saga/effects';
 import { eventChannel, END } from 'redux-saga';
 
@@ -15,7 +15,7 @@ import * as ApiSalt from '../../services/salt/api';
 import history from '../../history';
 import {
   addNotificationSuccessAction,
-  addNotificationErrorAction
+  addNotificationErrorAction,
 } from './notifications';
 
 import { intl } from '../../translations/IntlGlobalProvider';
@@ -28,13 +28,13 @@ import {
   addJobLocalStorage,
   removeJobLocalStorage,
   getJobStatusFromEventRet,
-  getNameFromJidLocalStorage
+  getNameFromJidLocalStorage,
 } from '../../services/salt/utils';
 
 import {
   API_STATUS_READY,
   API_STATUS_NOT_READY,
-  API_STATUS_UNKNOWN
+  API_STATUS_UNKNOWN,
 } from '../../constants.js';
 
 // Actions
@@ -48,7 +48,7 @@ const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
-const CONNECT_SALT_API = 'CONNECT_SALT_API';
+export const CONNECT_SALT_API = 'CONNECT_SALT_API';
 const UPDATE_EVENTS = 'UPDATE_EVENTS';
 const SUBSCRIBE_DEPLOY_EVENTS = 'SUBSCRIBE_DEPLOY_EVENTS';
 
@@ -72,13 +72,13 @@ export const roleTaintMap = [
     taints: [
       {
         key: ROLE_BOOTSTRAP,
-        effect: 'NoSchedule'
+        effect: 'NoSchedule',
       },
       {
         key: ROLE_INFRA,
-        effect: 'NoSchedule'
-      }
-    ]
+        effect: 'NoSchedule',
+      },
+    ],
   },
   {
     control_plane: true,
@@ -89,20 +89,20 @@ export const roleTaintMap = [
     taints: [
       {
         key: ROLE_MASTER,
-        effect: 'NoSchedule'
+        effect: 'NoSchedule',
       },
       {
         key: ROLE_ETCD,
-        effect: 'NoSchedule'
-      }
-    ]
+        effect: 'NoSchedule',
+      },
+    ],
   },
   {
     control_plane: false,
     workload_plane: true,
     bootstrap: false,
     infra: false,
-    roles: [ROLE_NODE]
+    roles: [ROLE_NODE],
   },
   {
     control_plane: false,
@@ -113,16 +113,16 @@ export const roleTaintMap = [
     taints: [
       {
         key: ROLE_INFRA,
-        effect: 'NoSchedule'
-      }
-    ]
+        effect: 'NoSchedule',
+      },
+    ],
   },
   {
     control_plane: true,
     workload_plane: true,
     bootstrap: false,
     infra: false,
-    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_NODE]
+    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_NODE],
   },
   {
     control_plane: true,
@@ -133,24 +133,24 @@ export const roleTaintMap = [
     taints: [
       {
         key: ROLE_INFRA,
-        effect: 'NoSchedule'
-      }
-    ]
+        effect: 'NoSchedule',
+      },
+    ],
   },
   {
     control_plane: false,
     workload_plane: true,
     bootstrap: false,
     infra: true,
-    roles: [ROLE_INFRA]
+    roles: [ROLE_INFRA],
   },
   {
     control_plane: true,
     workload_plane: true,
     bootstrap: false,
     infra: true,
-    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_INFRA]
-  }
+    roles: [ROLE_ETCD, ROLE_MASTER, ROLE_INFRA],
+  },
 ];
 
 // Reducer
@@ -159,7 +159,7 @@ const defaultState = {
   list: [],
   events: {},
   isRefreshing: false,
-  isLoading: false
+  isLoading: false,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -169,12 +169,12 @@ export default function reducer(state = defaultState, action = {}) {
     case CREATE_NODE_FAILED:
       return {
         ...state,
-        errors: { create_node: action.payload }
+        errors: { create_node: action.payload },
       };
     case CLEAR_CREATE_NODE_ERROR:
       return {
         ...state,
-        errors: { create_node: null }
+        errors: { create_node: null },
       };
     case UPDATE_EVENTS:
       return {
@@ -183,8 +183,8 @@ export default function reducer(state = defaultState, action = {}) {
           ...state.events,
           [action.payload.jid]: state.events[action.payload.jid]
             ? [...state.events[action.payload.jid], action.payload.msg]
-            : [action.payload.msg]
-        }
+            : [action.payload.msg],
+        },
       };
     default:
       return state;
@@ -246,8 +246,8 @@ export function* fetchClusterVersion() {
           ? result.body.items[0].metadata.annotations[
               CLUSTER_VERSION_ANNOTATION
             ]
-          : ''
-      })
+          : '',
+      }),
     );
   }
 }
@@ -255,8 +255,8 @@ export function* fetchClusterVersion() {
 export function* fetchNodes() {
   yield put(
     updateNodesAction({
-      isLoading: true
-    })
+      isLoading: true,
+    }),
   );
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
@@ -277,7 +277,7 @@ export function* fetchNodes() {
 
           const roleTaintMatched = roleTaintMap.find(item => {
             const nodeRoles = Object.keys(node.metadata.labels).filter(role =>
-              role.includes(ROLE_PREFIX)
+              role.includes(ROLE_PREFIX),
             );
 
             return (
@@ -285,7 +285,7 @@ export function* fetchNodes() {
               nodeRoles.every(role => item.roles.includes(role)) &&
               (item.taints && node.spec.taints
                 ? node.spec.taints.every(taint =>
-                    item.taints.find(item => item.key === taint.key)
+                    item.taints.find(item => item.key === taint.key),
                   )
                 : item.taints === node.spec.taints)
             );
@@ -316,23 +316,23 @@ export function* fetchNodes() {
             bootstrap: roleTaintMatched && roleTaintMatched.bootstrap,
             infra: roleTaintMatched && roleTaintMatched.infra,
             jid: getJidFromNameLocalStorage(node.metadata.name),
-            roles: rolesLabel.join(' / ')
+            roles: rolesLabel.join(' / '),
           };
-        })
-      })
+        }),
+      }),
     );
 
     yield all(
       result.body.items.map(node => {
         return call(getJobStatus, node.metadata.name);
-      })
+      }),
     );
   }
   yield delay(1000); // To make sur that the loader is visible for at least 1s
   yield put(
     updateNodesAction({
-      isLoading: false
-    })
+      isLoading: false,
+    }),
   );
   return result;
 }
@@ -343,7 +343,7 @@ export function* getJobStatus(name) {
     const result = yield call(ApiSalt.printJob, jid);
     const status = {
       name,
-      ...getJobStatusFromPrintJob(result, jid)
+      ...getJobStatusFromPrintJob(result, jid),
     };
     if (status.completed) {
       yield put(removeJobAction(jid));
@@ -352,8 +352,8 @@ export function* getJobStatus(name) {
         yield put(
           addNotificationSuccessAction({
             title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_success', { name })
-          })
+            message: intl.translate('node_deployment_success', { name }),
+          }),
         );
       } else {
         yield put(
@@ -362,9 +362,9 @@ export function* getJobStatus(name) {
             message: intl.translate('node_deployment_failed', {
               name,
               step: status.step_id,
-              reason: status.comment
-            })
-          })
+              reason: status.comment,
+            }),
+          }),
         );
       }
     }
@@ -377,24 +377,24 @@ export function* createNode({ payload }) {
     metadata: {
       name: payload.name,
       labels: {
-        'metalk8s.scality.com/version': clusterVersion
+        'metalk8s.scality.com/version': clusterVersion,
       },
       annotations: {
         'metalk8s.scality.com/ssh-user': payload.ssh_user,
         'metalk8s.scality.com/ssh-port': payload.ssh_port,
         'metalk8s.scality.com/ssh-host': payload.hostName_ip,
         'metalk8s.scality.com/ssh-key-path': payload.ssh_key_path,
-        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString()
-      }
+        'metalk8s.scality.com/ssh-sudo': payload.sudo_required.toString(),
+      },
     },
-    spec: {}
+    spec: {},
   };
 
   const roleTaintMatched = roleTaintMap.find(
     role =>
       role.control_plane === payload.control_plane &&
       role.workload_plane === payload.workload_plane &&
-      role.infra === payload.infra
+      role.infra === payload.infra,
   );
 
   if (roleTaintMatched) {
@@ -410,19 +410,21 @@ export function* createNode({ payload }) {
     yield put(
       addNotificationSuccessAction({
         title: intl.translate('node_creation'),
-        message: intl.translate('node_creation_success', { name: payload.name })
-      })
+        message: intl.translate('node_creation_success', {
+          name: payload.name,
+        }),
+      }),
     );
   } else {
     yield put({
       type: CREATE_NODE_FAILED,
-      payload: result.error.body.message
+      payload: result.error.body.message,
     });
     yield put(
       addNotificationErrorAction({
         title: intl.translate('node_creation'),
-        message: intl.translate('node_creation_failed', { name: payload.name })
-      })
+        message: intl.translate('node_creation_failed', { name: payload.name }),
+      }),
     );
   }
 }
@@ -434,8 +436,8 @@ export function* deployNode({ payload }) {
     yield put(
       addNotificationErrorAction({
         title: intl.translate('node_deployment'),
-        message: result.error
-      })
+        message: result.error,
+      }),
     );
   } else {
     yield call(subscribeDeployEvents, { jid: result.return[0].jid });
@@ -461,7 +463,7 @@ export function subSSE(eventSrc) {
 
 export function* sseSagas({ payload }) {
   const eventSrc = new EventSource(
-    `${payload.url}/events?token=${payload.token}`
+    `${payload.url}/events?token=${payload.token}`,
   );
   const channel = yield call(subSSE, eventSrc);
   while (true) {
@@ -475,7 +477,7 @@ export function* sseSagas({ payload }) {
           return call(updateDeployEvents, jid, data);
         }
         return data;
-      })
+      }),
     );
   }
 }
@@ -486,7 +488,7 @@ export function* updateDeployEvents(jid, msg) {
     const name = getNameFromJidLocalStorage(jid);
     const status = {
       name,
-      ...getJobStatusFromEventRet(msg.data)
+      ...getJobStatusFromEventRet(msg.data),
     };
     if (status.completed) {
       yield put(removeJobAction(jid));
@@ -495,8 +497,8 @@ export function* updateDeployEvents(jid, msg) {
         yield put(
           addNotificationSuccessAction({
             title: intl.translate('node_deployment'),
-            message: intl.translate('node_deployment_success', { name })
-          })
+            message: intl.translate('node_deployment_success', { name }),
+          }),
         );
       } else {
         yield put(
@@ -505,9 +507,9 @@ export function* updateDeployEvents(jid, msg) {
             message: intl.translate('node_deployment_failed', {
               name,
               step: status.step_id,
-              reason: status.comment
-            })
-          })
+              reason: status.comment,
+            }),
+          }),
         );
       }
     }
@@ -524,8 +526,8 @@ export function* subscribeDeployEvents({ jid }) {
 export function* refreshNodes() {
   yield put(
     updateNodesAction({
-      isRefreshing: true
-    })
+      isRefreshing: true,
+    }),
   );
 
   const result = yield call(fetchNodes);
@@ -541,8 +543,8 @@ export function* refreshNodes() {
 export function* stopRefreshNodes() {
   yield put(
     updateNodesAction({
-      isRefreshing: false
-    })
+      isRefreshing: false,
+    }),
   );
 }
 
