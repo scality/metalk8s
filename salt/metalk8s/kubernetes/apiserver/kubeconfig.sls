@@ -4,7 +4,7 @@
 include:
   - metalk8s.internal.m2crypto
 
-{%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
+{%- set apiserver = 'https://' ~ grains['metalk8s']['control_plane_ip'] ~ ':6443' %}
 
 Create kubeconfig file for admin:
   metalk8s_kubeconfig.managed:
