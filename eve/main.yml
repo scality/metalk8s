@@ -61,7 +61,7 @@ stages:
         haltOnFailure: true
         hideStepIf: true
     - Git:
-        name: git pull
+        name: Git pull
         repourl: '%(prop:git_reference)s'
         method: clobber
         retryFetch: true
@@ -116,7 +116,7 @@ stages:
         haltOnFailure: true
         hideStepIf: true
     - Git:
-        name: git pull
+        name: Git pull
         repourl: '%(prop:git_reference)s'
         method: clobber
         retryFetch: true
@@ -167,7 +167,7 @@ stages:
         haltOnFailure: true
         hideStepIf: true
     - Git:
-        name: git pull
+        name: Git pull
         repourl: '%(prop:git_reference)s'
         method: clobber
         retryFetch: true
@@ -208,7 +208,7 @@ stages:
         haltOnFailure: true
         hideStepIf: true
     - Git:
-        name: git pull
+        name: Git pull
         repourl: '%(prop:git_reference)s'
         method: clobber
         retryFetch: true
@@ -249,7 +249,7 @@ stages:
         haltOnFailure: true
     - ShellCommand:
         name: Create bootstrap configuration file
-        command: sudo env ARCHIVE_PATH=$(realpath metalk8s.iso) bash -c 'deploy/scripts/bootstrap-config.sh'
+        command: sudo env ARCHIVE_PATH=$(realpath metalk8s.iso) bash deploy/scripts/bootstrap-config.sh
         haltOnFailure: true
     - ShellCommand:
         name: Start the bootstrap process
@@ -310,7 +310,7 @@ stages:
         haltOnFailure: true
         hideStepIf: true
     - Git:
-        name: git pull
+        name: Git pull
         repourl: '%(prop:git_reference)s'
         method: clobber
         retryFetch: true
@@ -326,6 +326,160 @@ stages:
         command: "mkdir -p ~/.ssh; echo \"%(secret:ssh_pub_keys)s\" >> ~/.ssh/authorized_keys;\
           \ IP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet ([0-9.]+).*$/\\1/p'\
           \ ); echo \"Connect to this worker using:\n    ssh eve@$IP\""
+    - ShellCommand:
+        name: Check if unzip and curl are installed
+        command: if ! unzip -h 2&> /dev/null; then echo "Aborting - unzip not installed
+          and required" >&2; exit 1; fi; if ! curl -h 2&> /dev/null; then echo "Aborting
+          - curl not installed and required" >&2; exit 1; fi
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Download and install Terraform
+        command: curl --retry 5 -O "https://releases.hashicorp.com/terraform/0.12.3/terraform_0.12.3_linux_amd64.zip"
+          && sudo unzip "terraform_0.12.3_linux_amd64.zip" -d /usr/local/sbin/ &&
+          rm -f "terraform_0.12.3_linux_amd64.zip"
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Check that Terraform was installed
+        command: if ! terraform --version 2&> /dev/null; then echo "Aborting - Terraform
+          not installed and required" >&2; exit 1; fi
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Initialize Terraform
+        command: for _ in $(seq 1 12); do terraform init && exit; rm -rf .terraform/;
+          sleep 5; done
+        haltOnFailure: true
+        hideStepIf: true
+        workdir: build/deploy
+    - ShellCommand:
+        name: Validate Terraform deployment description
+        command: terraform validate
+        haltOnFailure: true
+        hideStepIf: true
+        workdir: build/deploy
+    - ShellCommand:
+        name: Spawn OpenStack virtual infrastructure with Terraform
+        command: terraform apply -auto-approve
+        haltOnFailure: true
+        env:
+          OS_AUTH_URL: '%(secret:scality_cloud_auth_url)s'
+          OS_PASSWORD: '%(secret:scality_cloud_password)s'
+          OS_REGION_NAME: '%(secret:scality_cloud_region)s'
+          OS_TENANT_NAME: '%(secret:scality_cloud_tenant_name)s'
+          OS_USERNAME: '%(secret:scality_cloud_username)s'
+          TF_VAR_nodes_count: '2'
+        workdir: build/deploy
+    - ShellCommand:
+        name: Retrieve ISO image checksum
+        command: ssh -F deploy/ssh_config bootstrap 'curl -s -XGET -o "/var/tmp/archives/SHA256SUM"
+          "%(prop:artifacts_private_url)s/SHA256SUM"'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Retrieve ISO image
+        command: ssh -F deploy/ssh_config bootstrap 'bash -c 'for i in {1..20}; do
+          echo "Attempt $i out of 20"; curl -s -XGET -o "/var/tmp/archives/metalk8s.iso"
+          "%(prop:artifacts_private_url)s/metalk8s.iso" && exit; sleep 2; done; echo
+          "Could not retrieve ISO after 20 attempts" >&2; exit 1''
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check ISO image with checksum
+        command: ssh -F deploy/ssh_config bootstrap 'cd /var/tmp/archives && sha256sum
+          -c SHA256SUM'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Create ISO mountpoint
+        command: ssh -F deploy/ssh_config bootstrap 'sudo mkdir -p "/var/tmp/metalk8s"'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Mount ISO image
+        command: ssh -F deploy/ssh_config bootstrap 'sudo mount -o loop "/var/tmp/archives/metalk8s.iso"
+          "/var/tmp/metalk8s"'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Create bootstrap configuration file
+        command: ssh -F deploy/ssh_config bootstrap [[ -f "deploy/scripts/bootstrap-config.sh"
+          ]] || (ssh -F deploy/ssh_config bootstrap 'mkdir -p $(dirname deploy/scripts/bootstrap-config.sh)'
+          && scp -F deploy/ssh_config deploy/scripts/bootstrap-config.sh bootstrap:deploy/scripts/bootstrap-config.sh)
+          && ssh -F deploy/ssh_config bootstrap 'sudo env ARCHIVE_PATH=/var/tmp/archives/metalk8s.iso
+          MINION_ID=bootstrap bash deploy/scripts/bootstrap-config.sh'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Start the bootstrap process
+        command: ssh -F deploy/ssh_config bootstrap [[ -f "/var/tmp/metalk8s/bootstrap.sh"
+          ]] || (ssh -F deploy/ssh_config bootstrap 'mkdir -p $(dirname /var/tmp/metalk8s/bootstrap.sh)'
+          && scp -F deploy/ssh_config /var/tmp/metalk8s/bootstrap.sh bootstrap:/var/tmp/metalk8s/bootstrap.sh)
+          && ssh -F deploy/ssh_config bootstrap 'sudo bash /var/tmp/metalk8s/bootstrap.sh
+          --verbose'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Enable IP-in-IP encapsulation for Calico
+        command: ssh -F deploy/ssh_config bootstrap [[ -f "/home/centos/scripts/enable_ipip.sh"
+          ]] || (ssh -F deploy/ssh_config bootstrap 'mkdir -p $(dirname /home/centos/scripts/enable_ipip.sh)'
+          && scp -F deploy/ssh_config /home/centos/scripts/enable_ipip.sh bootstrap:/home/centos/scripts/enable_ipip.sh)
+          && ssh -F deploy/ssh_config bootstrap 'bash /home/centos/scripts/enable_ipip.sh'
+    - ShellCommand:
+        name: Prepare test sources on bastion
+        command: git checkout "%(prop:branch)s" --quiet && tar cfp - tox.ini VERSION
+          tests/ buildchain/buildchain/versions.py | ssh -F deploy/ssh_config bastion
+          'tar xf -'
+    - ShellCommand:
+        name: Run tests - installation / expansion
+        command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
+          SSH_CONFIG_FILE=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
+          and install"'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run tests - fast
+        command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
+          SSH_CONFIG_FILE=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
+          and post and not slow"'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run tests - slow
+        command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
+          SSH_CONFIG_FILE=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
+          and post and slow"'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Collect logs using sosreport
+        command: ssh -F deploy/ssh_config bootstrap 'sudo sosreport --all-logs -o
+          metalk8s -kmetalk8s.podlogs=True -o containerd -kcontainerd.all=True -kcontainerd.logs=True
+          --batch --tmp-dir /var/tmp && sudo chown eve:eve /var/tmp/sosreport*'
+    - ShellCommand:
+        name: Copy artifacts for 'sosreport/single-multiple-nodes/bootstrap'
+        command: mkdir -p artifacts/sosreport/single-multiple-nodes/bootstrap; for
+          artifact in /var/tmp/sosreport*; do scp -F deploy/ssh_config -r bootstrap:$artifact
+          artifacts/sosreport/single-multiple-nodes/bootstrap; done
+    - ShellCommand:
+        name: Collect logs using sosreport
+        command: ssh -F deploy/ssh_config node1 'sudo sosreport --all-logs -o metalk8s
+          -kmetalk8s.podlogs=True -o containerd -kcontainerd.all=True -kcontainerd.logs=True
+          --batch --tmp-dir /var/tmp && sudo chown eve:eve /var/tmp/sosreport*'
+    - ShellCommand:
+        name: Copy artifacts for 'sosreport/single-multiple-nodes/node1'
+        command: mkdir -p artifacts/sosreport/single-multiple-nodes/node1; for artifact
+          in /var/tmp/sosreport*; do scp -F deploy/ssh_config -r node1:$artifact artifacts/sosreport/single-multiple-nodes/node1;
+          done
+    - ShellCommand:
+        name: Destroy Terraform-deployed infrastructure
+        command: for _ in $(seq 1 3); do terraform destroy -auto-approve && break;
+          done
+        alwaysRun: true
+        env:
+          OS_AUTH_URL: '%(secret:scality_cloud_auth_url)s'
+          OS_PASSWORD: '%(secret:scality_cloud_password)s'
+          OS_REGION_NAME: '%(secret:scality_cloud_region)s'
+          OS_TENANT_NAME: '%(secret:scality_cloud_tenant_name)s'
+          OS_USERNAME: '%(secret:scality_cloud_username)s'
+        workdir: build/deploy
+        sigtermTime: 600
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - sosreport/multiple-nodes
     - ShellCommand:
         name: Set build status to 'SUCCESSFUL' for multiple-nodes
         command: mkdir -p build_status/build_status/multiple-nodes && echo -n 'SUCCESSFUL'

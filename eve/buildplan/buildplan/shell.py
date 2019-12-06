@@ -28,7 +28,7 @@ def _for(values_in, command, var="_"):
         else " ".join(map(str, values_in))
     )
 
-    return _seq('for {var} in {values}', "do {command}", "done").format(
+    return _seq("for {var} in {values}", "do {command}", "done").format(
         var=var, values=values, command=command,
     )
 
@@ -62,7 +62,6 @@ class Shell(core.ShellCommand):
         if sudo:
             command = "sudo " + command
 
-        self._kwargs = kwargs
         super(Shell, self).__init__(name, command, **kwargs)
 
 
@@ -71,6 +70,7 @@ class Bash(Shell):
         self, name, command, *args, inline=False, **kwargs
     ):
         if inline:
+            self._inline, self._script = True, None
             if args:
                 raise ValueError(
                     "Cannot pass positional arguments to `Bash` "
@@ -79,6 +79,7 @@ class Bash(Shell):
             command = "bash -c '{}'".format(command)
 
         else:
+            self._inline, self._script = False, command
             command = _fmt_args("bash", command, *args)
 
         super(Bash, self).__init__(name, command, **kwargs)

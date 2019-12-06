@@ -4,6 +4,7 @@ import sys
 
 from buildplan import core
 from buildplan import dsl
+from buildplan.dsl import remote
 from buildplan import shell
 from buildplan import yamlprint
 
@@ -144,8 +145,20 @@ def single_node():
 
 
 @dsl.WithStatus()
-@dsl.WithSetup([dsl.SetupStep.GIT, dsl.SetupStep.CACHE, dsl.SetupStep.SSH])
+@dsl.WithArtifacts(urls=["sosreport/multiple-nodes"])
+@dsl.WithSetup(
+    [
+        dsl.SetupStep.GIT,
+        dsl.SetupStep.CACHE,
+        dsl.SetupStep.SSH,
+        dsl.SetupStep.CHECK_DEPS,
+    ]
+)
+@dsl.WithTerraform(tf_vars={"nodes_count": "2"})
 def multiple_nodes():
+    # Use a different mountpoint to check that we handle it
+    custom_mountpoint = pathlib.Path("/var/tmp/metalk8s")
+
     return core.Stage(
         name="multiple-nodes",
         worker=core.OpenStackWorker(
@@ -153,7 +166,47 @@ def multiple_nodes():
             flavor=core.OpenStackWorker.Flavor.MEDIUM,
             image=core.OpenStackWorker.Image.CENTOS7,
         ),
-        steps=[],
+        steps=[
+            *dsl.on_remote(host="bootstrap")(
+                *get_iso_from_artifacts(destination="/var/tmp/archives",),
+                *prepare_bootstrap(
+                    iso="/var/tmp/archives/metalk8s.iso",
+                    mountpoint=custom_mountpoint,
+                    minion_id="bootstrap",  # Don't use hostname
+                ),
+                install_bootstrap(mountpoint=custom_mountpoint),
+                enable_ipip(),
+            ),
+            *dsl.on_remote(host="bastion")(
+                *run_tests(
+                    {
+                        "installation / expansion": "install",
+                        "fast": "post and not slow",
+                        "slow": "post and slow",
+                    },
+                    common_filter="ci and multinodes",
+                    iso_mountpoint=custom_mountpoint,
+                    ssh_config="/home/centos/ssh_config",
+                ),
+            ),
+            # TODO: mutualize, maybe have a way to generate for loops, or just
+            # a single one and only accept single steps for
+            # multi-host `on_remote`...
+            *dsl.on_remote(host="bootstrap")(
+                collect_sosreport(),
+                *dsl.copy_artifacts(
+                    ["/var/tmp/sosreport*"],
+                    destination="sosreport/single-multiple-nodes/bootstrap",
+                ),
+            ),
+            *dsl.on_remote(host="node1")(
+                collect_sosreport(),
+                *dsl.copy_artifacts(
+                    ["/var/tmp/sosreport*"],
+                    destination="sosreport/single-multiple-nodes/node1",
+                ),
+            ),
+        ],
     )
 
 
@@ -297,7 +350,6 @@ def prepare_bootstrap(
         env=bootstrap_config_env,
         wrap_env=True,
         sudo=True,
-        inline=True,
         halt_on_failure=True,
     )
 
@@ -320,12 +372,33 @@ def run_tests(
     iso_mountpoint=DEFAULT_MOUNTPOINT,
     ssh_config=None,
 ):
-    yield shell.Shell(
+    prepare_sources = shell.Shell(
         "Checkout required version before running tests",
         'git checkout "{}" --quiet'.format(branch),
         halt_on_failure=True,
         hide_step_if=True,
     )
+
+    def remote_prepare_sources(ssh_config, host):
+        return shell.Shell(
+            "Prepare test sources on {}".format(host),
+            command=shell._and(
+                prepare_sources.command,
+                shell._fmt_args(
+                    shell._fmt_args(
+                        "tar cfp -",
+                        "tox.ini VERSION tests/",
+                        "buildchain/buildchain/versions.py",
+                    ),
+                    remote._ssh(ssh_config, host, "'tar xf -'"),
+                    join_with=" | ",
+                ),
+            ),
+        )
+
+    prepare_sources.as_remote = remote_prepare_sources
+
+    yield prepare_sources
 
     env = {"ISO_MOUNTPOINT": iso_mountpoint}
     if mode != "local":
@@ -343,11 +416,11 @@ def run_tests(
                 "-e",
                 "tests-local" if mode == "local" else "tests",
                 '-- -m "{}"'.format(final_filter) if final_filter else None,
-        ),
-        env=env,
+            ),
+            env=env,
             wrap_env=True,
-        halt_on_failure=True,
-    )
+            halt_on_failure=True,
+        )
 
 
 def collect_sosreport(owner="eve", group="eve"):
@@ -362,6 +435,13 @@ def collect_sosreport(owner="eve", group="eve"):
             ),
             "sudo chown {}:{} /var/tmp/sosreport*".format(owner, group),
         ),
+    )
+
+
+def enable_ipip():
+    return shell.Bash(
+        "Enable IP-in-IP encapsulation for Calico",
+        command="/home/centos/scripts/enable_ipip.sh",
     )
 
 
