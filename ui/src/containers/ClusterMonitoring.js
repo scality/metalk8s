@@ -40,6 +40,7 @@ const PageContainer = styled.div`
 `;
 
 const TableContainer = styled.div`
+  height: 100%;
   flex-grow: 1;
 
   .sc-table-column-cell-container-severity {
