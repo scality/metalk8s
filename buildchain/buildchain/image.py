@@ -117,8 +117,11 @@ def _remote_image(
     if name in REMOTE_NAMES:
         kwargs['remote_name'] = REMOTE_NAMES[name]
 
-    if name in SAVE_AS_TAR:
+    if name in SAVE_AS_TAR or name in SAVE_AS_TAR_AND_IMAGE:
         kwargs['save_as_tar'] = True
+
+    if name in SAVE_AS_TAR_AND_IMAGE:
+        kwargs['tar_only'] = False
 
     return targets.RemoteImage(**kwargs)
 
@@ -204,7 +207,9 @@ REMOTE_NAMES : Dict[str, str] = {
     'nginx-ingress-defaultbackend-amd64': 'defaultbackend-amd64',
 }
 
-SAVE_AS_TAR : FrozenSet[str] = frozenset(('nginx', 'pause'))
+SAVE_AS_TAR : FrozenSet[str] = frozenset(['pause'])
+
+SAVE_AS_TAR_AND_IMAGE : FrozenSet[str] = frozenset(['nginx'])
 
 for repo, images in IMGS_PER_REPOSITORY.items():
     for image_name in images:
