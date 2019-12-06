@@ -217,3 +217,7 @@
 {% set nginx_ingress = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('nginx-ingress')) %}
+
+{% set proxies = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('proxies')) %}
