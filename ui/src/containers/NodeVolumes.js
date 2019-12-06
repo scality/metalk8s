@@ -39,10 +39,7 @@ import {
 const VolumeTable = styled.div`
   flex-grow: 1;
   margin-top: ${padding.small};
-  /*solve the tooltip display issue*/
-  .ReactVirtualized__Grid {
-    overflow: visible !important;
-  }
+  /* solve the tooltip display issue */
   .sc-table-column-cell-action {
     overflow: visible !important;
   }
