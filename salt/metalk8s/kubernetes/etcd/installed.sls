@@ -29,7 +29,7 @@ Create etcd database directory:
 Create local etcd Pod manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/etcd.yaml
-    - source: salt://{{ slspath }}/files/manifest.yaml
+    - source: salt://{{ slspath }}/files/manifest.yaml.j2
     - config_files:
         - /etc/kubernetes/pki/etcd/ca.crt
         - /etc/kubernetes/pki/etcd/peer.crt
