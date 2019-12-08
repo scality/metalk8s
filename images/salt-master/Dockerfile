@@ -26,7 +26,7 @@ gpgkey=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/%s/
  && yum install -y python2-kubernetes salt-master salt-api salt-ssh openssh-clients \
  && yum install -y python-pip \
  && yum clean all \
- && pip install etcd3 \
+ && pip install "etcd3 != 0.11.0" \
  && chmod +x /tini
 
 # salt-master, salt-api
