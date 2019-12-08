@@ -80,7 +80,7 @@ Set up default basic auth htpasswd:
 Create kube-apiserver Pod manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
-    - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
+    - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml.j2
     - config_files:
         - {{ encryption_k8s_path }}
         - /etc/kubernetes/pki/apiserver.crt

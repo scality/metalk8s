@@ -278,13 +278,13 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/coredns/deployed.sls'),
     Path('salt/metalk8s/kubernetes/coredns/files/coredns-deployment.yaml.j2'),
 
-    Path('salt/metalk8s/kubernetes/files/control-plane-manifest.yaml'),
+    Path('salt/metalk8s/kubernetes/files/control-plane-manifest.yaml.j2'),
 
     Path('salt/metalk8s/kubernetes/etcd/certs/healthcheck-client.sls'),
     Path('salt/metalk8s/kubernetes/etcd/certs/init.sls'),
     Path('salt/metalk8s/kubernetes/etcd/certs/peer.sls'),
     Path('salt/metalk8s/kubernetes/etcd/certs/server.sls'),
-    Path('salt/metalk8s/kubernetes/etcd/files/manifest.yaml'),
+    Path('salt/metalk8s/kubernetes/etcd/files/manifest.yaml.j2'),
     Path('salt/metalk8s/kubernetes/etcd/healthy.sls'),
     Path('salt/metalk8s/kubernetes/etcd/init.sls'),
     Path('salt/metalk8s/kubernetes/etcd/installed.sls'),
