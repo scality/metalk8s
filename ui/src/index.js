@@ -18,7 +18,7 @@ const composeEnhancers =
 
 const sagaMiddleware = createSagaMiddleware();
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
-const store = createStore(reducer, enhancer);
+export const store = createStore(reducer, enhancer);
 
 sagaMiddleware.run(sagas);
 
@@ -28,7 +28,7 @@ ReactDOM.render(
       <App />
     </Router>
   </Provider>,
-  document.getElementById('root')
+  document.getElementById('root'),
 );
 
 // If you want your app to work offline and load faster, you can change

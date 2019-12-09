@@ -3,8 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { useRouteMatch, useHistory } from 'react-router';
-import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 import { Switch } from 'react-router-dom';
+import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 
 import NodeCreateForm from './NodeCreateForm';
 import NodeList from './NodeList';
@@ -15,11 +15,10 @@ import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
 import About from './About';
 import PrivateRoute from './PrivateRoute';
-import { logoutAction } from '../ducks/login';
 import { toggleSideBarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
-import { updateLanguageAction } from '../ducks/config';
+import { updateLanguageAction, logoutAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import VolumeInformation from './VolumeInformation';
@@ -31,39 +30,27 @@ import {
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
 
 const Layout = props => {
-  const user = useSelector(state => state.login.user);
+  const user = useSelector(state => state.oidc.user);
   const sidebar = useSelector(state => state.app.layout.sidebar);
-  const theme = useSelector(state => state.config.theme);
+  const { theme, language } = useSelector(state => state.config);
   const notifications = useSelector(state => state.app.notifications.list);
-  const language = useSelector(state => state.config.language);
   const solutions = useSelector(state => state.app.solutions.solutions);
   const dispatch = useDispatch();
-  const logout = () => dispatch(logoutAction());
+
+  const logout = event => {
+    event.preventDefault();
+    dispatch(logoutAction());
+  };
+
   const removeNotification = uid => dispatch(removeNotificationAction(uid));
   const updateLanguage = language => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const { intl } = props;
   const history = useHistory();
-
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
-
-  const help = [
-    {
-      label: intl.messages.about,
-      onClick: () => {
-        history.push('/about');
-      },
-    },
-  ];
-
-  const userConfig = {
-    name: user && user.username,
-    actions: [{ label: intl.messages.log_out, onClick: logout }],
-  };
-
   const sidebarConfig = {
     expanded: sidebar.expanded,
     actions: [
@@ -143,14 +130,51 @@ const Layout = props => {
     },
   ];
 
+  const filterLanguage = languages.filter(lang => lang.name !== language);
+
+  const rightActions = [
+    {
+      type: 'dropdown',
+      text: language,
+      icon: <i className="fas fa-globe" />,
+      items: filterLanguage,
+    },
+    {
+      type: 'dropdown',
+      icon: <i className="fas fa-question-circle" />,
+      items: [
+        {
+          label: intl.messages.about,
+          onClick: () => {
+            history.push('/about');
+          },
+        },
+      ],
+    },
+    {
+      type: 'dropdown',
+      text: user?.profile?.name,
+      icon: <i className="fas fa-user" />,
+      items: [
+        { label: intl.messages.log_out, onClick: event => logout(event) },
+      ],
+    },
+  ];
+
+  const applicationsAction = {
+    type: 'dropdown',
+    icon: <i className="fas fa-th" />,
+    items: applications,
+  };
+
+  if (applications && applications.length) {
+    rightActions.splice(1, 0, applicationsAction);
+  }
+
   const navbar = {
     onToggleClick: toggleSidebar,
-    toggleVisible: true,
     productName: intl.messages.product_name,
-    applications,
-    help,
-    user: user && userConfig,
-    languages,
+    rightActions,
     logo: (
       <img
         alt="logo"

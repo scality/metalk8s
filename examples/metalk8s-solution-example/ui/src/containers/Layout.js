@@ -47,22 +47,6 @@ const Layout = props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const applications = [];
-
-  const help = [
-    {
-      label: intl.messages.about,
-      onClick: () => {
-        history.push('/about');
-      }
-    }
-  ];
-
-  const userConfig = {
-    name: user && user.username,
-    actions: [{ label: intl.messages.log_out, onClick: logout }]
-  };
-
   const sidebarConfig = {
     expanded: sidebar.expanded,
     actions: [
@@ -87,13 +71,31 @@ const Layout = props => {
     ]
   };
 
+  const rightActions = [
+    {
+      type: 'dropdown',
+      icon: <i className="fas fa-question-circle" />,
+      items: [
+        {
+          label: intl.messages.about,
+          onClick: () => {
+            history.push('/about');
+          }
+        }
+      ]
+    },
+    {
+      type: 'dropdown',
+      text: user && user.username,
+      icon: <i className="fas fa-user" />,
+      items: [{ label: intl.messages.log_out, onClick: logout }]
+    }
+  ];
+
   const navbar = {
     onToggleClick: toggleSidebar,
-    toggleVisible: true,
     productName: intl.messages.product_name,
-    applications,
-    help,
-    user: user && userConfig,
+    rightActions,
     logo: (
       <img
         alt="logo"
