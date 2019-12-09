@@ -6,7 +6,7 @@ CONTROL_PLANE_IP=$(ip a show eth0 | grep -Po "inet \K[\d.]+")
 # The version of Cypress we install below requires GTK3 to be available
 test -n "${IN_CI}" && sudo yum install -y gtk3
 
-npm install --no-save --quiet --no-package-lock cypress@3.5.0 cypress-cucumber-preprocessor@1.12.0
+npm install --no-save --quiet --no-package-lock cypress@3.5.0 cypress-cucumber-preprocessor@1.12.0 cypress-wait-until@1.6.0
 
 test -n "${IN_CI}" && \
     sudo chown root:root /home/eve/.cache/Cypress/3.5.0/Cypress/chrome-sandbox && \
