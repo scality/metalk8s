@@ -96,6 +96,17 @@ upgrade_bootstrap () {
         --retcode-passthrough
 }
 
+launch_pre_upgrade () {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
+        saltenv="metalk8s-$DESTINATION_VERSION"
+
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.upgrade.pre \
+        saltenv="metalk8s-$DESTINATION_VERSION"
+}
+
+
 launch_upgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
@@ -149,4 +160,5 @@ run "Performing Pre-Upgrade checks" precheck_upgrade
 [ $DRY_RUN -eq 1 ] && exit 0
 run "Upgrading bootstrap" upgrade_bootstrap
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
+run "Launching the pre-upgrade" launch_pre_upgrade
 run "Launching the upgrade" launch_upgrade
