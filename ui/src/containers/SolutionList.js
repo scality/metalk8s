@@ -5,11 +5,18 @@ import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import { injectIntl } from 'react-intl';
-import { Table, Button, Breadcrumb, Modal, Input } from '@scality/core-ui';
+import {
+  Table,
+  Button,
+  Breadcrumb,
+  Modal,
+  Input,
+  Loader,
+} from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
 import { sortSelector } from '../services/utils';
-import Loader from '../components/Loader';
+
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
   BreadcrumbContainer,
@@ -386,7 +393,7 @@ const SolutionsList = props => {
             }}
           </Formik>
         ) : (
-          <Loader />
+          <Loader size="large">{intl.messages.import_solution_hint}</Loader>
         )}
       </Modal>
     </>
