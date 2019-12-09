@@ -3,6 +3,10 @@ variable "ssh_key_path" {
   default = "~/.ssh/terraform.pub"
 }
 
+locals {
+  bastion_ssh_key = "${path.module}/${local.prefix}-bastion-ssh-key"
+}
+
 resource "openstack_compute_keypair_v2" "local_ssh_key" {
   name       = local.prefix
   public_key = file(var.ssh_key_path)
@@ -44,5 +48,12 @@ resource "null_resource" "ssh_config" {
         nodes         = local.nodes
       }
     )
+  }
+}
+
+# Generate Bastion SSH keypair
+resource "null_resource" "bastion_ssh_keys" {
+  provisioner "local-exec" {
+    command  = "ssh-keygen -t rsa -b 4096 -N '' -f ${local.bastion_ssh_key}"
   }
 }
