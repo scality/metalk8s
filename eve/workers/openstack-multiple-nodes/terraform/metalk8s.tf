@@ -58,3 +58,34 @@ resource "null_resource" "metalk8s_run_bootstrap" {
     ]
   }
 }
+
+variable "metalk8s_provision_volumes" {
+  type    = bool
+  default = false
+}
+
+resource "null_resource" "metalk8s_provision_volumes" {
+  count = "${var.metalk8s_provision_volumes ? 1 : 0}"
+
+  connection {
+    host        = openstack_compute_instance_v2.bootstrap.access_ip_v4
+    type        = "ssh"
+    user        = "centos"
+    private_key = file("~/.ssh/terraform")
+  }
+
+  depends_on = [
+    null_resource.metalk8s_run_bootstrap
+  ]
+
+  provisioner "file" {
+    source      = "${path.module}/../../../create-volumes.sh"
+    destination = "/home/centos/create-volumes.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo PRODUCT_TXT=${var.metalk8s_iso_mountpoint}/product.txt PRODUCT_MOUNT=${var.metalk8s_iso_mountpoint} bash create-volumes.sh",
+    ]
+  }
+}
