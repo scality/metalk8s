@@ -13,9 +13,9 @@ export function initialize(apiUrl) {
 export function authenticate(user) {
   return saltApiClient.post('/login', {
     eauth: 'kubernetes_rbac',
-    username: user.username,
-    token: user.token,
-    token_type: 'Basic'
+    username: user.profile.email,
+    token: user.id_token,
+    token_type: user.token_type,
   });
 }
 
@@ -26,8 +26,8 @@ export async function deployNode(node, version) {
     arg: ['metalk8s.orchestrate.deploy_node'],
     kwarg: {
       saltenv: `metalk8s-${version}`,
-      pillar: { orchestrate: { node_name: node } }
-    }
+      pillar: { orchestrate: { node_name: node } },
+    },
   });
 }
 
@@ -35,6 +35,6 @@ export async function printJob(jid) {
   return saltApiClient.post('/', {
     client: 'runner',
     fun: 'jobs.print_job',
-    arg: [jid]
+    arg: [jid],
   });
 }

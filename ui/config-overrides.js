@@ -17,7 +17,7 @@ const setWebpackPerformance = () => config => {
     hints: 'error',
     // ~586 KiB for production
     // ~1953 KiB for development because flow increase the size of assets.
-    maxAssetSize: process.env.NODE_ENV === 'production' ? 600000 : 2000000,
+    maxAssetSize: process.env.NODE_ENV === 'production' ? 700000 : 2000000,
     assetFilter: assetFilename => {
       return (
         !assetFilename.endsWith('.map.gz') && assetFilename.endsWith('.gz')
