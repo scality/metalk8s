@@ -23,14 +23,7 @@ partition larger than 40 GB.
 
 Proxies
 -------
-For nodes operating behind a proxy, add the following lines to each cluster
-member's :file:`/etc/environment` file:
-
-.. code-block:: shell
-
-   http_proxy=http://user;pass@<HTTP proxy IP address>:<port>
-   https_proxy=http://user;pass@<HTTPS proxy IP address>:<port>
-   no_proxy=localhost,127.0.0.1,<local IP of each node>
+For nodes operating behind a proxy, see :ref:`Bootstrap Configuration`
 
 Provisioning
 ------------
