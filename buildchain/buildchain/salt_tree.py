@@ -520,7 +520,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         version=versions.CONTAINER_IMAGES_MAP['pause'].version,
         digest=versions.CONTAINER_IMAGES_MAP['pause'].digest,
         repository=constants.GOOGLE_REPOSITORY,
-        save_as_tar=True,
+        save_as=[targets.SaveAsTar()],
         # pylint:disable=line-too-long
         destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
     ),
