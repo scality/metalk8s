@@ -34,7 +34,7 @@ import datetime as dt
 import socket
 import subprocess
 from pathlib import Path
-from typing import Iterator, Tuple
+from typing import Iterator, List, Tuple, Union
 
 import doit  # type: ignore
 
@@ -177,7 +177,7 @@ def task__iso_build() -> types.TaskDict:
     """Create the ISO from the files in ISO_ROOT."""
     def mkisofs() -> None:
         """Create an ISO file (delete on error)."""
-        cmd = [
+        cmd : List[Union[str, Path]] = [
             config.ExtCommand.MKISOFS.value, '-output',  ISO_FILE,
             '-quiet',
             '-rock',
