@@ -46,45 +46,14 @@ perform the following procedures:
 Administering MetalK8s GUI, Kubernetes API and Salt API
 *******************************************************
 
-During installation, MetalK8s configures the Kubernetes API to accept Basic
-authentication, with default credentials ``admin`` / ``admin``.
+During installation, MetalK8s configures the Kubernetes API to accept
+authentication via OpenID Connect(OIDC).
 
 Services exposed by MetalK8s, such as
 :ref:`its GUI <quickstart-services-admin-ui>` or
 :ref:`Salt API <quickstart-services-salt>`, rely on the Kubernetes API for
-authenticating their users. As such, changing the credentials of a
-Kubernetes API user will also change the credentials required to
-connect to either one of these services.
+authenticating their users.
 
-Managing Kubernetes API username and password
----------------------------------------------
+.. todo::
 
-  .. warning::
-
-     The procedures mentioned below must be carried out on every control-plane
-     :term:`Node`, or more specifically, any Node bearing the
-     ``node-role.kubernetes.io/master`` label.
-
-#. Edit the credentials file located at ``/etc/kubernetes/htpasswd``, replacing
-   the username and/or password fields as below:
-
-   .. code-block:: shell
-
-      <password-in-clear>,<username-in-clear>,123,"system:masters"
-
-#. Force a restart of the Kubernetes API server:
-
-   .. code-block:: shell
-
-      $ crictl stop \
-          $(crictl ps -q --label io.kubernetes.pod.namespace=kube-system \
-                         --label io.kubernetes.container.name=kube-apiserver \
-                         --state Running)
-
-#. Access a service (for example, MetalK8s GUI) and authenticate yourself
-   using the new Account credentials.
-
-   .. note::
-
-      Upon changing the username and/or password, a fresh logout then login is
-      required for accessing the MetalK8s GUI.
+    - Define how to create and administer users.
