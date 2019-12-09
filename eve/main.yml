@@ -12,6 +12,31 @@ stages:
         command: mkdir -p build_status/build_status && echo 'FAILED' > build_status/build_status/.final_status
         haltOnFailure: true
         hideStepIf: true
+    - Git:
+        name: Git pull
+        repourl: '%(prop:git_reference)s'
+        method: clobber
+        retryFetch: true
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Compute stages to debug
+        command: bash eve/scripts/mark-for-debug.sh
+        haltOnFailure: true
+        hideStepIf: true
+        env:
+          DEBUG_PROPERTY: '%(prop:debug)s'
+          DEBUG_STAGES: single-node multiple-nodes
+    - SetPropertyFromCommand:
+        name: Mark stage 'single-node' for debugging
+        property: run_debug_single_node
+        command: bash -c '. ./.debug_stages && echo ${DEBUG_single_node:-false}'
+        hideStepIf: true
+    - SetPropertyFromCommand:
+        name: Mark stage 'multiple-nodes' for debugging
+        property: run_debug_multiple_nodes
+        command: bash -c '. ./.debug_stages && echo ${DEBUG_multiple_nodes:-false}'
+        hideStepIf: true
     - TriggerStages:
         name: Trigger build, docs, and lint stages
         stage_names:
@@ -277,6 +302,12 @@ stages:
         name: Copy artifacts for 'sosreport/single-node'
         command: mkdir -p artifacts/sosreport/single-node; for artifact in /var/tmp/sosreport*;
           do cp -r "$artifact" artifacts/sosreport/single-node; done
+    - ShellCommand:
+        name: Debug step - wait before allowing resource destruction
+        command: echo "Waiting 3600 seconds" && sleep 3600
+        alwaysRun: true
+        doStepIf: '%(prop:run_debug_single_node)s'
+        timeout: '3600'
     - Upload:
         name: Upload artifacts
         source: *id002
@@ -458,6 +489,12 @@ stages:
         command: mkdir -p artifacts/sosreport/single-multiple-nodes/node1; for artifact
           in /var/tmp/sosreport*; do scp -F deploy/ssh_config -r node1:$artifact artifacts/sosreport/single-multiple-nodes/node1;
           done
+    - ShellCommand:
+        name: Debug step - wait before allowing resource destruction
+        command: echo "Waiting 3600 seconds" && sleep 3600
+        alwaysRun: true
+        doStepIf: '%(prop:run_debug_multiple_nodes)s'
+        timeout: '3600'
     - ShellCommand:
         name: Destroy Terraform-deployed infrastructure
         command: for _ in $(seq 1 3); do terraform destroy -auto-approve && break;

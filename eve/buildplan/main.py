@@ -17,6 +17,7 @@ def build_project():
 
 # Stages {{{
 @dsl.WithStatus(is_root=True)
+@dsl.WithSetup([dsl.SetupStep.GIT])
 def pre_merge():
     return core.Stage(
         name="pre-merge",
@@ -34,6 +35,7 @@ def pre_merge():
             "release/*",
         ],
         steps=[
+            *dsl.set_debug_stage_properties("single-node", "multiple-nodes"),
             core.TriggerStages(
                 "Trigger build, docs, and lint stages",
                 stages=[build(), docs(), lint()],
@@ -119,6 +121,7 @@ def lint():
 @dsl.WithStatus()
 @dsl.WithArtifacts(urls=["sosreport/single-node"])
 @dsl.WithSetup([dsl.SetupStep.GIT, dsl.SetupStep.CACHE, dsl.SetupStep.SSH])
+@dsl.WithDebug()
 def single_node():
     return core.Stage(
         name="single-node",
@@ -155,6 +158,7 @@ def single_node():
     ]
 )
 @dsl.WithTerraform(tf_vars={"nodes_count": "2"})
+@dsl.WithDebug()
 def multiple_nodes():
     # Use a different mountpoint to check that we handle it
     custom_mountpoint = pathlib.Path("/var/tmp/metalk8s")

@@ -260,6 +260,7 @@ class ShellCommand(Step):
         workdir="workdir",
         sigterm_time="sigtermTime",
         use_pty="usePTY",
+        timeout="timeout",
     )
 
     def __init__(self, name, command, **kwargs):
@@ -273,10 +274,8 @@ class ShellCommand(Step):
 
 
 class Upload(Step):
-    OPTIONAL_ARGS = dict(
-        Step.OPTIONAL_ARGS,
-        urls="urls",
-    )
+    OPTIONAL_ARGS = dict(Step.OPTIONAL_ARGS, urls="urls")
+
     def __init__(self, name, source, **kwargs):
         super(Upload, self).__init__(name, **kwargs)
         self._source = source
