@@ -14,3 +14,17 @@ from buildchain.targets.remote_image import RemoteImage
 from buildchain.targets.repository import Repository
 from buildchain.targets.serialize import SerializedData
 from buildchain.targets.template import TemplateFile
+
+# For mypy, see `--no-implicit-reexport` documentation.
+__all__ = [
+    'Target', 'AtomicTarget', 'CompositeTarget',
+    'Sha256Sum',
+    'Mkdir',
+    'FileTree',
+    'LocalImage',
+    'Package',
+    'RemoteImage',
+    'Repository',
+    'SerializedData',
+    'TemplateFile',
+]
