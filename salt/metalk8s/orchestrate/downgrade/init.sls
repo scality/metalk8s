@@ -78,6 +78,12 @@ Deploy node {{ node }}:
           {#- Do not drain if we are in single node cluster #}
           skip_draining: True
           {%- endif %}
+        metalk8s:
+          nodes:
+            {{ node }}:
+              # Skip `etcd` role as we take care of etcd cluster after
+              skip_roles:
+                - etcd
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
