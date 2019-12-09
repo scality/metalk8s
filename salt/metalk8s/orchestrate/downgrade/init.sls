@@ -39,11 +39,6 @@ Wait for pillar refresh to complete:
 Skip node {{ node }}, already in {{ node_version }} older than {{ dest_version }}:
   test.succeed_without_changes
 
-  {%- elif 'bootstrap' in pillar.metalk8s.nodes[node].roles %}
-
-Skip node {{ node }}, bootstrap node downgrade should be done later:
-  test.succeed_without_changes
-
   {%- else %}
 
 Wait for API server to be available on {{ node }}:
