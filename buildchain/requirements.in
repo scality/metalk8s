@@ -1,2 +1,2 @@
 doit ~= 0.31.1
-docker ~= 3.7.2
+docker ~= 4.1.0

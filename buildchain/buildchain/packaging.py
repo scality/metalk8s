@@ -34,7 +34,6 @@ from typing import (
 import doit  # type: ignore
 
 from buildchain import builder
-from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
 from buildchain import docker_command
@@ -401,7 +400,7 @@ DEB_TO_BUILD : Dict[str, Tuple[targets.DEBPackage, ...]] = {
         # SOS report custom plugins.
         _deb_package(
             name='metalk8s-sosreport',
-            sources=config.ROOT/'packages/common/metalk8s-sosreport',
+            sources=constants.ROOT/'packages/common/metalk8s-sosreport',
         ),
         _deb_package(
             name='calico-cni-plugin',
