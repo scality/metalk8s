@@ -131,5 +131,9 @@
   "value": "Value",
   "prometheus_not_available":"Prometheus is not available.",
   "please_refer_to":"Please refer to",
-  "redirecting": "Redirecting…"
+  "redirecting": "Redirecting…",
+  "preferences": "Preferences",
+  "language": "Language",
+  "theme": "Theme",
+  "save": "Save"
 }
