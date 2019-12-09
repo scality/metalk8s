@@ -16,7 +16,7 @@ import ClusterMonitoring from './ClusterMonitoring';
 import About from './About';
 import PrivateRoute from './PrivateRoute';
 import { toggleSideBarAction } from '../ducks/app/layout';
-
+import Preferences from './Preferences';
 import { removeNotificationAction } from '../ducks/app/notifications';
 import { updateLanguageAction, logoutAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
@@ -135,27 +135,21 @@ const Layout = props => {
   const rightActions = [
     {
       type: 'dropdown',
-      text: language,
-      icon: <i className="fas fa-globe" />,
-      items: filterLanguage,
-    },
-    {
-      type: 'dropdown',
-      icon: <i className="fas fa-question-circle" />,
+      text: user?.profile?.name,
+      icon: <i className="fas fa-user" />,
       items: [
+        {
+          label: intl.messages.preferences,
+          onClick: () => {
+            history.push('/preferences');
+          },
+        },
         {
           label: intl.messages.about,
           onClick: () => {
             history.push('/about');
           },
         },
-      ],
-    },
-    {
-      type: 'dropdown',
-      text: user?.profile?.name,
-      icon: <i className="fas fa-user" />,
-      items: [
         { label: intl.messages.log_out, onClick: event => logout(event) },
       ],
     },
@@ -214,6 +208,7 @@ const Layout = props => {
             component={EnvironmentCreationForm}
           />
           <PrivateRoute exact path="/about" component={About} />
+          <PrivateRoute exact path="/preferences" component={Preferences} />
           <PrivateRoute exact path="/" component={ClusterMonitoring} />
         </Switch>
       </CoreUILayout>
