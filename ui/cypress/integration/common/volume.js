@@ -52,12 +52,22 @@ Then(
 );
 
 Then(
-  'I fill out the create volume form with SparseLoopDevice volume type and ckeck if the the volume I created is displayed on the volume list',
-  () => {
+  'I fill out the create volume form with SparseLoopDevice volume type and ckeck if the volume is created correctly',
+  function() {
+    cy.route('GET', '/api/kubernetes/api/v1/persistentvolumes').as(
+      'getPersistentVolumes',
+    );
     const volumeNameSparseLoopDevice = `volume-${new Date().getTime()}`;
     const volumeCapacity = Cypress.env('volume_capacity');
+    const volume_label_name = Cypress.env('volume_label_name');
+    const volume_label_value = Cypress.env('volume_label_value');
 
     cy.get('input[name=name]').type(volumeNameSparseLoopDevice);
+
+    cy.get('input[name=labelName]').type(volume_label_name);
+    cy.get('input[name=labelValue]').type(volume_label_value);
+    cy.get('[data-cy=add-volume-labels-button]').click();
+
     cy.get('.sc-select')
       .eq(0)
       .click();
@@ -77,12 +87,46 @@ Then(
     cy.get('.sc-select')
       .eq(2)
       .click();
-    cy.get('[data-cy="size-KiB"]').click();
+    //cy.get('[data-cy="size-KiB"]').click(); leave it at the default value GiB
 
     cy.get('[data-cy="submit-create-volume"]').click();
-    cy.get('.sc-table-column-cell-name').should(
-      'contain',
-      volumeNameSparseLoopDevice,
+
+    //Check if the volume is created
+    cy.get('input[name=search]').type(volumeNameSparseLoopDevice);
+
+    cy.get('.sc-table-row')
+      .eq(1) //2 rows with the header included
+      .find('.sc-table-column-cell-name')
+      .should('contain', volumeNameSparseLoopDevice);
+
+    // Wait until the volume is available
+    cy.waitUntil(
+      () =>
+        cy
+          .get('.sc-table-row')
+          .eq(1) //2 rows with the header included
+          .find('.sc-table-column-cell-status')
+          .then($span => $span.text() === 'Available'),
+      {
+        errorMsg: `Volume ${volumeNameSparseLoopDevice} is not available`,
+        timeout: 120000, // waits up to 120000 ms, default to 5000
+        interval: 5000, // performs the check every 5000 ms, default to 200
+      },
     );
+
+    //Go to the volume Information page
+    cy.get('.sc-table-row')
+      .eq(1) //2 rows with the header included
+      .click();
+
+    //Check if all the labels are present
+    cy.get('.sc-table-row')
+      .eq(1) //2 rows with the header included
+      .find('.sc-table-column-cell-name')
+      .should('contain', volume_label_name);
+    cy.get('.sc-table-row')
+      .eq(1) //2 rows with the header included
+      .find('.sc-table-column-cell-value')
+      .should('contain', volume_label_value);
   },
 );
