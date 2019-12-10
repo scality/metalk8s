@@ -258,49 +258,22 @@ def lint_all():
     )
 
 
-ARTIFACTS_URL = pathlib.Path("%(prop:artifacts_private_url)s")
-
-
 def get_iso_from_artifacts(destination=None, source=None):
-    base_url = ARTIFACTS_URL
-    name_suffix = ""
+    name_suffix = "" if source is None else " ({})".format(source)
+
+    source_dir = pathlib.Path(".")
     if source is not None:
-        base_url = base_url / source
-        name_suffix = " ({})".format(source)
+        source_dir = pathlib.Path(source)
 
     dest_dir = pathlib.Path(".")
     if destination is not None:
         dest_dir = pathlib.Path(destination)
 
-    def _curl_cmd(filename):
-        return 'curl -s -XGET -o "{out_path}" "{in_url}"'.format(
-            out_path=dest_dir / filename, in_url=base_url / filename,
-        )
-
-    # Get ISO checksum
-    yield shell.Shell(
-        "Retrieve ISO image checksum" + name_suffix,
-        command=_curl_cmd("SHA256SUM"),
-        halt_on_failure=True,
-    )
-
-    # Get ISO archive, with retry
-    yield shell.Bash(
-        "Retrieve ISO image" + name_suffix,
-        command=shell._seq(
-            shell._for(
-                "{{1..{max_attempts}}}",
-                shell._seq(
-                    'echo "Attempt $i out of {max_attempts}"',
-                    "{curl_cmd} && exit",
-                    "sleep 2",
-                ),
-                var="i",
-            ),
-            'echo "Could not retrieve ISO after {max_attempts} attempts" >&2',
-            "exit 1",
-        ).format(max_attempts=20, curl_cmd=_curl_cmd("metalk8s.iso")),
-        inline=True,
+    # Get ISO and checksum
+    yield dsl.RetrieveArtifacts(
+        "Retrieve ISO image and its checksum" + name_suffix,
+        sources=[source_dir / "SHA256SUM", source_dir / "metalk8s.iso"],
+        destination=dest_dir,
         halt_on_failure=True,
     )
 

@@ -8,6 +8,7 @@ from buildplan.dsl import remote
 
 
 ARTIFACTS = pathlib.Path("artifacts")
+ARTIFACTS_URL = pathlib.Path("%(prop:artifacts_private_url)s")
 
 
 class CopyArtifacts(shell.Shell):
@@ -59,6 +60,45 @@ def copy_artifacts(sources, destination=None, **kwargs):
         yield CopyArtifacts(
             sources=sources, destination=destination, **kwargs,
         )
+
+
+class RetrieveArtifacts(shell.Shell):
+    def __init__(self, name, sources, destination=".", **kwargs):
+        self.sources = sources
+        self.destination = pathlib.Path(destination)
+
+        super(RetrieveArtifacts, self).__init__(
+            name,
+            command=shell._for(
+                sources,
+                'curl --retry 10 -O "{}"'.format(ARTIFACTS_URL / "$file"),
+                var="file",
+            ),
+            workdir=base.BUILD_DIR / self.destination,
+            **kwargs,
+        )
+
+    def as_remote(self, ssh_config, host):
+        """Retrieve artifacts on the worker before copying to the remote."""
+        self._command = shell._seq(
+            self._command,
+            remote._ssh(
+                ssh_config, host, "mkdir -p {}".format(self.destination)
+            ),
+            shell._for(
+                self.sources,
+                remote._scp(ssh_config, "$file", "{host}:{dest}",).format(
+                    host=host, dest=self.destination / "$file",
+                ),
+                var="file",
+            ),
+        )
+
+        # Reset workdir since remote commands rely on the SSH config file path
+        # provided from the default workdir "build/"
+        self.workdir = None
+
+        return self
 
 
 class WithArtifacts(base.StageDecorator):
