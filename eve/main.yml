@@ -225,6 +225,67 @@ stages:
           \ IP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet ([0-9.]+).*$/\\1/p'\
           \ ); echo \"Connect to this worker using:\n    ssh eve@$IP\""
     - ShellCommand:
+        name: Retrieve ISO image checksum
+        command: curl -s -XGET -o "SHA256SUM" "%(prop:artifacts_private_url)s/SHA256SUM"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Retrieve ISO image
+        command: bash -c 'for i in {1..20}; do echo "Attempt $i out of 20"; curl -s
+          -XGET -o "metalk8s.iso" "%(prop:artifacts_private_url)s/metalk8s.iso" &&
+          exit; sleep 2; done; echo "Could not retrieve ISO after 20 attempts" >&2;
+          exit 1'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Check ISO image with checksum
+        command: sha256sum -c SHA256SUM
+        haltOnFailure: true
+    - ShellCommand:
+        name: Create ISO mountpoint
+        command: sudo mkdir -p "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Mount ISO image
+        command: sudo mount -o loop "$(realpath metalk8s.iso)" "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Create bootstrap configuration file
+        command: sudo env ARCHIVE_PATH=$(realpath metalk8s.iso) bash -c 'deploy/scripts/bootstrap-config.sh'
+        haltOnFailure: true
+    - ShellCommand:
+        name: Start the bootstrap process
+        command: sudo bash /srv/scality/metalk8s-%(prop:metalk8s_version)s/bootstrap.sh
+          --verbose
+        haltOnFailure: true
+    - ShellCommand:
+        name: Checkout required version before running tests
+        command: git checkout "%(prop:branch)s" --quiet
+        haltOnFailure: true
+        hideStepIf: true
+    - ShellCommand:
+        name: Run tests - fast
+        command: env ISO_MOUNTPOINT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
+          tox -e tests-local -- -m "post and ci and not multinode and not slow"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Run tests - slow
+        command: env ISO_MOUNTPOINT=/srv/scality/metalk8s-%(prop:metalk8s_version)s
+          tox -e tests-local -- -m "post and ci and not multinode and slow"
+        haltOnFailure: true
+    - ShellCommand:
+        name: Collect logs using sosreport
+        command: sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True -o
+          containerd -kcontainerd.all=True -kcontainerd.logs=True --batch --tmp-dir
+          /var/tmp && sudo chown eve:eve /var/tmp/sosreport*
+    - ShellCommand:
+        name: Copy artifacts for 'sosreport/single-node'
+        command: mkdir -p artifacts/sosreport/single-node; for artifact in /var/tmp/sosreport*;
+          do cp -r "$artifact" artifacts/sosreport/single-node; done
+    - Upload:
+        name: Upload artifacts
+        source: *id002
+        urls:
+        - sosreport/single-node
+    - ShellCommand:
         name: Set build status to 'SUCCESSFUL' for single-node
         command: mkdir -p build_status/build_status/single-node && echo -n 'SUCCESSFUL'
           > build_status/build_status/single-node/.final_status
