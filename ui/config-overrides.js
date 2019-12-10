@@ -15,7 +15,7 @@ const CompressionPlugin = require('compression-webpack-plugin');
 const setWebpackPerformance = () => config => {
   config.performance = {
     hints: 'error',
-    // ~586 KiB for production
+    // ~684 KiB for production
     // ~1953 KiB for development because flow increase the size of assets.
     maxAssetSize: process.env.NODE_ENV === 'production' ? 700000 : 2000000,
     assetFilter: assetFilename => {
