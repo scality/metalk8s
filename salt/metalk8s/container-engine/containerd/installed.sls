@@ -31,6 +31,8 @@ Install containerd:
     - require:
       - test: Repositories configured
       - metalk8s_package_manager: Install runc
+      - file: Create containerd service drop-in
+      - file: Configure registry IP in containerd conf
       {%- if grains['os_family'].lower() == 'redhat' %}
       - metalk8s_package_manager: Install container-selinux
       {%- endif %}
@@ -60,8 +62,6 @@ Create containerd service drop-in:
         HTTPS_PROXY={{ proxies.https }}
         {%- endif %}
       {%- endif %}
-    - require:
-      - metalk8s_package_manager: Install containerd
 
 Install and configure cri-tools:
   {{ pkg_installed('cri-tools') }}
@@ -85,5 +85,3 @@ Configure registry IP in containerd conf:
     - contents: |
         [plugins.cri.registry.mirrors."{{ repo.registry_endpoint }}"]
           endpoint = ["http://{{ registry_ip }}:{{ registry_port }}"]
-    - require:
-      - metalk8s_package_manager: Install containerd
