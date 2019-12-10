@@ -1,4 +1,4 @@
-from .artifacts import copy_artifacts, WithArtifacts
+from .artifacts import copy_artifacts, RetrieveArtifacts, WithArtifacts
 from .base import BUILD_DIR
 from .build_status import WithStatus
 from .debug import set_debug_stage_properties, WithDebug

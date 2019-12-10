@@ -252,16 +252,11 @@ stages:
           \ IP=$( ip -f inet addr show eth0 | sed -En 's/^.*inet ([0-9.]+).*$/\\1/p'\
           \ ); echo \"Connect to this worker using:\n    ssh eve@$IP\""
     - ShellCommand:
-        name: Retrieve ISO image checksum
-        command: curl -s -XGET -o "SHA256SUM" "%(prop:artifacts_private_url)s/SHA256SUM"
+        name: Retrieve ISO image and its checksum
+        command: for file in SHA256SUM metalk8s.iso; do curl --retry 10 -O "%(prop:artifacts_private_url)s/$file";
+          done
         haltOnFailure: true
-    - ShellCommand:
-        name: Retrieve ISO image
-        command: bash -c 'for i in {1..20}; do echo "Attempt $i out of 20"; curl -s
-          -XGET -o "metalk8s.iso" "%(prop:artifacts_private_url)s/metalk8s.iso" &&
-          exit; sleep 2; done; echo "Could not retrieve ISO after 20 attempts" >&2;
-          exit 1'
-        haltOnFailure: true
+        workdir: build
     - ShellCommand:
         name: Check ISO image with checksum
         command: sha256sum -c SHA256SUM
@@ -406,16 +401,11 @@ stages:
           TF_VAR_nodes_count: '2'
         workdir: build/deploy
     - ShellCommand:
-        name: Retrieve ISO image checksum
-        command: ssh -F deploy/ssh_config bootstrap 'curl -s -XGET -o "/var/tmp/archives/SHA256SUM"
-          "%(prop:artifacts_private_url)s/SHA256SUM"'
-        haltOnFailure: true
-    - ShellCommand:
-        name: Retrieve ISO image
-        command: ssh -F deploy/ssh_config bootstrap 'bash -c 'for i in {1..20}; do
-          echo "Attempt $i out of 20"; curl -s -XGET -o "/var/tmp/archives/metalk8s.iso"
-          "%(prop:artifacts_private_url)s/metalk8s.iso" && exit; sleep 2; done; echo
-          "Could not retrieve ISO after 20 attempts" >&2; exit 1''
+        name: Retrieve ISO image and its checksum
+        command: for file in SHA256SUM metalk8s.iso; do curl --retry 10 -O "%(prop:artifacts_private_url)s/$file";
+          done; ssh -F deploy/ssh_config bootstrap mkdir -p /var/tmp/archives; for
+          file in SHA256SUM metalk8s.iso; do scp -F deploy/ssh_config $file bootstrap:/var/tmp/archives/$file;
+          done
         haltOnFailure: true
     - ShellCommand:
         name: Check ISO image with checksum
