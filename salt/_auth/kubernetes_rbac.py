@@ -93,43 +93,6 @@ def _get_groups(kubeconfig):
 
 
 @_log_exceptions
-def _auth_basic(kubeconfig, username, token):
-    decoded = base64.decodestring(token)
-    if ':' not in decoded:
-        log.warning('Invalid Basic token format: missing ":"')
-        return False
-
-    (token_username, _) = decoded.split(':', 1)
-    if token_username != username:
-        log.warning('Invalid Basic token: username mismatch')
-        return False
-
-    return _check_k8s_creds(kubeconfig, 'Basic {}'.format(token))
-
-
-@_log_exceptions
-def _groups_basic(kubeconfig, username, token):
-    kubeconfig.api_key = {
-        'authorization': token,
-    }
-    kubeconfig.api_key_prefix = {
-        'authorization': 'Basic',
-    }
-    kubeconfig.username = username
-    kubeconfig.password = None
-    kubeconfig.cert_file = None
-    kubeconfig.key_file = None
-
-    return _get_groups(kubeconfig)
-
-
-AUTH_HANDLERS['basic'] = {
-    'auth': _auth_basic,
-    'groups': _groups_basic,
-}
-
-
-@_log_exceptions
 def _auth_bearer(kubeconfig, username, token):
     return _check_k8s_creds(kubeconfig, 'Bearer {}'.format(token))
 

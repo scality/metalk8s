@@ -24,16 +24,6 @@ def test_login_bearer_auth_to_salt_api(host):
     pass
 
 
-@scenario('../features/salt_api.feature', 'Login to SaltAPI using an incorrect password')
-def test_login_to_salt_api_using_an_incorrect_password(host, request):
-    pass
-
-
-@scenario('../features/salt_api.feature', 'Login to SaltAPI using an incorrect username')
-def test_login_to_salt_api_using_an_incorrect_username(host, request):
-    pass
-
-
 @pytest.fixture(scope='function')
 def context():
     return {}

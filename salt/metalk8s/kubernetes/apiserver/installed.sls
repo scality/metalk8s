@@ -4,7 +4,6 @@
     import ingress_control_plane with context
 %}
 
-{%- set htpasswd_path = "/etc/kubernetes/htpasswd" %}
 {%- set encryption_k8s_path = "/etc/kubernetes/encryption.conf" %}
 
 include:
@@ -69,16 +68,6 @@ Create keepalived configuration file generator:
         EOF
 {%- endif %}
 
-Set up default basic auth htpasswd:
-  file.managed:
-    - name: {{ htpasswd_path }}
-    - source: salt://{{ slspath }}/files/htpasswd
-    - user: root
-    - group: root
-    - mode: 600
-    - makedirs: True
-    - dir_mode: 750
-
 {%- set host = grains['metalk8s']['control_plane_ip'] %}
 
 Create kube-apiserver Pod manifest:
@@ -100,7 +89,6 @@ Create kube-apiserver Pod manifest:
         - /etc/kubernetes/pki/front-proxy-client.key
         - /etc/kubernetes/pki/sa.pub
         - /etc/metalk8s/pki/nginx-ingress/ca.crt
-        - {{ htpasswd_path }}
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
         - /etc/keepalived/check-apiserver.sh
         - /etc/keepalived/keepalived.conf.sh
@@ -116,7 +104,6 @@ Create kube-apiserver Pod manifest:
           - --authorization-mode=Node,RBAC
           - --advertise-address={{ host }}
           - --allow-privileged=true
-          - --basic-auth-file={{ htpasswd_path }}
           - --client-ca-file=/etc/kubernetes/pki/ca.crt
           - --cors-allowed-origins=.*
           - --enable-admission-plugins=NodeRestriction
@@ -162,9 +149,6 @@ Create kube-apiserver Pod manifest:
             name: metalk8s-certs
           - path: /etc/ssl/certs
             name: ca-certs
-          - path: {{ htpasswd_path }}
-            type: File
-            name: htpasswd
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
           - path: /etc/keepalived
             name: keepalived-config
@@ -226,7 +210,6 @@ Create kube-apiserver Pod manifest:
       - file: Ensure etcd CA cert is present
       - file: Ensure front-proxy CA cert is present
       - file: Ensure SA pub key is present
-      - file: Set up default basic auth htpasswd
       - file: Ensure Ingress CA cert is present
 {%- if pillar.metalk8s.api_server.keepalived.enabled %}
       - file: Create keepalived check script
