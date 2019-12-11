@@ -4,19 +4,31 @@ include:
   - metalk8s.kubernetes.ca.etcd.advertised
   - .certs
 
-{%- set host_name = grains['id'] %}
-{%- set host = grains['metalk8s']['control_plane_ip'] %}
+{%- set node_name = grains['id'] %}
+{%- set node_ip = grains['metalk8s']['control_plane_ip'] %}
 
-{%- set endpoint  = host_name ~ '=https://' ~ host ~ ':2380' %}
+{%- set endpoint = 'https://' ~ node_ip ~ ':2380' %}
 
-{#- Get the list of existing etcd node. #}
-{%- set etcd_endpoints = pillar.metalk8s.etcd.members %}
+{#- Get the list of existing etcd member. #}
+{%- set etcd_members = pillar.metalk8s.etcd.members %}
 
 {#- Compute the initial state according to the existing list of node. #}
-{%- set state = "existing" if etcd_endpoints else "new" %}
+{%- set state = "existing" if etcd_members else "new" %}
 
-{#- Add ourselves to the list. #}
-{%- do etcd_endpoints.append(endpoint) %}
+{%- set etcd_endpoints = {} %}
+{#- NOTE: Filter out members with empty name as they are not started yet. #}
+{%- for member in etcd_members | selectattr('name') %}
+  {#- NOTE: Only take first peer_urls for endpoint. #}
+  {%- do etcd_endpoints.update({member['name']: member['peer_urls'][0]}) %}
+{%- endfor %}
+
+{#- Add ourselves to the endpoints. #}
+{%- do etcd_endpoints.update({node_name: endpoint}) %}
+
+{%- set etcd_initial_cluster = [] %}
+{%- for name, ep in etcd_endpoints.items() %}
+  {%- do etcd_initial_cluster.append(name ~ '=' ~ ep) %}
+{%- endfor %}
 
 Create etcd database directory:
   file.directory:
@@ -41,18 +53,18 @@ Create local etcd Pod manifest:
         image_name: {{ build_image_name('etcd') }}
         command:
           - etcd
-          - --advertise-client-urls=https://{{ host }}:2379
+          - --advertise-client-urls=https://{{ node_ip }}:2379
           - --cert-file=/etc/kubernetes/pki/etcd/server.crt
           - --client-cert-auth=true
           - --data-dir=/var/lib/etcd
-          - --initial-advertise-peer-urls=https://{{ host }}:2380
-          - --initial-cluster={{ etcd_endpoints|unique|join(',') }}
+          - --initial-advertise-peer-urls=https://{{ node_ip }}:2380
+          - --initial-cluster={{ etcd_initial_cluster| sort | join(',') }}
           - --initial-cluster-state={{ state }}
           - --key-file=/etc/kubernetes/pki/etcd/server.key
-          - --listen-client-urls=https://127.0.0.1:2379,https://{{ host }}:2379
-          - --listen-peer-urls=https://{{ host }}:2380
-          - --listen-metrics-urls=http://127.0.0.1:2381,http://{{ host }}:2381
-          - --name={{ host_name }}
+          - --listen-client-urls=https://127.0.0.1:2379,https://{{ node_ip }}:2379
+          - --listen-peer-urls=https://{{ node_ip }}:2380
+          - --listen-metrics-urls=http://127.0.0.1:2381,http://{{ node_ip }}:2381
+          - --name={{ node_name }}
           - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
           - --peer-client-cert-auth=true
           - --peer-key-file=/etc/kubernetes/pki/etcd/peer.key
