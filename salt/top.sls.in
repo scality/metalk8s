@@ -71,6 +71,12 @@
 #
 # So, the `metalk8s.roles.node.absent` state is *only* applied when a
 # minion/node has no other known role but the `ca` one.
+#
+# Add a `skip_roles` feature to skip specific roles if we want to apply only
+# a part of the highstate
+# NOTE: When we skip a role we also skip `absent` state, meaning that if you
+# have a node without `etcd` role and you have an `etcd` `skip_roles` then the
+# `metalk8s.roles.etcd.absent` state will not be called
 
 {%- set roles = ['bootstrap', 'ca', 'etcd', 'master', 'node', 'infra'] -%}
 {%- set node_role = 'node' -%}
@@ -81,6 +87,10 @@
 {%- macro role_match(name) -%}
 I@metalk8s:nodes:{{ grains['id'] }}:roles:{{ name }}
 {%- endmacro %}
+{%- macro skip_role_match(name) -%}
+I@metalk8s:nodes:{{ grains['id'] }}:skip_roles:{{ name }}
+{%- endmacro %}
+
 
 metalk8s-{{ version }}:
   # 'Default' role applicable to all nodes
@@ -91,19 +101,19 @@ metalk8s-{{ version }}:
 
   {% for role in roles %}
   # {{ role }} role
-  {{ version_match }} and {{ role_match(role) }}:
+  {{ version_match }} and {{ role_match(role) }} and not {{ skip_role_match(role) }}:
     - match: compound
     - metalk8s.roles.{{ role }}
 
   {# See comment on top #}
   {%- if role != node_role %}
-  {{ version_match }} and not {{ role_match(role) }}:
+  {{ version_match }} and not {{ role_match(role) }} and not {{ skip_role_match(role) }}:
     - match: compound
     - metalk8s.roles.{{ role }}.absent
   {%- endif %}
   {% endfor %}
 
   # See comment on top
-  {{ version_match }} {% for role in node_roles %} and not {{ role_match(role) }} {% endfor %}:
+  {{ version_match }} {% for role in node_roles %} and not {{ role_match(role) }} {% endfor %} and not {{ skip_role_match(node_role) }}:
     - match: compound
     - metalk8s.roles.node.absent
