@@ -10,6 +10,20 @@ Execute the downgrade prechecks:
         orchestrate:
           dest_version: {{ dest_version }}
 
+# In salt 2018.3 we can not do synchronous pillar refresh, so add a sleep
+# see https://github.com/saltstack/salt/issues/20590
+Wait for pillar refresh to complete:
+  salt.function:
+    - name: saltutil.refresh_pillar
+    - tgt: '*'
+    - require:
+      - salt: Execute the downgrade prechecks
+  module.run:
+    - test.sleep:
+      - length: 20
+    - require:
+      - salt: Wait for pillar refresh to complete
+
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
 
@@ -25,11 +39,6 @@ Execute the downgrade prechecks:
 Skip node {{ node }}, already in {{ node_version }} older than {{ dest_version }}:
   test.succeed_without_changes
 
-  {%- elif 'bootstrap' in pillar.metalk8s.nodes[node].roles %}
-
-Skip node {{ node }}, bootstrap node downgrade should be done later:
-  test.succeed_without_changes
-
   {%- else %}
 
 Wait for API server to be available on {{ node }}:
@@ -39,7 +48,7 @@ Wait for API server to be available on {{ node }}:
   - status: 200
   - verify_ssl: false
   - require:
-    - salt: Execute the downgrade prechecks
+    - module: Wait for pillar refresh to complete
   {%- if previous_node is defined %}
     - salt: Deploy node {{ previous_node }}
   {%- endif %}
@@ -69,6 +78,12 @@ Deploy node {{ node }}:
           {#- Do not drain if we are in single node cluster #}
           skip_draining: True
           {%- endif %}
+        metalk8s:
+          nodes:
+            {{ node }}:
+              # Skip `etcd` role as we take care of etcd cluster after
+              skip_roles:
+                - etcd
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:

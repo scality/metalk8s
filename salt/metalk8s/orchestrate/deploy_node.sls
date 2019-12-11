@@ -1,6 +1,8 @@
 {%- set node_name = pillar.orchestrate.node_name %}
 {%- set version = pillar.metalk8s.nodes[node_name].version %}
 
+{%- set skip_roles = pillar.metalk8s.nodes[node_name].get('skip_roles', []) %}
+
 {%- if node_name not in salt.saltutil.runner('manage.up') %}
 Deploy salt-minion on a new node:
   salt.state:
@@ -116,6 +118,15 @@ Run the highstate:
     - tgt: {{ node_name }}
     - highstate: True
     - saltenv: metalk8s-{{ version }}
+    {#- Add ability to skip node roles to not apply all the highstate
+         e.g.: Skipping etcd when downgrading #}
+    {%- if skip_roles %}
+    - pillar:
+        metalk8s:
+          nodes:
+            {{ node_name }}:
+              skip_roles: {{ skip_roles }}
+    {%- endif %}
     - require:
       - salt: Set grains
       - salt: Refresh the mine
