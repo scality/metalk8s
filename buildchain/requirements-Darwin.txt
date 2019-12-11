@@ -40,3 +40,8 @@ six==1.13.0 \
 urllib3==1.25.7 \
     --hash=sha256:a8a318824cc77d1fd4b2bec2ded92646630d7fe8619497b142c84a9e6f5a7293 \
     --hash=sha256:f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745 \
+    # via requests
+websocket-client==0.56.0 \
+    --hash=sha256:1151d5fb3a62dc129164292e1227655e4bbc5dd5340a5165dfae61128ec50aa9 \
+    --hash=sha256:1fd5520878b68b84b5748bb30e592b10d0a91529d5383f74f4964e72b297fd3a \
+    # via docker
