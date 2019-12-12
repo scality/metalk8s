@@ -425,8 +425,7 @@ stages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
             - single-node-upgrade-centos
-            # Downgrade is deactivated on this branch due to #2058
-            #- single-node-downgrade-centos
+            - single-node-downgrade-centos
             - single-node-install-rhel
             - multiple-nodes-centos
             - single-node-patch-version
