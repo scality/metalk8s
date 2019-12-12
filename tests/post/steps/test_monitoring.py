@@ -27,6 +27,20 @@ def test_monitored_components(host):
     pass
 
 
+@scenario(
+    '../features/monitoring.feature',
+    'Pod metrics can be retrieved using metrics.k8s.io/v1beta1')
+def test_pod_metrics(host):
+    pass
+
+
+@scenario(
+    '../features/monitoring.feature',
+    'Node metrics can be retrieved using metrics.k8s.io/v1beta1')
+def test_node_metrics(host):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -106,6 +120,58 @@ def apiservice_condition_met(name, condition, k8s_apiclient):
             raise
 
     utils.retry(_check_object_exists, times=20, wait=3)
+
+
+@then(parsers.parse(
+    "a pod with label '{label}' in namespace '{namespace}' has metrics"))
+def pod_has_metrics(label, namespace, k8s_apiclient):
+    def _pod_has_metrics():
+        result = k8s_apiclient.call_api(
+            resource_path='/apis/metrics.k8s.io/v1beta1/'
+                          'namespaces/{namespace}/pods',
+            method='GET',
+            response_type=object,
+            path_params={
+                'namespace': namespace,
+            },
+            query_params=[
+                ('labelSelector', label),
+            ],
+            _return_http_data_only=True,
+        )
+
+        assert result['apiVersion'] == 'metrics.k8s.io/v1beta1'
+        assert result['kind'] == 'PodMetricsList'
+        assert result['items'] != []
+        assert result['items'][0]['containers'] != []
+        assert result['items'][0]['containers'][0]['usage']['cpu']
+        assert result['items'][0]['containers'][0]['usage']['memory']
+
+    # Metrics are only available after a while (by design)
+    utils.retry(_pod_has_metrics, times=60, wait=3)
+
+
+@then(parsers.parse("a node with label '{label}' has metrics"))
+def node_has_metrics(label, k8s_apiclient):
+    def _node_has_metrics():
+        result = k8s_apiclient.call_api(
+            resource_path='/apis/metrics.k8s.io/v1beta1/nodes',
+            method='GET',
+            response_type=object,
+            query_params=[
+                ('labelSelector', label),
+            ],
+            _return_http_data_only=True,
+        )
+
+        assert result['apiVersion'] == 'metrics.k8s.io/v1beta1'
+        assert result['kind'] == 'NodeMetricsList'
+        assert result['items'] != []
+        assert result['items'][0]['usage']['cpu']
+        assert result['items'][0]['usage']['memory']
+
+    # Metrics are only available after a while (by design)
+    utils.retry(_node_has_metrics, times=60, wait=3)
 
 
 # }}}

@@ -266,6 +266,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         },
         file_dep=[SCALITY_LOGO, SCALITY_FAVICON, LOGIN_STYLE],
     ),
+
+    Path('salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls'),
+    Path('salt/metalk8s/addons/prometheus-adapter/deployed/init.sls'),
+
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/cleanup.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls'),

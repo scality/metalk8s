@@ -194,6 +194,9 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
     constants.KIWIGRID_REPOSITORY: [
         'k8s-sidecar',
     ],
+    constants.PROMETHEUS_ADAPTER_REPOSITORY: [
+        'k8s-prometheus-adapter-amd64',
+    ],
     constants.PROMETHEUS_REPOSITORY: [
         'alertmanager',
         'node-exporter',

@@ -65,7 +65,7 @@ resource "openstack_compute_instance_v2" "bastion" {
 resource "openstack_compute_instance_v2" "bootstrap" {
   name        = "${local.prefix}-bootstrap"
   image_name  = var.openstack_image_name
-  flavor_name = var.openstack_flavour_name
+  flavor_name = "m1.large"
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
   scheduler_hints {
