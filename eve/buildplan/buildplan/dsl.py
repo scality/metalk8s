@@ -7,6 +7,7 @@ import functools
 import pathlib
 
 from buildplan import core
+from buildplan import shell
 
 
 class StageDecorator(metaclass=abc.ABCMeta):
@@ -42,10 +43,13 @@ def set_final_status(status, stage_name=None):
         build_status_dir /= stage_name
         step_name += " for {}".format(stage_name)
 
-    return core.ShellCommand(
+    return shell.Shell(
         step_name,
-        command="mkdir -p {} && echo '{}' > {}".format(
-            build_status_dir, status, build_status_dir / ".final_status"
+        command=shell._and(
+            "mkdir -p {}".format(build_status_dir),
+            "echo '{}' > {}".format(
+                status, build_status_dir / ".final_status"
+            ),
         ),
         halt_on_failure=True,
         hide_step_if=True,
@@ -91,9 +95,7 @@ class WithStatus(StageDecorator):
 ARTIFACTS = pathlib.Path("artifacts")
 
 
-class CopyArtifacts(core.ShellCommand):
-    STEP_NAME = "ShellCommand"
-
+class CopyArtifacts(shell.Shell):
     def __init__(self, sources, destination=None, **kwargs):
         if destination is not None:
             dest_dir = ARTIFACTS / destination
@@ -115,12 +117,10 @@ class CopyArtifacts(core.ShellCommand):
         )
 
     def __command(self, copy_cmd):
-        return "; ".join(
-            [
-                "mkdir -p {s.dest_dir}",
-                "for artifact in {{sources}}; do {}; done".format(copy_cmd),
-            ]
-        ).format(s=self, sources=" ".join(self.sources))
+        return shell._seq(
+            "mkdir -p {s.dest_dir}",
+            shell._for(self.sources, copy_cmd, var="artifact"),
+        ).format(s=self)
 
 
 def copy_artifacts(sources, destination=None, **kwargs):
@@ -178,13 +178,11 @@ class SetupStep(enum.Enum):
 
     @staticmethod
     def setup_cache():
-        return core.ShellCommand(
+        return shell.Shell(
             "Setup proxy cache",
-            command=" && ".join(
-                [
-                    "curl -s http://proxy-cache/setup.sh | sudo sh",
-                    ". /usr/local/bin/use_scality_proxy_cache",
-                ]
+            command=shell._and(
+                "curl -s http://proxy-cache/setup.sh | sudo sh",
+                ". /usr/local/bin/use_scality_proxy_cache",
             ),
             halt_on_failure=True,
             hide_step_if=True,
@@ -192,40 +190,33 @@ class SetupStep(enum.Enum):
 
     @staticmethod
     def setup_ssh():
-        return core.ShellCommand(
+        return shell.Shell(
             "Install SSH keys and report connection info",
-            command="; ".join(
-                [
-                    "mkdir -p ~/.ssh",
-                    'echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys',
-                    (
-                        "IP=$( "
-                        "ip -f inet addr show eth0 "
-                        "| sed -En 's/^.*inet ([0-9.]+).*$/\\1/p' "
-                        ")"
-                    ),
-                    'echo "Connect to this worker using:\n    ssh eve@$IP"',
-                ]
+            command=shell._seq(
+                "mkdir -p ~/.ssh",
+                'echo "%(secret:ssh_pub_keys)s" >> ~/.ssh/authorized_keys',
+                shell._fmt_args(
+                    "IP=$( ip -f inet addr show eth0",
+                    "| sed -En 's/^.*inet ([0-9.]+).*$/\\1/p' )",
+                ),
+                'echo "Connect to this worker using:\n    ssh eve@$IP"',
             ),
         )
 
     @staticmethod
     def wait_for_docker():
-        return core.ShellCommand(
+        return shell.Bash(
             "Wait for Docker daemon to be ready",
-            command="bash -c '{}'".format(
-                "; ".join(
-                    [
-                        "for i in $(seq 1 150)",
-                        "do",
-                        "  docker info &> /dev/null && exit",
-                        "  sleep 2",
-                        "done",
-                        'echo "Could not reach Docker daemon from Buildbot worker" >&2',
-                        "exit 1",
-                    ]
-                )
+            command=shell._seq(
+                shell._for(
+                    "{1..150}",
+                    shell._seq("docker info &> /dev/null && exit", "sleep 2"),
+                    var="i",
+                ),
+                'echo "Could not reach Docker daemon from Buildbot worker" >&2',
+                "exit 1",
             ),
+            inline=True,
             halt_on_failure=True,
             hide_step_if=True,
         )

@@ -55,9 +55,9 @@ stages:
         hideStepIf: true
     - ShellCommand:
         name: Wait for Docker daemon to be ready
-        command: bash -c 'for i in $(seq 1 150); do;   docker info &> /dev/null &&
-          exit;   sleep 2; done; echo "Could not reach Docker daemon from Buildbot
-          worker" >&2; exit 1'
+        command: bash -c 'for i in {1..150}; do docker info &> /dev/null && exit;
+          sleep 2; done; echo "Could not reach Docker daemon from Buildbot worker"
+          >&2; exit 1'
         haltOnFailure: true
         hideStepIf: true
     - Git:
