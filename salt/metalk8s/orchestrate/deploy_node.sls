@@ -162,6 +162,23 @@ Kill kube-controller-manager on all master nodes:
       - salt: Run the highstate
 
 {%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
+Ensure etcd-service is running:
+  service.running:
+    - name: etcd
+    - enable: True
+
+Wait until etcd is healthy:
+  http.wait_for_successful_query:
+    - name: https://127.0.0.1:2379/health
+    - verify_ssl: True
+    - ca_bundle: /etc/kubernetes/pki/etcd/ca.crt
+    - cert:
+      - /etc/kubernetes/pki/etcd/server.crt
+      - /etc/kubernetes/pki/etcd/server.key
+    - status: 200
+    - match: '{"health": "true"}'
+    - require:
+        - service: Ensure etcd-service is running
 
 Register the node into etcd cluster:
   salt.runner:
@@ -171,5 +188,6 @@ Register the node into etcd cluster:
       - metalk8s.orchestrate.register_etcd
     - require:
       - salt: Run the highstate
+      - http: Wait until etcd is healthy
 
 {%- endif %}
