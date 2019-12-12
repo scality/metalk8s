@@ -74,6 +74,7 @@ Set up default basic auth htpasswd:
     - mode: 600
     - makedirs: True
     - dir_mode: 750
+    - replace: False
 
 {%- set host = grains['metalk8s']['control_plane_ip'] %}
 
