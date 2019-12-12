@@ -93,7 +93,7 @@ const QuestionMarkIcon = styled.i`
 `;
 
 const TooltipContent = styled.div`
-  color: ${props => props.theme.brand.secondary};
+  color: ${props => props.theme.brand.primary};
   font-weight: ${fontWeight.bold};
 `;
 
