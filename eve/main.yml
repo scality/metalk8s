@@ -111,6 +111,7 @@ stages:
     - Upload:
         name: Upload artifacts
         source: &id002 artifacts
+        alwaysRun: true
         urls:
         - metalk8s.iso
         - SHA256SUM
@@ -164,6 +165,7 @@ stages:
     - Upload:
         name: Upload artifacts
         source: *id002
+        alwaysRun: true
         urls:
         - docs/html/index.html
         - docs/latex/MetalK8s.pdf
@@ -311,6 +313,7 @@ stages:
     - Upload:
         name: Upload artifacts
         source: *id002
+        alwaysRun: true
         urls:
         - sosreport/single-node
     - ShellCommand:
@@ -511,6 +514,7 @@ stages:
     - Upload:
         name: Upload artifacts
         source: *id002
+        alwaysRun: true
         urls:
         - sosreport/multiple-nodes
     - ShellCommand:

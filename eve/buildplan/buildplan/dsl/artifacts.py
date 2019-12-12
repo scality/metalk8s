@@ -75,5 +75,10 @@ class WithArtifacts(base.StageDecorator):
 
     def mutate(self, stage):
         stage.steps.append(
-            core.Upload("Upload artifacts", source=ARTIFACTS, urls=self.urls)
+            core.Upload(
+                "Upload artifacts",
+                source=ARTIFACTS,
+                urls=self.urls,
+                always_run=True,
+            )
         )
