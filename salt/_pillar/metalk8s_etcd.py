@@ -13,8 +13,8 @@ def _load_members(pillar):
     errors = []
     try:
         members = __salt__['metalk8s_etcd.get_etcd_member_list'](
-                    nodes = pillar['metalk8s']['nodes']
-                  )
+            nodes=pillar['metalk8s']['nodes']
+        )
     except Exception as exc:
         members = []
         errors.append(
