@@ -21,9 +21,6 @@ Sizing
 Each machine should have at least 2 CPU cores, 4 GB of RAM, and a root
 partition larger than 40 GB.
 
-For sizing recommendations depending on sample use cases, see the
-:doc:`Installation guide </installation-guide/sizing>`.
-
 Proxies
 -------
 For nodes operating behind a proxy, add the following lines to each cluster

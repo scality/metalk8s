@@ -112,7 +112,7 @@ communications:
 
 In case of conflicts with the existing infrastructure, make sure to choose
 other ranges during the
-:ref:`Bootstrap configuration <quickstart-bootstrap-config>`.
+:ref:`Bootstrap configuration <Bootstrap Configuration>`.
 
 
 .. _quickstart-intro-install-plan:
@@ -121,7 +121,7 @@ Installation plan
 ^^^^^^^^^^^^^^^^^
 In this guide, the depicted installation procedure is for a medium sized
 cluster, using three control-plane nodes and two worker nodes. Refer to
-the :doc:`/installation-guide/index` for extensive explanations of possible
+the :doc:`/installation/index` for extensive explanations of possible
 cluster architectures.
 
 .. note::

@@ -54,8 +54,8 @@ The MetalK8s GUI provides a simple form for that purpose.
    .. image:: img/ui/click-create-node.png
 
 #. Fill the form with relevant information (make sure the
-   :ref:`SSH provisioning <quickstart-bootstrap-ssh>` for the Bootstrap node is
-   done first):
+   :ref:`SSH provisioning <Bootstrap SSH Provisioning>` for the Bootstrap node
+   is done first):
 
    - **Name**: the hostname of the new Node
    - **MetalK8s Version**: use "|release|"
@@ -63,7 +63,7 @@ The MetalK8s GUI provides a simple form for that purpose.
    - **Hostname or IP**: the address to use for SSH from the Bootstrap
    - **SSH Port**: the port to use for SSH from the Bootstrap
    - **SSH Key Path**: the path to the private key generated in
-     :ref:`this procedure <quickstart-bootstrap-ssh>`
+     :ref:`this procedure <Bootstrap SSH Provisioning>`
    - **Sudo required**: whether the SSH deployment will need ``sudo`` access
    - **Roles/Workload Plane**: check this box if the new Node should receive
      workload applications
@@ -203,7 +203,7 @@ Open a terminal in the Salt Master container using
 :ref:`this procedure <quickstart-services-salt>`.
 
 Check that SSH access from the Salt Master to the new node is properly
-configured (see :ref:`quickstart-bootstrap-ssh`).
+configured (see :ref:`Bootstrap SSH Provisioning`).
 
 .. code-block:: shell
 
