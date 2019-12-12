@@ -6,3 +6,8 @@ output "ips" {
     control_plane_vip = module.control_plane_network.vip
   }
 }
+
+# The spawned infra prefix, useful for manual clean-up of lost resources
+output "prefix" {
+  value = local.prefix
+}
