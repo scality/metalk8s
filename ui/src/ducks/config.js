@@ -17,12 +17,14 @@ const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
 const SET_INITIAL_LANGUAGE = 'SET_INITIAL_LANGUAGE';
 const UPDATE_LANGUAGE = 'UPDATE_LANGUAGE';
+export const SET_THEMES = 'SET_THEMES';
 
 // Reducer
 const defaultState = {
   language: EN_LANG,
-  theme: {},
+  theme: {}, // current theme
   api: null,
+  themes: {}, // include light, dark and custom
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -33,7 +35,8 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, theme: action.payload };
     case SET_API_CONFIG:
       return { ...state, api: action.payload };
-
+    case SET_THEMES:
+      return { ...state, themes: action.payload };
     default:
       return state;
   }
@@ -68,12 +71,22 @@ export function updateLanguageAction(language) {
   return { type: UPDATE_LANGUAGE, payload: language };
 }
 
+export function setThemesAction(themes) {
+  return { type: SET_THEMES, payload: themes };
+}
+
 // Sagas
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
   if (!result.error) {
-    result.brand = mergeTheme(result, defaultTheme);
-    yield put(setThemeAction(result));
+    // get the default theme from configMap
+    const defaultThemeMode = result.default;
+    result.theme[defaultThemeMode].brand = mergeTheme(
+      result.theme[defaultThemeMode],
+      defaultTheme,
+    );
+    yield put(setThemesAction(result.theme));
+    yield put(setThemeAction(result.theme[defaultThemeMode]));
   }
 }
 

@@ -72,7 +72,7 @@ const LoginForm = props => {
       <LogoContainer>
         <img
           alt="logo"
-          src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
+          src={process.env.PUBLIC_URL + '/brand/assets/branding-dark.svg'}
         />
       </LogoContainer>
       <Input
