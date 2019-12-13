@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 __virtualname__ = "metalk8s_package_manager"
 
 
-def __virtualname__():
+def __virtual__():
     if __grains__['os_family'].lower() == 'redhat':
         return __virtualname__
     return (False, "metalk8s_package_manager: no RPM-based system detected")
