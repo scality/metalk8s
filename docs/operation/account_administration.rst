@@ -42,6 +42,11 @@ perform the following procedures:
 #. Access the Grafana instance and authenticate yourself using the new Account
    credentials.
 
+  .. warning::
+
+     During an upgrade or downgrade of a MetalK8s cluster, customized Grafana
+     username and password will be overwritten with default credentials
+     ``admin`` / ``admin``.
 
 Administering MetalK8s GUI, Kubernetes API and Salt API
 *******************************************************
