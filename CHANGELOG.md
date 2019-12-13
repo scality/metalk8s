@@ -2,6 +2,21 @@
 
 ## Release 2.4.2 (in development)
 
+### Breaking changes
+- If `apiServer.host` is configured in `BootstrapConfiguration`, this is no
+longer used (and must no longer be defined).
+- If `apiServer.keepalived` is configured in `BootstrapConfiguration`, this is
+no longer used, and Keepalived is no longer deployed at all.
+- Generated `admin.conf` `KubeConfig` files point to the control-plane IP of the
+host on which they are generated. You can override this when using them using
+`kubectl`s `-s`/`--server` argument to point to another address.
+
+### Features added
+
+- [#2103](https://github.com/scality/metalk8s/issues/2103) - Add a host-local
+`nginx` on every node to provide highly-available and load-balanced access to
+`kube-apiserver` (PR [#2106](https://github.com/scality/metalk8s/pull/2106))
+
 ## Release 2.4.1
 
 ### Features added

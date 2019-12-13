@@ -1,7 +1,4 @@
 {% set control_plane_ips = salt['network.ip_addrs'](cidr=salt['pillar.get']('networks:control_plane')) %}
-{% if pillar.metalk8s.api_server.keepalived.enabled %}
-{%   set control_plane_ips = control_plane_ips | difference([pillar.metalk8s.api_server.host]) | list | sort %}
-{% endif %}
 
 {% if control_plane_ips %}
 {%   if 'metalk8s' not in grains

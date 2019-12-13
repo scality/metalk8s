@@ -17,7 +17,7 @@ gpgkey=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/%s/
  && yum install -y epel-release \
  && yum install -y python2-kubernetes salt-master salt-api salt-ssh openssh-clients \
  && yum install -y python-pip \
- && pip install etcd3 \
+ && pip install "etcd3 != 0.11.0" \
  && yum clean all
 
 # salt-master, salt-api
