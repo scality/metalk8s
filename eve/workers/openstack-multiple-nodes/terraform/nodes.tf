@@ -6,7 +6,7 @@ resource "openstack_compute_servergroup_v2" "all" {
 resource "openstack_compute_instance_v2" "bastion" {
   name        = "${local.prefix}-bastion"
   image_name  = var.openstack_image_name
-  flavor_name = var.openstack_flavour_name
+  flavor_name = var.openstack_flavour_name.bastion
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
   scheduler_hints {
@@ -78,7 +78,7 @@ resource "openstack_compute_instance_v2" "bastion" {
 resource "openstack_compute_instance_v2" "bootstrap" {
   name        = "${local.prefix}-bootstrap"
   image_name  = var.openstack_image_name
-  flavor_name = var.openstack_flavour_name
+  flavor_name = var.openstack_flavour_name.bootstrap
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
   scheduler_hints {
@@ -154,7 +154,7 @@ variable "nodes_count" {
 resource "openstack_compute_instance_v2" "nodes" {
   name        = "${local.prefix}-node-${count.index + 1}"
   image_name  = var.openstack_image_name
-  flavor_name = var.openstack_flavour_name
+  flavor_name = var.openstack_flavour_name.nodes
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
   scheduler_hints {

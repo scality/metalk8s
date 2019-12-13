@@ -4,6 +4,10 @@ variable "openstack_image_name" {
 }
 
 variable "openstack_flavour_name" {
-  type    = string
-  default = "m1.medium"
+  type    = map
+  default = {
+    bastion   = "m1.medium"
+    bootstrap = "m1.large"
+    nodes     = "m1.medium"
+  }
 }
