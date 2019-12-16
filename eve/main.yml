@@ -406,40 +406,40 @@ stages:
         haltOnFailure: true
     - ShellCommand:
         name: Check ISO image with checksum
-        command: ssh -F deploy/ssh_config bootstrap bash -c 'cd /var/tmp/archives
-          && sha256sum -c SHA256SUM'
+        command: ssh -F deploy/ssh_config bootstrap 'cd /var/tmp/archives && sha256sum
+          -c SHA256SUM'
         haltOnFailure: true
     - ShellCommand:
         name: Create ISO mountpoint
-        command: ssh -F deploy/ssh_config bootstrap sudo mkdir -p "/var/tmp/metalk8s"
+        command: ssh -F deploy/ssh_config bootstrap 'sudo mkdir -p "/var/tmp/metalk8s"'
         haltOnFailure: true
     - ShellCommand:
         name: Mount ISO image
-        command: ssh -F deploy/ssh_config bootstrap sudo mount -o loop "/var/tmp/archives/metalk8s.iso"
-          "/var/tmp/metalk8s"
+        command: ssh -F deploy/ssh_config bootstrap 'sudo mount -o loop "/var/tmp/archives/metalk8s.iso"
+          "/var/tmp/metalk8s"'
         haltOnFailure: true
     - ShellCommand:
         name: Create bootstrap configuration file
         command: ssh -F deploy/ssh_config bootstrap [[ -f "deploy/scripts/bootstrap-config.sh"
-          ]] || ssh -F deploy/ssh_config bootstrap "mkdir -p $(dirname deploy/scripts/bootstrap-config.sh)"
-          && scp -F deploy/ssh_config deploy/scripts/bootstrap-config.sh bootstrap:deploy/scripts/bootstrap-config.sh
-          && ssh -F deploy/ssh_config bootstrap sudo env ARCHIVE_PATH=/var/tmp/archives/metalk8s.iso
-          MINION_ID=bootstrap bash deploy/scripts/bootstrap-config.sh
+          ]] || (ssh -F deploy/ssh_config bootstrap 'mkdir -p $(dirname deploy/scripts/bootstrap-config.sh)'
+          && scp -F deploy/ssh_config deploy/scripts/bootstrap-config.sh bootstrap:deploy/scripts/bootstrap-config.sh)
+          && ssh -F deploy/ssh_config bootstrap 'sudo env ARCHIVE_PATH=/var/tmp/archives/metalk8s.iso
+          MINION_ID=bootstrap bash deploy/scripts/bootstrap-config.sh'
         haltOnFailure: true
     - ShellCommand:
         name: Start the bootstrap process
         command: ssh -F deploy/ssh_config bootstrap [[ -f "/var/tmp/metalk8s/bootstrap.sh"
-          ]] || ssh -F deploy/ssh_config bootstrap "mkdir -p $(dirname /var/tmp/metalk8s/bootstrap.sh)"
-          && scp -F deploy/ssh_config /var/tmp/metalk8s/bootstrap.sh bootstrap:/var/tmp/metalk8s/bootstrap.sh
-          && ssh -F deploy/ssh_config bootstrap sudo bash /var/tmp/metalk8s/bootstrap.sh
-          --verbose
+          ]] || (ssh -F deploy/ssh_config bootstrap 'mkdir -p $(dirname /var/tmp/metalk8s/bootstrap.sh)'
+          && scp -F deploy/ssh_config /var/tmp/metalk8s/bootstrap.sh bootstrap:/var/tmp/metalk8s/bootstrap.sh)
+          && ssh -F deploy/ssh_config bootstrap 'sudo bash /var/tmp/metalk8s/bootstrap.sh
+          --verbose'
         haltOnFailure: true
     - ShellCommand:
         name: Enable IP-in-IP encapsulation for Calico
         command: ssh -F deploy/ssh_config bootstrap [[ -f "/home/centos/scripts/enable_ipip.sh"
-          ]] || ssh -F deploy/ssh_config bootstrap "mkdir -p $(dirname /home/centos/scripts/enable_ipip.sh)"
-          && scp -F deploy/ssh_config /home/centos/scripts/enable_ipip.sh bootstrap:/home/centos/scripts/enable_ipip.sh
-          && ssh -F deploy/ssh_config bootstrap bash /home/centos/scripts/enable_ipip.sh
+          ]] || (ssh -F deploy/ssh_config bootstrap 'mkdir -p $(dirname /home/centos/scripts/enable_ipip.sh)'
+          && scp -F deploy/ssh_config /home/centos/scripts/enable_ipip.sh bootstrap:/home/centos/scripts/enable_ipip.sh)
+          && ssh -F deploy/ssh_config bootstrap 'bash /home/centos/scripts/enable_ipip.sh'
     - ShellCommand:
         name: Prepare test sources on bastion
         command: git checkout "%(prop:branch)s" --quiet && tar cfp - tox.ini VERSION
@@ -447,27 +447,27 @@ stages:
           'tar xf -'
     - ShellCommand:
         name: Run tests - installation / expansion
-        command: ssh -F deploy/ssh_config bastion env ISO_MOUNTPOINT=/var/tmp/metalk8s
+        command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
           SSH_CONFIG=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
-          and install"
+          and install"'
         haltOnFailure: true
     - ShellCommand:
         name: Run tests - fast
-        command: ssh -F deploy/ssh_config bastion env ISO_MOUNTPOINT=/var/tmp/metalk8s
+        command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
           SSH_CONFIG=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
-          and post and not slow"
+          and post and not slow"'
         haltOnFailure: true
     - ShellCommand:
         name: Run tests - slow
-        command: ssh -F deploy/ssh_config bastion env ISO_MOUNTPOINT=/var/tmp/metalk8s
+        command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
           SSH_CONFIG=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
-          and post and slow"
+          and post and slow"'
         haltOnFailure: true
     - ShellCommand:
         name: Collect logs using sosreport
-        command: ssh -F deploy/ssh_config bootstrap sudo sosreport --all-logs -o metalk8s
-          -kmetalk8s.podlogs=True -o containerd -kcontainerd.all=True -kcontainerd.logs=True
-          --batch --tmp-dir /var/tmp && sudo chown eve:eve /var/tmp/sosreport*
+        command: ssh -F deploy/ssh_config bootstrap 'sudo sosreport --all-logs -o
+          metalk8s -kmetalk8s.podlogs=True -o containerd -kcontainerd.all=True -kcontainerd.logs=True
+          --batch --tmp-dir /var/tmp && sudo chown eve:eve /var/tmp/sosreport*'
     - ShellCommand:
         name: Copy artifacts for 'sosreport/single-multiple-nodes/bootstrap'
         command: mkdir -p artifacts/sosreport/single-multiple-nodes/bootstrap; for
@@ -475,9 +475,9 @@ stages:
           artifacts/sosreport/single-multiple-nodes/bootstrap; done
     - ShellCommand:
         name: Collect logs using sosreport
-        command: ssh -F deploy/ssh_config node1 sudo sosreport --all-logs -o metalk8s
+        command: ssh -F deploy/ssh_config node1 'sudo sosreport --all-logs -o metalk8s
           -kmetalk8s.podlogs=True -o containerd -kcontainerd.all=True -kcontainerd.logs=True
-          --batch --tmp-dir /var/tmp && sudo chown eve:eve /var/tmp/sosreport*
+          --batch --tmp-dir /var/tmp && sudo chown eve:eve /var/tmp/sosreport*'
     - ShellCommand:
         name: Copy artifacts for 'sosreport/single-multiple-nodes/node1'
         command: mkdir -p artifacts/sosreport/single-multiple-nodes/node1; for artifact

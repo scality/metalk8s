@@ -53,7 +53,7 @@ def implement_remote_for(*step_classes):
 
 @implement_remote_for(core.ShellCommand, shell.Shell)
 def remote_shell(step, ssh_config, host):
-    step._command = _ssh(ssh_config, host, step.command)
+    step._command = _ssh(ssh_config, host, "'{}'".format(step.command))
     return step
 
 
@@ -67,10 +67,10 @@ def remote_bash(step, ssh_config, host):
     remote_step._command = shell._and(
         shell._or(
             _ssh(ssh_config, host, '[[ -f "{script}" ]]'),
-            shell._and(
-                _ssh(ssh_config, host, '"mkdir -p $(dirname {script})"'),
+            "({})".format(shell._and(
+                _ssh(ssh_config, host, "'mkdir -p $(dirname {script})'"),
                 _scp(ssh_config, source="{script}", dest="{host}:{script}"),
-            ),
+            )),
         ),
         remote_step.command,
     ).format(script=remote_step._script, host=host)
