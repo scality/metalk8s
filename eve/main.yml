@@ -262,7 +262,7 @@ models:
         export SSH_CONFIG_FILE=\"${SSH_CONFIG_FILE}\" &&
         export ISO_MOUNTPOINT=\"${ISO_MOUNTPOINT}\" &&
         export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
-        tox -e tests -- -m \"${PYTEST_FILTERS}\""
+        tox -e tests -- ${PYTEST_ARGS:-""} -m \"${PYTEST_FILTERS}\""
       workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       haltOnFailure: true
   - ShellCommand: &add_final_status_artifact
@@ -1213,7 +1213,8 @@ stages:
           name: Run slow tests on the bastion
           env:
             <<: *_env_bastion_tests
-            PYTEST_FILTERS: "post and ci and slow"
+            PYTEST_ARGS: "--suppress-no-test-exit-code"
+            PYTEST_FILTERS: "post and ci and slow and not bootstrap"
       - ShellCommand:
           <<: *generate_report_over_ssh
           env:
