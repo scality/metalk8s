@@ -379,7 +379,7 @@ def run_tests(
 
     env = {"ISO_MOUNTPOINT": iso_mountpoint}
     if mode != "local":
-        env["SSH_CONFIG"] = ssh_config
+        env["SSH_CONFIG_FILE"] = ssh_config
 
     for label, extra_filter in filters.items():
         final_filter = shell._fmt_args(

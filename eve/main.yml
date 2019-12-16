@@ -448,19 +448,19 @@ stages:
     - ShellCommand:
         name: Run tests - installation / expansion
         command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
-          SSH_CONFIG=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
+          SSH_CONFIG_FILE=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
           and install"'
         haltOnFailure: true
     - ShellCommand:
         name: Run tests - fast
         command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
-          SSH_CONFIG=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
+          SSH_CONFIG_FILE=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
           and post and not slow"'
         haltOnFailure: true
     - ShellCommand:
         name: Run tests - slow
         command: ssh -F deploy/ssh_config bastion 'env ISO_MOUNTPOINT=/var/tmp/metalk8s
-          SSH_CONFIG=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
+          SSH_CONFIG_FILE=/home/centos/ssh_config tox -e tests -- -m "ci and multinodes
           and post and slow"'
         haltOnFailure: true
     - ShellCommand:
