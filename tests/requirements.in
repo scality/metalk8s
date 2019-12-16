@@ -4,3 +4,4 @@ testinfra >=2.0.0
 paramiko >=2.4.2 # testinfra backend
 cryptography >=2.4.2
 kubernetes >= 8.0.0
+pytest-custom_exit_code >=0.3.0
