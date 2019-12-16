@@ -17,7 +17,9 @@ from buildchain.targets.remote_image import (
 from buildchain.targets.repository import (
     Repository, RPMRepository, DEBRepository
 )
-from buildchain.targets.serialize import Renderer, SerializedData
+from buildchain.targets.serialize import (
+    Renderer, SerializedData, SaltState, YAMLDocument
+)
 from buildchain.targets.template import TemplateFile
 
 # For mypy, see `--no-implicit-reexport` documentation.
@@ -31,6 +33,6 @@ __all__ = [
     'Package', 'RPMPackage', 'DEBPackage',
     'ImageSaveFormat', 'RemoteImage', 'SaveAsLayers', 'SaveAsTar',
     'Repository', 'RPMRepository', 'DEBRepository',
-    'Renderer', 'SerializedData',
+    'Renderer', 'SerializedData', 'SaltState', 'YAMLDocument',
     'TemplateFile',
 ]
