@@ -4,6 +4,7 @@ import sys
 
 from buildplan import core
 from buildplan import dsl
+from buildplan import properties
 from buildplan.dsl import remote
 from buildplan import shell
 from buildplan import yamlprint
@@ -35,17 +36,45 @@ def pre_merge():
             "release/*",
         ],
         steps=[
-            *dsl.set_debug_stage_properties("single-node", "multiple-nodes"),
-            core.TriggerStages(
-                "Trigger build, docs, and lint stages",
-                stages=[build(), docs(), lint()],
-                halt_on_failure=True,
+            shell.Bash(
+                "Read last build artifacts URL",
+                "eve/scripts/read-last-build-status.sh",
+                env={"ARTIFACTS_NAME": "%(prop:artifacts_name)s"},
+                # hide_step_if=True,
             ),
-            set_version_property(),
-            core.TriggerStages(
-                "Trigger single-node and multiple-nodes steps with built ISO",
-                stages=[single_node(), multiple_nodes()],
-                halt_on_failure=True,
+            properties.set_property_from_file(
+                name="last_artifacts_url",
+                filename=".last_artifacts_url",
+                description="Last build artifacts URL",
+                # hide_step_if=True,
+            ),
+            properties.set_switch_property(
+                name="last_build_success",
+                predicate="$(cat .last_final_status) == 'SUCCESSFUL'",
+                description="Last build success",
+                do_step_if=properties.if_switch("last_artifacts_url"),
+                # hide_step_if=True,
+            ),
+            *properties.switch_steps(
+                name="last_build_success",
+                on=[shell.Shell("Build was successful, skip it!", "exit 0")],
+                off=[
+                    shell.Shell("Build was not successful, try it!", "exit 0"),
+                    # *dsl.set_debug_stage_properties(
+                    #     "single-node", "multiple-nodes"
+                    # ),
+                    # core.TriggerStages(
+                    #     "Trigger build, docs, and lint stages",
+                    #     stages=[build(), docs(), lint()],
+                    #     halt_on_failure=True,
+                    # ),
+                    # set_version_property(),
+                    # core.TriggerStages(
+                    #     "Trigger single-node and multiple-nodes steps with built ISO",
+                    #     stages=[single_node(), multiple_nodes()],
+                    #     halt_on_failure=True,
+                    # ),
+                ],
             ),
         ],
     )
