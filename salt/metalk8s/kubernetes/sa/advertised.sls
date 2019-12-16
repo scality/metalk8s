@@ -36,7 +36,7 @@ Ensure SA private key is present:
     - name: /etc/kubernetes/pki/sa.key
     - user: root
     - group: root
-    - mode: 644
+    - mode: 600
     - makedirs: True
     - dir_mode: 755
     - contents: {{ sa_priv_key.splitlines() }}

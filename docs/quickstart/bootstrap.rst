@@ -38,8 +38,6 @@ Configuration
         workloadPlane: <CIDR-notation>
       ca:
         minion: <hostname-of-the-bootstrap-node>
-      apiServer:
-        host: <IP-of-the-bootstrap-node>
       archives:
         - <path-to-metalk8s-iso>
 
@@ -50,7 +48,6 @@ system is configured to re-mount them automatically after a reboot.
 .. todo::
 
    - Explain the role of this config file and its values
-   - Add a note about setting HA for ``apiServer``
 
 
 .. _quickstart-bootstrap-ssh:

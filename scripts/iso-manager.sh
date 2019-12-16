@@ -198,8 +198,15 @@ _configure_archives() {
         echo "Configuring archive $salt_env..."
         $SALT_CALL --local state.sls metalk8s.archives.configured \
             saltenv="$salt_env" \
-            pillar="{'metalk8s': {'endpoints': \
-            $(salt-call --out txt pillar.get metalk8s:endpoints | cut -c 8-)}}" \
+            pillar="{ \
+                'metalk8s': { \
+                    'endpoints': \
+                        $(salt-call --out txt pillar.get metalk8s:endpoints | cut -c 8-), \
+                    'api_server': { \
+                        'kubeconfig': '/etc/kubernetes/admin.conf' \
+                    } \
+                } \
+            }" \
             test="$DRY_RUN" \
             --retcode-passthrough
     done

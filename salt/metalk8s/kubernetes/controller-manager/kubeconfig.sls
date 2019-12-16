@@ -1,7 +1,7 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
 
-{%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
+{%- set apiserver = 'https://127.0.0.1:7443' %}
 
 include:
   - metalk8s.internal.m2crypto

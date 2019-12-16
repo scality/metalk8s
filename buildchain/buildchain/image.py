@@ -30,7 +30,7 @@ Overview:
 
 
 import datetime
-from typing import Any, Dict, FrozenSet, Iterator, List, Tuple
+from typing import Any, Dict, Iterator, List, Tuple
 
 from buildchain import config
 from buildchain import constants
@@ -105,20 +105,18 @@ def _remote_image(
 ) -> targets.RemoteImage:
     """Build a `RemoteImage` from a name and a repository.
 
-    Provides sane defaults, relies on the `REMOTE_NAMES` and `SAVE_AS_TAR`
+    Provides sane defaults, relies on the `REMOTE_NAMES` and `SAVE_AS`
     constants to add some arguments.
     """
     overrides.setdefault('destination', constants.ISO_IMAGE_ROOT)
     overrides.setdefault('task_dep', ['_image_mkdir_root'])
 
     image_info = _get_image_info(name)
-    kwargs = dict(image_info._asdict(), repository=repository, **overrides)
+    kwargs = dict(image_info._asdict(), repository=repository,
+                  save_as=SAVE_AS.get(name, None), **overrides)
 
     if name in REMOTE_NAMES:
         kwargs['remote_name'] = REMOTE_NAMES[name]
-
-    if name in SAVE_AS_TAR:
-        kwargs['save_as_tar'] = True
 
     return targets.RemoteImage(**kwargs)
 
@@ -204,7 +202,10 @@ REMOTE_NAMES : Dict[str, str] = {
     'nginx-ingress-defaultbackend-amd64': 'defaultbackend-amd64',
 }
 
-SAVE_AS_TAR : FrozenSet[str] = frozenset(('nginx', 'pause'))
+SAVE_AS : Dict[str, List[targets.ImageSaveFormat]] = {
+    'pause': [targets.SaveAsTar()],
+    'nginx': [targets.SaveAsTar(), targets.SaveAsLayers()],
+}
 
 for repo, images in IMGS_PER_REPOSITORY.items():
     for image_name in images:
@@ -216,21 +217,6 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
     _local_image(
         name='salt-master',
         build_args={'SALT_VERSION': versions.SALT_VERSION},
-    ),
-    _local_image(
-        name='keepalived',
-        build_args={
-            'KEEPALIVED_IMAGE': versions.CENTOS_BASE_IMAGE,
-            'KEEPALIVED_IMAGE_SHA256': versions.CENTOS_BASE_IMAGE_SHA256,
-            'KEEPALIVED_VERSION': versions.KEEPALIVED_VERSION,
-            'BUILD_DATE': datetime.datetime.now(datetime.timezone.utc)
-                            .astimezone()
-                            .isoformat(),
-            'VCS_REF': constants.GIT_REF or '<unknown>',
-            'VERSION': versions.CONTAINER_IMAGES_MAP['keepalived'].version,
-            'METALK8S_VERSION': versions.VERSION,
-        },
-        file_dep=[constants.ROOT/'images'/'keepalived'/'entrypoint.sh'],
     ),
     _local_image(
         name='metalk8s-ui',
