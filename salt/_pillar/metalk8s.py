@@ -70,39 +70,6 @@ def _load_ca(config_data):
     }
 
 
-def _load_apiserver(config_data):
-    errors = __utils__['pillar_utils.assert_keys'](config_data, ['apiServer'])
-    if errors:
-        return __utils__['pillar_utils.errors_to_dict'](errors)
-
-    as_data = config_data['apiServer']
-
-    result = {
-        'host': None,
-        'keepalived': {
-            'enabled': False,
-            'virtualRouterId': 1,
-            'authPassword': 'MeTaLk8s',
-        },
-        'kubeconfig': '/etc/kubernetes/admin.conf'
-    }
-
-    errors = __utils__['pillar_utils.assert_keys'](as_data, ['host'])
-    if errors:
-        return __utils__['pillar_utils.errors_to_dict'](errors)
-
-    result['host'] = as_data['host']
-
-    if 'keepalived' in as_data:
-        k_data = as_data['keepalived']
-        k_result = result['keepalived']
-
-        for (key, default) in k_result.items():
-            k_result[key] = k_data.get(key, default)
-
-    return result
-
-
 def _load_iso_path(config_data):
     """Load iso path from BootstrapConfiguration
 
@@ -133,7 +100,6 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
         metal_data = {
             'archives': _load_iso_path(config),
             'ca': _load_ca(config),
-            'api_server': _load_apiserver(config)
         }
 
     result = {
@@ -144,7 +110,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
     if not isinstance(metal_data['archives'], list):
         # Special case for archives in pillar
         __utils__['pillar_utils.promote_errors'](metal_data, 'archives')
-    for key in ['ca', 'api_server']:
+    for key in ['ca',]:
         __utils__['pillar_utils.promote_errors'](metal_data, key)
     for key in ['networks', 'metalk8s']:
         __utils__['pillar_utils.promote_errors'](result, key)

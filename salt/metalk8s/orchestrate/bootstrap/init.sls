@@ -98,7 +98,7 @@ Bring bootstrap minion to highstate:
 
 Wait for API server to be available:
   http.wait_for_successful_query:
-  - name: https://{{ pillar.metalk8s.api_server.host }}:6443/healthz
+  - name: https://127.0.0.1:7443/healthz
   - match: 'ok'
   - status: 200
   - verify_ssl: false

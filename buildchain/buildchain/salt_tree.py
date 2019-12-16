@@ -343,8 +343,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/defaults.yaml'),
     Path('salt/metalk8s/deployed.sls'),
 
-    Path('salt/metalk8s/internal/init.sls'),
-
     Path('salt/metalk8s/internal/m2crypto/absent.sls'),
     Path('salt/metalk8s/internal/m2crypto/init.sls'),
     Path('salt/metalk8s/internal/m2crypto/installed.sls'),
@@ -352,6 +350,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/internal/preflight/init.sls'),
     Path('salt/metalk8s/internal/preflight/mandatory.sls'),
     Path('salt/metalk8s/internal/preflight/recommended.sls'),
+
+    Path('salt/metalk8s/internal/upgrade/apiserver-cert-localhost.sls'),
 
     Path('salt/metalk8s/sreport/init.sls'),
     Path('salt/metalk8s/sreport/installed.sls'),
@@ -368,6 +368,13 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/apiserver/installed.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/cryptconfig.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/kubeconfig.sls'),
+
+    Path('salt/metalk8s/kubernetes/apiserver-proxy/files/'
+            'apiserver-proxy.conf.j2'),
+    Path('salt/metalk8s/kubernetes/apiserver-proxy/files/'
+            'apiserver-proxy.yaml.j2'),
+    Path('salt/metalk8s/kubernetes/apiserver-proxy/init.sls'),
+    Path('salt/metalk8s/kubernetes/apiserver-proxy/installed.sls'),
 
     Path('salt/metalk8s/kubernetes/ca/advertised.sls'),
     Path('salt/metalk8s/kubernetes/ca/etcd/advertised.sls'),
@@ -573,7 +580,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         version=versions.CONTAINER_IMAGES_MAP['pause'].version,
         digest=versions.CONTAINER_IMAGES_MAP['pause'].digest,
         repository=constants.GOOGLE_REPOSITORY,
-        save_as_tar=True,
+        save_as=[targets.SaveAsTar()],
         # pylint:disable=line-too-long
         destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
     ),

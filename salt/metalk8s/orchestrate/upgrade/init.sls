@@ -39,6 +39,17 @@ Wait for pillar refresh to complete:
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
 
+Ensure all apiservers serve a certificate for 127.0.0.1:
+  salt.state:
+    - tgt: {{ cp_nodes | join(",") }}
+    - tgt_type: list
+    - sls:
+      - metalk8s.internal.upgrade.apiserver-cert-localhost
+    - saltenv: {{ saltenv }}
+    - batch: 1
+    - require:
+      - module: Wait for pillar refresh to complete
+
 {%- for node in cp_nodes + other_nodes %}
 
   {%- set node_version = pillar.metalk8s.nodes[node].version|string %}
@@ -53,14 +64,22 @@ Skip node {{ node }}, already in {{ node_version }} newer than {{ dest_version }
 
   {%- else %}
 
+Install apiserver-proxy on {{ node }}:
+  salt.state:
+    - tgt: {{ node }}
+    - sls:
+      - metalk8s.kubernetes.apiserver-proxy
+    - saltenv: {{ saltenv }}
+
 Wait for API server to be available on {{ node }}:
   http.wait_for_successful_query:
-  - name: https://{{ pillar.metalk8s.api_server.host }}:6443/healthz
+  - name: https://127.0.0.1:7443/healthz
   - match: 'ok'
   - status: 200
   - verify_ssl: false
   - require:
     - module: Wait for pillar refresh to complete
+    - salt: Install apiserver-proxy on {{ node }}
   {%- if previous_node is defined %}
     - salt: Deploy node {{ previous_node }}
   {%- endif %}
@@ -92,6 +111,7 @@ Deploy node {{ node }}:
           {%- endif %}
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
+      - salt: Ensure all apiservers serve a certificate for 127.0.0.1
     - require_in:
       - salt: Deploy Kubernetes objects
 
