@@ -256,7 +256,7 @@ stages:
         workdir: build
     - ShellCommand:
         name: Check ISO image with checksum
-        command: sha256sum -c SHA256SUM
+        command: sha256sum -c SHA256SUM metalk8s.iso
         haltOnFailure: true
     - ShellCommand:
         name: Create ISO mountpoint
@@ -407,6 +407,7 @@ stages:
     - ShellCommand:
         name: Check ISO image with checksum
         command: ssh -F deploy/ssh_config bootstrap sha256sum -c /var/tmp/archives/SHA256SUM
+          /var/tmp/archives/metalk8s.iso
         haltOnFailure: true
     - ShellCommand:
         name: Create ISO mountpoint
