@@ -111,6 +111,15 @@ def bootstrap_config(host):
         return yaml.safe_load(config_file.content_string)
 
 
+@pytest.fixture(scope='module')
+def bootstrap_id(host):
+    with host.sudo():
+        json_out = host.check_output(
+            "salt-call --local --out json grains.item id"
+        )
+    return json.loads(json_out)["local"]["id"]
+
+
 @pytest.fixture
 def registry_address(host, version):
     with host.sudo():

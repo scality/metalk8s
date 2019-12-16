@@ -33,16 +33,12 @@ def declare_node(
 ):
     """Declare the given node in Kubernetes."""
     node_ip = get_node_ip(hostname, ssh_config, bootstrap_config)
-    node_name = utils.resolve_hostname(hostname, ssh_config)
-    node_manifest = get_node_manifest(
-        node_type, version, node_ip, node_name
-    )
+    node_manifest = get_node_manifest(node_type, version, node_ip, hostname)
     k8s_client.create_node(body=node_from_manifest(node_manifest))
 
 
-@when(parsers.parse('we deploy the node "{name}"'))
-def deploy_node(host, ssh_config, version, name):
-    node_name = utils.resolve_hostname(name, ssh_config)
+@when(parsers.parse('we deploy the node "{node_name}"'))
+def deploy_node(host, version, bootstrap_id, node_name):
     accept_ssh_key = [
         'salt-ssh', '-i', node_name, 'test.ping', '--roster=kubernetes'
     ]
@@ -52,28 +48,25 @@ def deploy_node(host, ssh_config, version, name):
         'saltenv=metalk8s-{}'.format(version),
         "pillar='{}'".format(json.dumps(pillar))
     ]
-    run_salt_command(host, accept_ssh_key, ssh_config)
-    run_salt_command(host, deploy, ssh_config)
+    run_salt_command(host, accept_ssh_key, bootstrap_id)
+    run_salt_command(host, deploy, bootstrap_id)
 
 
 # }}}
 # Then {{{
 
-@then(parsers.parse('node "{hostname}" is registered in Kubernetes'))
-def check_node_is_registered(ssh_config, k8s_client, hostname):
+@then(parsers.parse('node "{node_name}" is registered in Kubernetes'))
+def check_node_is_registered(k8s_client, node_name):
     """Check if the given node is registered in Kubernetes."""
-    node_name = utils.resolve_hostname(hostname, ssh_config)
     try:
         k8s_client.read_node(node_name)
     except k8s.client.rest.ApiException as exn:
         pytest.fail(str(exn))
 
 
-@then(parsers.parse('node "{hostname}" status is "{expected_status}"'))
-def check_node_status(ssh_config, k8s_client, hostname, expected_status):
+@then(parsers.parse('node "{node_name}" status is "{expected_status}"'))
+def check_node_status(k8s_client, node_name, expected_status):
     """Check if the given node has the expected status."""
-    node_name = utils.resolve_hostname(hostname, ssh_config)
-
     def _check_node_status():
         try:
             status = k8s_client.read_node_status(node_name).status
@@ -97,10 +90,11 @@ def check_node_status(ssh_config, k8s_client, hostname, expected_status):
 
 
 @then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
-def check_etcd_role(ssh_config, k8s_client, node_name):
+def check_etcd_role(k8s_client, bootstrap_id, node_name):
     """Check if the given node is a member of the etcd cluster."""
-    node_name = utils.resolve_hostname(node_name, ssh_config)
-    etcd_member_list = etcdctl(k8s_client, ['member', 'list'], ssh_config)
+    etcd_member_list = etcdctl(
+        k8s_client, ['member', 'list'], bootstrap_id
+    )
     assert node_name in etcd_member_list, \
         'node {} is not part of the etcd cluster'.format(node_name)
 
@@ -159,17 +153,12 @@ def node_from_manifest(manifest):
     manifest['api_version'] = manifest.pop('apiVersion')
     return k8s.client.V1Node(**manifest)
 
-def run_salt_command(host, command, ssh_config):
+def run_salt_command(host, command, bootstrap_id):
     """Run a command inside the salt-master container."""
-
-    pod = 'salt-master-{}'.format(
-        utils.resolve_hostname('bootstrap', ssh_config)
-    )
-
     output = kubectl_exec(
         host,
         command,
-        pod,
+        'salt-master-{}'.format(bootstrap_id),
         container='salt-master',
         namespace='kube-system'
     )
@@ -180,11 +169,8 @@ def run_salt_command(host, command, ssh_config):
             output.stderr
         )
 
-def etcdctl(k8s_client, command, ssh_config):
+def etcdctl(k8s_client, command, bootstrap_id):
     """Run an etcdctl command inside the etcd container."""
-    name = 'etcd-{}'.format(
-        utils.resolve_hostname('bootstrap', ssh_config)
-    )
     etcd_command = [
         'etcdctl',
         '--endpoints', 'https://localhost:2379',
@@ -194,7 +180,7 @@ def etcdctl(k8s_client, command, ssh_config):
     ] + command
     output = k8s.stream.stream(
         k8s_client.connect_get_namespaced_pod_exec,
-        name=name, namespace='kube-system',
+        name='etcd-{}'.format(bootstrap_id), namespace='kube-system',
         command=etcd_command,
         stderr=True, stdin=False, stdout=True, tty=False
     )
