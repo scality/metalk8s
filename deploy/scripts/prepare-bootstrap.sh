@@ -9,6 +9,7 @@ API_SERVER_VIP=${API_SERVER_VIP:-}
 CONTROL_PLANE_IFACE=${CP_IFACE:-"eth0"}
 WORKLOAD_PLANE_IFACE=${WP_IFACE:-"eth0"}
 MINION_ID=${MINION_ID:-"$(hostname)"}
+SSH_IDENTITY=${SSH_IDENTITY:-"/home/centos/.ssh/bootstrap"}
 
 # Prepare output directory
 mkdir -p "$(dirname $OUTPUT_FILE)"
@@ -17,9 +18,12 @@ mkdir -p "$(dirname $OUTPUT_FILE)"
 mkdir -p /etc/salt
 echo "$MINION_ID" > /etc/salt/minion_id
 
-# keepalived configuration
-KEEPALIVED_ENABLED=false
-[[ "$API_SERVER_VIP" ]] && KEEPALIVED_ENABLED=true
+# Prepare Salt master SSH identity
+mkdir /etc/salt/pki
+if [ ! -f "$SSH_IDENTITY" ]; then
+  ssh-keygen -t rsa -b 4096 -N '' -f "$SSH_IDENTITY"
+fi
+cp "$SSH_IDENTITY" /etc/metalk8s/pki/salt_bootstrap
 
 # Retrieve networks info
 get_ip_netmask_from_iface() {

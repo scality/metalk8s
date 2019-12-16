@@ -49,14 +49,11 @@ resource "null_resource" "configure_bootstrap" {
     inline = [
       join(" ", [
         "sudo env",
-        "API_SERVER_VIP=${var.control_plane_network.vip}",
         "CP_IFACE=${var.control_plane_network.iface}",
         "WP_IFACE=${var.workload_plane_network.iface}",
         "ARCHIVE_PATH=${var.iso_mountpoint}",
-        "/home/centos/scripts/bootstrap-config.sh",
+        "/home/centos/scripts/prepare-bootstrap.sh",
       ]),
-      "sudo mkdir -p /etc/metalk8s/pki",
-      "sudo cp /home/centos/.ssh/bootstrap /etc/metalk8s/pki/salt_bootstrap",
     ]
   }
 }
