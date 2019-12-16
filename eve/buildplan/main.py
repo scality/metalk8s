@@ -278,11 +278,13 @@ def get_iso_from_artifacts(destination=None, source=None):
     )
 
     # Validate checksum
+    command = "sha256sum -c SHA256SUM"
+    if destination is not None:
+        command = "cd {} && {}".format(dest_dir, command)
+
     yield shell.Shell(
         "Check ISO image with checksum" + name_suffix,
-        command="sha256sum -c {checksum} {iso}".format(
-            checksum=dest_dir / "SHA256SUM", iso=dest_dir / "metalk8s.iso",
-        ),
+        command=command,
         halt_on_failure=True,
     )
 
