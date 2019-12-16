@@ -33,6 +33,8 @@ def _builder_image(
         They are passed to `LocalImage` init method.
     """
     img_name = '{}-{}-builder'.format(config.PROJECT_NAME.lower(), name)
+    kwargs.setdefault('task_dep', ['_build_root'])
+
     return LocalImage(
         name=img_name,
         version='latest',
