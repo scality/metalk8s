@@ -7,7 +7,7 @@ import collections
 import enum
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, IO, Mapping
+from typing import Any, Callable, Dict, IO, Mapping, Sequence
 
 import yaml
 
@@ -33,7 +33,7 @@ def render_envfile(variables: Mapping[str, str], filepath: Path) -> None:
         fp.write('\n')
 
 
-def render_yaml(data: Any, filepath: Path) -> None:
+def render_yaml(data: Sequence[Any], filepath: Path) -> None:
     """Serialize an object as YAML to a given file path."""
     with filepath.open('w', encoding='utf-8') as fp:
         _yaml_dump(data, fp)
@@ -164,7 +164,7 @@ def _bytestring_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
     )
 
 
-def _yaml_dump(data: Any, fp: IO[Any]) -> None:
+def _yaml_dump(data: Sequence[Any], fp: IO[Any]) -> None:
     dumper = yaml.SafeDumper(fp, sort_keys=False) # type: ignore
     dumper.add_representer( # type: ignore
         YAMLDocument.Literal, _literal_representer
@@ -173,9 +173,10 @@ def _yaml_dump(data: Any, fp: IO[Any]) -> None:
         YAMLDocument.ByteString, _bytestring_representer
     )
     try:
-        dumper.open()          # type: ignore
-        dumper.represent(data) # type: ignore
-        dumper.close()         # type: ignore
+        dumper.open() # type: ignore
+        for document in data:
+            dumper.represent(document) # type: ignore
+        dumper.close() # type: ignore
     finally:
         dumper.dispose() # type: ignore
 

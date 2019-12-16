@@ -239,7 +239,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         data=targets.SaltState(
             shebang='#!jinja | metalk8s_kubernetes',
             imports=[],
-            content={
+            content=[{
                 'apiVersion': 'v1',
                 'kind': 'ConfigMap',
                 'metadata': {
@@ -259,7 +259,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
                         SCALITY_LOGO.read_bytes()
                     )
                 },
-            },
+            }],
         ),
         file_dep=[SCALITY_LOGO, SCALITY_FAVICON, LOGIN_STYLE],
         renderer=targets.Renderer.SLS,
