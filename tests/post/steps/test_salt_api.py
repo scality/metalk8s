@@ -48,7 +48,8 @@ def login_salt_api(host, username, password, version, context, request):
     ])
     with host.sudo():
         cmd_output = host.check_output(cmd_ip)
-    ip = json.loads(cmd_output)['local'][0]
+    # We take the last IP, otherwise we can have the control plane VIP instead
+    ip = json.loads(cmd_output)['local'][-1]
 
     port = 4507
 
