@@ -314,17 +314,17 @@ def prepare_bootstrap(
         halt_on_failure=True,
     )
 
-    # Create BootstrapConfiguration
-    bootstrap_config_env = {
+    # Run preparation script
+    bootstrap_env = {
         "ARCHIVE_PATH": iso,
     }
     if minion_id is not None:
-        bootstrap_config_env["MINION_ID"] = minion_id
+        bootstrap_env["MINION_ID"] = minion_id
 
     yield shell.Bash(
-        "Create bootstrap configuration file",
-        "deploy/scripts/bootstrap-config.sh",
-        env=bootstrap_config_env,
+        "Prepare Bootstrap before installation",
+        "deploy/scripts/prepare-bootstrap.sh",
+        env=bootstrap_env,
         wrap_env=True,
         sudo=True,
         halt_on_failure=True,

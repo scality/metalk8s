@@ -267,8 +267,8 @@ stages:
         command: sudo mount -o loop "$(realpath metalk8s.iso)" "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
         haltOnFailure: true
     - ShellCommand:
-        name: Create bootstrap configuration file
-        command: sudo env ARCHIVE_PATH=$(realpath metalk8s.iso) bash deploy/scripts/bootstrap-config.sh
+        name: Prepare Bootstrap before installation
+        command: sudo env ARCHIVE_PATH=$(realpath metalk8s.iso) bash deploy/scripts/prepare-bootstrap.sh
         haltOnFailure: true
     - ShellCommand:
         name: Start the bootstrap process
@@ -419,12 +419,12 @@ stages:
           "/var/tmp/metalk8s"'
         haltOnFailure: true
     - ShellCommand:
-        name: Create bootstrap configuration file
-        command: ssh -F deploy/ssh_config bootstrap [[ -f "deploy/scripts/bootstrap-config.sh"
-          ]] || (ssh -F deploy/ssh_config bootstrap 'mkdir -p $(dirname deploy/scripts/bootstrap-config.sh)'
-          && scp -F deploy/ssh_config deploy/scripts/bootstrap-config.sh bootstrap:deploy/scripts/bootstrap-config.sh)
+        name: Prepare Bootstrap before installation
+        command: ssh -F deploy/ssh_config bootstrap [[ -f "deploy/scripts/prepare-bootstrap.sh"
+          ]] || (ssh -F deploy/ssh_config bootstrap 'mkdir -p $(dirname deploy/scripts/prepare-bootstrap.sh)'
+          && scp -F deploy/ssh_config deploy/scripts/prepare-bootstrap.sh bootstrap:deploy/scripts/prepare-bootstrap.sh)
           && ssh -F deploy/ssh_config bootstrap 'sudo env ARCHIVE_PATH=/var/tmp/archives/metalk8s.iso
-          MINION_ID=bootstrap bash deploy/scripts/bootstrap-config.sh'
+          MINION_ID=bootstrap bash deploy/scripts/prepare-bootstrap.sh'
         haltOnFailure: true
     - ShellCommand:
         name: Start the bootstrap process
