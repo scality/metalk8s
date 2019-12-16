@@ -10,6 +10,7 @@ module, while other methods can be found in `metalk8s_kubernetes_utils.py`,
 """
 
 import logging
+import re
 
 from salt.exceptions import CommandExecutionError
 from salt.utils import yaml
@@ -131,6 +132,13 @@ def _object_manipulation_function(action):
                     action
                 )
             )
+
+        # Adding label containing metalk8s version (retrieved from saltenv)
+        if action in ['create', 'replace']:
+            match = re.search(r'^metalk8s-(?P<version>.+)$', saltenv)
+            manifest.setdefault('metadata', {}).setdefault('labels', {})[
+                'metalk8s.scality.com/version'
+            ] = match.group('version') if match else "unknown"
 
         log.debug(
             '%sing object with manifest: %s',
