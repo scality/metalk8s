@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import ReactJson from 'react-json-view';
-import { Button, Loader, Steppers } from '@scality/core-ui';
 import { useRouteMatch, useHistory } from 'react-router';
-
-import { subscribeDeployEventsAction } from '../ducks/app/nodes';
-import { getJobStatusFromEventRet } from '../../src/services/salt/utils';
+import isEmpty from 'lodash.isempty';
+import { Button, Loader, Steppers } from '@scality/core-ui';
 import {
   fontWeight,
   grayLighter,
   padding,
   fontSize,
 } from '@scality/core-ui/dist/style/theme';
+
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeDeploymentContainer = styled.div`
@@ -21,6 +20,12 @@ const NodeDeploymentContainer = styled.div`
   flex-direction: column;
   padding: ${padding.larger};
   overflow: auto;
+`;
+
+const InfoMessage = styled.div`
+  color: ${props => props.theme.brand.text};
+  font-size: ${fontSize.base};
+  padding: ${padding.base};
 `;
 
 const NodeDeploymentTitle = styled.div`
@@ -58,59 +63,41 @@ const ErrorLabel = styled.span`
 `;
 
 const NodeDeployment = () => {
-  const dispatch = useDispatch();
   const history = useHistory();
   const match = useRouteMatch();
-  const nodeId = match?.params?.id;
+  const nodeName = match?.params?.id;
 
-  const events = useSelector(state => {
-    if (nodeId) {
-      return state.app.nodes.events[nodeId] || [];
-    }
-    return [];
-  });
+  const jobs = useSelector(state =>
+    state.app.salt.jobs.filter(
+      job => job.type === 'deploy-node' && job.node === nodeName,
+    ),
+  );
 
-  const [activeStep, setActiveStep] = useState(1);
-  const [steps, setSteps] = useState([
-    { title: intl.translate('node_registered') },
-    { title: intl.translate('deploying'), content: <Loader size="larger" /> },
-  ]);
+  let activeJob = jobs.find(job => !job.completed);
+  if (activeJob === undefined) {
+    // Pick most recent one
+    const sortedJobs = jobs.sort(
+      (jobA, jobB) => Date(jobA.completedAt) >= Date(jobB.completedAt),
+    );
+    activeJob = sortedJobs[0];
+  }
 
-  useEffect(() => {
-    if (nodeId) {
-      const subscribeDeployEvents = jid =>
-        dispatch(subscribeDeployEventsAction(jid));
-      subscribeDeployEvents(nodeId);
-    }
-  }, [nodeId, dispatch]);
-
-  useEffect(() => {
-    if (
-      //To improve
-      !steps.find(
-        step => step.title === intl.translate('deployment_started'),
-      ) &&
-      events.find(event => event.tag.includes('/new'))
-    ) {
-      const newSteps = steps;
-      newSteps.splice(steps.length - 1, 0, {
-        title: intl.translate('deployment_started'),
-      });
-      setSteps(newSteps);
-      setActiveStep(2);
+  let steps = [{ title: intl.translate('node_registered') }];
+  let success = false;
+  if (activeJob) {
+    if (activeJob.events.find(event => event.tag.includes('/new'))) {
+      steps.push({ title: intl.translate('deployment_started') });
     }
 
-    const result = events.find(event => event.tag.includes('/ret'));
-    if (result) {
-      const status = getJobStatusFromEventRet(result.data);
-      const newSteps = steps;
-      newSteps.splice(steps.length - 1, 1, {
+    if (activeJob.completed) {
+      const status = activeJob.status;
+      steps.push({
         title: intl.translate('completed'),
         content: (
           <span>
             {!status.success && (
               <ErrorLabel>
-                {`${intl.translate('error')}: ${status.step_id} - ${
+                {`${intl.translate('error')}: ${status.step} - ${
                   status.comment
                 }`}
               </ErrorLabel>
@@ -118,10 +105,18 @@ const NodeDeployment = () => {
           </span>
         ),
       });
-      setSteps(newSteps);
-      setActiveStep(status.success ? steps.length : steps.length - 1);
+      success = status.success;
+    } else {
+      steps.push({
+        title: intl.translate('deploying'),
+        content: <Loader size="larger" />,
+      });
     }
-  }, [events, steps]);
+  }
+
+  // TODO: Remove this workaround and actually handle showing a failed step
+  //       in the Steppers component
+  const activeStep = success ? steps.length : steps.length - 1;
 
   return (
     <NodeDeploymentContainer>
@@ -138,14 +133,26 @@ const NodeDeployment = () => {
         <NodeDeploymentTitle>
           {intl.translate('node_deployment')}
         </NodeDeploymentTitle>
-        <NodeDeploymentContent>
-          <NodeDeploymentStatus>
-            <Steppers steps={steps} activeStep={activeStep} />
-          </NodeDeploymentStatus>
-          <NodeDeploymentEvent>
-            <ReactJson src={events} name={nodeId} collapsed={true} />
-          </NodeDeploymentEvent>
-        </NodeDeploymentContent>
+        {activeJob === undefined ? (
+          <InfoMessage>
+            {intl.translate('no_deployment_found', { name: nodeName })}
+          </InfoMessage>
+        ) : activeJob.completed && isEmpty(activeJob.status) ? (
+          <InfoMessage>{intl.translate('refreshing_job')}</InfoMessage>
+        ) : (
+          <NodeDeploymentContent>
+            <NodeDeploymentStatus>
+              <Steppers steps={steps} activeStep={activeStep} />
+            </NodeDeploymentStatus>
+            <NodeDeploymentEvent>
+              <ReactJson
+                src={activeJob.events}
+                name={nodeName}
+                collapsed={true}
+              />
+            </NodeDeploymentEvent>
+          </NodeDeploymentContent>
+        )}
       </NodeDeploymentWrapper>
     </NodeDeploymentContainer>
   );

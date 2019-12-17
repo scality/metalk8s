@@ -13,7 +13,7 @@ import {
   SALT_AUTHENTICATION_SUCCESS,
   authenticateSaltApi,
 } from './login';
-import { CONNECT_SALT_API } from './app/nodes';
+import { CONNECT_SALT_API } from './app/salt';
 import * as ApiSalt from '../services/salt/api';
 import { LOGOUT } from './config';
 it('Salt authentication success', () => {

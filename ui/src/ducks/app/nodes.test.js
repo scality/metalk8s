@@ -1,958 +1,435 @@
-import { call, put, all, delay } from 'redux-saga/effects';
+import { call, put, all, delay, select } from 'redux-saga/effects';
+import { cloneableGenerator } from '@redux-saga/testing-utils';
+import * as ApiK8s from '../../services/k8s/api';
+import history from '../../history';
+import { REFRESH_TIMEOUT } from '../../constants';
 import {
   fetchNodes,
   createNode,
   refreshNodes,
   UPDATE_NODES,
-  CREATE_NODE_FAILED
+  CREATE_NODE_FAILED,
+  clusterVersionSelector,
+  nodesRefreshingSelector,
 } from './nodes';
-import * as ApiK8s from '../../services/k8s/api';
-import history from '../../history';
-import { getJobStatus } from './nodes.js';
-import { REFRESH_TIMEOUT } from '../../constants';
+import { allJobsSelector } from './salt';
+import {
+  ADD_NOTIFICATION_SUCCESS,
+  ADD_NOTIFICATION_ERROR,
+} from './notifications';
 
-const formPayload = {
-  control_plane: true,
-  hostName_ip: '172.21.254.44',
-  infra: true,
-  name: 'node1dd',
-  ssh_key_path: '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-  ssh_port: '22',
-  ssh_user: 'dqsd',
-  sudo_required: true,
-  version: '2.0',
-  workload_plane: true
-};
+// Helpers {{{
 
-const bodyRequest = {
-  metadata: {
-    annotations: {
-      'metalk8s.scality.com/ssh-host': '172.21.254.44',
-      'metalk8s.scality.com/ssh-key-path':
-        '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-      'metalk8s.scality.com/ssh-port': '22',
-      'metalk8s.scality.com/ssh-sudo': 'true',
-      'metalk8s.scality.com/ssh-user': 'dqsd'
-    },
-    labels: {
-      'metalk8s.scality.com/version': '2.0',
-      'node-role.kubernetes.io/etcd': '',
-      'node-role.kubernetes.io/infra': '',
-      'node-role.kubernetes.io/master': ''
-    },
-    name: 'node1dd'
+const DEFAULT_NAME = 'node1';
+const DEFAULT_CLUSTER_VERSION = '2.4.2';
+
+const nodeMetadata = ({
+  name = DEFAULT_NAME,
+  host = '10.0.0.1',
+  version = DEFAULT_CLUSTER_VERSION,
+  roles = ['node'],
+  keyPath = '/etc/metalk8s/pki/salt_bootstrap',
+  port = '22',
+  sudo = 'true',
+  user = 'centos',
+}) => ({
+  name: name,
+  labels: {
+    'metalk8s.scality.com/version': version,
+    ...roles.reduce(
+      (roleLabels, role) => ({
+        ...roleLabels,
+        [`node-role.kubernetes.io/${role}`]: '',
+      }),
+      {},
+    ),
   },
-  spec: {}
+  annotations: {
+    'metalk8s.scality.com/ssh-host': host,
+    'metalk8s.scality.com/ssh-key-path': keyPath,
+    'metalk8s.scality.com/ssh-port': port,
+    'metalk8s.scality.com/ssh-sudo': sudo,
+    'metalk8s.scality.com/ssh-user': user,
+  },
+});
+
+const nodeForApi = ({ taintRoles = [], showStatus = true, ...props }) => ({
+  metadata: nodeMetadata(props),
+  status: showStatus
+    ? {
+        // FIXME: make this generic
+        capacity: {
+          cpu: '2',
+          memory: '1000ki',
+        },
+        conditions: [
+          {
+            type: 'Ready',
+            status: 'True',
+          },
+        ],
+      }
+    : undefined,
+  spec: {
+    taints: taintRoles.length
+      ? taintRoles.map(role => ({
+          key: `node-role.kubernetes.io/${role}`,
+          effect: 'NoSchedule',
+        }))
+      : undefined,
+  },
+});
+
+const defaultNodeForState = {
+  name: DEFAULT_NAME,
+  metalk8s_version: DEFAULT_CLUSTER_VERSION,
+  workload_plane: true,
+  control_plane: false,
+  bootstrap: false,
+  infra: false,
+  status: 'ready',
+  deploying: false,
+  roles: 'Workload Plane',
 };
 
-it('update the control plane nodes state when fetchNodes', () => {
-  const gen = fetchNodes();
+const formPayload = ({
+  name = DEFAULT_NAME,
+  host = '10.0.0.1',
+  roles = [],
+  ssh = {
+    keyPath: '/etc/metalk8s/pki/salt_bootstrap',
+    port: '22',
+    user: 'centos',
+    sudo: true,
+  },
+}) => ({
+  name,
+  hostName_ip: host,
+  ssh_key_path: ssh.keyPath,
+  ssh_port: ssh.port,
+  ssh_user: ssh.user,
+  sudo_required: ssh.sudo,
+  control_plane: roles.includes('control-plane'),
+  workload_plane: roles.includes('workload-plane'),
+  infra: roles.includes('infra'),
+});
+
+// }}}
+
+describe('`fetchNodes` saga', () => {
+  const gen = cloneableGenerator(fetchNodes)();
+
   expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: true }
-    })
+    put({ type: UPDATE_NODES, payload: { isLoading: true } }),
   );
-  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
-  const result = {
-    body: {
-      items: [
-        {
-          metadata: {
-            name: 'boostrap',
-            creationTimestamp: '2019-29-03',
-            annotations: {
-              'metalk8s.scality.com/ssh-user': 'vagrant',
-              'metalk8s.scality.com/ssh-port': '22',
-              'metalk8s.scality.com/ssh-host': '172.21.254.7',
-              'metalk8s.scality.com/ssh-key-path':
-                '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true'
-            },
-            labels: {
-              'node-role.kubernetes.io/etcd': '',
-              'node-role.kubernetes.io/master': '',
-              'metalk8s.scality.com/version': '2.0'
-            }
-          },
-          status: {
-            capacity: {
-              cpu: '2',
-              memory: '1000ki'
-            },
-            conditions: [
-              {
-                type: 'Ready',
-                status: 'True'
-              }
-            ]
-          },
-          spec: {
-            taints: [
-              {
-                key: 'node-role.kubernetes.io/master',
-                effect: 'NoSchedule'
-              },
-              {
-                key: 'node-role.kubernetes.io/etcd',
-                effect: 'NoSchedule'
-              }
-            ]
-          }
-        }
-      ]
-    }
+
+  expect(gen.next().value).toEqual(select(allJobsSelector));
+
+  const _checkCompletion = _gen => {
+    expect(_gen.next().value).toEqual(delay(1000));
+    expect(_gen.next().value).toEqual(
+      put({ type: UPDATE_NODES, payload: { isLoading: false } }),
+    );
+    expect(_gen.next().done).toBe(true);
   };
 
-  const nodes = [
-    {
-      name: 'boostrap',
-      workload_plane: false,
-      control_plane: true,
-      bootstrap: false,
-      infra: false,
-      status: 'ready',
-      jid: undefined,
-      metalk8s_version: '2.0',
-      roles: 'Control Plane'
-    }
-  ];
+  test('has the correct nominal flow', () => {
+    const clone = gen.clone();
 
-  expect(gen.next(result).value).toEqual(
-    put({ type: UPDATE_NODES, payload: { list: nodes } })
-  );
-  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: false }
-    })
-  );
-  expect(gen.next().done).toEqual(true);
-});
+    const jobs = [];
+    expect(clone.next(jobs).value).toEqual(call(ApiK8s.getNodes));
 
-it('update the bootstrap nodes state when fetchNodes', () => {
-  const gen = fetchNodes();
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: true }
-    })
-  );
-  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
+    const apiResponse = { body: { items: [] } };
+    expect(clone.next(apiResponse).value).toEqual(
+      put({ type: UPDATE_NODES, payload: { list: [] } }),
+    );
 
-  const result = {
-    body: {
-      items: [
-        {
-          metadata: {
-            name: 'boostrap',
-            creationTimestamp: '2019-29-03',
-            annotations: {
-              'metalk8s.scality.com/ssh-user': 'vagrant',
-              'metalk8s.scality.com/ssh-port': '22',
-              'metalk8s.scality.com/ssh-host': '172.21.254.7',
-              'metalk8s.scality.com/ssh-key-path':
-                '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true'
-            },
-            labels: {
-              'node-role.kubernetes.io/bootstrap': '',
-              'node-role.kubernetes.io/etcd': '',
-              'node-role.kubernetes.io/master': '',
-              'node-role.kubernetes.io/infra': '',
-              'metalk8s.scality.com/version': '2.0'
-            }
-          },
-          status: {
-            capacity: {
-              cpu: '2',
-              memory: '1000ki'
-            },
-            conditions: [
-              {
-                type: 'Ready',
-                status: 'True'
-              }
-            ]
-          },
-          spec: {
-            taints: [
-              {
-                key: 'node-role.kubernetes.io/bootstrap',
-                effect: 'NoSchedule'
-              },
-              {
-                key: 'node-role.kubernetes.io/infra',
-                effect: 'NoSchedule'
-              }
-            ]
-          }
-        }
-      ]
-    }
-  };
+    _checkCompletion(clone);
+  });
 
-  const nodes = [
-    {
-      name: 'boostrap',
-      workload_plane: false,
-      control_plane: false,
-      infra: false,
-      bootstrap: true,
-      status: 'ready',
-      jid: undefined,
-      metalk8s_version: '2.0',
-      roles: 'Bootstrap'
-    }
-  ];
+  test.todo('handles API errors');
 
-  expect(gen.next(result).value).toEqual(
-    put({ type: UPDATE_NODES, payload: { list: nodes } })
-  );
-
-  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: false }
-    })
-  );
-  expect(gen.next().done).toEqual(true);
-});
-
-it('update the workload plane nodes state when fetchNodes', () => {
-  const gen = fetchNodes();
-
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: true }
-    })
-  );
-
-  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
-
-  const result = {
-    body: {
-      items: [
-        {
-          metadata: {
-            name: 'boostrap',
-            creationTimestamp: '2019-29-03',
-            annotations: {
-              'metalk8s.scality.com/ssh-user': 'vagrant',
-              'metalk8s.scality.com/ssh-port': '22',
-              'metalk8s.scality.com/ssh-host': '172.21.254.7',
-              'metalk8s.scality.com/ssh-key-path':
-                '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true'
-            },
-            labels: {
-              'node-role.kubernetes.io/node': '',
-              'metalk8s.scality.com/version': '2.0'
-            }
-          },
-          status: {
-            capacity: {
-              cpu: '2',
-              memory: '1000ki'
-            },
-            conditions: [
-              {
-                type: 'Ready',
-                status: 'True'
-              }
-            ]
-          },
-          spec: {}
-        }
-      ]
-    }
-  };
-
-  const nodes = [
-    {
-      name: 'boostrap',
-      workload_plane: true,
-      control_plane: false,
-      bootstrap: false,
-      infra: false,
-      status: 'ready',
-      jid: undefined,
-      metalk8s_version: '2.0',
-      roles: 'Workload Plane'
-    }
-  ];
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: UPDATE_NODES, payload: { list: nodes } })
-  );
-  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: false }
-    })
-  );
-  expect(gen.next().done).toEqual(true);
-});
-
-it('update the control plane/workload plane nodes state when fetchNodes', () => {
-  const gen = fetchNodes();
-
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: true }
-    })
-  );
-
-  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
-
-  const result = {
-    body: {
-      items: [
-        {
-          metadata: {
-            name: 'boostrap',
-            creationTimestamp: '2019-29-03',
-            annotations: {
-              'metalk8s.scality.com/ssh-user': 'vagrant',
-              'metalk8s.scality.com/ssh-port': '22',
-              'metalk8s.scality.com/ssh-host': '172.21.254.7',
-              'metalk8s.scality.com/ssh-key-path':
-                '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true'
-            },
-            labels: {
-              'node-role.kubernetes.io/node': '',
-              'node-role.kubernetes.io/etcd': '',
-              'node-role.kubernetes.io/master': '',
-              'metalk8s.scality.com/version': '2.0'
-            }
-          },
-          status: {
-            capacity: {
-              cpu: '2',
-              memory: '1000ki'
-            },
-            conditions: [
-              {
-                type: 'Ready',
-                status: 'True'
-              }
-            ]
-          },
-          spec: {}
-        }
-      ]
-    }
-  };
-
-  const nodes = [
-    {
-      name: 'boostrap',
-      workload_plane: true,
-      control_plane: true,
-      infra: false,
-      bootstrap: false,
-      status: 'ready',
-      jid: undefined,
-      metalk8s_version: '2.0',
-      roles: 'Control Plane / Workload Plane'
-    }
-  ];
-  expect(gen.next(result).value).toEqual(
-    put({ type: UPDATE_NODES, payload: { list: nodes } })
-  );
-
-  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: false }
-    })
-  );
-  expect(gen.next().done).toEqual(true);
-});
-
-it('update the control plane/workload plane/ infra nodes state when fetchNodes', () => {
-  const gen = fetchNodes();
-
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: true }
-    })
-  );
-  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
-
-  const result = {
-    body: {
-      items: [
-        {
-          metadata: {
-            name: 'boostrap',
-            creationTimestamp: '2019-29-03',
-            annotations: {
-              'metalk8s.scality.com/ssh-user': 'vagrant',
-              'metalk8s.scality.com/ssh-port': '22',
-              'metalk8s.scality.com/ssh-host': '172.21.254.7',
-              'metalk8s.scality.com/ssh-key-path':
-                '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true'
-            },
-            labels: {
-              'node-role.kubernetes.io/infra': '',
-              'node-role.kubernetes.io/etcd': '',
-              'node-role.kubernetes.io/master': '',
-              'metalk8s.scality.com/version': '2.0'
-            }
-          },
-          status: {
-            capacity: {
-              cpu: '2',
-              memory: '1000ki'
-            },
-            conditions: [
-              {
-                type: 'Ready',
-                status: 'True'
-              }
-            ]
-          },
-          spec: {}
-        }
-      ]
-    }
-  };
-
-  const nodes = [
-    {
-      name: 'boostrap',
-      workload_plane: true,
-      control_plane: true,
-      infra: true,
-      bootstrap: false,
-      status: 'ready',
-      jid: undefined,
-      metalk8s_version: '2.0',
-      roles: 'Control Plane / Workload Plane / Infra'
-    }
-  ];
-  expect(gen.next(result).value).toEqual(
-    put({ type: UPDATE_NODES, payload: { list: nodes } })
-  );
-
-  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: false }
-    })
-  );
-  expect(gen.next().done).toEqual(true);
-});
-
-it('update the infra nodes state when fetchNodes', () => {
-  const gen = fetchNodes();
-
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: true }
-    })
-  );
-  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
-
-  const result = {
-    body: {
-      items: [
-        {
-          metadata: {
-            name: 'boostrap',
-            creationTimestamp: '2019-29-03',
-            annotations: {
-              'metalk8s.scality.com/ssh-user': 'vagrant',
-              'metalk8s.scality.com/ssh-port': '22',
-              'metalk8s.scality.com/ssh-host': '172.21.254.7',
-              'metalk8s.scality.com/ssh-key-path':
-                '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true'
-            },
-            labels: {
-              'node-role.kubernetes.io/infra': '',
-              'metalk8s.scality.com/version': '2.0'
-            }
-          },
-          status: {
-            capacity: {
-              cpu: '2',
-              memory: '1000ki'
-            },
-            conditions: [
-              {
-                type: 'Ready',
-                status: 'True'
-              }
-            ]
-          },
-          spec: {
-            taints: [
-              {
-                key: 'node-role.kubernetes.io/infra',
-                effect: 'NoSchedule'
-              }
-            ]
-          }
-        }
-      ]
-    }
-  };
-
-  const nodes = [
-    {
-      name: 'boostrap',
-      workload_plane: false,
-      control_plane: false,
-      infra: true,
-      bootstrap: false,
-      status: 'ready',
-      jid: undefined,
-      metalk8s_version: '2.0',
-      roles: 'Infra'
-    }
-  ];
-  expect(gen.next(result).value).toEqual(
-    put({ type: UPDATE_NODES, payload: { list: nodes } })
-  );
-
-  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: false }
-    })
-  );
-  expect(gen.next().done).toEqual(true);
-});
-
-it('update the infra / Worload Plane  nodes state when fetchNodes', () => {
-  const gen = fetchNodes();
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: true }
-    })
-  );
-  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
-
-  const result = {
-    body: {
-      items: [
-        {
-          metadata: {
-            name: 'boostrap',
-            creationTimestamp: '2019-29-03',
-            annotations: {
-              'metalk8s.scality.com/ssh-user': 'vagrant',
-              'metalk8s.scality.com/ssh-port': '22',
-              'metalk8s.scality.com/ssh-host': '172.21.254.7',
-              'metalk8s.scality.com/ssh-key-path':
-                '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true'
-            },
-            labels: {
-              'node-role.kubernetes.io/infra': '',
-              'metalk8s.scality.com/version': '2.0'
-            }
-          },
-          status: {
-            capacity: {
-              cpu: '2',
-              memory: '1000ki'
-            },
-            conditions: [
-              {
-                type: 'Ready',
-                status: 'True'
-              }
-            ]
-          },
-          spec: {}
-        }
-      ]
-    }
-  };
-
-  const nodes = [
-    {
-      name: 'boostrap',
-      workload_plane: true,
-      control_plane: false,
-      infra: true,
-      bootstrap: false,
-      status: 'ready',
-      jid: undefined,
-      metalk8s_version: '2.0',
-      roles: 'Workload Plane / Infra'
-    }
-  ];
-  expect(gen.next(result).value).toEqual(
-    put({ type: UPDATE_NODES, payload: { list: nodes } })
-  );
-
-  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: false }
-    })
-  );
-  expect(gen.next().done).toEqual(true);
-});
-
-it('update the infra / Controle Plane nodes state when fetchNodes', () => {
-  const gen = fetchNodes();
-
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: true }
-    })
-  );
-  expect(gen.next().value).toEqual(call(ApiK8s.getNodes));
-
-  const result = {
-    body: {
-      items: [
-        {
-          metadata: {
-            name: 'boostrap',
-            creationTimestamp: '2019-29-03',
-            annotations: {
-              'metalk8s.scality.com/ssh-user': 'vagrant',
-              'metalk8s.scality.com/ssh-port': '22',
-              'metalk8s.scality.com/ssh-host': '172.21.254.7',
-              'metalk8s.scality.com/ssh-key-path':
-                '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-              'metalk8s.scality.com/ssh-sudo': 'true'
-            },
-            labels: {
-              'node-role.kubernetes.io/infra': '',
-              'node-role.kubernetes.io/master': '',
-              'node-role.kubernetes.io/etcd': '',
-              'metalk8s.scality.com/version': '2.0'
-            }
-          },
-          status: {
-            capacity: {
-              cpu: '2',
-              memory: '1000ki'
-            },
-            conditions: [
-              {
-                type: 'Ready',
-                status: 'True'
-              }
-            ]
-          },
-          spec: {
-            taints: [
-              {
-                key: 'node-role.kubernetes.io/infra',
-                effect: 'NoSchedule'
-              }
-            ]
-          }
-        }
-      ]
-    }
-  };
-
-  const nodes = [
-    {
-      name: 'boostrap',
-      workload_plane: false,
-      control_plane: true,
-      infra: true,
-      bootstrap: false,
-      status: 'ready',
-      jid: undefined,
-      metalk8s_version: '2.0',
-      roles: 'Control Plane / Infra'
-    }
-  ];
-  expect(gen.next(result).value).toEqual(
-    put({ type: UPDATE_NODES, payload: { list: nodes } })
-  );
-
-  expect(gen.next(result).value).toEqual(all([call(getJobStatus, 'boostrap')]));
-  expect(gen.next().value).toEqual(delay(1000));
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isLoading: false }
-    })
-  );
-  expect(gen.next().done).toEqual(true);
-});
-it('create Node success - CP,WP,I', () => {
-  const gen = createNode({ payload: formPayload });
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, bodyRequest));
-  expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
-  expect(gen.next().value).toEqual(call(history.push, '/nodes'));
-});
-
-it('create Node fail - CP,WP,I', () => {
-  const gen = createNode({ payload: formPayload });
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, bodyRequest));
-  expect(gen.next({ error: { body: { message: 'error' } } }).value).toEqual(
-    put({
-      type: CREATE_NODE_FAILED,
-      payload: 'error'
-    })
-  );
-});
-
-it('create Node success - CP', () => {
-  const request = {
-    metadata: {
-      annotations: {
-        'metalk8s.scality.com/ssh-host': '172.21.254.44',
-        'metalk8s.scality.com/ssh-key-path':
-          '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-        'metalk8s.scality.com/ssh-port': '22',
-        'metalk8s.scality.com/ssh-sudo': 'true',
-        'metalk8s.scality.com/ssh-user': 'dqsd'
+  test.each([
+    ['completed', true],
+    ['in progress', false],
+  ])('maps %s deployment Jobs to Nodes', (_, completed) => {
+    const clone = gen.clone();
+    const jobs = [
+      {
+        type: "deploy-node",
+        node: DEFAULT_NAME,
+        jid: '12345',
+        completed,
       },
-      labels: {
-        'metalk8s.scality.com/version': '2.0',
-        'node-role.kubernetes.io/etcd': '',
-        'node-role.kubernetes.io/master': ''
+    ];
+
+    expect(clone.next(jobs).value).toEqual(call(ApiK8s.getNodes));
+
+    const apiResponse = { body: { items: [nodeForApi({})] } };
+    const expectedNode = { ...defaultNodeForState, deploying: !completed };
+
+    expect(clone.next(apiResponse).value).toEqual(
+      put({ type: UPDATE_NODES, payload: { list: [expectedNode] } }),
+    );
+  });
+
+  test.todo('ignores Jobs not related to Nodes deployment');
+  test.todo('attaches Jobs based on Node name');
+
+  // FIXME: this logic is wrong anyway, we don't want to infer roles from
+  // taints, maybe display them, but that's all
+  test.each([
+    [
+      ['master', 'etcd'],
+      ['master', 'etcd'],
+      {
+        wp: false,
+        cp: true,
+        infra: false,
+        bootstrap: false,
+        labels: 'Control Plane',
       },
-      name: 'node1dd'
-    },
-    spec: {
-      taints: [
-        {
-          effect: 'NoSchedule',
-          key: 'node-role.kubernetes.io/master'
+    ],
+    [
+      ['bootstrap', 'master', 'etcd', 'infra'],
+      ['bootstrap', 'infra'],
+      {
+        wp: false,
+        cp: false,
+        infra: false,
+        bootstrap: true,
+        labels: 'Bootstrap',
+      },
+    ],
+    [
+      ['node'],
+      [],
+      {
+        wp: true,
+        cp: false,
+        infra: false,
+        bootstrap: false,
+        labels: 'Workload Plane',
+      },
+    ],
+    [
+      ['node', 'master', 'etcd'],
+      [],
+      {
+        wp: true,
+        cp: true,
+        infra: false,
+        bootstrap: false,
+        labels: 'Control Plane / Workload Plane',
+      },
+    ],
+    [
+      ['infra'],
+      ['infra'],
+      {
+        wp: false,
+        cp: false,
+        infra: true,
+        bootstrap: false,
+        labels: 'Infra',
+      },
+    ],
+    [
+      ['infra'],
+      [],
+      {
+        wp: true,
+        cp: false,
+        infra: true,
+        bootstrap: false,
+        labels: 'Workload Plane / Infra',
+      },
+    ],
+    [
+      ['infra', 'master', 'etcd'],
+      ['infra'],
+      {
+        wp: false,
+        cp: true,
+        infra: true,
+        bootstrap: false,
+        labels: 'Control Plane / Infra',
+      },
+    ],
+  ])('handles Node roles (%j) and taints (%j)', (roles, taints, expected) => {
+    const clone = gen.clone();
+    expect(clone.next([]).value).toEqual(call(ApiK8s.getNodes));
+
+    const apiResponse = {
+      body: { items: [nodeForApi({ roles, taintRoles: taints })] },
+    };
+
+    const expectedNode = {
+      ...defaultNodeForState,
+      workload_plane: expected.wp,
+      control_plane: expected.cp,
+      bootstrap: expected.bootstrap,
+      infra: expected.infra,
+      roles: expected.labels,
+    };
+
+    expect(clone.next(apiResponse).value).toEqual(
+      put({ type: UPDATE_NODES, payload: { list: [expectedNode] } }),
+    );
+
+    _checkCompletion(clone);
+  });
+});
+
+describe('`createNode` saga', () => {
+  test('has the correct nominal flow', () => {
+    const gen = createNode({
+      payload: formPayload({ roles: ['workload-plane'] }),
+    });
+    expect(gen.next().value).toEqual(select(clusterVersionSelector));
+    expect(gen.next(DEFAULT_CLUSTER_VERSION).value).toEqual(
+      call(
+        ApiK8s.createNode,
+        nodeForApi({ showStatus: false, roles: ['node'] }),
+      ),
+    );
+    expect(gen.next({ whatever: 'nominal result' }).value).toEqual(
+      call(fetchNodes),
+    );
+    expect(gen.next().value).toEqual(call(history.push, '/nodes'));
+    expect(gen.next().value).toMatchObject(
+      put({
+        type: ADD_NOTIFICATION_SUCCESS,
+        payload: {
+          title: 'Node creation',
+          message: `Node ${DEFAULT_NAME} has been created successfully.`,
+          variant: 'success',
+          dismissAfter: 5000,
         },
-        {
-          effect: 'NoSchedule',
-          key: 'node-role.kubernetes.io/etcd'
-        }
-      ]
-    }
-  };
-
-  const gen = createNode({
-    payload: { ...formPayload, workload_plane: false, infra: false }
+      }),
+    );
+    expect(gen.next().done).toBe(true);
   });
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
-  expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
-  expect(gen.next().value).toEqual(call(history.push, '/nodes'));
-});
 
-it('create Node success - WP', () => {
-  const request = {
-    metadata: {
-      annotations: {
-        'metalk8s.scality.com/ssh-host': '172.21.254.44',
-        'metalk8s.scality.com/ssh-key-path':
-          '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-        'metalk8s.scality.com/ssh-port': '22',
-        'metalk8s.scality.com/ssh-sudo': 'true',
-        'metalk8s.scality.com/ssh-user': 'dqsd'
-      },
-      labels: {
-        'metalk8s.scality.com/version': '2.0',
-        'node-role.kubernetes.io/node': ''
-      },
-      name: 'node1dd'
-    },
-    spec: {}
-  };
-
-  const gen = createNode({
-    payload: { ...formPayload, control_plane: false, infra: false }
+  test('handles API errors', () => {
+    const gen = createNode({
+      payload: formPayload({ roles: ['workload-plane'] }),
+    });
+    expect(gen.next().value).toEqual(select(clusterVersionSelector));
+    expect(gen.next(DEFAULT_CLUSTER_VERSION).value).toEqual(
+      call(
+        ApiK8s.createNode,
+        nodeForApi({ showStatus: false, roles: ['node'] }),
+      ),
+    );
+    expect(
+      gen.next({ error: { body: { message: 'some error happened' } } }).value,
+    ).toEqual(
+      put({ type: CREATE_NODE_FAILED, payload: 'some error happened' }),
+    );
+    expect(gen.next().value).toMatchObject(
+      put({
+        type: ADD_NOTIFICATION_ERROR,
+        payload: {
+          title: 'Node creation',
+          message: `Node ${DEFAULT_NAME} creation has failed.`,
+          variant: 'danger',
+        },
+      }),
+    );
+    expect(gen.next().done).toBe(true);
   });
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
-  expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
-  expect(gen.next().value).toEqual(call(history.push, '/nodes'));
-});
 
-it('create Node success - Infra', () => {
-  const request = {
-    metadata: {
-      annotations: {
-        'metalk8s.scality.com/ssh-host': '172.21.254.44',
-        'metalk8s.scality.com/ssh-key-path':
-          '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-        'metalk8s.scality.com/ssh-port': '22',
-        'metalk8s.scality.com/ssh-sudo': 'true',
-        'metalk8s.scality.com/ssh-user': 'dqsd'
-      },
-      labels: {
-        'metalk8s.scality.com/version': '2.0',
-        'node-role.kubernetes.io/infra': ''
-      },
-      name: 'node1dd'
-    },
-    spec: {
-      taints: [
-        {
-          effect: 'NoSchedule',
-          key: 'node-role.kubernetes.io/infra'
-        }
-      ]
-    }
-  };
-
-  const gen = createNode({
-    payload: { ...formPayload, control_plane: false, workload_plane: false }
+  test.each([
+    [
+      ['control-plane'],
+      { roles: ['master', 'etcd'], taints: ['master', 'etcd'] },
+    ],
+    [['workload-plane'], { roles: ['node'], taints: [] }],
+    [['infra'], { roles: ['infra'], taints: ['infra'] }],
+    [
+      ['control-plane', 'workload-plane'],
+      { roles: ['master', 'etcd', 'node'], taints: [] },
+    ],
+    [
+      ['control-plane', 'infra'],
+      { roles: ['master', 'etcd', 'infra'], taints: ['infra'] },
+    ],
+    [['workload-plane', 'infra'], { roles: ['infra'], taints: [] }],
+    [
+      ['control-plane', 'workload-plane', 'infra'],
+      { roles: ['master', 'etcd', 'infra'], taints: [] },
+    ],
+  ])('handles high-level roles (%j)', (roles, expected) => {
+    const gen = createNode({
+      payload: formPayload({ roles }),
+    });
+    expect(gen.next().value).toEqual(select(clusterVersionSelector));
+    expect(gen.next(DEFAULT_CLUSTER_VERSION).value).toEqual(
+      call(
+        ApiK8s.createNode,
+        nodeForApi({
+          showStatus: false,
+          roles: expected.roles,
+          taintRoles: expected.taints,
+        }),
+      ),
+    );
+    expect(gen.next({ whatever: 'nominal result' }).value).toEqual(
+      call(fetchNodes),
+    );
+    expect(gen.next().value).toEqual(call(history.push, '/nodes'));
+    expect(gen.next().value).toMatchObject(
+      put({
+        type: ADD_NOTIFICATION_SUCCESS,
+        payload: {
+          title: 'Node creation',
+          message: `Node ${DEFAULT_NAME} has been created successfully.`,
+          variant: 'success',
+          dismissAfter: 5000,
+        },
+      }),
+    );
+    expect(gen.next().done).toBe(true);
   });
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
-  expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
-  expect(gen.next().value).toEqual(call(history.push, '/nodes'));
 });
 
-it('create Node success - CP,WP', () => {
-  const request = {
-    metadata: {
-      annotations: {
-        'metalk8s.scality.com/ssh-host': '172.21.254.44',
-        'metalk8s.scality.com/ssh-key-path':
-          '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-        'metalk8s.scality.com/ssh-port': '22',
-        'metalk8s.scality.com/ssh-sudo': 'true',
-        'metalk8s.scality.com/ssh-user': 'dqsd'
-      },
-      labels: {
-        'metalk8s.scality.com/version': '2.0',
-        'node-role.kubernetes.io/master': '',
-        'node-role.kubernetes.io/etcd': '',
-        'node-role.kubernetes.io/node': ''
-      },
-      name: 'node1dd'
-    },
-    spec: {}
-  };
-
-  const gen = createNode({
-    payload: { ...formPayload, infra: false }
+describe('`refreshNodes` saga', () => {
+  // FIXME: avoid recursivity in this saga, see #2035
+  test("keeps refreshing if state didn't change", () => {
+    const gen = refreshNodes();
+    expect(gen.next().value).toEqual(
+      put({ type: UPDATE_NODES, payload: { isRefreshing: true } }),
+    );
+    expect(gen.next().value).toEqual(call(fetchNodes));
+    expect(gen.next({ whatever: 'nominal' }).value).toEqual(
+      delay(REFRESH_TIMEOUT),
+    );
+    expect(gen.next().value).toEqual(select(nodesRefreshingSelector));
+    // Still refreshing, recurse
+    expect(gen.next(true).value).toEqual(call(refreshNodes));
   });
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
-  expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
-  expect(gen.next().value).toEqual(call(history.push, '/nodes'));
-});
 
-it('create Node success - CP,Infra', () => {
-  const request = {
-    metadata: {
-      annotations: {
-        'metalk8s.scality.com/ssh-host': '172.21.254.44',
-        'metalk8s.scality.com/ssh-key-path':
-          '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-        'metalk8s.scality.com/ssh-port': '22',
-        'metalk8s.scality.com/ssh-sudo': 'true',
-        'metalk8s.scality.com/ssh-user': 'dqsd'
-      },
-      labels: {
-        'metalk8s.scality.com/version': '2.0',
-        'node-role.kubernetes.io/master': '',
-        'node-role.kubernetes.io/etcd': '',
-        'node-role.kubernetes.io/infra': ''
-      },
-      name: 'node1dd'
-    },
-    spec: {
-      taints: [
-        {
-          effect: 'NoSchedule',
-          key: 'node-role.kubernetes.io/infra'
-        }
-      ]
-    }
-  };
-
-  const gen = createNode({
-    payload: { ...formPayload, workload_plane: false }
+  test('stops refreshing if state changed', () => {
+    const gen = refreshNodes();
+    expect(gen.next().value).toEqual(
+      put({ type: UPDATE_NODES, payload: { isRefreshing: true } }),
+    );
+    expect(gen.next().value).toEqual(call(fetchNodes));
+    expect(gen.next({ whatever: 'nominal' }).value).toEqual(
+      delay(REFRESH_TIMEOUT),
+    );
+    expect(gen.next().value).toEqual(select(nodesRefreshingSelector));
+    // Not refreshing anymore, stop this saga
+    expect(gen.next(false).done).toBe(true);
   });
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
-  expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
-  expect(gen.next().value).toEqual(call(history.push, '/nodes'));
-});
 
-it('create Node success - WP,Infra', () => {
-  const request = {
-    metadata: {
-      annotations: {
-        'metalk8s.scality.com/ssh-host': '172.21.254.44',
-        'metalk8s.scality.com/ssh-key-path':
-          '/etc/metalk8s/pki/preshared_key_for_k8s_nodes',
-        'metalk8s.scality.com/ssh-port': '22',
-        'metalk8s.scality.com/ssh-sudo': 'true',
-        'metalk8s.scality.com/ssh-user': 'dqsd'
-      },
-      labels: {
-        'metalk8s.scality.com/version': '2.0',
-        'node-role.kubernetes.io/infra': ''
-      },
-      name: 'node1dd'
-    },
-    spec: {}
-  };
-
-  const gen = createNode({
-    payload: { ...formPayload, control_plane: false }
+  test('stops refreshing on error', () => {
+    const gen = refreshNodes();
+    expect(gen.next().value).toEqual(
+      put({ type: UPDATE_NODES, payload: { isRefreshing: true } }),
+    );
+    expect(gen.next().value).toEqual(call(fetchNodes));
+    expect(gen.next({ error: 'something broke' }).done).toBe(true);
   });
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('2.0').value).toEqual(call(ApiK8s.createNode, request));
-  expect(gen.next({ data: null }).value).toEqual(call(fetchNodes));
-  expect(gen.next().value).toEqual(call(history.push, '/nodes'));
-});
-
-it('should refresh nodes if no error', () => {
-  const gen = refreshNodes();
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isRefreshing: true }
-    })
-  );
-  expect(gen.next().value).toEqual(call(fetchNodes));
-  expect(gen.next({}).value).toEqual(delay(REFRESH_TIMEOUT));
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next(true).value).toEqual(call(refreshNodes));
-});
-
-it('should stop refresh Nodes', () => {
-  const gen = refreshNodes();
-  expect(gen.next().value).toEqual(
-    put({
-      type: UPDATE_NODES,
-      payload: { isRefreshing: true }
-    })
-  );
-  expect(gen.next().value).toEqual(call(fetchNodes));
-  expect(gen.next({}).value).toEqual(delay(REFRESH_TIMEOUT));
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next(false).done).toEqual(true);
 });

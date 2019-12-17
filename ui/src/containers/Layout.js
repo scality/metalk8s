@@ -188,7 +188,7 @@ const Layout = props => {
           <PrivateRoute exact path="/nodes/create" component={NodeCreateForm} />
           <PrivateRoute
             exact
-            path="/nodes/deploy/:id"
+            path="/nodes/:id/deploy"
             component={NodeDeployment}
           />
           <PrivateRoute
