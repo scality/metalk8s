@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
+import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { useLocation, useHistory, useRouteMatch } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
@@ -35,6 +35,7 @@ import {
 } from '../components/InformationList';
 import { STATUS_BOUND } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeInformationContainer = styled.div`
   display: flex;
@@ -70,7 +71,6 @@ const PodsContainer = styled.div`
 `;
 
 const NodeInformation = props => {
-  const { intl } = props;
   const history = useHistory();
   const match = useRouteMatch();
   const location = useLocation();
@@ -94,20 +94,20 @@ const NodeInformation = props => {
 
   const columns = [
     {
-      label: props.intl.messages.name,
+      label: intl.translate('name'),
       dataKey: 'name',
       flexGrow: 1,
     },
     {
-      label: props.intl.messages.status,
+      label: intl.translate('status'),
       dataKey: 'status',
     },
     {
-      label: props.intl.messages.namespace,
+      label: intl.translate('namespace'),
       dataKey: 'namespace',
     },
     {
-      label: props.intl.messages.start_time,
+      label: intl.translate('start_time'),
       dataKey: 'startTime',
       renderer: data => (
         <span>
@@ -116,7 +116,7 @@ const NodeInformation = props => {
       ),
     },
     {
-      label: props.intl.messages.restart,
+      label: intl.translate('restart'),
       dataKey: 'restartCount',
     },
   ];
@@ -131,21 +131,21 @@ const NodeInformation = props => {
   const NodeDetails = () => (
     <InformationListContainer>
       <InformationSpan>
-        <InformationLabel>{intl.messages.name}</InformationLabel>
+        <InformationLabel>{intl.translate('name')}</InformationLabel>
         <InformationMainValue>{node.name}</InformationMainValue>
       </InformationSpan>
       <InformationSpan>
-        <InformationLabel>{intl.messages.status}</InformationLabel>
+        <InformationLabel>{intl.translate('status')}</InformationLabel>
         <InformationValue>
-          {intl.messages[node.status] || node.status}
+          {intl.translate(node.status) || node.status}
         </InformationValue>
       </InformationSpan>
       <InformationSpan>
-        <InformationLabel>{intl.messages.roles}</InformationLabel>
+        <InformationLabel>{intl.translate('roles')}</InformationLabel>
         <InformationValue>{node.roles}</InformationValue>
       </InformationSpan>
       <InformationSpan>
-        <InformationLabel>{intl.messages.version}</InformationLabel>
+        <InformationLabel>{intl.translate('version')}</InformationLabel>
         <InformationValue>{node.metalk8s_version}</InformationValue>
       </InformationSpan>
     </InformationListContainer>
@@ -165,7 +165,7 @@ const NodeInformation = props => {
           onSort={onSort}
           onRowClick={() => {}}
           noRowsRenderer={() => (
-            <NoRowsRenderer content={intl.messages.no_data_available} />
+            <NoRowsRenderer content={intl.translate('no_data_available')} />
           )}
         />
       </PodsContainer>
@@ -181,14 +181,14 @@ const NodeInformation = props => {
       status: computeVolumeGlobalStatus(volume.metadata.name, volume?.status),
       bound:
         volumePV?.status?.phase === STATUS_BOUND
-          ? intl.messages.yes
-          : intl.messages.no,
+          ? intl.translate('yes')
+          : intl.translate('no'),
       storageCapacity:
         (volumePV &&
           volumePV.spec &&
           volumePV.spec.capacity &&
           volumePV.spec.capacity.storage) ||
-        intl.messages.unknown,
+        intl.translate('unknown'),
       storageClass: volume.spec.storageClassName,
       creationTime: volume.metadata.creationTimestamp,
     };
@@ -199,17 +199,17 @@ const NodeInformation = props => {
   const items = [
     {
       selected: !isVolumesPage && !isPodsPage,
-      title: intl.messages.details,
+      title: intl.translate('details'),
       onClick: () => history.push(match.url),
     },
     {
       selected: isVolumesPage,
-      title: intl.messages.volumes,
+      title: intl.translate('volumes'),
       onClick: () => history.push(`${match.url}/volumes`),
     },
     {
       selected: isPodsPage,
-      title: intl.messages.pods,
+      title: intl.translate('pods'),
       onClick: () => history.push(`${match.url}/pods`),
     },
   ];
@@ -220,7 +220,7 @@ const NodeInformation = props => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
-            <StyledLink to="/nodes">{intl.messages.nodes} </StyledLink>,
+            <StyledLink to="/nodes">{intl.translate('nodes')} </StyledLink>,
             <BreadcrumbLabel title={node.name}>{node.name}</BreadcrumbLabel>,
           ]}
         />
@@ -241,4 +241,4 @@ const NodeInformation = props => {
   );
 };
 
-export default injectIntl(NodeInformation);
+export default NodeInformation;
