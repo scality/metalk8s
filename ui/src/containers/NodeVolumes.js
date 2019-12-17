@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { useHistory } from 'react-router';
@@ -35,6 +34,7 @@ import {
   STATUS_AVAILABLE,
   STATUS_BOUND,
 } from '../constants';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumeTable = styled.div`
   flex-grow: 1;
@@ -88,7 +88,6 @@ const LoaderContainer = styled(Loader)`
 `;
 
 const NodeVolumes = props => {
-  const { intl } = props;
   const dispatch = useDispatch();
   const deleteVolume = deleteVolumeName =>
     dispatch(deleteVolumeAction(deleteVolumeName));
@@ -115,28 +114,28 @@ const NodeVolumes = props => {
   };
   const columns = [
     {
-      label: intl.messages.name,
+      label: intl.translate('name'),
       dataKey: 'name',
       flexGrow: 1,
     },
     {
-      label: intl.messages.status,
+      label: intl.translate('status'),
       dataKey: 'status',
     },
     {
-      label: intl.messages.bound,
+      label: intl.translate('bound'),
       dataKey: 'bound',
     },
     {
-      label: intl.messages.storageCapacity,
+      label: intl.translate('storageCapacity'),
       dataKey: 'storageCapacity',
     },
     {
-      label: intl.messages.storageClass,
+      label: intl.translate('storageClass'),
       dataKey: 'storageClass',
     },
     {
-      label: intl.messages.creationTime,
+      label: intl.translate('creationTime'),
       dataKey: 'creationTime',
       renderer: data => (
         <span>
@@ -151,7 +150,7 @@ const NodeVolumes = props => {
       ),
     },
     {
-      label: intl.messages.action,
+      label: intl.translate('action'),
       dataKey: 'action',
       disableSort: true,
       width: 150,
@@ -163,13 +162,13 @@ const NodeVolumes = props => {
 
           switch (rowData.status) {
             case STATUS_PENDING:
-              hintMessage = intl.messages.volume_status_pending_hint;
+              hintMessage = intl.translate('volume_status_pending_hint');
               break;
             case STATUS_TERMINATING:
-              hintMessage = intl.messages.volume_status_terminating_hint;
+              hintMessage = intl.translate('volume_status_terminating_hint');
               break;
             case STATUS_UNKNOWN:
-              hintMessage = intl.messages.volume_status_unknown_hint;
+              hintMessage = intl.translate('volume_status_unknown_hint');
               break;
             case STATUS_FAILED:
             case STATUS_AVAILABLE:
@@ -179,12 +178,14 @@ const NodeVolumes = props => {
               const persistentVolumeStatus = persistentVolume?.status?.phase;
               switch (persistentVolumeStatus) {
                 case STATUS_BOUND:
-                  hintMessage =
-                    intl.messages.volume_statue_failed_pv_bound_hint;
+                  hintMessage = intl.translate(
+                    'volume_statue_failed_pv_bound_hint',
+                  );
                   break;
                 case STATUS_PENDING:
-                  hintMessage =
-                    intl.messages.volume_status_failed_pv_pending_hint;
+                  hintMessage = intl.translate(
+                    'volume_status_failed_pv_pending_hint',
+                  );
                   break;
                 default:
                   hintMessage = '';
@@ -255,17 +256,17 @@ const NodeVolumes = props => {
       <Modal
         close={() => setisDeleteConfirmationModalOpen(false)}
         isOpen={isDeleteConfirmationModalOpen}
-        title={intl.messages.delete_a_volume}
+        title={intl.translate('delete_a_volume')}
         footer={
           <NotificationButtonGroup>
             <Button
               outlined
-              text={intl.messages.cancel}
+              text={intl.translate('cancel')}
               onClick={onClickCancelButton}
             />
             <DeleteButton
               variant="danger"
-              text={intl.messages.delete}
+              text={intl.translate('delete')}
               onClick={e => {
                 e.stopPropagation();
                 onClickDeleteButton(deleteVolumeName);
@@ -275,9 +276,9 @@ const NodeVolumes = props => {
         }
       >
         <ModalBody>
-          <div>{intl.messages.delete_a_volume_warning}</div>
+          <div>{intl.translate('delete_a_volume_warning')}</div>
           <div>
-            {intl.messages.delete_a_volume_confirm}
+            {intl.translate('delete_a_volume_confirm')}
             <strong>{deleteVolumeName}</strong>?
           </div>
         </ModalBody>
@@ -287,7 +288,7 @@ const NodeVolumes = props => {
         <SearchContainer>
           <SearchInput
             value={searchedVolumeName}
-            placeholder={intl.messages.search}
+            placeholder={intl.translate('search')}
             disableToggle={true}
             onChange={handleChange}
           ></SearchInput>
@@ -295,7 +296,10 @@ const NodeVolumes = props => {
 
         <ButtonContainer>
           {volumes.isLoading && <LoaderContainer size="small" />}
-          <Tooltip placement="left" overlay={intl.messages.create_new_volume}>
+          <Tooltip
+            placement="left"
+            overlay={intl.translate('create_new_volume')}
+          >
             <Button
               text={<i className="fas fa-plus "></i>}
               type="button"
@@ -323,10 +327,10 @@ const NodeVolumes = props => {
           }}
           noRowsRenderer={() =>
             searchedVolumeName === '' ? (
-              <NoRowsRenderer content={intl.messages.no_volume_found} />
+              <NoRowsRenderer content={intl.translate('no_volume_found')} />
             ) : (
               <NoRowsRenderer
-                content={intl.messages.no_searched_volume_found}
+                content={intl.translate('no_searched_volume_found')}
               />
             )
           }
@@ -336,4 +340,4 @@ const NodeVolumes = props => {
   );
 };
 
-export default injectIntl(NodeVolumes);
+export default NodeVolumes;
