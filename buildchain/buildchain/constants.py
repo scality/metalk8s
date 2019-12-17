@@ -17,14 +17,15 @@ from buildchain import config
 CMD_WIDTH : int = 14
 
 # URLs of the main container repositories.
-CALICO_REPOSITORY     : str = 'quay.io/calico'
-COREOS_REPOSITORY     : str = 'quay.io/coreos'
-DOCKER_REPOSITORY     : str = 'docker.io/library'
-GOOGLE_REPOSITORY     : str = 'k8s.gcr.io'
-GRAFANA_REPOSITORY    : str = 'docker.io/grafana'
-INGRESS_REPOSITORY    : str = 'quay.io/kubernetes-ingress-controller'
-KIWIGRID_REPOSITORY   : str = 'docker.io/kiwigrid'
-PROMETHEUS_REPOSITORY : str = 'quay.io/prometheus'
+CALICO_REPOSITORY             : str = 'quay.io/calico'
+COREOS_REPOSITORY             : str = 'quay.io/coreos'
+DOCKER_REPOSITORY             : str = 'docker.io/library'
+GOOGLE_REPOSITORY             : str = 'k8s.gcr.io'
+GRAFANA_REPOSITORY            : str = 'docker.io/grafana'
+INGRESS_REPOSITORY            : str = 'quay.io/kubernetes-ingress-controller'
+KIWIGRID_REPOSITORY           : str = 'docker.io/kiwigrid'
+PROMETHEUS_ADAPTER_REPOSITORY : str = 'docker.io/directxman12'
+PROMETHEUS_REPOSITORY         : str = 'quay.io/prometheus'
 
 # Paths {{{
 

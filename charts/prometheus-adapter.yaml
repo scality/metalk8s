@@ -1,0 +1,47 @@
+image:
+  repository: '{%- endraw -%}{{ build_image_name(\"k8s-prometheus-adapter-amd64\", False) }}{%- raw -%}'
+
+nodeSelector:
+  node-role.kubernetes.io/infra: ''
+
+prometheus:
+  url: http://prometheus-operator-prometheus
+
+replicas: 1
+
+rules:
+  resource:
+    cpu:
+      containerQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>}[3m])) by (<<.GroupBy>>)
+      nodeQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>, id='/'}[3m])) by (<<.GroupBy>>)
+      resources:
+        overrides:
+          node:
+            resource: node
+          namespace:
+            resource: namespace
+          pod:
+            resource: pod
+      containerLabel: container_name
+    memory:
+      containerQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+      nodeQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>,id='/'}) by (<<.GroupBy>>)
+      resources:
+        overrides:
+          node:
+            resource: node
+          namespace:
+            resource: namespace
+          pod:
+            resource: pod
+      containerLabel: container_name
+    window: 3m
+
+
+tolerations:
+  - key: 'node-role.kubernetes.io/bootstrap'
+    operator: 'Exists'
+    effect: 'NoSchedule'
+  - key: 'node-role.kubernetes.io/infra'
+    operator: 'Exists'
+    effect: 'NoSchedule'
