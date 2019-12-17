@@ -15,7 +15,7 @@ Mount this ISO file at the specific following path:
    root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|release|
 
 
-.. _quickstart-bootstrap-config:
+.. _Bootstrap Configuration:
 
 Configuration
 -------------
@@ -50,7 +50,7 @@ system is configured to re-mount them automatically after a reboot.
    - Explain the role of this config file and its values
 
 
-.. _quickstart-bootstrap-ssh:
+.. _Bootstrap SSH Provisioning:
 
 SSH provisioning
 ^^^^^^^^^^^^^^^^

@@ -5,7 +5,7 @@ Operational Guide
 
 This guide describes MetalK8s ISO preparation steps, upgrade and downgrade
 guidelines, supported versions and best practices required
-for operating MetalK8s_. Refer to the :doc:`/installation-guide/index` if you
+for operating MetalK8s_. Refer to the :doc:`/installation/index` if you
 do not have a working MetalK8s_ setup.
 
 .. toctree::
