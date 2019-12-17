@@ -39,10 +39,7 @@ import {
 const VolumeTable = styled.div`
   flex-grow: 1;
   margin-top: ${padding.small};
-  /*solve the tooltip display issue*/
-  .ReactVirtualized__Grid {
-    overflow: visible !important;
-  }
+  /* solve the tooltip display issue */
   .sc-table-column-cell-action {
     overflow: visible !important;
   }
@@ -88,6 +85,10 @@ const ButtonContainer = styled.div`
 
 const LoaderContainer = styled(Loader)`
   padding-right: ${padding.smaller};
+`;
+
+const TooltipContent = styled.div`
+  background-color: ${props => props.theme.brand.backgroundContrast2};
 `;
 
 const NodeVolumes = props => {
@@ -201,7 +202,10 @@ const NodeVolumes = props => {
 
         return (
           <>
-            <Tooltip placement="top" overlay={hintPopup()}>
+            <Tooltip
+              placement="top"
+              overlay={<TooltipContent>{hintPopup()}</TooltipContent>}
+            >
               <Button
                 className="remove-volume-button"
                 onClick={e => {

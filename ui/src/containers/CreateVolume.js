@@ -384,6 +384,7 @@ const CreateVolume = props => {
                           type="button"
                           onClick={addLabel}
                           data-cy="add-volume-labels-button"
+                          outlined
                         />
                       </LabelsForm>
                       {!!Object.keys(values.labels).length && (

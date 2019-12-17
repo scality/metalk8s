@@ -40,6 +40,7 @@ const PageContainer = styled.div`
 `;
 
 const TableContainer = styled.div`
+  height: 100%;
   flex-grow: 1;
 
   .sc-table-column-cell-container-severity {
@@ -93,7 +94,7 @@ const QuestionMarkIcon = styled.i`
 `;
 
 const TooltipContent = styled.div`
-  color: ${props => props.theme.brand.secondary};
+  color: ${props => props.theme.brand.primary};
   font-weight: ${fontWeight.bold};
 `;
 

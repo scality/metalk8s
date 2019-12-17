@@ -34,6 +34,7 @@ const Layout = props => {
   const user = useSelector(state => state.login.user);
   const sidebar = useSelector(state => state.app.layout.sidebar);
   const theme = useSelector(state => state.config.theme);
+  const logoPath = useSelector(state => state.config.logoPath);
   const notifications = useSelector(state => state.app.notifications.list);
   const language = useSelector(state => state.config.language);
   const solutions = useSelector(state => state.app.solutions.solutions);
@@ -151,12 +152,7 @@ const Layout = props => {
     help,
     user: user && userConfig,
     languages,
-    logo: (
-      <img
-        alt="logo"
-        src={process.env.PUBLIC_URL + '/brand/assets/branding.svg'}
-      />
-    ),
+    logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
   };
 
   return (
