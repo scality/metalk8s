@@ -4,24 +4,6 @@
     and nginx ingress default backend Deployment but `selector` are immutable
     field so, in this case, we cannot replace the object we need to first
     remove the current one and then deploy the desired one. #}
-{#- For upgrade we should use the current version to check whether or not we
-    need to remove the nginx ingress objects
-    `if current_version < 2.4.2`
-    but in orchestrate we are not able to known the current version so add an
-    hack checking if the current object exist and has a component selector, as
-    by default K8S add selector:
-    ```
-    matchLabels:
-      app: nginx-ingress
-      component: controller
-      release: nginx-ingress
-    ```
-    when our current selector is
-    ```
-    matchLabels:
-      app: nginx-ingress
-      release: nginx-ingress
-    ``` #}
 {%- set nginx_ingress_ds = salt.metalk8s_kubernetes.get_object(
         kind='DaemonSet',
         apiVersion='extensions/v1beta1',
@@ -34,17 +16,18 @@
         name='nginx-ingress-default-backend',
         namespace='metalk8s-ingress'
     ) %}
-{%- set desired_selector = {
-        'match_labels': {
-            'app': 'nginx-ingress',
-            'release': 'nginx-ingress'
-        },
-        'match_expressions': None
-     } %}
+
+{#- Only do it `if current_version < 2.4.2` #}
+{#- NOTE: If no version consider it's a 2.4.0 or 2.4.1 as version label was
+    added just after. #}
 
 {%- if nginx_ingress_ds and
-       nginx_ingress_ds.get('spec', {}).get('selector', {})
-          != desired_selector %}
+       salt.pkg.version_cmp(
+          nginx_ingress_ds.get('metadata', {}).get('labels', {}).get(
+            'metalk8s.scality.com/version', '2.4.1'
+          ),
+          '2.4.2'
+       ) == -1 %}
 
 Delete old nginx ingress daemon set:
   metalk8s_kubernetes.object_absent:
@@ -64,8 +47,12 @@ Nginx ingress daemon set already ready for upgrade:
 {%- endif %}
 
 {%- if nginx_ingress_deploy and
-       nginx_ingress_deploy.get('spec', {}).get('selector', {})
-          != desired_selector %}
+       salt.pkg.version_cmp(
+          nginx_ingress_deploy.get('metadata', {}).get('labels', {}).get(
+            'metalk8s.scality.com/version', '2.4.1'
+          ),
+          '2.4.2'
+       ) == -1 %}
 
 Delete old nginx ingress deployment:
   metalk8s_kubernetes.object_absent:
