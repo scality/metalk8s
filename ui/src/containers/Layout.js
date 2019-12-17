@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import { ThemeProvider } from 'styled-components';
 import { useRouteMatch, useHistory } from 'react-router';
 import { Switch } from 'react-router-dom';
 import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 
+import { intl } from '../translations/IntlGlobalProvider';
 import NodeCreateForm from './NodeCreateForm';
 import NodeList from './NodeList';
 import SolutionList from './SolutionList';
@@ -45,7 +45,6 @@ const Layout = props => {
   const removeNotification = uid => dispatch(removeNotificationAction(uid));
   const updateLanguage = language => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
-  const { intl } = props;
   const history = useHistory();
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
@@ -55,7 +54,7 @@ const Layout = props => {
     expanded: sidebar.expanded,
     actions: [
       {
-        label: intl.messages.monitoring,
+        label: intl.translate('monitoring'),
         icon: <i className="fas fa-desktop" />,
         onClick: () => {
           history.push('/');
@@ -67,7 +66,7 @@ const Layout = props => {
         }),
       },
       {
-        label: intl.messages.nodes,
+        label: intl.translate('nodes'),
         icon: <i className="fas fa-server" />,
         onClick: () => {
           history.push('/nodes');
@@ -79,7 +78,7 @@ const Layout = props => {
         }),
       },
       {
-        label: intl.messages.solutions,
+        label: intl.translate('solutions'),
         icon: <i className="fas fa-th" />,
         onClick: () => {
           history.push('/solutions');
@@ -144,7 +143,7 @@ const Layout = props => {
       icon: <i className="fas fa-question-circle" />,
       items: [
         {
-          label: intl.messages.about,
+          label: intl.translate('about'),
           onClick: () => {
             history.push('/about');
           },
@@ -156,7 +155,7 @@ const Layout = props => {
       text: user?.profile?.name,
       icon: <i className="fas fa-user" />,
       items: [
-        { label: intl.messages.log_out, onClick: event => logout(event) },
+        { label: intl.translate('log_out'), onClick: event => logout(event) },
       ],
     },
   ];
@@ -173,7 +172,7 @@ const Layout = props => {
 
   const navbar = {
     onToggleClick: toggleSidebar,
-    productName: intl.messages.product_name,
+    productName: intl.translate('product_name'),
     rightActions,
     logo: (
       <img
@@ -221,4 +220,4 @@ const Layout = props => {
   );
 };
 
-export default injectIntl(Layout);
+export default Layout;
