@@ -29,7 +29,6 @@ Overview:
 
 
 import abc
-import base64
 import importlib
 from pathlib import Path
 import sys
@@ -153,25 +152,6 @@ class StaticContainerRegistry(_StaticContainerRegistryBase):
         return parts
 
 
-def salt_embed_text(path: Path, indent: int) -> str:
-    """Return the content a text file in usable form by Salt."""
-    data = ['|']
-    with path.open(encoding='utf-8') as fp:
-        for line in fp:
-            data.append('{}{}'.format(' '*indent, line.rstrip()))
-    return '\n'.join(data)
-
-
-def salt_embed_bytes(path: Path, indent: int) -> str:
-    """Return the content of a binary file in usable form by Salt."""
-    data = ['|']
-    bytestring = path.read_bytes()
-    b64data = base64.encodebytes(bytestring).decode('utf-8')
-    for line in b64data.split('\n'):
-        data.append('{}{}'.format(' '*indent, line.rstrip()))
-    return '\n'.join(data)
-
-
 PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('pillar/metalk8s/roles/bootstrap.sls'),
     Path('pillar/metalk8s/roles/ca.sls'),
@@ -251,20 +231,38 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/dex/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/dex/deployed/tls-secret.sls'),
     Path('salt/metalk8s/addons/dex/deployed/clusterrolebinding.sls'),
-    targets.TemplateFile(
+    targets.SerializedData(
         task_name='theme-configmap.sls',
-        source=constants.ROOT.joinpath(
-            'salt/metalk8s/addons/dex/deployed/theme-configmap.sls.in'
-        ),
         destination=constants.ISO_ROOT.joinpath(
             'salt/metalk8s/addons/dex/deployed/theme-configmap.sls'
         ),
-        context={
-            'branding': salt_embed_bytes(SCALITY_LOGO, indent=4),
-            'favicon': salt_embed_bytes(SCALITY_FAVICON, indent=4),
-            'styles': salt_embed_text(LOGIN_STYLE, indent=4),
-        },
+        data=targets.SaltState(
+            shebang='#!jinja | metalk8s_kubernetes',
+            imports=[],
+            content=[{
+                'apiVersion': 'v1',
+                'kind': 'ConfigMap',
+                'metadata': {
+                    'name': 'dex-login',
+                    'namespace': 'metalk8s-auth',
+                },
+                'data': {
+                    'styles.css': targets.YAMLDocument.text(
+                        LOGIN_STYLE.read_text(encoding='utf-8')
+                    ),
+                },
+                'binaryData': {
+                    'favicon.png': targets.YAMLDocument.bytestring(
+                        SCALITY_FAVICON.read_bytes()
+                    ),
+                    'logo.png': targets.YAMLDocument.bytestring(
+                        SCALITY_LOGO.read_bytes()
+                    )
+                },
+            }],
+        ),
         file_dep=[SCALITY_LOGO, SCALITY_FAVICON, LOGIN_STYLE],
+        renderer=targets.Renderer.SLS,
     ),
 
     Path('salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls'),
@@ -347,8 +345,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/defaults.yaml'),
     Path('salt/metalk8s/deployed.sls'),
 
-    Path('salt/metalk8s/internal/init.sls'),
-
     Path('salt/metalk8s/internal/m2crypto/absent.sls'),
     Path('salt/metalk8s/internal/m2crypto/init.sls'),
     Path('salt/metalk8s/internal/m2crypto/installed.sls'),
@@ -356,6 +352,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/internal/preflight/init.sls'),
     Path('salt/metalk8s/internal/preflight/mandatory.sls'),
     Path('salt/metalk8s/internal/preflight/recommended.sls'),
+
+    Path('salt/metalk8s/internal/upgrade/apiserver-cert-localhost.sls'),
 
     Path('salt/metalk8s/sreport/init.sls'),
     Path('salt/metalk8s/sreport/installed.sls'),
@@ -372,6 +370,13 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/apiserver/installed.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/cryptconfig.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/kubeconfig.sls'),
+
+    Path('salt/metalk8s/kubernetes/apiserver-proxy/files/'
+            'apiserver-proxy.conf.j2'),
+    Path('salt/metalk8s/kubernetes/apiserver-proxy/files/'
+            'apiserver-proxy.yaml.j2'),
+    Path('salt/metalk8s/kubernetes/apiserver-proxy/init.sls'),
+    Path('salt/metalk8s/kubernetes/apiserver-proxy/installed.sls'),
 
     Path('salt/metalk8s/kubernetes/ca/advertised.sls'),
     Path('salt/metalk8s/kubernetes/ca/etcd/advertised.sls'),
@@ -577,7 +582,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         version=versions.CONTAINER_IMAGES_MAP['pause'].version,
         digest=versions.CONTAINER_IMAGES_MAP['pause'].digest,
         repository=constants.GOOGLE_REPOSITORY,
-        save_as_tar=True,
+        save_as=[targets.SaveAsTar()],
         # pylint:disable=line-too-long
         destination=constants.ISO_ROOT/'salt/metalk8s/container-engine/containerd/files',
     ),

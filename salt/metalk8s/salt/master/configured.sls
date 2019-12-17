@@ -13,10 +13,7 @@ Configure salt master:
     - template: jinja
     - defaults:
         salt_ip: "{{ salt_ip }}"
-        kubeconfig: "{{ pillar['metalk8s']['api_server']['kubeconfig'] }}"
-        {%- if pillar['metalk8s']['api_server'].get('context') %}
-        kubecontext: "{{ pillar['metalk8s']['api_server']['context'] }}"
-        {%- endif %}
+        kubeconfig: "/etc/kubernetes/admin.conf"
 
 Configure salt master roots paths:
   file.serialize:

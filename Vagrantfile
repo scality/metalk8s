@@ -36,9 +36,7 @@ CONTROL_PLANE_NETWORK = {
   # and
   # https://github.com/hashicorp/vagrant/blob/1e1c398de565ed0aab9631cfad2db6e1dac82d7f/plugins/providers/virtualbox/action/network.rb#L317
   # or https://github.com/hashicorp/vagrant/pull/7699
-  # Also, we leave off the 'last' IP in the control-plane network, which is
-  # reserved as the VIP of the API server.
-  :dhcp_upper => IPAddr.new(CONTROL_PLANE_IP).mask(CONTROL_PLANE_NETMASK).to_range.last(3).first.to_s,
+  :dhcp_upper => IPAddr.new(CONTROL_PLANE_IP).mask(CONTROL_PLANE_NETMASK).to_range.last(2).first.to_s,
 }
 
 # Bigger network for the workload plane. However, we only allow DHCP to allocate
@@ -136,10 +134,6 @@ networks:
   workloadPlane: #{WORKLOAD_PLANE_IP}/#{prefixlen(WORKLOAD_PLANE_NETMASK)}
 ca:
   minion: bootstrap
-apiServer:
-  host: #{IPAddr.new(CONTROL_PLANE_IP).mask(CONTROL_PLANE_NETMASK).to_range.last(2).first.to_s}
-  keepalived:
-    enabled: true
 archives:
   - /srv/scality/metalk8s-$VERSION
 EOF

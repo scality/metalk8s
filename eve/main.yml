@@ -39,7 +39,7 @@ models:
       # There are 3 CPUs available for Docker, and 1 for `doit` in the Pod.
       # Given the network IO-bound nature of some of the build steps, and
       # most build steps running in Docker, set concurrency to 4.
-      command: ./doit.sh -n 4
+      command: source /etc/profile && ./doit.sh -n 4
       usePTY: true
       haltOnFailure: true
   - ShellCommand: &ssh_ip_setup
@@ -262,7 +262,7 @@ models:
         export SSH_CONFIG_FILE=\"${SSH_CONFIG_FILE}\" &&
         export ISO_MOUNTPOINT=\"${ISO_MOUNTPOINT}\" &&
         export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
-        tox -e tests -- -m \"${PYTEST_FILTERS}\""
+        tox -e tests -- ${PYTEST_ARGS:-""} -m \"${PYTEST_FILTERS}\""
       workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       haltOnFailure: true
   - ShellCommand: &add_final_status_artifact
@@ -425,8 +425,7 @@ stages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
             - single-node-upgrade-centos
-            # Downgrade is deactivated on this branch due to #2058
-            #- single-node-downgrade-centos
+            - single-node-downgrade-centos
             - single-node-install-rhel
             - multiple-nodes-centos
             - single-node-patch-version
@@ -556,7 +555,7 @@ stages:
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all linting targets
-          command: ./doit.sh lint
+          command: source /etc/profile && ./doit.sh lint
           usePTY: true
           haltOnFailure: false
       - ShellCommand:
@@ -1221,7 +1220,8 @@ stages:
           name: Run slow tests on the bastion
           env:
             <<: *_env_bastion_tests
-            PYTEST_FILTERS: "post and ci and slow"
+            PYTEST_ARGS: "--suppress-no-test-exit-code"
+            PYTEST_FILTERS: "post and ci and slow and not bootstrap"
       - ShellCommand:
           <<: *generate_report_over_ssh
           env:

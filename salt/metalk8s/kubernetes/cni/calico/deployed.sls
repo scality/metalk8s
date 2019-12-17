@@ -63,7 +63,7 @@ data:
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-   name: felixconfigurations.crd.projectcalico.org
+  name: felixconfigurations.crd.projectcalico.org
 spec:
   scope: Cluster
   group: crd.projectcalico.org
@@ -400,6 +400,7 @@ rules:
       - networksets
       - clusterinformations
       - hostendpoints
+      - blockaffinities
     verbs:
       - get
       - list
@@ -478,6 +479,7 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: Group
   name: metalk8s:calico-node
+
 ---
 # Source: calico/templates/calico-node.yaml
 # This manifest installs the calico-node container, as well
@@ -531,7 +533,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         #- name: upgrade-ipam
-        #  image: calico/cni:v3.8.2
+        #  image: calico/cni:v3.10.2
         #  command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
         #  env:
         #    - name: KUBERNETES_NODE_NAME
@@ -552,7 +554,7 @@ spec:
         # and CNI network config file on each node.
         # Note: In MetalK8s, we handle this in the Calico state
         #- name: install-cni
-        #  image: calico/cni:v3.8.2
+        #  image: calico/cni:v3.10.2
         #  command: ["/install-cni.sh"]
         #  env:
         #    # Name of the CNI config file to create.
@@ -587,7 +589,7 @@ spec:
         # to communicate with Felix over the Policy Sync API.
         # Note: In MetalK8s, we have no support for Dikastes (yet).
         #- name: flexvol-driver
-        #  image: calico/pod2daemon-flexvol:v3.8.2
+        #  image: calico/pod2daemon-flexvol:v3.10.2
         #  volumeMounts:
         #  - name: flexvol-driver-host
         #    mountPath: /host/driver
@@ -659,10 +661,11 @@ spec:
             requests:
               cpu: 250m
           livenessProbe:
-            httpGet:
-              path: /liveness
-              port: 9099
-              host: localhost
+            exec:
+              command:
+              - /bin/calico-node
+              - -felix-live
+              - -bird-live
             periodSeconds: 10
             initialDelaySeconds: 10
             failureThreshold: 6
@@ -670,8 +673,8 @@ spec:
             exec:
               command:
               - /bin/calico-node
-              - -bird-ready
               - -felix-ready
+              - -bird-ready
             periodSeconds: 10
           volumeMounts:
             - mountPath: /lib/modules

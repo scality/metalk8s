@@ -17,9 +17,8 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 
 # Project-wide versions {{{
 
-CALICO_VERSION     : str = '3.8.2'
+CALICO_VERSION     : str = '3.10.2'
 K8S_VERSION        : str = '1.16.2'
-KEEPALIVED_VERSION : str = '1.3.5-16.el7'
 SALT_VERSION       : str = '2018.3.4'
 
 def load_version_information() -> None:
@@ -67,7 +66,6 @@ NODEJS_IMAGE_VERSION : str = '10.16.0'
 # This should be reset to 1 when the service exposed by the container changes
 # version.
 SALT_MASTER_BUILD_ID = 1
-KEEPALIVED_BUILD_ID  = 1
 
 
 def _version_prefix(version: str, prefix: str = 'v') -> str:
@@ -86,12 +84,12 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='calico-node',
         version=_version_prefix(CALICO_VERSION),
-        digest='sha256:6679ccc9f19dba3eb084db991c788dc9661ad3b5d5bafaa3379644229dca6b05',
+        digest='sha256:0a16ddf391c06e065c5b4db75069da9e153f9fc9dd45f92ff64a55616e0bfe26',
     ),
     Image(
         name='calico-kube-controllers',
         version=_version_prefix(CALICO_VERSION),
-        digest='sha256:cf461efd25ee74d1855e1ee26db98fe87de00293f7d039212adb03c91fececcd',
+        digest='sha256:3a015bcc7304b13aaecbb35648fcef739f69a955d3b38af305c24f4c6d215902',
     ),
     Image(
         name='configmap-reload',
@@ -194,13 +192,6 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         digest='sha256:ed3ec0597c2d5b7102a7f62c661a23d8e4b34d910693fc23fd40bfb1d9404dcf',
     ),
     # Local images
-    Image(
-        name='keepalived',
-        version='{version}-{build_id}'.format(
-            version=KEEPALIVED_VERSION, build_id=KEEPALIVED_BUILD_ID
-        ),
-        digest=None,
-    ),
     Image(
         name='metalk8s-ui',
         version=VERSION,

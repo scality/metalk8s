@@ -17,8 +17,6 @@ networks:
   workloadPlane: 10.100.0.0/16
 ca:
   minion: $(cat /etc/salt/minion_id)
-apiServer:
-  host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
 archives:
   - /var/tmp/metalk8s
 EOF
