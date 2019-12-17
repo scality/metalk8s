@@ -1,11 +1,11 @@
 import React from 'react';
 import { CallbackComponent } from 'redux-oidc';
-import { injectIntl } from 'react-intl';
 import { useHistory } from 'react-router';
 import { useSelector } from 'react-redux';
 import Loader from '../components/Loader';
+import { intl } from '../translations/IntlGlobalProvider';
 
-const CallbackPage = ({ intl }) => {
+const CallbackPage = () => {
   const userManager = useSelector(state => state.config.userManager);
   const history = useHistory();
   return (
@@ -19,9 +19,9 @@ const CallbackPage = ({ intl }) => {
         history.push('/');
       }}
     >
-      <Loader>{intl.messages.redirecting}</Loader>
+      <Loader>{intl.translate('redirecting')}</Loader>
     </CallbackComponent>
   );
 };
 
-export default injectIntl(CallbackPage);
+export default CallbackPage;
