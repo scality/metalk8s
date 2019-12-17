@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { useHistory } from 'react-router';
-import { injectIntl } from 'react-intl';
 import { Button, Input, Checkbox, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize, gray } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
@@ -17,6 +16,8 @@ import {
   BreadcrumbLabel,
   StyledLink,
 } from '../components/BreadcrumbStyle';
+import { intl } from '../translations/IntlGlobalProvider';
+
 const CreateNodeContainter = styled.div`
   height: 100%;
   padding: ${padding.base};
@@ -118,7 +119,7 @@ const validationSchema = yup.object().shape({
   infra: yup.boolean().required(),
 });
 
-const NodeCreateForm = ({ intl }) => {
+const NodeCreateForm = () => {
   const asyncErrors = useSelector(state => state.app.nodes.errors);
   const clusterVersion = useSelector(state => state.app.nodes.clusterVersion);
   const theme = useSelector(state => state.config.theme);
@@ -138,8 +139,10 @@ const NodeCreateForm = ({ intl }) => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
-            <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-            <BreadcrumbLabel>{intl.messages.create_new_node}</BreadcrumbLabel>,
+            <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
+            <BreadcrumbLabel>
+              {intl.translate('create_new_node')}
+            </BreadcrumbLabel>,
           ]}
         />
       </BreadcrumbContainer>
@@ -171,11 +174,11 @@ const NodeCreateForm = ({ intl }) => {
               <Form>
                 <FormSection>
                   <FormSectionTitle>
-                    {intl.messages.new_node_data}
+                    {intl.translate('new_node_data')}
                   </FormSectionTitle>
                   <Input
                     name="name"
-                    label={intl.messages.name}
+                    label={intl.translate('name')}
                     value={values.name}
                     onChange={handleChange('name')}
                     error={touched.name && errors.name}
@@ -183,18 +186,18 @@ const NodeCreateForm = ({ intl }) => {
                   />
                   <InputContainer className="sc-input">
                     <InputLabel className="sc-input-label">
-                      {intl.messages.version}
+                      {intl.translate('version')}
                     </InputLabel>
                     <InputValue>{clusterVersion}</InputValue>
                   </InputContainer>
                   <InputContainer className="sc-input">
                     <InputLabel className="sc-input-label">
-                      {intl.messages.roles}
+                      {intl.translate('roles')}
                     </InputLabel>
                     <CheckboxGroup>
                       <Checkbox
                         name="workload_plane"
-                        label={intl.messages.workload_plane}
+                        label={intl.translate('workload_plane')}
                         checked={values.workload_plane}
                         value={values.workload_plane}
                         onChange={handleChange('workload_plane')}
@@ -202,7 +205,7 @@ const NodeCreateForm = ({ intl }) => {
                       />
                       <Checkbox
                         name="control_plane"
-                        label={intl.messages.control_plane}
+                        label={intl.translate('control_plane')}
                         checked={values.control_plane}
                         value={values.control_plane}
                         onChange={handleChange('control_plane')}
@@ -210,7 +213,7 @@ const NodeCreateForm = ({ intl }) => {
                       />
                       <Checkbox
                         name="infra"
-                        label={intl.messages.infra}
+                        label={intl.translate('infra')}
                         checked={values.infra}
                         value={values.infra}
                         onChange={handleChange('infra')}
@@ -225,7 +228,7 @@ const NodeCreateForm = ({ intl }) => {
                           )
                         }
                       >
-                        {intl.messages.role_values_error}
+                        {intl.translate('role_values_error')}
                       </ErrorMessage>
                     </CheckboxGroup>
                   </InputContainer>
@@ -233,11 +236,11 @@ const NodeCreateForm = ({ intl }) => {
 
                 <FormSection>
                   <FormSectionTitle>
-                    {intl.messages.new_node_access}
+                    {intl.translate('new_node_access')}
                   </FormSectionTitle>
                   <Input
                     name="ssh_user"
-                    label={intl.messages.ssh_user}
+                    label={intl.translate('ssh_user')}
                     value={values.ssh_user}
                     onChange={handleChange('ssh_user')}
                     error={touched.ssh_user && errors.ssh_user}
@@ -245,7 +248,7 @@ const NodeCreateForm = ({ intl }) => {
                   />
                   <Input
                     name="hostName_ip"
-                    label={intl.messages.hostName_ip}
+                    label={intl.translate('hostName_ip')}
                     value={values.hostName_ip}
                     onChange={handleChange('hostName_ip')}
                     error={touched.hostName_ip && errors.hostName_ip}
@@ -253,7 +256,7 @@ const NodeCreateForm = ({ intl }) => {
                   />
                   <Input
                     name="ssh_port"
-                    label={intl.messages.ssh_port}
+                    label={intl.translate('ssh_port')}
                     value={values.ssh_port}
                     onChange={handleChange('ssh_port')}
                     error={touched.ssh_port && errors.ssh_port}
@@ -261,7 +264,7 @@ const NodeCreateForm = ({ intl }) => {
                   />
                   <Input
                     name="ssh_key_path"
-                    label={intl.messages.ssh_key_path}
+                    label={intl.translate('ssh_key_path')}
                     value={values.ssh_key_path}
                     onChange={handleChange('ssh_key_path')}
                     error={touched.ssh_key_path && errors.ssh_key_path}
@@ -270,7 +273,7 @@ const NodeCreateForm = ({ intl }) => {
                   <Input
                     name="sudo_required"
                     type="checkbox"
-                    label={intl.messages.sudo_required}
+                    label={intl.translate('sudo_required')}
                     value={values.sudo_required}
                     checked={values.sudo_required}
                     onChange={handleChange('sudo_required')}
@@ -281,13 +284,13 @@ const NodeCreateForm = ({ intl }) => {
                   <div>
                     <div>
                       <Button
-                        text={intl.messages.cancel}
+                        text={intl.translate('cancel')}
                         type="button"
                         outlined
                         onClick={() => history.push('/nodes')}
                       />
                       <Button
-                        text={intl.messages.create}
+                        text={intl.translate('create')}
                         type="submit"
                         disabled={
                           !dirty ||
@@ -316,4 +319,4 @@ const NodeCreateForm = ({ intl }) => {
   );
 };
 
-export default injectIntl(NodeCreateForm);
+export default NodeCreateForm;
