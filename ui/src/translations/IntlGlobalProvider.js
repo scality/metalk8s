@@ -36,6 +36,9 @@ class IntlTranslator {
   // Formatting Functions
   // ------------------------------------
   translate(key, values) {
+    if (!key) {
+      return '';
+    }
     const description = defineMessages({
       message: {
         id: key
