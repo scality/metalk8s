@@ -1,18 +1,18 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import ReactJson from 'react-json-view';
-import { Button, Loader, Steppers } from '@scality/core-ui';
 import { useRouteMatch, useHistory } from 'react-router';
 import isEmpty from 'lodash.isempty';
-
+import { Button, Loader, Steppers } from '@scality/core-ui';
 import {
   fontWeight,
   grayLighter,
   padding,
   fontSize,
 } from '@scality/core-ui/dist/style/theme';
+
+import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeDeploymentContainer = styled.div`
   height: 100%;
@@ -62,7 +62,7 @@ const ErrorLabel = styled.span`
   color: ${props => props.theme.brand.danger};
 `;
 
-const NodeDeployment = ({ intl }) => {
+const NodeDeployment = () => {
   const history = useHistory();
   const match = useRouteMatch();
   const nodeName = match?.params?.id;
@@ -82,22 +82,24 @@ const NodeDeployment = ({ intl }) => {
     activeJob = sortedJobs[0];
   }
 
-  let steps = [{ title: intl.messages.node_registered }];
+  let steps = [{ title: intl.translate('node_registered') }];
   let success = false;
   if (activeJob) {
     if (activeJob.events.find(event => event.tag.includes('/new'))) {
-      steps.push({ title: intl.messages.deployment_started });
+      steps.push({ title: intl.translate('deployment_started') });
     }
 
     if (activeJob.completed) {
       const status = activeJob.status;
       steps.push({
-        title: intl.messages.completed,
+        title: intl.translate('completed'),
         content: (
           <span>
             {!status.success && (
               <ErrorLabel>
-                {`${intl.messages.error}: ${status.step} - ${status.comment}`}
+                {`${intl.translate('error')}: ${status.step} - ${
+                  status.comment
+                }`}
               </ErrorLabel>
             )}
           </span>
@@ -106,7 +108,7 @@ const NodeDeployment = ({ intl }) => {
       success = status.success;
     } else {
       steps.push({
-        title: intl.messages.deploying,
+        title: intl.translate('deploying'),
         content: <Loader size="larger" />,
       });
     }
@@ -120,7 +122,7 @@ const NodeDeployment = ({ intl }) => {
     <NodeDeploymentContainer>
       <div>
         <Button
-          text={intl.messages.back_to_node_list}
+          text={intl.translate('back_to_node_list')}
           type="button"
           outlined
           onClick={() => history.push('/nodes')}
@@ -129,14 +131,14 @@ const NodeDeployment = ({ intl }) => {
       </div>
       <NodeDeploymentWrapper>
         <NodeDeploymentTitle>
-          {intl.messages.node_deployment}
+          {intl.translate('node_deployment')}
         </NodeDeploymentTitle>
         {activeJob === undefined ? (
           <InfoMessage>
             {intl.translate('no_deployment_found', { name: nodeName })}
           </InfoMessage>
         ) : activeJob.completed && isEmpty(activeJob.status) ? (
-          <InfoMessage>{intl.messages.refreshing_job}</InfoMessage>
+          <InfoMessage>{intl.translate('refreshing_job')}</InfoMessage>
         ) : (
           <NodeDeploymentContent>
             <NodeDeploymentStatus>
@@ -156,4 +158,4 @@ const NodeDeployment = ({ intl }) => {
   );
 };
 
-export default injectIntl(NodeDeployment);
+export default NodeDeployment;
