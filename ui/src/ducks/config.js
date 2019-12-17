@@ -26,11 +26,12 @@ export const SET_USER_MANAGER = 'SET_USER_MANAGER';
 export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 export const LOGOUT = 'LOGOUT';
 export const SET_USER_LOADED = 'SET_USER_LOADED';
+export const SET_THEMES = 'SET_THEMES';
 
 // Reducer
 const defaultState = {
   language: EN_LANG,
-  theme: {},
+  theme: {}, // current theme
   api: null,
   userManagerConfig: {
     client_id: 'metalk8s-ui',
@@ -45,6 +46,7 @@ const defaultState = {
   },
   userManager: null,
   isUserLoaded: false,
+  themes: {}, // include light, dark and custom
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -67,6 +69,8 @@ export default function reducer(state = defaultState, action = {}) {
       return { ...state, userManager: action.payload };
     case SET_USER_LOADED:
       return { ...state, isUserLoaded: action.payload };
+    case SET_THEMES:
+      return { ...state, themes: action.payload };
     default:
       return state;
   }
@@ -121,12 +125,22 @@ export function logoutAction() {
   return { type: LOGOUT };
 }
 
+export function setThemesAction(themes) {
+  return { type: SET_THEMES, payload: themes };
+}
+
 // Sagas
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
   if (!result.error) {
-    result.brand = mergeTheme(result, defaultTheme);
-    yield put(setThemeAction(result));
+    // get the default theme from configMap
+    const defaultThemeMode = result.default;
+    result.theme[defaultThemeMode].brand = mergeTheme(
+      result.theme[defaultThemeMode],
+      defaultTheme,
+    );
+    yield put(setThemesAction(result.theme));
+    yield put(setThemeAction(result.theme[defaultThemeMode]));
   }
 }
 

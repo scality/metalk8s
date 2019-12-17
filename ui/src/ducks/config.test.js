@@ -21,29 +21,38 @@ import {
   setUserManagerAction,
   SET_USER_MANAGER,
   SET_USER_LOADED,
+  SET_THEMES,
 } from './config.js';
-
+import { fetchUserInfo } from './login';
 import { LANGUAGE, FR_LANG, EN_LANG } from '../constants';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
 
-it('update the theme state when fetchTheme', () => {
+it('update the theme state and logo path when fetchTheme', () => {
   const gen = fetchTheme();
 
   expect(gen.next().value).toEqual(call(Api.fetchTheme));
 
   const result = {
-    data: {
-      brand: {
-        primary: '#283593',
+    theme: {
+      light: {
+        brand: {
+          primary: '#283593',
+        },
+        logo_path: '/brand/assets/branding.svg',
       },
     },
+    default: 'light',
   };
 
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_THEME, payload: result }),
+    put({ type: SET_THEMES, payload: result.theme }),
+  );
+
+  expect(gen.next(result).value).toEqual(
+    put({ type: SET_THEME, payload: result.theme.light }),
   );
 });
 
@@ -70,6 +79,7 @@ it('update the config state when fetchConfig', () => {
   expect(gen.next(result).value).toEqual(
     call(ApiSalt.initialize, 'http://172.21.254.13:4507'),
   );
+
   expect(gen.next(result).value).toEqual(
     call(ApiPrometheus.initialize, 'http://172.21.254.46:30222'),
   );
