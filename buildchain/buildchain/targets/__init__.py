@@ -11,7 +11,9 @@ from buildchain.targets.file_tree import FileTree
 from buildchain.targets.local_image import LocalImage
 from buildchain.targets.operator_image import OperatorImage
 from buildchain.targets.package import Package, RPMPackage, DEBPackage
-from buildchain.targets.remote_image import RemoteImage
+from buildchain.targets.remote_image import (
+    ImageSaveFormat, RemoteImage, SaveAsLayers, SaveAsTar
+)
 from buildchain.targets.repository import (
     Repository, RPMRepository, DEBRepository
 )
@@ -27,7 +29,7 @@ __all__ = [
     'LocalImage',
     'OperatorImage',
     'Package', 'RPMPackage', 'DEBPackage',
-    'RemoteImage',
+    'ImageSaveFormat', 'RemoteImage', 'SaveAsLayers', 'SaveAsTar',
     'Repository', 'RPMRepository', 'DEBRepository',
     'Renderer', 'SerializedData',
     'TemplateFile',

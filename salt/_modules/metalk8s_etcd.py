@@ -178,14 +178,14 @@ def check_etcd_health(
     else:
         return "cluster is healthy"
 
+
 def get_etcd_member_list(
         endpoint=None,
         nodes=None,
         ca_cert='/etc/kubernetes/pki/etcd/ca.crt',
         cert_key='/etc/kubernetes/pki/etcd/salt-master-etcd-client.key',
         cert_cert='/etc/kubernetes/pki/etcd/salt-master-etcd-client.crt'):
-    '''Get the list of etcd members peer urls using the python etcd3 client.'''
-    member_peer_urls = []
+    '''Get the list of etcd members using the python etcd3 client.'''
     if not endpoint:
         # If we have no endpoint get it from mine
         try:
@@ -196,14 +196,18 @@ def get_etcd_member_list(
                 cert_cert=cert_cert
             )
         except:
-            return member_peer_urls
+            return []
+
     with etcd3.client(host=endpoint,
                       ca_cert=ca_cert,
                       cert_key=cert_key,
                       cert_cert=cert_cert,
                       timeout=TIMEOUT) as etcd:
-        for member in etcd.members:
-            member_peer_urls.append('{0}={1}'.format(
-                member.name,
-                member.peer_urls[0]))
-    return list(set(member_peer_urls))
+        return [
+            {
+                'id': member.id,
+                'name': member.name,
+                'peer_urls': list(member.peer_urls),
+                'client_urls': list(member.client_urls)
+            } for member in etcd.members
+        ]

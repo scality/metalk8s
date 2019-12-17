@@ -1,6 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import repo_prefix with context %}
 
-{%- set apiserver = 'https://' ~ pillar.metalk8s.api_server.host ~ ':6443' %}
 {%- set version = pillar.metalk8s.nodes[pillar.bootstrap_id].version %}
 {%- set kubeconfig = "/etc/kubernetes/admin.conf" %}
 {%- set context = "kubernetes-admin@kubernetes" %}

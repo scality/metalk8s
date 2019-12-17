@@ -30,8 +30,12 @@ Procedure
        'salt-call', 'pillar.get', 'metalk8s', '--out', 'json'
    ])
    pillar = json.loads(output)['local']
+   output = subprocess.check_output([
+       'salt-call', 'grains.get', 'metalk8s:control_plane_ip', '--out', 'json'
+   ])
+   control_plane_ip = json.loads(output)['local']
    ui_conf = {
-       'url': 'https://{}:6443'.format(pillar['api_server']['host']),
+       'url': 'https://{}:6443'.format(control_plane_ip),
        'url_salt': 'https://{salt[ip]}:{salt[ports][api]}'.format(
            salt=pillar['endpoints']['salt-master']
        ),
