@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useRouteMatch, useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
-import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
 import Banner from '../components/Banner';
@@ -29,6 +28,7 @@ import {
   StyledLink,
 } from '../components/BreadcrumbStyle';
 import { sizeUnits } from '../services/utils';
+import { intl } from '../translations/IntlGlobalProvider';
 
 // We might want to do a factorization later for
 // form styled components
@@ -137,7 +137,6 @@ const LabelsName = styled(LabelsValue)`
 `;
 
 const CreateVolume = props => {
-  const { intl } = props;
   const dispatch = useDispatch();
   const history = useHistory();
   const match = useRouteMatch();
@@ -187,39 +186,34 @@ const CreateVolume = props => {
   const validationSchema = yup.object().shape({
     name: yup
       .string()
-      .matches(volumeNameRegex, intl.messages.volume_name_error)
+      .matches(volumeNameRegex, intl.translate('volume_name_error'))
       .required(
-        intl.formatMessage(
-          { id: 'generic_missing_field' },
-          { field: intl.messages.name.toLowerCase() },
-        ),
+        intl.translate('generic_missing_field', {
+          field: intl.translate('name').toLowerCase(),
+        }),
       ),
     storageClass: yup.string().required(),
     type: yup.string().required(),
     path: yup
       .string()
-      .matches(/^\//, intl.messages.volume_path_error)
+      .matches(/^\//, intl.translate('volume_path_error'))
       .when('type', {
         is: RAW_BLOCK_DEVICE,
-        then: yup
-          .string()
-          .required(
-            intl.formatMessage(
-              { id: 'generic_missing_field' },
-              { field: intl.messages.device_path.toLowerCase() },
-            ),
-          ),
+        then: yup.string().required(
+          intl.translate('generic_missing_field', {
+            field: intl.translate('device_path').toLowerCase(),
+          }),
+        ),
       }),
     sizeInput: yup.string().when('type', {
       is: SPARSE_LOOP_DEVICE,
       then: yup
         .string()
-        .matches(positiveIntegerRegex, intl.messages.volume_size_error)
+        .matches(positiveIntegerRegex, intl.translate('volume_size_error'))
         .required(
-          intl.formatMessage(
-            { id: 'generic_missing_field' },
-            { field: intl.messages.volume_size.toLowerCase() },
-          ),
+          intl.translate('generic_missing_field', {
+            field: intl.translate('volume_size').toLowerCase(),
+          }),
         ),
     }),
     selectedUnit: yup.string().when('type', {
@@ -238,7 +232,7 @@ const CreateVolume = props => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
-            <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
+            <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
             <StyledLink
               to={`/nodes/${match.params.id}/volumes`}
               title={match.params.id}
@@ -246,7 +240,7 @@ const CreateVolume = props => {
               {match.params.id}
             </StyledLink>,
             <BreadcrumbLabel>
-              {intl.messages.create_new_volume}
+              {intl.translate('create_new_volume')}
             </BreadcrumbLabel>,
           ]}
         />
@@ -256,16 +250,16 @@ const CreateVolume = props => {
         <Banner
           type={STATUS_BANNER_WARNING}
           icon={<i className="fas fa-exclamation-triangle" />}
-          title={intl.messages.no_storage_class_found}
+          title={intl.translate('no_storage_class_found')}
           messages={[
             <>
-              {intl.messages.storage_class_is_required}
+              {intl.translate('storage_class_is_required')}
               <a
                 rel="noopener noreferrer"
                 target="_blank"
                 href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
               >
-                {intl.messages.learn_more}
+                {intl.translate('learn_more')}
               </a>
             </>,
           ]}
@@ -353,19 +347,19 @@ const CreateVolume = props => {
                     name="name"
                     value={values.name}
                     onChange={handleChange('name')}
-                    label={intl.messages.name}
+                    label={intl.translate('name')}
                     error={touched.name && errors.name}
                     onBlur={handleOnBlur}
                   />
                   <InputContainer className="sc-input">
                     <InputLabel className="sc-input-label">
-                      {intl.messages.labels}
+                      {intl.translate('labels')}
                     </InputLabel>
                     <LabelsContainer>
                       <LabelsForm>
                         <Input
                           name="labelName"
-                          placeholder={intl.messages.enter_label_name}
+                          placeholder={intl.translate('enter_label_name')}
                           value={labelName}
                           onChange={e => {
                             setLabelName(e.target.value);
@@ -373,14 +367,14 @@ const CreateVolume = props => {
                         />
                         <Input
                           name="labelValue"
-                          placeholder={intl.messages.enter_label_value}
+                          placeholder={intl.translate('enter_label_value')}
                           value={labelValue}
                           onChange={e => {
                             setLabelValue(e.target.value);
                           }}
                         />
                         <Button
-                          text={intl.messages.add}
+                          text={intl.translate('add')}
                           type="button"
                           onClick={addLabel}
                           data-cy="add-volume-labels-button"
@@ -406,12 +400,12 @@ const CreateVolume = props => {
                   </InputContainer>
                   <Input
                     id="storageClass_input"
-                    label={intl.messages.storageClass}
+                    label={intl.translate('storageClass')}
                     clearable={false}
                     type="select"
                     options={optionsStorageClasses}
-                    placeholder={intl.messages.select_a_storageClass}
-                    noOptionsMessage={() => intl.messages.no_results}
+                    placeholder={intl.translate('select_a_storageClass')}
+                    noOptionsMessage={() => intl.translate('no_results')}
                     name="storageClass"
                     onChange={handleSelectChange('storageClass')}
                     value={getSelectedObjectItem(
@@ -423,12 +417,12 @@ const CreateVolume = props => {
                   />
                   <Input
                     id="type_input"
-                    label={intl.messages.type}
+                    label={intl.translate('type')}
                     clearable={false}
                     type="select"
                     options={optionsTypes}
-                    placeholder={intl.messages.select_a_type}
-                    noOptionsMessage={() => intl.messages.no_results}
+                    placeholder={intl.translate('select_a_type')}
+                    noOptionsMessage={() => intl.translate('no_results')}
                     name="type"
                     onChange={handleSelectChange('type')}
                     value={getSelectedObjectItem(optionsTypes, values?.type)}
@@ -443,7 +437,7 @@ const CreateVolume = props => {
                         min="1"
                         value={values.sizeInput}
                         onChange={handleChange('sizeInput')}
-                        label={intl.messages.volume_size}
+                        label={intl.translate('volume_size')}
                         error={touched.sizeInput && errors.sizeInput}
                         onBlur={handleOnBlur}
                       />
@@ -454,7 +448,7 @@ const CreateVolume = props => {
                           clearable={false}
                           type="select"
                           options={optionsSizeUnits}
-                          noOptionsMessage={() => intl.messages.no_results}
+                          noOptionsMessage={() => intl.translate('no_results')}
                           name="selectedUnit"
                           onChange={handleSelectChange('selectedUnit')}
                           value={getSelectedObjectItem(
@@ -471,7 +465,7 @@ const CreateVolume = props => {
                       name="path"
                       value={values.path}
                       onChange={handleChange('path')}
-                      label={intl.messages.device_path}
+                      label={intl.translate('device_path')}
                       error={touched.path && errors.path}
                       onBlur={handleOnBlur}
                     />
@@ -479,7 +473,7 @@ const CreateVolume = props => {
                 </FormSection>
                 <ActionContainer>
                   <Button
-                    text={intl.messages.cancel}
+                    text={intl.translate('cancel')}
                     type="button"
                     outlined
                     onClick={() =>
@@ -487,7 +481,7 @@ const CreateVolume = props => {
                     }
                   />
                   <Button
-                    text={intl.messages.create}
+                    text={intl.translate('create')}
                     type="submit"
                     disabled={!dirty || !isEmpty(errors)}
                     data-cy="submit-create-volume"
@@ -502,4 +496,4 @@ const CreateVolume = props => {
   );
 };
 
-export default injectIntl(CreateVolume);
+export default CreateVolume;
