@@ -17,6 +17,7 @@ export const CLUSTER_STATUS_UNKNOWN = 'CLUSTER_STATUS_UNKNOWN ';
 
 export const SET_PROMETHEUS_API_AVAILABLE = 'SET_PROMETHEUS_API_AVAILABLE';
 
+// Reducer
 const defaultState = {
   alert: {
     list: [],
@@ -36,7 +37,7 @@ const defaultState = {
   isPrometheusApiUp: false,
 };
 
-export default function(state = defaultState, action = {}) {
+export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_PROMETHEUS_API_AVAILABLE:
       return { ...state, isPrometheusApiUp: action.payload };
@@ -52,6 +53,7 @@ export default function(state = defaultState, action = {}) {
   }
 }
 
+// Action Creators
 export const refreshClusterStatusAction = () => {
   return { type: REFRESH_CLUSTER_STATUS };
 };
@@ -80,6 +82,13 @@ export const updateAlertsAction = payload => {
   return { type: UPDATE_ALERTS, payload };
 };
 
+// Selectors
+export const isAlertRefreshing = state =>
+  state.app.monitoring.alert.isRefreshing;
+export const isClusterRefreshing = state =>
+  state.app.monitoring.cluster.isRefreshing;
+
+// Sagas
 function getClusterQueryStatus(result) {
   return result &&
     result.status === 'success' &&
@@ -180,9 +189,7 @@ export function* refreshAlerts() {
   const resultAlerts = yield call(fetchAlerts);
   if (!resultAlerts.error) {
     yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(
-      state => state.app.monitoring.alert.isRefreshing,
-    );
+    const isRefreshing = yield select(isClusterRefreshing);
     if (isRefreshing) {
       yield call(refreshAlerts);
     }
@@ -198,9 +205,7 @@ export function* refreshClusterStatus() {
   const errorResult = yield call(fetchClusterStatus);
   if (!errorResult) {
     yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(
-      state => state.app.monitoring.cluster.isRefreshing,
-    );
+    const isRefreshing = yield select(isClusterRefreshing);
     if (isRefreshing) {
       yield call(refreshClusterStatus);
     }
