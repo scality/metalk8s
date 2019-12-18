@@ -4,7 +4,9 @@
 # Available states
 # ================
 #
+# * prepared      -> setup etcd dependencies
 # * installed     -> deploy etcd manifest
 #
 include:
+  - .prepared
   - .installed

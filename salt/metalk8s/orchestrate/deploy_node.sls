@@ -3,6 +3,8 @@
 
 {%- set skip_roles = pillar.metalk8s.nodes[node_name].get('skip_roles', []) %}
 
+{%- set roles = pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
+
 {%- if node_name not in salt.saltutil.runner('manage.up') %}
 Deploy salt-minion on a new node:
   salt.state:
@@ -113,23 +115,49 @@ Wait minion available:
 
 {%- endif %}
 
+{%- if 'etcd' in roles and 'etcd' not in skip_roles %}
+
+Install etcd node:
+  salt.state:
+    - tgt: {{ node_name }}
+    - saltenv: metalk8s-{{ version }}
+    - sls:
+      - metalk8s.roles.etcd
+    - pillar:
+        metalk8s:
+          # Skip etcd healthcheck as we register etcd member just after
+          skip_etcd_healthcheck: True
+          # Skip apiserver-proxy healthcheck as local apiserver may not be
+          # deployed yet (as we call `highstate` just after)
+          skip_apiserver_proxy_healthcheck: True
+
+Register the node into etcd cluster:
+  salt.runner:
+    - name: state.orchestrate
+    - pillar: {{ pillar | json  }}
+    - mods:
+      - metalk8s.orchestrate.register_etcd
+    - require:
+      - salt: Install etcd node
+    - require_in:
+      - salt: Run the highstate
+
+{%- endif %}
+
 Run the highstate:
   salt.state:
     - tgt: {{ node_name }}
     - highstate: True
     - saltenv: metalk8s-{{ version }}
+    {#- Add ability to skip node roles to not apply all the highstate
+        e.g.: Skipping etcd when downgrading #}
+    {%- if skip_roles %}
     - pillar:
         metalk8s:
-          # Skip etcd healthcheck as we register etcd member at the end of this
-          # orchestrate
-          skip_etcd_healthcheck: True
-          {#- Add ability to skip node roles to not apply all the highstate
-              e.g.: Skipping etcd when downgrading #}
-          {%- if skip_roles %}
           nodes:
             {{ node_name }}:
-              skip_roles: {{ skip_roles }}
-          {%- endif %}
+              skip_roles: {{ skip_roles | unique | tojson }}
+    {%- endif %}
     - require:
       - salt: Set grains
       - salt: Refresh the mine
@@ -164,15 +192,3 @@ Kill kube-controller-manager on all master nodes:
     - require:
       - salt: Run the highstate
 
-{%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
-
-Register the node into etcd cluster:
-  salt.runner:
-    - name: state.orchestrate
-    - pillar: {{ pillar | json  }}
-    - mods:
-      - metalk8s.orchestrate.register_etcd
-    - require:
-      - salt: Run the highstate
-
-{%- endif %}
