@@ -6,8 +6,7 @@
    :maxdepth: 2
    :caption: Contents:
 
-   quickstart/index
-   installation-guide/index
+   installation/index
    operation/index
    developer/index
    glossary
