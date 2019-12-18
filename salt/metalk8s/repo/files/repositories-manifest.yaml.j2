@@ -10,6 +10,7 @@ metadata:
     heritage: metalk8s
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/managed-by: salt
+    metalk8s.scality.com/version: {{ metalk8s_version }}
   annotations:
     metalk8s.scality.com/config-digest: "{{ config_digest }}"
 spec:
