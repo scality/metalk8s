@@ -37,7 +37,8 @@ const App = props => {
     dispatch(fetchConfigAction());
     dispatch(setInitialLanguageAction());
     dispatch(initToggleSideBarAction());
-  }, [language, dispatch]);
+    // eslint-disable-next-line
+  }, []);
 
   return api && theme && userManager && isUserLoaded ? (
     <OidcProvider store={store} userManager={userManager}>
