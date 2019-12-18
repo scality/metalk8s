@@ -1,6 +1,7 @@
 """Custom states for MetalK8s."""
 
 import time
+import re
 
 
 __virtualname__ = "metalk8s"
@@ -18,9 +19,11 @@ def static_pod_managed(name,
                        **kwargs):
     """Simple helper to edit a static Pod manifest if configuration changes.
 
-    Expects the template to use the `config_digest` variable and store it in
-    the `metadata.annotations` section, with the key
-    `metalk8s.scality.com/config-digest`.
+    Expects the template to use:
+    - `config_digest` variable and store it in the `metadata.annotations`
+      section, with the key `metalk8s.scality.com/config-digest`.
+    - `metalk8s_version` variabble and store it in the `metadata.labels`
+      section, with the key `metalk8s.scality.com/version`.
 
     name:
         Path to the static pod manifest.
@@ -57,6 +60,9 @@ def static_pod_managed(name,
         "-".join(config_file_digests)
     )
 
+    match = re.search(r'metalk8s-(?P<version>.+)$', __env__)
+    metalk8s_version = match.group('version') if match else "unknown"
+
     return __states__["file.managed"](
         name,
         source,
@@ -66,7 +72,10 @@ def static_pod_managed(name,
         mode=kwargs.pop("mode", "0600"),
         makedirs=kwargs.pop("makedirs", False),
         backup=kwargs.pop("backup", False),
-        context=dict(context or {}, config_digest=config_digest),
+        context=dict(
+            context or {},
+            config_digest=config_digest, metalk8s_version=metalk8s_version
+        ),
         **kwargs
     )
 
