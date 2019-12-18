@@ -17,13 +17,29 @@ from a single entrypoint. This operation can be done either through
 :ref:`the MetalK8s GUI <quickstart-expansion-ui>` or
 :ref:`the command-line <quickstart-expansion-cli>`.
 
+Defining an Architecture
+------------------------
+See the schema defined in
+:ref:`the introduction <quickstart-intro-install-plan>`.
+
+The Bootstrap being already deployed, the other nodes' deployment runs
+four times, twice for control-plane nodes (bringing up the
+control-plane to a total of three members), and twice for workload-plane nodes.
+
+.. todo::
+
+   - explain architecture: 3 control-plane + etcd, 2 workers (one being
+     dedicated for infra)
+   - remind roles and taints from intro
+
+
 .. _quickstart-expansion-ui:
 
-Adding a node with the :ref:`MetalK8s GUI <quickstart-services-admin-ui>`
+Adding a Node with the :ref:`MetalK8s GUI <quickstart-services-admin-ui>`
 -------------------------------------------------------------------------
 To reach the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`.
 
-Creating a Node object
+Creating a Node Object
 ^^^^^^^^^^^^^^^^^^^^^^
 The first step to adding a Node to a cluster is to declare it in the API.
 The MetalK8s GUI provides a simple form for that purpose.
@@ -59,7 +75,7 @@ The MetalK8s GUI provides a simple form for that purpose.
       Selecting **Workload Plane** and **Infra** checkbox will result in infra
       services and workload applications run on this Node.
 
-#. Click "Create". You will be redirected to the Node list page, and will be
+#. Click **Create**. You will be redirected to the Node list page, and will be
    shown a notification to confirm the Node creation:
 
    .. image:: img/ui/notification-node-created.png
@@ -70,13 +86,12 @@ Deploying the Node
 After the desired state has been declared, it can be applied to the machine.
 The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
 
-#. From the Node list page, any yet-to-be-deployed Node will have a "Deploy"
-   button. Click it to begin the deployment:
+#. From the Node list page, any yet-to-be-deployed Node click **Deploy**.
 
    .. image:: img/ui/click-node-deploy.png
 
-#. Once clicked, the button will change to "Deploying". Click it again to open
-   the deployment status page:
+   Once clicked, the button will change to **Deploying**. Click it again to
+   open the deployment status page:
 
    .. image:: img/ui/deployment-progress.png
 
@@ -88,8 +103,8 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
       - UI should parse these events further
       - Events should be documented
 
-#. When complete, click on "Back to nodes list". The new Node should have a
-   ``Ready`` status.
+#. When complete, click **Back to nodes list**. The new Node should be in a
+   **Ready** state.
 
 .. todo::
 
@@ -98,14 +113,14 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
 
 .. _quickstart-expansion-cli:
 
-Adding a node from the command-line
+Adding a Node from the Command-line
 -----------------------------------
 .. warning::
 
   Adding a node from command-line may require more advanced knowledge.
 .. _quickstart-expansion-manifest:
 
-Creating a manifest
+Creating a Manifest
 ^^^^^^^^^^^^^^^^^^^
 Adding a node requires the creation of a :term:`manifest <Node manifest>` file,
 following the template below:
@@ -199,7 +214,7 @@ CLI-only actions
      - effect: NoSchedule
        key: node-role.kubernetes.io/etcd
 
-Creating the Node object
+Creating the Node Object
 ^^^^^^^^^^^^^^^^^^^^^^^^
 Use ``kubectl`` to send the manifest file created before to Kubernetes API.
 
@@ -217,47 +232,47 @@ Check that it is available in the API and has the expected roles.
    bootstrap              Ready     bootstrap,etcd,infra,master   12d       v1.11.7
    <node-name>            Unknown   <expected node roles>         29s
 
-Deploying the node
+Deploying the Node
 ^^^^^^^^^^^^^^^^^^
 Open a terminal in the Salt Master container using
 :ref:`this procedure <quickstart-services-salt>`.
 
-Check that SSH access from the Salt Master to the new node is properly
-configured (see :ref:`Bootstrap SSH Provisioning`).
+#. Check that SSH access from the Salt Master to the new node is properly
+   configured (see :ref:`Bootstrap SSH Provisioning`).
 
-.. code-block:: shell
+   .. code-block:: shell
+   
+      root@salt-master-bootstrap $ salt-ssh --roster kubernetes <node-name> test.ping
+      <node-name>:
+          True
 
-   root@salt-master-bootstrap $ salt-ssh --roster kubernetes <node-name> test.ping
-   <node-name>:
-       True
+#. Start the node deployment.
 
-Start the node deployment.
-
-.. parsed-literal::
-
-   root@salt-master-bootstrap $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \\
-                                saltenv=metalk8s-|release| \\
-                                pillar='{"orchestrate": {"node_name": "<node-name>"}}'
-
-   ... lots of output ...
-   Summary for bootstrap_master
-   ------------
-   Succeeded: 7 (changed=7)
-   Failed:    0
-   ------------
-   Total states run:     7
-   Total run time: 121.468 s
-
-Troubleshooting
-^^^^^^^^^^^^^^^
+   .. parsed-literal::
+   
+      root@salt-master-bootstrap $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \\
+                                   saltenv=metalk8s-|release| \\
+                                   pillar='{"orchestrate": {"node_name": "<node-name>"}}'
+   
+      ... lots of output ...
+      Summary for bootstrap_master
+      ------------
+      Succeeded: 7 (changed=7)
+      Failed:    0
+      ------------
+      Total states run:     7
+      Total run time: 121.468 s
 
 .. todo::
+
+   Troubleshooting
+   ^^^^^^^^^^^^^^^
 
    - explain orchestrate output and how to find errors
    - point to log files
 
 
-Checking the cluster health
+Checking the Cluster Health
 ---------------------------
 
 During the expansion, it is recommended to check the cluster state between each

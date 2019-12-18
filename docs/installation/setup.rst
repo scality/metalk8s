@@ -13,7 +13,7 @@ MetalK8s_ clusters require machines running CentOS_ / RHEL_ 7.6 or higher as
 their operating system. These machines may be virtual or physical, with no
 difference in setup procedure.
 
-For this quickstart, we will need 5 machines (or 3, if running workload
+For this installation, 5 machines are required (or 3, if running workload
 applications on your control-plane nodes).
 
 Sizing
@@ -30,7 +30,7 @@ Provisioning
 
 SSH
 ^^^
-Each machine should be accessible through SSH from your host. As part of the
+Each machine should be accessible through SSH from the host. As part of the
 :doc:`./bootstrap`, a new SSH identity for the :term:`Bootstrap node` will be
 generated and shared to other nodes in the cluster. It is also possible to do
 it beforehand.
@@ -41,7 +41,7 @@ Each machine needs to be a member of both the control-plane and workload-plane
 networks, as described in :ref:`quickstart-intro-networks`. However, these
 networks can overlap, and nodes need not have distinct IPs for each plane.
 
-In order to reach the cluster-provided UIs from your host, the host needs to be
+In order to reach the cluster-provided UIs from the host, the host needs to be
 able to connect to workload-plane IPs of the machines.
 
 Repositories
@@ -96,7 +96,7 @@ Add a new repository:
         `repo_url` can be remote url using prefix `http://`, `https://`,
         `ftp://`, ... or a local path using `file://`.
 
-For more detail(s), refer to the official documentation:
+For more detail(s), refer to the official RedHat documentation:
 
     - `Enable Optional repositories with RHSM`_
     - `Configure repositories with YUM`_

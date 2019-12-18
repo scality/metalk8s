@@ -14,7 +14,7 @@ Nodes
 containers and can be managed by the cluster (control-plane services,
 described below).
 
-Control-plane and workload-plane
+Control-plane and Workload-plane
 """"""""""""""""""""""""""""""""
 This dichotomy is central to MetalK8s, and often referred to in other
 Kubernetes concepts.
@@ -42,9 +42,7 @@ Control-plane nodes often are responsible for providing storage for
 :term:`API Server`, by running :term:`etcd`. This responsibility may be
 offloaded to other nodes from the workload-plane (without the ``etcd`` taint).
 
-.. _node-roles:
-
-Node roles
+Node Roles
 """"""""""
 Determining a :term:`Node` responsibilities is achieved using **roles**.
 Roles are stored in :term:`Node manifests <Node manifest>` using labels, of the
@@ -80,9 +78,7 @@ MetalK8s uses five different **roles**, that may be combined freely:
   In practice, this role will be used in conjunction with the ``master``
   and ``etcd`` roles for bootstrapping the control-plane.
 
-.. _node-taints:
-
-Node taints
+Node Taints
 """""""""""
 :term:`Taints <Taint>` are complementary to roles. When a taint, or a set of
 taints, are applied to a :term:`Node`, only :term:`Pods <Pod>` with the
@@ -121,7 +117,7 @@ other ranges during the
 
 .. _quickstart-intro-install-plan:
 
-Installation plan
+Installation Plan
 ^^^^^^^^^^^^^^^^^
 In this guide, the depicted installation procedure is for a medium sized
 cluster, using three control-plane nodes and two worker nodes. Refer to

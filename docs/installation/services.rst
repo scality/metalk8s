@@ -1,4 +1,4 @@
-Accessing cluster services
+Accessing Cluster Services
 ==========================
 
 
@@ -10,15 +10,15 @@ MetalK8s GUI
 This GUI is deployed during the :doc:`Bootstrap installation <./bootstrap>`,
 and can be used for operating, extending and upgrading a MetalK8s cluster.
 
-Gather required information
+Gather Required Information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#. Get the control plane IP of the bootstrap node.
+Get the control plane IP of the bootstrap node.
 
-   .. code-block:: shell
+.. code-block:: shell
 
-      root@bootstrap $ salt-call grains.get metalk8s:control_plane_ip
-      local:
-          <the control plane IP>
+    root@bootstrap $ salt-call grains.get metalk8s:control_plane_ip
+    local:
+        <the control plane IP>
 
 Use MetalK8s UI
 ^^^^^^^^^^^^^^^
@@ -39,8 +39,8 @@ The landing page should look like this:
 This page displays two monitoring indicators:
 
 #. the Cluster Status, which evaluates if control-plane services are all up and
-   running
-#. the list of alerts stored in :term:`Alertmanager`
+   running,
+#. the list of alerts stored in :term:`Alertmanager`.
 
 
 .. _quickstart-services-grafana:
@@ -64,7 +64,7 @@ The Pod name is ``salt-master-<bootstrap hostname>``, and it contains two
 containers: ``salt-master`` and ``salt-api``.
 
 To interact with the Salt Master with the usual CLIs, open a terminal in the
-``salt-master`` container (we assume the Bootstrap hostname to be
+``salt-master`` container (assuming the Bootstrap hostname to be
 ``bootstrap``):
 
 .. code-block:: shell

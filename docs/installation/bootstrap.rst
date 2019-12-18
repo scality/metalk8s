@@ -4,8 +4,6 @@ Deployment of the :term:`Bootstrap node`
 Preparation
 -----------
 
-MetalK8s ISO
-^^^^^^^^^^^^
 On your bootstrap node, download the MetalK8s ISO file.
 Mount this ISO file at the specific following path:
 
@@ -65,8 +63,9 @@ it must a list of hosts, IP addresses or IP ranges in CIDR format.
 
 .. _Bootstrap SSH Provisioning:
 
-SSH provisioning
-^^^^^^^^^^^^^^^^
+SSH Provisioning
+----------------
+
 #. Prepare the MetalK8s PKI directory.
 
    .. code-block:: shell
@@ -87,26 +86,27 @@ SSH provisioning
       this key must exist in the ``/etc/metalk8s/pki`` directory.
 
 #. Accept the new identity on future new nodes (run from your host).
-   First, retrieve the public key from the Bootstrap node.
+   
+   #. First, retrieve the public key from the Bootstrap node.
 
-   .. code-block:: shell
+      .. code-block:: shell
 
-      user@host $ scp root@bootstrap:/etc/metalk8s/pki/salt-bootstrap.pub /tmp/salt-bootstrap.pub
+         user@host $ scp root@bootstrap:/etc/metalk8s/pki/salt-bootstrap.pub /tmp/salt-bootstrap.pub
 
-   Then, authorize this public key on each new node (this command assumes a
-   functional SSH access from your host to the target node). Repeat until all
-   nodes accept SSH connections from the Bootstrap node.
+   #. Authorize this public key on each new node (this command assumes a
+      functional SSH access from your host to the target node). Repeat until all
+      nodes accept SSH connections from the Bootstrap node.
 
-   .. code-block:: shell
+      .. code-block:: shell
 
-      user@host $ ssh-copy-id -i /tmp/salt-bootstrap.pub root@<node_hostname>
+         user@host $ ssh-copy-id -i /tmp/salt-bootstrap.pub root@<node_hostname>
 
 
 Installation
 ------------
 
-Run the install
-^^^^^^^^^^^^^^^
+Run the Installation
+^^^^^^^^^^^^^^^^^^^^
 Run the bootstrap script to install binaries and services required on the
 Bootstrap node.
 
@@ -117,14 +117,14 @@ Bootstrap node.
 .. warning::
 
     In case of virtual network (or any network which enforces source and
-    destination fields of IP packets to correspond to the MAC address(es))
+    destination fields of IP packets to correspond to the MAC address(es)),
     :ref:`IP-in-IP needs to be enabled<enable IP-in-IP>`.
 
-Provision storage for Prometheus services
+Provision Storage for Prometheus Services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After bootstrapping the cluster, the Prometheus and AlertManager services used
 to monitor the system will not be running (the respective :term:`Pods <Pod>`
-will remain in *Pending* state), because they require persistent storage to be
+will remain in **Pending** state), because they require persistent storage to be
 available. You can either provision these storage volumes on the bootstrap
 node, or later on other nodes joining the cluster. Templates for the required
 volumes are available in :download:`examples/prometheus-sparse.yaml
@@ -138,10 +138,10 @@ provision persistent storage.
    When deploying using Vagrant, persistent volumes for Prometheus and
    AlertManager are already provisioned.
 
-Validate the install
-^^^^^^^^^^^^^^^^^^^^
+Validate the Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^
 Check if all :term:`Pods <Pod>` on the Bootstrap node are in the
-``Running`` state.
+**Running** state.
 
 .. note::
 
@@ -190,10 +190,10 @@ Check if all :term:`Pods <Pod>` on the Bootstrap node are in the
 Check that you can access the MetalK8s GUI, following
 :ref:`this procedure <quickstart-services-admin-ui>`.
 
-Troubleshooting
-^^^^^^^^^^^^^^^
-
 .. todo::
+
+   Troubleshooting
+   ^^^^^^^^^^^^^^^
 
    - Mention ``/var/log/metalk8s-bootstrap.log`` and the command-line options
      for verbosity.
