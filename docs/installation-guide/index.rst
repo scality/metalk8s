@@ -1,6 +1,0 @@
-Installation Guide
-==================
-
-.. toctree::
-
-   sizing
