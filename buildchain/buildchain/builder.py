@@ -8,6 +8,7 @@ from typing import Any, Iterator, Tuple
 
 from buildchain import config
 from buildchain import constants
+from buildchain import coreutils
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
@@ -81,9 +82,28 @@ GO_BUILDER : LocalImage = _builder_image(
     ]
 )
 
+UI_BUILDER : LocalImage = _builder_image(
+    name='ui',
+    dockerfile=constants.ROOT/'ui'/'Dockerfile',
+    build_args={'NODE_IMAGE_VERSION': versions.NODEJS_IMAGE_VERSION},
+    file_dep=(
+        list(coreutils.ls_files_rec(constants.ROOT/'ui'/'public')) +
+        list(coreutils.ls_files_rec(constants.ROOT/'ui'/'src')) +
+        [
+            constants.ROOT/'ui'/'package.json',
+            constants.ROOT/'ui'/'package-lock.json',
+            constants.ROOT/'ui'/'entrypoint.sh',
+        ]
+    )
+)
+
 
 _BUILDERS : Tuple[LocalImage, ...] = (
-    RPM_BUILDER, DEB_BUILDER, DOC_BUILDER, GO_BUILDER
+    RPM_BUILDER,
+    DEB_BUILDER,
+    DOC_BUILDER,
+    GO_BUILDER,
+    UI_BUILDER,
 )
 
 

@@ -22,6 +22,7 @@ from buildchain.format import *
 from buildchain.lint import *
 from buildchain.packaging import *
 from buildchain.salt_tree import *
+from buildchain.ui import *
 from buildchain.vagrant import *
 
 
