@@ -4,7 +4,6 @@ import { useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
-import { injectIntl } from 'react-intl';
 import {
   Table,
   Button,
@@ -22,6 +21,7 @@ import {
   BreadcrumbContainer,
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -99,7 +99,6 @@ const SolutionsList = props => {
   const solutions = useSelector(state => state.app.solutions.solutions);
   const environments = useSelector(state => state.app.solutions.environments);
   const history = useHistory();
-  const { intl } = props;
 
   const onSort = (setSortBy, setSortDirection) => ({
     sortBy,
@@ -111,12 +110,12 @@ const SolutionsList = props => {
 
   const solutionColumns = [
     {
-      label: intl.messages.name,
+      label: intl.translate('name'),
       dataKey: 'name',
       flexGrow: 1,
     },
     {
-      label: intl.messages.versions,
+      label: intl.translate('versions'),
       dataKey: 'versions',
       renderer: versions =>
         versions.map((version, index) => (
@@ -130,16 +129,16 @@ const SolutionsList = props => {
 
   const environmentsColumn = [
     {
-      label: intl.messages.name,
+      label: intl.translate('name'),
       dataKey: 'name',
     },
     {
-      label: intl.messages.description,
+      label: intl.translate('description'),
       dataKey: 'description',
       flexGrow: 1,
     },
     {
-      label: intl.messages.solutions,
+      label: intl.translate('solutions'),
       dataKey: 'solutions',
       renderer: (solutions, row) => {
         const solutionsLinks = solutions
@@ -236,17 +235,17 @@ const SolutionsList = props => {
           <Breadcrumb
             activeColor={theme.brand.secondary}
             paths={[
-              <BreadcrumbLabel title={intl.messages.solutions}>
-                {intl.messages.solutions}
+              <BreadcrumbLabel title={intl.translate('solutions')}>
+                {intl.translate('solutions')}
               </BreadcrumbLabel>,
             ]}
           />
         </BreadcrumbContainer>
         <TableContainer>
           <EnvironmentHeader>
-            <PageSubtitle>{intl.messages.environments}</PageSubtitle>
+            <PageSubtitle>{intl.translate('environments')}</PageSubtitle>
             <Button
-              text={intl.messages.create_new_environment}
+              text={intl.translate('create_new_environment')}
               onClick={() => history.push('/solutions/create-environment')}
               icon={<i className="fas fa-plus" />}
             />
@@ -263,13 +262,13 @@ const SolutionsList = props => {
             onSort={onSort(setEnvSortBy, setEnvSortDirection)}
             onRowClick={() => {}}
             noRowsRenderer={() => (
-              <NoRowsRenderer content={intl.messages.no_data_available} />
+              <NoRowsRenderer content={intl.translate('no_data_available')} />
             )}
           />
         </TableContainer>
 
         <TableContainer>
-          <PageSubtitle>{intl.messages.available_solutions}</PageSubtitle>
+          <PageSubtitle>{intl.translate('available_solutions')}</PageSubtitle>
           <Table
             list={sortedSolutions}
             columns={solutionColumns}
@@ -281,7 +280,7 @@ const SolutionsList = props => {
             onSort={onSort(setSolutionSortBy, setSolutionSortDirection)}
             onRowClick={() => {}}
             noRowsRenderer={() => (
-              <NoRowsRenderer content={intl.messages.no_data_available} />
+              <NoRowsRenderer content={intl.translate('no_data_available')} />
             )}
           />
         </TableContainer>
@@ -293,10 +292,9 @@ const SolutionsList = props => {
           setSelectedEnvironment('');
         }}
         isOpen={isAddSolutionModalOpen}
-        title={intl.formatMessage(
-          { id: 'add_solution_to_environment' },
-          { environment: selectedEnvironment },
-        )}
+        title={intl.translate('add_solution_to_environment', {
+          environment: selectedEnvironment,
+        })}
       >
         {isSolutionReady ? (
           <Formik
@@ -353,20 +351,20 @@ const SolutionsList = props => {
                         <Input
                           type="select"
                           name="solutions"
-                          label={intl.messages.solutions}
+                          label={intl.translate('solutions')}
                           options={solutionsSelectOptions}
-                          placeholder={intl.messages.select_a_type}
-                          noOptionsMessage={() => intl.messages.no_results}
+                          placeholder={intl.translate('select_a_type')}
+                          noOptionsMessage={() => intl.translate('no_results')}
                           onChange={handleSelectChange('solution')}
                           value={values.solution}
                         />
                         <Input
                           type="select"
                           name="version"
-                          label={intl.messages.version_env}
+                          label={intl.translate('version_env')}
                           options={selectedSolutionVersionsOptions}
-                          placeholder={intl.messages.select_a_type}
-                          noOptionsMessage={() => intl.messages.no_results}
+                          placeholder={intl.translate('select_a_type')}
+                          noOptionsMessage={() => intl.translate('no_results')}
                           onChange={handleSelectChange('version')}
                           value={values.version}
                         />
@@ -375,14 +373,14 @@ const SolutionsList = props => {
                       <ActionContainer>
                         <Button
                           outlined
-                          text={intl.messages.cancel}
+                          text={intl.translate('cancel')}
                           onClick={() => {
                             setisAddSolutionModalOpen(false);
                             setSelectedEnvironment('');
                           }}
                         />
                         <Button
-                          text={intl.messages.add_solution}
+                          text={intl.translate('add_solution')}
                           type="submit"
                         />
                       </ActionContainer>
@@ -393,11 +391,11 @@ const SolutionsList = props => {
             }}
           </Formik>
         ) : (
-          <Loader size="large">{intl.messages.import_solution_hint}</Loader>
+          <Loader size="large">{intl.translate('import_solution_hint')}</Loader>
         )}
       </Modal>
     </>
   );
 };
 
-export default injectIntl(SolutionsList);
+export default SolutionsList;

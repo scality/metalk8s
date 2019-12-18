@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
+import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Loader as LoaderCoreUI } from '@scality/core-ui';
 import { Table, Tooltip, Button } from '@scality/core-ui';
@@ -23,7 +23,7 @@ import {
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import Banner from '../components/Banner';
-
+import { intl } from '../translations/IntlGlobalProvider';
 const VOLUME_PROVISION_DOC_REFERENCE =
   'MetalK8s Quickstart Guide > Deployment of the Bootstrap node > Installation > Provision storage for Prometheus services';
 
@@ -108,7 +108,6 @@ const ClusterMonitoring = props => {
   const clusterStatus = useSelector(state => makeClusterStatus(state, props));
   const cluster = useSelector(state => state.app.monitoring.cluster);
   const config = useSelector(state => state.config);
-  const { intl } = props;
 
   useEffect(() => {
     dispatch(refreshAlertsAction());
@@ -130,12 +129,12 @@ const ClusterMonitoring = props => {
 
   const columns = [
     {
-      label: intl.messages.name,
+      label: intl.translate('name'),
       dataKey: 'name',
       width: 250,
     },
     {
-      label: intl.messages.severity,
+      label: intl.translate('severity'),
       dataKey: 'severity',
       width: 100,
       renderer: data => {
@@ -143,12 +142,12 @@ const ClusterMonitoring = props => {
       },
     },
     {
-      label: intl.messages.message,
+      label: intl.translate('message'),
       dataKey: 'message',
       flexGrow: 1,
     },
     {
-      label: intl.messages.active_at,
+      label: intl.translate('active_at'),
       dataKey: 'activeAt',
       width: 200,
       renderer: data => (
@@ -193,7 +192,7 @@ const ClusterMonitoring = props => {
     <PageContainer>
       <ClusterStatusTitleContainer>
         <LeftClusterStatusContainer>
-          <PageSubtitle>{intl.messages.cluster_status + ' :'}</PageSubtitle>
+          <PageSubtitle>{intl.translate('cluster_status') + ' :'}</PageSubtitle>
           <ClusterStatusValue value={clusterStatus.value}>
             {clusterStatus.label}
           </ClusterStatusValue>
@@ -204,19 +203,19 @@ const ClusterMonitoring = props => {
                 <div>
                   <CircleStatus status={apiServerStatus} />
                   <ControlPlaneStatusLabel>
-                    {intl.messages.api_server}
+                    {intl.translate('api_server')}
                   </ControlPlaneStatusLabel>
                 </div>
                 <div>
                   <CircleStatus status={kubeSchedulerStatus} />
                   <ControlPlaneStatusLabel>
-                    {intl.messages.kube_scheduler}
+                    {intl.translate('kube_scheduler')}
                   </ControlPlaneStatusLabel>
                 </div>
                 <div>
                   <CircleStatus status={kubeControllerManagerStatus} />
                   <ControlPlaneStatusLabel>
-                    {intl.messages.kube_controller_manager}
+                    {intl.translate('kube_controller_manager')}
                   </ControlPlaneStatusLabel>
                 </div>
               </TooltipContent>
@@ -231,7 +230,7 @@ const ClusterMonitoring = props => {
             placement="left"
             overlay={
               <TooltipContent>
-                {intl.messages.advanced_monitoring}
+                {intl.translate('advanced_monitoring')}
               </TooltipContent>
             }
           >
@@ -250,16 +249,18 @@ const ClusterMonitoring = props => {
         <Banner
           type={STATUS_BANNER_WARNING}
           icon={<i className="fas fa-exclamation-triangle" />}
-          title={intl.messages.prometheus_not_available}
+          title={intl.translate('prometheus_not_available')}
           messages={[
             <>
-              {`${intl.messages.please_refer_to} ${VOLUME_PROVISION_DOC_REFERENCE}`}
+              {`${intl.translate(
+                'please_refer_to',
+              )} ${VOLUME_PROVISION_DOC_REFERENCE}`}
             </>,
           ]}
         />
       )}
       <PageSubtitle>
-        {intl.messages.alerts}
+        {intl.translate('alerts')}
         {alerts.isLoading ? <LoaderCoreUI size="small" /> : null}
       </PageSubtitle>
       <TableContainer>
@@ -272,7 +273,7 @@ const ClusterMonitoring = props => {
           sortDirection={sortDirection}
           onSort={onSort}
           noRowsRenderer={() => (
-            <NoRowsRenderer content={intl.messages.no_data_available} />
+            <NoRowsRenderer content={intl.translate('no_data_available')} />
           )}
         />
       </TableContainer>
@@ -281,9 +282,8 @@ const ClusterMonitoring = props => {
 };
 
 const makeClusterStatus = (state, props) => {
-  const { intl } = props;
   const cluster = state.app.monitoring.cluster;
-  let label = intl.messages.down;
+  let label = intl.translate('down');
   let value = CLUSTER_STATUS_DOWN;
   if (
     cluster.apiServerStatus > 0 &&
@@ -291,17 +291,17 @@ const makeClusterStatus = (state, props) => {
     cluster.kubeControllerManagerStatus > 0
   ) {
     value = CLUSTER_STATUS_UP;
-    label = intl.messages.cluster_up_and_running;
+    label = intl.translate('cluster_up_and_running');
   }
   if (cluster.error) {
     value = CLUSTER_STATUS_DOWN;
-    label = intl.messages[cluster.error] || cluster.error;
+    label = intl.translate(cluster.error) || cluster.error;
   }
   if (!state.app.monitoring.isPrometheusApiUp) {
     value = CLUSTER_STATUS_UNKNOWN;
-    label = intl.messages[cluster.error] || cluster.error;
+    label = intl.translate(cluster.error) || cluster.error;
   }
   return { value, label, isLoading: cluster.isLoading };
 };
 
-export default injectIntl(ClusterMonitoring);
+export default ClusterMonitoring;

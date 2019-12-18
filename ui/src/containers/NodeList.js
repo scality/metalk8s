@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { injectIntl } from 'react-intl';
 import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import {
@@ -19,6 +18,7 @@ import {
   BreadcrumbContainer,
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -64,7 +64,7 @@ const TableContainer = styled.div`
   }
 `;
 
-const NodeList = ({ intl }) => {
+const NodeList = () => {
   const nodes = useSelector(state => state.app.nodes);
   const theme = useSelector(state => state.config.theme);
   const dispatch = useDispatch();
@@ -77,17 +77,17 @@ const NodeList = ({ intl }) => {
   const history = useHistory();
   const columns = [
     {
-      label: intl.messages.name,
+      label: intl.translate('name'),
       dataKey: 'name',
       flexGrow: 1,
     },
     {
-      label: intl.messages.status,
+      label: intl.translate('status'),
       dataKey: 'status',
-      renderer: data => <span> {intl.messages[data] || data}</span>,
+      renderer: data => <span> {intl.translate(data) || data}</span>,
     },
     {
-      label: intl.messages.deployment,
+      label: intl.translate('deployment'),
       dataKey: 'deployment',
       renderer: (data, rowData) => {
         if (
@@ -97,7 +97,7 @@ const NodeList = ({ intl }) => {
           return (
             <span className="status">
               <Button
-                text={intl.messages.deploy}
+                text={intl.translate('deploy')}
                 onClick={event => {
                   event.stopPropagation();
                   deployNode(rowData);
@@ -111,7 +111,7 @@ const NodeList = ({ intl }) => {
           return (
             <span className="status">
               <Button
-                text={intl.messages.deploying}
+                text={intl.translate('deploying')}
                 onClick={event => {
                   event.stopPropagation();
                   history.push(`/nodes/deploy/${rowData.jid}`);
@@ -126,12 +126,12 @@ const NodeList = ({ intl }) => {
       },
     },
     {
-      label: intl.messages.roles,
+      label: intl.translate('roles'),
       dataKey: 'roles',
       flexGrow: 1,
     },
     {
-      label: intl.messages.version,
+      label: intl.translate('version'),
       dataKey: 'metalk8s_version',
     },
   ];
@@ -154,12 +154,12 @@ const NodeList = ({ intl }) => {
       <BreadcrumbContainer>
         <Breadcrumb
           activeColor={theme.brand.secondary}
-          paths={[<BreadcrumbLabel>{intl.messages.nodes}</BreadcrumbLabel>]}
+          paths={[<BreadcrumbLabel>{intl.translate('nodes')}</BreadcrumbLabel>]}
         />
       </BreadcrumbContainer>
       <ActionContainer>
         <Button
-          text={intl.messages.create_new_node}
+          text={intl.translate('create_new_node')}
           onClick={() => history.push('/nodes/create')}
           icon={<i className="fas fa-plus" />}
         />
@@ -186,7 +186,7 @@ const NodeList = ({ intl }) => {
             }
           }}
           noRowsRenderer={() => (
-            <NoRowsRenderer content={intl.messages.no_data_available} />
+            <NoRowsRenderer content={intl.translate('no_data_available')} />
           )}
         />
       </TableContainer>
@@ -194,4 +194,4 @@ const NodeList = ({ intl }) => {
   );
 };
 
-export default injectIntl(NodeList);
+export default NodeList;

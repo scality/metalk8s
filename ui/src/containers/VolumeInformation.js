@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouteMatch } from 'react-router';
-import { injectIntl, FormattedDate, FormattedTime } from 'react-intl';
+import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { Breadcrumb, Table, Loader } from '@scality/core-ui';
@@ -42,6 +42,7 @@ import {
   computeVolumeGlobalStatus,
   volumeGetError,
 } from '../services/NodeVolumesUtils';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumeInformationListContainer = styled(InformationListContainer)`
   margin: ${padding.larger};
@@ -78,7 +79,6 @@ const LoaderContainer = styled(Loader)`
 `;
 
 const VolumeInformation = props => {
-  const { intl } = props;
   const dispatch = useDispatch();
   const match = useRouteMatch();
 
@@ -115,11 +115,11 @@ const VolumeInformation = props => {
   const [errorCode, errorMessage] = volumeGetError(volume?.status);
   const columns = [
     {
-      label: intl.messages.name,
+      label: intl.translate('name'),
       dataKey: 'name',
     },
     {
-      label: intl.messages.value,
+      label: intl.translate('value'),
       dataKey: 'value',
     },
   ];
@@ -137,15 +137,15 @@ const VolumeInformation = props => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
-            <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
+            <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
             <StyledLink to={`/nodes/${node.name}`} title={node.name}>
               {node.name}
             </StyledLink>,
             <StyledLink
               to={`/nodes/${node.name}/volumes`}
-              title={intl.messages.volumes}
+              title={intl.translate('volumes')}
             >
-              {intl.messages.volumes}
+              {intl.translate('volumes')}
             </StyledLink>,
             <BreadcrumbLabel title={match.params.volumeName}>
               {match.params.volumeName}
@@ -160,8 +160,8 @@ const VolumeInformation = props => {
           icon={<i className="fas fa-exclamation-triangle" />}
           title={
             errorCode === 'CreationError'
-              ? intl.messages.failed_to_create_volume
-              : intl.messages.error
+              ? intl.translate('failed_to_create_volume')
+              : intl.translate('error')
           }
           messages={[errorMessage]}
         />
@@ -171,23 +171,23 @@ const VolumeInformation = props => {
 
       <VolumeInformationListContainer>
         <InformationSpan>
-          <InformationLabel>{intl.messages.name}</InformationLabel>
+          <InformationLabel>{intl.translate('name')}</InformationLabel>
           <InformationMainValue>{volume?.metadata?.name}</InformationMainValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.status}</InformationLabel>
+          <InformationLabel>{intl.translate('status')}</InformationLabel>
           <InformationValue>
-            {volumeStatus ?? intl.messages.unknown}
+            {volumeStatus ?? intl.translate('unknown')}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.size}</InformationLabel>
+          <InformationLabel>{intl.translate('size')}</InformationLabel>
           <InformationValue>
-            {pV?.spec?.capacity?.storage ?? intl.messages.unknown}
+            {pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.type}</InformationLabel>
+          <InformationLabel>{intl.translate('type')}</InformationLabel>
           <InformationValue>
             {volume?.spec?.rawBlockDevice
               ? RAW_BLOCK_DEVICE
@@ -195,38 +195,38 @@ const VolumeInformation = props => {
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.bound}</InformationLabel>
+          <InformationLabel>{intl.translate('bound')}</InformationLabel>
           <InformationValue>
             {pV?.status?.phase === STATUS_BOUND
-              ? intl.messages.yes
-              : intl.messages.no}
+              ? intl.translate('yes')
+              : intl.translate('no')}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.storageClass}</InformationLabel>
+          <InformationLabel>{intl.translate('storageClass')}</InformationLabel>
           <InformationValue>{volume?.spec?.storageClassName}</InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.path}</InformationLabel>
+          <InformationLabel>{intl.translate('path')}</InformationLabel>
           <InformationValue>
             {volume?.spec?.rawBlockDevice?.devicePath ??
-              intl.messages.not_applicable}
+              intl.translate('not_applicable')}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.access_mode}</InformationLabel>
+          <InformationLabel>{intl.translate('access_mode')}</InformationLabel>
           <InformationValue>
-            {pV?.spec?.accessModes ?? intl.messages.unknown}
+            {pV?.spec?.accessModes ?? intl.translate('unknown')}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.mount_option}</InformationLabel>
+          <InformationLabel>{intl.translate('mount_option')}</InformationLabel>
           <InformationValue>
             {storageClass?.mountOptions.join(', ')}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.messages.creationTime}</InformationLabel>
+          <InformationLabel>{intl.translate('creationTime')}</InformationLabel>
           {volume?.metadata?.creationTimestamp ? (
             <InformationValue>
               <FormattedDate value={volume.metadata.creationTimestamp} />{' '}
@@ -243,7 +243,7 @@ const VolumeInformation = props => {
         </InformationSpan>
         {!!labels?.length && (
           <InformationContainer>
-            <InformationLabel>{intl.messages.labels}</InformationLabel>
+            <InformationLabel>{intl.translate('labels')}</InformationLabel>
             <InformationValueSection>
               <Table
                 list={labels}
@@ -260,4 +260,4 @@ const VolumeInformation = props => {
   );
 };
 
-export default injectIntl(VolumeInformation);
+export default VolumeInformation;

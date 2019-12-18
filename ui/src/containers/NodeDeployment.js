@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import ReactJson from 'react-json-view';
 import { Button, Loader, Steppers } from '@scality/core-ui';
@@ -14,6 +13,7 @@ import {
   padding,
   fontSize,
 } from '@scality/core-ui/dist/style/theme';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeDeploymentContainer = styled.div`
   height: 100%;
@@ -57,7 +57,7 @@ const ErrorLabel = styled.span`
   color: ${props => props.theme.brand.danger};
 `;
 
-const NodeDeployment = ({ intl }) => {
+const NodeDeployment = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const match = useRouteMatch();
@@ -72,8 +72,8 @@ const NodeDeployment = ({ intl }) => {
 
   const [activeStep, setActiveStep] = useState(1);
   const [steps, setSteps] = useState([
-    { title: intl.messages.node_registered },
-    { title: intl.messages.deploying, content: <Loader size="larger" /> },
+    { title: intl.translate('node_registered') },
+    { title: intl.translate('deploying'), content: <Loader size="larger" /> },
   ]);
 
   useEffect(() => {
@@ -87,12 +87,14 @@ const NodeDeployment = ({ intl }) => {
   useEffect(() => {
     if (
       //To improve
-      !steps.find(step => step.title === intl.messages.deployment_started) &&
+      !steps.find(
+        step => step.title === intl.translate('deployment_started'),
+      ) &&
       events.find(event => event.tag.includes('/new'))
     ) {
       const newSteps = steps;
       newSteps.splice(steps.length - 1, 0, {
-        title: intl.messages.deployment_started,
+        title: intl.translate('deployment_started'),
       });
       setSteps(newSteps);
       setActiveStep(2);
@@ -103,12 +105,14 @@ const NodeDeployment = ({ intl }) => {
       const status = getJobStatusFromEventRet(result.data);
       const newSteps = steps;
       newSteps.splice(steps.length - 1, 1, {
-        title: intl.messages.completed,
+        title: intl.translate('completed'),
         content: (
           <span>
             {!status.success && (
               <ErrorLabel>
-                {`${intl.messages.error}: ${status.step_id} - ${status.comment}`}
+                {`${intl.translate('error')}: ${status.step_id} - ${
+                  status.comment
+                }`}
               </ErrorLabel>
             )}
           </span>
@@ -117,19 +121,13 @@ const NodeDeployment = ({ intl }) => {
       setSteps(newSteps);
       setActiveStep(status.success ? steps.length : steps.length - 1);
     }
-  }, [
-    events,
-    intl.messages.completed,
-    intl.messages.deployment_started,
-    intl.messages.error,
-    steps,
-  ]);
+  }, [events, steps]);
 
   return (
     <NodeDeploymentContainer>
       <div>
         <Button
-          text={intl.messages.back_to_node_list}
+          text={intl.translate('back_to_node_list')}
           type="button"
           outlined
           onClick={() => history.push('/nodes')}
@@ -138,7 +136,7 @@ const NodeDeployment = ({ intl }) => {
       </div>
       <NodeDeploymentWrapper>
         <NodeDeploymentTitle>
-          {intl.messages.node_deployment}
+          {intl.translate('node_deployment')}
         </NodeDeploymentTitle>
         <NodeDeploymentContent>
           <NodeDeploymentStatus>
@@ -153,4 +151,4 @@ const NodeDeployment = ({ intl }) => {
   );
 };
 
-export default injectIntl(NodeDeployment);
+export default NodeDeployment;

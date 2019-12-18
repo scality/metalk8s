@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FormattedMessage, injectIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const Title = styled.h3`
   margin-top: 25px;
@@ -20,12 +20,10 @@ const About = props => {
   const clusterVersion = useSelector(state => state.app.nodes.clusterVersion);
   return (
     <AboutContainer>
-      <Title>
-        <FormattedMessage id="product_name" />
-      </Title>
-      {`${props.intl.messages.cluster_version}: ${clusterVersion}`}
+      <Title>{intl.translate('product_name')}</Title>
+      {`${intl.translate('cluster_version')}: ${clusterVersion}`}
     </AboutContainer>
   );
 };
 
-export default injectIntl(About);
+export default About;

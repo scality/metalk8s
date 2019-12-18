@@ -1,7 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
-import { injectIntl } from 'react-intl';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
@@ -9,6 +8,7 @@ import isEmpty from 'lodash.isempty';
 import { Breadcrumb, Input, Button } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 
+import { intl } from '../translations/IntlGlobalProvider';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
@@ -86,7 +86,6 @@ const FormSection = styled.div`
 `;
 
 const EnvironmentCreationForm = props => {
-  const { intl } = props;
   const dispatch = useDispatch();
   const history = useHistory();
   const theme = useSelector(state => state.config.theme);
@@ -97,14 +96,11 @@ const EnvironmentCreationForm = props => {
   };
 
   const validationSchema = yup.object().shape({
-    name: yup
-      .string()
-      .required(
-        intl.formatMessage(
-          { id: 'generic_missing_field' },
-          { field: intl.messages.name.toLowerCase() },
-        ),
-      ),
+    name: yup.string().required(
+      intl.translate('generic_missing_field', {
+        field: intl.translate('name').toLowerCase(),
+      }),
+    ),
     description: yup.string(),
   });
 
@@ -114,9 +110,11 @@ const EnvironmentCreationForm = props => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
-            <StyledLink to="/solutions">{intl.messages.solutions}</StyledLink>,
+            <StyledLink to="/solutions">
+              {intl.translate('solutions')}
+            </StyledLink>,
             <BreadcrumbLabel>
-              {intl.messages.create_new_environment}
+              {intl.translate('create_new_environment')}
             </BreadcrumbLabel>,
           ]}
         />
@@ -143,12 +141,14 @@ const EnvironmentCreationForm = props => {
                 <FormSection>
                   <Input
                     name="name"
-                    label={intl.messages.name}
+                    label={intl.translate('name')}
                     onChange={handleChange('name')}
                     error={errors.name}
                   />
                   <TextAreaContainer>
-                    <TextAreaLabel>{intl.messages.description}</TextAreaLabel>
+                    <TextAreaLabel>
+                      {intl.translate('description')}
+                    </TextAreaLabel>
                     <TextArea
                       name="description"
                       rows="4"
@@ -159,7 +159,7 @@ const EnvironmentCreationForm = props => {
 
                 <ActionContainer>
                   <Button
-                    text={intl.messages.cancel}
+                    text={intl.translate('cancel')}
                     type="button"
                     outlined
                     onClick={() => {
@@ -167,7 +167,7 @@ const EnvironmentCreationForm = props => {
                     }}
                   />
                   <Button
-                    text={intl.messages.create}
+                    text={intl.translate('create')}
                     type="submit"
                     disabled={!dirty || !isEmpty(errors)}
                     data-cy="submit-create-environment"
@@ -182,4 +182,4 @@ const EnvironmentCreationForm = props => {
   );
 };
 
-export default injectIntl(EnvironmentCreationForm);
+export default EnvironmentCreationForm;
