@@ -143,6 +143,12 @@ export const updateVolumesAction = payload => {
   return { type: UPDATE_VOLUMES, payload };
 };
 
+// Selectors
+export const volumesRefreshingSelector = state =>
+  state.app.volumes.isRefreshing;
+export const persistentVolumesRefreshingSelector = state =>
+  state.app.volumes.isPVRefreshing;
+
 // Sagas
 export function* fetchVolumes() {
   yield put(
@@ -280,7 +286,7 @@ export function* refreshVolumes() {
   const result = yield call(fetchVolumes);
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(state => state.app.volumes.isRefreshing);
+    const isRefreshing = yield select(volumesRefreshingSelector);
     if (isRefreshing) {
       yield call(refreshVolumes);
     }
@@ -303,9 +309,7 @@ export function* refreshPersistentVolumes() {
   const result = yield call(fetchPersistentVolumes);
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
-    const isPVRefreshing = yield select(
-      state => state.app.volumes.isPVRefreshing,
-    );
+    const isPVRefreshing = yield select(persistentVolumesRefreshingSelector);
     if (isPVRefreshing) {
       yield call(refreshPersistentVolumes);
     }

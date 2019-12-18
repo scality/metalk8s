@@ -46,6 +46,8 @@
   "completed": "Completed",
   "node_registered": "Node registered",
   "deployment_started": "Deployment started",
+  "no_deployment_found": "No deployment job found for Node {name}.",
+  "refreshing_job": "Refreshing job info…",
   "cluster_status": "Cluster Status",
   "cluster_version": "Cluster Version",
   "monitoring": "Monitoring",

@@ -1,7 +1,9 @@
 import { call, takeEvery, put, select } from 'redux-saga/effects';
 import * as ApiSalt from '../services/salt/api';
-import { connectSaltApiAction } from './app/nodes';
-import { logoutAction } from './config';
+import history from '../history';
+
+import { apiConfigSelector, logoutAction } from './config';
+import { connectSaltApiAction } from './app/salt';
 
 // Actions
 const AUTHENTICATE_SALT_API = 'AUTHENTICATE_SALT_API';
@@ -40,7 +42,7 @@ export const setSaltAuthenticationSuccessAction = payload => {
 
 // Sagas
 export function* authenticateSaltApi() {
-  const api = yield select(state => state.config.api);
+  const api = yield select(apiConfigSelector);
   const user = yield select(state => state.oidc.user);
   const result = yield call(ApiSalt.authenticate, user);
   if (!result.error) {
