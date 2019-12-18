@@ -50,8 +50,8 @@ Install repositories manifest:
         image: {{ image_fullname }}
         name: {{ repositories_name }}
         version: {{ repositories_version }}
-        archives: {{ archives }}
-        solutions: {{ solutions }}
+        archives: {{ archives | tojson }}
+        solutions: {{ solutions | tojson }}
         package_path: /{{ repo.relative_path }}
         image_path: '/images/'
         nginx_confd_path: {{ repo.config.directory }}
