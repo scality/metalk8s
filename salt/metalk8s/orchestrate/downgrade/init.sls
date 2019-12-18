@@ -53,6 +53,13 @@ Wait for API server to be available on {{ node }}:
     - salt: Deploy node {{ previous_node }}
   {%- endif %}
 
+{#- This orchestrate is called with a `salt-master` running the `dest_version`
+    so this orchestrate need to be backward compatible.
+    Add an if to handle older version that does not have the new
+    `metalk8s_kubernetes` states and need a `kubeconfig`
+    (`2.4.0` and `2.4.1`) #}
+{%- if 'metalk8s_kubernetes.object_updated' in salt.sys.list_state_functions() %}
+
 Set node {{ node }} version to {{ dest_version }}:
   metalk8s_kubernetes.object_updated:
     - name: {{ node }}
@@ -64,6 +71,19 @@ Set node {{ node }} version to {{ dest_version }}:
             metalk8s.scality.com/version: "{{ dest_version }}"
     - require:
       - http: Wait for API server to be available on {{ node }}
+
+{%- else %}
+
+Set node {{ node }} version to {{ dest_version }}:
+  metalk8s_kubernetes.node_label_present:
+    - name: metalk8s.scality.com/version
+    - node: {{ node }}
+    - value: "{{ dest_version }}"
+    - kubeconfig: "/etc/kubernetes/admin.conf"
+    - require:
+      - http: Wait for API server to be available on {{ node }}
+
+{%- endif %}
 
 Deploy node {{ node }}:
   salt.runner:
@@ -107,51 +127,6 @@ Downgrade etcd cluster:
           dest_version: {{ dest_version }}
     - require:
       - salt: Execute the downgrade prechecks
-
-{#- In MetalK8s-2.4.2 we added selector in nginx ingress controller DaemonSet
-    and nginx ingress default backend Deployment but `selector` are immutable
-    field so, in this case, we cannot replace the object we need to first
-    remove the current one and then deploy the desired one. #}
-{#- Only do it `if dest_version < 2.4.2` #}
-{%- if salt.pkg.version_cmp(dest_version, '2.4.2') == 1 %}
-
-Delete old nginx ingress daemon set:
-  metalk8s_kubernetes.object_absent:
-    - name: nginx-ingress-controller
-    - namespace: metalk8s-ingress
-    - kind: DaemonSet
-    - apiVersion: apps/v1
-    - wait:
-        attempts: 10
-        sleep: 10
-    - require_in:
-      - salt: Sync module on salt-master
-
-Delete old nginx ingress deployment:
-  metalk8s_kubernetes.object_absent:
-    - name: nginx-ingress-default-backend
-    - namespace: metalk8s-ingress
-    - kind: Deployment
-    - apiVersion: apps/v1
-    - wait:
-        attempts: 10
-        sleep: 10
-    - require_in:
-      - salt: Sync module on salt-master
-
-Delete old nginx ingress control plane controller daemon set:
-  metalk8s_kubernetes.object_absent:
-    - name: nginx-ingress-control-plane-controller
-    - namespace: metalk8s-ingress
-    - kind: DaemonSet
-    - apiVersion: apps/v1
-    - wait:
-        attempts: 10
-        sleep: 10
-    - require_in:
-      - salt: Sync module on salt-master
-
-{%- endif %}
 
 Sync module on salt-master:
   salt.runner:
