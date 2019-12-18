@@ -10,6 +10,7 @@ metadata:
   labels:
     component: {{ name }}
     tier: "control-plane"
+    metalk8s.scality.com/version: {{ metalk8s_version }}
 spec:
   containers:
     - name: {{ name }}
