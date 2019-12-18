@@ -11,7 +11,8 @@ Sync {{ node }} minion:
   salt.function:
     - name: saltutil.sync_all
     - tgt: {{ node }}
-    - saltenv: metalk8s-{{ dest_version }}
+    - kwarg:
+        saltenv: metalk8s-{{ dest_version }}
 
 Deploy etcd {{ node }} to {{ dest_version }}:
   salt.state:
