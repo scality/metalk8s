@@ -34,7 +34,7 @@ Given('I log in', () => {
   };
   cy.wait('@saltAuthentication', timeOut);
 
-  cy.get('.sc-navbar .sc-dropdown > .trigger > .sc-trigger-text').should(
+  cy.get('[data-cy="user_dropdown"] .trigger > .sc-trigger-text').should(
     'contain',
     userName,
   );
