@@ -6,7 +6,7 @@
   {%- set package = repo.packages.get(package_name, {}) %}
   metalk8s_package_manager.installed:
     - name: {{ package_name }}
-    - pkgs_info: {{ repo.packages }}
+    - pkgs_info: {{ repo.packages | tojson }}
     {%- if package.version | default(None) %}
     - version: {{ package.version }}
     - hold: True
