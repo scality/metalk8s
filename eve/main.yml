@@ -929,7 +929,8 @@ stages:
           workdir: build/eve/workers/openstack-single-node-rhel/terraform
 
   single-node-patch-version:
-    worker: *single_node_worker
+    worker:
+      type: local
     steps:
       - SetPropertyFromCommand:
           name: Set previous patch version to upgrade from and downgrade to
