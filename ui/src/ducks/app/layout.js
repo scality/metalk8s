@@ -9,8 +9,8 @@ export const SIDEBAR_EXPENDED = 'sidebar_expended';
 // Reducer
 const defaultState = {
   sidebar: {
-    expanded: true
-  }
+    expanded: true,
+  },
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -20,8 +20,8 @@ export default function reducer(state = defaultState, action = {}) {
         ...state,
         sidebar: {
           ...state.sidebar,
-          expanded: !state.sidebar.expanded
-        }
+          expanded: !state.sidebar.expanded,
+        },
       };
     default:
       return state;
@@ -41,15 +41,20 @@ export const initToggleSideBarAction = () => {
   return { type: INIT_TOGGLE_SIDEBAR };
 };
 
+// Selectors
+export const isSidebarExpandedSelector = state =>
+  state.app.layout.sidebar.expanded;
+
+// Sagas
 export function* toggleSideBar() {
   yield put(setToggleSidebarAction());
-  const expanded = yield select(state => state.app.layout.sidebar.expanded);
+  const expanded = yield select(isSidebarExpandedSelector);
   localStorage.setItem(SIDEBAR_EXPENDED, expanded);
 }
 
 export function* initToggleSideBar() {
   if (localStorage.getItem(SIDEBAR_EXPENDED)) {
-    const expanded = yield select(state => state.app.layout.sidebar.expanded);
+    const expanded = yield select(isSidebarExpandedSelector);
     if (expanded !== JSON.parse(localStorage.getItem(SIDEBAR_EXPENDED))) {
       yield put(setToggleSidebarAction());
     }

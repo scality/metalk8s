@@ -46,6 +46,8 @@
   "completed": "Terminé",
   "node_registered": "Nœud enregistré",
   "deployment_started": "Déploiement commencé",
+  "no_deployment_found": "Aucune tâche de déploiement trouvée pour le nœud {name}.",
+  "refreshing_job": "Actualisation des informations de la tâche…",
   "cluster_status": "Statut du cluster",
   "cluster_version": "Version du cluster",
   "monitoring": "Monitoring",

@@ -38,8 +38,7 @@ export default function reducer(state = defaultState, action = {}) {
   }
 }
 
-// Actions Creator
-
+// Action Creators
 export function setSolutionsAction(solutions) {
   return { type: SET_SOLUTIONS, payload: solutions };
 }
@@ -68,6 +67,12 @@ export function createEnvironmentAction(newEnvironment) {
   return { type: CREATE_ENVIRONMENT, payload: newEnvironment };
 }
 
+// Selectors
+export const solutionsRefreshingSelector = state =>
+  state.app.solutions.isSolutionsRefreshing;
+export const solutionServicesSelector = state => state.app.solutions.services;
+
+// Sagas
 export function* createEnvironment(action) {
   const newEnvironment = action.payload;
 
@@ -110,7 +115,7 @@ export function* fetchSolutions() {
           versions: JSON.parse(solutionsConfigMap.data[key]),
         };
       });
-      const services = yield select(state => state.app.solutions.services);
+      const services = yield select(solutionServicesSelector);
       solutions.forEach(sol => {
         sol.versions.forEach(version => {
           if (version.deployed) {
@@ -155,9 +160,7 @@ export function* refreshSolutions() {
     !resultFetchEnvironments.error
   ) {
     yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(
-      state => state.config.isSolutionsRefreshing,
-    );
+    const isRefreshing = yield select(solutionsRefreshingSelector);
     if (isRefreshing) {
       yield call(refreshSolutions);
     }

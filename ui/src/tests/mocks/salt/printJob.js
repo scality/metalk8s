@@ -1,18 +1,20 @@
+import { JOB_ID, NODE_NAME } from './constants';
+
 export const data = {
   return: [
     {
-      '20190527213228970129': {
+      [JOB_ID]: {
         Result: {
           bootstrap_master: {
             return: {
               fun_args: [],
-              jid: '20190527213228970129',
+              jid: JOB_ID,
               return: {
                 outputter: 'highstate',
                 data: {
                   bootstrap_master: {
                     'salt_|-Set grains_|-Set grains_|-state': {
-                      comment: 'Updating node1 failed',
+                      comment: `Updating ${NODE_NAME} failed`,
                       name: 'Set grains',
                       start_time: '21:33:33.408716',
                       result: false,
@@ -22,7 +24,7 @@ export const data = {
                       __sls__: 'metalk8s.orchestrate.deploy_node',
                       changes: {
                         ret: {
-                          node1: {
+                          [NODE_NAME]: {
                             'grains_|-Set control_plane_ip grain_|-metalk8s:control_plane_ip_|-present': {
                               comment:
                                 'Set grain metalk8s:control_plane_ip to 172.21.254.12',
@@ -30,7 +32,7 @@ export const data = {
                               start_time: '21:33:34.750189',
                               result: false,
                               duration: 11.342,
-                              __run_num__: 0
+                              __run_num__: 0,
                             },
                             'grains_|-Set workload_plane_ip grain_|-metalk8s:workload_plane_ip_|-present': {
                               comment:
@@ -39,21 +41,21 @@ export const data = {
                               start_time: '21:33:34.761797',
                               result: false,
                               duration: 4.798,
-                              __run_num__: 1
-                            }
-                          }
+                              __run_num__: 1,
+                            },
+                          },
                         },
-                        out: 'highstate'
+                        out: 'highstate',
                       },
-                      __id__: 'Set grains'
+                      __id__: 'Set grains',
                     },
-                    'metalk8s_drain_|-Drain the node_|-node1_|-node_drained': {
+                    [`metalk8s_drain_|-Drain the node_|-${NODE_NAME}_|-node_drained`]: {
                       comment: 'Eviction complete.',
-                      name: 'node1',
+                      name: NODE_NAME,
                       start_time: '21:33:36.057387',
                       result: true,
                       duration: 259.239,
-                      __run_num__: 6
+                      __run_num__: 6,
                     },
                     'salt_|-Kill kube-controller-manager on all master nodes_|-ps.pkill_|-function': {
                       comment:
@@ -68,21 +70,22 @@ export const data = {
                       changes: {
                         ret: {
                           bootstrap: {
-                            killed: [14939]
-                          }
+                            killed: [14939],
+                          },
                         },
-                        out: 'highstate'
+                        out: 'highstate',
                       },
-                      __id__: 'Kill kube-controller-manager on all master nodes'
+                      __id__:
+                        'Kill kube-controller-manager on all master nodes',
                     },
                     'salt_|-Deploy salt-minion on a new node_|-Deploy salt-minion on a new node_|-state': {
-                      comment: 'States ran successfully. Updating node1.',
+                      comment: `States ran successfully. Updating ${NODE_NAME}.`,
                       name: 'Deploy salt-minion on a new node',
                       start_time: '21:32:31.403702',
                       result: true,
                       duration: 48700.922,
                       __run_num__: 0,
-                      __jid__: '20190527213237875376'
+                      __jid__: '20190527213237875376',
                     },
                     'module_|-Accept key_|-Accept key_|-run': {
                       comment: 'saltutil.wheel: Success',
@@ -90,20 +93,20 @@ export const data = {
                       start_time: '21:33:20.106366',
                       result: true,
                       duration: 350.636,
-                      __run_num__: 1
+                      __run_num__: 1,
                     },
                     'salt_|-Run the highstate_|-Run the highstate_|-state': {
-                      comment: 'States ran successfully. Updating node1.',
+                      comment: `States ran successfully. Updating ${NODE_NAME}.`,
                       name: 'Run the highstate',
                       start_time: '21:33:36.318055',
                       result: true,
                       duration: 80352.861,
                       __run_num__: 7,
-                      __jid__: '20190527213336504932'
+                      __jid__: '20190527213336504932',
                     },
-                    'metalk8s_cordon_|-Uncordon the node_|-node1_|-node_uncordoned': {
-                      comment: 'Node node1 uncordoned',
-                      name: 'node1',
+                    [`metalk8s_cordon_|-Uncordon the node_|-${NODE_NAME}_|-node_uncordoned`]: {
+                      comment: `Node ${NODE_NAME} uncordoned`,
+                      name: NODE_NAME,
                       start_time: '21:34:56.671443',
                       result: true,
                       duration: 234.004,
@@ -111,17 +114,17 @@ export const data = {
                       __sls__: 'metalk8s.orchestrate.deploy_node',
                       changes: {
                         new: {
-                          unschedulable: null
+                          unschedulable: null,
                         },
                         old: {
-                          unschedulable: true
-                        }
+                          unschedulable: true,
+                        },
                       },
-                      __id__: 'Uncordon the node'
+                      __id__: 'Uncordon the node',
                     },
-                    'metalk8s_cordon_|-Cordon the node_|-node1_|-node_cordoned': {
-                      comment: 'Node node1 cordoned',
-                      name: 'node1',
+                    [`metalk8s_cordon_|-Cordon the node_|-${NODE_NAME}_|-node_cordoned`]: {
+                      comment: `Node ${NODE_NAME} cordoned`,
+                      name: NODE_NAME,
                       start_time: '21:33:35.818960',
                       result: true,
                       duration: 236.41,
@@ -129,17 +132,16 @@ export const data = {
                       __sls__: 'metalk8s.orchestrate.deploy_node',
                       changes: {
                         new: {
-                          unschedulable: true
+                          unschedulable: true,
                         },
                         old: {
-                          unschedulable: false
-                        }
+                          unschedulable: false,
+                        },
                       },
-                      __id__: 'Cordon the node'
+                      __id__: 'Cordon the node',
                     },
                     'salt_|-Refresh the mine_|-mine.update_|-function': {
-                      comment:
-                        'Function ran successfully. Function mine.update ran on node1, bootstrap.',
+                      comment: `Function ran successfully. Function mine.update ran on ${NODE_NAME}, bootstrap.`,
                       name: 'mine.update',
                       start_time: '21:33:34.887400',
                       result: true,
@@ -149,12 +151,12 @@ export const data = {
                       __sls__: 'metalk8s.orchestrate.deploy_node',
                       changes: {
                         ret: {
-                          node1: true,
-                          bootstrap: true
+                          [NODE_NAME]: true,
+                          bootstrap: true,
                         },
-                        out: 'highstate'
+                        out: 'highstate',
                       },
-                      __id__: 'Refresh the mine'
+                      __id__: 'Refresh the mine',
                     },
                     'salt_|-Wait minion available_|-metalk8s_saltutil.wait_minions_|-runner': {
                       comment:
@@ -169,27 +171,26 @@ export const data = {
                       __sls__: 'metalk8s.orchestrate.deploy_node',
                       changes: {
                         return: {
-                          comment:
-                            'All minions matching "node1" responded: node1',
-                          result: true
-                        }
+                          comment: `All minions matching "${NODE_NAME}" responded: ${NODE_NAME}`,
+                          result: true,
+                        },
                       },
-                      __id__: 'Wait minion available'
-                    }
-                  }
+                      __id__: 'Wait minion available',
+                    },
+                  },
                 },
-                retcode: 0
+                retcode: 0,
               },
               success: false,
               _stamp: '2019-05-27T21:32:29.351849',
               user: 'admin',
-              fun: 'runner.state.orchestrate'
-            }
-          }
+              fun: 'runner.state.orchestrate',
+            },
+          },
         },
         StartTime: '2019, May 27 21:32:28.970129',
-        Error: 'Cannot contact returner or no job with this jid'
-      }
-    }
-  ]
+        Error: 'Cannot contact returner or no job with this jid',
+      },
+    },
+  ],
 };
