@@ -252,7 +252,7 @@ models:
         export ISO_MOUNTPOINT=\"${ISO_MOUNTPOINT}\" &&
         export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
         tox -e tests -- ${PYTEST_ARGS:-""} -m \"${PYTEST_FILTERS}\""
-      workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      workdir: build/contrib/terraform/
       haltOnFailure: true
   - ShellCommand: &add_final_status_artifact
       name: Add final status to artifacts
@@ -514,17 +514,17 @@ stages:
                 sleep 5
               fi
             done;
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Validate terraform definition
           command: terraform validate
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Spawn openstack virtual infra
           command: terraform apply -auto-approve
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           env: &_env_terraform
             OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
             OS_REGION_NAME: "%(secret:scality_cloud_region)s"
@@ -546,7 +546,7 @@ stages:
               sleep 5
               ssh -F ssh_config bootstrap id && break
             done;
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           # FIXME: find a way to share bastion public key to all spawned
@@ -559,7 +559,7 @@ stages:
             scp -F ssh_config -3 bastion:.ssh/bastion.pub node1:.ssh/ &&
             ssh -F ssh_config node1
             "cat .ssh/bastion.pub >> .ssh/authorized_keys"
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
       - ShellCommand:
           # FIXME: find a cleaner way with Terraform.
           name: Send bastion private key to bootstrap
@@ -567,26 +567,25 @@ stages:
               ssh -F ssh_config bootstrap "sudo mkdir -p /etc/metalk8s/pki/" &&
               scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
               ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
       - ShellCommand:
           name: Copy ISO to bootstrap node
           command: >
-            scp -F ssh_config ../../../../metalk8s.iso bootstrap:
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+            scp -F contrib/terraform/ssh_config metalk8s.iso bootstrap:./
           haltOnFailure: true
       - ShellCommand:
           name: Create mountpoint in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo mkdir -p /var/tmp/metalk8s
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Mount ISO image in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo mount -o loop metalk8s.iso /var/tmp/metalk8s
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Start the bootstrap process in bootstrap node
@@ -594,7 +593,7 @@ stages:
             ssh -F ssh_config bootstrap
             sudo bash
             /var/tmp/metalk8s/bootstrap.sh --verbose
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Install kubectl on the boostrap node
@@ -602,12 +601,11 @@ stages:
             ssh -F ssh_config bootstrap
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
       - ShellCommand:
           name: Enable IPIP
           env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+            SSH_CONFIG: contrib/terraform/ssh_config
           command: >
             ssh -F $SSH_CONFIG bootstrap
             'bash /home/centos/scripts/enable_ipip.sh'
@@ -617,8 +615,7 @@ stages:
           # authentication)
           name: Copy test sources to the bastion
           env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+            SSH_CONFIG: contrib/terraform/ssh_config
           command: >
             tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
             | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
@@ -643,12 +640,9 @@ stages:
             PYTEST_FILTERS: "post and ci and slow and not bootstrap"
       - ShellCommand:
           name: Generate sosreport on every machine
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
             for host in bootstrap node1; do
-              ssh -F $SSH_CONFIG $host \
+              ssh -F contrib/terraform/ssh_config $host \
               "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
               -o containerd -kcontainerd.all=True -kcontainerd.logs=True\
               --batch --tmp-dir /var/tmp && \
@@ -657,13 +651,10 @@ stages:
           alwaysRun: true
       - ShellCommand:
           name: Download every sosreport to the bastion
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
             mkdir -p sosreport/sosreport/multi-node &&
             for host in bootstrap node1; do
-              scp -F $SSH_CONFIG \
+              scp -F contrib/terraform/ssh_config \
               $host:/var/tmp/sosreport-* \
               sosreport/sosreport/multi-node/$host-sosreport.tar.xz
             done
@@ -687,7 +678,7 @@ stages:
             for _ in $(seq 1 3); do
                terraform destroy -auto-approve && break
             done;
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           env: *_env_terraform
           alwaysRun: true
           sigtermTime: 600
