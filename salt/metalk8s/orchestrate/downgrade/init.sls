@@ -70,7 +70,7 @@ Deploy node {{ node }}:
     - name: state.orchestrate
     - mods:
       - metalk8s.orchestrate.deploy_node
-    - saltenv: {{ saltenv }}
+    - saltenv: metalk8s-{{ dest_version }}
     - pillar:
         orchestrate:
           node_name: {{ node }}
