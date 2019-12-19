@@ -263,7 +263,7 @@ models:
         export ISO_MOUNTPOINT=\"${ISO_MOUNTPOINT}\" &&
         export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
         tox -e tests -- ${PYTEST_ARGS:-""} -m \"${PYTEST_FILTERS}\""
-      workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      workdir: build/contrib/terraform/
       haltOnFailure: true
   - ShellCommand: &add_final_status_artifact
       name: Add final status to artifacts
@@ -326,10 +326,12 @@ models:
             sleep 5
           fi
         done;
+      workdir: build/contrib/terraform
       haltOnFailure: true
   - ShellCommand: &terraform_validate
       name: Validate terraform definition
       command: terraform validate
+      workdir: build/contrib/terraform
       haltOnFailure: true
   - ShellCommand: &terraform_apply
       name: Spawn openstack virtual infra
@@ -341,6 +343,7 @@ models:
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
         TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
+      workdir: build/contrib/terraform
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
       name: Destroy openstack virtual infra
@@ -349,6 +352,7 @@ models:
            terraform destroy -auto-approve && break
         done;
       env: *_env_terraform
+      workdir: build/contrib/terraform
       alwaysRun: true
       sigtermTime: 600
 
@@ -1169,15 +1173,10 @@ stages:
           haltOnFailure: true
       - ShellCommand: *terraform_install
       - ShellCommand: *terraform_install_check
-      - ShellCommand:
-          <<: *terraform_init
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
-          <<: *terraform_validate
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      - ShellCommand: *terraform_init
+      - ShellCommand: *terraform_validate
       - ShellCommand:
           <<: *terraform_apply
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           env:
             <<: *_env_terraform
             TF_VAR_nodes_count: "2"
@@ -1192,7 +1191,7 @@ stages:
               sleep 5
               ssh -F ssh_config bootstrap id && break
             done;
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           # FIXME: find a way to share bastion public key to all spawned
@@ -1205,7 +1204,7 @@ stages:
             scp -F ssh_config -3 bastion:.ssh/bastion.pub node1:.ssh/ &&
             ssh -F ssh_config node1
             "cat .ssh/bastion.pub >> .ssh/authorized_keys"
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
       - ShellCommand:
           # FIXME: find a cleaner way with Terraform.
           name: Send bastion private key to bootstrap
@@ -1213,26 +1212,25 @@ stages:
               ssh -F ssh_config bootstrap "sudo mkdir -p /etc/metalk8s/pki/" &&
               scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
               ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
       - ShellCommand:
           name: Copy ISO to bootstrap node
           command: >
-            scp -F ssh_config ../../../../metalk8s.iso bootstrap:
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+            scp -F contrib/terraform/ssh_config metalk8s.iso bootstrap:./
           haltOnFailure: true
       - ShellCommand:
           name: Create mountpoint in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo mkdir -p /var/tmp/metalk8s
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Mount ISO image in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo mount -o loop metalk8s.iso /var/tmp/metalk8s
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Start the bootstrap process in bootstrap node
@@ -1240,7 +1238,7 @@ stages:
             ssh -F ssh_config bootstrap
             sudo bash
             /var/tmp/metalk8s/bootstrap.sh --verbose
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Provision Prometheus and AlertManager storage
@@ -1261,12 +1259,11 @@ stages:
             ssh -F ssh_config bootstrap
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          workdir: build/contrib/terraform/
       - ShellCommand:
           name: Enable IPIP
           env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+            SSH_CONFIG: contrib/terraform/ssh_config
           command: >
             ssh -F $SSH_CONFIG bootstrap
             'bash /home/centos/scripts/enable_ipip.sh'
@@ -1276,8 +1273,7 @@ stages:
           # authentication)
           name: Copy test sources to the bastion
           env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+            SSH_CONFIG: contrib/terraform/ssh_config
           command: >
             tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
             | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
@@ -1306,14 +1302,14 @@ stages:
             <<: *_env_generate_report_over_ssh
             HOSTS_LIST: "bootstrap node1"
             SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+              contrib/terraform/ssh_config
       - ShellCommand:
           <<: *collect_report_over_ssh
           env:
             <<: *_env_collect_report_over_ssh
             HOSTS_LIST: "bootstrap node1"
             SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+              contrib/terraform/ssh_config
             STEP_NAME: multiple-nodes-centos
       - Upload: *upload_report_artifacts
       - ShellCommand:
@@ -1328,6 +1324,4 @@ stages:
           env:
             STEP_NAME: multiple-nodes-centos
             DURATION: "14400"
-      - ShellCommand:
-          <<: *terraform_destroy
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+      - ShellCommand: *terraform_destroy
