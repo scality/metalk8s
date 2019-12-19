@@ -326,6 +326,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/nginx-ingress/deployed/chart.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/tls-secret.sls'),
+    Path('salt/metalk8s/addons/nginx-ingress/pre-downgrade.sls'),
+    Path('salt/metalk8s/addons/nginx-ingress/pre-upgrade.sls'),
 
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/certs/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/certs/server.sls'),
@@ -335,6 +337,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
          'tls-secret.sls'),
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/',
          'control-plane-ip.sls'),
+    Path('salt/metalk8s/addons/nginx-ingress-control-plane/pre-downgrade.sls'),
+    Path('salt/metalk8s/addons/nginx-ingress-control-plane/pre-upgrade.sls'),
 
     Path('salt/metalk8s/container-engine/containerd/configured.sls'),
     Path('salt/metalk8s/container-engine/containerd/files/50-metalk8s.conf'),
@@ -370,6 +374,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/apiserver/installed.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/cryptconfig.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/kubeconfig.sls'),
+    Path('salt/metalk8s/kubernetes/apiserver/pre-upgrade.sls'),
 
     Path('salt/metalk8s/kubernetes/apiserver-proxy/files/'
             'apiserver-proxy.conf.j2'),
@@ -463,11 +468,13 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/deploy_node.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
+    Path('salt/metalk8s/orchestrate/downgrade/pre.sls'),
     Path('salt/metalk8s/orchestrate/solutions/available.sls'),
     Path('salt/metalk8s/orchestrate/solutions/init.sls'),
     Path('salt/metalk8s/orchestrate/etcd.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
+    Path('salt/metalk8s/orchestrate/upgrade/pre.sls'),
     Path('salt/metalk8s/orchestrate/register_etcd.sls'),
 
     Path('salt/metalk8s/archives/configured.sls'),

@@ -37,7 +37,7 @@ Kill kube-apiserver:
   module.run:
     - ps.pkill:
       - pattern: kube-apiserver
-    - require:
+    - onchanges:
       - x509: Generate kube-apiserver certificate including '127.0.0.1'
 
 Wait for kube-apiserver to be running:
