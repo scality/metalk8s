@@ -2,7 +2,7 @@ Accessing Cluster Services
 ==========================
 
 
-.. _quickstart-services-admin-ui:
+.. _installation-services-admin-ui:
 
 MetalK8s GUI
 ------------
@@ -43,14 +43,14 @@ This page displays two monitoring indicators:
 #. the list of alerts stored in :term:`Alertmanager`.
 
 
-.. _quickstart-services-grafana:
+.. _installation-services-grafana:
 
 Grafana
 -------
 Grafana is available on the same host as the MetalK8s UI, under ``/grafana``.
 Log in with the default credentials: ``admin`` / ``admin``.
 
-.. _quickstart-services-salt:
+.. _installation-services-salt:
 
 Salt
 ----

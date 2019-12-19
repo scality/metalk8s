@@ -88,7 +88,7 @@ Taints allow dedicating Nodes to specific use-cases, such as having Nodes
 dedicated to running control-plane services.
 
 
-.. _quickstart-intro-networks:
+.. _installation-intro-networks:
 
 Networks
 """"""""
@@ -115,7 +115,7 @@ other ranges during the
 :ref:`Bootstrap configuration <Bootstrap Configuration>`.
 
 
-.. _quickstart-intro-install-plan:
+.. _installation-intro-install-plan:
 
 Installation Plan
 ^^^^^^^^^^^^^^^^^
@@ -126,7 +126,7 @@ cluster architectures.
 
 .. note::
 
-   This image depicts the architecture deployed with this Quickstart guide.
+   This image depicts the architecture deployed with this installation guide.
 
    .. image:: img/architecture.png
       :width: 100%

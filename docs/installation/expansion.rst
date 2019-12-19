@@ -14,13 +14,13 @@ Unlike the |kubeadm join|_ approach which relies on `bootstrap tokens`_ and
 manual operations on each node, MetalK8s uses Salt SSH to setup new
 :term:`Nodes <Node>` through declarative configuration,
 from a single entrypoint. This operation can be done either through
-:ref:`the MetalK8s GUI <quickstart-expansion-ui>` or
-:ref:`the command-line <quickstart-expansion-cli>`.
+:ref:`the MetalK8s GUI <installation-expansion-ui>` or
+:ref:`the command-line <installation-expansion-cli>`.
 
 Defining an Architecture
 ------------------------
 See the schema defined in
-:ref:`the introduction <quickstart-intro-install-plan>`.
+:ref:`the introduction <installation-intro-install-plan>`.
 
 The Bootstrap being already deployed, the other nodes' deployment runs
 four times, twice for control-plane nodes (bringing up the
@@ -33,11 +33,12 @@ control-plane to a total of three members), and twice for workload-plane nodes.
    - remind roles and taints from intro
 
 
-.. _quickstart-expansion-ui:
+.. _installation-expansion-ui:
 
-Adding a Node with the :ref:`MetalK8s GUI <quickstart-services-admin-ui>`
--------------------------------------------------------------------------
-To reach the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`.
+Adding a Node with the :ref:`MetalK8s GUI <installation-services-admin-ui>`
+---------------------------------------------------------------------------
+To reach the UI, refer to
+:ref:`this procedure <installation-services-admin-ui>`.
 
 Creating a Node Object
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -111,14 +112,13 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
    - troubleshooting (example errors)
 
 
-.. _quickstart-expansion-cli:
+.. _installation-expansion-cli:
 
 Adding a Node from the Command-line
 -----------------------------------
 .. warning::
 
-  Adding a node from command-line may require more advanced knowledge.
-.. _quickstart-expansion-manifest:
+.. _installation-expansion-manifest:
 
 Creating a Manifest
 ^^^^^^^^^^^^^^^^^^^
@@ -235,13 +235,13 @@ Check that it is available in the API and has the expected roles.
 Deploying the Node
 ^^^^^^^^^^^^^^^^^^
 Open a terminal in the Salt Master container using
-:ref:`this procedure <quickstart-services-salt>`.
+:ref:`this procedure <installation-services-salt>`.
 
 #. Check that SSH access from the Salt Master to the new node is properly
    configured (see :ref:`Bootstrap SSH Provisioning`).
 
    .. code-block:: shell
-   
+
       root@salt-master-bootstrap $ salt-ssh --roster kubernetes <node-name> test.ping
       <node-name>:
           True
@@ -249,11 +249,11 @@ Open a terminal in the Salt Master container using
 #. Start the node deployment.
 
    .. parsed-literal::
-   
+
       root@salt-master-bootstrap $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \\
                                    saltenv=metalk8s-|release| \\
                                    pillar='{"orchestrate": {"node_name": "<node-name>"}}'
-   
+
       ... lots of output ...
       Summary for bootstrap_master
       ------------
@@ -265,8 +265,7 @@ Open a terminal in the Salt Master container using
 
 .. todo::
 
-   Troubleshooting
-   ^^^^^^^^^^^^^^^
+   Troubleshooting section
 
    - explain orchestrate output and how to find errors
    - point to log files

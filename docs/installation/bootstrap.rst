@@ -4,14 +4,17 @@ Deployment of the :term:`Bootstrap node`
 Preparation
 -----------
 
-On your bootstrap node, download the MetalK8s ISO file.
-Mount this ISO file at the specific following path:
+#. Build the ISO using :ref:`this procedure <How to build an ISO>`.
+   Scality customers can retrieve validated builds as part of their license
+   from the Scality repositories.
 
-.. parsed-literal::
+#. Download the MetalK8s ISO file on the machine that will host the bootstrap
+   node. Mount this ISO file at the specific following path:
 
-   root@bootstrap $ mkdir -p /srv/scality/metalk8s-|release|
-   root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|release|
+   .. parsed-literal::
 
+      root@bootstrap $ mkdir -p /srv/scality/metalk8s-|release|
+      root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|release|
 
 .. _Bootstrap Configuration:
 
@@ -86,7 +89,7 @@ SSH Provisioning
       this key must exist in the ``/etc/metalk8s/pki`` directory.
 
 #. Accept the new identity on future new nodes (run from your host).
-   
+
    #. First, retrieve the public key from the Bootstrap node.
 
       .. code-block:: shell
@@ -124,8 +127,8 @@ Provision Storage for Prometheus Services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After bootstrapping the cluster, the Prometheus and AlertManager services used
 to monitor the system will not be running (the respective :term:`Pods <Pod>`
-will remain in **Pending** state), because they require persistent storage to be
-available. You can either provision these storage volumes on the bootstrap
+will remain in **Pending** state), because they require persistent storage to
+be available. You can either provision these storage volumes on the bootstrap
 node, or later on other nodes joining the cluster. Templates for the required
 volumes are available in :download:`examples/prometheus-sparse.yaml
 <../../examples/prometheus-sparse.yaml>`. Note, however, these templates use
@@ -188,12 +191,11 @@ Check if all :term:`Pods <Pod>` on the Bootstrap node are in the
    metalk8s-monitoring   prometheus-operator-64477d4bff-xxjw2             1/1       Running   0          4m        10.233.132.68   bootstrap   <none>
 
 Check that you can access the MetalK8s GUI, following
-:ref:`this procedure <quickstart-services-admin-ui>`.
+:ref:`this procedure <installation-services-admin-ui>`.
 
 .. todo::
 
-   Troubleshooting
-   ^^^^^^^^^^^^^^^
+   Troubleshooting section
 
    - Mention ``/var/log/metalk8s-bootstrap.log`` and the command-line options
      for verbosity.
