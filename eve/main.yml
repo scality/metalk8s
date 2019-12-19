@@ -936,7 +936,8 @@ stages:
           workdir: build/eve/workers/openstack-single-node-rhel/terraform
 
   single-node-patch-version:
-    worker: *single_node_worker
+    worker:
+      type: local
     steps:
       - SetPropertyFromCommand:
           name: Set previous patch version to upgrade from and downgrade to
@@ -963,6 +964,7 @@ stages:
           doStepIf: "%(prop:patch_present)s"
           stage_names:
             - single-node-upgrade-patch-centos
+            - single-node-downgrade-patch-centos
 
 # --- Upgrade for patch versions ---
   single-node-upgrade-patch-centos:
@@ -1059,6 +1061,76 @@ stages:
           <<: *wait_debug
           env:
             STEP_NAME: single-node-upgrade-patch-centos
+
+  # --- Downgrade for patch versions ---
+  single-node-downgrade-patch-centos:
+    worker: *single_node_worker
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: single-node-downgrade-patch-centos
+      - ShellCommand: *setup_cache
+      - ShellCommand: *ssh_ip_setup
+      # --- Get ISO for version N ---
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
+      # --- Get VERSION patch ISO for version N-1 from Artefacts ---
+      - ShellCommand: *retrieve_prev_patch_version_iso_checksum
+      - ShellCommand: *retrieve_prev_patch_version_iso
+      - ShellCommand: *check_prev_patch_version_iso_checksum
+      # --- Prepare for Bootstrap with patch version N ---
+      - ShellCommand: *create_mountpoint
+      - ShellCommand: *mount_iso
+      - ShellCommand: *bootstrap_config
+      # --- Install patch version N ---
+      - ShellCommand: *run_bootstrap
+      - ShellCommand: *provision_prometheus_volumes
+      # --- Test patch version N ---
+      - ShellCommand: *fast_tests
+      # --- Downgrade to patch version N-1 ---
+      - ShellCommand:
+          <<: *add_archive
+          name: Add previous ISO to cluster
+          env:
+            <<: *_env_add_archive
+            ISO_PATH: /tmp/metalk8s.iso
+      - ShellCommand:
+          name: Run downgrade to previous version
+          command: >
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
+            --destination-version %(prop:product_version_prev_patch)s
+          haltOnFailure: true
+      # --- Test patch version N-1 ---
+      - ShellCommand:
+          <<: *local_tests
+          name: Run fast tests locally for previous patch version
+          env:
+            <<: *_env_fast_tests
+            BRANCH: "%(prop:product_version_prev_patch)s"
+            ISO_MOUNTPOINT: >
+              /srv/scality/metalk8s-%(prop:product_version_prev_patch)s
+      # --- Collect logs ---
+      - ShellCommand: *collect_sosreport
+      - ShellCommand:
+          <<: *copy_report_artifacts
+          env:
+            DEST_DIR: sosreport/sosreport/single-node-downgrade-patch-centos
+      - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: single-node-downgrade-patch-centos
+      - Upload: *upload_final_status_artifact
+      - ShellCommand:
+          <<: *wait_debug
+          env:
+            STEP_NAME: single-node-downgrade-patch-centos
 
   multiple-nodes-centos:
     worker:
