@@ -30,25 +30,15 @@ def context():
 @when(parsers.parse(
     "we login to SaltAPI as '{username}' using password '{password}'"))
 def login_salt_api(host, username, password, version, context, request):
-    cmd_cidr = ' '.join([
-        'salt-call pillar.get',
-        'networks:control_plane',
-        'saltenv=metalk8s-{version}'.format(version=version),
-        '--out json',
-    ])
-    with host.sudo():
-        cidr_output = host.check_output(cmd_cidr)
-    cidr = json.loads(cidr_output)['local']
-
     cmd_ip = ' '.join([
         'salt-call --local',
-        'network.ip_addrs',
-        'cidr="{cidr}"'.format(cidr=cidr),
+        'grains.get',
+        'metalk8s:control_plane_ip',
         '--out json',
     ])
     with host.sudo():
         cmd_output = host.check_output(cmd_ip)
-    ip = json.loads(cmd_output)['local'][0]
+    ip = json.loads(cmd_output)['local']
 
     port = 4507
 
