@@ -124,3 +124,9 @@ variable "metalk8s_bootstrap" {
   description = "Whether to install the Bootstrap node"
   default     = false
 }
+
+variable "metalk8s_provision_volumes" {
+  type        = bool
+  description = "Whether to provision Volumes for Prometheus and AlertManager"
+  default     = false
+}

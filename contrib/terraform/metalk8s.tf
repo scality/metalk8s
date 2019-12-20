@@ -119,3 +119,29 @@ resource "null_resource" "run_bootstrap" {
     ]
   }
 }
+
+resource "null_resource" "provision_volumes" {
+  count = (var.metalk8s_bootstrap && var.metalk8s_provision_volumes) ? 1 : 0
+
+  connection {
+    host        = local.bootstrap_ip
+    type        = "ssh"
+    user        = "centos"
+    private_key = file(var.ssh_key_pair.private_key)
+  }
+
+  depends_on = [
+    null_resource.run_bootstrap,
+  ]
+
+  provisioner "remote-exec" {
+    inline = [
+      join(" ", [
+        "sudo env",
+        "PRODUCT_TXT=${local.metalk8s_iso.mountpoint}/product.txt",
+        "PRODUCT_MOUNT=${local.metalk8s_iso.mountpoint}",
+        "/home/centos/scripts/create-volumes.sh",
+      ]),
+    ]
+  }
+}
