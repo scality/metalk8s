@@ -2,6 +2,8 @@ locals {
   bastion = {
     enabled     = var.bastion_enabled,
     proxy_port  = var.bastion_proxy_port,
+    setup_tests = var.bastion_setup_tests,
+    test_branch = var.bastion_test_branch,
   }
 }
 
@@ -182,6 +184,49 @@ resource "null_resource" "bastion_http_proxy" {
       # Enable and start Squid
       "sudo systemctl enable squid",
       "sudo systemctl start squid",
+    ]
+  }
+}
+
+# FIXME: if we could setup bastion as a router for the private networks,
+#        any host using this router could run the tests...
+resource "null_resource" "setup_tests_bastion" {
+  count = local.bastion.enabled && local.bastion.setup_tests ? 1 : 0
+
+  # NOTE: after this is enabled, one can run `tox` commands from the cloned
+  #       repository on the Bastion
+
+  connection {
+    host        = local.bastion_ip
+    type        = "ssh"
+    user        = "centos"
+    private_key = file(var.ssh_key_pair.private_key)
+  }
+
+  # Install tox
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum install -y epel-release",
+      "sudo yum install -y python36-pip",
+      "sudo pip3.6 install tox",
+    ]
+  }
+
+  # Clone repository
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum install -y git",
+      join(" ", compact([
+        "git clone",
+        local.bastion.test_branch != ""
+        ? "--branch ${local.bastion.test_branch}"
+        : "",
+        "--single-branch",
+        "https://github.com/scality/metalk8s.git",
+        local.bastion.test_branch != ""
+        ? "metalk8s-${replace(local.bastion.test_branch, "/", "-")}"
+        : "metalk8s",
+      ])),
     ]
   }
 }

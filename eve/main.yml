@@ -522,6 +522,8 @@ stages:
             # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
             TF_VAR_nodes_count: "2"
             TF_VAR_bastion_enabled: "true"
+            TF_VAR_bastion_setup_tests: "true"
+            TF_VAR_bastion_test_branch: "%(prop:branch)s"
             TF_VAR_private_networks: '["control_plane", "workload_plane"]'
           haltOnFailure: true
       - ShellCommand:
@@ -583,16 +585,6 @@ stages:
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
           workdir: build/contrib/terraform/
-      - ShellCommand:
-          # FIXME: should find a cleaner way to do this (git clone may be
-          # cumbersome, unless we assume the repo is public and don't use
-          # authentication)
-          name: Copy test sources to the bastion
-          env:
-            SSH_CONFIG: contrib/terraform/ssh_config
-          command: >
-            tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
-            | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
       - ShellCommand:
           <<: *bastion_tests
           name: Run installation scenarii on the bastion
