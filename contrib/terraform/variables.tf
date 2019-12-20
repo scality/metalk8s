@@ -95,6 +95,18 @@ variable "bastion_proxy_port" {
   default     = 3128
 }
 
+variable "bastion_setup_tests" {
+  type        = bool
+  description = "Whether to setup test dependencies on the Bastion"
+  default     = false
+}
+
+variable "bastion_test_branch" {
+  type        = string
+  description = "Which branch to clone for running tests on the Bastion"
+  default     = ""
+}
+
 variable "metalk8s_iso_mode" {
   type        = string
   description = "How to provision the MetalK8s ISO on Bootstrap (can be 'local' or 'remote')"
