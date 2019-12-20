@@ -154,8 +154,13 @@ const Layout = props => {
       type: 'dropdown',
       text: user?.profile?.name,
       icon: <i className="fas fa-user" />,
+      'data-cy': 'user_dropdown',
       items: [
-        { label: intl.translate('log_out'), onClick: event => logout(event) },
+        {
+          label: intl.translate('log_out'),
+          onClick: event => logout(event),
+          'data-cy': 'logout_button',
+        },
       ],
     },
   ];

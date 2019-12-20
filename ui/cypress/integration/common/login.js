@@ -1,4 +1,4 @@
-import { Given } from 'cypress-cucumber-preprocessor/steps';
+import { Given, Then } from 'cypress-cucumber-preprocessor/steps';
 
 Given('I log in', () => {
   const target_url = Cypress.env('target_url');
@@ -34,8 +34,16 @@ Given('I log in', () => {
   };
   cy.wait('@saltAuthentication', timeOut);
 
-  cy.get('.sc-navbar .sc-dropdown > .trigger > .sc-trigger-text').should(
+  cy.get('[data-cy="user_dropdown"] .trigger > .sc-trigger-text').should(
     'contain',
     userName,
   );
+});
+
+Then('I log out', () => {
+  cy.get('[data-cy="user_dropdown"] .trigger > .sc-trigger-text').click();
+  cy.get('[data-cy="logout_button"]').click();
+
+  //Check if we are redirected to the DEX login page
+  cy.location('pathname').should('eq', '/oidc/auth');
 });
