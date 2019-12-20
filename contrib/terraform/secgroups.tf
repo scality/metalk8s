@@ -67,6 +67,8 @@ resource "openstack_networking_secgroup_rule_v2" "dns_egress" {
 
 # Bastion security group reinstates default egress rules
 resource "openstack_networking_secgroup_v2" "bastion" {
+  count = local.bastion.enabled ? 1 : 0
+
   name        = "${local.prefix}-bastion"
   description = "Security group for the Bastion VM"
 }

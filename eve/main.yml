@@ -1180,6 +1180,7 @@ stages:
           env:
             <<: *_env_terraform
             TF_VAR_nodes_count: "2"
+            TF_VAR_bastion_enabled: "true"
       - ShellCommand:
           name: Check SSH config for bootstrap node
           command: |-
