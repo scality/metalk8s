@@ -202,23 +202,12 @@ models:
       name: Create bootstrap configuration file
       env:
         PRODUCT_VERSION: "%(prop:metalk8s_version)s"
-      command: |
-        sudo bash << EOF
-        mkdir -p /etc/metalk8s
-        cat > /etc/metalk8s/bootstrap.yaml << END
-        apiVersion: metalk8s.scality.com/v1alpha2
-        kind: BootstrapConfiguration
-        networks:
-          controlPlane: 10.100.0.0/16
-          workloadPlane: 10.100.0.0/16
-        ca:
-          minion: "bootstrap"
-        apiServer:
-          host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
-        archives:
-          - "/srv/scality/metalk8s-${PRODUCT_VERSION}"
-        END
-        EOF
+      command: >
+        sudo python
+        contrib/terraform/scripts/prepare-bootstrap.py
+        --control-plane-net 10.100.0.0/16
+        --workload-plane-net 10.100.0.0/16
+        --archive-path "/srv/scality/metalk8s-${PRODUCT_VERSION}"
       haltOnFailure: true
   - ShellCommand: &run_bootstrap
       name: Start the bootstrap process
@@ -1215,6 +1204,18 @@ stages:
           workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
+          name: Prepare boostrap node
+          command: >
+            ssh -F ssh_config bootstrap
+            sudo python scripts/prepare-bootstrap.py
+            --control-plane-net 192.168.1.0/24
+            --workload-plane-net 192.168.2.0/24
+            --archive-path /home/centos/metalk8s.iso
+            --minion-id bootstrap
+            --copy-ssh-key /home/centos/.ssh/bootstrap
+          workdir: build/contrib/terraform/
+          haltOnFailure: true
+      - ShellCommand:
           name: Start the bootstrap process in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
@@ -1236,6 +1237,7 @@ stages:
             /tmp/create-volumes.sh
           haltOnFailure: true
       - ShellCommand:
+          # TODO: check if should be removed in 2.0
           name: Install kubectl on the boostrap node
           command: >
             ssh -F ssh_config bootstrap
