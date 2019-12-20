@@ -27,7 +27,7 @@ resource "openstack_compute_instance_v2" "bastion" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = "centos"
-    private_key = file("~/.ssh/terraform")
+    private_key = file(var.ssh_key_pair.private_key)
   }
 
   # Provision scripts for remote-execution
@@ -81,7 +81,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = "centos"
-    private_key = file("~/.ssh/terraform")
+    private_key = file(var.ssh_key_pair.private_key)
   }
 
   # Provision scripts for remote-execution
@@ -129,7 +129,7 @@ resource "openstack_compute_instance_v2" "nodes" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = "centos"
-    private_key = file("~/.ssh/terraform")
+    private_key = file(var.ssh_key_pair.private_key)
   }
 
   # Provision scripts for remote-execution
