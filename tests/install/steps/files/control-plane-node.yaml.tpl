@@ -11,5 +11,5 @@ metadata:
     metalk8s.scality.com/ssh-user: centos
     metalk8s.scality.com/ssh-port: "22"
     metalk8s.scality.com/ssh-host: $node_ip
-    metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/bastion
+    metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/salt-bootstrap
     metalk8s.scality.com/ssh-sudo: "true"

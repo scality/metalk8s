@@ -202,22 +202,9 @@ models:
       env:
         PRODUCT_VERSION: "%(prop:metalk8s_version)s"
       command: |
-        sudo bash << EOF
-        mkdir -p /etc/metalk8s
-        cat > /etc/metalk8s/bootstrap.yaml << END
-        apiVersion: metalk8s.scality.com/v1alpha2
-        kind: BootstrapConfiguration
-        networks:
-          controlPlane: 10.100.0.0/16
-          workloadPlane: 10.100.0.0/16
-        ca:
-          minion: $(hostname)
-        apiServer:
-          host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
-        archives:
-          - "/srv/scality/metalk8s-${PRODUCT_VERSION}"
-        END
-        EOF
+        sudo env
+          ARCHIVE_PATH="/srv/scality/metalk8s-${PRODUCT_VERSION}"
+          contrib/terraform/scripts/prepare-bootstrap.sh
       haltOnFailure: true
   - ShellCommand: &run_bootstrap
       name: Start the bootstrap process
@@ -570,6 +557,17 @@ stages:
           workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
+          name: Prepare boostrap node
+          command: >
+            ssh -F contrib/terraform/ssh_config bootstrap
+            sudo env
+            ARCHIVE_PATH=/home/centos/metalk8s.iso
+            MINION_ID=bootstrap
+            SSH_IDENTITY=/home/centos/.ssh/bootstrap
+            scripts/prepare-bootstrap.sh
+          workdir: build/contrib/terraform/
+          haltOnFailure: true
+      - ShellCommand:
           name: Start the bootstrap process in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
@@ -578,6 +576,7 @@ stages:
           workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
+          # TODO: check if should be removed in 2.0
           name: Install kubectl on the boostrap node
           command: >
             ssh -F ssh_config bootstrap

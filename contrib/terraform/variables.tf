@@ -112,3 +112,15 @@ variable "metalk8s_iso_destination" {
   description = "Destination of the MetalK8s ISO on Bootstrap"
   default     = "/home/centos/metalk8s.iso"
 }
+
+variable "metalk8s_iso_mountpoint" {
+  type        = string
+  description = "Where to mount the MetalK8s ISO on Bootstrap before installation"
+  default     = "/var/tmp/metalk8s"
+}
+
+variable "metalk8s_bootstrap" {
+  type        = bool
+  description = "Whether to install the Bootstrap node"
+  default     = false
+}

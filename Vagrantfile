@@ -101,7 +101,7 @@ set -eu -o pipefail
 echo "Deploying preshared SSH private key on the host"
 
 mkdir -p /etc/metalk8s/pki/
-cp /vagrant/.vagrant/#{PRESHARED_SSH_KEY_NAME} /etc/metalk8s/pki/
+cp /vagrant/.vagrant/#{PRESHARED_SSH_KEY_NAME} /etc/metalk8s/pki/salt-bootstrap
 
 echo "Deployed preshared SSH private key on the host"
 SCRIPT
