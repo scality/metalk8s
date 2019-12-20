@@ -1,8 +1,3 @@
-resource "openstack_compute_servergroup_v2" "all" {
-  name     = "${local.prefix}-servergroup"
-  policies = []
-}
-
 resource "openstack_compute_instance_v2" "bastion" {
   name        = "${local.prefix}-bastion"
   image_name  = var.openstack_image_name
@@ -10,7 +5,7 @@ resource "openstack_compute_instance_v2" "bastion" {
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
   scheduler_hints {
-    group = openstack_compute_servergroup_v2.all.id
+    group = openstack_compute_servergroup_v2.all_machines.id
   }
 
   security_groups = [
@@ -36,7 +31,7 @@ resource "openstack_compute_instance_v2" "bastion" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = "centos"
-    private_key = file("~/.ssh/terraform")
+    private_key = file(var.ssh_key_pair.private_key)
   }
 
   # Provision scripts for remote-execution
@@ -69,7 +64,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
   scheduler_hints {
-    group = openstack_compute_servergroup_v2.all.id
+    group = openstack_compute_servergroup_v2.all_machines.id
   }
 
   security_groups = [
@@ -94,7 +89,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = "centos"
-    private_key = file("~/.ssh/terraform")
+    private_key = file(var.ssh_key_pair.private_key)
   }
 
   # Provision scripts for remote-execution
@@ -121,7 +116,7 @@ resource "openstack_compute_instance_v2" "nodes" {
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
   scheduler_hints {
-    group = openstack_compute_servergroup_v2.all.id
+    group = openstack_compute_servergroup_v2.all_machines.id
   }
 
   security_groups = [
@@ -146,7 +141,7 @@ resource "openstack_compute_instance_v2" "nodes" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = "centos"
-    private_key = file("~/.ssh/terraform")
+    private_key = file(var.ssh_key_pair.private_key)
   }
 
   # Provision scripts for remote-execution
