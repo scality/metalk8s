@@ -1,38 +1,14 @@
-# Default CI network
-variable "openstack_network" {
-  type = map(string)
-  default = {
-    name = "tenantnetwork1"
-  }
-}
-
-data "openstack_networking_network_v2" "default_network" {
-  name = var.openstack_network.name
-}
-
-data "openstack_networking_subnet_v2" "default_subnet" {
-  network_id = data.openstack_networking_network_v2.default_network.id
-}
-
+# Default network (external)
 locals {
   dns_servers = tolist(
     data.openstack_networking_subnet_v2.default_subnet.dns_nameservers
   )
 }
 
-# Metadata service used by cloud-init
-# https://docs.openstack.org/nova/latest/user/metadata-service.html
-variable "openstack_link_local_ip" {
-  type    = string
-  default = "169.254.169.254"
-}
-
-
-# Security groups
 resource "openstack_networking_secgroup_v2" "nodes" {
   name                 = "${local.prefix}-nodes"
   description          = "Security group for MetalK8s nodes"
-  delete_default_rules = true # Removes default (open) egress rules
+  delete_default_rules = true # Remove default (open) egress rules
 }
 
 resource "openstack_networking_secgroup_rule_v2" "nodes_ssh" {
@@ -78,6 +54,8 @@ resource "openstack_networking_secgroup_rule_v2" "link_local_egress" {
 }
 
 resource "openstack_networking_secgroup_rule_v2" "dns_egress" {
+  count = length(local.dns_servers)
+
   direction         = "egress"
   ethertype         = "IPv4"
   protocol          = "udp"
@@ -85,11 +63,9 @@ resource "openstack_networking_secgroup_rule_v2" "dns_egress" {
   port_range_max    = 53
   remote_ip_prefix  = "${element(local.dns_servers, count.index)}/32"
   security_group_id = openstack_networking_secgroup_v2.nodes.id
-
-  count = length(local.dns_servers)
 }
 
-# Use the default rules for the Bastion so it remains online
+# Bastion security group reinstates default egress rules
 resource "openstack_networking_secgroup_v2" "bastion" {
   name        = "${local.prefix}-bastion"
   description = "Security group for the Bastion VM"
