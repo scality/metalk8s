@@ -58,3 +58,9 @@ variable "bastion_enabled" {
   description = "Whether to spawn a Bastion"
   default     = true
 }
+
+variable "bastion_proxy_port" {
+  type        = number
+  description = "Port to use for the Bastion HTTP forward proxy (squid)"
+  default     = 3128
+}

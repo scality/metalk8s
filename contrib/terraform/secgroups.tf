@@ -6,9 +6,13 @@ locals {
 }
 
 resource "openstack_networking_secgroup_v2" "nodes" {
-  name                 = "${local.prefix}-nodes"
-  description          = "Security group for MetalK8s nodes"
-  delete_default_rules = true # Remove default (open) egress rules
+  name        = "${local.prefix}-nodes"
+  description = "Security group for MetalK8s nodes"
+
+
+  # Remove default (open) egress rules only if we can setup a forward HTTP
+  # proxy on the Bastion
+  delete_default_rules = local.bastion.enabled
 }
 
 resource "openstack_networking_secgroup_rule_v2" "nodes_ssh" {
@@ -36,7 +40,11 @@ resource "openstack_networking_secgroup_rule_v2" "nodes_ingress" {
   security_group_id = openstack_networking_secgroup_v2.nodes.id
 }
 
+# Limiting egress rules are only used if we have a Bastion to proxy HTTP
+# traffic (in case we need online access)
 resource "openstack_networking_secgroup_rule_v2" "nodes_egress" {
+  count = local.bastion.enabled ? 1 : 0
+
   direction         = "egress"
   ethertype         = "IPv4"
   remote_group_id   = openstack_networking_secgroup_v2.nodes.id
@@ -44,6 +52,8 @@ resource "openstack_networking_secgroup_rule_v2" "nodes_egress" {
 }
 
 resource "openstack_networking_secgroup_rule_v2" "link_local_egress" {
+  count = local.bastion.enabled ? 1 : 0
+
   direction         = "egress"
   ethertype         = "IPv4"
   protocol          = "tcp"
@@ -54,7 +64,7 @@ resource "openstack_networking_secgroup_rule_v2" "link_local_egress" {
 }
 
 resource "openstack_networking_secgroup_rule_v2" "dns_egress" {
-  count = length(local.dns_servers)
+  count = local.bastion.enabled ? length(local.dns_servers) : 0
 
   direction         = "egress"
   ethertype         = "IPv4"
