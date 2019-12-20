@@ -1,6 +1,7 @@
 locals {
   bastion = {
     enabled     = var.bastion_enabled,
+    proxy_port  = var.bastion_proxy_port,
   }
 }
 
@@ -53,4 +54,44 @@ resource "openstack_compute_instance_v2" "bastion" {
 
 locals {
   bastion_ip = openstack_compute_instance_v2.bastion[0].access_ip_v4
+}
+
+# HTTP proxy for selective online access from Bootstrap or Nodes
+resource "null_resource" "bastion_http_proxy" {
+  count = local.bastion.enabled ? 1 : 0
+
+  depends_on = [openstack_compute_instance_v2.bastion]
+
+  connection {
+    host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
+    type        = "ssh"
+    user        = "centos"
+    private_key = file(var.ssh_key_pair.private_key)
+  }
+
+  # Prepare Squid configuration
+  provisioner "file" {
+    destination = "/home/centos/squid.conf"
+    content = templatefile(
+      "${path.module}/templates/squid.conf.tpl",
+      {
+        src_cidr   = data.openstack_networking_subnet_v2.default_subnet.cidr,
+        proxy_port = local.bastion.proxy_port,
+      }
+    )
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      # Install Squid
+      "sudo yum -y update",
+      "sudo yum -y install squid",
+      # Configure Squid
+      "sudo cp /home/centos/squid.conf /etc/squid/squid.conf",
+      "sudo chown root:squid /etc/squid/squid.conf",
+      # Enable and start Squid
+      "sudo systemctl enable squid",
+      "sudo systemctl start squid",
+    ]
+  }
 }

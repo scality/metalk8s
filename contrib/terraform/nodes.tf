@@ -40,3 +40,27 @@ locals {
     for node in openstack_compute_instance_v2.nodes : node.access_ip_v4
   ]
 }
+
+resource "null_resource" "nodes_use_proxy" {
+  count = local.bastion.enabled ? var.nodes_count : 0
+
+  depends_on = [
+    null_resource.bastion_http_proxy,
+  ]
+
+  connection {
+    host        = openstack_compute_instance_v2.nodes[count.index].access_ip_v4
+    type        = "ssh"
+    user        = "centos"
+    private_key = file(var.ssh_key_pair.private_key)
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      join(" ", [
+        "sudo python scripts/set_yum_proxy.py",
+        "http://${local.bastion_ip}:${local.bastion.proxy_port}",
+      ]),
+    ]
+  }
+}
