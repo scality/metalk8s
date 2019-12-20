@@ -194,6 +194,15 @@ create_archive() {
         echo "Creating '$(dirname "$BACKUP_ARCHIVE")' directory"
         mkdir -p "$(dirname "$BACKUP_ARCHIVE")"
     fi
+    (
+        cd "$BACKUP_DIR" &&
+        find . -type f ! -name ".sha256sum" -exec sha256sum {} \;
+    ) > "$BACKUP_DIR/.sha256sum"
+    cat > "$BACKUP_DIR/.metadata" << EOF
+VERSION=@@VERSION
+DATE=$(date -u --iso-8601=seconds)
+EOF
+
     tar "${TAR_OPTS[@]}" -C "$BACKUP_DIR" -cz -f "$BACKUP_ARCHIVE" ./
 }
 

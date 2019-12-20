@@ -4,6 +4,7 @@ set -u
 set -o pipefail
 
 VERBOSE=${VERBOSE:-0}
+CHECK_INTEGRITY=${CHECK_INTEGRITY:-1}
 LOGFILE="/var/log/metalk8s/restore.log"
 
 _usage() {
@@ -11,6 +12,7 @@ _usage() {
     echo "Options:"
     echo "-b/--backup-file <backup_file>:  Path to backup file"
     echo "-l/--log-file <logfile_path>:    Path to log file"
+    echo "--disable-integrity-check        Disable archive integrity check"
     echo "-v/--verbose:                    Run in verbose mode"
 }
 
@@ -27,6 +29,10 @@ while (( "$#" )); do
     -b|--backup-file)
       BACKUP_ARCHIVE="$2"
       shift 2
+      ;;
+    --disable-integrity-check)
+      CHECK_INTEGRITY=0
+      shift
       ;;
     *) # unsupported flags
       echo "Error: Unsupported flag $1" >&2
@@ -88,6 +94,10 @@ _save_cp() {
 
 extract_archive() {
     tar -C "$BACKUP_DIR" -xz -f "$BACKUP_ARCHIVE" ./
+}
+
+check_integrity() {
+    ( cd "$BACKUP_DIR" && sha256sum -c .sha256sum )
 }
 
 install_salt_minion() {
@@ -268,6 +278,7 @@ fi
 
 run "Determine the OS" determine_os
 run "Extract backup archive '$BACKUP_ARCHIVE'" extract_archive
+[ $CHECK_INTEGRITY -eq 0 ] || run "Checking backup archive integrity" check_integrity
 run "Pre-minion system tests" pre_minion_checks
 run "Disabling Salt minion service" disable_salt_minion_service
 run "Stopping Salt minion service" stop_salt_minion_service
