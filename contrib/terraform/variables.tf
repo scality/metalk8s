@@ -52,3 +52,9 @@ variable "nodes_count" {
   description = "Number of nodes to spawn in addition to Bootstrap and Bastion"
   default     = "1"
 }
+
+variable "bastion_enabled" {
+  type        = bool
+  description = "Whether to spawn a Bastion"
+  default     = true
+}

@@ -1,4 +1,12 @@
+locals {
+  bastion = {
+    enabled     = var.bastion_enabled,
+  }
+}
+
 resource "openstack_compute_instance_v2" "bastion" {
+  count = local.bastion.enabled ? 1 : 0
+
   name        = "${local.prefix}-bastion"
   image_name  = var.openstack_image_name
   flavor_name = var.openstack_flavours.bastion
@@ -10,7 +18,7 @@ resource "openstack_compute_instance_v2" "bastion" {
 
   security_groups = concat(
     [openstack_networking_secgroup_v2.nodes.name],
-    openstack_networking_secgroup_v2.bastion.name,
+    openstack_networking_secgroup_v2.bastion[*].name,
   )
 
   network {
@@ -44,5 +52,5 @@ resource "openstack_compute_instance_v2" "bastion" {
 }
 
 locals {
-  bastion_ip = openstack_compute_instance_v2.bastion.access_ip_v4
+  bastion_ip = openstack_compute_instance_v2.bastion[0].access_ip_v4
 }

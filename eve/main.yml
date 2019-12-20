@@ -534,6 +534,7 @@ stages:
             # FIXME: this makes hostnames too long
             # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
             TF_VAR_nodes_count: "2"
+            TF_VAR_bastion_enabled: "true"
           haltOnFailure: true
       - ShellCommand:
           name: Check SSH config for bootstrap node
