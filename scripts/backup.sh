@@ -163,7 +163,7 @@ backup_cas() {
         'sa.pub'
     )
     for ca in "${ca_files[@]}"; do
-        _save_cp "${ca_dir}$ca" "${BACKUP_DIR}/pki/$ca"
+        _save_cp "${ca_dir}$ca" "${BACKUP_DIR}/kubernetes/pki/$ca"
     done
 }
 
