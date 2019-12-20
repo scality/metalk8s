@@ -1,3 +1,20 @@
+locals {
+  all_instances = concat(
+    local.bastion.enabled ? [openstack_compute_instance_v2.bastion[0].id] : [],
+    [openstack_compute_instance_v2.bootstrap.id],
+    openstack_compute_instance_v2.nodes[*].id
+  )
+
+  nodes_info = [
+    for idx in range(length(openstack_compute_instance_v2.nodes)) :
+    {
+      name = "node${idx + 1}",
+      ip   = local.node_ips[idx],
+    }
+  ]
+}
+
+
 resource "null_resource" "ssh_config" {
   triggers = {
     cluster_instance_ids = join(",", local.all_instances)
@@ -11,7 +28,7 @@ resource "null_resource" "ssh_config" {
         identity_file = var.ssh_key_pair.private_key
         bastion_ip    = local.bastion_ip
         bootstrap_ip  = local.bootstrap_ip
-        nodes         = local.nodes
+        nodes         = local.nodes_info
       }
     )}' > ssh_config"
   }
@@ -31,7 +48,7 @@ resource "null_resource" "ssh_config" {
         identity_file = "/home/centos/.ssh/bastion"
         bastion_ip    = local.bastion_ip
         bootstrap_ip  = local.bootstrap_ip
-        nodes         = local.nodes
+        nodes         = local.nodes_info
       }
     )
   }

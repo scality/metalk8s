@@ -1,12 +1,13 @@
-resource "openstack_compute_instance_v2" "nodes" {
-  count = var.nodes_count
-
-  name        = "${local.prefix}-node-${count.index + 1}"
+resource "openstack_compute_instance_v2" "bastion" {
+  name        = "${local.prefix}-bastion"
   image_name  = var.openstack_image_name
-  flavor_name = var.openstack_flavours.nodes
+  flavor_name = var.openstack_flavours.bastion
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
-  security_groups = [openstack_networking_secgroup_v2.nodes.name]
+  security_groups = concat(
+    [openstack_networking_secgroup_v2.nodes.name],
+    openstack_networking_secgroup_v2.bastion.name,
+  )
 
   network {
     access_network = true
@@ -22,7 +23,7 @@ resource "openstack_compute_instance_v2" "nodes" {
 
   # Provision scripts for remote-execution
   provisioner "file" {
-    source      = "${path.module}/scripts"
+    source      = "${path.root}/scripts"
     destination = "/home/centos/scripts"
   }
 
@@ -32,7 +33,5 @@ resource "openstack_compute_instance_v2" "nodes" {
 }
 
 locals {
-  node_ips = [
-    for node in openstack_compute_instance_v2.nodes : node.access_ip_v4
-  ]
+  bastion_ip = openstack_compute_instance_v2.bastion.access_ip_v4
 }
