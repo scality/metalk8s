@@ -15,9 +15,9 @@ locals {
 }
 
 
-resource "null_resource" "ssh_config" {
+resource "null_resource" "local_ssh_config" {
   triggers = {
-    cluster_instance_ids = join(",", local.all_instances)
+    all_instances = join(",", local.all_instances)
   }
 
   # Generate SSH config file for local usage
@@ -30,7 +30,18 @@ resource "null_resource" "ssh_config" {
         bootstrap_ip  = local.bootstrap_ip
         nodes         = local.nodes_info
       }
-    )}' > ssh_config"
+    )}' > ./ssh_config"
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = "rm ./ssh_config"
+  }
+}
+
+resource "null_resource" "bastion_ssh_config" {
+  triggers = {
+    all_instances = join(",", local.all_instances)
   }
 
   # Generate SSH config file for the Bastion
