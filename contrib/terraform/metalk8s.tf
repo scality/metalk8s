@@ -120,6 +120,27 @@ resource "null_resource" "run_bootstrap" {
   }
 }
 
+resource "null_resource" "enable_ipip" {
+  # If one of the networks used by Metal is the default network, PortSecurity
+  # will still be enabled, so we need IPIP encapsulation
+  count = var.metalk8s_bootstrap && length(var.private_networks) < 2 ? 1 : 0
+
+  depends_on = [
+    null_resource.run_bootstrap,
+  ]
+
+  connection {
+    host        = local.bootstrap_ip
+    type        = "ssh"
+    user        = "centos"
+    private_key = file(var.ssh_key_pair.private_key)
+  }
+
+  provisioner "remote-exec" {
+    inline = ["bash scripts/enable_ipip.sh"]
+  }
+}
+
 resource "null_resource" "provision_volumes" {
   count = (var.metalk8s_bootstrap && var.metalk8s_provision_volumes) ? 1 : 0
 
