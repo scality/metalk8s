@@ -10,10 +10,11 @@ LOGFILE="/var/log/metalk8s/restore.log"
 _usage() {
     echo "$(basename "$0") [options]"
     echo "Options:"
-    echo "-b/--backup-file <backup_file>:  Path to backup file"
-    echo "-l/--log-file <logfile_path>:    Path to log file"
-    echo "--disable-integrity-check        Disable archive integrity check"
-    echo "-v/--verbose:                    Run in verbose mode"
+    echo "-b/--backup-file <backup_file>:   Path to backup file"
+    echo "-i/--apiserver-node-ip <ip>:      Node IP of one apiserver"
+    echo "-l/--log-file <logfile_path>:     Path to log file"
+    echo "--disable-integrity-check         Disable archive integrity check"
+    echo "-v/--verbose:                     Run in verbose mode"
 }
 
 while (( "$#" )); do
@@ -28,6 +29,10 @@ while (( "$#" )); do
       ;;
     -b|--backup-file)
       BACKUP_ARCHIVE="$2"
+      shift 2
+      ;;
+    -i|--apiserver-node-ip)
+      APISERVER_IP="$2"
       shift 2
       ;;
     --disable-integrity-check)
@@ -161,6 +166,7 @@ configure_salt_master() {
 
     pillar=(
       "{"
+      "  'apiserver_ip': ${APISERVER_IP:-''},"
       "  'repo': {'local_mode': True},"
       "  'metalk8s': {"
       "    'endpoints': {"
@@ -175,7 +181,7 @@ configure_salt_master() {
     )
 
     "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
-        '["metalk8s.roles.bootstrap", "metalk8s.roles.minion"]' \
+        '["metalk8s.roles.bootstrap", "metalk8s.roles.minion", "metalk8s.kubernetes.apiserver-proxy"]' \
         saltenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
 
@@ -227,9 +233,14 @@ push_cas() {
 mark_control_plane() {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
+    local -r bootstrap_id=$(
+        ${SALT_CALL} --local --out txt grains.get id \
+        | awk '/^local\: /{ print $2 }'
+    )
     "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
         metalk8s.kubernetes.mark-control-plane.deployed \
-        saltenv=metalk8s-@@VERSION
+        saltenv=metalk8s-@@VERSION \
+        pillar="{'bootstrap_id': '$bootstrap_id'}"
 
     "${SALT_CALL}" --retcode-passthrough mine.update
 }
