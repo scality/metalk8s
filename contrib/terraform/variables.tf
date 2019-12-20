@@ -17,6 +17,21 @@ variable "ssh_key_pair" {
   }
 }
 
+# OpenStack configuration
+variable "openstack_image_name" {
+  type    = string
+  default = "CentOS-7-x86_64-GenericCloud-1809.qcow2"
+}
+
+variable "openstack_flavours" {
+  type = object({ bootstrap = string, nodes = string, bastion = string })
+  default = {
+    bastion   = "m1.medium",
+    bootstrap = "m1.large",
+    nodes     = "m1.large",
+  }
+}
+
 # Metadata service used by cloud-init
 # https://docs.openstack.org/nova/latest/user/metadata-service.html
 variable "openstack_link_local_ip" {
@@ -29,4 +44,11 @@ variable "default_network" {
   type        = string
   description = "The default network name to use for SSH access"
   default     = "tenantnetwork1"
+}
+
+# MetalK8s deployment configuration
+variable "nodes_count" {
+  type        = string
+  description = "Number of nodes to spawn in addition to Bootstrap and Bastion"
+  default     = "1"
 }
