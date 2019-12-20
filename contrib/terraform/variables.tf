@@ -46,6 +46,36 @@ variable "default_network" {
   default     = "tenantnetwork1"
 }
 
+variable "private_networks" {
+  type        = list(string)
+  description = "Which private networks to use (or spawn)"
+  default     = []
+}
+
+variable "control_plane_subnet" {
+  type        = string
+  description = "Existing subnet to use for the control-plane"
+  default     = ""
+}
+
+variable "control_plane_vip" {
+  type        = string
+  description = "VIP to create for the control-plane"
+  default     = "192.168.1.2"
+}
+
+variable "workload_plane_subnet" {
+  type        = string
+  description = "Existing subnet to use for the workload-plane"
+  default     = ""
+}
+
+variable "workload_plane_vip" {
+  type        = string
+  description = "VIP to create for the workload-plane"
+  default     = ""
+}
+
 # MetalK8s deployment configuration
 variable "nodes_count" {
   type        = string
