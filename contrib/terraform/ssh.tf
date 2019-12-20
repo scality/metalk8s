@@ -53,3 +53,44 @@ resource "null_resource" "ssh_config" {
     )
   }
 }
+
+resource "null_resource" "bastion_public_key" {
+  depends_on = [
+    openstack_compute_instance_v2.bastion,
+    openstack_compute_instance_v2.bootstrap,
+    openstack_compute_instance_v2.nodes,
+  ]
+
+  # Share and authorize Bastion key
+  provisioner "local-exec" {
+    command = <<-EOT
+    %{for node_ip in concat([local.bootstrap_ip], local.node_ips)}
+    scp -i ${var.ssh_key_pair.private_key} -3 -o StrictHostKeyChecking=no \
+        centos@${local.bastion_ip}:.ssh/bastion.pub \
+        centos@${node_ip}:.ssh/bastion.pub
+    ssh -i ${var.ssh_key_pair.private_key} centos@${node_ip} \
+        "cat .ssh/bastion.pub >> .ssh/authorized_keys"
+    %{endfor}
+    EOT
+  }
+}
+
+resource "null_resource" "bootstrap_public_key" {
+  depends_on = [
+    openstack_compute_instance_v2.bootstrap,
+    openstack_compute_instance_v2.nodes,
+  ]
+
+  # Share and authorize Bootstrap key
+  provisioner "local-exec" {
+    command = <<-EOT
+    %{for node_ip in local.node_ips}
+    scp -i ${var.ssh_key_pair.private_key} -3 -o StrictHostKeyChecking=no \
+        centos@${local.bootstrap_ip}:.ssh/bootstrap.pub \
+        centos@${node_ip}:.ssh/bootstrap.pub
+    ssh -i ${var.ssh_key_pair.private_key} centos@${node_ip} \
+        "cat .ssh/bootstrap.pub >> .ssh/authorized_keys"
+    %{endfor}
+    EOT
+  }
+}
