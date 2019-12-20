@@ -165,15 +165,6 @@ backup_cas() {
     for ca in "${ca_files[@]}"; do
         _save_cp "${ca_dir}$ca" "${BACKUP_DIR}/pki/$ca"
     done
-
-    local -r metalk8s_ca_dir='/etc/metalk8s/pki/'
-    local -a metalk8s_ca_files=(
-        'nginx-ingress/ca.crt'
-        'nginx-ingress/ca.key'
-    )
-    for metalk8s_ca in "${metalk8s_ca_files[@]}"; do
-        _save_cp "${metalk8s_ca_dir}$metalk8s_ca" "${BACKUP_DIR}/pki_metalk8s/$metalk8s_ca"
-    done
 }
 
 backup_etcd() {

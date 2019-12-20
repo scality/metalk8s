@@ -134,15 +134,6 @@ restore_cas() {
     for ca in "${ca_files[@]}"; do
         _save_cp "${BACKUP_DIR}/pki/$ca" "${ca_dir}$ca"
     done
-
-    local -r metalk8s_ca_dir='/etc/metalk8s/pki/'
-    local -a metalk8s_ca_files=(
-        'nginx-ingress/ca.crt'
-        'nginx-ingress/ca.key'
-    )
-    for metalk8s_ca in "${metalk8s_ca_files[@]}"; do
-        _save_cp "${BACKUP_DIR}/pki_metalk8s/$metalk8s_ca" "${metalk8s_ca_dir}$metalk8s_ca"
-    done
 }
 
 configure_salt_master() {
