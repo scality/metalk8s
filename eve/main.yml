@@ -549,26 +549,6 @@ stages:
           workdir: build/contrib/terraform/
           haltOnFailure: true
       - ShellCommand:
-          # FIXME: find a way to share bastion public key to all spawned
-          # instances from Terraform
-          name: Send bastion public key to nodes
-          command: >
-            scp -F ssh_config -3 bastion:.ssh/bastion.pub bootstrap:.ssh/ &&
-            ssh -F ssh_config bootstrap
-            "cat .ssh/bastion.pub >> .ssh/authorized_keys" &&
-            scp -F ssh_config -3 bastion:.ssh/bastion.pub node1:.ssh/ &&
-            ssh -F ssh_config node1
-            "cat .ssh/bastion.pub >> .ssh/authorized_keys"
-          workdir: build/contrib/terraform/
-      - ShellCommand:
-          # FIXME: find a cleaner way with Terraform.
-          name: Send bastion private key to bootstrap
-          command: >
-              ssh -F ssh_config bootstrap "sudo mkdir -p /etc/metalk8s/pki/" &&
-              scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
-              ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
-          workdir: build/contrib/terraform/
-      - ShellCommand:
           name: Copy ISO to bootstrap node
           command: >
             scp -F contrib/terraform/ssh_config metalk8s.iso bootstrap:./

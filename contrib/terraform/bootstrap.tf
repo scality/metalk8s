@@ -31,6 +31,13 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   provisioner "remote-exec" {
     inline = ["chmod -R +x /home/centos/scripts"]
   }
+
+  # Generate an SSH keypair
+  provisioner "remote-exec" {
+    inline = [
+      "ssh-keygen -t rsa -b 4096 -N '' -f /home/centos/.ssh/bootstrap"
+    ]
+  }
 }
 
 locals {
