@@ -94,3 +94,21 @@ variable "bastion_proxy_port" {
   description = "Port to use for the Bastion HTTP forward proxy (squid)"
   default     = 3128
 }
+
+variable "metalk8s_iso_mode" {
+  type        = string
+  description = "How to provision the MetalK8s ISO on Bootstrap (can be 'local' or 'remote')"
+  default     = "local"
+}
+
+variable "metalk8s_iso_source" {
+  type        = string
+  description = "Source URI for the MetalK8s ISO (can be a local path or public URL)"
+  default     = ""
+}
+
+variable "metalk8s_iso_destination" {
+  type        = string
+  description = "Destination of the MetalK8s ISO on Bootstrap"
+  default     = "/home/centos/metalk8s.iso"
+}
