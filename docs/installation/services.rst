@@ -39,7 +39,7 @@ The landing page should look like this:
 This page displays two monitoring indicators:
 
 #. the Cluster Status, which evaluates if control-plane services are all up and
-   running,
+   running
 #. the list of alerts stored in :term:`Alertmanager`.
 
 

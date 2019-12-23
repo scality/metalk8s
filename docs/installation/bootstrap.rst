@@ -90,7 +90,7 @@ SSH Provisioning
 
 #. Accept the new identity on future new nodes (run from your host).
 
-   #. First, retrieve the public key from the Bootstrap node.
+   #. Retrieve the public key from the Bootstrap node.
 
       .. code-block:: shell
 
@@ -119,15 +119,15 @@ Bootstrap node.
 
 .. warning::
 
-    In case of virtual network (or any network which enforces source and
+    For virtual network (or any network which enforces source and
     destination fields of IP packets to correspond to the MAC address(es)),
     :ref:`IP-in-IP needs to be enabled<enable IP-in-IP>`.
 
 Provision Storage for Prometheus Services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After bootstrapping the cluster, the Prometheus and AlertManager services used
-to monitor the system will not be running (the respective :term:`Pods <Pod>`
-will remain in **Pending** state), because they require persistent storage to
+to monitor the system will not be running (their respective :term:`Pods <Pod>`
+will remain in a **Pending** state), because they require persistent storage to
 be available. You can either provision these storage volumes on the bootstrap
 node, or later on other nodes joining the cluster. Templates for the required
 volumes are available in :download:`examples/prometheus-sparse.yaml
@@ -143,8 +143,7 @@ provision persistent storage.
 
 Validate the Installation
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-Check if all :term:`Pods <Pod>` on the Bootstrap node are in the
-**Running** state.
+Check if all :term:`Pods <Pod>` on the Bootstrap node are running.
 
 .. note::
 

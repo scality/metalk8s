@@ -119,7 +119,7 @@ other ranges during the
 
 Installation Plan
 ^^^^^^^^^^^^^^^^^
-In this guide, the depicted installation procedure is for a medium sized
+In this guide, the depicted installation procedure is for a medium-sized
 cluster, using three control-plane nodes and two worker nodes. Refer to
 the :doc:`/installation/index` for extensive explanations of possible
 cluster architectures.

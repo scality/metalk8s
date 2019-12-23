@@ -41,7 +41,7 @@ Each machine must be a member of both the control-plane and workload-plane
 networks, as described in :ref:`installation-intro-networks`. However, these
 networks can overlap, and nodes need not have distinct IPs for each plane.
 
-In order to reach the cluster-provided UIs from the host, the host needs to be
+For the host to reach the cluster-provided UIs, it must be
 able to connect to workload-plane IPs of the machines.
 
 Repositories
@@ -96,7 +96,7 @@ Add a new repository:
         `repo_url` can be remote url using prefix `http://`, `https://`,
         `ftp://`, ... or a local path using `file://`.
 
-For more detail(s), refer to the official RedHat documentation:
+For more detail(s), refer to the official Red Hat documentation:
 
     - `Enable Optional repositories with RHSM`_
     - `Configure repositories with YUM`_
