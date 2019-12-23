@@ -18,7 +18,7 @@ Deploy etcd {{ node }} to {{ dest_version }}:
   salt.state:
     - tgt: {{ node }}
     - sls:
-      - metalk8s.kubernetes.etcd.healthy
+      - metalk8s.kubernetes.etcd
     - saltenv: metalk8s-{{ dest_version }}
     - require:
       - salt: Sync {{ node }} minion

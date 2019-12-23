@@ -80,3 +80,30 @@ Create local etcd Pod manifest:
     - require:
       - file: Create etcd database directory
       - file: Ensure etcd CA cert is present
+
+{#- In some case we may want to deploy etcd manifest but etcd do not work
+    properly, so we need to skip this health check
+    (e.g.: When we deploy a new etcd and member not yet registered #}
+{%- if not pillar.get('metalk8s', {}).get('skip_etcd_healthcheck', False) %}
+
+Delay after etcd pod deployment:
+  module.wait:
+    - test.sleep:
+      - length: 10
+    - watch:
+      - metalk8s: Create local etcd Pod manifest
+
+Waiting for etcd running:
+  http.wait_for_successful_query:
+    - name: https://127.0.0.1:2379/health
+    - verify_ssl: True
+    - ca_bundle: /etc/kubernetes/pki/etcd/ca.crt
+    - cert:
+      - /etc/kubernetes/pki/etcd/server.crt
+      - /etc/kubernetes/pki/etcd/server.key
+    - status: 200
+    - match: '{"health":"true"}'
+    - require:
+      - module: Delay after etcd pod deployment
+
+{%- endif %}
