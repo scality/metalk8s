@@ -234,6 +234,10 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
     # Ignore `refresh` if pillar is provided
     if not pillar and refresh:
         __salt__['saltutil.refresh_pillar']()
+        # In salt 2018.3 we can not do synchronous pillar refresh, so add a
+        # sleep
+        # See https://github.com/saltstack/salt/issues/20590
+        time.sleep('10')
 
     if not pillar:
         pillar = __pillar__
