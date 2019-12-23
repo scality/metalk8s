@@ -118,15 +118,18 @@ Run the highstate:
     - tgt: {{ node_name }}
     - highstate: True
     - saltenv: metalk8s-{{ version }}
-    {#- Add ability to skip node roles to not apply all the highstate
-         e.g.: Skipping etcd when downgrading #}
-    {%- if skip_roles %}
     - pillar:
         metalk8s:
+          # Skip etcd healthcheck as we register etcd member at the end of this
+          # orchestrate
+          skip_etcd_healthcheck: True
+          {#- Add ability to skip node roles to not apply all the highstate
+              e.g.: Skipping etcd when downgrading #}
+          {%- if skip_roles %}
           nodes:
             {{ node_name }}:
               skip_roles: {{ skip_roles }}
-    {%- endif %}
+          {%- endif %}
     - require:
       - salt: Set grains
       - salt: Refresh the mine
