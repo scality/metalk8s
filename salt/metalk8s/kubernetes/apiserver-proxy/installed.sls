@@ -26,6 +26,11 @@ Create apiserver-proxy Pod manifest:
     - require:
       - file: Create apiserver-proxy nginx configuration
 
+{#- In some case we may want to deploy apiserver-proxy on a `master` node
+    but not having local `apiserver` configured/ready yet so we cannot check
+    health of this proxy as we will only hit local apiserver #}
+{%- if not pillar.get('metalk8s', {}).get('skip_apiserver_proxy_healthcheck', False) %}
+
 Delay after apiserver-proxy deployment:
   module.run:
     - test.sleep:
@@ -39,3 +44,5 @@ Make sure apiserver-proxy is available:
   - status: 200
   - require:
     - module: Delay after apiserver-proxy deployment
+
+{%- endif %}
