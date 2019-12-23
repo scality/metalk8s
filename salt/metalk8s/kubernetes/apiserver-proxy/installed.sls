@@ -26,9 +26,16 @@ Create apiserver-proxy Pod manifest:
     - require:
       - file: Create apiserver-proxy nginx configuration
 
+Delay after apiserver-proxy deployment:
+  module.run:
+    - test.sleep:
+      - length: 10
+    - onchanges:
+      - metalk8s: Create apiserver-proxy Pod manifest
+
 Make sure apiserver-proxy is available:
   http.wait_for_successful_query:
   - name: http://127.0.0.1:7080/healthz
   - status: 200
   - require:
-    - metalk8s: Create apiserver-proxy Pod manifest
+    - module: Delay after apiserver-proxy deployment
