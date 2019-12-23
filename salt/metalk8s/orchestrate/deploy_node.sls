@@ -73,7 +73,9 @@ Sync module on the node:
     - kwarg:
         saltenv: {{ saltenv }}
 
-Refresh and check pillar before highstate:
+{%- if node_name in salt.saltutil.runner('manage.up') %}
+
+Refresh and check pillar before salt-minion configuration:
   salt.function:
     - name: metalk8s.check_pillar_keys
     - tgt: {{ node_name }}
@@ -91,8 +93,6 @@ Refresh and check pillar before highstate:
     - require:
       - salt: Sync module on the node
 
-{%- if node_name in salt.saltutil.runner('manage.up') %}
-
 Reconfigure salt-minion:
   salt.state:
     - tgt: {{ node_name }}
@@ -102,7 +102,7 @@ Reconfigure salt-minion:
     - require:
       - salt: Set grains
       - salt: Refresh the mine
-      - salt: Refresh and check pillar before highstate
+      - salt: Refresh and check pillar before salt-minion configuration
 
 Wait minion available:
   salt.runner:
@@ -111,11 +111,29 @@ Wait minion available:
     - require:
       - salt: Reconfigure salt-minion
     - require_in:
-      - salt: Run the highstate
+      - http: Wait for API server to be available before highstate
 
 {%- endif %}
 
 {%- if 'etcd' in roles and 'etcd' not in skip_roles %}
+
+Refresh and check pillar before etcd deployment:
+  salt.function:
+    - name: metalk8s.check_pillar_keys
+    - tgt: {{ node_name }}
+    - kwarg:
+        keys:
+          - metalk8s.endpoints.salt-master.ip
+          - metalk8s.endpoints.repositories.ip
+          - metalk8s.endpoints.repositories.ports.http
+        # We cannot raise when using `salt.function` as we need to return
+        # `False` to have a failed state
+        # https://github.com/saltstack/salt/issues/55503
+        raise_error: False
+    - retry:
+        attempts: 5
+    - require:
+      - salt: Sync module on the node
 
 Install etcd node:
   salt.state:
@@ -127,6 +145,8 @@ Install etcd node:
         metalk8s:
           # Skip etcd healthcheck as we register etcd member just after
           skip_etcd_healthcheck: True
+    - require:
+      - salt: Refresh and check pillar before etcd deployment
 
 Register the node into etcd cluster:
   salt.runner:
@@ -137,9 +157,35 @@ Register the node into etcd cluster:
     - require:
       - salt: Install etcd node
     - require_in:
-      - salt: Run the highstate
+      - http: Wait for API server to be available before highstate
 
 {%- endif %}
+
+Wait for API server to be available before highstate:
+  http.wait_for_successful_query:
+  - name: https://{{ pillar.metalk8s.api_server.host }}:6443/healthz
+  - match: 'ok'
+  - status: 200
+  - verify_ssl: false
+
+Refresh and check pillar before highstate:
+  salt.function:
+    - name: metalk8s.check_pillar_keys
+    - tgt: {{ node_name }}
+    - kwarg:
+        keys:
+          - metalk8s.endpoints.salt-master.ip
+          - metalk8s.endpoints.repositories.ip
+          - metalk8s.endpoints.repositories.ports.http
+        # We cannot raise when using `salt.function` as we need to return
+        # `False` to have a failed state
+        # https://github.com/saltstack/salt/issues/55503
+        raise_error: False
+    - retry:
+        attempts: 5
+    - require:
+      - salt: Sync module on the node
+      - http: Wait for API server to be available before highstate
 
 Run the highstate:
   salt.state:
