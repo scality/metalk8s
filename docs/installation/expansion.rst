@@ -53,10 +53,11 @@ The MetalK8s GUI provides a simple form for that purpose.
    - **Roles/Control Plane**: enable master and etcd services run on this Node
    - **Roles/Infra**: enable infra services run on this Node
 
-   **Note** that multiple roles combination is enable:
+   .. note::
 
-   Select **Workload Plane** and **Infra** checkbox: infra services and
-   workload applications run on this Node.
+      Combination of multiple roles is possible:
+      Selecting **Workload Plane** and **Infra** checkbox will result in infra
+      services and workload applications run on this Node.
 
 #. Click "Create". You will be redirected to the Node list page, and will be
    shown a notification to confirm the Node creation:
