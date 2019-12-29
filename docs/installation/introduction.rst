@@ -42,6 +42,8 @@ Control-plane nodes often are responsible for providing storage for
 :term:`API Server`, by running :term:`etcd`. This responsibility may be
 offloaded to other nodes from the workload-plane (without the ``etcd`` taint).
 
+.. _node-roles:
+
 Node roles
 """"""""""
 Determining a :term:`Node` responsibilities is achieved using **roles**.
@@ -77,6 +79,8 @@ MetalK8s uses five different **roles**, that may be combined freely:
 
   In practice, this role will be used in conjunction with the ``master``
   and ``etcd`` roles for bootstrapping the control-plane.
+
+.. _node-taints:
 
 Node taints
 """""""""""
