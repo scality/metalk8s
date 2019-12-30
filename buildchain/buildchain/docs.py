@@ -45,8 +45,9 @@ from buildchain import utils
 
 
 DocTarget = namedtuple('DocTarget', ('name', 'command', 'target'))
-DOC_BUILD_DIR : Path = constants.ROOT/'docs/_build'
-DOC_PDF_FILE  : Path = DOC_BUILD_DIR/'latex/{}.pdf'.format(config.PROJECT_NAME)
+DOC_PDF_FILE : Path = constants.DOCS_BUILD_ROOT/'latex/{}.pdf'.format(
+    config.PROJECT_NAME
+)
 
 
 def task_documentation() -> types.TaskDict:
@@ -54,16 +55,23 @@ def task_documentation() -> types.TaskDict:
     return {
         'actions': None,
         'task_dep': [
-            '_doc_mkdir_root',
+            '_doc_mkdir_iso_root',
             '_doc_deploy'
         ],
     }
 
 
-def task__doc_mkdir_root() -> types.TaskDict:
-    """Create the documentation root directory."""
+def task__doc_mkdir_iso_root() -> types.TaskDict:
+    """Create the documentation root directory on the ISO."""
     return targets.Mkdir(
         directory=constants.ISO_DOCS_ROOT, task_dep=['_iso_mkdir_root']
+    ).task
+
+
+def task__doc_mkdir_build_root() -> types.TaskDict:
+    """Create the documentation build root directory."""
+    return targets.Mkdir(
+        directory=constants.DOCS_BUILD_ROOT, task_dep=['_build_root']
     ).task
 
 
@@ -75,7 +83,7 @@ def task__doc_deploy() -> types.TaskDict:
         'title': utils.title_with_target1('COPY'),
         'actions': [(coreutils.cp_file, (source, target))],
         'targets': [target],
-        'task_dep': ['_doc_mkdir_root'],
+        'task_dep': ['_doc_mkdir_iso_root'],
         'file_dep': [source],
         'clean': True,
     }
@@ -89,7 +97,7 @@ def task_doc() -> Iterator[types.TaskDict]:
 
     doc_targets = (
         DocTarget(name='html', command='html',
-                  target=DOC_BUILD_DIR/'html/index.html'),
+                  target=constants.DOCS_BUILD_ROOT/'html/index.html'),
         DocTarget(name='pdf', command='latexpdf', target=DOC_PDF_FILE)
     )
     for target in doc_targets:
@@ -105,8 +113,12 @@ def task_doc() -> Iterator[types.TaskDict]:
             run_config=run_config,
             mounts=[
                 utils.bind_mount(
+                    target=Path('/usr/src/metalk8s/docs/_build/'),
+                    source=constants.DOCS_BUILD_ROOT
+                ),
+                utils.bind_mount(
                     target=Path('/usr/src/metalk8s/'), source=constants.ROOT
-                )
+                ),
             ]
         )
         yield {
@@ -118,7 +130,10 @@ def task_doc() -> Iterator[types.TaskDict]:
             'actions': [build_doc],
             'targets': [target.target],
             'file_dep': list(utils.git_ls('docs')),
-            'task_dep': ['_build_builder:{}'.format(builder.DOC_BUILDER.name)],
+            'task_dep': [
+                '_doc_mkdir_build_root',
+                '_build_builder:{}'.format(builder.DOC_BUILDER.name)
+            ],
             'clean': [clean(target)],
         }
 

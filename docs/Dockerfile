@@ -33,8 +33,6 @@ RUN python3.6 -m pip install tox==3.9.0 && \
 
 WORKDIR /usr/src/metalk8s
 
-RUN mkdir docs
-
 COPY tox.ini .
 COPY docs/requirements.txt docs/
 

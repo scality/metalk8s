@@ -223,20 +223,18 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
     ),
     _local_image(
         name='metalk8s-ui',
-        dockerfile=constants.ROOT/'ui'/'Dockerfile',
+        build_context=config.BUILD_ROOT,
         build_args={
             'NGINX_IMAGE_VERSION': versions.NGINX_IMAGE_VERSION,
-            'NODE_IMAGE_VERSION': versions.NODEJS_IMAGE_VERSION,
         },
         file_dep=(
-            list(coreutils.ls_files_rec(constants.ROOT/'ui'/'public')) +
-            list(coreutils.ls_files_rec(constants.ROOT/'ui'/'src')) +
+            list(coreutils.ls_files_rec(constants.UI_BUILD_ROOT)) +
+            list(coreutils.ls_files_rec(constants.DOCS_BUILD_ROOT)) +
             [
-                constants.ROOT/'ui'/'package.json',
-                constants.ROOT/'ui'/'package-lock.json',
-                constants.ROOT/'ui'/'conf'/'nginx.conf'
+                config.BUILD_ROOT/'metalk8s-ui-nginx.conf'
             ]
-        )
+        ),
+        task_dep=['ui', 'doc'],
     ),
     _local_image(
         name='metalk8s-utils',
