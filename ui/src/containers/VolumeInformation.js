@@ -4,7 +4,7 @@ import { useRouteMatch } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import { Breadcrumb, Table, Loader } from '@scality/core-ui';
+import { Breadcrumb, Table, Loader, Banner } from '@scality/core-ui';
 import {
   makeGetNodeFromUrl,
   makeGetVolumesFromUrl,
@@ -14,7 +14,6 @@ import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
   STATUS_BOUND,
-  STATUS_BANNER_ERROR,
   STATUS_FAILED,
 } from '../constants';
 import {
@@ -30,7 +29,6 @@ import {
   BreadcrumbLabel,
   StyledLink,
 } from '../components/BreadcrumbStyle';
-import Banner from '../components/Banner';
 import {
   InformationListContainer,
   InformationSpan,
@@ -156,15 +154,16 @@ const VolumeInformation = props => {
 
       {volumeStatus === STATUS_FAILED ? (
         <Banner
-          type={STATUS_BANNER_ERROR}
+          variant="danger"
           icon={<i className="fas fa-exclamation-triangle" />}
           title={
             errorCode === 'CreationError'
               ? intl.translate('failed_to_create_volume')
               : intl.translate('error')
           }
-          messages={[errorMessage]}
-        />
+        >
+          {errorMessage}
+        </Banner>
       ) : null}
 
       {<LoaderContainer isLoading={isLoading} size="small" />}

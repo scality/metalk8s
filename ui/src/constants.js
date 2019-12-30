@@ -8,10 +8,6 @@ export const STATUS_CRITICAL = 'critical';
 export const STATUS_SUCCESS = 'success';
 export const STATUS_NONE = 'none';
 
-export const STATUS_BANNER_WARNING = 'banner_warning';
-export const STATUS_BANNER_ERROR = 'banner_error';
-export const STATUS_BANNER_SUCCESS = 'banner_success';
-
 export const API_STATUS_READY = 'ready';
 export const API_STATUS_NOT_READY = 'not_ready';
 export const API_STATUS_UNKNOWN = 'unknown';

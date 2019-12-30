@@ -5,8 +5,7 @@ import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
-import Banner from '../components/Banner';
-import { Input, Button, Breadcrumb } from '@scality/core-ui';
+import { Input, Button, Breadcrumb, Banner } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
@@ -17,11 +16,7 @@ import {
   fontSize,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import {
-  SPARSE_LOOP_DEVICE,
-  RAW_BLOCK_DEVICE,
-  STATUS_BANNER_WARNING,
-} from '../constants';
+import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
@@ -248,22 +243,19 @@ const CreateVolume = props => {
 
       {isStorageClassExist ? null : (
         <Banner
-          type={STATUS_BANNER_WARNING}
+          variant="warning"
           icon={<i className="fas fa-exclamation-triangle" />}
           title={intl.translate('no_storage_class_found')}
-          messages={[
-            <>
-              {intl.translate('storage_class_is_required')}
-              <a
-                rel="noopener noreferrer"
-                target="_blank"
-                href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
-              >
-                {intl.translate('learn_more')}
-              </a>
-            </>,
-          ]}
-        />
+        >
+          {intl.translate('storage_class_is_required')}
+          <a
+            rel="noopener noreferrer"
+            target="_blank"
+            href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
+          >
+            {intl.translate('learn_more')}
+          </a>
+        </Banner>
       )}
       <CreateVolumeLayout>
         <Formik
