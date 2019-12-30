@@ -13,7 +13,7 @@
     "oidc-client": "^1.8.0",
     "polished": "3.4.1",
     "react": "^16.8.1",
-    "react-debounce-input": "3.2.0",
+    "react-debounce-input": "3.2.2",
     "react-dom": "^16.8.1",
     "react-intl": "^2.8.0",
     "react-json-view": "1.19.1",
