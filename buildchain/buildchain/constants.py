@@ -42,6 +42,8 @@ REPO_DEB_ROOT : Path = REPO_ROOT/'debian'
 ISO_IMAGE_ROOT : Path = ISO_ROOT/'images'
 # Root for the documentation on the ISO.
 ISO_DOCS_ROOT : Path = ISO_ROOT/'documentation'
+# Root for the documentation build.
+DOCS_BUILD_ROOT : Path = config.BUILD_ROOT/'docs'
 # Root for the packages that we build ourselves.
 PKG_ROOT : Path = config.BUILD_ROOT/'packages'
 # Root for the RPM packages that we build ourselves.
@@ -56,6 +58,8 @@ STATIC_CONTAINER_REGISTRY : Path = Path(
 )
 # Path to the storage-operator source directory.
 STORAGE_OPERATOR_ROOT : Path = ROOT/'storage-operator'
+# Path to the UI build root directory.
+UI_BUILD_ROOT : Path = config.BUILD_ROOT/'ui'
 
 # Docker entrypoints.
 DEBIAN_ENTRYPOINT : Path = ROOT/'packages/debian/entrypoint.sh'
