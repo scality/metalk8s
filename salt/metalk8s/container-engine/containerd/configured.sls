@@ -7,6 +7,7 @@ Start and enable containerd:
   service.running:
     - name: containerd
     - enable: True
+    - init_delay: 2
     - require:
       - metalk8s_package_manager: Install containerd
     - watch:
