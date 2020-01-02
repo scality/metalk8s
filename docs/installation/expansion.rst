@@ -17,22 +17,6 @@ from a single entrypoint. This operation can be done either through
 :ref:`the MetalK8s GUI <quickstart-expansion-ui>` or
 :ref:`the command-line <quickstart-expansion-cli>`.
 
-Defining an architecture
-------------------------
-See the schema defined in
-:ref:`the introduction <quickstart-intro-install-plan>`.
-
-The Bootstrap being already deployed, the deployment of other Nodes will
-need to happen four times, twice for control-plane Nodes (bringing up the
-control-plane to a total of three members), and twice for workload-plane Nodes.
-
-.. todo::
-
-   - explain architecture: 3 control-plane + etcd, 2 workers (one being
-     dedicated for infra)
-   - remind roles and taints from intro
-
-
 .. _quickstart-expansion-ui:
 
 Adding a node with the :ref:`MetalK8s GUI <quickstart-services-admin-ui>`
@@ -58,19 +42,22 @@ The MetalK8s GUI provides a simple form for that purpose.
    is done first):
 
    - **Name**: the hostname of the new Node
-   - **MetalK8s Version**: use "|release|"
    - **SSH User**: the user for which the Bootstrap has SSH access
    - **Hostname or IP**: the address to use for SSH from the Bootstrap
    - **SSH Port**: the port to use for SSH from the Bootstrap
    - **SSH Key Path**: the path to the private key generated in
      :ref:`this procedure <Bootstrap SSH Provisioning>`
    - **Sudo required**: whether the SSH deployment will need ``sudo`` access
-   - **Roles/Workload Plane**: check this box if the new Node should receive
-     workload applications
-   - **Roles/Control Plane**: check this box if the new Node should run
-     control-plane services
-   - **Roles/Infra**: check this box if the new Node should run
-     infra services
+   - **Roles/Workload Plane**: enable any workload applications
+     run on this Node
+   - **Roles/Control Plane**: enable master and etcd services run on this Node
+   - **Roles/Infra**: enable infra services run on this Node
+
+   .. note::
+
+      Combination of multiple roles is possible:
+      Selecting **Workload Plane** and **Infra** checkbox will result in infra
+      services and workload applications run on this Node.
 
 #. Click "Create". You will be redirected to the Node list page, and will be
    shown a notification to confirm the Node creation:
@@ -113,7 +100,9 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
 
 Adding a node from the command-line
 -----------------------------------
+.. warning::
 
+  Adding a node from command-line may require more advanced knowledge.
 .. _quickstart-expansion-manifest:
 
 Creating a manifest
@@ -140,7 +129,13 @@ following the template below:
 The combination of ``<role labels>`` and ``<taints>`` will determine what is
 installed and deployed on the Node.
 
-A node exclusively in the control-plane with ``etcd`` storage will have:
+:ref:`roles <node-roles>` determine a Node responsibilities.
+:ref:`taints <node-taints>` are complementary to roles.
+
+- A node exclusively in the control-plane with ``etcd`` storage
+
+  roles and taints both are set to master and etcd.
+  It has the same behavior as the **Control Plane** checkbox in the GUI.
 
 .. code-block:: yaml
 
@@ -159,8 +154,10 @@ A node exclusively in the control-plane with ``etcd`` storage will have:
      - effect: NoSchedule
        key: node-role.kubernetes.io/etcd
 
-A worker node dedicated to ``infra`` services (see :doc:`./introduction`) will
-use:
+- A worker node dedicated to ``infra`` services (see :doc:`./introduction`)
+
+  roles and taints both are set to infra. It has the same behavior as the
+  **Infra** checkbox in the GUI.
 
 .. code-block:: yaml
 
@@ -176,8 +173,31 @@ use:
      - effect: NoSchedule
        key: node-role.kubernetes.io/infra
 
-A simple worker still accepting ``infra`` services would use the same role
-label without the taint.
+- A simple worker still accepting ``infra`` services
+  would use the same role label without the taint
+
+  roles are set to node and infra. It's the same as the checkbox of
+  Workload Plane and Infra in MetalK8s GUI.
+
+CLI-only actions
+^^^^^^^^^^^^^^^^
+- A Node dedicated to etcd
+
+  roles and taints both are set to etcd.
+
+.. code-block:: yaml
+
+   […]
+   metadata:
+     […]
+     labels:
+       node-role.kubernetes.io/etcd: ''
+       [… (other labels except roles)]
+   spec:
+     […]
+     taints:
+     - effect: NoSchedule
+       key: node-role.kubernetes.io/etcd
 
 Creating the Node object
 ^^^^^^^^^^^^^^^^^^^^^^^^
