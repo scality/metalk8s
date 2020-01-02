@@ -1,6 +1,5 @@
 import { call, takeEvery, put, select } from 'redux-saga/effects';
 import * as ApiSalt from '../services/salt/api';
-import history from '../history';
 
 import { apiConfigSelector, logoutAction } from './config';
 import { connectSaltApiAction } from './app/salt';
