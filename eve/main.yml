@@ -184,36 +184,38 @@ models:
       haltOnFailure: true
       # Increase default timeout for ISOs, as artifacts may be too slow
       timeout: 2400
+
+  # --- Terraform steps ---
   - ShellCommand: &create_mountpoint
       name: Create mountpoint
       env:
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
-      command: sudo mkdir -p "/srv/scality/metalk8s-${PRODUCT_VERSION}"
+        MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+      command: >
+        ssh -F contrib/terraform/ssh_config bootstrap
+        sudo mkdir -p "$MOUNTPOINT"
   - ShellCommand: &mount_iso
       name: Mount ISO image
       env:
-        ISO_PATH: metalk8s.iso
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+        ARCHIVE_PATH: metalk8s.iso
+        MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
       command: >
-        sudo mount -o loop "${ISO_PATH}"
-        "/srv/scality/metalk8s-${PRODUCT_VERSION}"
+        ssh -F contrib/terraform/ssh_config bootstrap
+        sudo mount -o loop "$ARCHIVE_PATH" "$MOUNTPOINT"
   - ShellCommand: &bootstrap_config
-      name: Create bootstrap configuration file
+      name: Prepare Bootstrap before installation
       env:
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
-      command: |
-        sudo env
-          ARCHIVE_PATH="/srv/scality/metalk8s-${PRODUCT_VERSION}"
-          contrib/terraform/scripts/prepare-bootstrap.sh
+        ARCHIVE_PATH: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+      command: >
+        ssh -F contrib/terraform/ssh_config bootstrap
+        sudo ARCHIVE_PATH="$ARCHIVE_PATH" scripts/prepare-bootstrap.sh
       haltOnFailure: true
   - ShellCommand: &run_bootstrap
       name: Start the bootstrap process
       env:
-        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+        MOUNTPOINT: "%(prop:metalk8s_version)s"
       command: >
-        sudo bash
-        "/srv/scality/metalk8s-${PRODUCT_VERSION}/bootstrap.sh"
-        --verbose
+        ssh -F contrib/terraform/ssh_config bootstrap
+        sudo bash "$MOUNTPOINT/bootstrap.sh" --verbose
       haltOnFailure: true
   - ShellCommand: &local_tests
       name: Run tests locally
@@ -387,11 +389,11 @@ stages:
       - Upload: *upload_final_status_artifact
 
   single-node:
-    worker: &single_node_worker
-      type: openstack
-      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
-      flavor: m1.large
-      path: eve/workers/openstack-single-node
+    worker: &terraform_worker
+      type: kube_pod
+      path: eve/workers/pod-terraform/single-node.yaml
+      images:
+        docker-terraform: eve/workers/pod-terraform
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -400,7 +402,8 @@ stages:
             <<: *_env_final_status_artifact_failed
             STEP_NAME: single-node
       - ShellCommand: *setup_cache
-      - ShellCommand: *ssh_ip_setup
+      # FIXME: reintroduce SSH setup on Bastion
+      # - ShellCommand: *ssh_ip_setup
       # --- Retrieve ISO ---
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *retrieve_iso
@@ -444,9 +447,10 @@ stages:
 
   multiple-nodes:
     worker:
-      <<: *single_node_worker
-      flavor: m1.medium
-      path: eve/workers/openstack-multiple-nodes
+      type: kube_pod
+      path: eve/workers/pod-terraform/multiple-nodes.yaml
+      images:
+        docker-terraform: eve/workers/pod-terraform
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -455,41 +459,11 @@ stages:
             <<: *_env_final_status_artifact_failed
             STEP_NAME: multiple-nodes
       - ShellCommand: *setup_cache
-      - ShellCommand: *ssh_ip_setup
+      # FIXME: reintroduce SSH setup on Bastion
+      # - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
-      - ShellCommand:
-          name: Check if unzip and curl are installed
-          command: |-
-            if ! unzip -h 2&> /dev/null; then
-              echo "aborting - unzip not installed and required" >&2
-              exit 1
-            fi
-            if ! curl -h 2&> /dev/null; then
-              echo "aborting - curl not installed and required" >&2
-              exit 1
-            fi
-          haltOnFailure: true
-      - ShellCommand:
-          name: Download and install terraform
-          env:
-            TF_VERSION: "0.12.3"
-          command: >
-            TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/";
-            TF_FILE="terraform_${TF_VERSION}_linux_amd64.zip";
-            curl --retry 5 -O "${TF_URL}${TF_FILE}" &&
-            sudo unzip "${TF_FILE}" -d /usr/local/sbin/ &&
-            rm -f "${TF_FILE}"
-          haltOnFailure: true
-      - ShellCommand:
-          name: Check that terraform was installed
-          command: |-
-            if ! terraform --version 2&> /dev/null; then
-              echo "aborting - terraform not installed and required" >&2
-              exit 1
-            fi
-          haltOnFailure: true
       - ShellCommand:
           name: Init terraform
           command: |-
@@ -518,8 +492,6 @@ stages:
             OS_USERNAME: "%(secret:scality_cloud_username)s"
             OS_PASSWORD: "%(secret:scality_cloud_password)s"
             OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
-            # FIXME: this makes hostnames too long
-            # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
             TF_VAR_nodes_count: "2"
             TF_VAR_bastion_enabled: "true"
             TF_VAR_bastion_setup_tests: "true"
