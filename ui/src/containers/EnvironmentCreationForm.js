@@ -6,7 +6,7 @@ import * as yup from 'yup';
 import styled from 'styled-components';
 import isEmpty from 'lodash.isempty';
 import { Breadcrumb, Input, Button } from '@scality/core-ui';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { padding } from '@scality/core-ui/dist/style/theme';
 
 import { intl } from '../translations/IntlGlobalProvider';
 import {
@@ -28,35 +28,6 @@ const EnvironmentCreationFormContainer = styled.div`
 
 const CreationFormContainer = styled.div`
   margin-top: ${padding.base};
-`;
-
-const TextAreaContainer = styled.div`
-  display: inline-flex;
-`;
-
-const TextAreaLabel = styled.label`
-  width: 200px;
-  align-self: flex-start;
-  padding: ${padding.small};
-  font-size: ${fontSize.base};
-  color: ${props => props.theme.brand.text};
-`;
-
-/**
- * width = 200px - ${padding.small} - ${border} * 2
- */
-const TextArea = styled.textarea`
-  width: 178px;
-  border-radius: 4px;
-  border: 1px solid ${props => props.theme.brand.border};
-  padding: 8px ${padding.small};
-  font-size: ${fontSize.base};
-  background-color: ${props => props.theme.brand.backgroundContrast1};
-  color: ${props => props.theme.brand.text};
-  &:focus {
-    border: 1px solid ${props => props.theme.brand.primary};
-    outline: none;
-  }
 `;
 
 const ActionContainer = styled.div`
@@ -145,18 +116,14 @@ const EnvironmentCreationForm = props => {
                     onChange={handleChange('name')}
                     error={errors.name}
                   />
-                  <TextAreaContainer>
-                    <TextAreaLabel>
-                      {intl.translate('description')}
-                    </TextAreaLabel>
-                    <TextArea
-                      name="description"
-                      rows="4"
-                      onChange={handleChange('description')}
-                    />
-                  </TextAreaContainer>
+                  <Input
+                    name="description"
+                    label={intl.translate('description')}
+                    rows="4"
+                    onChange={handleChange('description')}
+                    type="textarea"
+                  />
                 </FormSection>
-
                 <ActionContainer>
                   <Button
                     text={intl.translate('cancel')}

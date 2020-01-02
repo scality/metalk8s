@@ -2,8 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
-import { Loader as LoaderCoreUI } from '@scality/core-ui';
-import { Table, Tooltip, Button } from '@scality/core-ui';
+import {
+  Loader as LoaderCoreUI,
+  Table,
+  Tooltip,
+  Button,
+  Banner,
+} from '@scality/core-ui';
 import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
 import {
@@ -15,14 +20,9 @@ import {
   CLUSTER_STATUS_DOWN,
   CLUSTER_STATUS_UNKNOWN,
 } from '../ducks/app/monitoring';
-import {
-  STATUS_CRITICAL,
-  STATUS_SUCCESS,
-  STATUS_BANNER_WARNING,
-} from '../constants';
+import { STATUS_CRITICAL, STATUS_SUCCESS } from '../constants';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-import Banner from '../components/Banner';
 import { intl } from '../translations/IntlGlobalProvider';
 const VOLUME_PROVISION_DOC_REFERENCE =
   'MetalK8s Quickstart Guide > Deployment of the Bootstrap node > Installation > Provision storage for Prometheus services';
@@ -247,17 +247,14 @@ const ClusterMonitoring = props => {
       </ClusterStatusTitleContainer>
       {cluster.isPrometheusVolumeProvisioned ? null : (
         <Banner
-          type={STATUS_BANNER_WARNING}
+          variant="warning"
           icon={<i className="fas fa-exclamation-triangle" />}
           title={intl.translate('prometheus_not_available')}
-          messages={[
-            <>
-              {`${intl.translate(
-                'please_refer_to',
-              )} ${VOLUME_PROVISION_DOC_REFERENCE}`}
-            </>,
-          ]}
-        />
+        >
+          {`${intl.translate(
+            'please_refer_to',
+          )} ${VOLUME_PROVISION_DOC_REFERENCE}`}
+        </Banner>
       )}
       <PageSubtitle>
         {intl.translate('alerts')}
