@@ -29,6 +29,7 @@ stringData:
       https: 0.0.0.0:5556
       tlsCert: /etc/dex/tls/https/server/tls.crt
       tlsKey: /etc/dex/tls/https/server/tls.key
+      allowedOrigins: ["*"]
     oauth2:
       alwaysShowLoginScreen: true
       responseTypes:
@@ -48,8 +49,7 @@ stringData:
     - id: metalk8s-ui
       name: MetalK8s UI
       redirectURIs:
-      - '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback{%
-        raw %}'
+      - '{% endraw %}http://localhost:3000/oauth2/callback{% raw %}'
       secret: ybrMJpVMQxsiZw26MhJzCjA2ut
     - id: grafana-ui
       name: Grafana UI
