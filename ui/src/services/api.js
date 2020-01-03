@@ -7,9 +7,9 @@ export function initialize(apiUrl) {
 }
 
 export function fetchTheme() {
-  return apiClient.get('/brand/theme.json');
+  return apiClient.get('http://localhost:8240/public/brand/theme.json');
 }
 
 export function fetchConfig() {
-  return apiClient.get('/config.json');
+  return apiClient.get('http://localhost:8240/public/config.json');
 }
