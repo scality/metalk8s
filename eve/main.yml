@@ -289,7 +289,7 @@ models:
   - ShellCommand: &terraform_install
       name: Download and install terraform
       env:
-        TF_VERSION: "0.12.3"
+        TF_VERSION: "0.12.20"
       command: >
         TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/";
         TF_FILE="terraform_${TF_VERSION}_linux_amd64.zip";

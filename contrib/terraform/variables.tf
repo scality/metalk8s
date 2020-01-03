@@ -61,7 +61,7 @@ variable "control_plane_subnet" {
 variable "control_plane_vip" {
   type        = string
   description = "VIP to create for the control-plane"
-  default     = "192.168.1.2"
+  default     = "6" # pick the 6th IP in the configured subnet
 }
 
 variable "workload_plane_subnet" {

@@ -18,9 +18,6 @@ locals {
     cidr  = "192.168.1.0/24",
     # Customizable values
     subnet_name = var.control_plane_subnet,
-    # TODO: allow configuring the CIDR and pick VIP as the second IP using
-    #       cidrhost(cidr, 2)
-    vip = var.control_plane_vip,
   }
 }
 
@@ -65,18 +62,30 @@ locals {
   )
 }
 
+locals {
+  # The VIP can be configured as a static IP or the number of the IP to pick
+  # from the configured subnet range (leave empty to not use a VIP)
+  control_plane_vip = (
+    length(regexall("^[1-9][0-9]*$", var.control_plane_vip)) > 0
+    ? cidrhost(
+      local.control_plane_subnet[0].cidr,
+      tonumber(var.control_plane_vip)
+    ) : var.control_plane_vip
+  )
+}
+
 resource "openstack_networking_port_v2" "control_plane_vip" {
   name       = "${local.control_plane_network.name}-vip"
   network_id = local.control_plane_subnet[0].network_id
 
   fixed_ip {
     subnet_id  = local.control_plane_subnet[0].id
-    ip_address = local.control_plane_network.vip
+    ip_address = local.control_plane_vip
   }
 
   count = (
     local.control_plane_network.enabled
-    && local.control_plane_network.vip != ""
+    && local.control_plane_vip != ""
   ) ? 1 : 0
 }
 
@@ -91,7 +100,6 @@ locals {
     cidr  = "192.168.2.0/24",
     # Customizable values
     subnet_name = var.workload_plane_subnet,
-    vip         = var.workload_plane_vip,
   }
 }
 
@@ -136,14 +144,26 @@ locals {
   )
 }
 
+locals {
+  # The VIP can be configured as a static IP or the number of the IP to pick
+  # from the configured subnet range (leave empty to not use a VIP)
+  workload_plane_vip = (
+    length(regexall("^[1-9][0-9]*$", var.workload_plane_vip)) > 0
+    ? cidrhost(
+      local.workload_plane_subnet[0].cidr,
+      tonumber(var.workload_plane_vip)
+    ) : var.workload_plane_vip
+  )
+}
+
 resource "openstack_networking_port_v2" "workload_plane_vip" {
   name       = "${local.workload_plane_network.name}-vip"
   network_id = local.workload_plane_subnet[0].network_id
 
   fixed_ip {
     subnet_id  = local.workload_plane_subnet[0].id
-    ip_address = local.workload_plane_network.vip
+    ip_address = local.workload_plane_vip
   }
 
-  count = local.workload_plane_network.vip != "" ? 1 : 0
+  count = local.workload_plane_vip != "" ? 1 : 0
 }
