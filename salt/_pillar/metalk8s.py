@@ -104,7 +104,8 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
 
     result = {
         'networks': _load_networks(config),
-        'metalk8s': metal_data
+        'metalk8s': metal_data,
+        'proxies': config.get('proxies', {})
     }
 
     if not isinstance(metal_data['archives'], list):

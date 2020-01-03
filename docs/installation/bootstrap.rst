@@ -36,6 +36,12 @@ Configuration
       networks:
         controlPlane: <CIDR-notation>
         workloadPlane: <CIDR-notation>
+      proxies:
+        http: <http://proxy-ip:proxy-port>
+        https: <https://proxy-ip:proxy-port>
+        no_proxy:
+          - <host>
+          - <ip/cidr>
       ca:
         minion: <hostname-of-the-bootstrap-node>
       archives:
@@ -44,6 +50,13 @@ Configuration
 The ``archives`` field is a list of absolute paths to MetalK8s ISO files. When
 the bootstrap script is executed, those ISOs are automatically mounted and the
 system is configured to re-mount them automatically after a reboot.
+
+The ``proxies`` field can be omitted if there is no proxy to configure.
+The 2 entries ``http`` and ``https`` are used to configure the containerd
+daemon proxy to fetch extra container images from outstide the MetalK8s
+cluster.
+The ``no_proxy`` entry specifies IPs that should be excluded from proxying,
+it must a list of hosts, IP addresses or IP ranges in CIDR format.
 
 .. todo::
 

@@ -61,6 +61,10 @@ Configure {{ repo_name }} repository:
   {%- endif %}
     - repo_gpg_check: {{ repo_config.repo_gpg_check }}
     - enabled: {{ repo_config.enabled }}
+    # URL to the proxy server for this repository.
+    # Set to '_none_' to disable the global proxy setting
+    # for this repository.
+    - proxy: _none_
     - refresh: false
     - onchanges_in:
       - cmd: Refresh yum cache
