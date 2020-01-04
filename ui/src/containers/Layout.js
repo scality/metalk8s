@@ -45,7 +45,7 @@ const Layout = props => {
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const { intl } = props;
   const history = useHistory();
-
+  const api = useSelector(state => state.config.api);
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
@@ -56,6 +56,12 @@ const Layout = props => {
       label: intl.messages.about,
       onClick: () => {
         history.push('/about');
+      },
+    },
+    {
+      label: intl.messages.documentation,
+      onClick: () => {
+        window.open(`${api.url_doc}/index.html`);
       },
     },
   ];

@@ -2,5 +2,6 @@
     "url": "https://{ip}:8443/api/kubernetes",
     "url_salt": "https://{ip}:8443/api/salt",
     "url_prometheus": "https://{ip}:8443/api/prometheus",
-    "url_grafana": "https://{ip}:8443/grafana"
+    "url_grafana": "https://{ip}:8443/grafana",
+    "url_doc": "https://{ip}:8443/docs"
 }
