@@ -7,7 +7,7 @@ import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
 import Banner from '../components/Banner';
-import { Input, Button, Breadcrumb } from '@scality/core-ui';
+import { Input, Button, Breadcrumb, Tooltip } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
@@ -93,7 +93,9 @@ const SizeUnitFieldSelectContainer = styled.div`
 `;
 
 const InputContainer = styled.div`
-  display: inline-flex;
+  /* display: inline-flex; */
+  display: flex;
+  align-items: center;
 `;
 
 const InputLabel = styled.label`
@@ -136,6 +138,14 @@ const LabelsName = styled(LabelsValue)`
   color: ${props => props.theme.brand.text};
 `;
 
+const TooltipContent = styled.div`
+  width: 100px;
+`;
+
+const HelpIcon = styled.div`
+  padding-left: ${padding.small};
+`;
+
 const CreateVolume = props => {
   const { intl } = props;
   const dispatch = useDispatch();
@@ -146,6 +156,7 @@ const CreateVolume = props => {
 
   const storageClass = useSelector(state => state.app.volumes.storageClass);
   const theme = useSelector(state => state.config.theme);
+  const api = useSelector(state => state.config.api);
 
   useEffect(() => {
     dispatch(fetchStorageClassAction());
@@ -263,7 +274,7 @@ const CreateVolume = props => {
               <a
                 rel="noopener noreferrer"
                 target="_blank"
-                href="https://kubernetes.io/docs/concepts/storage/storage-classes/#the-storageclass-resource"
+                href={`${api.url_doc}/operation/volume_management/storageclass_creation.html`}
               >
                 {intl.messages.learn_more}
               </a>
@@ -405,23 +416,46 @@ const CreateVolume = props => {
                       )}
                     </LabelsContainer>
                   </InputContainer>
-                  <Input
-                    id="storageClass_input"
-                    label={intl.messages.storageClass}
-                    clearable={false}
-                    type="select"
-                    options={optionsStorageClasses}
-                    placeholder={intl.messages.select_a_storageClass}
-                    noOptionsMessage={() => intl.messages.no_results}
-                    name="storageClass"
-                    onChange={handleSelectChange('storageClass')}
-                    value={getSelectedObjectItem(
-                      optionsStorageClasses,
-                      values?.storageClass,
-                    )}
-                    error={touched.storageClass && errors.storageClass}
-                    onBlur={handleOnBlur}
-                  />
+                  <InputContainer>
+                    <Input
+                      id="storageClass_input"
+                      label={intl.messages.storageClass}
+                      clearable={false}
+                      type="select"
+                      options={optionsStorageClasses}
+                      placeholder={intl.messages.select_a_storageClass}
+                      noOptionsMessage={() => intl.messages.no_results}
+                      name="storageClass"
+                      onChange={handleSelectChange('storageClass')}
+                      value={getSelectedObjectItem(
+                        optionsStorageClasses,
+                        values?.storageClass,
+                      )}
+                      error={touched.storageClass && errors.storageClass}
+                      onBlur={handleOnBlur}
+                    />
+                    <HelpIcon>
+                      <Tooltip
+                        placement="right"
+                        overlay={
+                          <TooltipContent>
+                            {intl.messages.how_to_create_storage_class}
+                          </TooltipContent>
+                        }
+                      >
+                        <Button
+                          icon={<i className="fas fa-question-circle" />}
+                          inverted={true}
+                          type="button"
+                          onClick={() =>
+                            window.open(
+                              `${api.url_doc}/operation/volume_management/storageclass_creation.html`,
+                            )
+                          }
+                        />
+                      </Tooltip>
+                    </HelpIcon>
+                  </InputContainer>
                   <Input
                     id="type_input"
                     label={intl.messages.type}
