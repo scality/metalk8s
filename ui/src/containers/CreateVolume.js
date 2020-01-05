@@ -32,7 +32,7 @@ import { sizeUnits } from '../services/utils';
 
 // We might want to do a factorization later for
 // form styled components
-const CreateVolumeContainer = styled.div`
+const CreateVolumeFormContainer = styled.div`
   display: inline-block;
   height: 100%;
   padding: ${padding.base};
@@ -93,7 +93,6 @@ const SizeUnitFieldSelectContainer = styled.div`
 `;
 
 const InputContainer = styled.div`
-  /* display: inline-flex; */
   display: flex;
   align-items: center;
 `;
@@ -138,12 +137,18 @@ const LabelsName = styled(LabelsValue)`
   color: ${props => props.theme.brand.text};
 `;
 
-const TooltipContent = styled.div`
-  width: 100px;
+const PageContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
 `;
 
-const HelpIcon = styled.div`
-  padding-left: ${padding.small};
+const DocumentationIcon = styled.div`
+  margin: 60px 20px;
+  button {
+    :hover {
+      cursor: pointer;
+    }
+  }
 `;
 
 const CreateVolume = props => {
@@ -244,296 +249,291 @@ const CreateVolume = props => {
   return isStorageClassLoading ? (
     <Loader />
   ) : (
-    <CreateVolumeContainer>
-      <BreadcrumbContainer>
-        <Breadcrumb
-          activeColor={theme.brand.secondary}
-          paths={[
-            <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
-            <StyledLink
-              to={`/nodes/${match.params.id}/volumes`}
-              title={match.params.id}
-            >
-              {match.params.id}
-            </StyledLink>,
-            <BreadcrumbLabel>
-              {intl.messages.create_new_volume}
-            </BreadcrumbLabel>,
-          ]}
-        />
-      </BreadcrumbContainer>
-
-      {isStorageClassExist ? null : (
-        <Banner
-          type={STATUS_BANNER_WARNING}
-          icon={<i className="fas fa-exclamation-triangle" />}
-          title={intl.messages.no_storage_class_found}
-          messages={[
-            <>
-              {intl.messages.storage_class_is_required}
-              <a
-                rel="noopener noreferrer"
-                target="_blank"
-                href={`${api.url_doc}/operation/volume_management/storageclass_creation.html`}
+    <PageContainer>
+      <CreateVolumeFormContainer>
+        <BreadcrumbContainer>
+          <Breadcrumb
+            activeColor={theme.brand.secondary}
+            paths={[
+              <StyledLink to="/nodes">{intl.messages.nodes}</StyledLink>,
+              <StyledLink
+                to={`/nodes/${match.params.id}/volumes`}
+                title={match.params.id}
               >
-                {intl.messages.learn_more}
-              </a>
-            </>,
-          ]}
-        />
-      )}
-      <CreateVolumeLayout>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={values => {
-            const newVolume = { ...values };
-            newVolume.size = `${values.sizeInput}${values.selectedUnit}`;
-            createVolume(newVolume, nodeName);
-          }}
-        >
-          {formikProps => {
-            const {
-              values,
-              handleChange,
-              errors,
-              touched,
-              setFieldTouched,
-              dirty,
-              setFieldValue,
-            } = formikProps;
+                {match.params.id}
+              </StyledLink>,
+              <BreadcrumbLabel>
+                {intl.messages.create_new_volume}
+              </BreadcrumbLabel>,
+            ]}
+          />
+        </BreadcrumbContainer>
 
-            //touched is not "always" correctly set
-            const handleOnBlur = e => setFieldTouched(e.target.name, true);
-            const handleSelectChange = field => selectedObj => {
-              setFieldValue(field, selectedObj ? selectedObj.value : '');
-            };
-            //get the select item from the object array
-            const getSelectedObjectItem = (items, selectedValue) => {
-              return items.find(item => item.value === selectedValue);
-            };
+        {isStorageClassExist ? null : (
+          <Banner
+            type={STATUS_BANNER_WARNING}
+            icon={<i className="fas fa-exclamation-triangle" />}
+            title={intl.messages.no_storage_class_found}
+            messages={[
+              <>
+                {intl.messages.storage_class_is_required}
+                <a
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  href={`${api.url_doc}/operation/volume_management/storageclass_creation.html`}
+                >
+                  {intl.messages.learn_more}
+                </a>
+              </>,
+            ]}
+          />
+        )}
+        <CreateVolumeLayout>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={values => {
+              const newVolume = { ...values };
+              newVolume.size = `${values.sizeInput}${values.selectedUnit}`;
+              createVolume(newVolume, nodeName);
+            }}
+          >
+            {formikProps => {
+              const {
+                values,
+                handleChange,
+                errors,
+                touched,
+                setFieldTouched,
+                dirty,
+                setFieldValue,
+              } = formikProps;
 
-            const addLabel = () => {
-              const labels = values.labels;
-              labels[labelName] = labelValue;
-              setFieldValue('labels', labels);
-              setLabelName('');
-              setLabelValue('');
-            };
-
-            const removeLabel = key => {
-              const labels = values.labels;
-              delete labels[key];
-              setFieldValue('labels', labels);
-            };
-
-            const optionsStorageClasses = storageClassesName.map(SCName => {
-              return {
-                label: SCName,
-                value: SCName,
-                'data-cy': `storageClass-${SCName}`,
+              //touched is not "always" correctly set
+              const handleOnBlur = e => setFieldTouched(e.target.name, true);
+              const handleSelectChange = field => selectedObj => {
+                setFieldValue(field, selectedObj ? selectedObj.value : '');
               };
-            });
-            const optionsTypes = types.map(({ label, value }) => {
-              return {
-                label,
-                value,
-                'data-cy': `type-${value}`,
+              //get the select item from the object array
+              const getSelectedObjectItem = (items, selectedValue) => {
+                return items.find(item => item.value === selectedValue);
               };
-            });
 
-            const optionsSizeUnits = sizeUnits
-              /**
-               * `sizeUnits` have a base 2 and base 10 units
-               * (ie. KiB and KB).
-               * We chose to only display base 2 units
-               * to improve the UX.
-               */
-              .filter((size, idx) => idx < 6)
-              .map(({ label, value }) => {
+              const addLabel = () => {
+                const labels = values.labels;
+                labels[labelName] = labelValue;
+                setFieldValue('labels', labels);
+                setLabelName('');
+                setLabelValue('');
+              };
+
+              const removeLabel = key => {
+                const labels = values.labels;
+                delete labels[key];
+                setFieldValue('labels', labels);
+              };
+
+              const optionsStorageClasses = storageClassesName.map(SCName => {
+                return {
+                  label: SCName,
+                  value: SCName,
+                  'data-cy': `storageClass-${SCName}`,
+                };
+              });
+              const optionsTypes = types.map(({ label, value }) => {
                 return {
                   label,
                   value,
-                  'data-cy': `size-${label}`,
+                  'data-cy': `type-${value}`,
                 };
               });
-            return (
-              <Form>
-                <FormSection>
-                  <Input
-                    name="name"
-                    value={values.name}
-                    onChange={handleChange('name')}
-                    label={intl.messages.name}
-                    error={touched.name && errors.name}
-                    onBlur={handleOnBlur}
-                  />
-                  <InputContainer className="sc-input">
-                    <InputLabel className="sc-input-label">
-                      {intl.messages.labels}
-                    </InputLabel>
-                    <LabelsContainer>
-                      <LabelsForm>
-                        <Input
-                          name="labelName"
-                          placeholder={intl.messages.enter_label_name}
-                          value={labelName}
-                          onChange={e => {
-                            setLabelName(e.target.value);
-                          }}
-                        />
-                        <Input
-                          name="labelValue"
-                          placeholder={intl.messages.enter_label_value}
-                          value={labelValue}
-                          onChange={e => {
-                            setLabelValue(e.target.value);
-                          }}
-                        />
-                        <Button
-                          text={intl.messages.add}
-                          type="button"
-                          onClick={addLabel}
-                          data-cy="add-volume-labels-button"
-                          outlined
-                        />
-                      </LabelsForm>
-                      {!!Object.keys(values.labels).length && (
-                        <LabelsList>
-                          {Object.keys(values.labels).map((key, index) => (
-                            <LabelsKeyValue key={`labelKeyValue_${index}`}>
-                              <LabelsName>{key}</LabelsName>
-                              <LabelsValue>{values.labels[key]}</LabelsValue>
-                              <Button
-                                icon={<i className="fas fa-lg fa-trash" />}
-                                inverted={true}
-                                type="button"
-                                onClick={() => removeLabel(key)}
-                              />
-                            </LabelsKeyValue>
-                          ))}
-                        </LabelsList>
-                      )}
-                    </LabelsContainer>
-                  </InputContainer>
-                  <InputContainer>
+
+              const optionsSizeUnits = sizeUnits
+                /**
+                 * `sizeUnits` have a base 2 and base 10 units
+                 * (ie. KiB and KB).
+                 * We chose to only display base 2 units
+                 * to improve the UX.
+                 */
+                .filter((size, idx) => idx < 6)
+                .map(({ label, value }) => {
+                  return {
+                    label,
+                    value,
+                    'data-cy': `size-${label}`,
+                  };
+                });
+              return (
+                <Form>
+                  <FormSection>
                     <Input
-                      id="storageClass_input"
-                      label={intl.messages.storageClass}
-                      clearable={false}
-                      type="select"
-                      options={optionsStorageClasses}
-                      placeholder={intl.messages.select_a_storageClass}
-                      noOptionsMessage={() => intl.messages.no_results}
-                      name="storageClass"
-                      onChange={handleSelectChange('storageClass')}
-                      value={getSelectedObjectItem(
-                        optionsStorageClasses,
-                        values?.storageClass,
-                      )}
-                      error={touched.storageClass && errors.storageClass}
+                      name="name"
+                      value={values.name}
+                      onChange={handleChange('name')}
+                      label={intl.messages.name}
+                      error={touched.name && errors.name}
                       onBlur={handleOnBlur}
                     />
-                    <HelpIcon>
-                      <Tooltip
-                        placement="right"
-                        overlay={
-                          <TooltipContent>
-                            {intl.messages.how_to_create_storage_class}
-                          </TooltipContent>
-                        }
-                      >
-                        <Button
-                          icon={<i className="fas fa-question-circle" />}
-                          inverted={true}
-                          type="button"
-                          onClick={() =>
-                            window.open(
-                              `${api.url_doc}/operation/volume_management/storageclass_creation.html`,
-                            )
-                          }
-                        />
-                      </Tooltip>
-                    </HelpIcon>
-                  </InputContainer>
-                  <Input
-                    id="type_input"
-                    label={intl.messages.type}
-                    clearable={false}
-                    type="select"
-                    options={optionsTypes}
-                    placeholder={intl.messages.select_a_type}
-                    noOptionsMessage={() => intl.messages.no_results}
-                    name="type"
-                    onChange={handleSelectChange('type')}
-                    value={getSelectedObjectItem(optionsTypes, values?.type)}
-                    error={touched.type && errors.type}
-                    onBlur={handleOnBlur}
-                  />
-                  {values.type === SPARSE_LOOP_DEVICE ? (
-                    <SizeFieldContainer>
+                    <InputContainer className="sc-input">
+                      <InputLabel className="sc-input-label">
+                        {intl.messages.labels}
+                      </InputLabel>
+                      <LabelsContainer>
+                        <LabelsForm>
+                          <Input
+                            name="labelName"
+                            placeholder={intl.messages.enter_label_name}
+                            value={labelName}
+                            onChange={e => {
+                              setLabelName(e.target.value);
+                            }}
+                          />
+                          <Input
+                            name="labelValue"
+                            placeholder={intl.messages.enter_label_value}
+                            value={labelValue}
+                            onChange={e => {
+                              setLabelValue(e.target.value);
+                            }}
+                          />
+                          <Button
+                            text={intl.messages.add}
+                            type="button"
+                            onClick={addLabel}
+                            data-cy="add-volume-labels-button"
+                            outlined
+                          />
+                        </LabelsForm>
+                        {!!Object.keys(values.labels).length && (
+                          <LabelsList>
+                            {Object.keys(values.labels).map((key, index) => (
+                              <LabelsKeyValue key={`labelKeyValue_${index}`}>
+                                <LabelsName>{key}</LabelsName>
+                                <LabelsValue>{values.labels[key]}</LabelsValue>
+                                <Button
+                                  icon={<i className="fas fa-lg fa-trash" />}
+                                  inverted={true}
+                                  type="button"
+                                  onClick={() => removeLabel(key)}
+                                />
+                              </LabelsKeyValue>
+                            ))}
+                          </LabelsList>
+                        )}
+                      </LabelsContainer>
+                    </InputContainer>
+                    <InputContainer>
                       <Input
-                        name="sizeInput"
-                        type="number"
-                        min="1"
-                        value={values.sizeInput}
-                        onChange={handleChange('sizeInput')}
-                        label={intl.messages.volume_size}
-                        error={touched.sizeInput && errors.sizeInput}
+                        id="storageClass_input"
+                        label={intl.messages.storageClass}
+                        clearable={false}
+                        type="select"
+                        options={optionsStorageClasses}
+                        placeholder={intl.messages.select_a_storageClass}
+                        noOptionsMessage={() => intl.messages.no_results}
+                        name="storageClass"
+                        onChange={handleSelectChange('storageClass')}
+                        value={getSelectedObjectItem(
+                          optionsStorageClasses,
+                          values?.storageClass,
+                        )}
+                        error={touched.storageClass && errors.storageClass}
                         onBlur={handleOnBlur}
                       />
-                      <SizeUnitFieldSelectContainer>
-                        <Input
-                          id="unit_input"
-                          label=""
-                          clearable={false}
-                          type="select"
-                          options={optionsSizeUnits}
-                          noOptionsMessage={() => intl.messages.no_results}
-                          name="selectedUnit"
-                          onChange={handleSelectChange('selectedUnit')}
-                          value={getSelectedObjectItem(
-                            optionsSizeUnits,
-                            values?.selectedUnit,
-                          )}
-                          error={touched.selectedUnit && errors.selectedUnit}
-                          onBlur={handleOnBlur}
-                        />
-                      </SizeUnitFieldSelectContainer>
-                    </SizeFieldContainer>
-                  ) : (
+                    </InputContainer>
                     <Input
-                      name="path"
-                      value={values.path}
-                      onChange={handleChange('path')}
-                      label={intl.messages.device_path}
-                      error={touched.path && errors.path}
+                      id="type_input"
+                      label={intl.messages.type}
+                      clearable={false}
+                      type="select"
+                      options={optionsTypes}
+                      placeholder={intl.messages.select_a_type}
+                      noOptionsMessage={() => intl.messages.no_results}
+                      name="type"
+                      onChange={handleSelectChange('type')}
+                      value={getSelectedObjectItem(optionsTypes, values?.type)}
+                      error={touched.type && errors.type}
                       onBlur={handleOnBlur}
                     />
-                  )}
-                </FormSection>
-                <ActionContainer>
-                  <Button
-                    text={intl.messages.cancel}
-                    type="button"
-                    outlined
-                    onClick={() =>
-                      history.push(`/nodes/${match.params.id}/volumes`)
-                    }
-                  />
-                  <Button
-                    text={intl.messages.create}
-                    type="submit"
-                    disabled={!dirty || !isEmpty(errors)}
-                    data-cy="submit-create-volume"
-                  />
-                </ActionContainer>
-              </Form>
-            );
-          }}
-        </Formik>
-      </CreateVolumeLayout>
-    </CreateVolumeContainer>
+                    {values.type === SPARSE_LOOP_DEVICE ? (
+                      <SizeFieldContainer>
+                        <Input
+                          name="sizeInput"
+                          type="number"
+                          min="1"
+                          value={values.sizeInput}
+                          onChange={handleChange('sizeInput')}
+                          label={intl.messages.volume_size}
+                          error={touched.sizeInput && errors.sizeInput}
+                          onBlur={handleOnBlur}
+                        />
+                        <SizeUnitFieldSelectContainer>
+                          <Input
+                            id="unit_input"
+                            label=""
+                            clearable={false}
+                            type="select"
+                            options={optionsSizeUnits}
+                            noOptionsMessage={() => intl.messages.no_results}
+                            name="selectedUnit"
+                            onChange={handleSelectChange('selectedUnit')}
+                            value={getSelectedObjectItem(
+                              optionsSizeUnits,
+                              values?.selectedUnit,
+                            )}
+                            error={touched.selectedUnit && errors.selectedUnit}
+                            onBlur={handleOnBlur}
+                          />
+                        </SizeUnitFieldSelectContainer>
+                      </SizeFieldContainer>
+                    ) : (
+                      <Input
+                        name="path"
+                        value={values.path}
+                        onChange={handleChange('path')}
+                        label={intl.messages.device_path}
+                        error={touched.path && errors.path}
+                        onBlur={handleOnBlur}
+                      />
+                    )}
+                  </FormSection>
+                  <ActionContainer>
+                    <Button
+                      text={intl.messages.cancel}
+                      type="button"
+                      outlined
+                      onClick={() =>
+                        history.push(`/nodes/${match.params.id}/volumes`)
+                      }
+                    />
+                    <Button
+                      text={intl.messages.create}
+                      type="submit"
+                      disabled={!dirty || !isEmpty(errors)}
+                      data-cy="submit-create-volume"
+                    />
+                  </ActionContainer>
+                </Form>
+              );
+            }}
+          </Formik>
+        </CreateVolumeLayout>
+      </CreateVolumeFormContainer>
+      <DocumentationIcon>
+        <Tooltip placement="left" overlay={intl.messages.documentation}>
+          <Button
+            icon={<i className="fas fa-book-reader fa-lg" />}
+            inverted={true}
+            type="button"
+            onClick={() =>
+              window.open(
+                `${api.url_doc}/operation/volume_management/volume_creation_deletion_gui.html#volume-creation`,
+              )
+            }
+          />
+        </Tooltip>
+      </DocumentationIcon>
+    </PageContainer>
   );
 };
 
