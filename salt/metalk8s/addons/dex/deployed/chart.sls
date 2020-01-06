@@ -49,7 +49,7 @@ stringData:
     - id: metalk8s-ui
       name: MetalK8s UI
       redirectURIs:
-      - '{% endraw %}http://localhost:3000/oauth2/callback{% raw %}'
+      - '{% endraw %}http://localhost:8233/metalK8s/oauth2/callback{% raw %}'
       secret: ybrMJpVMQxsiZw26MhJzCjA2ut
     - id: grafana-ui
       name: Grafana UI
