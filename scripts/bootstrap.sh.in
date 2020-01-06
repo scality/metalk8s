@@ -63,6 +63,12 @@ declare -a PACKAGES=(
 # shellcheck disable=SC1090
 . "$BASE_DIR"/common.sh
 
+ensure_archives_mounted() {
+    "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough \
+        state.sls metalk8s.archives.mounted \
+        saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
+}
+
 orchestrate_bootstrap() {
     # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
     # otherwise grains set during execution won't be taken into account
@@ -171,6 +177,7 @@ main() {
     run "Stopping Salt minion service" stop_salt_minion_service
     run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
+    run "Ensure mountpoint is under /srv/scality" ensure_archives_mounted
 
     orchestrate_bootstrap
 
