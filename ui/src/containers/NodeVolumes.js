@@ -87,10 +87,6 @@ const LoaderContainer = styled(Loader)`
   padding-right: ${padding.smaller};
 `;
 
-const TooltipContent = styled.div`
-  background-color: ${props => props.theme.brand.backgroundContrast2};
-`;
-
 const NodeVolumes = props => {
   const { intl } = props;
   const dispatch = useDispatch();
@@ -202,10 +198,7 @@ const NodeVolumes = props => {
 
         return (
           <>
-            <Tooltip
-              placement="top"
-              overlay={<TooltipContent>{hintPopup()}</TooltipContent>}
-            >
+            <Tooltip placement="bottom" overlay={hintPopup()}>
               <Button
                 className="remove-volume-button"
                 onClick={e => {
