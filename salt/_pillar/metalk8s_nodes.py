@@ -134,7 +134,7 @@ def list_volumes(api_client, minion_id):
             volume['spec']['storageClassName'],
             volume['spec']['storageClassName']
         )
-        volume['spec']['storageClassName'] = storageclass
+        volume['spec']['storageClass'] = storageclass
         name = volume['metadata']['name']
         results[name] = volume
 

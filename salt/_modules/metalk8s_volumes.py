@@ -226,7 +226,7 @@ class Volume(object):
         if device_info.has_partition:
             raise Exception('backing device `{}` contains a partition table'\
                             .format(self.path))
-        storage_class = self.get('spec.storageClassName')
+        storage_class = self.get('spec.storageClass')
         # If we got a string that means the name wasn't replaced by the object.
         if isinstance(storage_class, basestring):
             raise Exception('StorageClass {} not found'.format(storage_class))
