@@ -89,7 +89,7 @@ const ClusterStatusValue = styled.span`
   }};
 `;
 
-const QuestionMarkIcon = styled.i`
+const InformationMarkIcon = styled.i`
   color: ${props => props.theme.brand.primary};
 `;
 
@@ -222,7 +222,7 @@ const ClusterMonitoring = props => {
               </TooltipContent>
             }
           >
-            <QuestionMarkIcon className="fas fa-question-circle" />
+            <InformationMarkIcon className="fas fa-info-circle" />
           </Tooltip>
           {clusterStatus.isLoading ? <LoaderCoreUI size="small" /> : null}
         </LeftClusterStatusContainer>
