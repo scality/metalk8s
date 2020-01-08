@@ -183,9 +183,6 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
         'kube-scheduler',
         'nginx-ingress-defaultbackend-amd64',
     ],
-    constants.GRAFANA_REPOSITORY: [
-        'grafana',
-    ],
     constants.INGRESS_REPOSITORY: [
         'nginx-ingress-controller',
     ],
@@ -220,6 +217,10 @@ for repo, images in IMGS_PER_REPOSITORY.items():
 # }}}
 # Container images to build {{{
 TO_BUILD : Tuple[targets.LocalImage, ...] = (
+    _local_image(
+        name='grafana',
+        build_args={'GRAFANA_IMAGE_VERSION': versions.GRAFANA_IMAGE_VERSION},
+    ),
     _local_image(
         name='salt-master',
         build_args={'SALT_VERSION': versions.SALT_VERSION},
