@@ -57,8 +57,9 @@ CENTOS_BASE_IMAGE : str = 'docker.io/centos'
 CENTOS_BASE_IMAGE_SHA256 : str = \
     '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
-NGINX_IMAGE_VERSION  : str = '1.15.8'
-NODEJS_IMAGE_VERSION : str = '10.16.0'
+GRAFANA_IMAGE_VERSION : str = '6.4.2'
+NGINX_IMAGE_VERSION   : str = '1.15.8'
+NODEJS_IMAGE_VERSION  : str = '10.16.0'
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
@@ -105,11 +106,6 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         name='etcd',
         version='3.3.10',
         digest='sha256:17da501f5d2a675be46040422a27b7cc21b8a43895ac998b171db1c346f361f7',
-    ),
-    Image(
-        name='grafana',
-        version='6.4.2',
-        digest='sha256:8c2238eea9d3d39aeb6174db2e30b233fd2546128ec1fa1bc64f8058afd51e68',
     ),
     Image(
         name='k8s-sidecar',
@@ -187,6 +183,11 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         digest='sha256:c0bcb231fe67cd11fd26f7adf5ac1080dfac189ac94705538bd4ab7dd99a98a9',
     ),
     # Local images
+    Image(
+        name='grafana',
+        version=GRAFANA_IMAGE_VERSION,
+        digest=None,
+    ),
     Image(
         name='metalk8s-ui',
         version=VERSION,
