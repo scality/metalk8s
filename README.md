@@ -6,6 +6,8 @@ An opinionated Kubernetes distribution with a focus on long-term on-prem deploym
 
 ## Building
 
+Prerequisites are listed [here](docs/developer/building/requirements.rst).
+
 To build a MetalK8s ISO, simply type `./doit.sh`.
 
 For more information, please refers to developer documentation.
