@@ -46,10 +46,12 @@ const Layout = props => {
   const updateLanguage = language => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
+  const api = useSelector(state => state.config.api);
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
+
   const sidebarConfig = {
     expanded: sidebar.expanded,
     actions: [
@@ -146,6 +148,12 @@ const Layout = props => {
           label: intl.translate('about'),
           onClick: () => {
             history.push('/about');
+          },
+        },
+        {
+          label: intl.translate('documentation'),
+          onClick: () => {
+            window.open(`${api.url_doc}/index.html`);
           },
         },
       ],

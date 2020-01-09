@@ -134,5 +134,6 @@
   "prometheus_not_available":"Prometheus is not available.",
   "please_refer_to":"Please refer to",
   "import_solution_hint":"You should import a solution to prepare your environment",
-  "redirecting": "Redirecting…"
+  "redirecting": "Redirecting…",
+  "documentation": "Documentation"
 }
