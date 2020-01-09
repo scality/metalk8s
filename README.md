@@ -14,6 +14,8 @@ For more information, please refer to the
 
 ## Building
 
+Prerequisites are listed [here](docs/developer/building/requirements.rst).
+
 To build a MetalK8s ISO, simply type `./doit.sh`.
 
 For more information, please refer to the

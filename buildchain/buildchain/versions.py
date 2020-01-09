@@ -57,8 +57,9 @@ CENTOS_BASE_IMAGE : str = 'docker.io/centos'
 CENTOS_BASE_IMAGE_SHA256 : str = \
     '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
-NGINX_IMAGE_VERSION  : str = '1.15.8'
-NODEJS_IMAGE_VERSION : str = '10.16.0'
+GRAFANA_IMAGE_VERSION : str = '6.4.2'
+NGINX_IMAGE_VERSION   : str = '1.15.8'
+NODEJS_IMAGE_VERSION  : str = '10.16.0'
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
@@ -112,11 +113,6 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         digest='sha256:12c2c5e5731c3bcd56e6f1c05c0f9198b6f06793fa7fca2fb43aab9622dc4afa',
     ),
     Image(
-        name='grafana',
-        version='6.4.2',
-        digest='sha256:8c2238eea9d3d39aeb6174db2e30b233fd2546128ec1fa1bc64f8058afd51e68',
-    ),
-    Image(
         name='k8s-sidecar',
         version='0.1.20',
         digest='sha256:af151f677a63cdfcdfc18a4e3043520ec506d5e116692e5190f6f765dca42a52',
@@ -163,8 +159,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='node-exporter',
-        version='v0.18.0',
-        digest='sha256:b2dd31b0d23fda63588674e40fd8d05010d07c5d4ac37163fc596ba9065ce38d',
+        version='v0.18.1',
+        digest='sha256:a2f29256e53cc3e0b64d7a472512600b2e9410347d53cdc85b49f659c17e02ee',
     ),
     Image(
         name='pause',
@@ -173,8 +169,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='prometheus',
-        version='v2.12.0',
-        digest='sha256:cd93b8711bb92eb9c437d74217311519e0a93bc55779aa664325dc83cd13cb3',
+        version='v2.13.1',
+        digest='sha256:0a8caa2e9f19907608915db6e62a67383fe44b9876a467b297ee6f64e51dd58a',
     ),
     Image(
         name='k8s-prometheus-adapter-amd64',
@@ -183,15 +179,20 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='prometheus-config-reloader',
-        version='v0.32.0',
-        digest='sha256:f1e57817dcfdb2c76e8a154b39180c6c8f3f16b990fe9cc41bee34cca0784a64',
+        version='v0.34.0',
+        digest='sha256:459bc1b1fc51420cd244b082fe14444f6d8596997c2e40f52c08d1f5a09ab860',
     ),
     Image(
         name='prometheus-operator',
-        version='v0.32.0',
-        digest='sha256:ed3ec0597c2d5b7102a7f62c661a23d8e4b34d910693fc23fd40bfb1d9404dcf',
+        version='v0.34.0',
+        digest='sha256:c0bcb231fe67cd11fd26f7adf5ac1080dfac189ac94705538bd4ab7dd99a98a9',
     ),
     # Local images
+    Image(
+        name='grafana',
+        version=GRAFANA_IMAGE_VERSION,
+        digest=None,
+    ),
     Image(
         name='metalk8s-ui',
         version=VERSION,
