@@ -2,6 +2,7 @@
 Feature: Cluster expansion
     Scenario: Add one node to the cluster
         Given the Kubernetes API is available
+        And the Salt Master is running
         When we declare a new "control-plane" node on host "node1"
         Then node "node1" is registered in Kubernetes
         And node "node1" status is "NotReady"
