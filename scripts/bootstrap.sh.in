@@ -9,6 +9,7 @@ if test -z "$(type -p)"; then set -o pipefail; fi
 
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/bootstrap.log
+CONFIG_FILEPATH=/etc/metalk8s/bootstrap.yaml
 
 if ! options=$(getopt --options v --long verbose,log-file: -- "$@"); then
     echo 1>&2 "Incorrect arguments provided"
@@ -150,8 +151,19 @@ orchestrate_bootstrap() {
         "$SALT_CALL" mine.update
 }
 
+
+bootstrap_file_is_present() {
+    if [ ! -f "$CONFIG_FILEPATH" ]; then
+        die "You need to create a BootstrapConfiguration file, at $CONFIG_FILEPATH." \
+            "Please refer to the configuration section of the MetalK8s Installation Guide"
+        return 1
+    fi
+}
+
+
 main() {
     run "Determine the OS" determine_os
+    run "Checking that BootstrapConfiguration is present" bootstrap_file_is_present
     run "Pre-minion system tests" pre_minion_checks
     run "Configure internal repositories" configure_repositories
     run "Check mandatory packages presence" check_packages_presence
