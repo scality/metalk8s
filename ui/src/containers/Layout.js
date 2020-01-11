@@ -63,6 +63,7 @@ const Layout = props => {
       onClick: () => {
         window.open(`${api.url_doc}/index.html`);
       },
+      'data-cy': 'documentation',
     },
   ];
 
