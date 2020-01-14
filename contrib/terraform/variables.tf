@@ -58,21 +58,9 @@ variable "control_plane_subnet" {
   default     = ""
 }
 
-variable "control_plane_vip" {
-  type        = string
-  description = "VIP to create for the control-plane"
-  default     = "_" # pick any available IP in the configured subnet
-}
-
 variable "workload_plane_subnet" {
   type        = string
   description = "Existing subnet to use for the workload-plane"
-  default     = ""
-}
-
-variable "workload_plane_vip" {
-  type        = string
-  description = "VIP to create for the workload-plane"
   default     = ""
 }
 
