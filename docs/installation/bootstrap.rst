@@ -119,7 +119,7 @@ Bootstrap node.
 
 .. warning::
 
-    For virtual network (or any network which enforces source and
+    For virtual networks (or any network which enforces source and
     destination fields of IP packets to correspond to the MAC address(es)),
     :ref:`IP-in-IP needs to be enabled<enable IP-in-IP>`.
 

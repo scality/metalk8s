@@ -14,7 +14,7 @@ Nodes
 containers and can be managed by the cluster (control-plane services,
 described below).
 
-Control-plane and Workload-plane
+Control plane and Workload plane
 """"""""""""""""""""""""""""""""
 This dichotomy is central to MetalK8s, and often referred to in other
 Kubernetes concepts.
@@ -40,7 +40,7 @@ will be deployed via Kubernetes objects, managed by services provided by the
 
 Control-plane nodes often are responsible for providing storage for
 :term:`API Server`, by running :term:`etcd`. This responsibility may be
-offloaded to other nodes from the workload-plane (without the ``etcd`` taint).
+offloaded to other nodes from the workload plane (without the ``etcd`` taint).
 
 Node Roles
 """"""""""
@@ -75,17 +75,17 @@ MetalK8s uses five different **roles**, that may be combined freely:
   - An OCI registry for :term:`Pods <Pod>` images
   - A :term:`Salt Master` and its associated :term:`SaltAPI`
 
-  In practice, this role will be used in conjunction with the ``master``
-  and ``etcd`` roles for bootstrapping the control-plane.
+  In practice, this role is used in conjunction with the ``master``
+  and ``etcd`` roles for bootstrapping the control plane.
 
 Node Taints
 """""""""""
-:term:`Taints <Taint>` are complementary to roles. When a taint, or a set of
-taints, are applied to a :term:`Node`, only :term:`Pods <Pod>` with the
+:term:`Taints <Taint>` are complementary to roles. When a taint or a set of
+taints is applied to a :term:`Node`, only :term:`Pods <Pod>` with the
 corresponding :term:`tolerations <Toleration>` can be scheduled on that Node.
 
 Taints allow dedicating Nodes to specific use-cases, such as having Nodes
-dedicated to running control-plane services.
+dedicated to running control plane services.
 
 
 .. _installation-intro-networks:

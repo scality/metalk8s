@@ -1,5 +1,5 @@
-Installation Guide
-==================
+Installation
+============
 
 .. _MetalK8s: https://github.com/scality/metalk8s/
 

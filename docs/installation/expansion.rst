@@ -22,9 +22,10 @@ Defining an Architecture
 See the schema defined in
 :ref:`the introduction <installation-intro-install-plan>`.
 
-The Bootstrap being already deployed, the other nodes' deployment runs
-four times, twice for control-plane nodes (bringing up the
-control-plane to a total of three members), and twice for workload-plane nodes.
+Once the Bootstrap is deployed, the other nodes will undergo four deployment
+runs, two for control-plane nodes (bringing up the
+control-plane to a total of three members), and two more for workload-plane
+nodes.
 
 .. todo::
 
@@ -87,11 +88,12 @@ Deploying the Node
 After the desired state has been declared, it can be applied to the machine.
 The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
 
-#. From the Node list page, any yet-to-be-deployed Node click **Deploy**.
+#. From the Node list page, click the **Deploy** button for any Node
+   that has not yet been deployed.
 
    .. image:: img/ui/click-node-deploy.png
 
-   Once clicked, the button will change to **Deploying**. Click it again to
+   Once clicked, the button changes to **Deploying**. Click it again to
    open the deployment status page:
 
    .. image:: img/ui/deployment-progress.png
@@ -104,8 +106,8 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
       - UI should parse these events further
       - Events should be documented
 
-#. When complete, click **Back to nodes list**. The new Node should be in a
-   **Ready** state.
+#. When deployment is complete, click **Back to nodes list**. The new Node
+   should be in a **Ready** state.
 
 .. todo::
 
@@ -271,8 +273,8 @@ Open a terminal in the Salt Master container using
    - point to log files
 
 
-Checking the Cluster Health
----------------------------
+Checking Cluster Health
+-----------------------
 
 During the expansion, it is recommended to check the cluster state between each
 node addition.

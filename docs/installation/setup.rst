@@ -42,7 +42,7 @@ networks, as described in :ref:`installation-intro-networks`. However, these
 networks can overlap, and nodes need not have distinct IPs for each plane.
 
 For the host to reach the cluster-provided UIs, it must be
-able to connect to workload-plane IPs of the machines.
+able to connect to control plane IPs of the machines.
 
 Repositories
 ^^^^^^^^^^^^
