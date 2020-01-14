@@ -46,6 +46,7 @@ const Layout = props => {
   const updateLanguage = language => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
+  const api = useSelector(state => state.config.api);
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
