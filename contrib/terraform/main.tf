@@ -22,6 +22,11 @@ locals {
   }"
 }
 
+# Openstack base image to use for worker machines (bootstrap and nodes)
+locals {
+  os_image = var.openstack_images[var.openstack_use_os]
+}
+
 # Keypair for provisioning nodes
 resource "openstack_compute_keypair_v2" "local_ssh_key" {
   name       = local.prefix

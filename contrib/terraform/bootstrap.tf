@@ -1,6 +1,6 @@
 resource "openstack_compute_instance_v2" "bootstrap" {
   name        = "${local.prefix}-bootstrap"
-  image_name  = var.openstack_image_name
+  image_name  = local.os_image
   flavor_name = var.openstack_flavours.bootstrap
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
@@ -26,6 +26,26 @@ resource "openstack_compute_instance_v2" "bootstrap" {
 
   provisioner "remote-exec" {
     inline = ["chmod -R +x /home/centos/scripts"]
+  }
+
+  # Configure RedHat Subscription Manager if enabled
+  provisioner "remote-exec" {
+    inline = [
+      var.openstack_use_os == "redhat" ? join(" ", [
+        "sudo bash scripts/rhsm-register.sh",
+        "'${var.rhsm_username}' '${var.rhsm_password}'",
+      ]) : "echo 'Nothing to do, not configured to use RHEL.'"
+    ]
+  }
+
+  provisioner "remote-exec" {
+    when       = destroy
+    on_failure = continue
+    inline = [
+      var.openstack_use_os == "redhat"
+      ? "sudo subscription-manager unregister"
+      : "",
+    ]
   }
 
   # Generate an SSH keypair

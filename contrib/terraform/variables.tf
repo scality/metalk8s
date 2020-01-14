@@ -18,9 +18,29 @@ variable "ssh_key_pair" {
 }
 
 # OpenStack configuration
-variable "openstack_image_name" {
-  type    = string
-  default = "CentOS-7-x86_64-GenericCloud-1809.qcow2"
+variable "openstack_images" {
+  type = object({ centos = string, rhel = string })
+  default = {
+    centos = "CentOS-7-x86_64-GenericCloud-1809.qcow2"
+    rhel   = "rhel-server-updated-7.6-x86_64-kvm.qcow2"
+  }
+}
+
+variable "openstack_use_os" {
+  type        = string
+  description = "Which OS to use for spawned VMs ('centos' or 'rhel')"
+  default     = "centos"
+}
+
+# RHEL configuration
+variable "rhsm_username" {
+  type        = string
+  description = "Username for accessing RedHat Subscription Manager"
+}
+
+variable "rhsm_password" {
+  type        = string
+  description = "Password for accessing RedHat Subscription Manager"
 }
 
 variable "openstack_flavours" {

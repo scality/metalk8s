@@ -10,8 +10,10 @@ locals {
 resource "openstack_compute_instance_v2" "bastion" {
   count = local.bastion.enabled ? 1 : 0
 
-  name        = "${local.prefix}-bastion"
-  image_name  = var.openstack_image_name
+  name = "${local.prefix}-bastion"
+
+  # Always install Bastion with CentOS, for simplicity
+  image_name  = var.openstack_images["centos"]
   flavor_name = var.openstack_flavours.bastion
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
