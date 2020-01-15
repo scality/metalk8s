@@ -14,7 +14,7 @@ their operating system. These machines may be virtual or physical, with no
 difference in setup procedure.
 
 For this installation, 5 machines are required (or 3, if running workload
-applications on your control-plane nodes).
+applications on your control plane nodes).
 
 Sizing
 ------
@@ -37,7 +37,7 @@ it beforehand.
 
 Network
 ^^^^^^^
-Each machine must be a member of both the control-plane and workload-plane
+Each machine must be a member of both the control plane and workload plane
 networks, as described in :ref:`installation-intro-networks`. However, these
 networks can overlap, and nodes need not have distinct IPs for each plane.
 

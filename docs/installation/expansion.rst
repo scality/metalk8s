@@ -23,13 +23,13 @@ See the schema defined in
 :ref:`the introduction <installation-intro-install-plan>`.
 
 Once the Bootstrap is deployed, the other nodes will undergo four deployment
-runs, two for control-plane nodes (bringing up the
-control-plane to a total of three members), and two more for workload-plane
+runs, two for control plane nodes (bringing up the
+control plane to a total of three members), and two more for workload plane
 nodes.
 
 .. todo::
 
-   - explain architecture: 3 control-plane + etcd, 2 workers (one being
+   - explain architecture: 3 control plane + etcd, 2 workers (one being
      dedicated for infra)
    - remind roles and taints from intro
 
@@ -118,7 +118,6 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
 
 Adding a Node from the Command-line
 -----------------------------------
-.. warning::
 
 .. _installation-expansion-manifest:
 
@@ -135,7 +134,7 @@ following the template below:
      name: <node_name>
      annotations:
        metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/salt-bootstrap
-       metalk8s.scality.com/ssh-host: <node control-plane IP>
+       metalk8s.scality.com/ssh-host: <node control plane IP>
        metalk8s.scality.com/ssh-sudo: 'false'
      labels:
        metalk8s.scality.com/version: '|release|'
@@ -149,7 +148,7 @@ installed and deployed on the Node.
 :ref:`roles <node-roles>` determine a Node responsibilities.
 :ref:`taints <node-taints>` are complementary to roles.
 
-- A node exclusively in the control-plane with ``etcd`` storage
+- A node exclusively in the control plane with ``etcd`` storage
 
   roles and taints both are set to master and etcd.
   It has the same behavior as the **Control Plane** checkbox in the GUI.
@@ -279,7 +278,7 @@ Checking Cluster Health
 During the expansion, it is recommended to check the cluster state between each
 node addition.
 
-When expanding the control-plane, one can check the etcd cluster health:
+When expanding the control plane, one can check the etcd cluster health:
 
 .. code-block:: shell
 
