@@ -9,7 +9,8 @@ your cluster. See :doc:`/operation/volume_management/storageclass_creation`
 Volume Creation
 ---------------
 
-To access the UI, refer to :ref:`this procedure <quickstart-services-admin-ui>`
+To access the UI, refer to
+:ref:`this procedure <installation-services-admin-ui>`
 
 #. Navigate to the **Nodes** list page, by clicking the button in the sidebar:
 

@@ -11,7 +11,7 @@ Administering Grafana
 
 A fresh install of MetalK8s has a Grafana service instance with default
 credentials: ``admin`` / ``admin``. For more information on how to access
-Grafana, please refer to :ref:`this procedure <quickstart-services-grafana>`
+Grafana, please refer to :ref:`this procedure <installation-services-grafana>`
 
 Changing Grafana username and password
 --------------------------------------
@@ -55,8 +55,8 @@ During installation, MetalK8s configures the Kubernetes API to accept
 authentication via OpenID Connect(OIDC).
 
 Services exposed by MetalK8s, such as
-:ref:`its GUI <quickstart-services-admin-ui>` or
-:ref:`Salt API <quickstart-services-salt>`, rely on the Kubernetes API for
+:ref:`its GUI <installation-services-admin-ui>` or
+:ref:`Salt API <installation-services-salt>`, rely on the Kubernetes API for
 authenticating their users.
 
 .. todo::

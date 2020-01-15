@@ -37,7 +37,7 @@ Changing the hostname of a MetalK8s node
       <node_name>    NotReady   etcd,master                   19h       v1.11.7
 
 #. Change the name of the node in the ``yaml`` file used to create it.
-   Refer to :ref:`quickstart-expansion-manifest` for more information.
+   Refer to :ref:`installation-expansion-manifest` for more information.
 
    .. parsed-literal::
 

@@ -1,3 +1,5 @@
+.. _How to build an ISO:
+
 How to build an ISO
 ===================
 
