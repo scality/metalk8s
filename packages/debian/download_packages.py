@@ -98,8 +98,6 @@ def fetch_binary(
 
 def add_external_repositories(salt_version: str) -> None:
     """Register Salt and Kubernetes repository."""
-    # Only keep the major and minor version number.
-    salt_version = '.'.join(salt_version.split('.')[:2])
     # TODO: move these static info in `versions.py`.
     repositories = [
         {
@@ -110,13 +108,13 @@ def add_external_repositories(salt_version: str) -> None:
         }, {
             'name': 'saltstack',
             'key': urllib.parse.urljoin(
-                'https://repo.saltstack.com/',
-                'apt/ubuntu/18.04/amd64/{}/SALTSTACK-GPG-KEY.pub'.format(
+                'https://repo.saltstack.com/apt/ubuntu/',
+                '18.04/amd64/archive/{}/SALTSTACK-GPG-KEY.pub'.format(
                     salt_version
                 )
             ),
             'source': 'deb http://repo.saltstack.com/apt/ubuntu/'\
-                      '18.04/amd64/{} bionic main'.format(salt_version)
+                      '18.04/amd64/archive/{} bionic main'.format(salt_version)
         }
     ]
     for repo in repositories:
