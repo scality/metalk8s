@@ -89,6 +89,8 @@ UI_BUILDER : LocalImage = _builder_image(
     file_dep=(
         list(coreutils.ls_files_rec(constants.ROOT/'ui'/'public')) +
         list(coreutils.ls_files_rec(constants.ROOT/'ui'/'src')) +
+        list(coreutils.ls_files_rec(constants.ROOT/'ui'/'config')) +
+        list(coreutils.ls_files_rec(constants.ROOT/'ui'/'scripts')) +
         [
             constants.ROOT/'ui'/'package.json',
             constants.ROOT/'ui'/'package-lock.json',
