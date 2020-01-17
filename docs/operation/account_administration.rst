@@ -51,8 +51,10 @@ perform the following procedures:
 Administering MetalK8s GUI, Kubernetes API and Salt API
 *******************************************************
 
-During installation, MetalK8s configures the Kubernetes API to accept
-authentication via OpenID Connect(OIDC).
+.. _Administering-MetalK8s-GUI-Kubernetes-API-and-Salt-API:
+
+During installation, MetalK8s configures the Kubernetes API to accept Basic
+authentication, with default credentials ``admin`` / ``admin``.
 
 Services exposed by MetalK8s, such as
 :ref:`its GUI <installation-services-admin-ui>` or

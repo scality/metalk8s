@@ -27,8 +27,11 @@ Configuration
 
       root@bootstrap $ mkdir /etc/metalk8s
 
-#. Create the :file:`/etc/metalk8s/bootstrap.yaml` file. Change the networks,
-   IP address, and hostname to conform to your infrastructure.
+#. Create the :file:`/etc/metalk8s/bootstrap.yaml` file.
+   This file contains initial configuration settings which are mandatory for
+   setting up a MetalK8s :term:`Bootstrap node`.
+   Change the networks, IP address, and hostname fields to conform to your
+   infrastructure.
 
    .. code-block:: yaml
 
@@ -37,6 +40,8 @@ Configuration
       networks:
         controlPlane: <CIDR-notation>
         workloadPlane: <CIDR-notation>
+        pods: <CIDR-notation>
+        services: <CIDR-notation>
       proxies:
         http: <http://proxy-ip:proxy-port>
         https: <https://proxy-ip:proxy-port>
@@ -48,20 +53,58 @@ Configuration
       archives:
         - <path-to-metalk8s-iso>
 
-The ``archives`` field is a list of absolute paths to MetalK8s ISO files. When
-the bootstrap script is executed, those ISOs are automatically mounted and the
-system is configured to re-mount them automatically after a reboot.
+The ``networks`` field specifies a range of IP addresses written in CIDR
+notation for it's various subfields.
+
+      The ``controlPlane`` and ``workloadPlane`` entries are **mandatory**.
+      These values specify the range of IP addresses that will be used at the
+      host level for each member of the cluster.
+
+      .. code-block:: yaml
+
+            networks:
+              controlPlane: 10.200.1.0/28
+              workloadPlane: 10.200.1.0/28
+
+      All nodes within the cluster **must** connect to both the control plane
+      and workload plane networks. If the same network range is chosen for both
+      the control plane and workload plane networks then the same interface
+      may be used.
+
+      The ``pods`` and ``services`` fields are not mandatory, though can be
+      changed to match the constraints of existing networking infrastructure
+      (for example, if all or part of these default subnets is already routed).
+      During installation, by default ``pods`` and ``services`` are set to the
+      following values below if omitted.
+
+      For **production clusters**, we advise users to anticipate future
+      expansions and use sufficiently large networks for pods and services.
+
+      .. code-block:: yaml
+
+            networks:
+              pods: 10.233.0.0/16
+              services: 10.96.0.0/12
 
 The ``proxies`` field can be omitted if there is no proxy to configure.
 The 2 entries ``http`` and ``https`` are used to configure the containerd
 daemon proxy to fetch extra container images from outstide the MetalK8s
 cluster.
 The ``no_proxy`` entry specifies IPs that should be excluded from proxying,
-it must a list of hosts, IP addresses or IP ranges in CIDR format.
+it must be a list of hosts, IP addresses or IP ranges in CIDR format.
+For example;
 
-.. todo::
+   .. code-block:: shell
 
-   - Explain the role of this config file and its values
+      no_proxy:
+        - localhost
+        - 127.0.0.1
+        - 10.10.0.0/16
+        - 192.168.0.0/16
+
+The ``archives`` field is a list of absolute paths to MetalK8s ISO files. When
+the bootstrap script is executed, those ISOs are automatically mounted and the
+system is configured to re-mount them automatically after a reboot.
 
 
 .. _Bootstrap SSH Provisioning:
@@ -105,6 +148,8 @@ SSH Provisioning
          user@host $ ssh-copy-id -i /tmp/salt-bootstrap.pub root@<node_hostname>
 
 
+.. _Bootstrap installation:
+
 Installation
 ------------
 
@@ -123,29 +168,18 @@ Bootstrap node.
     destination fields of IP packets to correspond to the MAC address(es)),
     :ref:`IP-in-IP needs to be enabled<enable IP-in-IP>`.
 
-Provision Storage for Prometheus Services
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-After bootstrapping the cluster, the Prometheus and AlertManager services used
-to monitor the system will not be running (their respective :term:`Pods <Pod>`
-will remain in a **Pending** state), because they require persistent storage to
-be available. You can either provision these storage volumes on the bootstrap
-node, or later on other nodes joining the cluster. Templates for the required
-volumes are available in :download:`examples/prometheus-sparse.yaml
-<../../examples/prometheus-sparse.yaml>`. Note, however, these templates use
-the `sparseLoopDevice` *Volume* type, which is not suitable for production
-installations. Refer to :ref:`volume-management` for more information on how to
-provision persistent storage.
+Validate the install
+^^^^^^^^^^^^^^^^^^^^
+- Check that all :term:`Pods <Pod>` on the Bootstrap node are in the
+  **Running** state. Note that Prometheus and Alertmanager pods will remain in
+  a **Pending** state until their respective persistent storage volumes are
+  provisioned.
 
 .. note::
 
-   When deploying using Vagrant, persistent volumes for Prometheus and
-   AlertManager are already provisioned.
-
-Validate the Installation
-^^^^^^^^^^^^^^^^^^^^^^^^^
-Check if all :term:`Pods <Pod>` on the Bootstrap node are running.
-
-.. note::
+   The administrator :term:`kubeconfig` file is used to configure access to
+   Kubernetes when used with :term:`kubectl` as shown below. This file contains
+   sensitive information and should be kept securely.
 
    On all subsequent :term:`kubectl` commands, you may omit the
    ``--kubeconfig`` argument if you have exported the ``KUBECONFIG``
@@ -162,42 +196,51 @@ Check if all :term:`Pods <Pod>` on the Bootstrap node are running.
 
    root@bootstrap $ kubectl get nodes --kubeconfig /etc/kubernetes/admin.conf
    NAME                   STATUS    ROLES                         AGE       VERSION
-   bootstrap              Ready     bootstrap,etcd,infra,master   17m       v1.11.7
+   bootstrap              Ready     bootstrap,etcd,infra,master   17m       v1.15.5
 
    root@bootstrap $ kubectl get pods --all-namespaces -o wide --kubeconfig /etc/kubernetes/admin.conf
-   NAMESPACE             NAME                                             READY     STATUS    RESTARTS   AGE       IP              NODE        NOMINATED NODE
-   kube-system           calico-kube-controllers-b7bc4449f-6rh2q          1/1       Running   0          4m        10.233.132.65   bootstrap   <none>
-   kube-system           calico-node-r2qxs                                1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
-   kube-system           coredns-7475f8d796-8h4lt                         1/1       Running   0          4m        10.233.132.67   bootstrap   <none>
-   kube-system           coredns-7475f8d796-m5zz9                         1/1       Running   0          4m        10.233.132.66   bootstrap   <none>
-   kube-system           etcd-bootstrap                                   1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
-   kube-system           kube-apiserver-bootstrap                         2/2       Running   0          4m        172.21.254.12   bootstrap   <none>
-   kube-system           kube-controller-manager-bootstrap                1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
-   kube-system           kube-proxy-vb74b                                 1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
-   kube-system           kube-scheduler-bootstrap                         1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
-   kube-system           repositories-bootstrap                           1/1       Running   0          4m        172.21.254.12   bootstrap   <none>
-   kube-system           salt-master-bootstrap                            2/2       Running   0          4m        172.21.254.12   bootstrap   <none>
-   metalk8s-ingress      nginx-ingress-controller-46lxd                   1/1       Running   0          4m        10.233.132.73   bootstrap   <none>
-   metalk8s-ingress      nginx-ingress-default-backend-5449d5b699-8bkbr   1/1       Running   0          4m        10.233.132.74   bootstrap   <none>
-   metalk8s-monitoring   alertmanager-main-0                              2/2       Running   0          4m        10.233.132.70   bootstrap   <none>
-   metalk8s-monitoring   alertmanager-main-1                              2/2       Running   0          3m        10.233.132.76   bootstrap   <none>
-   metalk8s-monitoring   alertmanager-main-2                              2/2       Running   0          3m        10.233.132.77   bootstrap   <none>
-   metalk8s-monitoring   grafana-5cb4945b7b-ltdrz                         1/1       Running   0          4m        10.233.132.71   bootstrap   <none>
-   metalk8s-monitoring   kube-state-metrics-588d699b56-d6crn              4/4       Running   0          3m        10.233.132.75   bootstrap   <none>
-   metalk8s-monitoring   node-exporter-4jdgv                              2/2       Running   0          4m        172.21.254.12   bootstrap   <none>
-   metalk8s-monitoring   prometheus-k8s-0                                 3/3       Running   1          4m        10.233.132.72   bootstrap   <none>
-   metalk8s-monitoring   prometheus-k8s-1                                 3/3       Running   1          3m        10.233.132.78   bootstrap   <none>
-   metalk8s-monitoring   prometheus-operator-64477d4bff-xxjw2             1/1       Running   0          4m        10.233.132.68   bootstrap   <none>
+   NAMESPACE             NAME                                                      READY   STATUS    RESTARTS   AGE     IP               NODE            NOMINATED NODE   READINESS GATES
+   kube-system           calico-kube-controllers-7c9944c5f4-h9bsc                  1/1     Running   0          6m29s   10.233.220.129   bootstrap   <none>           <none>
+   kube-system           calico-node-v4qhb                                         1/1     Running   0          6m29s   10.200.3.152     bootstrap   <none>           <none>
+   kube-system           coredns-ff46db798-k54z9                                   1/1     Running   0          6m29s   10.233.220.134   bootstrap   <none>           <none>
+   kube-system           coredns-ff46db798-nvmjl                                   1/1     Running   0          6m29s   10.233.220.132   bootstrap   <none>           <none>
+   kube-system           etcd-bootstrap                                            1/1     Running   0          5m45s   10.200.3.152     bootstrap   <none>           <none>
+   kube-system           kube-apiserver-bootstrap                                  1/1     Running   0          5m57s   10.200.3.152     bootstrap   <none>           <none>
+   kube-system           kube-controller-manager-bootstrap                         1/1     Running   0          7m4s    10.200.3.152     bootstrap   <none>           <none>
+   kube-system           kube-proxy-n6zgk                                          1/1     Running   0          6m32s   10.200.3.152     bootstrap   <none>           <none>
+   kube-system           kube-scheduler-bootstrap                                  1/1     Running   0          7m4s    10.200.3.152     bootstrap   <none>           <none>
+   kube-system           repositories-bootstrap                                    1/1     Running   0          6m20s   10.200.3.152     bootstrap   <none>           <none>
+   kube-system           salt-master-bootstrap                                     2/2     Running   0          6m10s   10.200.3.152     bootstrap   <none>           <none>
+   kube-system           storage-operator-7567748b6d-hp7gq                         1/1     Running   0          6m6s    10.233.220.138   bootstrap   <none>           <none>
+   metalk8s-ingress      nginx-ingress-control-plane-controller-5nkkx              1/1     Running   0          6m6s    10.233.220.137   bootstrap   <none>           <none>
+   metalk8s-ingress      nginx-ingress-controller-shg7x                            1/1     Running   0          6m7s    10.233.220.135   bootstrap   <none>           <none>
+   metalk8s-ingress      nginx-ingress-default-backend-7d8898655c-jj7l6            1/1     Running   0          6m7s    10.233.220.136   bootstrap   <none>           <none>
+   metalk8s-monitoring   alertmanager-prometheus-operator-alertmanager-0           0/2     Pending   0          6m1s    <none>           <none>      <none>           <none>
+   metalk8s-monitoring   prometheus-operator-grafana-775fbb5b-sgngh                2/2     Running   0          6m17s   10.233.220.130   bootstrap   <none>           <none>
+   metalk8s-monitoring   prometheus-operator-kube-state-metrics-7587b4897c-tt79q   1/1     Running   0          6m17s   10.233.220.131   bootstrap   <none>           <none>
+   metalk8s-monitoring   prometheus-operator-operator-7446d89644-zqdlj             1/1     Running   0          6m17s   10.233.220.133   bootstrap   <none>           <none>
+   metalk8s-monitoring   prometheus-operator-prometheus-node-exporter-rb969        1/1     Running   0          6m17s   10.200.3.152     bootstrap   <none>           <none>
+   metalk8s-monitoring   prometheus-prometheus-operator-prometheus-0               0/3     Pending   0          5m50s   <none>           <none>      <none>           <none>
+   metalk8s-ui           metalk8s-ui-6f74ff4bc-fgk86                               1/1     Running   0          6m4s    10.233.220.139   bootstrap   <none>           <none>
 
-Check that you can access the MetalK8s GUI, following
-:ref:`this procedure <installation-services-admin-ui>`.
+- From the console output above, :term:`Prometheus` and :term:`Alertmanager`
+  pods are in a ``Pending`` state because their respective persistent
+  storage volumes need to be provisioned. To provision these persistent storage
+  volumes, follow :ref:`this procedure <Provision Prometheus storage>`.
 
-.. todo::
+- Check that you can access the MetalK8s GUI after the
+  :ref:`installation <Bootstrap installation>` is completed by following
+  :ref:`this procedure <installation-services-admin-ui>`.
 
-   Troubleshooting section
+- At this stage, the MetalK8s GUI should be up and ready for you to
+  explore.
 
-   - Mention ``/var/log/metalk8s-bootstrap.log`` and the command-line options
-     for verbosity.
-   - Add Salt master/minion logs, and explain how to run a specific state from
-     the Salt master.
-   - Then refer to a troubleshooting section in the installation guide.
+  .. note::
+
+     Monitoring through the MetalK8s GUI will not be available until persistent
+     storage volumes for both Prometheus and Alertmanager have been successfully
+     provisioned.
+
+- If you encouter an error during installation or have difficulties
+  validating a fresh MetalK8s installation, visit our
+  :ref:`Troubleshooting guide <Troubleshooting Guide>`.
