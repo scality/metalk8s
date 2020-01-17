@@ -16,7 +16,6 @@ import CallbackPage from './LoginCallback';
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
 import { fetchConfigAction, setInitialLanguageAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
-import { store } from '../index';
 
 const messages = {
   EN: translations_en,
@@ -34,14 +33,14 @@ const App = props => {
 
   useEffect(() => {
     document.title = messages[language].product_name;
-    dispatch(fetchConfigAction());
+    dispatch(fetchConfigAction(props.store, props.url));
     dispatch(setInitialLanguageAction());
     dispatch(initToggleSideBarAction());
     // eslint-disable-next-line
   }, []);
 
   return api && theme && userManager && isUserLoaded ? (
-    <OidcProvider store={store} userManager={userManager}>
+    <OidcProvider store={props.store} userManager={userManager}>
       <IntlProvider locale={language} messages={messages[language]}>
         <IntlGlobalProvider>
           <Switch>
@@ -50,7 +49,7 @@ const App = props => {
               path="/oauth2/callback"
               component={() => <CallbackPage />}
             />
-            <Route component={Layout} />
+            <Route component={() => <Layout microapp={props.microapp} />} />
           </Switch>
         </IntlGlobalProvider>
       </IntlProvider>

@@ -4,7 +4,6 @@ import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import { loadUser, createUserManager } from 'redux-oidc';
 import { USER_FOUND } from 'redux-oidc';
 import { WebStorageStateStore } from 'oidc-client';
-import { store } from '../index';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
@@ -89,8 +88,8 @@ export function fetchThemeAction() {
   return { type: FETCH_THEME };
 }
 
-export function fetchConfigAction() {
-  return { type: FETCH_CONFIG };
+export function fetchConfigAction(store, url) {
+  return { type: FETCH_CONFIG, payload: { store, url } };
 }
 
 export function setApiConfigAction(conf) {
@@ -148,8 +147,8 @@ export function* fetchTheme() {
   }
 }
 
-export function* fetchConfig() {
-  yield call(Api.initialize, process.env.PUBLIC_URL);
+export function* fetchConfig({ payload }) {
+  yield call(Api.initialize, payload.url || process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error && result.url_oidc_provider && result.url_redirect) {
     yield call(fetchTheme);
@@ -167,7 +166,7 @@ export function* fetchConfig() {
     );
     yield put(setUserManagerAction(createUserManager(userManagerConfig)));
     const userManager = yield select(state => state.config.userManager);
-    yield call(loadUser, store, userManager);
+    yield call(loadUser, payload.store, userManager);
     yield put(setUserLoadedAction(true));
   }
 }

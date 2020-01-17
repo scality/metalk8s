@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 import { useRouteMatch, useHistory } from 'react-router';
-import { Switch } from 'react-router-dom';
+import { Switch, Redirect } from 'react-router-dom';
 import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 
 import { intl } from '../translations/IntlGlobalProvider';
@@ -175,12 +175,14 @@ const Layout = props => {
     rightActions.splice(1, 0, applicationsAction);
   }
 
-  const navbar = {
-    onToggleClick: toggleSidebar,
-    productName: intl.translate('product_name'),
-    rightActions,
-    logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
-  };
+  const navbar = props.microapp
+    ? null
+    : {
+        onToggleClick: toggleSidebar,
+        productName: intl.translate('product_name'),
+        rightActions,
+        logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
+      };
 
   return (
     <ThemeProvider theme={theme}>
@@ -214,6 +216,7 @@ const Layout = props => {
           />
           <PrivateRoute exact path="/about" component={About} />
           <PrivateRoute exact path="/" component={ClusterMonitoring} />
+          <Redirect to="/" />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>
