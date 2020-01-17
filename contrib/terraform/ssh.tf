@@ -66,6 +66,10 @@ resource "null_resource" "bastion_ssh_config" {
 }
 
 resource "null_resource" "bastion_public_key" {
+  triggers = {
+    all_instances = join(",", local.all_instances)
+  }
+
   depends_on = [
     openstack_compute_instance_v2.bastion,
     openstack_compute_instance_v2.bootstrap,
@@ -87,6 +91,13 @@ resource "null_resource" "bastion_public_key" {
 }
 
 resource "null_resource" "bootstrap_public_key" {
+  triggers = {
+    all_instances = join(",", concat(
+      [openstack_compute_instance_v2.bootstrap.id],
+      openstack_compute_instance_v2.nodes[*].id
+    ))
+  }
+
   depends_on = [
     openstack_compute_instance_v2.bootstrap,
     openstack_compute_instance_v2.nodes,

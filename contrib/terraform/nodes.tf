@@ -148,6 +148,11 @@ resource "null_resource" "nodes_iface_config" {
 resource "null_resource" "nodes_use_proxy" {
   count = local.bastion.enabled ? var.nodes_count : 0
 
+  triggers = {
+    bootstrap = openstack_compute_instance_v2.bootstrap.id,
+    nodes = join(",", openstack_compute_instance_v2.nodes[*].id),
+  }
+
   depends_on = [
     openstack_compute_instance_v2.nodes,
     null_resource.bastion_http_proxy,
