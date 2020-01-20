@@ -96,3 +96,15 @@ For more detail(s), refer to the official Red Hat documentation:
     - `Enable Optional repositories with RHSM`_
     - `Configure repositories with YUM`_
     - `Advanced repositories configuration`_
+
+:term:`etcd`
+^^^^^^^^^^^^
+For production environments, a dedicated block device for :term:`etcd` is
+recommended for better performance and stability.
+If possible, use a SSD which provides lower write latencies, with less
+variance than a spinning disk, thus improving the reliability of :term:`etcd`.
+
+The device must be formatted and mounted on `/var/lib/etcd`.
+
+For further information on :term:`etcd` hardware requirements, see the
+`official documentation <https://etcd.io/docs/v3.3.12/op-guide/hardware>`_.
