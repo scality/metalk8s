@@ -253,6 +253,13 @@ reconfigure_nodes() {
         saltenv=metalk8s-@@VERSION
     "${SALT_MASTER_CALL[@]}" salt-key -A -y
 
+    # Wait all minions to be ready
+    "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.wait_minions
+
+    # In salt 2018.3 we can not do synchronous pillar refresh, so add a sleep
+    # See htpps://github.com/saltstack/salt/issues/20590
+    "${SALT_MASTER_CALL[@]}" salt '*' saltutil.refresh_pillar && sleep 20
+    "${SALT_MASTER_CALL[@]}" salt '*' mine.update
 }
 
 highstate_bootstrap() {
