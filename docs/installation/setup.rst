@@ -16,11 +16,6 @@ difference in setup procedure.
 For this installation, 5 machines are required (or 3, if running workload
 applications on your control plane nodes).
 
-Sizing
-------
-Each machine should have at least 2 CPU cores, 4 GB of RAM, and a root
-partition larger than 40 GB.
-
 Proxies
 -------
 For nodes operating behind a proxy, see :ref:`Bootstrap Configuration`
