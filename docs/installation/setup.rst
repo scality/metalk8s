@@ -29,6 +29,27 @@ Proxies
 -------
 For nodes operating behind a proxy, see :ref:`Bootstrap Configuration`
 
+Linux Kernel Version
+--------------------
+Linux Kernel shipped with latest (7.7) and previous versions of
+CentOS_ / RHEL_ 7 is affected by a cgroups memory leak bug.
+
+Kernel must be at least in version 3.10.0-1062.4.1 for this bug to be fixed.
+
+The version can be retrieved using:
+
+    .. code-block:: shell
+
+        uname -r
+
+If the installed version is lower than the one above, it must
+be upgraded:
+
+    .. code-block:: shell
+
+        yum upgrade -y kernel-3.10.0-1062.4.1.el7
+        reboot
+
 Provisioning
 ------------
 
