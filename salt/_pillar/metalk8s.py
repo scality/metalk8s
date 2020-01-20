@@ -1,4 +1,5 @@
 import logging
+from collections import Mapping
 
 import salt.utils.files
 import salt.utils.yaml
@@ -15,8 +16,20 @@ def _load_config(path):
     log.debug('Loading MetalK8s configuration from %s', path)
 
     config = None
-    with salt.utils.files.fopen(path, 'rb') as fd:
-        config = salt.utils.yaml.safe_load(fd)
+    try:
+        with salt.utils.files.fopen(path, 'rb') as fd:
+            config = salt.utils.yaml.safe_load(fd) or {}
+    except Exception as exc:
+        return __utils__['pillar_utils.errors_to_dict']([
+            "Failed to load {}: {}".format(path, exc)
+        ])
+    if not config:
+        error_tplt = (
+            'Invalid BootstrapConfiguration at {}'
+        )
+        return __utils__['pillar_utils.errors_to_dict'](
+            [error_tplt.format(path)]
+        )
 
     expected = {
         'apiVersion': 'metalk8s.scality.com/v1alpha2',
@@ -40,6 +53,11 @@ def _load_networks(config_data):
         return __utils__['pillar_utils.errors_to_dict'](errors)
 
     networks_data = config_data['networks']
+    if not isinstance(networks_data, Mapping):
+        return __utils__['pillar_utils.errors_to_dict']([
+            "Invalid network format in config file, mapping expected got {}"
+            .format(networks_data)
+        ])
     errors = __utils__['pillar_utils.assert_keys'](
         networks_data,
         ['controlPlane', 'workloadPlane']
@@ -61,6 +79,12 @@ def _load_ca(config_data):
         return __utils__['pillar_utils.errors_to_dict'](errors)
 
     ca_data = config_data['ca']
+    if not isinstance(ca_data, Mapping):
+        return __utils__['pillar_utils.errors_to_dict']([
+            "Invalid ca format in config file, mapping expected got {}"
+            .format(ca_data)
+        ])
+
     errors = __utils__['pillar_utils.assert_keys'](ca_data, ['minion'])
     if errors:
         return __utils__['pillar_utils.errors_to_dict'](errors)
@@ -95,6 +119,14 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
         metal_data = __utils__['pillar_utils.errors_to_dict'](
             config['_errors']
         )
+        result = {
+            'metalk8s': metal_data,
+        }
+
+        for key in ['metalk8s']:
+            __utils__['pillar_utils.promote_errors'](result, key)
+
+        return result
 
     else:
         metal_data = {
@@ -102,18 +134,18 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
             'ca': _load_ca(config),
         }
 
-    result = {
-        'networks': _load_networks(config),
-        'metalk8s': metal_data,
-        'proxies': config.get('proxies', {})
-    }
+        result = {
+            'networks': _load_networks(config),
+            'metalk8s': metal_data,
+            'proxies': config.get('proxies', {})
+        }
 
-    if not isinstance(metal_data['archives'], list):
-        # Special case for archives in pillar
-        __utils__['pillar_utils.promote_errors'](metal_data, 'archives')
-    for key in ['ca',]:
-        __utils__['pillar_utils.promote_errors'](metal_data, key)
-    for key in ['networks', 'metalk8s']:
-        __utils__['pillar_utils.promote_errors'](result, key)
+        if not isinstance(metal_data['archives'], list):
+            # Special case for archives in pillar
+            __utils__['pillar_utils.promote_errors'](metal_data, 'archives')
+        for key in ['ca',]:
+            __utils__['pillar_utils.promote_errors'](metal_data, key)
+        for key in ['networks', 'metalk8s']:
+            __utils__['pillar_utils.promote_errors'](result, key)
 
-    return result
+        return result
