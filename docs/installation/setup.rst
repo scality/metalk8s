@@ -101,8 +101,3 @@ For more detail(s), refer to the official Red Hat documentation:
     - `Enable Optional repositories with RHSM`_
     - `Configure repositories with YUM`_
     - `Advanced repositories configuration`_
-
-Example OpenStack deployment
-----------------------------
-
-.. todo:: Extract the Terraform tooling used in CI for ease of use.
