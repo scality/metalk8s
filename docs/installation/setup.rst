@@ -8,6 +8,8 @@ Prerequisites
 .. _Enable Optional repositories with RHSM: https://access.redhat.com/solutions/392003
 .. _Configure repositories with YUM: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/sec-configuring_yum_and_yum_repositories#sec-Managing_Yum_Repositories
 .. _Advanced repositories configuration: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/sec-configuring_yum_and_yum_repositories#sec-Setting_repository_Options
+.. _SaltStack: https://www.saltstack.com
+.. _Puppet: https://puppet.com
 
 MetalK8s_ clusters require machines running CentOS_ / RHEL_ 7.6 or higher as
 their operating system. These machines may be virtual or physical, with no
@@ -15,6 +17,13 @@ difference in setup procedure.
 
 For this installation, 5 machines are required (or 3, if running workload
 applications on your control plane nodes).
+
+Machines must **not** be managed by any configuration management system
+(e.g. SaltStack_, Puppet_).
+
+    .. warning::
+        Distribution must be, as much as possible, left intact (no tuning,
+        tweaking, configuration nor software installation).
 
 Proxies
 -------
