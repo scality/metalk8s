@@ -3,11 +3,14 @@ const webpack = require('webpack');
 const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ManifestPlugin = require('webpack-manifest-plugin');
 
 module.exports = {
-  entry: path.resolve(__dirname, '../src/micro-app.js'),
+  entry: {
+    metalK8s: path.resolve(__dirname, '../src/micro-app.js'),
+  },
   output: {
-    filename: 'metalK8s.js',
+    filename: 'metalK8s.[contenthash:8].js',
     library: 'metalK8s',
     libraryTarget: 'amd',
     path: path.resolve(__dirname, '../build/metalK8s'),
@@ -53,7 +56,10 @@ module.exports = {
   resolve: {
     modules: [__dirname, 'node_modules'],
   },
-  plugins: [new CleanWebpackPlugin(['../build/metalK8s'])],
+  plugins: [
+    new CleanWebpackPlugin(['../build/metalK8s']),
+    new ManifestPlugin(),
+  ],
   devtool: 'source-map',
   externals: [/^react$/, /^react\/lib.*/, /^react-dom$/, /.*react-dom.*/],
 };
