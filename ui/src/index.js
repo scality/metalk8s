@@ -24,7 +24,7 @@ sagaMiddleware.run(sagas);
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={history}>
+    <Router history={history()}>
       <App store={store} />
     </Router>
   </Provider>,

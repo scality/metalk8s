@@ -91,7 +91,7 @@ export function* createEnvironment(action) {
   const result = yield call(ApiK8s.createEnvironment, body);
   if (!result.error) {
     yield call(fetchEnvironments);
-    history.push('/solutions');
+    history().push('/solutions');
   }
   return result;
 }

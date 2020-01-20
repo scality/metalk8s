@@ -345,7 +345,7 @@ it('create volume with the type sparseloopdevice', () => {
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/nodes/${nodeName}/volumes`),
+    call(history().push, `/nodes/${nodeName}/volumes`),
   );
 
   expect(gen.next().value.payload.action.type).toEqual(

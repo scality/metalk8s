@@ -331,7 +331,7 @@ export function* createNode({ payload }) {
 
   if (!result.error) {
     yield call(fetchNodes);
-    yield call(history.push, '/nodes');
+    yield call(history().push, '/nodes');
     yield put(
       addNotificationSuccessAction({
         title: intl.translate('node_creation'),

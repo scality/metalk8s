@@ -251,7 +251,7 @@ export function* createVolumes({ payload }) {
 
     const result = yield call(ApiK8s.createVolume, body);
     if (!result.error) {
-      yield call(history.push, `/nodes/${nodeName}/volumes`);
+      yield call(history().push, `/nodes/${nodeName}/volumes`);
       yield put(
         addNotificationSuccessAction({
           title: intl.translate('volume_creation'),

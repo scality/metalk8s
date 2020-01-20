@@ -156,7 +156,7 @@ describe('`fetchNodes` saga', () => {
     const clone = gen.clone();
     const jobs = [
       {
-        type: "deploy-node",
+        type: 'deploy-node',
         node: DEFAULT_NAME,
         jid: '12345',
         completed,
@@ -296,7 +296,7 @@ describe('`createNode` saga', () => {
     expect(gen.next({ whatever: 'nominal result' }).value).toEqual(
       call(fetchNodes),
     );
-    expect(gen.next().value).toEqual(call(history.push, '/nodes'));
+    expect(gen.next().value).toEqual(call(history().push, '/nodes'));
     expect(gen.next().value).toMatchObject(
       put({
         type: ADD_NOTIFICATION_SUCCESS,
@@ -378,7 +378,7 @@ describe('`createNode` saga', () => {
     expect(gen.next({ whatever: 'nominal result' }).value).toEqual(
       call(fetchNodes),
     );
-    expect(gen.next().value).toEqual(call(history.push, '/nodes'));
+    expect(gen.next().value).toEqual(call(history().push, '/nodes'));
     expect(gen.next().value).toMatchObject(
       put({
         type: ADD_NOTIFICATION_SUCCESS,
