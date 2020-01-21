@@ -48,7 +48,7 @@ def test_static_pods_restart(host, transient_files):
 
 @given("I have set up a static pod", target_fixture="static_pod_id")
 def set_up_static_pod(
-    host, hostname, k8s_client, utils_image, transient_files
+    host, nodename, k8s_client, utils_image, transient_files
 ):
     manifest_path = str(MANIFESTS_PATH / "{}.yaml".format(DEFAULT_POD_NAME))
 
@@ -102,7 +102,7 @@ def set_up_static_pod(
     # See: https://github.com/kubernetes/kubernetes/issues/65825
     transient_files.insert(0, manifest_path)
 
-    fullname = "{}-{}".format(DEFAULT_POD_NAME, hostname)
+    fullname = "{}-{}".format(DEFAULT_POD_NAME, nodename)
 
     utils.retry(
         kube_utils.wait_for_pod(k8s_client, fullname),
@@ -137,8 +137,8 @@ def manage_static_pod(host):
 
 
 @then("the static pod was changed")
-def check_static_pod_changed(host, hostname, k8s_client, static_pod_id):
-    fullname = "{}-{}".format(DEFAULT_POD_NAME, hostname)
+def check_static_pod_changed(host, nodename, k8s_client, static_pod_id):
+    fullname = "{}-{}".format(DEFAULT_POD_NAME, nodename)
 
     wait_for_pod = kube_utils.wait_for_pod(
         k8s_client,
