@@ -545,8 +545,8 @@ class VolumeClient(Client):
         )['items']
 
     def _create(self, body):
-        # Fixup the hostname.
-        body['spec']['nodeName'] = utils.resolve_hostname(
+        # Fixup the node name.
+        body['spec']['nodeName'] = utils.get_node_name(
             body['spec']['nodeName'], self._ssh_config
         )
         self._client.create_cluster_custom_object(

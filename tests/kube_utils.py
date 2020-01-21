@@ -20,7 +20,7 @@ def get_pods(
         field_selector.append('status.phase={}'.format(state))
 
     if node:
-        nodename = utils.resolve_hostname(node, ssh_config)
+        nodename = utils.get_node_name(node, ssh_config)
         field_selector.append('spec.nodeName={}'.format(nodename))
 
     kwargs = {}
