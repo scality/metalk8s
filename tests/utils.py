@@ -52,11 +52,12 @@ def get_ip_from_cidr(host, cidr):
     return None
 
 
-def resolve_hostname(nodename, ssh_config):
-    """Resolve a node name (from SSH config) to a real hostname."""
+def get_node_name(nodename, ssh_config=None):
+    """Get a node name (from SSH config)."""
     if ssh_config is not None:
         node = testinfra.get_host(nodename, ssh_config=ssh_config)
-        nodename = node.check_output('hostname')
-    else:
-        assert nodename == 'bootstrap'
+        with node.sudo():
+            return node.check_output(
+                'salt-call --local --out txt grains.get id | cut -c 8-'
+            )
     return nodename
