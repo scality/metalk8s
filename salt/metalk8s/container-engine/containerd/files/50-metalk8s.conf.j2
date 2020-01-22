@@ -2,4 +2,6 @@
 # See https://github.com/containerd/containerd/issues/3201
 # See https://github.com/containerd/containerd/pull/3202
 LimitNOFILE=1048576
-Environment="{{ environment }}"
+{%- for key, value in (environment | default({}, True)).items() %}
+Environment={{ key }}={{ value }}
+{%- endfor %}
