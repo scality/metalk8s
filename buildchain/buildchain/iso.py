@@ -65,7 +65,6 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
             Path('common.sh'),
             Path('iso-manager.sh'),
             Path('solution-manager.sh'),
-            Path('backup.sh'),
             helper.TemplateFile(
                 task_name='downgrade.sh',
                 source=constants.ROOT/'scripts'/'downgrade.sh.in',
@@ -86,6 +85,14 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
                 task_name='bootstrap.sh',
                 source=constants.ROOT/'scripts'/'bootstrap.sh.in',
                 destination=constants.ISO_ROOT/'bootstrap.sh',
+                context={'VERSION': versions.VERSION},
+                file_dep=[versions.VERSION_FILE],
+                task_dep=['_iso_mkdir_root'],
+            ),
+            helper.TemplateFile(
+                task_name='backup.sh',
+                source=constants.ROOT/'scripts'/'backup.sh.in',
+                destination=constants.ISO_ROOT/'backup.sh',
                 context={'VERSION': versions.VERSION},
                 file_dep=[versions.VERSION_FILE],
                 task_dep=['_iso_mkdir_root'],

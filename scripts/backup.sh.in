@@ -163,18 +163,7 @@ backup_cas() {
         'sa.pub'
     )
     for ca in "${ca_files[@]}"; do
-        _save_cp "${ca_dir}$ca" "${BACKUP_DIR}/pki/$ca"
-    done
-
-    local -r metalk8s_ca_dir='/etc/metalk8s/pki/'
-    local -a metalk8s_ca_files=(
-        'nginx-ingress/ca.crt'
-        'nginx-ingress/ca.key'
-        'dex/ca.crt'
-        'dex/ca.key'
-    )
-    for metalk8s_ca in "${metalk8s_ca_files[@]}"; do
-        _save_cp "${metalk8s_ca_dir}$metalk8s_ca" "${BACKUP_DIR}/pki_metalk8s/$metalk8s_ca"
+        _save_cp "${ca_dir}$ca" "${BACKUP_DIR}/kubernetes/pki/$ca"
     done
 }
 
@@ -205,6 +194,15 @@ create_archive() {
         echo "Creating '$(dirname "$BACKUP_ARCHIVE")' directory"
         mkdir -p "$(dirname "$BACKUP_ARCHIVE")"
     fi
+    (
+        cd "$BACKUP_DIR" &&
+        find . -type f ! -name ".sha256sum" -exec sha256sum {} \;
+    ) > "$BACKUP_DIR/.sha256sum"
+    cat > "$BACKUP_DIR/.metadata" << EOF
+VERSION=@@VERSION
+DATE=$(date -u --iso-8601=seconds)
+EOF
+
     tar "${TAR_OPTS[@]}" -C "$BACKUP_DIR" -cz -f "$BACKUP_ARCHIVE" ./
 }
 

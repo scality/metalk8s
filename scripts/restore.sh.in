@@ -4,14 +4,17 @@ set -u
 set -o pipefail
 
 VERBOSE=${VERBOSE:-0}
+CHECK_INTEGRITY=${CHECK_INTEGRITY:-1}
 LOGFILE="/var/log/metalk8s/restore.log"
 
 _usage() {
     echo "$(basename "$0") [options]"
     echo "Options:"
-    echo "-b/--backup-file <backup_file>:  Path to backup file"
-    echo "-l/--log-file <logfile_path>:    Path to log file"
-    echo "-v/--verbose:                    Run in verbose mode"
+    echo "-b/--backup-file <backup_file>:   Path to backup file"
+    echo "-i/--apiserver-node-ip <ip>:      Node IP of one apiserver"
+    echo "-l/--log-file <logfile_path>:     Path to log file"
+    echo "--disable-integrity-check         Disable archive integrity check"
+    echo "-v/--verbose:                     Run in verbose mode"
 }
 
 while (( "$#" )); do
@@ -27,6 +30,14 @@ while (( "$#" )); do
     -b|--backup-file)
       BACKUP_ARCHIVE="$2"
       shift 2
+      ;;
+    -i|--apiserver-node-ip)
+      APISERVER_IP="$2"
+      shift 2
+      ;;
+    --disable-integrity-check)
+      CHECK_INTEGRITY=0
+      shift
       ;;
     *) # unsupported flags
       echo "Error: Unsupported flag $1" >&2
@@ -90,6 +101,10 @@ extract_archive() {
     tar -C "$BACKUP_DIR" -xz -f "$BACKUP_ARCHIVE" ./
 }
 
+check_integrity() {
+    ( cd "$BACKUP_DIR" && sha256sum -c .sha256sum )
+}
+
 install_salt_minion() {
     local -a yum_opts=(
         '--assumeyes'
@@ -132,18 +147,7 @@ restore_cas() {
         'sa.pub'
     )
     for ca in "${ca_files[@]}"; do
-        _save_cp "${BACKUP_DIR}/pki/$ca" "${ca_dir}$ca"
-    done
-
-    local -r metalk8s_ca_dir='/etc/metalk8s/pki/'
-    local -a metalk8s_ca_files=(
-        'nginx-ingress/ca.crt'
-        'nginx-ingress/ca.key'
-        'dex/ca.crt'
-        'dex/ca.key'
-    )
-    for metalk8s_ca in "${metalk8s_ca_files[@]}"; do
-        _save_cp "${BACKUP_DIR}/pki_metalk8s/$metalk8s_ca" "${metalk8s_ca_dir}$metalk8s_ca"
+        _save_cp "${BACKUP_DIR}/kubernetes/pki/$ca" "${ca_dir}$ca"
     done
 }
 
@@ -162,6 +166,7 @@ configure_salt_master() {
 
     pillar=(
       "{"
+      "  'apiserver_ip': ${APISERVER_IP:-''},"
       "  'repo': {'local_mode': True},"
       "  'metalk8s': {"
       "    'endpoints': {"
@@ -176,13 +181,15 @@ configure_salt_master() {
     )
 
     "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
-        '["metalk8s.roles.bootstrap", "metalk8s.roles.minion"]' \
+        '["metalk8s.roles.bootstrap", "metalk8s.roles.minion", "metalk8s.kubernetes.apiserver-proxy"]' \
         saltenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
 
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
+        saltenv=metalk8s-@@VERSION
+    "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.sync_auth \
         saltenv=metalk8s-@@VERSION
 
     local -r bootstrap_id=$(
@@ -228,9 +235,14 @@ push_cas() {
 mark_control_plane() {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
+    local -r bootstrap_id=$(
+        ${SALT_CALL} --local --out txt grains.get id \
+        | awk '/^local\: /{ print $2 }'
+    )
     "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
         metalk8s.kubernetes.mark-control-plane.deployed \
-        saltenv=metalk8s-@@VERSION
+        saltenv=metalk8s-@@VERSION \
+        pillar="{'bootstrap_id': '$bootstrap_id'}"
 
     "${SALT_CALL}" --retcode-passthrough mine.update
 }
@@ -254,6 +266,13 @@ reconfigure_nodes() {
         saltenv=metalk8s-@@VERSION
     "${SALT_MASTER_CALL[@]}" salt-key -A -y
 
+    # Wait all minions to be ready
+    "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.wait_minions
+
+    # In salt 2018.3 we can not do synchronous pillar refresh, so add a sleep
+    # See htpps://github.com/saltstack/salt/issues/20590
+    "${SALT_MASTER_CALL[@]}" salt '*' saltutil.refresh_pillar && sleep 20
+    "${SALT_MASTER_CALL[@]}" salt '*' mine.update
 }
 
 highstate_bootstrap() {
@@ -272,6 +291,14 @@ highstate_bootstrap() {
         pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
 }
 
+reconfigure_k8s_obj() {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.addons.nginx-ingress-control-plane.deployed \
+        saltenv=metalk8s-@@VERSION
+}
+
 if [ ! -f "$BACKUP_ARCHIVE" ]; then
     echo "Backup '$BACKUP_ARCHIVE' file does not exist" >&2
     exit 1
@@ -279,6 +306,7 @@ fi
 
 run "Determine the OS" determine_os
 run "Extract backup archive '$BACKUP_ARCHIVE'" extract_archive
+[ $CHECK_INTEGRITY -eq 0 ] || run "Checking backup archive integrity" check_integrity
 run "Pre-minion system tests" pre_minion_checks
 run "Disabling Salt minion service" disable_salt_minion_service
 run "Stopping Salt minion service" stop_salt_minion_service
@@ -295,5 +323,7 @@ run "Marking new bootstrap node" mark_control_plane
 run "Reconfiguring all nodes" reconfigure_nodes
 
 run "Applying highstate on the new bootstrap node" highstate_bootstrap
+
+run "Reconfiguring some Kubernetes objects" reconfigure_k8s_obj
 
 "$BASE_DIR"/backup.sh
