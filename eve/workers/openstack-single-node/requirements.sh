@@ -29,12 +29,7 @@ sudo -u eve pip3.6 install --user tox
 
 ## Configuration ##
 
-HOSTNAME=bootstrap
-
-# This step is needed so Kubelet registration doesn't fail for DNS entries
-# longer than 63 characters.
-hostnamectl set-hostname $HOSTNAME
-
-# Make sure Salt Minion ID is set to this same hostname
+# Set salt minion_id before lauching the bootstrap to not use the hostname as
+# minion id and kubernetes kubernetes node name
 mkdir -p /etc/salt
-echo $HOSTNAME > /etc/salt/minion_id
+echo "bootstrap" > /etc/salt/minion_id

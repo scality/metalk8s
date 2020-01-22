@@ -12,7 +12,7 @@ Create kubeconf file for calico:
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ kube_api.cert.client_signing_policy }}
     - client_cert_info:
-        CN: {{ salt['network.get_hostname']() }}
+        CN: {{ grains.id }}
         O: metalk8s:calico-node
     - apiserver: https://{{ kubernetes_service_ip }}:443
     - cluster: {{ kubernetes.cluster }}
