@@ -50,7 +50,7 @@ Create containerd service drop-in:
     - context:
       environment: >-
       {%- if proxies %}
-        {%- set no_proxy = ["localhost", "127.0.0.1"] + networks.values %}
+        {%- set no_proxy = ["localhost", "127.0.0.1"] + networks.values() %}
         {%- if proxies.no_proxy | default %}
           {%- do no_proxy.extend(proxies.no_proxy) %}
         {%- endif %}
