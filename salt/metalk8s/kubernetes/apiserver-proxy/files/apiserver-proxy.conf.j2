@@ -10,12 +10,16 @@ events {
   worker_connections 16384;
 }
 
-{%- set masters_request = salt['mine.get'](
-        tgt='I@metalk8s:nodes:*:roles:master',
-        fun='control_plane_ip',
-        tgt_type='compound',
-    )
+{%- if pillar.get('apiserver_ip') %}
+{%-     set masters_request = {'ip': pillar.apiserver_ip} %}
+{%- else %}
+{%-     set masters_request = salt['mine.get'](
+            tgt='I@metalk8s:nodes:*:roles:master',
+            fun='control_plane_ip',
+            tgt_type='compound',
+        )
 %}
+{%- endif %}
 {%- if not masters_request %}
 {# In this case, we're (likely) bootstrapping #}
 {%-   set apiservers = ['127.0.0.1'] %}

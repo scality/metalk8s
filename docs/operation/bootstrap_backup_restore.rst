@@ -22,15 +22,34 @@ Restoration procedure
 
 .. warning::
 
-    You cannot use the restore script if you do not have High Availability
-    apiserver because some information required to reconfigure the others
-    nodes are stored in the apiserver.
+   It is mandatory to have a highly available control plane, with at least
+   3 members in the ``etcd`` cluster (including the failed bootstrap Node),
+   to use the restore script.
 
-.. warning::
+Before running the script, the unreachable ``etcd`` member needs to be
+unregistered from the cluster. To do so, run the following commands
+from a working Node with the ``etcd`` role:
 
-    In case of a 3-node etcd cluster (2 nodes + unreachable old bootstrap node)
-    you need to remove the old bootstrap node from the etcd cluster before
-    running the restore script.
+.. code::
+
+   # Get etcd container id
+   CONT_ID=$(crictl ps -q --label io.kubernetes.container.name=etcd --state Running)
+
+   # List all etcd members to get the ID of the etcd member that need to be removed
+   crictl exec -it "$CONT_ID" \
+      etcdctl --endpoints https://localhost:2379 \
+      --ca-file /etc/kubernetes/pki/etcd/ca.crt \
+      --key-file /etc/kubernetes/pki/etcd/server.key \
+      --cert-file /etc/kubernetes/pki/etcd/server.crt \
+      member list
+
+   # Remove the etcd member (replace <etcd_id> in the command)
+   crictl exec -it "$CONT_ID" \
+      etcdctl --endpoints https://localhost:2379 \
+      --ca-file /etc/kubernetes/pki/etcd/ca.crt \
+      --key-file /etc/kubernetes/pki/etcd/server.key \
+      --cert-file /etc/kubernetes/pki/etcd/server.crt \
+      member remove <etcd_id>
 
 To restore a bootstrap node you need a backup archive and **MetalK8s** ISOs.
 
@@ -41,9 +60,9 @@ First mount the ISO and then run the restore script:
 
 .. code::
 
-    /srv/scality/metalk8s-X.X.X/restore.sh --backup-file <backup_archive>
+   /srv/scality/metalk8s-X.X.X/restore.sh --backup-file <backup_archive> --apiserver-node-ip <node_ip>
 
 .. note::
 
     Replace `<backup_archive>` with the path to the backup archive you want
-    to use.
+    to use and `<node_ip>` with a control-plane IP of one control-plane Node.
