@@ -189,6 +189,8 @@ configure_salt_master() {
 
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv=metalk8s-@@VERSION
+    "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.sync_auth \
+        saltenv=metalk8s-@@VERSION
 
     local -r bootstrap_id=$(
         ${SALT_CALL} --local --out txt grains.get id \
@@ -289,6 +291,14 @@ highstate_bootstrap() {
         pillar="{'orchestrate': {'node_name': '$bootstrap_id'}}"
 }
 
+reconfigure_k8s_obj() {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.addons.nginx-ingress-control-plane.deployed \
+        saltenv=metalk8s-@@VERSION
+}
+
 if [ ! -f "$BACKUP_ARCHIVE" ]; then
     echo "Backup '$BACKUP_ARCHIVE' file does not exist" >&2
     exit 1
@@ -313,5 +323,7 @@ run "Marking new bootstrap node" mark_control_plane
 run "Reconfiguring all nodes" reconfigure_nodes
 
 run "Applying highstate on the new bootstrap node" highstate_bootstrap
+
+run "Reconfiguring some Kubernetes objects" reconfigure_k8s_obj
 
 "$BASE_DIR"/backup.sh
