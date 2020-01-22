@@ -12,18 +12,24 @@ include:
 {#- Get the list of existing etcd member. #}
 {%- set etcd_members = pillar.metalk8s.etcd.members %}
 
-{#- Compute the initial state according to the existing list of node. #}
-{%- set state = "existing" if etcd_members else "new" %}
+{%- if pillar.get('is_bootstrap') and not etcd_members %}
+  {%- set state = 'new' %}
+  {%- set etcd_endpoints = {node_name: endpoint} %}
+{%- else %}
+  {%- set state = 'existing' %}
 
-{%- set etcd_endpoints = {} %}
-{#- NOTE: Filter out members with empty name as they are not started yet. #}
-{%- for member in etcd_members | selectattr('name') %}
-  {#- NOTE: Only take first peer_urls for endpoint. #}
-  {%- do etcd_endpoints.update({member['name']: member['peer_urls'][0]}) %}
-{%- endfor %}
+  {%- set etcd_endpoints = {} %}
+  {#- NOTE: Filter out members with empty name as they are not started yet. #}
+  {%- for member in etcd_members | selectattr('name') %}
+    {#- NOTE: Only take first peer_urls for endpoint. #}
+    {%- do etcd_endpoints.update({member['name']: member['peer_urls'][0]}) %}
+  {%- else %}
+    {{ raise('List of active etcd members is empty, cannot reference the existing cluster state.') }}
+  {%- endfor %}
 
-{#- Add ourselves to the endpoints. #}
-{%- do etcd_endpoints.update({node_name: endpoint}) %}
+  {#- Add ourselves to the endpoints. #}
+  {%- do etcd_endpoints.update({node_name: endpoint}) %}
+{%- endif %}
 
 {%- set etcd_initial_cluster = [] %}
 {%- for name, ep in etcd_endpoints.items() %}
