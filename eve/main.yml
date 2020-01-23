@@ -1597,7 +1597,7 @@ stages:
           name: Run installation scenarii on the bastion
           env:
             <<: *_env_bastion_tests
-            PYTEST_FILTERS: "install and ci and multinodes"
+            PYTEST_FILTERS: "install and ci and multinodes and not node2"
       - ShellCommand:
           <<: *bastion_tests
           name: Run fast tests on the bastion

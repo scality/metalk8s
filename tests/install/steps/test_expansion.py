@@ -13,7 +13,12 @@ from tests import utils
 
 # Scenarios
 @scenario('../features/expansion.feature', 'Add one node to the cluster')
-def test_cluster_expansion(host):
+def test_cluster_expansion_1_node(host):
+    pass
+
+
+@scenario('../features/expansion.feature', 'Add a second node to the cluster')
+def test_cluster_expansion_2_nodes(host):
     pass
 
 # When {{{
