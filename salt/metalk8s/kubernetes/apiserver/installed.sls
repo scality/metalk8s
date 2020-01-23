@@ -21,6 +21,16 @@ Set up default basic auth htpasswd:
     - replace: False
 
 {%- set host = grains['metalk8s']['control_plane_ip'] %}
+{%- set etcd_servers = [] %}
+{#- NOTE: Filter out members with empty name as they are not started yet. #}
+{%- for member in pillar.metalk8s.etcd.members | selectattr('name') %}
+{%-   do etcd_servers.extend(member['client_urls']) %}
+{%- endfor %}
+{%- set etcd_servers = etcd_servers | sort %}
+{%- if 'etcd' in pillar.metalk8s.nodes[grains.id].roles %}
+{%-   do etcd_servers.insert(0, "https://" ~ host ~ ":2379") %}
+{%- endif %}
+{%- set etcd_servers = etcd_servers | unique %}
 
 Create kube-apiserver Pod manifest:
   metalk8s.static_pod_managed:
@@ -61,7 +71,7 @@ Create kube-apiserver Pod manifest:
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
           - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
-          - --etcd-servers=https://{{ grains.metalk8s.control_plane_ip }}:2379
+          - --etcd-servers={{ etcd_servers | join(",") }}
           - --insecure-port=0
           - --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt
           - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
