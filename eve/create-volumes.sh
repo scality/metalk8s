@@ -37,7 +37,7 @@ check_pod_is_in_phase() {
     [[ $phase = "$expected_phase" ]]
 }
 
-BOOTSTRAP_NODE_NAME=${BOOTSTRAP_NODE_NAME:-$(hostname)}
+BOOTSTRAP_NODE_NAME=${BOOTSTRAP_NODE_NAME:-$(salt-call --local --out txt grains.get id | cut -c 8-)}
 PRODUCT_TXT=${PRODUCT_TXT:-/vagrant/_build/root/product.txt}
 MAX_TRIES=300
 
