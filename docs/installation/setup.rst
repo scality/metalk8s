@@ -8,6 +8,8 @@ Prerequisites
 .. _Enable Optional repositories with RHSM: https://access.redhat.com/solutions/392003
 .. _Configure repositories with YUM: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/sec-configuring_yum_and_yum_repositories#sec-Managing_Yum_Repositories
 .. _Advanced repositories configuration: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/sec-configuring_yum_and_yum_repositories#sec-Setting_repository_Options
+.. _SaltStack: https://www.saltstack.com
+.. _Puppet: https://puppet.com
 
 MetalK8s_ clusters require machines running CentOS_ / RHEL_ 7.6 or higher as
 their operating system. These machines may be virtual or physical, with no
@@ -16,14 +18,37 @@ difference in setup procedure.
 For this installation, 5 machines are required (or 3, if running workload
 applications on your control plane nodes).
 
-Sizing
-------
-Each machine should have at least 2 CPU cores, 4 GB of RAM, and a root
-partition larger than 40 GB.
+Machines must **not** be managed by any configuration management system
+(e.g. SaltStack_, Puppet_).
+
+    .. warning::
+        Distribution must be, as much as possible, left intact (no tuning,
+        tweaking, configuration nor software installation).
 
 Proxies
 -------
 For nodes operating behind a proxy, see :ref:`Bootstrap Configuration`
+
+Linux Kernel Version
+--------------------
+Linux Kernel shipped with latest (7.7) and previous versions of
+CentOS_ / RHEL_ 7 is affected by a cgroups memory leak bug.
+
+Kernel must be at least in version 3.10.0-1062.4.1 for this bug to be fixed.
+
+The version can be retrieved using:
+
+    .. code-block:: shell
+
+        uname -r
+
+If the installed version is lower than the one above, it must
+be upgraded:
+
+    .. code-block:: shell
+
+        yum upgrade -y kernel-3.10.0-1062.4.1.el7
+        reboot
 
 Provisioning
 ------------
@@ -102,7 +127,14 @@ For more detail(s), refer to the official Red Hat documentation:
     - `Configure repositories with YUM`_
     - `Advanced repositories configuration`_
 
-Example OpenStack deployment
-----------------------------
+:term:`etcd`
+^^^^^^^^^^^^
+For production environments, a dedicated block device for :term:`etcd` is
+recommended for better performance and stability.
+If possible, use a SSD which provides lower write latencies, with less
+variance than a spinning disk, thus improving the reliability of :term:`etcd`.
 
-.. todo:: Extract the Terraform tooling used in CI for ease of use.
+The device must be formatted and mounted on `/var/lib/etcd`.
+
+For further information on :term:`etcd` hardware requirements, see the
+`official documentation <https://etcd.io/docs/v3.3.12/op-guide/hardware>`_.
