@@ -297,12 +297,14 @@ models:
         ISO_MOUNTPOINT: "/var/tmp/metalk8s"
         TEST_HOSTS_LIST: "bootstrap"
         PYTEST_FILTERS: "post and ci"
+        BOOTSTRAP_BACKUP_ARCHIVE: ""
       command: >
         ssh -F ssh_config bastion --
         "cd metalk8s &&
         export SSH_CONFIG_FILE=\"${SSH_CONFIG_FILE}\" &&
         export ISO_MOUNTPOINT=\"${ISO_MOUNTPOINT}\" &&
         export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
+        export BOOTSTRAP_BACKUP_ARCHIVE=\"${BOOTSTRAP_BACKUP_ARCHIVE}\" &&
         tox -e tests -- ${PYTEST_ARGS:-""} -m \"${PYTEST_FILTERS}\""
       workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       haltOnFailure: true
