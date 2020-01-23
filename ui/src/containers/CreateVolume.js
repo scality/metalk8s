@@ -4,7 +4,7 @@ import { useRouteMatch, useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
-import Loader from '../components/Loader';
+import loadable from 'react-loadable';
 import { Input, Button, Breadcrumb, Banner } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import {
@@ -219,8 +219,16 @@ const CreateVolume = props => {
   });
   const isStorageClassExist = storageClassesName.length > 0;
 
+  const LoadingComponent = () => <h3>please wait...</h3>;
+
+  const AsyncLoaderComponent = loadable({
+    loader: () =>
+      import(/* webpackChunkName: "loader" */ '../components/Loader'),
+    loading: LoadingComponent,
+  });
+
   return isStorageClassLoading ? (
-    <Loader />
+    <AsyncLoaderComponent />
   ) : (
     <CreateVolumeContainer>
       <BreadcrumbContainer>

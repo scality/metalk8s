@@ -4,6 +4,8 @@ const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
+  .BundleAnalyzerPlugin;
 
 module.exports = {
   entry: {
@@ -11,6 +13,7 @@ module.exports = {
   },
   output: {
     filename: 'metalK8s.[contenthash:8].js',
+    chunkFilename: '[name].bundle.[contenthash:8].js',
     library: 'metalK8s',
     libraryTarget: 'amd',
     path: path.resolve(__dirname, '../build/metalK8s'),
@@ -58,6 +61,7 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(['../build/metalK8s']),
+    new BundleAnalyzerPlugin(),
     new ManifestPlugin(),
   ],
   devtool: 'source-map',

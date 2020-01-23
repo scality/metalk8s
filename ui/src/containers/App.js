@@ -7,10 +7,10 @@ import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
 import { OidcProvider } from 'redux-oidc';
 import { Route, Switch } from 'react-router-dom';
+import loadable from 'react-loadable';
 
 import translations_en from '../translations/en';
 import translations_fr from '../translations/fr';
-import Loader from '../components/Loader';
 import Layout from './Layout';
 import CallbackPage from './LoginCallback';
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
@@ -30,6 +30,13 @@ const App = props => {
   );
   const isUserLoaded = useSelector(state => state.config.isUserLoaded);
   const dispatch = useDispatch();
+  const LoadingComponent = () => <h3>please wait...</h3>;
+
+  const AsyncLoaderComponent = loadable({
+    loader: () =>
+      import(/* webpackChunkName: "loader" */ '../components/Loader'),
+    loading: LoadingComponent,
+  });
 
   useEffect(() => {
     document.title = messages[language].product_name;
@@ -55,7 +62,7 @@ const App = props => {
       </IntlProvider>
     </OidcProvider>
   ) : (
-    <Loader />
+    <AsyncLoaderComponent />
   );
 };
 

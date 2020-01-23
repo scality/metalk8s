@@ -11,7 +11,7 @@ import * as serviceWorker from './serviceWorker';
 import reducer from './ducks/reducer';
 import sagas from './ducks/sagas';
 import history, { setHistoryBaseName } from './history';
-
+import setPublicPath from '../config/setPublicPath';
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
     ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
@@ -50,7 +50,12 @@ const reactLifecycles = singleSpaReact({
   domElementGetter,
 });
 
-export const bootstrap = [reactLifecycles.bootstrap];
+export const bootstrap = [
+  () => {
+    return setPublicPath();
+  },
+  reactLifecycles.bootstrap,
+];
 
 export const mount = [reactLifecycles.mount];
 
