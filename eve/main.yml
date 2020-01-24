@@ -1009,11 +1009,6 @@ stages:
           env:
             <<: *_env_prev_patch_version
             ISO_PATH: /tmp/metalk8s.iso
-      # MetalK8s 2.4.0 and 2.4.1 need hostname as minion_id
-      # https://github.com/scality/metalk8s/issues/2043
-      - ShellCommand: &set_hostname_to_minion_id
-          name: Change hostname to match minion id
-          command: sudo hostnamectl set-hostname "$(cat /etc/salt/minion_id)"
       - ShellCommand:
           <<: *bootstrap_config
           env: *_env_prev_patch_version
@@ -1089,7 +1084,6 @@ stages:
       # --- Prepare for Bootstrap with patch version N ---
       - ShellCommand: *create_mountpoint
       - ShellCommand: *mount_iso
-      - ShellCommand: *set_hostname_to_minion_id
       - ShellCommand: *bootstrap_config
       # --- Install patch version N ---
       - ShellCommand: *run_bootstrap
