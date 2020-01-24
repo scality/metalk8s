@@ -951,7 +951,8 @@ stages:
           name: Run slow tests locally
           env:
             <<: *_env_local_tests
-            PYTEST_FILTERS: "post and ci and not multinode and slow"
+            PYTEST_FILTERS: >-
+              post and ci and not multinode and slow and not restore
       - ShellCommand:
           name: Cypress test
           command: bash cypress.sh
@@ -1626,7 +1627,8 @@ stages:
           env:
             <<: *_env_bastion_tests
             PYTEST_ARGS: "--suppress-no-test-exit-code"
-            PYTEST_FILTERS: "post and ci and slow and not bootstrap"
+            PYTEST_FILTERS: >-
+              post and ci and slow and not bootstrap and not restore
       - ShellCommand:
           <<: *generate_report_over_ssh
           env:
