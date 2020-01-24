@@ -212,7 +212,7 @@ models:
           controlPlane: 10.100.0.0/16
           workloadPlane: 10.100.0.0/16
         ca:
-          minion: $(hostname)
+          minion: "bootstrap"
         apiServer:
           host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
         archives:
@@ -339,8 +339,7 @@ models:
         OS_USERNAME: "%(secret:scality_cloud_username)s"
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
-        # FIXME: this makes hostnames too long
-        # TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
+        TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
       name: Destroy openstack virtual infra
@@ -1003,6 +1002,11 @@ stages:
           env:
             <<: *_env_prev_patch_version
             ISO_PATH: /tmp/metalk8s.iso
+      # MetalK8s 2.4.0 and 2.4.1 need hostname as minion_id
+      # https://github.com/scality/metalk8s/issues/2043
+      - ShellCommand: &set_hostname_to_minion_id
+          name: Change hostname to match minion id
+          command: sudo hostnamectl set-hostname "$(cat /etc/salt/minion_id)"
       - ShellCommand:
           <<: *bootstrap_config
           env: *_env_prev_patch_version
@@ -1078,6 +1082,7 @@ stages:
       # --- Prepare for Bootstrap with patch version N ---
       - ShellCommand: *create_mountpoint
       - ShellCommand: *mount_iso
+      - ShellCommand: *set_hostname_to_minion_id
       - ShellCommand: *bootstrap_config
       # --- Install patch version N ---
       - ShellCommand: *run_bootstrap
