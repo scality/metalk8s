@@ -1,9 +1,9 @@
 Post-Installation Procedure
 ===========================
 
-.. _Provision Prometheus storage:
+.. _Provision Prometheus Storage:
 
-Provision storage for Prometheus services
+Provision Storage for Prometheus Services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After bootstrapping the cluster, the Prometheus and AlertManager services used
 to monitor the system will not be running (the respective :term:`Pods <Pod>`

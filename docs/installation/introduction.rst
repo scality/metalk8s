@@ -124,7 +124,7 @@ Nodes
 containers and can be managed by the cluster (control plane services,
 described below).
 
-Control plane and Workload plane
+Control Plane and Workload Plane
 """"""""""""""""""""""""""""""""
 This dichotomy is central to MetalK8s, and often referred to in other
 Kubernetes concepts.
@@ -148,7 +148,7 @@ will be deployed via Kubernetes objects, managed by services provided by the
    Nodes may belong to both planes, so that one can run applications
    alongside the control plane services.
 
-control plane nodes often are responsible for providing storage for
+Control plane nodes often are responsible for providing storage for
 :term:`API Server`, by running :term:`etcd`. This responsibility may be
 offloaded to other nodes from the workload plane (without the ``etcd`` taint).
 
