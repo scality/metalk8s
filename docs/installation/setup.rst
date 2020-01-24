@@ -125,6 +125,8 @@ For more detail(s), refer to the official Red Hat documentation:
     - `Configure repositories with YUM`_
     - `Advanced repositories configuration`_
 
+.. _Setup etcd partition:
+
 :term:`etcd`
 ^^^^^^^^^^^^
 For production environments, a dedicated block device for :term:`etcd` is

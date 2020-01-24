@@ -61,8 +61,8 @@ offering the finest control over the entire platform:
 - One or more machines dedicated to running Infra services (see
   :ref:`the Infra role<node-role-infra>`)
 - Any number of machines dedicated to running applications, the number and
-  sizing depending on the applications (for instance, Zenko_ would recommend
-  using three or more machines)
+  :ref:`sizing<installation-intro-sizing>` depending on the applications (for
+  instance, Zenko_ would recommend using three or more machines)
 
 .. image:: img/extended-arch.png
    :width: 100%
@@ -237,3 +237,54 @@ communications:
 In case of conflicts with the existing infrastructure, make sure to choose
 other ranges during the
 :ref:`Bootstrap configuration <Bootstrap Configuration>`.
+
+
+Additional Notes
+^^^^^^^^^^^^^^^^
+
+.. _installation-intro-sizing:
+
+Sizing
+""""""
+Defining an appropriate sizing for the machines in a MetalK8s cluster strongly
+depends on the selected architecture and the expected future variations to
+this architecture. Refer to the documentation of the applications planned to
+run in the deployed cluster before completing the sizing, as their needs will
+compete with the cluster's.
+
+Each :ref:`role<node-roles>`, describing a group of services, requires a
+certain amount of resources for it to run properly. If multiple roles are used
+on a single Node, these requirements add up.
+
++----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+|      Role      |       Services        |   CPU    |  RAM   |        Required storage         |     Recommended storage     |
++================+=======================+==========+========+=================================+=============================+
+| bootstrap      | Package repositories, | 1 core   | 2 GB   | Sufficient space for the        |                             |
+|                | container registries, |          |        | product ISO archives            |                             |
+|                | Salt master           |          |        |                                 |                             |
++----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+| etcd           | ``etcd`` database     | 0.5 core | 1 GB   | 1 GB for                        |                             |
+|                | for K8s API           |          |        | ``/var/lib/etcd``               |                             |
++----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+| master         | K8s API,              | 0.5 core | 1 GB   |                                 |                             |
+|                | scheduler, and        |          |        |                                 |                             |
+|                | controllers           |          |        |                                 |                             |
++----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+| infra          | Monitoring services,  | 0.5 core | 2 GB   | 10 GB partition for Prometheus  |                             |
+|                | Ingress controllers   |          |        | 1 GB partition for Alertmanager |                             |
++----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+| *requirements* | Salt minion,          | 0.2 core | 0.5 GB | **40 GB root partition**        | 100 GB or more for ``/var`` |
+| *common to*    | Kubelet               |          |        |                                 |                             |
+| *any Node*     |                       |          |        |                                 |                             |
++----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+
+These numbers are not accounting for highly unstable workloads or other sources
+of unpredictable load on the cluster services, and it is recommended to provide
+an additional 50% of resources as a safety margin.
+
+Consider the `official recommendations for etcd sizing
+<https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/hardware.md>`_
+as the stability of a MetalK8s installation depends strongly on the backing
+``etcd`` stability (see :ref:`this note<Setup etcd partition>` for more
+details). Prometheus and Alertmanager also require storage, as explained in
+:ref:`this section<Provision Prometheus Storage>`.
