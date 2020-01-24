@@ -174,12 +174,6 @@ MetalK8s uses five different **roles**, that may be combined freely:
   The ``etcd`` role marks a node running :term:`etcd` for storage of
   :term:`API Server`.
 
-.. _node-role-node:
-
-``node-role.kubernetes.io/node``
-  This role marks a workload plane node. It is included implicitly by all
-  other roles.
-
 .. _node-role-infra:
 
 ``node-role.kubernetes.io/infra``
@@ -200,6 +194,10 @@ MetalK8s uses five different **roles**, that may be combined freely:
   In practice, this role is used in conjunction with the ``master``
   and ``etcd`` roles for bootstrapping the control plane.
 
+In the :ref:`architecture diagrams<installation-intro-architecture>` presented
+above, each box represents a role (with the ``node-role.kubernetes.io/`` prefix
+omitted).
+
 .. _node-taints:
 
 Node Taints
@@ -211,6 +209,28 @@ corresponding :term:`tolerations <Toleration>` can be scheduled on that Node.
 Taints allow dedicating Nodes to specific use-cases, such as having Nodes
 dedicated to running control plane services.
 
+Refer to the :ref:`architecture diagrams<installation-intro-architecture>`
+above for examples: each **T** marker on a role means the taint corresponding
+to this role has been applied on the Node.
+
+Note that Pods from the control plane services (corresponding to ``master`` and
+``etcd`` roles) have tolerations for the ``bootstrap`` and ``infra`` taints.
+This is because after :doc:`bootstrapping the first Node<./bootstrap>`, it
+will be configured as follows:
+
+.. image:: img/bootstrap-single-node-arch.png
+   :width: 100%
+
+The taints applied are only tolerated by services deployed by MetalK8s. If the
+selected architecture requires workloads to run on the Bootstrap node, these
+taints should be removed (see the
+:ref:`compact architecture<installation-intro-compact-arch>` diagram).
+
+.. note::
+
+   To get more in-depth information about taints and tolerations, see
+   `the official Kubernetes documentation
+   <https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/>`_.
 
 .. _installation-intro-networks:
 
