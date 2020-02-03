@@ -76,7 +76,7 @@ class FileTree(base.CompositeTarget):
         if not self.directories:
             self._root = self.source_prefix
         else:
-            self._root = self.directories[-1].relative_to(self.destination)
+            self._root = self.directories[0].relative_to(self.destination)
         super().__init__(basename=basename, **kwargs)
 
     directories   = property(operator.attrgetter('_dirs'))
@@ -111,7 +111,7 @@ class FileTree(base.CompositeTarget):
     def make_directories(self) -> types.TaskDict:
         """Return a task that create a directory hierarchy."""
         def mkdirs(targets: Sequence[str]) -> None:
-            for directory in reversed(targets):
+            for directory in targets:
                 Path(directory).mkdir(exist_ok=True)
 
         task = self.basic_task
@@ -160,7 +160,7 @@ class FileTree(base.CompositeTarget):
             dirs.update(path.parents)
         dirs.discard(Path('.'))
         # Sort by depth, from the leaves to the root.
-        return sorted(dirs, key=lambda path: -str(path).count('/'))
+        return sorted(dirs, key=lambda path: str(path).count('/'))
 
     def _get_task_dep_for_copy(self) -> List[str]:
         """Return the list of tasks to execute before copying the files."""
