@@ -55,6 +55,7 @@ Install repositories manifest:
         package_path: /{{ repo.relative_path }}
         image_path: '/images/'
         nginx_confd_path: {{ repo.config.directory }}
+        probe_host: {{ grains.metalk8s.control_plane_ip }}
     - require:
       - containerd: Inject nginx image
       - file: Generate repositories nginx configuration
@@ -83,7 +84,8 @@ Ensure repositories container is up:
 
 Wait for Repositories container to answer:
   http.wait_for_successful_query:
-   - name: http://127.0.0.1:{{ repo.port }}/{{ saltenv }}/
+   - name: http://{{ grains.metalk8s.control_plane_ip }}:{{
+     repo.port }}/{{ saltenv }}/
    - status: 200
    - require:
      - module: Ensure repositories container is up
