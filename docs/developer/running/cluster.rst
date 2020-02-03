@@ -20,6 +20,8 @@ This command will start a virtual machine (using VirtualBox) and:
 - import a private SSH key (automatically generated in ``.vagrant``)
 - generate a boostrap configuration
 - execute the bootstrap script to make this machine a bootstrap node
+- provision sparse-file Volumes for Prometheus and Alertmanager to run on this
+  bootstrap node
 
 After executing this command, you have a MetalK8s bootstrap node up and running
 and you can connect to it by using ``vagrant ssh bootstrap``.
