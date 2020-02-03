@@ -448,6 +448,17 @@ models:
         done
       alwaysRun: true
 
+  - ShellCommand: &copy_bastion_pub_key_ssh
+      name: Send bastion public key to nodes
+      command: >
+        for host in $HOSTS_LIST; do
+          ssh -F ssh_config bastion "cat .ssh/bastion.pub" |
+          ssh -F ssh_config $host "cat >> .ssh/authorized_keys"
+        done
+      env:
+        HOSTS_LIST: bootstrap
+      workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+
 stages:
   pre-merge:
     worker:
@@ -1504,17 +1515,9 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
-          # FIXME: find a way to share bastion public key to all spawned
-          # instances from Terraform
-          name: Send bastion public key to nodes
-          command: >
-            scp -F ssh_config -3 bastion:.ssh/bastion.pub bootstrap:.ssh/ &&
-            ssh -F ssh_config bootstrap
-            "cat .ssh/bastion.pub >> .ssh/authorized_keys" &&
-            scp -F ssh_config -3 bastion:.ssh/bastion.pub node1:.ssh/ &&
-            ssh -F ssh_config node1
-            "cat .ssh/bastion.pub >> .ssh/authorized_keys"
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          <<: *copy_bastion_pub_key_ssh
+          env:
+            HOSTS_LIST: "bootstrap node1"
       - ShellCommand:
           # FIXME: find a cleaner way with Terraform.
           name: Send bastion private key to bootstrap
