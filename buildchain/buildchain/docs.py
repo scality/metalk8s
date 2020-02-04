@@ -70,9 +70,14 @@ def task__doc_mkdir_iso_root() -> types.TaskDict:
 
 def task__doc_mkdir_build_root() -> types.TaskDict:
     """Create the documentation build root directory."""
-    return targets.Mkdir(
+    def clean_doctrees() -> None:
+        coreutils.rm_rf(constants.DOCS_BUILD_ROOT/'doctrees')
+
+    task = targets.Mkdir(
         directory=constants.DOCS_BUILD_ROOT, task_dep=['_build_root']
     ).task
+    task['clean'] = [clean_doctrees, doit.task.clean_targets]
+    return task
 
 
 def task__doc_deploy() -> types.TaskDict:
