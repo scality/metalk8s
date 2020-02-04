@@ -25122,8 +25122,9 @@ spec:
       - configMap:
           name: prometheus-operator-grafana
         name: config
-      - emptyDir: {}
-        name: storage
+      - name: storage
+        persistentVolumeClaim:
+          claimName: prometheus-operator-grafana-pvc
       - emptyDir: {}
         name: sc-dashboard-volume
       - configMap:

@@ -118,6 +118,20 @@ grafana:
       operator: 'Exists'
       effect: 'NoSchedule'
 
+  persistence:
+    type: pvc
+    enabled: true
+    storageClassName: metalk8s-prometheus
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    finalizers:
+      - kubernetes.io/pvc-protection
+    existingClaim: 'prometheus-operator-grafana-pvc'
+
+  initChownData:
+    enabled: false
+
   ingress:
     enabled: true
     annotations:
