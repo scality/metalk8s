@@ -1,5 +1,5 @@
 # This file contains manifests to create `sparseLoopDevice` volumes for
-# Prometheus and AlertManager to be deployed.
+# Prometheus, Grafana and AlertManager to be deployed.
 # Make sure to change the `nodeName` to the node name of your bootstrap node.
 ---
 apiVersion: storage.metalk8s.scality.com/v1alpha1
@@ -29,4 +29,18 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: 'prometheus-operator-alertmanager'
+---
+apiVersion: storage.metalk8s.scality.com/v1alpha1
+kind: Volume
+metadata:
+  name: bootstrap-grafana
+spec:
+  nodeName: BOOTSTRAP_NODE_NAME
+  storageClassName: metalk8s-prometheus
+  sparseLoopDevice:
+    size: 10Gi
+  template:
+    metadata:
+      labels:
+        app: 'grafana'
 ---

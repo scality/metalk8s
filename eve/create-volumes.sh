@@ -58,6 +58,12 @@ echo "Creating storage volumes"
 sed "s/BOOTSTRAP_NODE_NAME/${BOOTSTRAP_NODE_NAME}/" "${PRODUCT_MOUNT}/examples/prometheus-sparse.yaml" | \
     kubectl apply -f -
 
+echo "Waiting for PV 'bootstrap-grafana' to be provisioned"
+if ! retry "$MAX_TRIES" check_pv_exists bootstrap-grafana; then
+    echo "PV not created"
+    exit 1
+fi
+
 echo "Waiting for PV 'bootstrap-alertmanager' to be provisioned"
 if ! retry "$MAX_TRIES" check_pv_exists bootstrap-alertmanager; then
     echo "PV not created"
@@ -67,6 +73,14 @@ fi
 echo "Waiting for PV 'bootstrap-prometheus' to be provisioned"
 if ! retry "$MAX_TRIES" check_pv_exists bootstrap-prometheus; then
     echo "PV not created"
+    exit 1
+fi
+
+echo 'Waiting for Grafana to be running'
+GRAFANA_POD_NAME=$(kubectl get pod -l app=grafana -o jsonpath="{.items[0].metadata.name}" -n metalk8s-monitoring)
+if ! retry "$MAX_TRIES" check_pod_is_in_phase metalk8s-monitoring \
+      "$GRAFANA_POD_NAME" Running; then
+    echo "Grafana is not Running"
     exit 1
 fi
 
