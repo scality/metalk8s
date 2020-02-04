@@ -215,6 +215,16 @@ if HAS_LIBS:
             api_cls=k8s_client.CoreV1Api,
             name='node',
         ),
+        ('v1', 'PersistentVolume'): KindInfo(
+            model=k8s_client.V1PersistentVolume,
+            api_cls=k8s_client.CoreV1Api,
+            name='persistent_volume',
+        ),
+        ('v1', 'PersistentVolumeClaim'): KindInfo(
+            model=k8s_client.V1PersistentVolumeClaim,
+            api_cls=k8s_client.CoreV1Api,
+            name='namespaced_persistent_volume_claim',
+        ),
         ('v1', 'Pod'): KindInfo(
             model=k8s_client.V1Pod,
             api_cls=k8s_client.CoreV1Api,
