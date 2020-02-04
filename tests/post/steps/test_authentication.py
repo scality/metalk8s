@@ -81,26 +81,43 @@ def control_plane_ip(host):
 
 # Given {{{
 
+
 @given(parsers.parse(
     "the control-plane Ingress path '{path}' is available"))
-def check_cp_ingress_pod(request, host, k8s_client, control_plane_ip):
+def check_cp_ingress_pod_and_container(
+    request,
+    host,
+    k8s_client,
+    control_plane_ip
+):
     ssh_config = request.config.getoption('--ssh-config')
     label = "release=nginx-ingress-control-plane"
+    namespace = "metalk8s-ingress"
 
-    # Ensure nginx ingress control-plane controller is running
-    def _wait_for_ingress():
-        namespace = "metalk8s-ingress"
-        pods = kube_utils.get_pods(
-            k8s_client, ssh_config, label, namespace=namespace
-        )
-        assert len(pods) > 0
+    def _wait_for_ingress_pod_and_container():
+        try:
+            pods = kube_utils.get_pods(
+                k8s_client, ssh_config, label, namespace=namespace
+            )
+        except Exception as exc:
+            pytest.fail("unable to get pods with error: {}".format(exc))
+
+        assert pods, ("No pod with label {} found".format(label))
+
+        for pod in pods:
+            assert all(
+                container.ready == True
+                for container in pod.status.container_statuses
+            )
+
     utils.retry(
-        _wait_for_ingress,
+        _wait_for_ingress_pod_and_container,
         times=10,
-        wait=3,
+        wait=5,
         name="wait for pod labeled '{}'".format(label)
     )
-    # Todo: use the ingress object to check it's addresses
+    # Todo: check the provided path and ensure it does not redirect to the
+    # default-backend
 
 
 # }}}
@@ -168,7 +185,7 @@ def reach_openid_config(host, control_plane_ip):
             control_plane_ip, INGRESS_PORT
         )
 
-    utils.retry(_get_openID_config, times=10, wait=3)
+    utils.retry(_get_openID_config, times=10, wait=5)
 
 
 @then(parsers.parse(
