@@ -179,6 +179,10 @@ def _object_manipulation_function(action):
             call_kwargs['body'] = obj
 
         if action == 'replace' and old_object:
+            # pvc are immutable after creation
+            if obj.api_version == 'v1' and obj.kind == 'PersistentVolumeClaim':
+                return
+
             # Some attributes have to be preserved
             # otherwise exceptions will be thrown
             if 'resource_version' in old_object['metadata']:
