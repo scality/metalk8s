@@ -5,10 +5,10 @@ Post-Installation Procedure
 
 Provision storage for Prometheus services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-After bootstrapping the cluster, the Prometheus and AlertManager services used
-to monitor the system will not be running (the respective :term:`Pods <Pod>`
-will remain in *Pending* state), because they require persistent storage to be
-available.
+After bootstrapping the cluster, the Prometheus, Grafana and AlertManager
+services used to monitor the system will not be running
+(the respective :term:`Pods <Pod>` will remain in *Pending* state), because
+they require persistent storage to be available.
 
 You can either provision these storage volumes on the bootstrap
 node, or later on other nodes joining the cluster. Templates for the required
@@ -21,7 +21,7 @@ for more information on how to provision persistent storage.
 
 .. note::
 
-   When deploying using Vagrant, persistent volumes for Prometheus and
+   When deploying using Vagrant, persistent volumes for Prometheus, Grafana and
    AlertManager are already provisioned.
 
 .. todo::

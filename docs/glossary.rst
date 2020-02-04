@@ -47,6 +47,14 @@ Glossary
 
      For more information, see `etcd.io <https://etcd.io>`_.
 
+   Grafana
+     The Grafana is a service that produces summary metrics about containers
+     running on Kubernetes nodes. It includes dashboards that give visibility
+     into the entire Kubernetes Cluster.
+
+     For more information, See the official Grafana documentation
+     `Grafana <https://grafana.com/docs/grafana/latest//>`_.
+
    Kubeconfig
      A configuration file for :term:`kubectl`, which includes authentication
      through embedded certificates.
