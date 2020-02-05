@@ -33,12 +33,12 @@ spec:
           protocol: TCP
       livenessProbe:
         httpGet:
-          host: localhost
+          host: {{ probe_host }}
           port: http
           path: /
       readinessProbe:
         httpGet:
-          host: localhost
+          host: {{ probe_host }}
           port: http
           path: /
       volumeMounts:

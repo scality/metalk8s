@@ -1,5 +1,5 @@
 server {
-    listen       {{ listening_port }};
+    listen       {{ listening_address }}:{{ listening_port }};
     server_name  localhost;
 
     location / {
