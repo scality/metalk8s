@@ -178,7 +178,6 @@ def task__download_deb_packages() -> types.TaskDict:
                 continue
             coreutils.rm_rf(repository.pkgdir)
         utils.unlink_if_exist(witness)
-        constants.REPO_DEB_ROOT.rmdir()
 
     def mkdirs() -> None:
         """Create directories for the repositories."""
