@@ -10,12 +10,13 @@ self-healing system configuration, and more.
 The installation of a MetalK8s cluster can be broken down into
 the following steps:
 
-#. :doc:`Setup <./setup>` of the environment (with requirements and example
-   OpenStack deployment)
+#. :doc:`Setup <./setup>` of the environment
 #. :doc:`Deployment <./bootstrap>` of the :term:`Bootstrap node`, the first
    machine in the cluster
 #. :doc:`Expansion <./expansion>` of the cluster, orchestrated from the
    Bootstrap node
+#. :doc:`Post installation <./post-install>` configuration steps and sanity
+   checks
 
 .. _Kubernetes: https://kubernetes.io/
 
