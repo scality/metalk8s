@@ -46,24 +46,10 @@ def task__ui_mkdir_build_root() -> types.TaskDict:
 def task__ui_build() -> types.TaskDict:
     """Build the MetalK8s UI NodeJS code."""
     def clean() -> None:
-        coreutils.rm_rf(constants.UI_BUILD_ROOT)
-
-    build_ui = docker_command.DockerRun(
-        builder=builder.UI_BUILDER,
-        command=['/entrypoint.sh'],
-        run_config=docker_command.default_run_config(
-            constants.ROOT/'ui'/'entrypoint.sh'
-        ),
-        mounts=[
-            utils.bind_mount(
-                target=Path('/home/node/build'),
-                source=constants.UI_BUILD_ROOT,
-            ),
-        ],
-    )
+        run_ui_builder('clean')()
 
     return {
-        'actions': [build_ui],
+        'actions': [run_ui_builder('build')],
         'title': utils.title_with_target1('NPM BUILD'),
         'task_dep': [
             '_build_builder:{}'.format(builder.UI_BUILDER.name),
@@ -88,6 +74,23 @@ def task__ui_config() -> types.TaskDict:
         'file_dep': [source],
         'clean': True,
     }
+
+
+def run_ui_builder(cmd: str) -> docker_command.DockerRun:
+    """Return a DockerRun instance of the UI builder for the given command."""
+    return docker_command.DockerRun(
+        builder=builder.UI_BUILDER,
+        command=['/entrypoint.sh', cmd],
+        run_config=docker_command.default_run_config(
+            constants.ROOT/'ui'/'entrypoint.sh'
+        ),
+        mounts=[
+            utils.bind_mount(
+                target=Path('/home/node/build'),
+                source=constants.UI_BUILD_ROOT,
+            ),
+        ],
+    )
 
 
 __all__ = utils.export_only_tasks(__name__)
