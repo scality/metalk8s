@@ -224,8 +224,19 @@ will be configured as follows:
 
 The taints applied are only tolerated by services deployed by MetalK8s. If the
 selected architecture requires workloads to run on the Bootstrap node, these
-taints should be removed (see the
-:ref:`compact architecture<installation-intro-compact-arch>` diagram).
+taints should be removed.
+
+.. image:: img/bootstrap-remove-taints.png
+   :width: 100%
+
+To achieve this, use the following commands after deployment:
+
+.. code-block:: shell
+
+   root@bootstrap $ kubectl taint nodes <bootstrap-node-name> \
+                      node-role.kubernetes.io/bootstrap:NoSchedule-
+   root@bootstrap $ kubectl taint nodes <bootstrap-node-name> \
+                      node-role.kubernetes.io/infra:NoSchedule-
 
 .. note::
 
