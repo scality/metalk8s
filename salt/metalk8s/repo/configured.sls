@@ -13,6 +13,7 @@ Generate repositories nginx configuration:
     - makedirs: true
     - backup: false
     - defaults:
+        listening_address: {{ grains.metalk8s.control_plane_ip }}
         listening_port: {{ repo.port }}
 
 Deploy common container registry nginx configuration:
