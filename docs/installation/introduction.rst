@@ -29,6 +29,16 @@ it can impact sizing of the machines and other infrastructure-related details.
 
 .. note:: "Machines" may indicate bare-metal servers or VMs interchangeably.
 
+.. warning::
+
+   MetalK8s is not designed to handle world-distributed multi-sites
+   architectures. Instead, it focuses on providing a highly resilient cluster
+   at the datacenter scale. To manage multiple sites, look into solutions
+   provided at the application level, or alternatives from the community
+   (such as what `the SIG Multicluster
+   <https://github.com/kubernetes/community/tree/master/sig-multicluster>`_
+   provides).
+
 Standard Architecture
 """""""""""""""""""""
 The recommended architecture when installing a small-sized MetalK8s cluster
