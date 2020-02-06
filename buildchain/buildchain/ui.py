@@ -36,11 +36,12 @@ def task_ui() -> types.TaskDict:
 
 def task__ui_mkdir_build_root() -> types.TaskDict:
     """Create the MetalK8s UI build root directory."""
-    return targets.Mkdir(
-        directory=constants.UI_BUILD_ROOT,
-        user_mask=0o000,  # node user needs to be able to write in this folder
-        task_dep=['_build_root'],
+    task = targets.Mkdir(
+        directory=constants.UI_BUILD_ROOT, task_dep=['_build_root'],
     ).task
+    # `node` user in the container needs to be able to write in this folder.
+    task['actions'].append(lambda: constants.UI_BUILD_ROOT.chmod(0o777))
+    return task
 
 
 def task__ui_build() -> types.TaskDict:
