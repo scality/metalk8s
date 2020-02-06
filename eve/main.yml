@@ -1552,19 +1552,6 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
-          name: Provision Prometheus and AlertManager storage
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
-          command: >
-            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
-            ssh -F $SSH_CONFIG bootstrap
-            sudo env
-            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
-            PRODUCT_MOUNT=/var/tmp/metalk8s
-            /tmp/create-volumes.sh
-          haltOnFailure: true
-      - ShellCommand:
           name: Install kubectl on the boostrap node
           command: >
             ssh -F ssh_config bootstrap
@@ -1592,8 +1579,10 @@ stages:
             | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
       - ShellCommand:
           <<: *wait_pods_running_ssh
+          name: Wait for "kube-system" Pods to be in running state
           env:
             <<: *_env_wait_pods_running_ssh
+            EXTRA_OPTS: "--namespace kube-system"
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
       - ShellCommand:
@@ -1602,6 +1591,26 @@ stages:
           env:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "install and ci and multinodes and not node2"
+      - ShellCommand:
+          name: Provision Prometheus and AlertManager storage
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          command: >
+            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
+            ssh -F $SSH_CONFIG bootstrap
+            sudo env
+            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
+            PRODUCT_MOUNT=/var/tmp/metalk8s
+            NODE_NAME=node1
+            /tmp/create-volumes.sh
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *wait_pods_running_ssh
+          env:
+            <<: *_env_wait_pods_running_ssh
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
       - ShellCommand:
           <<: *bastion_tests
           name: Run fast tests on the bastion
