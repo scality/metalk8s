@@ -463,6 +463,13 @@ stages:
             <<: *_env_final_status_artifact_success
             STEP_NAME: build
       - Upload: *upload_final_status_artifact
+      - ShellCommand:
+          name: Cleanup build tree
+          env:
+            PYTHON_SYS: python3.6
+          command: ./doit.sh clean && test ! -d _build
+          usePTY: true
+          haltOnFailure: true
 
   buildprev:
     worker: *build_worker

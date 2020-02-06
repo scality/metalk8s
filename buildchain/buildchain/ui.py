@@ -36,37 +36,25 @@ def task_ui() -> types.TaskDict:
 
 def task__ui_mkdir_build_root() -> types.TaskDict:
     """Create the MetalK8s UI build root directory."""
-    return targets.Mkdir(
-        directory=constants.UI_BUILD_ROOT,
-        user_mask=0o000,  # node user needs to be able to write in this folder
-        task_dep=['_build_root'],
+    task = targets.Mkdir(
+        directory=constants.UI_BUILD_ROOT, task_dep=['_build_root'],
     ).task
+    # `node` user in the container needs to be able to write in this folder.
+    task['actions'].append(lambda: constants.UI_BUILD_ROOT.chmod(0o777))
+    return task
 
 
 def task__ui_build() -> types.TaskDict:
     """Build the MetalK8s UI NodeJS code."""
     def clean() -> None:
-        coreutils.rm_rf(constants.UI_BUILD_ROOT)
-
-    build_ui = docker_command.DockerRun(
-        builder=builder.UI_BUILDER,
-        command=['/entrypoint.sh'],
-        run_config=docker_command.default_run_config(
-            constants.ROOT/'ui'/'entrypoint.sh'
-        ),
-        mounts=[
-            utils.bind_mount(
-                target=Path('/home/node/build'),
-                source=constants.UI_BUILD_ROOT,
-            ),
-        ],
-    )
+        run_ui_builder('clean')()
 
     return {
-        'actions': [build_ui],
+        'actions': [run_ui_builder('build')],
         'title': utils.title_with_target1('NPM BUILD'),
         'task_dep': [
             '_build_builder:{}'.format(builder.UI_BUILDER.name),
+            '_ui_mkdir_build_root',
         ],
         'file_dep': list(utils.git_ls('ui')),
         'targets': [constants.UI_BUILD_ROOT/'index.html'],
@@ -87,6 +75,23 @@ def task__ui_config() -> types.TaskDict:
         'file_dep': [source],
         'clean': True,
     }
+
+
+def run_ui_builder(cmd: str) -> docker_command.DockerRun:
+    """Return a DockerRun instance of the UI builder for the given command."""
+    return docker_command.DockerRun(
+        builder=builder.UI_BUILDER,
+        command=['/entrypoint.sh', cmd],
+        run_config=docker_command.default_run_config(
+            constants.ROOT/'ui'/'entrypoint.sh'
+        ),
+        mounts=[
+            utils.bind_mount(
+                target=Path('/home/node/build'),
+                source=constants.UI_BUILD_ROOT,
+            ),
+        ],
+    )
 
 
 __all__ = utils.export_only_tasks(__name__)

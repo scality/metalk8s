@@ -2,6 +2,26 @@
 
 set -eu
 
-npm ci
+build() {
+    npm ci
+    npm run build
+}
 
-npm run build
+clean() {
+    rm -rf /home/node/build
+}
+
+case ${1:- } in
+    build)
+        build
+        ;;
+    clean)
+        clean
+        ;;
+    '')
+        exec /bin/bash
+        ;;
+    *)
+        exec "$@"
+        ;;
+esac

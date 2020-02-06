@@ -109,7 +109,7 @@ def _remote_image(
     constants to add some arguments.
     """
     overrides.setdefault('destination', constants.ISO_IMAGE_ROOT)
-    overrides.setdefault('task_dep', ['_image_mkdir_root'])
+    overrides.setdefault('task_dep', []).append('_image_mkdir_root')
 
     image_info = _get_image_info(name)
     kwargs = dict(image_info._asdict(), repository=repository,
@@ -131,7 +131,7 @@ def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
     kwargs.setdefault('destination', constants.ISO_IMAGE_ROOT)
     kwargs.setdefault('dockerfile', constants.ROOT/'images'/name/'Dockerfile')
     kwargs.setdefault('save_on_disk', True)
-    kwargs.setdefault('task_dep', ['_image_mkdir_root'])
+    kwargs.setdefault('task_dep', []).append('_image_mkdir_root')
 
     return targets.LocalImage(
         name=name,
@@ -144,7 +144,7 @@ def _operator_image(name: str, **kwargs: Any) -> targets.OperatorImage:
     image_info = _get_image_info(name)
 
     kwargs.setdefault('destination', constants.ISO_IMAGE_ROOT)
-    kwargs.setdefault('task_dep', ['_image_mkdir_root'])
+    kwargs.setdefault('task_dep', []).append('_image_mkdir_root')
 
     return targets.OperatorImage(
         name=name,

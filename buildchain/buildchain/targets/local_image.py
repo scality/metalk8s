@@ -188,7 +188,8 @@ class LocalImage(image.ContainerImage):
         """Build a container image locally."""
         actions: List[types.Action] = [self.check_dockerfile_dependencies]
         actions.extend(self._do_build())
-        actions.extend(self._do_save())
+        if self.save_on_disk:
+            actions.extend(self._do_save())
         return actions
 
     def _do_build(self) -> List[types.Action]:
@@ -197,10 +198,6 @@ class LocalImage(image.ContainerImage):
 
     def _do_save(self) -> List[types.Action]:
         """Return the actions used to save the image."""
-        if not self.save_on_disk:
-            # If we don't save the image, at least we touch a file
-            # (to keep track of the build).
-            return [(coreutils.touch, [self.dest_dir/self.tag], {})]
         # If a destination is defined, let's save the image there.
         cmd = [
             config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
