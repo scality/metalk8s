@@ -288,3 +288,21 @@ as the stability of a MetalK8s installation depends strongly on the backing
 ``etcd`` stability (see :ref:`this note<Setup etcd partition>` for more
 details). Prometheus and Alertmanager also require storage, as explained in
 :ref:`this section<Provision Prometheus Storage>`.
+
+.. _installation-intro-cloud:
+
+Deploying with Cloud Providers
+""""""""""""""""""""""""""""""
+When installing in a virtual environment, such as `AWS EC2`_ or `OpenStack`_,
+special care will be needed for adjusting networks configuration. Virtual
+environments often add a layer of security at the port level, which should be
+disabled, or circumvented with :ref:`IP-in-IP encapsulation<enable IP-in-IP>`.
+
+Also note that Kubernetes has numerous integrations with existing cloud
+providers to provide easier access to proprietary features, such as
+load balancers. For more information, see
+`this documentation article
+<https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/>`_.
+
+.. _AWS EC2: https://aws.amazon.com/ec2/
+.. _OpenStack: https://www.openstack.org/
