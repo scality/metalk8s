@@ -26,7 +26,7 @@ setHistoryBaseName('metalK8s');
 
 const rootComponent = props => (
   <Provider store={store}>
-    <Router history={history()}>
+    <Router history={history}>
       <App store={store} url="http://localhost:8240/public" microapp={true} />
     </Router>
   </Provider>

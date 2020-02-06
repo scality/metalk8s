@@ -6,8 +6,7 @@ export const setHistoryBaseName = name => {
   basename = name;
 };
 
-export default () =>
-  createBrowserHistory({
-    /* pass a configuration object here if needed */
-    basename,
-  });
+export default createBrowserHistory({
+  /* pass a configuration object here if needed */
+  basename,
+});

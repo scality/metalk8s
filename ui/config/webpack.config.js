@@ -193,6 +193,9 @@ module.exports = function(webpackEnv) {
       // are used on the same page.
       jsonpFunction: `webpackJsonp${appPackageJson.name}`,
     },
+    devServer: {
+      historyApiFallback: true,
+    },
     optimization: {
       minimize: isEnvProduction,
       minimizer: [
