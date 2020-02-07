@@ -6,21 +6,66 @@ Post-Installation Procedure
 Provision Storage for Prometheus Services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After bootstrapping the cluster, the Prometheus and AlertManager services used
-to monitor the system will not be running (the respective :term:`Pods <Pod>`
-will remain in *Pending* state), because they require persistent storage to be
-available.
+to monitor the system **will not be running** (the respective :term:`Pods
+<Pod>` will remain in *Pending* state), because they require persistent storage
+to be available.
 
 You can either provision these storage volumes on the :term:`Bootstrap
-node`, or later on other nodes joining the cluster. Templates for the required
-volumes are available in :download:`examples/prometheus-sparse.yaml
-<../../examples/prometheus-sparse.yaml>`.
+node`, or later on other nodes joining the cluster. It is even recommended to
+separate :ref:`Bootstrap services <node-role-bootstrap>` from :ref:`Infra
+services <node-role-infra>`.
 
-Note, however, these templates use the `sparseLoopDevice` *Volume* type, which
-is not suitable for production installations. Refer to :ref:`volume-management`
-for more information on how to provision persistent storage.
+To create the required *Volume* objects, write a YAML file with the following
+contents, replacing ``<node_name>`` with the name of the :term:`Node` on which
+to run Prometheus and AlertManager, and ``<device_path[2]>`` with the ``/dev``
+path for the partitions to use:
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: storage.metalk8s.scality.com/v1alpha1
+   kind: Volume
+   metadata:
+     name: <node_name>-prometheus
+   spec:
+     nodeName: <node_name>
+     storageClassName: metalk8s-prometheus
+     rawBlockDevice:  # Choose a device with at least 10GiB capacity
+       devicePath: <device_path>
+     template:
+       metadata:
+         labels:
+           app.kubernetes.io/name: 'prometheus-operator-prometheus'
+   ---
+   apiVersion: storage.metalk8s.scality.com/v1alpha1
+   kind: Volume
+   metadata:
+     name: <node_name>-alertmanager
+   spec:
+     nodeName: <node_name>
+     storageClassName: metalk8s-prometheus
+     rawBlockDevice:  # Choose a device with at least 1GiB capacity
+       devicePath: <device_path2>
+     template:
+       metadata:
+         labels:
+           app.kubernetes.io/name: 'prometheus-operator-alertmanager'
+   ---
+
+Once this file is created with the right values filled in, run the following
+command to create the *Volume* objects (replacing ``<file_path>`` with the path
+of the aforementioned YAML file):
+
+.. code-block:: shell
+
+   root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                      apply -f <file_path>
+
+For more details on the available options for storage management, see
+:doc:`this section of the Operational Guide
+<../operation/volume_management/index>`.
 
 .. todo::
 
-   - Explain in one sentence why it is needed
-   - Procedure
+   - Sanity check
    - Troubleshooting if needed
