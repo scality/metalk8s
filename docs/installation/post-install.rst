@@ -69,3 +69,18 @@ For more details on the available options for storage management, see
 
    - Sanity check
    - Troubleshooting if needed
+
+
+Changing credentials
+^^^^^^^^^^^^^^^^^^^^
+After a fresh installation, an administrator account is created with default
+credentials. For production deployments, make sure to change those credentials
+and use safer values.
+
+To change user credentials and groups for :term:`K8s API <API Server>` (and as
+such, for :ref:`MetalK8s GUI <installation-services-admin-ui>` and
+:term:`SaltAPI`), follow :ref:`this procedure <ops-k8s-admin>`.
+
+To change Grafana user credentials, follow :ref:`this procedure
+<ops-grafana-admin>`.
+
