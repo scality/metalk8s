@@ -13,10 +13,8 @@ Prerequisites
 
 MetalK8s_ clusters require machines running CentOS_ / RHEL_ 7.6 or higher as
 their operating system. These machines may be virtual or physical, with no
-difference in setup procedure.
-
-For this installation, 5 machines are required (or 3, if running workload
-applications on your control plane nodes).
+difference in setup procedure. The number of machines to setup depends on the
+chosen architecture (see :ref:`installation-intro-architecture`).
 
 Machines must **not** be managed by any configuration management system
 (e.g. SaltStack_, Puppet_).
@@ -127,14 +125,17 @@ For more detail(s), refer to the official Red Hat documentation:
     - `Configure repositories with YUM`_
     - `Advanced repositories configuration`_
 
+.. _Setup etcd partition:
+
 :term:`etcd`
 ^^^^^^^^^^^^
-For production environments, a dedicated block device for :term:`etcd` is
+For production environments, a dedicated block device for ``etcd`` is
 recommended for better performance and stability.
 If possible, use a SSD which provides lower write latencies, with less
-variance than a spinning disk, thus improving the reliability of :term:`etcd`.
+variance than a spinning disk, thus improving the reliability of ``etcd``.
 
-The device must be formatted and mounted on `/var/lib/etcd`.
+The device must be formatted and mounted on ``/var/lib/etcd``, on Nodes
+intended to bear the :ref:`etcd role<node-role-etcd>`.
 
-For further information on :term:`etcd` hardware requirements, see the
+For further information on ``etcd`` hardware requirements, see the
 `official documentation <https://etcd.io/docs/v3.3.12/op-guide/hardware>`_.
