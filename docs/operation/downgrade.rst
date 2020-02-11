@@ -21,8 +21,8 @@ Supported Versions
 
 Downgrade Pre-requisites
 ************************
-Before proceeding with the downgrade procedure, make sure, make sure to
-complete the pre-requisites listed in :doc:`/operation/preparation`.
+Before proceeding with the downgrade procedure, make sure to complete the
+pre-requisites listed in :doc:`/operation/preparation`.
 
 You can test if your environment will successfully downgrade with the following
 command.
