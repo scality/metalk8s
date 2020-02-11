@@ -21,8 +21,8 @@ Supported Versions
 
 Upgrade Pre-requisites
 **********************
-Before proceeding with the upgrade procedure, make sure, make sure to complete
-the pre-requisites listed in :doc:`/operation/preparation`.
+Before proceeding with the upgrade procedure, make sure to complete the
+pre-requisites listed in :doc:`/operation/preparation`.
 
 You can test if your environment will successfully upgrade with the following
 command.
