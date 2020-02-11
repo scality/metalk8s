@@ -19,20 +19,16 @@ from a single entrypoint. This operation can be done either through
 
 Defining an Architecture
 ------------------------
-See the schema defined in
-:ref:`the introduction <installation-intro-install-plan>`.
+Follow the recommendations provided in
+:ref:`the introduction<installation-intro-architecture>` to choose an
+architecture.
 
-Once the Bootstrap is deployed, the other nodes will undergo four deployment
-runs, two for control plane nodes (bringing up the
-control plane to a total of three members), and two more for workload plane
-nodes.
-
-.. todo::
-
-   - explain architecture: 3 control plane + etcd, 2 workers (one being
-     dedicated for infra)
-   - remind roles and taints from intro
-
+List the machines to deploy and their associated roles, and deploy each of them
+using the following process, either from
+:ref:`the GUI<installation-expansion-ui>` or
+:ref:`CLI<installation-expansion-cli>`. Note however, that the finest control
+over :ref:`roles<node-roles>` and :ref:`taints<node-taints>` can only be
+achieved using the command-line.
 
 .. _installation-expansion-ui:
 
