@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         python3.6 \
         python3-buildbot-worker \
         python3-pip \
+        python3-setuptools \
         texlive-fonts-extra \
         texlive-fonts-recommended \
         texlive-latex-extra \
