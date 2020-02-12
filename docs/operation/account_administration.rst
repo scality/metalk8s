@@ -6,6 +6,8 @@ This section highlights **MetalK8s Account Administration** which covers
 changing the default username and password for some MetalK8s services.
 
 
+.. _ops-grafana-admin:
+
 Administering Grafana
 *********************
 
@@ -48,10 +50,10 @@ perform the following procedures:
      username and password will be overwritten with default credentials
      ``admin`` / ``admin``.
 
+.. _ops-k8s-admin:
+
 Administering MetalK8s GUI, Kubernetes API and Salt API
 *******************************************************
-
-.. _Administering-MetalK8s-GUI-Kubernetes-API-and-Salt-API:
 
 During installation, MetalK8s configures the Kubernetes API to accept Basic
 authentication, with default credentials ``admin`` / ``admin``.

@@ -58,7 +58,15 @@ Glossary
      The kubelet is the primary "node agent" that runs on each cluster node.
 
      |see K8s docs|
-     `https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/`
+     `kubelet <https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/>`_.
+
+   Namespace
+     A Namespace is a Kubernetes abstraction to support multiple virtual
+     clusters backed by the same physical cluster, providing a scope for
+     resource names.
+
+     |see K8s docs|
+     `namespaces <https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/>`_.
 
    Node
      A Node is a Kubernetes worker machine - either virtual or physical.
