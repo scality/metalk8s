@@ -140,7 +140,7 @@
     "react-app-rewired": "^2.1.3",
     "source-map-explorer": "^2.0.1",
     "webpack-bundle-analyzer": "^3.6.0",
-    "webpack-external-import": "2.1.1",
+    "webpack-external-import": "github:carlito-scality/webpack-external-import.git#microapp-poc",
     "write-file-webpack-plugin": "4.5.1",
     "webpack-merge": "^4.2.1"
   },
