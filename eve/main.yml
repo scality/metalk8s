@@ -269,7 +269,8 @@ models:
       name: Add final status to artifacts
       command: |-
         bash -c '
-          declare -r BUILD_STATUS_DIR=build_status/build_status/${STEP_NAME:-}
+          declare BUILD_STATUS_DIR=build_status
+          [[ ${STEP_NAME:-} ]] && BUILD_STATUS_DIR+="/build_status/$STEP_NAME"
           mkdir -p "$BUILD_STATUS_DIR"
           echo -n "$FINAL_STATUS" > "$BUILD_STATUS_DIR/.final_status"
         '
