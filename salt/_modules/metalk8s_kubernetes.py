@@ -298,7 +298,7 @@ update_object = _object_manipulation_function('update')
 
 # Listing resources can benefit from a simpler signature
 def list_objects(kind, apiVersion, namespace='default', all_namespaces=False,
-                 field_selector=None, **kwargs):
+                 field_selector=None, label_selector=None, **kwargs):
     """
     List all objects of a type using some object description.
 
@@ -329,6 +329,8 @@ def list_objects(kind, apiVersion, namespace='default', all_namespaces=False,
         call_kwargs['namespace'] = namespace
     if field_selector:
         call_kwargs['field_selector'] = field_selector
+    if label_selector:
+        call_kwargs['label_selector'] = label_selector
 
     kubeconfig, context = __salt__[
         'metalk8s_kubernetes.get_kubeconfig'
