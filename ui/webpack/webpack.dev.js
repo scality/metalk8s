@@ -3,7 +3,7 @@ const webpack = require('webpack');
 module.exports = commonPaths => ({
   mode: 'development',
   devtool: 'inline-source-map',
-  entry: commonPaths.entry,
+  entry: { metalk8s: commonPaths.entry },
   output: {
     filename: '[name].js',
     path: commonPaths.outputPath,

@@ -5,7 +5,7 @@ const TerserPlugin = require("terser-webpack-plugin"); */
 
 module.exports = commonPaths => ({
   mode: 'production',
-  entry: commonPaths.entry,
+  entry: { metalk8s: commonPaths.entry },
   output: {
     filename: `${commonPaths.jsFolder}/[name].[hash].js`,
     path: commonPaths.outputPath,
