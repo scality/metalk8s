@@ -9,7 +9,7 @@ import App from './containers/App';
 import * as serviceWorker from './serviceWorker';
 import reducer from './ducks/reducer';
 import sagas from './ducks/sagas';
-import history, { setHistoryBaseName } from './history';
+import history from './history';
 import setPublicPath from '../config/setPublicPath';
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -21,7 +21,6 @@ const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
 export const store = createStore(reducer, enhancer);
 
 sagaMiddleware.run(sagas);
-setHistoryBaseName('metalk8s');
 
 const rootComponent = props => (
   <Provider store={store}>

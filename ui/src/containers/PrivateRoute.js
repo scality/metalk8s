@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Route } from 'react-router-dom';
 
 const PrivateRoute = ({ component, ...rest }) => {
-  const authenticated = useSelector(state => !!state.oidc.user);
+  /*   const authenticated = useSelector(state => !!state.oidc.user);
   const userManager = useSelector(state => state.config.userManager);
 
   if (!authenticated) {
@@ -13,7 +13,9 @@ const PrivateRoute = ({ component, ...rest }) => {
     return null;
   } else {
     return <Route {...rest} component={component} />;
-  }
+  } */
+
+  return <Route {...rest} component={component} />;
 };
 
 export default PrivateRoute;
