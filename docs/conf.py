@@ -6,6 +6,7 @@
 
 import os
 import pathlib
+import subprocess
 import sys
 import yaml
 
@@ -34,11 +35,14 @@ project = 'MetalK8s'
 copyright = '2019, Scality'
 author = 'Scality'
 
+# Used for finding the project logo and defining some links
+project_identifier = 'metalk8s'
+
 # The full version, including alpha/beta/rc tags
 version = versions.VERSION
 
-# The full git reference if this is a developemnt release (otherwise, same as
-# version)
+# The full git reference if this is a developemnt release (otherwise, leave it
+# empty)
 if versions.VERSION_SUFFIX == "-dev":
     release = constants.GIT_REF
 
@@ -46,8 +50,23 @@ if versions.VERSION_SUFFIX == "-dev":
     # a given release in `introduction.rst`
     tags.add('unreleased')
 else:
-    release = versions.VERSION
+    release = ''
 
+# One can manually add the 'release' tag when building to obtain similar
+# results as when built from the latest tag
+if tags.has('release'):
+    RELEASE_BUILD = True
+    tags.remove('unreleased')
+
+    _latest_tag_out = subprocess.check_output(
+        ["git", "describe", "--abbrev=0"],
+    )
+    version = _latest_tag_out.decode("utf-8").rstrip()
+    release = ''
+else:
+    RELEASE_BUILD = not tags.has('unreleased')
+
+# Read general information from Salt defaults
 with open("../salt/metalk8s/defaults.yaml", "r") as fd:
     salt_defaults = yaml.safe_load(fd)
 
@@ -91,15 +110,50 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_scality'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
+
 html_theme_options = {
-    'logo_only': True,
+    'social_links': [
+        ("github", "https://www.github.com/scality/metalk8s"),
+        ("linkedin", "https://www.linkedin.com/company/scality/"),
+        ("twitter", "https://twitter.com/scality"),
+        ("instagram", "https://instagram.com/scalitylife"),
+        ("facebook", "https://www.facebook.com/scality/"),
+    ],
 }
+
+# Build tag for Scality product documentation
+if tags.has('scality-product'):
+    _kblink = 'https://support.scality.com/hc/en-us'
+    _homelink = 'https://documentation.scality.com'
+    html_theme_options['footer_links'] = [
+        ("Support", "https://support.scality.com"),
+        ("Knowledge Base", _kblink),
+        ("Training", "https://training.scality.com"),
+    ]
+    html_theme_options['kblink'] = _kblink
+    html_theme_options['homelink'] = _homelink
+    html_theme_options['parentlink'] = _homelink + '/metalk8s'
+else:
+    html_theme_options['footer_links'] = [
+        ("Support", "https://www.github.com/scality/metalk8s/issues"),
+    ]
+
+    # Only add header links for RTD-hosted docs (otherwise, we assume it's
+    # embedded documentation in the product ISO and ignore links for now)
+    if ON_RTD:
+        _homelink = 'https://metal-k8s.readthedocs.io'
+        html_theme_options['homelink'] = _homelink
+        html_theme_options['parentlink'] = _homelink
+
+html_theme_options['footer_links'].append(
+    ("Privacy Policy", "https://www.scality.com/privacy-policy/")
+)
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -114,8 +168,7 @@ html_context = {
 
 html_show_sourcelink = False
 
-html_logo = '../artwork/generated/metalk8s-logo-wide-white-200.png'
-
+html_logo = '../artwork/generated/metalk8s-logo-wide-black-400.png'
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -187,7 +240,7 @@ texinfo_documents = [
 # -- Options for todo extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = not tags.has('release')
+todo_include_todos = not RELEASE_BUILD
 
 # -- Options for sphinxcontrib-spelling --------------------------------------
 # See http://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
