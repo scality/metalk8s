@@ -1,0 +1,3 @@
+#!jinja | metalk8s_kubernetes
+
+@@CustomResourceDefinition

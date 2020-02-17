@@ -31,6 +31,9 @@ rest_cherrypy:
   ssl_chain: /etc/kubernetes/pki/ca.crt
 
 external_auth:
+  pam:
+    pepper:
+      - .*
   kubernetes_rbac:
     ^kubeconfig: /etc/kubernetes/admin.conf
     node-admins%:

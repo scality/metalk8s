@@ -218,6 +218,22 @@ for repo, images in IMGS_PER_REPOSITORY.items():
 # Container images to build {{{
 TO_BUILD : Tuple[targets.LocalImage, ...] = (
     _local_image(
+        name='configmonitor-operator',
+        build_context=config.BUILD_ROOT,
+        build_args={
+            'CONFIGMONITOR_IMAGE_VERSION': versions.CONFIGMONITOR_IMAGE_VERSION
+        },
+        file_dep=(
+            list(coreutils.ls_files_rec(
+                constants.CONFIGMONITOR_OPERATOR_ROOT)
+            ) +
+            [
+                config.BUILD_ROOT/'main.py',
+                config.BUILD_ROOT/'run.sh',
+            ]
+        )
+    ),
+    _local_image(
         name='grafana',
         build_args={'GRAFANA_IMAGE_VERSION': versions.GRAFANA_IMAGE_VERSION},
     ),

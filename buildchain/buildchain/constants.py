@@ -16,6 +16,9 @@ from buildchain import config
 # (used in task display, for a nice aligned output).
 CMD_WIDTH : int = 14
 
+# Path to the configmonitor-operator source directory.
+CONFIGMONITOR_OPERATOR_ROOT : Path = ROOT/'configmonitor-operator'
+
 # URLs of the main container repositories.
 CALICO_REPOSITORY             : str = 'quay.io/calico'
 COREOS_REPOSITORY             : str = 'quay.io/coreos'

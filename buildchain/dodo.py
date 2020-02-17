@@ -14,6 +14,7 @@ from buildchain import constants
 from buildchain.build import *
 from buildchain.builder import *
 from buildchain.codegen import *
+from buildchain.configmonitor_operator import *
 from buildchain.deps import *
 from buildchain.docs import *
 from buildchain.image import *

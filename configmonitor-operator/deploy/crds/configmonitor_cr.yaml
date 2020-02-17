@@ -1,0 +1,9 @@
+# this is an example cr
+apiVersion: serviceconfig.metalk8s.scality.com/v1alpha1
+kind: ConfigMonitor
+metadata:
+  name: grafanauser-config-monitor
+spec:
+  configmap: metalk8s-grafana-userconfig
+  podSelector:
+    app: grafana

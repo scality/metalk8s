@@ -57,9 +57,10 @@ CENTOS_BASE_IMAGE : str = 'docker.io/centos'
 CENTOS_BASE_IMAGE_SHA256 : str = \
     '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
-GRAFANA_IMAGE_VERSION : str = '6.4.2'
-NGINX_IMAGE_VERSION   : str = '1.15.8'
-NODEJS_IMAGE_VERSION  : str = '10.16.0'
+CONFIGMONITOR_IMAGE_VERSION : str = '1.0'
+GRAFANA_IMAGE_VERSION       : str = '6.4.2'
+NGINX_IMAGE_VERSION         : str = '1.15.8'
+NODEJS_IMAGE_VERSION        : str = '10.16.0'
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
@@ -96,6 +97,11 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         name='configmap-reload',
         version='v0.0.1',
         digest='sha256:e2fd60ff0ae4500a75b80ebaa30e0e7deba9ad107833e8ca53f0047c42c5a057',
+    ),
+    Image(
+        name='configmonitor-operator',
+        version='latest',
+        digest=None,
     ),
     Image(
         name='coredns',

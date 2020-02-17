@@ -168,9 +168,16 @@ PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
 )
 
-OPERATOR_YAML_ROOT : Path = constants.ROOT/'storage-operator/deploy'
+CONFIGMONITOR_YAML_ROOT : Path = constants.ROOT/'configmonitor-operator/deploy'
+OPERATOR_YAML_ROOT      : Path = constants.ROOT/'storage-operator/deploy'
 
+CONFM_CRD  : Path = CONFIGMONITOR_YAML_ROOT/'crds/configmonitor_crd.yaml'
 VOLUME_CRD : Path = OPERATOR_YAML_ROOT/'crds/storage_v1alpha1_volume_crd.yaml'
+
+CONFM_ACCOUNT     : Path = CONFIGMONITOR_YAML_ROOT/'service_account.yaml'
+CONFM_ROLE        : Path = CONFIGMONITOR_YAML_ROOT/'role.yaml'
+CONFM_ROLEBINDING : Path = CONFIGMONITOR_YAML_ROOT/'role_binding.yaml'
+CONFM_DEPLOYMENT  : Path = CONFIGMONITOR_YAML_ROOT/'operator.yaml'
 
 OPERATOR_ACCOUNT     : Path = OPERATOR_YAML_ROOT/'service_account.yaml'
 OPERATOR_ROLE        : Path = OPERATOR_YAML_ROOT/'role.yaml'
@@ -219,6 +226,38 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'metalk8s': {'version': versions.VERSION},
         },
         renderer=targets.Renderer.JSON,
+    ),
+
+    Path('salt/metalk8s/addons/configmonitor/deployed.sls'),
+    targets.TemplateFile(
+        task_name='configmonitor-operator.sls',
+        source=constants.ROOT.joinpath(
+            'salt/metalk8s/addons/configmonitor/configmonitor-operator.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/configmonitor/configmonitor-operator.sls'
+        ),
+        context={
+            'ServiceAccount': CONFM_ACCOUNT.read_text(encoding='utf-8'),
+            'Role': CONFM_ROLE.read_text(encoding='utf-8'),
+            'RoleBinding': CONFM_ROLEBINDING.read_text(encoding='utf-8'),
+            'Deployment': CONFM_DEPLOYMENT.read_text(encoding='utf-8'),
+        },
+        file_dep=[CONFM_ACCOUNT, CONFM_ROLE,
+                  CONFM_ROLEBINDING, CONFM_DEPLOYMENT],
+    ),
+    targets.TemplateFile(
+
+        task_name='configmonitor-crd.sls',
+        source=constants.ROOT.joinpath(
+            'salt/metalk8s/addons/configmonitor/configmonitor-crd.sls.in'),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/configmonitor/configmonitor-crd.sls'
+        ),
+        context={
+            'CustomResourceDefinition': CONFM_CRD.read_text(encoding='utf-8')
+        },
+        file_dep=[CONFM_CRD],
     ),
 
     Path('salt/metalk8s/addons/dex/ca/init.sls'),
