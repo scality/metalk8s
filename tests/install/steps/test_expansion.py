@@ -174,9 +174,9 @@ def etcdctl(k8s_client, command, ssh_config):
     etcd_command = [
         'etcdctl',
         '--endpoints', 'https://localhost:2379',
-        '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
-        '--key-file', '/etc/kubernetes/pki/etcd/server.key',
-        '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
+        '--cacert', '/etc/kubernetes/pki/etcd/ca.crt',
+        '--key', '/etc/kubernetes/pki/etcd/server.key',
+        '--cert', '/etc/kubernetes/pki/etcd/server.crt',
     ] + command
     output = k8s.stream.stream(
         k8s_client.connect_get_namespaced_pod_exec,

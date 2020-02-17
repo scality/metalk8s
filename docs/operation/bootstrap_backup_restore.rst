@@ -38,17 +38,17 @@ from a working Node with the ``etcd`` role:
    # List all etcd members to get the ID of the etcd member that need to be removed
    crictl exec -it "$CONT_ID" \
       etcdctl --endpoints https://localhost:2379 \
-      --ca-file /etc/kubernetes/pki/etcd/ca.crt \
-      --key-file /etc/kubernetes/pki/etcd/server.key \
-      --cert-file /etc/kubernetes/pki/etcd/server.crt \
+      --cacert /etc/kubernetes/pki/etcd/ca.crt \
+      --key /etc/kubernetes/pki/etcd/server.key \
+      --cert /etc/kubernetes/pki/etcd/server.crt \
       member list
 
    # Remove the etcd member (replace <etcd_id> in the command)
    crictl exec -it "$CONT_ID" \
       etcdctl --endpoints https://localhost:2379 \
-      --ca-file /etc/kubernetes/pki/etcd/ca.crt \
-      --key-file /etc/kubernetes/pki/etcd/server.key \
-      --cert-file /etc/kubernetes/pki/etcd/server.crt \
+      --cacert /etc/kubernetes/pki/etcd/ca.crt \
+      --key /etc/kubernetes/pki/etcd/server.key \
+      --cert /etc/kubernetes/pki/etcd/server.crt \
       member remove <etcd_id>
 
 To restore a bootstrap node you need a backup archive and **MetalK8s** ISOs.

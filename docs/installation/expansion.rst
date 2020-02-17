@@ -280,9 +280,9 @@ When expanding the control plane, one can check the etcd cluster health:
 
    root@bootstrap $ kubectl -n kube-system exec -ti etcd-bootstrap sh --kubeconfig /etc/kubernetes/admin.conf
    root@etcd-bootstrap $ etcdctl --endpoints=https://[127.0.0.1]:2379 \
-                         --ca-file=/etc/kubernetes/pki/etcd/ca.crt \
-                         --cert-file=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
-                         --key-file=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+                         --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+                         --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+                         --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
                          cluster-health
 
      member 46af28ca4af6c465 is healthy: got healthy result from https://172.21.254.6:2379
