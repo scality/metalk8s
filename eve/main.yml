@@ -749,6 +749,7 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
             --destination-version %(prop:metalk8s_version_prev)s
           haltOnFailure: true
+      - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
       - ShellCommand: &fast_tests_prev
           <<: *local_tests
@@ -812,6 +813,7 @@ stages:
       - ShellCommand:
           <<: *run_bootstrap
           env: *_env_version_prev
+      - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
       - ShellCommand: *fast_tests_prev
       # --- Upgrade to version N ---
@@ -829,6 +831,7 @@ stages:
             --destination-version %(prop:metalk8s_version)s
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
+      - ShellCommand: *wait_pods_running
       # --- Test version N ---
       - ShellCommand: *fast_tests
       # --- Collect logs ---
@@ -921,6 +924,12 @@ stages:
             PRODUCT_MOUNT=/var/tmp/metalk8s
             /tmp/create-volumes.sh
           haltOnFailure: true
+      - ShellCommand:
+          <<: *wait_pods_running_ssh
+          env:
+            <<: *_env_wait_pods_running_ssh
+            SSH_CONFIG: >-
+              eve/workers/openstack-single-node-rhel/terraform/ssh_config
       - ShellCommand:
           name: Run fast tests
           env:
@@ -1061,6 +1070,7 @@ stages:
             PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:product_version_prev_patch)s
             eve/create-volumes.sh
           haltOnFailure: true
+      - ShellCommand: *wait_pods_running
       # --- We do not need to Test patch version N-1 ---
       # --- Upgrade to version N ---
       - ShellCommand:
@@ -1077,6 +1087,7 @@ stages:
             --destination-version %(prop:metalk8s_version)s
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
+      - ShellCommand: *wait_pods_running
       # --- Test version N ---
       - ShellCommand: *fast_tests
       # --- Collect logs ---
@@ -1125,6 +1136,7 @@ stages:
       # --- Install patch version N ---
       - ShellCommand: *run_bootstrap
       - ShellCommand: *provision_prometheus_volumes
+      - ShellCommand: *wait_pods_running
       # --- Test patch version N ---
       - ShellCommand: *fast_tests
       # --- Downgrade to patch version N-1 ---
@@ -1141,6 +1153,7 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
             --destination-version %(prop:product_version_prev_patch)s
           haltOnFailure: true
+      - ShellCommand: *wait_pods_running
       # --- Test patch version N-1 ---
       - ShellCommand:
           <<: *local_tests
