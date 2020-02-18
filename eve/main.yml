@@ -425,7 +425,8 @@ stages:
           name: Trigger single-node and multiple-nodes steps with built ISO
           stage_names:
             - single-node-upgrade-centos
-            - single-node-downgrade-centos
+            # Cannot downgrade from a 3.4 etcd cluster to 3.3
+            # - single-node-downgrade-centos
             - single-node-install-rhel
             - multiple-nodes-centos
             - single-node-patch-version
