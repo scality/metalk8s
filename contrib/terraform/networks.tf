@@ -1,23 +1,19 @@
-# Default network
-data "openstack_networking_network_v2" "default_network" {
-  name = var.default_network
+# Public network
+data "openstack_networking_network_v2" "public_network" {
+  name = var.public_network
 }
 
-data "openstack_networking_subnet_v2" "default_subnet" {
-  network_id = data.openstack_networking_network_v2.default_network.id
+data "openstack_networking_subnet_v2" "public_subnet" {
+  network_id = data.openstack_networking_network_v2.public_network.id
 }
 
 # Control-plane
 locals {
   control_plane_network = {
-    # Computed values
-    enabled = contains(var.private_networks, "control_plane")
-    name    = "${local.prefix}-control-plane",
-    # Hard-coded defaults
-    iface = "eth1",
-    cidr  = "192.168.1.0/24",
-    # Customizable values
-    subnet_name = var.control_plane_subnet,
+    name        = "${local.prefix}-control-plane",
+    enabled     = var.control_plane.private,
+    cidr        = var.control_plane.cidr,
+    subnet_name = var.control_plane.existing_subnet,
   }
 }
 
@@ -65,14 +61,10 @@ locals {
 # Workload-plane
 locals {
   workload_plane_network = {
-    # Computed values
-    enabled = contains(var.private_networks, "workload_plane")
-    name    = "${local.prefix}-workload-plane",
-    # Hard-coded defaults
-    iface = "eth2",
-    cidr  = "192.168.2.0/24",
-    # Customizable values
-    subnet_name = var.workload_plane_subnet,
+    name        = "${local.prefix}-workload-plane",
+    enabled     = var.workload_plane.private,
+    cidr        = var.workload_plane.cidr,
+    subnet_name = var.workload_plane.existing_subnet,
   }
 }
 
@@ -115,4 +107,10 @@ locals {
     ? data.openstack_networking_subnet_v2.workload_plane
     : openstack_networking_subnet_v2.workload_plane
   )
+}
+
+locals {
+  # If either workload plane or control plane are configured to use the public
+  # network, we assume PortSecurity is enabled, and activate IPIP encapsulation
+  enable_ipip = ! (var.control_plane.private && var.workload_plane.private)
 }

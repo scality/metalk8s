@@ -10,25 +10,37 @@ terraform {
 }
 
 
-# Deployment prefix
+# Deployment prefix (use a generated one if nothing provided)
 resource "random_string" "current" {
   length  = 5
   special = false
 }
 
 locals {
-  prefix = "metalk8s-${
-    var.worker_uuid != "" ? var.worker_uuid : random_string.current.result
-  }"
+  prefix = (
+    var.prefix != "" ? var.prefix : "metalk8s-${random_string.current.result}"
+  )
 }
 
-# Openstack base image to use for worker machines (bootstrap and nodes)
+
+# RHEL specifics
 locals {
-  os_image = var.openstack_images[var.openstack_use_os]
+  using_rhel = {
+    bastion   = var.bastion.image == "redhat7",
+    bootstrap = var.bootstrap.image == "redhat7",
+    nodes     = var.nodes.image == "redhat7",
+  }
 }
 
-# Keypair for provisioning nodes
-resource "openstack_compute_keypair_v2" "local_ssh_key" {
-  name       = local.prefix
-  public_key = file(var.ssh_key_pair.public_key)
+
+# Scripts hashes (to trigger re-upload when necessary)
+locals {
+  script_hashes = {
+    create_volumes    = filemd5("${path.root}/scripts/create-volumes.sh"),
+    enable_ipip       = filemd5("${path.root}/scripts/enable_ipip.sh"),
+    iface_config      = filemd5("${path.root}/scripts/network-iface-config.sh"),
+    prepare_bootstrap = filemd5("${path.root}/scripts/prepare-bootstrap.py"),
+    rhsm_register     = filemd5("${path.root}/scripts/rhsm-register.sh"),
+    set_yum_proxy     = filemd5("${path.root}/scripts/set_yum_proxy.py"),
+  }
 }

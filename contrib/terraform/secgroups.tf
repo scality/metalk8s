@@ -1,7 +1,7 @@
 # Default network (external)
 locals {
   dns_servers = tolist(
-    data.openstack_networking_subnet_v2.default_subnet.dns_nameservers
+    data.openstack_networking_subnet_v2.public_subnet.dns_nameservers
   )
 }
 

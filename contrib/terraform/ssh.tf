@@ -15,6 +15,36 @@ locals {
 }
 
 
+resource "openstack_compute_keypair_v2" "local" {
+  name = "${local.prefix}-local"
+
+  # Make a local copy of the keypair for reference in the SSH config file
+  provisioner "local-exec" {
+    command = join(" && ", [
+      "mkdir -p ${path.root}/.ssh",
+      "echo '${self.public_key}' > ${path.root}/.ssh/${self.name}.pub",
+      "echo '${self.private_key}' > ${path.root}/.ssh/${self.name}",
+      "chmod 600 ${path.root}/.ssh/${self.name}*",
+    ])
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = "rm ${path.root}/.ssh/${self.name}*"
+  }
+}
+
+
+resource "openstack_compute_keypair_v2" "bastion" {
+  name = "${local.prefix}-bastion"
+}
+
+
+resource "openstack_compute_keypair_v2" "bootstrap" {
+  name = "${local.prefix}-bootstrap"
+}
+
+
 resource "null_resource" "local_ssh_config" {
   triggers = {
     all_instances = join(",", local.all_instances)
@@ -25,17 +55,17 @@ resource "null_resource" "local_ssh_config" {
     command = "echo '${templatefile(
       "${path.module}/templates/ssh_config.tpl",
       {
-        identity_file = var.ssh_key_pair.private_key
+        identity_file = "${path.root}/.ssh/${local.prefix}-local"
         bastion_ip    = local.bastion_ip
         bootstrap_ip  = local.bootstrap_ip
         nodes         = local.nodes_info
       }
-    )}' > ./ssh_config"
+    )}' > ./.ssh/${local.prefix}.config"
   }
 
   provisioner "local-exec" {
     when    = destroy
-    command = "rm ./ssh_config"
+    command = "rm ./.ssh/${local.prefix}.config"
   }
 }
 
@@ -48,71 +78,19 @@ resource "null_resource" "bastion_ssh_config" {
   provisioner "file" {
     connection {
       host        = local.bastion_ip
-      user        = "centos"
-      private_key = file(var.ssh_key_pair.private_key)
+      user        = local.bastion.user
+      private_key = openstack_compute_keypair_v2.local.private_key
     }
 
-    destination = "/home/centos/ssh_config"
+    destination = "/home/${local.bastion.user}/ssh_config"
     content = templatefile(
       "${path.module}/templates/ssh_config.tpl",
       {
-        identity_file = "/home/centos/.ssh/bastion"
+        identity_file = "/home/${local.bastion.user}/.ssh/bastion"
         bastion_ip    = local.bastion_ip
         bootstrap_ip  = local.bootstrap_ip
         nodes         = local.nodes_info
       }
     )
-  }
-}
-
-resource "null_resource" "bastion_public_key" {
-  triggers = {
-    all_instances = join(",", local.all_instances)
-  }
-
-  depends_on = [
-    openstack_compute_instance_v2.bastion,
-    openstack_compute_instance_v2.bootstrap,
-    openstack_compute_instance_v2.nodes,
-  ]
-
-  # Share and authorize Bastion key
-  provisioner "local-exec" {
-    command = <<-EOT
-    %{for node_ip in concat([local.bootstrap_ip], local.node_ips)}
-    scp -i ${var.ssh_key_pair.private_key} -3 -o StrictHostKeyChecking=no \
-        centos@${local.bastion_ip}:.ssh/bastion.pub \
-        centos@${node_ip}:.ssh/bastion.pub
-    ssh -i ${var.ssh_key_pair.private_key} centos@${node_ip} \
-        "cat .ssh/bastion.pub >> .ssh/authorized_keys"
-    %{endfor}
-    EOT
-  }
-}
-
-resource "null_resource" "bootstrap_public_key" {
-  triggers = {
-    all_instances = join(",", concat(
-      [openstack_compute_instance_v2.bootstrap.id],
-      openstack_compute_instance_v2.nodes[*].id
-    ))
-  }
-
-  depends_on = [
-    openstack_compute_instance_v2.bootstrap,
-    openstack_compute_instance_v2.nodes,
-  ]
-
-  # Share and authorize Bootstrap key
-  provisioner "local-exec" {
-    command = <<-EOT
-    %{for node_ip in local.node_ips}
-    scp -i ${var.ssh_key_pair.private_key} -3 -o StrictHostKeyChecking=no \
-        centos@${local.bootstrap_ip}:.ssh/bootstrap.pub \
-        centos@${node_ip}:.ssh/bootstrap.pub
-    ssh -i ${var.ssh_key_pair.private_key} centos@${node_ip} \
-        "cat .ssh/bootstrap.pub >> .ssh/authorized_keys"
-    %{endfor}
-    EOT
   }
 }

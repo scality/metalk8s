@@ -1,9 +1,10 @@
 locals {
   bastion = {
-    enabled     = var.bastion_enabled,
-    proxy_port  = var.bastion_proxy_port,
-    setup_tests = var.bastion_setup_tests,
-    test_branch = var.bastion_test_branch,
+    enabled    = var.bastion.enabled,
+    flavour    = var.openstack_flavours[var.bastion.flavour],
+    image      = var.openstack_images[var.bastion.image].image,
+    user       = var.openstack_images[var.bastion.image].user,
+    proxy_port = var.bastion_proxy_port,
   }
 }
 
@@ -12,43 +13,55 @@ resource "openstack_compute_instance_v2" "bastion" {
 
   name = "${local.prefix}-bastion"
 
-  # Always install Bastion with CentOS, for simplicity
-  image_name  = var.openstack_images["centos"]
-  flavor_name = var.openstack_flavours.bastion
-  key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
+  # WARNING: if CentOS is not used, setup of Bastion services may not work as
+  #          expected
+  image_name  = local.bastion.image
+  flavor_name = local.bastion.flavour
+  key_pair    = openstack_compute_keypair_v2.local.name
 
   security_groups = concat(
     [openstack_networking_secgroup_v2.nodes.name],
     openstack_networking_secgroup_v2.bastion[*].name,
   )
 
+  # NOTE: this does not work - ifaces are not yet attached when this runs at
+  #       first boot
+  # user_data = <<-EOT
+  # #cloud-config
+  # network:
+  #   version: 2
+  #   ethernets:
+  #     all:
+  #       match:
+  #         name: eth*
+  #       dhcp4: true
+  # EOT
+
   network {
     access_network = true
-    name           = data.openstack_networking_network_v2.default_network.name
+    name           = data.openstack_networking_network_v2.public_network.name
   }
 
   connection {
     host        = self.access_ip_v4
     type        = "ssh"
-    user        = "centos"
-    private_key = file(var.ssh_key_pair.private_key)
+    user        = local.bastion.user
+    private_key = openstack_compute_keypair_v2.local.private_key
   }
 
-  # Provision scripts for remote-execution
+  # Provision SSH identities
   provisioner "file" {
-    source      = "${path.root}/scripts"
-    destination = "/home/centos/scripts"
+    content     = openstack_compute_keypair_v2.bastion.public_key
+    destination = "/home/${local.bastion.user}/.ssh/bastion.pub"
+  }
+
+  provisioner "file" {
+    content     = openstack_compute_keypair_v2.bastion.private_key
+    destination = "/home/${local.bastion.user}/.ssh/bastion"
   }
 
   provisioner "remote-exec" {
-    inline = ["chmod -R +x /home/centos/scripts"]
-  }
-
-  # Generate an SSH keypair
-  provisioner "remote-exec" {
-    inline = [
-      "ssh-keygen -t rsa -b 4096 -N '' -f /home/centos/.ssh/bastion"
-    ]
+    inline = ["chmod 600 /home/${local.bastion.user}/.ssh/bastion*"]
   }
 }
 
@@ -58,6 +71,78 @@ locals {
     ? openstack_compute_instance_v2.bastion[0].access_ip_v4
     : ""
   )
+}
+
+
+# Scripts provisioning
+resource "null_resource" "provision_scripts_bastion" {
+  count = local.bastion.enabled ? 1 : 0
+
+  depends_on = [
+    openstack_compute_instance_v2.bastion,
+  ]
+
+  triggers = {
+    bastion = openstack_compute_instance_v2.bastion[0].id,
+    script_hashes = join(",", compact([
+      # List of hashes for scripts that will be used
+      local.using_rhel.bastion ? local.script_hashes.rhsm_register : "",
+      local.script_hashes.iface_config,
+    ])),
+  }
+
+  connection {
+    host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
+    type        = "ssh"
+    user        = local.bastion.user
+    private_key = openstack_compute_keypair_v2.local.private_key
+  }
+
+  # Provision scripts for remote-execution
+  provisioner "remote-exec" {
+    inline = ["mkdir -p /tmp/metalk8s"]
+  }
+
+  provisioner "file" {
+    source      = "${path.root}/scripts"
+    destination = "/tmp/metalk8s/"
+  }
+
+  provisioner "remote-exec" {
+    inline = ["chmod -R +x /tmp/metalk8s/scripts"]
+  }
+}
+
+resource "null_resource" "configure_rhsm_bastion" {
+  # Configure RedHat Subscription Manager if enabled
+  count = (local.bastion.enabled && local.using_rhel.bastion) ? 1 : 0
+
+  depends_on = [
+    openstack_compute_instance_v2.bastion,
+    null_resource.provision_scripts_bastion,
+  ]
+
+  connection {
+    host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
+    type        = "ssh"
+    user        = local.bastion.user
+    private_key = openstack_compute_keypair_v2.local.private_key
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      join(" ", [
+        "sudo bash /tmp/metalk8s/scripts/rhsm-register.sh",
+        "'${var.rhsm_username}' '${var.rhsm_password}'",
+      ]),
+    ]
+  }
+
+  provisioner "remote-exec" {
+    when       = destroy
+    on_failure = continue
+    inline     = ["sudo subscription-manager unregister"]
+  }
 }
 
 
@@ -108,8 +193,10 @@ resource "null_resource" "bastion_iface_config" {
   count = local.bastion.enabled ? 1 : 0
 
   depends_on = [
+    openstack_compute_instance_v2.bastion,
     openstack_compute_interface_attach_v2.control_plane_bastion,
     openstack_compute_interface_attach_v2.workload_plane_bastion,
+    null_resource.provision_scripts_bastion,
   ]
 
   triggers = {
@@ -129,8 +216,8 @@ resource "null_resource" "bastion_iface_config" {
   connection {
     host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
     type        = "ssh"
-    user        = "centos"
-    private_key = file(var.ssh_key_pair.private_key)
+    user        = local.bastion.user
+    private_key = openstack_compute_keypair_v2.local.private_key
   }
 
   # Configure network interfaces for private networks
@@ -144,7 +231,7 @@ resource "null_resource" "bastion_iface_config" {
         ? [openstack_networking_port_v2.workload_plane_bastion[0].mac_address]
         : [],
       ) :
-      "sudo bash scripts/network-iface-config.sh ${mac_address}"
+      "sudo bash /tmp/metalk8s/scripts/network-iface-config.sh ${mac_address}"
     ]
   }
 }
@@ -159,8 +246,8 @@ resource "null_resource" "bastion_http_proxy" {
   connection {
     host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
     type        = "ssh"
-    user        = "centos"
-    private_key = file(var.ssh_key_pair.private_key)
+    user        = local.bastion.user
+    private_key = openstack_compute_keypair_v2.local.private_key
   }
 
   # Prepare Squid configuration
@@ -169,7 +256,7 @@ resource "null_resource" "bastion_http_proxy" {
     content = templatefile(
       "${path.module}/templates/squid.conf.tpl",
       {
-        src_cidr   = data.openstack_networking_subnet_v2.default_subnet.cidr,
+        src_cidr   = data.openstack_networking_subnet_v2.public_subnet.cidr,
         proxy_port = local.bastion.proxy_port,
       }
     )
@@ -185,54 +272,6 @@ resource "null_resource" "bastion_http_proxy" {
       # Enable and start Squid
       "sudo systemctl enable squid",
       "sudo systemctl start squid",
-    ]
-  }
-}
-
-# FIXME: if we could setup bastion as a router for the private networks,
-#        any host using this router could run the tests...
-#        maybe simply suggest using `sshuttle` with the Bastion?
-# NOTE: after this is provisioned, one can run E2E tests with `tox` from the
-#       cloned repository on the Bastion
-resource "null_resource" "setup_tests_bastion" {
-  count = local.bastion.enabled && local.bastion.setup_tests ? 1 : 0
-
-  # NOTE: after this is enabled, one can run `tox` commands from the cloned
-  #       repository on the Bastion
-  depends_on = [openstack_compute_instance_v2.bastion]
-
-
-  connection {
-    host        = local.bastion_ip
-    type        = "ssh"
-    user        = "centos"
-    private_key = file(var.ssh_key_pair.private_key)
-  }
-
-  # Install tox
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum install -y epel-release",
-      "sudo yum install -y python36-pip",
-      "sudo pip3.6 install tox",
-    ]
-  }
-
-  # Clone repository
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum install -y git",
-      join(" ", compact([
-        "git clone",
-        local.bastion.test_branch != ""
-        ? "--branch ${local.bastion.test_branch}"
-        : "",
-        "--single-branch",
-        "https://github.com/scality/metalk8s.git",
-        local.bastion.test_branch != ""
-        ? "metalk8s-${replace(local.bastion.test_branch, "/", "-")}"
-        : "metalk8s",
-      ])),
     ]
   }
 }

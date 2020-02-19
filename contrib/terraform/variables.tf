@@ -1,144 +1,116 @@
-# Use in CI to link a deployment to its worker
-variable "worker_uuid" {
-  type    = string
-  default = ""
-}
-
-# SSH local configuration
-variable "ssh_key_pair" {
-  type = object({
-    private_key = string,
-    public_key  = string,
-  })
-  description = "The SSH key pair to use for setting up OpenStack VMs"
-  default = {
-    private_key = "~/.ssh/terraform",
-    public_key  = "~/.ssh/terraform.pub"
-  }
+variable "prefix" {
+  type        = string
+  default     = ""
+  description = "Prefix to use when naming deployed resources"
 }
 
 # OpenStack configuration
-variable "openstack_images" {
-  type = object({ centos = string, rhel = string })
-  default = {
-    centos = "CentOS-7-x86_64-GenericCloud-1809.qcow2"
-    rhel   = "rhel-server-updated-7.6-x86_64-kvm.qcow2"
-  }
+variable "openstack_flavours" {
+  type = object({
+    small = string, medium = string, large = string, xlarge = string,
+  })
+  description = "Map of VM flavours, indexed by T-shirt sizes"
 }
 
-variable "openstack_use_os" {
+variable "openstack_images" {
+  type = object({
+    centos7 = object({ image = string, user = string }),
+    rhel7   = object({ image = string, user = string }),
+  })
+  description = <<-EOT
+  Map of available VM image names, indexed by supported OS basename
+  EOT
+}
+
+variable "openstack_link_local_ip" {
   type        = string
-  description = "Which OS to use for spawned VMs ('centos' or 'rhel')"
-  default     = "centos"
+  description = "IP address for the metadata service used by cloud-init"
+  # https://docs.openstack.org/nova/latest/user/metadata-service.html
 }
 
 # RHEL configuration
 variable "rhsm_username" {
   type        = string
   description = "Username for accessing RedHat Subscription Manager"
+  default     = ""
 }
 
 variable "rhsm_password" {
   type        = string
   description = "Password for accessing RedHat Subscription Manager"
-}
-
-variable "openstack_flavours" {
-  type = object({ bootstrap = string, nodes = string, bastion = string })
-  default = {
-    bastion   = "m1.medium",
-    bootstrap = "m1.large",
-    nodes     = "m1.large",
-  }
-}
-
-# Metadata service used by cloud-init
-# https://docs.openstack.org/nova/latest/user/metadata-service.html
-variable "openstack_link_local_ip" {
-  type    = string
-  default = "169.254.169.254"
+  default     = ""
 }
 
 # Networks configuration
-variable "default_network" {
+variable "public_network" {
   type        = string
-  description = "The default network name to use for SSH access"
-  default     = "tenantnetwork1"
+  description = "The public network name to use for SSH access"
 }
 
-variable "private_networks" {
-  type        = list(string)
-  description = "Which private networks to use (or spawn)"
-  default     = []
+variable "control_plane" {
+  type = object({
+    private         = bool,
+    existing_subnet = string,
+    cidr            = string,
+  })
+  description = "Configuration of the control plane network"
+  default     = { private = false, existing_subnet = "", cidr = "" }
 }
 
-variable "control_plane_subnet" {
-  type        = string
-  description = "Existing subnet to use for the control-plane"
-  default     = ""
-}
-
-variable "workload_plane_subnet" {
-  type        = string
-  description = "Existing subnet to use for the workload-plane"
-  default     = ""
+variable "workload_plane" {
+  type = object({
+    private         = bool,
+    existing_subnet = string,
+    cidr            = string,
+  })
+  description = "Configuration of the workload plane network"
+  default     = { private = false, existing_subnet = "", cidr = "" }
 }
 
 # MetalK8s deployment configuration
-variable "nodes_count" {
-  type        = string
-  description = "Number of nodes to spawn in addition to Bootstrap and Bastion"
-  default     = "1"
+variable "bastion" {
+  type        = object({ flavour = string, image = string, enabled = bool })
+  description = "Description of the Bastion VM to spawn"
 }
 
-variable "bastion_enabled" {
-  type        = bool
-  description = "Whether to spawn a Bastion"
-  default     = true
+variable "bootstrap" {
+  type        = object({ flavour = string, image = string })
+  description = "Description of the Bootstrap VM to spawn"
 }
 
+variable "nodes" {
+  type        = object({ flavour = string, image = string, count = number })
+  description = "Description of the extra Node VMs to spawn"
+}
+
+# Bastion configuration
 variable "bastion_proxy_port" {
   type        = number
   description = "Port to use for the Bastion HTTP forward proxy (squid)"
   default     = 3128
 }
 
-variable "bastion_setup_tests" {
-  type        = bool
-  description = "Whether to setup test dependencies on the Bastion"
-  default     = false
+# MetalK8s ISO
+variable "metalk8s_iso" {
+  type = object({
+    mode = string, source = string, destination = string, mountpoint = string,
+  })
+  description = <<-EOT
+  How to provision the MetalK8s ISO on Bootstrap:
+    - `mode` can be 'local' or 'remote' ('local' relies on SCP, very slow)
+    - `source` matches `mode`, can be a local path or public URL
+    - `destination` defines where to store the ISO
+    - `mountpoint` defines where to mount the ISO
+  EOT
+  default = {
+    mode        = "local",
+    source      = "", # Disables provisioning
+    destination = "",
+    mountpoint  = "",
+  }
 }
 
-variable "bastion_test_branch" {
-  type        = string
-  description = "Which branch to clone for running tests on the Bastion"
-  default     = ""
-}
-
-variable "metalk8s_iso_mode" {
-  type        = string
-  description = "How to provision the MetalK8s ISO on Bootstrap (can be 'local' or 'remote')"
-  default     = "local"
-}
-
-variable "metalk8s_iso_source" {
-  type        = string
-  description = "Source URI for the MetalK8s ISO (can be a local path or public URL)"
-  default     = ""
-}
-
-variable "metalk8s_iso_destination" {
-  type        = string
-  description = "Destination of the MetalK8s ISO on Bootstrap"
-  default     = "/home/centos/metalk8s.iso"
-}
-
-variable "metalk8s_iso_mountpoint" {
-  type        = string
-  description = "Where to mount the MetalK8s ISO on Bootstrap before installation"
-  default     = "/var/tmp/metalk8s"
-}
-
+# Installation and post-installation flags
 variable "metalk8s_bootstrap" {
   type        = bool
   description = "Whether to install the Bootstrap node"
