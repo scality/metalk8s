@@ -1,0 +1,13 @@
+.terraform/
+
+# Ignore all tfvars except some provided examples
+*.tfvars
+!scality-cloud.tfvars
+!example.tfvars
+
+# Ignore all state and backups
+*.tfstate
+*.tfstate.backup
+
+# Ignore generated SSH info
+.ssh/

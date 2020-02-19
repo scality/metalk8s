@@ -110,25 +110,15 @@ def have_perms(host, context, perms):
 
 def _get_salt_api_address(host, version):
     SALT_API_PORT = 4507
-    cmd_cidr = ' '.join([
-        'salt-call', 'pillar.get',
-        'networks:control_plane',
-        'saltenv=metalk8s-{version}'.format(version=version),
-        '--out', 'json',
-    ])
-    with host.sudo():
-        cidr_output = host.check_output(cmd_cidr)
-    cidr = json.loads(cidr_output)['local']
-
     cmd_ip = ' '.join([
-        'salt-call', '--local',
-        'network.ip_addrs',
-        'cidr="{cidr}"'.format(cidr=cidr),
-        '--out', 'json',
+        'salt-call --local',
+        'grains.get',
+        'metalk8s:control_plane_ip',
+        '--out json',
     ])
     with host.sudo():
         cmd_output = host.check_output(cmd_ip)
-    ip = json.loads(cmd_output)['local'][0]
+    ip = json.loads(cmd_output)['local']
     return '{}:{}'.format(ip, SALT_API_PORT)
 
 
