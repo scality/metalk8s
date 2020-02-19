@@ -6,6 +6,7 @@ import {
   STATUS_AVAILABLE,
   STATUS_BOUND,
   STATUS_RELEASED,
+  STATUS_READY,
 } from '../constants';
 
 export const isVolumeDeletable = (rowData, persistentVolumes) => {
@@ -18,7 +19,7 @@ export const isVolumeDeletable = (rowData, persistentVolumes) => {
     case STATUS_TERMINATING:
       return false;
     case STATUS_FAILED:
-    case STATUS_AVAILABLE:
+    case STATUS_READY:
       if (persistentVolumes?.length === 0) {
         return true;
       } else {
@@ -80,7 +81,7 @@ export const computeVolumeGlobalStatus = (name, status) => {
 
   switch(condStatus) {
   case 'True':
-    return STATUS_AVAILABLE;
+    return STATUS_READY;
   case 'False':
     return STATUS_FAILED;
   case 'Unknown':
