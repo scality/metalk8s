@@ -32,6 +32,34 @@ models:
         echo "Could not reach Docker daemon from buildbot worker" >&2
         exit 1'
       haltOnFailure: true
+  - ShellCommand: &wait_pods_running
+      name: Wait for pods to be in running state
+      env: &_env_wait_pods_running
+        RETRY: "60"
+        SLEEP_TIME: "5"
+        STABILIZATION_TIME: "30"
+        STATUS: "Running"
+      command: >
+        git checkout "%(prop:branch)s" &&
+        sudo eve/wait_pods_status.sh
+        --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
+        --status "$STATUS" --retry "$RETRY"
+      usePTY: true
+      haltOnFailure: true
+  - ShellCommand: &wait_pods_running_ssh
+      name: Wait for pods to be in running state
+      env: &_env_wait_pods_running_ssh
+        <<: *_env_wait_pods_running
+        SSH_CONFIG: ssh_config
+        SSH_HOST: bootstrap
+      command: >
+        git checkout "%(prop:branch)s" &&
+        scp -F "$SSH_CONFIG" eve/wait_pods_status.sh "$SSH_HOST":/tmp/ &&
+        ssh -F "$SSH_CONFIG" "$SSH_HOST" sudo /tmp/wait_pods_status.sh
+        --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
+        --status "$STATUS" --retry "$RETRY"
+      usePTY: true
+      haltOnFailure: true
   - ShellCommand: &build_all
       name: Build everything
       env:
@@ -674,6 +702,8 @@ stages:
             git checkout "${BRANCH}" --quiet &&
             sudo -E eve/create-volumes.sh
           haltOnFailure: true
+      # --- Wait for the cluster to be stabilized ---
+      - ShellCommand: *wait_pods_running
       # --- Test version N ---
       - ShellCommand: &fast_tests
           <<: *local_tests
@@ -721,6 +751,7 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
             --destination-version %(prop:metalk8s_version_prev)s
           haltOnFailure: true
+      - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
       - ShellCommand: &fast_tests_prev
           <<: *local_tests
@@ -790,6 +821,7 @@ stages:
             BRANCH: "development/%(prop:product_version_prev)s"
             PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/product.txt"
             PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s"
+      - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
       - ShellCommand: *fast_tests_prev
       # --- Upgrade to version N ---
@@ -807,6 +839,7 @@ stages:
             --destination-version %(prop:metalk8s_version)s
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
+      - ShellCommand: *wait_pods_running
       # --- Test version N ---
       - ShellCommand: *fast_tests
       # --- Collect logs ---
@@ -899,6 +932,12 @@ stages:
             PRODUCT_MOUNT=/var/tmp/metalk8s
             /tmp/create-volumes.sh
           haltOnFailure: true
+      - ShellCommand:
+          <<: *wait_pods_running_ssh
+          env:
+            <<: *_env_wait_pods_running_ssh
+            SSH_CONFIG: >-
+              eve/workers/openstack-single-node-rhel/terraform/ssh_config
       - ShellCommand:
           name: Run fast tests
           env:
@@ -1034,6 +1073,7 @@ stages:
             PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:product_version_prev_patch)s
             eve/create-volumes.sh
           haltOnFailure: true
+      - ShellCommand: *wait_pods_running
       # --- We do not need to Test patch version N-1 ---
       # --- Upgrade to version N ---
       - ShellCommand:
@@ -1050,6 +1090,7 @@ stages:
             --destination-version %(prop:metalk8s_version)s
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
+      - ShellCommand: *wait_pods_running
       # --- Test version N ---
       - ShellCommand: *fast_tests
       # --- Collect logs ---
@@ -1097,6 +1138,7 @@ stages:
       # --- Install patch version N ---
       - ShellCommand: *run_bootstrap
       - ShellCommand: *provision_prometheus_volumes
+      - ShellCommand: *wait_pods_running
       # --- Test patch version N ---
       - ShellCommand: *fast_tests
       # --- Downgrade to patch version N-1 ---
@@ -1113,6 +1155,7 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
             --destination-version %(prop:product_version_prev_patch)s
           haltOnFailure: true
+      - ShellCommand: *wait_pods_running
       # --- Test patch version N-1 ---
       - ShellCommand:
           <<: *local_tests
@@ -1283,6 +1326,12 @@ stages:
           command: >
             tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
             | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
+      - ShellCommand:
+          <<: *wait_pods_running_ssh
+          env:
+            <<: *_env_wait_pods_running_ssh
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
       - ShellCommand:
           <<: *bastion_tests
           name: Run installation scenarii on the bastion
