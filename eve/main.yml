@@ -562,6 +562,7 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
             --destination-version %(prop:metalk8s_version_prev)s
           haltOnFailure: true
+      - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
       - ShellCommand: &fast_tests_prev
           <<: *local_tests
@@ -625,6 +626,7 @@ stages:
       - ShellCommand:
           <<: *run_bootstrap
           env: *_env_version_prev
+      - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
       - ShellCommand: *fast_tests_prev
       # --- Upgrade to version N ---
@@ -641,6 +643,7 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
             --destination-version %(prop:metalk8s_version)s
           haltOnFailure: true
+      - ShellCommand: *wait_pods_running
       # --- Test version N ---
       - ShellCommand: *fast_tests
       # --- Collect logs ---
