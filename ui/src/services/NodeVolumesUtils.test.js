@@ -278,7 +278,7 @@ it('should return false when volume is ready and there is no PV', () => {
 
 it('should return Unkown when called with wrong input', () => {
   const volume = {
-    'status': {'conditions': []}
+    status: { conditions: [] },
   };
   const result = computeVolumeGlobalStatus('test', volume);
   expect(result).toEqual(STATUS_UNKNOWN);
@@ -290,13 +290,13 @@ it('should return Unkown when volume has no status', () => {
 });
 
 it('should return Unkown when volume has no conditions', () => {
-  const volumeStatus = {'conditions': []};
+  const volumeStatus = { conditions: [] };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_UNKNOWN);
 });
 
 it('should return Unkown when volume has no Ready condition', () => {
-  const volumeStatus = {'conditions': [{'type': 'nope'}]};
+  const volumeStatus = { conditions: [{ type: 'nope' }] };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_UNKNOWN);
 });
@@ -308,25 +308,23 @@ it('should return Ready when Ready condition is True', () => {
 });
 
 it('should return Failed when Ready condition is False', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'False'}
-  ]};
+  const volumeStatus = { conditions: [{ type: 'Ready', status: 'False' }] };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_FAILED);
 });
 
 it('should return Pending when Ready condition is Unknown/Pending', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'Unknown', 'reason': 'Pending'}
-  ]};
+  const volumeStatus = {
+    conditions: [{ type: 'Ready', status: 'Unknown', reason: 'Pending' }],
+  };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_PENDING);
 });
 
 it('should return Pending when Ready condition is Unknown/Terminating', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'Unknown', 'reason': 'Terminating'}
-  ]};
+  const volumeStatus = {
+    conditions: [{ type: 'Ready', status: 'Unknown', reason: 'Terminating' }],
+  };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_TERMINATING);
 });
@@ -334,11 +332,11 @@ it('should return Pending when Ready condition is Unknown/Terminating', () => {
 // }}}
 // volumeGetError {{{
 
-const NO_ERROR = ['', '']
+const NO_ERROR = ['', ''];
 
 it('should return no error when called with wrong input', () => {
   const volume = {
-    'status': {'conditions': []}
+    status: { conditions: [] },
   };
   const result = volumeGetError(volume);
   expect(result).toEqual(NO_ERROR);
@@ -350,42 +348,40 @@ it('should return no error when called with no status', () => {
 });
 
 it('should return no error when called with no conditions', () => {
-  const volumeStatus = {'conditions': []};
+  const volumeStatus = { conditions: [] };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
 
 it('should return no error when called with no Ready conditions', () => {
-  const volumeStatus = {'conditions': [{'type': 'nope'}]};
+  const volumeStatus = { conditions: [{ type: 'nope' }] };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
 
 it('should return no error when called with successful Ready condition', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'True'}
-  ]};
+  const volumeStatus = { conditions: [{ type: 'Ready', status: 'True' }] };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
 
 it('should return no error when called with pending Ready condition', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'Unknown'}
-  ]};
+  const volumeStatus = { conditions: [{ type: 'Ready', status: 'Unknown' }] };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
 
 it('should return error when called with failed Ready condition', () => {
-  const volumeStatus = {'conditions': [
-    {
-      'type': 'Ready',
-      'status': 'False',
-      'reason': 'CreationError',
-      'message': 'BOOM'
-    }
-  ]};
+  const volumeStatus = {
+    conditions: [
+      {
+        type: 'Ready',
+        status: 'False',
+        reason: 'CreationError',
+        message: 'BOOM',
+      },
+    ],
+  };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(['CreationError', 'BOOM']);
 });
