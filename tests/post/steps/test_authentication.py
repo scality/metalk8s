@@ -3,8 +3,6 @@ import re
 
 import requests
 import requests.exceptions
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
 import pytest
 from pytest_bdd import scenario, given, then, when, parsers
@@ -130,9 +128,16 @@ def check_cp_ingress_pod_and_container(
 
 @when(parsers.parse(
     "we perform a request on '{path}' with port '{port}' on control-plane IP"))
-def perform_request(host, context, control_plane_ip, path, port):
+def perform_request(
+    request_retry_session,
+    host,
+    context,
+    control_plane_ip,
+    path,
+    port
+):
     try:
-        context['response'] = requests_retry_session().get(
+        context['response'] = request_retry_session.get(
             'https://{ip}:{port}{path}'.format(
                 ip=control_plane_ip, port=port, path=path
             ),
@@ -146,9 +151,16 @@ def perform_request(host, context, control_plane_ip, path, port):
 
 @when(parsers.parse(
     "we login to Dex as '{username}' using password '{password}'"))
-def dex_login(host, control_plane_ip, username, password, context):
+def dex_login(
+    host,
+    control_plane_ip,
+    username,
+    password,
+    context,
+    request_retry_session
+):
     context['login_response'] = _dex_auth_request(
-        control_plane_ip, username, password
+        control_plane_ip, username, password, request_retry_session
     )
 
 
@@ -159,10 +171,10 @@ def dex_login(host, control_plane_ip, username, password, context):
 
 
 @then("we can reach the OIDC openID configuration")
-def reach_openid_config(host, control_plane_ip):
+def reach_openid_config(request_retry_session, host, control_plane_ip):
     def _get_openID_config():
         try:
-            response = requests_retry_session().get(
+            response = request_retry_session.get(
                 'https://{}:{}/oidc/.well-known/openid-configuration'.format(
                     control_plane_ip, INGRESS_PORT
                 ),
@@ -224,9 +236,14 @@ def successful_login(host, context, status_code):
 # Helper {{{
 
 
-def _dex_auth_request(control_plane_ip, username, password):
+def _dex_auth_request(
+    control_plane_ip,
+    username,
+    password,
+    request_retry_session
+):
     try:
-        response = requests_retry_session().post(
+        response = request_retry_session.post(
             'https://{}:{}/oidc/auth?'.format(control_plane_ip, INGRESS_PORT),
             data={
                 'response_type': 'id_token',
@@ -271,32 +288,6 @@ def _dex_auth_request(control_plane_ip, username, password):
         pytest.fail("Unable to login with error: {}".format(exc))
 
     return result
-
-
-# a retry helper that performs 3 retries with an exponential sleep interval
-# between each request.
-# Only retry internal server errors and service unavailable errors
-# Source: https://www.peterbe.com/plog/best-practice-with-retries-with-requests
-
-def requests_retry_session(
-    retries=3,
-    backoff_factor=0.3,
-    status_forcelist=(500, 503),
-    method_whitelist=frozenset(['GET', 'POST']),
-    session=None
-):
-    session = session or requests.Session()
-    retry = Retry(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist,
-    )
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-    return session
 
 
 # }}}
