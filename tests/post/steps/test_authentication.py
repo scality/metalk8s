@@ -128,9 +128,16 @@ def check_cp_ingress_pod_and_container(
 
 @when(parsers.parse(
     "we perform a request on '{path}' with port '{port}' on control-plane IP"))
-def perform_request(host, context, control_plane_ip, path, port):
+def perform_request(
+    request_retry_session,
+    host,
+    context,
+    control_plane_ip,
+    path,
+    port
+):
     try:
-        context['response'] = utils.requests_retry_session().get(
+        context['response'] = request_retry_session.get(
             'https://{ip}:{port}{path}'.format(
                 ip=control_plane_ip, port=port, path=path
             ),
@@ -144,9 +151,16 @@ def perform_request(host, context, control_plane_ip, path, port):
 
 @when(parsers.parse(
     "we login to Dex as '{username}' using password '{password}'"))
-def dex_login(host, control_plane_ip, username, password, context):
+def dex_login(
+    host,
+    control_plane_ip,
+    username,
+    password,
+    context,
+    request_retry_session
+):
     context['login_response'] = _dex_auth_request(
-        control_plane_ip, username, password
+        control_plane_ip, username, password, request_retry_session
     )
 
 
@@ -157,10 +171,10 @@ def dex_login(host, control_plane_ip, username, password, context):
 
 
 @then("we can reach the OIDC openID configuration")
-def reach_openid_config(host, control_plane_ip):
+def reach_openid_config(request_retry_session, host, control_plane_ip):
     def _get_openID_config():
         try:
-            response = utils.requests_retry_session().get(
+            response = request_retry_session.get(
                 'https://{}:{}/oidc/.well-known/openid-configuration'.format(
                     control_plane_ip, INGRESS_PORT
                 ),
@@ -222,9 +236,14 @@ def successful_login(host, context, status_code):
 # Helper {{{
 
 
-def _dex_auth_request(control_plane_ip, username, password):
+def _dex_auth_request(
+    control_plane_ip,
+    username,
+    password,
+    request_retry_session
+):
     try:
-        response = utils.requests_retry_session().post(
+        response = request_retry_session.post(
             'https://{}:{}/oidc/auth?'.format(control_plane_ip, INGRESS_PORT),
             data={
                 'response_type': 'id_token',

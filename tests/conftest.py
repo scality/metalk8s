@@ -255,6 +255,14 @@ def ssh_config(request):
     return request.config.getoption('--ssh-config')
 
 
+@pytest.fixture(scope="function")
+def request_retry_session(request):
+    # Callers can inject arguments using `pytest.mark.parametrize`
+    params = getattr(request, 'param', {})
+
+    return utils.requests_retry_session(**params)
+
+
 def count_running_pods(
         request, k8s_client, pods_count, label, namespace, node):
     ssh_config = request.config.getoption('--ssh-config')
