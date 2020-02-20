@@ -28,10 +28,7 @@ resource "openstack_networking_network_v2" "control_plane" {
 }
 
 resource "openstack_networking_subnet_v2" "control_plane" {
-  count = (
-    local.control_plane_network.enabled
-    && local.control_plane_network.subnet_name == ""
-  ) ? 1 : 0
+  count = length(openstack_networking_network_v2.control_plane)
 
   name        = local.control_plane_network.name
   network_id  = openstack_networking_network_v2.control_plane[0].id
@@ -63,6 +60,7 @@ locals {
   workload_plane_network = {
     name        = "${local.prefix}-workload-plane",
     enabled     = var.workload_plane.private,
+    reuse_cp    = var.workload_plane.reuse_control_plane,
     cidr        = var.workload_plane.cidr,
     subnet_name = var.workload_plane.existing_subnet,
   }
@@ -71,6 +69,7 @@ locals {
 resource "openstack_networking_network_v2" "workload_plane" {
   count = (
     local.workload_plane_network.enabled
+    && ! local.workload_plane_network.reuse_cp
     && local.workload_plane_network.subnet_name == ""
   ) ? 1 : 0
 
@@ -79,10 +78,7 @@ resource "openstack_networking_network_v2" "workload_plane" {
 }
 
 resource "openstack_networking_subnet_v2" "workload_plane" {
-  count = (
-    local.control_plane_network.enabled
-    && local.control_plane_network.subnet_name == ""
-  ) ? 1 : 0
+  count = length(openstack_networking_network_v2.workload_plane)
 
   name        = local.workload_plane_network.name
   network_id  = openstack_networking_network_v2.workload_plane[0].id
@@ -95,6 +91,7 @@ resource "openstack_networking_subnet_v2" "workload_plane" {
 data "openstack_networking_subnet_v2" "workload_plane" {
   count = (
     local.workload_plane_network.enabled
+    && ! local.workload_plane_network.reuse_cp
     && local.workload_plane_network.subnet_name != ""
   ) ? 1 : 0
 

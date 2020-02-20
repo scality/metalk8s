@@ -162,7 +162,7 @@ resource "openstack_networking_port_v2" "control_plane_bastion" {
   count = local.bastion.enabled && local.control_plane_network.enabled ? 1 : 0
 }
 resource "openstack_compute_interface_attach_v2" "control_plane_bastion" {
-  count = local.bastion.enabled && local.control_plane_network.enabled ? 1 : 0
+  count = length(openstack_networking_port_v2.control_plane_bastion)
 
   instance_id = openstack_compute_instance_v2.bastion[0].id
   port_id     = openstack_networking_port_v2.control_plane_bastion[0].id
@@ -180,10 +180,14 @@ resource "openstack_networking_port_v2" "workload_plane_bastion" {
     subnet_id = local.workload_plane_subnet[0].id
   }
 
-  count = local.bastion.enabled && local.workload_plane_network.enabled ? 1 : 0
+  count = (
+    local.bastion.enabled
+    && local.workload_plane_network.enabled
+    && ! local.workload_plane_network.reuse_cp
+  ) ? 1 : 0
 }
 resource "openstack_compute_interface_attach_v2" "workload_plane_bastion" {
-  count = local.bastion.enabled && local.workload_plane_network.enabled ? 1 : 0
+  count = length(openstack_networking_port_v2.workload_plane_bastion)
 
   instance_id = openstack_compute_instance_v2.bastion[0].id
   port_id     = openstack_networking_port_v2.workload_plane_bastion[0].id
@@ -208,6 +212,7 @@ resource "null_resource" "bastion_iface_config" {
     ),
     wp_port = (
       local.workload_plane_network.enabled
+      && ! local.workload_plane_network.reuse_cp
       ? openstack_networking_port_v2.workload_plane_bastion[0].id
       : ""
     )
@@ -228,6 +233,7 @@ resource "null_resource" "bastion_iface_config" {
         ? [openstack_networking_port_v2.control_plane_bastion[0].mac_address]
         : [],
         local.workload_plane_network.enabled
+        && ! local.workload_plane_network.reuse_cp
         ? [openstack_networking_port_v2.workload_plane_bastion[0].mac_address]
         : [],
       ) :

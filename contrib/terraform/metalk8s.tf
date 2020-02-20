@@ -67,7 +67,7 @@ resource "null_resource" "configure_bootstrap" {
   count = var.metalk8s_bootstrap ? 1 : 0
 
   depends_on = [
-    # null_resource.bootstrap_iface_config,
+    null_resource.bootstrap_iface_config,
     null_resource.provision_scripts_bootstrap,
   ]
 
@@ -78,22 +78,40 @@ resource "null_resource" "configure_bootstrap" {
     private_key = openstack_compute_keypair_v2.local.private_key
   }
 
-  # Prepare for bootstrap installation
   provisioner "remote-exec" {
     inline = [
+      # Pre-seed minion ID
+      "sudo mkdir -p /etc/salt",
+      "sudo bash -c 'echo \"bootstrap\" > /etc/salt/minion_id'",
+      # Copy SSH identity for Salt master
+      "sudo mkdir -p /etc/metalk8s/pki",
       join(" ", [
-        "sudo python /tmp/metalk8s/scripts/prepare-bootstrap.py",
-        "--control-plane-net",
-        local.control_plane_network.enabled
-        ? local.control_plane_subnet[0].cidr
-        : data.openstack_networking_subnet_v2.public_subnet.cidr,
-        "--workload-plane-net",
-        local.workload_plane_network.enabled
-        ? local.workload_plane_subnet[0].cidr
-        : data.openstack_networking_subnet_v2.public_subnet.cidr,
-        "--archive-path", local.metalk8s_iso.destination,
-        "--copy-ssh-key", "/home/${local.bootstrap.user}/.ssh/bootstrap",
+        "sudo cp",
+        "/home/${local.bootstrap.user}/.ssh/bootstrap",
+        "/etc/metalk8s/pki/salt-bootstrap",
       ]),
+      # Write BootstrapConfiguration
+      join("", [
+        "sudo bash -c 'echo \"",
+        templatefile("${path.root}/templates/bootstrap.yaml.tpl", {
+          control_plane_cidr = (
+            local.control_plane_network.enabled
+            ? local.control_plane_subnet[0].cidr
+            : data.openstack_networking_subnet_v2.public_subnet.cidr
+          ),
+          workload_plane_cidr = (
+            local.workload_plane_network.enabled
+            ? (
+              local.workload_plane_network.reuse_cp
+              ? local.control_plane_subnet[0].cidr
+              : local.workload_plane_subnet[0].cidr
+            ) : data.openstack_networking_subnet_v2.public_subnet.cidr
+          ),
+          ca_minion = "bootstrap",
+          archives = [local.metalk8s_iso.destination],
+        }),
+        "\" > /etc/metalk8s/bootstrap.yaml'",
+      ])
     ]
   }
 }
@@ -145,7 +163,7 @@ resource "null_resource" "enable_ipip" {
   }
 
   provisioner "remote-exec" {
-    inline = ["bash scripts/enable_ipip.sh"]
+    inline = ["bash /tmp/metalk8s/scripts/enable_ipip.sh"]
   }
 }
 

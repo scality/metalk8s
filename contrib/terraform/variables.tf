@@ -59,12 +59,18 @@ variable "control_plane" {
 
 variable "workload_plane" {
   type = object({
-    private         = bool,
-    existing_subnet = string,
-    cidr            = string,
+    private             = bool,
+    reuse_control_plane = bool,
+    existing_subnet     = string,
+    cidr                = string,
   })
   description = "Configuration of the workload plane network"
-  default     = { private = false, existing_subnet = "", cidr = "" }
+  default = {
+    private             = false,
+    reuse_control_plane = false,
+    existing_subnet     = "",
+    cidr                = ""
+  }
 }
 
 # MetalK8s deployment configuration

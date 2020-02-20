@@ -156,7 +156,7 @@ resource "openstack_networking_port_v2" "control_plane_bootstrap" {
   count = local.control_plane_network.enabled ? 1 : 0
 }
 resource "openstack_compute_interface_attach_v2" "control_plane_bootstrap" {
-  count = local.control_plane_network.enabled ? 1 : 0
+  count = length(openstack_networking_port_v2.control_plane_bootstrap)
 
   depends_on = [
     openstack_compute_instance_v2.bootstrap,
@@ -182,10 +182,13 @@ resource "openstack_networking_port_v2" "workload_plane_bootstrap" {
     subnet_id = local.workload_plane_subnet[0].id
   }
 
-  count = local.workload_plane_network.enabled ? 1 : 0
+  count = (
+    local.workload_plane_network.enabled
+    && ! local.workload_plane_network.reuse_cp
+  ) ? 1 : 0
 }
 resource "openstack_compute_interface_attach_v2" "workload_plane_bootstrap" {
-  count = local.workload_plane_network.enabled ? 1 : 0
+  count = length(openstack_networking_port_v2.workload_plane_bootstrap)
 
   depends_on = [
     openstack_compute_instance_v2.bootstrap,
@@ -212,6 +215,7 @@ resource "null_resource" "bootstrap_iface_config" {
     ),
     wp_port = (
       local.workload_plane_network.enabled
+      && ! local.workload_plane_network.reuse_cp
       ? openstack_networking_port_v2.workload_plane_bootstrap[0].id
       : ""
     )
@@ -232,6 +236,7 @@ resource "null_resource" "bootstrap_iface_config" {
         ? [openstack_networking_port_v2.control_plane_bootstrap[0].mac_address]
         : [],
         local.workload_plane_network.enabled
+        && ! local.workload_plane_network.reuse_cp
         ? [openstack_networking_port_v2.workload_plane_bootstrap[0].mac_address]
         : [],
       ) :
