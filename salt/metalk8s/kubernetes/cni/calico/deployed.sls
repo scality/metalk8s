@@ -54,6 +54,10 @@ data:
   #        "type": "portmap",
   #        "snat": true,
   #        "capabilities": {"portMappings": true}
+  #      },
+  #      {
+  #        "type": "bandwidth",
+  #        "capabilities": {"bandwidth": true}
   #      }
   #    ]
   #  }
@@ -512,7 +516,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       hostNetwork: true
       tolerations:
         # Make sure calico-node gets scheduled on all nodes.
@@ -533,7 +537,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         #- name: upgrade-ipam
-        #  image: calico/cni:v3.10.2
+        #  image: calico/cni:v3.12.0
         #  command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
         #  env:
         #    - name: KUBERNETES_NODE_NAME
@@ -550,11 +554,13 @@ spec:
         #      name: host-local-net-dir
         #    - mountPath: /host/opt/cni/bin
         #      name: cni-bin-dir
+        #  securityContext:
+        #    privileged: true
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         # Note: In MetalK8s, we handle this in the Calico state
         #- name: install-cni
-        #  image: calico/cni:v3.10.2
+        #  image: calico/cni:v3.12.0
         #  command: ["/install-cni.sh"]
         #  env:
         #    # Name of the CNI config file to create.
@@ -585,14 +591,18 @@ spec:
         #      name: cni-bin-dir
         #    - mountPath: /host/etc/cni/net.d
         #      name: cni-net-dir
+        #  securityContext:
+        #    privileged: true
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         # Note: In MetalK8s, we have no support for Dikastes (yet).
         #- name: flexvol-driver
-        #  image: calico/pod2daemon-flexvol:v3.10.2
+        #  image: calico/pod2daemon-flexvol:v3.12.0
         #  volumeMounts:
         #  - name: flexvol-driver-host
         #    mountPath: /host/driver
+        #  securityContext:
+        #    privileged: true
       containers:
         # Runs calico-node container on each Kubernetes node.  This
         # container programs network policy and routes on each
@@ -770,7 +780,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly

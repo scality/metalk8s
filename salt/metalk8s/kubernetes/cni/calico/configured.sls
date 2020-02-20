@@ -48,5 +48,12 @@ Create CNI calico configuration file:
             capabilities:
               portMappings: true
             conditionsV4: ["-d", "{{ grains.metalk8s.workload_plane_ip }}/32"]
+          # Note: Calico upstream enables the `bandwidth` CNI plugin by default.
+          # However, this plugin (executable) is not available in the CNI RPM
+          # package we currently install. Hence, not enabling this functionality
+          # (for now).
+          #- type: "bandwidth"
+          #  capabilities:
+          #    bandwidth: true
     - require:
       - metalk8s_kubeconfig: Create kubeconf file for calico
