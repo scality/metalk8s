@@ -49,24 +49,33 @@ variable "public_network" {
 
 variable "control_plane" {
   type = object({
-    private         = bool,
+    enabled         = bool,
     existing_subnet = string,
     cidr            = string,
   })
-  description = "Configuration of the control plane network"
-  default     = { private = false, existing_subnet = "", cidr = "" }
+  description = <<-EOT
+  Configuration of the control plane network
+  If disabled, MetalK8s will use the public network for its control plane.
+  EOT
+  default     = { enabled = false, existing_subnet = "", cidr = "" }
 }
 
 variable "workload_plane" {
   type = object({
-    private             = bool,
+    enabled             = bool,
     reuse_control_plane = bool,
     existing_subnet     = string,
     cidr                = string,
   })
-  description = "Configuration of the workload plane network"
+  description = <<-EOT
+  Configuration of the workload plane network
+  If disabled, MetalK8s will use the public network for its workload plane.
+  If `reuse_control_plane` is true, no additional port will be created for
+  the workload plane subnet, and MetalK8s will use the same CIDR for both
+  network configurations.
+  EOT
   default = {
-    private             = false,
+    enabled             = false,
     reuse_control_plane = false,
     existing_subnet     = "",
     cidr                = ""
