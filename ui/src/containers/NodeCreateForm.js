@@ -5,7 +5,7 @@ import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { useHistory } from 'react-router';
 import { Button, Input, Checkbox, Breadcrumb } from '@scality/core-ui';
-import { padding, fontSize, gray } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
 import {
   createNodeAction,
@@ -34,6 +34,7 @@ const CreateNodeLayout = styled.div`
       margin: ${padding.smaller} 0;
       .sc-input-label {
         width: 200px;
+        color: ${props => props.theme.brand.textPrimary};
       }
     }
   }
@@ -68,7 +69,7 @@ const CheckboxGroup = styled.div`
 
 const FormSectionTitle = styled.h3`
   margin: 0 ${padding.small} 0;
-  color: ${gray};
+  color: ${props => props.theme.brand.textPrimary};
 `;
 
 const FormSection = styled.div`
@@ -84,7 +85,7 @@ const InputContainer = styled.div`
 const InputLabel = styled.label`
   padding: ${padding.small};
   font-size: ${fontSize.base};
-  color: ${props => props.theme.brand.text};
+  color: ${props => props.theme.brand.textPrimary};
 `;
 
 const InputValue = styled(InputLabel)`

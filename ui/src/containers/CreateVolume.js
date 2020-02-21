@@ -60,6 +60,7 @@ const CreateVolumeLayout = styled.div`
       margin: ${padding.smaller} 0;
       .sc-input-label {
         width: 150px;
+        color: ${props => props.theme.brand.textPrimary};
       }
     }
   }
@@ -95,7 +96,10 @@ const InputContainer = styled.div`
 const InputLabel = styled.label`
   padding: ${padding.small};
   font-size: ${fontSize.base};
-  color: ${props => props.theme.brand.text};
+  color: ${props => props.theme.brand.textPrimary};
+  .sc-input-label {
+    color: ${props => props.theme.brand.textPrimary};
+  }
 `;
 
 const LabelsContainer = styled.div`
@@ -124,12 +128,10 @@ const LabelsValue = styled.div`
   width: 200px;
   padding: ${padding.small} 0;
   margin-right: ${padding.small};
-  color: ${props => props.theme.brand.text};
 `;
 
 const LabelsName = styled(LabelsValue)`
   font-weight: ${fontWeight.bold};
-  color: ${props => props.theme.brand.text};
 `;
 
 const PageContainer = styled.div`

@@ -23,13 +23,13 @@ const NodeDeploymentContainer = styled.div`
 `;
 
 const InfoMessage = styled.div`
-  color: ${props => props.theme.brand.text};
+  color: ${props => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   padding: ${padding.base};
 `;
 
 const NodeDeploymentTitle = styled.div`
-  color: ${props => props.theme.brand.text};
+  color: ${props => props.theme.brand.textPrimary};
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.large};
   margin: ${padding.base};
@@ -37,7 +37,7 @@ const NodeDeploymentTitle = styled.div`
 
 const NodeDeploymentEvent = styled.div`
   background-color: ${grayLighter};
-  color: ${props => props.theme.brand.text} !important;
+  color: ${props => props.theme.brand.textPrimary};
   padding: ${padding.base};
   margin: ${padding.base};
   border-radius: 5px;

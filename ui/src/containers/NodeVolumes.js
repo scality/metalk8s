@@ -70,6 +70,10 @@ const ActionContainer = styled.div`
 `;
 
 const SearchContainer = styled.div`
+  margin-left: ${padding.base};
+  input.sc-input-type {
+    background-color: ${props => props.theme.brand.primaryDark2};
+  }
   width: 250px;
 `;
 
@@ -85,6 +89,12 @@ const ButtonContainer = styled.div`
 
 const LoaderContainer = styled(Loader)`
   padding-right: ${padding.smaller};
+`;
+
+const TrashButtonContainer = styled(Button)`
+  ${props => {
+    if (props.disabled) return { opacity: 0.2 };
+  }};
 `;
 
 const NodeVolumes = props => {
@@ -200,7 +210,7 @@ const NodeVolumes = props => {
         return (
           <>
             <Tooltip placement="bottom" overlay={hintPopup()}>
-              <Button
+              <TrashButtonContainer
                 className="remove-volume-button"
                 onClick={e => {
                   e.stopPropagation();
@@ -212,7 +222,7 @@ const NodeVolumes = props => {
                 inverted={true}
                 icon={<i className="fas fa-lg fa-trash" />}
                 disabled={!isEnableClick}
-              ></Button>
+              ></TrashButtonContainer>
             </Tooltip>
           </>
         );

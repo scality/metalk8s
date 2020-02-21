@@ -48,7 +48,7 @@ const TableContainer = styled.div`
 `;
 
 const PageSubtitle = styled.h3`
-  color: ${(props) => props.theme.brand.text};
+  color: ${(props) => props.theme.brand.textPrimary};
   margin: ${padding.small} 0;
   display: flex;
   align-items: center;
@@ -89,11 +89,11 @@ const ClusterStatusValue = styled.span`
 `;
 
 const InformationMarkIcon = styled.i`
-  color: ${(props) => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.textPrimary};
 `;
 
 const TooltipContent = styled.div`
-  color: ${(props) => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.textSecondary};
   font-weight: ${fontWeight.bold};
 `;
 
