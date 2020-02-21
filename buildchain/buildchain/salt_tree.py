@@ -555,8 +555,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s_network.py'),
     Path('salt/_modules/metalk8s_package_manager_yum.py'),
     Path('salt/_modules/metalk8s_package_manager_apt.py'),
-    Path('salt/_modules/metalk8s_volumes.py'),
+    Path('salt/_modules/metalk8s_service_configuration.py'),
     Path('salt/_modules/metalk8s_solutions.py'),
+    Path('salt/_modules/metalk8s_volumes.py'),
 
 
     Path('salt/_pillar/metalk8s.py'),
