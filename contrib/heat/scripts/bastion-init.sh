@@ -45,13 +45,18 @@ terraform init
 echo "Terraform initialized."
 
 # Apply Terraform configuration with provided /run/terraform/deployment.tfvars
-echo "Spawning cluster using Terraform..."
 
 source openstack.env  # The OpenStack API credentials, provisioned by Heat
 
-# Import self as Bastion instance into Terraform state
-terraform import \
-  openstack_compute_instance_v2.bastion $(cat /run/cloud-init/.instance-id)
+# Importing spawned resources into Terraform state
+echo "Loading resources into Terraform state..."
+
+chmod +x ./tf-imports.sh
+./tf-imports.sh
+
+echo "Finished importing resources."
+
+echo "Spawning cluster using Terraform..."
 
 terraform apply \
   -var-file scality-cloud.tfvars \

@@ -2,7 +2,7 @@
 
 prefix = "metalk8s-$random"
 
-offline = ! $run_online
+online = "$online"
 
 bastion = {
     enabled  = true,
@@ -28,9 +28,10 @@ control_plane = {
 }
 
 workload_plane = {
-    enabled         = true,
-    existing_subnet = "$wp_subnet_name",
-    cidr            = "",
+    enabled             = true,
+    existing_subnet     = "$wp_subnet_name",
+    reuse_control_plane = false,
+    cidr                = "",
 }
 
 metalk8s_iso = {

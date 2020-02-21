@@ -151,12 +151,12 @@ resources:
           template: metalk8s-$random-workload-plane-subnet
           params: { $random: { get_attr: [random_name, value] } }
   # Security groups
-  bastion_secgroup:
+  ingress_secgroup:
     type: OS::Neutron::SecurityGroup
     properties:
       name:
         str_replace:
-          template: metalk8s-$random-bastion-secgroup
+          template: metalk8s-$random-ingress-secgroup
           params: { $random: { get_attr: [random_name, value] } }
       rules:
         - direction: ingress
@@ -169,6 +169,177 @@ resources:
           ethertype: IPv4
           protocol: icmp
           remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+  open_egress_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name:
+        str_replace:
+          template: metalk8s-$random-open-egress-secgroup
+          params: { $random: { get_attr: [random_name, value] } }
+  restricted_egress_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      # NOTE: rules are going to be set by Terraform
+      name:
+        str_replace:
+          template: metalk8s-$random-restricted-egress-secgroup
+          params: { $random: { get_attr: [random_name, value] } }
+  # Bootstrap ports
+  bootstrap_public_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: public_network }
+      security_groups:
+        - get_resource: ingress_secgroup
+        - if:
+            - offline
+            - get_resource: restricted_egress_secgroup
+            - get_resource: open_egress_secgroup
+  bootstrap_control_plane_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: control_plane_network }
+      fixed_ips:
+        - subnet_id: { get_resource: control_plane_subnet }
+  bootstrap_workload_plane_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: workload_plane_network }
+      fixed_ips:
+        - subnet_id: { get_resource: workload_plane_subnet }
+  # Bootstrap VM
+  bootstrap:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: metalk8s-$random-bootstrap
+          params: { $random: { get_attr: [random_name, value] } }
+      key_name: { get_param: key_pair }
+      flavor: m1.large
+      image: { get_param: metalk8s_os }
+      networks:
+        - port: { get_resource: bootstrap_public_port }
+        - port: { get_resource: bootstrap_control_plane_port }
+        - port: { get_resource: bootstrap_workload_plane_port }
+  # Master node ports
+  master_public_ports:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 2
+      resource_def:
+        type: OS::Neutron::Port
+        properties:
+          name:
+            str_replace:
+              template: metalk8s-$random-master-%index%
+              params: { $random: { get_attr: [random_name, value] } }
+          network: { get_resource: public_network }
+          security_groups:
+            - get_resource: ingress_secgroup
+            - if:
+                - offline
+                - get_resource: restricted_egress_secgroup
+                - get_resource: open_egress_secgroup
+  master_control_plane_ports:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 2
+      resource_def:
+        type: OS::Neutron::Port
+        properties:
+          network: { get_resource: control_plane_network }
+          fixed_ips:
+            - subnet_id: { get_resource: control_plane_subnet }
+  master_workload_plane_ports:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 2
+      resource_def:
+        type: OS::Neutron::Port
+        properties:
+          network: { get_resource: workload_plane_network }
+          fixed_ips:
+            - subnet_id: { get_resource: workload_plane_subnet }
+  # Master VMs
+  master_nodes:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 2
+      resource_def:
+        type: OS::Nova::Server
+        properties:
+          name:
+            str_replace:
+              template: metalk8s-$random-master-%index%
+              params: { $random: { get_attr: [random_name, value] } }
+          key_name: { get_param: key_pair }
+          flavor: { get_param: metalk8s_workers_flavour }
+          image: { get_param: metalk8s_os }
+          networks:
+            - port: { get_attr: [master_public_ports, refs, "%index%"] }
+            - port: { get_attr: [master_control_plane_ports, refs, "%index%"] }
+            - port: { get_attr: [master_workload_plane_ports, refs, "%index%"] }
+  # Worker node ports
+  worker_public_ports:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: metalk8s_workers_count }
+      resource_def:
+        type: OS::Neutron::Port
+        properties:
+          name:
+            str_replace:
+              template: metalk8s-$random-worker-%index%
+              params: { $random: { get_attr: [random_name, value] } }
+          network: { get_resource: public_network }
+          security_groups:
+            - get_resource: ingress_secgroup
+            - if:
+                - offline
+                - get_resource: restricted_egress_secgroup
+                - get_resource: open_egress_secgroup
+  worker_control_plane_ports:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: metalk8s_workers_count }
+      resource_def:
+        type: OS::Neutron::Port
+        properties:
+          network: { get_resource: control_plane_network }
+          fixed_ips:
+            - subnet_id: { get_resource: control_plane_subnet }
+  worker_workload_plane_ports:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: metalk8s_workers_count }
+      resource_def:
+        type: OS::Neutron::Port
+        properties:
+          network: { get_resource: workload_plane_network }
+          fixed_ips:
+            - subnet_id: { get_resource: workload_plane_subnet }
+  # Worker VMs
+  worker_nodes:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: metalk8s_workers_count }
+      resource_def:
+        type: OS::Nova::Server
+        properties:
+          name:
+            str_replace:
+              template: metalk8s-$random-worker-%index%
+              params: { $random: { get_attr: [random_name, value] } }
+          key_name: { get_param: key_pair }
+          flavor: { get_param: metalk8s_workers_flavour }
+          image: { get_param: metalk8s_os }
+          networks:
+            - port: { get_attr: [worker_public_ports, refs, "%index%"] }
+            - port: { get_attr: [worker_control_plane_ports, refs, "%index%"] }
+            - port: { get_attr: [worker_workload_plane_ports, refs, "%index%"] }
   # Bastion ports
   bastion_public_port:
     type: OS::Neutron::Port
@@ -213,12 +384,61 @@ resources:
                 params:
                   $random: { get_attr: [random_name, value] }
                   $image_name: { get_param: metalk8s_os }
-                  $run_online: { get_param: metalk8s_online }
+                  $online: { get_param: metalk8s_online }
                   $workers_count: { get_param: metalk8s_workers_count }
                   $flavour_name: { get_param: metalk8s_workers_flavour }
                   $cp_subnet_name: { get_attr: [control_plane_subnet, name] }
                   $wp_subnet_name: { get_attr: [workload_plane_subnet, name] }
                   $metalk8s_version: { get_param: metalk8s_version }
+          - path: /run/terraform/tf-imports.sh
+            owner: root:root
+            permissions: '0755'
+            content:
+              str_replace:
+                template: { get_file: templates/tf-imports.sh.tpl }
+                params:
+                  $keypair:
+                    get_param: key_pair
+                  $open_egress:
+                    get_resource: open_egress_secgroup
+                  $restricted_egress:
+                    get_resource: restricted_egress_secgroup
+                  $ingress:
+                    get_resource: ingress_secgroup
+                  $bastion_cp_port:
+                    get_resource: bastion_control_plane_port
+                  $bastion_wp_port:
+                    get_resource: bastion_workload_plane_port
+                  $bootstrap_id:
+                    get_resource: bootstrap
+                  $bootstrap_cp_port:
+                    get_resource: bootstrap_control_plane_port
+                  $bootstrap_wp_port:
+                    get_resource: bootstrap_workload_plane_port
+                  $master_ids:
+                    list_join:
+                      - ' '
+                      - get_attr: [master_nodes, refs]
+                  $master_cp_ports:
+                    list_join:
+                      - ' '
+                      - get_attr: [master_control_plane_ports, refs]
+                  $master_wp_ports:
+                    list_join:
+                      - ' '
+                      - get_attr: [master_workload_plane_ports, refs]
+                  $worker_ids:
+                    list_join:
+                      - ' '
+                      - get_attr: [worker_nodes, refs]
+                  $worker_cp_ports:
+                    list_join:
+                      - ' '
+                      - get_attr: [worker_control_plane_ports, refs]
+                  $worker_wp_ports:
+                    list_join:
+                      - ' '
+                      - get_attr: [worker_workload_plane_ports, refs]
   bastion_boot_script:
     type: OS::Heat::SoftwareConfig
     properties:
@@ -226,7 +446,7 @@ resources:
   setup_iface_script:
     type: OS::Heat::SoftwareConfig
     properties:
-      config: { get_file: scripts/setup-iface-config.sh }
+      config: { get_file: scripts/setup-ifaces.sh }
   bastion_init:
     type: OS::Heat::MultipartMime
     properties:
@@ -243,7 +463,7 @@ resources:
           params: { $random: { get_attr: [random_name, value] } }
       key_name: { get_param: key_pair }
       flavor: m1.small
-      image: CentOS-7-x86_64-GenericCloud-latest
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       networks:
         - port: { get_resource: bastion_public_port }
         - port: { get_resource: bastion_control_plane_port }
