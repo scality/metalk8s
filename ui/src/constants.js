@@ -19,6 +19,7 @@ export const STATUS_FAILED = 'Failed';
 export const STATUS_AVAILABLE = 'Available';
 export const STATUS_RELEASED = 'Released';
 export const STATUS_UNKNOWN = 'Unknown';
+export const STATUS_READY = 'Ready';
 
 export const SPARSE_LOOP_DEVICE = 'sparseLoopDevice';
 export const RAW_BLOCK_DEVICE = 'rawBlockDevice';

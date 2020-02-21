@@ -3,7 +3,7 @@ import {
   STATUS_TERMINATING,
   STATUS_PENDING,
   STATUS_FAILED,
-  STATUS_AVAILABLE,
+  STATUS_READY,
 } from '../constants';
 import {
   computeVolumeGlobalStatus,
@@ -84,50 +84,50 @@ const testcaseVolumeFailedPvUnknown = {
   ],
 };
 
-const testcaseVolumeAvailablePvFailed = {
-  rowData: { status: 'Available', name: 'test' },
+const testcaseVolumeReadyPvFailed = {
+  rowData: { status: 'Ready', name: 'test' },
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Failed' } },
   ],
 };
 
-const testcaseVolumeAvailablePvAvailable = {
-  rowData: { status: 'Available', name: 'test' },
+const testcaseVolumeReadyPvAvailable = {
+  rowData: { status: 'Ready', name: 'test' },
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Available' } },
   ],
 };
 
-const testcaseVolumeAvailablePvReleased = {
-  rowData: { status: 'Available', name: 'test' },
+const testcaseVolumeReadyPvReleased = {
+  rowData: { status: 'Ready', name: 'test' },
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Released' } },
   ],
 };
 
 const testcaseVolumeAvailablePvPending = {
-  rowData: { status: 'Available', name: 'test' },
+  rowData: { status: 'Ready', name: 'test' },
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Pending' } },
   ],
 };
 
-const testcaseVolumeAvailablePvBound = {
-  rowData: { status: 'Available', name: 'test' },
+const testcaseVolumeReadyPvBound = {
+  rowData: { status: 'Ready', name: 'test' },
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Bound' } },
   ],
 };
 
-const testcaseVolumeAvailablePvUnknown = {
-  rowData: { status: 'Available', name: 'test' },
+const testcaseVolumeReadyPvUnknown = {
+  rowData: { status: 'Ready', name: 'test' },
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Unknown' } },
   ],
 };
 
-const testcaseVolumeAvailableWithoutPv = {
-  rowData: { status: 'Available', name: 'test' },
+const testcaseVolumeReadyWithoutPv = {
+  rowData: { status: 'Ready', name: 'test' },
   persistentVolumes: [
     { metadata: { name: 'testnoPV' }, status: { phase: 'Available' } },
   ],
@@ -216,31 +216,31 @@ it('should return false when volume is failed and PV is unknown', () => {
   expect(result).toEqual(false);
 });
 
-it('should return true when volume is available and PV is failed', () => {
+it('should return true when volume is ready and PV is failed', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeAvailablePvFailed.rowData,
-    testcaseVolumeAvailablePvFailed.persistentVolumes,
+    testcaseVolumeReadyPvFailed.rowData,
+    testcaseVolumeReadyPvFailed.persistentVolumes,
   );
   expect(result).toEqual(true);
 });
 
-it('should return true when volume is available and PV is available', () => {
+it('should return true when volume is ready and PV is available', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeAvailablePvAvailable.rowData,
-    testcaseVolumeAvailablePvAvailable.persistentVolumes,
+    testcaseVolumeReadyPvAvailable.rowData,
+    testcaseVolumeReadyPvAvailable.persistentVolumes,
   );
   expect(result).toEqual(true);
 });
 
-it('should return true when volume is available and PV is released', () => {
+it('should return true when volume is ready and PV is released', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeAvailablePvReleased.rowData,
-    testcaseVolumeAvailablePvReleased.persistentVolumes,
+    testcaseVolumeReadyPvReleased.rowData,
+    testcaseVolumeReadyPvReleased.persistentVolumes,
   );
   expect(result).toEqual(true);
 });
 
-it('should return false when volume is available and PV is pending', () => {
+it('should return false when volume is ready and PV is pending', () => {
   const result = isVolumeDeletable(
     testcaseVolumeAvailablePvPending.rowData,
     testcaseVolumeAvailablePvPending.persistentVolumes,
@@ -248,26 +248,26 @@ it('should return false when volume is available and PV is pending', () => {
   expect(result).toEqual(false);
 });
 
-it('should return false when volume is available and PV is bound', () => {
+it('should return false when volume is ready and PV is bound', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeAvailablePvBound.rowData,
-    testcaseVolumeAvailablePvBound.persistentVolumes,
+    testcaseVolumeReadyPvBound.rowData,
+    testcaseVolumeReadyPvBound.persistentVolumes,
   );
   expect(result).toEqual(false);
 });
 
-it('should return false when volume is available and PV is unknown', () => {
+it('should return false when volume is ready and PV is unknown', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeAvailablePvUnknown.rowData,
-    testcaseVolumeAvailablePvUnknown.persistentVolumes,
+    testcaseVolumeReadyPvUnknown.rowData,
+    testcaseVolumeReadyPvUnknown.persistentVolumes,
   );
   expect(result).toEqual(false);
 });
 
-it('should return false when volume is available and there is no PV', () => {
+it('should return false when volume is ready and there is no PV', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeAvailableWithoutPv.rowData,
-    testcaseVolumeAvailableWithoutPv.persistentVolumes,
+    testcaseVolumeReadyWithoutPv.rowData,
+    testcaseVolumeReadyWithoutPv.persistentVolumes,
   );
   expect(result).toEqual(true);
 });
@@ -278,7 +278,7 @@ it('should return false when volume is available and there is no PV', () => {
 
 it('should return Unkown when called with wrong input', () => {
   const volume = {
-    'status': {'conditions': []}
+    status: { conditions: [] },
   };
   const result = computeVolumeGlobalStatus('test', volume);
   expect(result).toEqual(STATUS_UNKNOWN);
@@ -290,45 +290,41 @@ it('should return Unkown when volume has no status', () => {
 });
 
 it('should return Unkown when volume has no conditions', () => {
-  const volumeStatus = {'conditions': []};
+  const volumeStatus = { conditions: [] };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_UNKNOWN);
 });
 
 it('should return Unkown when volume has no Ready condition', () => {
-  const volumeStatus = {'conditions': [{'type': 'nope'}]};
+  const volumeStatus = { conditions: [{ type: 'nope' }] };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_UNKNOWN);
 });
 
-it('should return Available when Ready condition is True', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'True'}
-  ]};
+it('should return Ready when Ready condition is True', () => {
+  const volumeStatus = { conditions: [{ type: 'Ready', status: 'True' }] };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
-  expect(result).toEqual(STATUS_AVAILABLE);
+  expect(result).toEqual(STATUS_READY);
 });
 
 it('should return Failed when Ready condition is False', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'False'}
-  ]};
+  const volumeStatus = { conditions: [{ type: 'Ready', status: 'False' }] };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_FAILED);
 });
 
 it('should return Pending when Ready condition is Unknown/Pending', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'Unknown', 'reason': 'Pending'}
-  ]};
+  const volumeStatus = {
+    conditions: [{ type: 'Ready', status: 'Unknown', reason: 'Pending' }],
+  };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_PENDING);
 });
 
 it('should return Pending when Ready condition is Unknown/Terminating', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'Unknown', 'reason': 'Terminating'}
-  ]};
+  const volumeStatus = {
+    conditions: [{ type: 'Ready', status: 'Unknown', reason: 'Terminating' }],
+  };
   const result = computeVolumeGlobalStatus('test', volumeStatus);
   expect(result).toEqual(STATUS_TERMINATING);
 });
@@ -336,11 +332,11 @@ it('should return Pending when Ready condition is Unknown/Terminating', () => {
 // }}}
 // volumeGetError {{{
 
-const NO_ERROR = ['', '']
+const NO_ERROR = ['', ''];
 
 it('should return no error when called with wrong input', () => {
   const volume = {
-    'status': {'conditions': []}
+    status: { conditions: [] },
   };
   const result = volumeGetError(volume);
   expect(result).toEqual(NO_ERROR);
@@ -352,42 +348,40 @@ it('should return no error when called with no status', () => {
 });
 
 it('should return no error when called with no conditions', () => {
-  const volumeStatus = {'conditions': []};
+  const volumeStatus = { conditions: [] };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
 
 it('should return no error when called with no Ready conditions', () => {
-  const volumeStatus = {'conditions': [{'type': 'nope'}]};
+  const volumeStatus = { conditions: [{ type: 'nope' }] };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
 
 it('should return no error when called with successful Ready condition', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'True'}
-  ]};
+  const volumeStatus = { conditions: [{ type: 'Ready', status: 'True' }] };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
 
 it('should return no error when called with pending Ready condition', () => {
-  const volumeStatus = {'conditions': [
-    {'type': 'Ready', 'status': 'Unknown'}
-  ]};
+  const volumeStatus = { conditions: [{ type: 'Ready', status: 'Unknown' }] };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(NO_ERROR);
 });
 
 it('should return error when called with failed Ready condition', () => {
-  const volumeStatus = {'conditions': [
-    {
-      'type': 'Ready',
-      'status': 'False',
-      'reason': 'CreationError',
-      'message': 'BOOM'
-    }
-  ]};
+  const volumeStatus = {
+    conditions: [
+      {
+        type: 'Ready',
+        status: 'False',
+        reason: 'CreationError',
+        message: 'BOOM',
+      },
+    ],
+  };
   const result = volumeGetError(volumeStatus);
   expect(result).toEqual(['CreationError', 'BOOM']);
 });
