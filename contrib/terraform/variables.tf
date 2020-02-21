@@ -74,6 +74,15 @@ variable "workload_plane" {
 }
 
 # MetalK8s deployment configuration
+variable "offline" {
+  type = bool
+  description = <<-EOT
+  Whether to isolate MetalK8s from the Internet (Bastion can be used as a
+  forward proxy if required).
+  EOT
+  default = true
+}
+
 variable "bastion" {
   type        = object({ flavour = string, image = string, enabled = bool })
   description = "Description of the Bastion VM to spawn"
