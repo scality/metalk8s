@@ -83,33 +83,46 @@ variable "workload_plane" {
 }
 
 # MetalK8s deployment configuration
-variable "offline" {
+variable "online" {
   type = bool
   description = <<-EOT
-  Whether to isolate MetalK8s from the Internet (Bastion can be used as a
-  forward proxy if required).
+  Whether to leave Internet access to the cluster or not (Bastion can be used
+  as a forward proxy if required).
   EOT
-  default = true
+  default = false
 }
 
 variable "bastion" {
   type        = object({
     enabled = bool,
-    existing = string,
     flavour = string,
     image = string,
   })
   description = "Description of the Bastion VM to spawn"
+  default = {
+    enabled = true,
+    flavour = "medium",
+    image = "centos7",
+  }
 }
 
 variable "bootstrap" {
   type        = object({ flavour = string, image = string })
   description = "Description of the Bootstrap VM to spawn"
+  default = {
+    flavour = "large",
+    image = "centos7",
+  }
 }
 
 variable "nodes" {
   type        = object({ flavour = string, image = string, count = number })
   description = "Description of the extra Node VMs to spawn"
+  default = {
+    count = 2,
+    flavour = "large",
+    image = "centos7",
+  }
 }
 
 # Bastion configuration

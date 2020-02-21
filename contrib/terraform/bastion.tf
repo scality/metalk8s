@@ -8,8 +8,64 @@ locals {
   }
 }
 
+# Ports
+# TODO: public port
+resource "openstack_networking_port_v2" "public_bastion" {
+  name       = "${local.prefix}-bastion"
+  network_id = data.openstack_networking_network_v2.public_network.id
+
+  admin_state_up        = true
+
+  security_group_ids = [
+    openstack_networking_secgroup_v2.ingress.id,
+    openstack_networking_secgroup_v2.open_egress[0].id,
+  ]
+
+  count = local.bastion.enabled ? 1 : 0
+}
+
+resource "openstack_networking_port_v2" "control_plane_bastion" {
+  name       = "${local.control_plane_network.name}-bastion"
+  network_id = local.control_plane_subnet[0].network_id
+
+  admin_state_up        = true
+  no_security_groups    = true
+  port_security_enabled = false
+
+  fixed_ip {
+    subnet_id = local.control_plane_subnet[0].id
+  }
+
+  count = local.bastion.enabled && local.control_plane_network.enabled ? 1 : 0
+}
+
+resource "openstack_networking_port_v2" "workload_plane_bastion" {
+  name       = "${local.workload_plane_network.name}-bastion"
+  network_id = local.workload_plane_subnet[0].network_id
+
+  admin_state_up        = true
+  no_security_groups    = true
+  port_security_enabled = false
+
+  fixed_ip {
+    subnet_id = local.workload_plane_subnet[0].id
+  }
+
+  count = (
+    local.bastion.enabled
+    && local.workload_plane_network.enabled
+    && ! local.workload_plane_network.reuse_cp
+  ) ? 1 : 0
+}
+
 resource "openstack_compute_instance_v2" "bastion" {
   count = local.bastion.enabled ? 1 : 0
+
+  depends_on = [
+    openstack_networking_port_v2.public_bastion,
+    openstack_networking_port_v2.control_plane_bastion,
+    openstack_networking_port_v2.workload_plane_bastion,
+  ]
 
   name = "${local.prefix}-bastion"
 
@@ -18,11 +74,6 @@ resource "openstack_compute_instance_v2" "bastion" {
   image_name  = local.bastion.image
   flavor_name = local.bastion.flavour
   key_pair    = openstack_compute_keypair_v2.local.name
-
-  security_groups = concat(
-    [openstack_networking_secgroup_v2.nodes.name],
-    openstack_networking_secgroup_v2.bastion[*].name,
-  )
 
   # NOTE: this does not work - ifaces are not yet attached when this runs at
   #       first boot
@@ -39,7 +90,20 @@ resource "openstack_compute_instance_v2" "bastion" {
 
   network {
     access_network = true
-    name           = data.openstack_networking_network_v2.public_network.name
+    port           = openstack_networking_port_v2.public_bastion[0].id
+  }
+
+  dynamic "network" {
+    for_each = concat(
+      openstack_networking_port_v2.control_plane_bastion[*].id,
+      openstack_networking_port_v2.workload_plane_bastion[*].id,
+    )
+    iterator = port
+
+    content {
+      access_network = false
+      port           = port.value
+    }
   }
 
   connection {
@@ -146,73 +210,37 @@ resource "null_resource" "configure_rhsm_bastion" {
 }
 
 
-# Ports on private networks
-resource "openstack_networking_port_v2" "control_plane_bastion" {
-  name       = "${local.control_plane_network.name}-bastion"
-  network_id = local.control_plane_subnet[0].network_id
+# resource "openstack_compute_interface_attach_v2" "control_plane_bastion" {
+#   count = length(openstack_networking_port_v2.control_plane_bastion)
 
-  admin_state_up        = true
-  no_security_groups    = true
-  port_security_enabled = false
+#   instance_id = openstack_compute_instance_v2.bastion[0].id
+#   port_id     = openstack_networking_port_v2.control_plane_bastion[0].id
+# }
+# resource "openstack_compute_interface_attach_v2" "workload_plane_bastion" {
+#   count = length(openstack_networking_port_v2.workload_plane_bastion)
 
-  fixed_ip {
-    subnet_id = local.control_plane_subnet[0].id
-  }
+#   instance_id = openstack_compute_instance_v2.bastion[0].id
+#   port_id     = openstack_networking_port_v2.workload_plane_bastion[0].id
+# }
 
-  count = local.bastion.enabled && local.control_plane_network.enabled ? 1 : 0
-}
-resource "openstack_compute_interface_attach_v2" "control_plane_bastion" {
-  count = length(openstack_networking_port_v2.control_plane_bastion)
-
-  instance_id = openstack_compute_instance_v2.bastion[0].id
-  port_id     = openstack_networking_port_v2.control_plane_bastion[0].id
-}
-
-resource "openstack_networking_port_v2" "workload_plane_bastion" {
-  name       = "${local.workload_plane_network.name}-bastion"
-  network_id = local.workload_plane_subnet[0].network_id
-
-  admin_state_up        = true
-  no_security_groups    = true
-  port_security_enabled = false
-
-  fixed_ip {
-    subnet_id = local.workload_plane_subnet[0].id
-  }
-
-  count = (
-    local.bastion.enabled
-    && local.workload_plane_network.enabled
-    && ! local.workload_plane_network.reuse_cp
-  ) ? 1 : 0
-}
-resource "openstack_compute_interface_attach_v2" "workload_plane_bastion" {
-  count = length(openstack_networking_port_v2.workload_plane_bastion)
-
-  instance_id = openstack_compute_instance_v2.bastion[0].id
-  port_id     = openstack_networking_port_v2.workload_plane_bastion[0].id
-}
-
+# TODO: use cloud-init
 resource "null_resource" "bastion_iface_config" {
   count = local.bastion.enabled ? 1 : 0
 
   depends_on = [
     openstack_compute_instance_v2.bastion,
-    openstack_compute_interface_attach_v2.control_plane_bastion,
-    openstack_compute_interface_attach_v2.workload_plane_bastion,
     null_resource.provision_scripts_bastion,
   ]
 
   triggers = {
     bastion = openstack_compute_instance_v2.bastion[0].id,
     cp_port = (
-      local.control_plane_network.enabled
+      length(openstack_networking_port_v2.control_plane_bastion) != 0
       ? openstack_networking_port_v2.control_plane_bastion[0].id
       : ""
     ),
     wp_port = (
-      local.workload_plane_network.enabled
-      && ! local.workload_plane_network.reuse_cp
+      length(openstack_networking_port_v2.workload_plane_bastion) != 0
       ? openstack_networking_port_v2.workload_plane_bastion[0].id
       : ""
     )
@@ -229,11 +257,10 @@ resource "null_resource" "bastion_iface_config" {
   provisioner "remote-exec" {
     inline = [
       for mac_address in concat(
-        local.control_plane_network.enabled
+        length(openstack_networking_port_v2.control_plane_bastion) != 0
         ? [openstack_networking_port_v2.control_plane_bastion[0].mac_address]
         : [],
-        local.workload_plane_network.enabled
-        && ! local.workload_plane_network.reuse_cp
+        length(openstack_networking_port_v2.workload_plane_bastion) != 0
         ? [openstack_networking_port_v2.workload_plane_bastion[0].mac_address]
         : [],
       ) :
@@ -243,9 +270,10 @@ resource "null_resource" "bastion_iface_config" {
 }
 
 
-# HTTP proxy for selective online access from Bootstrap or Nodes
+# HTTP proxy for selective online access from Bootstrap or Nodes (disabled if
+# cluster is online)
 resource "null_resource" "bastion_http_proxy" {
-  count = local.bastion.enabled ? 1 : 0
+  count = local.bastion.enabled && !var.online ? 1 : 0
 
   depends_on = [openstack_compute_instance_v2.bastion]
 

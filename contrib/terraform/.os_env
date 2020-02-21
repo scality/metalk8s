@@ -1,0 +1,7 @@
+# OpenStack authentication
+export OS_AUTH_URL="https://scality.cloud/keystone/v3"
+export OS_REGION_NAME=Europe
+export OS_TENANT_NAME=guillaume.demonet@scality.com
+export OS_TOKEN=gAAAAABeDboqJ5T833WjNJ9-9fcva0AGSF8rk18JNJpqsH9ZNU8ZKsiL7nxMAiTAF08eDtpnFWd3GpaH0tWUDR5GAHzpmrfOuZ_U3hgq-f7y4LDNfjTCfTxjL-QtZv5drOpBLwaIi9la-xzVp-tzU-ZtvXzXiFmKFnyJ-4A8UWBZAvQi_BR_TSG6Gak3IfeqhMWcpJov5W0nvbY7MOkFgwlk_cffQA-V0JWNOE-XAjxT953riG-4Drxnl3h1DuiXZpM6A-uL2iUfLR2Yd-u2eWuw1rTyAwmBOA
+export OS_AUTH_TYPE=token
+export OS_PROJECT_DOMAIN_ID=${OS_PROJECT_DOMAIN_ID:-default}

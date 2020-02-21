@@ -6,13 +6,65 @@ locals {
   }
 }
 
+# Ports
+resource "openstack_networking_port_v2" "public_bootstrap" {
+  name = "${local.prefix}-public-bootstrap"
+  network_id = data.openstack_networking_network_v2.public_network.id
+
+  admin_state_up = true
+
+  security_group_ids = [
+    openstack_networking_secgroup_v2.ingress.id,
+    var.online
+    ? openstack_networking_secgroup_v2.open_egress[0].id
+    : openstack_networking_secgroup_v2.restricted_egress[0].id
+  ]
+}
+
+resource "openstack_networking_port_v2" "control_plane_bootstrap" {
+  name       = "${local.control_plane_network.name}-bootstrap"
+  network_id = local.control_plane_subnet[0].network_id
+
+  admin_state_up        = true
+  no_security_groups    = true
+  port_security_enabled = false
+
+  fixed_ip {
+    subnet_id = local.control_plane_subnet[0].id
+  }
+
+  count = local.control_plane_network.enabled ? 1 : 0
+}
+
+resource "openstack_networking_port_v2" "workload_plane_bootstrap" {
+  name       = "${local.workload_plane_network.name}-bootstrap"
+  network_id = local.workload_plane_subnet[0].network_id
+
+  admin_state_up        = true
+  no_security_groups    = true
+  port_security_enabled = false
+
+  fixed_ip {
+    subnet_id = local.workload_plane_subnet[0].id
+  }
+
+  count = (
+    local.workload_plane_network.enabled
+    && ! local.workload_plane_network.reuse_cp
+  ) ? 1 : 0
+}
+
 resource "openstack_compute_instance_v2" "bootstrap" {
+  depends_on = [
+    openstack_networking_port_v2.public_bootstrap,
+    openstack_networking_port_v2.control_plane_bootstrap,
+    openstack_networking_port_v2.workload_plane_bootstrap,
+  ]
+
   name        = "${local.prefix}-bootstrap"
   image_name  = local.bootstrap.image
   flavor_name = local.bootstrap.flavour
   key_pair    = openstack_compute_keypair_v2.local.name
-
-  security_groups = [openstack_networking_secgroup_v2.nodes.name]
 
   # NOTE: this does not work - ifaces are not yet attached when this runs at
   #       first boot
@@ -29,7 +81,20 @@ resource "openstack_compute_instance_v2" "bootstrap" {
 
   network {
     access_network = true
-    name           = data.openstack_networking_network_v2.public_network.name
+    port           = openstack_networking_port_v2.public_bootstrap.id
+  }
+
+  dynamic "network" {
+    for_each = concat(
+      openstack_networking_port_v2.control_plane_bootstrap[*].id,
+      openstack_networking_port_v2.workload_plane_bootstrap[*].id,
+    )
+    iterator = port
+
+    content {
+      access_network = false
+      port           = port.value
+    }
   }
 
   connection {
@@ -135,87 +200,22 @@ resource "null_resource" "configure_rhsm_bootstrap" {
   }
 }
 
-
-# Ports on private networks
-resource "openstack_networking_port_v2" "control_plane_bootstrap" {
-  name       = "${local.control_plane_network.name}-bootstrap"
-  network_id = local.control_plane_subnet[0].network_id
-
-  depends_on = [
-    openstack_compute_instance_v2.bootstrap,
-  ]
-
-  admin_state_up        = true
-  no_security_groups    = true
-  port_security_enabled = false
-
-  fixed_ip {
-    subnet_id = local.control_plane_subnet[0].id
-  }
-
-  count = local.control_plane_network.enabled ? 1 : 0
-}
-resource "openstack_compute_interface_attach_v2" "control_plane_bootstrap" {
-  count = length(openstack_networking_port_v2.control_plane_bootstrap)
-
-  depends_on = [
-    openstack_compute_instance_v2.bootstrap,
-  ]
-
-  instance_id = openstack_compute_instance_v2.bootstrap.id
-  port_id     = openstack_networking_port_v2.control_plane_bootstrap[0].id
-}
-
-resource "openstack_networking_port_v2" "workload_plane_bootstrap" {
-  name       = "${local.workload_plane_network.name}-bootstrap"
-  network_id = local.workload_plane_subnet[0].network_id
-
-  depends_on = [
-    openstack_compute_instance_v2.bootstrap,
-  ]
-
-  admin_state_up        = true
-  no_security_groups    = true
-  port_security_enabled = false
-
-  fixed_ip {
-    subnet_id = local.workload_plane_subnet[0].id
-  }
-
-  count = (
-    local.workload_plane_network.enabled
-    && ! local.workload_plane_network.reuse_cp
-  ) ? 1 : 0
-}
-resource "openstack_compute_interface_attach_v2" "workload_plane_bootstrap" {
-  count = length(openstack_networking_port_v2.workload_plane_bootstrap)
-
-  depends_on = [
-    openstack_compute_instance_v2.bootstrap,
-  ]
-
-  instance_id = openstack_compute_instance_v2.bootstrap.id
-  port_id     = openstack_networking_port_v2.workload_plane_bootstrap[0].id
-}
-
+# TODO: use cloud-init
 resource "null_resource" "bootstrap_iface_config" {
   depends_on = [
     openstack_compute_instance_v2.bootstrap,
-    openstack_compute_interface_attach_v2.control_plane_bootstrap,
-    openstack_compute_interface_attach_v2.workload_plane_bootstrap,
     null_resource.provision_scripts_bootstrap,
   ]
 
   triggers = {
     bootstrap = openstack_compute_instance_v2.bootstrap.id,
     cp_port = (
-      local.control_plane_network.enabled
+      length(openstack_networking_port_v2.control_plane_bootstrap) != 0
       ? openstack_networking_port_v2.control_plane_bootstrap[0].id
       : ""
     ),
     wp_port = (
-      local.workload_plane_network.enabled
-      && ! local.workload_plane_network.reuse_cp
+      length(openstack_networking_port_v2.workload_plane_bootstrap) != 0
       ? openstack_networking_port_v2.workload_plane_bootstrap[0].id
       : ""
     )
@@ -232,11 +232,10 @@ resource "null_resource" "bootstrap_iface_config" {
   provisioner "remote-exec" {
     inline = [
       for mac_address in concat(
-        local.control_plane_network.enabled
+        length(openstack_networking_port_v2.control_plane_bootstrap) != 0
         ? [openstack_networking_port_v2.control_plane_bootstrap[0].mac_address]
         : [],
-        local.workload_plane_network.enabled
-        && ! local.workload_plane_network.reuse_cp
+        length(openstack_networking_port_v2.workload_plane_bootstrap) != 0
         ? [openstack_networking_port_v2.workload_plane_bootstrap[0].mac_address]
         : [],
       ) :
@@ -246,7 +245,7 @@ resource "null_resource" "bootstrap_iface_config" {
 }
 
 resource "null_resource" "bootstrap_use_proxy" {
-  count = local.bastion.enabled ? 1 : 0
+  count = local.bastion.enabled && !var.online ? 1 : 0
 
   triggers = {
     bootstrap = openstack_compute_instance_v2.bootstrap.id,
