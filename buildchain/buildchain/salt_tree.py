@@ -221,6 +221,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         renderer=targets.Renderer.JSON,
     ),
 
+    Path('salt/metalk8s/addons/addons-service-config/configmap.sls'),
+    Path('salt/metalk8s/addons/addons-service-config/deployed.sls'),
+    Path('salt/metalk8s/addons/addons-service-config/init.sls'),
+
     Path('salt/metalk8s/addons/dex/ca/init.sls'),
     Path('salt/metalk8s/addons/dex/ca/installed.sls'),
     Path('salt/metalk8s/addons/dex/ca/advertised.sls'),
