@@ -6,6 +6,7 @@ import {
   STATUS_AVAILABLE,
   STATUS_BOUND,
   STATUS_RELEASED,
+  STATUS_READY,
 } from '../constants';
 
 export const isVolumeDeletable = (rowData, persistentVolumes) => {
@@ -18,7 +19,7 @@ export const isVolumeDeletable = (rowData, persistentVolumes) => {
     case STATUS_TERMINATING:
       return false;
     case STATUS_FAILED:
-    case STATUS_AVAILABLE:
+    case STATUS_READY:
       if (persistentVolumes?.length === 0) {
         return true;
       } else {
@@ -54,7 +55,6 @@ export const isVolumeDeletable = (rowData, persistentVolumes) => {
   }
 };
 
-
 // Compute the global status of a volume from its conditions.
 //
 // Arguments
@@ -78,28 +78,28 @@ export const computeVolumeGlobalStatus = (name, status) => {
   const condStatus = condition?.status;
   const condReason = condition?.reason;
 
-  switch(condStatus) {
-  case 'True':
-    return STATUS_AVAILABLE;
-  case 'False':
-    return STATUS_FAILED;
-  case 'Unknown':
-    switch(condReason) {
-    case 'Pending':
-      return STATUS_PENDING;
-    case 'Terminating':
-      return STATUS_TERMINATING;
+  switch (condStatus) {
+    case 'True':
+      return STATUS_READY;
+    case 'False':
+      return STATUS_FAILED;
+    case 'Unknown':
+      switch (condReason) {
+        case 'Pending':
+          return STATUS_PENDING;
+        case 'Terminating':
+          return STATUS_TERMINATING;
+        default:
+          console.error(
+            `Unexpected Ready reason for Volume ${name}: ${condReason}`,
+          );
+          return STATUS_UNKNOWN;
+      }
     default:
       console.error(
-        `Unexpected Ready reason for Volume ${name}: ${condReason}`,
+        `Unexpected Ready status for Volume ${name}: ${condStatus}`,
       );
       return STATUS_UNKNOWN;
-    }
-  default:
-    console.error(
-      `Unexpected Ready status for Volume ${name}: ${condStatus}`,
-    );
-    return STATUS_UNKNOWN;
   }
 };
 
