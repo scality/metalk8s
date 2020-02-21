@@ -84,7 +84,12 @@ variable "offline" {
 }
 
 variable "bastion" {
-  type        = object({ flavour = string, image = string, enabled = bool })
+  type        = object({
+    enabled = bool,
+    existing = string,
+    flavour = string,
+    image = string,
+  })
   description = "Description of the Bastion VM to spawn"
 }
 
