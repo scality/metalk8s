@@ -32,8 +32,8 @@ import {
   STATUS_TERMINATING,
   STATUS_PENDING,
   STATUS_FAILED,
-  STATUS_AVAILABLE,
   STATUS_BOUND,
+  STATUS_READY,
 } from '../constants';
 
 const VolumeTable = styled.div`
@@ -172,7 +172,7 @@ const NodeVolumes = props => {
               hintMessage = intl.messages.volume_status_unknown_hint;
               break;
             case STATUS_FAILED:
-            case STATUS_AVAILABLE:
+            case STATUS_READY:
               const persistentVolume = persistentVolumes.find(
                 pv => pv?.metadata?.name === rowData.name,
               );

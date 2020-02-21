@@ -99,16 +99,16 @@ Then(
       .find('.sc-table-column-cell-name')
       .should('contain', volumeNameSparseLoopDevice);
 
-    // Wait until the volume is available
+    // Wait until the volume is ready
     cy.waitUntil(
       () =>
         cy
           .get('.sc-table-row')
           .eq(1) //2 rows with the header included
           .find('.sc-table-column-cell-status')
-          .then($span => $span.text() === 'Available'),
+          .then($span => $span.text() === 'Ready'),
       {
-        errorMsg: `Volume ${volumeNameSparseLoopDevice} is not available`,
+        errorMsg: `Volume ${volumeNameSparseLoopDevice} is not ready`,
         timeout: 120000, // waits up to 120000 ms, default to 5000
         interval: 5000, // performs the check every 5000 ms, default to 200
       },
