@@ -115,6 +115,15 @@ Sync module on salt-master:
     - name: saltutil.sync_all
     - saltenv: metalk8s-{{ dest_version }}
 
+Deploy Kubernetes service config objects:
+  salt.runner:
+  - name: state.orchestrate
+  - mods:
+    - metalk8s.service-configuration.deployed
+  - saltenv: metalk8s-{{ dest_version }}
+  - require:
+    - salt: Sync module on salt-master
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate
@@ -124,3 +133,4 @@ Deploy Kubernetes objects:
     - require:
       - salt: Sync module on salt-master
       - salt: Upgrade etcd cluster
+      - salt: Deploy Kubernetes service config objects

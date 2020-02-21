@@ -133,6 +133,27 @@ Sync module on salt-master:
     - name: saltutil.sync_all
     - saltenv: metalk8s-{{ dest_version }}
 
+{#- In previous MetalK8s releases, Cluster and Service configurations where not
+    persisted throughout. Now in `2.5.0` we have added ConfigMaps to store
+    service configurations. When running a downgrade to a version inferior to
+    `2.5.0` we do not need to deploy these ConfigMap objects. #}
+{#- Only run this step if `dest_version >= 2.5.0` #}
+
+{%- if salt.pkg.version_cmp(dest_version, '2.5.0') >= 0 %}
+
+Deploy Kubernetes service config objects:
+  salt.runner:
+  - name: state.orchestrate
+  - mods:
+    - metalk8s.service-configuration.deployed
+  - saltenv: metalk8s-{{ dest_version }}
+  - require:
+    - salt: Sync module on salt-master
+  - require_in:
+    - salt: Deploy Kubernetes objects
+
+{%- endif %}
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate
