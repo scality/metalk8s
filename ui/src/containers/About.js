@@ -13,7 +13,7 @@ const AboutContainer = styled.div`
   padding: 30px;
   flex-direction: column;
   align-items: center;
-  color: ${props => props.theme.brand.text};
+  color: ${props => props.theme.brand.textPrimary};
 `;
 
 const About = props => {

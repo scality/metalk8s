@@ -62,6 +62,7 @@ const NodeInformationContainer = styled.div`
     flex-direction: column;
     flex-grow: 1;
     padding: ${padding.smaller};
+    background-color: ${props => props.theme.brand.primary};
   }
 `;
 
