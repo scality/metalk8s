@@ -70,10 +70,18 @@ const ActionContainer = styled.div`
 `;
 
 const SearchContainer = styled.div`
+<<<<<<< HEAD
   margin-left: ${padding.base};
   input.sc-input-type {
     background-color: ${(props) => props.theme.brand.primaryDark2};
   }
+||||||| parent of fd6e3f4e... ui/components: modify the components to adapt to the new color palette
+=======
+  margin-left: ${padding.base};
+  input.sc-input-type {
+    background-color: ${(props) => props.theme.brand.primaryDark2};
+  }
+>>>>>>> fd6e3f4e... ui/components: modify the components to adapt to the new color palette
   width: 250px;
 `;
 
