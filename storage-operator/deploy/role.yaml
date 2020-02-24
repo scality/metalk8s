@@ -10,6 +10,7 @@ rules:
   - pods
   - nodes
   - services
+  - services/finalizers
   - endpoints
   - persistentvolumes
   - persistentvolumeclaims
@@ -17,7 +18,13 @@ rules:
   - configmaps
   - secrets
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - apps
   resources:
@@ -26,7 +33,13 @@ rules:
   - replicasets
   - statefulsets
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - monitoring.coreos.com
   resources:
@@ -52,6 +65,7 @@ rules:
   - apps
   resources:
   - replicasets
+  - deployments
   verbs:
   - get
 - apiGroups:
@@ -59,7 +73,13 @@ rules:
   resources:
   - '*'
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - storage.k8s.io
   resources:

@@ -200,7 +200,7 @@ reclaim its storage and remove the finalizers to let the object be deleted.
 const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
 const JOB_DONE_MARKER = "DONE"
 
-var log = logf.Log.WithName("volume-controller")
+var log = logf.Log.WithName("controller_volume")
 
 // Add creates a new Volume Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -234,7 +234,7 @@ func newReconciler(mgr manager.Manager) (reconcile.Reconciler, error) {
 	return &ReconcileVolume{
 		client:   mgr.GetClient(),
 		scheme:   mgr.GetScheme(),
-		recorder: mgr.GetRecorder("volume-controller"),
+		recorder: mgr.GetEventRecorderFor("volume-controller"),
 		salt:     saltClient,
 	}, nil
 }
@@ -549,13 +549,13 @@ func (self *ReconcileVolume) fetchSaltEnv(
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Name", request.Name)
-	reqLogger.Info("reconciling volume: START")
-	defer reqLogger.Info("reconciling volume: STOP")
+	reqLogger.Info("Reconciling Volume")
+	defer reqLogger.Info("End reconciling Volume")
 
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
-	// Fetch the requested Volume object.
+	// Fetch the Volume instance
 	//
 	// The reconciliation request can be triggered by either a Volume or a
 	// PersistentVolume owned by a Volume (we're watching both), but because the
@@ -566,9 +566,9 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	err := r.client.Get(ctx, request.NamespacedName, volume)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Volume not found:
-			// => all the finalizers have been removed & Volume has been deleted
-			// => there is nothing left to do
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
 			reqLogger.Info("volume already deleted: nothing to do")
 			return endReconciliation()
 		}

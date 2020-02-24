@@ -29,7 +29,6 @@ type VolumeSource struct {
 }
 
 // VolumeSpec defines the desired state of Volume
-// +k8s:openapi-gen=true
 type VolumeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
@@ -51,7 +50,6 @@ type VolumeSpec struct {
 }
 
 // Describes the PersistentVolume that will be created to back the Volume.
-// +k8s:openapi-gen=true
 type PersistentVolumeTemplateSpec struct {
 	// Standard object's metadata.
 	// +optional
@@ -103,20 +101,19 @@ type VolumeCondition struct {
 	// Last time the condition transited from one status to another (optional).
 	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
 	// Unique, one-word, CamelCase reason for the condition's last transition.
+	// +kubebuilder:validation:Enum=Pending;Terminating;InternalError;CreationError;DestructionError;UnavailableError
 	Reason ConditionReason `json:"reason,omitempty"`
 	// Human readable message indicating details about last transition.
 	Message string `json:"message,omitempty"`
 }
 
 // VolumeStatus defines the observed state of Volume
-// +k8s:openapi-gen=true
 type VolumeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// List of conditions through which the Volume has or has not passed.
-	// +kubebuilder:validation:Enum=Available,Pending,Failed,Terminating
 	Conditions []VolumeCondition `json:"conditions,omitempty"`
 
 	// Job in progress
@@ -126,9 +123,8 @@ type VolumeStatus struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Volume is the Schema for the volumes API
-// +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-// +genclient:nonNamespaced
+// +kubebuilder:resource:path=volumes,scope=Cluster
 // +kubebuilder:printcolumn:name="Node",type="string",JSONPath=".spec.nodeName",description="The node on which the volume is available"
 // +kubebuilder:printcolumn:name="StorageClass",type="string",JSONPath=".spec.storageClassName",description="The storage class of the volume"
 type Volume struct {

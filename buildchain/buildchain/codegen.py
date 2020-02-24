@@ -24,7 +24,7 @@ def codegen_go() -> types.TaskDict:
     """Generate Go code using operator-sdk."""
     cwd  = constants.STORAGE_OPERATOR_ROOT
     actions = []
-    for target in ('k8s', 'openapi'):
+    for target in ('k8s', 'crds'):
         cmd = ' '.join(map(shlex.quote, [
             config.ExtCommand.OPERATOR_SDK.value, 'generate', target
         ]))

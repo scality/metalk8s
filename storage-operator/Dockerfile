@@ -1,6 +1,6 @@
 FROM golang:1.13-alpine
 
-ARG OPERATOR_SDK_VERSION=v0.9.0
+ARG OPERATOR_SDK_VERSION=v0.15.2
 
 # Download & install Operator SDK
 RUN wget -O /usr/bin/operator-sdk                                         \

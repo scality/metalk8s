@@ -170,7 +170,9 @@ PILLAR_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
 OPERATOR_YAML_ROOT : Path = constants.ROOT/'storage-operator/deploy'
 
-VOLUME_CRD : Path = OPERATOR_YAML_ROOT/'crds/storage_v1alpha1_volume_crd.yaml'
+VOLUME_CRD : Path = OPERATOR_YAML_ROOT.joinpath(
+    'crds', 'storage.metalk8s.scality.com_volumes_crd.yaml'
+)
 
 OPERATOR_ACCOUNT     : Path = OPERATOR_YAML_ROOT/'service_account.yaml'
 OPERATOR_ROLE        : Path = OPERATOR_YAML_ROOT/'role.yaml'

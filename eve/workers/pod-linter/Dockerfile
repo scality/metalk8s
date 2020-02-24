@@ -1,19 +1,21 @@
 # CI lint container - Fedora for recent ShellCheck version
-FROM fedora:29
+FROM fedora:31
 
 ARG BUILDBOT_VERSION=0.9.12
-ARG GO_VERSION=1.12.7
-ARG OPERATOR_SDK_VERSION=v0.9.0
+ARG GO_VERSION=1.13.8
+ARG OPERATOR_SDK_VERSION=v0.15.2
 
 ENV LANG=en_US.utf8
 
 WORKDIR /home/eve/workspace
 
-RUN dnf install -y git \
+RUN dnf install -y \
+  git \
   sudo \
   gcc \
   make \
   enchant \
+  findutils \
   hg \
   python2-twisted \
   python \
