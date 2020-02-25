@@ -9,7 +9,7 @@ commonLabels:
 alertmanager:
   alertmanagerSpec:
     image:
-      repository: '''{%- endraw -%}{{ build_image_name("alertmanager", False) }}{%- raw -%}'''
+      repository: '__image__(alertmanager)'
 
     nodeSelector:
       node-role.kubernetes.io/infra: ''
@@ -23,6 +23,8 @@ alertmanager:
       - key: 'node-role.kubernetes.io/infra'
         operator: 'Exists'
         effect: 'NoSchedule'
+
+    replicas: '__var__(alertmanager.spec.deployment.replicas)'
 
     storage:
       volumeClaimTemplate:
@@ -56,22 +58,22 @@ prometheusOperator:
       effect: 'NoSchedule'
 
   image:
-    repository: '{%- endraw -%}{{ build_image_name(\"prometheus-operator\", False) }}{%- raw -%}'
+    repository: '__image__(prometheus-operator)'
 
   configmapReloadImage:
-    repository: '{%- endraw -%}{{ build_image_name("configmap-reload", False) }}{%- raw -%}'
+    repository: '__image__(configmap-reload)'
 
   prometheusConfigReloaderImage:
-    repository: '{%- endraw -%}{{ build_image_name("prometheus-config-reloader", False) }}{%- raw -%}'
+    repository: '__image__(prometheus-config-reloader)'
 
   hyperkubeImage:
-    repository: '''{%- endraw -%}{{ build_image_name("hyperkube", False) }}{%- raw -%}'''
+    repository: '__image__(hyperkube)'
 
 
 prometheus:
   prometheusSpec:
     image:
-      repository: '''{%- endraw -%}{{ build_image_name("prometheus", False) }}{%- raw -%}'''
+      repository: '__image__(prometheus)'
 
     tolerations:
       - key: 'node-role.kubernetes.io/bootstrap'
@@ -80,6 +82,8 @@ prometheus:
       - key: 'node-role.kubernetes.io/infra'
         operator: 'Exists'
         effect: 'NoSchedule'
+
+    replicas: '__var__(prometheus.spec.deployment.replicas)'
 
     nodeSelector:
       node-role.kubernetes.io/infra: ''
@@ -102,10 +106,10 @@ grafana:
   adminPassword: admin
 
   image:
-    repository: '{%- endraw -%}{{ build_image_name(\"grafana\", False) }}{%- raw -%}'
+    repository: '__image__(grafana)'
 
   sidecar:
-    image: '{%- endraw -%}{{ build_image_name(\"k8s-sidecar\", False) }}{%- raw -%}:0.1.20'
+    image: '__image__(k8s-sidecar):0.1.20'
 
   nodeSelector:
     node-role.kubernetes.io/infra: ''
@@ -117,6 +121,9 @@ grafana:
     - key: 'node-role.kubernetes.io/infra'
       operator: 'Exists'
       effect: 'NoSchedule'
+
+  replicas: '__var__(grafana.spec.deployment.replicas)'
+
 
   ingress:
     enabled: true
@@ -140,7 +147,7 @@ grafana:
 
 kube-state-metrics:
   image:
-    repository: '{%- endraw -%}{{ build_image_name(\"kube-state-metrics\", False) }}{%- raw -%}'
+    repository: '__image__(kube-state-metrics)'
 
   nodeSelector:
     node-role.kubernetes.io/infra: ''
@@ -156,7 +163,7 @@ kube-state-metrics:
 
 prometheus-node-exporter:
   image:
-    repository: '{%- endraw -%}{{ build_image_name(\"node-exporter\", False) }}{%- raw -%}'
+    repository: '__image__(node-exporter)'
 
 
 kubeEtcd:

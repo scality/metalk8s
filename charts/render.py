@@ -16,9 +16,18 @@ It performs the following tasks:
   `app.kubernetes.io/managed-by` to `salt`, and copy any `app` and
   `component` fields to the canonical `app.kubernetes.io/name` and
   `app.kubernetes.io/component` fields
+- Replace YAML-safe special strings (used in Helm values definitions) with the
+  appropriate Jinja syntax. Supports:
+    - "__var__(<varname>)", to replace with "{{ <varname> }}" (useful when
+      retrieving variables from service configuration ConfigMaps)
+    - "__image__(<imgname>)", to replace with
+      "{{ build_image_name("<imgname>", False) }}"
+    - "__full_image__(<imgname>)", to replace with
+      "{{ build_image_name("<imgname>") }}"
 '''
 
 import argparse
+import io
 import re
 import sys
 import subprocess
@@ -28,18 +37,18 @@ from yaml.dumper import SafeDumper
 from yaml.representer import SafeRepresenter
 
 
-START_BLOCK = '''
+START_BLOCK = """
 #!jinja | metalk8s_kubernetes
-{{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}}
 
+{{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}}
 {configlines}
 
 {{% raw %}}
-'''
+"""
 
-END_BLOCK = '''
+END_BLOCK = """
 {% endraw %}
-'''
+"""
 
 
 def fixup_metadata(namespace, doc):
@@ -117,6 +126,31 @@ def keep_doc(doc):
     return True
 
 
+def replace_magic_strings(rendered_yaml):
+    # Handle __var__
+    result = re.sub(
+        r'__var__\((?P<varname>[\w\-_]+(?:\.[\w\-_]+)*)\)',
+        r'{% endraw -%}{{ \g<varname> }}{%- raw %}',
+        rendered_yaml,
+    )
+
+    # Handle __image__
+    result = re.sub(
+        r'__image__\((?P<imgname>[\w\-]+)\)',
+        r'{% endraw -%}{{ build_image_name("\g<imgname>", False) }}{%- raw %}',
+        result,
+    )
+
+    # Handle __full_image__ (include version tag in the rendered name)
+    result = re.sub(
+        r'__full_image__\((?P<imgname>[\w\-]+)\)',
+        r'{% endraw -%}{{ build_image_name("\g<imgname>") }}{%- raw %}',
+        result,
+    )
+
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('name', help="Denotes the name of the chart")
@@ -176,13 +210,17 @@ def main():
     )
     sys.stdout.write('\n')
 
+    stream = io.StringIO()
     yaml.safe_dump_all(
         (fixup(doc)
             for doc in yaml.safe_load_all(template)
             if keep_doc(doc)),
-        sys.stdout,
+        stream,
         default_flow_style=False,
     )
+    stream.seek(0)
+
+    sys.stdout.write(replace_magic_strings(stream.read()))
 
     sys.stdout.write(END_BLOCK)
 
