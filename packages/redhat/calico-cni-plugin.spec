@@ -6,12 +6,12 @@
 
 %ifarch x86_64
 %global built_arch              amd64
-%global calico_sha256           fbc6588d6c83552403c5e75f108690f9f36fd65421552ae070dc1c93fa6f5139
-%global calico_ipam_sha256      522cc86264ae971625f68471c587fcecd9fbcfb362534b8fba03336702593e89
+%global calico_sha256           020b1387d903a8f9a8b68f727972ed319f8c9af16b5ca7059539d3480999a9a6
+%global calico_ipam_sha256      a5d6c71246cac61c41c22439f2890fbf4254bde2a02d1800a872d6c31b988b37
 %endif
 
 Name:           calico-cni-plugin
-Version:        3.10.2
+Version:        3.12.0
 Release:        1%{?dist}
 Summary:        Calico CNI plugin
 
@@ -49,6 +49,9 @@ install -p -m 755 %{SOURCE2} %{buildroot}/opt/cni/bin/calico-ipam
 %doc README.md
 
 %changelog
+* Thu Feb 20 2020 Nicolas Trangez <nicolas.trangez@scality.com> - 3.12.0-1
+- Version bump
+
 * Sat Dec 14 2019 Nicolas Trangez <nicolas.trangez@scality.com> - 3.10.2-1
 - Version bump
 
