@@ -24,6 +24,8 @@ alertmanager:
         operator: 'Exists'
         effect: 'NoSchedule'
 
+    replicas: '''{%- endraw -%}{{ alertmanager.spec.deployment.replicas }}{%- raw -%}'''
+
     storage:
       volumeClaimTemplate:
         spec:
@@ -81,6 +83,8 @@ prometheus:
         operator: 'Exists'
         effect: 'NoSchedule'
 
+    replicas: '''{%- endraw -%}{{ prometheus.spec.deployment.replicas }}{%- raw -%}'''
+
     nodeSelector:
       node-role.kubernetes.io/infra: ''
 
@@ -117,6 +121,9 @@ grafana:
     - key: 'node-role.kubernetes.io/infra'
       operator: 'Exists'
       effect: 'NoSchedule'
+
+  replicas: '''{%- endraw -%}{{ grafana.spec.deployment.replicas }}{%- raw -%}'''
+
 
   ingress:
     enabled: true
