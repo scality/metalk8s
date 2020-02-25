@@ -18,6 +18,7 @@ It performs the following tasks:
   `app.kubernetes.io/component` fields
 '''
 
+import argparse
 import re
 import sys
 import subprocess
@@ -27,16 +28,21 @@ from yaml.dumper import SafeDumper
 from yaml.representer import SafeRepresenter
 
 
-BOILERPLATE = '''
+BOILERPLATE = """
 #!jinja | metalk8s_kubernetes
+{configlines}
+"""
+
+SUB_BOILERPLATE = '''
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {% raw %}
 '''
 
-BOILERPLATE_END = '''
+SUB_BOILERPLATE_END = '''
 {% endraw %}
 '''
+
 
 def fixup_metadata(namespace, doc):
     if 'metadata' in doc and 'namespace' not in doc['metadata']:
@@ -114,25 +120,45 @@ def keep_doc(doc):
 
 
 def main():
-    (name, namespace, values, path) = sys.argv[1:]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('name', help="Denotes the name of the chart")
+    parser.add_argument('namespace', help="Metalk8s namespace to deploy unto")
+    parser.add_argument('values', help="Our custom chart values")
+    parser.add_argument(
+        '--service-config',
+        action='append',
+        nargs=2,
+        dest="service_config",
+        help="Ex: --service-config service_name service_configmap_name"
+    )
+    parser.add_argument('path')
+    args, extra = parser.parse_known_args()
 
     template = subprocess.check_output([
         'helm', 'template',
-        '--name', name,
-        '--namespace', namespace,
-        '--values', values,
-        path,
+        '--name', args.name,
+        '--namespace', args.namespace,
+        '--values', args.values,
+        args.path,
     ])
 
     fixup = lambda doc: \
         fixup_metadata(
-            namespace=namespace,
+            namespace=args.namespace,
             doc=fixup_doc(
                 doc=doc
             )
         )
 
-    sys.stdout.write(BOILERPLATE.lstrip())
+    sys.stdout.write(
+        BOILERPLATE.format(
+            configlines='\n'.join(
+                "{} set {} = salt.metalk8s_service_configurator.get_service_conf('{}', '{}') {}".format(
+                    '{%-', p[0], args.namespace, p[1], '%}'
+                ) for p in args.service_config)
+        ).lstrip()
+    )
+    sys.stdout.write(SUB_BOILERPLATE)
     sys.stdout.write('\n')
 
     yaml.safe_dump_all(
@@ -143,7 +169,7 @@ def main():
         default_flow_style=False,
     )
 
-    sys.stdout.write(BOILERPLATE_END)
+    sys.stdout.write(SUB_BOILERPLATE_END)
 
 
 if __name__ == '__main__':
