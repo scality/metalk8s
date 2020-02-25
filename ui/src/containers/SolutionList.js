@@ -32,7 +32,7 @@ const PageContainer = styled.div`
 `;
 
 const PageSubtitle = styled.h3`
-  color: ${props => props.theme.brand.text};
+  color: ${props => props.theme.brand.textPrimary};
   margin: ${padding.small} 0;
   display: flex;
   align-items: center;

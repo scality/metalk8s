@@ -11,7 +11,7 @@ import {
 const Circle = styled.i`
   color: ${props => {
     const theme = props.theme.brand;
-    let color = theme.text;
+    let color = theme.textPrimary;
 
     switch (props.status) {
       case STATUS_SUCCESS:
@@ -24,10 +24,10 @@ const Circle = styled.i`
         color = theme.danger;
         break;
       case STATUS_NONE:
-        color = theme.text;
+        color = theme.textPrimary;
         break;
       default:
-        color = theme.text;
+        color = theme.textPrimary;
     }
 
     return color;
