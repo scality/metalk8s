@@ -1,9 +1,9 @@
 #!jinja | metalk8s_kubernetes
-{%- set grafana = salt.metalk8s_service_configurator.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config') %}
-{%- set prometheus = salt.metalk8s_service_configurator.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config') %}
-{%- set alertmanager = salt.metalk8s_service_configurator.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config') %}
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- set alertmanager = salt.metalk8s_service_configurator.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config') %}
+{%- set prometheus = salt.metalk8s_service_configurator.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config') %}
+{%- set grafana = salt.metalk8s_service_configurator.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config') %}
 
 {% raw %}
 
@@ -40319,8 +40319,7 @@ spec:
         - --web.listen-address=0.0.0.0:9100
         - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
         - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
-        image: '{%- endraw -%}{{ build_image_name("node-exporter", False) }}{%- raw
-          -%}:v0.18.1'
+        image: {%- endraw %}{{ build_image_name("node-exporter", False) }}{% raw -%}:v0.18.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -40378,7 +40377,7 @@ metadata:
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
-  replicas: '{%- endraw -%}{{ grafana.spec.deployment.replicas }}{%- raw -%}'
+  replicas: {%- endraw %}{{ grafana.spec.deployment.replicas }}{% raw -%}
   selector:
     matchLabels:
       app: grafana
@@ -40404,8 +40403,7 @@ spec:
           value: /tmp/dashboards
         - name: RESOURCE
           value: both
-        image: '{%- endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw
-          -%}:0.1.20'
+        image: {%- endraw %}{{ build_image_name("k8s-sidecar", False) }}{% raw -%}:0.1.20
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         resources: {}
@@ -40423,7 +40421,7 @@ spec:
             secretKeyRef:
               key: admin-password
               name: prometheus-operator-grafana
-        image: '{%- endraw -%}{{ build_image_name("grafana", False) }}{%- raw -%}:6.4.2'
+        image: {%- endraw %}{{ build_image_name("grafana", False) }}{% raw -%}:6.4.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -40468,8 +40466,7 @@ spec:
           value: /etc/grafana/provisioning/datasources
         - name: RESOURCE
           value: both
-        image: '{%- endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw
-          -%}:0.1.20'
+        image: {%- endraw %}{{ build_image_name("k8s-sidecar", False) }}{% raw -%}:0.1.20
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         resources: {}
@@ -40551,8 +40548,7 @@ spec:
         - --collectors=services
         - --collectors=statefulsets
         - --collectors=storageclasses
-        image: '{%- endraw -%}{{ build_image_name("kube-state-metrics", False) }}{%-
-          raw -%}:v1.8.0'
+        image: {%- endraw %}{{ build_image_name("kube-state-metrics", False) }}{% raw -%}:v1.8.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -40619,14 +40615,11 @@ spec:
         - --kubelet-service=kube-system/prometheus-operator-kubelet
         - --logtostderr=true
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={%- endraw -%}{{ build_image_name("prometheus-config-reloader",
-          False) }}{%- raw -%}:v0.34.0
-        - --config-reloader-image={%- endraw -%}{{ build_image_name("configmap-reload",
-          False) }}{%- raw -%}:v0.0.1
+        - --prometheus-config-reloader={%- endraw %}{{ build_image_name("prometheus-config-reloader", False) }}{% raw -%}:v0.34.0
+        - --config-reloader-image={%- endraw %}{{ build_image_name("configmap-reload", False) }}{% raw -%}:v0.0.1
         - --config-reloader-cpu=100m
         - --config-reloader-memory=25Mi
-        image: '{%- endraw -%}{{ build_image_name("prometheus-operator", False) }}{%-
-          raw -%}:v0.34.0'
+        image: {%- endraw %}{{ build_image_name("prometheus-operator", False) }}{% raw -%}:v0.34.0
         imagePullPolicy: IfNotPresent
         name: prometheus-operator
         ports:
@@ -40700,7 +40693,7 @@ spec:
               app: alertmanager
           topologyKey: kubernetes.io/hostname
         weight: 100
-  baseImage: '{%- endraw -%}{{ build_image_name("alertmanager", False) }}{%- raw -%}'
+  baseImage: {%- endraw %}{{ build_image_name("alertmanager", False) }}{% raw -%}
   externalUrl: http://prometheus-operator-alertmanager.metalk8s-monitoring:9093
   listenLocal: false
   logFormat: logfmt
@@ -40708,7 +40701,7 @@ spec:
   nodeSelector:
     node-role.kubernetes.io/infra: ''
   paused: false
-  replicas: '{%- endraw -%}{{ alertmanager.spec.deployment.replicas }}{%- raw -%}'
+  replicas: {%- endraw %}{{ alertmanager.spec.deployment.replicas }}{% raw -%}
   retention: 120h
   routePrefix: /
   securityContext:
@@ -40767,7 +40760,7 @@ spec:
       namespace: metalk8s-monitoring
       pathPrefix: /
       port: web
-  baseImage: '{%- endraw -%}{{ build_image_name("prometheus", False) }}{%- raw -%}'
+  baseImage: {%- endraw %}{{ build_image_name("prometheus", False) }}{% raw -%}
   enableAdminAPI: false
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   listenLocal: false
@@ -40780,7 +40773,7 @@ spec:
   podMonitorSelector:
     matchLabels:
       release: prometheus-operator
-  replicas: '{%- endraw -%}{{ prometheus.spec.deployment.replicas }}{%- raw -%}'
+  replicas: {%- endraw %}{{ prometheus.spec.deployment.replicas }}{% raw -%}
   retention: 10d
   routePrefix: /
   ruleNamespaceSelector: {}
