@@ -18,6 +18,7 @@ It performs the following tasks:
   `app.kubernetes.io/component` fields
 '''
 
+import argparse
 import re
 import sys
 import subprocess
@@ -27,16 +28,19 @@ from yaml.dumper import SafeDumper
 from yaml.representer import SafeRepresenter
 
 
-BOILERPLATE = '''
+START_BLOCK = '''
 #!jinja | metalk8s_kubernetes
-{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}}
 
-{% raw %}
+{configlines}
+
+{{% raw %}}
 '''
 
-BOILERPLATE_END = '''
+END_BLOCK = '''
 {% endraw %}
 '''
+
 
 def fixup_metadata(namespace, doc):
     if 'metadata' in doc and 'namespace' not in doc['metadata']:
@@ -114,25 +118,62 @@ def keep_doc(doc):
 
 
 def main():
-    (name, namespace, values, path) = sys.argv[1:]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('name', help="Denotes the name of the chart")
+    parser.add_argument(
+        '-n',
+        '--namespace',
+        default="default",
+        help="Namespace to deploy this chart in"
+    )
+    parser.add_argument('values', help="Our custom chart values")
+
+    '''
+    To use this argument, follow the format below:
+        --service-config service_name service_configmap_name
+    where service_name is actually the jinja variable which will hold
+    ConfigMap contents.
+    Note that you can specify multiple service config arguments using:
+        --service-config grafana metalk8s-grafana-config
+        --service-config prometheus metalk8s-prometheus-config
+    '''
+    # Todo: Add kind & apiVersion to the service-config nargs
+    parser.add_argument(
+        '--service-config',
+        action='append',
+        nargs=2,
+        dest="service_configs",
+        help="Example: --service-config grafana metalk8s-grafana-config"
+    )
+    parser.add_argument('path', help="Path to the chart directory")
+    args = parser.parse_args()
 
     template = subprocess.check_output([
         'helm', 'template',
-        '--name', name,
-        '--namespace', namespace,
-        '--values', values,
-        path,
+        '--name', args.name,
+        '--namespace', args.namespace,
+        '--values', args.values,
+        args.path,
     ])
 
     fixup = lambda doc: \
         fixup_metadata(
-            namespace=namespace,
+            namespace=args.namespace,
             doc=fixup_doc(
                 doc=doc
             )
         )
 
-    sys.stdout.write(BOILERPLATE.lstrip())
+    sys.stdout.write(
+        START_BLOCK.format(
+            configlines='\n'.join(
+                ("{{%- set {} = salt.metalk8s_service_configuration"
+                 ".get_service_conf('{}', '{}') %}}").format(
+                    service_config[0], args.namespace, service_config[1]
+                ) for service_config in args.service_configs
+            )
+        ).lstrip()
+    )
     sys.stdout.write('\n')
 
     yaml.safe_dump_all(
@@ -143,7 +184,7 @@ def main():
         default_flow_style=False,
     )
 
-    sys.stdout.write(BOILERPLATE_END)
+    sys.stdout.write(END_BLOCK)
 
 
 if __name__ == '__main__':
