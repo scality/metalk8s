@@ -4,7 +4,7 @@ terraform {
 
   required_providers {
     null      = "~> 2.1.2"
-    openstack = "~> 1.20.0"
+    openstack = "~> 1.25.0"
     random    = "~> 2.1.2"
   }
 }

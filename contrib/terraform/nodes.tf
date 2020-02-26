@@ -15,13 +15,13 @@ resource "openstack_networking_port_v2" "public_nodes" {
   admin_state_up = true
 
   security_group_ids = [
-    openstack_networking_secgroup_v2.ingress.id,
+    openstack_networking_secgroup_v2.ingress[0].id,
     var.online
     ? openstack_networking_secgroup_v2.open_egress[0].id
     : openstack_networking_secgroup_v2.restricted_egress[0].id,
   ]
 
-  count = local.nodes.count
+  count = local.heat.enabled ? 0 : local.nodes.count
 }
 
 resource "openstack_networking_port_v2" "control_plane_nodes" {
@@ -36,7 +36,9 @@ resource "openstack_networking_port_v2" "control_plane_nodes" {
     subnet_id = local.control_plane_subnet[0].id
   }
 
-  count = local.control_plane_network.enabled ? local.nodes.count : 0
+  count = (
+    local.control_plane_network.enabled && !local.heat.enabled
+  ) ? local.nodes.count : 0
 }
 
 resource "openstack_networking_port_v2" "workload_plane_nodes" {
@@ -53,12 +55,13 @@ resource "openstack_networking_port_v2" "workload_plane_nodes" {
 
   count = (
     local.workload_plane_network.enabled
-    && ! local.workload_plane_network.reuse_cp
+    && !local.workload_plane_network.reuse_cp
+    && !local.heat.enabled
   ) ? local.nodes.count : 0
 }
 
 resource "openstack_compute_instance_v2" "nodes" {
-  count = local.nodes.count
+  count = local.heat.enabled ? 0 : local.nodes.count
 
   depends_on = [
     openstack_networking_port_v2.public_nodes,
@@ -108,7 +111,7 @@ resource "openstack_compute_instance_v2" "nodes" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = local.nodes.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Provision SSH identities
@@ -121,15 +124,17 @@ resource "openstack_compute_instance_v2" "nodes" {
 }
 
 locals {
-  node_ips = [
-    for node in openstack_compute_instance_v2.nodes : node.access_ip_v4
-  ]
+  node_ips = (
+    local.heat.enabled
+    ? openstack_orchestration_stack_v1.cluster[0].outputs.node_ips
+    : [for node in openstack_compute_instance_v2.nodes : node.access_ip_v4]
+  )
 }
 
 
 # Scripts provisioning
 resource "null_resource" "provision_scripts_nodes" {
-  count = local.nodes.count
+  count = local.heat.enabled ? 0 : local.nodes.count
 
   depends_on = [
     openstack_compute_instance_v2.nodes,
@@ -149,7 +154,7 @@ resource "null_resource" "provision_scripts_nodes" {
     host        = openstack_compute_instance_v2.nodes[count.index].access_ip_v4
     type        = "ssh"
     user        = local.nodes.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Provision scripts for remote-execution
@@ -170,7 +175,7 @@ resource "null_resource" "provision_scripts_nodes" {
 
 resource "null_resource" "configure_rhsm_nodes" {
   # Configure RedHat Subscription Manager if enabled
-  count = local.using_rhel.nodes ? local.nodes.count : 0
+  count = local.using_rhel.nodes && !local.heat.enabled ? local.nodes.count : 0
 
   depends_on = [
     openstack_compute_instance_v2.nodes,
@@ -181,7 +186,7 @@ resource "null_resource" "configure_rhsm_nodes" {
     host        = openstack_compute_instance_v2.nodes[count.index].access_ip_v4
     type        = "ssh"
     user        = local.nodes.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {
@@ -203,7 +208,7 @@ resource "null_resource" "configure_rhsm_nodes" {
 
 # TODO: use cloud-init
 resource "null_resource" "nodes_iface_config" {
-  count = local.nodes.count
+  count = local.heat.enabled ? 0 : local.nodes.count
 
   depends_on = [
     openstack_compute_instance_v2.nodes,
@@ -228,7 +233,7 @@ resource "null_resource" "nodes_iface_config" {
     host        = openstack_compute_instance_v2.nodes[count.index].access_ip_v4
     type        = "ssh"
     user        = local.nodes.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Configure network interfaces for private networks
@@ -248,11 +253,13 @@ resource "null_resource" "nodes_iface_config" {
 }
 
 resource "null_resource" "nodes_use_proxy" {
-  count = local.bastion.enabled && !var.online ? local.nodes.count : 0
+  count = (
+    local.bastion.enabled && !var.online && !local.heat.enabled
+  ) ? local.nodes.count : 0
 
   triggers = {
-    bootstrap = openstack_compute_instance_v2.bootstrap.id,
-    nodes     = join(",", openstack_compute_instance_v2.nodes[*].id),
+    bastion = join("", openstack_compute_instance_v2.bastion[*].id),
+    nodes   = join(",", openstack_compute_instance_v2.nodes[*].id),
   }
 
   depends_on = [
@@ -265,7 +272,7 @@ resource "null_resource" "nodes_use_proxy" {
     host        = openstack_compute_instance_v2.nodes[count.index].access_ip_v4
     type        = "ssh"
     user        = local.nodes.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {

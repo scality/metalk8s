@@ -1,7 +1,30 @@
+# General settings
 variable "prefix" {
   type        = string
   default     = ""
-  description = "Prefix to use when naming deployed resources"
+  description = <<-EOF
+  Prefix to use when naming deployed resources
+  If set or left to an empty string, a generated prefix
+  (`metalk8s-<5-random-chars>`) will be used.
+  EOF
+}
+
+variable "access_keypair" {
+  type        = object({
+    generate = bool,
+    public_key_path = string,
+    public_key = string,
+    private_key_path = string,
+    private_key = string,
+  })
+  default = {
+    generate = true,
+    public_key_path = "",
+    public_key = "",
+    private_key_path = "",
+    private_key = "",
+  }
+  description = "SSH keypair to use for provisioning VMs with Terraform"
 }
 
 # OpenStack configuration
@@ -163,4 +186,32 @@ variable "metalk8s_provision_volumes" {
   type        = bool
   description = "Whether to provision Volumes for Prometheus and AlertManager"
   default     = false
+}
+
+# Opt-in alternative Heat deployment
+variable "heat" {
+  type        = object({
+    enabled = bool,
+    stack_name = string,
+    parameters = object({}),
+    parameters_path = string,
+    template_path = string,
+    environment_path = string,
+  })
+
+  default     = {
+    enabled = false,
+    stack_name = "", # if empty, default to ${local.prefix}
+    parameters = {},
+    parameters_path = "",
+    template_path = "", # if empty, default to ../heat/template.yaml
+    environment_path = "",
+  }
+
+  description = <<-EOF
+  Definition of a Heat Stack to create or import.
+  Using this will entirely disable spawning all resources defined in this
+  module, and only focus on installation and configuration of MetalK8s on
+  the existing infrastructure.
+  EOF
 }

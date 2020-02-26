@@ -1,29 +1,36 @@
 locals {
-  all_instances = concat(
-    local.bastion.enabled ? [openstack_compute_instance_v2.bastion[0].id] : [],
-    [openstack_compute_instance_v2.bootstrap.id],
-    openstack_compute_instance_v2.nodes[*].id
-  )
-
-  nodes_info = [
-    for idx in range(length(openstack_compute_instance_v2.nodes)) :
-    {
-      name = "node${idx + 1}",
-      ip   = local.node_ips[idx],
-    }
-  ]
+  access_keypair = {
+    generate = var.access_keypair.generate
+    public_key = (
+      fileexists(var.access_keypair.public_key_path)
+      ? file(var.access_keypair.public_key_path)
+      : var.access_keypair.public_key
+    )
+    private_key = (
+      fileexists(var.access_keypair.private_key_path)
+      ? file(var.access_keypair.private_key_path)
+      : var.access_keypair.private_key
+    )
+  }
 }
-
 
 resource "openstack_compute_keypair_v2" "local" {
   name = "${local.prefix}-local"
+
+  public_key = (
+    local.access_keypair.generate ? "" : local.access_keypair.public_key
+  )
 
   # Make a local copy of the keypair for reference in the SSH config file
   provisioner "local-exec" {
     command = join(" && ", [
       "mkdir -p ${path.root}/.ssh",
       "echo '${self.public_key}' > ${path.root}/.ssh/${self.name}.pub",
-      "echo '${self.private_key}' > ${path.root}/.ssh/${self.name}",
+      "echo '${
+        local.access_keypair.generate
+        ? self.private_key
+        : local.access_keypair.private_key
+      }' > ${path.root}/.ssh/${self.name}",
       "chmod 600 ${path.root}/.ssh/${self.name}*",
     ])
   }
@@ -32,6 +39,14 @@ resource "openstack_compute_keypair_v2" "local" {
     when    = destroy
     command = "rm ${path.root}/.ssh/${self.name}*"
   }
+}
+
+locals {
+  access_private_key = (
+    local.access_keypair.generate
+    ? openstack_compute_keypair_v2.local.private_key
+    : local.access_keypair.private_key
+  )
 }
 
 
@@ -44,6 +59,22 @@ resource "openstack_compute_keypair_v2" "bootstrap" {
   name = "${local.prefix}-bootstrap"
 }
 
+
+locals {
+  all_instances = concat(
+    openstack_compute_instance_v2.bastion[*].id,
+    openstack_compute_instance_v2.bootstrap[*].id,
+    openstack_compute_instance_v2.nodes[*].id
+  )
+
+  nodes_info = [
+    for idx in range(length(openstack_compute_instance_v2.nodes)) :
+    {
+      name = "node${idx + 1}",
+      ip   = local.node_ips[idx],
+    }
+  ]
+}
 
 resource "null_resource" "local_ssh_config" {
   triggers = {
@@ -79,7 +110,7 @@ resource "null_resource" "bastion_ssh_config" {
     connection {
       host        = local.bastion_ip
       user        = local.bastion.user
-      private_key = openstack_compute_keypair_v2.local.private_key
+      private_key = local.access_private_key
     }
 
     destination = "/home/${local.bastion.user}/ssh_config"

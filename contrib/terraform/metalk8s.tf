@@ -20,7 +20,7 @@ resource "null_resource" "upload_local_iso" {
     host        = local.bootstrap_ip
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {
@@ -46,7 +46,7 @@ resource "null_resource" "download_remote_iso" {
     host        = local.bootstrap_ip
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {
@@ -75,7 +75,7 @@ resource "null_resource" "configure_bootstrap" {
     host        = local.bootstrap_ip
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {
@@ -130,7 +130,7 @@ resource "null_resource" "run_bootstrap" {
     host        = local.bootstrap_ip
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {
@@ -159,7 +159,7 @@ resource "null_resource" "enable_ipip" {
     host        = local.bootstrap_ip
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {
@@ -174,7 +174,7 @@ resource "null_resource" "provision_volumes" {
     host        = local.bootstrap_ip
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   depends_on = [

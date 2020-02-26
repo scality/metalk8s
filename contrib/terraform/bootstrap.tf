@@ -8,13 +8,15 @@ locals {
 
 # Ports
 resource "openstack_networking_port_v2" "public_bootstrap" {
+  count = local.heat.enabled ? 0 : 1
+
   name = "${local.prefix}-public-bootstrap"
   network_id = data.openstack_networking_network_v2.public_network.id
 
   admin_state_up = true
 
   security_group_ids = [
-    openstack_networking_secgroup_v2.ingress.id,
+    openstack_networking_secgroup_v2.ingress[0].id,
     var.online
     ? openstack_networking_secgroup_v2.open_egress[0].id
     : openstack_networking_secgroup_v2.restricted_egress[0].id
@@ -33,7 +35,7 @@ resource "openstack_networking_port_v2" "control_plane_bootstrap" {
     subnet_id = local.control_plane_subnet[0].id
   }
 
-  count = local.control_plane_network.enabled ? 1 : 0
+  count = local.control_plane_network.enabled && !local.heat.enabled ? 1 : 0
 }
 
 resource "openstack_networking_port_v2" "workload_plane_bootstrap" {
@@ -51,10 +53,13 @@ resource "openstack_networking_port_v2" "workload_plane_bootstrap" {
   count = (
     local.workload_plane_network.enabled
     && ! local.workload_plane_network.reuse_cp
+     && !local.heat.enabled
   ) ? 1 : 0
 }
 
 resource "openstack_compute_instance_v2" "bootstrap" {
+  count = local.heat.enabled ? 0 : 1
+
   depends_on = [
     openstack_networking_port_v2.public_bootstrap,
     openstack_networking_port_v2.control_plane_bootstrap,
@@ -81,7 +86,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
 
   network {
     access_network = true
-    port           = openstack_networking_port_v2.public_bootstrap.id
+    port           = openstack_networking_port_v2.public_bootstrap[0].id
   }
 
   dynamic "network" {
@@ -101,7 +106,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Provision SSH identities
@@ -130,6 +135,8 @@ locals {
 
 # Scripts provisioning
 resource "null_resource" "provision_scripts_bootstrap" {
+  count = local.heat.enabled ? 0 : 1
+
   depends_on = [
     openstack_compute_instance_v2.bootstrap,
   ]
@@ -150,7 +157,7 @@ resource "null_resource" "provision_scripts_bootstrap" {
     host        = openstack_compute_instance_v2.bootstrap.access_ip_v4
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Provision scripts for remote-execution
@@ -170,7 +177,7 @@ resource "null_resource" "provision_scripts_bootstrap" {
 
 resource "null_resource" "configure_rhsm_bootstrap" {
   # Configure RedHat Subscription Manager if enabled
-  count = local.using_rhel.bootstrap ? 1 : 0
+  count = local.using_rhel.bootstrap && !local.heat.enabled ? 1 : 0
 
   depends_on = [
     openstack_compute_instance_v2.bootstrap,
@@ -181,7 +188,7 @@ resource "null_resource" "configure_rhsm_bootstrap" {
     host        = openstack_compute_instance_v2.bootstrap.access_ip_v4
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {
@@ -202,6 +209,8 @@ resource "null_resource" "configure_rhsm_bootstrap" {
 
 # TODO: use cloud-init
 resource "null_resource" "bootstrap_iface_config" {
+  count = local.heat.enabled ? 0 : 1
+
   depends_on = [
     openstack_compute_instance_v2.bootstrap,
     null_resource.provision_scripts_bootstrap,
@@ -225,7 +234,7 @@ resource "null_resource" "bootstrap_iface_config" {
     host        = openstack_compute_instance_v2.bootstrap.access_ip_v4
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Configure network interfaces for private networks
@@ -245,7 +254,7 @@ resource "null_resource" "bootstrap_iface_config" {
 }
 
 resource "null_resource" "bootstrap_use_proxy" {
-  count = local.bastion.enabled && !var.online ? 1 : 0
+  count = local.bastion.enabled && !var.online && !local.heat.enabled ? 1 : 0
 
   triggers = {
     bootstrap = openstack_compute_instance_v2.bootstrap.id,
@@ -262,7 +271,7 @@ resource "null_resource" "bootstrap_use_proxy" {
     host        = openstack_compute_instance_v2.bootstrap.access_ip_v4
     type        = "ssh"
     user        = local.bootstrap.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {

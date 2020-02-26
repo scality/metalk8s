@@ -17,11 +17,11 @@ resource "openstack_networking_port_v2" "public_bastion" {
   admin_state_up        = true
 
   security_group_ids = [
-    openstack_networking_secgroup_v2.ingress.id,
+    openstack_networking_secgroup_v2.ingress[0].id,
     openstack_networking_secgroup_v2.open_egress[0].id,
   ]
 
-  count = local.bastion.enabled ? 1 : 0
+  count = local.bastion.enabled && !local.heat.enabled ? 1 : 0
 }
 
 resource "openstack_networking_port_v2" "control_plane_bastion" {
@@ -36,7 +36,11 @@ resource "openstack_networking_port_v2" "control_plane_bastion" {
     subnet_id = local.control_plane_subnet[0].id
   }
 
-  count = local.bastion.enabled && local.control_plane_network.enabled ? 1 : 0
+  count = (
+    local.bastion.enabled
+    && local.control_plane_network.enabled
+    && !local.heat.enabled
+   ) ? 1 : 0
 }
 
 resource "openstack_networking_port_v2" "workload_plane_bastion" {
@@ -54,12 +58,13 @@ resource "openstack_networking_port_v2" "workload_plane_bastion" {
   count = (
     local.bastion.enabled
     && local.workload_plane_network.enabled
-    && ! local.workload_plane_network.reuse_cp
+    && !local.workload_plane_network.reuse_cp
+    && !local.heat.enabled
   ) ? 1 : 0
 }
 
 resource "openstack_compute_instance_v2" "bastion" {
-  count = local.bastion.enabled ? 1 : 0
+  count = local.bastion.enabled && !local.heat.enabled ? 1 : 0
 
   depends_on = [
     openstack_networking_port_v2.public_bastion,
@@ -110,7 +115,7 @@ resource "openstack_compute_instance_v2" "bastion" {
     host        = self.access_ip_v4
     type        = "ssh"
     user        = local.bastion.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Provision SSH identities
@@ -131,16 +136,20 @@ resource "openstack_compute_instance_v2" "bastion" {
 
 locals {
   bastion_ip = (
-    local.bastion.enabled
-    ? openstack_compute_instance_v2.bastion[0].access_ip_v4
-    : ""
+    local.heat.enabled
+    ? openstack_orchestration_stack.outputs.cluster.bastion.public_ip
+    : (
+      local.bastion.enabled
+      ? openstack_compute_instance_v2.bastion[0].access_ip_v4
+      : ""
+    )
   )
 }
 
 
-# Scripts provisioning
+# Scripts provisioning (cloud-init!)
 resource "null_resource" "provision_scripts_bastion" {
-  count = local.bastion.enabled ? 1 : 0
+  count = local.bastion.enabled&& !local.heat.enabled ? 1 : 0
 
   depends_on = [
     openstack_compute_instance_v2.bastion,
@@ -156,10 +165,10 @@ resource "null_resource" "provision_scripts_bastion" {
   }
 
   connection {
-    host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
+    host        = bastion_ip
     type        = "ssh"
     user        = local.bastion.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Provision scripts for remote-execution
@@ -177,9 +186,14 @@ resource "null_resource" "provision_scripts_bastion" {
   }
 }
 
+# (cloud-init!)
 resource "null_resource" "configure_rhsm_bastion" {
   # Configure RedHat Subscription Manager if enabled
-  count = (local.bastion.enabled && local.using_rhel.bastion) ? 1 : 0
+  count = (
+    local.bastion.enabled
+    && local.using_rhel.bastion
+    && !local.heat.enabled
+  ) ? 1 : 0
 
   depends_on = [
     openstack_compute_instance_v2.bastion,
@@ -187,10 +201,10 @@ resource "null_resource" "configure_rhsm_bastion" {
   ]
 
   connection {
-    host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
+    host        = local.bastion_ip
     type        = "ssh"
     user        = local.bastion.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   provisioner "remote-exec" {
@@ -225,7 +239,7 @@ resource "null_resource" "configure_rhsm_bastion" {
 
 # TODO: use cloud-init
 resource "null_resource" "bastion_iface_config" {
-  count = local.bastion.enabled ? 1 : 0
+  count = local.bastion.enabled && !local.heat.enabled ? 1 : 0
 
   depends_on = [
     openstack_compute_instance_v2.bastion,
@@ -250,7 +264,7 @@ resource "null_resource" "bastion_iface_config" {
     host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
     type        = "ssh"
     user        = local.bastion.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Configure network interfaces for private networks
@@ -273,7 +287,7 @@ resource "null_resource" "bastion_iface_config" {
 # HTTP proxy for selective online access from Bootstrap or Nodes (disabled if
 # cluster is online)
 resource "null_resource" "bastion_http_proxy" {
-  count = local.bastion.enabled && !var.online ? 1 : 0
+  count = local.bastion.enabled && !var.online && !local.heat.enabled ? 1 : 0
 
   depends_on = [openstack_compute_instance_v2.bastion]
 
@@ -281,7 +295,7 @@ resource "null_resource" "bastion_http_proxy" {
     host        = openstack_compute_instance_v2.bastion[0].access_ip_v4
     type        = "ssh"
     user        = local.bastion.user
-    private_key = openstack_compute_keypair_v2.local.private_key
+    private_key = local.access_private_key
   }
 
   # Prepare Squid configuration
