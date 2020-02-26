@@ -1,0 +1,101 @@
+heat_template_version: pike
+
+description: Single VM to be used in a MetalK8s cluster.
+
+parameters:
+  public_network_id:
+    type: string
+    constraints:
+      - custom_constraint: neutron.network
+  control_plane_network_id:
+    type: string
+    constraints:
+      - custom_constraint: neutron.network
+  control_plane_subnet_id:
+    type: string
+    constraints:
+      - custom_constraint: neutron.subnet
+  workload_plane_network_id:
+    type: string
+    constraints:
+      - custom_constraint: neutron.network
+  workload_plane_subnet_id:
+    type: string
+    constraints:
+      - custom_constraint: neutron.subnet
+  ingress_secgroup_id:
+    type: string
+    constraints:
+      - custom_constraint: neutron.security_group
+  egress_secgroup_id:
+    type: string
+    constraints:
+      - custom_constraint: neutron.security_group
+  name:
+    type: string
+  key_pair:
+    type: string
+    constraints:
+      - custom_constraint: nova.keypair
+  flavor:
+    type: string
+    constraints:
+      - custom_constraint: nova.flavor
+  image:
+    type: string
+    constraints:
+      - custom_constraint: glance.image
+
+resources:
+  public_port:
+    type: OS::Neutron::Port
+    properties:
+      name:
+        str_replace:
+          template: $name-public
+          params: { $name: { get_param: name } }
+      network: { get_param: public_network_id }
+      security_groups:
+        - get_param: ingress_secgroup_id
+        - get_param: egress_secgroup_id
+  control_plane_port:
+    type: OS::Neutron::Port
+    properties:
+      name:
+        str_replace:
+          template: $name-control-plane
+          params: { $name: { get_param: name } }
+      network: { get_param: control_plane_network_id }
+      fixed_ips:
+        - subnet_id: { get_param: control_plane_subnet_id }
+  workload_plane_port:
+    type: OS::Neutron::Port
+    properties:
+      name:
+        str_replace:
+          template: $name-workload-plane
+          params: { $name: { get_param: name } }
+      network: { get_param: workload_plane_network_id }
+      fixed_ips:
+        - subnet_id: { get_param: workload_plane_subnet_id }
+  server:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: name }
+      key_name: { get_param: key_pair }
+      flavor: { get_param: flavor }
+      image: { get_param: image }
+      networks:
+        - port: { get_resource: public_port }
+        - port: { get_resource: control_plane_port }
+        - port: { get_resource: workload_plane_port }
+
+outputs:
+  OS::stack_id:
+    value: { get_resource: server }
+  public_port:
+    value: { get_resource: public_port }
+  control_plane_port:
+    value: { get_resource: control_plane_port }
+  workload_plane_port:
+    value: { get_resource: workload_plane_port }

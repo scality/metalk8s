@@ -14,29 +14,36 @@ $TF_IMPORT openstack_networking_secgroup_v2.ingress $ingress
 echo "Done importing Security Groups."
 
 echo "Importing Bastion (self)..."
-$TF_IMPORT openstack_compute_instance_v2.bastion $(cat /run/cloud-init/.instance-id)
-$TF_IMPORT openstack_networking_port_v2.control_plane_bastion $bastion_cp_port
-$TF_IMPORT openstack_networking_port_v2.workload_plane_bastion $bastion_wp_port
+$TF_IMPORT openstack_compute_instance_v2.bastion[0] $(cat /run/cloud-init/.instance-id)
+$TF_IMPORT openstack_networking_port_v2.public_bastion[0] $bastion_public_port
+$TF_IMPORT openstack_networking_port_v2.control_plane_bastion[0] $bastion_cp_port
+$TF_IMPORT openstack_networking_port_v2.workload_plane_bastion[0] $bastion_wp_port
 echo "Done importing Bastion (self)."
 
 echo "Importing Bootstrap..."
 $TF_IMPORT openstack_compute_instance_v2.bootstrap $bootstrap_id
-$TF_IMPORT openstack_networking_port_v2.control_plane_bootstrap $bootstrap_cp_port
-$TF_IMPORT openstack_networking_port_v2.workload_plane_bootstrap $bootstrap_wp_port
+$TF_IMPORT openstack_networking_port_v2.control_plane_bootstrap[0] $bootstrap_cp_port
+$TF_IMPORT openstack_networking_port_v2.workload_plane_bootstrap[0] $bootstrap_wp_port
 echo "Done importing Bootstrap."
 
 import_array() {
-    local -r base_addr=$1 values=${@:2}
+    local -r base_addr=$1 start=$2 values=${@:3}
 
-    count=0
+    count=$start
     for value in ${values[@]}; do
         $TF_IMPORT "$base_addr[$count]" "$value"
         (( count++ ))
     done
 }
 
-echo "Importing Nodes..."
-import_array openstack_compute_instance_v2.nodes $node_ids
-import_array openstack_networking_port_v2.control_plane_nodes $node_cp_ports
-import_array openstack_networking_port_v2.workload_plane_nodes $node_wp_ports
-echo "Done importing Nodes."
+echo "Importing master Nodes..."
+import_array openstack_compute_instance_v2.nodes 0 $master_ids
+import_array openstack_networking_port_v2.control_plane_nodes 0 $master_cp_ports
+import_array openstack_networking_port_v2.workload_plane_nodes 0 $master_wp_ports
+echo "Done importing master Nodes."
+
+echo "Importing worker Nodes..."
+import_array openstack_compute_instance_v2.nodes 2 $worker_ids
+import_array openstack_networking_port_v2.control_plane_nodes 2 $worker_cp_ports
+import_array openstack_networking_port_v2.workload_plane_nodes 2 $worker_wp_ports
+echo "Done importing worker Nodes."

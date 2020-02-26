@@ -6,8 +6,8 @@ online = "$online"
 
 bastion = {
     enabled  = true,
-    image    = "",
-    flavour  = "",
+    image    = "centos7",
+    flavour  = "small",
 }
 
 bootstrap = {

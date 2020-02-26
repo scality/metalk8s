@@ -14,7 +14,7 @@ parameter_groups:
       - key_pair
       - scality_cloud_token
       - scality_cloud_region
-      - public_network_name
+      - public_network_id
   - label: MetalK8s configuration
     description: |
       Define the cluster configuration to deploy.
@@ -48,7 +48,7 @@ parameters:
     constraints:
       - custom_constraint: keystone.region
     immutable: true
-  public_network_name:
+  public_network_id:
     type: string
     label: Public Network
     description: |
@@ -96,13 +96,15 @@ parameters:
     type: string
     label: Workers Flavour
     description: Instance flavour to use for MetalK8s worker nodes
-    default: m1.large
+    default: large
     constraints:
-      - custom_constraint: nova.flavor
+      - allowed_values: [small, medium, large, xlarge]
     immutable: true
 
 conditions:
   offline: { not: { get_param: metalk8s_online } }
+  os_centos7: { equals: [ { get_param: metalk8s_os }, centos7 ] }
+  os_rhel7: { equals: [ { get_param: metalk8s_os }, rhel7 ] }
 
 resources:
   # Common resources
@@ -113,7 +115,7 @@ resources:
   # Networks
   public_network:
     type: OS::Neutron::Net
-    external_id: { get_param: public_network_name }
+    external_id: { get_param: public_network_id }
   control_plane_network:
     type: OS::Neutron::Net
     properties:
@@ -186,166 +188,117 @@ resources:
         str_replace:
           template: metalk8s-$random-restricted-egress-secgroup
           params: { $random: { get_attr: [random_name, value] } }
-  # Bootstrap ports
-  bootstrap_public_port:
-    type: OS::Neutron::Port
-    properties:
-      network: { get_resource: public_network }
-      security_groups:
-        - get_resource: ingress_secgroup
-        - if:
-            - offline
-            - get_resource: restricted_egress_secgroup
-            - get_resource: open_egress_secgroup
-  bootstrap_control_plane_port:
-    type: OS::Neutron::Port
-    properties:
-      network: { get_resource: control_plane_network }
-      fixed_ips:
-        - subnet_id: { get_resource: control_plane_subnet }
-  bootstrap_workload_plane_port:
-    type: OS::Neutron::Port
-    properties:
-      network: { get_resource: workload_plane_network }
-      fixed_ips:
-        - subnet_id: { get_resource: workload_plane_subnet }
-  # Bootstrap VM
+  # Bootstrap VM and ports
   bootstrap:
-    type: OS::Nova::Server
+    type: node.template
     properties:
       name:
         str_replace:
           template: metalk8s-$random-bootstrap
           params: { $random: { get_attr: [random_name, value] } }
-      key_name: { get_param: key_pair }
+      key_pair: { get_param: key_pair }
       flavor: m1.large
-      image: { get_param: metalk8s_os }
-      networks:
-        - port: { get_resource: bootstrap_public_port }
-        - port: { get_resource: bootstrap_control_plane_port }
-        - port: { get_resource: bootstrap_workload_plane_port }
-  # Master node ports
-  master_public_ports:
+      image:
+        if:
+          - os_centos7
+          - CentOS-7-x86_64-GenericCloud-1809.qcow2
+          - if:
+              - os_rhel7
+              - rhel-server-updated-7.6-x86_64-kvm.qcow2
+              - CentOS-7-x86_64-GenericCloud-latest  # Default value
+      public_network_id: { get_resource: public_network }
+      control_plane_network_id: { get_resource: control_plane_network }
+      control_plane_subnet_id: { get_resource: control_plane_subnet }
+      workload_plane_network_id: { get_resource: workload_plane_network }
+      workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+      ingress_secgroup_id: { get_resource: ingress_secgroup }
+      egress_secgroup_id:
+        if:
+          - offline
+          - get_resource: restricted_egress_secgroup
+          - get_resource: open_egress_secgroup
+  # Master VMs and ports
+  masters:
     type: OS::Heat::ResourceGroup
     properties:
       count: 2
       resource_def:
-        type: OS::Neutron::Port
+        type: node.template
         properties:
           name:
             str_replace:
               template: metalk8s-$random-master-%index%
               params: { $random: { get_attr: [random_name, value] } }
-          network: { get_resource: public_network }
-          security_groups:
-            - get_resource: ingress_secgroup
-            - if:
-                - offline
-                - get_resource: restricted_egress_secgroup
-                - get_resource: open_egress_secgroup
-  master_control_plane_ports:
-    type: OS::Heat::ResourceGroup
-    properties:
-      count: 2
-      resource_def:
-        type: OS::Neutron::Port
-        properties:
-          network: { get_resource: control_plane_network }
-          fixed_ips:
-            - subnet_id: { get_resource: control_plane_subnet }
-  master_workload_plane_ports:
-    type: OS::Heat::ResourceGroup
-    properties:
-      count: 2
-      resource_def:
-        type: OS::Neutron::Port
-        properties:
-          network: { get_resource: workload_plane_network }
-          fixed_ips:
-            - subnet_id: { get_resource: workload_plane_subnet }
-  # Master VMs
-  master_nodes:
-    type: OS::Heat::ResourceGroup
-    properties:
-      count: 2
-      resource_def:
-        type: OS::Nova::Server
-        properties:
-          name:
+          key_pair: { get_param: key_pair }
+          flavor:
+            # FIXME: this should have constant sizing, but we need the same
+            # as workers for later import in Terraform
             str_replace:
-              template: metalk8s-$random-master-%index%
-              params: { $random: { get_attr: [random_name, value] } }
-          key_name: { get_param: key_pair }
-          flavor: { get_param: metalk8s_workers_flavour }
-          image: { get_param: metalk8s_os }
-          networks:
-            - port: { get_attr: [master_public_ports, refs, "%index%"] }
-            - port: { get_attr: [master_control_plane_ports, refs, "%index%"] }
-            - port: { get_attr: [master_workload_plane_ports, refs, "%index%"] }
-  # Worker node ports
-  worker_public_ports:
+              template: m1.$flavor
+              params: { $flavor: { get_param: metalk8s_workers_flavour } }
+          image:
+            if:
+              - os_centos7
+              - CentOS-7-x86_64-GenericCloud-1809.qcow2
+              - if:
+                  - os_rhel7
+                  - rhel-server-updated-7.6-x86_64-kvm.qcow2
+                  - CentOS-7-x86_64-GenericCloud-latest  # Default value
+          public_network_id: { get_resource: public_network }
+          control_plane_network_id: { get_resource: control_plane_network }
+          control_plane_subnet_id: { get_resource: control_plane_subnet }
+          workload_plane_network_id: { get_resource: workload_plane_network }
+          workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+          ingress_secgroup_id: { get_resource: ingress_secgroup }
+          egress_secgroup_id:
+            if:
+              - offline
+              - get_resource: restricted_egress_secgroup
+              - get_resource: open_egress_secgroup
+  # Worker VMs and ports
+  workers:
     type: OS::Heat::ResourceGroup
     properties:
       count: { get_param: metalk8s_workers_count }
       resource_def:
-        type: OS::Neutron::Port
+        type: node.template
         properties:
           name:
             str_replace:
               template: metalk8s-$random-worker-%index%
               params: { $random: { get_attr: [random_name, value] } }
-          network: { get_resource: public_network }
-          security_groups:
-            - get_resource: ingress_secgroup
-            - if:
-                - offline
-                - get_resource: restricted_egress_secgroup
-                - get_resource: open_egress_secgroup
-  worker_control_plane_ports:
-    type: OS::Heat::ResourceGroup
-    properties:
-      count: { get_param: metalk8s_workers_count }
-      resource_def:
-        type: OS::Neutron::Port
-        properties:
-          network: { get_resource: control_plane_network }
-          fixed_ips:
-            - subnet_id: { get_resource: control_plane_subnet }
-  worker_workload_plane_ports:
-    type: OS::Heat::ResourceGroup
-    properties:
-      count: { get_param: metalk8s_workers_count }
-      resource_def:
-        type: OS::Neutron::Port
-        properties:
-          network: { get_resource: workload_plane_network }
-          fixed_ips:
-            - subnet_id: { get_resource: workload_plane_subnet }
-  # Worker VMs
-  worker_nodes:
-    type: OS::Heat::ResourceGroup
-    properties:
-      count: { get_param: metalk8s_workers_count }
-      resource_def:
-        type: OS::Nova::Server
-        properties:
-          name:
+          key_pair: { get_param: key_pair }
+          flavor:
             str_replace:
-              template: metalk8s-$random-worker-%index%
-              params: { $random: { get_attr: [random_name, value] } }
-          key_name: { get_param: key_pair }
-          flavor: { get_param: metalk8s_workers_flavour }
-          image: { get_param: metalk8s_os }
-          networks:
-            - port: { get_attr: [worker_public_ports, refs, "%index%"] }
-            - port: { get_attr: [worker_control_plane_ports, refs, "%index%"] }
-            - port: { get_attr: [worker_workload_plane_ports, refs, "%index%"] }
+              template: m1.$flavor
+              params: { $flavor: { get_param: metalk8s_workers_flavour } }
+          image:
+            if:
+              - os_centos7
+              - CentOS-7-x86_64-GenericCloud-1809.qcow2
+              - if:
+                  - os_rhel7
+                  - rhel-server-updated-7.6-x86_64-kvm.qcow2
+                  - CentOS-7-x86_64-GenericCloud-latest  # Default value
+          public_network_id: { get_resource: public_network }
+          control_plane_network_id: { get_resource: control_plane_network }
+          control_plane_subnet_id: { get_resource: control_plane_subnet }
+          workload_plane_network_id: { get_resource: workload_plane_network }
+          workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+          ingress_secgroup_id: { get_resource: ingress_secgroup }
+          egress_secgroup_id:
+            if:
+              - offline
+              - get_resource: restricted_egress_secgroup
+              - get_resource: open_egress_secgroup
   # Bastion ports
   bastion_public_port:
     type: OS::Neutron::Port
     properties:
       network: { get_resource: public_network }
-      security_groups: [{ get_resource: bastion_secgroup }]
+      security_groups:
+        - get_resource: ingress_secgroup
+        - get_resource: open_egress_secgroup
   bastion_control_plane_port:
     type: OS::Neutron::Port
     properties:
@@ -384,7 +337,7 @@ resources:
                 params:
                   $random: { get_attr: [random_name, value] }
                   $image_name: { get_param: metalk8s_os }
-                  $online: { get_param: metalk8s_online }
+                  $online: { if: [offline, 'false', 'true'] }
                   $workers_count: { get_param: metalk8s_workers_count }
                   $flavour_name: { get_param: metalk8s_workers_flavour }
                   $cp_subnet_name: { get_attr: [control_plane_subnet, name] }
@@ -412,33 +365,33 @@ resources:
                   $bootstrap_id:
                     get_resource: bootstrap
                   $bootstrap_cp_port:
-                    get_resource: bootstrap_control_plane_port
+                    get_attr: [bootstrap, control_plane_port]
                   $bootstrap_wp_port:
-                    get_resource: bootstrap_workload_plane_port
+                    get_attr: [bootstrap, workload_plane_port]
                   $master_ids:
                     list_join:
                       - ' '
-                      - get_attr: [master_nodes, refs]
+                      - get_attr: [masters, refs]
                   $master_cp_ports:
                     list_join:
                       - ' '
-                      - get_attr: [master_control_plane_ports, refs]
+                      - get_attr: [masters, control_plane_port]
                   $master_wp_ports:
                     list_join:
                       - ' '
-                      - get_attr: [master_workload_plane_ports, refs]
+                      - get_attr: [masters, workload_plane_port]
                   $worker_ids:
                     list_join:
                       - ' '
-                      - get_attr: [worker_nodes, refs]
+                      - get_attr: [workers, refs]
                   $worker_cp_ports:
                     list_join:
                       - ' '
-                      - get_attr: [worker_control_plane_ports, refs]
+                      - get_attr: [workers, control_plane_port]
                   $worker_wp_ports:
                     list_join:
                       - ' '
-                      - get_attr: [worker_workload_plane_ports, refs]
+                      - get_attr: [workers, workload_plane_port]
   bastion_boot_script:
     type: OS::Heat::SoftwareConfig
     properties:
