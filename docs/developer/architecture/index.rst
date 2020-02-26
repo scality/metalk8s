@@ -5,3 +5,4 @@ Architecture Documents
 
    deployment
    requirements
+   ci
