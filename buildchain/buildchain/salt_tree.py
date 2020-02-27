@@ -275,6 +275,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'node-exporter-full.json'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/init.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/deployed/',
+            'service-configuration.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/storageclass.sls'),
 
     Path('salt/metalk8s/addons/ui/deployed/dependencies.sls'),
@@ -481,6 +483,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/archives/init.sls'),
     Path('salt/metalk8s/archives/mounted.sls'),
 
+    Path('salt/metalk8s/service-configuration/deployed/init.sls'),
+
     Path('salt/metalk8s/solutions/configured.sls'),
     Path('salt/metalk8s/solutions/mounted.sls'),
     Path('salt/metalk8s/solutions/unconfigured.sls'),
@@ -551,8 +555,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s_network.py'),
     Path('salt/_modules/metalk8s_package_manager_yum.py'),
     Path('salt/_modules/metalk8s_package_manager_apt.py'),
-    Path('salt/_modules/metalk8s_volumes.py'),
+    Path('salt/_modules/metalk8s_service_configuration.py'),
     Path('salt/_modules/metalk8s_solutions.py'),
+    Path('salt/_modules/metalk8s_volumes.py'),
 
 
     Path('salt/_pillar/metalk8s.py'),

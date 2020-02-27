@@ -4,3 +4,4 @@ include:
   - .cleanup
   - .chart
   - .dashboards
+  - .service-configuration
