@@ -30,7 +30,7 @@ export const SET_THEMES = 'SET_THEMES';
 
 // Reducer
 const defaultState = {
-  language: EN_LANG,
+  language: EN_LANG || null,
   theme: {}, // current theme
   api: null,
   userManagerConfig: {
@@ -50,6 +50,7 @@ const defaultState = {
 };
 
 export default function reducer(state = defaultState, action = {}) {
+  console.log('config reducer', action);
   switch (action.type) {
     case SET_LANG:
       return { ...state, language: action.payload };
@@ -72,7 +73,10 @@ export default function reducer(state = defaultState, action = {}) {
     case SET_THEMES:
       return { ...state, themes: action.payload };
     default:
-      return state;
+      // For some reason at the initialization defaultState === undefined
+      // So we have an error when we initialise the reducer with combineReducer
+      // cf: https://github.com/reduxjs/redux/issues/2578
+      return state === undefined ? null : state;
   }
 }
 

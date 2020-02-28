@@ -188,7 +188,7 @@ const Layout = props => {
     onToggleClick: toggleSidebar,
     productName: intl.translate('product_name'),
     rightActions,
-    logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
+    logo: <img alt="logo" src={theme.logo_path} />,
   };
 
   return (

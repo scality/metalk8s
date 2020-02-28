@@ -23,6 +23,7 @@ export default function reducer(state = defaultState, action = {}) {
       };
 
     default:
+      console.log('login', defaultState);
       return state;
   }
 }

@@ -7,10 +7,11 @@ export const SET_PODS = 'SET_PODS';
 
 // Reducer
 const defaultState = {
-  list: []
+  list: [],
 };
 
 export default function reducer(state = defaultState, action = {}) {
+  console.log('pod reducer', action);
   switch (action.type) {
     case SET_PODS:
       return { ...state, list: action.payload };
@@ -43,9 +44,9 @@ export function* fetchPods() {
           restartCount:
             pod.status.containerStatuses && pod.status.containerStatuses.length
               ? pod.status.containerStatuses[0].restartCount
-              : 0
-        }))
-      )
+              : 0,
+        })),
+      ),
     );
   }
 }
