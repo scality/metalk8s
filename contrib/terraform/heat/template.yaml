@@ -1,0 +1,467 @@
+heat_template_version: pike
+
+description: |
+  Heat template for provisioning a single MetalK8s cluster.
+
+  This will first spawn all infrastructure using Heat (including a Bastion VM),
+  and then use Terraform to provision the MetalK8s cluster on this
+  infrastructure.
+
+  The deployed cluster will include a three nodes control plane (Bootstrap with
+  two Masters), and as many nodes as desired in the workload plane. The
+  Bastion is not part of the deployed cluster.
+
+parameter_groups:
+  - label: Deployment configuration
+    description: |
+      Define the credentials to use for deploying this cluster.
+    parameters:
+      - key_pair
+      - scality_cloud_token
+      - scality_cloud_region
+      - access_network_id
+      - artifacts_user
+      - artifacts_password
+
+  - label: MetalK8s configuration
+    description: |
+      Define the cluster configuration to deploy.
+    parameters:
+      - metalk8s_version
+      - metalk8s_image
+      - metalk8s_online
+      - metalk8s_workers_count
+      - metalk8s_workers_flavor
+      
+parameters:
+  key_pair:
+    type: string
+    label: SSH Key Pair
+    description: |
+      Name of the key pair to use for deploying VMs
+    constraints:
+      - custom_constraint: nova.keypair
+    immutable: true
+  scality_cloud_token:
+    type: string
+    label: Scality Cloud Token
+    description: |
+      API token to interact with scality.cloud OpenStack API (used by Bastion
+      to run Terraform)
+    immutable: true
+  scality_cloud_region:
+    type: string
+    label: Scality Cloud Region
+    description: Region to spawn into
+    default: Europe
+    constraints:
+      - custom_constraint: keystone.region
+    immutable: true
+  access_network_id:
+    type: string
+    label: Access Network
+    description: |
+      Network to use for the deployment and access to VMs
+    constraints:
+      - custom_constraint: neutron.network
+    immutable: true
+  artifacts_user:
+    type: string
+    label: Artifacts Username
+    description: Username to access MetalK8s artifacts service
+    default: developer
+    immutable: true
+  artifacts_password:
+    type: string
+    label: Artifacts Password
+    description: Password to access MetalK8s artifacts service
+    hidden: true
+    immutable: true
+  metalk8s_online:
+    type: boolean
+    label: Online Deployment
+    description: |
+      Whether to install an online cluster (only relying on the public network
+      in your tenant), or not (thus spawning private networks and isolating
+      cluster nodes from Internet)
+    default: false
+    immutable: true
+  metalk8s_image:
+    type: string
+    label: Image
+    description: Which OS image to use for all VMs
+    immutable: true
+    default: CentOS-7-x86_64-GenericCloud-latest
+    constraints:
+      - custom_constraint: glance.image
+      - allowed_pattern: "(?i).*centos.*"
+  metalk8s_version:
+    type: string
+    label: MetalK8s Version
+    description: Which version of MetalK8s to install
+    default: "2.4.2"
+    constraints:
+      - allowed_values:
+          - "2.4.2"
+    immutable: true
+  metalk8s_workers_count:
+    type: number
+    label: Workers Count
+    description: Number of MetalK8s worker nodes to deploy
+    default: 3
+    constraints:
+      - range: { min: 0, max: 99 }
+    immutable: true
+  metalk8s_workers_flavor:
+    type: string
+    label: Workers Flavour
+    description: Instance flavour to use for MetalK8s worker nodes
+    default: m1.large
+    constraints:
+      - custom_constraint: nova.flavor
+    immutable: true
+
+conditions:
+  offline: { not: { get_param: metalk8s_online } }
+
+resources:
+  # Networks
+  access_network:
+    type: OS::Neutron::Net
+    external_id: { get_param: access_network_id }
+  control_plane_network:
+    type: OS::Neutron::Net
+    properties:
+      port_security_enabled: false
+      name:
+        str_replace:
+          template: $prefix-control-plane
+          params: { $prefix: { get_param: "OS::stack_name" } }
+  control_plane_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: control_plane_network }
+      cidr: "192.168.1.0/24"
+      ip_version: 4
+      name:
+        str_replace:
+          template: $prefix-control-plane-subnet
+          params: { $prefix: { get_param: "OS::stack_name" } }
+  workload_plane_network:
+    type: OS::Neutron::Net
+    properties:
+      port_security_enabled: false
+      name:
+        str_replace:
+          template: $prefix-workload-plane
+          params: { $prefix: { get_param: "OS::stack_name" } }
+  workload_plane_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: workload_plane_network }
+      cidr: "192.168.2.0/24"
+      ip_version: 4
+      name:
+        str_replace:
+          template: $prefix-workload-plane-subnet
+          params: { $prefix: { get_param: "OS::stack_name" } }
+
+  # Security groups
+  ingress_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name:
+        str_replace:
+          template: $prefix-ingress-secgroup
+          params: { $prefix: { get_param: "OS::stack_name" } }
+      rules:
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+          protocol: icmp
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+          remote_mode: remote_group_id
+        # Add egress rule for this secgroup's members, to delete default egress
+        # rules (managed in <kind>_egress_secgroup resources)
+        - direction: egress
+          ethertype: IPv4
+          remote_mode: remote_group_id
+  open_egress_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name:
+        str_replace:
+          template: $prefix-open-egress-secgroup
+          params: { $prefix: { get_param: "OS::stack_name" } }
+  restricted_egress_secgroup:
+    type: OS::Neutron::SecurityGroup
+    condition: offline
+    properties:
+      name:
+        str_replace:
+          template: $prefix-restricted-egress-secgroup
+          params: { $prefix: { get_param: "OS::stack_name" } }
+      rules:
+        repeat:
+          for_each:
+            <%dns_ip%>:
+              get_attr: [access_network, subnets, 0, dns_nameservers]
+          template:
+            direction: egress
+            ethertype: IPv4
+            protocol: udp
+            port_range_min: 53
+            port_range_max: 53
+            remote_ip_prefix: <%dns_ip%>/32
+  egress_rule_metadata:
+    type: OS::Neutron::SecurityGroupRule
+    properties:
+      security_group: { get_resource: restricted_egress_secgroup }
+      direction: egress
+      ethertype: IPv4
+      port_range_min: 80
+      port_range_max: 80
+      remote_ip_prefix: "169.254.169.254/32"
+
+  # Bastion ports
+  bastion_public_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: access_network }
+      security_groups:
+        - get_resource: ingress_secgroup
+        - get_resource: open_egress_secgroup
+  bastion_control_plane_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: control_plane_network }
+      fixed_ips:
+        - subnet_id: { get_resource: control_plane_subnet }
+  bastion_workload_plane_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: workload_plane_network }
+      fixed_ips:
+        - subnet_id: { get_resource: workload_plane_subnet }
+  # Bastion cloud-init
+  squid_proxy_config:
+    type: OS::Heat::CloudConfig
+    condition: offline
+    properties:
+      cloud_config:
+        packages:
+          - squid
+        write_files:
+          - path: /etc/squid/squid.config
+            owner: root:root
+            content:
+              str_replace:
+                template: { get_file: templates/squid.conf.tpl }
+                params:
+                  <%src_cidr%>: { get_attr: [access_network, subnets, 0, cidr] }
+                  <%proxy_port%>: 3128
+        runcmd:
+          - systemctl enable squid
+          - systemctl start squid
+  terraform_config:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        packages:
+          - git
+          - unzip
+        write_files:
+          - path: /run/terraform/openstack.env
+            owner: root:root
+            content:
+              str_replace:
+                template: { get_file: templates/openstack.env.tpl }
+                params:
+                  $tenant_id: { get_attr: [access_network, tenant_id] }
+                  $region_name: { get_param: scality_cloud_region }
+                  $api_token: { get_param: scality_cloud_token }
+          - path: /run/terraform/deployment.tfvars
+            owner: root:root
+            content:
+              str_replace:
+                template: { get_file: templates/deployment.tfvars.tpl }
+                params:
+                  $prefix: { get_param: "OS::stack_name" }
+                  $image: { get_param: metalk8s_image }
+                  $online: { if: [offline, 'false', 'true'] }
+                  $workers_count: { get_param: metalk8s_workers_count }
+                  $flavor: { get_param: metalk8s_workers_flavor }
+                  $cp_subnet_name: { get_attr: [control_plane_subnet, name] }
+                  $wp_subnet_name: { get_attr: [workload_plane_subnet, name] }
+                  $metalk8s_version: { get_param: metalk8s_version }
+                  $artifacts_user: { get_param: artifacts_user }
+                  $artifacts_pass: { get_param: artifacts_password }
+  bastion_boot_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config:
+        str_replace:
+          template: { get_file: scripts/bastion-init.sh }
+          params:
+            <%stack_id%>: { get_param: OS::stack_id }
+  setup_ifaces_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: { get_file: scripts/setup-ifaces.sh }
+  bastion_init:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        # TODO: add RHSM setup if required
+        - config: { get_resource: bastion_boot_script }
+        - config: { get_resource: setup_ifaces_script }
+        - config: { get_resource: squid_proxy_config }
+        - config: { get_resource: terraform_config }
+  # Bastion VM
+  bastion:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: $prefix-bastion
+          params: { $prefix: { get_param: "OS::stack_name" } }
+      key_name: { get_param: key_pair }
+      flavor: m1.small
+      image: { get_param: metalk8s_image }
+      networks:
+        - port: { get_resource: bastion_public_port }
+        - port: { get_resource: bastion_control_plane_port }
+        - port: { get_resource: bastion_workload_plane_port }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: { get_resource: bastion_init }
+
+  # Bootstrap VM and ports
+  bootstrap:
+    type: node.template
+    properties:
+      name:
+        str_replace:
+          template: $prefix-bootstrap
+          params: { $prefix: { get_param: "OS::stack_name" } }
+      key_pair: { get_param: key_pair }
+      flavor: m1.large
+      image: { get_param: metalk8s_image }
+      bastion_access_ip:
+        get_attr: [bastion, networks, { get_resource: access_network }, 0]
+      bastion_proxy_port: 3128
+      offline: { if: [offline, true, false] }
+      access_network_id: { get_resource: access_network }
+      control_plane_network_id: { get_resource: control_plane_network }
+      control_plane_subnet_id: { get_resource: control_plane_subnet }
+      workload_plane_network_id: { get_resource: workload_plane_network }
+      workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+      ingress_secgroup_id: { get_resource: ingress_secgroup }
+      egress_secgroup_id:
+        if:
+          - offline
+          - get_resource: restricted_egress_secgroup
+          - get_resource: open_egress_secgroup
+  # Master VMs and ports
+  masters:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 2
+      resource_def:
+        type: node.template
+        properties:
+          name:
+            str_replace:
+              template: $prefix-master-%index%
+              params: { $prefix: { get_param: "OS::stack_name" } }
+          key_pair: { get_param: key_pair }
+          flavor: m1.large
+          image: { get_param: metalk8s_image }
+          bastion_access_ip:
+            get_attr: [bastion, networks, { get_resource: access_network }, 0]
+          bastion_proxy_port: 3128
+          offline: { if: [offline, true, false] }
+          access_network_id: { get_resource: access_network }
+          control_plane_network_id: { get_resource: control_plane_network }
+          control_plane_subnet_id: { get_resource: control_plane_subnet }
+          workload_plane_network_id: { get_resource: workload_plane_network }
+          workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+          ingress_secgroup_id: { get_resource: ingress_secgroup }
+          egress_secgroup_id:
+            if:
+              - offline
+              - get_resource: restricted_egress_secgroup
+              - get_resource: open_egress_secgroup
+  # Worker VMs and ports
+  workers:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: metalk8s_workers_count }
+      resource_def:
+        type: node.template
+        properties:
+          name:
+            str_replace:
+              template: $prefix-worker-%index%
+              params: { $prefix: { get_param: "OS::stack_name" } }
+          key_pair: { get_param: key_pair }
+          flavor: { get_param: metalk8s_workers_flavor }
+          image: { get_param: metalk8s_image }
+          bastion_access_ip:
+            get_attr: [bastion, networks, { get_resource: access_network }, 0]
+          bastion_proxy_port: 3128
+          offline: { if: [offline, true, false] }
+          access_network_id: { get_resource: access_network }
+          control_plane_network_id: { get_resource: control_plane_network }
+          control_plane_subnet_id: { get_resource: control_plane_subnet }
+          workload_plane_network_id: { get_resource: workload_plane_network }
+          workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+          ingress_secgroup_id: { get_resource: ingress_secgroup }
+          egress_secgroup_id:
+            if:
+              - offline
+              - get_resource: restricted_egress_secgroup
+              - get_resource: open_egress_secgroup
+
+outputs:
+  sshuttle_cmd:
+    description: |
+      Command to run for activating an SSH-based VPN through Bastion, allowing
+      local access to private networks for this cluster (run from your host)
+    value:
+      str_replace:
+        template: sshuttle -r centos@$bastion_ip $cp_cidr $wp_cidr
+        params:
+          $bastion_ip:
+            get_attr: [bastion, networks, { get_resource: access_network }, 0]
+          $cp_cidr:
+            get_attr: [control_plane_subnet, cidr]
+          $wp_cidr:
+            get_attr: [workload_plane_subnet, cidr]
+  bastion_info:
+    description: IP addresses for Bastion
+    value:
+      access_ip:
+        get_attr: [bastion, networks, { get_resource: access_network }, 0]
+      private_ips:
+        control_plane:
+          get_attr: [bastion, networks, { get_resource: control_plane_network }, 0]
+        workload_plane:
+          get_attr: [bastion, networks, { get_resource: workload_plane_network }, 0]
+  machines_info:
+    value:
+      bootstrap:
+        bootstrap:
+          access_ip:
+            get_attr: [bastion, networks, { get_resource: access_network }, 0]
+          private_ips:
+            control_plane:
+              get_attr: [bastion, networks, { get_resource: control_plane_network }, 0]
+            workload_plane:
+              get_attr: [bastion, networks, { get_resource: workload_plane_network }, 0]

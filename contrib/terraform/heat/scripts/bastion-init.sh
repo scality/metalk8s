@@ -24,46 +24,33 @@ rm -f "$TF_ARCHIVE"
 echo "Terraform installed."
 
 # Clone MetalK8s repository to get Terraform module definition
+# FIXME: use a static identifier instead of a branch name
 echo "Retrieving MetalK8s sources for Terraform definitions..."
-
 git clone \
-  --branch feature/add-heat-templates \
+  --branch heat/v0.1 \
   --single-branch \
   https://github.com/scality/metalk8s \
   ./metalk8s-terraform
 
 cp -R ./metalk8s-terraform/contrib/terraform/* /run/terraform/
-
+cd /run/terraform
 echo "Terraform definitions ready."
 
 # Initialize Terraform
 echo "Initializing Terraform..."
-
-cd /run/terraform
 terraform init
-
 echo "Terraform initialized."
-
-# Apply Terraform configuration with provided /run/terraform/deployment.tfvars
 
 source openstack.env  # The OpenStack API credentials, provisioned by Heat
 
-# Importing spawned resources into Terraform state
-echo "Loading resources into Terraform state..."
+# Importing spawned stack into Terraform state
+# echo "Importing resources into Terraform..."
+# terraform import openstack_orchestration_stack_v1.heat[0] "<%stack_id%>"
+# echo "Finished importing resources."
 
-chmod +x ./tf-imports.sh
-./tf-imports.sh
-
-echo "Finished importing resources."
-
-echo "Spawning cluster using Terraform..."
-
-terraform apply \
-  -var-file scality-cloud.tfvars \
-  -var-file deployment.tfvars \
-  -auto-approve
-
-echo "Spawn complete!"
+# echo "Deploying cluster using Terraform..."
+# terraform apply -var-file deployment.tfvars -auto-approve
+# echo "Spawn complete!"
 
 # TODO: Write script output values
 # (this needs `heat-config-script` in the base image)

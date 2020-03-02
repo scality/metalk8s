@@ -1,0 +1,26 @@
+heat_template_version: pike
+
+resources:
+#   my_node:
+#     type: OS::Nova::Server
+#     properties:
+#       name:
+#         str_replace:
+#           template: $prefix-node
+#           params: { $prefix: { get_param: "OS::stack_name" } }
+#       key_name: MyKey
+#       flavor: m1.large
+#       image: CentOS-7-x86_64-GenericCloud-latest
+#       networks:
+#         - network: tenantnetwork1
+  my_node:
+    type: node.template
+    properties:
+      name:
+        str_replace:
+          template: $prefix-node
+          params: { $prefix: { get_param: "OS::stack_name" } }
+      key_pair: MyKey
+      flavor: m1.large
+      image: CentOS-7-x86_64-GenericCloud-latest
+      access_network_id: a8b5b41e-8478-483c-b348-ffae653414c2

@@ -3,7 +3,7 @@ heat_template_version: pike
 description: Single VM to be used in a MetalK8s cluster.
 
 parameters:
-  public_network_id:
+  access_network_id:
     type: string
     constraints:
       - custom_constraint: neutron.network
@@ -31,6 +31,16 @@ parameters:
     type: string
     constraints:
       - custom_constraint: neutron.security_group
+  bastion_access_ip:
+    type: string
+    constraints:
+      - custom_constraint: ip_addr
+  bastion_proxy_port:
+    type: number
+    constraints:
+      - range: { min: 1024, max: 49151 }
+  offline:
+    type: boolean
   name:
     type: string
   key_pair:
@@ -47,14 +57,14 @@ parameters:
       - custom_constraint: glance.image
 
 resources:
-  public_port:
+  access_port:
     type: OS::Neutron::Port
     properties:
       name:
         str_replace:
           template: $name-public
           params: { $name: { get_param: name } }
-      network: { get_param: public_network_id }
+      network: { get_param: access_network_id }
       security_groups:
         - get_param: ingress_secgroup_id
         - get_param: egress_secgroup_id
@@ -78,6 +88,34 @@ resources:
       network: { get_param: workload_plane_network_id }
       fixed_ips:
         - subnet_id: { get_param: workload_plane_subnet_id }
+  proxy_config:
+    type: OS::Heat::CloudConfig
+    condition: { get_param: offline }
+    properties:
+      cloud_config:
+        write_files:
+          - path: /run/metalk8s/scripts/setup_proxy.py
+            owner: root:root
+            content: { get_file: scripts/setup_proxy.py }
+        runcmd:
+          - str_replace:
+              template: >-
+                python /run/metalk8s/scripts/setup_proxy.py
+                --proxy-host $bastion_ip --proxy-port $bastion_proxy_port
+              params:
+                $bastion_ip: { get_param: bastion_access_ip }
+                $bastion_proxy_port: { get_param: bastion_proxy_port }
+  setup_ifaces_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: { get_file: scripts/setup-ifaces.sh }
+  cloud_init:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        # TODO: setup RHSM if required
+        - config: { get_resource: setup_ifaces_script }
+        - config: { get_resource: proxy_config }
   server:
     type: OS::Nova::Server
     properties:
@@ -86,16 +124,18 @@ resources:
       flavor: { get_param: flavor }
       image: { get_param: image }
       networks:
-        - port: { get_resource: public_port }
+        - port: { get_resource: access_port }
         - port: { get_resource: control_plane_port }
         - port: { get_resource: workload_plane_port }
+      user_data_format: SOFTWARE_CONFIG
+      user_data: { get_resource: cloud_init }
 
 outputs:
   OS::stack_id:
     value: { get_resource: server }
-  public_port:
-    value: { get_resource: public_port }
-  control_plane_port:
-    value: { get_resource: control_plane_port }
-  workload_plane_port:
-    value: { get_resource: workload_plane_port }
+  access_ip:
+    value: { get_attr: [server, networks, { get_param: access_network_id }, 0] }
+  private_ips:
+    value:
+      control_plane: { get_attr: [control_plane_port, fixed_ips, 0] }
+      workload_plane: { get_attr: [workload_plane_port, fixed_ips, 0] }

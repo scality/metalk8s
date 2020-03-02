@@ -9,13 +9,9 @@ openstack_images = {
   },
 }
 
-openstack_flavours = {
+openstack_flavors = {
   small  = "m1.small",
   medium = "m1.medium",
   large  = "m1.large",
   xlarge = "m1.xlarge",
 }
-
-openstack_link_local_ip = "169.254.169.254"
-
-public_network = "tenantnetwork1"

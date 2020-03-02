@@ -1,7 +1,7 @@
 Format: Heat.HOT/1.0
 Type: Application
 FullName: com.scality.metalk8s.MetalK8sCluster
-Name: MetalK8s Cluster - v1alpha1
+Name: MetalK8s Cluster - @VERSION@
 Description: "Heat template to deploy a MetalK8s cluster on VMs"
 Author: squad-metalk8s@scality.com
 Tags:

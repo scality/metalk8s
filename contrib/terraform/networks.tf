@@ -1,120 +1,52 @@
-# Public network
-data "openstack_networking_network_v2" "public_network" {
-  name = var.public_network
+# Access network
+data "openstack_networking_network_v2" "access_network" {
+  name       = var.access_network.name != "" ? var.access_network.name : ""
+  network_id = var.access_network.id != "" ? var.access_network.id : ""
 }
 
-data "openstack_networking_subnet_v2" "public_subnet" {
-  network_id = data.openstack_networking_network_v2.public_network.id
+data "openstack_networking_subnet_v2" "access_subnet" {
+  network_id = data.openstack_networking_network_v2.access_network.id
 }
 
-# Control-plane
+# Private networks
 locals {
-  control_plane_network = {
-    name        = "${local.prefix}-control-plane",
-    enabled     = var.control_plane.enabled,
-    cidr        = var.control_plane.cidr,
-    subnet_name = var.control_plane.existing_subnet,
+  spawn_private_nets = {
+    for name, info in var.private_networks :
+    name => info.cidr if info.existing_subnet == ""
+  }
+
+  reuse_private_subnets = {
+    for name, info in var.private_networks :
+    name => info.existing_subnet if info.existing_subnet != ""
   }
 }
 
-resource "openstack_networking_network_v2" "control_plane" {
-  count = (
-    local.control_plane_network.enabled
-    && local.control_plane_network.subnet_name == ""
-  ) ? 1 : 0
+resource "openstack_networking_network_v2" "private_networks" {
+  for_each = local.heat.enabled ? {} : local.spawn_private_nets
 
-  name                  = local.control_plane_network.name
+  name                  = "${local.prefix}-${replace(each.key, "_", "-")}"
   port_security_enabled = false
 }
 
-resource "openstack_networking_subnet_v2" "control_plane" {
-  count = (
-    local.control_plane_network.enabled
-    && local.control_plane_network.subnet_name == ""
-  ) ? 1 : 0
+resource "openstack_networking_subnet_v2" "private_subnets" {
+  for_each = local.heat.enabled ? {} : local.spawn_private_nets
 
-  name        = local.control_plane_network.name
-  network_id  = openstack_networking_network_v2.control_plane[0].id
+  name        = "${local.prefix}-${replace(each.key, "_", "-")}-subnet"
+  network_id  = openstack_networking_network_v2.private_networks[each.key].id
+  cidr        = each.value
   enable_dhcp = true
-  cidr        = local.control_plane_network.cidr
   ip_version  = 4
   no_gateway  = true
 }
 
-data "openstack_networking_subnet_v2" "control_plane" {
-  count = (
-    local.control_plane_network.enabled
-    && local.control_plane_network.subnet_name != ""
-  ) ? 1 : 0
+data "openstack_networking_subnet_v2" "private_subnets" {
+  for_each = local.reuse_private_subnets
 
-  name = local.control_plane_network.subnet_name
+  name = each.value
 }
 
 locals {
-  control_plane_subnet = (
-    local.control_plane_network.subnet_name != ""
-    ? data.openstack_networking_subnet_v2.control_plane
-    : openstack_networking_subnet_v2.control_plane
+  private_subnets = merge(
+    openstack_networking_subnet_v2.private_subnets, data.openstack_networking_subnet_v2.private_subnets,
   )
-}
-
-# Workload-plane
-locals {
-  workload_plane_network = {
-    name        = "${local.prefix}-workload-plane",
-    enabled     = var.workload_plane.enabled,
-    reuse_cp    = var.workload_plane.reuse_control_plane,
-    cidr        = var.workload_plane.cidr,
-    subnet_name = var.workload_plane.existing_subnet,
-  }
-}
-
-resource "openstack_networking_network_v2" "workload_plane" {
-  count = (
-    local.workload_plane_network.enabled
-    && ! local.workload_plane_network.reuse_cp
-    && local.workload_plane_network.subnet_name == ""
-  ) ? 1 : 0
-
-  name                  = local.workload_plane_network.name
-  port_security_enabled = false
-}
-
-resource "openstack_networking_subnet_v2" "workload_plane" {
-  count = (
-    local.workload_plane_network.enabled
-    && ! local.workload_plane_network.reuse_cp
-    && local.workload_plane_network.subnet_name == ""
-  ) ? 1 : 0
-
-  name        = local.workload_plane_network.name
-  network_id  = openstack_networking_network_v2.workload_plane[0].id
-  enable_dhcp = true
-  cidr        = local.workload_plane_network.cidr
-  ip_version  = 4
-  no_gateway  = true
-}
-
-data "openstack_networking_subnet_v2" "workload_plane" {
-  count = (
-    local.workload_plane_network.enabled
-    && ! local.workload_plane_network.reuse_cp
-    && local.workload_plane_network.subnet_name != ""
-  ) ? 1 : 0
-
-  name = local.workload_plane_network.subnet_name
-}
-
-locals {
-  workload_plane_subnet = (
-    local.workload_plane_network.subnet_name != ""
-    ? data.openstack_networking_subnet_v2.workload_plane
-    : openstack_networking_subnet_v2.workload_plane
-  )
-}
-
-locals {
-  # If either workload plane or control plane are configured to use the public
-  # network, we assume PortSecurity is enabled, and activate IPIP encapsulation
-  enable_ipip = ! (var.control_plane.enabled && var.workload_plane.enabled)
 }

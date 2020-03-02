@@ -3,10 +3,10 @@
 #
 
 # Only allow access through the default network
-acl localnet src ${src_cidr}
+acl localnet src <%src_cidr%>
 
 # Squid's listening port
-http_port ${proxy_port}
+http_port <%proxy_port%>
 
 # Default ACL configuration
 acl SSL_ports port 443

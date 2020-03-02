@@ -1,24 +1,18 @@
+%{ if bastion != {} ~}
 Host bastion
-    User centos
+    User ${bastion.user}
     Port 22
-    Hostname ${bastion_ip}
+    Hostname ${bastion.access_ip}
     IdentityFile ${identity_file}
     IdentitiesOnly yes
     StrictHostKeyChecking no
+%{ endif ~}
 
-Host bootstrap
-    User centos
+%{ for machine in machines ~}
+Host ${machine.name}
+    User ${machine.user}
     Port 22
-    Hostname ${bootstrap_ip}
-    IdentityFile ${identity_file}
-    IdentitiesOnly yes
-    StrictHostKeyChecking no
-
-%{ for node in nodes ~}
-Host ${node.name}
-    User centos
-    Port 22
-    Hostname ${node.ip}
+    Hostname ${machine.access_ip}
     IdentityFile ${identity_file}
     IdentitiesOnly yes
     StrictHostKeyChecking no

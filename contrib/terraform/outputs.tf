@@ -1,7 +1,7 @@
-output "ips" {
-  value = {
-    bastion   = local.bastion_ip
-    bootstrap = local.bootstrap_ip
-    nodes     = local.node_ips
-  }
+output "bastion" {
+  value = local.bastion_info
+}
+
+output "machines" {
+  value = local.machines_info
 }
