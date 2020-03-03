@@ -28,13 +28,22 @@ import {
   stopRefreshSolutionsAction,
 } from '../ducks/app/solutions';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
+import { appNamespaceSelector } from '../ducks/namespaceHelper';
 
 const Layout = props => {
-  const user = useSelector(state => state.oidc.user);
-  const sidebar = useSelector(state => state.app.layout.sidebar);
-  const { theme, language } = useSelector(state => state.config);
-  const notifications = useSelector(state => state.app.notifications.list);
-  const solutions = useSelector(state => state.app.solutions.solutions);
+  const user = useSelector(state => appNamespaceSelector(state).oidc.user);
+  const sidebar = useSelector(
+    state => appNamespaceSelector(state).app.layout.sidebar,
+  );
+  const { theme, language } = useSelector(
+    state => appNamespaceSelector(state).config,
+  );
+  const notifications = useSelector(
+    state => appNamespaceSelector(state).app.notifications.list,
+  );
+  // const solutions = useSelector(
+  //   state => appNamespaceSelector(state).app.solutions.solutions,
+  // );
   const dispatch = useDispatch();
 
   const logout = event => {
@@ -46,8 +55,8 @@ const Layout = props => {
   const updateLanguage = language => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
-  const api = useSelector(state => state.config.api);
-  useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
+  const api = useSelector(state => appNamespaceSelector(state).config.api);
+  // useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
@@ -79,35 +88,35 @@ const Layout = props => {
           strict: true,
         }),
       },
-      {
-        label: intl.translate('solutions'),
-        icon: <i className="fas fa-th" />,
-        onClick: () => {
-          history.push('/solutions');
-        },
-        active: useRouteMatch({
-          path: '/solutions',
-          exact: false,
-          strict: true,
-        }),
-      },
+      // {
+      //   label: intl.translate('solutions'),
+      //   icon: <i className="fas fa-th" />,
+      //   onClick: () => {
+      //     history.push('/solutions');
+      //   },
+      //   active: useRouteMatch({
+      //     path: '/solutions',
+      //     exact: false,
+      //     strict: true,
+      //   }),
+      // },
     ],
   };
 
   let applications = null;
-  if (solutions?.length) {
-    applications = solutions?.reduce((prev, solution) => {
-      let solutionDeployedVersions = solution?.versions?.filter(
-        version => version?.deployed && version?.ui_url,
-      );
-      let app = solutionDeployedVersions.map(version => ({
-        label: solution.name,
-        // TO BE IMPROVED in core-ui to allow display Link or <a></a>
-        onClick: () => window.open(version.ui_url, '_self'),
-      }));
-      return [...prev, ...app];
-    }, []);
-  }
+  // if (solutions?.length) {
+  //   applications = solutions?.reduce((prev, solution) => {
+  //     let solutionDeployedVersions = solution?.versions?.filter(
+  //       version => version?.deployed && version?.ui_url,
+  //     );
+  //     let app = solutionDeployedVersions.map(version => ({
+  //       label: solution.name,
+  //       // TO BE IMPROVED in core-ui to allow display Link or <a></a>
+  //       onClick: () => window.open(version.ui_url, '_self'),
+  //     }));
+  //     return [...prev, ...app];
+  //   }, []);
+  // }
 
   // In this particular case, the label should not be translated
   const languages = [
@@ -184,12 +193,14 @@ const Layout = props => {
     rightActions.splice(1, 0, applicationsAction);
   }
 
-  const navbar = {
-    onToggleClick: toggleSidebar,
-    productName: intl.translate('product_name'),
-    rightActions,
-    logo: <img alt="logo" src={theme.logo_path} />,
-  };
+  const navbar = props.isMicroApp
+    ? null
+    : {
+        onToggleClick: toggleSidebar,
+        productName: intl.translate('product_name'),
+        rightActions,
+        logo: <img alt="logo" src={theme.logo_path} />,
+      };
 
   return (
     <ThemeProvider theme={theme}>

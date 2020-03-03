@@ -11,5 +11,7 @@ export function fetchTheme() {
 }
 
 export function fetchConfig() {
-  return apiClient.get('/config.json');
+  console.warn('Dont forget to change back');
+  return apiClient.get('/external-component/metalk8s/config.json');
+  // return apiClient.get('/config.json');
 }

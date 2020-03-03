@@ -11,7 +11,7 @@ import {
   RAW_BLOCK_DEVICE,
   REFRESH_TIMEOUT,
 } from '../../constants';
-
+import { appNamespaceSelector, nameSpaceAction } from '../namespaceHelper';
 // Actions
 const FETCH_VOLUMES = 'FETCH_VOLUMES';
 const SET_VOLUMES = 'SET_VOLUMES';
@@ -145,14 +145,14 @@ export const updateVolumesAction = payload => {
 
 // Selectors
 export const volumesRefreshingSelector = state =>
-  state.app.volumes.isRefreshing;
+  appNamespaceSelector(state).app.volumes.isRefreshing;
 export const persistentVolumesRefreshingSelector = state =>
-  state.app.volumes.isPVRefreshing;
+  appNamespaceSelector(state).app.volumes.isPVRefreshing;
 
 // Sagas
 export function* fetchVolumes() {
   yield put(
-    updateVolumesAction({
+    nameSpaceAction(updateVolumesAction, {
       isLoading: true,
     }),
   );

@@ -16,7 +16,7 @@ import CallbackPage from './LoginCallback';
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
 import { fetchConfigAction, setInitialLanguageAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
-import { store } from '../index';
+import { store } from '../microAppIndex';
 
 const messages = {
   EN: translations_en,

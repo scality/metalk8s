@@ -19,9 +19,13 @@ import { initToggleSideBarAction } from '../ducks/app/layout';
 import {
   setActionCreatorNamespace,
   namespaceReducerFactory,
+  nameSpaceAction,
+  setSelectorNamespace,
+  appNamespaceSelector,
 } from '../ducks/namespaceHelper';
 import reducer from '../ducks/reducer';
 import sagas from '../ducks/sagas.js';
+import { BrowserRouter } from 'react-router-dom';
 
 const messages = {
   EN: translations_en,
@@ -34,10 +38,9 @@ const MicroApp = props => {
   const { store, namespace } = props;
   // set namespace `localMetalk8s`
   setActionCreatorNamespace(namespace);
+  setSelectorNamespace(namespace);
   // inject our reducer for metalk8s
-
   useEffect(() => {
-    console.log('reducer', reducer);
     store.injectReducer(
       `${namespace}`,
       namespaceReducerFactory(namespace, reducer),
@@ -46,32 +49,39 @@ const MicroApp = props => {
     store.runSaga(sagas);
   }, []);
 
-  const { language, api, theme, userManager } = useSelector(
-    state => state.config,
+  const language = 'EN';
+  const { api, theme, userManager } = useSelector(
+    state => appNamespaceSelector(state)?.config ?? {},
   );
-  const isUserLoaded = useSelector(state => state.config.isUserLoaded);
+  const appState = useSelector(state => appNamespaceSelector(state).app);
+  const isUserLoaded = useSelector(
+    state => appNamespaceSelector(state).config?.isUserLoaded,
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
-    document.title = messages[language].product_name;
-    dispatch(fetchConfigAction());
-    dispatch(setInitialLanguageAction());
-    dispatch(initToggleSideBarAction());
-    // eslint-disable-next-line
+    //   // document.title = messages[language].product_name;
+    dispatch(nameSpaceAction(fetchConfigAction, store));
+    dispatch(nameSpaceAction(setInitialLanguageAction));
+    dispatch(nameSpaceAction(initToggleSideBarAction));
   }, []);
 
-  return api && theme && userManager && isUserLoaded ? (
+  return api && theme && userManager && isUserLoaded && appState ? (
     <OidcProvider store={store} userManager={userManager}>
       <IntlProvider locale={language} messages={messages[language]}>
         <IntlGlobalProvider>
-          <Switch>
-            <Route
-              exact
-              path="/oauth2/callback"
-              component={() => <CallbackPage />}
-            />
-            <Route component={Layout} />
-          </Switch>
+          <BrowserRouter>
+            <Switch>
+              <Route
+                exact
+                path="/oauth2/callback"
+                component={() => <CallbackPage />}
+              />
+              <Route>
+                <Layout isMicroApp={true} />
+              </Route>
+            </Switch>
+          </BrowserRouter>
         </IntlGlobalProvider>
       </IntlProvider>
     </OidcProvider>

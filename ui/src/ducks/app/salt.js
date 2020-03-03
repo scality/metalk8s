@@ -124,7 +124,7 @@ export function setJobStatusAction(jid, status) {
 }
 
 // Selectors
-export const allJobsSelector = state => state.app.salt.jobs;
+export const allJobsSelector = state => state?.app?.salt?.jobs ?? [];
 
 // Sagas
 export function* initialize(payload) {

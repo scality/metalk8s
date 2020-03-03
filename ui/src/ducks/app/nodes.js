@@ -25,6 +25,7 @@ import {
   API_STATUS_NOT_READY,
   API_STATUS_UNKNOWN,
 } from '../../constants.js';
+import { appNamespaceSelector, nameSpaceAction } from '../namespaceHelper';
 
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
@@ -200,15 +201,17 @@ export const stopRefreshNodesAction = () => {
 };
 
 // Selectors
-export const clusterVersionSelector = state => state.app.nodes.clusterVersion;
-export const nodesRefreshingSelector = state => state.app.nodes.isRefreshing;
+export const clusterVersionSelector = state =>
+  appNamespaceSelector(state).app.nodes.clusterVersion;
+export const nodesRefreshingSelector = state =>
+  appNamespaceSelector(state).app.nodes.isRefreshing;
 
 // Sagas
 export function* fetchClusterVersion() {
   const result = yield call(ApiK8s.getKubeSystemNamespace);
   if (!result.error) {
     yield put(
-      updateNodesAction({
+      nameSpaceAction(updateNodesAction, {
         clusterVersion: result.body.items.length
           ? result.body.items[0].metadata.annotations[
               CLUSTER_VERSION_ANNOTATION
@@ -220,7 +223,7 @@ export function* fetchClusterVersion() {
 }
 
 export function* fetchNodes() {
-  yield put(updateNodesAction({ isLoading: true }));
+  yield put(nameSpaceAction(updateNodesAction, { isLoading: true }));
 
   const allJobs = yield select(allJobsSelector);
   const deployingNodes = allJobs
@@ -230,7 +233,7 @@ export function* fetchNodes() {
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
     yield put(
-      updateNodesAction({
+      nameSpaceAction(updateNodesAction, {
         list: result.body.items.map(node => {
           const statusType =
             node.status.conditions &&
@@ -292,7 +295,7 @@ export function* fetchNodes() {
     );
   }
   yield delay(1000); // To make sure that the loader is visible for at least 1s
-  yield put(updateNodesAction({ isLoading: false }));
+  yield put(nameSpaceAction(updateNodesAction, { isLoading: false }));
   return result;
 }
 
@@ -333,7 +336,7 @@ export function* createNode({ payload }) {
     yield call(fetchNodes);
     yield call(history.push, '/nodes');
     yield put(
-      addNotificationSuccessAction({
+      nameSpaceAction(addNotificationSuccessAction, {
         title: intl.translate('node_creation'),
         message: intl.translate('node_creation_success', {
           name: payload.name,
@@ -346,7 +349,7 @@ export function* createNode({ payload }) {
       payload: result.error.body.message,
     });
     yield put(
-      addNotificationErrorAction({
+      nameSpaceAction(addNotificationErrorAction, {
         title: intl.translate('node_creation'),
         message: intl.translate('node_creation_failed', { name: payload.name }),
       }),
@@ -359,7 +362,7 @@ export function* deployNode({ payload }) {
   const result = yield call(ApiSalt.deployNode, payload.name, clusterVersion);
   if (result.error) {
     yield put(
-      addNotificationErrorAction({
+      nameSpaceAction(addNotificationErrorAction, {
         title: intl.translate('node_deployment'),
         message: result.error,
       }),
@@ -382,7 +385,7 @@ export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
   if (job?.type === 'deploy-node') {
     if (status.success) {
       yield put(
-        addNotificationSuccessAction({
+        nameSpaceAction(addNotificationSuccessAction, {
           title: intl.translate('node_deployment'),
           message: intl.translate('node_deployment_success', {
             name: job.node,
@@ -391,7 +394,7 @@ export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
       );
     } else {
       yield put(
-        addNotificationErrorAction({
+        nameSpaceAction(addNotificationErrorAction, {
           title: intl.translate('node_deployment'),
           message: intl.translate('node_deployment_failed', {
             name: job.node,
@@ -406,7 +409,7 @@ export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
 
 export function* refreshNodes() {
   yield put(
-    updateNodesAction({
+    nameSpaceAction(updateNodesAction, {
       isRefreshing: true,
     }),
   );
@@ -423,7 +426,7 @@ export function* refreshNodes() {
 
 export function* stopRefreshNodes() {
   yield put(
-    updateNodesAction({
+    nameSpaceAction(updateNodesAction, {
       isRefreshing: false,
     }),
   );

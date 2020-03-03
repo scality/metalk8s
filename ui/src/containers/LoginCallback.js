@@ -4,9 +4,14 @@ import { useHistory } from 'react-router';
 import { useSelector } from 'react-redux';
 import Loader from '../components/Loader';
 import { intl } from '../translations/IntlGlobalProvider';
+import { appNamespaceSelector } from '../ducks/namespaceHelper';
 
 const CallbackPage = () => {
-  const userManager = useSelector(state => state.config.userManager);
+  // const dispatch = useDispatch();
+  const userManager = useSelector(
+    state => appNamespaceSelector(state).config.userManager,
+  );
+
   const history = useHistory();
   return (
     <CallbackComponent

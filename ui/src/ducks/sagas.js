@@ -12,7 +12,7 @@ import { configSaga } from './config';
 export default function* rootSaga() {
   yield all([
     fork(authenticateSaga),
-    // fork(configSaga),
+    fork(configSaga),
     fork(layoutSaga),
     fork(monitoringSaga),
     fork(nodesSaga),

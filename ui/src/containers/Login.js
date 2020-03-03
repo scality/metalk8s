@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { authenticateAction } from '../ducks/login';
 import { injectIntl } from 'react-intl';
 import isEmpty from 'lodash.isempty';
+import { nameSpaceAction } from '../ducks/namespaceHelper';
 
 const LoginFormContainer = styled.div`
   height: 100vh;
@@ -116,10 +117,12 @@ const validationSchema = yup.object().shape({
 });
 
 const Login = props => {
-  const asyncErrors = useSelector(state => state.login.errors);
+  const asyncErrors = useSelector(
+    state => authenticateAction(state).login.errors,
+  );
   const dispatch = useDispatch();
-  const authenticate = values => dispatch(authenticateAction(values));
-
+  const authenticate = values =>
+    dispatch(nameSpaceAction(authenticateAction, values));
   return (
     <LoginFormContainer>
       <Formik

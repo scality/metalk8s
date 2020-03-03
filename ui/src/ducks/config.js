@@ -4,7 +4,6 @@ import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import { loadUser, createUserManager } from 'redux-oidc';
 import { USER_FOUND } from 'redux-oidc';
 import { WebStorageStateStore } from 'oidc-client';
-import { store } from '../index';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
@@ -12,6 +11,11 @@ import * as ApiPrometheus from '../services/prometheus/api';
 import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 
 import { authenticateSaltApi } from './login';
+import {
+  nameSpaceAction,
+  appNamespaceSelector,
+} from '../ducks/namespaceHelper';
+
 // Actions
 export const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
@@ -50,7 +54,6 @@ const defaultState = {
 };
 
 export default function reducer(state = defaultState, action = {}) {
-  console.log('config reducer', action);
   switch (action.type) {
     case SET_LANG:
       return { ...state, language: action.payload };
@@ -93,8 +96,8 @@ export function fetchThemeAction() {
   return { type: FETCH_THEME };
 }
 
-export function fetchConfigAction() {
-  return { type: FETCH_CONFIG };
+export function fetchConfigAction(store) {
+  return { type: FETCH_CONFIG, payload: store };
 }
 
 export function setApiConfigAction(conf) {
@@ -121,9 +124,9 @@ export function setUserLoadedAction(isLoaded) {
   return { type: SET_USER_LOADED, payload: isLoaded };
 }
 
-export function updateAPIConfigAction(payload) {
-  return { type: UPDATE_API_CONFIG, payload };
-}
+// export function updateAPIConfigAction(payload) {
+//   return { type: UPDATE_API_CONFIG, payload };
+// }
 
 export function logoutAction() {
   return { type: LOGOUT };
@@ -134,50 +137,62 @@ export function setThemesAction(themes) {
 }
 
 // Selectors
-export const languageSelector = state => state.config.language;
-export const apiConfigSelector = state => state.config.api;
+export const languageSelector = state =>
+  appNamespaceSelector(state).config.language;
+
+// export const apiConfigSelector = state =>
+//   appNamespaceSelector(state).config.api;
 
 // Sagas
 export function* fetchTheme() {
   const result = yield call(Api.fetchTheme);
   if (!result.error) {
-    // get the default theme from configMap
+    //   // get the default theme from configMap
     const defaultThemeMode = result.default;
     result.theme[defaultThemeMode].brand = mergeTheme(
       result.theme[defaultThemeMode],
       defaultTheme,
     );
-    yield put(setThemesAction(result.theme));
-    yield put(setThemeAction(result.theme[defaultThemeMode]));
+    yield put(nameSpaceAction(setThemesAction, result.theme));
+    yield put(nameSpaceAction(setThemeAction, result.theme[defaultThemeMode]));
   }
 }
 
-export function* fetchConfig() {
+export function* fetchConfig(action) {
+  const store = action.payload;
+  console.log('fetchConfig store', store);
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error && result.url_oidc_provider && result.url_redirect) {
-    yield call(fetchTheme);
-    yield put(setApiConfigAction(result));
+    //     yield call(fetchTheme);
+    yield put(nameSpaceAction(setApiConfigAction, result));
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
     yield put(
-      setUserManagerConfigAction({
+      nameSpaceAction(setUserManagerConfigAction, {
         authority: result.url_oidc_provider,
         redirect_uri: result.url_redirect,
       }),
     );
     const userManagerConfig = yield select(
-      state => state.config.userManagerConfig,
+      state => appNamespaceSelector(state).config.userManagerConfig,
     );
-    yield put(setUserManagerAction(createUserManager(userManagerConfig)));
-    const userManager = yield select(state => state.config.userManager);
+    yield put(
+      nameSpaceAction(
+        setUserManagerAction,
+        createUserManager(userManagerConfig),
+      ),
+    );
+    const userManager = yield select(
+      state => appNamespaceSelector(state).config.userManager,
+    );
     yield call(loadUser, store, userManager);
-    yield put(setUserLoadedAction(true));
+    yield put(nameSpaceAction(setUserLoadedAction, true));
   }
 }
 
 export function* updateApiServerConfig({ payload }) {
-  const api = yield select(state => state.config.api);
+  const api = yield select(state => appNamespaceSelector(state).config.api);
   if (api) {
     yield call(
       ApiK8s.updateApiServerConfig,
@@ -211,7 +226,9 @@ export function* updateLanguage(action) {
 }
 
 export function* logout() {
-  const userManager = yield select(state => state.config.userManager);
+  const userManager = yield select(
+    state => appNamespaceSelector(state).config.userManager,
+  );
   if (userManager) {
     userManager.removeUser(); // removes the user data from sessionStorage
   }

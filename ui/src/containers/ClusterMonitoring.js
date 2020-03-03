@@ -24,6 +24,7 @@ import { STATUS_CRITICAL, STATUS_SUCCESS } from '../constants';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { intl } from '../translations/IntlGlobalProvider';
+import { appNamespaceSelector } from '../ducks/namespaceHelper';
 const VOLUME_PROVISION_DOC_REFERENCE =
   'MetalK8s Quickstart Guide > Deployment of the Bootstrap node > Installation > Provision storage for Prometheus services';
 
@@ -104,10 +105,16 @@ const ControlPlaneStatusLabel = styled.span`
 
 const ClusterMonitoring = props => {
   const dispatch = useDispatch();
-  const alerts = useSelector(state => state.app.monitoring.alert);
-  const clusterStatus = useSelector(state => makeClusterStatus(state, props));
-  const cluster = useSelector(state => state.app.monitoring.cluster);
-  const config = useSelector(state => state.config);
+  const alerts = useSelector(
+    state => appNamespaceSelector(state).app.monitoring.alert,
+  );
+  const clusterStatus = useSelector(state =>
+    makeClusterStatus(appNamespaceSelector(state), props),
+  );
+  const cluster = useSelector(
+    state => appNamespaceSelector(state).app.monitoring.cluster,
+  );
+  const config = useSelector(state => appNamespaceSelector(state).config);
 
   useEffect(() => {
     dispatch(refreshAlertsAction());

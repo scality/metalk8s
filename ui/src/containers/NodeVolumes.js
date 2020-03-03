@@ -35,6 +35,10 @@ import {
   STATUS_READY,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
+import {
+  appNamespaceSelector,
+  nameSpaceAction,
+} from '../ducks/namespaceHelper';
 
 const VolumeTable = styled.div`
   flex-grow: 1;
@@ -108,8 +112,10 @@ const NodeVolumes = props => {
   );
   const history = useHistory();
 
-  const volumes = useSelector(state => state.app.volumes);
-  const persistentVolumes = useSelector(state => state.app.volumes.pVList);
+  const volumes = useSelector(state => appNamespaceSelector(state).app.volumes);
+  const persistentVolumes = useSelector(
+    state => appNamespaceSelector(state).app.volumes.pVList,
+  );
   const [searchedVolumeName, setSearchedVolumeName] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');

@@ -5,7 +5,7 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    microAppMeta4: './src/microAppIndex.js',
+    microAppIndex: './src/microAppIndex.js',
   },
   optimization: {
     namedModules: true,

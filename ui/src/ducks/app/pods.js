@@ -11,7 +11,6 @@ const defaultState = {
 };
 
 export default function reducer(state = defaultState, action = {}) {
-  console.log('pod reducer', action);
   switch (action.type) {
     case SET_PODS:
       return { ...state, list: action.payload };

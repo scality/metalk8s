@@ -36,6 +36,10 @@ import {
 import { STATUS_BOUND } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
+import {
+  appNamespaceSelector,
+  nameSpaceAction,
+} from '../ducks/namespaceHelper';
 
 const NodeInformationContainer = styled.div`
   display: flex;
@@ -79,19 +83,27 @@ const NodeInformation = props => {
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   useEffect(() => {
-    dispatch(fetchPodsAction());
-    dispatch(fetchVolumesAction());
-    dispatch(fetchPersistentVolumeAction());
+    dispatch(nameSpaceAction(fetchPodsAction));
+    dispatch(nameSpaceAction(fetchVolumesAction));
+    dispatch(nameSpaceAction(fetchPersistentVolumeAction));
   }, [dispatch]);
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setsortDirection] = useState('ASC');
 
-  const node = useSelector(state => makeGetNodeFromUrl(state, props));
-  const theme = useSelector(state => state.config.theme);
-  const pods = useSelector(state => makeGetPodsFromUrl(state, props));
-  const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
-  const pVList = useSelector(state => state.app.volumes.pVList);
+  const node = useSelector(state =>
+    makeGetNodeFromUrl(appNamespaceSelector(state), props),
+  );
+  const theme = useSelector(state => appNamespaceSelector(state).config.theme);
+  const pods = useSelector(state =>
+    makeGetPodsFromUrl(appNamespaceSelector(state), props),
+  );
+  const volumes = useSelector(state =>
+    makeGetVolumesFromUrl(appNamespaceSelector(state), props),
+  );
+  const pVList = useSelector(
+    state => appNamespaceSelector(state).app.volumes.pVList,
+  );
 
   const columns = [
     {

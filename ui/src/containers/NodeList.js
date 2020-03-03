@@ -19,7 +19,7 @@ import {
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
 import { intl } from '../translations/IntlGlobalProvider';
-
+import { appNamespaceSelector } from '../ducks/namespaceHelper';
 const PageContainer = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -65,8 +65,8 @@ const TableContainer = styled.div`
 `;
 
 const NodeList = () => {
-  const nodes = useSelector(state => state.app.nodes);
-  const theme = useSelector(state => state.config.theme);
+  const nodes = useSelector(state => appNamespaceSelector(state).app.nodes);
+  const theme = useSelector(state => appNamespaceSelector(state).config.theme);
   const dispatch = useDispatch();
   const deployNode = payload => dispatch(deployNodeAction(payload));
 

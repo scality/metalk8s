@@ -11,11 +11,9 @@ import * as serviceWorker from './serviceWorker';
 import history from './history';
 import MicroApp from './containers/MicroApp';
 
-console.log('hello ?');
 const sagaMiddleware = createSagaMiddleware();
 
 const configureStore = () => {
-  console.log('configureStore ?');
   const initialState = {};
   const initialReducer = (state = initialState) => state;
 
@@ -47,13 +45,11 @@ const configureStore = () => {
   return store;
 };
 
-const store = configureStore();
+export const store = configureStore();
 
-console.log('hehe');
 ReactDOM.render(
   <Provider store={store}>
     <Router history={history}>
-      <div>HAHHAAA</div>
       <MicroApp store={store} namespace="metalk8s" />
     </Router>
   </Provider>,

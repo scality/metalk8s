@@ -13,9 +13,9 @@ export function initialize(apiUrl) {
 export function authenticate(user) {
   return saltApiClient.post('/login', {
     eauth: 'kubernetes_rbac',
-    username: user.profile.email,
-    token: user.id_token,
-    token_type: user.token_type,
+    username: user?.profile?.email,
+    token: user?.id_token,
+    token_type: user?.token_type,
   });
 }
 

@@ -2,6 +2,7 @@ import { put, takeEvery, call, all, delay, select } from 'redux-saga/effects';
 import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
 import { REFRESH_TIMEOUT } from '../../constants';
 import * as ApiK8s from '../../services/k8s/api';
+import { nameSpaceAction, appNamespaceSelector } from '../namespaceHelper';
 
 const REFRESH_CLUSTER_STATUS = 'REFRESH_CLUSTER_STATUS';
 const STOP_REFRESH_CLUSTER_STATUS = 'STOP_REFRESH_CLUSTER_STATUS';
@@ -84,9 +85,9 @@ export const updateAlertsAction = payload => {
 
 // Selectors
 export const isAlertRefreshing = state =>
-  state.app.monitoring.alert.isRefreshing;
+  appNamespaceSelector(state).app.monitoring.alert.isRefreshing;
 export const isClusterRefreshing = state =>
-  state.app.monitoring.cluster.isRefreshing;
+  appNamespaceSelector(state).app.monitoring.cluster.isRefreshing;
 
 // Sagas
 function getClusterQueryStatus(result) {
@@ -127,7 +128,7 @@ export function* handlePrometheusError(clusterHealth, result) {
 }
 
 export function* fetchClusterStatus() {
-  yield put(updateClusterStatusAction({ isLoading: true }));
+  yield put(nameSpaceAction(updateClusterStatusAction, { isLoading: true }));
   const clusterHealth = {
     apiServerStatus: 0,
     kubeSchedulerStatus: 0,
@@ -158,14 +159,14 @@ export function* fetchClusterStatus() {
   } else {
     yield call(handlePrometheusError, clusterHealth, errorResult);
   }
-  yield put(updateClusterStatusAction(clusterHealth));
+  yield put(nameSpaceAction(updateClusterStatusAction, clusterHealth));
   yield delay(1000); // To make sure that the loader is visible for at least 1s
-  yield put(updateClusterStatusAction({ isLoading: false }));
+  yield put(nameSpaceAction(updateClusterStatusAction, { isLoading: false }));
   return errorResult;
 }
 
 export function* fetchAlerts() {
-  yield put(updateAlertsAction({ isLoading: true }));
+  yield put(nameSpaceAction(updateAlertsAction, { isLoading: true }));
   const resultAlerts = yield call(getAlerts);
   let alert = {
     list: [],
@@ -178,14 +179,14 @@ export function* fetchAlerts() {
   } else {
     yield call(handlePrometheusError, alert, resultAlerts);
   }
-  yield put(updateAlertsAction(alert));
+  yield put(nameSpaceAction(updateAlertsAction, alert));
   yield delay(1000); // To make sure that the loader is visible for at least 1s
-  yield put(updateAlertsAction({ isLoading: false }));
+  yield put(nameSpaceAction(updateAlertsAction, { isLoading: false }));
   return resultAlerts;
 }
 
 export function* refreshAlerts() {
-  yield put(updateAlertsAction({ isRefreshing: true }));
+  yield put(nameSpaceAction(updateAlertsAction, { isRefreshing: true }));
   const resultAlerts = yield call(fetchAlerts);
   if (!resultAlerts.error) {
     yield delay(REFRESH_TIMEOUT);
@@ -197,11 +198,11 @@ export function* refreshAlerts() {
 }
 
 export function* stopRefreshAlerts() {
-  yield put(updateAlertsAction({ isRefreshing: false }));
+  yield put(nameSpaceAction(updateAlertsAction, { isRefreshing: false }));
 }
 
 export function* refreshClusterStatus() {
-  yield put(updateClusterStatusAction({ isRefreshing: true }));
+  yield put(nameSpaceAction(updateClusterStatusAction, { isRefreshing: true }));
   const errorResult = yield call(fetchClusterStatus);
   if (!errorResult) {
     yield delay(REFRESH_TIMEOUT);
@@ -213,7 +214,9 @@ export function* refreshClusterStatus() {
 }
 
 export function* stopRefreshClusterStatus() {
-  yield put(updateClusterStatusAction({ isRefreshing: false }));
+  yield put(
+    nameSpaceAction(updateClusterStatusAction, { isRefreshing: false }),
+  );
 }
 
 export function* monitoringSaga() {

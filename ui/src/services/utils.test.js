@@ -5,7 +5,7 @@ const testcases = [
   { storageCapacity: '1Gi' },
   { storageCapacity: '100Mi' },
   { storageCapacity: '10Gi' },
-  { storageCapacity: '1Mi' }
+  { storageCapacity: '1Mi' },
 ];
 
 const testcases2 = [
@@ -15,7 +15,7 @@ const testcases2 = [
   { storageCapacity: '1Gi' },
   { storageCapacity: '1Mi' },
   { storageCapacity: '11111111111' },
-  { storageCapacity: '10Gi' }
+  { storageCapacity: '10Gi' },
 ];
 
 it('should sort correctly the array', () => {
@@ -25,7 +25,7 @@ it('should sort correctly the array', () => {
     { storageCapacity: '1Mi' },
     { storageCapacity: '100Mi' },
     { storageCapacity: '1Gi' },
-    { storageCapacity: '10Gi' }
+    { storageCapacity: '10Gi' },
   ]);
 
   const result2 = sortCapacity(testcases2, 'storageCapacity');
@@ -36,7 +36,7 @@ it('should sort correctly the array', () => {
     { storageCapacity: '10Gi' },
     { storageCapacity: '11111111111' },
     { storageCapacity: '42949670k' },
-    { storageCapacity: '250Gi' }
+    { storageCapacity: '250Gi' },
   ]);
 });
 
@@ -52,7 +52,7 @@ it('should not break when the user put the wrong sortBy', () => {
     { storageCapacity: '1Gi' },
     { storageCapacity: '100Mi' },
     { storageCapacity: '10Gi' },
-    { storageCapacity: '1Mi' }
+    { storageCapacity: '1Mi' },
   ]);
 });
 
@@ -63,7 +63,7 @@ it('should keep the original sequence when the user put the wrong sortDirection'
     { storageCapacity: '1Gi' },
     { storageCapacity: '100Mi' },
     { storageCapacity: '10Gi' },
-    { storageCapacity: '1Mi' }
+    { storageCapacity: '1Mi' },
   ]);
 });
 
@@ -73,7 +73,7 @@ it('should not break when a item is null', () => {
     { storageCapacity: '1Gi' },
     { storageCapacity: '100Mi' },
     null,
-    { storageCapacity: '1Mi' }
+    { storageCapacity: '1Mi' },
   ];
 
   const result = sortCapacity(testcases);
@@ -82,7 +82,7 @@ it('should not break when a item is null', () => {
     { storageCapacity: '1Mi' },
     { storageCapacity: '100Mi' },
     { storageCapacity: '1Gi' },
-    null
+    null,
   ]);
 });
 
@@ -91,7 +91,7 @@ it('test the sort with a custom sortBy', () => {
     { yanjin: '1Ki' },
     { yanjin: '1Gi' },
     { yanjin: '100Mi' },
-    { yanjin: '1Mi' }
+    { yanjin: '1Mi' },
   ];
 
   const result = sortCapacity(testcases, 'yanjin');
@@ -99,6 +99,6 @@ it('test the sort with a custom sortBy', () => {
     { yanjin: '1Ki' },
     { yanjin: '1Mi' },
     { yanjin: '100Mi' },
-    { yanjin: '1Gi' }
+    { yanjin: '1Gi' },
   ]);
 });

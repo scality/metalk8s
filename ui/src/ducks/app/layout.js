@@ -1,4 +1,5 @@
 import { put, takeEvery, select } from 'redux-saga/effects';
+import { appNamespaceSelector } from '../namespaceHelper';
 
 // Actions
 const TOGGLE_SIDEBAR = 'TOGGLE_SIDEBAR';
@@ -48,13 +49,21 @@ export const isSidebarExpandedSelector = state =>
 // Sagas
 export function* toggleSideBar() {
   yield put(setToggleSidebarAction());
-  const expanded = yield select(isSidebarExpandedSelector);
+  const expanded = yield select(state =>
+    isSidebarExpandedSelector(appNamespaceSelector(state)),
+  );
+
+  select(state => {
+    isSidebarExpandedSelector(state);
+  });
   localStorage.setItem(SIDEBAR_EXPENDED, expanded);
 }
 
 export function* initToggleSideBar() {
   if (localStorage.getItem(SIDEBAR_EXPENDED)) {
-    const expanded = yield select(isSidebarExpandedSelector);
+    const expanded = yield select(state =>
+      isSidebarExpandedSelector(appNamespaceSelector(state)),
+    );
     if (expanded !== JSON.parse(localStorage.getItem(SIDEBAR_EXPENDED))) {
       yield put(setToggleSidebarAction());
     }
