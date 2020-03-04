@@ -32,6 +32,7 @@ import { appNamespaceSelector } from '../ducks/namespaceHelper';
 
 const Layout = props => {
   const user = useSelector(state => appNamespaceSelector(state).oidc.user);
+  console.log('user metalk8s', user);
   const sidebar = useSelector(
     state => appNamespaceSelector(state).app.layout.sidebar,
   );

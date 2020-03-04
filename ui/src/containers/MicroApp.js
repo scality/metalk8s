@@ -36,10 +36,11 @@ addLocaleData([...locale_en, ...locale_fr]);
 
 const MicroApp = props => {
   const { store, namespace } = props;
-  // set namespace `localMetalk8s`
+  // inject our reducer for metalk8s
+
   setActionCreatorNamespace(namespace);
   setSelectorNamespace(namespace);
-  // inject our reducer for metalk8s
+
   useEffect(() => {
     store.injectReducer(
       `${namespace}`,
@@ -50,10 +51,12 @@ const MicroApp = props => {
   }, []);
 
   const language = 'EN';
-  const { api, theme, userManager } = useSelector(
-    state => appNamespaceSelector(state)?.config ?? {},
-  );
+  const config = useSelector(state => appNamespaceSelector(state).config || {});
+
+  const { api, theme, userManager } = config;
+
   const appState = useSelector(state => appNamespaceSelector(state).app);
+  // Maybe useful later but now it isn't.
   const isUserLoaded = useSelector(
     state => appNamespaceSelector(state).config?.isUserLoaded,
   );
@@ -64,27 +67,31 @@ const MicroApp = props => {
     dispatch(nameSpaceAction(fetchConfigAction, store));
     dispatch(nameSpaceAction(setInitialLanguageAction));
     dispatch(nameSpaceAction(initToggleSideBarAction));
-  }, []);
+  }, [dispatch, store]);
 
-  return api && theme && userManager && isUserLoaded && appState ? (
-    <OidcProvider store={store} userManager={userManager}>
-      <IntlProvider locale={language} messages={messages[language]}>
-        <IntlGlobalProvider>
-          <BrowserRouter>
-            <Switch>
-              <Route
+  console.log('metalk8s micro app');
+  console.log('api', api);
+  console.log('theme', theme);
+  console.log('userManager', userManager);
+  console.log('appState', appState);
+
+  return api && userManager && appState ? (
+    <IntlProvider locale={language} messages={messages[language]}>
+      <IntlGlobalProvider>
+        <BrowserRouter>
+          <Switch>
+            {/* <Route
                 exact
                 path="/oauth2/callback"
                 component={() => <CallbackPage />}
-              />
-              <Route>
-                <Layout isMicroApp={true} />
-              </Route>
-            </Switch>
-          </BrowserRouter>
-        </IntlGlobalProvider>
-      </IntlProvider>
-    </OidcProvider>
+              /> */}
+            <Route>
+              <Layout isMicroApp={true} />
+            </Route>
+          </Switch>
+        </BrowserRouter>
+      </IntlGlobalProvider>
+    </IntlProvider>
   ) : (
     <Loader />
   );

@@ -7,7 +7,6 @@ import { intl } from '../translations/IntlGlobalProvider';
 import { appNamespaceSelector } from '../ducks/namespaceHelper';
 
 const CallbackPage = () => {
-  // const dispatch = useDispatch();
   const userManager = useSelector(
     state => appNamespaceSelector(state).config.userManager,
   );

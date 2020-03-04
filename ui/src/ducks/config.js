@@ -160,11 +160,10 @@ export function* fetchTheme() {
 
 export function* fetchConfig(action) {
   const store = action.payload;
-  console.log('fetchConfig store', store);
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error && result.url_oidc_provider && result.url_redirect) {
-    //     yield call(fetchTheme);
+    //yield call(fetchTheme);
     yield put(nameSpaceAction(setApiConfigAction, result));
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
@@ -174,6 +173,8 @@ export function* fetchConfig(action) {
         redirect_uri: result.url_redirect,
       }),
     );
+
+    /// do the same thing in shell from here
     const userManagerConfig = yield select(
       state => appNamespaceSelector(state).config.userManagerConfig,
     );
