@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"example-operator/pkg/apis/examplesolution/v1alpha1"
+	"example-solution-operator/pkg/apis/examplesolution/v1alpha1"
 )
 
 func init() {

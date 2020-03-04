@@ -35,7 +35,7 @@ ISO ?= $(BUILD_ROOT)/$(PRODUCT_LOWERNAME)-$(VERSION_FULL).iso
 # Source paths
 IMAGES_SRC ?= $(PWD)/images
 UI_SRC ?= $(PWD)/ui
-OPERATOR_SRC ?= $(PWD)/example-operator
+OPERATOR_SRC ?= $(PWD)/operator
 
 # Binary paths and options
 DOCKER ?= docker
@@ -111,7 +111,7 @@ OPERATOR_IMG_DEPS := $(shell find $(OPERATOR_SRC) \
 	-type f -not -name ".*" -print \
 )
 OPERATOR_BUILD_ARGS ?= \
-	--go-build-args "-ldflags -X=example-operator/version.Version=$(VERSION_FULL)"
+	--go-build-args "-ldflags -X=operator/version.Version=$(VERSION_FULL)"
 
 $(OPERATOR_BUILD_TARGET): $(OPERATOR_IMG_DEPS)
 	@echo Building Operator image "$(OPERATOR_IMG_NAME):$(VERSION_FULL)"...

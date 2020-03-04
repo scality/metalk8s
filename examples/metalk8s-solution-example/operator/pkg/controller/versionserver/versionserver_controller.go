@@ -3,8 +3,8 @@ package versionserver
 import (
 	"context"
 
-	examplesolutionv1alpha1 "example-operator/pkg/apis/examplesolution/v1alpha1"
-	"example-operator/pkg/controller/util"
+	examplesolutionv1alpha1 "example-solution-operator/pkg/apis/examplesolution/v1alpha1"
+	"example-solution-operator/pkg/controller/util"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
