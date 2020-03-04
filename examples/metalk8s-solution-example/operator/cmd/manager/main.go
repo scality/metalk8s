@@ -11,9 +11,9 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 
-	"example-operator/pkg/apis"
-	"example-operator/pkg/controller"
-	"example-operator/version"
+	"example-solution-operator/pkg/apis"
+	"example-solution-operator/pkg/controller"
+	"example-solution-operator/version"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
@@ -43,7 +43,7 @@ func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
 	log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
-	log.Info(fmt.Sprintf("Version of example-operator: %v", version.Version))
+	log.Info(fmt.Sprintf("Version of example-solution-operator: %v", version.Version))
 }
 
 func main() {
@@ -54,8 +54,6 @@ func main() {
 	// Add flags registered by imported packages (e.g. glog and
 	// controller-runtime)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-
-	pflag.Parse()
 
 	// Use a zap logr.Logger implementation. If none of the zap
 	// flags are configured (or if the zap flag set is not being
@@ -84,7 +82,7 @@ func main() {
 
 	ctx := context.TODO()
 	// Become the leader before proceeding
-	err = leader.Become(ctx, "example-operator-lock")
+	err = leader.Become(ctx, "example-solution-operator-lock")
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)

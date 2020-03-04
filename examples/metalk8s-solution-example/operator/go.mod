@@ -1,4 +1,4 @@
-module example-operator
+module example-solution-operator
 
 require (
 	github.com/NYTimes/gziphandler v1.0.1 // indirect

@@ -1,7 +1,7 @@
 package util
 
 import (
-	"example-operator/version"
+	"example-solution-operator/version"
 	"fmt"
 	"os"
 
@@ -33,7 +33,7 @@ const (
 	ContainerHTTPPort = 8080
 
 	// DefaultOperatorName is the default name for this Operator
-	DefaultOperatorName = "example-operator"
+	DefaultOperatorName = "example-solution-operator"
 )
 
 // commonLabels returns a map of common labels to use in objects managed by
