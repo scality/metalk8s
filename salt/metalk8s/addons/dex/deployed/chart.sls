@@ -1,5 +1,7 @@
 #!jinja | metalk8s_kubernetes
+
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config') %}
 
 {% raw %}
 
@@ -18,7 +20,7 @@ metadata:
   namespace: metalk8s-auth
 stringData:
   config.yaml: |-
-    issuer: {% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc{% raw %}
+    issuer: "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc{%- raw %}"
     storage:
       config:
         inCluster: true
@@ -29,6 +31,8 @@ stringData:
       https: 0.0.0.0:5556
       tlsCert: /etc/dex/tls/https/server/tls.crt
       tlsKey: /etc/dex/tls/https/server/tls.key
+    connectors:
+      {% endraw -%}{{ dex.spec.connectors | tojson }}{%- raw %}
     oauth2:
       alwaysShowLoginScreen: true
       responseTypes:
@@ -48,21 +52,16 @@ stringData:
     - id: metalk8s-ui
       name: MetalK8s UI
       redirectURIs:
-      - '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback{%
-        raw %}'
+      - "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback{%- raw %}"
       secret: ybrMJpVMQxsiZw26MhJzCjA2ut
     - id: grafana-ui
       name: Grafana UI
       redirectURIs:
-      - '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth{%
-        raw %}'
+      - "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth{%- raw %}"
       secret: 4lqK98NcsWG5qBRHJUqYM1
-    enablePasswordDB: true
+    enablePasswordDB: {% endraw -%}{{ dex.spec.localuserstore.enabled }}{%- raw %}
     staticPasswords:
-    - email: admin@metalk8s.invalid
-      hash: $2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W
-      userID: 08a8684b-db88-4b73-90a9-3cd1661f5466
-      username: admin
+      {% endraw -%}{{ dex.spec.localuserstore.userlist | tojson }}{%- raw %}
     expiry:
       idTokens: 24h
       signingKeys: 6h
@@ -147,8 +146,7 @@ metadata:
   name: dex
   namespace: metalk8s-auth
 spec:
-  clusterIP: '{% endraw %}{{ salt.metalk8s_network.get_oidc_service_ip() }}{% raw
-    %}'
+  clusterIP: {% endraw -%}{{ salt.metalk8s_network.get_oidc_service_ip() }}{%- raw %}
   ports:
   - name: https
     port: 32000
@@ -174,7 +172,7 @@ metadata:
   name: dex
   namespace: metalk8s-auth
 spec:
-  replicas: 2
+  replicas: {% endraw -%}{{ dex.spec.deployment.replicas }}{%- raw %}
   selector:
     matchLabels:
       app.kubernetes.io/component: dex
@@ -188,7 +186,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 278f2b27e9441887e4070365aa3df2ccf668da0025ebf565605555c2b7b16042
+        checksum/config: ad6c30825bdc913fdb7dd6486fd137e443001efd3f183aa7ae13f013bc6f6c38
       labels:
         app.kubernetes.io/component: dex
         app.kubernetes.io/instance: dex
@@ -200,7 +198,7 @@ spec:
         - serve
         - /etc/dex/cfg/config.yaml
         env: []
-        image: '{% endraw %}{{ build_image_name("dex", False) }}{% raw %}:v2.19.0'
+        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.19.0
         imagePullPolicy: IfNotPresent
         name: main
         ports:
