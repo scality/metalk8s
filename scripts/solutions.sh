@@ -278,6 +278,9 @@ import_solution() {
     run "Importing Solutions" \
         salt_minion_exec state.sls metalk8s.solutions.available \
         saltenv="$SALTENV"
+    run "Configuring Metalk8s registry" \
+        salt_minion_exec state.sls metalk8s.repo.installed \
+        saltenv="$SALTENV"
 }
 
 unimport_solution() {
@@ -286,6 +289,9 @@ unimport_solution() {
     run "Updating Solutions configuration file" configure_archives True
     run "Unimporting Solutions" \
         salt_minion_exec state.sls metalk8s.solutions.available \
+        saltenv="$SALTENV"
+    run "Configuring Metalk8s registry" \
+        salt_minion_exec state.sls metalk8s.repo.installed \
         saltenv="$SALTENV"
 }
 

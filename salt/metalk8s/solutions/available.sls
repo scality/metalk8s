@@ -6,9 +6,6 @@
 
 {%- from "metalk8s/map.jinja" import repo with context %}
 
-include:
-  - metalk8s.repo.installed
-
 {%- macro extract_info(archive_path) %}
   {{ machine_name }},{{ display_name }},{{ mount_path }}
 {%- endmacro %}
@@ -74,8 +71,6 @@ Expose container images for Solution {{ display_name }}:
         registry_root: {{ mount_path }}/images
     - require:
       - file: Container images for Solution {{ display_name }} exist
-    - require_in:
-      - sls: metalk8s.repo.installed
 
   {%- endfor %} {# Configured solutions are all mounted and images exposed #}
 
@@ -95,8 +90,6 @@ Cannot remove archive for active Solution {{ display_name }}:
 Remove container images for Solution {{ display_name }}:
   file.absent:
     - name: {{ repo.config.directory }}/{{ info.id }}-registry-config.inc
-    - require_in:
-      - sls: metalk8s.repo.installed
 
 Unmount Solution {{ display_name }}:
   mount.unmounted:
