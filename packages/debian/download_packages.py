@@ -78,7 +78,9 @@ def fetch_binary(
     filename = pathlib.Path(package.filename).name
     destfile = destdir/filename
     print('Downloading package {}'.format(filename))
-    with urllib.request.urlopen(package.uri) as response:
+    pkg_uri = urllib.parse.urlparse(package.uri)
+    pkg_uri = pkg_uri._replace(path=urllib.parse.quote(pkg_uri.path))
+    with urllib.request.urlopen(urllib.parse.urlunparse(pkg_uri)) as response:
         destfile.write_bytes(response.read())
     # Check package size.
     if destfile.stat().st_size != package.size:
