@@ -10,14 +10,20 @@
   {{ machine_name }},{{ display_name }},{{ mount_path }}
 {%- endmacro %}
 
+{%- set available = pillar.metalk8s.solutions.available | d({}) %}
+{%- set configured = pillar.metalk8s.solutions.config.archives | d([]) %}
+
 {%- if '_errors' in pillar.metalk8s.solutions.config %}
 Cannot proceed with mounting of Solution archives:
   test.fail_without_changes:
     - comment: "Errors: {{ pillar.metalk8s.solutions.config._errors | join('; ') }}"
 
+{%- elif not available and not configured %}
+No Solution found in configuration:
+  test.succeed_without_changes
+
 {%- else %}
   {#- Mount configured #}
-  {%- set configured = pillar.metalk8s.solutions.config.archives %}
   {%- for archive_path in configured %}
     {%- set solution = salt['metalk8s.archive_info_from_iso'](archive_path) %}
     {%- set machine_name = solution.name | replace(' ', '-') | lower %}
@@ -76,7 +82,6 @@ Expose container images for Solution {{ display_name }}:
 
   {#- Unmount all Solution ISOs mounted in /srv/scality not referenced in
       the configuration file #}
-  {%- set available = pillar.metalk8s.solutions.available %}
   {%- for machine_name, versions in available.items() %}
     {%- for info in versions %}
       {%- if info.archive not in configured %}
@@ -94,7 +99,6 @@ Remove container images for Solution {{ display_name }}:
 Unmount Solution {{ display_name }}:
   mount.unmounted:
     - name: {{ info.mountpoint }}
-    - device: {{ info.archive }}
     - persist: True
     - require:
       - file: Remove container images for Solution {{ display_name }}
