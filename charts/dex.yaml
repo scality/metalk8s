@@ -1,4 +1,4 @@
-image: '{% endraw %}{{ build_image_name(\"dex\", False) }}{% raw %}'
+image: '__image__(dex)'
 
 nodeSelector:
   node-role.kubernetes.io/infra: ''
@@ -11,7 +11,7 @@ tolerations:
     operator: "Exists"
     effect: "NoSchedule"
 
-replicas: 2
+replicas: '__var__(dex.spec.deployment.replicas)'
 
 # grpc support
 grpc: false
@@ -20,7 +20,7 @@ grpc: false
 https: true
 
 service:
-  clusterIP: '{% endraw %}{{ salt.metalk8s_network.get_oidc_service_ip() }}{% raw %}'
+  clusterIP: '__var__(salt.metalk8s_network.get_oidc_service_ip())'
 
 ingress:
   enabled: true
@@ -47,7 +47,7 @@ certs:
     create: false
 
 config:
-  issuer: '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc{% raw %}'
+  issuer: '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc)'
   web:
     tlsCert: /etc/dex/tls/https/server/tls.crt
     tlsKey: /etc/dex/tls/https/server/tls.key
@@ -55,7 +55,7 @@ config:
     theme: "scality"
     issuer: "MetalK8s"
 
-  connectors: {}
+  connectors: '__var_tojson__(dex.spec.connectors)'
 
   oauth2:
     alwaysShowLoginScreen: true
@@ -77,18 +77,15 @@ config:
     - grafana-ui
   - id: metalk8s-ui
     redirectURIs:
-    - '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback{% raw %}'
+    - '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback)'
     name: 'MetalK8s UI'
     secret: "ybrMJpVMQxsiZw26MhJzCjA2ut"
   - id: grafana-ui
     name: 'Grafana UI'
     redirectURIs:
-    - '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth{% raw %}'
+    - '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth)'
     secret: "4lqK98NcsWG5qBRHJUqYM1"
 
-  staticPasswords:
-    - email: "admin@metalk8s.invalid"
-      # bcrypt hash of the string "password"
-      hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
-      username: "admin"
-      userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+  enablePasswordDB: '__var__(dex.spec.localuserstore.enabled)'
+
+  staticPasswords: '__var_tojson__(dex.spec.localuserstore.userlist)'

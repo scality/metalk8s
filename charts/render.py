@@ -129,9 +129,23 @@ def keep_doc(doc):
 def replace_magic_strings(rendered_yaml):
     # Handle __var__
     result = re.sub(
-        r'__var__\((?P<varname>[\w\-_]+(?:\.[\w\-_]+)*)\)',
+        r'__var__\((?P<varname>[\w\-_]+(?:\.[\w\-_()]+)*)\)',
         r'{% endraw -%}{{ \g<varname> }}{%- raw %}',
         rendered_yaml,
+    )
+
+    # Handle __var_tojson__
+    result = re.sub(
+        r'__var_tojson__\((?P<varname>[\w\-_]+(?:\.[\w\-_()|]+)*)\)',
+        r'  {% endraw -%}{{ \g<varname> | tojson }}{%- raw %}',
+        result,
+    )
+
+    # Handle __url__
+    result = re.sub(
+        r'__url__\((?P<varname>.*)\)',
+        r'"{% endraw -%}\g<varname>{%- raw %}"',
+        result,
     )
 
     # Handle __image__
