@@ -16,7 +16,9 @@ Ensure salt-minion running:
     - enable: True
     - require:
       - module: Wait until salt-minion restarted
-  module.run:
-    - test.ping: []
+  test.configurable_test_state:
+    - changes: False
+    - result: __slot__:salt:test.ping()
+    - comment: Ran 'test.ping'
     - require:
       - service: Ensure salt-minion running
