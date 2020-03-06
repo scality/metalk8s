@@ -77,7 +77,7 @@ config:
     - grafana-ui
   - id: metalk8s-ui
     redirectURIs:
-    - '{% endraw %}https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback{% raw %}'
+    - '{% endraw %}http://localhost:3000/oauth2/callback{% raw %}'
     name: 'MetalK8s UI'
     secret: "ybrMJpVMQxsiZw26MhJzCjA2ut"
   - id: grafana-ui

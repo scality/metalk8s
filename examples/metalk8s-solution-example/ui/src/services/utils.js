@@ -3,6 +3,7 @@ import { sortBy as sortByArray } from 'lodash';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import semver from 'semver';
+import { nameSpaceAction } from '../ducks/namespaceHelper';
 
 export const sortSelector = createSelector(
   (list, sortBy, sortDirection) => {
@@ -25,9 +26,9 @@ export const sortSelector = createSelector(
 export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(refreshAction());
+    dispatch(nameSpaceAction(refreshAction));
     return () => {
-      dispatch(stopRefreshAction());
+      dispatch(nameSpaceAction(stopRefreshAction));
     };
   }, [dispatch, refreshAction, stopRefreshAction]);
 };

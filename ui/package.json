@@ -88,9 +88,7 @@
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start:standalone": "NODE_ENV=development webpack-dev-server --config ./config/webpack.config.micro.dev.js --port 3001 --env=development",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test --env=jsdom",
-    "test:nowatch": "CI=true react-app-rewired test --env=jsdom --reporters=default --reporters=jest-junit",
+    "build": "webpack --config ./config/webpack.config.micro.prod.js -p",
     "test:e2e": "cypress run --spec 'cypress/integration/**/*.feature'",
     "flow": "flow check"
   },

@@ -1,7 +1,6 @@
 module github.com/scality/metalk8s/storage-operator
 
 require (
-	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/go-logr/logr v0.1.0
 	github.com/operator-framework/operator-sdk v0.9.1-0.20190712203509-e1d904fa80a4
 	github.com/pkg/errors v0.8.1

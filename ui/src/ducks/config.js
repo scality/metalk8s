@@ -196,7 +196,6 @@ export function* fetchConfig(action) {
 export function* updateApiServerConfig({ payload }) {
   const api = yield select(state => appNamespaceSelector(state).config.api);
   if (api) {
-    console.log('no error in updateApiServerConfig');
     yield call(
       ApiK8s.updateApiServerConfig,
       api.url,
