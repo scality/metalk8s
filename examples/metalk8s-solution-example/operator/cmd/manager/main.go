@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"example-solution-operator/pkg/apis"
+	opConfig "example-solution-operator/pkg/config"
 	"example-solution-operator/pkg/controller"
 	"example-solution-operator/version"
 
@@ -55,6 +56,17 @@ func main() {
 	// controller-runtime)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
+	var operatorConfigFile string
+	pflag.StringVarP(
+		&operatorConfigFile,
+		"config",
+		"c",
+		"",
+		"Operator configuration file",
+	)
+
+	pflag.Parse()
+
 	// Use a zap logr.Logger implementation. If none of the zap
 	// flags are configured (or if the zap flag set is not being
 	// used), this defaults to a production zap logger.
@@ -66,6 +78,15 @@ func main() {
 	logf.SetLogger(zap.Logger())
 
 	printVersion()
+
+	if operatorConfigFile != "" {
+		operatorConfig, err := opConfig.LoadConfigurationFromFile(operatorConfigFile)
+		if err != nil {
+			log.Error(err, "")
+			os.Exit(1)
+		}
+		log.Info(fmt.Sprintf("Operator configuration loaded: %+v\n", operatorConfig))
+	}
 
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
