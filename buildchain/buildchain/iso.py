@@ -64,7 +64,7 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
         files=(
             Path('common.sh'),
             Path('iso-manager.sh'),
-            Path('solution-manager.sh'),
+            Path('solutions.sh'),
             helper.TemplateFile(
                 task_name='downgrade.sh',
                 source=constants.ROOT/'scripts'/'downgrade.sh.in',

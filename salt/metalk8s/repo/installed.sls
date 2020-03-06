@@ -4,7 +4,7 @@
 {%- set repositories_version = '1.0.0' %}
 
 {%- set archives = salt.metalk8s.get_archives() %}
-{%- set solutions = pillar.metalk8s.get('solutions', {}).get('deployed', {}) %}
+{%- set solutions = pillar.metalk8s.get('solutions', {}).get('available', {}) %}
 
 {%- set docker_repository = 'docker.io/library' %}
 {%- set image_name = 'nginx' %}
@@ -34,9 +34,9 @@ Install repositories manifest:
       - {{ salt.file.join(repo.config.directory, repo.config.common_registry) }}
       - {{ salt.file.join(repo.config.directory, '99-' ~ saltenv ~ '-registry.inc') }}
     {%- for name, versions in solutions.items() | sort(attribute='0') %}
-      {%- for version_info in versions | sort(attribute='version') %}
+      {%- for info in versions | sort(attribute='version') %}
       - {{ salt.file.join(repo.config.directory,
-                          name ~ '-' ~ version_info.version ~ '-registry-config.inc') }}
+                          info.id ~ '-registry-config.inc') }}
       {%- endfor %}
     {%- endfor %}
     - config_files_opt:
