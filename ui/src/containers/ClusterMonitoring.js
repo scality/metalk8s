@@ -24,7 +24,10 @@ import { STATUS_CRITICAL, STATUS_SUCCESS } from '../constants';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { intl } from '../translations/IntlGlobalProvider';
-import { appNamespaceSelector } from '../ducks/namespaceHelper';
+import {
+  appNamespaceSelector,
+  nameSpaceAction,
+} from '../ducks/namespaceHelper';
 const VOLUME_PROVISION_DOC_REFERENCE =
   'MetalK8s Quickstart Guide > Deployment of the Bootstrap node > Installation > Provision storage for Prometheus services';
 
@@ -43,7 +46,6 @@ const PageContainer = styled.div`
 const TableContainer = styled.div`
   height: 100%;
   flex-grow: 1;
-
   .sc-table-column-cell-container-severity {
     justify-content: center;
   }
@@ -117,13 +119,13 @@ const ClusterMonitoring = props => {
   const config = useSelector(state => appNamespaceSelector(state).config);
 
   useEffect(() => {
-    dispatch(refreshAlertsAction());
-    return () => dispatch(stopRefreshAlertsAction());
+    dispatch(nameSpaceAction(refreshAlertsAction));
+    return () => dispatch(nameSpaceAction(stopRefreshAlertsAction));
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(refreshClusterStatusAction());
-    return () => dispatch(stopRefreshClusterStatusAction());
+    dispatch(nameSpaceAction(refreshClusterStatusAction));
+    return () => dispatch(nameSpaceAction(stopRefreshClusterStatusAction));
   }, [dispatch]);
 
   const [sortBy, setSortBy] = useState('name');

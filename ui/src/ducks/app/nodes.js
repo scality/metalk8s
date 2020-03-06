@@ -224,14 +224,14 @@ export function* fetchClusterVersion() {
 
 export function* fetchNodes() {
   yield put(nameSpaceAction(updateNodesAction, { isLoading: true }));
-
   const allJobs = yield select(allJobsSelector);
   const deployingNodes = allJobs
     .filter(job => job.type === 'deploy-node' && !job.completed)
     .map(job => job.node);
 
-  const result = yield call(ApiK8s.getNodes);
+  const result = yield call(ApiK8s.getNodes); // there is error in getNodes
   if (!result.error) {
+    console.log('no error fetchNodes');
     yield put(
       nameSpaceAction(updateNodesAction, {
         list: result.body.items.map(node => {
@@ -358,7 +358,9 @@ export function* createNode({ payload }) {
 }
 
 export function* deployNode({ payload }) {
-  const clusterVersion = yield select(state => state.app.nodes.clusterVersion);
+  const clusterVersion = yield select(
+    state => appNamespaceSelector(state).app.nodes.clusterVersion,
+  );
   const result = yield call(ApiSalt.deployNode, payload.name, clusterVersion);
   if (result.error) {
     yield put(
@@ -413,8 +415,8 @@ export function* refreshNodes() {
       isRefreshing: true,
     }),
   );
-
   const result = yield call(fetchNodes);
+
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(nodesRefreshingSelector);

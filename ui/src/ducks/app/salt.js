@@ -19,7 +19,7 @@ import {
   removeJobFromLocalStorage,
   markJobCompleteInLocalStorage,
 } from '../../services/salt/utils';
-
+import { appNamespaceSelector } from '../namespaceHelper';
 // Actions
 export const ADD_JOB = 'ADD_JOB';
 export const REMOVE_JOB = 'REMOVE_JOB';
@@ -124,7 +124,8 @@ export function setJobStatusAction(jid, status) {
 }
 
 // Selectors
-export const allJobsSelector = state => state?.app?.salt?.jobs ?? [];
+export const allJobsSelector = state =>
+  appNamespaceSelector(state)?.app?.salt?.jobs ?? [];
 
 // Sagas
 export function* initialize(payload) {

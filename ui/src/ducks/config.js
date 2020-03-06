@@ -124,9 +124,10 @@ export function setUserLoadedAction(isLoaded) {
   return { type: SET_USER_LOADED, payload: isLoaded };
 }
 
-// export function updateAPIConfigAction(payload) {
-//   return { type: UPDATE_API_CONFIG, payload };
-// }
+export function updateAPIConfigAction(payload) {
+  // uselessAction
+  return { type: UPDATE_API_CONFIG, payload };
+}
 
 export function logoutAction() {
   return { type: LOGOUT };
@@ -140,8 +141,8 @@ export function setThemesAction(themes) {
 export const languageSelector = state =>
   appNamespaceSelector(state).config.language;
 
-// export const apiConfigSelector = state =>
-//   appNamespaceSelector(state).config.api;
+export const apiConfigSelector = state =>
+  appNamespaceSelector(state).config.api;
 
 // Sagas
 export function* fetchTheme() {
@@ -163,7 +164,7 @@ export function* fetchConfig(action) {
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error && result.url_oidc_provider && result.url_redirect) {
-    //yield call(fetchTheme);
+    yield call(fetchTheme);
     yield put(nameSpaceAction(setApiConfigAction, result));
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
@@ -195,6 +196,7 @@ export function* fetchConfig(action) {
 export function* updateApiServerConfig({ payload }) {
   const api = yield select(state => appNamespaceSelector(state).config.api);
   if (api) {
+    console.log('no error in updateApiServerConfig');
     yield call(
       ApiK8s.updateApiServerConfig,
       api.url,

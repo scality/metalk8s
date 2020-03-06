@@ -13,6 +13,7 @@ const APP_K8S_COMPONENT_LABEL = 'app.kubernetes.io/component';
 
 export const updateApiServerConfig = (url, id_token, token_type) => {
   config = new Config(url, id_token, token_type);
+  console.log('config', config);
   coreV1 = config.makeApiClient(CoreV1Api);
   customObjects = config.makeApiClient(CustomObjectsApi);
   storage = config.makeApiClient(StorageV1Api);
@@ -20,8 +21,10 @@ export const updateApiServerConfig = (url, id_token, token_type) => {
 
 export async function getNodes() {
   try {
+    console.log('coreV1', coreV1);
     return await coreV1.listNode();
   } catch (error) {
+    console.log('error in getNodes', error);
     return { error };
   }
 }

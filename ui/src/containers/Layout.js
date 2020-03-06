@@ -32,7 +32,6 @@ import { appNamespaceSelector } from '../ducks/namespaceHelper';
 
 const Layout = props => {
   const user = useSelector(state => appNamespaceSelector(state).oidc.user);
-  console.log('user metalk8s', user);
   const sidebar = useSelector(
     state => appNamespaceSelector(state).app.layout.sidebar,
   );
@@ -62,6 +61,10 @@ const Layout = props => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
 
+  let { path } = useRouteMatch();
+  console.log('path', path);
+  path = path === '/' ? '' : path;
+
   const sidebarConfig = {
     expanded: sidebar.expanded,
     actions: [
@@ -69,7 +72,7 @@ const Layout = props => {
         label: intl.translate('monitoring'),
         icon: <i className="fas fa-desktop" />,
         onClick: () => {
-          history.push('/');
+          history.push(`${path}`);
         },
         active: useRouteMatch({
           path: '/',
@@ -81,7 +84,7 @@ const Layout = props => {
         label: intl.translate('nodes'),
         icon: <i className="fas fa-server" />,
         onClick: () => {
-          history.push('/nodes');
+          history.push(`${path}/nodes`); // change the history for microapp
         },
         active: useRouteMatch({
           path: '/nodes',
@@ -211,30 +214,35 @@ const Layout = props => {
           onDismiss={removeNotification}
         />
         <Switch>
-          <PrivateRoute exact path="/nodes/create" component={NodeCreateForm} />
           <PrivateRoute
-            exact
-            path="/nodes/:id/deploy"
+            path={`${path}/nodes/create`}
+            component={NodeCreateForm}
+          />
+          <PrivateRoute
+            path={`${path}/nodes/:id/deploy`}
             component={NodeDeployment}
           />
           <PrivateRoute
-            path={`/nodes/:id/createVolume`}
+            path={`${path}/nodes/:id/createVolume`}
             component={CreateVolume}
           />
           <PrivateRoute
             path="/nodes/:id/volumes/:volumeName"
             component={VolumeInformation}
           />
-          <PrivateRoute path="/nodes/:id" component={NodeInformation} />
-          <PrivateRoute exact path="/nodes" component={NodeList} />
+          <PrivateRoute
+            path={`${path}/nodes/:id`}
+            component={NodeInformation}
+          />
+          <PrivateRoute exact path={`${path}/nodes`} component={NodeList} />
           <PrivateRoute exact path="/solutions" component={SolutionList} />
           <PrivateRoute
             exact
             path="/solutions/create-environment"
             component={EnvironmentCreationForm}
           />
-          <PrivateRoute exact path="/about" component={About} />
-          <PrivateRoute exact path="/" component={ClusterMonitoring} />
+          <PrivateRoute path="/about" component={About} />
+          <PrivateRoute path={`${path}`} component={ClusterMonitoring} />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useRouteMatch, useHistory } from 'react-router';
 import styled from 'styled-components';
 import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -19,7 +19,11 @@ import {
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
 import { intl } from '../translations/IntlGlobalProvider';
-import { appNamespaceSelector } from '../ducks/namespaceHelper';
+import {
+  appNamespaceSelector,
+  nameSpaceAction,
+} from '../ducks/namespaceHelper';
+
 const PageContainer = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -68,10 +72,14 @@ const NodeList = () => {
   const nodes = useSelector(state => appNamespaceSelector(state).app.nodes);
   const theme = useSelector(state => appNamespaceSelector(state).config.theme);
   const dispatch = useDispatch();
-  const deployNode = payload => dispatch(deployNodeAction(payload));
+  const deployNode = payload =>
+    dispatch(nameSpaceAction(deployNodeAction, payload));
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
+  let { path } = useRouteMatch();
+
+  console.log('NodeList path', path);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const history = useHistory();
@@ -114,7 +122,7 @@ const NodeList = () => {
                 text={intl.translate('deploying')}
                 onClick={event => {
                   event.stopPropagation();
-                  history.push(`/nodes/${rowData.name}/deploy`);
+                  history.push(`${path}/nodes/${rowData.name}/deploy`);
                 }}
                 icon={<Loader size="smaller" />}
                 size="smaller"
@@ -143,7 +151,7 @@ const NodeList = () => {
 
   const onRowClick = row => {
     if (row.rowData && row.rowData.name) {
-      history.push(`/nodes/${row.rowData.name}`);
+      history.push(`${path}/${row.rowData.name}`);
     }
   };
 
@@ -160,7 +168,7 @@ const NodeList = () => {
       <ActionContainer>
         <Button
           text={intl.translate('create_new_node')}
-          onClick={() => history.push('/nodes/create')}
+          onClick={() => history.push(`${path}/create`)}
           icon={<i className="fas fa-plus" />}
         />
         {nodes.isLoading && <Loader size="small" />}

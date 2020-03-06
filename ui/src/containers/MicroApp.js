@@ -69,27 +69,19 @@ const MicroApp = props => {
     dispatch(nameSpaceAction(initToggleSideBarAction));
   }, [dispatch, store]);
 
-  console.log('metalk8s micro app');
-  console.log('api', api);
-  console.log('theme', theme);
-  console.log('userManager', userManager);
-  console.log('appState', appState);
-
   return api && userManager && appState ? (
     <IntlProvider locale={language} messages={messages[language]}>
       <IntlGlobalProvider>
-        <BrowserRouter>
-          <Switch>
-            {/* <Route
-                exact
-                path="/oauth2/callback"
-                component={() => <CallbackPage />}
-              /> */}
-            <Route>
-              <Layout isMicroApp={true} />
-            </Route>
-          </Switch>
-        </BrowserRouter>
+        <Switch>
+          <Route
+            exact
+            path="/oauth2/callback"
+            component={() => <CallbackPage />}
+          />
+          <Route>
+            <Layout isMicroApp={true} />
+          </Route>
+        </Switch>
       </IntlGlobalProvider>
     </IntlProvider>
   ) : (

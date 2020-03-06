@@ -2,6 +2,10 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { createSelector } from 'reselect';
 import sortByArray from 'lodash.sortby';
+import {
+  nameSpaceAction,
+  appNamespaceSelector,
+} from '../ducks/namespaceHelper';
 
 export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
@@ -146,13 +150,13 @@ export const getNodeNameFromUrl = (state, props) => {
 };
 
 export const getNodes = state =>
-  (state && state.app && state.app.nodes && state.app.nodes.list) || [];
+  appNamespaceSelector(state)?.app?.nodes?.list || [];
 
 export const getPods = state =>
-  (state && state.app && state.app.pods && state.app.pods.list) || [];
+  appNamespaceSelector(state)?.app?.pods?.list || [];
 
 export const getVolumes = state =>
-  (state && state.app && state.app.volumes && state.app.volumes.list) || [];
+  appNamespaceSelector(state)?.app?.volumes?.list || [];
 
 export const makeGetNodeFromUrl = createSelector(
   getNodeNameFromUrl,
@@ -178,9 +182,9 @@ export const makeGetVolumesFromUrl = createSelector(
 export const useRefreshEffect = (refreshAction, stopRefreshAction) => {
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(refreshAction());
+    dispatch(nameSpaceAction(refreshAction));
     return () => {
-      dispatch(stopRefreshAction());
+      dispatch(nameSpaceAction(stopRefreshAction));
     };
   }, [dispatch, refreshAction, stopRefreshAction]);
 };

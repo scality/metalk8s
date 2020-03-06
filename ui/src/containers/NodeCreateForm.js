@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
-import { useHistory } from 'react-router';
+import { useHistory, useRouteMatch } from 'react-router';
 import { Button, Input, Checkbox, Breadcrumb } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
@@ -17,6 +17,7 @@ import {
   StyledLink,
 } from '../components/BreadcrumbStyle';
 import { intl } from '../translations/IntlGlobalProvider';
+import { appNamespaceSelector } from '../ducks/namespaceHelper';
 
 const CreateNodeContainter = styled.div`
   height: 100%;
@@ -121,12 +122,19 @@ const validationSchema = yup.object().shape({
 });
 
 const NodeCreateForm = () => {
-  const asyncErrors = useSelector(state => state.app.nodes.errors);
-  const clusterVersion = useSelector(state => state.app.nodes.clusterVersion);
-  const theme = useSelector(state => state.config.theme);
+  const asyncErrors = useSelector(
+    state => appNamespaceSelector(state).app.nodes.errors,
+  );
+  const clusterVersion = useSelector(
+    state => appNamespaceSelector(state).app.nodes.clusterVersion,
+  );
+  const theme = useSelector(state => appNamespaceSelector(state).config.theme);
   const dispatch = useDispatch();
   const createNode = body => dispatch(createNodeAction(body));
   const history = useHistory();
+
+  let { path } = useRouteMatch();
+  console.log('NodeCreateForm path', path);
 
   useEffect(() => {
     return () => {

@@ -78,6 +78,7 @@ const PodsContainer = styled.div`
 const NodeInformation = props => {
   const history = useHistory();
   const match = useRouteMatch();
+  console.log('match', match);
   const location = useLocation();
   const dispatch = useDispatch();
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
