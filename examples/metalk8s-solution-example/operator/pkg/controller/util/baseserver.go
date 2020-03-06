@@ -1,6 +1,7 @@
 package util
 
 import (
+	"example-solution-operator/pkg/config"
 	"example-solution-operator/version"
 	"fmt"
 	"os"
@@ -108,16 +109,28 @@ func BuildLabelSelector(labels map[string]string) metav1.LabelSelector {
 
 // buildImageName builds a complete image name based on the version provided
 // for the `base-server` component, which is the only one deployed for now
+// Here `version` is both the image and the Solution versions
 func buildImageName(version string) string {
-	prefix, found := os.LookupEnv("REGISTRY_PREFIX")
-	if !found {
-		prefix = "docker.io/metalk8s"
+	var imageName string = "base-server:" + version
+	var prefix string
+
+	for solution_version, repositories := range config.Repositories() {
+		if solution_version == version {
+			for _, repository := range repositories {
+				for _, image := range repository.Images {
+					if image == imageName {
+						prefix = repository.Endpoint
+					}
+				}
+			}
+		}
 	}
 
-	return fmt.Sprintf(
-		"%[1]s/%[2]s-%[3]s/base-server:%[3]s",
-		prefix, ApplicationName, version,
-	)
+	if prefix == "" {
+		return imageName
+	}
+
+	return fmt.Sprintf("%s/%s", prefix, imageName)
 }
 
 // BuildContainer builds a container image for a component of kind `kind`
