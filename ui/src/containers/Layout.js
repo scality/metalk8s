@@ -62,7 +62,6 @@ const Layout = props => {
   }, [dispatch]);
 
   let { path } = useRouteMatch();
-  console.log('path', path);
   path = path === '/' ? '' : path;
 
   const sidebarConfig = {

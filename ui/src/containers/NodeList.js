@@ -78,8 +78,6 @@ const NodeList = () => {
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   let { path } = useRouteMatch();
-
-  console.log('NodeList path', path);
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
   const history = useHistory();

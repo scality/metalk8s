@@ -133,9 +133,6 @@ const NodeCreateForm = () => {
   const createNode = body => dispatch(createNodeAction(body));
   const history = useHistory();
 
-  let { path } = useRouteMatch();
-  console.log('NodeCreateForm path', path);
-
   useEffect(() => {
     return () => {
       dispatch(clearCreateNodeErrorAction());

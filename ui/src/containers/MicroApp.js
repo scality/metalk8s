@@ -56,7 +56,7 @@ const MicroApp = props => {
   const { api, theme, userManager } = config;
 
   const appState = useSelector(state => appNamespaceSelector(state).app);
-  // Maybe useful later but now it isn't.
+  // make sure the config is ready before api call.
   const isUserLoaded = useSelector(
     state => appNamespaceSelector(state).config?.isUserLoaded,
   );
@@ -69,7 +69,7 @@ const MicroApp = props => {
     dispatch(nameSpaceAction(initToggleSideBarAction));
   }, [dispatch, store]);
 
-  return api && userManager && appState ? (
+  return api && theme && userManager && isUserLoaded && appState ? (
     <IntlProvider locale={language} messages={messages[language]}>
       <IntlGlobalProvider>
         <Switch>

@@ -231,7 +231,6 @@ export function* fetchNodes() {
 
   const result = yield call(ApiK8s.getNodes); // there is error in getNodes
   if (!result.error) {
-    console.log('no error fetchNodes');
     yield put(
       nameSpaceAction(updateNodesAction, {
         list: result.body.items.map(node => {
