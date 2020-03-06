@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ solution }}-operator
+  namespace: {{ namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: {{ solution }}-operator
+  template:
+    metadata:
+      labels:
+        name: {{ solution }}-operator
+    spec:
+      serviceAccountName: {{ solution }}-operator
+      containers:
+        - name: {{ solution }}-operator
+          image: {{ repository }}/{{ image_name }}:{{ image_tag }}
+          command:
+          - {{ solution }}-operator
+          - --config=/etc/config/operator.yaml
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "{{ solution }}-operator"
+          volumeMounts:
+            - name: operator-config
+              mountPath: /etc/config
+      volumes:
+        - name: operator-config
+          configMap:
+            name: {{ solution }}-operator-config

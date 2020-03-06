@@ -1,186 +1,258 @@
-'''
-Various utilities to manage Solutions.
-'''
-import json
+"""Utility methods for Solutions management.
+
+This module contains minion-local operations, see `metalk8s_solutions_k8s.py`
+for the K8s operations in the virtual `metalk8s_solutions` module.
+"""
+import collections
+import errno
+import os
 import logging
 import yaml
 
+import salt
 from salt.exceptions import CommandExecutionError
-
-HAS_LIBS = True
-SOLUTIONS_CONFIG_MAP = 'metalk8s-solutions'
-SOLUTIONS_CONFIG_MAP_NAMESPACE = 'metalk8s-solutions'
-SOLUTIONS_CONFIG_FILE = '/etc/metalk8s/solutions.yaml'
-try:
-    import kubernetes.client
-    from kubernetes.client.rest import ApiException
-    from urllib3.exceptions import HTTPError
-except ImportError:
-    HAS_LIBS = False
 
 log = logging.getLogger(__name__)
 
+CONFIG_FILE = '/etc/metalk8s/solutions.yaml'
+CONFIG_KIND = 'SolutionsConfiguration'
+SUPPORTED_CONFIG_VERSIONS = [
+    'solutions.metalk8s.scality.com/{}'.format(version)
+    for version in ['v1alpha1']
+]
 
 __virtualname__ = 'metalk8s_solutions'
 
 
 def __virtual__():
-    if HAS_LIBS:
-        return __virtualname__
+    if 'metalk8s.archive_info_from_iso' not in __salt__:
+        return False, "Failed to load 'metalk8s' module."
+    return __virtualname__
+
+
+def _load_config_file(create=False):
+    try:
+        with open(CONFIG_FILE, 'r') as fd:
+            return yaml.safe_load(fd)
+    except IOError as exc:
+        if create and exc.errno == errno.ENOENT:
+            return _create_config_file()
+        msg = 'Failed to load "{}": {}'.format(CONFIG_FILE, str(exc))
+        raise CommandExecutionError(message=msg)
+
+
+def _write_config_file(data):
+    try:
+        with open(CONFIG_FILE, 'w') as fd:
+            yaml.safe_dump(data, fd)
+    except Exception as exc:
+        msg = 'Failed to write Solutions config file at "{}": {}'.format(
+            CONFIG_FILE, exc
+        )
+        raise CommandExecutionError(message=msg)
+
+
+def _create_config_file():
+    default_data = {
+        'apiVersion': SUPPORTED_CONFIG_VERSIONS[0],
+        'kind': CONFIG_KIND,
+        'archives': [],
+        'active': {},
+    }
+    _write_config_file(default_data)
+    return default_data
+
+
+def read_config(create=False):
+    """Read the SolutionsConfiguration file and return its contents.
+
+    Empty containers will be used for `archives` and `active` in the return
+    value.
+
+    The format should look like the following example:
+
+    ..code-block:: yaml
+
+      apiVersion: metalk8s.scality.com/v1alpha1
+      kind: SolutionsConfiguration
+      archives:
+        - /path/to/solution/archive.iso
+      active:
+        solution-name: X.Y.Z-suffix (or 'latest')
+
+    If `create` is set to True, this will create an empty configuration file
+    if it does not exist yet.
+    """
+    config = _load_config_file(create=create)
+
+    if config.get('kind') != 'SolutionsConfiguration':
+        raise CommandExecutionError(
+            'Invalid `kind` in configuration ({}), '
+            'must be "SolutionsConfiguration"'.format(config.get('kind'))
+        )
+
+    if config.get('apiVersion') not in SUPPORTED_CONFIG_VERSIONS:
+        raise CommandExecutionError(
+            'Invalid `apiVersion` in configuration ({}), '
+            'must be one of: {}'.format(
+                config.get('apiVersion'),
+                ', '.join(SUPPORTED_CONFIG_VERSIONS)
+            )
+        )
+
+    config.setdefault('archives', [])
+    config.setdefault('active', {})
+
+    return config
+
+
+def configure_archive(archive, create_config=False, removed=False):
+    """Add (or remove) a Solution archive in the config file."""
+    config = read_config(create=create_config)
+
+    if removed:
+        try:
+            config['archives'].remove(archive)
+        except ValueError:
+            pass
     else:
-        return False, 'python kubernetes library not found'
+        if archive not in config['archives']:
+            config['archives'].append(archive)
+
+    _write_config_file(config)
+    return True
 
 
-def list_deployed(
-    context="kubernetes-admin@kubernetes",
-    kubeconfig="/etc/kubernetes/admin.conf"
-):
-    """Get all deployed Solution versions from a known ConfigMap."""
-    response_dict = __salt__['metalk8s_kubernetes.show_configmap'](
-        SOLUTIONS_CONFIG_MAP,
-        namespace=SOLUTIONS_CONFIG_MAP_NAMESPACE,
-        context=context,
-        kubeconfig=kubeconfig,
-    )
-    if not response_dict or not response_dict.get('data'):
-        return {}
+def activate_solution(solution, version='latest'):
+    """Set a `version` of a `solution` as being "active"."""
+    available = list_available()
+    if solution not in available:
+        raise CommandExecutionError(
+            'Cannot activate Solution "{}": not available'.format(solution)
+        )
 
+    # NOTE: this doesn't create a config file, since you can't activate a non-
+    #       available version
+    config = read_config(create=False)
+
+    if version != 'latest':
+        if version not in (info['version'] for info in available[solution]):
+            raise CommandExecutionError(
+                'Cannot activate version "{}" for Solution "{}": '
+                'not available'.format(version, solution)
+            )
+
+    config['active'][solution] = version
+    _write_config_file(config)
+    return True
+
+
+def deactivate_solution(solution):
+    """Remove a `solution` from the "active" section in configuration."""
+    config = read_config(create=False)
+    config['active'].pop(solution, None)
+    _write_config_file(config)
+    return True
+
+
+def _is_solution_mount(mount_tuple):
+    """Return whether a mount is for a Solution archive.
+
+    Any ISO9660 mounted in `/srv/scality` that isn't for MetalK8s is considered
+    to be a Solution archive.
+    """
+    mountpoint, mount_info = mount_tuple
+
+    if not mountpoint.startswith('/srv/scality/'):
+        return False
+
+    if mountpoint.startswith('/srv/scality/metalk8s-'):
+        return False
+
+    if mount_info['fstype'] != 'iso9660':
+        return False
+
+    return True
+
+
+SOLUTION_CONFIG_KIND = 'SolutionConfig'
+SOLUTION_CONFIG_APIVERSIONS = [
+    'solutions.metalk8s.scality.com/v1alpha1',
+]
+
+
+def _default_solution_config(name, version):
     return {
-        name: json.loads(versions_str)
-        for name, versions_str in response_dict['data'].items()
+        'kind': SOLUTION_CONFIG_KIND,
+        'apiVersion': SOLUTION_CONFIG_APIVERSIONS[0],
+        'operator': {
+            'image': {
+                'name': '{}-operator'.format(name),
+                'tag': version,
+            },
+        },
+        'ui': {
+            'image': {
+                'name': '{}-ui'.format(name),
+                'tag': version,
+            },
+        },
+        'customApiGroups': [],
     }
 
 
-def list_configured():
-    """Get list of Solution archives paths defined in a config file."""
-    try:
-        with open(SOLUTIONS_CONFIG_FILE, 'r') as fd:
-            content = yaml.safe_load(fd)
-    except Exception as exc:
-        msg = 'Failed to load "{}": {}'.format(SOLUTIONS_CONFIG_FILE, str(exc))
-        raise CommandExecutionError(message=msg)
+def read_solution_config(mountpoint, name, version):
+    log.debug('Reading Solution config from %r', mountpoint)
+    config = _default_solution_config(name, version)
+    config_path = os.path.join(mountpoint, 'config.yaml')
 
-    return content.get('archives', []) or []
+    if not os.path.isfile(config_path):
+        log.debug('Solution mounted at %r has no "config.yaml"', mountpoint)
+        return config
 
+    with salt.utils.files.fopen(config_path, 'r') as stream:
+        provided_config = salt.utils.yaml.safe_load(stream)
 
-def register_solution_version(
-    name,
-    version,
-    archive_path,
-    deployed=False,
-    context="kubernetes-admin@kubernetes",
-    kubeconfig="/etc/kubernetes/admin.conf"
-):
-    """Add a Solution version to the ConfigMap."""
-    cfg = __salt__['metalk8s_kubernetes.setup_conn'](
-        context=context,
-        kubeconfig=kubeconfig
-    )
-    api_instance = kubernetes.client.CoreV1Api()
+    provided_kind = provided_config.pop('kind', None)
+    provided_api_version = provided_config.pop('apiVersion', None)
 
-    # Retrieve the existing ConfigMap
-    configmap = __salt__['metalk8s_kubernetes.show_configmap'](
-        SOLUTIONS_CONFIG_MAP,
-        namespace=SOLUTIONS_CONFIG_MAP_NAMESPACE,
-        context=context,
-        kubeconfig=kubeconfig,
-    )
-    if configmap is None:
-        configmap = __salt__['metalk8s_kubernetes.create_configmap'](
-            SOLUTIONS_CONFIG_MAP,
-            namespace=SOLUTIONS_CONFIG_MAP_NAMESPACE,
-            data=None,
-            context=context,
-            kubeconfig=kubeconfig,
+    if (
+        provided_kind != SOLUTION_CONFIG_KIND or
+        provided_api_version not in SOLUTION_CONFIG_APIVERSIONS
+    ):
+        raise CommandExecutionError(
+            'Wrong apiVersion/kind for {}'.format(config_path)
         )
 
-    all_versions_str = (configmap.get('data') or {}).get(name, '[]')
-    all_versions = json.loads(all_versions_str)
+    salt.utils.dictupdate.update(config, provided_config)
+    return config
 
-    for version_dict in all_versions:
-        if version_dict['version'] == version:
-            version_dict['iso'] = archive_path
-            version_dict['deployed'] = deployed
-            break
-    else:
-        all_versions.append({
+
+def list_available():
+    """Get a view of mounted Solution archives.
+
+    Result is in the shape of a dict, with Solution names as keys, and lists
+    of mounted archives (each being a dict of various info) as values.
+    """
+    result = collections.defaultdict(list)
+
+    active_mounts = __salt__['mount.active']()
+
+    solution_mounts = filter(_is_solution_mount, active_mounts.items())
+
+    for mountpoint, mount_info in solution_mounts:
+        solution_info = __salt__['metalk8s.archive_info_from_tree'](mountpoint)
+        name = solution_info['name']
+        machine_name = name.replace(' ', '-').lower()
+        version = solution_info['version']
+
+        result[machine_name].append({
+            'name': name,
+            'id': '{}-{}'.format(machine_name, version),
+            'mountpoint': mountpoint,
+            'archive': mount_info['alt_device'],
             'version': version,
-            'iso': archive_path,
-            'deployed': deployed,
+            'config': read_solution_config(mountpoint, machine_name, version),
         })
 
-    body = {'data': {name: json.dumps(all_versions)}}
-
-    try:
-        api_instance.patch_namespaced_config_map(
-            SOLUTIONS_CONFIG_MAP,
-            SOLUTIONS_CONFIG_MAP_NAMESPACE,
-            body
-        )
-    except ApiException as exc:
-        log.exception('Failed to patch ConfigMap "%s": %s',
-                      SOLUTIONS_CONFIG_MAP, exc)
-        return False
-
-    return True
-
-def unregister_solution_version(
-    name,
-    version,
-    context="kubernetes-admin@kubernetes",
-    kubeconfig="/etc/kubernetes/admin.conf"
-):
-    """Remove a Solution version from the ConfigMap."""
-    cfg = __salt__['metalk8s_kubernetes.setup_conn'](
-        context=context,
-        kubeconfig=kubeconfig
-    )
-    api_instance = kubernetes.client.CoreV1Api()
-
-    # Retrieve the existing ConfigMap
-    configmap = __salt__['metalk8s_kubernetes.show_configmap'](
-        SOLUTIONS_CONFIG_MAP,
-        namespace=SOLUTIONS_CONFIG_MAP_NAMESPACE,
-        context=context,
-        kubeconfig=kubeconfig,
-    )
-    if not configmap:
-        log.exception(
-            'Cannot unregister Solution: ConfigMap "%s" is missing.',
-            SOLUTIONS_CONFIG_MAP
-        )
-        return False
-
-    old_versions = json.loads((configmap['data'] or {}).get(name, '[]'))
-    new_versions = [
-        version_dict for version_dict in old_versions
-        if version_dict['version'] != version
-    ]
-    # If this is the last registered version then remove all the entry
-    if new_versions == []:
-        del configmap['data'][name]
-        # Patching a CM while removing a key does not work, we need to replace it
-        try:
-            api_instance.replace_namespaced_config_map(
-                SOLUTIONS_CONFIG_MAP,
-                SOLUTIONS_CONFIG_MAP_NAMESPACE,
-                configmap
-            )
-        except ApiException as exc:
-            log.exception('Failed to patch ConfigMap "%s": %s',
-                          SOLUTIONS_CONFIG_MAP, str(exc))
-            return False
-    else:
-        body = {'data': {name: json.dumps(new_versions)}}
-        try:
-            api_instance.patch_namespaced_config_map(
-                SOLUTIONS_CONFIG_MAP,
-                SOLUTIONS_CONFIG_MAP_NAMESPACE,
-                body
-            )
-        except ApiException as exc:
-            log.exception('Failed to patch ConfigMap "%s": %s',
-                          SOLUTIONS_CONFIG_MAP, str(exc))
-            return False
-
-    return True
+    return dict(result)
