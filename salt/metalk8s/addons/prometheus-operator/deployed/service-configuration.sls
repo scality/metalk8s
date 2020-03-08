@@ -90,6 +90,25 @@ Create alertmanager-config ConfigMap:
             spec:
               deployment:
                 replicas: 1
+              notification:
+                config:
+                  global:
+                    resolve_timeout: 5m
+                  templates: []
+                  route:
+                    group_by: ['job']
+                    group_wait: 30s
+                    group_interval: 5m
+                    repeat_interval: 12h
+                    receiver: 'null'
+                    routes:
+                    - match:
+                        alertname: Watchdog
+                      receiver: 'null'
+                  receivers:
+                    - name: 'null'
+                  inhibit_rules: []
+
 {%- else %}
 
 metalk8s-alertmanager-config ConfigMap already exist:

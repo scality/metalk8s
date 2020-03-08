@@ -38,6 +38,18 @@ alertmanager:
             matchLabels:
               app.kubernetes.io/name: prometheus-operator-alertmanager
 
+  ## Passing the below configuration directives through the helm template
+  ## engine leads to no substitution since the variables passed will be base64
+  ## encoded directly hence we end up with `alertmanager.yaml` being invalid
+
+  ## So let us disable the creation of this secret from the default charts
+  ## and then create a new secret that replaces the
+  ## alertmanager-prometheus-operator-alertmanager secret with new config
+  ## read from a ConfigMap (metalk8s-alertmanager-config)
+
+  # config: '__var_tojson__(alertmanager.spec.notification.config)'
+
+    useExistingSecret: true
 
 prometheusOperator:
   tlsProxy:

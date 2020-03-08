@@ -286,22 +286,6 @@ type: Opaque
 ---
 apiVersion: v1
 data:
-  alertmanager.yaml: Z2xvYmFsOgogIHJlc29sdmVfdGltZW91dDogNW0KcmVjZWl2ZXJzOgotIG5hbWU6ICJudWxsIgpyb3V0ZToKICBncm91cF9ieToKICAtIGpvYgogIGdyb3VwX2ludGVydmFsOiA1bQogIGdyb3VwX3dhaXQ6IDMwcwogIHJlY2VpdmVyOiAibnVsbCIKICByZXBlYXRfaW50ZXJ2YWw6IDEyaAogIHJvdXRlczoKICAtIG1hdGNoOgogICAgICBhbGVydG5hbWU6IFdhdGNoZG9nCiAgICByZWNlaXZlcjogIm51bGwiCg==
-kind: Secret
-metadata:
-  labels:
-    app: prometheus-operator-alertmanager
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-alertmanager
-    app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-8.1.2
-    heritage: metalk8s
-    release: prometheus-operator
-  name: alertmanager-prometheus-operator-alertmanager
-  namespace: metalk8s-monitoring
----
-apiVersion: v1
-data:
   provider.yaml: |-
     apiVersion: 1
     providers:
