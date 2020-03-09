@@ -1,12 +1,12 @@
-Upgrade Guide
-=============
-Upgrading a MetalK8s cluster is handled via utility scripts which are packaged
-with every new release.
-This section describes a reliable upgrade procedure for **MetalK8s** including
-all the components that are included in the stack.
+Upgrade
+=======
 
-Supported Versions
-******************
+Upgrading a MetalK8s cluster is handled via utility scripts which arepackaged
+with your current installation.
+
+Supported Upgrade Paths
+***********************
+
 .. note::
 
     MetalK8 supports upgrade **strictly** from one supported
@@ -19,28 +19,24 @@ Supported Versions
     `release notes <https://github.com/scality/metalk8s/releases>`_ for more
     information.
 
-Upgrade Pre-requisites
-**********************
-Before proceeding with the upgrade procedure, make sure to complete the
-pre-requisites listed in :doc:`/operation/preparation`.
+Prerequisites
+*************
 
-You can test if your environment will successfully upgrade with the following
-command.
-This will simulate the upgrade procedure and provide an overview of the
-changes to be carried out in your MetalK8s cluster.
+- Provision the new **Metalk8s** ISO by running the utility script shipped
+  with the current installation:
+
+   .. code::
+
+     /srv/scality/metalk8s-X.X.X/iso-manager.sh -a <path_to_iso>
+
+- Test if the upgrade procedure is compatible with your environment:
 
    .. code::
 
      /srv/scality/metalk8s-X.X.X/upgrade.sh --destination-version <destination_version> --dry-run --verbose
 
-Upgrade Steps
-*************
-Ensure that the upgrade pre-requisites above have been met before you make
-any step further.
-
-To upgrade a MetalK8s cluster, run the utility script shipped
-with the **new** version you want to upgrade to providing it with the
-destination version:
+Procedure
+*********
 
 .. important::
 
@@ -48,7 +44,7 @@ destination version:
     upgrade must be the new MetalK8s version you would like to upgrade
     to.
 
-- From the :term:`Bootstrap node`, launch the upgrade.
+Launch the upgrade from the :term:`Bootstrap node`.
 
    .. code::
 
