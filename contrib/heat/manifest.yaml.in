@@ -1,0 +1,10 @@
+Format: Heat.HOT/1.0
+Type: Application
+FullName: com.scality.metalk8s.MetalK8sCluster.@@VERSION
+Name: MetalK8s Cluster (@@VERSION)
+Version: @@REVISION
+Description: "Heat template to deploy a MetalK8s cluster on VMs"
+Author: squad-metalk8s@scality.com
+Tags:
+  - metalk8s
+Logo: logo.png

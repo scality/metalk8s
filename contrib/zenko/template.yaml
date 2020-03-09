@@ -1,0 +1,159 @@
+heat_template_version: pike
+
+description: |
+  Heat template for provisioning a standard Zenko deployment.
+
+  The Zenko cluster will run on three worker nodes, part of a MetalK8s cluster
+  which also runs three masters and two nodes dedicated to monitoring services.
+
+  The cluster will be configured to run behind a proxy (hosted on a Bastion
+  VM), and will rely on private networks for both control plane and workload
+  plane services.
+
+parameters:
+  key_pair:
+    type: string
+    label: SSH Key Pair
+    description: >
+      Name of the key pair to use for deploying VMs
+    constraints:
+      - custom_constraint: nova.keypair
+    immutable: true
+  access_subnet_id:
+    type: string
+    label: Access Subnet
+    description: >
+      Subnet to use for the deployment and access to VMs
+    constraints:
+      - custom_constraint: neutron.subnet
+  metalk8s_iso_url:
+    type: string
+    label: MetalK8s ISO URL
+    description: >
+      Public (optionally authenticated) URL to retrieve the MetalK8s ISO that
+      will be installed
+    default: https://packages.scality.com/moonshot/metalk8s/242/metalk8s.iso
+  metalk8s_iso_user:
+    type: string
+    label: MetalK8s ISO Username
+    description: Username to access the MetalK8s ISO URL
+    default: ""
+    immutable: true
+  metalk8s_iso_pass:
+    type: string
+    label: MetalK8s ISO Password
+    description: Password to access the MetalK8s ISO URL
+    default: ""
+    hidden: true
+    immutable: true
+
+resources:
+  # Zenko deployment progress
+  zenko_wait_handle:
+    type: OS::Heat::WaitConditionHandle
+  zenko_wait_condition:
+    type: OS::Heat::WaitCondition
+    properties:
+      handle: { get_resource: zenko_wait_handle }
+      count: 5 # 'init', 'helm', 'storage', 'zenko', 'complete'
+      timeout: 10800 # 3 hours
+
+  # Use WaitCondition to receive Zenko client ID from a script
+  zenko_client_id_wait_handle:
+    type: OS::Heat::WaitConditionHandle
+  zenko_client_id_wait_condition:
+    type: OS::Heat::WaitCondition
+    properties:
+      handle: { get_resource: zenko_client_id_wait_handle }
+      timeout: 10800 # 3 hours
+
+  signals_config:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        merge_how: dict(recurse_array)+list(append)
+        write_files:
+          - path: /run/zenko/signals/send
+            owner: root:root
+            permissions: '0755'
+            content:
+              str_replace:
+                template: { get_file: scripts/send-signal.sh }
+                params:
+                  <%notify_main%>: { get_attr: [zenko_wait_handle, curl_cli] }
+                  <%notify_client_id%>:
+                    get_attr: [zenko_client_id_wait_handle, curl_cli]
+
+  install_helm_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: { get_file: scripts/install-helm.sh }
+
+  configure_zenko_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: { get_file: scripts/configure-zenko.sh }
+
+  provision_storage_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: { get_file: scripts/provision-storage.sh }
+
+  install_zenko_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: { get_file: scripts/install-zenko.sh }
+
+  metalk8s_cluster:
+    type: OS::Heat::Stack
+    properties:
+      template: ../heat/template.yaml
+      parameters:
+        key_pair: { get_param: key_pair }
+        access_subnet_id: { get_param: access_subnet_id }
+        online_mode: false
+        workers_count: 3
+        workers_flavor: m1.xlarge
+        metalk8s_iso_url: { get_param: metalk8s_iso_url }
+        metalk8s_iso_user: { get_param: metalk8s_iso_user }
+        metalk8s_iso_pass: { get_param: metalk8s_iso_pass }
+        name_prefix: { get_param: "OS::stack_name" }
+        bootstrap_extra_init_parts:
+          list_join:
+            - ","
+            - [{get_resource: signals_config},
+              {get_resource: install_helm_script},
+              {get_resource: configure_zenko_script},
+              {get_resource: provision_storage_script},
+              {get_resource: install_zenko_script}]
+
+outputs:
+  sshuttle_cmd:
+    value: { get_attr: [metalk8s_cluster, sshuttle_cmd] }
+  metalk8s_deployment_status:
+    value: { get_attr: [metalk8s_cluster, metalk8s_deployment_status] }
+  metalk8s_bastion_info:
+    value: { get_attr: [metalk8s_cluster, bastion_info] }
+  metalk8s_bootstrap_info:
+    value: { get_attr: [metalk8s_cluster, bootstrap_info] }
+  metalk8s_masters_info:
+    value: { get_attr: [metalk8s_cluster, masters_info] }
+  metalk8s_infras_info:
+    value: { get_attr: [metalk8s_cluster, infras_info] }
+  metalk8s_workers_info:
+    value: { get_attr: [metalk8s_cluster, workers_info] }
+  metalk8s_ui:
+    value:
+      str_replace:
+        template: https://$bootstrap_cp_ip:8443
+        params:
+          $bootstrap_cp_ip:
+            get_attr:
+              - metalk8s_cluster
+              - bootstrap_info
+              - private_ips
+              - control_plane

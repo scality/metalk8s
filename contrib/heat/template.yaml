@@ -1,0 +1,646 @@
+heat_template_version: pike
+
+description: |
+  Heat template for provisioning a single MetalK8s cluster.
+
+  The deployed cluster will include a three nodes control plane (Bootstrap with
+  two Masters), and as many nodes as desired in the workload plane.
+
+  A Bastion, which is not part of the deployed cluster, will be provisioned to
+  provide a forward HTTP proxy to the cluster nodes (necessary for accessing
+  package repositories in offline deployments).
+
+parameter_groups:
+  - label: Deployment configuration
+    description: >
+      Select the existing resources to use for deploying this cluster.
+    parameters:
+      - key_pair
+      - access_subnet_id
+
+  - label: Infrastructure configuration
+    description: >
+      Configure the infrastructure to create.
+    parameters:
+      - online_mode
+      - workers_count
+      - workers_flavor
+
+  - label: MetalK8s configuration
+    description: >
+      Configure the MetalK8s cluster to install.
+    parameters:
+      - metalk8s_iso_url
+      - metalk8s_iso_user
+      - metalk8s_iso_pass
+
+  - label: Internal
+    parameters:
+      - name_prefix
+      - bastion_extra_init_parts
+      - bootstrap_extra_init_parts
+      - node_extra_init_parts
+
+parameters:
+  key_pair:
+    type: string
+    label: SSH Key Pair
+    description: >
+      Name of the key pair to use for deploying VMs
+    constraints:
+      - custom_constraint: nova.keypair
+    immutable: true
+  access_subnet_id:
+    type: string
+    label: Access Subnet
+    description: >
+      Subnet to use for the deployment and access to VMs
+    constraints:
+      - custom_constraint: neutron.subnet
+    immutable: true
+  online_mode:
+    type: boolean
+    label: Online Deployment
+    description: >
+      Whether to install an online cluster (only relying on the public network
+      in your tenant), or not (thus spawning private networks and isolating
+      cluster nodes from Internet)
+    default: false
+    immutable: true
+  workers_count:
+    type: number
+    label: Workers Count
+    description: Number of MetalK8s worker nodes to deploy
+    default: 3
+    constraints:
+      - range: { min: 0, max: 99 }
+    immutable: true
+  workers_flavor:
+    type: string
+    label: Workers Flavor
+    description: Instance flavor to use for MetalK8s worker nodes
+    default: m1.large
+    constraints:
+      - custom_constraint: nova.flavor
+    immutable: true
+  metalk8s_iso_url:
+    type: string
+    label: MetalK8s ISO URL
+    description: >
+      Public (optionally authenticated) URL to retrieve the MetalK8s ISO that
+      will be installed
+    default: https://packages.scality.com/moonshot/metalk8s/242/metalk8s.iso
+  metalk8s_iso_user:
+    type: string
+    label: MetalK8s ISO Username
+    description: Username to access the MetalK8s ISO URL
+    default: ""
+    immutable: true
+  metalk8s_iso_pass:
+    type: string
+    label: MetalK8s ISO Password
+    description: Password to access the MetalK8s ISO URL
+    default: ""
+    hidden: true
+    immutable: true
+  name_prefix:
+    type: string
+    default: ""
+    hidden: true
+    immutable: true
+  bastion_extra_init_parts:
+    type: comma_delimited_list
+    default: ""
+    hidden: true
+    immutable: true
+  bootstrap_extra_init_parts:
+    type: comma_delimited_list
+    default: ""
+    hidden: true
+    immutable: true
+  node_extra_init_parts:
+    type: comma_delimited_list
+    default: ""
+    hidden: true
+    immutable: true
+
+conditions:
+  offline: { not: { get_param: online_mode } }
+
+resources:
+  prefix:
+    type: OS::Heat::Value
+    properties:
+      value:
+        if:
+          - equals: [{ get_param: name_prefix }, ""]
+          - { get_param: "OS::stack_name" }
+          - { get_param: name_prefix }
+
+  # Networks
+  access_subnet:
+    type: OS::Neutron::Subnet
+    external_id: { get_param: access_subnet_id }
+  control_plane_network:
+    type: OS::Neutron::Net
+    properties:
+      port_security_enabled: false
+      name:
+        str_replace:
+          template: $prefix-control-plane
+          params: { $prefix: { get_attr: [prefix, value] } }
+  control_plane_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: control_plane_network }
+      cidr: "192.168.1.0/24"
+      ip_version: 4
+      name:
+        str_replace:
+          template: $prefix-control-plane-subnet
+          params: { $prefix: { get_attr: [prefix, value] } }
+  workload_plane_network:
+    type: OS::Neutron::Net
+    properties:
+      port_security_enabled: false
+      name:
+        str_replace:
+          template: $prefix-workload-plane
+          params: { $prefix: { get_attr: [prefix, value] } }
+  workload_plane_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: workload_plane_network }
+      cidr: "192.168.2.0/24"
+      ip_version: 4
+      name:
+        str_replace:
+          template: $prefix-workload-plane-subnet
+          params: { $prefix: { get_attr: [prefix, value] } }
+
+  # Security groups
+  ingress_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name:
+        str_replace:
+          template: $prefix-ingress-secgroup
+          params: { $prefix: { get_attr: [prefix, value] } }
+      rules:
+        - direction: ingress
+          ethertype: IPv4
+          protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+          protocol: icmp
+          remote_ip_prefix: "0.0.0.0/0"
+        - direction: ingress
+          ethertype: IPv4
+          remote_mode: remote_group_id
+        # Add egress rule for this secgroup's members, to delete default egress
+        # rules (managed in <kind>_egress_secgroup resources)
+        - direction: egress
+          ethertype: IPv4
+          remote_mode: remote_group_id
+  open_egress_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name:
+        str_replace:
+          template: $prefix-open-egress-secgroup
+          params: { $prefix: { get_attr: [prefix, value] } }
+  restricted_egress_secgroup:
+    type: OS::Neutron::SecurityGroup
+    condition: offline
+    properties:
+      name:
+        str_replace:
+          template: $prefix-restricted-egress-secgroup
+          params: { $prefix: { get_attr: [prefix, value] } }
+      rules:
+        repeat:
+          for_each:
+            <%dns_ip%>: { get_attr: [access_subnet, dns_nameservers] }
+          template:
+            direction: egress
+            ethertype: IPv4
+            protocol: udp
+            port_range_min: 53
+            port_range_max: 53
+            remote_ip_prefix: <%dns_ip%>/32
+  egress_rule_metadata:
+    type: OS::Neutron::SecurityGroupRule
+    properties:
+      security_group: { get_resource: restricted_egress_secgroup }
+      direction: egress
+      ethertype: IPv4
+      port_range_min: 80
+      port_range_max: 80
+      remote_ip_prefix: "169.254.169.254/32"
+
+  # MetalK8s deployment progress
+  metalk8s_wait_handle:
+    type: OS::Heat::WaitConditionHandle
+  metalk8s_wait_condition:
+    type: OS::Heat::WaitCondition
+    properties:
+      handle: { get_resource: metalk8s_wait_handle }
+      count: 6 # 'init', 'bootstrap', 'masters', 'infra', 'workers', 'complete'
+      timeout: 7200 # 2 hours
+
+  # Cloud-init configurations
+  install_proxy_config:
+    type: OS::Heat::CloudConfig
+    condition: offline
+    properties:
+      cloud_config:
+        merge_how: dict(recurse_array)+list(append)
+        packages:
+          - squid
+        write_files:
+          - path: /etc/squid/squid.config
+            owner: root:root
+            content:
+              str_replace:
+                template: { get_file: templates/squid.conf.tpl }
+                params:
+                  <%src_cidr%>: { get_attr: [access_subnet, cidr] }
+                  <%proxy_port%>: 3128
+        runcmd:
+          - systemctl enable squid
+          - systemctl start squid
+  use_proxy_script:
+    type: OS::Heat::SoftwareConfig
+    condition: offline
+    properties:
+      config:
+        str_replace:
+          template: { get_file: scripts/setup_proxy.py }
+          params:
+            <%bastion_ip%>: { get_attr: [bastion, access_ip] }
+            <%bastion_proxy_port%>: 3128
+  setup_ifaces_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: { get_file: scripts/setup-ifaces.sh }
+  setup_heat_agent_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: { get_file: scripts/setup-heat-agent.sh }
+  authorize_bootstrap_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config:
+        str_replace:
+          template: |
+            #!/bin/bash -x
+            echo '$public_key' >> /home/centos/.ssh/authorized_keys
+          params:
+            $public_key: { get_attr: [bootstrap_keypair, public_key] }
+  bootstrap_dependencies_config:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        merge_how: dict(recurse_array)+list(append)
+        write_files:
+          - path: /run/metalk8s/scripts/configure-bootstrap.sh
+            owner: root:root
+            permissions: '0755'
+            content: { get_file: scripts/configure-bootstrap.sh }
+          - path: /run/metalk8s/scripts/install-bootstrap.sh
+            owner: root:root
+            permissions: '0755'
+            content: { get_file: scripts/install-bootstrap.sh }
+          - path: /run/metalk8s/scripts/expand-cluster.sh
+            owner: root:root
+            permissions: '0755'
+            content: { get_file: scripts/expand-cluster.sh }
+          - path: /run/metalk8s/scripts/setup-infra.sh
+            owner: root:root
+            permissions: '0755'
+            content: { get_file: scripts/setup-infra.sh }
+          - path: /run/metalk8s/scripts/wait_pods_status.sh
+            owner: root:root
+            permissions: '0755'
+            content: { get_file: scripts/wait_pods_status.sh }
+          - path: /run/metalk8s/scripts/wait_nodes.py
+            owner: root:root
+            content: { get_file: scripts/wait_nodes.py }
+          - path: /run/metalk8s/signals/send
+            owner: root:root
+            permissions: '0755'
+            content:
+              str_replace:
+                template: { get_file: scripts/send-signal.sh }
+                params:
+                  <%wc_notify%>: { get_attr: [metalk8s_wait_handle, curl_cli] }
+  bootstrap_init_script:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config:
+        str_replace:
+          template: { get_file: scripts/bootstrap-init.sh }
+          params:
+            <%offline%>: { if: [offline, "true", "false"] }
+            <%iso_url%>: { get_param: metalk8s_iso_url }
+            <%iso_user%>: { get_param: metalk8s_iso_user }
+            <%iso_pass%>: { get_param: metalk8s_iso_pass }
+            <%bastion_ip%>: { get_attr: [bastion, access_ip] }
+            <%bastion_proxy_port%>: 3128
+            <%bootstrap_private_key%>:
+              get_attr: [bootstrap_keypair, private_key]
+            <%bootstrap_public_key%>:
+              get_attr: [bootstrap_keypair, public_key]
+            <%master_ips%>:
+              list_join: [",", { get_attr: [masters, control_plane_ip] }]
+            <%infra_ips%>:
+              list_join: [",", { get_attr: [infras, control_plane_ip] }]
+            <%worker_ips%>:
+              list_join: [",", { get_attr: [workers, control_plane_ip] }]
+
+  # Bastion
+  bastion_init:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        repeat:
+          template: { config: $part_id }
+          for_each:
+            $part_id:
+              list_concat:
+                - [{ get_resource: setup_ifaces_script },
+                   { get_resource: install_proxy_config }]
+                - { get_param: node_extra_init_parts }
+
+  bastion:
+    type: node.template
+    properties:
+      name:
+        str_replace:
+          template: $prefix-bastion
+          params: { $prefix: { get_attr: [prefix, value] } }
+      key_pair: { get_param: key_pair }
+      flavor: m1.medium
+      image: CentOS-7-x86_64-GenericCloud-latest
+      offline: { if: [offline, true, false] }
+      cloud_init_id: { get_resource: bastion_init }
+      access_network_id: { get_attr: [access_subnet, network_id] }
+      control_plane_network_id: { get_resource: control_plane_network }
+      control_plane_subnet_id: { get_resource: control_plane_subnet }
+      workload_plane_network_id: { get_resource: workload_plane_network }
+      workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+      ingress_secgroup_id: { get_resource: ingress_secgroup }
+      egress_secgroup_id: { get_resource: open_egress_secgroup }
+
+  # Common cloud-init for cluster Nodes
+  node_init:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        repeat:
+          template: { config: $part_id }
+          for_each:
+            $part_id:
+              list_concat:
+                - [{ get_resource: setup_ifaces_script },
+                   { get_resource: use_proxy_script },
+                   { get_resource: authorize_bootstrap_script }]
+                - { get_param: node_extra_init_parts }
+
+  # Master VMs and ports
+  masters:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 2
+      resource_def:
+        type: node.template
+        properties:
+          name:
+            str_replace:
+              template: $prefix-master-%index%
+              params: { $prefix: { get_attr: [prefix, value] } }
+          key_pair: { get_param: key_pair }
+          flavor: m1.medium
+          image: CentOS-7-x86_64-GenericCloud-latest
+          offline: { if: [offline, true, false] }
+          cloud_init_id: { get_resource: node_init }
+          access_network_id: { get_attr: [access_subnet, network_id] }
+          control_plane_network_id: { get_resource: control_plane_network }
+          control_plane_subnet_id: { get_resource: control_plane_subnet }
+          workload_plane_network_id: { get_resource: workload_plane_network }
+          workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+          ingress_secgroup_id: { get_resource: ingress_secgroup }
+          egress_secgroup_id:
+            if:
+              - offline
+              - get_resource: restricted_egress_secgroup
+              - get_resource: open_egress_secgroup
+
+  # Infra VMs and ports
+  infras:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 2
+      resource_def:
+        type: node.template
+        properties:
+          name:
+            str_replace:
+              template: $prefix-infra-%index%
+              params: { $prefix: { get_attr: [prefix, value] } }
+          key_pair: { get_param: key_pair }
+          flavor: m1.medium
+          image: CentOS-7-x86_64-GenericCloud-latest
+          offline: { if: [offline, true, false] }
+          cloud_init_id: { get_resource: node_init }
+          access_network_id: { get_attr: [access_subnet, network_id] }
+          control_plane_network_id: { get_resource: control_plane_network }
+          control_plane_subnet_id: { get_resource: control_plane_subnet }
+          workload_plane_network_id: { get_resource: workload_plane_network }
+          workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+          ingress_secgroup_id: { get_resource: ingress_secgroup }
+          egress_secgroup_id:
+            if:
+              - offline
+              - get_resource: restricted_egress_secgroup
+              - get_resource: open_egress_secgroup
+
+  # Worker VMs and ports
+  workers:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: workers_count }
+      resource_def:
+        type: node.template
+        properties:
+          name:
+            str_replace:
+              template: $prefix-worker-%index%
+              params: { $prefix: { get_attr: [prefix, value] } }
+          key_pair: { get_param: key_pair }
+          flavor: { get_param: workers_flavor }
+          image: CentOS-7-x86_64-GenericCloud-latest
+          offline: { if: [offline, true, false] }
+          cloud_init_id: { get_resource: node_init }
+          access_network_id: { get_attr: [access_subnet, network_id] }
+          control_plane_network_id: { get_resource: control_plane_network }
+          control_plane_subnet_id: { get_resource: control_plane_subnet }
+          workload_plane_network_id: { get_resource: workload_plane_network }
+          workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+          ingress_secgroup_id: { get_resource: ingress_secgroup }
+          egress_secgroup_id:
+            if:
+              - offline
+              - get_resource: restricted_egress_secgroup
+              - get_resource: open_egress_secgroup
+
+  # Bootstrap
+  bootstrap_keypair:
+    type: OS::Nova::KeyPair
+    properties:
+      name:
+        str_replace:
+          template: $prefix-bootstrap
+          params: { $prefix: { get_attr: [prefix, value] } }
+      save_private_key: true
+
+  bootstrap_init:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        repeat:
+          template: { config: $part_id }
+          for_each:
+            $part_id:
+              list_concat:
+                - [{ get_resource: setup_ifaces_script },
+                   { get_resource: use_proxy_script },
+                   { get_resource: authorize_bootstrap_script },
+                   { get_resource: bootstrap_dependencies_config },
+                   { get_resource: bootstrap_init_script }]
+                - { get_param: bootstrap_extra_init_parts }
+
+  bootstrap:
+    type: node.template
+    properties:
+      name:
+        str_replace:
+          template: $prefix-bootstrap
+          params: { $prefix: { get_attr: [prefix, value] } }
+      key_pair: { get_param: key_pair }
+      flavor: m1.large
+      image: CentOS-7-x86_64-GenericCloud-latest
+      offline: { if: [offline, true, false] }
+      cloud_init_id: { get_resource: bootstrap_init }
+      access_network_id: { get_attr: [access_subnet, network_id] }
+      control_plane_network_id: { get_resource: control_plane_network }
+      control_plane_subnet_id: { get_resource: control_plane_subnet }
+      workload_plane_network_id: { get_resource: workload_plane_network }
+      workload_plane_subnet_id: { get_resource: workload_plane_subnet }
+      ingress_secgroup_id: { get_resource: ingress_secgroup }
+      egress_secgroup_id:
+        if:
+          - offline
+          - get_resource: restricted_egress_secgroup
+          - get_resource: open_egress_secgroup
+
+outputs:
+  prefix:
+    value: { get_attr: [prefix, value] }
+  sshuttle_cmd:
+    description: |
+      Command to run for activating an SSH-based VPN through Bastion, allowing
+      local access to private networks for this cluster (run from your host)
+    value:
+      str_replace:
+        template: sshuttle -r centos@$bastion_ip $cp_cidr $wp_cidr
+        params:
+          $bastion_ip:
+            get_attr: [bastion, access_ip]
+          $cp_cidr:
+            get_attr: [control_plane_subnet, cidr]
+          $wp_cidr:
+            get_attr: [workload_plane_subnet, cidr]
+  metalk8s_deployment_status:
+    description: Current status of MetalK8s deployment
+    value: { get_attr: [metalk8s_wait_condition, data] }
+  bastion_info:
+    description: Bastion information
+    value:
+      id: { get_resource: bastion }
+      name: { get_attr: [bastion, name] }
+      access_ip: { get_attr: [bastion, access_ip] }
+      private_ips:
+        control_plane: { get_attr: [bastion, control_plane_ip] }
+        workload_plane: { get_attr: [bastion, workload_plane_ip] }
+      proxy_url:
+        str_replace:
+          template: https://$bastion_ip:3128
+          params: { $bastion_ip: { get_attr: [bastion, access_ip] } }
+  bootstrap_info:
+    description: Bootstrap information
+    value:
+      id: { get_resource: bootstrap }
+      name: { get_attr: [bootstrap, name] }
+      access_ip: { get_attr: [bootstrap, access_ip] }
+      private_ips:
+        control_plane: { get_attr: [bootstrap, control_plane_ip] }
+        workload_plane: { get_attr: [bootstrap, workload_plane_ip] }
+  masters_info:
+    description: Master nodes information
+    value:
+      repeat:
+        permutations: false
+        for_each:
+          <%id%>: { get_attr: [masters, refs] }
+          <%name%>: { get_attr: [masters, name] }
+          <%access_ip%>: { get_attr: [masters, access_ip] }
+          <%control_plane_ip%>: { get_attr: [masters, control_plane_ip] }
+          <%workload_plane_ip%>: { get_attr: [masters, workload_plane_ip] }
+        template:
+          id: <%id%>
+          name: <%name%>
+          access_ip: <%access_ip%>
+          private_ips:
+            control_plane: <%control_plane_ip%>
+            workload_plane: <%workload_plane_ip%>
+  infras_info:
+    description: Infra nodes information
+    value:
+      repeat:
+        permutations: false
+        for_each:
+          <%id%>: { get_attr: [infras, refs] }
+          <%name%>: { get_attr: [infras, name] }
+          <%access_ip%>: { get_attr: [infras, access_ip] }
+          <%control_plane_ip%>: { get_attr: [infras, control_plane_ip] }
+          <%workload_plane_ip%>: { get_attr: [infras, workload_plane_ip] }
+        template:
+          id: <%id%>
+          name: <%name%>
+          access_ip: <%access_ip%>
+          private_ips:
+            control_plane: <%control_plane_ip%>
+            workload_plane: <%workload_plane_ip%>
+  workers_info:
+    description: Worker nodes information
+    value:
+      repeat:
+        permutations: false
+        for_each:
+          <%id%>: { get_attr: [workers, refs] }
+          <%name%>: { get_attr: [workers, name] }
+          <%access_ip%>: { get_attr: [workers, access_ip] }
+          <%control_plane_ip%>: { get_attr: [workers, control_plane_ip] }
+          <%workload_plane_ip%>: { get_attr: [workers, workload_plane_ip] }
+        template:
+          id: <%id%>
+          name: <%name%>
+          access_ip: <%access_ip%>
+          private_ips:
+            control_plane: <%control_plane_ip%>
+            workload_plane: <%workload_plane_ip%>
+  
