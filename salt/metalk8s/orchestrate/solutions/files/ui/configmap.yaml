@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ solution }}-ui
+  namespace: {{ namespace }}
+data:
+  config.json: |
+    {"url": "/api/kubernetes"}
+  theme.json: |
+    {"brand": {"primary": "#403e40", "secondary": "#e99121"}}
