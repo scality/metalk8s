@@ -717,26 +717,6 @@ stages:
           env:
             <<: *_env_local_tests
             PYTEST_FILTERS: "post and ci and not multinode and slow"
-      - ShellCommand:
-          name: Cypress test
-          command: bash cypress.sh
-          workdir: build/ui
-          haltOnFailure: true
-          env:
-            IN_CI: 'True'
-      - ShellCommand:
-          name: Prepare upload folder
-          command: >
-            mkdir -p upload/cypress &&
-            (cp -r cypress/screenshots upload/cypress || true) &&
-            (cp -r cypress/videos upload/cypress || true) &&
-            (cp -r junit upload/ || true)
-          workdir: build/ui
-          alwaysRun: true
-      - Upload:
-          name: Upload cypress and junit folder
-          source: ui/upload
-          alwaysRun: true
       # --- Downgrade to version N-1 ---
       - ShellCommand:
           <<: *add_archive
@@ -948,6 +928,39 @@ stages:
           command: >
             tox -e tests -- -m "${PYTEST_FILTERS}"
           haltOnFailure: true
+      - ShellCommand:
+          name: Copy Cypress tests
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-single-node-rhel/terraform/ssh_config
+          command: >
+            scp -r -F "$SSH_CONFIG" ui bootstrap:
+      - ShellCommand:
+          name: Run Cypress tests
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-single-node-rhel/terraform/ssh_config
+            IN_CI: 'True'
+          command: >
+            ssh -F "$SSH_CONFIG" bootstrap "
+              cd ui && IN_CI=$IN_CI bash cypress.sh
+            "
+          haltOnFailure: true
+      - ShellCommand:
+          name: Prepare Cypress upload folder
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-single-node-rhel/terraform/ssh_config
+          command: |-
+            mkdir -p upload/cypress
+            scp -r -F "$SSH_CONFIG" bootstrap:ui/cypress/screenshots upload/cypress/
+            scp -r -F "$SSH_CONFIG" bootstrap:ui/cypress/videos upload/cypress/
+            scp -r -F "$SSH_CONFIG" bootstrap:ui/junit upload/
+          alwaysRun: true
+      - Upload:
+          name: Upload Cypress and JUnit folder
+          source: upload
+          alwaysRun: true
       - ShellCommand:
           <<: *generate_report_over_ssh
           env:
