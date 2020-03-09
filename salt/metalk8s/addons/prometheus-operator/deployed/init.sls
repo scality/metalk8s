@@ -3,5 +3,6 @@ include:
   - .storageclass
   - .cleanup
   - .chart
+  - .alertmanager-configuration-secret
   - .dashboards
   - .service-configuration
