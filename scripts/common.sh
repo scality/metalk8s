@@ -339,3 +339,13 @@ configure_salt_minion_local_mode() {
         --local --retcode-passthrough state.sls metalk8s.salt.minion.local \
         pillar="{'metalk8s': {'archives': '$BASE_DIR'}}" saltenv=base
 }
+
+get_salt_env() {
+    "$SALT_CALL" --out txt slsutil.renderer \
+        string="metalk8s-{{ pillar.metalk8s.nodes[grains.id].version }}" \
+        | cut -c 8-
+}
+
+get_salt_minion_id() {
+    "$SALT_CALL" --out txt grains.get id | cut -c 8-
+}

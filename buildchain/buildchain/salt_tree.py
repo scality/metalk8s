@@ -289,8 +289,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/ui/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/ui/deployed/ui.sls'),
 
-    Path('salt/metalk8s/addons/solutions/deployed.sls'),
-    Path('salt/metalk8s/addons/solutions/environment-crd.sls'),
+    Path('salt/metalk8s/addons/solutions/deployed/configmap.sls'),
+    Path('salt/metalk8s/addons/solutions/deployed/init.sls'),
+    Path('salt/metalk8s/addons/solutions/deployed/namespace.sls'),
 
     Path('salt/metalk8s/addons/volumes/deployed.sls'),
     targets.TemplateFile(
@@ -468,31 +469,38 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/node/grains.sls'),
 
+    Path('salt/metalk8s/orchestrate/deploy_node.sls'),
+    Path('salt/metalk8s/orchestrate/etcd.sls'),
+    Path('salt/metalk8s/orchestrate/register_etcd.sls'),
+
     Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
-    Path('salt/metalk8s/orchestrate/deploy_node.sls'),
+
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/pre.sls'),
-    Path('salt/metalk8s/orchestrate/solutions/available.sls'),
-    Path('salt/metalk8s/orchestrate/solutions/init.sls'),
-    Path('salt/metalk8s/orchestrate/etcd.sls'),
+
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/pre.sls'),
-    Path('salt/metalk8s/orchestrate/register_etcd.sls'),
+
+    Path('salt/metalk8s/orchestrate/solutions/prepare-environment.sls'),
+    Path('salt/metalk8s/orchestrate/solutions/deploy-components.sls'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/configmap.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/deployment.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/role.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/role_binding.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/operator/service_account.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/ui/configmap.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/ui/deployment.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/ui/ingress.yaml'),
+    Path('salt/metalk8s/orchestrate/solutions/files/ui/service.yaml'),
 
     Path('salt/metalk8s/archives/configured.sls'),
     Path('salt/metalk8s/archives/init.sls'),
     Path('salt/metalk8s/archives/mounted.sls'),
 
     Path('salt/metalk8s/service-configuration/deployed/init.sls'),
-
-    Path('salt/metalk8s/solutions/configured.sls'),
-    Path('salt/metalk8s/solutions/mounted.sls'),
-    Path('salt/metalk8s/solutions/unconfigured.sls'),
-    Path('salt/metalk8s/solutions/unmounted.sls'),
-    Path('salt/metalk8s/solutions/init.sls'),
 
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
@@ -538,6 +546,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/minion/local.sls'),
     Path('salt/metalk8s/salt/minion/running.sls'),
 
+    Path('salt/metalk8s/solutions/available.sls'),
+    Path('salt/metalk8s/solutions/init.sls'),
+
     Path('salt/metalk8s/volumes/init.sls'),
     Path('salt/metalk8s/volumes/prepared/init.sls'),
     Path('salt/metalk8s/volumes/prepared/installed.sls'),
@@ -548,27 +559,27 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
+    Path('salt/_modules/metalk8s.py'),
     Path('salt/_modules/metalk8s_cordon.py'),
     Path('salt/_modules/metalk8s_drain.py'),
-    Path('salt/_modules/metalk8s_kubernetes.py'),
     Path('salt/_modules/metalk8s_etcd.py'),
     Path('salt/_modules/metalk8s_grafana.py'),
+    Path('salt/_modules/metalk8s_kubernetes.py'),
     Path('salt/_modules/metalk8s_kubernetes_utils.py'),
-    Path('salt/_modules/metalk8s.py'),
     Path('salt/_modules/metalk8s_network.py'),
     Path('salt/_modules/metalk8s_package_manager_yum.py'),
     Path('salt/_modules/metalk8s_package_manager_apt.py'),
     Path('salt/_modules/metalk8s_service_configuration.py'),
     Path('salt/_modules/metalk8s_solutions.py'),
+    Path('salt/_modules/metalk8s_solutions_k8s.py'),
     Path('salt/_modules/metalk8s_volumes.py'),
-
 
     Path('salt/_pillar/metalk8s.py'),
     Path('salt/_pillar/metalk8s_endpoints.py'),
+    Path('salt/_pillar/metalk8s_etcd.py'),
     Path('salt/_pillar/metalk8s_nodes.py'),
     Path('salt/_pillar/metalk8s_private.py'),
     Path('salt/_pillar/metalk8s_solutions.py'),
-    Path('salt/_pillar/metalk8s_etcd.py'),
 
     Path('salt/_renderers/metalk8s_kubernetes.py'),
 
