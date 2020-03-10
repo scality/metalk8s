@@ -1,9 +1,8 @@
-StorageClass Creation
-=====================
+Creating a StorageClass
+=======================
 
 **MetalK8s** uses **StorageClass** objects to describe how **Volumes** are
 formatted and mounted.
-This section hightlights how to create a Storageclass using the **CLI**.
 
 #. Create a **StorageClass** manifest.
 
@@ -45,7 +44,7 @@ This section hightlights how to create a Storageclass using the **CLI**.
 
       root@bootstrap $ kubectl apply -f storageclass.yml
 
-#. Check that the **StorageClass** has been created.
+Check that the **StorageClass** has been successfully created by running:
 
    .. code-block:: shell
 

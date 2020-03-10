@@ -10,5 +10,5 @@ persistent data storage within a MetalK8s Cluster.
 .. toctree::
 
    storageclass_creation
-   volume_creation_deletion_cli
-   volume_creation_deletion_gui
+   volume_creation
+   volume_deletion
