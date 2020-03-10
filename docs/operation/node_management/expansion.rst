@@ -9,7 +9,7 @@ Cluster expansion
 .. |kubeadm join| replace:: ``kubeadm join``
 
 Once the :term:`Bootstrap node` has been installed
-(see :doc:`./bootstrap`), the cluster can be expanded.
+(see :doc:`../../installation/bootstrap`), the cluster can be expanded.
 Unlike the |kubeadm join|_ approach which relies on `bootstrap tokens`_ and
 manual operations on each node, MetalK8s uses Salt SSH to setup new
 :term:`Nodes <Node>` through declarative configuration,
@@ -166,7 +166,8 @@ installed and deployed on the Node.
      - effect: NoSchedule
        key: node-role.kubernetes.io/etcd
 
-- A worker node dedicated to ``infra`` services (see :doc:`./introduction`)
+- A worker node dedicated to ``infra`` services (see
+  :doc:`../../installation/introduction`)
 
   Roles and taints both are set to infra. It has the same behavior as the
   **Infra** checkbox in the GUI.

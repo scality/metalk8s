@@ -13,8 +13,6 @@ the following steps:
 #. :doc:`Setup <./setup>` of the environment
 #. :doc:`Deployment <./bootstrap>` of the :term:`Bootstrap node`, the first
    machine in the cluster
-#. :doc:`Expansion <./expansion>` of the cluster, orchestrated from the
-   Bootstrap node
 #. :doc:`Post installation <./post-install>` configuration steps and sanity
    checks
 
@@ -119,7 +117,8 @@ group of services.
 
 It is also possible to evolve an architecture after initial deployment, in case
 the underlying infrastructure also evolves (new machines can be added through
-the :doc:`expansion<./expansion>` mechanism, roles can be added or removed...).
+the :doc:`expansion<../operation/node_management/expansion>` mechanism, roles
+can be added or removed...).
 
 
 Concepts

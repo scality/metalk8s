@@ -241,6 +241,9 @@ Validate the install
      storage volumes for both Prometheus and Alertmanager have been successfully
      provisioned.
 
+- :doc:`Expansion <../operation/node_management/expansion>` of the cluster is
+  possible.
+
 - If you encouter an error during installation or have difficulties
   validating a fresh MetalK8s installation, visit our
   :ref:`Troubleshooting guide <Troubleshooting Guide>`.
