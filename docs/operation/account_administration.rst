@@ -8,18 +8,12 @@ changing the default username and password for some MetalK8s services.
 
 .. _ops-grafana-admin:
 
-Administering Grafana
-*********************
+Changing Grafana Username and Password
+--------------------------------------
 
 A fresh install of MetalK8s has a Grafana service instance with default
 credentials: ``admin`` / ``admin``. For more information on how to access
-Grafana, please refer to :ref:`this procedure <installation-services-grafana>`
-
-Changing Grafana username and password
---------------------------------------
-
-To change the default username and password for Grafana on a MetalK8s cluster,
-perform the following procedures:
+Grafana, refer to :ref:`this procedure <installation-services-grafana>`.
 
 #. Create a file named ``patch-secret.yaml`` that has the following content:
 
@@ -35,7 +29,7 @@ perform the following procedures:
 
       $ kubectl --kubeconfig /etc/kubernetes/admin.conf patch secrets prometheus-operator-grafana --patch "$(cat patch-secret.yaml)" -n metalk8s-monitoring
 
-#. Now, roll out the new updates for Grafana:
+#. Roll out the new updates for Grafana:
 
    .. code-block:: shell
 
@@ -46,14 +40,14 @@ perform the following procedures:
 
   .. warning::
 
-     During an upgrade or downgrade of a MetalK8s cluster, customized Grafana
-     username and password will be overwritten with default credentials
-     ``admin`` / ``admin``.
+     During an :doc:`upgrade <./upgrade>` or :doc:`downgrade <./downgrade>` of
+     a MetalK8s cluster, customized Grafana username and password will be
+     overwritten with default credentials ``admin`` / ``admin``.
 
 .. _ops-k8s-admin:
 
-Administering MetalK8s GUI, Kubernetes API and Salt API
-*******************************************************
+Managing Kubernetes API Username and Password
+---------------------------------------------
 
 During installation, MetalK8s configures the Kubernetes API to accept Basic
 authentication, with default credentials ``admin`` / ``admin``.
@@ -64,9 +58,6 @@ Services exposed by MetalK8s, such as
 authenticating their users. As such, changing the credentials of a
 Kubernetes API user will also change the credentials required to
 connect to either one of these services.
-
-Managing Kubernetes API username and password
----------------------------------------------
 
   .. warning::
 
