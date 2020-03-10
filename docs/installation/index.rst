@@ -14,6 +14,5 @@ and shows how to access various services after completing the setup.
    introduction
    setup
    bootstrap
-   expansion
    post-install
    services

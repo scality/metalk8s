@@ -1,6 +1,5 @@
-Changing the hostname of a MetalK8s node
+Changing the Hostname of a MetalK8s Node
 ========================================
-
 
 #. On the node, change the hostname:
 
@@ -9,7 +8,7 @@ Changing the hostname of a MetalK8s node
       $ hostnamectl set-hostname <New hostname>
       $ systemctl restart systemd-hostnamed
 
-#. Check that the change is taken into account.
+   Check that the change is taken into account.
 
    .. code-block:: shell
 
@@ -55,7 +54,7 @@ Changing the hostname of a MetalK8s node
       spec:
         taints: <taints>
 
-   Then apply the configuration:
+   Apply the configuration:
 
    .. code-block:: shell
 
@@ -101,4 +100,3 @@ Changing the hostname of a MetalK8s node
    .. code-block:: shell
 
       $ systemctl restart kubelet
-

@@ -32,8 +32,8 @@ achieved using the command-line.
 
 .. _installation-expansion-ui:
 
-Adding a Node with the :ref:`MetalK8s GUI <installation-services-admin-ui>`
----------------------------------------------------------------------------
+Using the :ref:`GUI <installation-services-admin-ui>`
+-----------------------------------------------------
 To reach the UI, refer to
 :ref:`this procedure <installation-services-admin-ui>`.
 
@@ -44,12 +44,12 @@ The MetalK8s GUI provides a simple form for that purpose.
 
 #. Navigate to the Node list page, by clicking the button in the sidebar:
 
-   .. image:: img/ui/click-node-list.png
+   .. image:: img/click-node-list.png
 
 #. From the Node list (the Bootstrap node should be visible there), click the
    button labeled "Create a New Node":
 
-   .. image:: img/ui/click-create-node.png
+   .. image:: img/click-create-node.png
 
 #. Fill the form with relevant information (make sure the
    :ref:`SSH provisioning <Bootstrap SSH Provisioning>` for the Bootstrap node
@@ -76,7 +76,7 @@ The MetalK8s GUI provides a simple form for that purpose.
 #. Click **Create**. You will be redirected to the Node list page, and will be
    shown a notification to confirm the Node creation:
 
-   .. image:: img/ui/notification-node-created.png
+   .. image:: img/notification-node-created.png
 
 
 Deploying the Node
@@ -87,12 +87,12 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
 #. From the Node list page, click the **Deploy** button for any Node
    that has not yet been deployed.
 
-   .. image:: img/ui/click-node-deploy.png
+   .. image:: img/click-node-deploy.png
 
    Once clicked, the button changes to **Deploying**. Click it again to
    open the deployment status page:
 
-   .. image:: img/ui/deployment-progress.png
+   .. image:: img/deployment-progress.png
 
    Detailed events are shown on the right of this page, for advanced users to
    debug in case of errors.
@@ -112,8 +112,8 @@ The MetalK8s GUI uses :term:`SaltAPI` to orchestrate the deployment.
 
 .. _installation-expansion-cli:
 
-Adding a Node from the Command-line
------------------------------------
+Using the CLI
+-------------
 
 .. _installation-expansion-manifest:
 
@@ -168,7 +168,7 @@ installed and deployed on the Node.
 
 - A worker node dedicated to ``infra`` services (see :doc:`./introduction`)
 
-  roles and taints both are set to infra. It has the same behavior as the
+  Roles and taints both are set to infra. It has the same behavior as the
   **Infra** checkbox in the GUI.
 
 .. code-block:: yaml
