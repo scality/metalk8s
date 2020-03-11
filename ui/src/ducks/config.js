@@ -194,7 +194,6 @@ export function* fetchConfig(action) {
 }
 
 export function* updateApiServerConfig({ payload }) {
-  console.log('updateApiServerConfig payload', payload);
   const api = yield select(state => appNamespaceSelector(state).config.api);
   if (api) {
     yield call(

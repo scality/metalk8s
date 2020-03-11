@@ -25,7 +25,6 @@ import {
 } from '../ducks/namespaceHelper';
 import reducer from '../ducks/reducer';
 import sagas from '../ducks/sagas.js';
-import { BrowserRouter } from 'react-router-dom';
 
 const messages = {
   EN: translations_en,

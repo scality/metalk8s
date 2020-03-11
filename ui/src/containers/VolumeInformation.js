@@ -41,6 +41,10 @@ import {
   volumeGetError,
 } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
+import {
+  appNamespaceSelector,
+  nameSpaceAction,
+} from '../ducks/namespaceHelper';
 
 const VolumeInformationListContainer = styled(InformationListContainer)`
   margin: ${padding.larger};
@@ -86,17 +90,24 @@ const VolumeInformation = props => {
     stopRefreshPersistentVolumesAction,
   );
   useEffect(() => {
-    dispatch(fetchNodesAction());
-    dispatch(fetchStorageClassAction());
+    dispatch(nameSpaceAction(fetchNodesAction));
+    dispatch(nameSpaceAction(fetchStorageClassAction));
   }, [dispatch]);
 
-  const theme = useSelector(state => state.config.theme);
+  const theme = useSelector(state => appNamespaceSelector(state).config.theme);
   const node = useSelector(state => makeGetNodeFromUrl(state, props));
   const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
-  const pVList = useSelector(state => state.app.volumes.pVList);
-  const storageClasses = useSelector(state => state.app.volumes.storageClass);
 
-  const isLoading = useSelector(state => state.app.volumes.isLoading);
+  const pVList = useSelector(
+    state => appNamespaceSelector(state).app.volumes.pVList,
+  );
+  const storageClasses = useSelector(
+    state => appNamespaceSelector(state).app.volumes.storageClass,
+  );
+
+  const isLoading = useSelector(
+    state => appNamespaceSelector(state).app.volumes.isLoading,
+  );
 
   const currentVolumeName = match.params.volumeName;
   const volume = volumes.find(

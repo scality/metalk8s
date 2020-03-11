@@ -158,11 +158,11 @@ export function* fetchVolumes() {
   );
   const result = yield call(ApiK8s.getVolumes);
   if (!result.error) {
-    yield put(setVolumesAction(result?.body?.items ?? []));
+    yield put(nameSpaceAction(setVolumesAction, result?.body?.items ?? []));
   }
   yield delay(1000); // To make sure that the loader is visible for at least 1s
   yield put(
-    updateVolumesAction({
+    nameSpaceAction(updateVolumesAction, {
       isLoading: false,
     }),
   );
@@ -172,18 +172,22 @@ export function* fetchVolumes() {
 export function* fetchPersistentVolumes() {
   const result = yield call(ApiK8s.getPersistentVolumes);
   if (!result.error) {
-    yield put(setPersistentVolumesAction(result?.body?.items ?? []));
+    yield put(
+      nameSpaceAction(setPersistentVolumesAction, result?.body?.items ?? []),
+    );
   }
   return result;
 }
 
 export function* fetchStorageClass() {
-  yield put(updateStorageClassAction(true));
+  yield put(nameSpaceAction(updateStorageClassAction, true));
   const result = yield call(ApiK8s.getStorageClass);
   if (!result.error) {
-    yield put(setStorageClassAction(result?.body?.items ?? []));
+    yield put(
+      nameSpaceAction(setStorageClassAction, result?.body?.items ?? []),
+    );
   }
-  yield put(updateStorageClassAction(false));
+  yield put(nameSpaceAction(updateStorageClassAction, false));
 }
 
 /**
@@ -253,7 +257,7 @@ export function* createVolumes({ payload }) {
     if (!result.error) {
       yield call(history.push, `/nodes/${nodeName}/volumes`);
       yield put(
-        addNotificationSuccessAction({
+        nameSpaceAction(addNotificationSuccessAction, {
           title: intl.translate('volume_creation'),
           message: intl.translate('volume_creation_success', {
             name: newVolume.name,
@@ -262,7 +266,7 @@ export function* createVolumes({ payload }) {
       );
     } else {
       yield put(
-        addNotificationErrorAction({
+        nameSpaceAction(addNotificationErrorAction, {
           title: intl.translate('volume_creation'),
           message: intl.translate('volume_creation_failed', {
             name: newVolume.name,
@@ -273,7 +277,7 @@ export function* createVolumes({ payload }) {
   } else {
     // We might want to change this behavior later
     yield put(
-      addNotificationErrorAction({
+      nameSpaceAction(addNotificationErrorAction, {
         title: 'Volume Form Error',
         message: 'Volume not created, some fields are missing.',
       }),
@@ -282,7 +286,7 @@ export function* createVolumes({ payload }) {
 }
 
 export function* refreshVolumes() {
-  yield put(updateVolumesRefreshingAction(true));
+  yield put(nameSpaceAction(updateVolumesRefreshingAction, true));
   const result = yield call(fetchVolumes);
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
@@ -294,18 +298,20 @@ export function* refreshVolumes() {
 }
 
 export function* stopRefreshVolumes() {
-  yield put(updateVolumesRefreshingAction(false));
+  yield put(nameSpaceAction(updateVolumesRefreshingAction, false));
 }
 
 export function* fetchPersistentVolumeClaims() {
   const result = yield call(ApiK8s.getPersistentVolumeClaims);
   if (!result.error) {
-    yield put(setPersistentVolumeClaimAction(result.body.items));
+    yield put(
+      nameSpaceAction(setPersistentVolumeClaimAction, result.body.items),
+    );
   }
 }
 
 export function* refreshPersistentVolumes() {
-  yield put(updatePersistentVolumesRefreshingAction(true));
+  yield put(nameSpaceAction(updatePersistentVolumesRefreshingAction, true));
   const result = yield call(fetchPersistentVolumes);
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
@@ -317,14 +323,14 @@ export function* refreshPersistentVolumes() {
 }
 
 export function* stopRefreshPersistentVolumes() {
-  yield put(updatePersistentVolumesRefreshingAction(false));
+  yield put(nameSpaceAction(updatePersistentVolumesRefreshingAction, false));
 }
 
 export function* deleteVolume({ payload }) {
   const result = yield call(ApiK8s.deleteVolume, payload);
   if (!result.error) {
     yield put(
-      addNotificationSuccessAction({
+      nameSpaceAction(addNotificationSuccessAction, {
         title: intl.translate('volume_deletion'),
         message: intl.translate('volume_delete_success', {
           name: payload,
@@ -333,7 +339,7 @@ export function* deleteVolume({ payload }) {
     );
   } else {
     yield put(
-      addNotificationErrorAction({
+      nameSpaceAction(addNotificationErrorAction, {
         title: intl.translate('volume_deletion'),
         message: intl.translate('volume_delete_failed', {
           name: payload,

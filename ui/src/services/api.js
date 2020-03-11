@@ -13,5 +13,5 @@ export function fetchTheme() {
 export function fetchConfig() {
   console.warn('Dont forget to change back - its for microapp');
   return apiClient.get('/external-component/metalk8s/config.json');
-  // return apiClient.get('/config.json');
+  //return apiClient.get('/config.json');
 }

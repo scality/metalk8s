@@ -17,6 +17,12 @@ const PrivateRoute = ({ component, ...rest }) => {
     }); //Go to Dex Login Form if not authenticated
     return null;
   } else {
+    const { path } = rest;
+    console.log('PrivateRoute path', path);
+    console.log('rest', rest);
+    if (path.endsWith('createVolume')) {
+      console.log('shoud render');
+    }
     return <Route {...rest} component={component} />;
   }
 };

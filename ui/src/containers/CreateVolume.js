@@ -24,7 +24,10 @@ import {
 } from '../components/BreadcrumbStyle';
 import { sizeUnits } from '../services/utils';
 import { intl } from '../translations/IntlGlobalProvider';
-
+import {
+  appNamespaceSelector,
+  nameSpaceAction,
+} from '../ducks/namespaceHelper';
 // We might want to do a factorization later for
 // form styled components
 const CreateVolumeFormContainer = styled.div`
@@ -153,20 +156,22 @@ const CreateVolume = props => {
   const history = useHistory();
   const match = useRouteMatch();
   const createVolume = (body, nodeName) =>
-    dispatch(createVolumeAction(body, nodeName));
+    dispatch(nameSpaceAction(createVolumeAction, body, nodeName));
 
-  const storageClass = useSelector(state => state.app.volumes.storageClass);
-  const theme = useSelector(state => state.config.theme);
-  const api = useSelector(state => state.config.api);
+  const storageClass = useSelector(
+    state => appNamespaceSelector(state).app.volumes.storageClass,
+  );
+  const theme = useSelector(state => appNamespaceSelector(state).config.theme);
+  const api = useSelector(state => appNamespaceSelector(state).config.api);
 
   useEffect(() => {
-    dispatch(fetchStorageClassAction());
+    dispatch(nameSpaceAction(fetchStorageClassAction));
   }, [dispatch]);
 
   const nodeName = match.params.id;
   const storageClassesName = storageClass.map(item => item.metadata.name);
   const isStorageClassLoading = useSelector(
-    state => state.app.volumes.isSCLoading,
+    state => appNamespaceSelector(state).app.volumes.isSCLoading,
   );
 
   const [labelName, setLabelName] = useState('');

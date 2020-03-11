@@ -204,7 +204,7 @@ const Layout = props => {
         rightActions,
         logo: <img alt="logo" src={theme.logo_path} />,
       };
-
+  console.log('path in layout', path);
   return (
     <ThemeProvider theme={theme}>
       <CoreUILayout sidebar={sidebarConfig} navbar={navbar}>

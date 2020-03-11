@@ -1,5 +1,6 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import * as ApiK8s from '../../services/k8s/api';
+import { nameSpaceAction } from '../namespaceHelper';
 
 // Actions
 const FETCH_PODS = 'FETCH_PODS';
@@ -33,7 +34,8 @@ export function* fetchPods() {
   const result = yield call(ApiK8s.getPods);
   if (!result.error) {
     yield put(
-      setPodsAction(
+      nameSpaceAction(
+        setPodsAction,
         result.body.items.map(pod => ({
           name: pod.metadata.name,
           namespace: pod.metadata.namespace,

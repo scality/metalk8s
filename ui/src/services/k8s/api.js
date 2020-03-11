@@ -30,6 +30,7 @@ export async function getPods() {
   try {
     return await coreV1.listPodForAllNamespaces();
   } catch (error) {
+    console.log('error in getPods', error);
     return { error };
   }
 }

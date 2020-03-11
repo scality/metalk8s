@@ -91,16 +91,10 @@ const NodeInformation = props => {
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setsortDirection] = useState('ASC');
 
-  const node = useSelector(state =>
-    makeGetNodeFromUrl(appNamespaceSelector(state), props),
-  );
+  const node = useSelector(state => makeGetNodeFromUrl(state, props));
   const theme = useSelector(state => appNamespaceSelector(state).config.theme);
-  const pods = useSelector(state =>
-    makeGetPodsFromUrl(appNamespaceSelector(state), props),
-  );
-  const volumes = useSelector(state =>
-    makeGetVolumesFromUrl(appNamespaceSelector(state), props),
-  );
+  const pods = useSelector(state => makeGetPodsFromUrl(state, props));
+  const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
   const pVList = useSelector(
     state => appNamespaceSelector(state).app.volumes.pVList,
   );

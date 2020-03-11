@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { FormattedDate, FormattedTime } from 'react-intl';
-import { useHistory } from 'react-router';
+import { useHistory, useRouteMatch } from 'react-router';
 import {
   Button,
   Table,
@@ -267,6 +267,10 @@ const NodeVolumes = props => {
     setSearchedVolumeName(e.target.value);
   };
 
+  let { path } = useRouteMatch();
+  path = path === '/' ? '' : path;
+  console.log('path', path);
+
   return (
     <>
       <Modal
@@ -320,7 +324,9 @@ const NodeVolumes = props => {
               text={<i className="fas fa-plus "></i>}
               type="button"
               onClick={() => {
-                history.push('createVolume');
+                const goBackPath = path.split('/');
+                goBackPath.pop();
+                history.push(`${goBackPath.join('/')}/createVolume`);
               }}
               data-cy="create-volume-button"
             />
