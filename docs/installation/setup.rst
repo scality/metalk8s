@@ -20,7 +20,6 @@ Machines *must not* be managed by any configuration management system, such as
 SaltStack_ or Puppet_.
 
     .. warning::
-       
        The distribution must be left intact as much as possible (do not tune,
        tweak, or configure it, or install any software).
 
@@ -43,9 +42,9 @@ The version can be retrieved using:
 
     $ uname -r
 
-If the installed version is lower than the one above, upgrade it with: 
+If the installed version is lower than the one above, upgrade it with:
 
-  .. code-block:: shell
+.. code-block:: shell
 
     $ yum upgrade -y kernel-3.10.0-1062.4.1.el7
     $ reboot
@@ -60,8 +59,8 @@ SSH
 
 Each machine must be accessible through SSH from the host. :doc:`Bootstrap node
 deployment<./bootstrap>` generates a new SSH identity for the :term:`Bootstrap
-node` and shares it with other nodes in the cluster. You can also do this manually
-beforehand.
+node` and shares it with other nodes in the cluster. You can also do this
+manually beforehand.
 
 Network
 ^^^^^^^

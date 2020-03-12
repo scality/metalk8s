@@ -345,8 +345,8 @@ of security at the port level, which must be disabled or circumvented with
 
 Also note that Kubernetes has numerous integrations with existing cloud
 providers to provide easier access to proprietary features, such as
-load balancers. For more information, review
-`this topic<https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/>`_.
+load balancers. For more information, review `this topic`_.
 
 .. _AWS EC2: https://aws.amazon.com/ec2/
 .. _OpenStack: https://www.openstack.org/
+.. _this topic: https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/
