@@ -60,7 +60,7 @@ simpler sizing of said machines, as MetalK8s impact would be negligible.
 
 Extended Architecture
 """""""""""""""""""""
-This example architecture focuses on reliability rather than compacity,
+This example architecture focuses on reliability rather than compactness
 offering the finest control over the entire platform:
 
 - One machine dedicated to running Bootstrap services (see
