@@ -99,7 +99,6 @@ const SolutionsList = props => {
   const solutions = useSelector(state => state.app.solutions.solutions);
   const environments = useSelector(state => state.app.solutions.environments);
   const history = useHistory();
-  const { intl } = props;
 
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
 
