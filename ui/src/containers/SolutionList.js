@@ -182,7 +182,7 @@ const SolutionsList = props => {
             <ButtonContainer marginLeft={solutionsLinks.length > 0}>
               <Button
                 size="smaller"
-                icon={<i className="fas fa-plus" />}
+                text={intl.translate('add')}
                 onClick={() => {
                   setSelectedEnvironment(row.name);
                   setisAddSolutionModalOpen(true);
@@ -337,7 +337,7 @@ const SolutionsList = props => {
                         <Input
                           type="select"
                           name="solutions"
-                          label={intl.translate('solutions')}
+                          label={intl.translate('solution')}
                           options={solutionsSelectOptions}
                           placeholder={intl.translate('select_a_type')}
                           noOptionsMessage={() => intl.translate('no_results')}

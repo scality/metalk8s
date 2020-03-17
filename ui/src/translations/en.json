@@ -96,6 +96,7 @@
   "no_storage_class_found": "No storage class found.",
   "storage_class_is_required": "A storage class is required in order to create a volume. Please create one in Kubernetes.",
   "learn_more": "Learn more",
+  "solution": "Solution",
   "solutions": "Solutions",
   "available_solutions": "Available Solutions",
   "versions": "Versions",
@@ -123,7 +124,7 @@
   "create_new_environment": "Create a New Environment",
   "description": "Description",
   "add_solution_to_environment": "Add solution to the environment {environment}",
-  "version_env": "Versions",
+  "version_env": "Version",
   "add_solution": "Add the solution",
   "advanced_monitoring": "Advanced Monitoring",
   "add": "Add",
@@ -135,5 +136,9 @@
   "please_refer_to": "Please refer to",
   "import_solution_hint": "You should import a solution to prepare your environment",
   "redirecting": "Redirecting…",
-  "documentation": "Documentation"
+  "documentation": "Documentation",
+  "env_preparation": "Environment preparation",
+  "env_preparation_success": "Environment {envName} is being prepared.",
+  "env_preparation_failed": "Environment {envName} preparation has failed.",
+  "environment_creation_failed": "Environment {envName} creation has failed."
 }
