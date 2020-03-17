@@ -12,10 +12,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 def retry(operation, times=1, wait=1, error_msg=None, name="default"):
+    last_assert = None
     for idx in range(times):
         try:
             res = operation()
         except AssertionError as exc:
+            last_assert = str(exc)
             LOGGER.info(
                 "[%s] Attempt %d/%d failed: %s", name, idx, times, str(exc)
             )
@@ -29,6 +31,9 @@ def retry(operation, times=1, wait=1, error_msg=None, name="default"):
                 "Failed to run operation '{name}' after {attempts} attempts "
                 "(waited {total}s in total)"
             ).format(name=name, attempts=times, total=times * wait)
+
+        if last_assert:
+            error_msg = error_msg + ': ' + last_assert
 
         pytest.fail(error_msg)
 
