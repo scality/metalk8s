@@ -1,6 +1,8 @@
+import functools
 import ipaddress
 import logging
 import re
+import operator
 import testinfra
 import time
 from typing import Optional, Dict
@@ -160,3 +162,21 @@ def run_salt_command(host, command, ssh_config):
             output.stdout,
             output.stderr
         )
+
+
+def get_dict_element(data, path, delimiter='.'):
+    """
+    Traverse a dict using a 'delimiter' on a target string.
+    getitem(a, b) returns the value of a at index b
+    """
+    return functools.reduce(operator.getitem, path.split(delimiter), data)
+
+
+def set_dict_element(data, path, value, delimiter='.'):
+    """
+    Traverse a nested dict using a delimiter on a target string
+    replaces the value of a key within a dictionary and returns the new dict
+    """
+    path, _, key = path.rpartition(delimiter)
+    (get_dict_element(data, path) if path else data)[key] = value
+    return data
