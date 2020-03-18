@@ -7,3 +7,4 @@ Architecture Documents
    deployment
    monitoring
    requirements
+   ci

@@ -20,6 +20,10 @@ models:
           curl -s http://proxy-cache/setup.sh | sudo sh &&
           . /usr/local/bin/use_scality_proxy_cache
       haltOnFailure: true
+  - SetProperty: &set_premerge_url
+      name: Set premerge artifacts private_url as Property
+      property: premerge_artifacts_private_url
+      value: "http://artifacts/builds/%(prop:premerge_artifacts_name)s"
   - ShellCommand: &wait_for_docker
       name: Wait for Docker daemon to be ready
       command: |
@@ -157,7 +161,7 @@ models:
       name: Set version as property from built artifacts
       property: metalk8s_version
       env:
-        BASE_URL: "%(prop:artifacts_private_url)s"
+        BASE_URL: "%(prop:premerge_artifacts_private_url)s"
       command: >
         bash -c '
         . <(curl -s "${BASE_URL}/product.txt") &&
@@ -186,7 +190,7 @@ models:
   - ShellCommand: &retrieve_iso_checksum
       name: Retrieve ISO image checksum
       env: &_env_retrieve_artifact
-        BASE_URL: "%(prop:artifacts_private_url)s"
+        BASE_URL: "%(prop:premerge_artifacts_private_url)s"
         DEST_DIR: "."
       command: >
         curl -s -XGET -o "${DEST_DIR}/SHA256SUM" "${BASE_URL}/SHA256SUM"
@@ -426,6 +430,50 @@ stages:
       type: local
     steps:
       - ShellCommand: *add_final_status_artifact_failed
+      - SetProperty:
+          # Set premerge_artifacts_name to current artifacts name
+          # as we are in premerge so we can use same step to retrieve ISO
+          # in pre-merge and post-merge
+          name: Set premerge artifacts name to current artifacts_name
+          property: premerge_artifacts_name
+          value: "%(prop:artifacts_name)s"
+      - SetProperty: *set_premerge_url
+      - TriggerStages:
+          name: Trigger build, docs and lint stages simultaneously
+          stage_names:
+            - build
+            - docs
+            - lint
+            - unit_tests
+          haltOnFailure: true
+      - SetPropertyFromCommand: *set_version_prop
+      - TriggerStages:
+          name: Trigger multiple-nodes step with built ISO
+          stage_names:
+            - single-node-install-rhel
+            - multiple-nodes-centos
+      - ShellCommand: *add_final_status_artifact_success
+      - Upload: *upload_final_status_artifact
+
+  post-merge:
+    # Only let 2 post merge run simultaneously
+    simultaneous_builds: 2
+    worker:
+      type: local
+    steps:
+      - GetArtifactsFromStage:
+          name: Get pre-merge artifacts_name
+          stage: pre-merge
+          property: premerge_artifacts_name
+          haltOnFailure: True
+      - SetProperty: *set_premerge_url
+      - ShellCommand:
+          name: Save the pre-merge artifacts reference
+          command: >
+            mkdir -p build_status/.related_artifacts
+            && touch
+            "build_status/.related_artifacts/%(prop:premerge_artifacts_name)s"
+          haltOnFailure: True
       - SetPropertyFromCommand:
           name: Set previous version to upgrade from and downgrade to
           property: product_version_prev
@@ -434,13 +482,9 @@ stages:
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
               echo "$major.$(( $minor-1 ))"
       - TriggerStages:
-          name: Trigger build, docs and lint stages simultaneously
+          name: Trigger build of previous version
           stage_names:
-            - build
             - buildprev
-            - docs
-            - lint
-            - unit_tests
           haltOnFailure: true
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand:
@@ -450,13 +494,12 @@ stages:
           env:
             BASE_URL: "%(prop:artifacts_private_url)s/pre"
       - TriggerStages:
-          name: Trigger single-node and multiple-nodes steps with built ISO
+          name: Trigger Post-merge test stages simultaneously
           stage_names:
             - single-node-upgrade-centos
             - single-node-downgrade-centos
-            - single-node-install-rhel
-            - multiple-nodes-centos
             - single-node-patch-version
+          waitForFinish: True
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
 

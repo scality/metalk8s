@@ -21,39 +21,46 @@ def sync_auth(saltenv='base', extmod_whitelist=None, extmod_blacklist=None):
 def wait_minions(tgt='*', retry=10):
     client = salt.client.get_local_client(__opts__['conf_file'])
 
-    minions = client.cmd(tgt, 'test.ping', timeout=2)
-    attempts = 1
+    minions = None
 
-    def condition_reached(minions, attempts):
-        if attempts > retry:
-            return True
-
+    def condition_reached(minions):
         if minions and all(status for status in minions.values()):
             return True
 
         # Either `minions` is empty, or not all succeeded
         return False
 
-    while not condition_reached(minions, attempts):
+    for attempts in range(1, retry):
+        try:
+            minions = client.cmd(tgt, 'test.ping', timeout=2)
+        except Exception as exc:  # pylint: disable=broad-except
+            log.exception('Unable to run "test.ping" on "%s": "%s"', tgt, exc)
+            minions = None
+
+        if condition_reached(minions):
+            break
+
         log.info(
             "[Attempt %d/%d] Waiting for minions to respond: %s",
             attempts,
             retry,
             ', '.join(
-                minion for minion, status in minions.items() if not status
+                minion
+                for minion, status in (minions or {}).items()
+                if not status
             )
         )
-        minions = client.cmd(tgt, 'test.ping', timeout=2)
-        attempts += 1
 
-    if not minions or not all(status for status in minions.values()):
+    if not condition_reached(minions):
         error_message = (
             'Minion{plural} failed to respond after {retry} retries: {minions}'
         ).format(
             plural='s' if len(minions) > 1 else '',
             retry=retry,
             minions=', '.join(
-                minion for minion, status in minions.items() if not status
+                minion
+                for minion, status in (minions or {}).items()
+                if not status
             )
         )
         log.error(error_message)
