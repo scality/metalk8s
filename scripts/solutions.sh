@@ -138,7 +138,7 @@ while :; do
     case $1 in
         -a|--archive)
             shift
-            ARCHIVES+=("$1")
+            ARCHIVES+=("$(readlink -f "$1")")
             ;;
         -d|--description)
             shift
