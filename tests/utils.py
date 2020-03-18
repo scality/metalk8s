@@ -1,6 +1,8 @@
+import functools
 import ipaddress
 import logging
 import re
+import operator
 import testinfra
 import time
 from typing import Optional, Dict
@@ -109,3 +111,72 @@ def requests_retry_session(
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     return session
+
+
+def kubectl_exec(
+    host,
+    command,
+    pod,
+    kubeconfig='/etc/kubernetes/admin.conf',
+    **kwargs
+):
+    """Grab the return code from a `kubectl exec`"""
+    kube_args = ['--kubeconfig', kubeconfig]
+
+    if kwargs.get('container'):
+        kube_args.extend(['-c', kwargs.get('container')])
+    if kwargs.get('namespace'):
+        kube_args.extend(['-n', kwargs.get('namespace')])
+
+    kubectl_cmd_tplt = 'kubectl exec {} {} -- {}'
+
+    with host.sudo():
+        output = host.run(
+            kubectl_cmd_tplt.format(
+                pod,
+                ' '.join(kube_args),
+                ' '.join(command)
+            )
+        )
+        return output
+
+
+def run_salt_command(host, command, ssh_config):
+    """Run a command inside the salt-master container."""
+
+    pod = 'salt-master-{}'.format(
+        get_node_name('bootstrap', ssh_config)
+    )
+
+    output = kubectl_exec(
+        host,
+        command,
+        pod,
+        container='salt-master',
+        namespace='kube-system'
+    )
+
+    assert output.exit_status == 0, \
+        'command {} failed with: \nout: {}\nerr:'.format(
+            command,
+            output.stdout,
+            output.stderr
+        )
+
+
+def get_dict_element(data, path, delimiter='.'):
+    """
+    Traverse a dict using a 'delimiter' on a target string.
+    getitem(a, b) returns the value of a at index b
+    """
+    return functools.reduce(operator.getitem, path.split(delimiter), data)
+
+
+def set_dict_element(data, path, value, delimiter='.'):
+    """
+    Traverse a nested dict using a delimiter on a target string
+    replaces the value of a key within a dictionary and returns the new dict
+    """
+    path, _, key = path.rpartition(delimiter)
+    (get_dict_element(data, path) if path else data)[key] = value
+    return data
