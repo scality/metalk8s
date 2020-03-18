@@ -55,15 +55,13 @@ usage() {
     echo "Usage: $SCRIPT_NAME COMMAND [OPTIONS]"
     echo
     echo "Commands:"
-    echo "  activate            Deploy a Solution components (UI, Operator,"
-    echo "                      CRDs, ...)"
+    echo "  activate            Deploy a Solution components (CRDs)"
     echo "    -n, --name          Name of the Solution to deploy"
     echo "    -V, --version       Version of the Solution to deploy"
+    echo "                        (optional, default to latest)"
     echo
-    echo "  deactivate          Remove a Solution components (UI, Operator,"
-    echo "                      CRDs, ...)"
+    echo "  deactivate          Remove a Solution components (CRDs)"
     echo "    -n, --name          Name of the Solution to delete"
-    echo "    -V, --version       Version of the Solution to delete"
     echo
     echo "  import              Import a Solution archive"
     echo "    -a, --archive       Path to the Solution archive to import,"
