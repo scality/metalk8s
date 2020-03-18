@@ -1,37 +1,88 @@
-Deployment of the :term:`Bootstrap node`
-========================================
+Deploying the Bootstrap Node
+============================
 
-Preparation
------------
+Standard deployment requires a :term:`bootstrap node` to deploy and populate
+the other nodes. The bootstrap node is built using an ISO image.
 
-#. Build the ISO using :ref:`this procedure <How to build an ISO>`.
-   Scality customers can retrieve validated builds as part of their license
-   from the Scality repositories.
+Prepare
+-------
 
-#. Download the MetalK8s ISO file on the machine that will host the bootstrap
-   node. Mount this ISO file at the specific following path:
+Build or request a bootstrap ISO image. Licensed Scality customers can receive
+validated builds from the Scality repositories. This is the easiest and best
+way to get the ISO needed to deploy the bootstrap node.
+
+To build an ISO, install the prerequisites described in the _`mandatory
+requirements<../../developer/building/requirements.html#mandatory>` section of
+the developer documentation. Docker must be installed and running.
+
+#. Clone the MetalK8s repository::
+
+   $ git clone https://github.com/scality/metalk8s.git
+
+#. Open the top-level directory of the MetalK8s repository::
+
+   $ cd metalk8s
+
+#. Enter ``./doit.sh``.
+
+   The doit script builds the ISO.
+
+Whether you've built or received your ISO,
+
+#. Download the MetalK8s ISO file to the machine that will host the bootstrap
+   node.
+
+   .. tip::
+
+      It's fastest to download directly to the bootstrap node using wget or curl.
+
+   ::
+
+     $ wget https://packages.scality.com/moonshot/metalk8s/242/metalk8s.iso --user "<user.name>" --ask-password
+     Password for user ‘user.name’:
+
+     --2020-03-16 19:19:51--  https://packages.scality.com/moonshot/metalk8s/242/metalk8s.iso
+     Resolving packages.scality.com (packages.scality.com)... 5.196.181.52
+     Connecting to packages.scality.com (packages.scality.com)|5.196.181.52|:443... connected.
+     HTTP request sent, awaiting response... 401 Unauthorized
+     Reusing existing connection to packages.scality.com:443.
+     HTTP request sent, awaiting response... 200 OK
+     Length: 1445693440 (1.3G) [application/octet-stream]
+     Saving to: ‘metalk8s.iso.1’
+
+     100%[============================================================>] 1,445,693,440  212MB/s   in 7.1s
+
+     2020-03-16 19:19:58 (193 MB/s) - ‘metalk8s.iso.1’ saved [1445693440/1445693440]
+
+#. Assume root authority on the bootstrap node::
+
+   $ sudo su
+
+#. Mount the ISO file to the following path:
 
    .. parsed-literal::
 
-      root@bootstrap $ mkdir -p /srv/scality/metalk8s-|release|
-      root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|release|
+      root@bootstrap # mkdir -p /srv/scality/metalk8s-|release|
+      root@bootstrap # mount <path-to-iso> /srv/scality/metalk8s-|release|
 
 .. _Bootstrap Configuration:
 
-Configuration
--------------
+Configure
+---------
+
+Maintain root authority as you configure the bootstrap node.
+
 
 #. Create the MetalK8s configuration directory.
 
    .. code-block:: shell
 
-      root@bootstrap $ mkdir /etc/metalk8s
+      root@bootstrap # mkdir /etc/metalk8s
 
-#. Create the :file:`/etc/metalk8s/bootstrap.yaml` file.
-   This file contains initial configuration settings which are mandatory for
-   setting up a MetalK8s :term:`Bootstrap node`.
-   Change the networks, IP address, and hostname fields to conform to your
-   infrastructure.
+#. Create the :file:`/etc/metalk8s/bootstrap.yaml` file. This file contains
+   initial configuration settings that are required for setting up a MetalK8s
+   :term:`Bootstrap node`. Change the networks, IP address, and hostname fields
+   to conform to your infrastructure.
 
    .. code-block:: yaml
 
@@ -53,46 +104,67 @@ Configuration
       archives:
         - <path-to-metalk8s-iso>
 
+   Fields that may require configuration are described below.
+
+networks
+^^^^^^^^
+
 The ``networks`` field specifies a range of IP addresses written in CIDR
-notation for it's various subfields.
+notation for its various subfields.
 
-      The ``controlPlane`` and ``workloadPlane`` entries are **mandatory**.
-      These values specify the range of IP addresses that will be used at the
-      host level for each member of the cluster.
 
-      .. code-block:: yaml
+controlPlane and workloadPlane
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            networks:
-              controlPlane: 10.200.1.0/28
-              workloadPlane: 10.200.1.0/28
+The ``controlPlane`` and ``workloadPlane`` entries, which specify the IP
+address range used at the host level for each member of the cluster, are
+mandatory.
 
-      All nodes within the cluster **must** connect to both the control plane
-      and workload plane networks. If the same network range is chosen for both
-      the control plane and workload plane networks then the same interface
-      may be used.
+   .. code-block:: yaml
 
-      The ``pods`` and ``services`` fields are not mandatory, though can be
-      changed to match the constraints of existing networking infrastructure
-      (for example, if all or part of these default subnets is already routed).
-      During installation, by default ``pods`` and ``services`` are set to the
-      following values below if omitted.
+     networks:
+       controlPlane: 10.200.1.0/28
+       workloadPlane: 10.200.1.0/28
 
-      For **production clusters**, we advise users to anticipate future
-      expansions and use sufficiently large networks for pods and services.
+All nodes in the cluster must connect to both the control plane and workload
+plane networks. If both the control plane and workload plane networks use the
+same network range, you can use the same interface.
 
-      .. code-block:: yaml
+pods and services
+~~~~~~~~~~~~~~~~~
 
-            networks:
-              pods: 10.233.0.0/16
-              services: 10.96.0.0/12
+The ``pods`` and ``services`` fields are not mandatory, but can be changed to
+match the constraints of existing networking infrastructure (for example, if
+all or part of these default subnets is already routed). During installation,
+``pods`` and ``services`` are set to the following default values if omitted.
+
+For production clusters, you must anticipate future expansions and use
+large enough networks for pods and services.
+
+   .. code-block:: yaml
+
+      networks:
+        pods: 10.233.0.0/16
+        services: 10.96.0.0/12
+
+proxies
+^^^^^^^
 
 The ``proxies`` field can be omitted if there is no proxy to configure.
-The 2 entries ``http`` and ``https`` are used to configure the containerd
+
+http/https
+~~~~~~~~~~
+
+The two entries ``http`` and ``https`` are used to configure the containerd
 daemon proxy to fetch extra container images from outstide the MetalK8s
 cluster.
-The ``no_proxy`` entry specifies IPs that should be excluded from proxying,
-it must be a list of hosts, IP addresses or IP ranges in CIDR format.
-For example;
+
+no_proxy
+~~~~~~~~
+
+The ``no_proxy`` entry specifies IP addresses to be excluded from proxying.
+This must consist of a list of hosts, IP addresses or IP ranges in CIDR format.
+For example:
 
    .. code-block:: shell
 
@@ -109,138 +181,195 @@ system is configured to re-mount them automatically after a reboot.
 
 .. _Bootstrap SSH Provisioning:
 
-SSH Provisioning
-----------------
+Provision SSH
+-------------
 
 #. Prepare the MetalK8s PKI directory.
 
    .. code-block:: shell
 
-      root@bootstrap $ mkdir -p /etc/metalk8s/pki
+      root@bootstrap # mkdir -p /etc/metalk8s/pki
 
-#. Generate a passwordless SSH key that will be used for authentication
-   to future new nodes.
+#. Generate a passwordless SSH key for authentication to the nodes you're about
+   to create.
 
    .. code-block:: shell
 
-      root@bootstrap $ ssh-keygen -t rsa -b 4096 -N '' -f /etc/metalk8s/pki/salt-bootstrap
+      root@bootstrap # ssh-keygen -t rsa -b 4096 -N '' -f /etc/metalk8s/pki/salt-bootstrap
+
+   The server responds with:
+
+   .. code-block:: shell
+
+     Generating public/private rsa key pair.
+     Your identification has been saved in /etc/metalk8s/pki/salt-bootstrap.
+     Your public key has been saved in /etc/metalk8s/pki/salt-bootstrap.pub.
+     The key fingerprint is:
+     SHA256:b/c5KYswnE9p7p66tI5EcJGAgtx8Mc/SCKLgu7WFcew root@bootstrap.novalocal
+     The key's randomart image is:
+     +---[RSA 4096]----+
+     |+o+o.+.          |
+     |B..o+o*          |
+     |o...o= +         |
+     |  .o= .          |
+     | . o.E  S        |
+     |  o.o  . o .=    |
+     | . .. . = * .  . |
+     |   . o o X o..o. |
+     |    ..=+= o  oo. |
+     +----[SHA256]-----+
 
    .. warning::
 
-      Although the key name is not critical (will be re-used afterwards, so
-      make sure to replace occurences of ``salt-bootstrap`` where relevant),
-      this key must exist in the ``/etc/metalk8s/pki`` directory.
+      This key must reside in the /etc/metalk8s/pki directory. You don't have to
+      name it "salt-bootstrap", but if you name it something else, you will need
+      to substitute that name in the commands that follow.
 
-#. Accept the new identity on future new nodes (run from your host).
+#. Accept the new identity for the new nodes. From your host:
 
-   #. Retrieve the public key from the Bootstrap node.
+   a. Make sure each node is accessible from the host using ssh. For each node,
+      enter:
+
+      .. code-block:: shell
+
+         user@host $ ssh <nodename or IP address>
+
+         The authenticity of host '<nodename> (10.200.5.150)' can't be established.
+         ECDSA key fingerprint is SHA256:lXF4HvkU4lPS7Wc8MJgygi4cet5FHTN+SSpk0lq6in8.
+         Are you sure you want to continue connecting (yes/no)? yes
+         Warning: Permanently added '<nodename>' (ECDSA) to the list of known hosts.
+
+      If you've already accessed all the nodes with SSH, you can skip this step.
+
+   #. Retrieve the public key from the bootstrap node:
 
       .. code-block:: shell
 
          user@host $ scp root@bootstrap:/etc/metalk8s/pki/salt-bootstrap.pub /tmp/salt-bootstrap.pub
 
-   #. Authorize this public key on each new node (this command assumes a
-      functional SSH access from your host to the target node). Repeat until all
-      nodes accept SSH connections from the Bootstrap node.
+         salt-bootstrap.pub                                            100%  750     3.6KB/s   00:00
+
+   #. Authorize this public key on each new node.
 
       .. code-block:: shell
 
-         user@host $ ssh-copy-id -i /tmp/salt-bootstrap.pub root@<node_hostname>
+         user@host $ ssh-copy-id -i -f /tmp/salt-bootstrap.pub root@<node_hostname>
 
+      Repeat until all nodes accept SSH connections from the Bootstrap node.
 
 .. _Bootstrap installation:
 
-Installation
-------------
+Install
+-------
 
 Run the Installation
 ^^^^^^^^^^^^^^^^^^^^
+
 Run the bootstrap script to install binaries and services required on the
 Bootstrap node.
 
 .. parsed-literal::
 
-   root@bootstrap $ /srv/scality/metalk8s-|release|/bootstrap.sh
+   root@bootstrap # /srv/scality/metalk8s-|release|/bootstrap.sh
 
-.. warning::
+   .. warning::
 
     For virtual networks (or any network which enforces source and
     destination fields of IP packets to correspond to the MAC address(es)),
     :ref:`IP-in-IP needs to be enabled<enable IP-in-IP>`.
 
-Validate the install
-^^^^^^^^^^^^^^^^^^^^
-- Check that all :term:`Pods <Pod>` on the Bootstrap node are in the
-  **Running** state. Note that Prometheus and Alertmanager pods will remain in
-  a **Pending** state until their respective persistent storage volumes are
-  provisioned.
+Configure kubectl Administration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To administer the Kubernetes cluster you must issue kubectl commands. kubectl
+requires a defined path and credentials. Running the bootstrap installation
+script generates a file, admin.conf, which contains address, port, and
+credential information required for access.
 
 .. note::
 
-   The administrator :term:`kubeconfig` file is used to configure access to
-   Kubernetes when used with :term:`kubectl` as shown below. This file contains
-   sensitive information and should be kept securely.
+   This file contains sensitive information and must be kept secure.
 
-   On all subsequent :term:`kubectl` commands, you may omit the
-   ``--kubeconfig`` argument if you have exported the ``KUBECONFIG``
-   environment variable set to the path of the administrator :term:`kubeconfig`
-   file for the cluster.
+You can reference this file explicitly in commands using the ``--kubeconfig``
+argument. For example::
 
-   By default, this path is ``/etc/kubernetes/admin.conf``.
+   root@bootstrap # get pods --all-namespaces --kubeconfig /etc/kubernetes/admin.conf
 
-   .. code-block:: shell
+It is easier, however, to export this path to an environment variable. From the
+bootstrap node, enter::
 
-      root@bootstrap $ export KUBECONFIG=/etc/kubernetes/admin.conf
+   root@bootstrap # export KUBECONFIG=/etc/kubernetes/admin.conf
 
-.. code-block:: shell
+With this path exported, the root user on the bootstrap node can issue kubectl
+commands without nominating the kubectl path on each command.
 
-   root@bootstrap $ kubectl get nodes --kubeconfig /etc/kubernetes/admin.conf
-   NAME                   STATUS    ROLES                         AGE       VERSION
-   bootstrap              Ready     bootstrap,etcd,infra,master   17m       v1.15.5
+In a non-production environment, you can copy admin.conf to your local host
+machine and establish a kubectl session by copying admin.conf to a local
+directory, exporting KUBECONFIG to that location as shown above, and opening a
+local kubectl session with::
 
-   root@bootstrap $ kubectl get pods --all-namespaces -o wide --kubeconfig /etc/kubernetes/admin.conf
-   NAMESPACE             NAME                                                      READY   STATUS    RESTARTS   AGE     IP               NODE            NOMINATED NODE   READINESS GATES
-   kube-system           calico-kube-controllers-7c9944c5f4-h9bsc                  1/1     Running   0          6m29s   10.233.220.129   bootstrap   <none>           <none>
-   kube-system           calico-node-v4qhb                                         1/1     Running   0          6m29s   10.200.3.152     bootstrap   <none>           <none>
-   kube-system           coredns-ff46db798-k54z9                                   1/1     Running   0          6m29s   10.233.220.134   bootstrap   <none>           <none>
-   kube-system           coredns-ff46db798-nvmjl                                   1/1     Running   0          6m29s   10.233.220.132   bootstrap   <none>           <none>
-   kube-system           etcd-bootstrap                                            1/1     Running   0          5m45s   10.200.3.152     bootstrap   <none>           <none>
-   kube-system           kube-apiserver-bootstrap                                  1/1     Running   0          5m57s   10.200.3.152     bootstrap   <none>           <none>
-   kube-system           kube-controller-manager-bootstrap                         1/1     Running   0          7m4s    10.200.3.152     bootstrap   <none>           <none>
-   kube-system           kube-proxy-n6zgk                                          1/1     Running   0          6m32s   10.200.3.152     bootstrap   <none>           <none>
-   kube-system           kube-scheduler-bootstrap                                  1/1     Running   0          7m4s    10.200.3.152     bootstrap   <none>           <none>
-   kube-system           repositories-bootstrap                                    1/1     Running   0          6m20s   10.200.3.152     bootstrap   <none>           <none>
-   kube-system           salt-master-bootstrap                                     2/2     Running   0          6m10s   10.200.3.152     bootstrap   <none>           <none>
-   kube-system           storage-operator-7567748b6d-hp7gq                         1/1     Running   0          6m6s    10.233.220.138   bootstrap   <none>           <none>
-   metalk8s-ingress      nginx-ingress-control-plane-controller-5nkkx              1/1     Running   0          6m6s    10.233.220.137   bootstrap   <none>           <none>
-   metalk8s-ingress      nginx-ingress-controller-shg7x                            1/1     Running   0          6m7s    10.233.220.135   bootstrap   <none>           <none>
-   metalk8s-ingress      nginx-ingress-default-backend-7d8898655c-jj7l6            1/1     Running   0          6m7s    10.233.220.136   bootstrap   <none>           <none>
-   metalk8s-monitoring   alertmanager-prometheus-operator-alertmanager-0           0/2     Pending   0          6m1s    <none>           <none>      <none>           <none>
-   metalk8s-monitoring   prometheus-operator-grafana-775fbb5b-sgngh                2/2     Running   0          6m17s   10.233.220.130   bootstrap   <none>           <none>
-   metalk8s-monitoring   prometheus-operator-kube-state-metrics-7587b4897c-tt79q   1/1     Running   0          6m17s   10.233.220.131   bootstrap   <none>           <none>
-   metalk8s-monitoring   prometheus-operator-operator-7446d89644-zqdlj             1/1     Running   0          6m17s   10.233.220.133   bootstrap   <none>           <none>
-   metalk8s-monitoring   prometheus-operator-prometheus-node-exporter-rb969        1/1     Running   0          6m17s   10.200.3.152     bootstrap   <none>           <none>
-   metalk8s-monitoring   prometheus-prometheus-operator-prometheus-0               0/3     Pending   0          5m50s   <none>           <none>      <none>           <none>
-   metalk8s-ui           metalk8s-ui-6f74ff4bc-fgk86                               1/1     Running   0          6m4s    10.233.220.139   bootstrap   <none>           <none>
+   user@host $ kubectl proxy
 
-- From the console output above, :term:`Prometheus` and :term:`Alertmanager`
-  pods are in a ``Pending`` state because their respective persistent
-  storage volumes need to be provisioned. To provision these persistent storage
-  volumes, follow :ref:`this procedure <Provision Prometheus storage>`.
+While this proxy is in session, the user can issue kubectl commands from a
+second terminal on the host.
 
-- Check that you can access the MetalK8s GUI after the
-  :ref:`installation <Bootstrap installation>` is completed by following
-  :ref:`this procedure <installation-services-admin-ui>`.
+.. warning::
 
-- At this stage, the MetalK8s GUI should be up and ready for you to
-  explore.
+   This configuration is not secure and is suitable *only* for ease of use in
+   test and familiarization deployments. *Do not deploy it in a production
+   environment.*
 
-  .. note::
+Validate the Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-     Monitoring through the MetalK8s GUI will not be available until persistent
-     storage volumes for both Prometheus and Alertmanager have been successfully
-     provisioned.
+From your kubectl-enabled machine:
 
-- If you encouter an error during installation or have difficulties
-  validating a fresh MetalK8s installation, visit our
-  :ref:`Troubleshooting guide <Troubleshooting Guide>`.
+- Check that all :term:`Pods <Pod>` on the bootstrap node are in the
+  ``Running`` state::
+
+    root@bootstrap # kubectl get pods --all-namespaces
+
+  MetalK8s responds as follows. Prometheus and Alertmanager pods remain in a
+  ``Pending`` state until their persistent storage volumes are provisioned as
+  described in the :ref:`Post-Installation Proedure<Provision Prometheus storage>`.
+
+  .. code-block::
+
+     NAMESPACE             NAME                                                      READY   STATUS    RESTARTS   AGE
+     kube-system           apiserver-proxy-bootstrap.novalocal                       1/1     Running   1          17m
+     kube-system           calico-kube-controllers-6d4f8d6565-7ms4w                  1/1     Running   1          17m
+     kube-system           calico-node-tj9mb                                         1/1     Running   1          17m
+     kube-system           coredns-776b9d4f7-t6l56                                   1/1     Running   1          17m
+     kube-system           coredns-776b9d4f7-zh5b9                                   1/1     Running   1          17m
+     kube-system           etcd-bootstrap.novalocal                                  1/1     Running   1          18mm
+     kube-system           kube-apiserver-bootstrap.novalocal                        1/1     Running   1          17m
+     kube-system           kube-controller-manager-bootstrap.novalocal               1/1     Running   1          18mm
+     kube-system           kube-proxy-vdz4w                                          1/1     Running   1          17m
+     kube-system           kube-scheduler-bootstrap.novalocal                        1/1     Running   1          18mm
+     kube-system           repositories-bootstrap.novalocal                          1/1     Running   1          18mm
+     kube-system           salt-master-bootstrap.novalocal                           2/2     Running   2          18mm
+     kube-system           storage-operator-7db4756cc9-ptgqh                         1/1     Running   1          17m
+     metalk8s-ingress      nginx-ingress-control-plane-controller-hzwmm              1/1     Running   1          17m
+     metalk8s-ingress      nginx-ingress-controller-bhk2w                            1/1     Running   1          17m
+     metalk8s-ingress      nginx-ingress-default-backend-585c66c874-qjh9d            1/1     Running   1          17m
+     metalk8s-monitoring   alertmanager-prometheus-operator-alertmanager-0           0/2     Pending   0          17m
+     metalk8s-monitoring   prometheus-adapter-545b44c584-d4mbx                       1/1     Running   1          17m
+     metalk8s-monitoring   prometheus-operator-grafana-688649c67b-v5k5p              2/2     Running   2          17m
+     metalk8s-monitoring   prometheus-operator-kube-state-metrics-7c8f746b9d-dblnr   1/1     Running   1          17m
+     metalk8s-monitoring   prometheus-operator-operator-7f469cbbf-nlgxn              1/1     Running   1          17m
+     metalk8s-monitoring   prometheus-operator-prometheus-node-exporter-bprmv        1/1     Running   1          17m
+     metalk8s-monitoring   prometheus-prometheus-operator-prometheus-0               0/3     Pending   0          16m
+     metalk8s-ui           metalk8s-ui-57946664ff-r5rcs                              1/1     Running   1          17m
+
+- Review the bootstrap node's status with ``kubectl get nodes``.
+
+  .. code-block:: shell
+
+     root@bootstrap $ kubectl get nodes
+     NAME                   STATUS    ROLES                         AGE       VERSION
+     bootstrap              Ready     bootstrap,etcd,infra,master   17m       v1.15.5
+
+
+If you encouter an error during installation or have difficulties validating a
+fresh MetalK8s installation, visit our :ref:`Troubleshooting Guide
+<Troubleshooting Guide>`.
