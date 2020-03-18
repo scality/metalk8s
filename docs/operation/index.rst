@@ -18,4 +18,5 @@ do not have a working MetalK8s_ setup.
    changing_node_hostname
    volume_management/index
    account_administration
+   cluster_and_service_configuration
    troubleshooting
