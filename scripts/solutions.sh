@@ -33,7 +33,7 @@ declare -A COMMANDS=(
 declare -A COMMAND_MANDATORY_OPTIONS=(
     [import]='--archive'
     [unimport]='--archive'
-    [activate]='--name --version'
+    [activate]='--name'
     [deactivate]='--name'
     [create-env]='--name'
     [delete-env]='--name'
@@ -138,7 +138,7 @@ while :; do
     case $1 in
         -a|--archive)
             shift
-            ARCHIVES+=("$1")
+            ARCHIVES+=("$(readlink -f "$1")")
             ;;
         -d|--description)
             shift
@@ -236,7 +236,7 @@ activate_solution() {
     run "Updating Solutions configuration file" \
         salt_minion_exec metalk8s_solutions.activate_solution \
         solution="$NAME" \
-        version="$VERSION" \
+        version="${VERSION:-latest}" \
         --local
 
     run "Deploying Solution components" \
@@ -261,6 +261,11 @@ configure_archives() {
     local removed=${1:-False}
 
     for archive in "${ARCHIVES[@]}"; do
+        if file "$archive" | grep -vq 'ISO 9660'; then
+            echo "File '$archive' is not an ISO archive" 1>&2
+            return 1
+        fi
+
         salt_minion_exec metalk8s_solutions.configure_archive \
             archive="$archive" \
             removed="$removed" \
