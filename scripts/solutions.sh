@@ -33,7 +33,7 @@ declare -A COMMANDS=(
 declare -A COMMAND_MANDATORY_OPTIONS=(
     [import]='--archive'
     [unimport]='--archive'
-    [activate]='--name --version'
+    [activate]='--name'
     [deactivate]='--name'
     [create-env]='--name'
     [delete-env]='--name'
@@ -236,7 +236,7 @@ activate_solution() {
     run "Updating Solutions configuration file" \
         salt_minion_exec metalk8s_solutions.activate_solution \
         solution="$NAME" \
-        version="$VERSION" \
+        version="${VERSION:-latest}" \
         --local
 
     run "Deploying Solution components" \
