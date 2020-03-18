@@ -344,9 +344,9 @@ of security at the port level, which must be disabled or circumvented with
 :ref:`IP-in-IP encapsulation<enable IP-in-IP>`.
 
 Also note that Kubernetes has numerous integrations with existing cloud
-providers to provide easier access to proprietary features, such as
-load balancers. For more information, review
-`this topic<https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/>`_.
+providers to provide easier access to proprietary features, such as load
+balancers. For more information, review `this topic
+<https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/>`_.
 
 .. _AWS EC2: https://aws.amazon.com/ec2/
 .. _OpenStack: https://www.openstack.org/
