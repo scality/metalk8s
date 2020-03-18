@@ -261,6 +261,11 @@ configure_archives() {
     local removed=${1:-False}
 
     for archive in "${ARCHIVES[@]}"; do
+        if file "$archive" | grep -vq 'ISO 9660'; then
+            echo "File '$archive' is not an ISO archive" 1>&2
+            return 1
+        fi
+
         salt_minion_exec metalk8s_solutions.configure_archive \
             archive="$archive" \
             removed="$removed" \
