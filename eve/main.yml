@@ -571,6 +571,48 @@ stages:
             STEP_NAME: buildprev
       - Upload: *upload_final_status_artifact
 
+  build-example-solution:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-example-solution-builder/pod.yaml
+      images:
+        example-solution-builder: eve/workers/pod-example-solution-builder
+    steps:
+      - ShellCommand: *wait_for_docker
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: build-example-solution
+      - ShellCommand: *setup_cache
+      - SetPropertyFromCommand:
+          name: Set Example Solution version property
+          property: example_solution_version
+          command: >
+            . examples/metalk8s-solution-example/VERSION &&
+            echo "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX"
+      - ShellCommand:
+          name: Build Example Solution ISO
+          command: >
+            cd examples/metalk8s-solution-example &&
+            DOCKER_SOCKET=http://localhost:2375 make iso
+          haltOnFailure: True
+          timeout: 3600
+      - ShellCommand:
+          <<: *copy_artifacts
+          env:
+            <<: *_env_copy_artifacts
+            ARTIFACTS: >-
+              examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version)s.iso
+      - Upload: *upload_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: build-example-solution
+      - Upload: *upload_final_status_artifact
+
   docs:
     worker:
       type: kube_pod
