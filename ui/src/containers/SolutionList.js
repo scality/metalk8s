@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
@@ -13,9 +13,7 @@ import {
   Loader,
 } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
-
 import { sortSelector } from '../services/utils';
-
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
   BreadcrumbContainer,
@@ -26,6 +24,7 @@ import { useRefreshEffect } from '../services/utils';
 import {
   refreshSolutionsAction,
   stopRefreshSolutionsAction,
+  prepareEnvironmentAction,
 } from '../ducks/app/solutions';
 
 const PageContainer = styled.div`
@@ -66,10 +65,6 @@ const FormStyle = styled.div`
   }
 `;
 
-const ButtonContainer = styled.span`
-  margin-left: ${props => (props.marginLeft ? '10px' : '0')};
-`;
-
 const TableContainer = styled.div`
   height: 40%;
   margin: 0 0 50px 0;
@@ -94,12 +89,27 @@ const SelectContainer = styled.div`
   margin-top: 20px;
 `;
 
+const EnvironmentSolutionContainer = styled.div`
+  display: flex;
+  align-items: baseline;
+`;
+
+const SolutionLinks = styled.div`
+  padding-left: ${padding.smaller};
+`;
+
+const LoaderContainer = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  padding: 0 0 0 ${padding.smaller};
+`;
+
 const SolutionsList = props => {
   const theme = useSelector(state => state.config.theme);
   const solutions = useSelector(state => state.app.solutions.solutions);
   const environments = useSelector(state => state.app.solutions.environments);
   const history = useHistory();
-
+  const dispatch = useDispatch();
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
 
   const [solutionSortBy, setSolutionSortBy] = useState('name');
@@ -144,52 +154,42 @@ const SolutionsList = props => {
     {
       label: intl.translate('description'),
       dataKey: 'description',
-      flexGrow: 1,
     },
     {
       label: intl.translate('solutions'),
       dataKey: 'solutions',
-      renderer: (solutions, row) => {
-        const solutionsLinks = solutions
-          .map((solution, idx) => {
-            const solutionRow = sortedSolutions.find(
-              s => s.name === solution.name,
+      renderer: (solutions, environment) => {
+        const isEnvironmentPreparing = environment.isPreparing;
+        const deployedSolutions = environment.solutions;
+        const solutionsList =
+          deployedSolutions &&
+          deployedSolutions.map((deployedSolution, idx) => {
+            return (
+              <span
+                key={idx}
+              >{`${deployedSolution.name}(v.${deployedSolution.version})`}</span>
             );
-
-            const solutionVersion = solutionRow?.versions?.find(
-              v => v.version === solution.version,
-            );
-
-            return solutionVersion?.ui?.ingressPath ? (
-              <ButtonContainer key={`solution_${idx}`} marginLeft={idx > 0}>
-                <Button
-                  size="smaller"
-                  text={`${solution.name} ${solution.version}`}
-                  icon={<i className="fas fa-external-link-alt" />}
-                  onClick={() => {
-                    const url = `${solution.ui.ingressPath}`;
-                    window.open(url, '_blank');
-                  }}
-                ></Button>
-              </ButtonContainer>
-            ) : null;
-          })
-          .filter(solution => solution != null);
+          });
 
         return (
-          <div>
-            <span>{solutionsLinks}</span>
-            <ButtonContainer marginLeft={solutionsLinks.length > 0}>
-              <Button
-                size="smaller"
-                text={intl.translate('add')}
-                onClick={() => {
-                  setSelectedEnvironment(row.name);
-                  setisAddSolutionModalOpen(true);
-                }}
-              />
-            </ButtonContainer>
-          </div>
+          <EnvironmentSolutionContainer>
+            <Button
+              size="smaller"
+              text={intl.translate('add')}
+              outlined
+              onClick={() => {
+                setSelectedEnvironment(environment.name);
+                setisAddSolutionModalOpen(true);
+              }}
+            />
+            <SolutionLinks>{solutionsList}</SolutionLinks>
+            {isEnvironmentPreparing && (
+              <LoaderContainer>
+                <Loader size="small"></Loader>
+                {intl.translate('preparing_environemnt')}
+              </LoaderContainer>
+            )}
+          </EnvironmentSolutionContainer>
         );
       },
       flexGrow: 1,
@@ -302,7 +302,8 @@ const SolutionsList = props => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={values => {
-              // TODO: configure + prepare env + redirect to UI
+              dispatch(prepareEnvironmentAction(selectedEnvironment, values));
+              setisAddSolutionModalOpen(false);
             }}
           >
             {formikProps => {
