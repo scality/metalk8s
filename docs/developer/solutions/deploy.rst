@@ -5,9 +5,9 @@ Given the solution ISO is correctly generated, a script utiliy has been
 added to manage Solutions.
 This script is located at the root of Metalk8s archive:
 
-  .. code::
+  .. parsed-literal::
 
-    /srv/scality/metalk8s-X.X.X/solutions.sh
+    /srv/scality/metalk8s-|release|/solutions.sh
 
 Import a Solution
 -----------------
@@ -136,3 +136,29 @@ subcommand:
 
     ./solutions.sh delete-solution --name <environment-name> \
       --solution <solution-name>
+
+Upgrade/Downgrade a Solution
+----------------------------
+
+Before starting, the destination version must have been imported.
+
+Patch the Environment ConfigMap, with the destination version:
+
+  .. code::
+
+    kubectl patch cm metalk8s-environment --namespace <namespace-name> \
+      --patch '{"data": {"<solution-name>": "<solution-version-dest>"}}'
+
+Apply the change with Salt:
+
+  .. code::
+
+    salt_container=$(
+      crictl ps -q \
+      --label io.kubernetes.pod.namespace=kube-system \
+      --label io.kubernetes.container.name=salt-master \
+      --state Running
+    )
+    crictl exec -i "$salt_container" salt-run state.orchestrate \
+      metalk8s.orchestrate.solutions.prepare-environment \
+      pillar="{'orchestrate': {'env_name': '<environment-name>'}}"

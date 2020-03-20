@@ -13,6 +13,7 @@ do not have a working MetalK8s_ setup.
    bootstrap_backup_restore
    enable_ip_ip
    preparation
+   solutions
    upgrade
    downgrade
    changing_node_hostname
