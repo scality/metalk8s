@@ -93,6 +93,7 @@ const defaultJob = {
   completedAt: null,
   status: {},
   events: [],
+  name: '',
 };
 
 export function addJobAction(job) {
@@ -111,16 +112,16 @@ export function connectSaltApiAction(payload) {
   return { type: CONNECT_SALT_API, payload };
 }
 
-function addJobEventAction(jid, event) {
-  return { type: ADD_JOB_EVENT, payload: { jid, event } };
+function addJobEventAction(jid, event, name) {
+  return { type: ADD_JOB_EVENT, payload: { jid, event, name } };
 }
 
-export function setJobCompletedAction(jid, completedAt, status) {
-  return { type: JOB_COMPLETED, payload: { jid, completedAt, status } };
+export function setJobCompletedAction(jid, completedAt, status, name) {
+  return { type: JOB_COMPLETED, payload: { jid, completedAt, status, name } };
 }
 
-export function setJobStatusAction(jid, status) {
-  return { type: SET_JOB_STATUS, payload: { jid, status } };
+export function setJobStatusAction(jid, status, name) {
+  return { type: SET_JOB_STATUS, payload: { jid, status, name } };
 }
 
 // Selectors
@@ -182,21 +183,26 @@ export function* updateJobStatus(job, status) {
       // notifications).
       const completedTime = new Date();
       yield put(
-        setJobCompletedAction(job.jid, completedTime.toISOString(), status),
+        setJobCompletedAction(
+          job.jid,
+          completedTime.toISOString(),
+          status,
+          job.name,
+        ),
       );
     } else {
-      yield put(setJobStatusAction(job.jid, status));
+      yield put(setJobStatusAction(job.jid, status, job.name));
     }
   }
 }
 
 // Watch Salt events {{{
-function* readJobEvent(job, event) {
+function* readJobEvent(job, event, name) {
   const eventTag = event?.tag ?? '';
 
   if (eventTag.includes('/ret')) {
     const status = getJobStatusFromEventRet(event.data);
-    yield call(updateJobStatus, job, status);
+    yield call(updateJobStatus, job, status, name);
   }
 }
 
@@ -228,8 +234,8 @@ export function* watchSaltEvents({ payload: { url, token } }) {
 
     if (relatedJob !== undefined) {
       yield all([
-        put(addJobEventAction(relatedJob.jid, data)),
-        fork(readJobEvent, relatedJob, data),
+        put(addJobEventAction(relatedJob.jid, data, relatedJob.name)),
+        fork(readJobEvent, relatedJob, data, relatedJob.name),
       ]);
     }
   }
