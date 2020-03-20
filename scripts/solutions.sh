@@ -33,7 +33,7 @@ declare -A COMMANDS=(
 declare -A COMMAND_MANDATORY_OPTIONS=(
     [import]='--archive'
     [unimport]='--archive'
-    [activate]='--name --version'
+    [activate]='--name'
     [deactivate]='--name'
     [create-env]='--name'
     [delete-env]='--name'
@@ -55,15 +55,13 @@ usage() {
     echo "Usage: $SCRIPT_NAME COMMAND [OPTIONS]"
     echo
     echo "Commands:"
-    echo "  activate            Deploy a Solution components (UI, Operator,"
-    echo "                      CRDs, ...)"
+    echo "  activate            Deploy a Solution components (CRDs)"
     echo "    -n, --name          Name of the Solution to deploy"
     echo "    -V, --version       Version of the Solution to deploy"
+    echo "                        (optional, default to latest)"
     echo
-    echo "  deactivate          Remove a Solution components (UI, Operator,"
-    echo "                      CRDs, ...)"
+    echo "  deactivate          Remove a Solution components (CRDs)"
     echo "    -n, --name          Name of the Solution to delete"
-    echo "    -V, --version       Version of the Solution to delete"
     echo
     echo "  import              Import a Solution archive"
     echo "    -a, --archive       Path to the Solution archive to import,"
@@ -138,7 +136,7 @@ while :; do
     case $1 in
         -a|--archive)
             shift
-            ARCHIVES+=("$1")
+            ARCHIVES+=("$(readlink -f "$1")")
             ;;
         -d|--description)
             shift
@@ -236,7 +234,7 @@ activate_solution() {
     run "Updating Solutions configuration file" \
         salt_minion_exec metalk8s_solutions.activate_solution \
         solution="$NAME" \
-        version="$VERSION" \
+        version="${VERSION:-latest}" \
         --local
 
     run "Deploying Solution components" \
@@ -261,6 +259,11 @@ configure_archives() {
     local removed=${1:-False}
 
     for archive in "${ARCHIVES[@]}"; do
+        if file "$archive" | grep -vq 'ISO 9660'; then
+            echo "File '$archive' is not an ISO archive" 1>&2
+            return 1
+        fi
+
         salt_minion_exec metalk8s_solutions.configure_archive \
             archive="$archive" \
             removed="$removed" \

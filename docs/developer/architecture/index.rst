@@ -8,3 +8,4 @@ Architecture Documents
    monitoring
    configurations
    requirements
+   ci
