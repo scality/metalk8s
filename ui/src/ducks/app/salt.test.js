@@ -33,7 +33,12 @@ import {
   createChannelFromSource,
 } from './salt';
 
-const exampleJob = { type: 'example', jid: '12345', completedAt: null };
+const exampleJob = {
+  type: 'example',
+  jid: '12345',
+  completedAt: null,
+  name: 'prepare-env/dev',
+};
 
 describe('`addJobAction` action creator', () => {
   test('handles a job in progress', () => {
@@ -146,7 +151,7 @@ describe('`updateJobStatus` saga', () => {
     const status = { completed: true };
     const gen = updateJobStatus({ ...exampleJob, completedAt: 'now' }, status);
     expect(gen.next().value).toEqual(
-      put(setJobStatusAction(exampleJob.jid, status)),
+      put(setJobStatusAction(exampleJob.jid, status, exampleJob.name)),
     );
     expect(gen.next().done).toBe(true);
   });
