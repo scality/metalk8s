@@ -1,0 +1,57 @@
+Centralized CLI
+===============
+
+Context
+-------
+
+MetalK8s comes with a set of services to operate and monitor the K8s cluster.
+All operations that need to be performed by the Platform Administrator could be
+categorized as follow:
+- Cluster Resources Administration (Nodes, Volumes, Deployments, ...)
+- Cluster Administration (Install, Upgrade, Downgrade, Backup, Restore, ...)
+- Solution Administration (CRUD Environment, Import/Remove Solution, ...)
+- Cluster Service Administration (Configure Dex, Prometheus, Alert Manager, ...)
+
+K8s provides the kubctl CLI, which is distributed and enables all kind of
+interaction with all resources available in etcd DB but its usage often requires
+to build verbose yaml files. Also kubectl tool only expose the standard K8s
+resources but not the custom ones, such as Volumes.
+
+Currently, MetalK8s provides other set of CLI or manual procedures, but those
+are located in various locations, their usage may vary and they are not
+developed using the same technologies.
+
+This makes the CLI and associated documentation not super intuitive and it
+also makes the maintenance more expensive in the long term.
+
+The goal of the project is to provide MetalK8s administrator an intuitive and
+easy to use set of CLI in order to administrate and operate a finite set of
+functionalities.
+
+Because kubectl CLI is already in place and is well known by Kubernetes
+administrators, it will be used as a standard to follow for all other MetalK8s
+CLIs:
+- CLI follows kubctl style
+- CLI is not interactive
+- CLI should not require password input
+- CLI implementation relies on secured APIs
+- CLI support completion for easy discovery
+- CLI output is standardized (yaml, json, ...)
+- CLI can be executed from outside of the cluster
+
+When it is possible, it would make sense to leverage kubectl plugin
+
+Requirements
+------------
+
+Cluster Resources Administration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Cluster Administration
+^^^^^^^^^^^^^^^^^^^^^^
+
+Solution Administration
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Cluster Service Administration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
