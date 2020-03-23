@@ -20,6 +20,8 @@ SOLUTION=''
 VERBOSE=${VERBOSE:-0}
 VERSION=''
 
+export KUBECONFIG
+
 declare -A COMMANDS=(
     [import]=import_solution
     [unimport]=unimport_solution
