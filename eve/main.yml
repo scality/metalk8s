@@ -702,7 +702,7 @@ stages:
           name: Run all linting targets
           command: source /etc/profile && ./doit.sh lint
           usePTY: true
-          haltOnFailure: false
+          haltOnFailure: true
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
