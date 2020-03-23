@@ -40,6 +40,7 @@ OPERATOR_SRC ?= $(PWD)/example-operator
 # Binary paths and options
 DOCKER ?= docker
 DOCKER_OPTS ?=
+DOCKER_SOCKET ?= unix:///var/run/docker.sock
 HARDLINK ?= hardlink
 OPERATOR_SDK ?= operator-sdk
 OPERATOR_SDK_OPTS ?=
@@ -150,6 +151,7 @@ $(BUILD_ROOT)/images/%/.saved: $(BUILD_ROOT)/images/%/.built | $(IMAGES_ROOT)/%
 	@mkdir -p $(@D)
 	$(SKOPEO) $(SKOPEO_OPTS) copy \
 		--format v2s2 --dest-compress \
+		--src-daemon-host $(DOCKER_SOCKET) \
 		docker-daemon:$*:$(VERSION_FULL) \
 		dir:$(IMAGES_ROOT)/$*/$(VERSION_FULL)
 	@touch $@
