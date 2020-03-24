@@ -12,32 +12,34 @@ categorized as follow:
 - Solution Administration (CRUD Environment, Import/Remove Solution, ...)
 - Cluster Service Administration (Configure Dex, Prometheus, Alert Manager, ...)
 
-K8s provides the kubctl CLI, which is distributed and enables all kind of
-interaction with all resources available in etcd DB but its usage often requires
-to build verbose yaml files. Also kubectl tool only expose the standard K8s
-resources but not the custom ones, such as Volumes.
+K8s provides the kubectl CLI, which is distributed and enables all kind of
+interaction with all Kubernetes resources, through apiserver, but its usage
+often requires to build verbose YAML files.
 
-Currently, MetalK8s provides other set of CLI or manual procedures, but those
-are located in various locations, their usage may vary and they are not
-developed using the same technologies.
+Currently, MetalK8s provides other set of scripts or manual procedures, but
+those are located in various locations, their usage may vary and they are not
+developed using the same logic.
 
 This makes the CLI and associated documentation not super intuitive and it
 also makes the maintenance more expensive in the long term.
 
-The goal of the project is to provide MetalK8s administrator an intuitive and
-easy to use set of CLI in order to administrate and operate a finite set of
-functionalities.
+The goal of the project is to provide MetalK8s administrator with an intuitive
+and easy to use set of tools in order to administrate and operate a finite set
+of functionalities.
 
 Because kubectl CLI is already in place and is well known by Kubernetes
 administrators, it will be used as a standard to follow for all other MetalK8s
 CLIs:
-- CLI follows kubctl style
-- CLI is not interactive
+- CLI follows kubectl style: kubectl <action> <object>
+- CLI provides an exhaustive help, per action, with relevant examples
+- CLI is not interactive (except maybe for very first install script)
 - CLI should not require password input
-- CLI implementation relies on secured APIs
-- CLI support completion for easy discovery
-- CLI output is standardized (yaml, json, ...)
-- CLI can be executed from outside of the cluster
+- CLI implementation relies on secure APIs
+- CLI support <action> completion for easy discovery
+- CLI output is standardized and human readable by default
+- CLI output can be formatted in JSON or YAML
+- CLI can be executed from outside of the cluster (except maybe for very first
+  install script)
 
 When it is possible, it would make sense to leverage kubectl plugin
 
