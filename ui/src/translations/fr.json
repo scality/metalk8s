@@ -36,7 +36,7 @@
   "deploy": "Déployer",
   "deploying": "Déploiement en cours",
   "deployment": "Déploiement",
-  "version": "MetalK8s Version",
+  "metalk8s_version": "MetalK8s Version",
   "node_deployment": "Déploiement du nœud",
   "node_deployment_success": "Déploiement du nœud {name} a terminé avec succèss",
   "node_deployment_failed": "Déploiement du nœud {name} a échoué. {step} - {reason}",

@@ -36,7 +36,7 @@
   "deploy": "Deploy",
   "deploying": "Deploying",
   "deployment": "Deployment",
-  "version": "MetalK8s Version",
+  "metalk8s_version": "MetalK8s Version",
   "node_deployment": "Node Deployment",
   "node_deployment_success": "Node {name} has been deployed successfully.",
   "node_deployment_failed": "Node {name} deployment has failed. {step} - {reason}",

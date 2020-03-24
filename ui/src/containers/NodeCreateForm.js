@@ -187,7 +187,7 @@ const NodeCreateForm = () => {
                   />
                   <InputContainer className="sc-input">
                     <InputLabel className="sc-input-label">
-                      {intl.translate('version')}
+                      {intl.translate('metalk8s_version')}
                     </InputLabel>
                     <InputValue>{clusterVersion}</InputValue>
                   </InputContainer>
