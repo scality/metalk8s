@@ -7,10 +7,12 @@ Context
 MetalK8s comes with a set of services to operate and monitor the K8s cluster.
 All operations that need to be performed by the Platform Administrator could be
 categorized as follow:
+
 - Cluster Resources Administration (Nodes, Volumes, Deployments, ...)
 - Cluster Administration (Install, Upgrade, Downgrade, Backup, Restore, ...)
 - Solution Administration (CRUD Environment, Import/Remove Solution, ...)
-- Cluster Service Administration (Configure Dex, Prometheus, Alert Manager, ...)
+- Cluster Service Administration (Configure Dex, Prometheus, Alert Manager,
+  ...)
 
 K8s provides the kubectl CLI, which is distributed and enables all kind of
 interaction with all Kubernetes resources, through apiserver, but its usage
@@ -30,6 +32,7 @@ of functionalities.
 Because kubectl CLI is already in place and is well known by Kubernetes
 administrators, it will be used as a standard to follow for all other MetalK8s
 CLIs:
+
 - CLI follows kubectl style: kubectl <action> <object>
 - CLI provides an exhaustive help, per action, with relevant examples
 - CLI is not interactive (except maybe for very first install script)
