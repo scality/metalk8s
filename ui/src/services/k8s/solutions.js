@@ -1,5 +1,5 @@
-import { coreV1, appsV1 } from './api';
-import { listNamespaces } from './core';
+import { coreV1 } from './api';
+import * as core from './core';
 
 const _K8S = 'app.kubernetes.io';
 const _METAL = 'solutions.metalk8s.scality.com';
@@ -27,7 +27,7 @@ export async function getSolutionsConfigMap() {
 // }}}
 // Environment-scoped management {{{
 export async function listEnvironments() {
-  const result = await listNamespaces({
+  const result = await core.listNamespaces({
     labelSelector: LABEL_ENVIRONMENT_NAME,
   });
   if (!result.error) {
@@ -98,57 +98,43 @@ export async function getEnvironmentAdminUIs(environment) {
   }));
 }
 
-export async function getNamespacedConfigmap(environment) {
-  try {
-    return await coreV1.readNamespacedConfigMap(
+export async function getEnvironmentConfigMap(environment) {
+  // we may support multiple namespaces in one environment later
+  const environmentConfigMaps = [];
+  for (const namespace of environment.namespaces) {
+    const result = await coreV1.readNamespacedConfigMap(
       ENVIRONMENT_CONFIGMAP_NAME,
-      environment,
+      namespace.metadata.name,
     );
-  } catch (error) {
-    return { error };
+
+    if (!result.error) {
+      environmentConfigMaps.push(result?.body?.data);
+    }
   }
+  return environmentConfigMaps[0];
 }
 
 export async function createNamespacedConfigMap(namespace) {
-  const body = {
-    metadata: {
-      name: ENVIRONMENT_CONFIGMAP_NAME,
-    },
-  };
   try {
-    return await coreV1.createNamespacedConfigMap(namespace, body);
-  } catch (error) {
-    return { error };
-  }
-}
-
-export async function patchNamespacedConfigMap(namespace, data) {
-  const body = {
-    data: { ...data },
-  };
-  try {
-    return await coreV1.patchNamespacedConfigMap(
+    return await core.createNamespacedConfigMap(
       ENVIRONMENT_CONFIGMAP_NAME,
       namespace,
-      body,
-      undefined,
-      undefined,
-      {
-        headers: {
-          'Content-Type': 'application/merge-patch+json',
-        },
-      },
     );
   } catch (error) {
     return { error };
   }
 }
 
-export async function getNamespacedDeployment(name, namespace) {
-  try {
-    return await appsV1.readNamespacedDeployment(name, namespace);
-  } catch (error) {
-    return { error };
-  }
+export async function addSolutionToEnvironment(namespace, solName, solVersion) {
+  const patch = [{ op: 'add', path: `/data/${solName}`, value: solVersion }];
+
+  return core.patchNamespacedConfigMap(
+    ENVIRONMENT_CONFIGMAP_NAME,
+    namespace,
+    // use an object instead of many arguments, for easier support of
+    // multiple methods (e.g. both `jsonPatch` and `mergePatch` could be
+    // allowed, headers being inferred from which is used).
+    { jsonPatch: patch },
+  );
 }
 // }}}
