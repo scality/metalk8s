@@ -9,6 +9,7 @@ import {
   takeEvery,
   select,
 } from 'redux-saga/effects';
+import * as CoreApi from '../../services/k8s/core';
 import * as SolutionsApi from '../../services/k8s/solutions';
 import * as SaltApi from '../../services/salt/api';
 
@@ -78,8 +79,8 @@ export function createEnvironmentAction(newEnvironment) {
   return { type: CREATE_ENVIRONMENT, payload: newEnvironment };
 }
 
-export function prepareEnvironmentAction(environment, solution) {
-  return { type: PREPARE_ENVIRONMENT, payload: { environment, solution } };
+export function prepareEnvironmentAction(envName, solution) {
+  return { type: PREPARE_ENVIRONMENT, payload: { envName, solution } };
 }
 
 // Selectors
@@ -94,52 +95,16 @@ export function* fetchEnvironments() {
     ?.filter(job => job.name.startsWith('prepare-env/') && !job.completed)
     .map(job => job.name.replace(/^(prepare-env\/)/, ''));
   const environments = yield call(SolutionsApi.listEnvironments);
-  if (!environments.error) {
-    for (const env of environments) {
-      const envConfig = yield call(
-        SolutionsApi.getNamespacedConfigmap,
-        env.name,
-      );
-      if (!envConfig.error && envConfig.body.data) {
-        // we may have several soutions in one environment
-        env.solutions = [];
-        const solutions = Object.keys(envConfig.body.data);
-        for (const solution of solutions) {
-          const solutionOperatorDeployment = yield call(
-            SolutionsApi.getNamespacedDeployment,
-            `${solution}${OPERATOR_}`,
-            env.name,
-          );
-          const solutionUIDeployment = yield call(
-            SolutionsApi.getNamespacedDeployment,
-            `${solution}${UI_}`,
-            env.name,
-          );
-          if (
-            !solutionOperatorDeployment.error &&
-            !solutionUIDeployment.error
-          ) {
-            env.solutions.push({
-              name: solution,
-              version: envConfig?.body?.data?.[solution],
-            });
-          } else {
-            console.error(`Solution: ${env.name} deployment has failed.`);
-          }
-        }
-      } else {
-        env.solutions = [];
-      }
-      env.isPreparing = preparingEnvs?.includes(env.name);
-    }
+  const updatedEnvironments = yield call(updateEnvironments, environments);
+  for (const env of updatedEnvironments) {
+    env.isPreparing = preparingEnvs?.includes(env.name);
   }
-  yield put(setEnvironmentsAction(environments));
-  return environments;
+  yield put(setEnvironmentsAction(updatedEnvironments));
+  return updatedEnvironments;
 }
 
 export function* createEnvironment(action) {
   const { name } = action.payload;
-
   const resultCreateEnvironment = yield call(
     SolutionsApi.createEnvironment,
     action.payload,
@@ -151,79 +116,114 @@ export function* createEnvironment(action) {
       name,
     );
     if (!resultCreateNamespacedConfigMap.error) {
-      yield call(fetchEnvironments);
-      history.push('/solutions');
-      return resultCreateEnvironment;
     } else {
       yield put(
         addNotificationErrorAction({
-          title: intl.translate('environment_creation_failed', { name: name }),
-          message: resultCreateNamespacedConfigMap.error,
+          title: intl.translate('environment_creation_failed', {
+            envName: name,
+          }),
         }),
       );
     }
   } else {
     yield put(
       addNotificationErrorAction({
-        title: intl.translate('environment_creation_failed', { name: name }),
-        message: resultCreateEnvironment.error,
+        title: intl.translate('environment_creation_failed', { envName: name }),
       }),
     );
   }
+  history.push('/solutions');
+  yield call(fetchEnvironments);
 }
 
 export function* prepareEnvironment(action) {
-  const { environment, solution } = action.payload;
-
-  const addedSolution = { [solution.solution.value]: solution.version.value };
+  const { envName, solution } = action.payload;
+  const addedSolutionName = solution.solution.value;
+  const addedSolutionVersion = solution.version.value;
   const existingEnv = yield select(state => state.app.solutions.environments);
-  const preparingEnv = existingEnv.find(env => (env.name = environment));
+
+  const preparingEnv = existingEnv.find(env => env.name === envName);
 
   if (preparingEnv === undefined) {
-    console.error(`Environment '${environment}' does not exist`);
+    console.error(`Environment '${envName}' does not exist`);
   } else if (preparingEnv?.preparing) {
-    console.error(`Environment '${environment}' is preparing`);
+    console.error(`Environment '${envName}' is preparing`);
   }
 
-  const patchConfigMapResult = yield call(
-    SolutionsApi.patchNamespacedConfigMap,
-    environment,
-    addedSolution,
+  const addSolutionToEnvironmentResult = yield call(
+    SolutionsApi.addSolutionToEnvironment,
+    envName,
+    addedSolutionName,
+    addedSolutionVersion,
   );
-  if (!patchConfigMapResult.error) {
+
+  if (!addSolutionToEnvironmentResult.error) {
     const clusterVersion = yield select(
       state => state.app.nodes.clusterVersion,
     );
     const result = yield call(
       SaltApi.prepareEnvironment,
-      environment,
+      envName,
       clusterVersion,
     );
     if (result.error) {
       yield put(
         addNotificationErrorAction({
           title: intl.translate('prepare_environment'),
-          message: result.error,
+          message: intl.translate('env_preparation_failed', { envName }),
         }),
       );
     } else {
       yield put(
         addJobAction({
-          name: `prepare-env/${environment}`,
+          name: `prepare-env/${envName}`,
           jid: result.return[0].jid,
         }),
       );
       yield call(watchPrepareJobs);
-      yield call(fetchEnvironments);
     }
   } else {
     yield put(
       addNotificationErrorAction({
         title: intl.translate('prepare_environment'),
-        message: patchConfigMapResult.error,
+        message: intl.translate('env_preparation_failed', { envName }),
       }),
     );
   }
+}
+
+export function* updateEnvironments(environments) {
+  for (const env of environments) {
+    const envConfig = yield call(SolutionsApi.getEnvironmentConfigMap, env);
+    if (envConfig) {
+      const solutions = Object.keys(envConfig);
+      // we may have several soutions in one environment
+      for (const solution of solutions) {
+        const solutionOperatorDeployment = yield call(
+          CoreApi.getNamespacedDeployment,
+          `${solution}${OPERATOR_}`,
+          env.name,
+        );
+        const solutionUIDeployment = yield call(
+          CoreApi.getNamespacedDeployment,
+          `${solution}${UI_}`,
+          env.name,
+        );
+        if (!solutionOperatorDeployment.error && !solutionUIDeployment.error) {
+          if (env.solutions === undefined) {
+            env.solutions = [];
+            env.solutions.push({
+              name: solution,
+              version: envConfig?.[solution],
+            });
+          }
+        } else {
+          console.error(`Solution: ${env.name} deployment has failed.`);
+        }
+      }
+    }
+  }
+  return environments;
 }
 
 export function* watchPrepareJobs() {
@@ -242,6 +242,7 @@ export function* watchPrepareJobs() {
             message: intl.translate('env_preparation_success', { envName }),
           }),
         );
+        yield call(fetchEnvironments);
       } else {
         yield put(
           addNotificationErrorAction({
