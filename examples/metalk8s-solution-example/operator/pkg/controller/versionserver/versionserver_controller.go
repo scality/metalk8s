@@ -126,11 +126,13 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 	err = r.client.Get(ctx, instanceNamespacedName, deployment)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
-		dep := r.deploymentForVersionServer(instance)
-		reqLogger.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-		err = r.client.Create(ctx, dep)
+		reqLogger.Info("Creating a new Deployment", "Deployment.Namespace", instance.Namespace, "Deployment.Name", instance.Name)
+		dep, err := r.deploymentForVersionServer(instance)
+		if err == nil {
+			err = r.client.Create(ctx, dep)
+		}
 		if err != nil {
-			reqLogger.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+			reqLogger.Error(err, "Failed to create new Deployment", "Deployment.Namespace", instance.Namespace, "Deployment.Name", instance.Name)
 			return reconcile.Result{}, err
 		}
 		// Deployment created successfully - return and requeue
@@ -160,13 +162,14 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 	if !ok || deployedVersion != version {
 		// Update labels and image name
 		labels := labelsForVersionServer(instance)
-		deployment.ObjectMeta.Labels = labels
-		deployment.Spec.Template.ObjectMeta.Labels = labels
-		deployment.Spec.Template.Spec.Containers = []corev1.Container{
-			containerForVersionServer(instance),
-		}
+		container, err := containerForVersionServer(instance)
+		if err == nil {
+			deployment.ObjectMeta.Labels = labels
+			deployment.Spec.Template.ObjectMeta.Labels = labels
+			deployment.Spec.Template.Spec.Containers = []corev1.Container{container}
 
-		err = r.client.Update(ctx, deployment)
+			err = r.client.Update(ctx, deployment)
+		}
 		if err != nil {
 			reqLogger.Error(err, "Failed to update Deployment", "Deployment.Namespace", deployment.Namespace, "Deployment.Name", deployment.Name)
 			return reconcile.Result{}, err
@@ -222,19 +225,24 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) *appsv1.Deployment {
+func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) (*appsv1.Deployment, error) {
+	container, err := containerForVersionServer(versionserver)
+	if err != nil {
+		return nil, err
+	}
+
 	deployment := util.BuildDeployment(
 		versionserver.Name,
 		versionserver.Namespace,
 		versionserver.Spec.Version,
 		util.VersionServerKind,
 		versionserver.Spec.Replicas,
-		containerForVersionServer(versionserver),
+		container,
 	)
 
 	// Set the owner reference
 	controllerutil.SetControllerReference(versionserver, deployment, r.scheme)
-	return deployment
+	return deployment, nil
 }
 
 func (r *ReconcileVersionServer) serviceForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) *corev1.Service {
@@ -250,7 +258,7 @@ func (r *ReconcileVersionServer) serviceForVersionServer(versionserver *examples
 	return service
 }
 
-func containerForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) corev1.Container {
+func containerForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) (corev1.Container, error) {
 	return util.BuildContainer(
 		versionserver.Spec.Version,
 		versionserver.Name,

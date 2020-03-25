@@ -110,7 +110,7 @@ func BuildLabelSelector(labels map[string]string) metav1.LabelSelector {
 // buildImageName builds a complete image name based on the version provided
 // for the `base-server` component, which is the only one deployed for now
 // Here `version` is both the image and the Solution versions
-func buildImageName(version string) string {
+func buildImageName(version string) (string, error) {
 	var imageName string = "base-server:" + version
 	var prefix string
 
@@ -127,16 +127,19 @@ func buildImageName(version string) string {
 	}
 
 	if prefix == "" {
-		return imageName
+		return "", fmt.Errorf(
+			"Unable to find image %s in repositories configuration",
+			imageName,
+		)
 	}
 
-	return fmt.Sprintf("%s/%s", prefix, imageName)
+	return fmt.Sprintf("%s/%s", prefix, imageName), nil
 }
 
 // BuildContainer builds a container image for a component of kind `kind`
 func BuildContainer(
 	version string, name string, kind ServerKind, cmdArgs []string,
-) corev1.Container {
+) (corev1.Container, error) {
 	var path string
 	switch kind {
 	case VersionServerKind:
@@ -145,8 +148,13 @@ func BuildContainer(
 		path = "/time"
 	}
 
+	imageName, err := buildImageName(version)
+	if err != nil {
+		return corev1.Container{}, err
+	}
+
 	return corev1.Container{
-		Image:   buildImageName(version),
+		Image:   imageName,
 		Name:    string(kind),
 		Command: append([]string{"python3", "/app/server.py"}, cmdArgs...),
 		LivenessProbe: &corev1.Probe{
@@ -165,7 +173,7 @@ func BuildContainer(
 			ContainerPort: ContainerHTTPPort,
 			Name:          "http",
 		}},
-	}
+	}, nil
 }
 
 // BuildService builds a Service object for a component
