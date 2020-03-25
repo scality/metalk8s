@@ -89,7 +89,7 @@
   "volume_creation": "Création du volume",
   "volume_creation_success": "Volume {name} est en cours de création.",
   "volume_creation_failed": "La création du volume {name} a échoué.",
-  "volume_name_error": "Le nom doit être composé de minuscules, chiffres ou de tiret.",
+  "name_error": "Le nom doit être composé de minuscules, chiffres ou de tiret.",
   "volume_path_error": "Le chemin du disque doit commencer par un '/'.",
   "volume_size_error": "La capacité du volume doit être un entier positif.",
   "generic_missing_field": "Veuillez entrer un {field}.",
