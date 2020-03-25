@@ -140,5 +140,8 @@
   "env_preparation": "Environment preparation",
   "env_preparation_success": "Environment {envName} is being prepared.",
   "env_preparation_failed": "Environment {envName} preparation has failed.",
-  "environment_creation_failed": "Environment {envName} creation has failed."
+  "environment_creation_failed": "Environment {envName} creation has failed.",
+  "environment_deletion": "Environment deletion",
+  "environment_delete_success": "Environment {envName} is being deleted.",
+  "environment_delete_failed": "Environment {envName} deletion has failed."
 }

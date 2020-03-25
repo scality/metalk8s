@@ -25,6 +25,7 @@ import {
   refreshSolutionsAction,
   stopRefreshSolutionsAction,
   prepareEnvironmentAction,
+  deleteEnvironmentAction,
 } from '../ducks/app/solutions';
 
 const PageContainer = styled.div`
@@ -68,6 +69,11 @@ const FormStyle = styled.div`
 const TableContainer = styled.div`
   height: 40%;
   margin: 0 0 50px 0;
+
+  /* solve the tooltip display issue */
+  .sc-table-column-cell-action {
+    overflow: visible !important;
+  }
 `;
 
 const EnvironmentHeader = styled.div`
@@ -102,6 +108,11 @@ const LoaderContainer = styled.div`
   display: flex;
   flex-wrap: nowrap;
   padding: 0 0 0 ${padding.smaller};
+`;
+const TrashButtonContainer = styled(Button)`
+  ${props => {
+    if (props.disabled) return { opacity: 0.2 };
+  }};
 `;
 
 const SolutionsList = props => {
@@ -195,6 +206,25 @@ const SolutionsList = props => {
         );
       },
       flexGrow: 1,
+    },
+    {
+      label: intl.translate('action'),
+      dataKey: 'action',
+      disableSort: true,
+      renderer: (_, environment) => {
+        return (
+          <>
+            <TrashButtonContainer
+              onClick={e => {
+                e.stopPropagation();
+                dispatch(deleteEnvironmentAction(environment.name));
+              }}
+              inverted={true}
+              icon={<i className="fas fa-lg fa-trash" />}
+            ></TrashButtonContainer>
+          </>
+        );
+      },
     },
   ];
 

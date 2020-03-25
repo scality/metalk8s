@@ -33,6 +33,7 @@ const CREATE_ENVIRONMENT = 'CREATE_ENVIRONMENT';
 const REFRESH_SOLUTIONS = 'REFRESH_SOLUTIONS';
 const STOP_REFRESH_SOLUTIONS = 'STOP_REFRESH_SOLUTIONS';
 const PREPARE_ENVIRONMENT = 'PREPARE_ENVIRONMENT';
+const DELETE_ENVIRONMENT = 'DELETE_ENVIRONMENT';
 
 // Reducer
 const defaultState = {
@@ -81,6 +82,10 @@ export function createEnvironmentAction(newEnvironment) {
 
 export function prepareEnvironmentAction(envName, solution) {
   return { type: PREPARE_ENVIRONMENT, payload: { envName, solution } };
+}
+
+export function deleteEnvironmentAction(envName) {
+  return { type: DELETE_ENVIRONMENT, payload: envName };
 }
 
 // Selectors
@@ -297,11 +302,35 @@ export function* refreshSolutions() {
   }
 }
 
+export function* deleteEnvironment(action) {
+  const envName = action.payload;
+  const result = yield call(CoreApi.deleteEnvironment, envName);
+  if (!result.error) {
+    yield put(
+      addNotificationSuccessAction({
+        title: intl.translate('environment_deletion'),
+        message: intl.translate('environment_delete_success', { envName }),
+      }),
+    );
+    yield call(fetchEnvironments);
+  } else {
+    yield put(
+      addNotificationErrorAction({
+        title: intl.translate('environment_deletion'),
+        message: intl.translate('environment_delete_failed', {
+          envName,
+        }),
+      }),
+    );
+  }
+}
+
 // Sagas
 export function* solutionsSaga() {
   yield all([
     fork(refreshSolutions),
     takeEvery(CREATE_ENVIRONMENT, createEnvironment),
     takeEvery(PREPARE_ENVIRONMENT, prepareEnvironment),
+    takeEvery(DELETE_ENVIRONMENT, deleteEnvironment),
   ]);
 }
