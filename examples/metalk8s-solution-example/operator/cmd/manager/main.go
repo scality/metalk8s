@@ -79,14 +79,17 @@ func main() {
 
 	printVersion()
 
+	operatorConfig := &opConfig.OperatorConfig{}
 	if operatorConfigFile != "" {
-		operatorConfig, err := opConfig.LoadConfigurationFromFile(operatorConfigFile)
+		cfg, err := opConfig.LoadConfigurationFromFile(operatorConfigFile)
 		if err != nil {
 			log.Error(err, "")
 			os.Exit(1)
 		}
-		log.Info(fmt.Sprintf("Operator configuration loaded: %+v\n", operatorConfig))
+		operatorConfig = cfg
 	}
+
+	log.Info(fmt.Sprintf("Operator configuration loaded: %+v\n", operatorConfig))
 
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
@@ -129,7 +132,7 @@ func main() {
 	}
 
 	// Setup all Controllers
-	if err := controller.AddToManager(mgr); err != nil {
+	if err := controller.AddToManager(mgr, operatorConfig); err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
