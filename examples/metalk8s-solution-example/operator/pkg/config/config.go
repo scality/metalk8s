@@ -14,17 +14,15 @@ import (
 )
 
 type Repository struct {
-	Endpoint string `yaml:"endpoint" validate:"required"`
+	Endpoint string   `yaml:"endpoint" validate:"required"`
 	Images   []string `yaml:"images" validate:"required,ne=0"`
 }
 
 type OperatorConfig struct {
-	Kind         string `yaml:"kind" validate:"required,eq=OperatorConfig"`
-	APIVersion   string `yaml:"apiVersion" validate:"required,eq=solutions.metalk8s.scality.com/v1alpha1"`
+	Kind         string                  `yaml:"kind" validate:"required,eq=OperatorConfig"`
+	APIVersion   string                  `yaml:"apiVersion" validate:"required,eq=solutions.metalk8s.scality.com/v1alpha1"`
 	Repositories map[string][]Repository `yaml:"repositories" validate:"required,ne=0"`
 }
-
-var operatorConfig OperatorConfig
 
 // Example of valid configuration file format:
 //
@@ -67,7 +65,7 @@ func getErrorMessage(err validator.FieldError, prefix string) string {
 	return message
 }
 
-func (opConfig *OperatorConfig) validate() error {
+func (config *OperatorConfig) validate() error {
 	var errorList []string
 	validate := validator.New()
 
@@ -80,7 +78,7 @@ func (opConfig *OperatorConfig) validate() error {
 		return name
 	})
 
-	err := validate.Struct(opConfig)
+	err := validate.Struct(config)
 
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
@@ -88,7 +86,7 @@ func (opConfig *OperatorConfig) validate() error {
 		}
 	}
 
-	for version, repositories := range opConfig.Repositories {
+	for version, repositories := range config.Repositories {
 		for index, repository := range repositories {
 			err = validate.Struct(repository)
 			if err != nil {
@@ -108,6 +106,8 @@ func (opConfig *OperatorConfig) validate() error {
 }
 
 func LoadConfiguration(input io.Reader) (*OperatorConfig, error) {
+	var config OperatorConfig
+
 	buffer, err := ioutil.ReadAll(input)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -116,7 +116,7 @@ func LoadConfiguration(input io.Reader) (*OperatorConfig, error) {
 		)
 	}
 
-	err = yaml.UnmarshalStrict(buffer, &operatorConfig)
+	err = yaml.UnmarshalStrict(buffer, &config)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"Invalid Operator configuration format: %v",
@@ -124,12 +124,12 @@ func LoadConfiguration(input io.Reader) (*OperatorConfig, error) {
 		)
 	}
 
-	err = operatorConfig.validate()
+	err = config.validate()
 	if err != nil {
 		return nil, err
 	}
 
-	return &operatorConfig, nil
+	return &config, nil
 }
 
 func LoadConfigurationFromFile(configFile string) (*OperatorConfig, error) {
@@ -140,14 +140,4 @@ func LoadConfigurationFromFile(configFile string) (*OperatorConfig, error) {
 	defer file.Close()
 
 	return LoadConfiguration(file)
-}
-
-// Returns the whole Operator configuration
-func Operator() OperatorConfig {
-	return operatorConfig
-}
-
-// Returns the repositories related configuration
-func Repositories() map[string][]Repository {
-	return operatorConfig.Repositories
 }
