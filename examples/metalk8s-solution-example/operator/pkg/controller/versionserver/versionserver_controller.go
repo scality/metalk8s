@@ -4,6 +4,7 @@ import (
 	"context"
 
 	examplesolutionv1alpha1 "example-solution-operator/pkg/apis/examplesolution/v1alpha1"
+	"example-solution-operator/pkg/config"
 	"example-solution-operator/pkg/controller/util"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -31,13 +32,20 @@ var log = logf.Log.WithName("version-server-controller")
 
 // Add creates a new VersionServer Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+func Add(mgr manager.Manager, config *config.OperatorConfig) error {
+	return add(mgr, newReconciler(mgr, config))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileVersionServer{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+func newReconciler(
+	mgr manager.Manager,
+	config *config.OperatorConfig,
+) reconcile.Reconciler {
+	return &ReconcileVersionServer{
+		client:   mgr.GetClient(),
+		scheme:   mgr.GetScheme(),
+		opConfig: config,
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -81,8 +89,9 @@ var _ reconcile.Reconciler = &ReconcileVersionServer{}
 type ReconcileVersionServer struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client   client.Client
+	scheme   *runtime.Scheme
+	opConfig *config.OperatorConfig
 }
 
 // Reconcile reads that state of the cluster for a VersionServer object and makes changes based on the state read
@@ -163,7 +172,7 @@ func (r *ReconcileVersionServer) Reconcile(request reconcile.Request) (reconcile
 		deployment.ObjectMeta.Labels = labels
 		deployment.Spec.Template.ObjectMeta.Labels = labels
 		deployment.Spec.Template.Spec.Containers = []corev1.Container{
-			containerForVersionServer(instance),
+			containerForVersionServer(instance, r.opConfig.Repositories),
 		}
 
 		err = r.client.Update(ctx, deployment)
@@ -229,7 +238,7 @@ func (r *ReconcileVersionServer) deploymentForVersionServer(versionserver *examp
 		versionserver.Spec.Version,
 		util.VersionServerKind,
 		versionserver.Spec.Replicas,
-		containerForVersionServer(versionserver),
+		containerForVersionServer(versionserver, r.opConfig.Repositories),
 	)
 
 	// Set the owner reference
@@ -250,12 +259,16 @@ func (r *ReconcileVersionServer) serviceForVersionServer(versionserver *examples
 	return service
 }
 
-func containerForVersionServer(versionserver *examplesolutionv1alpha1.VersionServer) corev1.Container {
+func containerForVersionServer(
+	versionserver *examplesolutionv1alpha1.VersionServer,
+	repositories map[string][]config.Repository,
+) corev1.Container {
 	return util.BuildContainer(
 		versionserver.Spec.Version,
 		versionserver.Name,
 		util.VersionServerKind,
 		[]string{"--version", versionserver.Spec.Version},
+		repositories,
 	)
 }
 

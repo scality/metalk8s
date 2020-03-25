@@ -4,6 +4,7 @@ import (
 	"context"
 
 	examplesolutionv1alpha1 "example-solution-operator/pkg/apis/examplesolution/v1alpha1"
+	"example-solution-operator/pkg/config"
 	"example-solution-operator/pkg/controller/util"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -31,13 +32,20 @@ var log = logf.Log.WithName("controller_clockserver")
 
 // Add creates a new ClockServer Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+func Add(mgr manager.Manager, config *config.OperatorConfig) error {
+	return add(mgr, newReconciler(mgr, config))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileClockServer{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+func newReconciler(
+	mgr manager.Manager,
+	config *config.OperatorConfig,
+) reconcile.Reconciler {
+	return &ReconcileClockServer{
+		client:   mgr.GetClient(),
+		scheme:   mgr.GetScheme(),
+		opConfig: config,
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -81,8 +89,9 @@ var _ reconcile.Reconciler = &ReconcileClockServer{}
 type ReconcileClockServer struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client   client.Client
+	scheme   *runtime.Scheme
+	opConfig *config.OperatorConfig
 }
 
 // Reconcile reads that state of the cluster for a ClockServer object and makes changes based on the state read
@@ -174,7 +183,7 @@ func (r *ReconcileClockServer) Reconcile(request reconcile.Request) (reconcile.R
 		found.ObjectMeta.Labels = labels
 		found.Spec.Template.ObjectMeta.Labels = labels
 		found.Spec.Template.Spec.Containers = []corev1.Container{
-			containerForClockServer(instance),
+			containerForClockServer(instance, r.opConfig.Repositories),
 		}
 
 		err = r.client.Update(ctx, found)
@@ -242,7 +251,7 @@ func (r *ReconcileClockServer) deploymentForClockServer(clockserver *examplesolu
 		clockserver.Spec.Version,
 		util.ClockServerKind,
 		replicas,
-		containerForClockServer(clockserver),
+		containerForClockServer(clockserver, r.opConfig.Repositories),
 	)
 
 	// Set the owner reference
@@ -263,12 +272,16 @@ func (r *ReconcileClockServer) serviceForClockServer(clockserver *examplesolutio
 	return service
 }
 
-func containerForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) corev1.Container {
+func containerForClockServer(
+	clockserver *examplesolutionv1alpha1.ClockServer,
+	repositories map[string][]config.Repository,
+) corev1.Container {
 	return util.BuildContainer(
 		clockserver.Spec.Version,
 		clockserver.Name,
 		util.ClockServerKind,
 		[]string{"--clock", clockserver.Spec.Timezone},
+		repositories,
 	)
 }
 

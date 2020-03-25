@@ -110,11 +110,11 @@ func BuildLabelSelector(labels map[string]string) metav1.LabelSelector {
 // buildImageName builds a complete image name based on the version provided
 // for the `base-server` component, which is the only one deployed for now
 // Here version is both the image and the Solution versions
-func buildImageName(version string) string {
+func buildImageName(version string, repositories map[string][]config.Repository) string {
 	var imageName string = "base-server:" + version
 	var prefix string
 
-	for solution_version, repositories := range config.Repositories() {
+	for solution_version, repositories := range repositories {
 		if solution_version == version {
 			for _, repository := range repositories {
 				for _, image := range repository.Images {
@@ -136,6 +136,7 @@ func buildImageName(version string) string {
 // BuildContainer builds a container image for a component of kind `kind`
 func BuildContainer(
 	version string, name string, kind ServerKind, cmdArgs []string,
+	repositories map[string][]config.Repository,
 ) corev1.Container {
 	var path string
 	switch kind {
@@ -146,7 +147,7 @@ func BuildContainer(
 	}
 
 	return corev1.Container{
-		Image:   buildImageName(version),
+		Image:   buildImageName(version, repositories),
 		Name:    string(kind),
 		Command: append([]string{"python3", "/app/server.py"}, cmdArgs...),
 		LivenessProbe: &corev1.Probe{
