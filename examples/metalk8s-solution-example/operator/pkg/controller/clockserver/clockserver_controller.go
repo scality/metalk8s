@@ -126,11 +126,13 @@ func (r *ReconcileClockServer) Reconcile(request reconcile.Request) (reconcile.R
 	err = r.client.Get(ctx, instanceNamespacedName, found)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new deployment
-		dep := r.deploymentForClockServer(instance)
-		reqLogger.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-		err = r.client.Create(ctx, dep)
+		reqLogger.Info("Creating a new Deployment", "Deployment.Namespace", instance.Namespace, "Deployment.Name", instance.Name)
+		dep, err := r.deploymentForClockServer(instance)
+		if err == nil {
+			err = r.client.Create(ctx, dep)
+		}
 		if err != nil {
-			reqLogger.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+			reqLogger.Error(err, "Failed to create new Deployment", "Deployment.Namespace", instance.Namespace, instance.Name)
 			return reconcile.Result{}, err
 		}
 		// Deployment created successfully - return and requeue
@@ -146,16 +148,19 @@ func (r *ReconcileClockServer) Reconcile(request reconcile.Request) (reconcile.R
 	deployedTimezone, ok := depAnnotations["example-solution.metalk8s.scality.com/clock-timezone"]
 	if !ok || deployedTimezone != timezone {
 		// Refresh .spec.template and .metadata.{labels,annotations}
-		newDep := r.deploymentForClockServer(instance)
-		found.Spec.Template = newDep.Spec.Template
-		for label, value := range newDep.ObjectMeta.Labels {
-			found.ObjectMeta.Labels[label] = value
-		}
-		for annotation, value := range newDep.ObjectMeta.Annotations {
-			found.ObjectMeta.Annotations[annotation] = value
-		}
+		newDep, err := r.deploymentForClockServer(instance)
 
-		err = r.client.Update(ctx, found)
+		if err == nil {
+			found.Spec.Template = newDep.Spec.Template
+			for label, value := range newDep.ObjectMeta.Labels {
+				found.ObjectMeta.Labels[label] = value
+			}
+			for annotation, value := range newDep.ObjectMeta.Annotations {
+				found.ObjectMeta.Annotations[annotation] = value
+			}
+
+			err = r.client.Update(ctx, found)
+		}
 		if err != nil {
 			reqLogger.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
 			return reconcile.Result{}, err
@@ -171,13 +176,14 @@ func (r *ReconcileClockServer) Reconcile(request reconcile.Request) (reconcile.R
 	if !ok || deployedVersion != version {
 		// Update labels and container
 		labels := labelsForClockServer(instance)
-		found.ObjectMeta.Labels = labels
-		found.Spec.Template.ObjectMeta.Labels = labels
-		found.Spec.Template.Spec.Containers = []corev1.Container{
-			containerForClockServer(instance),
-		}
+		container, err := containerForClockServer(instance)
+		if err == nil {
+			found.ObjectMeta.Labels = labels
+			found.Spec.Template.ObjectMeta.Labels = labels
+			found.Spec.Template.Spec.Containers = []corev1.Container{container}
 
-		err = r.client.Update(ctx, found)
+			err = r.client.Update(ctx, found)
+		}
 		if err != nil {
 			reqLogger.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
 			return reconcile.Result{}, err
@@ -233,8 +239,13 @@ func (r *ReconcileClockServer) Reconcile(request reconcile.Request) (reconcile.R
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileClockServer) deploymentForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) *appsv1.Deployment {
+func (r *ReconcileClockServer) deploymentForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) (*appsv1.Deployment, error) {
 	replicas := int32(1)
+	container, err := containerForClockServer(clockserver)
+
+	if err != nil {
+		return nil, err
+	}
 
 	deployment := util.BuildDeployment(
 		clockserver.Name,
@@ -242,12 +253,12 @@ func (r *ReconcileClockServer) deploymentForClockServer(clockserver *examplesolu
 		clockserver.Spec.Version,
 		util.ClockServerKind,
 		replicas,
-		containerForClockServer(clockserver),
+		container,
 	)
 
 	// Set the owner reference
 	controllerutil.SetControllerReference(clockserver, deployment, r.scheme)
-	return deployment
+	return deployment, nil
 }
 
 func (r *ReconcileClockServer) serviceForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) *corev1.Service {
@@ -263,7 +274,7 @@ func (r *ReconcileClockServer) serviceForClockServer(clockserver *examplesolutio
 	return service
 }
 
-func containerForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) corev1.Container {
+func containerForClockServer(clockserver *examplesolutionv1alpha1.ClockServer) (corev1.Container, error) {
 	return util.BuildContainer(
 		clockserver.Spec.Version,
 		clockserver.Name,
