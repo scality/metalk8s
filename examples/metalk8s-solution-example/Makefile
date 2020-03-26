@@ -1,7 +1,7 @@
 .POSIX:
 
 .DEFAULT_GOAL := all
-all: images ui operator product_info
+all: images ui operator config product_info
 .PHONY: all
 
 # Use this empty target to force execution of a rule
@@ -214,6 +214,13 @@ $(ISO_ROOT)/operator/%: $(OPERATOR_SRC)/%
 	@mkdir -p $(@D)
 	@rm -f $@
 	@cp -a $< $@
+
+# Solution default configuration
+config: $(ISO_ROOT)/config.yaml
+.PHONY: config
+
+$(ISO_ROOT)/config.yaml: $(PWD)/config.yaml
+	cp -f $< $@
 
 # Product information
 product_info: $(ISO_ROOT)/product.txt
