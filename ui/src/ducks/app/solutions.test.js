@@ -8,10 +8,12 @@ import {
   prepareEnvironment,
   watchPrepareJobs,
   updateEnvironments,
+  deleteEnvironment,
 } from './solutions';
 import * as CoreApi from '../../services/k8s/core';
 import * as SolutionsApi from '../../services/k8s/solutions';
 import * as SaltApi from '../../services/salt/api';
+import history from '../../history';
 import { addJobAction } from './salt';
 
 it('update the solutions list state when fetchSolutions', () => {
@@ -119,33 +121,10 @@ it('create ConfigMap for the namespace when createEnvironment', () => {
   expect(gen.next().value).toEqual(
     call(SolutionsApi.createEnvironment, action.payload),
   );
-
-  const resultCreateNamespacedConfigMap = {
-    response: {
-      _fetchResponse: {},
-    },
-    body: {
-      apiVersion: 'v1',
-      kind: 'ConfigMap',
-      metadata: {
-        creationTimestamp: '2020-03-21T17:44:21.000Z',
-        name: 'metalk8s-environment',
-        namespace: 'unit-test',
-        resourceVersion: '821673',
-        selfLink:
-          '/api/v1/namespaces/unit-test/configmaps/metalk8s-environment',
-        uid: 'b1d82b5f-1fbf-46d7-b4f5-c51bbb626e1e',
-      },
-    },
-  };
-
   expect(gen.next(resultCreateEnvironment).value).toEqual(
-    call(SolutionsApi.createNamespacedConfigMap, action.payload.name),
+    call(history.push, '/solutions'),
   );
-
-  expect(
-    gen.next(resultCreateNamespacedConfigMap, resultCreateEnvironment).value,
-  ).toEqual(call(fetchEnvironments));
+  expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
 });
 
@@ -233,20 +212,10 @@ it('patch namespace with solution when preparing the evironment', () => {
     type: 'PREPARE_ENVIRONMENT',
     payload: {
       envName: 'test-prepare-env',
-      solution: {
-        solution: {
-          label: 'example-solution',
-          value: 'example-solution',
-        },
-        version: {
-          label: '0.1.0-dev',
-          value: '0.1.0-dev',
-        },
-      },
+      solName: 'example-solution',
+      solVersion: '0.1.0-dev',
     },
   };
-  const addedSolutionName = 'example-solution';
-  const addedSolutionVersion = '0.1.0-dev';
 
   const gen = prepareEnvironment(action);
   const existingEnv = [
@@ -255,13 +224,12 @@ it('patch namespace with solution when preparing the evironment', () => {
   ];
   expect(gen.next().value.type).toEqual('SELECT');
   const clusterVersion = '2.6.0-dev';
-  const envName = 'test-prepare-env';
   expect(gen.next(existingEnv).value).toEqual(
     call(
       SolutionsApi.addSolutionToEnvironment,
-      envName,
-      addedSolutionName,
-      addedSolutionVersion,
+      'test-prepare-env',
+      'example-solution',
+      '0.1.0-dev',
     ),
   );
 
@@ -288,25 +256,26 @@ it('patch namespace with solution when preparing the evironment', () => {
   };
   expect(gen.next(patchConfigMapResult).value.type).toEqual('SELECT');
   expect(gen.next(clusterVersion).value).toEqual(
-    call(SaltApi.prepareEnvironment, envName, clusterVersion),
+    call(SaltApi.prepareEnvironment, 'test-prepare-env', '2.6.0-dev'),
   );
   const result = {
     return: [
       {
         jid: '20200322173837550838',
         tag: 'salt/run/20200322173837550838',
+        env: 'test-prepare-env',
       },
     ],
   };
   expect(gen.next(result).value).toEqual(
     put(
       addJobAction({
-        name: `prepare-env/${envName}`,
+        type: `prepare-env`,
         jid: '20200322173837550838',
+        env: 'test-prepare-env',
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(watchPrepareJobs));
   expect(gen.next().done).toEqual(true);
 });
 
@@ -325,6 +294,9 @@ it('display the error notification when environment creation has failed', () => 
     error: 'This is an error',
   };
   expect(gen.next(resultCreateEnvironment).value.type).toEqual('PUT');
+  expect(gen.next(resultCreateEnvironment).value).toEqual(
+    call(history.push, '/solutions'),
+  );
   expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
 });
@@ -340,42 +312,11 @@ it('display the error notification when create ConfigMap has failed', () => {
     call(SolutionsApi.createEnvironment, action.payload),
   );
 
-  const resultCreateEnvironment = {
-    response: {
-      _fetchResponse: {},
-    },
-    body: {
-      apiVersion: 'v1',
-      kind: 'Namespace',
-      metadata: {
-        annotations: {
-          'solutions.metalk8s.scality.com/environment-description': '',
-        },
-        creationTimestamp: '2020-03-21T17:44:21.000Z',
-        labels: {
-          'solutions.metalk8s.scality.com/environment': 'unit-test',
-        },
-        name: 'unit-test',
-        resourceVersion: '821669',
-        selfLink: '/api/v1/namespaces/unit-test',
-        uid: '04e910c3-db8a-4466-a96e-af15586dee3d',
-      },
-      spec: {
-        finalizers: ['kubernetes'],
-      },
-      status: {
-        phase: 'Active',
-      },
-    },
-  };
-
-  expect(gen.next(resultCreateEnvironment).value).toEqual(
-    call(SolutionsApi.createNamespacedConfigMap, action.payload.name),
-  );
   const resultCreateNamespacedConfigMap = {
     error: 'There is an error in create ConfigMap',
   };
   expect(gen.next(resultCreateNamespacedConfigMap).value.type).toEqual('PUT');
+  expect(gen.next().value).toEqual(call(history.push, '/solutions'));
   expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
 });
@@ -439,4 +380,34 @@ it('update the environment with the deployed solutions when updateEnviornments',
   expect(
     gen.next(solutionUIDeployment, solutionOperatorDeployment).done,
   ).toEqual(true);
+});
+
+it('delete the Environemnt and then fetch the environments when deleteEnvironment', () => {
+  const action = {
+    type: 'DELETE_ENVIRONMENT',
+    payload: 'dev',
+  };
+  const gen = deleteEnvironment(action);
+  expect(gen.next(action).value).toEqual(
+    call(SolutionsApi.deleteEnvironment, 'dev'),
+  );
+  const result = {
+    response: {
+      _fetchResponse: {},
+    },
+    body: {
+      apiVersion: 'v1',
+      kind: 'Namespace',
+      metadata: {
+        resourceVersion: '1250132',
+        selfLink: '/api/v1/namespaces/new',
+      },
+      status: {
+        phase: 'Terminating',
+      },
+    },
+  };
+  expect(gen.next(result).value.type).toEqual('PUT');
+  expect(gen.next().value).toEqual(call(fetchEnvironments));
+  expect(gen.next().done).toEqual(true);
 });
