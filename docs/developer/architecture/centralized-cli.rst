@@ -35,7 +35,7 @@ CLIs:
 
 - CLI follows kubectl style: kubectl <action> <resource>
 - CLI provides an exhaustive help, per action, with relevant examples
-- CLI is not interactive (except for static user provisioning)
+- CLI is not interactive (except if password input is needed)
 - CLI should not require password input
 - CLI provides a dryrun mode for intrusive operations
 - CLI provides a verbose (or debug) mode
@@ -90,7 +90,7 @@ tools: mk8sctl
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
 +============+============+===============================================+
-| cluster    | install    |                                               |
+| bootstrap  | install    |                                               |
 +------------+------------+-----------------------------------------------+
 | cluster    | import-iso | path_to_iso                                   |
 +------------+------------+-----------------------------------------------+
@@ -101,8 +101,6 @@ tools: mk8sctl
 | etcd       | health     |                                               |
 +------------+------------+-----------------------------------------------+
 | bootstrap  | backup     |                                               |
-+------------+------------+-----------------------------------------------+
-| bootstrap  | restore    | backup-file                                   |
 +------------+------------+-----------------------------------------------+
 | bootstrap  | restore    | backup-file                                   |
 +------------+------------+-----------------------------------------------+
