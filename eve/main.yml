@@ -566,13 +566,14 @@ stages:
     steps:
       - ShellCommand: *wait_for_docker
       - ShellCommand: *setup_cache
-      - ShellCommand: *git_pull_prev
+      - Git: *git_pull
       - ShellCommand:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
             <<: *_build_metalk8s-previous_junit_info
             STEP_NAME: buildprev
+      - ShellCommand: *git_pull_prev
       - ShellCommand:
           <<: *build_all
           workdir: "build/metalk8s-%(prop:product_version_prev)s"
