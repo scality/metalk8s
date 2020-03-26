@@ -96,9 +96,9 @@ export const solutionServicesSelector = state => state.app.solutions.services;
 // Sagas
 export function* fetchEnvironments() {
   const jobs = yield select(state => state.app.salt.jobs);
-  const preparingEnvs = jobs
-    ?.filter(job => job.name.startsWith('prepare-env/') && !job.completed)
-    .map(job => job.name.replace(/^(prepare-env\/)/, ''));
+  const preparingEnvs = jobs?.filter(
+    job => job.type === 'prepare-env/' && !job.completed,
+  );
   const environments = yield call(SolutionsApi.listEnvironments);
   const updatedEnvironments = yield call(updateEnvironments, environments);
   for (const env of updatedEnvironments) {
@@ -181,11 +181,11 @@ export function* prepareEnvironment(action) {
     } else {
       yield put(
         addJobAction({
-          name: `prepare-env/${envName}`,
+          type: 'prepare-env',
           jid: result.return[0].jid,
+          env: envName,
         }),
       );
-      yield call(watchPrepareJobs);
     }
   } else {
     yield put(
@@ -234,39 +234,6 @@ export function* updateEnvironments(environments) {
     }
   }
   return environments;
-}
-
-export function* watchPrepareJobs() {
-  while (true) {
-    const completedJob = yield take(JOB_COMPLETED);
-    const {
-      payload: { name, status },
-    } = completedJob;
-
-    if (name.startsWith('prepare-env/')) {
-      const envName = name.replace(/^(prepare-env\/)/, '');
-      if (status.success) {
-        yield put(
-          addNotificationSuccessAction({
-            title: intl.translate('env_preparation'),
-            message: intl.translate('env_preparation_success', { envName }),
-          }),
-        );
-        yield call(fetchEnvironments);
-      } else {
-        yield put(
-          addNotificationErrorAction({
-            title: intl.translate('env_preparation'),
-            message: intl.translate('env_preparation_failed', {
-              envName,
-              step: status.step,
-              reason: status.comment,
-            }),
-          }),
-        );
-      }
-    }
-  }
 }
 
 export function* fetchSolutions() {
@@ -330,6 +297,34 @@ export function* deleteEnvironment(action) {
   }
 }
 
+export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
+  const jobs = yield select(state => state.app.salt.jobs);
+  const job = jobs.find(job => job.jid === jid);
+  if (job?.type === 'prepare-env') {
+    if (status.success) {
+      yield put(
+        addNotificationSuccessAction({
+          title: intl.translate('env_preparation'),
+          message: intl.translate('env_preparation_success', {
+            envName: job.env,
+          }),
+        }),
+      );
+    } else {
+      yield put(
+        addNotificationErrorAction({
+          title: intl.translate('env_preparation'),
+          message: intl.translate('env_preparation_failed', {
+            envName: job.env,
+            step: status.step,
+            reason: status.comment,
+          }),
+        }),
+      );
+    }
+  }
+}
+
 // Sagas
 export function* solutionsSaga() {
   yield all([
@@ -337,5 +332,6 @@ export function* solutionsSaga() {
     takeEvery(CREATE_ENVIRONMENT, createEnvironment),
     takeEvery(PREPARE_ENVIRONMENT, prepareEnvironment),
     takeEvery(DELETE_ENVIRONMENT, deleteEnvironment),
+    takeEvery(JOB_COMPLETED, notifyDeployJobCompleted),
   ]);
 }
