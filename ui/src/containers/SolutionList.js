@@ -331,6 +331,7 @@ const SolutionsList = props => {
       >
         {isSolutionReady ? (
           <Formik
+            enableReinitialize
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={values => {
@@ -354,6 +355,11 @@ const SolutionsList = props => {
                 sortedSolutions.find(
                   solution => solution.name === values.solution.value,
                 )?.versions ?? [];
+              // once we select the solution, we should update the initialValues of version
+              initialValues.version.label =
+                selectedSolutionVersions[0]?.version;
+              initialValues.version.value =
+                selectedSolutionVersions[0]?.version;
 
               const selectedSolutionVersionsOptions = selectedSolutionVersions.map(
                 solutionVersion => ({
