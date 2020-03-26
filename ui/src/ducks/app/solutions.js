@@ -221,6 +221,11 @@ export function* updateEnvironments(environments) {
               name: solution,
               version: envConfig?.[solution],
             });
+          } else if (env.solutions.length !== 0) {
+            env.solutions.push({
+              name: solution,
+              version: envConfig?.[solution],
+            });
           }
         } else {
           console.error(`Solution: ${env.name} deployment has failed.`);

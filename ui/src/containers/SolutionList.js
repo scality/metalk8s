@@ -176,9 +176,9 @@ const SolutionsList = props => {
           deployedSolutions &&
           deployedSolutions.map((deployedSolution, idx) => {
             return (
-              <span
-                key={idx}
-              >{`${deployedSolution.name}(v.${deployedSolution.version})`}</span>
+              <span key={idx}>
+                {`${deployedSolution.name} (v.${deployedSolution.version})`}{' '}
+              </span>
             );
           });
 
