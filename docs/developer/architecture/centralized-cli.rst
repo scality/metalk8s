@@ -33,10 +33,12 @@ Because kubectl CLI is already in place and is well known by Kubernetes
 administrators, it will be used as a standard to follow for all other MetalK8s
 CLIs:
 
-- CLI follows kubectl style: kubectl <action> <object>
+- CLI follows kubectl style: kubectl <action> <resource>
 - CLI provides an exhaustive help, per action, with relevant examples
-- CLI is not interactive (except maybe for very first install script)
+- CLI is not interactive (except for static user provisioning)
 - CLI should not require password input
+- CLI provides a dryrun mode for intrusive operations
+- CLI provides a verbose (or debug) mode
 - CLI implementation relies on secure APIs
 - CLI support <action> completion for easy discovery
 - CLI output is standardized and human readable by default
@@ -52,11 +54,92 @@ Requirements
 Cluster Resources Administration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+tools: kubectl
+
++------------+------------------+-----------------------------------------+
+| Resource   | action           | parameters                              |
++============+==================+=========================================+
+| node       | add              | name, ssh-user, hostname or ip,         |
+|            |                  | ssh port, ssh-key-path, sudo-required,  |
+|            |                  | roles, manifest-template-path           |
++------------+------------------+-----------------------------------------+
+| the manifest-template-path is the path to the manifest describing the   |
+| resource. Everything that is in the command line, override the manifest |
+| content. This apply to Node and Volumes.                                |
++------------+------------------+-----------------------------------------+
+| node       | edit             | name, hostname (to change node hostname)|
++------------+------------------+-----------------------------------------+
+| node       | deploy(or apply?)| <list of nodes>, dry-run                |
++------------+------------------+-----------------------------------------+
+| node       | delete, drain,   | <list of nodes>                         |
+|            | taint, label     |                                         |
++------------+------------------+-----------------------------------------+
+| volume     | add              | name, nodeName, storageClassName,       |
+|            |                  | devicePath, manifest-template-path,     |
+|            |                  | labels                                  |
++------------+------------------+-----------------------------------------+
+| volume     | delete, label    | name                                    |
++------------+------------------+-----------------------------------------+
+
+
 Cluster Administration
 ^^^^^^^^^^^^^^^^^^^^^^
+
+tools: mk8sctl
+
++------------+------------+-----------------------------------------------+
+| Resource   | action     | parameters                                    |
++============+============+===============================================+
+| cluster    | install    |                                               |
++------------+------------+-----------------------------------------------+
+| cluster    | import-iso | path_to_iso                                   |
++------------+------------+-----------------------------------------------+
+| cluster    | upgrade    | dest-version, dry-run                         |
++------------+------------+-----------------------------------------------+
+| cluster    | downgrade  | dest-version, dry-run                         |
++------------+------------+-----------------------------------------------+
+| etcd       | health     |                                               |
++------------+------------+-----------------------------------------------+
+| bootstrap  | backup     |                                               |
++------------+------------+-----------------------------------------------+
+| bootstrap  | restore    | backup-file                                   |
++------------+------------+-----------------------------------------------+
+| bootstrap  | restore    | backup-file                                   |
++------------+------------+-----------------------------------------------+
+| cluster    | edit-conf  | conf-param=conf-value                         |
+|            |            | ex: ip-in-ip=true                             |
++------------+------------+-----------------------------------------------+
 
 Solution Administration
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+tools: mk8sctl
+
++------------+------------+-----------------------------------------------+
+| Resource   | action     | parameters                                    |
++============+============+===============================================+
+| solution   | import     |                                               |
++------------+------------+-----------------------------------------------+
+| solution   | import     | path_to_iso                                   |
++------------+------------+-----------------------------------------------+
+|environment | add        | name                                          |
++------------+------------+-----------------------------------------------+
+|environment | delete     |                                               |
++------------+------------+-----------------------------------------------+
+
 Cluster Service Administration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tools: mk8sctl
+
++------------+------------+-----------------------------------------------+
+| Resource   | action     | parameters                                    |
++============+============+===============================================+
+| grafana    | edit-conf  | conf-param=conf-value                         |
++------------+------------+-----------------------------------------------+
+| user       | add        | name, email, passwd, mk8s-roles               |
++------------+------------+-----------------------------------------------+
+| user       | delete     | name                                          |
++------------+------------+-----------------------------------------------+
+| user       | edit       | name, email, passwd, mk8s-roles               |
++------------+------------+-----------------------------------------------+
