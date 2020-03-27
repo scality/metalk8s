@@ -144,5 +144,7 @@
   "environment_creation_failed": "La création de l'environnement {envName} a échoué.",
   "environment_deletion": "Suppression de l'environnement",
   "environment_delete_success": "L'environnement {envName} est en cours de suppression.",
-  "environment_delete_failed": "La suppression de l'environnement {envName} a échoué."
+  "environment_delete_failed": "La suppression de l'environnement {envName} a échoué.",
+  "add_solution_to_configmap": "Ajoutez une solution à la ConfigMap de '{envName}'",
+  "add_solution_to_configmap_failed": "Échec de l'ajout de la solution à la ConfigMap de '{envName}'."
 }

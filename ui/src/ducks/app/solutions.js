@@ -80,8 +80,11 @@ export function createEnvironmentAction(newEnvironment) {
   return { type: CREATE_ENVIRONMENT, payload: newEnvironment };
 }
 
-export function prepareEnvironmentAction(envName, solution) {
-  return { type: PREPARE_ENVIRONMENT, payload: { envName, solution } };
+export function prepareEnvironmentAction(envName, solName, solVersion) {
+  return {
+    type: PREPARE_ENVIRONMENT,
+    payload: { envName, solName, solVersion },
+  };
 }
 
 export function deleteEnvironmentAction(envName) {
@@ -127,9 +130,8 @@ export function* createEnvironment(action) {
 }
 
 export function* prepareEnvironment(action) {
-  const { envName, solution } = action.payload;
-  const addedSolutionName = solution.solution.value;
-  const addedSolutionVersion = solution.version.value;
+  const { envName, solName, solVersion } = action.payload;
+
   const existingEnv = yield select(state => state.app.solutions.environments);
 
   const preparingEnv = existingEnv.find(env => env.name === envName);
@@ -143,8 +145,8 @@ export function* prepareEnvironment(action) {
   const addSolutionToEnvironmentResult = yield call(
     SolutionsApi.addSolutionToEnvironment,
     envName,
-    addedSolutionName,
-    addedSolutionVersion,
+    solName,
+    solVersion,
   );
 
   if (!addSolutionToEnvironmentResult.error) {
@@ -156,14 +158,7 @@ export function* prepareEnvironment(action) {
       envName,
       clusterVersion,
     );
-    if (result.error) {
-      yield put(
-        addNotificationErrorAction({
-          title: intl.translate('prepare_environment'),
-          message: intl.translate('env_preparation_failed', { envName }),
-        }),
-      );
-    } else {
+    if (!result.error) {
       yield put(
         addJobAction({
           type: 'prepare-env',
@@ -171,12 +166,21 @@ export function* prepareEnvironment(action) {
           env: envName,
         }),
       );
+    } else {
+      yield put(
+        addNotificationErrorAction({
+          title: intl.translate('prepare_environment'),
+          message: intl.translate('env_preparation_failed', { envName }),
+        }),
+      );
     }
   } else {
     yield put(
       addNotificationErrorAction({
-        title: intl.translate('prepare_environment'),
-        message: intl.translate('env_preparation_failed', { envName }),
+        title: intl.translate('add_solution_to_configmap', {
+          envName,
+        }),
+        message: intl.translate('add_solution_to_configmap_failed'),
       }),
     );
   }

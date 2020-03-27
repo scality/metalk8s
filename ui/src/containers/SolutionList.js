@@ -69,11 +69,6 @@ const FormStyle = styled.div`
 const TableContainer = styled.div`
   height: 40%;
   margin: 0 0 50px 0;
-
-  /* solve the tooltip display issue */
-  .sc-table-column-cell-action {
-    overflow: visible !important;
-  }
 `;
 
 const EnvironmentHeader = styled.div`
@@ -335,7 +330,15 @@ const SolutionsList = props => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={values => {
-              dispatch(prepareEnvironmentAction(selectedEnvironment, values));
+              const solName = values.solution.value;
+              const solVersion = values.version.value;
+              dispatch(
+                prepareEnvironmentAction(
+                  selectedEnvironment,
+                  solName,
+                  solVersion,
+                ),
+              );
               setisAddSolutionModalOpen(false);
             }}
           >

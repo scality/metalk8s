@@ -144,5 +144,7 @@
   "environment_creation_failed": "Environment {envName} creation has failed.",
   "environment_deletion": "Environment deletion",
   "environment_delete_success": "Environment {envName} is being deleted.",
-  "environment_delete_failed": "Environment {envName} deletion has failed."
+  "environment_delete_failed": "Environment {envName} deletion has failed.",
+  "add_solution_to_configmap": "Add solution to '{envName}' ConfigMap",
+  "add_solution_to_configmap_failed": "Add solution to ConfigMap has failed."
 }
