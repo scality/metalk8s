@@ -119,11 +119,3 @@ export async function getNamespacedDeployment(name, namespace) {
     return { error };
   }
 }
-
-export async function deleteEnvironment(name) {
-  try {
-    return await coreV1.deleteNamespace(name);
-  } catch (error) {
-    return { error };
-  }
-}

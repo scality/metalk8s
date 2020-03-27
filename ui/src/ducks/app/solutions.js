@@ -115,29 +115,14 @@ export function* createEnvironment(action) {
     action.payload,
   );
 
-  if (!resultCreateEnvironment.error) {
-    const resultCreateNamespacedConfigMap = yield call(
-      SolutionsApi.createNamespacedConfigMap,
-      name,
-    );
-    if (!resultCreateNamespacedConfigMap.error) {
-    } else {
-      yield put(
-        addNotificationErrorAction({
-          title: intl.translate('environment_creation_failed', {
-            envName: name,
-          }),
-        }),
-      );
-    }
-  } else {
+  if (resultCreateEnvironment.error) {
     yield put(
       addNotificationErrorAction({
         title: intl.translate('environment_creation_failed', { envName: name }),
       }),
     );
   }
-  history.push('/solutions');
+  yield call(history.push, '/solutions');
   yield call(fetchEnvironments);
 }
 
@@ -276,7 +261,7 @@ export function* refreshSolutions() {
 
 export function* deleteEnvironment(action) {
   const envName = action.payload;
-  const result = yield call(CoreApi.deleteEnvironment, envName);
+  const result = yield call(SolutionsApi.deleteEnvironment, envName);
   if (!result.error) {
     yield put(
       addNotificationSuccessAction({

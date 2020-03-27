@@ -58,9 +58,13 @@ export async function createEnvironment({ name, description }) {
       annotations: { [ANNOTATION_ENVIRONMENT_DESCRIPTION]: description },
     },
   };
-
+  // create namespace and configMap at the same time
   try {
-    return await coreV1.createNamespace(body);
+    await coreV1.createNamespace(body);
+    return await core.createNamespacedConfigMap(
+      ENVIRONMENT_CONFIGMAP_NAME,
+      name,
+    );
   } catch (error) {
     return { error };
   }
@@ -114,17 +118,6 @@ export async function getEnvironmentConfigMap(environment) {
   return environmentConfigMaps[0];
 }
 
-export async function createNamespacedConfigMap(namespace) {
-  try {
-    return await core.createNamespacedConfigMap(
-      ENVIRONMENT_CONFIGMAP_NAME,
-      namespace,
-    );
-  } catch (error) {
-    return { error };
-  }
-}
-
 export async function addSolutionToEnvironment(namespace, solName, solVersion) {
   const patch = [{ op: 'add', path: `/data/${solName}`, value: solVersion }];
 
@@ -137,4 +130,13 @@ export async function addSolutionToEnvironment(namespace, solName, solVersion) {
     { jsonPatch: patch },
   );
 }
+
+export async function deleteEnvironment(name) {
+  try {
+    return await coreV1.deleteNamespace(name);
+  } catch (error) {
+    return { error };
+  }
+}
+
 // }}}
