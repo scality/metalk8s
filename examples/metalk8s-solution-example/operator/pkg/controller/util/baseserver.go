@@ -1,7 +1,8 @@
 package util
 
 import (
-	"example-operator/version"
+	"example-solution-operator/pkg/config"
+	"example-solution-operator/version"
 	"fmt"
 	"os"
 
@@ -33,7 +34,7 @@ const (
 	ContainerHTTPPort = 8080
 
 	// DefaultOperatorName is the default name for this Operator
-	DefaultOperatorName = "example-operator"
+	DefaultOperatorName = "example-solution-operator"
 )
 
 // commonLabels returns a map of common labels to use in objects managed by
@@ -108,22 +109,38 @@ func BuildLabelSelector(labels map[string]string) metav1.LabelSelector {
 
 // buildImageName builds a complete image name based on the version provided
 // for the `base-server` component, which is the only one deployed for now
-func buildImageName(version string) string {
-	prefix, found := os.LookupEnv("REGISTRY_PREFIX")
-	if !found {
-		prefix = "docker.io/metalk8s"
+// Here `version` is both the image and the Solution versions
+func buildImageName(version string, repositories map[string][]config.Repository) (string, error) {
+	var imageName string = "base-server:" + version
+	var prefix string
+
+	for solution_version, repositories := range repositories {
+		if solution_version == version {
+			for _, repository := range repositories {
+				for _, image := range repository.Images {
+					if image == imageName {
+						prefix = repository.Endpoint
+					}
+				}
+			}
+		}
 	}
 
-	return fmt.Sprintf(
-		"%[1]s/%[2]s-%[3]s/base-server:%[3]s",
-		prefix, ApplicationName, version,
-	)
+	if prefix == "" {
+		return "", fmt.Errorf(
+			"Unable to find image %s in repositories configuration",
+			imageName,
+		)
+	}
+
+	return fmt.Sprintf("%s/%s", prefix, imageName), nil
 }
 
 // BuildContainer builds a container image for a component of kind `kind`
 func BuildContainer(
 	version string, name string, kind ServerKind, cmdArgs []string,
-) corev1.Container {
+	repositories map[string][]config.Repository,
+) (corev1.Container, error) {
 	var path string
 	switch kind {
 	case VersionServerKind:
@@ -132,8 +149,13 @@ func BuildContainer(
 		path = "/time"
 	}
 
+	imageName, err := buildImageName(version, repositories)
+	if err != nil {
+		return corev1.Container{}, err
+	}
+
 	return corev1.Container{
-		Image:   buildImageName(version),
+		Image:   imageName,
 		Name:    string(kind),
 		Command: append([]string{"python3", "/app/server.py"}, cmdArgs...),
 		LivenessProbe: &corev1.Probe{
@@ -152,7 +174,7 @@ func BuildContainer(
 			ContainerPort: ContainerHTTPPort,
 			Name:          "http",
 		}},
-	}
+	}, nil
 }
 
 // BuildService builds a Service object for a component

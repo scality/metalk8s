@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"example-operator/pkg/controller/versionserver"
+	"example-solution-operator/pkg/controller/clockserver"
 )
 
 func init() {
 	// AddToManagerFuncs is a list of functions to create controllers and add them to a manager.
-	AddToManagerFuncs = append(AddToManagerFuncs, versionserver.Add)
+	AddToManagerFuncs = append(AddToManagerFuncs, clockserver.Add)
 }
