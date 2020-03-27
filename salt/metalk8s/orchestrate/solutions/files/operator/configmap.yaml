@@ -9,6 +9,8 @@ data:
     kind: OperatorConfig
     repositories:
 {%- for version_info in pillar.metalk8s.solutions.available.get(solution, []) %}
-      - version: {{ version_info.version }}
-        repository: {{ registry }}/{{ version_info.id }}
+      {{ version_info.version }}:
+        - endpoint: {{ registry }}/{{ version_info.id }}
+          images:
+            {{ version_info.config.images | yaml(False) | indent(12) }}
 {%- endfor %}

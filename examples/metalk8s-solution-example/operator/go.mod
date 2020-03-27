@@ -1,10 +1,14 @@
-module example-operator
+module example-solution-operator
 
 require (
 	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/go-openapi/spec v0.19.0
+	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/operator-framework/operator-sdk v0.9.1-0.20190805223000-66e78cc576ef
 	github.com/spf13/pflag v1.0.3
+	gopkg.in/go-playground/validator.v9 v9.31.0
+	gopkg.in/yaml.v2 v2.2.2
 	k8s.io/api v0.0.0-20190612125737-db0771252981
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad
 	k8s.io/client-go v11.0.0+incompatible
