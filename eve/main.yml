@@ -305,6 +305,12 @@ models:
           [[ ${STEP_NAME:-} ]] && BUILD_STATUS_DIR+="/build_status/$STEP_NAME"
           mkdir -p "$BUILD_STATUS_DIR"
           echo -n "$FINAL_STATUS" > "$BUILD_STATUS_DIR/.final_status"
+          TEST_NAME="${TEST_NAME:-$STEP_NAME}"
+          if [[ ${TEST_NAME:-} && ${TEST_SUITE:-} ]]; then
+              git checkout "%(prop:branch)s" && \
+              eve/generate_junit_result.sh \
+                  > "$BUILD_STATUS_DIR/junit_status.xml"
+          fi
         '
       env: &_env_final_status_artifact
         STEP_NAME: ''
@@ -506,6 +512,10 @@ stages:
       - Upload: *upload_final_status_artifact
 
   build:
+    _metalk8s_internal_info:
+      junit_info: &_build_metalk8s_junit_info
+        TEST_SUITE: build
+        TEST_NAME: metalk8s
     worker: &build_worker
       type: kube_pod
       path: eve/workers/pod-builder/pod.yaml
@@ -518,6 +528,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_build_metalk8s_junit_info
             STEP_NAME: build
       - ShellCommand: *setup_cache
       - ShellCommand: *build_all
@@ -535,6 +546,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_build_metalk8s_junit_info
             STEP_NAME: build
       - Upload: *upload_final_status_artifact
       - ShellCommand:
@@ -546,16 +558,22 @@ stages:
           haltOnFailure: true
 
   buildprev:
+    _metalk8s_internal_info:
+      junit_info: &_build_metalk8s-previous_junit_info
+        TEST_SUITE: build
+        TEST_NAME: metalk8s-previous
     worker: *build_worker
     steps:
       - ShellCommand: *wait_for_docker
       - ShellCommand: *setup_cache
-      - ShellCommand: *git_pull_prev
+      - Git: *git_pull
       - ShellCommand:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_build_metalk8s-previous_junit_info
             STEP_NAME: buildprev
+      - ShellCommand: *git_pull_prev
       - ShellCommand:
           <<: *build_all
           workdir: "build/metalk8s-%(prop:product_version_prev)s"
@@ -570,10 +588,15 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_build_metalk8s-previous_junit_info
             STEP_NAME: buildprev
       - Upload: *upload_final_status_artifact
 
   build-example-solution:
+    _metalk8s_internal_info:
+      junit_info: &_build_ex-solution_junit_info
+        TEST_SUITE: build
+        TEST_NAME: example-solution
     worker:
       type: kube_pod
       path: eve/workers/pod-example-solution-builder/pod.yaml
@@ -586,6 +609,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_build_ex-solution_junit_info
             STEP_NAME: build-example-solution
       - ShellCommand: *setup_cache
       - SetPropertyFromCommand:
@@ -612,10 +636,15 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_build_ex-solution_junit_info
             STEP_NAME: build-example-solution
       - Upload: *upload_final_status_artifact
 
   docs:
+    _metalk8s_internal_info:
+      junit_info: &_build_docs_junit_info
+        TEST_SUITE: build
+        TEST_NAME: docs
     worker:
       type: kube_pod
       path: eve/workers/pod-docs-builder/pod.yaml
@@ -629,6 +658,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_build_docs_junit_info
             STEP_NAME: docs
       - ShellCommand: *setup_cache
       - ShellCommand:
@@ -656,10 +686,16 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_build_docs_junit_info
             STEP_NAME: docs
       - Upload: *upload_final_status_artifact
 
   lint:
+    _metalk8s_internal_info:
+      junit_info: &_lint_junit_info
+        TEST_SUITE: lint
+        # This one should be split in different test case for each linting
+        TEST_NAME: full
     worker:
       type: kube_pod
       path: eve/workers/pod-linter/pod.yaml
@@ -673,21 +709,28 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_lint_junit_info
             STEP_NAME: lint
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all linting targets
           command: source /etc/profile && ./doit.sh lint
           usePTY: true
-          haltOnFailure: false
+          haltOnFailure: true
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_lint_junit_info
             STEP_NAME: lint
       - Upload: *upload_final_status_artifact
 
   unit_tests:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_junit_info
+        TEST_SUITE: unit-test
+        # This one should be split in different test case for each unit tests
+        TEST_NAME: full
     worker:
       type: kube_pod
       path: eve/workers/pod-unit-tests/pod.yaml
@@ -701,6 +744,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_junit_info
             STEP_NAME: unit_tests
       - ShellCommand: *setup_cache
       - ShellCommand:
@@ -733,10 +777,16 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_unit-test_junit_info
             STEP_NAME: unit_tests
       - Upload: *upload_final_status_artifact
 
   single-node-downgrade-centos:
+    _metalk8s_internal_info:
+      junit_info: &_downgrade_minor_single-node_junit_info
+        TEST_SUITE: downgrade
+        CLASS_NAME: minor.single-node.centos7
+        TEST_NAME: simple environment
     worker: &single_node_worker
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
@@ -748,6 +798,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_downgrade_minor_single-node_junit_info
             STEP_NAME: single-node-downgrade-centos
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
@@ -838,6 +889,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_downgrade_minor_single-node_junit_info
             STEP_NAME: single-node-downgrade-centos
       - Upload: *upload_final_status_artifact
       - ShellCommand:
@@ -846,6 +898,11 @@ stages:
             STEP_NAME: single-node-downgrade-centos
 
   single-node-upgrade-centos:
+    _metalk8s_internal_info:
+      junit_info: &_upgrade_minor_single-node_junit_info
+        TEST_SUITE: upgrade
+        CLASS_NAME: minor.single-node.centos7
+        TEST_NAME: simple environment
     worker: *single_node_worker
     steps:
       - Git: *git_pull
@@ -853,6 +910,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_upgrade_minor_single-node_junit_info
             STEP_NAME: single-node-upgrade-centos
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
@@ -919,6 +977,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_upgrade_minor_single-node_junit_info
             STEP_NAME: single-node-upgrade-centos
       - Upload: *upload_final_status_artifact
       - ShellCommand:
@@ -927,6 +986,11 @@ stages:
             STEP_NAME: single-node-upgrade-centos
 
   single-node-install-rhel:
+    _metalk8s_internal_info:
+      junit_info: &_install_single-node_junit_info
+        TEST_SUITE: install
+        CLASS_NAME: single-node.rhel7
+        TEST_NAME: simple environment
     worker:
       <<: *single_node_worker
       flavor: m1.medium
@@ -937,6 +1001,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_install_single-node_junit_info
             STEP_NAME: single-node-install-rhel
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
@@ -1067,6 +1132,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_install_single-node_junit_info
             STEP_NAME: single-node-install-rhel
       - Upload: *upload_final_status_artifact
       - ShellCommand:
@@ -1114,6 +1180,11 @@ stages:
 
 # --- Upgrade for patch versions ---
   single-node-upgrade-patch-centos:
+    _metalk8s_internal_info:
+      junit_info: &_upgrade_patch_single-node_junit_info
+        TEST_SUITE: upgrade
+        CLASS_NAME: patch.single-node.centos7
+        TEST_NAME: simple environment
     worker: *single_node_worker
     steps:
       - Git: *git_pull
@@ -1121,6 +1192,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_upgrade_patch_single-node_junit_info
             STEP_NAME: single-node-upgrade-patch-centos
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
@@ -1203,6 +1275,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_upgrade_patch_single-node_junit_info
             STEP_NAME: single-node-upgrade-patch-centos
       - Upload: *upload_final_status_artifact
       - ShellCommand:
@@ -1212,6 +1285,11 @@ stages:
 
   # --- Downgrade for patch versions ---
   single-node-downgrade-patch-centos:
+    _metalk8s_internal_info:
+      junit_info: &_downgrade_patch_single-node_junit_info
+        TEST_SUITE: downgrade
+        CLASS_NAME: patch.single-node.centos7
+        TEST_NAME: simple environment
     worker: *single_node_worker
     steps:
       - Git: *git_pull
@@ -1219,6 +1297,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_downgrade_patch_single-node_junit_info
             STEP_NAME: single-node-downgrade-patch-centos
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
@@ -1275,6 +1354,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_downgrade_patch_single-node_junit_info
             STEP_NAME: single-node-downgrade-patch-centos
       - Upload: *upload_final_status_artifact
       - ShellCommand:
@@ -1283,6 +1363,11 @@ stages:
             STEP_NAME: single-node-downgrade-patch-centos
 
   multiple-nodes-centos:
+    _metalk8s_internal_info:
+      junit_info: &_install_multi-node_junit_info
+        TEST_SUITE: install
+        CLASS_NAME: multi-node.centos7
+        TEST_NAME: 1 bootstrap 1 master,etcd
     worker:
       <<: *single_node_worker
       flavor: m1.medium
@@ -1293,6 +1378,7 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
+            <<: *_install_multi-node_junit_info
             STEP_NAME: multiple-nodes-centos
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
@@ -1470,6 +1556,7 @@ stages:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
+            <<: *_install_multi-node_junit_info
             STEP_NAME: multiple-nodes-centos
       - Upload: *upload_final_status_artifact
       - ShellCommand:
