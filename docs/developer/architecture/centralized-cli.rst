@@ -14,9 +14,9 @@ categorized as follow:
 - Cluster Service Administration (Configure Dex, Prometheus, Alert Manager,
   ...)
 
-K8s provides the kubectl CLI, which is distributed and enables all kind of
-interaction with all Kubernetes resources, through apiserver, but its usage
-often requires to build verbose YAML files.
+K8s provides the kubectl CLI, which is distributed and enables
+all kind of interaction with all Kubernetes resources, through apiserver, but
+its usage often requires to build verbose YAML files.
 
 Currently, MetalK8s provides other set of scripts or manual procedures, but
 those are located in various locations, their usage may vary and they are not
@@ -29,12 +29,13 @@ The goal of the project is to provide MetalK8s administrator with an intuitive
 and easy to use set of tools in order to administrate and operate a finite set
 of functionalities.
 
-Because kubectl CLI is already in place and is well known by Kubernetes
+Because kubectl is already in place and is well known by Kubernetes
 administrators, it will be used as a standard to follow for all other MetalK8s
 CLIs:
 
 - CLI follows kubectl style: kubectl <action> <resource>
 - CLI provides an exhaustive help, per action, with relevant examples
+- CLI provides <action> help when the command is not valid
 - CLI is not interactive (except if password input is needed)
 - CLI should not require password input
 - CLI provides a dryrun mode for intrusive operations
@@ -48,13 +49,27 @@ CLIs:
 
 When it is possible, it would make sense to leverage kubectl plugin
 
+All functionalities are exposed through 2 distincts CLI:
+- kubectl (enriched using kubectl approach)
+- mk8sctl: a new CLI, exposing specific MetalK8s functionalities
+
+In order to operate the cluster with mk8sctl from outside of the cluster, a
+specific pkg (for each OS) or a procedure explaining how to deploy it is
+available.
+The mk8scli is deployed and available by default on bootstrap nodes
+
 Requirements
 ------------
+
+Not listing all commands that are already available through kubectl.
+Only describing commands that are missing or commands that can be simplified
+using new command line arguments and predefined manifest.
+
 
 Cluster Resources Administration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-tools: kubectl
+**tool: kubectl**
 
 +------------+------------------+-----------------------------------------+
 | Resource   | action           | parameters                              |
@@ -69,28 +84,28 @@ tools: kubectl
 +------------+------------------+-----------------------------------------+
 | node       | edit             | name, hostname (to change node hostname)|
 +------------+------------------+-----------------------------------------+
-| node       | deploy(or apply?)| <list of nodes>, dry-run                |
+| node       | deploy           | <list of nodes>, dry-run                |
 +------------+------------------+-----------------------------------------+
 | node       | delete, drain,   | <list of nodes>                         |
 |            | taint, label     |                                         |
 +------------+------------------+-----------------------------------------+
 | volume     | add              | name, nodeName, storageClassName,       |
 |            |                  | devicePath, manifest-template-path,     |
-|            |                  | labels                                  |
+|            |                  | labels, type                            |
 +------------+------------------+-----------------------------------------+
-| volume     | delete, label    | name                                    |
+| volume     | delete, labels   | name                                    |
 +------------+------------------+-----------------------------------------+
 
 
 Cluster Administration
 ^^^^^^^^^^^^^^^^^^^^^^
 
-tools: mk8sctl
+**tool: mk8sctl**
 
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
 +============+============+===============================================+
-| bootstrap  | install    |                                               |
+| bootstrap  | deploy     |                                               |
 +------------+------------+-----------------------------------------------+
 | cluster    | import-iso | path_to_iso                                   |
 +------------+------------+-----------------------------------------------+
@@ -111,7 +126,7 @@ tools: mk8sctl
 Solution Administration
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-tools: mk8sctl
+**tool: mk8sctl**
 
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
@@ -128,12 +143,26 @@ tools: mk8sctl
 Cluster Service Administration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-tools: mk8sctl
+**tool: mk8sctl**
 
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
 +============+============+===============================================+
 | grafana    | edit-conf  | conf-param=conf-value                         |
++------------+------------+-----------------------------------------------+
+|alertmanager| edit-conf  | conf-param=conf-value                         |
++------------+------------+-----------------------------------------------+
+| alert-rule | edit-conf  | conf-param=conf-value                         |
++------------+------------+-----------------------------------------------+
+| alert-rule | add        | conf-param=conf-value                         |
++------------+------------+-----------------------------------------------+
+|prometheuse | edit-conf  | conf-param=conf-value                         |
++------------+------------+-----------------------------------------------+
+| grafana    | deploy     |                                               |
++------------+------------+-----------------------------------------------+
+|alertmanager| deploy     |                                               |
++------------+------------+-----------------------------------------------+
+| prometheus | deploy     |                                               |
 +------------+------------+-----------------------------------------------+
 | user       | add        | name, email, passwd, mk8s-roles               |
 +------------+------------+-----------------------------------------------+
