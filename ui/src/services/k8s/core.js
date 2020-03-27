@@ -1,5 +1,4 @@
 import { coreV1, appsV1 } from './api';
-import jsonpatch from 'jsonpatch';
 
 export async function getNodes() {
   try {
@@ -82,7 +81,7 @@ export async function createNamespacedConfigMap(name, namespace, restProps) {
     metadata: {
       name,
     },
-    restProps, //other props for V1ConfigMap: apiVersion, binaryData, data, kind
+    ...restProps, //other props for V1ConfigMap: apiVersion, binaryData, data, kind
   };
   try {
     return await coreV1.createNamespacedConfigMap(namespace, body);
@@ -91,9 +90,21 @@ export async function createNamespacedConfigMap(name, namespace, restProps) {
   }
 }
 
-export async function patchNamespacedConfigMap(name, namespace, patch) {
-  // we don't have data prop in ConfigMap, in order to patch solution we need to initialize with a data object
-  const body = jsonpatch.apply_patch({ data: {} }, patch.jsonPatch);
+export async function patchNamespacedConfigMap(
+  name,
+  namespace,
+  { jsonPatch, mergePatch },
+) {
+  let cTypeHeader;
+  let body;
+  if (jsonPatch !== undefined) {
+    cTypeHeader = 'application/json-patch+json';
+    body = jsonPatch;
+  } else {
+    cTypeHeader = 'application/merge-patch+json';
+    body = mergePatch;
+  }
+
   try {
     return await coreV1.patchNamespacedConfigMap(
       name,
@@ -101,11 +112,7 @@ export async function patchNamespacedConfigMap(name, namespace, patch) {
       body,
       undefined,
       undefined,
-      {
-        headers: {
-          'Content-Type': 'application/merge-patch+json',
-        },
-      },
+      { headers: { 'Content-Type': cTypeHeader } },
     );
   } catch (error) {
     return { error };

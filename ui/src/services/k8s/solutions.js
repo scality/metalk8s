@@ -119,7 +119,17 @@ export async function getEnvironmentConfigMap(environment) {
 }
 
 export async function addSolutionToEnvironment(namespace, solName, solVersion) {
-  const patch = [{ op: 'add', path: `/data/${solName}`, value: solVersion }];
+  const result = await coreV1.readNamespacedConfigMap(
+    ENVIRONMENT_CONFIGMAP_NAME,
+    namespace,
+  );
+  let patch;
+  // Create the data key if it doesn't exists, otherwise we can't insert the solution field inside.
+  if (result.body.data) {
+    patch = [{ op: 'add', path: `/data/${solName}`, value: solVersion }];
+  } else {
+    patch = [{ op: 'add', path: '/data', value: { [solName]: solVersion } }];
+  }
 
   return core.patchNamespacedConfigMap(
     ENVIRONMENT_CONFIGMAP_NAME,
