@@ -181,7 +181,28 @@ SOLUTION_CONFIG_APIVERSIONS = [
 ]
 
 
-def _default_solution_config(name, version):
+def list_solution_images(mountpoint):
+    images_dir = os.path.join(mountpoint, 'images')
+    solution_images = []
+
+    if not os.path.isdir(images_dir):
+        raise CommandExecutionError(
+            '{} does not exist or is not a directory'.format(images_dir)
+        )
+
+    for image in os.listdir(images_dir):
+        image_dir = os.path.join(images_dir, image)
+        if os.path.isdir(image_dir):
+            solution_images.extend([
+                '{}:{}'.format(image, version)
+                for version in os.listdir(image_dir)
+                if os.path.isdir(os.path.join(image_dir, version))
+            ])
+
+    return solution_images
+
+
+def _default_solution_config(mountpoint, name, version):
     return {
         'kind': SOLUTION_CONFIG_KIND,
         'apiVersion': SOLUTION_CONFIG_APIVERSIONS[0],
@@ -197,13 +218,14 @@ def _default_solution_config(name, version):
                 'tag': version,
             },
         },
+        'images': list_solution_images(mountpoint),
         'customApiGroups': [],
     }
 
 
 def read_solution_config(mountpoint, name, version):
     log.debug('Reading Solution config from %r', mountpoint)
-    config = _default_solution_config(name, version)
+    config = _default_solution_config(mountpoint, name, version)
     config_path = os.path.join(mountpoint, 'config.yaml')
 
     if not os.path.isfile(config_path):

@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   creationTimestamp: null
-  name: example-operator
+  name: example-solution-operator
 rules:
 - apiGroups:
   - ""
@@ -35,7 +35,7 @@ rules:
 - apiGroups:
   - apps
   resourceNames:
-  - example-operator
+  - example-solution-operator
   resources:
   - deployments/finalizers
   verbs:
