@@ -53,12 +53,13 @@ When it is possible, it would make sense to leverage kubectl plugin
 
 All functionalities are exposed through 2 distinct CLI:
 - kubectl (enriched using kubectl approach)
-- mk8sctl: a new CLI, exposing specific MetalK8s functionalities
+- metalk8scli: a new CLI, exposing specific MetalK8s functionalities
 
-In order to operate the cluster with mk8sctl from outside of the cluster, a
+In order to operate the cluster with metalk8scli from outside of the cluster, a
 specific pkg (for each OS) or a procedure explaining how to deploy it, is
 available.
-The mk8scli is deployed and available by default on bootstrap nodes
+The metalk8scli and kubectl are deployed and available by default on bootstrap
+nodes.
 
 Requirements
 ------------
@@ -76,7 +77,7 @@ Cluster Resources Administration
 +------------+------------------+-----------------------------------------+
 | Resource   | action           | parameters                              |
 +============+==================+=========================================+
-| node       | add              | name, ssh-user, hostname or ip,         |
+| node       | create           | name, ssh-user, hostname or ip,         |
 |            |                  | ssh port, ssh-key-path, sudo-required,  |
 |            |                  | roles, manifest-template-path           |
 +------------+------------------+-----------------------------------------+
@@ -91,7 +92,7 @@ Cluster Resources Administration
 | node       | delete, drain,   | <list of nodes>                         |
 |            | taint, label     |                                         |
 +------------+------------------+-----------------------------------------+
-| volume     | add              | name, nodeName, storageClassName,       |
+| volume     | create           | name, nodeName, storageClassName,       |
 |            |                  | devicePath, manifest-template-path,     |
 |            |                  | labels, type                            |
 +------------+------------------+-----------------------------------------+
@@ -102,7 +103,7 @@ Cluster Resources Administration
 Cluster Administration
 ^^^^^^^^^^^^^^^^^^^^^^
 
-**tool: mk8sctl**
+**tool: metalk8scli**
 
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
@@ -128,14 +129,14 @@ Cluster Administration
 Solution Administration
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-**tool: mk8sctl**
+**tool: metalk8scli**
 
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
 +============+============+===============================================+
 | solution   | import     | path_to_iso                                   |
 +------------+------------+-----------------------------------------------+
-|environment | add        | name                                          |
+|environment | create     | name                                          |
 +------------+------------+-----------------------------------------------+
 |environment | delete     | name                                          |
 +------------+------------+-----------------------------------------------+
@@ -143,7 +144,7 @@ Solution Administration
 Cluster Service Administration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**tool: mk8sctl**
+**tool: metalk8scli**
 
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
@@ -154,7 +155,7 @@ Cluster Service Administration
 +------------+------------+-----------------------------------------------+
 | alert-rule | edit-conf  | conf-param=conf-value                         |
 +------------+------------+-----------------------------------------------+
-| alert-rule | add        | conf-param=conf-value                         |
+| alert-rule | create     | conf-param=conf-value                         |
 +------------+------------+-----------------------------------------------+
 | prometheus | edit-conf  | conf-param=conf-value                         |
 +------------+------------+-----------------------------------------------+
@@ -164,7 +165,7 @@ Cluster Service Administration
 +------------+------------+-----------------------------------------------+
 | prometheus | deploy     |                                               |
 +------------+------------+-----------------------------------------------+
-| user       | add        | name, email, passwd, mk8s-roles               |
+| user       | create     | name, email, passwd, mk8s-roles               |
 +------------+------------+-----------------------------------------------+
 | user       | delete     | name                                          |
 +------------+------------+-----------------------------------------------+
