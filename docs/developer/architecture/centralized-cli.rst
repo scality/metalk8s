@@ -15,8 +15,9 @@ categorized as follow:
   ...)
 
 K8s provides the kubectl CLI, enabling all kind of interactions with all
-Kubernetes resources, through apiserver, but its usage often requires to build
-verbose YAML files.
+Kubernetes resources, through k8s apiserver, but its usage often requires to
+build verbose YAML files. Also it does not leverage everything MetalK8s exposes
+through the salt API.
 It is shipped as an independent package and can be deployed and run from
 anywhere, on any OS.
 
@@ -32,10 +33,9 @@ and easy to use set of tools in order to administrate and operate a finite set
 of functionalities.
 
 Because kubectl is already in place and is well known by Kubernetes
-administrators, it will be used as a standard to follow for all other MetalK8s
-CLIs:
+administrators, it will be used as a standard to follow, as much as possible,
+for all other MetalK8s CLIs:
 
-- CLI follows kubectl style: kubectl <action> <resource>
 - CLI provides an exhaustive help, per action, with relevant examples
 - CLI provides <action> help when the command is not valid
 - CLI is not interactive (except if password input is needed)
@@ -43,22 +43,32 @@ CLIs:
 - CLI provides a dryrun mode for intrusive operations
 - CLI provides a verbose (or debug) mode
 - CLI implementation relies on secure APIs
-- CLI support <action> completion for easy discovery
+- CLI support action completion for easy discovery
 - CLI output is standardized and human readable by default
 - CLI output can be formatted in JSON or YAML
-- CLI can be executed from outside of the cluster (except maybe for very first
-  install script)
 
 When it is possible, it would make sense to leverage kubectl plugin
 
-All functionalities are exposed through 2 distinct CLI:
-- kubectl (enriched using kubectl approach)
-- metalk8scli: a new CLI, exposing specific MetalK8s functionalities
+Most functionalities are exposed through 2 distinct CLI:
 
-In order to operate the cluster with metalk8scli from outside of the cluster, a
-specific pkg (for each OS) or a procedure explaining how to deploy it, is
-available.
-The metalk8scli and kubectl are deployed and available by default on bootstrap
+- kubectl: enriched with metalk8s plugin, to interact with both k8s apiserver
+  and salt API, and that can be executed from outside of the cluster.
+- metalk8sctl: a new CLI, exposing specific MetalK8s functionalities, that are
+  not interacting with k8s apiserver, and that must be executed on cluster node
+  host.
+
+Some cluster configurations will be achievable through documented procedures,
+such as changing one cluster server hostname.
+
+Other specific solution kubectl plugin may also be provided by a solution.
+
+To know which command must be used, administrator will rely on MetalK8s
+documentation. Documentation will be updated accordingly.
+
+In order to operate the cluster with kubectl plugins from outside of the
+cluster, plugin binary will be available for download from the bootstrap node
+or from MetalK8s release repository.
+The metalk8sctl and kubectl are deployed and available by default on bootstrap
 nodes.
 
 Requirements
@@ -66,55 +76,41 @@ Requirements
 
 Not listing all commands that are already available through kubectl.
 Only describing commands that are missing or commands that can be simplified
-using new command line arguments and predefined manifest.
+using new command line arguments.
 
 
 Cluster Resources Administration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**tool: kubectl**
+**tool: kubectl metalk8s**
 
-+------------+------------------+-----------------------------------------+
-| Resource   | action           | parameters                              |
-+============+==================+=========================================+
-| node       | create           | name, ssh-user, hostname or ip,         |
-|            |                  | ssh port, ssh-key-path, sudo-required,  |
-|            |                  | roles, manifest-template-path           |
-+------------+------------------+-----------------------------------------+
-| the manifest-template-path is the path to the manifest describing the   |
-| resource. Everything that is in the command line, override the manifest |
-| content. This apply to Node and Volumes.                                |
-+------------+------------------+-----------------------------------------+
-| node       | edit             | name, hostname (to change node hostname)|
-+------------+------------------+-----------------------------------------+
-| node       | deploy           | <list of nodes>, dry-run                |
-+------------+------------------+-----------------------------------------+
-| node       | delete, drain,   | <list of nodes>                         |
-|            | taint, label     |                                         |
-+------------+------------------+-----------------------------------------+
-| volume     | create           | name, nodeName, storageClassName,       |
-|            |                  | devicePath, manifest-template-path,     |
-|            |                  | labels, type                            |
-+------------+------------------+-----------------------------------------+
-| volume     | delete, labels   | name                                    |
-+------------+------------------+-----------------------------------------+
-
++----------+---------------+-------------+-----------------------------------+
+| action   | resource type | resource id | parameters                        |
++==========+===============+=============+===================================+
+| create   | node          | name        | ssh-user, hostname or ip, ssh port|
+|          |               |             | ssh-key-path, sudo-required, roles|
++----------+---------------+-------------+-----------------------------------+
+| deploy   | node          | name...     | <dry-run>                         |
++----------+---------------+-------------+-----------------------------------+
+| create   | volume        | name        | type, nodeName, storageClassName, |
+|          |               |             | <devicePath>, <size>, <labels>    |
++----------+---------------+-------------+-----------------------------------+
 
 Cluster Administration
 ^^^^^^^^^^^^^^^^^^^^^^
 
-**tool: metalk8scli**
+**tool: metalk8sctl**
 
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
 +============+============+===============================================+
 | bootstrap  | deploy     |                                               |
 +------------+------------+-----------------------------------------------+
-| cluster    | import-iso | path_to_iso                                   |
+| bootstrap  | import-iso | path_to_iso                                   |
 +------------+------------+-----------------------------------------------+
-| cluster    | upgrade    | dest-version, dry-run                         |
+| cluster    | upgrade    | dest-version, <dry-run>                       |
 +------------+------------+-----------------------------------------------+
-| cluster    | downgrade  | dest-version, dry-run                         |
+| cluster    | downgrade  | dest-version, <dry-run>                       |
 +------------+------------+-----------------------------------------------+
 | etcd       | health     |                                               |
 +------------+------------+-----------------------------------------------+
@@ -122,52 +118,34 @@ Cluster Administration
 +------------+------------+-----------------------------------------------+
 | bootstrap  | restore    | backup-file                                   |
 +------------+------------+-----------------------------------------------+
-| cluster    | edit-conf  | conf-param=conf-value                         |
-|            |            | ex: ip-in-ip=true                             |
-+------------+------------+-----------------------------------------------+
 
 Solution Administration
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-**tool: metalk8scli**
+**tool: metalk8sctl**
 
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
 +============+============+===============================================+
-| solution   | import     | path_to_iso                                   |
-+------------+------------+-----------------------------------------------+
-|environment | create     | name                                          |
-+------------+------------+-----------------------------------------------+
-|environment | delete     | name                                          |
+| solutions  | import-iso | path_to_iso                                   |
 +------------+------------+-----------------------------------------------+
 
 Cluster Service Administration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**tool: metalk8scli**
+**tool: kubectl metalk8s**
 
-+------------+------------+-----------------------------------------------+
-| Resource   | action     | parameters                                    |
-+============+============+===============================================+
-| grafana    | edit-conf  | conf-param=conf-value                         |
-+------------+------------+-----------------------------------------------+
-|alertmanager| edit-conf  | conf-param=conf-value                         |
-+------------+------------+-----------------------------------------------+
-| alert-rule | edit-conf  | conf-param=conf-value                         |
-+------------+------------+-----------------------------------------------+
-| alert-rule | create     | conf-param=conf-value                         |
-+------------+------------+-----------------------------------------------+
-| prometheus | edit-conf  | conf-param=conf-value                         |
-+------------+------------+-----------------------------------------------+
-| grafana    | deploy     |                                               |
-+------------+------------+-----------------------------------------------+
-|alertmanager| deploy     |                                               |
-+------------+------------+-----------------------------------------------+
-| prometheus | deploy     |                                               |
-+------------+------------+-----------------------------------------------+
-| user       | create     | name, email, passwd, mk8s-roles               |
-+------------+------------+-----------------------------------------------+
-| user       | delete     | name                                          |
-+------------+------------+-----------------------------------------------+
-| user       | edit       | name, email, passwd, mk8s-roles               |
-+------------+------------+-----------------------------------------------+
++----------+---------------+-------------+----------------------------+
+| action   | resource type | resource id | parameters                 |
++==========+===============+=============+============================+
+| The following edit commands are doing both configuration update and |
+| applying the configuration.                                         |
++----------+---------------+-------------+----------------------------+
+| edit     | grafana-config| name        | open an editor             |
++----------+---------------+-------------+----------------------------+
+| edit     | am-config     | name        | open an editor             |
++----------+---------------+-------------+----------------------------+
+| edit     | prom-config   | name        | open an editor             |
++----------+---------------+-------------+----------------------------+
+| edit     | dex-config    | name        | open an editor             |
++----------+---------------+-------------+----------------------------+
