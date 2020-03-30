@@ -171,7 +171,10 @@ const SolutionsList = props => {
           deployedSolutions &&
           deployedSolutions.map((deployedSolution, idx) => {
             return (
-              <span key={idx}>
+              <span
+                key={idx}
+                data-cy={`${deployedSolution.name} (v.${deployedSolution.version})`}
+              >
                 {`${deployedSolution.name} (v.${deployedSolution.version})`}{' '}
               </span>
             );
@@ -187,6 +190,7 @@ const SolutionsList = props => {
                 setSelectedEnvironment(environment.name);
                 setisAddSolutionModalOpen(true);
               }}
+              data-cy={`add_solution_to_${environment.name}_button`}
             />
             <SolutionLinks>{solutionsList}</SolutionLinks>
             {isEnvironmentPreparing && (
@@ -216,6 +220,7 @@ const SolutionsList = props => {
               }}
               inverted={true}
               icon={<i className="fas fa-lg fa-trash" />}
+              data-cy={`delete_${environment.name}_button`}
             ></TrashButtonContainer>
           </>
         );
@@ -233,8 +238,14 @@ const SolutionsList = props => {
   const firstVersion = sortedSolutions?.[0]?.versions?.[0]?.version ?? '';
 
   const initialValues = {
-    solution: { label: firstSolution, value: firstSolution },
-    version: { label: firstVersion, value: firstVersion },
+    solution: {
+      label: firstSolution,
+      value: firstSolution,
+    },
+    version: {
+      label: firstVersion,
+      value: firstVersion,
+    },
   };
 
   const validationSchema = {
@@ -276,6 +287,7 @@ const SolutionsList = props => {
               text={intl.translate('create_new_environment')}
               onClick={() => history.push('/solutions/create-environment')}
               icon={<i className="fas fa-plus" />}
+              data-cy="create_new_environment_button"
             />
           </EnvironmentHeader>
 
@@ -352,6 +364,7 @@ const SolutionsList = props => {
               const solutionsSelectOptions = sortedSolutions.map(solution => ({
                 label: solution.name,
                 value: solution.name,
+                'data-cy': `${solution.name}`,
               }));
 
               const selectedSolutionVersions =
@@ -368,9 +381,9 @@ const SolutionsList = props => {
                 solutionVersion => ({
                   label: solutionVersion.version,
                   value: solutionVersion.version,
+                  'data-cy': `${solutionVersion.version}`,
                 }),
               );
-
               return (
                 <ModalBody>
                   <Form>
@@ -410,6 +423,7 @@ const SolutionsList = props => {
                         <Button
                           text={intl.translate('add_solution')}
                           type="submit"
+                          data-cy="add_solution_submit_button"
                         />
                       </ActionContainer>
                     </FormStyle>
