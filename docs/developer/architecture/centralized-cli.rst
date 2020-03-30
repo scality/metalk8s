@@ -14,9 +14,11 @@ categorized as follow:
 - Cluster Service Administration (Configure Dex, Prometheus, Alert Manager,
   ...)
 
-K8s provides the kubectl CLI, which is distributed and enables
-all kind of interaction with all Kubernetes resources, through apiserver, but
-its usage often requires to build verbose YAML files.
+K8s provides the kubectl CLI, enabling all kind of interactions with all
+Kubernetes resources, through apiserver, but its usage often requires to build
+verbose YAML files.
+It is shipped as an independent package and can be deployed and run from
+anywhere, on any OS.
 
 Currently, MetalK8s provides other set of scripts or manual procedures, but
 those are located in various locations, their usage may vary and they are not
@@ -49,12 +51,12 @@ CLIs:
 
 When it is possible, it would make sense to leverage kubectl plugin
 
-All functionalities are exposed through 2 distincts CLI:
+All functionalities are exposed through 2 distinct CLI:
 - kubectl (enriched using kubectl approach)
 - mk8sctl: a new CLI, exposing specific MetalK8s functionalities
 
 In order to operate the cluster with mk8sctl from outside of the cluster, a
-specific pkg (for each OS) or a procedure explaining how to deploy it is
+specific pkg (for each OS) or a procedure explaining how to deploy it, is
 available.
 The mk8scli is deployed and available by default on bootstrap nodes
 
@@ -131,13 +133,11 @@ Solution Administration
 +------------+------------+-----------------------------------------------+
 | Resource   | action     | parameters                                    |
 +============+============+===============================================+
-| solution   | import     |                                               |
-+------------+------------+-----------------------------------------------+
 | solution   | import     | path_to_iso                                   |
 +------------+------------+-----------------------------------------------+
 |environment | add        | name                                          |
 +------------+------------+-----------------------------------------------+
-|environment | delete     |                                               |
+|environment | delete     | name                                          |
 +------------+------------+-----------------------------------------------+
 
 Cluster Service Administration
@@ -156,7 +156,7 @@ Cluster Service Administration
 +------------+------------+-----------------------------------------------+
 | alert-rule | add        | conf-param=conf-value                         |
 +------------+------------+-----------------------------------------------+
-|prometheuse | edit-conf  | conf-param=conf-value                         |
+| prometheus | edit-conf  | conf-param=conf-value                         |
 +------------+------------+-----------------------------------------------+
 | grafana    | deploy     |                                               |
 +------------+------------+-----------------------------------------------+
