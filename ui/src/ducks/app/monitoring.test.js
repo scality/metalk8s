@@ -11,7 +11,7 @@ import {
 } from './monitoring';
 import { REFRESH_TIMEOUT } from '../../constants';
 import { queryPrometheus, getAlerts } from '../../services/prometheus/api';
-import * as ApiK8s from '../../services/k8s/api';
+import * as CoreApi from '../../services/k8s/core';
 
 const alertsResult = {
   data: {
@@ -390,7 +390,7 @@ it('should handlePrometheusError when prometheus is down, the error is unknown s
   const result = { error: {} };
   const gen = handlePrometheusError({}, result);
   expect(gen.next(result).value).toEqual(
-    call(ApiK8s.queryPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
+    call(CoreApi.queryPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
   );
 
   const prometheusPod = {
@@ -505,7 +505,7 @@ it('should handlePrometheusError and set the Unknown status for cluster when the
   const result = { error: {} };
   const gen = handlePrometheusError({}, result);
   expect(gen.next(result).value).toEqual(
-    call(ApiK8s.queryPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
+    call(CoreApi.queryPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
   );
   const prometheusPod = {
     body: {

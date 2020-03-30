@@ -131,7 +131,7 @@ const NodeList = () => {
       flexGrow: 1,
     },
     {
-      label: intl.translate('version'),
+      label: intl.translate('metalk8s_version'),
       dataKey: 'metalk8s_version',
     },
   ];

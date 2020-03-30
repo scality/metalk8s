@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
@@ -13,15 +13,20 @@ import {
   Loader,
 } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
-
 import { sortSelector } from '../services/utils';
-
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import {
   BreadcrumbContainer,
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
 import { intl } from '../translations/IntlGlobalProvider';
+import { useRefreshEffect } from '../services/utils';
+import {
+  refreshSolutionsAction,
+  stopRefreshSolutionsAction,
+  prepareEnvironmentAction,
+  deleteEnvironmentAction,
+} from '../ducks/app/solutions';
 
 const PageContainer = styled.div`
   box-sizing: border-box;
@@ -40,6 +45,7 @@ const PageSubtitle = styled.h3`
 
 const VersionLabel = styled.label`
   padding: 0 ${padding.smaller};
+  ${props => (props.active ? 'font-weight: bold;' : '')}
 `;
 
 const ModalBody = styled.div``;
@@ -58,10 +64,6 @@ const FormStyle = styled.div`
       width: 200px;
     }
   }
-`;
-
-const ButtonContainer = styled.span`
-  margin-left: ${props => (props.marginLeft ? '10px' : '0')};
 `;
 
 const TableContainer = styled.div`
@@ -88,17 +90,40 @@ const SelectContainer = styled.div`
   margin-top: 20px;
 `;
 
+const EnvironmentSolutionContainer = styled.div`
+  display: flex;
+  align-items: baseline;
+`;
+
+const SolutionLinks = styled.div`
+  padding-left: ${padding.smaller};
+`;
+
+const LoaderContainer = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  padding: 0 0 0 ${padding.smaller};
+`;
+const TrashButtonContainer = styled(Button)`
+  ${props => {
+    if (props.disabled) return { opacity: 0.2 };
+  }};
+`;
+
 const SolutionsList = props => {
+  const theme = useSelector(state => state.config.theme);
+  const solutions = useSelector(state => state.app.solutions.solutions);
+  const environments = useSelector(state => state.app.solutions.environments);
+  const history = useHistory();
+  const dispatch = useDispatch();
+  useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
+
   const [solutionSortBy, setSolutionSortBy] = useState('name');
   const [solutionSortDirection, setSolutionSortDirection] = useState('ASC');
   const [envSortBy, setEnvSortBy] = useState('name');
   const [envSortDirection, setEnvSortDirection] = useState('ASC');
   const [isAddSolutionModalOpen, setisAddSolutionModalOpen] = useState(false);
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
-  const theme = useSelector(state => state.config.theme);
-  const solutions = useSelector(state => state.app.solutions.solutions);
-  const environments = useSelector(state => state.app.solutions.environments);
-  const history = useHistory();
 
   const onSort = (setSortBy, setSortDirection) => ({
     sortBy,
@@ -119,7 +144,7 @@ const SolutionsList = props => {
       dataKey: 'versions',
       renderer: versions =>
         versions.map((version, index) => (
-          <VersionLabel key={`version_${index}`}>
+          <VersionLabel key={`version_${index}`} active={version.active}>
             {version.version}
           </VersionLabel>
         )),
@@ -135,55 +160,66 @@ const SolutionsList = props => {
     {
       label: intl.translate('description'),
       dataKey: 'description',
-      flexGrow: 1,
     },
     {
       label: intl.translate('solutions'),
       dataKey: 'solutions',
-      renderer: (solutions, row) => {
-        const solutionsLinks = solutions
-          .map((solution, idx) => {
-            const solutionRow = sortedSolutions.find(
-              s => s.name === solution.name,
+      renderer: (solutions, environment) => {
+        const isEnvironmentPreparing = environment.isPreparing;
+        const deployedSolutions = environment.solutions;
+        const solutionsList =
+          deployedSolutions &&
+          deployedSolutions.map((deployedSolution, idx) => {
+            return (
+              <span key={idx}>
+                {`${deployedSolution.name} (v.${deployedSolution.version})`}{' '}
+              </span>
             );
-
-            const solutionVersion = solutionRow?.versions?.find(
-              v => v.version === solution.version,
-            );
-
-            return solutionVersion?.ui_url ? (
-              <ButtonContainer key={`solution_${idx}`} marginLeft={idx !== 0}>
-                <Button
-                  size="smaller"
-                  text={`${solution.name} ${solution.version}`}
-                  icon={<i className="fas fa-external-link-alt" />}
-                  onClick={() => {
-                    const url = `${solutionVersion.ui_url}/environments/${row.name}`;
-                    window.open(url, '_blank');
-                  }}
-                ></Button>
-              </ButtonContainer>
-            ) : null;
-          })
-          .filter(solution => solution != null);
+          });
 
         return (
-          <div>
-            <span>{solutionsLinks}</span>
-            <ButtonContainer marginLeft={solutionsLinks.length !== 0}>
-              <Button
-                size="smaller"
-                icon={<i className="fas fa-plus" />}
-                onClick={() => {
-                  setSelectedEnvironment(row.name);
-                  setisAddSolutionModalOpen(true);
-                }}
-              />
-            </ButtonContainer>
-          </div>
+          <EnvironmentSolutionContainer>
+            <Button
+              size="smaller"
+              text={intl.translate('add')}
+              outlined
+              onClick={() => {
+                setSelectedEnvironment(environment.name);
+                setisAddSolutionModalOpen(true);
+              }}
+            />
+            <SolutionLinks>{solutionsList}</SolutionLinks>
+            {isEnvironmentPreparing && (
+              <LoaderContainer>
+                <Loader size="small"></Loader>
+                {intl.translate('preparing_environemnt', {
+                  envName: environment.name,
+                })}
+              </LoaderContainer>
+            )}
+          </EnvironmentSolutionContainer>
         );
       },
       flexGrow: 1,
+    },
+    {
+      label: intl.translate('action'),
+      dataKey: 'action',
+      disableSort: true,
+      renderer: (_, environment) => {
+        return (
+          <>
+            <TrashButtonContainer
+              onClick={e => {
+                e.stopPropagation();
+                dispatch(deleteEnvironmentAction(environment.name));
+              }}
+              inverted={true}
+              icon={<i className="fas fa-lg fa-trash" />}
+            ></TrashButtonContainer>
+          </>
+        );
+      },
     },
   ];
 
@@ -193,15 +229,7 @@ const SolutionsList = props => {
   const sortedEnvironments =
     sortSelector(environments, envSortBy, envSortDirection) ?? [];
 
-  const formattedEnvironments = sortedEnvironments.map(environment => {
-    return {
-      name: environment?.metadata?.name ?? '',
-      description: environment?.spec?.description ?? '',
-      solutions: environment?.spec?.solutions ?? [],
-    };
-  });
-
-  const firstSolution = (sortedSolutions[0] && sortedSolutions[0].name) ?? '';
+  const firstSolution = sortedSolutions?.[0]?.name ?? '';
   const firstVersion = sortedSolutions?.[0]?.versions?.[0]?.version ?? '';
 
   const initialValues = {
@@ -252,7 +280,7 @@ const SolutionsList = props => {
           </EnvironmentHeader>
 
           <Table
-            list={formattedEnvironments}
+            list={sortedEnvironments}
             columns={environmentsColumn}
             disableHeader={false}
             headerHeight={40}
@@ -298,25 +326,20 @@ const SolutionsList = props => {
       >
         {isSolutionReady ? (
           <Formik
+            enableReinitialize
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={values => {
-              const selectedSolution = sortedSolutions.find(
-                solution => solution.name === values.solution.value,
+              const solName = values.solution.value;
+              const solVersion = values.version.value;
+              dispatch(
+                prepareEnvironmentAction(
+                  selectedEnvironment,
+                  solName,
+                  solVersion,
+                ),
               );
-
-              const selectedVersion = selectedSolution.versions.find(
-                version => version.version === values.version.value,
-              );
-
-              if (
-                selectedVersion.ui_url &&
-                selectedEnvironment &&
-                selectedVersion.version
-              ) {
-                const url = `${selectedVersion.ui_url}/environments/${selectedEnvironment}/version/${selectedVersion.version}/prepare`;
-                window.open(url, '_blank');
-              }
+              setisAddSolutionModalOpen(false);
             }}
           >
             {formikProps => {
@@ -335,6 +358,11 @@ const SolutionsList = props => {
                 sortedSolutions.find(
                   solution => solution.name === values.solution.value,
                 )?.versions ?? [];
+              // once we select the solution, we should update the initialValues of version
+              initialValues.version.label =
+                selectedSolutionVersions[0]?.version;
+              initialValues.version.value =
+                selectedSolutionVersions[0]?.version;
 
               const selectedSolutionVersionsOptions = selectedSolutionVersions.map(
                 solutionVersion => ({
@@ -351,7 +379,7 @@ const SolutionsList = props => {
                         <Input
                           type="select"
                           name="solutions"
-                          label={intl.translate('solutions')}
+                          label={intl.translate('solution')}
                           options={solutionsSelectOptions}
                           placeholder={intl.translate('select_a_type')}
                           noOptionsMessage={() => intl.translate('no_results')}

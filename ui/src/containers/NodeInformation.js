@@ -146,7 +146,9 @@ const NodeInformation = props => {
         <InformationValue>{node.roles}</InformationValue>
       </InformationSpan>
       <InformationSpan>
-        <InformationLabel>{intl.translate('version')}</InformationLabel>
+        <InformationLabel>
+          {intl.translate('metalk8s_version')}
+        </InformationLabel>
         <InformationValue>{node.metalk8s_version}</InformationValue>
       </InformationSpan>
     </InformationListContainer>

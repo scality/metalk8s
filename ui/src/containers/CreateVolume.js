@@ -199,7 +199,7 @@ const CreateVolume = props => {
   const validationSchema = yup.object().shape({
     name: yup
       .string()
-      .matches(volumeNameRegex, intl.translate('volume_name_error'))
+      .matches(volumeNameRegex, intl.translate('name_error'))
       .required(
         intl.translate('generic_missing_field', {
           field: intl.translate('name').toLowerCase(),
