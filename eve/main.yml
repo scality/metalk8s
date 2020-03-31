@@ -520,6 +520,48 @@ stages:
           waitForFinish: True
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
+      - TriggerStages:
+          name: Trigger TestRail objects creation
+          stage_names:
+            - create-testrail-objects
+          alwaysRun: True
+
+  create-testrail-objects:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-basic/pod.yaml
+      images:
+        docker-basic: eve/workers/docker-centos7
+      vars:
+        name: "metalk8s-test-tools-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          name: Install test tools requirements
+          command: >
+            git clone git@bitbucket.org:scality/test_tools.git &&
+            sudo yum install -y epel-release &&
+            sudo yum install -y python3.6 python3-pip &&
+            pip3 install --user -r test_tools/testrail/requirements.txt
+      - ShellCommand:
+          name: Create TestRail objects
+          env:
+            TESTRAIL_LOGIN: "%(secret:testrail_login)s"
+            TESTRAIL_KEY: "%(secret:testrail_key)s"
+            TESTRAIL_PROJECT: "MetalK8s"
+            TESTRAIL_MILESTONE: "%(prop:metalk8s_short_version)s"
+            TESTRAIL_SUITE: "%(prop:metalk8s_short_version)s"
+            TESTRAIL_PLAN: "%(prop:metalk8s_version)s"
+            DESCRIPTION_FILE: "eve/testrail_description_file.yaml"
+          command: >
+            python3 test_tools/testrail/testrail_create.py
+            --user "$TESTRAIL_LOGIN"
+            --password "$TESTRAIL_KEY"
+            --project "$TESTRAIL_PROJECT"
+            --milestone "$TESTRAIL_MILESTONE"
+            --test-suite "$TESTRAIL_SUITE"
+            --test-plan "$TESTRAIL_PLAN"
+            "$DESCRIPTION_FILE"
 
   build:
     _metalk8s_internal_info:
