@@ -19,6 +19,7 @@ import {
   BreadcrumbContainer,
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
+import PageContainer from '../components/TableBasedPageStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 import { useRefreshEffect } from '../services/utils';
 import {
@@ -27,14 +28,6 @@ import {
   prepareEnvironmentAction,
   deleteEnvironmentAction,
 } from '../ducks/app/solutions';
-
-const PageContainer = styled.div`
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: ${padding.base};
-`;
 
 const PageSubtitle = styled.h3`
   color: ${props => props.theme.brand.textPrimary};
