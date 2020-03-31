@@ -332,6 +332,7 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             release='1.el7'
         ),
         PackageVersion(name='yum-plugin-versionlock'),
+        PackageVersion(name='yum-utils'),
     ),
     'debian': (
         PackageVersion(
