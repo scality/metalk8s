@@ -15,6 +15,7 @@ import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
 import About from './About';
 import PrivateRoute from './PrivateRoute';
+import SolutionDetail from './SolutionDetail';
 import { toggleSideBarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
@@ -218,6 +219,11 @@ const Layout = props => {
           />
           <PrivateRoute exact path="/about" component={About} />
           <PrivateRoute exact path="/" component={ClusterMonitoring} />
+          <PrivateRoute
+            exact
+            path="/environments/:id"
+            component={SolutionDetail}
+          />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>

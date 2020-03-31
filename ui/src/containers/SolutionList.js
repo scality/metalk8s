@@ -179,7 +179,8 @@ const SolutionsList = props => {
               size="smaller"
               text={intl.translate('add')}
               outlined
-              onClick={() => {
+              onClick={e => {
+                e.stopPropagation();
                 setSelectedEnvironment(environment.name);
                 setisAddSolutionModalOpen(true);
               }}
@@ -293,7 +294,9 @@ const SolutionsList = props => {
             sortBy={envSortBy}
             sortDirection={envSortDirection}
             onSort={onSort(setEnvSortBy, setEnvSortDirection)}
-            onRowClick={() => {}}
+            onRowClick={event => {
+              history.push(`/environments/${event.rowData.name}`);
+            }}
             noRowsRenderer={() => (
               <NoRowsRenderer content={intl.translate('no_data_available')} />
             )}
