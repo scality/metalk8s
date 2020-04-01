@@ -7,5 +7,6 @@ Architecture Documents
    deployment
    monitoring
    configurations
+   alerting
    requirements
    ci
