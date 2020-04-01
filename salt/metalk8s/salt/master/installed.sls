@@ -7,6 +7,15 @@
 
 {%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
 
+{%- set solution_archives = {} %}
+{%- set solutions_available = pillar.metalk8s.get('solutions', {}).get('available', {}) %}
+{%- for versions in solutions_available.values() %}
+  {%- for version in versions %}
+    {%- set version_sanitized = version.id | replace('.', '-') %}
+    {%- do solution_archives.update({version_sanitized: version.mountpoint}) %}
+  {%- endfor %}
+{%- endfor %}
+
 include:
   - .configured
 
@@ -32,6 +41,7 @@ Install and start salt master manifest:
         image: {{ image_name }}
         version: {{ image_version }}
         archives: {{ salt.metalk8s.get_archives() | tojson }}
+        solution_archives: {{ solution_archives | tojson }}
         salt_ip: "{{ salt_ip }}"
     - require:
       - file: Create salt master directories
