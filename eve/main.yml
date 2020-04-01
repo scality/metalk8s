@@ -166,6 +166,15 @@ models:
         bash -c '
         . <(curl -s "${BASE_URL}/product.txt") &&
         echo $VERSION'
+  - SetPropertyFromCommand: &set_short_version_prop
+      name: Set short version as property from built artifacts
+      property: metalk8s_short_version
+      env:
+        BASE_URL: "%(prop:premerge_artifacts_private_url)s"
+      command: >
+        bash -c '
+          . <(curl -s "${BASE_URL}/product.txt") &&
+          echo $SHORT_VERSION'
   - ShellCommand: &copy_artifacts
       name: Put the artifacts to upload in a separate directory
       env: &_env_copy_artifacts
@@ -453,6 +462,7 @@ stages:
             - unit_tests
           haltOnFailure: true
       - SetPropertyFromCommand: *set_version_prop
+      - SetPropertyFromCommand: *set_short_version_prop
       - TriggerStages:
           name: Trigger multiple-nodes step with built ISO
           stage_names:
@@ -480,6 +490,8 @@ stages:
             && touch
             "build_status/.related_artifacts/%(prop:premerge_artifacts_name)s"
           haltOnFailure: True
+      - SetPropertyFromCommand: *set_version_prop
+      - SetPropertyFromCommand: *set_short_version_prop
       - SetPropertyFromCommand:
           name: Set previous version to upgrade from and downgrade to
           property: product_version_prev
@@ -493,7 +505,6 @@ stages:
             - buildprev
             - build-example-solution
           haltOnFailure: true
-      - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand:
           <<: *set_version_prop
           name: Set previous version as property from built artifacts
