@@ -125,7 +125,7 @@ export function* createEnvironment(action) {
       }),
     );
   }
-  yield call(history.push, '/solutions');
+  yield call(history.push, '/environments');
   yield call(fetchEnvironments);
 }
 

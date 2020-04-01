@@ -76,13 +76,13 @@ const Layout = props => {
         }),
       },
       {
-        label: intl.translate('solutions'),
+        label: intl.translate('environments'),
         icon: <i className="fas fa-th" />,
         onClick: () => {
-          history.push('/solutions');
+          history.push('/environments');
         },
         active: useRouteMatch({
-          path: '/solutions',
+          path: '/environments',
           exact: false,
           strict: true,
         }),
@@ -211,10 +211,10 @@ const Layout = props => {
           />
           <PrivateRoute path="/nodes/:id" component={NodeInformation} />
           <PrivateRoute exact path="/nodes" component={NodeList} />
-          <PrivateRoute exact path="/solutions" component={SolutionList} />
+          <PrivateRoute exact path="/environments" component={SolutionList} />
           <PrivateRoute
             exact
-            path="/solutions/create-environment"
+            path="/environments/create-environment"
             component={EnvironmentCreationForm}
           />
           <PrivateRoute exact path="/about" component={About} />

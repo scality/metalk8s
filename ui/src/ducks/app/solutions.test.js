@@ -6,7 +6,6 @@ import {
   fetchEnvironments,
   setEnvironmentsAction,
   prepareEnvironment,
-  watchPrepareJobs,
   updateEnvironments,
   deleteEnvironment,
 } from './solutions';
@@ -122,7 +121,7 @@ it('create ConfigMap for the namespace when createEnvironment', () => {
     call(SolutionsApi.createEnvironment, action.payload),
   );
   expect(gen.next(resultCreateEnvironment).value).toEqual(
-    call(history.push, '/solutions'),
+    call(history.push, '/environments'),
   );
   expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
@@ -295,7 +294,7 @@ it('display the error notification when environment creation has failed', () => 
   };
   expect(gen.next(resultCreateEnvironment).value.type).toEqual('PUT');
   expect(gen.next(resultCreateEnvironment).value).toEqual(
-    call(history.push, '/solutions'),
+    call(history.push, '/environments'),
   );
   expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
@@ -316,7 +315,7 @@ it('display the error notification when create ConfigMap has failed', () => {
     error: 'There is an error in create ConfigMap',
   };
   expect(gen.next(resultCreateNamespacedConfigMap).value.type).toEqual('PUT');
-  expect(gen.next().value).toEqual(call(history.push, '/solutions'));
+  expect(gen.next().value).toEqual(call(history.push, '/environments'));
   expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
 });

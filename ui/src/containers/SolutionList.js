@@ -268,8 +268,8 @@ const SolutionsList = props => {
           <Breadcrumb
             activeColor={theme.brand.secondary}
             paths={[
-              <BreadcrumbLabel title={intl.translate('solutions')}>
-                {intl.translate('solutions')}
+              <BreadcrumbLabel title={intl.translate('environments')}>
+                {intl.translate('environments')}
               </BreadcrumbLabel>,
             ]}
           />
@@ -279,7 +279,7 @@ const SolutionsList = props => {
             <PageSubtitle>{intl.translate('environments')}</PageSubtitle>
             <Button
               text={intl.translate('create_new_environment')}
-              onClick={() => history.push('/solutions/create-environment')}
+              onClick={() => history.push('/environments/create-environment')}
               icon={<i className="fas fa-plus" />}
               data-cy="create_new_environment_button"
             />
