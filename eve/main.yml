@@ -471,7 +471,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_build_metalk8s-previous_junit_info
         TEST_SUITE: build
-        TEST_NAME: metalk8s-previous
+        TEST_NAME: metalk8s previous
     worker: *build_worker
     steps:
       - ShellCommand: *wait_for_docker
@@ -580,7 +580,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_downgrade_minor_single-node_junit_info
         TEST_SUITE: downgrade
-        CLASS_NAME: minor.single-node.centos7
+        CLASS_NAME: minor.single node.centos7
         TEST_NAME: simple environment
     worker: &single_node_worker
       type: openstack
@@ -686,7 +686,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_upgrade_minor_single-node_junit_info
         TEST_SUITE: upgrade
-        CLASS_NAME: minor.single-node.centos7
+        CLASS_NAME: minor.single node.centos7
         TEST_NAME: simple environment
     worker: *single_node_worker
     steps:
@@ -767,7 +767,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_install_multi-node_junit_info
         TEST_SUITE: install
-        CLASS_NAME: multi-node.centos7
+        CLASS_NAME: multi node.centos7
         TEST_NAME: 1 bootstrap 1 master,etcd
     worker:
       <<: *single_node_worker
