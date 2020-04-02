@@ -5,6 +5,7 @@ Build:
     Build tests
   cases:
     MetalK8s Previous: {}
+    Example Solution: {}
 
 Upgrade:
   description: >-
