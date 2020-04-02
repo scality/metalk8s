@@ -20,6 +20,7 @@ import {
   StyledLink,
 } from '../components/BreadcrumbStyle';
 import PageContainer from '../components/TableBasedPageStyle';
+import { FormStyle, ActionContainer } from '../components/ModalFormStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 import { useRefreshEffect } from '../services/utils';
 import {
@@ -28,35 +29,11 @@ import {
   prepareEnvironmentAction,
 } from '../ducks/app/solutions';
 
-// duplicated style
-const FormStyle = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding-bottom: ${padding.base};
-  min-height: 220px;
-  .sc-input {
-    display: inline-flex;
-    margin: ${padding.smaller} 0;
-    justify-content: center;
-    .sc-input-label {
-      width: 200px;
-    }
-  }
-`;
-
 const SelectContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin-top: 45px;
-`;
-
-const ActionContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin: 10px 0;
-  padding: 10px 0;
 `;
 
 const SolutionDetail = () => {

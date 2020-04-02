@@ -20,6 +20,7 @@ import {
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
 import PageContainer from '../components/TableBasedPageStyle';
+import { FormStyle, ActionContainer } from '../components/ModalFormStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 import { useRefreshEffect } from '../services/utils';
 import {
@@ -41,24 +42,6 @@ const VersionLabel = styled.label`
   ${props => (props.active ? 'font-weight: bold;' : '')}
 `;
 
-const ModalBody = styled.div``;
-
-const FormStyle = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding-bottom: ${padding.base};
-  min-height: 220px;
-  .sc-input {
-    display: inline-flex;
-    margin: ${padding.smaller} 0;
-    justify-content: center;
-    .sc-input-label {
-      width: 200px;
-    }
-  }
-`;
-
 const TableContainer = styled.div`
   height: 40%;
   margin: 0 0 50px 0;
@@ -67,13 +50,6 @@ const TableContainer = styled.div`
 const EnvironmentHeader = styled.div`
   display: flex;
   justify-content: space-between;
-`;
-
-const ActionContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin: 10px 0;
-  padding: 10px 0;
 `;
 
 const SelectContainer = styled.div`
@@ -385,7 +361,7 @@ const SolutionsList = props => {
                 }),
               );
               return (
-                <ModalBody>
+                <>
                   <Form>
                     <FormStyle>
                       <SelectContainer>
@@ -428,7 +404,7 @@ const SolutionsList = props => {
                       </ActionContainer>
                     </FormStyle>
                   </Form>
-                </ModalBody>
+                </>
               );
             }}
           </Formik>
