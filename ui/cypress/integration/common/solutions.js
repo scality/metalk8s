@@ -112,6 +112,6 @@ Then(
     cy.wait('@getEnvironmentsList', timeOut);
     cy.wait('@getEnvironmentConfigMap', timeOut); // wait until the next time updating the environment
 
-    cy.get('.sc-table:first .sc-table-row').should('have.length', 1); //Only Table header
+    cy.get('.sc-table-column-cell-name').should('not.contain', environmentName); // check the environment I created is being deleted
   },
 );
