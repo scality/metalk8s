@@ -290,6 +290,9 @@ import_solution() {
     run "Configuring Metalk8s registry" \
         salt_minion_exec state.sls metalk8s.repo.installed \
         saltenv="$SALTENV"
+    run "Configuring Salt master" \
+        salt_minion_exec state.sls metalk8s.salt.master.installed \
+        saltenv="$SALTENV"
 }
 
 unimport_solution() {
@@ -305,6 +308,9 @@ unimport_solution() {
         pillar="{'bootstrap_id': '$(get_salt_minion_id)'}"
     run "Configuring Metalk8s registry" \
         salt_minion_exec state.sls metalk8s.repo.installed \
+        saltenv="$SALTENV"
+    run "Configuring Salt master" \
+        salt_minion_exec state.sls metalk8s.salt.master.installed \
         saltenv="$SALTENV"
 }
 
