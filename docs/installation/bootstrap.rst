@@ -1,11 +1,12 @@
-Deploying the Bootstrap Node
-============================
+==============================
+ Deploying the Bootstrap Node
+==============================
 
 Standard deployment requires a :term:`bootstrap node` to deploy and populate
 the other nodes. The bootstrap node is built using an ISO image.
 
 Prepare
--------
+=======
 
 Build or request a bootstrap ISO image. Licensed Scality customers can receive
 validated builds from the Scality repositories. This is the easiest and best
@@ -68,7 +69,7 @@ Whether you've built or received your ISO,
 .. _Bootstrap Configuration:
 
 Configure
----------
+=========
 
 Maintain root authority as you configure the bootstrap node.
 
@@ -107,7 +108,7 @@ Maintain root authority as you configure the bootstrap node.
    Fields that may require configuration are described below.
 
 networks
-^^^^^^^^
+--------
 
 The ``networks`` field specifies a range of IP addresses written in CIDR
 notation for its various subfields.
@@ -148,7 +149,7 @@ large enough networks for pods and services.
         services: 10.96.0.0/12
 
 proxies
-^^^^^^^
+-------
 
 The ``proxies`` field can be omitted if there is no proxy to configure.
 
@@ -182,7 +183,7 @@ system is configured to re-mount them automatically after a reboot.
 .. _Bootstrap SSH Provisioning:
 
 Provision SSH
--------------
+=============
 
 #. Prepare the MetalK8s PKI directory.
 
@@ -253,17 +254,25 @@ Provision SSH
 
       .. code-block:: shell
 
-         user@host $ ssh-copy-id -i -f /tmp/salt-bootstrap.pub root@<node_hostname>
+         user@host $ ssh-copy-id -f -i /tmp/salt-bootstrap.pub root@<node_hostname>
 
-      Repeat until all nodes accept SSH connections from the Bootstrap node.
+      Repeat until for all nodes.
 
+   #. Validate that the nodes accept SSH connections from the Bootstrap
+      node. As root on the bootstrap node, for each node enter::
+
+	# ssh -i /etc/metalk8s/pki/salt-bootstrap <user>@<node>
+	
+      If you can log in to the nodes successfully, the SSH keys are properly
+      deployed.
+      
 .. _Bootstrap installation:
 
 Install
--------
+=======
 
 Run the Installation
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 Run the bootstrap script to install binaries and services required on the
 Bootstrap node.
@@ -279,7 +288,7 @@ Bootstrap node.
     :ref:`IP-in-IP needs to be enabled<enable IP-in-IP>`.
 
 Configure kubectl Administration
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------
 
 To administer the Kubernetes cluster you must issue kubectl commands. kubectl
 requires a defined path and credentials. Running the bootstrap installation
@@ -305,13 +314,14 @@ commands without nominating the kubectl path on each command.
 
 In a non-production environment, you can copy admin.conf to your local host
 machine and establish a kubectl session by copying admin.conf to a local
-directory, exporting KUBECONFIG to that location as shown above, and opening a
+directory, exporting ``$KUBECONFIG`` to that location as shown above, and opening a
 local kubectl session with::
 
    user@host $ kubectl proxy
 
 While this proxy is in session, the user can issue kubectl commands from a
-second terminal on the host.
+second terminal on the host. Export the path to admin.conf to KUBECONFIG for
+each environment (terminal window).
 
 .. warning::
 
@@ -320,7 +330,7 @@ second terminal on the host.
    environment.*
 
 Validate the Installation
-^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------
 
 From your kubectl-enabled machine:
 
