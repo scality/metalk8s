@@ -204,16 +204,41 @@ export function* updateEnvironments(environments) {
           env.name,
         );
         if (!solutionOperatorDeployment.error && !solutionUIDeployment.error) {
+          const currentSolutionVersion = envConfig?.[solution];
+          // when update the environment, we add `availableUpgradeVersion` and `availableDowngradeVersion` field
+          const availableSolutions = yield select(
+            state => state.app.solutions.solutions,
+          );
+          const availableSolutionVersions = availableSolutions.find(
+            avaSol => avaSol.name === solution,
+          );
+
+          const availableUpgradeVersion = [];
+          const availableDowngradeVersion = [];
+
+          availableSolutionVersions.versions.forEach(avaSolVer => {
+            if (avaSolVer.version.localeCompare(currentSolutionVersion) <= -1) {
+              availableDowngradeVersion.push(avaSolVer);
+            } else if (
+              avaSolVer.version.localeCompare(currentSolutionVersion) >= 1
+            ) {
+              availableUpgradeVersion.push(avaSolVer);
+            }
+          });
           if (env.solutions === undefined) {
             env.solutions = [];
             env.solutions.push({
               name: solution,
-              version: envConfig?.[solution],
+              version: currentSolutionVersion,
+              availableUpgradeVersion,
+              availableDowngradeVersion,
             });
           } else if (env.solutions.length !== 0) {
             env.solutions.push({
               name: solution,
-              version: envConfig?.[solution],
+              version: currentSolutionVersion,
+              availableUpgradeVersion,
+              availableDowngradeVersion,
             });
           }
         } else {
