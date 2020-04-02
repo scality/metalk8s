@@ -295,7 +295,11 @@ const SolutionsList = props => {
             sortDirection={envSortDirection}
             onSort={onSort(setEnvSortBy, setEnvSortDirection)}
             onRowClick={event => {
-              history.push(`/environments/${event.rowData.name}`);
+              const solutions = event.rowData.solutions;
+              const env_name = event.rowData.name;
+              if (solutions) {
+                history.push(`/environments/${env_name}`);
+              }
             }}
             noRowsRenderer={() => (
               <NoRowsRenderer content={intl.translate('no_data_available')} />
