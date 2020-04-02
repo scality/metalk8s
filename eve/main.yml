@@ -166,6 +166,15 @@ models:
         bash -c '
         . <(curl -s "${BASE_URL}/product.txt") &&
         echo $VERSION'
+  - SetPropertyFromCommand: &set_short_version_prop
+      name: Set short version as property from built artifacts
+      property: metalk8s_short_version
+      env:
+        BASE_URL: "%(prop:premerge_artifacts_private_url)s"
+      command: >
+        bash -c '
+          . <(curl -s "${BASE_URL}/product.txt") &&
+          echo $SHORT_VERSION'
   - ShellCommand: &copy_artifacts
       name: Put the artifacts to upload in a separate directory
       env: &_env_copy_artifacts
@@ -453,6 +462,7 @@ stages:
             - unit_tests
           haltOnFailure: true
       - SetPropertyFromCommand: *set_version_prop
+      - SetPropertyFromCommand: *set_short_version_prop
       - TriggerStages:
           name: Trigger multiple-nodes step with built ISO
           stage_names:
@@ -480,6 +490,8 @@ stages:
             && touch
             "build_status/.related_artifacts/%(prop:premerge_artifacts_name)s"
           haltOnFailure: True
+      - SetPropertyFromCommand: *set_version_prop
+      - SetPropertyFromCommand: *set_short_version_prop
       - SetPropertyFromCommand:
           name: Set previous version to upgrade from and downgrade to
           property: product_version_prev
@@ -493,7 +505,6 @@ stages:
             - buildprev
             - build-example-solution
           haltOnFailure: true
-      - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand:
           <<: *set_version_prop
           name: Set previous version as property from built artifacts
@@ -509,6 +520,48 @@ stages:
           waitForFinish: True
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
+      - TriggerStages:
+          name: Trigger TestRail objects creation
+          stage_names:
+            - create-testrail-objects
+          alwaysRun: True
+
+  create-testrail-objects:
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-basic/pod.yaml
+      images:
+        docker-basic: eve/workers/docker-centos7
+      vars:
+        name: "metalk8s-test-tools-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          name: Install test tools requirements
+          command: >
+            git clone git@bitbucket.org:scality/test_tools.git &&
+            sudo yum install -y epel-release &&
+            sudo yum install -y python3.6 python3-pip &&
+            pip3 install --user -r test_tools/testrail/requirements.txt
+      - ShellCommand:
+          name: Create TestRail objects
+          env:
+            TESTRAIL_LOGIN: "%(secret:testrail_login)s"
+            TESTRAIL_KEY: "%(secret:testrail_key)s"
+            TESTRAIL_PROJECT: "MetalK8s"
+            TESTRAIL_MILESTONE: "%(prop:metalk8s_short_version)s"
+            TESTRAIL_SUITE: "%(prop:metalk8s_short_version)s"
+            TESTRAIL_PLAN: "%(prop:metalk8s_version)s"
+            DESCRIPTION_FILE: "eve/testrail_description_file.yaml"
+          command: >
+            python3 test_tools/testrail/testrail_create.py
+            --user "$TESTRAIL_LOGIN"
+            --password "$TESTRAIL_KEY"
+            --project "$TESTRAIL_PROJECT"
+            --milestone "$TESTRAIL_MILESTONE"
+            --test-suite "$TESTRAIL_SUITE"
+            --test-plan "$TESTRAIL_PLAN"
+            "$DESCRIPTION_FILE"
 
   build:
     _metalk8s_internal_info:
@@ -560,7 +613,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_build_metalk8s-previous_junit_info
         TEST_SUITE: build
-        TEST_NAME: metalk8s-previous
+        TEST_NAME: metalk8s previous
     worker: *build_worker
     steps:
       - ShellCommand: *wait_for_docker
@@ -784,7 +837,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_downgrade_minor_single-node_junit_info
         TEST_SUITE: downgrade
-        CLASS_NAME: minor.single-node.centos7
+        CLASS_NAME: minor.single node.centos7
         TEST_NAME: simple environment
     worker: &single_node_worker
       type: openstack
@@ -920,7 +973,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_upgrade_minor_single-node_junit_info
         TEST_SUITE: upgrade
-        CLASS_NAME: minor.single-node.centos7
+        CLASS_NAME: minor.single node.centos7
         TEST_NAME: simple environment
     worker: *single_node_worker
     steps:
@@ -1352,7 +1405,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_install_multi-node_junit_info
         TEST_SUITE: install
-        CLASS_NAME: multi-node.centos7
+        CLASS_NAME: multi node.centos7
         TEST_NAME: 1 bootstrap 1 master,etcd
     worker:
       <<: *single_node_worker
