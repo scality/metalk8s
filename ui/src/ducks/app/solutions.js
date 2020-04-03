@@ -203,9 +203,22 @@ export function* updateEnvironments(environments) {
           `${solution}${UI_}`,
           env.name,
         );
+
         if (!solutionOperatorDeployment.error && !solutionUIDeployment.error) {
-          const currentSolutionVersion = envConfig?.[solution];
+          // in order to get the deployed version, we temporarily check the image version deployed Operator & UI.
+          // but we should add a label with the solution version in both Operator & UI.
+          const solutionUIDeploymentVersion = solutionUIDeployment?.body?.spec?.template?.spec?.containers[0]?.image?.split(
+            ':',
+          )[1];
+          const solutionOperatorDeploymentVersion = solutionOperatorDeployment?.body?.spec?.template?.spec?.containers[0]?.image?.split(
+            ':',
+          )[1];
           // when update the environment, we add `availableUpgradeVersion` and `availableDowngradeVersion` field
+          const currentSolutionVersion = envConfig?.[solution];
+          const isDeploySolutionSucceed =
+            currentSolutionVersion === solutionOperatorDeploymentVersion &&
+            currentSolutionVersion === solutionUIDeploymentVersion;
+
           const availableSolutions = yield select(
             state => state.app.solutions.solutions,
           );
@@ -217,26 +230,42 @@ export function* updateEnvironments(environments) {
           const availableDowngradeVersion = [];
 
           availableSolutionVersions.versions.forEach(avaSolVer => {
-            if (avaSolVer.version.localeCompare(currentSolutionVersion) <= -1) {
+            if (
+              avaSolVer.version.localeCompare(
+                isDeploySolutionSucceed
+                  ? currentSolutionVersion
+                  : solutionOperatorDeploymentVersion,
+              ) <= -1
+            ) {
               availableDowngradeVersion.push(avaSolVer);
             } else if (
-              avaSolVer.version.localeCompare(currentSolutionVersion) >= 1
+              avaSolVer.version.localeCompare(
+                isDeploySolutionSucceed
+                  ? currentSolutionVersion
+                  : solutionOperatorDeploymentVersion,
+              ) >= 1
             ) {
               availableUpgradeVersion.push(avaSolVer);
             }
           });
+
+          //  we first check if the deploy Operator & UI version is the same as Configmap, and then update the currentSolutionVersion inside the solutions
           if (env.solutions === undefined) {
             env.solutions = [];
             env.solutions.push({
               name: solution,
-              version: currentSolutionVersion,
+              version: isDeploySolutionSucceed
+                ? currentSolutionVersion
+                : solutionOperatorDeploymentVersion,
               availableUpgradeVersion,
               availableDowngradeVersion,
             });
           } else if (env.solutions.length !== 0) {
             env.solutions.push({
               name: solution,
-              version: currentSolutionVersion,
+              version: isDeploySolutionSucceed
+                ? currentSolutionVersion
+                : solutionOperatorDeploymentVersion,
               availableUpgradeVersion,
               availableDowngradeVersion,
             });
