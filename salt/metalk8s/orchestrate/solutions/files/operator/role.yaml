@@ -3,6 +3,13 @@ kind: Role
 metadata:
   name: {{ solution }}-operator
   namespace: {{ namespace }}
+  labels:
+    app: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: {{ solution }}
 rules:
 {# TODO: make those configurable #}
 - apiGroups:
