@@ -323,6 +323,8 @@ models:
       env: &_env_final_status_artifact
         STEP_NAME: ''
         FINAL_STATUS: ''
+        TEXT: |-
+          Artifact Url: %(prop:artifacts_public_url)s
       haltOnFailure: True
   - ShellCommand: &add_final_status_artifact_success
       <<: *add_final_status_artifact
