@@ -139,6 +139,9 @@ def _object_manipulation_function(action):
             manifest.setdefault('metadata', {}).setdefault('labels', {})[
                 'metalk8s.scality.com/version'
             ] = match.group('version') if match else "unknown"
+            manifest['metadata']['labels']['app.kubernetes.io/managed-by'] = \
+                'salt'
+            manifest['metadata']['labels']['heritage'] = 'salt'
 
         log.debug(
             '%sing object with manifest: %s',

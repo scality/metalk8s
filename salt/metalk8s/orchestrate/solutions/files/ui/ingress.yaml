@@ -4,10 +4,12 @@ metadata:
   name: {{ solution }}-ui
   namespace: {{ namespace }}
   labels:
-    app.kubernetes.io/managed-by: salt
+    app: {{ solution }}-ui
     app.kubernetes.io/name: {{ solution }}-ui
+    app.kubernetes.io/instance: {{ solution }}-ui
+    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/component: ui
     app.kubernetes.io/part-of: {{ solution }}
-    heritage: {{ solution }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: '/$2'
     nginx.ingress.kubernetes.io/use-regex: "true"

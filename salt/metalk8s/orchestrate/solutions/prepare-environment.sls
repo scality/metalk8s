@@ -12,6 +12,7 @@ Apply ServiceAccount for Operator of Solution {{ solution.name }}:
     - defaults:
         solution: {{ solution_id }}
         namespace: {{ namespace }}
+        version: {{ solution.version }}
 
 Apply Role for Operator of Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
@@ -21,6 +22,7 @@ Apply Role for Operator of Solution {{ solution.name }}:
         solution: {{ solution_id }}
         namespace: {{ namespace }}
         custom_api_groups: {{ solution.config.customApiGroups }}
+        version: {{ solution.version }}
 
 Apply RoleBinding for Operator of Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
@@ -29,6 +31,7 @@ Apply RoleBinding for Operator of Solution {{ solution.name }}:
     - defaults:
         solution: {{ solution_id }}
         namespace: {{ namespace }}
+        version: {{ solution.version }}
     - require:
         - metalk8s_kubernetes: Apply ServiceAccount for Operator of Solution {{ solution.name }}
         - metalk8s_kubernetes: Apply Role for Operator of Solution {{ solution.name }}
@@ -43,6 +46,7 @@ Apply Operator ConfigMap for Solution {{ solution.name }}:
         solution: {{ solution_id }}
         namespace: {{ namespace }}
         registry: {{ repo.registry_endpoint }}
+        version: {{ solution.version }}
 
 Apply Operator Deployment for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
@@ -102,6 +106,7 @@ Apply Ingress for UI of Solution {{ solution.name }}:
         solution: {{ solution_id }}
         namespace: {{ namespace }}
         environment: {{ env_name }}
+        version: {{ solution.version }}
 
 {%- endmacro %}
 
