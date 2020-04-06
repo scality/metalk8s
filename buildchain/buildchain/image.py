@@ -39,6 +39,7 @@ from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
+from buildchain import ROOT
 
 
 def task_images() -> types.TaskDict:
@@ -250,7 +251,12 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
                             .isoformat(),
             'VCS_REF': constants.GIT_REF or '<unknown>',
             'METALK8S_VERSION': versions.VERSION,
+            'SALT_VERSION': versions.SALT_VERSION,
+            'KUBERNETES_VERSION': versions.K8S_VERSION,
         },
+        file_dep=[
+            ROOT/'images'/'metalk8s-utils'/'configure-repos.sh',
+        ],
     ),
     _operator_image(
         name='storage-operator',
