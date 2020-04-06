@@ -5,12 +5,11 @@ metadata:
   namespace: {{ namespace }}
   labels:
     app: {{ solution }}-ui
-    heritage: {{ solution }}
     app.kubernetes.io/name: {{ solution }}-ui
+    app.kubernetes.io/instance: {{ solution }}-ui
     app.kubernetes.io/version: {{ version }}
     app.kubernetes.io/component: ui
     app.kubernetes.io/part-of: {{ solution }}
-    app.kubernetes.io/managed-by: salt
 spec:
   ports:
   - port: 80
