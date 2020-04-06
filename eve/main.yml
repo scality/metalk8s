@@ -1761,7 +1761,7 @@ stages:
           command: >
             ssh -F ssh_config bootstrap
             sudo /var/tmp/metalk8s/solutions.sh
-            import --archive example-solution.iso
+            import --archive /var/tmp/example-solution.iso
           workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
           haltOnFailure: true
       - ShellCommand:
