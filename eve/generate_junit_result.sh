@@ -33,14 +33,18 @@ EOF
 if [ "$TYPE" ]; then
 
     cat << EOF
-        <testcase name="$TEST_NAME" classname="$CLASS_NAME">
-            <$TYPE type="$TYPE" message="$FINAL_STATUS"/>
+        <testcase name="$TEST_NAME" classname="$CLASS_NAME" message="$MESSAGE">
+            <$TYPE type="$TYPE" message="$FINAL_STATUS">
+                $TEXT
+            </$TYPE>
         </testcase>
 EOF
 
 else
     cat << EOF
-        <testcase name="$TEST_NAME" classname="$CLASS_NAME"/>
+        <testcase name="$TEST_NAME" classname="$CLASS_NAME" message="$MESSAGE">
+            $TEXT
+        </testcase>
 EOF
 fi
 
