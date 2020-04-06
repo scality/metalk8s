@@ -96,12 +96,12 @@ Apply Service for UI of Solution {{ solution.name }}:
 
 Apply Ingress for UI of Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/ui/service.yaml
+    - name: salt://{{ slspath }}/files/ui/ingress.yaml
     - template: jinja
     - defaults:
         solution: {{ solution_id }}
         namespace: {{ namespace }}
-        version: {{ solution.version }}
+        environment: {{ env_name }}
 
 {%- endmacro %}
 
