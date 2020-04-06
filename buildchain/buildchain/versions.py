@@ -21,6 +21,7 @@ CALICO_VERSION     : str = '3.12.0'
 K8S_VERSION        : str = '1.17.4'
 SALT_VERSION       : str = '2018.3.4'
 CONTAINERD_VERSION : str = '1.2.13'
+CONTAINERD_RELEASE : str = '2.el7'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -333,7 +334,7 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(
             name='containerd',
             version=CONTAINERD_VERSION,
-            release='1.el7',
+            release=CONTAINERD_RELEASE,
         ),
         PackageVersion(name='container-selinux'),  # TODO #1710
         PackageVersion(

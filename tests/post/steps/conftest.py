@@ -1,5 +1,5 @@
 # coding: utf-8
-from pytest_bdd import given, parsers
+from pytest_bdd import given, parsers, then
 
 from tests import kube_utils, utils
 
@@ -46,11 +46,17 @@ def _check_pods_status(k8s_client, expected_status, ssh_config,
     )
 
 # }}}
+
+
+_PARSE_PODS_WITH_LABEL_STATUS = parsers.parse(
+    "pods with label '{label}' are '{expected_status}'")
+
+
 # Given {{{
 
 
-@given(parsers.parse("pods with label '{label}' are '{expected_status}'"))
-def check_pod_status(request, host, k8s_client, label, expected_status):
+@given(_PARSE_PODS_WITH_LABEL_STATUS)
+def given_check_pod_status(request, host, k8s_client, label, expected_status):
     ssh_config = request.config.getoption('--ssh-config')
 
     _check_pods_status(
@@ -64,5 +70,17 @@ def check_all_pods_status(request, host, k8s_client, expected_status):
 
     _check_pods_status(
         k8s_client, expected_status, ssh_config
+    )
+# }}}
+
+# Then {{{
+
+
+@then(_PARSE_PODS_WITH_LABEL_STATUS)
+def then_check_pod_status(request, host, k8s_client, label, expected_status):
+    ssh_config = request.config.getoption('--ssh-config')
+
+    _check_pods_status(
+        k8s_client, expected_status, ssh_config, label=label
     )
 # }}}

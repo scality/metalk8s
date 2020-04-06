@@ -23,16 +23,16 @@ export GOPATH=$GO_BUILD_PATH:%{gopath}
 %define gobuild(o:) %{expand:
 %global _dwz_low_mem_die_limit 0
 %ifnarch ppc64
-go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
+go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
 %else
-go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
+go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
 %endif
 }
 %endif
 
 
 Name:           containerd
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An industry-standard container runtime
 License:        ASL 2.0
 URL:            https://containerd.io
@@ -43,6 +43,7 @@ Source2:        containerd.toml
 BuildRequires:  golang >= 1.10
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  go-md2man
+BuildRequires:  libseccomp-devel
 BuildRequires:  systemd
 %{?systemd_requires}
 Requires:       runc
@@ -209,6 +210,9 @@ install -D -p -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/containerd/config.toml
 
 
 %changelog
+* Mon Apr 6 2020 Nicolas Trangez <nicolas.trangez@scality.com> - 1.2.13-2
+- Enable seccomp support
+
 * Mon Apr 6 2020 Nicolas Trangez <nicolas.trangez@scality.com> - 1.2.13-1
 - Latest upstream
 
