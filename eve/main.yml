@@ -323,6 +323,8 @@ models:
       env: &_env_final_status_artifact
         STEP_NAME: ''
         FINAL_STATUS: ''
+        TEXT: |-
+          Artifact Url: %(prop:artifacts_public_url)s
       haltOnFailure: True
   - ShellCommand: &add_final_status_artifact_success
       <<: *add_final_status_artifact
@@ -428,12 +430,12 @@ stages:
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
       - TriggerStages:
-          name: Trigger TestRail objects creation
+          name: Trigger TestRail objects creation and results upload
           stage_names:
-            - create-testrail-objects
+            - create-upload-testrail-objects
           alwaysRun: True
 
-  create-testrail-objects:
+  create-upload-testrail-objects:
     worker:
       type: kube_pod
       path: eve/workers/pod-basic/pod.yaml
@@ -448,11 +450,11 @@ stages:
           command: >
             git clone git@bitbucket.org:scality/test_tools.git &&
             sudo yum install -y epel-release &&
-            sudo yum install -y python3.6 python3-pip &&
+            sudo yum install -y wget python3.6 python3-pip &&
             pip3 install --user -r test_tools/testrail/requirements.txt
       - ShellCommand:
           name: Create TestRail objects
-          env:
+          env: &env_testrail
             TESTRAIL_LOGIN: "%(secret:testrail_login)s"
             TESTRAIL_KEY: "%(secret:testrail_key)s"
             TESTRAIL_PROJECT: "MetalK8s"
@@ -469,6 +471,32 @@ stages:
             --test-suite "$TESTRAIL_SUITE"
             --test-plan "$TESTRAIL_PLAN"
             "$DESCRIPTION_FILE"
+          haltOnFailure: False
+      - ShellCommand:
+          name: Upload TestRail results
+          env:
+            <<: *env_testrail
+            BASE_URL: "%(prop:artifacts_private_url)s/build_status/"
+            PATTERN: "*.xml"
+          # This step will upload TestRail result from all xml in
+          # `build_status` directory
+          # These xml should be JUnit file
+          # NOTE: `--tolerate` allow to continue even if one XML upload failed
+          #       BUT script will exit with 1 if at least one XML file failed
+          command: >
+            TEMPDIR="$(mktemp -d)" &&
+            wget --tries=10 --recursive --level=10 --no-parent
+            --directory-prefix="$TEMPDIR" --accept="$PATTERN"
+            "$BASE_URL" &&
+            find "$TEMPDIR" -type f -name "$PATTERN" -exec
+            python3 test_tools/testrail/testrail_upload_result.py
+            --user "$TESTRAIL_LOGIN"
+            --password "$TESTRAIL_KEY"
+            --project "$TESTRAIL_PROJECT"
+            --test-suite "$TESTRAIL_SUITE"
+            --test-plan "$TESTRAIL_PLAN"
+            --tolerate
+            '{}' +
 
   build:
     _metalk8s_internal_info:
