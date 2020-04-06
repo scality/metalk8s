@@ -20,6 +20,7 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 CALICO_VERSION     : str = '3.12.0'
 K8S_VERSION        : str = '1.16.13'
 SALT_VERSION       : str = '3000.3'
+CONTAINERD_VERSION : str = '1.2.4'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -306,7 +307,6 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(name='kubectl', version=K8S_VERSION),
         PackageVersion(name='kubelet', version=K8S_VERSION),
         # Latest packages
-        PackageVersion(name='containerd'),
         PackageVersion(name='coreutils'),
         PackageVersion(name='cri-tools'),
         PackageVersion(name='e2fsprogs'),
@@ -329,6 +329,11 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             name='calico-cni-plugin',
             version=CALICO_VERSION,
             release='1.el7'
+        ),
+        PackageVersion(
+            name='containerd',
+            version=CONTAINERD_VERSION,
+            release='1.el7',
         ),
         PackageVersion(name='container-selinux'),  # TODO #1710
         PackageVersion(name='httpd-tools'),
