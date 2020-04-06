@@ -18,6 +18,6 @@ spec:
   - http:
       paths:
       - path: /env/{{ environment }}/{{ solution }}(/|$)(.*)
-          backend:
-            serviceName: {{ solution }}-ui
-            servicePort: 80
+        backend:
+          serviceName: {{ solution }}-ui
+          servicePort: 80
