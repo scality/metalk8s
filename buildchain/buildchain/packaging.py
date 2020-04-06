@@ -305,6 +305,15 @@ CALICO_RPM = _rpm_package(
     ],
 )
 
+CONTAINERD_RPM = _rpm_package(
+    name='containerd',
+    sources=[
+        Path('containerd.service'),
+        Path('containerd.toml'),
+        Path('containerd-{}.tar.gz'.format(versions.CONTAINERD_VERSION)),
+    ],
+)
+
 RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
     'scality': (
         # SOS report custom plugins.
@@ -315,7 +324,8 @@ RPM_TO_BUILD : Dict[str, Tuple[targets.RPMPackage, ...]] = {
                 Path('containerd.py'),
             ],
         ),
-        CALICO_RPM
+        CALICO_RPM,
+        CONTAINERD_RPM,
     ),
 }
 
