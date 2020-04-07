@@ -5,13 +5,11 @@ metadata:
   namespace: {{ namespace }}
   labels:
     app: {{ solution }}-ui
-    heritage: {{ solution }}
     app.kubernetes.io/name: {{ solution }}-ui
+    app.kubernetes.io/instance: {{ solution }}-ui
     app.kubernetes.io/version: {{ version }}
     app.kubernetes.io/component: ui
     app.kubernetes.io/part-of: {{ solution }}
-    # UIs are deployed and managed by Salt, provided with MetalK8s
-    app.kubernetes.io/managed-by: salt
 spec:
   selector:
     matchLabels:
