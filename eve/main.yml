@@ -326,6 +326,8 @@ models:
         FINAL_STATUS: ''
         TEXT: |-
           Artifact Url: %(prop:artifacts_public_url)s
+          Branch: %(prop:branch)s
+          Commit: %(prop:revision)s
       haltOnFailure: True
   - ShellCommand: &add_final_status_artifact_success
       <<: *add_final_status_artifact
