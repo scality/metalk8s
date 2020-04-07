@@ -315,6 +315,17 @@ data:
     [analytics]
     check_for_updates = false
     reporting_enabled = false
+    [auth]
+    oauth_auto_login = true
+    [auth.generic_oauth]
+    api_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/userinfo{%- raw %}"
+    auth_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/auth{%- raw %}"
+    client_id = grafana-ui
+    client_secret = 4lqK98NcsWG5qBRHJUqYM1
+    enabled = true
+    scopes = openid profile email groups
+    tls_skip_verify_insecure = true
+    token_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token{%- raw %}"
     [grafana_net]
     url = https://grafana.net
     [log]
@@ -325,7 +336,7 @@ data:
     plugins = /var/lib/grafana/plugins
     provisioning = /etc/grafana/provisioning
     [server]
-    root_url = /grafana
+    root_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana{%- raw %}"
 kind: ConfigMap
 metadata:
   labels:
@@ -40371,7 +40382,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 1333eb6df5422133392f807bdd5ff1177a7aaeeeaf04bc043472230a9c9ebedb
+        checksum/config: 7bdc765fb193e66e7a094a5fb0ffe34218370368d820cffbaf93cae218ebe61f
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: 424200eb6040b7b1ec58add370935c65963d856f8ece2725caaa8390a3b54eee
         checksum/secret: 90b18138547156baaa1588680e3842aabcb31605c7f7fb8baa7eacc2b6d4822b
