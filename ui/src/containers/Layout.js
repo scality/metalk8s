@@ -30,7 +30,7 @@ const Layout = (props) => {
   const { theme, language } = useSelector((state) => state.config);
   const notifications = useSelector((state) => state.app.notifications.list);
   const solutions = useSelector((state) => state.app.solutions.solutions);
-
+  const isUserLoaded = useSelector((state) => !!state.oidc.user);
   const dispatch = useDispatch();
 
   const logout = (event) => {
@@ -183,13 +183,16 @@ const Layout = (props) => {
   const navbar = {
     onToggleClick: toggleSidebar,
     productName: intl.translate('product_name'),
-    rightActions,
     logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
   };
+  // display the sidebar and rightAction if the user is loaded
+  if (isUserLoaded) {
+    navbar['rightActions'] = rightActions;
+  }
 
   return (
     <ThemeProvider theme={theme}>
-      <CoreUILayout sidebar={sidebarConfig} navbar={navbar}>
+      <CoreUILayout sidebar={isUserLoaded && sidebarConfig} navbar={navbar}>
         <Notifications
           notifications={notifications}
           onDismiss={removeNotification}
