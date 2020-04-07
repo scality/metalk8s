@@ -7,5 +7,5 @@ Developer Guide
    design/index
    building/index
    running/index
-   best_practices/index
-   solutions/index
+   development/index
+
