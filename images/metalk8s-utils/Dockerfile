@@ -4,6 +4,14 @@ ARG BASE_IMAGE=docker.io/centos
 
 FROM $BASE_IMAGE@sha256:$BASE_IMAGE_SHA256
 
+# Kubernetes version
+ARG KUBERNETES_VERSION
+# Salt version
+ARG SALT_VERSION
+
+COPY configure-repos.sh /
+RUN /configure-repos.sh 7 $SALT_VERSION && rm /configure-repos.sh
+
 # Timestamp of the build, formatted as RFC3339
 ARG BUILD_DATE
 # Git revision o the tree at build time
@@ -12,8 +20,6 @@ ARG VCS_REF
 ARG VERSION
 # Version of the project, e.g. `git describe --always --long --dirty --broken`
 ARG METALK8S_VERSION
-
-ENTRYPOINT ["/bin/sh"]
 
 # These contain BUILD_DATE so should come 'late' for layer caching
 LABEL maintainer="moonshot-platform@scality.com" \
@@ -46,13 +52,58 @@ LABEL maintainer="moonshot-platform@scality.com" \
 
 # Final layers, installing tooling
 RUN yum install -y epel-release && \
-    yum install -y \
+    yum install -y --setopt=skip_missing_names_on_install=False \
+        bash-completion \
+        bash-completion-extras \
         bind-utils \
+        bzip2 \
+        conntrack-tools \
+        cri-tools \
         curl \
+        e2fsprogs \
+        ebtables \
+        etcd \
+        ethtool \
+        gdb \
+        git \
+        htop \
+        httpd-tools \
         httpie \
+        iotop \
         iperf \
+        iperf3 \
         iproute \
+        ipset \
+        iptables \
+        ipvsadm \
+        jnettop \
+        jq \
+        "kubectl-${KUBERNETES_VERSION}" \
+        less \
+        lsof \
+        ltrace \
+        lvm2 \
+        net-tools \
+        nethogs \
+        nmap \
+        nmap-ncat \
+        openssh-clients \
+        openssh-server \
+        openssl \
+        parted \
+        perf \
+        rsync \
+        salt-master \
+        salt-minion \
         socat \
+        strace \
+        sysstat \
+        tcpdump \
         telnet \
+        util-linux \
+        vim \
+        wget \
+        wireshark \
+        xfsprogs \
         && \
     yum clean all
