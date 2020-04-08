@@ -15,6 +15,7 @@ documented procedure to the later.
 
 Managing Authentication
 ^^^^^^^^^^^^^^^^^^^^^^^
+   .. _Add-dex-static-user:
 
 Add a local static user
 """""""""""""""""""""""
