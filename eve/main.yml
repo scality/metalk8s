@@ -704,19 +704,36 @@ stages:
           command: >
             . examples/metalk8s-solution-example/VERSION &&
             echo "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX"
-      - ShellCommand:
+      - ShellCommand: &build_example_solution_iso
           name: Build Example Solution ISO
           command: >
             cd examples/metalk8s-solution-example &&
-            DOCKER_SOCKET=http://localhost:2375 make iso
+            DOCKER_SOCKET=http://localhost:2375 make iso &&
+            rm -rf examples/metalk8s-solution-example/_build/images
+            examples/metalk8s-solution-example/_build/root/images
           haltOnFailure: True
           timeout: 3600
+      - ShellCommand:
+          name: Increment Example Solution patch version
+          command: >
+            bash -c '
+            . examples/metalk8s-solution-example/VERSION &&
+            sed -i "s/^VERSION_PATCH=.*$/VERSION_PATCH=$(( ++VERSION_PATCH ))/"
+            examples/metalk8s-solution-example/VERSION
+            '
+          haltOnFailure: True
+      - SetPropertyFromCommand:
+          <<: *set_example_solution_version
+          name: Set Example Solution version next property
+          property: example_solution_version_next
+      - ShellCommand: *build_example_solution_iso
       - ShellCommand:
           <<: *copy_artifacts
           env:
             <<: *_env_copy_artifacts
             ARTIFACTS: >-
               examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version)s.iso
+              examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version_next)s.iso
       - Upload: *upload_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
