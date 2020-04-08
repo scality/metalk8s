@@ -64,7 +64,7 @@ export function setSolutionsRefeshingAction(payload) {
   return { type: SET_SOLUTIONS_REFRESHING, payload };
 }
 
-export const setEnvironmentsAction = environments => {
+export const setEnvironmentsAction = (environments) => {
   return { type: SET_ENVIRONMENTS, payload: environments };
 };
 
@@ -92,15 +92,15 @@ export function deleteEnvironmentAction(envName) {
 }
 
 // Selectors
-export const solutionsRefreshingSelector = state =>
+export const solutionsRefreshingSelector = (state) =>
   state.app.solutions.isSolutionsRefreshing;
-export const solutionServicesSelector = state => state.app.solutions.services;
+export const solutionServicesSelector = (state) => state.app.solutions.services;
 
 // Sagas
 export function* fetchEnvironments() {
-  const jobs = yield select(state => state.app.salt.jobs);
+  const jobs = yield select((state) => state.app.salt.jobs);
   const preparingEnvs = jobs?.filter(
-    job => job.type === 'prepare-env/' && !job.completed,
+    (job) => job.type === 'prepare-env/' && !job.completed,
   );
   const environments = yield call(SolutionsApi.listEnvironments);
   const updatedEnvironments = yield call(updateEnvironments, environments);
@@ -132,9 +132,9 @@ export function* createEnvironment(action) {
 export function* prepareEnvironment(action) {
   const { envName, solName, solVersion } = action.payload;
 
-  const existingEnv = yield select(state => state.app.solutions.environments);
+  const existingEnv = yield select((state) => state.app.solutions.environments);
 
-  const preparingEnv = existingEnv.find(env => env.name === envName);
+  const preparingEnv = existingEnv.find((env) => env.name === envName);
 
   if (preparingEnv === undefined) {
     console.error(`Environment '${envName}' does not exist`);
@@ -151,7 +151,7 @@ export function* prepareEnvironment(action) {
 
   if (!addSolutionToEnvironmentResult.error) {
     const clusterVersion = yield select(
-      state => state.app.nodes.clusterVersion,
+      (state) => state.app.nodes.clusterVersion,
     );
     const result = yield call(
       SaltApi.prepareEnvironment,
@@ -207,67 +207,20 @@ export function* updateEnvironments(environments) {
         if (!solutionOperatorDeployment.error && !solutionUIDeployment.error) {
           // in order to get the deployed version, we temporarily check the image version deployed Operator & UI.
           // but we should add a label with the solution version in both Operator & UI.
-          const solutionUIDeploymentVersion = solutionUIDeployment?.body?.spec?.template?.spec?.containers[0]?.image?.split(
-            ':',
-          )[1];
           const solutionOperatorDeploymentVersion = solutionOperatorDeployment?.body?.spec?.template?.spec?.containers[0]?.image?.split(
             ':',
           )[1];
-          // when update the environment, we add `availableUpgradeVersion` and `availableDowngradeVersion` field
-          const currentSolutionVersion = envConfig?.[solution];
-          const isDeploySolutionSucceed =
-            currentSolutionVersion === solutionOperatorDeploymentVersion &&
-            currentSolutionVersion === solutionUIDeploymentVersion;
 
-          const availableSolutions = yield select(
-            state => state.app.solutions.solutions,
-          );
-          const availableSolutionVersions = availableSolutions.find(
-            avaSol => avaSol.name === solution,
-          );
-
-          const availableUpgradeVersion = [];
-          const availableDowngradeVersion = [];
-
-          availableSolutionVersions.versions.forEach(avaSolVer => {
-            if (
-              avaSolVer.version.localeCompare(
-                isDeploySolutionSucceed
-                  ? currentSolutionVersion
-                  : solutionOperatorDeploymentVersion,
-              ) <= -1
-            ) {
-              availableDowngradeVersion.push(avaSolVer);
-            } else if (
-              avaSolVer.version.localeCompare(
-                isDeploySolutionSucceed
-                  ? currentSolutionVersion
-                  : solutionOperatorDeploymentVersion,
-              ) >= 1
-            ) {
-              availableUpgradeVersion.push(avaSolVer);
-            }
-          });
-
-          //  we first check if the deploy Operator & UI version is the same as Configmap, and then update the currentSolutionVersion inside the solutions
           if (env.solutions === undefined) {
             env.solutions = [];
             env.solutions.push({
               name: solution,
-              version: isDeploySolutionSucceed
-                ? currentSolutionVersion
-                : solutionOperatorDeploymentVersion,
-              availableUpgradeVersion,
-              availableDowngradeVersion,
+              version: solutionOperatorDeploymentVersion,
             });
           } else if (env.solutions.length !== 0) {
             env.solutions.push({
               name: solution,
-              version: isDeploySolutionSucceed
-                ? currentSolutionVersion
-                : solutionOperatorDeploymentVersion,
-              availableUpgradeVersion,
-              availableDowngradeVersion,
+              version: solutionOperatorDeploymentVersion,
             });
           }
         } else {
@@ -284,7 +237,7 @@ export function* fetchSolutions() {
   if (!result.error) {
     const configData = result?.body?.data;
     if (configData) {
-      const solutions = Object.keys(configData).map(key => ({
+      const solutions = Object.keys(configData).map((key) => ({
         name: key,
         versions: JSON.parse(configData[key]),
       }));
@@ -341,8 +294,8 @@ export function* deleteEnvironment(action) {
 }
 
 export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
-  const jobs = yield select(state => state.app.salt.jobs);
-  const job = jobs.find(job => job.jid === jid);
+  const jobs = yield select((state) => state.app.salt.jobs);
+  const job = jobs.find((job) => job.jid === jid);
   if (job?.type === 'prepare-env') {
     if (status.success) {
       yield put(

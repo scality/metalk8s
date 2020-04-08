@@ -38,11 +38,15 @@ const SelectContainer = styled.div`
 
 const SolutionDetail = () => {
   const match = useRouteMatch();
-  const theme = useSelector(state => state.config.theme);
-  const environments = useSelector(state => state.app.solutions.environments);
-  const environment = environments.find(env => env.name === match.params.id);
+  const theme = useSelector((state) => state.config.theme);
+  const environments = useSelector((state) => state.app.solutions.environments);
+  const environment = environments.find((env) => env.name === match.params.id);
   const deployedSolutions = environment?.solutions;
 
+  // get all the available solutions from the global redux store
+  const availableSolutions = useSelector(
+    (state) => state.app.solutions.solutions,
+  );
   const dispatch = useDispatch();
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
 
@@ -82,7 +86,24 @@ const SolutionDetail = () => {
       renderer: (_, rowData) => {
         const solName = rowData.name;
         const solution =
-          deployedSolutions.find(depSol => depSol.name === solName) ?? {};
+          deployedSolutions.find((depSol) => depSol.name === solName) ?? {};
+        const availableDeployingSolution = availableSolutions?.find(
+          (avaSol) => avaSol.name === solName,
+        );
+
+        const availableUpgradeVersion = [];
+        const availableDowngradeVersion = [];
+
+        availableDeployingSolution.versions.forEach((avaDepSol) => {
+          if (avaDepSol.version.localeCompare(solution.version) <= -1) {
+            availableDowngradeVersion.push(avaDepSol);
+          } else if (avaDepSol.version.localeCompare(solution.version) >= 1) {
+            availableUpgradeVersion.push(avaDepSol);
+          }
+        });
+        solution.availableDowngradeVersion = availableDowngradeVersion;
+        solution.availableUpgradeVersion = availableUpgradeVersion;
+
         return (
           <>
             {solution?.availableUpgradeVersion?.length > 0 && (
@@ -90,7 +111,7 @@ const SolutionDetail = () => {
                 size="smaller"
                 text={intl.translate('upgrade')}
                 outlined
-                onClick={e => {
+                onClick={(e) => {
                   setUpgradeOrDowngrade('Upgrade');
                   setSelectedSolName(solName);
                   setIsUpgradeDowngradeSolutionModalOpen(true);
@@ -123,7 +144,7 @@ const SolutionDetail = () => {
     sortSelector(deployedSolutions, solSortBy, solSortDirection) ?? [];
 
   const selectedSolution =
-    deployedSolutions?.find(depSol => depSol.name === selectedSolName) ?? [];
+    deployedSolutions?.find((depSol) => depSol.name === selectedSolName) ?? [];
 
   const initialValues = {
     version: {
@@ -190,7 +211,7 @@ const SolutionDetail = () => {
           enableReinitialize
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={values => {
+          onSubmit={(values) => {
             const upgradeSolutionVersion = values.version.value;
             dispatch(
               prepareEnvironmentAction(
@@ -202,24 +223,24 @@ const SolutionDetail = () => {
             setIsUpgradeDowngradeSolutionModalOpen(false);
           }}
         >
-          {formikProps => {
+          {(formikProps) => {
             const { setFieldValue, values } = formikProps;
 
-            const handleSelectChange = field => selectedObj => {
+            const handleSelectChange = (field) => (selectedObj) => {
               setFieldValue(field, selectedObj ? selectedObj : '');
             };
 
             let selectedSolutionVersionsOptions = [];
             if (upgradeOrDowngrade === 'Upgrade') {
               selectedSolutionVersionsOptions = selectedSolution.availableUpgradeVersion.map(
-                avaUpgradeVersion => ({
+                (avaUpgradeVersion) => ({
                   label: avaUpgradeVersion.version,
                   value: avaUpgradeVersion.version,
                 }),
               );
             } else {
               selectedSolutionVersionsOptions = selectedSolution.availableDowngradeVersion.map(
-                avaDowngradeVersion => ({
+                (avaDowngradeVersion) => ({
                   label: avaDowngradeVersion.version,
                   value: avaDowngradeVersion.version,
                 }),
