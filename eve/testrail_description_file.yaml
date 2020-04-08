@@ -17,7 +17,7 @@ Upgrade:
       sub_sections: &lifecycle_sub_sections
         Single Node:
           description: >-
-            Single node environement tests
+            Single node test environment
           sub_sections:
             CentOs7:
               description: >-
@@ -33,3 +33,17 @@ Downgrade:
   description: >-
     Downgrade tests
   sections: *lifecycle_sections
+
+Install:
+  description: >-
+    Installation tests
+  sections:
+    Single Node:
+      description: >-
+        Single node test environment
+      sub_sections:
+        CentOs7:
+          description: >-
+            CentOs 7 tests
+          cases:
+            Solutions: {}

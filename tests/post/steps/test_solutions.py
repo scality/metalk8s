@@ -332,12 +332,24 @@ def get_environment(k8s_client, name):
 
 
 def get_available_solution(host):
-    with host.sudo():
-        output = host.check_output(
-            'salt-call --out=json pillar.get "{}"'.format(SOLUTION_PILLAR_KEY)
-        )
-    data = json.loads(output)['local']
-    return data
+    def _get_available_solutions_from_pillar():
+        with host.sudo():
+            output = host.check_output(
+                'salt-call --out=json pillar.get "{}"'.format(
+                    SOLUTION_PILLAR_KEY
+                )
+            )
+        data = json.loads(output)['local']
+        assert '_errors' not in data
+
+        return data
+
+    return utils.retry(
+        _get_available_solutions_from_pillar,
+        times=10,
+        wait=2,
+        name="getting available Solutions from pillar"
+    )
 
 
 def run_solutions_command(request, host, args):
