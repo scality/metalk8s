@@ -11,7 +11,7 @@ Prerequisites
 .. _SaltStack: https://www.saltstack.com
 .. _Puppet: https://puppet.com
 
-MetalK8s_ clusters require machines running CentOS_//RHEL_ 7.6 or higher as
+MetalK8s_ clusters require machines running CentOS_\/RHEL_ 7.6 or higher as
 their operating system. These machines may be virtual or physical, with no
 difference in setup procedure. The number of machines to set up depends on the
 architecture you chose in :ref:`installation-intro-architecture`.
@@ -44,7 +44,7 @@ The version can be retrieved using:
 
 If the installed version is lower than the one above, upgrade it with:
 
-.. code-block:: shell
+  .. code-block:: shell
 
     $ yum upgrade -y kernel-3.10.0-1062.4.1.el7
     $ reboot

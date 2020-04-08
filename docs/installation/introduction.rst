@@ -22,7 +22,8 @@ Installing a MetalK8s cluster can be broken down into the following steps:
    MetalK8s is not designed to handle world-distributed multi-site
    architectures. Instead, it provides a highly resilient cluster at the
    datacenter scale. To manage multiple sites, look into application-level
-   solutions or alternatives from such the communities as `the Multicluster SIG
+   solutions or alternatives from such Kubernetes community groups as `the
+   Multicluster SIG
    <https://github.com/kubernetes/community/tree/master/sig-multicluster>`_).
 
 .. _Kubernetes: https://kubernetes.io/
@@ -32,7 +33,7 @@ Installing a MetalK8s cluster can be broken down into the following steps:
 Choosing a Deployment Architecture
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Before starting the installation, you must choose an architecture.
+Before starting the installation, it's best to choose an architecture.
 
 Standard Architecture
 """""""""""""""""""""
