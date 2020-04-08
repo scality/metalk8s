@@ -38,3 +38,15 @@ export async function printJob(jid) {
     arg: [jid],
   });
 }
+
+export async function prepareEnvironment(environment, version) {
+  return saltApiClient.post('/', {
+    client: 'runner_async',
+    fun: 'state.orchestrate',
+    arg: ['metalk8s.orchestrate.solutions.prepare-environment'],
+    kwarg: {
+      saltenv: `metalk8s-${version}`,
+      pillar: { orchestrate: { env_name: environment } },
+    },
+  });
+}

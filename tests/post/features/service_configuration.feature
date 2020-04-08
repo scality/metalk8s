@@ -8,3 +8,4 @@ Feature: Cluster and Services Configurations
         When we update 'metalk8s-dex-config' CSC in namespace 'metalk8s-auth' 'spec.deployment.replicas' to '3'
         And we apply the 'metalk8s.addons.dex.deployed' salt state
         Then we have '3' at 'status.available_replicas' for 'dex' Deployment in namespace 'metalk8s-auth'
+        And we restore original state of 'metalk8s-dex-config' CSC in namespace 'metalk8s-auth'

@@ -21,7 +21,7 @@ import {
   updateStorageClassAction,
   deleteVolume,
 } from './volumes';
-import * as ApiK8s from '../../services/k8s/api';
+import * as VolumesApi from '../../services/k8s/volumes';
 import { SET_STORAGECLASS } from './volumes.js';
 import { REFRESH_TIMEOUT } from '../../constants';
 
@@ -34,7 +34,7 @@ it('update the volume', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
+  expect(gen.next().value).toEqual(call(VolumesApi.getVolumes));
 
   const result = {
     body: {
@@ -88,7 +88,7 @@ it('does not update volume if there is an error', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
+  expect(gen.next().value).toEqual(call(VolumesApi.getVolumes));
 
   const result = { error: {} };
 
@@ -114,7 +114,7 @@ it('should put a empty array if Volumes is not correct', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(ApiK8s.getVolumes));
+  expect(gen.next().value).toEqual(call(VolumesApi.getVolumes));
 
   const result = { it: 'should not work' };
   expect(gen.next(result).value).toEqual(put(setVolumesAction([])));
@@ -135,7 +135,7 @@ it('update the storage class', () => {
   const gen = fetchStorageClass();
 
   expect(gen.next().value).toEqual(put(updateStorageClassAction(true)));
-  expect(gen.next().value).toEqual(call(ApiK8s.getStorageClass));
+  expect(gen.next().value).toEqual(call(VolumesApi.getStorageClass));
   const result = {
     body: {
       items: [
@@ -168,7 +168,7 @@ it('update the storage class', () => {
 it('does not update the storage class if there is an error', () => {
   const gen = fetchStorageClass();
   expect(gen.next().value).toEqual(put(updateStorageClassAction(true)));
-  expect(gen.next().value).toEqual(call(ApiK8s.getStorageClass));
+  expect(gen.next().value).toEqual(call(VolumesApi.getStorageClass));
 
   const result = {
     error: {},
@@ -179,7 +179,7 @@ it('does not update the storage class if there is an error', () => {
 
 it('update PVs', () => {
   const gen = fetchPersistentVolumes();
-  expect(gen.next().value).toEqual(call(ApiK8s.getPersistentVolumes));
+  expect(gen.next().value).toEqual(call(VolumesApi.getPersistentVolumes));
 
   const result = {
     body: {
@@ -256,7 +256,7 @@ it('update PVs', () => {
 
 it('should put a empty array if PVs object is not correct', () => {
   const gen = fetchPersistentVolumes();
-  expect(gen.next().value).toEqual(call(ApiK8s.getPersistentVolumes));
+  expect(gen.next().value).toEqual(call(VolumesApi.getPersistentVolumes));
 
   const result = { it: 'should not work' };
 
@@ -267,7 +267,7 @@ it('should put a empty array if PVs object is not correct', () => {
 it('does not update PV if there is an error', () => {
   const gen = fetchPersistentVolumes();
 
-  expect(gen.next().value).toEqual(call(ApiK8s.getPersistentVolumes));
+  expect(gen.next().value).toEqual(call(VolumesApi.getPersistentVolumes));
 
   const result = {
     error: {},
@@ -320,7 +320,7 @@ it('create volume with the type sparseloopdevice', () => {
     },
   };
 
-  expect(gen.next(body).value).toEqual(call(ApiK8s.createVolume, body));
+  expect(gen.next(body).value).toEqual(call(VolumesApi.createVolume, body));
   const result = {
     body: {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -396,7 +396,7 @@ it('create a volume with the type rawBlockdevice', () => {
     },
   };
 
-  expect(gen.next(body).value).toEqual(call(ApiK8s.createVolume, body));
+  expect(gen.next(body).value).toEqual(call(VolumesApi.createVolume, body));
   const result = {
     body: {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -486,7 +486,7 @@ it('does not create a volume when there is an error', () => {
       },
     },
   };
-  expect(gen.next(body).value).toEqual(call(ApiK8s.createVolume, body));
+  expect(gen.next(body).value).toEqual(call(VolumesApi.createVolume, body));
   const result = { error: {} };
 
   expect(gen.next(result).value.payload.action.type).toEqual(
@@ -653,7 +653,7 @@ it('should not refresh volume if volume have an error', () => {
 it('should delete volume', () => {
   const payload = { payload: 'test-volume' };
   const gen = deleteVolume(payload);
-  expect(gen.next().value).toEqual(call(ApiK8s.deleteVolume, 'test-volume'));
+  expect(gen.next().value).toEqual(call(VolumesApi.deleteVolume, 'test-volume'));
   const result = {
     body: {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -692,7 +692,7 @@ it('should delete volume', () => {
 it('should display the error notification when there is error in delete volume', () => {
   const payload = { payload: 'test-volume' };
   const gen = deleteVolume(payload);
-  expect(gen.next().value).toEqual(call(ApiK8s.deleteVolume, 'test-volume'));
+  expect(gen.next().value).toEqual(call(VolumesApi.deleteVolume, 'test-volume'));
   const result = { error: {} };
   expect(gen.next(result).value.payload.action.type).toEqual(
     ADD_NOTIFICATION_ERROR,

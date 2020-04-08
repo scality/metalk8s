@@ -20,6 +20,8 @@ SOLUTION=''
 VERBOSE=${VERBOSE:-0}
 VERSION=''
 
+export KUBECONFIG
+
 declare -A COMMANDS=(
     [import]=import_solution
     [unimport]=unimport_solution
@@ -281,8 +283,15 @@ import_solution() {
     run "Importing Solutions" \
         salt_minion_exec state.sls metalk8s.solutions.available \
         saltenv="$SALTENV"
+    run "Updating Solutions ConfigMap" \
+        salt_master_exec salt-run state.orchestrate \
+        metalk8s.orchestrate.solutions.deploy-components \
+        pillar="{'bootstrap_id': '$(get_salt_minion_id)'}"
     run "Configuring Metalk8s registry" \
         salt_minion_exec state.sls metalk8s.repo.installed \
+        saltenv="$SALTENV"
+    run "Configuring Salt master" \
+        salt_minion_exec state.sls metalk8s.salt.master.installed \
         saltenv="$SALTENV"
 }
 
@@ -293,8 +302,15 @@ unimport_solution() {
     run "Unimporting Solutions" \
         salt_minion_exec state.sls metalk8s.solutions.available \
         saltenv="$SALTENV"
+    run "Updating Solutions ConfigMap" \
+        salt_master_exec salt-run state.orchestrate \
+        metalk8s.orchestrate.solutions.deploy-components \
+        pillar="{'bootstrap_id': '$(get_salt_minion_id)'}"
     run "Configuring Metalk8s registry" \
         salt_minion_exec state.sls metalk8s.repo.installed \
+        saltenv="$SALTENV"
+    run "Configuring Salt master" \
+        salt_minion_exec state.sls metalk8s.salt.master.installed \
         saltenv="$SALTENV"
 }
 

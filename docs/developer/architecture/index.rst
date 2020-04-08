@@ -7,5 +7,7 @@ Architecture Documents
    deployment
    monitoring
    configurations
+   alerting
+   centralized-cli
    requirements
    ci

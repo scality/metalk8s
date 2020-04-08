@@ -18,4 +18,14 @@ RUN yum install -y \
         && \
     yum clean all
 
+# To build containerd
+RUN yum install -y \
+        golang \
+        btrfs-progs-devel \
+        go-md2man \
+        libseccomp-devel \
+        systemd \
+        && \
+    yum clean all
+
 RUN useradd -m build

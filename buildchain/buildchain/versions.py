@@ -18,8 +18,10 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 # Project-wide versions {{{
 
 CALICO_VERSION     : str = '3.12.0'
-K8S_VERSION        : str = '1.17.3'
+K8S_VERSION        : str = '1.17.4'
 SALT_VERSION       : str = '2018.3.4'
+CONTAINERD_VERSION : str = '1.2.13'
+CONTAINERD_RELEASE : str = '2.el7'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -120,22 +122,22 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='kube-apiserver',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:33400ea29255bd20714b6b8092b22ebb045ae134030d6bf476bddfed9d33e900',
+        digest='sha256:bbcec0b4ee3ef6c0f0a27c028b3a44234863f6e783a71c79cb5e651f82e992c8',
     ),
     Image(
         name='kube-controller-manager',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:2f0bf4d08e72a1fd6327c8eca3a72ad21af3a608283423bb3c10c98e68759844',
+        digest='sha256:29f57d6d1e821e417a4dcef5a3669ab545530469e332420131387c7df3bec62f',
     ),
     Image(
         name='kube-proxy',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:3a70e2ab8d1d623680191a1a1f1dcb0bdbfd388784b1f153d5630a7397a63fd4',
+        digest='sha256:e3db5d1a2a3959f2745fa80ae008a9fb6bce3294f85819eb3cd5f695b2bb4785',
     ),
     Image(
         name='kube-scheduler',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:b091f0db3bc61a3339fd3ba7ebb06c984c4ded32e1f2b1ef0fbdfab638e88462',
+        digest='sha256:819fa2bf3c0d4ccf3df94445c6096a73730a3b4e982f6cd1daa25a5679aea55f',
     ),
     Image(
         name='kube-state-metrics',
@@ -306,7 +308,6 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(name='kubectl', version=K8S_VERSION),
         PackageVersion(name='kubelet', version=K8S_VERSION),
         # Latest packages
-        PackageVersion(name='containerd'),
         PackageVersion(name='coreutils'),
         PackageVersion(name='cri-tools'),
         PackageVersion(name='e2fsprogs'),
@@ -330,6 +331,11 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             version=CALICO_VERSION,
             release='1.el7'
         ),
+        PackageVersion(
+            name='containerd',
+            version=CONTAINERD_VERSION,
+            release=CONTAINERD_RELEASE,
+        ),
         PackageVersion(name='container-selinux'),  # TODO #1710
         PackageVersion(
             name='metalk8s-sosreport',
@@ -337,6 +343,7 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             release='1.el7'
         ),
         PackageVersion(name='yum-plugin-versionlock'),
+        PackageVersion(name='yum-utils'),
     ),
     'debian': (
         PackageVersion(

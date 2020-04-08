@@ -1,24 +1,43 @@
-import { call, put, takeEvery, select, delay } from 'redux-saga/effects';
-import * as ApiK8s from '../../services/k8s/api';
+import {
+  all,
+  call,
+  delay,
+  fork,
+  put,
+  race,
+  take,
+  takeEvery,
+  select,
+} from 'redux-saga/effects';
+import * as CoreApi from '../../services/k8s/core';
+import * as SolutionsApi from '../../services/k8s/solutions';
+import * as SaltApi from '../../services/salt/api';
+
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
+import {
+  addNotificationSuccessAction,
+  addNotificationErrorAction,
+} from './notifications';
+import { intl } from '../../translations/IntlGlobalProvider';
+import { addJobAction, JOB_COMPLETED } from './salt';
 
-const APP_K8S_PART_OF_SOLUTION_LABEL = 'app.kubernetes.io/part-of';
-const APP_K8S_VERSION_LABEL = 'app.kubernetes.io/version';
+const OPERATOR_ = '-operator';
+const UI_ = '-ui';
 
 // Actions
 export const SET_SOLUTIONS = 'SET_SOLUTIONS';
 export const SET_SOLUTIONS_REFRESHING = 'SET_SOLUTIONS_REFRESHING';
-export const SET_SERVICES = 'SET_SERVICES';
 export const SET_ENVIRONMENTS = 'SET_ENVIRONMENTS';
 const CREATE_ENVIRONMENT = 'CREATE_ENVIRONMENT';
 const REFRESH_SOLUTIONS = 'REFRESH_SOLUTIONS';
 const STOP_REFRESH_SOLUTIONS = 'STOP_REFRESH_SOLUTIONS';
+const PREPARE_ENVIRONMENT = 'PREPARE_ENVIRONMENT';
+const DELETE_ENVIRONMENT = 'DELETE_ENVIRONMENT';
 
 // Reducer
 const defaultState = {
   solutions: [],
-  services: [],
   environments: [],
   isSolutionsRefreshing: false,
 };
@@ -27,8 +46,6 @@ export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_SOLUTIONS:
       return { ...state, solutions: action.payload };
-    case SET_SERVICES:
-      return { ...state, services: action.payload };
     case SET_ENVIRONMENTS:
       return { ...state, environments: action.payload };
     case SET_SOLUTIONS_REFRESHING:
@@ -47,10 +64,6 @@ export function setSolutionsRefeshingAction(payload) {
   return { type: SET_SOLUTIONS_REFRESHING, payload };
 }
 
-export function setServicesAction(services) {
-  return { type: SET_SERVICES, payload: services };
-}
-
 export const setEnvironmentsAction = environments => {
   return { type: SET_ENVIRONMENTS, payload: environments };
 };
@@ -67,113 +80,247 @@ export function createEnvironmentAction(newEnvironment) {
   return { type: CREATE_ENVIRONMENT, payload: newEnvironment };
 }
 
+export function prepareEnvironmentAction(envName, solName, solVersion) {
+  return {
+    type: PREPARE_ENVIRONMENT,
+    payload: { envName, solName, solVersion },
+  };
+}
+
+export function deleteEnvironmentAction(envName) {
+  return { type: DELETE_ENVIRONMENT, payload: envName };
+}
+
 // Selectors
 export const solutionsRefreshingSelector = state =>
   state.app.solutions.isSolutionsRefreshing;
 export const solutionServicesSelector = state => state.app.solutions.services;
 
 // Sagas
-export function* createEnvironment(action) {
-  const newEnvironment = action.payload;
-
-  const body = {
-    apiVersion: 'solutions.metalk8s.scality.com/v1alpha1',
-    kind: 'Environment',
-    metadata: {
-      name: newEnvironment.name,
-    },
-    spec: {
-      description: newEnvironment.description,
-      solutions: [],
-    },
-  };
-
-  const result = yield call(ApiK8s.createEnvironment, body);
-  if (!result.error) {
-    yield call(fetchEnvironments);
-    history.push('/solutions');
+export function* fetchEnvironments() {
+  const jobs = yield select(state => state.app.salt.jobs);
+  const preparingEnvs = jobs?.filter(
+    job => job.type === 'prepare-env/' && !job.completed,
+  );
+  const environments = yield call(SolutionsApi.listEnvironments);
+  const updatedEnvironments = yield call(updateEnvironments, environments);
+  for (const env of updatedEnvironments) {
+    env.isPreparing = preparingEnvs?.includes(env.name);
   }
-  return result;
+  yield put(setEnvironmentsAction(updatedEnvironments));
+  return updatedEnvironments;
 }
 
-export function* fetchUIServices() {
-  const result = yield call(ApiK8s.getUIServiceForAllNamespaces);
-  if (!result.error) {
-    yield put(setServicesAction(result.body.items));
+export function* createEnvironment(action) {
+  const { name } = action.payload;
+  const resultCreateEnvironment = yield call(
+    SolutionsApi.createEnvironment,
+    action.payload,
+  );
+
+  if (resultCreateEnvironment.error) {
+    yield put(
+      addNotificationErrorAction({
+        title: intl.translate('environment_creation_failed', { envName: name }),
+      }),
+    );
   }
-  return result;
+  yield call(history.push, '/solutions');
+  yield call(fetchEnvironments);
+}
+
+export function* prepareEnvironment(action) {
+  const { envName, solName, solVersion } = action.payload;
+
+  const existingEnv = yield select(state => state.app.solutions.environments);
+
+  const preparingEnv = existingEnv.find(env => env.name === envName);
+
+  if (preparingEnv === undefined) {
+    console.error(`Environment '${envName}' does not exist`);
+  } else if (preparingEnv?.preparing) {
+    console.error(`Environment '${envName}' is preparing`);
+  }
+
+  const addSolutionToEnvironmentResult = yield call(
+    SolutionsApi.addSolutionToEnvironment,
+    envName,
+    solName,
+    solVersion,
+  );
+
+  if (!addSolutionToEnvironmentResult.error) {
+    const clusterVersion = yield select(
+      state => state.app.nodes.clusterVersion,
+    );
+    const result = yield call(
+      SaltApi.prepareEnvironment,
+      envName,
+      clusterVersion,
+    );
+    if (!result.error) {
+      yield put(
+        addJobAction({
+          type: 'prepare-env',
+          jid: result.return[0].jid,
+          env: envName,
+        }),
+      );
+    } else {
+      yield put(
+        addNotificationErrorAction({
+          title: intl.translate('prepare_environment'),
+          message: intl.translate('env_preparation_failed', { envName }),
+        }),
+      );
+    }
+  } else {
+    yield put(
+      addNotificationErrorAction({
+        title: intl.translate('add_solution_to_configmap', {
+          envName,
+        }),
+        message: intl.translate('add_solution_to_configmap_failed'),
+      }),
+    );
+  }
+}
+
+export function* updateEnvironments(environments) {
+  for (const env of environments) {
+    const envConfig = yield call(SolutionsApi.getEnvironmentConfigMap, env);
+    if (envConfig) {
+      const solutions = Object.keys(envConfig);
+      // we may have several soutions in one environment
+      for (const solution of solutions) {
+        const solutionOperatorDeployment = yield call(
+          CoreApi.getNamespacedDeployment,
+          `${solution}${OPERATOR_}`,
+          env.name,
+        );
+        const solutionUIDeployment = yield call(
+          CoreApi.getNamespacedDeployment,
+          `${solution}${UI_}`,
+          env.name,
+        );
+        if (!solutionOperatorDeployment.error && !solutionUIDeployment.error) {
+          if (env.solutions === undefined) {
+            env.solutions = [];
+            env.solutions.push({
+              name: solution,
+              version: envConfig?.[solution],
+            });
+          } else if (env.solutions.length !== 0) {
+            env.solutions.push({
+              name: solution,
+              version: envConfig?.[solution],
+            });
+          }
+        } else {
+          console.error(`Solution: ${env.name} deployment has failed.`);
+        }
+      }
+    }
+  }
+  return environments;
 }
 
 export function* fetchSolutions() {
-  const result = yield call(ApiK8s.getSolutionsConfigMapForAllNamespaces);
+  const result = yield call(SolutionsApi.getSolutionsConfigMap);
   if (!result.error) {
-    const solutionsConfigMap = result.body.items[0];
-    if (solutionsConfigMap && solutionsConfigMap.data) {
-      const solutions = Object.keys(solutionsConfigMap.data).map(key => {
-        return {
-          name: key,
-          versions: JSON.parse(solutionsConfigMap.data[key]),
-        };
-      });
-      const services = yield select(solutionServicesSelector);
-      solutions.forEach(sol => {
-        sol.versions.forEach(version => {
-          if (version.deployed) {
-            const sol_service = services.find(
-              service =>
-                service.metadata.labels &&
-                service.metadata.labels[APP_K8S_PART_OF_SOLUTION_LABEL] ===
-                  sol.name &&
-                service.metadata.labels[APP_K8S_VERSION_LABEL] ===
-                  version.version,
-            );
-            version.ui_url = sol_service
-              ? `http://localhost:${sol_service.spec.ports[0].nodePort}` // TO BE IMPROVED: we can not get the Solution UI's IP so far
-              : '';
-          }
-        });
-      });
+    const configData = result?.body?.data;
+    if (configData) {
+      const solutions = Object.keys(configData).map(key => ({
+        name: key,
+        versions: JSON.parse(configData[key]),
+      }));
       yield put(setSolutionsAction(solutions));
     }
   }
   return result;
 }
 
-export function* fetchEnvironments() {
-  const result = yield call(ApiK8s.getEnvironments);
-  if (!result.error) {
-    yield put(setEnvironmentsAction(result?.body?.items ?? []));
-  }
-  return result;
-}
-
 export function* refreshSolutions() {
-  yield put(setSolutionsRefeshingAction(true));
+  // Long-running saga, should be unique for the whole application
+  while (true) {
+    // Start refreshing on demand
+    yield take(REFRESH_SOLUTIONS);
+    yield put(setSolutionsRefeshingAction(true));
+    while (true) {
+      // Spawn the fetch actions in parallel
+      yield all([fork(fetchSolutions), fork(fetchEnvironments)]);
 
-  const resultFetchUIServices = yield call(fetchUIServices);
-  const resultFetchSolutions = yield call(fetchSolutions);
-  const resultFetchEnvironments = yield call(fetchEnvironments);
+      const { interrupt } = yield race({
+        interrupt: take(STOP_REFRESH_SOLUTIONS),
+        requeue: delay(REFRESH_TIMEOUT),
+      });
 
-  if (
-    !resultFetchSolutions.error &&
-    !resultFetchUIServices.error &&
-    !resultFetchEnvironments.error
-  ) {
-    yield delay(REFRESH_TIMEOUT);
-    const isRefreshing = yield select(solutionsRefreshingSelector);
-    if (isRefreshing) {
-      yield call(refreshSolutions);
+      if (interrupt) {
+        yield put(setSolutionsRefeshingAction(false));
+        break;
+      }
     }
   }
 }
 
-export function* stopRefreshSolutions() {
-  yield put(setSolutionsRefeshingAction(false));
+export function* deleteEnvironment(action) {
+  const envName = action.payload;
+  const result = yield call(SolutionsApi.deleteEnvironment, envName);
+  if (!result.error) {
+    yield put(
+      addNotificationSuccessAction({
+        title: intl.translate('environment_deletion'),
+        message: intl.translate('environment_delete_success', { envName }),
+      }),
+    );
+    yield call(fetchEnvironments);
+  } else {
+    yield put(
+      addNotificationErrorAction({
+        title: intl.translate('environment_deletion'),
+        message: intl.translate('environment_delete_failed', {
+          envName,
+        }),
+      }),
+    );
+  }
+}
+
+export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
+  const jobs = yield select(state => state.app.salt.jobs);
+  const job = jobs.find(job => job.jid === jid);
+  if (job?.type === 'prepare-env') {
+    if (status.success) {
+      yield put(
+        addNotificationSuccessAction({
+          title: intl.translate('env_preparation'),
+          message: intl.translate('env_preparation_success', {
+            envName: job.env,
+          }),
+        }),
+      );
+    } else {
+      yield put(
+        addNotificationErrorAction({
+          title: intl.translate('env_preparation'),
+          message: intl.translate('env_preparation_failed', {
+            envName: job.env,
+            step: status.step,
+            reason: status.comment,
+          }),
+        }),
+      );
+    }
+  }
 }
 
 // Sagas
 export function* solutionsSaga() {
-  yield takeEvery(REFRESH_SOLUTIONS, refreshSolutions);
-  yield takeEvery(STOP_REFRESH_SOLUTIONS, stopRefreshSolutions);
-  yield takeEvery(CREATE_ENVIRONMENT, createEnvironment);
+  yield all([
+    fork(refreshSolutions),
+    takeEvery(CREATE_ENVIRONMENT, createEnvironment),
+    takeEvery(PREPARE_ENVIRONMENT, prepareEnvironment),
+    takeEvery(DELETE_ENVIRONMENT, deleteEnvironment),
+    takeEvery(JOB_COMPLETED, notifyDeployJobCompleted),
+  ]);
 }

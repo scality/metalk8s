@@ -65,13 +65,17 @@ const EnvironmentCreationForm = props => {
     name: '',
     description: '',
   };
-
+  const environmentNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   const validationSchema = yup.object().shape({
-    name: yup.string().required(
-      intl.translate('generic_missing_field', {
-        field: intl.translate('name').toLowerCase(),
-      }),
-    ),
+    name: yup
+      .string()
+      .matches(environmentNameRegex, intl.translate('name_error'))
+      .required(
+        intl.translate('generic_missing_field', {
+          field: intl.translate('name').toLowerCase(),
+        }),
+      ),
+
     description: yup.string(),
   });
 

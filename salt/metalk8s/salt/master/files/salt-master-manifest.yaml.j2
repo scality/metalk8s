@@ -68,6 +68,11 @@ spec:
           mountPath: '/srv/scality/{{ env }}/pillar'
           readOnly: true
         {%- endfor %}
+        {%- for solution, mountpoint in solution_archives.items() | sort(attribute='0') %}
+        - name: solution-{{ solution }}
+          mountPath: '{{ mountpoint }}'
+          readOnly: true
+        {%- endfor %}
         - name: metalk8s-config
           mountPath: '/etc/metalk8s'
           readOnly: true
@@ -124,6 +129,12 @@ spec:
     - name: pillar-{{ env | replace('.', '-') }}
       hostPath:
         path: '{{ archive.path }}/pillar'
+        type: Directory
+    {%- endfor %}
+    {%- for solution, mountpoint in solution_archives.items() | sort(attribute='0') %}
+    - name: solution-{{ solution }}
+      hostPath:
+        path: '{{ mountpoint }}'
         type: Directory
     {%- endfor %}
     - name: metalk8s-config

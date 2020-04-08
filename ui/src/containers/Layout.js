@@ -22,11 +22,6 @@ import { updateLanguageAction, logoutAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import VolumeInformation from './VolumeInformation';
-import { useRefreshEffect } from '../services/utils';
-import {
-  refreshSolutionsAction,
-  stopRefreshSolutionsAction,
-} from '../ducks/app/solutions';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
 
 const Layout = props => {
@@ -47,7 +42,7 @@ const Layout = props => {
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
   const api = useSelector(state => state.config.api);
-  useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
+
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
