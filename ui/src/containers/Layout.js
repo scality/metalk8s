@@ -24,24 +24,25 @@ import CreateVolume from './CreateVolume';
 import VolumeInformation from './VolumeInformation';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
 
-const Layout = props => {
-  const user = useSelector(state => state.oidc.user);
-  const sidebar = useSelector(state => state.app.layout.sidebar);
-  const { theme, language } = useSelector(state => state.config);
-  const notifications = useSelector(state => state.app.notifications.list);
-  const solutions = useSelector(state => state.app.solutions.solutions);
+const Layout = (props) => {
+  const user = useSelector((state) => state.oidc.user);
+  const sidebar = useSelector((state) => state.app.layout.sidebar);
+  const { theme, language } = useSelector((state) => state.config);
+  const notifications = useSelector((state) => state.app.notifications.list);
+  const solutions = useSelector((state) => state.app.solutions.solutions);
+  const isUserLoaded = useSelector((state) => !!state.oidc.user);
   const dispatch = useDispatch();
 
-  const logout = event => {
+  const logout = (event) => {
     event.preventDefault();
     dispatch(logoutAction());
   };
 
-  const removeNotification = uid => dispatch(removeNotificationAction(uid));
-  const updateLanguage = language => dispatch(updateLanguageAction(language));
+  const removeNotification = (uid) => dispatch(removeNotificationAction(uid));
+  const updateLanguage = (language) => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
-  const api = useSelector(state => state.config.api);
+  const api = useSelector((state) => state.config.api);
 
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
@@ -93,9 +94,9 @@ const Layout = props => {
   if (solutions?.length) {
     applications = solutions?.reduce((prev, solution) => {
       let solutionDeployedVersions = solution?.versions?.filter(
-        version => version?.deployed && version?.ui_url,
+        (version) => version?.deployed && version?.ui_url,
       );
-      let app = solutionDeployedVersions.map(version => ({
+      let app = solutionDeployedVersions.map((version) => ({
         label: solution.name,
         // TO BE IMPROVED in core-ui to allow display Link or <a></a>
         onClick: () => window.open(version.ui_url, '_self'),
@@ -126,7 +127,7 @@ const Layout = props => {
     },
   ];
 
-  const filterLanguage = languages.filter(lang => lang.name !== language);
+  const filterLanguage = languages.filter((lang) => lang.name !== language);
 
   const rightActions = [
     {
@@ -162,7 +163,7 @@ const Layout = props => {
       items: [
         {
           label: intl.translate('log_out'),
-          onClick: event => logout(event),
+          onClick: (event) => logout(event),
           'data-cy': 'logout_button',
         },
       ],
@@ -182,13 +183,16 @@ const Layout = props => {
   const navbar = {
     onToggleClick: toggleSidebar,
     productName: intl.translate('product_name'),
-    rightActions,
     logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
   };
+  // display the sidebar and rightAction if the user is loaded
+  if (isUserLoaded) {
+    navbar['rightActions'] = rightActions;
+  }
 
   return (
     <ThemeProvider theme={theme}>
-      <CoreUILayout sidebar={sidebarConfig} navbar={navbar}>
+      <CoreUILayout sidebar={isUserLoaded && sidebarConfig} navbar={navbar}>
         <Notifications
           notifications={notifications}
           onDismiss={removeNotification}
