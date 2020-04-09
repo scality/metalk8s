@@ -23,7 +23,8 @@ import { intl } from '../../translations/IntlGlobalProvider';
 import { addJobAction, JOB_COMPLETED } from './salt';
 
 const OPERATOR_ = '-operator';
-const UI_ = '-ui';
+const _K8S = 'app.kubernetes.io';
+const LABEL_K8S_VERSION = `${_K8S}/version`;
 
 // Actions
 export const SET_SOLUTIONS = 'SET_SOLUTIONS';
@@ -193,34 +194,25 @@ export function* updateEnvironments(environments) {
       const solutions = Object.keys(envConfig);
       // we may have several soutions in one environment
       for (const solution of solutions) {
-        const solutionOperatorDeployment = yield call(
+        const operatorDeployment = yield call(
           CoreApi.getNamespacedDeployment,
           `${solution}${OPERATOR_}`,
           env.name,
         );
-        const solutionUIDeployment = yield call(
-          CoreApi.getNamespacedDeployment,
-          `${solution}${UI_}`,
-          env.name,
-        );
+        const operatorVersion =
+          operatorDeployment?.body?.metadata?.labels[LABEL_K8S_VERSION];
 
-        if (!solutionOperatorDeployment.error && !solutionUIDeployment.error) {
-          // in order to get the deployed version, we temporarily check the image version deployed Operator & UI.
-          // but we should add a label with the solution version in both Operator & UI.
-          const solutionOperatorDeploymentVersion = solutionOperatorDeployment?.body?.spec?.template?.spec?.containers[0]?.image?.split(
-            ':',
-          )[1];
-
+        if (operatorDeployment) {
           if (env.solutions === undefined) {
             env.solutions = [];
             env.solutions.push({
               name: solution,
-              version: solutionOperatorDeploymentVersion,
+              version: operatorVersion,
             });
           } else if (env.solutions.length !== 0) {
             env.solutions.push({
               name: solution,
-              version: solutionOperatorDeploymentVersion,
+              version: operatorVersion,
             });
           }
         } else {
