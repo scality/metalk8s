@@ -324,6 +324,7 @@ models:
         STEP_NAME: ''
         FINAL_STATUS: ''
         TEXT: |-
+          Build Url: %(prop:buildurl)s
           Artifact Url: %(prop:artifacts_public_url)s
           Branch: %(prop:branch)s
           Commit: %(prop:revision)s
