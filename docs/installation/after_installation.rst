@@ -15,7 +15,7 @@ later on other nodes joining the cluster. Separating :ref:`Bootstrap services
 <node-role-bootstrap>` from :ref:`Infra services <node-role-infra>` is
 recommended.
 
-To create the required "Volume" objects, copy the following code to a YAML
+To create the required Volume objects, copy the following code to a YAML
 file, replacing ``<node_name>`` with the name of the :term:`Node` on which to
 run Prometheus and AlertManager, and ``<device_path[2]>`` with the ``/dev``
 path for the partitions to use:
@@ -26,11 +26,12 @@ path for the partitions to use:
    apiVersion: storage.metalk8s.scality.com/v1alpha1
    kind: Volume
    metadata:
-     name: bootstrap-prometheus
+     name: <node_name>-prometheus
    spec:
      nodeName: <node_name>
      storageClassName: metalk8s-prometheus
-     sparseLoopDevice:
+     rawBlockDevice:  # Choose a device with at least 10GiB capacity
+       devicePath: <device_path>
        size: 10Gi
      template:
        metadata:
@@ -40,11 +41,12 @@ path for the partitions to use:
    apiVersion: storage.metalk8s.scality.com/v1alpha1
    kind: Volume
    metadata:
-     name: bootstrap-alertmanager
+     name: <node_name>-alertmanager
    spec:
      nodeName: <node_name>
      storageClassName: metalk8s-prometheus
-     sparseLoopDevice:
+     rawBlockDevice: # Choose a device with at least 1GiB capacity
+       devicePath: <device_path2>
        size: 1Gi
      template:
        metadata:
@@ -58,11 +60,10 @@ of the aforementioned YAML file):
 
 .. code-block:: shell
 
-   root@bootstrap # kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f <file_path>
+   root@bootstrap # kubectl apply -f <file_path>
 
 For more details on the available options for storage management, see
-:doc:`Volume Management <../operation/volume_management/index>` in
-:ref:`MetalK8s Operation <../operation/index>`.
+:doc:`Volume Management <../operation/volume_management/index>`.
 
 .. todo::
 
@@ -72,11 +73,9 @@ For more details on the available options for storage management, see
 GUI Validation
 ^^^^^^^^^^^^^^
 
-If things are installed correctly, you can open and log in to the new bootstrap
-server.
-
-Open your browser and access the bootstrap server. Enter the bootstrap server's
-IP address or hostname into the browser, specifying port 8443::
+If things are installed correctly, you can open and log in to the MetalK8s
+Platform GUI. Enter the server's IP address or hostname into the browser,
+specifying port 8443::
 
   https://<address>:8443
 
@@ -89,8 +88,8 @@ The default credentials are:
 * Username: **admin**
 * Password: **admin**
 
-Changing Credentials
-^^^^^^^^^^^^^^^^^^^^
+Change Credentials
+^^^^^^^^^^^^^^^^^^
 
 After a fresh installation, an administrator account is created. For production
 deployments, change these credentials and use safer values.
@@ -101,9 +100,8 @@ thus for :ref:`MetalK8s GUI <installation-services-admin-ui>` and
 
 To change Grafana user credentials, see :ref:`ops-grafana-admin`.
 
-
-Validating the Deployment
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Validate the Deployment
+^^^^^^^^^^^^^^^^^^^^^^^
 
 To ensure the Kubernetes cluster is properly running before scheduling
 applications, perform the following sanity checks:
@@ -129,13 +127,13 @@ applications, perform the following sanity checks:
    provisioned yet. See :ref:`Provision Prometheus Storage`).
 
    To look for all Pods at once, use the ``--all-namespaces`` flag. To select
-   Pods in a given :term:`Namespace` use the ``-n`` or ``--namespace`` option
+   Pods in a given :term:`Namespace` use the ``-n`` or ``--namespace`` option.
 
    For instance, to check all Pods making up the cluster-critical services:
 
    .. code-block:: shell
 
-      root@bootstrap # kubectl --kubeconfig /etc/kubernetes/admin.conf \
+      root@bootstrap # kubectl --kubeconfig /etc/kubernetes/admin.conf\
                          get pods --namespace kube-system
 
       NAME                                       READY   STATUS    RESTARTS   AGE
