@@ -15,9 +15,7 @@ When(
       '/api/kubernetes/api/v1/namespaces?labelSelector=solutions.metalk8s.scality.com/environment',
     ).as('getEnvironmentsList');
 
-    cy.get('.sc-sidebar-item')
-      .eq(2)
-      .click(); // go to solutions list
+    cy.get('.sc-sidebar-item').eq(2).click(); // go to solutions list
 
     const timeOut = {
       requestTimeout: 60000,
@@ -60,16 +58,12 @@ Then(
   () => {
     cy.route(
       'GET',
-      `api/kubernetes/apis/apps/v1/namespaces/${environmentName}/deployments/example-solution-ui`,
-    ).as('getSolutionUIDeployment');
+      `api/kubernetes/apis/apps/v1/namespaces/${environmentName}/deployments/example-solution-operator`,
+    ).as('getSolutionOperatorDeployment');
 
-    cy.get('.sc-modal .sc-select')
-      .eq(0)
-      .click();
+    cy.get('.sc-modal .sc-select').eq(0).click();
     cy.get(`[data-cy="${solutionName}"]`).click();
-    cy.get('.sc-modal .sc-select')
-      .eq(1)
-      .click();
+    cy.get('.sc-modal .sc-select').eq(1).click();
     cy.get(`[data-cy="${solutionVersion}"]`).click();
 
     cy.get('[data-cy="add_solution_submit_button"]').click();
@@ -78,7 +72,7 @@ Then(
       requestTimeout: 60000,
       responseTimeout: 60000,
     };
-    cy.wait('@getSolutionUIDeployment', timeOut);
+    cy.wait('@getSolutionOperatorDeployment', timeOut);
 
     cy.get('.sc-table-column-cell-container-solutions').should(
       'contain',
