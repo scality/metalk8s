@@ -89,8 +89,7 @@ def container_error_handler(container_error: ContainerError) -> str:
 
 
 def task_error(
-    expected_exn: Type[Exception],
-    handler: Callable[[Exception], str] = default_error_handler
+    handlers: Dict[Type[Exception], Callable[[Exception], str]]
 ) -> Callable[[Any], Any]:
     """Wrap a callable to create a resilient `doit` task
 
@@ -106,7 +105,12 @@ def task_error(
         def decorated_task(*args: Any, **kwargs: Any) -> Optional[TaskError]:
             try:
                 task_func(*args, **kwargs)
-            except expected_exn as err:
+            # We are broad on purpose here.
+            # pylint: disable=broad-except
+            except Exception as err:
+                handler = handlers.get(type(err))
+                if handler is None:
+                    raise
                 return TaskError(handler(err))
             return None
         return decorated_task
@@ -138,8 +142,10 @@ class DockerBuild:
         self.dockerfile = str(dockerfile)
         self.buildargs = buildargs
 
-    @task_error(docker.errors.BuildError, handler=build_error_handler)
-    @task_error(docker.errors.APIError)
+    @task_error({
+        docker.errors.BuildError: build_error_handler,
+        docker.errors.APIError: default_error_handler,
+    })
     def __call__(self) -> None:
         DOCKER_CLIENT.images.build(
             tag=self.tag,
@@ -262,9 +268,11 @@ class DockerRun:
 
         return run_config
 
-    @task_error(docker.errors.ContainerError, handler=container_error_handler)
-    @task_error(docker.errors.ImageNotFound)
-    @task_error(docker.errors.APIError)
+    @task_error({
+        docker.errors.ContainerError: container_error_handler,
+        docker.errors.ImageNotFound: default_error_handler,
+        docker.errors.APIError: default_error_handler,
+    })
     def __call__(self) -> None:
         run_config = self.expand_config()
         DOCKER_CLIENT.containers.run(
@@ -290,8 +298,10 @@ class DockerTag:
         self.full_name = full_name
         self.version = version
 
-    @task_error(docker.errors.BuildError, handler=build_error_handler)
-    @task_error(docker.errors.APIError)
+    @task_error({
+        docker.errors.BuildError: build_error_handler,
+        docker.errors.APIError: default_error_handler,
+    })
     def __call__(self) -> None:
         to_tag = DOCKER_CLIENT.images.get(self.full_name)
         to_tag.tag(self.repository, tag=self.version)
@@ -318,9 +328,11 @@ class DockerPull:
         self.version = version
         self.digest = digest
 
-    @task_error(docker.errors.BuildError, handler=build_error_handler)
-    @task_error(docker.errors.APIError)
-    @task_error(ValueError)
+    @task_error({
+        docker.errors.BuildError: build_error_handler,
+        docker.errors.APIError: default_error_handler,
+        ValueError: default_error_handler,
+    })
     def __call__(self) -> None:
         pulled = DOCKER_CLIENT.images.pull(
             # For some reason, the repository must include the image name
@@ -352,8 +364,10 @@ class DockerSave:
         self.tag = tag
         self.save_path = save_path
 
-    @task_error(docker.errors.APIError)
-    @task_error(OSError)
+    @task_error({
+        docker.errors.APIError: default_error_handler,
+        OSError: default_error_handler,
+    })
     def __call__(self) -> None:
         to_save = DOCKER_CLIENT.images.get(self.tag)
         image_stream = to_save.save(named=True)
