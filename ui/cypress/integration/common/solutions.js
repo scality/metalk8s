@@ -148,3 +148,22 @@ Then('I click on upgrade button and check the solution is upgraded', () => {
     upgradeSolutionVersion,
   );
 });
+
+Then(
+  'I click on the downgrade button and check the solution is downgraded',
+  () => {
+    cy.get('[data-cy="downgrade"]').click();
+    cy.get('.sc-modal .sc-select').eq(0).click();
+    cy.get(`[data-cy="${solutionVersion}"]`).click();
+    cy.get('[data-cy="upgrade_downgrade_button"]').click();
+    const timeOut = {
+      requestTimeout: 60000,
+      responseTimeout: 60000,
+    };
+
+    cy.wait('@getSolutionOperatorDeployment', timeOut);
+    cy.wait('@getSolutionOperatorDeployment', timeOut);
+
+    cy.get('.sc-table-column-cell-version').should('contain', solutionVersion);
+  },
+);
