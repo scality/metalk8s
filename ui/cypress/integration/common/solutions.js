@@ -4,6 +4,7 @@ const environmentName = `environment-${new Date().getTime()}`;
 const environmentDescription = `Test environment ${environmentName}`;
 const solutionName = 'example-solution';
 const solutionVersion = '0.1.0-dev';
+const upgradeSolutionVersion = '0.1.1-dev';
 
 When(
   'I go to the solutions list by clicking the solution icon in the sidebar',
@@ -111,3 +112,39 @@ Then(
     cy.get('.sc-table-column-cell-name').should('not.contain', environmentName); // check the environment I created is being deleted
   },
 );
+
+When(
+  'I go to the Environment Detail page by clicking the environment list',
+  () => {
+    cy.route(
+      'GET',
+      `api/kubernetes/apis/apps/v1/namespaces/${environmentName}/deployments/example-solution-operator`,
+    ).as('getSolutionOperatorDeployment');
+    cy.route(
+      'GET',
+      '/api/kubernetes/api/v1/namespaces?labelSelector=solutions.metalk8s.scality.com/environment',
+    ).as('getEnvironmentsList');
+    cy.get(`[data-cy="${environmentName}"]`).click();
+  },
+);
+
+Then('I click on upgrade button and check the solution is upgraded', () => {
+  cy.get('[data-cy="upgrade"]').click();
+
+  cy.get('.sc-modal .sc-select').eq(0).click();
+  cy.get(`[data-cy="${upgradeSolutionVersion}"]`).click();
+  cy.get('[data-cy="upgrade_downgrade_button"]').click();
+  const timeOut = {
+    requestTimeout: 60000,
+    responseTimeout: 60000,
+  };
+
+  cy.wait('@getSolutionOperatorDeployment', timeOut);
+  cy.wait('@getSolutionOperatorDeployment', timeOut);
+  cy.wait('@getSolutionOperatorDeployment', timeOut);
+
+  cy.get('.sc-table-column-cell-version').should(
+    'contain',
+    upgradeSolutionVersion,
+  );
+});
