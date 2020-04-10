@@ -31,7 +31,7 @@ import {
 } from '../ducks/app/solutions';
 
 const PageSubtitle = styled.h3`
-  color: ${props => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.brand.textPrimary};
   margin: ${padding.small} 0;
   display: flex;
   align-items: center;
@@ -39,7 +39,7 @@ const PageSubtitle = styled.h3`
 
 const VersionLabel = styled.label`
   padding: 0 ${padding.smaller};
-  ${props => (props.active ? 'font-weight: bold;' : '')}
+  ${(props) => (props.active ? 'font-weight: bold;' : '')}
 `;
 
 const TableContainer = styled.div`
@@ -74,15 +74,15 @@ const LoaderContainer = styled.div`
   padding: 0 0 0 ${padding.smaller};
 `;
 const TrashButtonContainer = styled(Button)`
-  ${props => {
+  ${(props) => {
     if (props.disabled) return { opacity: 0.2 };
   }};
 `;
 
-const SolutionsList = props => {
-  const theme = useSelector(state => state.config.theme);
-  const solutions = useSelector(state => state.app.solutions.solutions);
-  const environments = useSelector(state => state.app.solutions.environments);
+const SolutionsList = (props) => {
+  const theme = useSelector((state) => state.config.theme);
+  const solutions = useSelector((state) => state.app.solutions.solutions);
+  const environments = useSelector((state) => state.app.solutions.environments);
   const history = useHistory();
   const dispatch = useDispatch();
   useRefreshEffect(refreshSolutionsAction, stopRefreshSolutionsAction);
@@ -111,7 +111,7 @@ const SolutionsList = props => {
     {
       label: intl.translate('versions'),
       dataKey: 'versions',
-      renderer: versions =>
+      renderer: (versions) =>
         versions.map((version, index) => (
           <VersionLabel key={`version_${index}`} active={version.active}>
             {version.version}
@@ -144,7 +144,8 @@ const SolutionsList = props => {
                 key={idx}
                 data-cy={`${deployedSolution.name} (v.${deployedSolution.version})`}
               >
-                {`${deployedSolution.name} (v.${deployedSolution.version})`}{' '}
+                {deployedSolution.version &&
+                  `${deployedSolution.name} (v.${deployedSolution.version})`}{' '}
               </span>
             );
           });
@@ -155,7 +156,7 @@ const SolutionsList = props => {
               size="smaller"
               text={intl.translate('add')}
               outlined
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 setSelectedEnvironment(environment.name);
                 setisAddSolutionModalOpen(true);
@@ -184,7 +185,7 @@ const SolutionsList = props => {
         return (
           <>
             <TrashButtonContainer
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 dispatch(deleteEnvironmentAction(environment.name));
               }}
@@ -270,7 +271,7 @@ const SolutionsList = props => {
             sortBy={envSortBy}
             sortDirection={envSortDirection}
             onSort={onSort(setEnvSortBy, setEnvSortDirection)}
-            onRowClick={event => {
+            onRowClick={(event) => {
               const solutions = event.rowData.solutions;
               const env_name = event.rowData.name;
               if (solutions) {
@@ -317,7 +318,7 @@ const SolutionsList = props => {
             enableReinitialize
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={values => {
+            onSubmit={(values) => {
               const solName = values.solution.value;
               const solVersion = values.version.value;
               dispatch(
@@ -330,22 +331,24 @@ const SolutionsList = props => {
               setisAddSolutionModalOpen(false);
             }}
           >
-            {formikProps => {
+            {(formikProps) => {
               const { setFieldValue, values } = formikProps;
 
-              const handleSelectChange = field => selectedObj => {
+              const handleSelectChange = (field) => (selectedObj) => {
                 setFieldValue(field, selectedObj ? selectedObj : '');
               };
 
-              const solutionsSelectOptions = sortedSolutions.map(solution => ({
-                label: solution.name,
-                value: solution.name,
-                'data-cy': `${solution.name}`,
-              }));
+              const solutionsSelectOptions = sortedSolutions.map(
+                (solution) => ({
+                  label: solution.name,
+                  value: solution.name,
+                  'data-cy': `${solution.name}`,
+                }),
+              );
 
               const selectedSolutionVersions =
                 sortedSolutions.find(
-                  solution => solution.name === values.solution.value,
+                  (solution) => solution.name === values.solution.value,
                 )?.versions ?? [];
               // once we select the solution, we should update the initialValues of version
               initialValues.version.label =
@@ -354,7 +357,7 @@ const SolutionsList = props => {
                 selectedSolutionVersions[0]?.version;
 
               const selectedSolutionVersionsOptions = selectedSolutionVersions.map(
-                solutionVersion => ({
+                (solutionVersion) => ({
                   label: solutionVersion.version,
                   value: solutionVersion.version,
                   'data-cy': `${solutionVersion.version}`,
