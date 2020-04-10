@@ -6,4 +6,4 @@ Developer Guide
    architecture/index
    building/index
    running/index
-   best_practices/index
+   development/index
