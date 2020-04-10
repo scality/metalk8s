@@ -72,6 +72,8 @@ Then(
       requestTimeout: 60000,
       responseTimeout: 60000,
     };
+    // To make sure the prepare environment is ready, because something we maybe update the env during the preparation
+    cy.wait('@getSolutionOperatorDeployment', timeOut);
     cy.wait('@getSolutionOperatorDeployment', timeOut);
 
     cy.get('.sc-table-column-cell-container-solutions').should(
