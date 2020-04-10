@@ -30,7 +30,13 @@ The login page is loaded, and should resemble the following:
 
 .. image:: img/ui/login.png
 
-Log in with the default login / password (admin / admin).
+Log in with the default login / password
+(``admin@metalk8s.invalid`` / ``password``).
+
+  .. note::
+
+     To change the default password as provided above, refer to
+     :ref:`this procedure <Change-dex-user-password>`.
 
 The landing page should look like this:
 
@@ -48,7 +54,7 @@ This page displays two monitoring indicators:
 Grafana
 -------
 Grafana is available on the same host as the MetalK8s UI, under ``/grafana``.
-Log in with the default credentials: ``admin`` / ``admin``.
+Log in with the default credentials: ``admin@metalk8s.invalid`` / ``password``.
 
 .. _installation-services-salt:
 
@@ -69,7 +75,9 @@ To interact with the Salt Master with the usual CLIs, open a terminal in the
 
 .. code-block:: shell
 
-   root@bootstrap $ kubectl exec -it -n kube-system -c salt-master --kubeconfig /etc/kubernetes/admin.conf salt-master-bootstrap bash
+   root@bootstrap $ kubectl exec -it -n kube-system -c salt-master \
+                      --kubeconfig /etc/kubernetes/admin.conf \
+                      salt-master-bootstrap bash
 
 .. todo::
 

@@ -5,3 +5,4 @@ include:
   - metalk8s.repo.installed
   - metalk8s.salt.master
   - metalk8s.kubectl
+  - metalk8s.utils
