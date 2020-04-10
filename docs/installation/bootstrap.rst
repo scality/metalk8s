@@ -259,13 +259,15 @@ Provision SSH
       Repeat until for all nodes.
 
    #. Validate that the nodes accept SSH connections from the Bootstrap
-      node. As root on the bootstrap node, for each node enter::
+      node. As root on the bootstrap node, for each node enter:
 
-	# ssh -i /etc/metalk8s/pki/salt-bootstrap <user>@<node>
-	
+      .. code-block:: shell
+
+         # ssh -i /etc/metalk8s/pki/salt-bootstrap <user>@<node>
+
       If you can log in to the nodes successfully, the SSH keys are properly
       deployed.
-      
+
 .. _Bootstrap installation:
 
 Install
@@ -314,8 +316,8 @@ commands without nominating the kubectl path on each command.
 
 In a non-production environment, you can copy admin.conf to your local host
 machine and establish a kubectl session by copying admin.conf to a local
-directory, exporting ``$KUBECONFIG`` to that location as shown above, and opening a
-local kubectl session with::
+directory, exporting ``$KUBECONFIG`` to that location as shown above, and
+opening a local kubectl session with::
 
    user@host $ kubectl proxy
 
