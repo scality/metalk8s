@@ -337,6 +337,7 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             release=CONTAINERD_RELEASE,
         ),
         PackageVersion(name='container-selinux'),  # TODO #1710
+        PackageVersion(name='httpd-tools'),
         PackageVersion(
             name='metalk8s-sosreport',
             version=SHORT_VERSION,

@@ -15,6 +15,7 @@ documented procedure to the later.
 
 Managing Authentication
 ^^^^^^^^^^^^^^^^^^^^^^^
+   .. _Add-dex-static-user:
 
 Add a local static user
 """""""""""""""""""""""
@@ -30,12 +31,18 @@ MetalK8s installation.
 
 To add a new static user, perform the following operations:
 
-#. Generate a password ``hash``. The command below requires **apache-utils**
-   package to be installed.
+   .. _Generate-password-hash:
+
+#. Generate a bcrypt hash of your new password.
+
+   - To generate the bcrypt hash, on the Bootstrap node, run the following.
 
    .. code-block:: shell
 
-      root@bootstrap $ htpasswd -bnBC 12 "" <replace-with-password> | tr -d ':\n'
+      root@bootstrap $ htpasswd -nBC 14 "" | tr -d ':'
+      New password:
+      Re-type new password:
+      <your hash here, starting with "$2y$14$">
 
 #. Generate a unique ``UserID`` by running the following command.
 
@@ -68,20 +75,17 @@ To add a new static user, perform the following operations:
                       userID: "<uuidv4>"
       [...]
 
-#. Save and apply the changes.
+#. Save the ConfigMap changes.
 
-#. From the Bootstrap node, execute the following command which connects to
-   the Salt master container and applies salt-states to propagate the new
-   changes down to the underlying services.
+#. From the Bootstrap node, run the following to propagate the
+   changes.
 
-   Make sure to replace the <version> prefix in the command below with the
-   currently installed MetalK8s version number e.g 2.5.0
+   .. parsed-literal::
 
-   .. code-block:: shell
-
-      root@bootstrap $ crictl exec -it \
-                         $(crictl ps -q --label io.kubernetes.container.name=salt-master) bash \
-                         -c "salt-run state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-<version>"
+      root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                       --kubeconfig /etc/kubernetes/admin.conf \\
+                       salt-master-bootstrap -- salt-run \\
+                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|release|
 
 #. Finally, create and apply the required :file:`ClusterRoleBinding.yaml` file
    that ensures that the newly added static user is bound to a Cluster Role.
@@ -146,6 +150,51 @@ To add a new static user, perform the following operations:
 
 #. Verify that the user has been successfully added and you can log in to the
    MetalK8s UI using the new email and password.
+
+.. _Change-dex-static-user-password:
+
+Change password for local static user
+"""""""""""""""""""""""""""""""""""""
+
+To change the password of an existing user, perform the following operations:
+
+#. Generate a bcrypt hash of the new password using
+   :ref:`this procedure<Generate-password-hash>` .
+
+#. From the Bootstrap node, edit the ConfigMap ``metalk8s-dex-config`` and then
+   change the ``hash`` for the selected user:
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         edit configmaps metalk8s-dex-config -n metalk8s-auth
+
+      [..]
+      config.yaml: |-
+         localuserstore:
+            enabled: true
+            userlist:
+               - email: "admin@metalk8s.invalid"
+                  hash: "<new-password-hash>"
+                  username: "admin"
+                  userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+      [...]
+
+
+#. Save the ConfigMap changes.
+
+#. From the Bootstrap node, run the following to propagate the
+   changes.
+
+   .. parsed-literal::
+
+      root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                       --kubeconfig /etc/kubernetes/admin.conf \\
+                       salt-master-bootstrap -- salt-run \\
+                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|release|
+
+#. Verify that the password has been changed and you can log in to the MetalK8s
+   UI using the new password
 
 .. todo::
 
@@ -216,15 +265,12 @@ perform the following operations:
                   replicas: <number-of-replicas>
       [...]
 
-#. Save and apply the changes.
+#. Save the ConfigMap changes.
 
 
 #. From the Bootstrap node, execute the following command which connects to
    the Salt master container and applies salt-states to propagate the new
    changes down to the underlying services.
-
-   Make sure to replace the <version> prefix in the command below with the
-   currently installed MetalK8s version number e.g 2.5.0
 
    .. note::
 
@@ -233,12 +279,13 @@ perform the following operations:
       normally. Refer to :ref:`this procedure <Provision Prometheus storage>`
       for more information.
 
-   .. code-block:: shell
 
-      root@bootstrap $ crictl exec -it \
-                         $(crictl ps -q --label io.kubernetes.container.name=salt-master) bash \
-                         -c "salt-run state.sls metalk8s.addons.prometheus-operator.deployed saltenv=metalk8s-<version>"
+   .. parsed-literal::
 
+      root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                       --kubeconfig /etc/kubernetes/admin.conf \\
+                       salt-master-bootstrap -- salt-run state.sls \\
+                       metalk8s.addons.prometheus-operator.deployed saltenv=metalk8s-|release|
 
 .. todo::
 
