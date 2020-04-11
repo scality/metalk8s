@@ -88,8 +88,7 @@ def container_error_handler(container_error: ContainerError) -> str:
 
 
 def task_error(
-    expected_exn: Type[Exception],
-    handler: Callable[[Exception], str] = default_error_handler
+    handlers: Dict[Type[Exception], Callable[[Exception], str]]
 ) -> Callable[[Any], Any]:
     """Wrap a callable to create a resilient `doit` task
 
@@ -105,15 +104,22 @@ def task_error(
         def decorated_task(*args: Any, **kwargs: Any) -> Optional[TaskError]:
             try:
                 task_func(*args, **kwargs)
-            except expected_exn as err:
+            # We are broad on purpose here.
+            # pylint: disable=broad-except
+            except Exception as err:
+                handler = handlers.get(type(err))
+                if handler is None:
+                    raise
                 return TaskError(handler(err))
             return None
         return decorated_task
     return wrapped_task
 
 
-@task_error(docker.errors.BuildError, handler=build_error_handler)
-@task_error(docker.errors.APIError)
+@task_error({
+    docker.errors.BuildError: build_error_handler,
+    docker.errors.APIError: default_error_handler,
+})
 def docker_build(image: 'LocalImage') -> None:
     """Build a Docker image using Docker API."""
     DOCKER_CLIENT.images.build(
@@ -213,9 +219,11 @@ class DockerRun:
 
         return run_config
 
-    @task_error(docker.errors.ContainerError, handler=container_error_handler)
-    @task_error(docker.errors.ImageNotFound)
-    @task_error(docker.errors.APIError)
+    @task_error({
+        docker.errors.ContainerError: container_error_handler,
+        docker.errors.ImageNotFound: default_error_handler,
+        docker.errors.APIError: default_error_handler,
+    })
     def __call__(self) -> None:
         run_config = self.expand_config()
         DOCKER_CLIENT.containers.run(
@@ -225,8 +233,10 @@ class DockerRun:
         )
 
 
-@task_error(docker.errors.BuildError, handler=build_error_handler)
-@task_error(docker.errors.APIError)
+@task_error({
+    docker.errors.BuildError: build_error_handler,
+    docker.errors.APIError: default_error_handler,
+})
 def docker_tag(repository: str, full_name: str, version: str) -> None:
     """Tag an image using the Docker API.
 
@@ -239,9 +249,11 @@ def docker_tag(repository: str, full_name: str, version: str) -> None:
     image_to_tag.tag(repository, tag=version)
 
 
-@task_error(docker.errors.BuildError, handler=build_error_handler)
-@task_error(docker.errors.APIError)
-@task_error(ValueError)
+@task_error({
+    docker.errors.BuildError: build_error_handler,
+    docker.errors.APIError: default_error_handler,
+    ValueError: default_error_handler,
+})
 def docker_pull(repository: str, name: str, version: str, digest: str) -> None:
     """Pull a Docker image using Docker API.
 
@@ -267,8 +279,10 @@ def docker_pull(repository: str, name: str, version: str, digest: str) -> None:
         )
 
 
-@task_error(docker.errors.APIError)
-@task_error(OSError)
+@task_error({
+    docker.errors.APIError: default_error_handler,
+    OSError: default_error_handler,
+})
 def docker_save(tag: str, save_path: Path) -> None:
     """Save a Docker image using Docker API.
 
