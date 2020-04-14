@@ -72,7 +72,7 @@ const ActionContainer = styled.div`
 const SearchContainer = styled.div`
   margin-left: ${padding.base};
   input.sc-input-type {
-    background-color: ${props => props.theme.brand.primaryDark2};
+    background-color: ${(props) => props.theme.brand.primaryDark2};
   }
   width: 250px;
 `;
@@ -92,14 +92,14 @@ const LoaderContainer = styled(Loader)`
 `;
 
 const TrashButtonContainer = styled(Button)`
-  ${props => {
+  ${(props) => {
     if (props.disabled) return { opacity: 0.2 };
   }};
 `;
 
-const NodeVolumes = props => {
+const NodeVolumes = (props) => {
   const dispatch = useDispatch();
-  const deleteVolume = deleteVolumeName =>
+  const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
@@ -108,8 +108,8 @@ const NodeVolumes = props => {
   );
   const history = useHistory();
 
-  const volumes = useSelector(state => state.app.volumes);
-  const persistentVolumes = useSelector(state => state.app.volumes.pVList);
+  const volumes = useSelector((state) => state.app.volumes);
+  const persistentVolumes = useSelector((state) => state.app.volumes.pVList);
   const [searchedVolumeName, setSearchedVolumeName] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
@@ -147,7 +147,7 @@ const NodeVolumes = props => {
     {
       label: intl.translate('creationTime'),
       dataKey: 'creationTime',
-      renderer: data => (
+      renderer: (data) => (
         <span>
           <FormattedDate value={data} />{' '}
           <FormattedTime
@@ -214,7 +214,7 @@ const NodeVolumes = props => {
             <Tooltip placement="bottom" overlay={hintPopup()}>
               <TrashButtonContainer
                 className="remove-volume-button"
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation();
                   if (isEnableClick) {
                     setDeleteVolumeName(rowData.name);
@@ -232,7 +232,7 @@ const NodeVolumes = props => {
     },
   ];
 
-  const onRowClick = row => {
+  const onRowClick = (row) => {
     if (row.rowData && row.rowData.name) {
       history.push(`/nodes/${props.nodeName}/volumes/${row.rowData.name}`);
     }
@@ -240,7 +240,7 @@ const NodeVolumes = props => {
 
   const volumeDataList = props.data;
 
-  let volumeSortedList = volumeDataList.filter(volume =>
+  let volumeSortedList = volumeDataList.filter((volume) =>
     volume.name.includes(searchedVolumeName),
   );
 
@@ -250,7 +250,7 @@ const NodeVolumes = props => {
     volumeSortedList = sortSelector(volumeSortedList, sortBy, sortDirection);
   }
 
-  const onClickDeleteButton = deleteVolumeName => {
+  const onClickDeleteButton = (deleteVolumeName) => {
     deleteVolume(deleteVolumeName);
     setisDeleteConfirmationModalOpen(false);
   };
@@ -259,7 +259,7 @@ const NodeVolumes = props => {
     setisDeleteConfirmationModalOpen(false);
   };
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     setSearchedVolumeName(e.target.value);
   };
 
@@ -279,7 +279,7 @@ const NodeVolumes = props => {
             <DeleteButton
               variant="danger"
               text={intl.translate('delete')}
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 onClickDeleteButton(deleteVolumeName);
               }}
@@ -334,7 +334,7 @@ const NodeVolumes = props => {
           sortBy={sortBy}
           sortDirection={sortDirection}
           onSort={onSort}
-          onRowClick={item => {
+          onRowClick={(item) => {
             onRowClick(item);
           }}
           noRowsRenderer={() =>
