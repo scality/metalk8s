@@ -46,7 +46,16 @@
     "flow": "flow check"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "eslint:recommended"
+    ],
+    "rules": {
+      "no-return-assign": [
+        "error",
+        "always"
+      ]
+    }
   },
   "browserslist": [
     ">0.2%",
