@@ -324,7 +324,10 @@ export function* createNode({ payload }) {
 
   if (roleTaintMatched) {
     body.spec.taints = roleTaintMatched.taints;
-    roleTaintMatched.roles.map(role => (body.metadata.labels[role] = ''));
+    // initialise the labels
+    for (const role of roleTaintMatched.roles) {
+      body.metadata.labels[role] = '';
+    }
   }
 
   const result = yield call(CoreApi.createNode, body);
