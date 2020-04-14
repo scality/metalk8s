@@ -9,6 +9,10 @@ Set metalk8s_osmajorrelease in yum vars:
     - name: /etc/yum/vars/metalk8s_osmajorrelease
     - contents: {{ grains['osmajorrelease'] }}
 
+Install yum-utils:
+  pkg.installed:
+    - name: yum-utils
+
 Install yum-plugin-versionlock:
   pkg.installed:
     - name: yum-plugin-versionlock

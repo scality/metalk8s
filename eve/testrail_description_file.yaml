@@ -1,0 +1,35 @@
+# This file describe TestRail objects that need to be created
+
+Build:
+  description: >-
+    Build tests
+  cases:
+    MetalK8s Previous: {}
+    Example Solution: {}
+
+Upgrade:
+  description: >-
+    Upgrade tests
+  sections: &lifecycle_sections
+    Minor:
+      description: >-
+        Previous minor version tests
+      sub_sections: &lifecycle_sub_sections
+        Single Node:
+          description: >-
+            Single node environement tests
+          sub_sections:
+            CentOs7:
+              description: >-
+                CentOs 7 tests
+              cases:
+                Simple environment: {}
+    Patch:
+      description: >-
+        Last released patch version tests
+      sub_sections: *lifecycle_sub_sections
+
+Downgrade:
+  description: >-
+    Downgrade tests
+  sections: *lifecycle_sections
