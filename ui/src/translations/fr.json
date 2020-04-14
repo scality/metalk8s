@@ -146,5 +146,10 @@
   "environment_delete_success": "L'environnement {envName} est en cours de suppression.",
   "environment_delete_failed": "La suppression de l'environnement {envName} a échoué.",
   "add_solution_to_configmap": "Ajoutez une solution à la ConfigMap de '{envName}'",
-  "add_solution_to_configmap_failed": "Échec de l'ajout de la solution à la ConfigMap de '{envName}'."
+  "add_solution_to_configmap_failed": "Échec de l'ajout de la solution à la ConfigMap de '{envName}'.",
+  "upgrade": "Mettre à jour",
+  "downgrade": "Rétrograder",
+  "upgrade_solution": "Mettre à jour la solution {solName}",
+  "downgrade_solution": "Rétrograder la solution {solName}",
+  "no_other_available_version": "Aucune autre version disponible"
 }
