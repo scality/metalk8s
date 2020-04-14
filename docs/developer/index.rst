@@ -8,4 +8,4 @@ Developer Guide
    building/index
    running/index
    development/index
-
+   solutions/index
