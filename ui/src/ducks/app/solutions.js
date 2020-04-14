@@ -23,7 +23,8 @@ import { intl } from '../../translations/IntlGlobalProvider';
 import { addJobAction, JOB_COMPLETED } from './salt';
 
 const OPERATOR_ = '-operator';
-const UI_ = '-ui';
+const _K8S = 'app.kubernetes.io';
+const LABEL_K8S_VERSION = `${_K8S}/version`;
 
 // Actions
 export const SET_SOLUTIONS = 'SET_SOLUTIONS';
@@ -64,7 +65,7 @@ export function setSolutionsRefeshingAction(payload) {
   return { type: SET_SOLUTIONS_REFRESHING, payload };
 }
 
-export const setEnvironmentsAction = environments => {
+export const setEnvironmentsAction = (environments) => {
   return { type: SET_ENVIRONMENTS, payload: environments };
 };
 
@@ -92,15 +93,15 @@ export function deleteEnvironmentAction(envName) {
 }
 
 // Selectors
-export const solutionsRefreshingSelector = state =>
+export const solutionsRefreshingSelector = (state) =>
   state.app.solutions.isSolutionsRefreshing;
-export const solutionServicesSelector = state => state.app.solutions.services;
+export const solutionServicesSelector = (state) => state.app.solutions.services;
 
 // Sagas
 export function* fetchEnvironments() {
-  const jobs = yield select(state => state.app.salt.jobs);
+  const jobs = yield select((state) => state.app.salt.jobs);
   const preparingEnvs = jobs?.filter(
-    job => job.type === 'prepare-env/' && !job.completed,
+    (job) => job.type === 'prepare-env/' && !job.completed,
   );
   const environments = yield call(SolutionsApi.listEnvironments);
   const updatedEnvironments = yield call(updateEnvironments, environments);
@@ -125,16 +126,16 @@ export function* createEnvironment(action) {
       }),
     );
   }
-  yield call(history.push, '/solutions');
+  yield call(history.push, '/environments');
   yield call(fetchEnvironments);
 }
 
 export function* prepareEnvironment(action) {
   const { envName, solName, solVersion } = action.payload;
 
-  const existingEnv = yield select(state => state.app.solutions.environments);
+  const existingEnv = yield select((state) => state.app.solutions.environments);
 
-  const preparingEnv = existingEnv.find(env => env.name === envName);
+  const preparingEnv = existingEnv.find((env) => env.name === envName);
 
   if (preparingEnv === undefined) {
     console.error(`Environment '${envName}' does not exist`);
@@ -151,7 +152,7 @@ export function* prepareEnvironment(action) {
 
   if (!addSolutionToEnvironmentResult.error) {
     const clusterVersion = yield select(
-      state => state.app.nodes.clusterVersion,
+      (state) => state.app.nodes.clusterVersion,
     );
     const result = yield call(
       SaltApi.prepareEnvironment,
@@ -193,27 +194,25 @@ export function* updateEnvironments(environments) {
       const solutions = Object.keys(envConfig);
       // we may have several soutions in one environment
       for (const solution of solutions) {
-        const solutionOperatorDeployment = yield call(
+        const operatorDeployment = yield call(
           CoreApi.getNamespacedDeployment,
           `${solution}${OPERATOR_}`,
           env.name,
         );
-        const solutionUIDeployment = yield call(
-          CoreApi.getNamespacedDeployment,
-          `${solution}${UI_}`,
-          env.name,
-        );
-        if (!solutionOperatorDeployment.error && !solutionUIDeployment.error) {
+        const operatorVersion =
+          operatorDeployment?.body?.metadata?.labels[LABEL_K8S_VERSION];
+
+        if (operatorDeployment) {
           if (env.solutions === undefined) {
             env.solutions = [];
             env.solutions.push({
               name: solution,
-              version: envConfig?.[solution],
+              version: operatorVersion,
             });
           } else if (env.solutions.length !== 0) {
             env.solutions.push({
               name: solution,
-              version: envConfig?.[solution],
+              version: operatorVersion,
             });
           }
         } else {
@@ -230,7 +229,7 @@ export function* fetchSolutions() {
   if (!result.error) {
     const configData = result?.body?.data;
     if (configData) {
-      const solutions = Object.keys(configData).map(key => ({
+      const solutions = Object.keys(configData).map((key) => ({
         name: key,
         versions: JSON.parse(configData[key]),
       }));
@@ -287,8 +286,8 @@ export function* deleteEnvironment(action) {
 }
 
 export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
-  const jobs = yield select(state => state.app.salt.jobs);
-  const job = jobs.find(job => job.jid === jid);
+  const jobs = yield select((state) => state.app.salt.jobs);
+  const job = jobs.find((job) => job.jid === jid);
   if (job?.type === 'prepare-env') {
     if (status.success) {
       yield put(

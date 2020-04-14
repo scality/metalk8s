@@ -921,8 +921,8 @@ stages:
           <<: *retrieve_iso
           name: Retrieve previous ISO image
           env:
+            <<: *_env_retrieve_artifact_retry
             <<: *_env_previous_artifact
-            MAX_ATTEMPTS: "300"
       - ShellCommand: &check_prev_iso_checksum
           <<: *check_iso_checksum
           name: Check previous ISO image with checksum

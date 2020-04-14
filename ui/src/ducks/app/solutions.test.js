@@ -6,7 +6,6 @@ import {
   fetchEnvironments,
   setEnvironmentsAction,
   prepareEnvironment,
-  watchPrepareJobs,
   updateEnvironments,
   deleteEnvironment,
 } from './solutions';
@@ -122,7 +121,7 @@ it('create ConfigMap for the namespace when createEnvironment', () => {
     call(SolutionsApi.createEnvironment, action.payload),
   );
   expect(gen.next(resultCreateEnvironment).value).toEqual(
-    call(history.push, '/solutions'),
+    call(history.push, '/environments'),
   );
   expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
@@ -295,7 +294,7 @@ it('display the error notification when environment creation has failed', () => 
   };
   expect(gen.next(resultCreateEnvironment).value.type).toEqual('PUT');
   expect(gen.next(resultCreateEnvironment).value).toEqual(
-    call(history.push, '/solutions'),
+    call(history.push, '/environments'),
   );
   expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
@@ -316,7 +315,7 @@ it('display the error notification when create ConfigMap has failed', () => {
     error: 'There is an error in create ConfigMap',
   };
   expect(gen.next(resultCreateNamespacedConfigMap).value.type).toEqual('PUT');
-  expect(gen.next().value).toEqual(call(history.push, '/solutions'));
+  expect(gen.next().value).toEqual(call(history.push, '/environments'));
   expect(gen.next().value).toEqual(call(fetchEnvironments));
   expect(gen.next().done).toEqual(true);
 });
@@ -367,18 +366,75 @@ it('update the environment with the deployed solutions when updateEnviornments',
   expect(gen.next(envConfig).value).toEqual(
     call(CoreApi.getNamespacedDeployment, `example-solution-operator`, 'test'),
   );
-  expect(gen.next(envConfig).value).toEqual(
-    call(CoreApi.getNamespacedDeployment, `example-solution-ui`, 'test'),
-  );
-  const solutionOperatorDeployment = {};
-  const solutionUIDeployment = {
-    response: {
-      _fetchResponse: {},
+
+  const operatorVersion = '0.1.0-dev';
+
+  const availableSolutions = [
+    {
+      name: 'example-solution',
+      versions: [
+        {
+          name: 'Example Solution',
+          archive: '/vagrant/_build/root/example-solution-0.2.0-dev.iso',
+          version: '0.2.0-dev',
+          active: false,
+          mountpoint: '/srv/scality/example-solution-0.2.0-dev',
+          config: {
+            operator: {
+              image: {
+                tag: '0.2.0-dev',
+                name: 'example-solution-operator',
+              },
+            },
+            ui: {
+              image: {
+                tag: '0.2.0-dev',
+                name: 'example-solution-ui',
+              },
+            },
+            kind: 'SolutionConfig',
+            customApiGroups: [],
+            apiVersion: 'solutions.metalk8s.scality.com/v1alpha1',
+          },
+          id: 'example-solution-0.2.0-dev',
+        },
+        {
+          name: 'Example Solution',
+          archive:
+            '/vagrant/examples/metalk8s-solution-example/_build/example-solution-0.1.0-dev.iso',
+          version: '0.1.0-dev',
+          active: false,
+          mountpoint: '/srv/scality/example-solution-0.1.0-dev',
+          config: {
+            operator: {
+              image: {
+                tag: '0.1.0-dev',
+                name: 'example-solution-operator',
+              },
+            },
+            ui: {
+              image: {
+                tag: '0.1.0-dev',
+                name: 'example-solution-ui',
+              },
+            },
+            kind: 'SolutionConfig',
+            customApiGroups: [],
+            apiVersion: 'solutions.metalk8s.scality.com/v1alpha1',
+          },
+          id: 'example-solution-0.1.0-dev',
+        },
+      ],
     },
-    body: {},
-  };
+  ];
+  const availableUpgradeVersion = [];
+  const availableDowngradeVersion = [];
   expect(
-    gen.next(solutionUIDeployment, solutionOperatorDeployment).done,
+    gen.next(
+      availableSolutions,
+      availableUpgradeVersion,
+      availableDowngradeVersion,
+    ).done,
   ).toEqual(true);
 });
 
