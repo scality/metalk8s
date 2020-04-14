@@ -169,6 +169,8 @@ const NodeVolumes = props => {
 
         const hintPopup = () => {
           let hintMessage = '';
+          let persistentVolume = null;
+          let persistentVolumeStatus = '';
 
           switch (rowData.status) {
             case STATUS_PENDING:
@@ -182,10 +184,10 @@ const NodeVolumes = props => {
               break;
             case STATUS_FAILED:
             case STATUS_READY:
-              const persistentVolume = persistentVolumes.find(
-                pv => pv?.metadata?.name === rowData.name,
+              persistentVolume = persistentVolumes.find(
+                (pv) => pv?.metadata?.name === rowData.name,
               );
-              const persistentVolumeStatus = persistentVolume?.status?.phase;
+              persistentVolumeStatus = persistentVolume?.status?.phase;
               switch (persistentVolumeStatus) {
                 case STATUS_BOUND:
                   hintMessage = intl.translate(
