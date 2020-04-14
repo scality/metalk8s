@@ -327,6 +327,7 @@ models:
         STEP_NAME: ''
         FINAL_STATUS: ''
         TEXT: |-
+          Build Url: %(prop:buildurl)s
           Artifact Url: %(prop:artifacts_public_url)s
           Branch: %(prop:branch)s
           Commit: %(prop:revision)s
@@ -704,19 +705,36 @@ stages:
           command: >
             . examples/metalk8s-solution-example/VERSION &&
             echo "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX"
-      - ShellCommand:
+      - ShellCommand: &build_example_solution_iso
           name: Build Example Solution ISO
           command: >
             cd examples/metalk8s-solution-example &&
-            DOCKER_SOCKET=http://localhost:2375 make iso
+            DOCKER_SOCKET=http://localhost:2375 make iso &&
+            rm -rf examples/metalk8s-solution-example/_build/images
+            examples/metalk8s-solution-example/_build/root/images
           haltOnFailure: True
           timeout: 3600
+      - ShellCommand:
+          name: Increment Example Solution patch version
+          command: >
+            bash -c '
+            . examples/metalk8s-solution-example/VERSION &&
+            sed -i "s/^VERSION_PATCH=.*$/VERSION_PATCH=$(( ++VERSION_PATCH ))/"
+            examples/metalk8s-solution-example/VERSION
+            '
+          haltOnFailure: True
+      - SetPropertyFromCommand:
+          <<: *set_example_solution_version
+          name: Set Example Solution version next property
+          property: example_solution_version_next
+      - ShellCommand: *build_example_solution_iso
       - ShellCommand:
           <<: *copy_artifacts
           env:
             <<: *_env_copy_artifacts
             ARTIFACTS: >-
               examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version)s.iso
+              examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version_next)s.iso
       - Upload: *upload_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
@@ -903,8 +921,8 @@ stages:
           <<: *retrieve_iso
           name: Retrieve previous ISO image
           env:
+            <<: *_env_retrieve_artifact_retry
             <<: *_env_previous_artifact
-            MAX_ATTEMPTS: "300"
       - ShellCommand: &check_prev_iso_checksum
           <<: *check_iso_checksum
           name: Check previous ISO image with checksum
@@ -1717,6 +1735,15 @@ stages:
             SSH_CONFIG: >-
               eve/workers/openstack-single-node-with-cypress/terraform/ssh_config
       - SetPropertyFromCommand: *set_example_solution_version
+      - SetPropertyFromCommand:
+          name: Set Example Solution version next property
+          property: example_solution_version_next
+          command: >
+            eval $(bash -c '
+            . examples/metalk8s-solution-example/VERSION &&
+            sed "s/^VERSION_PATCH=.*$/VERSION_PATCH=$(( ++VERSION_PATCH ))/"
+            examples/metalk8s-solution-example/VERSION') &&
+            echo "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX"
       - ShellCommand:
           <<: *retrieve_iso
           name: Retrieve Solution example-solution ISO image
@@ -1727,9 +1754,21 @@ stages:
             FILE_DEST: example-solution.iso
             BASE_URL: "%(prop:artifacts_private_url)s"
       - ShellCommand:
-          name: Copy Solutions ISO to bootstrap node
+          <<: *retrieve_iso
+          name: Retrieve Solution next example-solution ISO image
+          env:
+            <<: *_env_retrieve_artifact_retry
+            FILE_SOURCE: >-
+              example-solution-%(prop:example_solution_version_next)s.iso
+            FILE_DEST: example-solution-next.iso
+            BASE_URL: "%(prop:artifacts_private_url)s"
+      - ShellCommand:
+          name: Copy Solutions ISOs to bootstrap node
           command: >
-            scp -F ssh_config ../../../../example-solution.iso "bootstrap:/var/tmp"
+            scp -F ssh_config
+            ../../../../example-solution.iso
+            ../../../../example-solution-next.iso
+            "bootstrap:/var/tmp"
           workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
           haltOnFailure: true
       - ShellCommand:
@@ -1760,14 +1799,21 @@ stages:
               eve/workers/openstack-single-node-with-cypress/terraform/ssh_config
           command: scp -r -F "$SSH_CONFIG" ui "cypress:"
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &import_solution_archive_ssh
           name: Import Solution example-solution archive
+          env:
+            SOLUTION_ARCHIVE: /var/tmp/example-solution.iso
           command: >
             ssh -F ssh_config bootstrap
             sudo /var/tmp/metalk8s/solutions.sh
-            import --archive /var/tmp/example-solution.iso
+            import --archive "$SOLUTION_ARCHIVE"
           workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
           haltOnFailure: true
+      - ShellCommand:
+          <<: *import_solution_archive_ssh
+          name: Import Solution next example-solution archive
+          env:
+            SOLUTION_ARCHIVE: /var/tmp/example-solution-next.iso
       - ShellCommand:
           name: Run Solutions UI tests
           command: >

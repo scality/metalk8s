@@ -85,8 +85,8 @@ const EnvironmentCreationForm = props => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
-            <StyledLink to="/solutions">
-              {intl.translate('solutions')}
+            <StyledLink to="/environments">
+              {intl.translate('environments')}
             </StyledLink>,
             <BreadcrumbLabel>
               {intl.translate('create_new_environment')}
@@ -134,7 +134,7 @@ const EnvironmentCreationForm = props => {
                     type="button"
                     outlined
                     onClick={() => {
-                      history.push('/solutions');
+                      history.push('/environments');
                     }}
                   />
                   <Button

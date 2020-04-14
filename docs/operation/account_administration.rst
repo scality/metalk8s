@@ -3,66 +3,72 @@ Account Administration
 ======================
 
 This section highlights **MetalK8s Account Administration** which covers
-changing the default username and password for some MetalK8s services.
+user authentication, identity management and access control.
 
+User Authentication and Identity management
+-------------------------------------------
+
+Identity management and user authentication in MetalK8s is driven by the
+integration of `kube-apiserver` and Dex (an OIDC provider).
+
+Kubernetes API enables OpenID Connect (OIDC) as one authentication strategy
+(it also supports certificate-based authentication) by trusting Dex as an
+OIDC Provider.
+
+Dex can authenticate users against:
+
+   - a static user store (stored in configuration)
+   - a connector-based interface, allowing to plug in external such as LDAP,
+     SAML, GitHub, Active Directory and others.
+
+MetalK8s OIDC based Services
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+MetalK8s out of the box enables OpenID Connect (OIDC) based authentication for
+its UI and Grafana service.
 
 .. _ops-grafana-admin:
 
-Administering Grafana
-*********************
+Administering Grafana and MetalK8s UI
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A fresh install of MetalK8s has a Grafana service instance with default
-credentials: ``admin`` / ``admin``. For more information on how to access
-Grafana, please refer to :ref:`this procedure <installation-services-grafana>`
+A fresh installation of MetalK8s has its UI and Grafana service with default
+login credentials as: ``admin@metalk8s.invalid`` / ``password``.
 
-Changing Grafana username and password
---------------------------------------
+This default user is defined in Dex configuration as a static user, to
+allow MetalK8s administrators first time access to these services. It is
+recommended that MetalK8s administrators change the default password.
 
-To change the default username and password for Grafana on a MetalK8s cluster,
-perform the following procedures:
+.. note::
 
-#. Create a file named ``patch-secret.yaml`` that has the following content:
+   The MetalK8s UI and Grafana are both configured to use OIDC as
+   an authentication mechanism, and trust Dex as a Provider. Changing
+   the Dex configuration, including the default credentials, will impact
+   both UIs.
 
-   .. code-block:: yaml
+For information on how to access the MetalK8s UI, please refer to
+:ref:`this procedure <installation-services-admin-ui>`
 
-      stringData:
-        admin-user: <username-in-clear>
-        admin-password: <password-in-clear>
+For information on how to access the Grafana service, please refer to
+:ref:`this procedure <installation-services-grafana>`
 
-#. Apply the patch file by running:
 
-   .. code-block:: shell
+Add new static user
+^^^^^^^^^^^^^^^^^^^
 
-      $ kubectl --kubeconfig /etc/kubernetes/admin.conf patch secrets prometheus-operator-grafana --patch "$(cat patch-secret.yaml)" -n metalk8s-monitoring
+To add a new static user for either the MetalK8s UI and/or Grafana service,
+refer to :ref:`this procedure <Add-dex-static-user>`
 
-#. Now, roll out the new updates for Grafana:
+Change static user password
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   .. code-block:: shell
-
-      $ kubectl --kubeconfig /etc/kubernetes/admin.conf rollout restart deploy prometheus-operator-grafana -n metalk8s-monitoring
-
-#. Access the Grafana instance and authenticate yourself using the new Account
-   credentials.
-
-  .. warning::
-
-     During an upgrade or downgrade of a MetalK8s cluster, customized Grafana
-     username and password will be overwritten with default credentials
-     ``admin`` / ``admin``.
-
-.. _ops-k8s-admin:
-
-Administering MetalK8s GUI, Kubernetes API and Salt API
-*******************************************************
-
-During installation, MetalK8s configures the Kubernetes API to accept Basic
-authentication, with default credentials ``admin`` / ``admin``.
-
-Services exposed by MetalK8s, such as
-:ref:`its GUI <installation-services-admin-ui>` or
-:ref:`Salt API <installation-services-salt>`, rely on the Kubernetes API for
-authenticating their users.
+To change the default password for the MetalK8s UI and/or Grafana service,
+refer to :ref:`this procedure <Change-dex-static-user-password>`
 
 .. todo::
 
-    - Define how to create and administer users.
+   Add documentation on the following
+
+   - Dex connectors
+
+   - How to add a new connector (LDAP, AD, SAML)

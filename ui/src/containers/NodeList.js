@@ -18,15 +18,8 @@ import {
   BreadcrumbContainer,
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
+import PageContainer from '../components/TableBasedPageStyle';
 import { intl } from '../translations/IntlGlobalProvider';
-
-const PageContainer = styled.div`
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: ${padding.base};
-`;
 
 const ActionContainer = styled.div`
   margin-bottom: ${padding.base};

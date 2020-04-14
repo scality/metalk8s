@@ -95,7 +95,7 @@ export async function getEnvironmentAdminUIs(environment) {
     services.push(...result.body.items);
   }
 
-  return services.map(svc => ({
+  return services.map((svc) => ({
     solution: svc?.metadata?.labels?.[LABEL_K8S_PART_OF],
     ingressPath: svc?.metadata?.annotations?.[ANNOTATION_INGRESS_PATH],
     service: svc,

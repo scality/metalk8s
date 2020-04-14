@@ -484,6 +484,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/pre.sls'),
 
+    Path('salt/metalk8s/orchestrate/solutions/import-components.sls'),
     Path('salt/metalk8s/orchestrate/solutions/prepare-environment.sls'),
     Path('salt/metalk8s/orchestrate/solutions/deploy-components.sls'),
     Path('salt/metalk8s/orchestrate/solutions/files/operator/configmap.yaml'),
@@ -548,6 +549,10 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/solutions/available.sls'),
     Path('salt/metalk8s/solutions/init.sls'),
+
+    Path('salt/metalk8s/utils/init.sls'),
+    Path('salt/metalk8s/utils/httpd-tools/init.sls'),
+    Path('salt/metalk8s/utils/httpd-tools/installed.sls'),
 
     Path('salt/metalk8s/volumes/init.sls'),
     Path('salt/metalk8s/volumes/prepared/init.sls'),
