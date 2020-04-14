@@ -6,5 +6,6 @@ Architecture Documents
    authentication
    deployment
    monitoring
+   alerting
    requirements
    ci

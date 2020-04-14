@@ -3,12 +3,21 @@ kind: ConfigMap
 metadata:
   name: {{ solution }}-operator-config
   namespace: {{ namespace }}
+  labels:
+    app: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/version: {{ version }}
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: {{ solution }}
 data:
   operator.yaml: |
     apiVersion: solutions.metalk8s.scality.com/v1alpha1
     kind: OperatorConfig
     repositories:
 {%- for version_info in pillar.metalk8s.solutions.available.get(solution, []) %}
-      - version: {{ version_info.version }}
-        repository: {{ registry }}/{{ version_info.id }}
+      {{ version_info.version }}:
+        - endpoint: {{ registry }}/{{ version_info.id }}
+          images:
+            {{ version_info.config.images | yaml(False) | indent(12) }}
 {%- endfor %}
