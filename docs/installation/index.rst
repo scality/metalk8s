@@ -15,5 +15,5 @@ and shows how to access various services after completing the setup.
    setup
    bootstrap
    expansion
-   post-install
+   after_installation
    services
