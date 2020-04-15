@@ -116,6 +116,7 @@ const SolutionDetail = () => {
                   setSelectedSolName(solName);
                   setIsUpgradeDowngradeSolutionModalOpen(true);
                 }}
+                data-cy="upgrade"
               />
             )}{' '}
             {solution?.availableDowngradeVersion?.length > 0 && (
@@ -128,6 +129,7 @@ const SolutionDetail = () => {
                   setSelectedSolName(solName);
                   setIsUpgradeDowngradeSolutionModalOpen(true);
                 }}
+                data-cy="downgrade"
               />
             )}
             {solution?.availableUpgradeVersion?.length === 0 &&
@@ -236,6 +238,7 @@ const SolutionDetail = () => {
                 (avaUpgradeVersion) => ({
                   label: avaUpgradeVersion.version,
                   value: avaUpgradeVersion.version,
+                  'data-cy': avaUpgradeVersion.version,
                 }),
               );
             } else {
@@ -243,6 +246,7 @@ const SolutionDetail = () => {
                 (avaDowngradeVersion) => ({
                   label: avaDowngradeVersion.version,
                   value: avaDowngradeVersion.version,
+                  'data-cy': avaDowngradeVersion.version,
                 }),
               );
             }
@@ -284,6 +288,7 @@ const SolutionDetail = () => {
                             : intl.translate('downgrade')
                         }
                         type="submit"
+                        data-cy="upgrade_downgrade_button"
                       />
                     </ActionContainer>
                   </FormStyle>
