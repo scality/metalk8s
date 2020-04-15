@@ -148,3 +148,20 @@ Feature: Volume management
         And I delete the Volume 'test-volume10'
         Then the Volume 'test-volume10' does not exist
         And the PersistentVolume 'test-volume10' does not exist
+
+    Scenario: Test deletion while creation is in progress
+        Given the Kubernetes API is available
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: test-volume11
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s-prometheus
+              sparseLoopDevice:
+                size: 10Gi
+        Then the Volume 'test-volume11' is 'Pending'
+        When I delete the Volume 'test-volume11'
+        Then the Volume 'test-volume11' does not exist
+        And the PersistentVolume 'test-volume11' does not exist
