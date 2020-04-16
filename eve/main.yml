@@ -1479,7 +1479,7 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           env:
             <<: *_env_terraform
-            TF_VAR_nodes_count: "2"
+            TF_VAR_nodes_count: "1"
       - ShellCommand:
           name: Check SSH config for bootstrap node
           command: |-
