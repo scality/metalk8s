@@ -4,14 +4,6 @@ MAINTAINER moonshot-platform <moonshot-platform@scality.com>
 
 # Versions to use
 ARG SALT_VERSION=2018.3.4
-ARG TINI_VERSION=v0.18.0
-
-# Install and check tini
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /tini.asc
-
-COPY source.key source.key
-RUN gpg --import source.key && gpg --batch --verify /tini.asc /tini
 
 # Install saltstack
 RUN printf "[saltstack-repo]\n\
@@ -25,12 +17,11 @@ gpgkey=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/%s/
  && yum install -y epel-release \
  && yum install -y python2-kubernetes salt-master salt-api salt-ssh openssh-clients \
  && yum install -y python-pip \
- && yum clean all \
  && pip install pip==20.0.2 \
  && pip install etcd3 \
- && chmod +x /tini
+ && yum clean all
 
 # salt-master, salt-api
 EXPOSE 4505 4506
 
-ENTRYPOINT ["/tini", "--", "/usr/bin/salt-master"]
+ENTRYPOINT ["/usr/bin/salt-master"]

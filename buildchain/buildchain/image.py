@@ -203,7 +203,6 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
     _local_image(
         name='salt-master',
         build_args={'SALT_VERSION': versions.SALT_VERSION},
-        file_dep=[constants.ROOT/'images'/'salt-master'/'source.key'],
     ),
     _local_image(
         name='keepalived',

@@ -1,4 +1,4 @@
-kubeTargetVersionOverride: 1.11.10
+kubeTargetVersionOverride: 1.12.10
 
 commonLabels:
   # This needs to remain 'Tiller' for the render script to work properly

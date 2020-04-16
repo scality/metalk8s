@@ -18,7 +18,7 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 # Project-wide versions {{{
 
 CALICO_VERSION     : str = '3.8.2'
-K8S_VERSION        : str = '1.11.10'
+K8S_VERSION        : str = '1.12.10'
 KEEPALIVED_VERSION : str = '1.3.5-16.el7'
 SALT_VERSION       : str = '2018.3.4'
 
@@ -110,8 +110,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='etcd',
-        version='3.2.18',
-        digest='sha256:b960569ade5f37205a033dcdc3191fe99dc95b15c6795a6282859070ec2c6124',
+        version='3.2.24',
+        digest='sha256:905d7ca17fd02bc24c0eba9a062753aba15db3e31422390bc3238eb762339b20',
     ),
     Image(
         name='grafana',
@@ -126,27 +126,27 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='kube-apiserver',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:a6733a3ec08e4a84d5d1492c0fa2833b6d067ea78e37c87fcffc47bd1ab4ed9c',
+        digest='sha256:b671e3782d2130d5f740ec66a5839259e345cce53f28eef75bafed6a1f71d2ce',
     ),
     Image(
         name='kube-controller-manager',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:f5ddb81466e7467dacc8b6498bdd117ab77fb2fdb0b333c4ebe3e95e5493a661',
+        digest='sha256:c14a9b367dadd2282662e870482ae2ed0f2bd4eef109206d5225ff3364959f53',
     ),
     Image(
         name='kube-proxy',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:fd6c29a779b3e30ad4072a1c77aef49f20bd3ea6cbd290c6f47be28ef333bb69',
+        digest='sha256:7b7e74971c00a29fa22ae232148cd7a36a7deb2121b6128afdabcb098e3ded64',
     ),
     Image(
         name='kube-rbac-proxy',
-        version='v0.3.1',
-        digest='sha256:a578315f24e6fd01a65e187e4d1979678598a7d800d039ee5cfe4e11b0b1788d',
+        version='v0.4.1',
+        digest='sha256:9d07c391aeb1a9d02eb4343c113ed01825227c70c32b3cae861711f90191b0fd',
     ),
     Image(
         name='kube-scheduler',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:119fcd453469b7a3cc644ea7cda992371c5b746ef705dd88d7a8bfefae48b3be',
+        digest='sha256:2faa45f26104f7acba1758c2273fce181f057cff19a0fddb15c418dcf174682e',
     ),
     Image(
         name='kube-state-metrics',

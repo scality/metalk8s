@@ -15,6 +15,7 @@ metadata:
   annotations:
     metalk8s.scality.com/config-digest: '{{ config_digest }}'
 spec:
+  shareProcessNamespace: true
   hostNetwork: true
   priorityClassName: system-cluster-critical
   securityContext:
@@ -75,8 +76,8 @@ spec:
           readOnly: true
     - name: salt-api
       image: {{ image }}
-      command: ['/tini']
-      args: ['salt-api', '--', '--log-level=info']
+      command: ['salt-api']
+      args: ['--log-level=info']
       ports:
         - name: api
           containerPort: 4507

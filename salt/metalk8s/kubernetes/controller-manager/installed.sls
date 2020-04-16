@@ -18,7 +18,7 @@ Create kube-controller-manager Pod manifest:
         name: kube-controller-manager
         image_name: {{ build_image_name("kube-controller-manager") }}
         host: {{ grains['metalk8s']['control_plane_ip'] }}
-        port: 10252
+        port: http-metrics
         scheme: HTTP
         command:
           - kube-controller-manager
@@ -33,6 +33,9 @@ Create kube-controller-manager Pod manifest:
           - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
           - --use-service-account-credentials=true
         requested_cpu: 200m
+        ports:
+          - name: http-metrics
+            containerPort: 10252
         volumes:
           - path: /etc/pki
             name: etc-pki

@@ -13,7 +13,7 @@ Create kube-scheduler Pod manifest:
         name: kube-scheduler
         image_name: {{ build_image_name("kube-scheduler") }}
         host: {{ grains['metalk8s']['control_plane_ip'] }}
-        port: 10251
+        port: http-metrics
         scheme: HTTP
         command:
           - kube-scheduler
@@ -21,6 +21,9 @@ Create kube-scheduler Pod manifest:
           - --kubeconfig=/etc/kubernetes/scheduler.conf
           - --leader-elect=true
         requested_cpu: 100m
+        ports:
+          - name: http-metrics
+            containerPort: 10251
         volumes:
           - path: /etc/kubernetes/scheduler.conf
             name: kubeconfig
