@@ -6,6 +6,7 @@ set -o pipefail
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/upgrade.log
 DRY_RUN=0
+SALTENV=${SALTENV:-}
 DESTINATION_VERSION=""
 SALT_CALL=${SALT_CALL:-salt-call}
 
@@ -168,23 +169,23 @@ upgrade_bootstrap () {
 launch_upgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
-        saltenv="metalk8s-$DESTINATION_VERSION"
+        saltenv="$SALTENV"
 
     "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.sync_auth  \
-        saltenv="metalk8s-$DESTINATION_VERSION"
+        saltenv="$SALTENV"
 
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_roster  \
-        saltenv="metalk8s-$DESTINATION_VERSION"
+        saltenv="$SALTENV"
 
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
-        metalk8s.orchestrate.upgrade saltenv="metalk8s-$DESTINATION_VERSION"
+        metalk8s.orchestrate.upgrade saltenv="$SALTENV"
 }
 
 precheck_upgrade() {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.upgrade.precheck \
-        saltenv="metalk8s-$DESTINATION_VERSION" \
+        saltenv="$SALTENV" \
         pillar="{'metalk8s': {'cluster_version': '$DESTINATION_VERSION'}}"
 }
 
@@ -193,7 +194,7 @@ patch_kubesystem_namespace() {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
-        saltenv="metalk8s-@@VERSION"
+        saltenv="$SALTENV"
 
     #update the annotation with the new destination value
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate_single \
@@ -212,6 +213,12 @@ get_cluster_version() {
 if [ -z "$DESTINATION_VERSION" ]; then
     get_cluster_version
     run "Getting cluster version $DESTINATION_VERSION"
+fi
+
+# SALTENV should be equal to script version and DESTINATION_VERSION
+# (checked by the precheck orchestrate)
+if [ -z "$SALTENV" ]; then
+    SALTENV="metalk8s-@@VERSION"
 fi
 
 run "Performing Pre-Upgrade checks" precheck_upgrade
