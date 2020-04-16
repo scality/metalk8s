@@ -4,6 +4,9 @@ peer:
   .*:
     - x509.sign_remote_certificate
 
+# Enable grains caching on salt-master
+grains_cache: True
+
 # We use information from the `metalk8s_node` ext_pillar to match in
 # `pillar/top.sls`, hence we need to load them first.
 ext_pillar_first: true
