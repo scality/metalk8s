@@ -6,7 +6,7 @@ set -o pipefail
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/downgrade.log
 DRY_RUN=0
-SALTENV=""
+SALTENV=${SALTENV:-}
 DESTINATION_VERSION=""
 SALT_CALL=${SALT_CALL:-salt-call}
 CRICTL=${CRICTL:-crictl}
@@ -73,18 +73,6 @@ trap cleanup EXIT
 # shellcheck disable=SC1090
 . "$BASE_DIR"/common.sh
 
-_set_env() {
-    if [ -z "$SALTENV" ]; then
-        SALTENV="metalk8s-$($SALT_CALL --out txt slsutil.renderer \
-            string="{{ pillar.metalk8s.nodes[grains.id].version }}" \
-            | cut -c 8-)"
-    fi
-}
-
-_init () {
-    _set_env
-}
-
 precheck_downgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
@@ -149,7 +137,7 @@ patch_kubesystem_namespace() {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
 
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
-        saltenv="metalk8s-@@VERSION"
+        saltenv="$SALTENV"
 
     #update the annotation with the new destination value
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate_single \
@@ -166,10 +154,16 @@ get_cluster_version() {
 }
 
 # Main
-_init
 if [ -z "$DESTINATION_VERSION" ]; then
     get_cluster_version
     run "Getting cluster version $DESTINATION_VERSION"
+fi
+
+# SALTENV should be equal to script version and equal to the higher node
+# version of the cluster
+# (checked by the precheck orchestrate)
+if [ -z "$SALTENV" ]; then
+    SALTENV="metalk8s-@@VERSION"
 fi
 
 run "Performing Pre-Downgrade checks" precheck_downgrade
