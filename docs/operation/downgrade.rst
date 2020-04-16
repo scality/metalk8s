@@ -29,9 +29,15 @@ command.
 This will simulate the downgrade prechecks and provide an overview of the
 changes to be carried out in your MetalK8s cluster.
 
+.. important::
+
+    The version prefix metalk8s-**X.X.X** as used below during a MetalK8s
+    downgrade must be the currently-installed MetalKs8 version.
+
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/downgrade.sh --destination-version <destination_version> --dry-run --verbose
+     /srv/scality/metalk8s-X.X.X/downgrade.sh --destination-version \
+       <destination_version> --dry-run --verbose
 
 Downgrade Steps
 ***************

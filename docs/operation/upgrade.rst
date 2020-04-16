@@ -29,9 +29,16 @@ command.
 This will simulate the upgrade prechecks and provide an overview of the
 changes to be carried out in your MetalK8s cluster.
 
+.. important::
+
+    The version prefix metalk8s-**X.X.X** as used below during a MetalK8s
+    upgrade must be the new MetalK8s version you would like to upgrade
+    to.
+
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/upgrade.sh --destination-version <destination_version> --dry-run --verbose
+     /srv/scality/metalk8s-X.X.X/upgrade.sh --destination-version \
+       <destination_version> --dry-run --verbose
 
 Upgrade Steps
 *************
