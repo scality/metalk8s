@@ -1,3 +1,5 @@
+.. _accessing cluster services:
+
 Accessing Cluster Services
 ==========================
 

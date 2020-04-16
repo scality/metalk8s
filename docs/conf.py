@@ -24,7 +24,7 @@ ON_RTD = os.environ.get('READTHEDOCS') == 'True'
 # -- Project information -----------------------------------------------------
 
 project = 'MetalK8s'
-copyright = '2019, Scality'
+copyright = '2020, Scality'
 author = 'Scality'
 
 # The short version, {major}.{minor}
