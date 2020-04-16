@@ -26,7 +26,7 @@ pre-requisites listed in :doc:`/operation/preparation`.
 
 You can test if your environment will successfully downgrade with the following
 command.
-This will simulate the downgrade procedure and provide an overview of the
+This will simulate the downgrade prechecks and provide an overview of the
 changes to be carried out in your MetalK8s cluster.
 
    .. code::
