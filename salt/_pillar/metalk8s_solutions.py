@@ -29,10 +29,17 @@ def _load_solutions(bootstrap_id):
 
     errors = []
     try:
-        result['available'] = __salt__['saltutil.cmd'](
+        available_ret = __salt__['saltutil.cmd'](
             tgt=bootstrap_id,
             fun='metalk8s_solutions.list_available',
-        )[bootstrap_id]['ret']
+        )[bootstrap_id]
+        if available_ret['retcode'] != 0:
+            raise Exception('[{}] {}'.format(
+                available_ret['retcode'],
+                available_ret['ret']
+            ))
+
+        result['available'] = available_ret['ret']
     except Exception as exc:
         errors.append(
             "Error when listing available Solutions: {}".format(exc)
