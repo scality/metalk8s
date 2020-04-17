@@ -31,6 +31,17 @@ Glossary
      and from where the cluster will be deployed to other machines. It also
      serves as the entrypoint for upgrades of the cluster.
 
+   ConfigMap
+     A ConfigMap is a Kubernetes object that allows one to store general
+     configuration information such as environment variables in a key-value
+     pair format.
+     ConfigMaps can only be applied to namespaces and once created, they can
+     be updated automatically without the need of restarting containers that
+     depend on it.
+
+     |see K8s docs|
+     `ConfigMap <https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#understanding-configmaps-and-pods/>`_.
+
    Controller Manager
    ``kube-controller-manager``
      The Kubernetes controller manager embeds the core control loops shipped
