@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 2.4.3 (in development)
+## Release 2.4.3
 
 ### Features added
 - [#1993](https://github.com/scality/metalk8s/issues/1993) - Add Solutions
@@ -14,6 +14,9 @@ kubernetes objects (PR [#2236](https://github.com/scality/metalk8s/pull/2236))
 - [#2328](https://github.com/scality/metalk8s/issues/2328) - Bump K8S version
 to 1.15.11 (PR [#2362](https://github.com/scality/metalk8s/pull/2362))
 
+- Salt grains cache is now enabled
+(PR [#2417](https://github.com/scality/metalk8s/pull/2417)
+
 ### Bug fixes
 - [#2334](https://github.com/scality/metalk8s/issues/2334) - Add and
 install `yum-utils` package required for cluster expansion
@@ -22,6 +25,9 @@ install `yum-utils` package required for cluster expansion
 - [#2245](https://github.com/scality/metalk8s/issues/2245) - Rephrase volume
 status from `Available` to `Ready`
 (PR [#2248](https://github.com/scality/metalk8s/pull/2248))
+
+- [#2409](https://github.com/scality/metalk8s/issues/2409) - Deletion
+on pending volumes (PR [#2410](https://github.com/scality/metalk8s/pull/2410))
 
 ## Release 2.4.2
 
