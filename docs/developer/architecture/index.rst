@@ -9,4 +9,5 @@ Architecture Documents
    configurations
    alerting
    requirements
+   solutions
    ci
