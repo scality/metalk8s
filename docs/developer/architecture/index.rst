@@ -10,4 +10,5 @@ Architecture Documents
    alerting
    centralized-cli
    requirements
+   solutions
    ci
