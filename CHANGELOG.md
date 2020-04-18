@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Release 2.5.0 (in development)
+## Release 2.5.1 (in development)
+
+## Release 2.5.0
 
 ### Breaking changes
 - Basic authentication has been deprecated in favour of OpenID Connect (OIDC)
