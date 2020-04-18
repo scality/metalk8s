@@ -11,7 +11,9 @@
   (Issue [#2259](https://github.com/scality/metalk8s/issues/2259),
   PR [#2369](https://github.com/scality/metalk8s/pull/2369))
 
-## Release 2.5.0 (in development)
+## Release 2.5.1 (in development)
+
+## Release 2.5.0
 
 ### Breaking changes
 - Basic authentication has been deprecated in favour of OpenID Connect (OIDC)
