@@ -11,8 +11,8 @@ Mount this ISO file at the specific following path:
 
 .. parsed-literal::
 
-   root@bootstrap $ mkdir -p /srv/scality/metalk8s-|release|
-   root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|release|
+   root@bootstrap $ mkdir -p /srv/scality/metalk8s-|version|
+   root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|version|
 
 
 .. _quickstart-bootstrap-config:
@@ -102,7 +102,7 @@ Bootstrap node.
 
 .. parsed-literal::
 
-   root@bootstrap $ /srv/scality/metalk8s-|release|/bootstrap.sh
+   root@bootstrap $ /srv/scality/metalk8s-|version|/bootstrap.sh
 
 Validate the install
 ^^^^^^^^^^^^^^^^^^^^
