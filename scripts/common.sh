@@ -313,13 +313,21 @@ pre_minion_checks() {
 get_salt_container() {
     local -r max_retries=10
     local salt_container='' attempts=0
+    local -a found_containers=()
 
-    while [ -z "$salt_container" ] && [ $attempts -lt $max_retries ]; do
-        salt_container="$(crictl ps -q \
+    while [[ $attempts -lt $max_retries ]]; do
+        IFS=$'\n' read -r -d '' -a found_containers < <(crictl ps -q \
             --label io.kubernetes.pod.namespace=kube-system \
             --label io.kubernetes.container.name=salt-master \
-            --state Running)"
+            --state Running && printf '\0')
+
+        if [[ "${#found_containers[@]}" -eq 1 ]]; then
+            salt_container=${found_containers[0]}
+            break
+        fi
+        echo "Invalid number of candidates: ${#found_containers[@]}" >&2
         (( attempts++ ))
+        sleep 3
     done
 
     if [ -z "$salt_container" ]; then
