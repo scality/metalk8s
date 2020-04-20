@@ -52,7 +52,7 @@ following the template below:
        metalk8s.scality.com/ssh-host: <node control-plane IP>
        metalk8s.scality.com/ssh-sudo: 'false'
      labels:
-       metalk8s.scality.com/version: '|release|'
+       metalk8s.scality.com/version: '|version|'
        <role labels>
    spec:
      taints: <taints>
@@ -136,7 +136,7 @@ Start the node deployment.
 .. parsed-literal::
 
    root@salt-master-bootstrap $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \\
-                                saltenv=metalk8s-|release| \\
+                                saltenv=metalk8s-|version| \\
                                 pillar='{"orchestrate": {"node_name": "<node-name>"}}'
 
    ... lots of output ...
