@@ -141,9 +141,9 @@ def replace_magic_strings(rendered_yaml):
         result,
     )
 
-    # Handle __url__
+    # Handle __escape__
     result = re.sub(
-        r'__url__\((?P<varname>.*)\)',
+        r'__escape__\((?P<varname>.*)\)',
         r'"{% endraw -%}\g<varname>{%- raw %}"',
         result,
     )
