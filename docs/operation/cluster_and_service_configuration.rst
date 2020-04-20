@@ -85,7 +85,7 @@ To add a new static user, perform the following operations:
       root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
                        --kubeconfig /etc/kubernetes/admin.conf \\
                        salt-master-bootstrap -- salt-run \\
-                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|release|
+                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
 
 #. Finally, create and apply the required :file:`ClusterRoleBinding.yaml` file
    that ensures that the newly added static user is bound to a Cluster Role.
@@ -191,7 +191,7 @@ To change the password of an existing user, perform the following operations:
       root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
                        --kubeconfig /etc/kubernetes/admin.conf \\
                        salt-master-bootstrap -- salt-run \\
-                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|release|
+                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
 
 #. Verify that the password has been changed and you can log in to the MetalK8s
    UI using the new password
@@ -285,7 +285,7 @@ perform the following operations:
       root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
                        --kubeconfig /etc/kubernetes/admin.conf \\
                        salt-master-bootstrap -- salt-run state.sls \\
-                       metalk8s.addons.prometheus-operator.deployed saltenv=metalk8s-|release|
+                       metalk8s.addons.prometheus-operator.deployed saltenv=metalk8s-|version|
 
 .. todo::
 

@@ -17,6 +17,12 @@ import sys
 _lib_path = pathlib.Path(__file__).parent / '_lib'
 sys.path.insert(0, str(_lib_path.resolve()))
 
+# MetalK8s Buildchain
+_buildchain_path = pathlib.Path(__file__) / "../../buildchain"
+sys.path.insert(0, str(_buildchain_path.resolve()))
+from buildchain import constants
+from buildchain import versions
+
 # -- Environment toggles -----------------------------------------------------
 
 ON_RTD = os.environ.get('READTHEDOCS') == 'True'
@@ -27,11 +33,19 @@ project = 'MetalK8s'
 copyright = '2019, Scality'
 author = 'Scality'
 
-# The short version, {major}.{minor}
-version = '2.5'
-
 # The full version, including alpha/beta/rc tags
-release = '2.5.1-dev'
+version = versions.VERSION
+
+# The full git reference if this is a developemnt release (otherwise, same as
+# version)
+if versions.VERSION_SUFFIX == "-dev":
+    release = constants.GIT_REF
+
+    # NOTE: we use this tag to show a warning message with more details about
+    # a given release in `introduction.rst`
+    tags.add('unreleased')
+else:
+    release = versions.VERSION
 
 
 # -- General configuration ---------------------------------------------------
