@@ -47,7 +47,7 @@ certs:
     create: false
 
 config:
-  issuer: '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc)'
+  issuer: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc)'
   web:
     tlsCert: /etc/dex/tls/https/server/tls.crt
     tlsKey: /etc/dex/tls/https/server/tls.key
@@ -77,13 +77,13 @@ config:
     - grafana-ui
   - id: metalk8s-ui
     redirectURIs:
-    - '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback)'
+    - '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback)'
     name: 'MetalK8s UI'
     secret: "ybrMJpVMQxsiZw26MhJzCjA2ut"
   - id: grafana-ui
     name: 'Grafana UI'
     redirectURIs:
-    - '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth)'
+    - '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth)'
     secret: "4lqK98NcsWG5qBRHJUqYM1"
 
   enablePasswordDB: '__var__(dex.spec.localuserstore.enabled)'
