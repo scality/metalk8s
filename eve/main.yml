@@ -459,6 +459,7 @@ stages:
         TEST_SUITE: install
         CLASS_NAME: single-node.centos7
         TEST_NAME: simple environment
+    simultaneous_builds: 20
     worker: &single_node_worker
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
@@ -524,6 +525,7 @@ stages:
         TEST_SUITE: install
         CLASS_NAME: multi-node.centos7
         TEST_NAME: 1 bootstrap 1 master,etcd
+    simultaneous_builds: 20
     worker:
       <<: *single_node_worker
       flavor: m1.medium
