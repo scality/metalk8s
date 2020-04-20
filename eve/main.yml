@@ -381,7 +381,7 @@ stages:
       - TriggerStages:
           name: Trigger multiple-nodes step with built ISO
           stage_names:
-            - multiple-nodes
+            - multiple-nodes-centos
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
 
@@ -656,6 +656,7 @@ stages:
         TEST_SUITE: downgrade
         CLASS_NAME: minor.single node.centos7
         TEST_NAME: simple environment
+    simultaneous_builds: 20
     worker: &single_node_worker
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
@@ -762,6 +763,7 @@ stages:
         TEST_SUITE: upgrade
         CLASS_NAME: minor.single node.centos7
         TEST_NAME: simple environment
+    simultaneous_builds: 20
     worker: *single_node_worker
     steps:
       - Git: *git_pull
@@ -837,12 +839,13 @@ stages:
           env:
             STEP_NAME: single-node-upgrade
 
-  multiple-nodes:
+  multiple-nodes-centos:
     _metalk8s_internal_info:
       junit_info: &_install_multi-node_junit_info
         TEST_SUITE: install
         CLASS_NAME: multi node.centos7
         TEST_NAME: 1 bootstrap 1 master,etcd
+    simultaneous_builds: 20
     worker:
       <<: *single_node_worker
       flavor: m1.medium
@@ -854,7 +857,7 @@ stages:
           env:
             <<: *_env_final_status_artifact_failed
             <<: *_install_multi-node_junit_info
-            STEP_NAME: multiple-nodes
+            STEP_NAME: multiple-nodes-centos
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
@@ -1067,13 +1070,13 @@ stages:
           env:
             <<: *_env_final_status_artifact_success
             <<: *_install_multi-node_junit_info
-            STEP_NAME: multiple-nodes
+            STEP_NAME: multiple-nodes-centos
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           timeout: 14400
           env:
-            STEP_NAME: multiple-nodes
+            STEP_NAME: multiple-nodes-centos
             DURATION: "14400"
       - ShellCommand:
           name: Destroy openstack virtual infra
