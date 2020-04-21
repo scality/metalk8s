@@ -1,47 +1,109 @@
 #!jinja | metalk8s_kubernetes
+
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
 
 {% raw %}
 
 apiVersion: v1
 data:
-  config.yaml: "rules:\n- seriesQuery: '{__name__=~\"^container_.*\",container_name!=\"\
-    POD\",namespace!=\"\",pod_name!=\"\"}'\n  seriesFilters: []\n  resources:\n  \
-    \  overrides:\n      namespace:\n        resource: namespace\n      pod_name:\n\
-    \        resource: pod\n  name:\n    matches: ^container_(.*)_seconds_total$\n\
-    \    as: \"\"\n  metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>,container_name!=\"\
-    POD\"}[5m]))\n    by (<<.GroupBy>>)\n- seriesQuery: '{__name__=~\"^container_.*\"\
-    ,container_name!=\"POD\",namespace!=\"\",pod_name!=\"\"}'\n  seriesFilters:\n\
-    \  - isNot: ^container_.*_seconds_total$\n  resources:\n    overrides:\n     \
-    \ namespace:\n        resource: namespace\n      pod_name:\n        resource:\
-    \ pod\n  name:\n    matches: ^container_(.*)_total$\n    as: \"\"\n  metricsQuery:\
-    \ sum(rate(<<.Series>>{<<.LabelMatchers>>,container_name!=\"POD\"}[5m]))\n   \
-    \ by (<<.GroupBy>>)\n- seriesQuery: '{__name__=~\"^container_.*\",container_name!=\"\
-    POD\",namespace!=\"\",pod_name!=\"\"}'\n  seriesFilters:\n  - isNot: ^container_.*_total$\n\
-    \  resources:\n    overrides:\n      namespace:\n        resource: namespace\n\
-    \      pod_name:\n        resource: pod\n  name:\n    matches: ^container_(.*)$\n\
-    \    as: \"\"\n  metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>,container_name!=\"\
-    POD\"}) by (<<.GroupBy>>)\n- seriesQuery: '{namespace!=\"\",__name__!~\"^container_.*\"\
-    }'\n  seriesFilters:\n  - isNot: .*_total$\n  resources:\n    template: <<.Resource>>\n\
-    \  name:\n    matches: \"\"\n    as: \"\"\n  metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>})\
-    \ by (<<.GroupBy>>)\n- seriesQuery: '{namespace!=\"\",__name__!~\"^container_.*\"\
-    }'\n  seriesFilters:\n  - isNot: .*_seconds_total\n  resources:\n    template:\
-    \ <<.Resource>>\n  name:\n    matches: ^(.*)_total$\n    as: \"\"\n  metricsQuery:\
-    \ sum(rate(<<.Series>>{<<.LabelMatchers>>}[5m])) by (<<.GroupBy>>)\n- seriesQuery:\
-    \ '{namespace!=\"\",__name__!~\"^container_.*\"}'\n  seriesFilters: []\n  resources:\n\
-    \    template: <<.Resource>>\n  name:\n    matches: ^(.*)_seconds_total$\n   \
-    \ as: \"\"\n  metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>}[5m])) by\
-    \ (<<.GroupBy>>)\nresourceRules:\n  cpu:\n    containerLabel: container_name\n\
-    \    containerQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>}[3m]))\n\
-    \      by (<<.GroupBy>>)\n    nodeQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>,\
-    \ id='/'}[3m]))\n      by (<<.GroupBy>>)\n    resources:\n      overrides:\n \
-    \       namespace:\n          resource: namespace\n        node:\n          resource:\
-    \ node\n        pod:\n          resource: pod\n  memory:\n    containerLabel:\
-    \ container_name\n    containerQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>})\
-    \ by (<<.GroupBy>>)\n    nodeQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>,id='/'})\
-    \ by\n      (<<.GroupBy>>)\n    resources:\n      overrides:\n        namespace:\n\
-    \          resource: namespace\n        node:\n          resource: node\n    \
-    \    pod:\n          resource: pod\n  window: 3m\n  \n"
+  config.yaml: |-
+    rules:
+    - seriesQuery: '{__name__=~"^container_.*",container!="POD",namespace!="",pod!=""}'
+      seriesFilters: []
+      resources:
+        overrides:
+          namespace:
+            resource: namespace
+          pod:
+            resource: pod
+      name:
+        matches: ^container_(.*)_seconds_total$
+        as: ""
+      metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>,container!="POD"}[5m]))
+        by (<<.GroupBy>>)
+    - seriesQuery: '{__name__=~"^container_.*",container!="POD",namespace!="",pod!=""}'
+      seriesFilters:
+      - isNot: ^container_.*_seconds_total$
+      resources:
+        overrides:
+          namespace:
+            resource: namespace
+          pod:
+            resource: pod
+      name:
+        matches: ^container_(.*)_total$
+        as: ""
+      metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>,container!="POD"}[5m]))
+        by (<<.GroupBy>>)
+    - seriesQuery: '{__name__=~"^container_.*",container!="POD",namespace!="",pod!=""}'
+      seriesFilters:
+      - isNot: ^container_.*_total$
+      resources:
+        overrides:
+          namespace:
+            resource: namespace
+          pod:
+            resource: pod
+      name:
+        matches: ^container_(.*)$
+        as: ""
+      metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>,container!="POD"}) by (<<.GroupBy>>)
+    - seriesQuery: '{namespace!="",__name__!~"^container_.*"}'
+      seriesFilters:
+      - isNot: .*_total$
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: ""
+        as: ""
+      metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+    - seriesQuery: '{namespace!="",__name__!~"^container_.*"}'
+      seriesFilters:
+      - isNot: .*_seconds_total
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: ^(.*)_total$
+        as: ""
+      metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>}[5m])) by (<<.GroupBy>>)
+    - seriesQuery: '{namespace!="",__name__!~"^container_.*"}'
+      seriesFilters: []
+      resources:
+        template: <<.Resource>>
+      name:
+        matches: ^(.*)_seconds_total$
+        as: ""
+      metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>}[5m])) by (<<.GroupBy>>)
+    resourceRules:
+      cpu:
+        containerLabel: container_name
+        containerQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>}[3m]))
+          by (<<.GroupBy>>)
+        nodeQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>, id='/'}[3m]))
+          by (<<.GroupBy>>)
+        resources:
+          overrides:
+            namespace:
+              resource: namespace
+            node:
+              resource: node
+            pod:
+              resource: pod
+      memory:
+        containerLabel: container_name
+        containerQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+        nodeQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>,id='/'}) by
+          (<<.GroupBy>>)
+        resources:
+          overrides:
+            namespace:
+              resource: namespace
+            node:
+              resource: node
+            pod:
+              resource: pod
+      window: 3m
 kind: ConfigMap
 metadata:
   labels:
@@ -49,7 +111,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter
@@ -63,7 +125,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter
@@ -77,7 +139,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-server-resources
@@ -98,7 +160,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-resource-reader
@@ -114,6 +176,7 @@ rules:
   verbs:
   - get
   - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -123,7 +186,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-metrics
@@ -148,7 +211,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter:system:auth-delegator
@@ -170,7 +233,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-resource-reader
@@ -192,7 +255,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-hpa-controller
@@ -214,7 +277,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-hpa-controller-metrics
@@ -236,7 +299,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-auth-reader
@@ -259,7 +322,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter
@@ -282,7 +345,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter
@@ -296,13 +359,13 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: af5232ebf7c9aae4f20e8e0491bce5ee713153bc0ca342a4c4c275e44ef3d6e7
+        checksum/config: e1ea8506b046c8e09a15940037dab9e258845ce50292615b74e487d8f475ef8d
       labels:
         app: prometheus-adapter
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-adapter
         app.kubernetes.io/part-of: metalk8s
-        chart: prometheus-adapter-1.4.0
+        chart: prometheus-adapter-2.3.1
         heritage: metalk8s
         release: prometheus-adapter
       name: prometheus-adapter
@@ -319,7 +382,7 @@ spec:
         - --v=4
         - --config=/etc/adapter/config.yaml
         image: '{%- endraw -%}{{ build_image_name("k8s-prometheus-adapter-amd64",
-          False) }}{%- raw -%}:v0.5.0'
+          False) }}{%- raw -%}:v0.6.0'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -377,7 +440,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: v1beta1.custom.metrics.k8s.io
@@ -400,7 +463,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-1.4.0
+    chart: prometheus-adapter-2.3.1
     heritage: metalk8s
     release: prometheus-adapter
   name: v1beta1.metrics.k8s.io
