@@ -1,4 +1,6 @@
 {# Should be run by the orchestrator runner #}
+# This state cannot run on a minion since it depends on etcd3 python lib
+# which is only available by default on the salt-master.
 
 {%- set nodename = pillar.orchestrate.node_name -%}
 

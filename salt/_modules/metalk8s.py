@@ -8,6 +8,7 @@ import re
 import socket
 import time
 
+from salt.pillar import get_pillar
 from salt.exceptions import CommandExecutionError
 import salt.utils.files
 
@@ -233,7 +234,16 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
     """
     # Ignore `refresh` if pillar is provided
     if not pillar and refresh:
-        __salt__['saltutil.refresh_pillar']()
+        # Do not use `saltutil.refresh_pillar` as in salt 2018.3 we can not do
+        # synchronous pillar refresh
+        # See https://github.com/saltstack/salt/issues/20590
+        pillar = get_pillar(
+            __opts__,
+            __grains__,
+            __grains__['id'],
+            saltenv=__opts__.get('saltenv'),
+            pillarenv=__opts__.get('pillarenv')
+        ).compile_pillar()
 
     if not pillar:
         pillar = __pillar__

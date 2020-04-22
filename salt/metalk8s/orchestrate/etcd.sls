@@ -14,14 +14,31 @@ Sync {{ node }} minion:
     - kwarg:
         saltenv: metalk8s-{{ dest_version }}
 
+Check pillar on {{ node }}:
+  salt.function:
+    - name: metalk8s.check_pillar_keys
+    - tgt: {{ node }}
+    - kwarg:
+        keys:
+          - metalk8s.endpoints.repositories.ip
+          - metalk8s.endpoints.repositories.ports.http
+        # We cannot raise when using `salt.function` as we need to return
+        # `False` to have a failed state
+        # https://github.com/saltstack/salt/issues/55503
+        raise_error: False
+    - retry:
+        attempts: 5
+    - require:
+      - salt: Sync {{ node }} minion
+
 Deploy etcd {{ node }} to {{ dest_version }}:
   salt.state:
     - tgt: {{ node }}
     - sls:
-      - metalk8s.kubernetes.etcd.healthy
+      - metalk8s.kubernetes.etcd
     - saltenv: metalk8s-{{ dest_version }}
     - require:
-      - salt: Sync {{ node }} minion
+      - salt: Check pillar on {{ node }}
       - module: Check etcd cluster health
   {%- if previous_node is defined %}
       - metalk8s: Check etcd cluster health for {{ previous_node }}

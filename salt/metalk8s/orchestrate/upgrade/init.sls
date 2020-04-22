@@ -22,20 +22,6 @@ Upgrade etcd cluster:
     - require:
       - salt: Execute the upgrade prechecks
 
-# In salt 2018.3 we can not do synchronous pillar refresh, so add a sleep
-# see https://github.com/saltstack/salt/issues/20590
-Wait for pillar refresh to complete:
-  salt.function:
-    - name: saltutil.refresh_pillar
-    - tgt: '*'
-    - require:
-      - salt: Upgrade etcd cluster
-  module.run:
-    - test.sleep:
-      - length: 20
-    - require:
-      - salt: Wait for pillar refresh to complete
-
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
 
@@ -60,7 +46,7 @@ Wait for API server to be available on {{ node }}:
   - status: 200
   - verify_ssl: false
   - require:
-    - module: Wait for pillar refresh to complete
+    - salt: Upgrade etcd cluster
   {%- if previous_node is defined %}
     - salt: Deploy node {{ previous_node }}
   {%- endif %}

@@ -4,8 +4,9 @@
 # Available states
 # ================
 #
+# * prepared      -> setup etcd dependencies
 # * installed     -> deploy etcd manifest
-# * healthy       -> check health of etcd node
 #
 include:
+  - .prepared
   - .installed
