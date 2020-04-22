@@ -39,12 +39,29 @@ Skip node {{ node }}, already in {{ node_version }} newer than {{ dest_version }
 
   {%- else %}
 
+Check pillar on {{ node }} before installing apiserver-proxy:
+  salt.function:
+    - name: metalk8s.check_pillar_keys
+    - tgt: {{ node }}
+    - kwarg:
+        keys:
+          - metalk8s.endpoints.repositories.ip
+          - metalk8s.endpoints.repositories.ports.http
+          # We cannot raise when using `salt.function` as we need to return
+          # `False` to have a failed state
+          # https://github.com/saltstack/salt/issues/55503
+          raise_error: False
+    - retry:
+        attempts: 5
+
 Install apiserver-proxy on {{ node }}:
   salt.state:
     - tgt: {{ node }}
     - sls:
       - metalk8s.kubernetes.apiserver-proxy
     - saltenv: {{ saltenv }}
+    - require:
+      - salt: Check pillar on {{ node }} before installing apiserver-proxy
 
 Wait for API server to be available on {{ node }}:
   http.wait_for_successful_query:
