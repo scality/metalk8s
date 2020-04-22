@@ -39,10 +39,20 @@ spec:
             - --namespace={{ $.Release.Namespace }}
             - --secret-name={{ template "prometheus-operator.fullname" . }}-admission
             - --patch-failure-policy={{ .Values.prometheusOperator.admissionWebhooks.failurePolicy }}
+          resources:
+{{ toYaml .Values.prometheusOperator.admissionWebhooks.patch.resources | indent 12 }}
       restartPolicy: OnFailure
       serviceAccountName: {{ template "prometheus-operator.fullname" . }}-admission
       {{- with .Values.prometheusOperator.admissionWebhooks.patch.nodeSelector }}
       nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.prometheusOperator.admissionWebhooks.patch.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.prometheusOperator.admissionWebhooks.patch.tolerations }}
+      tolerations:
 {{ toYaml . | indent 8 }}
       {{- end }}
       securityContext:
