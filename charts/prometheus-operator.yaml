@@ -148,7 +148,7 @@ grafana:
 
   grafana.ini:
     server:
-      root_url: '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana)'
+      root_url: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana)'
     analytics:
       reporting_enabled: false
       check_for_updates: false
@@ -160,9 +160,9 @@ grafana:
       scopes: "openid profile email groups"
       client_id: "grafana-ui"
       client_secret: "4lqK98NcsWG5qBRHJUqYM1"
-      auth_url: '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/auth)'
-      token_url:  '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token)'
-      api_url: '__url__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/userinfo)'
+      auth_url: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/auth)'
+      token_url:  '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token)'
+      api_url: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/userinfo)'
 
   testFramework:
     enabled: false
