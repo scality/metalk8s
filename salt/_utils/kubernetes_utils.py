@@ -14,7 +14,7 @@ from salt.utils.dictdiffer import recursive_diff
 try:
     import kubernetes.config
     import kubernetes.client as k8s_client
-    import kubernetes.client.apis as k8s_apis
+    import kubernetes.client.api as k8s_apis
 
     # Workaround for https://github.com/kubernetes-client/python/issues/376
     def set_conditions(self, conditions):
@@ -88,7 +88,7 @@ class ApiClient(object):
                  method_names=None, all_namespaces_name=None):
         if api_cls not in ALL_APIS:
             raise ValueError(
-                '`api_cls` must be an API from `kubernetes.client.apis`'
+                '`api_cls` must be an API from `kubernetes.client.api`'
             )
         methods = self.CRUD_METHODS
         if isinstance(method_names, six.string_types):
