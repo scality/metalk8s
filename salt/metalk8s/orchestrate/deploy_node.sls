@@ -3,6 +3,8 @@
 
 {%- set skip_roles = pillar.metalk8s.nodes[node_name].get('skip_roles', []) %}
 
+{%- set roles = pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
+
 {%- if node_name not in salt.saltutil.runner('manage.up') %}
 Deploy salt-minion on a new node:
   salt.state:
@@ -71,7 +73,9 @@ Sync module on the node:
     - kwarg:
         saltenv: {{ saltenv }}
 
-Refresh and check pillar before highstate:
+{%- if node_name in salt.saltutil.runner('manage.up') %}
+
+Check pillar before salt-minion configuration:
   salt.function:
     - name: metalk8s.check_pillar_keys
     - tgt: {{ node_name }}
@@ -89,8 +93,6 @@ Refresh and check pillar before highstate:
     - require:
       - salt: Sync module on the node
 
-{%- if node_name in salt.saltutil.runner('manage.up') %}
-
 Reconfigure salt-minion:
   salt.state:
     - tgt: {{ node_name }}
@@ -100,7 +102,7 @@ Reconfigure salt-minion:
     - require:
       - salt: Set grains
       - salt: Refresh the mine
-      - salt: Refresh and check pillar before highstate
+      - salt: Check pillar before salt-minion configuration
 
 Wait minion available:
   salt.runner:
@@ -109,9 +111,81 @@ Wait minion available:
     - require:
       - salt: Reconfigure salt-minion
     - require_in:
-      - salt: Run the highstate
+      - http: Wait for API server to be available before highstate
 
 {%- endif %}
+
+{%- if 'etcd' in roles and 'etcd' not in skip_roles %}
+
+Check pillar before etcd deployment:
+  salt.function:
+    - name: metalk8s.check_pillar_keys
+    - tgt: {{ node_name }}
+    - kwarg:
+        keys:
+          - metalk8s.endpoints.salt-master.ip
+          - metalk8s.endpoints.repositories.ip
+          - metalk8s.endpoints.repositories.ports.http
+        # We cannot raise when using `salt.function` as we need to return
+        # `False` to have a failed state
+        # https://github.com/saltstack/salt/issues/55503
+        raise_error: False
+    - retry:
+        attempts: 5
+    - require:
+      - salt: Sync module on the node
+
+Install etcd node:
+  salt.state:
+    - tgt: {{ node_name }}
+    - saltenv: metalk8s-{{ version }}
+    - sls:
+      - metalk8s.roles.etcd
+    - pillar:
+        metalk8s:
+          # Skip etcd healthcheck as we register etcd member just after
+          skip_etcd_healthcheck: True
+    - require:
+      - salt: Check pillar before etcd deployment
+
+Register the node into etcd cluster:
+  salt.runner:
+    - name: state.orchestrate
+    - pillar: {{ pillar | json  }}
+    - mods:
+      - metalk8s.orchestrate.register_etcd
+    - require:
+      - salt: Install etcd node
+    - require_in:
+      - http: Wait for API server to be available before highstate
+
+{%- endif %}
+
+Wait for API server to be available before highstate:
+  http.wait_for_successful_query:
+  - name: https://{{ pillar.metalk8s.api_server.host }}:6443/healthz
+  - match: 'ok'
+  - status: 200
+  - verify_ssl: false
+
+Check pillar before highstate:
+  salt.function:
+    - name: metalk8s.check_pillar_keys
+    - tgt: {{ node_name }}
+    - kwarg:
+        keys:
+          - metalk8s.endpoints.salt-master.ip
+          - metalk8s.endpoints.repositories.ip
+          - metalk8s.endpoints.repositories.ports.http
+        # We cannot raise when using `salt.function` as we need to return
+        # `False` to have a failed state
+        # https://github.com/saltstack/salt/issues/55503
+        raise_error: False
+    - retry:
+        attempts: 5
+    - require:
+      - salt: Sync module on the node
+      - http: Wait for API server to be available before highstate
 
 Run the highstate:
   salt.state:
@@ -119,19 +193,19 @@ Run the highstate:
     - highstate: True
     - saltenv: metalk8s-{{ version }}
     {#- Add ability to skip node roles to not apply all the highstate
-         e.g.: Skipping etcd when downgrading #}
+        e.g.: Skipping etcd when downgrading #}
     {%- if skip_roles %}
     - pillar:
         metalk8s:
           nodes:
             {{ node_name }}:
-              skip_roles: {{ skip_roles }}
+              skip_roles: {{ skip_roles | unique | tojson }}
     {%- endif %}
     - require:
       - salt: Set grains
       - salt: Refresh the mine
       - metalk8s_cordon: Cordon the node
-      - salt: Refresh and check pillar before highstate
+      - salt: Check pillar before highstate
 
 Wait for API server to be available:
   http.wait_for_successful_query:
@@ -161,15 +235,3 @@ Kill kube-controller-manager on all master nodes:
     - require:
       - salt: Run the highstate
 
-{%- if 'etcd' in pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
-
-Register the node into etcd cluster:
-  salt.runner:
-    - name: state.orchestrate
-    - pillar: {{ pillar | json  }}
-    - mods:
-      - metalk8s.orchestrate.register_etcd
-    - require:
-      - salt: Run the highstate
-
-{%- endif %}
