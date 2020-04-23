@@ -427,7 +427,7 @@ class CustomApiClient(ApiClient):
 
             # Convert body to_dict if it's a CustomObject as
             # `python-kubernetes` want a dict or a specific objects with
-            # some attributes like `swagger_types`, `attributes_map`, ...
+            # some attributes like `openapi_types`, `attributes_map`, ...
             if isinstance(kwargs.get('body'), CustomObject):
                 kwargs['body'] = kwargs['body'].to_dict()
 
@@ -656,7 +656,7 @@ def _build_standard_object(model, manifest):
     """Construct an instance of `model` based on its `manifest`.
 
     This method assumes `model` to be a member of `kubernetes.client.models`,
-    so that it can use its `attribute_map` and `swagger_types` attributes.
+    so that it can use its `attribute_map` and `openapi_types` attributes.
     """
     # `model.attribute_map` contain all attribute correspondance between
     # snake case and YAML style (camel case) so we need to reverse it
@@ -671,7 +671,7 @@ def _build_standard_object(model, manifest):
     kwargs = {}
     for src_key, src_value in manifest.items():
         key = reverse_attr_map.get(src_key, src_key)
-        type_str = model.swagger_types.get(key)
+        type_str = model.openapi_types.get(key)
 
         if type_str is None:
             raise ValueError(
@@ -702,7 +702,7 @@ def _cast_value(value, type_string):
     """Attempt to cast a value given a type declaration as a string.
 
     Used exclusively by `_build_standard_object`, relying on the models
-    `swagger_types` declarations for converting manifests into Python objects.
+    `openapi_types` declarations for converting manifests into Python objects.
     """
     # Special case for None used for exemple when patching to remove key
     if value is None:
