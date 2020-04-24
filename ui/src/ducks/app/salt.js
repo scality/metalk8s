@@ -19,6 +19,8 @@ import {
   removeJobFromLocalStorage,
   markJobCompleteInLocalStorage,
 } from '../../services/salt/utils';
+import { addNotificationErrorAction } from './notifications';
+import { intl } from '../../translations/IntlGlobalProvider';
 
 // Actions
 export const ADD_JOB = 'ADD_JOB';
@@ -168,6 +170,14 @@ export function* manageLocalStorage() {
 
 export function* refreshJobStatus(job) {
   const result = yield call(ApiSalt.printJob, job.jid);
+  if (result.error) {
+    yield put(
+      addNotificationErrorAction({
+        title: intl.translate('salt_job'),
+        message: JSON.stringify(result.error),
+      }),
+    );
+  }
   const status = getJobStatusFromPrintJob(result, job.jid);
   yield call(updateJobStatus, job, status);
 }
