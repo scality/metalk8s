@@ -44,12 +44,12 @@ export default function reducer(state = defaultState, action = {}) {
     case REMOVE_JOB:
       return {
         ...state,
-        jobs: state.jobs.filter(job => job.jid !== action.payload.jid),
+        jobs: state.jobs.filter((job) => job.jid !== action.payload.jid),
       };
     case ADD_JOB_EVENT:
       return {
         ...state,
-        jobs: state.jobs.map(job =>
+        jobs: state.jobs.map((job) =>
           job.jid === action.payload.jid
             ? { ...job, events: [...job.events, action.payload.event] }
             : job,
@@ -58,7 +58,7 @@ export default function reducer(state = defaultState, action = {}) {
     case JOB_COMPLETED:
       return {
         ...state,
-        jobs: state.jobs.map(job =>
+        jobs: state.jobs.map((job) =>
           job.jid === action.payload.jid
             ? {
                 ...job,
@@ -72,7 +72,7 @@ export default function reducer(state = defaultState, action = {}) {
     case SET_JOB_STATUS:
       return {
         ...state,
-        jobs: state.jobs.map(job =>
+        jobs: state.jobs.map((job) =>
           job.jid === action.payload.jid
             ? { ...job, status: action.payload.status }
             : job,
@@ -124,13 +124,13 @@ export function setJobStatusAction(jid, status) {
 }
 
 // Selectors
-export const allJobsSelector = state => state.app.salt.jobs;
+export const allJobsSelector = (state) => state.app.salt.jobs;
 
 // Sagas
 export function* initialize(payload) {
   const savedJobs = listJobsFromLocalStorage();
-  yield all(savedJobs.map(job => put(addJobAction(job))));
-  yield all(savedJobs.map(job => call(refreshJobStatus, job)));
+  yield all(savedJobs.map((job) => put(addJobAction(job))));
+  yield all(savedJobs.map((job) => call(refreshJobStatus, job)));
 
   // Once state is initialized from localStorage, we can start watching Salt
   // Event bus (doing it before may loose some events since no job exists)
@@ -168,7 +168,6 @@ export function* manageLocalStorage() {
 
 export function* refreshJobStatus(job) {
   const result = yield call(ApiSalt.printJob, job.jid);
-  // TODO: error handling?
   const status = getJobStatusFromPrintJob(result, job.jid);
   yield call(updateJobStatus, job, status);
 }
@@ -201,8 +200,8 @@ function* readJobEvent(job, event) {
 }
 
 export function createChannelFromSource(eventSrc) {
-  const subs = emitter => {
-    eventSrc.onmessage = msg => {
+  const subs = (emitter) => {
+    eventSrc.onmessage = (msg) => {
       emitter(msg);
     };
     eventSrc.onerror = () => {
@@ -224,7 +223,7 @@ export function* watchSaltEvents({ payload: { url, token } }) {
     const data = JSON.parse(event.data);
 
     const jobs = yield select(allJobsSelector);
-    const relatedJob = jobs.find(job => data.tag.includes(job.jid));
+    const relatedJob = jobs.find((job) => data.tag.includes(job.jid));
 
     if (relatedJob !== undefined) {
       yield all([
@@ -252,7 +251,7 @@ export function* garbageCollectJobs() {
   while (true) {
     const jobs = yield select(allJobsSelector);
     const toRemove = jobs.filter(checkJobExpiry);
-    yield all(toRemove.map(job => put(removeJobAction(job))));
+    yield all(toRemove.map((job) => put(removeJobAction(job))));
     yield delay(JOB_GC_DELAY);
   }
 }
