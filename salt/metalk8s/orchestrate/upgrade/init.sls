@@ -47,10 +47,10 @@ Check pillar on {{ node }} before installing apiserver-proxy:
         keys:
           - metalk8s.endpoints.repositories.ip
           - metalk8s.endpoints.repositories.ports.http
-          # We cannot raise when using `salt.function` as we need to return
-          # `False` to have a failed state
-          # https://github.com/saltstack/salt/issues/55503
-          raise_error: False
+        # We cannot raise when using `salt.function` as we need to return
+        # `False` to have a failed state
+        # https://github.com/saltstack/salt/issues/55503
+        raise_error: False
     - retry:
         attempts: 5
 
