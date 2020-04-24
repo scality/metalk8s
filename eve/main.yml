@@ -439,7 +439,7 @@ models:
         mkdir -p "sosreport/sosreport/$STEP_NAME" &&
         for host in $HOSTS_LIST; do
           scp -F "$SSH_CONFIG" \
-          $host:/var/tmp/sosreport-* \
+          "$host:/var/tmp/sosreport-*.tar.xz" \
           "sosreport/sosreport/$STEP_NAME/$host-sosreport.tar.xz"
         done
       alwaysRun: true
