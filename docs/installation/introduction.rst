@@ -301,27 +301,27 @@ Each :ref:`role<node-roles>`, describing a group of services, requires a
 certain amount of resources to run properly. If multiple roles are used
 on a single Node, these requirements add up.
 
-+----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
-|      Role      |       Services        |   CPU    |  RAM   |        Required Storage         |     Recommended Storage     |
-+================+=======================+==========+========+=================================+=============================+
-| bootstrap      | Package repositories, | 1 core   | 2 GB   | Sufficient space for the        |                             |
-|                | container registries, |          |        | product ISO archives            |                             |
-|                | Salt master           |          |        |                                 |                             |
-+----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
-| etcd           | etcd database for the | 0.5 core | 1 GB   | 1 GB for                        |                             |
-|                | K8s API               |          |        | /var/lib/etcd                   |                             |
-+----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
-| master         | K8s API,              | 0.5 core | 1 GB   |                                 |                             |
-|                | scheduler, and        |          |        |                                 |                             |
-|                | controllers           |          |        |                                 |                             |
-+----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
-| infra          | Monitoring services,  | 0.5 core | 2 GB   | 10 GB partition for Prometheus  |                             |
-|                | Ingress controllers   |          |        | 1 GB partition for Alertmanager |                             |
-+----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
-| *requirements\ | Salt minion,          | 0.2 core | 0.5 GB | **40 GB root partition**        | 100 GB or more for /var     |
-| common to\     | Kubelet               |          |        |                                 |                             |
-| any Node*      |                       |          |        |                                 |                             |
-+----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
++-----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+|      Role       |       Services        |   CPU    |  RAM   |        Required Storage         |     Recommended Storage     |
++=================+=======================+==========+========+=================================+=============================+
+| bootstrap       | Package repositories, | 1 core   | 2 GB   | Sufficient space for the        |                             |
+|                 | container registries, |          |        | product ISO archives            |                             |
+|                 | Salt master           |          |        |                                 |                             |
++-----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+| etcd            | etcd database for the | 0.5 core | 1 GB   | 1 GB for                        |                             |
+|                 | K8s API               |          |        | /var/lib/etcd                   |                             |
++-----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+| master          | K8s API,              | 0.5 core | 1 GB   |                                 |                             |
+|                 | scheduler, and        |          |        |                                 |                             |
+|                 | controllers           |          |        |                                 |                             |
++-----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+| infra           | Monitoring services,  | 0.5 core | 2 GB   | 10 GB partition for Prometheus  |                             |
+|                 | Ingress controllers   |          |        | 1 GB partition for Alertmanager |                             |
++-----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
+| *requirements \ | Salt minion,          | 0.2 core | 0.5 GB | **40 GB root partition**        | 100 GB or more for /var     |
+| common to \     | Kubelet               |          |        |                                 |                             |
+| any Node*       |                       |          |        |                                 |                             |
++-----------------+-----------------------+----------+--------+---------------------------------+-----------------------------+
 
 These numbers do not account for highly unstable workloads or other sources of
 unpredictable load on the cluster services. Providing a safety margin of an
