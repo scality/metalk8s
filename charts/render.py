@@ -190,6 +190,7 @@ def main():
         '--service-config',
         action='append',
         nargs=2,
+        required=False,
         dest="service_configs",
         help="Example: --service-config grafana metalk8s-grafana-config"
     )
@@ -212,16 +213,14 @@ def main():
             )
         )
 
-    sys.stdout.write(
-        START_BLOCK.format(
-            configlines='\n'.join(
-                ("{{%- set {} = salt.metalk8s_service_configuration"
-                 ".get_service_conf('{}', '{}') %}}").format(
-                    service_config[0], args.namespace, service_config[1]
-                ) for service_config in args.service_configs
-            )
-        ).lstrip()
-    )
+    config = '\n'.join(
+        ("{{%- set {} = salt.metalk8s_service_configuration"
+            ".get_service_conf('{}', '{}') %}}").format(
+            service_config[0], args.namespace, service_config[1]
+        ) for service_config in args.service_configs
+    ) if args.service_configs else ''
+
+    sys.stdout.write(START_BLOCK.format(configlines=config).lstrip())
     sys.stdout.write('\n')
 
     stream = io.StringIO()
