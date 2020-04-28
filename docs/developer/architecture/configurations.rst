@@ -91,16 +91,44 @@ requirements for the following reasons:
 How it works
 ^^^^^^^^^^^^
 
-During the Bootstrap stages, when we are assertive that the K8s cluster is
-fully ready and available we could perform the following actions:
+During Bootstrap, Upgrade or Downgrade stages, when we are assertive that
+the K8s cluster is fully ready and available we could perform the following
+actions:
 
-  - Create and deploy ConfigMaps that hold cluster and service configurations
-    and pre-fill them with default values.
-  - Template service pods and deployments to consume configuration data
-    directly from the above deployed ConfigMaps
+  - Firstly, create and deploy ConfigMaps that will hold customizable cluster
+    and service configurations.
+    These ConfigMaps should define an empty `config.yaml` in the data section
+    of the ConfigMap for later use. A standard layout for each customizable
+    field could be added in the documentation to assist MetalK8s administrator
+    in adding and modifying customizations.
+
+  - In a `csc.yaml` file located at the root directory of each MetalK8s Addon,
+    define the keys and values for default service configurations in a
+    YAML structured format.
+
+      - The layout of service configurations within this file could have root
+        key being the impacted ConfigMap name. For example:
+
+    .. code-block:: yaml
+
+        metalk8s-prometheus-config:
+          spec:
+            deployment:
+              replicas: 1
+
+  - During Addon manifests rendering, call a Salt module that will merge
+    the configurations defined within the customizable ConfigMap to those
+    defined in `csc.yaml` using the recommended merge strategy.
+
+    The resulting configuration (a python dict object) will be used to populate
+    the desired configuration fields within each Addon chart at render time.
 
 This approach works because in a MetalK8s cluster, ConfigMaps for cluster and
 service configurations are available before we deploy the configured services.
+
+Secondly, we need to ensure that the default values specified in
+`csc.yaml` are upgrade-able while user-defined configurations remain
+untouched.
 
 **Using Salt states**
 
@@ -274,3 +302,6 @@ Test Plan
    - Checking for invalid values in a user defined configuration (e.g setting
      the number of replicas to a string ("two"))
    - Checking for invalid formats in a user configuration
+
+- Add tests to ensure we could merge a service configuration at render time
+  while keeping user-defined modifications intact
