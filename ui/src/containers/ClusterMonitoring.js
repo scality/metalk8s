@@ -33,14 +33,13 @@ const PageContainer = styled.div`
   flex-direction: column;
   height: 100%;
   padding: ${padding.larger};
-
   .sc-loader {
     padding: 0 ${padding.smaller};
   }
 `;
 
 const TableContainer = styled.div`
-  height: 100%;
+  height: 80%;
   flex-grow: 1;
 
   .sc-table-column-cell-container-severity {

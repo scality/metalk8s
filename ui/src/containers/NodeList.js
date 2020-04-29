@@ -36,6 +36,7 @@ const ActionContainer = styled.div`
 `;
 
 const TableContainer = styled.div`
+  height: 80%;
   flex-grow: 1;
   .status {
     display: flex;
