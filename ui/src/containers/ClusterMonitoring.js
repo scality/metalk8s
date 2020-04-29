@@ -48,7 +48,7 @@ const TableContainer = styled.div`
 `;
 
 const PageSubtitle = styled.h3`
-  color: ${props => props.theme.brand.text};
+  color: ${(props) => props.theme.brand.text};
   margin: ${padding.small} 0;
   display: flex;
   align-items: center;
@@ -76,7 +76,7 @@ const RightClusterStatusContainer = styled.div`
 const ClusterStatusValue = styled.span`
   margin: 0 ${padding.small};
   font-weight: bold;
-  color: ${props => {
+  color: ${(props) => {
     switch (props.value) {
       case CLUSTER_STATUS_UNKNOWN:
         return props.theme.brand.warning;
@@ -89,11 +89,11 @@ const ClusterStatusValue = styled.span`
 `;
 
 const InformationMarkIcon = styled.i`
-  color: ${props => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.primary};
 `;
 
 const TooltipContent = styled.div`
-  color: ${props => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.primary};
   font-weight: ${fontWeight.bold};
 `;
 
@@ -101,12 +101,12 @@ const ControlPlaneStatusLabel = styled.span`
   margin-left: ${padding.smaller};
 `;
 
-const ClusterMonitoring = props => {
+const ClusterMonitoring = (props) => {
   const dispatch = useDispatch();
-  const alerts = useSelector(state => state.app.monitoring.alert);
-  const clusterStatus = useSelector(state => makeClusterStatus(state, props));
-  const cluster = useSelector(state => state.app.monitoring.cluster);
-  const config = useSelector(state => state.config);
+  const alerts = useSelector((state) => state.app.monitoring.alert);
+  const clusterStatus = useSelector((state) => makeClusterStatus(state, props));
+  const cluster = useSelector((state) => state.app.monitoring.cluster);
+  const config = useSelector((state) => state.config);
 
   useEffect(() => {
     dispatch(refreshAlertsAction());
@@ -136,7 +136,7 @@ const ClusterMonitoring = props => {
       label: intl.translate('severity'),
       dataKey: 'severity',
       width: 100,
-      renderer: data => {
+      renderer: (data) => {
         return <CircleStatus className="fas fa-circle" status={data} />;
       },
     },
@@ -149,7 +149,7 @@ const ClusterMonitoring = props => {
       label: intl.translate('active_at'),
       dataKey: 'activeAt',
       width: 200,
-      renderer: data => (
+      renderer: (data) => (
         <span>
           <FormattedDate value={data} />{' '}
           <FormattedTime
@@ -164,8 +164,8 @@ const ClusterMonitoring = props => {
   ];
 
   const alertsList = alerts.list
-    .filter(alert => alert.state !== 'pending')
-    .map(alert => {
+    .filter((alert) => alert.state !== 'pending')
+    .map((alert) => {
       return {
         name: alert.labels.alertname,
         severity: alert.labels.severity,
@@ -174,7 +174,7 @@ const ClusterMonitoring = props => {
       };
     });
 
-  const checkControlPlaneStatus = jobCount =>
+  const checkControlPlaneStatus = (jobCount) =>
     jobCount > 0 ? STATUS_SUCCESS : STATUS_CRITICAL;
 
   const apiServerStatus = checkControlPlaneStatus(cluster.apiServerStatus);
