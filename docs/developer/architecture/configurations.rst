@@ -98,37 +98,100 @@ actions:
   - Firstly, create and deploy ConfigMaps that will hold customizable cluster
     and service configurations.
     These ConfigMaps should define an empty `config.yaml` in the data section
-    of the ConfigMap for later use. A standard layout for each customizable
-    field could be added in the documentation to assist MetalK8s administrator
-    in adding and modifying customizations.
+    of the ConfigMap for later use.
 
-  - In a `csc.yaml` file located at the root directory of each MetalK8s Addon,
-    define the keys and values for default service configurations in a
-    YAML structured format.
+    A standard layout for each customizable field could be added in the
+    documentation to assist MetalK8s administrator in adding and modifying
+    customizations.
 
-      - The layout of service configurations within this file could have root
-        key being the impacted ConfigMap name. For example:
+    To simplify the customizing efforts required from MetalK8s administrators,
+    each customizable ConfigMap will include an example section with inline
+    documented directives that highlight how users should add, edit and remove
+    customizations.
 
-    .. code-block:: yaml
+  - In an Addon config file for example;
+    `salt/metalk8s/addons/prometheus-operator/config/alertmanager.yaml`, define
+    the keys and values for default service configurations in a YAML structured
+    format.
 
-        metalk8s-prometheus-config:
+      - The layout of service configurations within this file could follow the
+        format:
+
+        .. code-block:: yaml
+
+            # Configuration of the Alertmanager service
+            apiVersion: addons.metalk8s.scality.com/v1alpha1
+            kind: AlertmanagerConfig
+            spec:
+              # Configure the Alertmanager Deployment
+              deployment:
+                replicas: 1
+
+  - During Addon manifest rendering, call a Salt module that will merge
+    the configurations defined within the customizable ConfigMap to those
+    defined in `alertmanager.yaml` using a Salt merge strategy.
+
+    Amongst other merge technique such as `aggregate`, `overwrite`, `list`, the
+    `recurse` merge technique is chosen to merge the two data structures
+    because it allows deep merging of python dict objects while
+    being able to support the aggregation of list structures within the python
+    object.
+
+    Aggregating list structures is particularly useful when merging the
+    pre-provisioned Dex static users found in the default configurations to
+    those newly defined by Administrators especially during upgrade. Without
+    support for list merge, pre-provisioned Dex static users will be
+    overwritten during merge time.
+
+    `Recurse` merge strategy example:
+
+    Merging the following structures using `salt.utils.dictupdate.merge`:
+
+      - Object (a) (MetalK8s defaults):
+
+        .. code-block:: yaml
+
+          apiVersion: addons.metalk8s.scality.com/v1alpha1
+          kind: AlertmanagerConfig
           spec:
             deployment:
               replicas: 1
 
-  - During Addon manifests rendering, call a Salt module that will merge
-    the configurations defined within the customizable ConfigMap to those
-    defined in `csc.yaml` using the recommended merge strategy.
+      - Object (b) (User-defined configurations from ConfigMap):
 
-    The resulting configuration (a python dict object) will be used to populate
+        .. code-block:: yaml
+
+          apiVersion: addons.metalk8s.scality.com/v1alpha1
+          kind: AlertmanagerConfig
+          spec:
+            deployment:
+              replicas: 2
+            notification:
+              config:
+                global:
+                  resolve_timeout: 5m
+
+      - Result of Salt `recurse` merge:
+
+        .. code-block:: yaml
+
+          apiVersion: addons.metalk8s.scality.com/v1alpha1
+          kind: AlertmanagerConfig
+          spec:
+            deployment:
+              replicas: 2
+            notification:
+              config:
+                global:
+                  resolve_timeout: 5m
+
+    The resulting configuration (a python object) will be used to populate
     the desired configuration fields within each Addon chart at render time.
 
-This approach works because in a MetalK8s cluster, ConfigMaps for cluster and
-service configurations are available before we deploy the configured services.
-
-Secondly, we need to ensure that the default values specified in
-`csc.yaml` are upgrade-able while user-defined configurations remain
-untouched.
+The above approach is flexible and fault tolerant because in a MetalK8s
+cluster, once the user-defined ConfigMaps are absent or empty during Addon
+deployment, merging will yield no changes and we can effectively use default
+values packaged alongside each MetalK8s Addon to run the deployment.
 
 **Using Salt states**
 
@@ -287,6 +350,9 @@ In the Operational Guide:
 * Document how to customize or change any given service settings using the UI
   interface
 * Document the list of service settings which can be configured by the user
+
+* Document the default service configurations files which are deployed along
+  side MetalK8s addons
 
 Test Plan
 ---------
