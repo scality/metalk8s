@@ -1,19 +1,19 @@
 mine_functions:
   kubernetes_root_ca_b64:
-    mine_function: hashutil.base64_encodefile
-    fname: /etc/kubernetes/pki/ca.crt
+    - mine_function: hashutil.base64_encodefile
+    - /etc/kubernetes/pki/ca.crt
 
   kubernetes_etcd_ca_b64:
-    mine_function: hashutil.base64_encodefile
-    fname: /etc/kubernetes/pki/etcd/ca.crt
+    - mine_function: hashutil.base64_encodefile
+    - /etc/kubernetes/pki/etcd/ca.crt
 
   kubernetes_front_proxy_ca_b64:
-    mine_function: hashutil.base64_encodefile
-    fname: /etc/kubernetes/pki/front-proxy-ca.crt
+    - mine_function: hashutil.base64_encodefile
+    - /etc/kubernetes/pki/front-proxy-ca.crt
 
   kubernetes_sa_pub_key_b64:
-    mine_function: hashutil.base64_encodefile
-    fname: /etc/kubernetes/pki/sa.pub
+    - mine_function: hashutil.base64_encodefile
+    - /etc/kubernetes/pki/sa.pub
 
 x509_signing_policies:
   kube_apiserver_client_policy:
