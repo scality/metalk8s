@@ -39,9 +39,8 @@ Create grafana-config ConfigMap:
           config.yaml: |-
             apiVersion: addons.metalk8s.scality.com
             kind: GrafanaConfig
-            spec:
-              deployment:
-                replicas: 1
+            spec: {}
+
 {%- else %}
 
 metalk8s-grafana-config ConfigMap already exist:
@@ -63,9 +62,8 @@ Create prometheus-config ConfigMap:
           config.yaml: |-
             apiVersion: addons.metalk8s.scality.com
             kind: PrometheusConfig
-            spec:
-              deployment:
-                replicas: 1
+            spec: {}
+
 {%- else %}
 
 metalk8s-prometheus-config ConfigMap already exist:
@@ -87,27 +85,7 @@ Create alertmanager-config ConfigMap:
           config.yaml: |-
             apiVersion: addons.metalk8s.scality.com
             kind: AlertmanagerConfig
-            spec:
-              deployment:
-                replicas: 1
-              notification:
-                config:
-                  global:
-                    resolve_timeout: 5m
-                  templates: []
-                  route:
-                    group_by: ['job']
-                    group_wait: 30s
-                    group_interval: 5m
-                    repeat_interval: 12h
-                    receiver: 'null'
-                    routes:
-                    - match:
-                        alertname: Watchdog
-                      receiver: 'null'
-                  receivers:
-                    - name: 'null'
-                  inhibit_rules: []
+            spec: {}
 
 {%- else %}
 
