@@ -13,7 +13,7 @@ Ensure SA pub key is present:
     - mode: 644
     - makedirs: True
     - dir_mode: 755
-    - contents: {{ sa_pub_key.splitlines() }}
+    - contents: {{ sa_pub_key.splitlines() | tojson }}
 
 {%- else %}
 
@@ -39,7 +39,7 @@ Ensure SA private key is present:
     - mode: 644
     - makedirs: True
     - dir_mode: 755
-    - contents: {{ sa_priv_key.splitlines() }}
+    - contents: {{ sa_priv_key.splitlines() | tojson }}
 
 {%- else %}
 
