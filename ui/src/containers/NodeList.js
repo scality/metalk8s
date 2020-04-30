@@ -29,6 +29,7 @@ const ActionContainer = styled.div`
 `;
 
 const TableContainer = styled.div`
+  height: 80%;
   flex-grow: 1;
   .status {
     display: flex;
@@ -58,10 +59,10 @@ const TableContainer = styled.div`
 `;
 
 const NodeList = () => {
-  const nodes = useSelector(state => state.app.nodes);
-  const theme = useSelector(state => state.config.theme);
+  const nodes = useSelector((state) => state.app.nodes);
+  const theme = useSelector((state) => state.config.theme);
   const dispatch = useDispatch();
-  const deployNode = payload => dispatch(deployNodeAction(payload));
+  const deployNode = (payload) => dispatch(deployNodeAction(payload));
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
@@ -77,7 +78,7 @@ const NodeList = () => {
     {
       label: intl.translate('status'),
       dataKey: 'status',
-      renderer: data => <span> {intl.translate(data) || data}</span>,
+      renderer: (data) => <span> {intl.translate(data) || data}</span>,
     },
     {
       label: intl.translate('deployment'),
@@ -91,7 +92,7 @@ const NodeList = () => {
             <span className="status">
               <Button
                 text={intl.translate('deploy')}
-                onClick={event => {
+                onClick={(event) => {
                   event.stopPropagation();
                   deployNode(rowData);
                 }}
@@ -105,7 +106,7 @@ const NodeList = () => {
             <span className="status">
               <Button
                 text={intl.translate('deploying')}
-                onClick={event => {
+                onClick={(event) => {
                   event.stopPropagation();
                   history.push(`/nodes/${rowData.name}/deploy`);
                 }}
@@ -134,7 +135,7 @@ const NodeList = () => {
     setSortDirection(sortDirection);
   };
 
-  const onRowClick = row => {
+  const onRowClick = (row) => {
     if (row.rowData && row.rowData.name) {
       history.push(`/nodes/${row.rowData.name}`);
     }
@@ -168,7 +169,7 @@ const NodeList = () => {
           sortBy={sortBy}
           sortDirection={sortDirection}
           onSort={onSort}
-          onRowClick={item => {
+          onRowClick={(item) => {
             // FIXME we will change that behavior later
             // We want let the user click on the item only it's deployed.
             if (
