@@ -341,14 +341,18 @@ func (self *Client) authenticatedRequest(
 // Authenticate against the Salt API server.
 func (self *Client) authenticate(ctx context.Context) error {
 	payload := map[string]interface{}{
-		"eauth":      "kubernetes_rbac",
-		"username":   self.creds.username,
-		"token":      self.creds.token,
-		"token_type": string(self.creds.kind),
+		"eauth":    "kubernetes_rbac",
+		"username": self.creds.username,
+	}
+
+	if self.creds.kind == BearerToken {
+		payload["token"] = self.creds.token
+	} else {
+		payload["password"] = self.creds.token
 	}
 
 	self.logger.Info(
-		"Auth", "username", payload["username"], "type", payload["token_type"],
+		"Auth", "username", payload["username"], "type", string(self.creds.kind),
 	)
 
 	response, err := self.doRequest(ctx, "POST", "/login", payload, false)
