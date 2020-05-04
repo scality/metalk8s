@@ -105,7 +105,7 @@ def list_pkg_dependents(
     if not version:
         return all_pkgs
 
-    if pkgs_info and versions_dict[name] != version:
+    if pkgs_info and str(versions_dict[name]) != str(version):
         log.error(
             'Trying to list dependents for "%s" with version "%s", '
             'while version configured is "%s"',
