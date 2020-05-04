@@ -15,7 +15,7 @@ Ensure Ingress CA cert is present:
     - mode: 644
     - makedirs: True
     - dir_mode: 755
-    - contents: {{ ingress_ca_cert.splitlines() }}
+    - contents: {{ ingress_ca_cert.splitlines() | tojson }}
 
 {%- else %}
 
