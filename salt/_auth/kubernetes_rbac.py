@@ -145,20 +145,41 @@ def _load_kubeconfig(opts):
     return kubeconfig
 
 
-def auth(username, token, token_type, **kwargs):
+def auth(username, password=None, token=None, **kwargs):
     log.info('Authentication request for "%s"', username)
 
-    handler = AUTH_HANDLERS.get(token_type.lower(), None)
-    if not handler:
-        log.warning('Unknown auth token_type: %s', token_type)
+    if token and password:
+        log.warning(
+            'Invalid authentication request cannot provide "token" and '
+            '"password" at the same time'
+        )
         return False
+    if not token and (not password or not username):
+        log.warning(
+            'Invalid authentication request need a "token" or '
+            'a "username" and "password"'
+        )
+        return False
+
+    # Password authentication request no longer supported
+    if password:
+        log.warning(
+            'Authentication request with "username", "password" is '
+            'no longer supported')
+        return False
+
+    handler = AUTH_HANDLERS['bearer']
 
     kubeconfig = _load_kubeconfig(__opts__)
     if kubeconfig is None:
         log.info('Failed to load Kubernetes API client configuration')
         return False
 
-    result = handler.get('auth', lambda _c, _u, _t: False)(kubeconfig, username, token)
+    result = handler.get('auth', lambda _c, _u, _t: False)(
+        kubeconfig,
+        username,
+        token or password
+    )
     if result:
         log.info('Authentication request for "%s" succeeded', username)
     else:
@@ -167,20 +188,41 @@ def auth(username, token, token_type, **kwargs):
     return result
 
 
-def groups(username, token, token_type, **kwargs):
+def groups(username, password=None, token=None, **kwargs):
     log.info('Groups request for "%s"', username)
 
-    handler = AUTH_HANDLERS.get(token_type.lower(), None)
-    if not handler:
-        log.debug('Unknown groups token_type: %s', token_type)
+    if token and password:
+        log.warning(
+            'Invalid groups request cannot provide "token" and "password" '
+            'at the same time'
+        )
         return []
+    if not token and (not password or not username):
+        log.warning(
+            'Invalid groups request need a "token" or '
+            'a "username" and "password"'
+        )
+        return []
+
+    # Password groups request no longer supported
+    if password:
+        log.warning(
+            'Groups request with "username", "password" is '
+            'no longer supported')
+        return []
+
+    handler = AUTH_HANDLERS['bearer']
 
     kubeconfig = _load_kubeconfig(__opts__)
     if kubeconfig is None:
         log.info('Failed to load Kubernetes API client configuration')
         return []
 
-    result = handler.get('groups', lambda _c, _u, _t: [])(kubeconfig, username, token)
+    result = handler.get('groups', lambda _c, _u, _t: [])(
+        kubeconfig,
+        username,
+        token or password
+    )
     log.debug('Groups for "%s": %r', username, result)
 
     return result
