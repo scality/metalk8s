@@ -35,7 +35,7 @@ Generate front proxy CA certificate:
 Advertise front proxy CA certificate in the mine:
   module.wait:
     - mine.send:
-      - func: kubernetes_front_proxy_ca_b64
+      - kubernetes_front_proxy_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/front-proxy-ca.crt
     - watch:

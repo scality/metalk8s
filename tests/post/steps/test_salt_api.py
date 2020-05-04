@@ -59,8 +59,7 @@ def login_salt_api(host, username, password, version, context, request):
         data={
             'eauth': 'kubernetes_rbac',
             'username': username,
-            'token': token,
-            'token_type': 'Basic',
+            'password': token
         },
         verify=False,
     )
