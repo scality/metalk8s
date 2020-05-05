@@ -40,7 +40,9 @@ def login_salt_api_basic(host, username, password, version, context):
     token = base64.encodebytes(
         '{}:{}'.format(username, password).encode('utf-8')
     ).rstrip()
-    context['salt-api'] = _salt_api_login(address, username, token, 'Basic')
+    context['salt-api'] = _salt_api_login(
+        address, username=username, password=token
+    )
 
 
 @when("we login to SaltAPI with an admin ServiceAccount")
@@ -117,7 +119,7 @@ def _login_salt_api_sa(address, k8s_client, sa_name, sa_namespace):
     )
     token = base64.decodebytes(secret.data['token'].encode('utf-8'))
     return _salt_api_login(
-        address, sa_name, token, 'Bearer'
+        address, username=sa_name, token=token
     )
 
 
@@ -145,15 +147,21 @@ def _get_salt_api_address(host, version):
     return '{}:{}'.format(ip, SALT_API_PORT)
 
 
-def _salt_api_login(address, username, token, token_type):
+def _salt_api_login(address, username=None, password=None, token=None):
+    data = {
+        'eauth': 'kubernetes_rbac'
+    }
+
+    if username:
+        data['username'] = username
+    if password:
+        data['password'] = password
+    if token:
+        data['token'] = token
+
     response = requests.post(
         'https://{}/login'.format(address),
-        data={
-            'eauth': 'kubernetes_rbac',
-            'username': username,
-            'token': token,
-            'token_type': token_type,
-        },
+        data=data,
         verify=False,
     )
     result = {

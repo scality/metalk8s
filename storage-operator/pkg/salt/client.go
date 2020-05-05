@@ -189,28 +189,8 @@ func (self *Client) PollJob(
 	nodeResult := result[nodeName].(map[string]interface{})
 
 	// The job is done: check if it has succeeded.
-	success := result[nodeName].(map[string]interface{})["success"].(bool)
 	retcode := result[nodeName].(map[string]interface{})["retcode"].(float64)
 
-	// `"success": false` == stacktrace => the job executed and failed.
-	if !success {
-		jobLogger.Info("Salt job failed")
-		reason := getStateFailureRootCause(nodeResult["return"])
-		return nil, &AsyncJobFailed{reason}
-	}
-	// /!\ `"success": true` != job ran and succeedeed!!
-	// See https://github.com/saltstack/salt/issues/4002
-	//
-	// IIUC, having `success == true` and `retcode != 0` means "the job failed
-	// before being executed": it didn't really fail (because it haven't run)
-	// so we got `"success": true` BUT something went wrong (so retcode != 0).
-	//
-	// Real life example: run `metalk8s.volumes` for volume Foo, then while it's
-	// still in progress run `metalk8s.volumes` for volume Bar => the job for
-	// Bar will fail with success:true/retcode:1 because the state is already
-	// running for Foo…
-	//
-	// So let's check `retcode` to be 100% sure it succeedeed.
 	switch int(retcode) {
 	case 0:
 		jobLogger.Info("Salt job succeeded")
@@ -341,14 +321,18 @@ func (self *Client) authenticatedRequest(
 // Authenticate against the Salt API server.
 func (self *Client) authenticate(ctx context.Context) error {
 	payload := map[string]interface{}{
-		"eauth":      "kubernetes_rbac",
-		"username":   self.creds.username,
-		"token":      self.creds.token,
-		"token_type": string(self.creds.kind),
+		"eauth":    "kubernetes_rbac",
+		"username": self.creds.username,
+	}
+
+	if self.creds.kind == BearerToken {
+		payload["token"] = self.creds.token
+	} else {
+		payload["password"] = self.creds.token
 	}
 
 	self.logger.Info(
-		"Auth", "username", payload["username"], "type", payload["token_type"],
+		"Auth", "username", payload["username"], "type", string(self.creds.kind),
 	)
 
 	response, err := self.doRequest(ctx, "POST", "/login", payload, false)
