@@ -37,8 +37,14 @@ const defaultState = {
     client_id: 'metalk8s-ui',
     redirect_uri: 'http://localhost:3000/callback',
     response_type: 'id_token',
-    scope:
-      'openid profile email offline_access audience:server:client_id:oidc-auth-client',
+    scope: [
+      'openid',
+      'profile',
+      'email',
+      'groups',
+      'offline_access', // For refresh tokens, not sure if that's useful
+      'audience:server:client_id:oidc-auth-client', // A token for apiserver
+    ].join(' '),
     authority: '',
     loadUserInfo: false,
     post_logout_redirect_uri: '/',
