@@ -99,6 +99,10 @@ Reconfigure salt-minion:
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.salt.minion.configured
+    # NOTE: This state may upgrade/downgrade salt-minion package and also
+    # restart salt-minion service, so it may take time to answer salt-master
+    # job query, so increase timeout for this specific state
+    - timeout: 200
     - require:
       - salt: Set grains
       - salt: Refresh the mine
