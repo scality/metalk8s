@@ -1,0 +1,16 @@
+---
+# Configuration of the Dex (OIDC) service
+apiVersion: addons.metalk8s.scality.com
+kind: DexConfig
+spec:
+  # Configure the Dex Deployment
+  deployment:
+    replicas: 2
+  localuserstore:
+    enabled: true
+    userlist:
+      - email: "admin@metalk8s.invalid"
+        hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+        username: "admin"
+        userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+  connectors: []
