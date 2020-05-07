@@ -8,6 +8,7 @@ This module's functions are merged into the `metalk8s_kubernetes`
 module when called by salt by virtue of its `__virtualname__` attribute.
 '''
 
+import json
 import logging
 import operator
 import time
@@ -345,6 +346,7 @@ class Drain(object):
         Returns: string message
         Raises: CommandExecutionError in case of timeout or eviction failure
         '''
+        log.debug("Beginning drain of Node %s", self.node_name)
         try:
             pods = self.get_pods_for_eviction()
         except DrainException as exc:
@@ -358,15 +360,20 @@ class Drain(object):
                 )
             )
 
+        if pods:
+            pods_to_evict = ", ".join([
+                pod['metadata']['name'] for pod in pods
+            ])
+        else:
+            pods_to_evict = "no pods to evict."
+
         if dry_run:
             # Would be nice to create the Eviction in dry-run mode and see if
             # we hit some 429 Too Many Requests (because a disruption budget
             # would prevent the eviction)
-            return "Prepared for eviction of pods: {0}".format(
-                ", ".join([pod['metadata']['name'] for pod in pods])
-                if pods else "no pods to evict."
-            )
+            return "Prepared for eviction of pods: {}".format(pods_to_evict)
 
+        log.debug("Starting eviction of pods: %s", pods_to_evict)
         try:
             self.evict_pods(pods)
         except DrainTimeoutException as exc:
@@ -434,6 +441,11 @@ class Drain(object):
                         response['metadata']['uid'] != pod['metadata']['uid']:
                     log.info("%s evicted", pod['metadata']['name'])
                 else:
+                    log.debug(
+                        "Waiting for eviction of Pod %s (current status: %s)",
+                        pod['metadata']['name'],
+                        pod.get('status', {}).get('phase'),
+                    )
                     pending.append(pod)
 
             if not pending:
@@ -507,10 +519,22 @@ def evict_pod(name, namespace='default', grace_period=1,
         if isinstance(exc, ApiException):
             if exc.status == 404:
                 # Seems to be ignored in kubectl, let's do the same
+                log.debug(
+                    "Received '404 Not Found' when creating Eviction for %s, "
+                    "ignoring",
+                    name,
+                )
                 return True
             if exc.status == 429:
                 # Too Many Requests: the eviction is rejected, but indicates
                 # we should retry later (probably due to a disruption budget)
+                status = json.loads(exc.body, encoding="utf-8")
+                log.info(
+                    "Cannot evict %s at the moment: %s",
+                    name,
+                    status['message'],
+                )
+                # When implemented by Kubernetes, read the `Retry-After` advice
                 return False
 
         raise CommandExecutionError(
