@@ -1,0 +1,102 @@
+AlertmanagerConfigInconsistent,critical,The configuration of the instances of the Alertmanager cluster `{{$labels.service}}` are out of sync.
+AlertmanagerFailedReload,warning,Reloading Alertmanager's configuration has failed for {{ $labels.namespace }}/{{ $labels.pod}}.
+AlertmanagerMembersInconsistent,critical,Alertmanager has not found all other members of the cluster.
+etcdInsufficientMembers,critical,"etcd cluster ""{{ $labels.job }}"": insufficient members ({{ $value }})."
+etcdNoLeader,critical,"etcd cluster ""{{ $labels.job }}"": member {{ $labels.instance }} has no leader."
+etcdHighNumberOfLeaderChanges,warning,"etcd cluster ""{{ $labels.job }}"": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour."
+etcdHighNumberOfFailedGRPCRequests,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}."
+etcdHighNumberOfFailedGRPCRequests,critical,"etcd cluster ""{{ $labels.job }}"": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}."
+etcdGRPCRequestsSlow,critical,"etcd cluster ""{{ $labels.job }}"": gRPC requests to {{ $labels.grpc_method }} are taking {{ $value }}s on etcd instance {{ $labels.instance }}."
+etcdMemberCommunicationSlow,warning,"etcd cluster ""{{ $labels.job }}"": member communication with {{ $labels.To }} is taking {{ $value }}s on etcd instance {{ $labels.instance }}."
+etcdHighNumberOfFailedProposals,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }} proposal failures within the last hour on etcd instance {{ $labels.instance }}."
+etcdHighFsyncDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percentile fync durations are {{ $value }}s on etcd instance {{ $labels.instance }}."
+etcdHighCommitDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percentile commit durations {{ $value }}s on etcd instance {{ $labels.instance }}."
+etcdHighNumberOfFailedHTTPRequests,warning,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}
+etcdHighNumberOfFailedHTTPRequests,critical,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}.
+etcdHTTPRequestsSlow,warning,etcd instance {{ $labels.instance }} HTTP requests to {{ $labels.method }} are slow.
+TargetDown,warning,"{{ printf ""%.4g"" $value }}% of the {{ $labels.job }} targets in {{ $labels.namespace }} namespace are down."
+Watchdog,none,"This is an alert meant to ensure that the entire alerting pipeline is functional.
+This alert is always firing, therefore it should always be firing in Alertmanager
+and always fire against a receiver. There are integrations with various notification
+mechanisms that send a notification when this alert is not firing. For example the
+""DeadMansSnitch"" integration in PagerDuty."
+AlertmanagerDown,critical,Alertmanager has disappeared from Prometheus target discovery.
+KubeAPIDown,critical,KubeAPI has disappeared from Prometheus target discovery.
+KubeControllerManagerDown,critical,KubeControllerManager has disappeared from Prometheus target discovery.
+KubeSchedulerDown,critical,KubeScheduler has disappeared from Prometheus target discovery.
+KubeStateMetricsDown,critical,KubeStateMetrics has disappeared from Prometheus target discovery.
+KubeletDown,critical,Kubelet has disappeared from Prometheus target discovery.
+NodeExporterDown,critical,NodeExporter has disappeared from Prometheus target discovery.
+PrometheusDown,critical,Prometheus has disappeared from Prometheus target discovery.
+PrometheusOperatorDown,critical,PrometheusOperator has disappeared from Prometheus target discovery.
+KubePodCrashLooping,critical,"Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is restarting {{ printf ""%.2f"" $value }} times / 5 minutes."
+KubePodNotReady,critical,Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for longer than 15 minutes.
+KubeDeploymentGenerationMismatch,critical,"Deployment generation for {{ $labels.namespace }}/{{ $labels.deployment }} does not match, this indicates that the Deployment has failed but has not been rolled back."
+KubeDeploymentReplicasMismatch,critical,Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has not matched the expected number of replicas for longer than 15 minutes.
+KubeStatefulSetReplicasMismatch,critical,StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has not matched the expected number of replicas for longer than 15 minutes.
+KubeStatefulSetGenerationMismatch,critical,"StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset }} does not match, this indicates that the StatefulSet has failed but has not been rolled back."
+KubeStatefulSetUpdateNotRolledOut,critical,StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} update has not been rolled out.
+KubeDaemonSetRolloutStuck,critical,Only {{ $value | humanizePercentage }} of the desired Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are scheduled and ready.
+KubeContainerWaiting,warning,Pod {{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container}} has been in waiting state for longer than 1 hour.
+KubeDaemonSetNotScheduled,warning,{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are not scheduled.
+KubeDaemonSetMisScheduled,warning,{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are running where they are not supposed to run.
+KubeCronJobRunning,warning,CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is taking more than 1h to complete.
+KubeJobCompletion,warning,Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking more than one hour to complete.
+KubeJobFailed,warning,Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete.
+KubeHpaReplicasMismatch,warning,HPA {{ $labels.namespace }}/{{ $labels.hpa }} has not matched the desired number of replicas for longer than 15 minutes.
+KubeHpaMaxedOut,warning,HPA {{ $labels.namespace }}/{{ $labels.hpa }} has been running at max replicas for longer than 15 minutes.
+KubeCPUOvercommit,warning,Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.
+KubeMemOvercommit,warning,Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.
+KubeCPUOvercommit,warning,Cluster has overcommitted CPU resource requests for Namespaces.
+KubeMemOvercommit,warning,Cluster has overcommitted memory resource requests for Namespaces.
+KubeQuotaExceeded,warning,Namespace {{ $labels.namespace }} is using {{ $value | humanizePercentage }} of its {{ $labels.resource }} quota.
+CPUThrottlingHigh,warning,{{ $value | humanizePercentage }} throttling of CPU in namespace {{ $labels.namespace }} for container {{ $labels.container }} in pod {{ $labels.pod }}.
+KubePersistentVolumeUsageCritical,critical,The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is only {{ $value | humanizePercentage }} free.
+KubePersistentVolumeFullInFourDays,critical,"Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is expected to fill up within four days. Currently {{ $value | humanizePercentage }} is available."
+KubePersistentVolumeErrors,critical,The persistent volume {{ $labels.persistentvolume }} has status {{ $labels.phase }}.
+KubeAPILatencyHigh,warning,The API server has a 99th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}.
+KubeAPILatencyHigh,critical,The API server has a 99th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}.
+KubeAPIErrorsHigh,critical,API server is returning errors for {{ $value | humanizePercentage }} of requests.
+KubeAPIErrorsHigh,warning,API server is returning errors for {{ $value | humanizePercentage }} of requests.
+KubeAPIErrorsHigh,critical,API server is returning errors for {{ $value | humanizePercentage }} of requests for {{ $labels.verb }} {{ $labels.resource }} {{ $labels.subresource }}.
+KubeAPIErrorsHigh,warning,API server is returning errors for {{ $value | humanizePercentage }} of requests for {{ $labels.verb }} {{ $labels.resource }} {{ $labels.subresource }}.
+KubeClientCertificateExpiration,warning,A client certificate used to authenticate to the apiserver is expiring in less than 7.0 days.
+KubeClientCertificateExpiration,critical,A client certificate used to authenticate to the apiserver is expiring in less than 24.0 hours.
+KubeAPIDown,critical,KubeAPI has disappeared from Prometheus target discovery.
+KubeControllerManagerDown,critical,KubeControllerManager has disappeared from Prometheus target discovery.
+KubeNodeNotReady,warning,{{ $labels.node }} has been unready for more than 15 minutes.
+KubeNodeUnreachable,warning,{{ $labels.node }} is unreachable and some workloads may be rescheduled.
+KubeletTooManyPods,warning,Kubelet '{{ $labels.node }}' is running at {{ $value | humanizePercentage }} of its Pod capacity.
+KubeletDown,critical,Kubelet has disappeared from Prometheus target discovery.
+KubeSchedulerDown,critical,KubeScheduler has disappeared from Prometheus target discovery.
+KubeVersionMismatch,warning,There are {{ $value }} different semantic versions of Kubernetes components running.
+KubeClientErrors,warning,Kubernetes API server client '{{ $labels.job }}/{{ $labels.instance }}' is experiencing {{ $value | humanizePercentage }} errors.'
+NodeFilesystemSpaceFillingUp,warning,Filesystem is predicted to run out of space within the next 24 hours.
+NodeFilesystemSpaceFillingUp,critical,Filesystem is predicted to run out of space within the next 4 hours.
+NodeFilesystemAlmostOutOfSpace,warning,Filesystem has less than 5% space left.
+NodeFilesystemAlmostOutOfSpace,critical,Filesystem has less than 3% space left.
+NodeFilesystemFilesFillingUp,warning,Filesystem is predicted to run out of inodes within the next 24 hours.
+NodeFilesystemFilesFillingUp,critical,Filesystem is predicted to run out of inodes within the next 4 hours.
+NodeFilesystemAlmostOutOfFiles,warning,Filesystem has less than 5% inodes left.
+NodeFilesystemAlmostOutOfFiles,critical,Filesystem has less than 3% inodes left.
+NodeNetworkReceiveErrs,warning,Network interface is reporting many receive errors.
+NodeNetworkTransmitErrs,warning,Network interface is reporting many transmit errors.
+NodeNetworkInterfaceFlapping,warning,"Network interface ""{{ $labels.device }}"" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"""
+ClockSkewDetected,warning,Clock skew detected on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}. Ensure NTP is configured correctly on this host.
+PrometheusOperatorReconcileErrors,warning,Errors while reconciling {{ $labels.controller }} in {{ $labels.namespace }} Namespace.
+PrometheusOperatorNodeLookupErrors,warning,Errors while reconciling Prometheus in {{ $labels.namespace }} Namespace.
+PrometheusBadConfig,critical,Failed Prometheus configuration reload.
+PrometheusNotificationQueueRunningFull,warning,Prometheus alert notification queue predicted to run full in less than 30m.
+PrometheusErrorSendingAlertsToSomeAlertmanagers,warning,Prometheus has encountered more than 1% errors sending alerts to a specific Alertmanager.
+PrometheusErrorSendingAlertsToAnyAlertmanager,critical,Prometheus encounters more than 3% errors sending alerts to any Alertmanager.
+PrometheusNotConnectedToAlertmanagers,warning,Prometheus is not connected to any Alertmanagers.
+PrometheusTSDBReloadsFailing,warning,Prometheus has issues reloading blocks from disk.
+PrometheusTSDBCompactionsFailing,warning,Prometheus has issues compacting blocks.
+PrometheusNotIngestingSamples,warning,Prometheus is not ingesting samples.
+PrometheusDuplicateTimestamps,warning,Prometheus is dropping samples with duplicate timestamps.
+PrometheusOutOfOrderTimestamps,warning,Prometheus drops samples with out-of-order timestamps.
+PrometheusRemoteStorageFailures,critical,Prometheus fails to send samples to remote storage.
+PrometheusRemoteWriteBehind,critical,Prometheus remote write is behind.
+PrometheusRemoteWriteDesiredShards,warning,Prometheus remote write desired shards calculation wants to run more than configured max shards.
+PrometheusRuleFailures,critical,Prometheus is failing rule evaluations.
+PrometheusMissingRuleEvaluations,warning,Prometheus is missing rule evaluations due to slow rule group evaluation.
