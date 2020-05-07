@@ -405,6 +405,7 @@ class Drain(object):
                 )
                 if evicted:
                     break
+                time.sleep(5)  # kubectl waits 5 seconds
 
         self.wait_for_eviction(pods)
 
