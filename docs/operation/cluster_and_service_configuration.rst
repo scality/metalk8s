@@ -87,6 +87,13 @@ To add a new static user, perform the following operations:
                        salt-master-bootstrap -- salt-run \\
                        state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
 
+#. From the Bootstrap node, restart the Dex deployments.
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         rollout restart deployment dex -n metalk8s-auth
+
 #. Finally, create and apply the required :file:`ClusterRoleBinding.yaml` file
    that ensures that the newly added static user is bound to a Cluster Role.
 
@@ -192,6 +199,13 @@ To change the password of an existing user, perform the following operations:
                        --kubeconfig /etc/kubernetes/admin.conf \\
                        salt-master-bootstrap -- salt-run \\
                        state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+
+#. From the Bootstrap node, restart the Dex deployments.
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         rollout restart deployment dex -n metalk8s-auth
 
 #. Verify that the password has been changed and you can log in to the MetalK8s
    UI using the new password
