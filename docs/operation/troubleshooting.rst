@@ -59,7 +59,8 @@ Account Administration Errors
 Forgot the MetalK8s GUI password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you forget the MetalK8s GUI username and/or password combination,
-follow :ref:`this procedure <ops-k8s-admin>` to reset or change it.
+follow :ref:`this procedure <Change-dex-static-user-password>` to reset or
+change it.
 
 General Kubernetes Resource Errors
 ++++++++++++++++++++++++++++++++++
