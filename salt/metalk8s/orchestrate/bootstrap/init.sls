@@ -107,10 +107,11 @@ Wait for API server to be available:
   - require:
     - salt: Bring bootstrap minion to highstate
 
-Generate etcd client certs for salt master:
+Generate client certs for Salt master:
   salt.state:
   - sls:
     - metalk8s.salt.master.certs
+    - metalk8s.salt.master.kubeconfig
   - tgt: {{ pillar.bootstrap_id }}
   - pillar: {{ pillar_data | tojson }}
   - saltenv: {{ saltenv }}

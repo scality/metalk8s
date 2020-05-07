@@ -486,6 +486,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/master/files/salt-master-manifest.yaml.j2'),
     Path('salt/metalk8s/salt/master/init.sls'),
     Path('salt/metalk8s/salt/master/installed.sls'),
+    Path('salt/metalk8s/salt/master/kubeconfig.sls'),
     Path('salt/metalk8s/salt/master/certs/etcd-client.sls'),
     Path('salt/metalk8s/salt/master/certs/init.sls'),
     Path('salt/metalk8s/salt/master/certs/salt-api.sls'),
