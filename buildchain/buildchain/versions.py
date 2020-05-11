@@ -19,7 +19,7 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 
 CALICO_VERSION     : str = '3.8.2'
 K8S_VERSION        : str = '1.15.11'
-SALT_VERSION       : str = '2018.3.4'
+SALT_VERSION       : str = '3000.2'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -140,7 +140,7 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='nginx',
         version=NGINX_IMAGE_VERSION,
-        digest='sha256:dd2d0ac3fff2f007d99e033b64854be0941e19a2ad51f174d9240dda20d9f534',
+        digest='sha256:f09fe80eb0e75e97b04b9dfb065ac3fda37a8fac0161f42fca1e6fe4d0977c80',
     ),
     Image(
         name='nginx-ingress-controller',
@@ -160,7 +160,7 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='pause',
         version='3.1',
-        digest='sha256:f78411e19d84a252e53bff71a4407a5686c46983a2c2eeed83929b888179acea',
+        digest='sha256:da86e6ba6ca197bf6bc5e9d900febd906b133eaa4750e6bed647b0fbe50ed43e',
     ),
     Image(
         name='prometheus',

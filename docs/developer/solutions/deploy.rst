@@ -7,7 +7,7 @@ This script is located at the root of Metalk8s archive:
 
   .. parsed-literal::
 
-    /srv/scality/metalk8s-|release|/solutions.sh
+    /srv/scality/metalk8s-|version|/solutions.sh
 
 Import a Solution
 -----------------

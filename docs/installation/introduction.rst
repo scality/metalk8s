@@ -22,7 +22,8 @@ Installing a MetalK8s cluster can be broken down into the following steps:
    MetalK8s is not designed to handle world-distributed multi-site
    architectures. Instead, it provides a highly resilient cluster at the
    datacenter scale. To manage multiple sites, look into application-level
-   solutions or alternatives from such the communities as `the Multicluster SIG
+   solutions or alternatives from such Kubernetes community groups as `the
+   Multicluster SIG
    <https://github.com/kubernetes/community/tree/master/sig-multicluster>`_).
 
 .. _Kubernetes: https://kubernetes.io/
@@ -32,7 +33,7 @@ Installing a MetalK8s cluster can be broken down into the following steps:
 Choosing a Deployment Architecture
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Before starting the installation, you must choose an architecture.
+Before starting the installation, it's best to choose an architecture.
 
 Standard Architecture
 """""""""""""""""""""
@@ -57,6 +58,7 @@ size, as MetalK8s impact will be negligible.
 
 Extended Architecture
 """""""""""""""""""""
+
 This example architecture focuses on reliability rather than compactness,
 offering the finest control over the entire platform:
 
@@ -344,8 +346,8 @@ of security at the port level, which must be disabled or circumvented with
 
 Also note that Kubernetes has numerous integrations with existing cloud
 providers to provide easier access to proprietary features, such as
-load balancers. For more information, review
-`this topic <https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/>`_.
+load balancers. For more information, review `this topic`_.
 
 .. _AWS EC2: https://aws.amazon.com/ec2/
 .. _OpenStack: https://www.openstack.org/
+.. _this topic: https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/

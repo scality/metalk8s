@@ -23,4 +23,4 @@ Configure registry:
     - sls:
       - metalk8s.repo.installed
     - require:
-      - metalk8s_kubernetes: Update Solutions configuration
+      - salt: Update Solutions configuration

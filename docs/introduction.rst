@@ -1,3 +1,14 @@
+.. only:: unreleased
+
+   .. warning::
+
+      This is a development version and was not officialy released.
+
+      .. parsed-literal::
+
+         Version: |version|
+         Git Revision: |release|
+
 .. only:: latex
 
    Introduction

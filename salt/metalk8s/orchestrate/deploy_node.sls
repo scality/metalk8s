@@ -75,7 +75,7 @@ Sync module on the node:
 
 {%- if node_name in salt.saltutil.runner('manage.up') %}
 
-Refresh and check pillar before salt-minion configuration:
+Check pillar before salt-minion configuration:
   salt.function:
     - name: metalk8s.check_pillar_keys
     - tgt: {{ node_name }}
@@ -99,10 +99,14 @@ Reconfigure salt-minion:
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.salt.minion.configured
+    # NOTE: This state may upgrade/downgrade salt-minion package and also
+    # restart salt-minion service, so it may take time to answer salt-master
+    # job query, so increase timeout for this specific state
+    - timeout: 200
     - require:
       - salt: Set grains
       - salt: Refresh the mine
-      - salt: Refresh and check pillar before salt-minion configuration
+      - salt: Check pillar before salt-minion configuration
 
 Wait minion available:
   salt.runner:
@@ -117,7 +121,7 @@ Wait minion available:
 
 {%- if 'etcd' in roles and 'etcd' not in skip_roles %}
 
-Refresh and check pillar before etcd deployment:
+Check pillar before etcd deployment:
   salt.function:
     - name: metalk8s.check_pillar_keys
     - tgt: {{ node_name }}
@@ -149,7 +153,7 @@ Install etcd node:
           # deployed yet (as we call `highstate` just after)
           skip_apiserver_proxy_healthcheck: True
     - require:
-      - salt: Refresh and check pillar before etcd deployment
+      - salt: Check pillar before etcd deployment
 
 Register the node into etcd cluster:
   salt.runner:
@@ -171,7 +175,7 @@ Wait for API server to be available before highstate:
   - status: 200
   - verify_ssl: false
 
-Refresh and check pillar before highstate:
+Check pillar before highstate:
   salt.function:
     - name: metalk8s.check_pillar_keys
     - tgt: {{ node_name }}
@@ -208,7 +212,7 @@ Run the highstate:
       - salt: Set grains
       - salt: Refresh the mine
       - metalk8s_cordon: Cordon the node
-      - salt: Refresh and check pillar before highstate
+      - salt: Check pillar before highstate
 
 Wait for API server to be available:
   http.wait_for_successful_query:
