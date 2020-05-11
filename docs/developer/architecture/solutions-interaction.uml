@@ -1,0 +1,137 @@
+@startuml
+
+actor user as "User"
+control ui as "MetalK8s UI"
+control saltmaster as "Salt Master"
+entity bootstrap as "Bootstrap node"
+control apiserver as "Kubernetes API"
+control registry as "MetalK8s registry"
+
+== Import a new Solution (version) ==
+
+user -> bootstrap : Upload Solution ISO
+user -> bootstrap ++ : Run Solutions CLI to import archive
+bootstrap -> bootstrap : Update SolutionsConfiguration file
+bootstrap -> saltmaster ++ : Request Solutions import "orchestrate.solutions.import-components"
+
+saltmaster -> bootstrap ++ : Run "metalk8s.solutions.available" formula
+|||
+
+loop For each ISO defined in "SolutionsConfiguration"
+
+    |||
+    saltmaster -> bootstrap ++ : Check ISO file (against our standards/constraints)
+    |||
+    bootstrap --> saltmaster -- : Return status (valid or not) and metadata if any
+    |||
+
+    alt ISO is invalid
+        |||
+        saltmaster -> saltmaster : Fail early
+        |||
+    else ISO is valid
+        |||
+        saltmaster -> bootstrap : Mount ISO
+        bootstrap -> registry : Configure new ISO source
+        bootstrap -> saltmaster : Solution imported successfully
+        |||
+    end
+    |||
+end
+|||
+
+loop For each Solution version in "metalk8s-solutions" ConfigMap not in "SolutionsConfiguration"
+    |||
+    bootstrap -> registry : Remove configuration for this Solution version
+    bootstrap -> bootstrap : Unmount ISO
+    bootstrap -> saltmaster : Solution removed successfully
+    |||
+end
+|||
+
+bootstrap -> saltmaster -- : All Solutions imported/removed successfully
+
+saltmaster <-> apiserver : Update "metalk8s-solutions" ConfigMap
+
+saltmaster -> saltmaster : Mount Solution content into Salt Master container
+
+saltmaster -> bootstrap -- : Solution import finished
+
+bootstrap -> user -- : Solutions imported successfully
+
+|||
+
+== Activate a Solution (version) ==
+
+user -> bootstrap ++ : Run Solutions CLI to activate a version
+bootstrap -> bootstrap : Update SolutionsConfiguration file
+bootstrap -> saltmaster ++ : Request Solutions components deployment "orchestrate.solutions.deploy-components"
+
+loop For each Solution version in SolutionsConfiguration
+    |||
+
+    alt Solution version is active
+        |||
+        saltmaster -> apiserver : Deploy/Update Solution version components
+        |||
+    else Solution version is not active
+        |||
+        saltmaster -> apiserver : Remove Solution version components
+        |||
+    end
+
+    |||
+    saltmaster -> apiserver : Update "metalk8s-solutions" ConfigMap
+    |||
+end
+|||
+
+saltmaster -> bootstrap -- : Solutions components deployment finished
+bootstrap -> user -- : Solutions successfully activated
+
+
+== Create an Environment ==
+
+user -> bootstrap ++ : Run Solutions CLI to create an Environment
+bootstrap -> apiserver : Create Environment Namespace
+bootstrap -> apiserver : Set Environment name label on Namespace
+bootstrap -> apiserver : Set Environment description annotation on Namespace
+bootstrap -> apiserver : Create Environment ConfigMap "metalk8s-environment"
+bootstrap -> user -- : Environment successfully created
+
+== Add a Solution (version) to an Environment ==
+
+user -> bootstrap ++ : Run Solutions CLI to add a Solution to an Environment
+bootstrap -> apiserver : Update Environment ConfigMap "metalk8s-environment"
+bootstrap -> saltmaster ++ : Request Environment preparation "orchestration.solutions.prepare-environment"
+saltmaster <-> apiserver : Retrieve "metalk8s-environment" ConfigMap
+
+loop For each Solution in "metalk8s-environment" ConfigMap
+    |||
+
+    alt Solution version is available
+        |||
+        saltmaster -> apiserver : Deploy Solution Operator ServiceAccount
+        saltmaster -> apiserver : Deploy Solution Operator Role
+        saltmaster -> apiserver : Deploy Solution Operator RoleBinding
+        saltmaster -> apiserver : Deploy Solution Operator ConfigMap
+        saltmaster -> apiserver : Deploy Solution Operator Deployment
+        saltmaster -> apiserver : Deploy Solution UI ConfigMap
+        saltmaster -> apiserver : Deploy Solution UI Deployment
+        saltmaster -> apiserver : Deploy Solution UI Service
+        saltmaster -> apiserver : Deploy Solution UI Ingress
+        |||
+    else Solution version is not available
+        |||
+        saltmaster -> saltmaster : Environment preparation failure
+        |||
+    end
+    |||
+
+end
+|||
+
+saltmaster -> bootstrap -- : Environment preparation finished
+bootstrap -> user -- : Solutions successfully added to Environment
+
+@enduml
