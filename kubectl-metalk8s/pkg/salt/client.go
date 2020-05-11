@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -61,89 +60,6 @@ func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 		token:  nil,
 		logger: logger,
 	}, nil
-}
-
-// Spawn a job, asynchronously, to prepare the volume on the specified node.
-//
-// Arguments
-//     ctx:        the request context (used for cancellation)
-//     nodeName:   name of the node where the volume will be
-//     volumeName: name of the volume to prepare
-//     saltenv:    saltenv to use
-//
-// Returns
-//     The Salt job ID.
-func (self *Client) PrepareVolume(
-	ctx context.Context, nodeName string, volumeName string, saltenv string,
-) (string, error) {
-	payload := map[string]interface{}{
-		"client": "local_async",
-		"tgt":    nodeName,
-		"fun":    "state.sls",
-		"kwarg": map[string]interface{}{
-			"mods":    "metalk8s.volumes",
-			"saltenv": saltenv,
-			"pillar":  map[string]interface{}{"volume": volumeName},
-		},
-	}
-
-	self.logger.Info(
-		"PrepareVolume", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
-	)
-
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return "", errors.Wrapf(
-			err,
-			"PrepareVolume failed (env=%s, target=%s, volume=%s)",
-			saltenv, nodeName, volumeName,
-		)
-	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return result["jid"].(string), nil
-}
-
-// Spawn a job, asynchronously, to unprepare the volume on the specified node.
-//
-// Arguments
-//     ctx:      the request context (used for cancellation)
-//     nodeName: name of the node where the volume will be
-//     volumeName: name of the volume to prepare
-//     saltenv:    saltenv to use
-//
-// Returns
-//     The Salt job ID.
-func (self *Client) UnprepareVolume(
-	ctx context.Context, nodeName string, volumeName string, saltenv string,
-) (string, error) {
-	payload := map[string]interface{}{
-		"client": "local_async",
-		"tgt":    nodeName,
-		"fun":    "state.sls",
-		"kwarg": map[string]interface{}{
-			"mods":    "metalk8s.volumes.unprepared",
-			"saltenv": saltenv,
-			"pillar":  map[string]interface{}{"volume": volumeName},
-		},
-	}
-
-	self.logger.Info(
-		"UnprepareVolume",
-		"Volume.NodeName", nodeName, "Volume.Name", volumeName,
-	)
-
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return "", errors.Wrapf(
-			err,
-			"UnrepareVolume failed (env=%s, target=%s, volume=%s)",
-			saltenv, nodeName, volumeName,
-		)
-	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return result["jid"].(string), nil
 }
 
 // Poll the status of an asynchronous Salt job.
@@ -223,49 +139,6 @@ func getStateFailureRootCause(output interface{}) string {
 	default:
 		return fmt.Sprintf("unknown error type (%T)", error)
 	}
-}
-
-// Return the size of the specified device on the given node.
-//
-// This request is synchronous.
-//
-// Arguments
-//     ctx:        the request context (used for cancellation)
-//     nodeName:   name of the node where the volume will be
-//     devicePath: path of the device for which we want the size
-//
-// Returns
-//     The size of the device, in bytes.
-func (self *Client) GetVolumeSize(
-	ctx context.Context, nodeName string, devicePath string,
-) (int64, error) {
-	payload := map[string]interface{}{
-		"client":  "local",
-		"tgt":     nodeName,
-		"fun":     "disk.dump",
-		"arg":     devicePath,
-		"timeout": 1,
-	}
-
-	self.logger.Info("disk.dump")
-
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return 0, errors.Wrapf(
-			err, "disk.dump failed (target=%s, path=%s)", nodeName, devicePath,
-		)
-	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	if nodeResult, ok := result[nodeName].(map[string]interface{}); ok {
-		size_str := nodeResult["getsize64"].(string)
-		return strconv.ParseInt(size_str, 10, 64)
-	}
-
-	return 0, fmt.Errorf(
-		"no size in disk.dump response (target=%s, path=%s)",
-		nodeName, devicePath,
-	)
 }
 
 // Send an authenticated request to Salt API.
