@@ -9,13 +9,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
+	"k8s.io/client-go/rest"
+	"k8s.io/klog/klogr"
 )
 
 type AsyncJobFailed struct {
@@ -28,20 +32,24 @@ func (self *AsyncJobFailed) Error() string {
 
 // A Salt API client.
 type Client struct {
-	address string       // Address of the Salt API server.
-	client  *http.Client // HTTP client to query Salt API.
-	creds   *Credential  // Salt API authentication credentials.
-	token   *authToken   // Salt API authentication token.
-	logger  logr.Logger  // Logger for the client's requests
+	address string            // Address of the Salt API server.
+	client  *http.Client      // HTTP client to query Salt API.
+	creds   *Credential       // Salt API authentication credentials.
+	token   *authToken        // Salt API authentication token.
+	logger  logr.Logger       // Logger for the client's requests.
+	headers map[string]string // Custom headers to add to requests.
 }
 
 // Create a new Salt API client.
-func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
-	address := os.Getenv("METALK8S_SALT_MASTER_ADDRESS")
+func NewClient(
+	address string, creds *Credential, caCertData []byte, logger logr.Logger,
+) (*Client, error) {
+	if address == "" {
+		address = os.Getenv("METALK8S_SALT_MASTER_ADDRESS")
+	}
 	if address == "" {
 		address = "https://salt-master:4507"
 	}
-	logger := log.Log.WithName("salt-api").WithValues("Salt.Address", address)
 
 	if len(caCertData) == 0 {
 		return nil, fmt.Errorf("Empty CA certificate")
@@ -60,6 +68,51 @@ func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 		token:  nil,
 		logger: logger,
 	}, nil
+}
+
+// Create a new Salt API client from a given config (basically a kubeconfig)
+func NewForConfig(config *rest.Config) (*Client, error) {
+	// config.Host is the apiserver url, add path to the Salt-master proxy
+	url, err := url.Parse(config.Host)
+	if err != nil {
+		return nil, err
+	}
+	url.Path = path.Join(
+		url.Path,
+		"api/v1/namespaces/kube-system/services/https:salt-master:api/proxy/",
+	)
+	address := url.String()
+
+	// Username is mandatory for Salt-API even if it's already part of the
+	// Bearer Token
+	username := config.Username
+	if username == "" {
+		username = "salt-go-client"
+	}
+
+	if config.BearerToken == "" {
+		return nil, fmt.Errorf("Salt API only support BearerToken authentication")
+	}
+
+	client, err := NewClient(
+		address,
+		NewCredential(username, config.BearerToken, BearerToken),
+		config.TLSClientConfig.CAData,
+		klogr.New().WithName("salt-api").WithValues("Salt.Address", address),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if client.headers == nil {
+		client.headers = map[string]string{}
+	}
+	// Add header to authenticate through apiserver Proxy
+	client.headers["Authorization"] = fmt.Sprintf(
+		"Bearer %s", config.BearerToken,
+	)
+
+	return client, nil
 }
 
 // Poll the status of an asynchronous Salt job.
@@ -334,6 +387,10 @@ func (self *Client) newRequest(
 	request.Header.Set("Content-Type", "application/json")
 	if is_auth {
 		request.Header.Set("X-Auth-Token", self.token.value)
+	}
+
+	for key, value := range self.headers {
+		request.Header.Set(key, value)
 	}
 	return request, nil
 }
