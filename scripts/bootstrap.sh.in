@@ -94,8 +94,8 @@ orchestrate_bootstrap() {
     )
 
     run "Deploying early-stage bootstrap node in local mode (this may take a while)" \
-        "$SALT_CALL" --local --state-output=mixed --retcode-passthrough state.sls \
-            '["metalk8s.kubernetes.ca.kubernetes.installed", "metalk8s.roles.bootstrap", "metalk8s.roles.minion"]' \
+        "$SALT_CALL" --local --state-output=mixed --retcode-passthrough \
+            state.sls metalk8s.roles.internal.early-stage-bootstrap \
             saltenv=metalk8s-@@VERSION \
             pillarenv=metalk8s-@@VERSION \
             pillar="${pillar[*]}"
