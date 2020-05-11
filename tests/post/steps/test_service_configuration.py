@@ -11,6 +11,20 @@ from kubernetes.client.rest import ApiException
 from tests import utils
 
 
+# Constants {{{
+
+
+DEFAULT_CSC_CONFIG_YAML = """
+apiVersion: addons.metalk8s.scality.com
+kind: DexConfig
+spec:
+  deployment:
+    replicas: {replicas}
+"""
+
+
+# }}}
+
 # Fixtures {{{
 
 
@@ -42,15 +56,12 @@ def test_service_config_propagation(host):
 
 
 @given(parsers.parse(
-    "we have a '{name}' CSC in namespace '{namespace}' with "
-    "'{path}' equal to '{value}'"))
+    "we have a '{name}' CSC in namespace '{namespace}'"))
 def check_csc_configuration(
     k8s_client,
     csc,
     name,
     namespace,
-    path,
-    value
 ):
     csc_response = csc.get(name, namespace)
 
@@ -61,12 +72,6 @@ def check_csc_configuration(
     )
 
     csc_obj = csc.load(csc_response, name, namespace)
-    response_value = utils.get_dict_element(csc_obj, path)
-
-    assert literal_eval(value) == response_value, (
-        "Expected value {} for key {} in ConfigMap {} found in namespace {}, "
-        "got {}".format(value, path, name, namespace, response_value)
-    )
     return dict(csc_obj=csc_obj)
 
 
@@ -88,14 +93,13 @@ def update_service_configuration(
     value
 ):
 
-    full_csc = csc.get(name, namespace)
-    csc_obj = utils.set_dict_element(
-        csc.load(full_csc, name, namespace), path, literal_eval(value)
+    csc_from_yaml = yaml.safe_load(
+        DEFAULT_CSC_CONFIG_YAML.format(replicas=value)
     )
     patch = {
         'data': {
             'config.yaml': yaml.safe_dump(
-                csc_obj, default_flow_style=False
+                csc_from_yaml, default_flow_style=False
             )
         }
     }

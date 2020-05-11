@@ -19,7 +19,7 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 
 CALICO_VERSION     : str = '3.12.0'
 K8S_VERSION        : str = '1.16.8'
-SALT_VERSION       : str = '2018.3.4'
+SALT_VERSION       : str = '3000.2'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -104,8 +104,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='dex',
-        version='v2.19.0',
-        digest='sha256:132523cc3e9402a5e12c3b7d837da6f0c96d8a05f27bf6ba42458c2a0d1c01f5',
+        version='v2.23.0',
+        digest='sha256:b0bbc14a503a97587b365113a2f171a04ee7a6fd6f84c52e9384400533c9276c',
     ),
     Image(
         name='etcd',
@@ -149,8 +149,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='nginx-ingress-controller',
-        version='0.26.1',
-        digest='sha256:464db4880861bd9d1e74e67a4a9c975a6e74c1e9968776d8d4cc73492a56dfa5',
+        version='0.30.0',
+        digest='sha256:b312c91d0de688a21075078982b5e3a48b13b46eda4df743317d3059fc3ca0d9',
     ),
     Image(
         name='nginx-ingress-defaultbackend-amd64',
@@ -174,8 +174,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='k8s-prometheus-adapter-amd64',
-        version='v0.5.0',
-        digest='sha256:acf4c4dc6aaa51e3004eebdc410b509db45d1a6ebd255457c5745f0b4671678f',
+        version='v0.6.0',
+        digest='sha256:b63dc612e3cb73f79d2401a4516f794f9f0a83002600ca72e675e41baecff437',
     ),
     Image(
         name='prometheus-config-reloader',

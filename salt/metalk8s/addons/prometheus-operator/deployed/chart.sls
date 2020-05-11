@@ -1,9 +1,12 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{%- set grafana = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config') %}
-{%- set prometheus = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config') %}
-{%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config') %}
+{% import_yaml 'metalk8s/addons/prometheus-operator/config/grafana.yaml' as grafana_defaults with context %}
+{% import_yaml 'metalk8s/addons/prometheus-operator/config/prometheus.yaml' as prometheus_defaults with context %}
+{% import_yaml 'metalk8s/addons/prometheus-operator/config/alertmanager.yaml' as alertmanager_defaults with context %}
+{%- set grafana = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config', grafana_defaults) %}
+{%- set prometheus = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults) %}
+{%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults) %}
 
 {% raw %}
 
@@ -40382,7 +40385,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 7bdc765fb193e66e7a094a5fb0ffe34218370368d820cffbaf93cae218ebe61f
+        checksum/config: 822028727d07edab6b024280685ef2510fcbae564ca11bea646dde763fd9559c
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: 424200eb6040b7b1ec58add370935c65963d856f8ece2725caaa8390a3b54eee
         checksum/secret: 90b18138547156baaa1588680e3842aabcb31605c7f7fb8baa7eacc2b6d4822b

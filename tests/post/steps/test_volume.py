@@ -180,6 +180,11 @@ def test_volume_invalid_storage_class(host, teardown):
 def test_volume_invalid_storage_class(host, teardown):
     pass
 
+@scenario('../features/volume.feature',
+          'Test deletion while creation is in progress')
+def test_volume_delete_while_pending(host, teardown):
+    pass
+
 # }}}
 # Given {{{
 

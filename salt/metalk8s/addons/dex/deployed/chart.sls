@@ -1,7 +1,8 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config') %}
+{% import_yaml 'metalk8s/addons/dex/config/dex.yaml' as dex_defaults with context %}
+{%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
 
 {% raw %}
 
@@ -13,8 +14,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.0
-    helm.sh/chart: dex-2.4.0
+    app.kubernetes.io/version: 2.23.0
+    helm.sh/chart: dex-2.10.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -77,8 +78,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.0
-    helm.sh/chart: dex-2.4.0
+    app.kubernetes.io/version: 2.23.0
+    helm.sh/chart: dex-2.10.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -91,8 +92,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.0
-    helm.sh/chart: dex-2.4.0
+    app.kubernetes.io/version: 2.23.0
+    helm.sh/chart: dex-2.10.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -118,8 +119,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.0
-    helm.sh/chart: dex-2.4.0
+    app.kubernetes.io/version: 2.23.0
+    helm.sh/chart: dex-2.10.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -140,8 +141,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.0
-    helm.sh/chart: dex-2.4.0
+    app.kubernetes.io/version: 2.23.0
+    helm.sh/chart: dex-2.10.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -166,8 +167,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.0
-    helm.sh/chart: dex-2.4.0
+    app.kubernetes.io/version: 2.23.0
+    helm.sh/chart: dex-2.10.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -186,7 +187,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: ad6c30825bdc913fdb7dd6486fd137e443001efd3f183aa7ae13f013bc6f6c38
+        checksum/config: d58a2489f8f7fd4df3f78cad5ea6ac51e7eda9ca076c41689ce853539ff2a15b
       labels:
         app.kubernetes.io/component: dex
         app.kubernetes.io/instance: dex
@@ -198,7 +199,7 @@ spec:
         - serve
         - /etc/dex/cfg/config.yaml
         env: []
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.19.0
+        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.23.0
         imagePullPolicy: IfNotPresent
         name: main
         ports:
@@ -250,8 +251,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.19.0
-    helm.sh/chart: dex-2.4.0
+    app.kubernetes.io/version: 2.23.0
+    helm.sh/chart: dex-2.10.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
