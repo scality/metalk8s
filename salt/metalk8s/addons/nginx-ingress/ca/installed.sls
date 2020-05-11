@@ -35,7 +35,7 @@ Generate Ingress CA certificate:
 Advertise Ingress CA certificate in the mine:
   module.wait:
     - mine.send:
-      - func: ingress_ca_b64
+      - ingress_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/metalk8s/pki/nginx-ingress/ca.crt
     - watch:

@@ -8,4 +8,5 @@ Architecture Documents
    monitoring
    alerting
    requirements
+   solutions
    ci

@@ -50,7 +50,7 @@ Changing the hostname of a MetalK8s node
           metalk8s.scality.com/ssh-host: <node control-plane IP>
           metalk8s.scality.com/ssh-sudo: 'false'
         labels:
-          metalk8s.scality.com/version: '|release|'
+          metalk8s.scality.com/version: '|version|'
           <role labels>
       spec:
         taints: <taints>
@@ -84,7 +84,7 @@ Changing the hostname of a MetalK8s node
    .. parsed-literal::
 
      $ salt-run state.orchestrate metalk8s.orchestrate.deploy_node \
-       saltenv=metalk8s-|release| \
+       saltenv=metalk8s-|version| \
        pillar='{"orchestrate": {"node_name": "<new-node-name>"}}'
 
 

@@ -20,7 +20,7 @@ of failure, then re-run the installation with the verbose flag (``--verbose``).
 
 .. parsed-literal::
 
-   root@bootstrap $ /srv/scality/metalk8s-|release|/bootstrap.sh --verbose
+   root@bootstrap $ /srv/scality/metalk8s-|version|/bootstrap.sh --verbose
 
 Errors after restarting the Bootstrap node
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,8 +32,8 @@ following checks:
 
   .. parsed-literal::
 
-     [root@bootstrap vagrant]# mount | grep /srv/scality/metalk8s-|release|
-     /home/centos/metalk8s.iso on /srv/scality/metalk8s-|release| type iso9660 (ro,relatime)
+     [root@bootstrap vagrant]# mount | grep /srv/scality/metalk8s-|version|
+     /home/centos/metalk8s.iso on /srv/scality/metalk8s-|version| type iso9660 (ro,relatime)
 
 
 - If the ISO is unmounted, run the following command which will check the
@@ -41,7 +41,7 @@ following checks:
 
   .. parsed-literal::
 
-     [root@bootstrap vagrant]# salt-call state.sls metalk8s.archives.mounted saltenv=metalk8s-|release|
+     [root@bootstrap vagrant]# salt-call state.sls metalk8s.archives.mounted saltenv=metalk8s-|version|
       Summary for local
       ------------
       Succeeded: 3

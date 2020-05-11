@@ -22,20 +22,6 @@ Upgrade etcd cluster:
     - require:
       - salt: Execute the upgrade prechecks
 
-# In salt 2018.3 we can not do synchronous pillar refresh, so add a sleep
-# see https://github.com/saltstack/salt/issues/20590
-Wait for pillar refresh to complete:
-  salt.function:
-    - name: saltutil.refresh_pillar
-    - tgt: '*'
-    - require:
-      - salt: Upgrade etcd cluster
-  module.run:
-    - test.sleep:
-      - length: 20
-    - require:
-      - salt: Wait for pillar refresh to complete
-
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
 
@@ -53,12 +39,29 @@ Skip node {{ node }}, already in {{ node_version }} newer than {{ dest_version }
 
   {%- else %}
 
+Check pillar on {{ node }} before installing apiserver-proxy:
+  salt.function:
+    - name: metalk8s.check_pillar_keys
+    - tgt: {{ node }}
+    - kwarg:
+        keys:
+          - metalk8s.endpoints.repositories.ip
+          - metalk8s.endpoints.repositories.ports.http
+        # We cannot raise when using `salt.function` as we need to return
+        # `False` to have a failed state
+        # https://github.com/saltstack/salt/issues/55503
+        raise_error: False
+    - retry:
+        attempts: 5
+
 Install apiserver-proxy on {{ node }}:
   salt.state:
     - tgt: {{ node }}
     - sls:
       - metalk8s.kubernetes.apiserver-proxy
     - saltenv: {{ saltenv }}
+    - require:
+      - salt: Check pillar on {{ node }} before installing apiserver-proxy
 
 Wait for API server to be available on {{ node }}:
   http.wait_for_successful_query:
@@ -67,8 +70,8 @@ Wait for API server to be available on {{ node }}:
   - status: 200
   - verify_ssl: false
   - require:
-    - module: Wait for pillar refresh to complete
     - salt: Install apiserver-proxy on {{ node }}
+    - salt: Upgrade etcd cluster
   {%- if previous_node is defined %}
     - salt: Deploy node {{ previous_node }}
   {%- endif %}

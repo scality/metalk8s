@@ -29,7 +29,7 @@ Store SA public key:
 Advertise SA pub key in the mine:
   module.wait:
     - mine.send:
-      - func: kubernetes_sa_pub_key_b64
+      - kubernetes_sa_pub_key_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/sa.pub
     - watch:

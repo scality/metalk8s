@@ -13,7 +13,7 @@ Ensure etcd CA cert is present:
     - mode: 644
     - makedirs: True
     - dir_mode: 755
-    - contents: {{ etcd_ca.splitlines() }}
+    - contents: {{ etcd_ca.splitlines() | tojson }}
 
 {%- else %}
 

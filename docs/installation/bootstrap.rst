@@ -63,8 +63,8 @@ Whether you've built or received your ISO,
 
    .. parsed-literal::
 
-      root@bootstrap # mkdir -p /srv/scality/metalk8s-|release|
-      root@bootstrap # mount <path-to-iso> /srv/scality/metalk8s-|release|
+      root@bootstrap $ mkdir -p /srv/scality/metalk8s-|version|
+      root@bootstrap $ mount <path-to-iso> /srv/scality/metalk8s-|version|
 
 .. _Bootstrap Configuration:
 
@@ -281,7 +281,7 @@ Bootstrap node.
 
 .. parsed-literal::
 
-   root@bootstrap # /srv/scality/metalk8s-|release|/bootstrap.sh
+   root@bootstrap $ /srv/scality/metalk8s-|version|/bootstrap.sh
 
    .. warning::
 
