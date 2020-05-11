@@ -226,6 +226,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/dex/ca/advertised.sls'),
     Path('salt/metalk8s/addons/dex/certs/init.sls'),
     Path('salt/metalk8s/addons/dex/certs/server.sls'),
+    Path('salt/metalk8s/addons/dex/config/dex.yaml'),
     Path('salt/metalk8s/addons/dex/deployed/chart.sls'),
     Path('salt/metalk8s/addons/dex/deployed/init.sls'),
     Path('salt/metalk8s/addons/dex/deployed/namespace.sls'),
@@ -269,6 +270,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-adapter/deployed/init.sls'),
 
+    Path('salt/metalk8s/addons/prometheus-operator/config/alertmanager.yaml'),
+    Path('salt/metalk8s/addons/prometheus-operator/config/grafana.yaml'),
+    Path('salt/metalk8s/addons/prometheus-operator/config/prometheus.yaml'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/'
          'alertmanager-configuration-secret.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),

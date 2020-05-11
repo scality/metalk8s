@@ -41,6 +41,7 @@ START_BLOCK = """
 #!jinja | metalk8s_kubernetes
 
 {{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}}
+{csc_defaults}
 {configlines}
 
 {{% raw %}}
@@ -141,9 +142,9 @@ def replace_magic_strings(rendered_yaml):
         result,
     )
 
-    # Handle __url__
+    # Handle __escape__
     result = re.sub(
-        r'__url__\((?P<varname>.*)\)',
+        r'__escape__\((?P<varname>.*)\)',
         r'"{% endraw -%}\g<varname>{%- raw %}"',
         result,
     )
@@ -190,6 +191,7 @@ def main():
         '--service-config',
         action='append',
         nargs=2,
+        required=False,
         dest="service_configs",
         help="Example: --service-config grafana metalk8s-grafana-config"
     )
@@ -211,16 +213,26 @@ def main():
                 doc=doc
             )
         )
+    if args.service_configs:
+        import_csc_yaml = '\n'.join(
+            ("{{% import_yaml 'metalk8s/addons/{0}/config/{1}.yaml' as "
+                "{1}_defaults with context %}}").format(
+                args.name, service_config[0]
+            ) for service_config in args.service_configs
+        )
 
-    sys.stdout.write(
-        START_BLOCK.format(
-            configlines='\n'.join(
-                ("{{%- set {} = salt.metalk8s_service_configuration"
-                 ".get_service_conf('{}', '{}') %}}").format(
-                    service_config[0], args.namespace, service_config[1]
-                ) for service_config in args.service_configs
-            )
-        ).lstrip()
+        config = '\n'.join(
+            ("{{%- set {0} = salt.metalk8s_service_configuration"
+                ".get_service_conf('{1}', '{2}', {0}_defaults) %}}").format(
+                service_config[0], args.namespace, service_config[1]
+            ) for service_config in args.service_configs
+        )
+    else:
+        import_csc_yaml = ''
+        config = ''
+
+    sys.stdout.write(START_BLOCK.format(
+        csc_defaults=import_csc_yaml, configlines=config).lstrip()
     )
     sys.stdout.write('\n')
 

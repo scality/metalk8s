@@ -15,7 +15,7 @@ Ensure Dex CA cert is present:
     - mode: 644
     - makedirs: True
     - dir_mode: 755
-    - contents: {{ dex_ca_cert.splitlines() }}
+    - contents: {{ dex_ca_cert.splitlines() | tojson }}
 
 {%- else %}
 

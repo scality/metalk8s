@@ -135,5 +135,6 @@
   "please_refer_to": "Please refer to",
   "import_solution_hint": "You should import a solution to prepare your environment",
   "redirecting": "Redirecting…",
-  "documentation": "Documentation"
+  "documentation": "Documentation",
+  "salt_job": "Salt job"
 }

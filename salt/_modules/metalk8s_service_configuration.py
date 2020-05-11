@@ -3,6 +3,7 @@
 import logging
 import yaml
 
+import salt
 from salt.exceptions import CommandExecutionError
 
 
@@ -18,6 +19,7 @@ def __virtual__():
 def get_service_conf(
     namespace,
     configmap_name,
+    default_csc,
     apiVersion=None,
     kind=None,
     **kwargs
@@ -27,6 +29,7 @@ def get_service_conf(
     Arguments:
         configmap_name: the ConfigMap name
         namespace: the Namespace where the ConfigMap is stored
+        default_csc: the CSC imported from YAML file
 
     Returns:
         A dict of a specific service configuration
@@ -35,12 +38,20 @@ def get_service_conf(
 
     .. code-block:: bash
 
-        salt-call metalk8s_service_configuration.get_service_conf "metalk8s-monitoring" "metalk8s-prometheus-config"
+        salt-call metalk8s_service_configuration.get_service_conf
+            "metalk8s-monitoring" "metalk8s-prometheus-config"
+            '{"apiVersion":"addons.metalk8s.scality.com","kind":"PrometheusConfig","spec":{"deployment":{"replicas":1}}}'
     """
 
     if not configmap_name:
-        raise Exception(
+        raise CommandExecutionError(
             'Expected a ConfigMap name but got {}'.format(configmap_name)
+        )
+    if not isinstance(default_csc, dict):
+        raise CommandExecutionError(
+            'Expected default CSC for ConfigMap {} but got {}'.format(
+                configmap_name, default_csc
+            )
         )
 
     try:
@@ -83,10 +94,6 @@ def get_service_conf(
             'Expected `config.yaml` as yaml in the ConfigMap {} but got {}'
             .format(configmap_name, config)
         )
-
-    if not apiVersion and not kind:
-        return config
-
     if apiVersion and config['apiVersion'] != apiVersion:
         raise CommandExecutionError(
             'Expected value {} for key apiVersion, got {}'.format(
@@ -99,6 +106,9 @@ def get_service_conf(
                 kind, config['kind']
             )
         )
+    merged_config = salt.utils.dictupdate.merge(
+        default_csc, config, strategy='recurse',
+        merge_lists=True
+    )
 
-    #Todo: Need a full schema validation of the ConfigMap data portion
-    return config
+    return merged_config
