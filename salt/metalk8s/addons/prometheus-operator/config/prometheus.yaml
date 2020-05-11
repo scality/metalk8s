@@ -6,3 +6,35 @@ spec:
   # Configure the Prometheus Deployment
   deployment:
     replicas: 1
+  rules:
+    node_exporter:
+      node_filesystem_space_filling_up:
+        warning:
+          hours: 24  # Hours before there is no space left
+          threshold: 40  # Min space left to trigger prediction
+        critical:
+          hours: 4
+          threshold: 20
+      node_filesystem_almost_out_of_space:
+        warning:
+          available: 5  # Percentage of free space left
+        critical:
+          available: 3
+      node_filesystem_files_filling_up:
+        warning:
+          hours: 24  # Hours before there is no inode left
+          threshold: 40  # Min space left to trigger prediction
+        critical:
+          hours: 6
+          threshold: 20
+      node_filesystem_almost_out_of_files:
+        warning:
+          available: 5  # Percentage of free inodes left
+        critical:
+          available: 3
+      node_network_receive_errors:
+        warning:
+          errors: 10  # Number of receive errors for the last 2m
+      node_network_transmit_errors:
+        warning:
+          errors: 10  # Number of transmit errors for the last 2m
