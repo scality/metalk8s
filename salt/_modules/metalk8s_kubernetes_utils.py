@@ -197,7 +197,7 @@ def get_service_endpoints(service, namespace, kubeconfig):
             port['name']: port['port']
             for port in endpoint['subsets'][0]['ports']
         }
-    except (AttributeError, IndexError, KeyError) as exc:
+    except (AttributeError, IndexError, KeyError, TypeError) as exc:
         raise CommandExecutionError(
             error_tpl.format(service, namespace, exc)
         )
