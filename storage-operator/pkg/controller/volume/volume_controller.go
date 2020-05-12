@@ -243,7 +243,7 @@ func newReconciler(mgr manager.Manager) (reconcile.Reconciler, error) {
 	return &ReconcileVolume{
 		client:   mgr.GetClient(),
 		scheme:   mgr.GetScheme(),
-		recorder: mgr.GetRecorder("volume-controller"),
+		recorder: mgr.GetEventRecorderFor("volume-controller"),
 		salt:     saltClient,
 		devices:  make(map[string]deviceInfo),
 	}, nil
