@@ -118,6 +118,8 @@ type VolumeStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// List of conditions through which the Volume has or has not passed.
+	// +listType=map
+	// +listMapKey=type
 	Conditions []VolumeCondition `json:"conditions,omitempty"`
 
 	// Job in progress

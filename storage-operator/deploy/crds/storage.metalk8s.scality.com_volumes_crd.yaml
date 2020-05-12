@@ -298,6 +298,24 @@ spec:
                       description: CSI represents storage that is handled by an external
                         CSI driver (Beta feature).
                       properties:
+                        controllerExpandSecretRef:
+                          description: ControllerExpandSecretRef is a reference to
+                            the secret object containing sensitive information to
+                            pass to the CSI driver to complete the CSI ControllerExpandVolume
+                            call. This is an alpha field and requires enabling ExpandCSIVolumes
+                            feature gate. This field is optional, and may be empty
+                            if no secret is required. If the secret object contains
+                            more than one secret, all secrets are passed.
+                          properties:
+                            name:
+                              description: Name is unique within a namespace to reference
+                                a secret resource.
+                              type: string
+                            namespace:
+                              description: Namespace defines the space within which
+                                the secret name must be unique.
+                              type: string
+                          type: object
                         controllerPublishSecretRef:
                           description: ControllerPublishSecretRef is a reference to
                             the secret object containing sensitive information to

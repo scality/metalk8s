@@ -109,7 +109,7 @@ func (in *VolumeCondition) DeepCopy() *VolumeCondition {
 func (in *VolumeList) DeepCopyInto(out *VolumeList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Volume, len(*in))
