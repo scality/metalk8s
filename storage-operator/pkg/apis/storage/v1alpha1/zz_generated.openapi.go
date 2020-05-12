@@ -22,6 +22,7 @@ func schema_pkg_apis_storage_v1alpha1_Volume(ref common.ReferenceCallback) commo
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "Volume is the Schema for the volumes API",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -65,6 +66,7 @@ func schema_pkg_apis_storage_v1alpha1_VolumeSpec(ref common.ReferenceCallback) c
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "VolumeSpec defines the desired state of Volume",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"nodeName": {
 						SchemaProps: spec.SchemaProps{
@@ -110,6 +112,7 @@ func schema_pkg_apis_storage_v1alpha1_VolumeStatus(ref common.ReferenceCallback)
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "VolumeStatus defines the observed state of Volume",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"conditions": {
 						SchemaProps: spec.SchemaProps{
