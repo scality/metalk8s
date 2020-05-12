@@ -75,7 +75,13 @@ rules:
   resources:
   - persistentvolumes
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 # For reading a Node's MetalK8s version
 - apiGroups:
   - ""
@@ -93,8 +99,13 @@ rules:
   resources:
   - '*'
   verbs:
-  - '*'
-# For reading device preparation details (formatting and mounting options)
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - storage.k8s.io
   resources:
