@@ -122,6 +122,12 @@ func schema_pkg_apis_storage_v1alpha1_VolumeStatus(ref common.ReferenceCallback)
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"conditions": {
+						VendorExtensible: spec.VendorExtensible{
+							Extensions: spec.Extensions{
+								"x-kubernetes-list-map-keys": "type",
+								"x-kubernetes-list-type":     "map",
+							},
+						},
 						SchemaProps: spec.SchemaProps{
 							Description: "List of conditions through which the Volume has or has not passed.",
 							Type:        []string{"array"},
