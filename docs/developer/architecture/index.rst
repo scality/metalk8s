@@ -9,6 +9,7 @@ Architecture Documents
    configurations
    alerting
    centralized-cli
+   metalk8s-ui
    requirements
    solutions
    ci
