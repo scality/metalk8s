@@ -46,7 +46,7 @@ type VolumeSpec struct {
 	// How the volume is intended to be consumed, either Block or Filesystem
 	// (default is Filesystem).
 	// +optional
-	// +kubebuilder:validation:Enum=Filesystem,Block
+	// +kubebuilder:validation:Enum=Filesystem;Block
 	Mode corev1.PersistentVolumeMode `json:"mode,omitempty"`
 
 	// Template for the underlying PersistentVolume.

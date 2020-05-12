@@ -40,6 +40,13 @@ spec:
         spec:
           description: VolumeSpec defines the desired state of Volume
           properties:
+            mode:
+              description: How the volume is intended to be consumed, either Block
+                or Filesystem (default is Filesystem).
+              enum:
+              - Filesystem
+              - Block
+              type: string
             nodeName:
               description: Name of the node on which the volume is available.
               type: string
@@ -54,8 +61,12 @@ spec:
             sparseLoopDevice:
               properties:
                 size:
+                  anyOf:
+                  - type: integer
+                  - type: string
                   description: Size of the generated sparse file backing the PersistentVolume.
-                  type: string
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
               required:
               - size
               type: object
@@ -171,7 +182,11 @@ spec:
                       type: object
                     capacity:
                       additionalProperties:
-                        type: string
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                       description: 'A description of the persistent volume''s resources
                         and capacity. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#capacity'
                       type: object
@@ -1135,6 +1150,12 @@ spec:
                 - type
                 type: object
               type: array
+              x-kubernetes-list-map-keys:
+              - type
+              x-kubernetes-list-type: map
+            deviceName:
+              description: Name of the underlying block device.
+              type: string
             job:
               description: Job in progress
               type: string
