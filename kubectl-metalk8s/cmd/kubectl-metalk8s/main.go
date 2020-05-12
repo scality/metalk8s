@@ -1,21 +1,43 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"github.com/spf13/pflag"
+	"fmt"
+	"os"
+
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/klog"
 
 	"github.com/scality/metalk8s/kubectl-metalk8s/pkg/cmd"
-
-	"k8s.io/klog"
+	"github.com/scality/metalk8s/kubectl-metalk8s/pkg/cmd/listnodes"
+	"github.com/scality/metalk8s/kubectl-metalk8s/pkg/cmd/testping"
 )
 
 func main() {
-	flags := pflag.NewFlagSet("kubectl-metalk8s", pflag.ExitOnError)
-	pflag.CommandLine = flags
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	klog.InitFlags(nil)
+	streams := &genericclioptions.IOStreams{
+		In:     os.Stdin,
+		Out:    os.Stdout,
+		ErrOut: os.Stderr,
+	}
 
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	globalOptions := cmd.NewGlobalOptions(streams)
 
-	cmd.Execute()
+	rootCmd := cmd.NewRootCommand()
+	rootCmd.AddCommand(listnodes.NewCommand(globalOptions))
+	rootCmd.AddCommand(testping.NewCommand(globalOptions))
+
+	klogFlags := &flag.FlagSet{}
+	klog.InitFlags(klogFlags)
+	rootCmd.PersistentFlags().AddGoFlagSet(klogFlags)
+
+	globalOptions.AddFlags(rootCmd.PersistentFlags())
+
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 }
