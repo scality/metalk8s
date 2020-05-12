@@ -8,6 +8,7 @@ import (
 
 	"github.com/scality/metalk8s/kubectl-metalk8s/pkg/cmd"
 	"github.com/scality/metalk8s/kubectl-metalk8s/pkg/cmd/listnodes"
+	"github.com/scality/metalk8s/kubectl-metalk8s/pkg/cmd/testping"
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/klog"
@@ -27,6 +28,7 @@ func main() {
 
 	rootCmd := cmd.NewRootCommand()
 	rootCmd.AddCommand(listnodes.NewCommand(globalOptions))
+	rootCmd.AddCommand(testping.NewCommand(globalOptions))
 
 	klogFlags := &flag.FlagSet{}
 	klog.InitFlags(klogFlags)
