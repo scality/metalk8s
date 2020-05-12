@@ -38,3 +38,8 @@ Feature: Monitoring is up and running
     Scenario: Node metrics can be retrieved using metrics.k8s.io/v1beta1
         Given the Kubernetes API is available
         Then a node with label 'node-role.kubernetes.io/bootstrap=' has metrics
+
+    Scenario: Ensure deployed Prometheus rules match the default
+        Given the Kubernetes API is available
+        And we have 1 running pod labeled 'prometheus=prometheus-operator-prometheus' in namespace 'metalk8s-monitoring'
+        Then the deployed Prometheus alert rules are the same as the default alert rules
