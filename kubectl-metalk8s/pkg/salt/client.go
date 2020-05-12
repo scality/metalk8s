@@ -115,6 +115,39 @@ func NewForConfig(config *rest.Config) (*Client, error) {
 	return client, nil
 }
 
+// Run a Salt command using local async client
+//
+// Arguments
+//		ctx:		the request context (used for cancellation)
+//		tgt:		salt minion target
+//		fun:		salt function to execute
+//		kwarg:	aditional kwargs
+//
+// Returns
+//		The Salt job ID
+func (self *Client) LocalAsync(
+	ctx context.Context, tgt string, fun string, kwarg map[string]interface{},
+) (string, error) {
+	payload := map[string]interface{}{
+		"client": "local_async",
+		"tgt":    tgt,
+		"fun":    fun,
+	}
+
+	if kwarg != nil && len(kwarg) > 0 {
+		payload["kwarg"] = kwarg
+	}
+
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO(#1461): make this more robust
+	result := ans["return"].([]interface{})[0].(map[string]interface{})
+	return result["jid"].(string), nil
+}
+
 // Poll the status of an asynchronous Salt job.
 //
 // Arguments
