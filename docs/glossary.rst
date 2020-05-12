@@ -58,6 +58,12 @@ Glossary
 
      For more information, see `etcd.io <https://etcd.io>`_.
 
+   Grafana
+     Grafana is a service for analysing and visualizing metrics scraped by
+     Prometheus.
+
+     For more information, see `Grafana <https://grafana.com/docs/grafana/latest/>`_.
+
    Kubeconfig
      A configuration file for :term:`kubectl`, which includes authentication
      through embedded certificates.
@@ -70,6 +76,13 @@ Glossary
 
      |see K8s docs|
      `kubelet <https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/>`_.
+
+   Kube-state-metrics
+     The kube-state-metrics service listens to the Kubernetes API server and
+     generates metrics about the state of the objects.
+
+     |see K8s docs|
+     `kube-state-metrics <https://github.com/kubernetes/kube-state-metrics/tree/master/docs/>`_.
 
    Namespace
      A Namespace is a Kubernetes abstraction to support multiple virtual
@@ -105,6 +118,13 @@ Glossary
      provided by the cluster or installed afterwards.
 
      For more details, see `prometheus.io <https://prometheus.io>`_.
+
+   Prometheus Node-exporter
+     The Prometheus node-exporter is an exporter for exposing hardware and
+     OS metrics read from the Linux Kernel. Users can typically obtain the
+     following metrics; cpu, memory, filesystem for each Kubernetes node.
+
+    For more details, see `prometheus node-exporter <https://prometheus.io/docs/guides/node-exporter>`_.
 
    SaltAPI
      SaltAPI is an HTTP service for exposing operations to perform with a

@@ -20,4 +20,5 @@ do not have a working MetalK8s_ setup.
    volume_management/index
    account_administration
    cluster_and_service_configuration
+   cluster_monitoring
    troubleshooting
