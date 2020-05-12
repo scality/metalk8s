@@ -5,7 +5,7 @@ Requirements
 ------------
 
 - `Go <https://golang.org/>`_ (1.13 or higher) and
-  `operator-sdk <https://github.com/operator-framework/operator-sdk>`_ (0.15 or
+  `operator-sdk <https://github.com/operator-framework/operator-sdk>`_ (0.16 or
   higher): to build the Kubernetes Operators
 - `Mercurial <https://www.mercurial-scm.org/>`_: some Go dependencies are
   downloaded from Mercurial repositories.
