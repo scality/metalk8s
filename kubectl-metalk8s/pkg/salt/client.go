@@ -153,12 +153,11 @@ func (self *Client) LocalAsync(
 // Arguments
 //     ctx:      the request context (used for cancellation)
 //     jobId:    Salt job ID
-//     nodeName: node on which the job is executed
 //
 // Returns
 //     The result of the job if the execution is over, otherwise nil.
 func (self *Client) PollJob(
-	ctx context.Context, jobId string, nodeName string,
+	ctx context.Context, jobId string,
 ) (map[string]interface{}, error) {
 	jobLogger := self.logger.WithValues("Salt.JobId", jobId)
 	jobLogger.Info("polling Salt job")
@@ -188,22 +187,8 @@ func (self *Client) PollJob(
 		jobLogger.Info("Salt job is still running")
 		return nil, nil
 	}
-	nodeResult := result[nodeName].(map[string]interface{})
 
-	// The job is done: check if it has succeeded.
-	retcode := result[nodeName].(map[string]interface{})["retcode"].(float64)
-
-	switch int(retcode) {
-	case 0:
-		jobLogger.Info("Salt job succeeded")
-		return nodeResult, nil
-	case 1: // Concurrent state execution.
-		return nil, fmt.Errorf("Salt job %s failed to run", jobId)
-	default:
-		jobLogger.Info("Salt job failed")
-		reason := getStateFailureRootCause(nodeResult["return"])
-		return nil, &AsyncJobFailed{reason}
-	}
+	return result, nil
 }
 
 func getStateFailureRootCause(output interface{}) string {
