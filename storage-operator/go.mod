@@ -1,5 +1,7 @@
 module github.com/scality/metalk8s/storage-operator
 
+go 1.13
+
 require (
 	github.com/go-logr/logr v0.1.0
 	github.com/pkg/errors v0.9.1
@@ -19,5 +21,3 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
 	k8s.io/client-go => k8s.io/client-go v0.17.4 // Required by prometheus-operator
 )
-
-go 1.13
