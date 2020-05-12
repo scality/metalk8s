@@ -160,7 +160,7 @@ func (self *Client) PollJob(
 	ctx context.Context, jobId string,
 ) (map[string]interface{}, error) {
 	jobLogger := self.logger.WithValues("Salt.JobId", jobId)
-	jobLogger.Info("polling Salt job")
+	jobLogger.V(3).Info("polling Salt job")
 
 	endpoint := fmt.Sprintf("/jobs/%s", jobId)
 	ans, err := self.authenticatedRequest(ctx, "GET", endpoint, nil)
@@ -175,7 +175,7 @@ func (self *Client) PollJob(
 
 	// Unknown Job ID: maybe the Salt server restarted or something like that.
 	if errmsg, found := info["Error"]; found {
-		jobLogger.Info("Salt job not found")
+		jobLogger.V(3).Info("Salt job not found")
 		reason := fmt.Sprintf(
 			"cannot get status for job %s: %s", jobId, (errmsg).(string),
 		)
@@ -184,7 +184,7 @@ func (self *Client) PollJob(
 	result := info["Result"].(map[string]interface{})
 	// No result yet, the job is still running.
 	if len(result) == 0 {
-		jobLogger.Info("Salt job is still running")
+		jobLogger.V(3).Info("Salt job is still running")
 		return nil, nil
 	}
 
@@ -247,7 +247,7 @@ func (self *Client) authenticatedRequest(
 	// Maybe the token got invalidated by a restart of the Salt API server.
 	// => Re-authenticate and retry.
 	if response.StatusCode == 401 {
-		self.logger.Info("valid token rejected: try to re-authenticate")
+		self.logger.V(3).Info("valid token rejected: try to re-authenticate")
 
 		response.Body.Close() // Terminate this request before starting another.
 
@@ -275,7 +275,7 @@ func (self *Client) authenticate(ctx context.Context) error {
 		payload["password"] = self.creds.token
 	}
 
-	self.logger.Info(
+	self.logger.V(3).Info(
 		"Auth", "username", payload["username"], "type", string(self.creds.kind),
 	)
 
@@ -355,11 +355,11 @@ func (self *Client) logRequest(
 	url := fmt.Sprintf("%s%s", self.address, endpoint)
 
 	if response != nil {
-		self.logger.Info(verb,
+		self.logger.V(3).Info(verb,
 			"url", url, "StatusCode", response.StatusCode, "duration", elapsed,
 		)
 	} else {
-		self.logger.Info(verb, "url", url, "duration", elapsed)
+		self.logger.V(3).Info(verb, "url", url, "duration", elapsed)
 	}
 }
 
