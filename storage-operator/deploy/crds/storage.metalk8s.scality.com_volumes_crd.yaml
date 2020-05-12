@@ -54,8 +54,12 @@ spec:
             sparseLoopDevice:
               properties:
                 size:
+                  anyOf:
+                  - type: integer
+                  - type: string
                   description: Size of the generated sparse file backing the PersistentVolume.
-                  type: string
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
               required:
               - size
               type: object
@@ -171,7 +175,11 @@ spec:
                       type: object
                     capacity:
                       additionalProperties:
-                        type: string
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                       description: 'A description of the persistent volume''s resources
                         and capacity. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#capacity'
                       type: object
@@ -1135,6 +1143,9 @@ spec:
                 - type
                 type: object
               type: array
+              x-kubernetes-list-map-keys:
+              - type
+              x-kubernetes-list-type: map
             job:
               description: Job in progress
               type: string
