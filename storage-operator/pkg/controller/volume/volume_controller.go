@@ -479,7 +479,6 @@ type stateSetter func(
 func (self *ReconcileVolume) pollSaltJob(
 	ctx context.Context,
 	stepName string,
-	jobName string,
 	volume *storagev1alpha1.Volume,
 	pv *corev1.PersistentVolume,
 	setState stateSetter,
@@ -490,10 +489,16 @@ func (self *ReconcileVolume) pollSaltJob(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
 
-	jid := volume.Status.Job
-	if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
+	job, err := salt.JobFromString(volume.Status.Job)
+	if err != nil {
+		reqLogger.Error(err, "cannot parse Salt job from Volume status")
+		return self.setFailedVolumeStatus(
+			ctx, volume, pv, reason, "cannot parse Salt job from Volume status",
+		)
+	}
+	if result, err := self.salt.PollJob(ctx, job, nodeName); err != nil {
 		reqLogger.Error(
-			err, fmt.Sprintf("failed to poll Salt job '%s' status", jobName),
+			err, fmt.Sprintf("failed to poll Salt job '%s' status", job.Name),
 		)
 		// This one is not retryable.
 		if failure, ok := err.(*salt.AsyncJobFailed); ok {
@@ -503,15 +508,16 @@ func (self *ReconcileVolume) pollSaltJob(
 			)
 			return self.setFailedVolumeStatus(
 				ctx, volume, pv, reason,
-				"Salt job '%s' failed with: %s", jobName, failure.Error(),
+				"Salt job '%s' failed with: %s", job.Name, failure.Error(),
 			)
 		}
 		// Job salt not found or failed to run, let's retry.
-		return setState(ctx, volume, "")
+		job.ID = ""
+		return setState(ctx, volume, job.String())
 	} else {
 		if result == nil {
 			reqLogger.Info(
-				fmt.Sprintf("Salt job '%s' still in progress", jobName),
+				fmt.Sprintf("Salt job '%s' still in progress", job.Name),
 			)
 			return delayedRequeue(nil)
 		}
@@ -519,7 +525,8 @@ func (self *ReconcileVolume) pollSaltJob(
 			volume, corev1.EventTypeNormal, "SaltCall",
 			"step '%s' succeeded", stepName,
 		)
-		return setState(ctx, volume, JOB_DONE_MARKER)
+		job.ID = JOB_DONE_MARKER
+		return setState(ctx, volume, job.String())
 	}
 }
 
@@ -645,15 +652,20 @@ func (self *ReconcileVolume) deployVolume(
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
+	job, err := salt.JobFromString(volume.Status.Job)
+	if err != nil {
+		reqLogger.Error(err, "cannot parse Salt job from Volume status")
+		return requeue(err)
+	}
 
-	switch volume.Status.Job {
+	switch job.ID {
 	case "": // No job in progress: call Salt to prepare the volume.
 		// Set volume-protection finalizer on the volume.
 		if err := self.addVolumeFinalizer(ctx, volume); err != nil {
 			reqLogger.Error(err, "cannot set volume-protection: requeue")
 			return delayedRequeue(err)
 		}
-		jid, err := self.salt.PrepareVolume(ctx, nodeName, volume.Name, saltenv)
+		job, err := self.salt.PrepareVolume(ctx, nodeName, volume.Name, saltenv)
 		if err != nil {
 			reqLogger.Error(err, "failed to run PrepareVolume")
 			return delayedRequeue(err)
@@ -663,14 +675,14 @@ func (self *ReconcileVolume) deployVolume(
 				volume, corev1.EventTypeNormal, "SaltCall",
 				"volume provisioning started",
 			)
-			return self.setPendingVolumeStatus(ctx, volume, jid)
+			return self.setPendingVolumeStatus(ctx, volume, job.String())
 		}
 	case JOB_DONE_MARKER: // Salt job is done, now let's create the PV.
 		return self.createPersistentVolume(ctx, volume)
 	default: // PrepareVolume in progress: poll its state.
 		return self.pollSaltJob(
-			ctx, "volume provisioning", "PrepareVolume",
-			volume, nil, self.setPendingVolumeStatus,
+			ctx, "volume provisioning", volume, nil,
+			self.setPendingVolumeStatus,
 			storagev1alpha1.ReasonCreationError,
 		)
 	}
@@ -904,16 +916,22 @@ func (self *ReconcileVolume) reclaimStorage(
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
-	saltJob := volume.Status.Job
+	job, err := salt.JobFromString(volume.Status.Job)
+	if err != nil {
+		reqLogger.Error(err, "cannot parse Salt job from Volume status")
+		return requeue(err)
+	}
+	jobId := job.ID
+
 	// Ignore existing Job ID in Failed case (no job are running), JID only here
 	// for debug (which is now useless as we're going to delete the Volume).
 	if volume.ComputePhase() == storagev1alpha1.VolumeFailed {
-		saltJob = ""
+		jobId = ""
 	}
 
-	switch saltJob {
+	switch jobId {
 	case "": // No job in progress: call Salt to unprepare the volume.
-		jid, err := self.salt.UnprepareVolume(
+		job, err := self.salt.UnprepareVolume(
 			ctx, nodeName, volume.Name, saltenv,
 		)
 		if err != nil {
@@ -925,7 +943,7 @@ func (self *ReconcileVolume) reclaimStorage(
 				volume, corev1.EventTypeNormal, "SaltCall",
 				"volume finalization started",
 			)
-			return self.setTerminatingVolumeStatus(ctx, volume, jid)
+			return self.setTerminatingVolumeStatus(ctx, volume, job.String())
 		}
 	case JOB_DONE_MARKER: // Salt job is done, now let's remove the finalizers.
 		if pv != nil {
@@ -947,8 +965,8 @@ func (self *ReconcileVolume) reclaimStorage(
 		return endReconciliation()
 	default: // UnprepareVolume in progress: poll its state.
 		return self.pollSaltJob(
-			ctx, "volume finalization", "UnprepareVolume",
-			volume, pv, self.setTerminatingVolumeStatus,
+			ctx, "volume finalization", volume, pv,
+			self.setTerminatingVolumeStatus,
 			storagev1alpha1.ReasonDestructionError,
 		)
 	}

@@ -72,10 +72,10 @@ func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 //     saltenv:    saltenv to use
 //
 // Returns
-//     The Salt job ID.
+//     The Salt job handle.
 func (self *Client) PrepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
-) (string, error) {
+) (*JobHandle, error) {
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -93,7 +93,7 @@ func (self *Client) PrepareVolume(
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
-		return "", errors.Wrapf(
+		return nil, errors.Wrapf(
 			err,
 			"PrepareVolume failed (env=%s, target=%s, volume=%s)",
 			saltenv, nodeName, volumeName,
@@ -101,7 +101,7 @@ func (self *Client) PrepareVolume(
 	}
 	// TODO(#1461): make this more robust.
 	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return result["jid"].(string), nil
+	return newJob("PrepareVolume", result["jid"].(string)), nil
 }
 
 // Spawn a job, asynchronously, to unprepare the volume on the specified node.
@@ -113,10 +113,10 @@ func (self *Client) PrepareVolume(
 //     saltenv:    saltenv to use
 //
 // Returns
-//     The Salt job ID.
+//     The Salt job handle.
 func (self *Client) UnprepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
-) (string, error) {
+) (*JobHandle, error) {
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -135,7 +135,7 @@ func (self *Client) UnprepareVolume(
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
-		return "", errors.Wrapf(
+		return nil, errors.Wrapf(
 			err,
 			"UnrepareVolume failed (env=%s, target=%s, volume=%s)",
 			saltenv, nodeName, volumeName,
@@ -143,29 +143,29 @@ func (self *Client) UnprepareVolume(
 	}
 	// TODO(#1461): make this more robust.
 	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return result["jid"].(string), nil
+	return newJob("UnprepareVolume", result["jid"].(string)), nil
 }
 
 // Poll the status of an asynchronous Salt job.
 //
 // Arguments
 //     ctx:      the request context (used for cancellation)
-//     jobId:    Salt job ID
+//     job:      Salt job handle
 //     nodeName: node on which the job is executed
 //
 // Returns
 //     The result of the job if the execution is over, otherwise nil.
 func (self *Client) PollJob(
-	ctx context.Context, jobId string, nodeName string,
+	ctx context.Context, job *JobHandle, nodeName string,
 ) (map[string]interface{}, error) {
-	jobLogger := self.logger.WithValues("Salt.JobId", jobId)
+	jobLogger := self.logger.WithValues("Salt.JobId", job.ID)
 	jobLogger.Info("polling Salt job")
 
-	endpoint := fmt.Sprintf("/jobs/%s", jobId)
+	endpoint := fmt.Sprintf("/jobs/%s", job.ID)
 	ans, err := self.authenticatedRequest(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, errors.Wrapf(
-			err, "Salt job polling failed for ID %s", jobId,
+			err, "Salt job polling failed for ID %s", job.ID,
 		)
 	}
 
@@ -176,7 +176,7 @@ func (self *Client) PollJob(
 	if errmsg, found := info["Error"]; found {
 		jobLogger.Info("Salt job not found")
 		reason := fmt.Sprintf(
-			"cannot get status for job %s: %s", jobId, (errmsg).(string),
+			"cannot get status for job %s: %s", job.ID, (errmsg).(string),
 		)
 		return nil, errors.New(reason)
 	}
@@ -196,7 +196,7 @@ func (self *Client) PollJob(
 		jobLogger.Info("Salt job succeeded")
 		return nodeResult, nil
 	case 1: // Concurrent state execution.
-		return nil, fmt.Errorf("Salt job %s failed to run", jobId)
+		return nil, fmt.Errorf("Salt job %s failed to run", job.ID)
 	default:
 		jobLogger.Info("Salt job failed")
 		reason := getStateFailureRootCause(nodeResult["return"])
