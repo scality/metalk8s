@@ -15,10 +15,16 @@ gpgkey=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/%s/
  && rpm --import https://repo.saltstack.com/yum/redhat/7/x86_64/archive/${SALT_VERSION}/SALTSTACK-GPG-KEY.pub \
  && yum clean expire-cache \
  && yum install -y epel-release \
- && yum install -y python2-kubernetes salt-master salt-api salt-ssh openssh-clients \
  && yum install -y python-pip \
- && pip install pip==20.0.2 \
+ && pip install pip==20.1 \
  && pip install "etcd3 != 0.11.0" \
+ && yum install -y git \
+ && pip install "git+https://github.com/kubernetes-client/python.git@cef5e9bd10a6d5ca4d9c83da46ccfe2114cdaaf8#egg=kubernetes" \
+ && yum remove -y git \
+ && pip uninstall -y \
+     requests \
+     urllib3 \
+ && yum install -y salt-master salt-api salt-ssh openssh-clients \
  && yum clean all
 
 # salt-master, salt-api
