@@ -36,6 +36,11 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   provisioner "remote-exec" {
     inline = [
       "sudo bash scripts/rhsm-register.sh '${var.rhsm_username}' '${var.rhsm_password}'",
+    ]
+  }
+
+  provisioner "remote-exec" {
+    inline = [
       "sudo bash scripts/bootstrap-config.sh",
     ]
   }
