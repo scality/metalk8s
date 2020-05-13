@@ -99,12 +99,25 @@ spec:
                   reason:
                     description: Unique, one-word, CamelCase reason for the condition's
                       last transition.
+                    enum:
+                    - Pending
+                    - Terminating
+                    - InternalError
+                    - CreationError
+                    - DestructionError
+                    - UnavailableError
                     type: string
                   status:
                     description: Status of the condition, one of True, False, Unknown.
+                    enum:
+                    - "True"
+                    - "False"
+                    - Unknown
                     type: string
                   type:
                     description: Type of volume condition.
+                    enum:
+                    - Ready
                     type: string
                 required:
                 - type

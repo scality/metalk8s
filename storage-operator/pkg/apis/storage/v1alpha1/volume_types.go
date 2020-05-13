@@ -94,14 +94,17 @@ const (
 
 type VolumeCondition struct {
 	// Type of volume condition.
+	// +kubebuilder:validation:Enum=Ready
 	Type VolumeConditionType `json:"type"`
 	// Status of the condition, one of True, False, Unknown.
+	// +kubebuilder:validation:Enum=True,False,Unknown
 	Status corev1.ConditionStatus `json:"status"`
 	// Last time the condition was updated (optional).
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
 	// Last time the condition transited from one status to another (optional).
 	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
 	// Unique, one-word, CamelCase reason for the condition's last transition.
+	// +kubebuilder:validation:Enum=Pending,Terminating,InternalError,CreationError,DestructionError,UnavailableError
 	Reason ConditionReason `json:"reason,omitempty"`
 	// Human readable message indicating details about last transition.
 	Message string `json:"message,omitempty"`
@@ -115,7 +118,6 @@ type VolumeStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// List of conditions through which the Volume has or has not passed.
-	// +kubebuilder:validation:Enum=Available,Pending,Failed,Terminating
 	Conditions []VolumeCondition `json:"conditions,omitempty"`
 
 	// Job in progress
