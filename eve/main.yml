@@ -280,7 +280,7 @@ models:
       command: >
         sudo bash
         "/srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh"
-        --archive "$(readlink -f "${ISO_PATH}")"
+        --archive "$(readlink -f "${ISO_PATH}")" --verbose
       haltOnFailure: true
   - ShellCommand: &local_tests
       name: Run tests locally
@@ -1034,7 +1034,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:metalk8s_version_prev)s
+            --destination-version "%(prop:metalk8s_version_prev)s" --verbose
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
@@ -1129,7 +1129,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version %(prop:metalk8s_version)s
+            --destination-version "%(prop:metalk8s_version)s" --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
@@ -1436,7 +1436,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version %(prop:metalk8s_version)s
+            --destination-version %(prop:metalk8s_version)s --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
@@ -1510,7 +1510,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:product_promoted_version)s
+            --destination-version %(prop:product_promoted_version)s --verbose
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
       # --- Test promoted version ---
