@@ -1,5 +1,5 @@
 # CI lint container - Fedora for recent ShellCheck version
-FROM fedora:29
+FROM fedora:32
 
 ARG BUILDBOT_VERSION=0.9.12
 ARG GO_VERSION=1.12.7
@@ -15,7 +15,7 @@ RUN dnf install -y git \
   make \
   enchant \
   hg \
-  python2-twisted \
+  python3-twisted \
   python \
   python-devel \
   python-pip \
