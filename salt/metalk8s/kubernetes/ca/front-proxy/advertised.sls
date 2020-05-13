@@ -13,7 +13,7 @@ Ensure front-proxy CA cert is present:
     - mode: 644
     - makedirs: True
     - dir_mode: 755
-    - contents: {{ ca_cert.splitlines() }}
+    - contents: {{ ca_cert.splitlines() | tojson }}
 
 {%- else %}
 

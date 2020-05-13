@@ -18,7 +18,7 @@ export function addJobToLocalStorage({
   ...props
 }) {
   const jobs = listJobsFromLocalStorage();
-  const job = jobs.find(item => item.jid === jid);
+  const job = jobs.find((item) => item.jid === jid);
   if (!job) {
     jobs.push({ jid, type, completedAt, ...props });
     saveJobsToLocalStorage(jobs);
@@ -27,7 +27,7 @@ export function addJobToLocalStorage({
 
 export function removeJobFromLocalStorage(jid) {
   const existingJobs = listJobsFromLocalStorage();
-  const jobs = existingJobs.filter(job => job.jid !== jid);
+  const jobs = existingJobs.filter((job) => job.jid !== jid);
   if (jobs.length) {
     saveJobsToLocalStorage(jobs);
   } else {
@@ -37,7 +37,7 @@ export function removeJobFromLocalStorage(jid) {
 
 export function markJobCompleteInLocalStorage(jid, completedAt) {
   const jobs = listJobsFromLocalStorage();
-  const job = jobs.find(item => item.jid === jid);
+  const job = jobs.find((item) => item.jid === jid);
   if (job) {
     job.completedAt = completedAt;
   }
@@ -53,7 +53,7 @@ export function parseJobError(returner) {
   const steps = Object.values(returner.return.data)[0];
   let firstFailedStepIndex = Infinity;
   let firstFailedStepKey;
-  Object.keys(steps).forEach(key => {
+  Object.keys(steps).forEach((key) => {
     if (!steps[key].result && steps[key].__run_num__ < firstFailedStepIndex) {
       firstFailedStepIndex = steps[key].__run_num__;
       firstFailedStepKey = key;
@@ -82,6 +82,12 @@ export function getJobStatusFromPrintJob(result, jid) {
     if (!status.success) {
       status = { ...status, ...parseJobError(returner) };
     }
+  }
+  // add error handling when indicating the error inside the JSON
+  if (job && job['Error']) {
+    status.completed = true;
+    const returner = Object.values(job['Result'])[0].return;
+    status = { ...status, ...parseJobError(returner) };
   }
 
   return status;

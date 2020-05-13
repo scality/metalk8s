@@ -160,3 +160,46 @@ def read_and_render_yaml_file(source, template, context=None, saltenv='base'):
                         template))
 
         return salt.utils.yaml.safe_load(contents)
+
+
+def get_service_endpoints(service, namespace, kubeconfig):
+    error_tpl = \
+        'Unable to get kubernetes endpoints for {} in namespace {}:\n{!s}'
+
+    try:
+        endpoint = __salt__['metalk8s_kubernetes.get_object'](
+            name=service,
+            kind='Endpoints',
+            apiVersion='v1',
+            namespace=namespace,
+            kubeconfig=kubeconfig,
+        )
+    except CommandExecutionError as exc:
+        raise CommandExecutionError(
+            error_tpl.format(service, namespace, exc)
+        )
+
+    if not endpoint:
+        raise CommandExecutionError(
+            error_tpl.format(service, namespace, 'Endpoint not found')
+        )
+
+    try:
+        # Extract hostname, ip and node_name
+        result = {
+            k: v
+            for k, v in endpoint['subsets'][0]['addresses'][0].items()
+            if k in ['hostname', 'ip', 'node_name']
+        }
+
+        # Add ports info to result dict
+        result['ports'] = {
+            port['name']: port['port']
+            for port in endpoint['subsets'][0]['ports']
+        }
+    except (AttributeError, IndexError, KeyError, TypeError) as exc:
+        raise CommandExecutionError(
+            error_tpl.format(service, namespace, exc)
+        )
+
+    return result

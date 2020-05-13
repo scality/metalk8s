@@ -151,5 +151,6 @@
   "downgrade": "Rétrograder",
   "upgrade_solution": "Mettre à jour la solution {solName}",
   "downgrade_solution": "Rétrograder la solution {solName}",
-  "no_other_available_version": "Aucune autre version disponible"
+  "no_other_available_version": "Aucune autre version disponible",
+  "salt_job": "Salt job"
 }

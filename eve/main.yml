@@ -394,7 +394,7 @@ models:
         OS_USERNAME: "%(secret:scality_cloud_username)s"
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
-        TF_VAR_worker_uuid: "%(prop:worker_uuid)s"
+        TF_VAR_prefix: "%(prop:buildnumber)s-%(prop:stage_name)s"
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
       name: Destroy openstack virtual infra
@@ -441,7 +441,7 @@ models:
         mkdir -p "sosreport/sosreport/$STEP_NAME" &&
         for host in $HOSTS_LIST; do
           scp -F "$SSH_CONFIG" \
-          $host:/var/tmp/sosreport-* \
+          "$host:/var/tmp/sosreport-*.tar.xz" \
           "sosreport/sosreport/$STEP_NAME/$host-sosreport.tar.xz"
         done
       alwaysRun: true
@@ -891,6 +891,7 @@ stages:
         TEST_SUITE: downgrade
         CLASS_NAME: minor.single node.centos7
         TEST_NAME: simple environment
+    simultaneous_builds: 20
     worker: &single_node_worker
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
@@ -1007,6 +1008,7 @@ stages:
         TEST_SUITE: upgrade
         CLASS_NAME: minor.single node.centos7
         TEST_NAME: simple environment
+    simultaneous_builds: 20
     worker: *single_node_worker
     steps:
       - Git: *git_pull
@@ -1095,6 +1097,7 @@ stages:
         TEST_SUITE: install
         CLASS_NAME: single node.rhel7
         TEST_NAME: simple environment
+    simultaneous_build: 20
     worker:
       <<: *single_node_worker
       flavor: m1.medium
@@ -1290,6 +1293,7 @@ stages:
         TEST_SUITE: upgrade
         CLASS_NAME: patch.single node.centos7
         TEST_NAME: simple environment
+    simultaneous_build: 20
     worker: *single_node_worker
     steps:
       - Git: *git_pull
@@ -1395,6 +1399,7 @@ stages:
         TEST_SUITE: downgrade
         CLASS_NAME: patch.single node.centos7
         TEST_NAME: simple environment
+    simultaneous_builds: 20
     worker: *single_node_worker
     steps:
       - Git: *git_pull
@@ -1473,6 +1478,7 @@ stages:
         TEST_SUITE: install
         CLASS_NAME: multi node.centos7
         TEST_NAME: 1 bootstrap 1 master,etcd
+    simultaneous_builds: 20
     worker:
       <<: *single_node_worker
       flavor: m1.medium
@@ -1680,6 +1686,7 @@ stages:
         TEST_SUITE: install
         CLASS_NAME: single node.centos7
         TEST_NAME: solutions
+    simultaneous_builds: 20
     worker:
       <<: *single_node_worker
       flavor: m1.medium

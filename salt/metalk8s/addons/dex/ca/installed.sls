@@ -35,7 +35,7 @@ Generate dex CA certificate:
 Advertise dex CA certificate in the mine:
   module.wait:
     - mine.send:
-      - func: dex_ca_b64
+      - dex_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/metalk8s/pki/dex/ca.crt
     - watch:

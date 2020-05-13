@@ -137,6 +137,13 @@ Glossary
      |see K8s docs|
      `kube-scheduler <https://kubernetes.io/docs/reference/command-line-tools-reference/kube-scheduler/>`_.
 
+   Secret
+     Kubernetes Secrets let you store and manage sensitive information,
+     such as passwords, OAuth tokens, and SSH keys.
+
+     |see K8s docs|
+     `Secrets <https://kubernetes.io/docs/concepts/configuration/secret/>`_.
+
    Service
      A Kubernetes Service is an abstract way to expose an application running
      on a set of :term:`Pods <Pod>` as a network service.

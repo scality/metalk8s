@@ -37,8 +37,14 @@ const defaultState = {
     client_id: 'metalk8s-ui',
     redirect_uri: 'http://localhost:3000/callback',
     response_type: 'id_token',
-    scope:
-      'openid profile email offline_access audience:server:client_id:oidc-auth-client',
+    scope: [
+      'openid',
+      'profile',
+      'email',
+      'groups',
+      'offline_access', // For refresh tokens, not sure if that's useful
+      'audience:server:client_id:oidc-auth-client', // A token for apiserver
+    ].join(' '),
     authority: '',
     loadUserInfo: false,
     post_logout_redirect_uri: '/',
@@ -130,8 +136,8 @@ export function setThemesAction(themes) {
 }
 
 // Selectors
-export const languageSelector = state => state.config.language;
-export const apiConfigSelector = state => state.config.api;
+export const languageSelector = (state) => state.config.language;
+export const apiConfigSelector = (state) => state.config.api;
 
 // Sagas
 export function* fetchTheme() {
@@ -163,17 +169,17 @@ export function* fetchConfig() {
       }),
     );
     const userManagerConfig = yield select(
-      state => state.config.userManagerConfig,
+      (state) => state.config.userManagerConfig,
     );
     yield put(setUserManagerAction(createUserManager(userManagerConfig)));
-    const userManager = yield select(state => state.config.userManager);
+    const userManager = yield select((state) => state.config.userManager);
     yield call(loadUser, store, userManager);
     yield put(setUserLoadedAction(true));
   }
 }
 
 export function* updateApiServerConfig({ payload }) {
-  const api = yield select(state => state.config.api);
+  const api = yield select((state) => state.config.api);
   if (api) {
     yield call(
       ApiK8s.updateApiServerConfig,
@@ -207,7 +213,7 @@ export function* updateLanguage(action) {
 }
 
 export function* logout() {
-  const userManager = yield select(state => state.config.userManager);
+  const userManager = yield select((state) => state.config.userManager);
   if (userManager) {
     userManager.removeUser(); // removes the user data from sessionStorage
   }
