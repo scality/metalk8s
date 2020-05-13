@@ -11,36 +11,9 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"./pkg/apis/storage/v1alpha1.PersistentVolumeTemplateSpec": schema_pkg_apis_storage_v1alpha1_PersistentVolumeTemplateSpec(ref),
-		"./pkg/apis/storage/v1alpha1.Volume":                       schema_pkg_apis_storage_v1alpha1_Volume(ref),
-		"./pkg/apis/storage/v1alpha1.VolumeSpec":                   schema_pkg_apis_storage_v1alpha1_VolumeSpec(ref),
-		"./pkg/apis/storage/v1alpha1.VolumeStatus":                 schema_pkg_apis_storage_v1alpha1_VolumeStatus(ref),
-	}
-}
-
-func schema_pkg_apis_storage_v1alpha1_PersistentVolumeTemplateSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "Describes the PersistentVolume that will be created to back the Volume.",
-				Properties: map[string]spec.Schema{
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Standard object's metadata.",
-							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
-						},
-					},
-					"spec": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Specification of the Persistent Volume.",
-							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeSpec"),
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			"k8s.io/api/core/v1.PersistentVolumeSpec", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+		"./pkg/apis/storage/v1alpha1.Volume":       schema_pkg_apis_storage_v1alpha1_Volume(ref),
+		"./pkg/apis/storage/v1alpha1.VolumeSpec":   schema_pkg_apis_storage_v1alpha1_VolumeSpec(ref),
+		"./pkg/apis/storage/v1alpha1.VolumeStatus": schema_pkg_apis_storage_v1alpha1_VolumeStatus(ref),
 	}
 }
 
