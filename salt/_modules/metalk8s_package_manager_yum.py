@@ -116,7 +116,7 @@ def list_pkg_dependents(
     if not version:
         return all_pkgs
 
-    if pkgs_info and versions_dict[name] != version:
+    if pkgs_info and str(versions_dict[name]) != str(version):
         log.error(
             'Trying to list dependents for "%s" with version "%s", '
             'while version configured is "%s"',
@@ -125,6 +125,13 @@ def list_pkg_dependents(
             versions_dict[name]
         )
         return None
+
+    # NOTE: Currently dependencies are not properly handle for downgrade
+    # purpose, only add a special case for `salt` as it's one known issue
+    # during downgrade
+    # https://github.com/scality/metalk8s/issues/2523
+    if name.startswith('salt-'):
+        all_pkgs['salt'] = version
 
     dependents = _list_dependents(
         name,

@@ -4,10 +4,11 @@ Restart salt-minion:
     - bg: true
 
 Wait until salt-minion restarted:
-  module.wait:
-    - test.sleep:
-      - length: 10
-    - watch:
+  test.configurable_test_state:
+    - changes: False
+    - result: __slot__:salt:test.sleep(10)
+    - comment: Wait a bit for 'salt-minion' to restart
+    - onchanges:
       - cmd: Restart salt-minion
 
 Ensure salt-minion running:
@@ -15,7 +16,7 @@ Ensure salt-minion running:
     - name: salt-minion
     - enable: True
     - require:
-      - module: Wait until salt-minion restarted
+      - test: Wait until salt-minion restarted
   test.configurable_test_state:
     - changes: False
     - result: __slot__:salt:test.ping()

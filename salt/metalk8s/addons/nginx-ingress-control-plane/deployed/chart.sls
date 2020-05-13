@@ -1,5 +1,7 @@
 #!jinja | metalk8s_kubernetes
+
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+
 
 {% raw %}
 
@@ -11,13 +13,13 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.24.7
+    chart: nginx-ingress-1.36.3
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
   namespace: metalk8s-ingress
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
@@ -25,7 +27,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.24.7
+    chart: nginx-ingress-1.36.3
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -81,7 +83,7 @@ rules:
   verbs:
   - update
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
@@ -89,7 +91,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.24.7
+    chart: nginx-ingress-1.36.3
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -103,7 +105,7 @@ subjects:
   name: nginx-ingress-control-plane
   namespace: metalk8s-ingress
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
@@ -111,7 +113,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.24.7
+    chart: nginx-ingress-1.36.3
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -190,7 +192,7 @@ rules:
   - create
   - patch
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
@@ -198,7 +200,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.24.7
+    chart: nginx-ingress-1.36.3
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane
@@ -221,14 +223,13 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.24.7
+    chart: nginx-ingress-1.36.3
     component: controller
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane-controller
   namespace: metalk8s-ingress
 spec:
-  clusterIP: ''
   externalIPs:
   - '{%- endraw -%}{{ grains.metalk8s.control_plane_ip }}{%- raw -%}'
   ports:
@@ -238,21 +239,21 @@ spec:
     targetPort: https
   selector:
     app: nginx-ingress
-    component: controller
+    app.kubernetes.io/component: controller
     release: nginx-ingress-control-plane
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  annotations: {}
   labels:
     app: nginx-ingress
     app.kubernetes.io/component: controller
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: nginx-ingress
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.24.7
-    component: controller
+    chart: nginx-ingress-1.36.3
     heritage: metalk8s
     release: nginx-ingress-control-plane
   name: nginx-ingress-control-plane-controller
@@ -268,6 +269,7 @@ spec:
     metadata:
       labels:
         app: nginx-ingress
+        app.kubernetes.io/component: controller
         component: controller
         release: nginx-ingress-control-plane
     spec:
@@ -289,7 +291,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         image: '{%- endraw -%}{{ build_image_name("nginx-ingress-controller", False)
-          }}{%- raw -%}:0.26.1'
+          }}{%- raw -%}:0.30.0'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -327,7 +329,7 @@ spec:
             - NET_BIND_SERVICE
             drop:
             - ALL
-          runAsUser: 33
+          runAsUser: 101
       dnsPolicy: ClusterFirst
       hostNetwork: false
       nodeSelector:

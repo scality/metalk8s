@@ -4,6 +4,7 @@ const environmentName = `environment-${new Date().getTime()}`;
 const environmentDescription = `Test environment ${environmentName}`;
 const solutionName = 'example-solution';
 const solutionVersion = '0.1.0-dev';
+const upgradeSolutionVersion = '0.1.1-dev';
 
 When(
   'I go to the solutions list by clicking the solution icon in the sidebar',
@@ -72,6 +73,8 @@ Then(
       requestTimeout: 60000,
       responseTimeout: 60000,
     };
+    // To make sure the prepare environment is ready, because something we maybe update the env during the preparation
+    cy.wait('@getSolutionOperatorDeployment', timeOut);
     cy.wait('@getSolutionOperatorDeployment', timeOut);
 
     cy.get('.sc-table-column-cell-container-solutions').should(
@@ -107,5 +110,60 @@ Then(
     cy.wait('@getEnvironmentConfigMap', timeOut); // wait until the next time updating the environment
 
     cy.get('.sc-table-column-cell-name').should('not.contain', environmentName); // check the environment I created is being deleted
+  },
+);
+
+When(
+  'I go to the Environment Detail page by clicking the environment list',
+  () => {
+    cy.route(
+      'GET',
+      `api/kubernetes/apis/apps/v1/namespaces/${environmentName}/deployments/example-solution-operator`,
+    ).as('getSolutionOperatorDeployment');
+    cy.route(
+      'GET',
+      '/api/kubernetes/api/v1/namespaces?labelSelector=solutions.metalk8s.scality.com/environment',
+    ).as('getEnvironmentsList');
+    cy.get(`[data-cy="${environmentName}"]`).click();
+  },
+);
+
+Then('I click on upgrade button and check the solution is upgraded', () => {
+  cy.get('[data-cy="upgrade"]').click();
+
+  cy.get('.sc-modal .sc-select').eq(0).click();
+  cy.get(`[data-cy="${upgradeSolutionVersion}"]`).click();
+  cy.get('[data-cy="upgrade_downgrade_button"]').click();
+  const timeOut = {
+    requestTimeout: 60000,
+    responseTimeout: 60000,
+  };
+
+  cy.wait('@getSolutionOperatorDeployment', timeOut);
+  cy.wait('@getSolutionOperatorDeployment', timeOut);
+  cy.wait('@getSolutionOperatorDeployment', timeOut);
+
+  cy.get('.sc-table-column-cell-version').should(
+    'contain',
+    upgradeSolutionVersion,
+  );
+});
+
+Then(
+  'I click on the downgrade button and check the solution is downgraded',
+  () => {
+    cy.get('[data-cy="downgrade"]').click();
+    cy.get('.sc-modal .sc-select').eq(0).click();
+    cy.get(`[data-cy="${solutionVersion}"]`).click();
+    cy.get('[data-cy="upgrade_downgrade_button"]').click();
+    const timeOut = {
+      requestTimeout: 60000,
+      responseTimeout: 60000,
+    };
+
+    cy.wait('@getSolutionOperatorDeployment', timeOut);
+    cy.wait('@getSolutionOperatorDeployment', timeOut);
+
+    cy.get('.sc-table-column-cell-version').should('contain', solutionVersion);
   },
 );

@@ -1,0 +1,8 @@
+---
+# Configuration of the Prometheus service
+apiVersion: addons.metalk8s.scality.com
+kind: PrometheusConfig
+spec:
+  # Configure the Prometheus Deployment
+  deployment:
+    replicas: 1

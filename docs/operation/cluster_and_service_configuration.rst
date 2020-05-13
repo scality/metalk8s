@@ -10,8 +10,64 @@ Managing Cluster and Services Configurations
 
 Newly deployed **MetalK8s** clusters come with chosen default values for most
 Cluster services. These default values are transparent to Admin users
-and can be customized at any point in time given that Admins follow the
+and can be customized at any point in time given that Administrators follow the
 documented procedure to the later.
+
+Managing default runtime Service Configurations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MetalK8s addons (Alertmanager, Dex, Grafana and Prometheus) ships with default
+runtime service configurations required for basic service deployment.
+Find below an exhaustive list of available default Service Configurations
+deployed in a MetalK8s cluster:
+
+Alertmanager
+""""""""""""
+The following basic Alertmanager configurations are required for starting up
+Alertmanager within a MetalK8s cluster.
+The default configuration values for Alertmanager are specified in the output
+below and can be overridden by specifying its corresponding values within a
+Cluster and Service ConfigMap (metalk8s-alertmanager-config). An advanced list
+of Alertmanager configurations will be provided in future versions with
+provided guidelines on how to add these configurations to the Service
+ConfigMap.
+
+This document below describes parameters that are set by default.
+
+.. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/alertmanager.yaml
+
+Dex
+"""
+Dex (an Identity Provider) that drives user authentication and identity
+management in a MetalK8s cluster is provisioned with the following default
+configurations.
+The default configuration values for Dex are specified in the output below and
+can be overridden by specifying its corresponding values within the Cluster and
+Service ConfigMap (metalk8s-dex-config).
+
+This document below describes parameters that are set by default.
+
+.. literalinclude:: ../../salt/metalk8s/addons/dex/config/dex.yaml
+
+Grafana
+"""""""
+The default configuration values for Grafana are specified in the output below
+and can be overridden by specifying its corresponding values within the Cluster
+and Service ConfigMap (metalk8s-grafana-config).
+
+This document below describes parameters that are set by default.
+
+.. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/grafana.yaml
+
+Prometheus
+""""""""""
+The default configuration values for Prometheus are specified in the output
+below and can be overridden by specifying its corresponding values within the
+Cluster and Service ConfigMap (metalk8s-grafana-config).
+
+This document below describes parameters that are set by default.
+
+.. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/prometheus.yaml
+
 
 Managing Authentication
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -51,7 +107,7 @@ To add a new static user, perform the following operations:
       root@bootstrap $ python -c 'import uuid; print uuid.uuid4()'
 
 #. From the Bootstrap node, edit the ConfigMap ``metalk8s-dex-config`` and then
-   add a new entry to the already existing list using:
+   add a new entry using:
 
    .. code-block:: shell
 
@@ -85,7 +141,14 @@ To add a new static user, perform the following operations:
       root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
                        --kubeconfig /etc/kubernetes/admin.conf \\
                        salt-master-bootstrap -- salt-run \\
-                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|release|
+                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+
+#. From the Bootstrap node, restart the Dex deployments.
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         rollout restart deployment dex -n metalk8s-auth
 
 #. Finally, create and apply the required :file:`ClusterRoleBinding.yaml` file
    that ensures that the newly added static user is bound to a Cluster Role.
@@ -164,6 +227,16 @@ To change the password of an existing user, perform the following operations:
 #. From the Bootstrap node, edit the ConfigMap ``metalk8s-dex-config`` and then
    change the ``hash`` for the selected user:
 
+   .. note::
+
+      **Override default Admin password**
+
+      Newly deployed MetalK8s cluster comes provisioned with a default admin
+      account. To override the password for this default admin account, perform
+      the operation below specifying the email `admin@metalk8s.invalid`.
+      MetalK8s will automatically override the default password with the new
+      entry you have specified.
+
    .. code-block:: shell
 
       root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
@@ -174,10 +247,10 @@ To change the password of an existing user, perform the following operations:
          localuserstore:
             enabled: true
             userlist:
-               - email: "admin@metalk8s.invalid"
-                  hash: "<new-password-hash>"
-                  username: "admin"
-                  userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+               - email: "user@metalk8s.invalid"
+                 hash: "<new-password-hash>"
+                 username: "user"
+                 userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
       [...]
 
 
@@ -191,7 +264,14 @@ To change the password of an existing user, perform the following operations:
       root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
                        --kubeconfig /etc/kubernetes/admin.conf \\
                        salt-master-bootstrap -- salt-run \\
-                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|release|
+                       state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+
+#. From the Bootstrap node, restart the Dex deployments.
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         rollout restart deployment dex -n metalk8s-auth
 
 #. Verify that the password has been changed and you can log in to the MetalK8s
    UI using the new password
@@ -285,7 +365,7 @@ perform the following operations:
       root@bootstrap $ kubectl exec -n kube-system -c salt-master \\
                        --kubeconfig /etc/kubernetes/admin.conf \\
                        salt-master-bootstrap -- salt-run state.sls \\
-                       metalk8s.addons.prometheus-operator.deployed saltenv=metalk8s-|release|
+                       metalk8s.addons.prometheus-operator.deployed saltenv=metalk8s-|version|
 
 .. todo::
 

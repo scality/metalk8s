@@ -125,6 +125,9 @@ const SolutionsList = (props) => {
     {
       label: intl.translate('name'),
       dataKey: 'name',
+      renderer: (_, environment) => {
+        return <span data-cy={`${environment.name}`}>{environment.name}</span>;
+      },
     },
     {
       label: intl.translate('description'),

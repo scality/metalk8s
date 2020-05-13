@@ -588,7 +588,14 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 	// Check if the volume is marked for deletion (i.e., deletion tstamp is set).
 	if !volume.GetDeletionTimestamp().IsZero() {
-		return r.finalizeVolume(ctx, volume, saltenv)
+		// Pending volume: can do nothing but wait for stabilization.
+		if volume.ComputePhase() == storagev1alpha1.VolumePending {
+			reqLogger.Info("pending volume cannot be finalized: requeue")
+			// Do not return here! We need to re-enter deployVolume to keep
+			// polling the Salt job and make progress.
+		} else {
+			return r.finalizeVolume(ctx, volume, saltenv)
+		}
 	}
 	// Skip volume stuck waiting for deletion or a manual fix.
 	if condition := volume.IsInUnrecoverableFailedState(); condition != nil {
@@ -676,13 +683,6 @@ func (self *ReconcileVolume) finalizeVolume(
 	saltenv string,
 ) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Volume.Name", volume.Name)
-
-	// Pending volume: can do nothing but wait for stabilization.
-	if volume.ComputePhase() == storagev1alpha1.VolumePending {
-		reqLogger.Info("pending volume cannot be finalized: requeue")
-		return delayedRequeue(nil)
-	}
-
 	// Check if a PV is associated to the volume.
 	pv, err := self.getPersistentVolume(ctx, volume)
 	if err != nil {

@@ -151,5 +151,6 @@
   "downgrade": "Downgrade",
   "upgrade_solution": "Upgrade Solution {solName}",
   "downgrade_solution": "Downgrade Solution {solName}",
-  "no_other_available_version": "No other available versions"
+  "no_other_available_version": "No other available versions",
+  "salt_job": "Salt job"
 }

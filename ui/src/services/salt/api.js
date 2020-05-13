@@ -11,12 +11,18 @@ export function initialize(apiUrl) {
 }
 
 export function authenticate(user) {
-  return saltApiClient.post('/login', {
+  var payload = {
     eauth: 'kubernetes_rbac',
     username: user.profile.email,
-    token: user.id_token,
-    token_type: user.token_type,
-  });
+  }
+
+  if (user.token_type.toLowerCase() === 'bearer') {
+    payload.token = user.id_token
+  } else {
+    payload.password = user.id_token
+  }
+
+  return saltApiClient.post('/login', payload);
 }
 
 export async function deployNode(node, version) {

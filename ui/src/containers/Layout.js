@@ -50,6 +50,7 @@ const Layout = (props) => {
   }, [dispatch]);
 
   const sidebarConfig = {
+    onToggleClick: toggleSidebar,
     expanded: sidebar.expanded,
     actions: [
       {
@@ -182,7 +183,6 @@ const Layout = (props) => {
   }
 
   const navbar = {
-    onToggleClick: toggleSidebar,
     productName: intl.translate('product_name'),
     logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
   };
