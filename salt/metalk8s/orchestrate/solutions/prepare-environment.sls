@@ -21,7 +21,7 @@ Apply Role for Operator of Solution {{ solution.name }}:
     - defaults:
         solution: {{ solution_id }}
         namespace: {{ namespace }}
-        custom_api_groups: {{ solution.config.customApiGroups }}
+        custom_api_groups: {{ solution.config.customApiGroups | tojson }}
         version: {{ solution.version }}
 
 Apply RoleBinding for Operator of Solution {{ solution.name }}:
