@@ -23,5 +23,4 @@ baseurl=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/$S
 enabled=1
 gpgcheck=1
 gpgkey=https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/$SALT_VERSION/SALTSTACK-GPG-KEY.pub
-       https://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/$SALT_VERSION/base/RPM-GPG-KEY-CentOS-$CENTOS_VERSION
 EOF
