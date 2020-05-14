@@ -475,6 +475,8 @@ type stateSetter func(
 	context.Context, *storagev1alpha1.Volume, string,
 ) (reconcile.Result, error)
 
+type jobSuccessCallback func(map[string]interface{}) (reconcile.Result, error)
+
 // Poll a Salt state job.
 func (self *ReconcileVolume) pollSaltJob(
 	ctx context.Context,
@@ -483,6 +485,7 @@ func (self *ReconcileVolume) pollSaltJob(
 	pv *corev1.PersistentVolume,
 	setState stateSetter,
 	reason storagev1alpha1.ConditionReason,
+	onSuccess jobSuccessCallback,
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
@@ -525,8 +528,7 @@ func (self *ReconcileVolume) pollSaltJob(
 			volume, corev1.EventTypeNormal, "SaltCall",
 			"step '%s' succeeded", stepName,
 		)
-		job.ID = JOB_DONE_MARKER
-		return setState(ctx, volume, job.String())
+		return onSuccess(result)
 	}
 }
 
@@ -684,6 +686,10 @@ func (self *ReconcileVolume) deployVolume(
 			ctx, "volume provisioning", volume, nil,
 			self.setPendingVolumeStatus,
 			storagev1alpha1.ReasonCreationError,
+			func(_ map[string]interface{}) (reconcile.Result, error) {
+				job.ID = JOB_DONE_MARKER
+				return self.setPendingVolumeStatus(ctx, volume, job.String())
+			},
 		)
 	}
 }
@@ -968,6 +974,10 @@ func (self *ReconcileVolume) reclaimStorage(
 			ctx, "volume finalization", volume, pv,
 			self.setTerminatingVolumeStatus,
 			storagev1alpha1.ReasonDestructionError,
+			func(_ map[string]interface{}) (reconcile.Result, error) {
+				job.ID = JOB_DONE_MARKER
+				return self.setTerminatingVolumeStatus(ctx, volume, job.String())
+			},
 		)
 	}
 }
