@@ -4,9 +4,7 @@ import yaml
 import pytest
 from pytest_bdd import scenario, given, then, when, parsers
 
-import kubernetes.client
 from kubernetes.client import AppsV1Api
-from kubernetes.client.rest import ApiException
 
 from tests import utils
 
@@ -31,6 +29,7 @@ spec:
 @pytest.fixture
 def k8s_appsv1_client(k8s_apiclient):
     return AppsV1Api(api_client=k8s_apiclient)
+
 
 @pytest.fixture
 def csc(k8s_client):
