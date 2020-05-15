@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -227,45 +226,42 @@ func getStateFailureRootCause(output interface{}) string {
 
 // Return the size of the specified device on the given node.
 //
-// This request is synchronous.
+// This request is asynchronous.
 //
 // Arguments
 //     ctx:        the request context (used for cancellation)
 //     nodeName:   name of the node where the volume will be
+//     volumeName: name of the volume to prepare
 //     devicePath: path of the device for which we want the size
 //
 // Returns
-//     The size of the device, in bytes.
+//     The Salt job handle.
 func (self *Client) GetVolumeSize(
-	ctx context.Context, nodeName string, devicePath string,
-) (int64, error) {
+	ctx context.Context, nodeName string, volumeName string, devicePath string,
+) (*JobHandle, error) {
 	payload := map[string]interface{}{
-		"client":  "local",
+		"client":  "local_async",
 		"tgt":     nodeName,
 		"fun":     "disk.dump",
 		"arg":     devicePath,
 		"timeout": 1,
 	}
 
-	self.logger.Info("disk.dump")
+	self.logger.Info(
+		"GetVolumeSize", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
-		return 0, errors.Wrapf(
-			err, "disk.dump failed (target=%s, path=%s)", nodeName, devicePath,
+		return nil, errors.Wrapf(
+			err,
+			"GetVolumeSize failed (target=%s, volume=%s, device=%s)",
+			nodeName, volumeName, devicePath,
 		)
 	}
 	// TODO(#1461): make this more robust.
 	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	if nodeResult, ok := result[nodeName].(map[string]interface{}); ok {
-		size_str := nodeResult["getsize64"].(string)
-		return strconv.ParseInt(size_str, 10, 64)
-	}
-
-	return 0, fmt.Errorf(
-		"no size in disk.dump response (target=%s, path=%s)",
-		nodeName, devicePath,
-	)
+	return newJob("GetVolumeSize", result["jid"].(string)), nil
 }
 
 // Send an authenticated request to Salt API.
