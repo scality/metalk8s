@@ -1,4 +1,5 @@
 import ipaddress
+import json
 import logging
 import re
 import testinfra
@@ -61,8 +62,15 @@ def get_node_name(nodename, ssh_config=None):
     """Get a node name (from SSH config)."""
     if ssh_config is not None:
         node = testinfra.get_host(nodename, ssh_config=ssh_config)
-        with node.sudo():
-            return node.check_output(
-                'salt-call --local --out txt grains.get id | cut -c 8-'
-            )
+        return get_grain(node, 'id')
     return nodename
+
+
+def get_grain(host, key):
+    with host.sudo():
+        output = host.check_output(
+            'salt-call --local --out=json grains.get "{}"'.format(key)
+        )
+        grain = json.loads(output)['local']
+
+    return grain

@@ -32,6 +32,7 @@ def version(request, host):
             'source %s && echo $VERSION', str(product_path)
         )
 
+
 @pytest.fixture(scope="module")
 def hostname(host):
     """Return the result of `hostname` on the `host` fixture.
@@ -49,10 +50,14 @@ def nodename(host):
     Node name need to be equal to the salt minion id so just retrieve the
     salt minion id
     """
-    with host.sudo():
-        return host.check_output(
-            'salt-call --local --out txt grains.get id | cut -c 8-'
-        )
+    return utils.get_grain(host, 'id')
+
+
+@pytest.fixture(scope="module")
+def control_plane_ip(host):
+    """Return the Kubernetes control plane IP based on the salt grain
+    """
+    return utils.get_grain(host, 'metalk8s:control_plane_ip')
 
 
 @pytest.fixture(scope="module")
