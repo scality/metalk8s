@@ -34,6 +34,11 @@ def test_service_config_propagation(host):
     pass
 
 
+@scenario('../features/service_configuration.feature',
+          'Customization of pre-defined Prometheus rules')
+def test_prometheus_rules_customization(host):
+    pass
+
 # }}}
 
 
@@ -103,7 +108,13 @@ def apply_service_config(host, version, request, k8s_client, state):
         'salt-run', 'state.sls', '{}'.format(state),
         'saltenv=metalk8s-{}'.format(version)
     ]
-    utils.run_salt_command(host, cmd, ssh_config)
+
+    def apply_salt_state():
+        utils.run_salt_command(host, cmd, ssh_config)
+
+    apply_salt_state()
+
+    request.addfinalizer(apply_salt_state)
 
 
 # }}}
@@ -175,6 +186,39 @@ def restore_csc(
         .format(name, namespace, patch)
     )
 
+
+@then(parsers.parse(
+    "we have an alert rule '{rule_name}' in group '{group_name}' with "
+    "severity '{severity}' and '{path}' equal to '{value}'"
+))
+def check_prometheus_alert_rule(
+        prometheus_api, rule_name, group_name, severity, path, value):
+    """Retrieve an alert rule from the Prometheus API, then
+    checks if the given path matches the value.
+    """
+
+    def _wait_prometheus_config_reload():
+        try:
+            rules = prometheus_api.find_rules(
+                rule_name, group_name, {'severity': severity}
+            )
+        except utils.PrometheusApiError as exc:
+            pytest.fail(str(exc))
+
+        n_rules = len(rules)
+        assert n_rules == 1, (
+            "Expecting 1 alert rule '{}' in group '{}' with severity '{}', "
+            "but found '{}'."
+        ).format(rule_name, group_name, severity, n_rules)
+
+        assert utils.get_dict_element(rules[0], path) == value
+
+    utils.retry(
+        _wait_prometheus_config_reload,
+        times=10,
+        wait=5,
+        name="wait for Prometheus configuration reload"
+    )
 
 # }}}
 
