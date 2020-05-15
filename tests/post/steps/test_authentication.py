@@ -1,4 +1,3 @@
-import json
 import re
 
 import requests
@@ -63,17 +62,6 @@ def test_login(host):
 @pytest.fixture(scope='function')
 def context():
     return {}
-
-
-@pytest.fixture(scope='function')
-def control_plane_ip(host):
-    with host.sudo():
-        output = host.check_output(' '.join([
-            'salt-call', '--local', '--out=json',
-            'grains.get', 'metalk8s:control_plane_ip',
-        ]))
-        ip = json.loads(output)['local']
-    return ip
 
 
 # }}}
