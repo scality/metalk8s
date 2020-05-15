@@ -48,15 +48,14 @@ def check_csc_configuration(
     name,
     namespace,
 ):
-    csc_response = csc.get(name, namespace)
+    csc_obj = csc.get(name, namespace)
 
-    assert csc_response, (
+    assert csc_obj, (
         "No ConfigMap with name {} in namespace {} found".format(
             name, namespace
         )
     )
 
-    csc_obj = csc.load(csc_response, name, namespace)
     return dict(csc_obj=csc_obj)
 
 
@@ -70,23 +69,20 @@ def check_csc_configuration(
     "we update '{name}' CSC in namespace '{namespace}' "
     "'{path}' to '{value}'"))
 def update_service_configuration(
-    k8s_client,
     csc,
     name,
     namespace,
     path,
     value
 ):
-
     csc_obj = csc.get(name, namespace)
-    csc_content = csc.load(csc_obj, name, namespace)
 
-    utils.set_dict_element(csc_content, path, value)
+    utils.set_dict_element(csc_obj, path, value)
 
     patch = {
         'data': {
             'config.yaml': yaml.safe_dump(
-                csc_content, default_flow_style=False
+                csc_obj, default_flow_style=False
             )
         }
     }
@@ -193,10 +189,28 @@ class ClusterServiceConfiguration:
             )
         except Exception as exc:
             pytest.fail(
-                "Unable to read {} ConfigMap  in namespace {} with error: {!s}"
+                "Unable to read {} ConfigMap in namespace {} with error: {!s}"
                 .format(name, namespace, exc)
             )
-        return response
+
+        try:
+            csc_key = "config.yaml"
+            csc_data = response.data[csc_key]
+        except KeyError:
+            raise Exception(
+                "Missing '{}' key in '{}' ConfigMap in namespace '{}'"
+                .format(csc_key, name, namespace)
+            )
+
+        try:
+            csc_object = yaml.safe_load(csc_data)
+        except yaml.YAMLError as exc:
+            raise Exception(
+                'Invalid YAML format in ConfigMap {} in Namespace {} under '
+                'key {}: {!s}'.format(name, namespace, csc_key, exc)
+            )
+
+        return csc_object
 
     def update(self, name, namespace, patch):
         try:
@@ -208,22 +222,8 @@ class ClusterServiceConfiguration:
                 "Unable to patch ConfigMap {} in namespace {} with error {!s}"
                 .format(name, namespace, exc)
             )
-        return response
 
-    def load(self, full_csc, name, namespace):
-        try:
-            csc_obj = yaml.safe_load(full_csc.data['config.yaml'])
-        except yaml.YAMLError as exc:
-            raise Exception(
-                'Invalid YAML format in ConfigMap {} found in namespace {}: '
-                '{!s}'.format(name, namespace, exc)
-            )
-        except Exception as exc:
-            raise Exception(
-                "Failed loading `config.yaml` from ConfigMap {} in namespace "
-                "{}: {!s}".format(name, namespace, exc)
-            )
-        return csc_obj
+        return response
 
 
 # }}}
