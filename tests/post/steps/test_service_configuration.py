@@ -9,20 +9,6 @@ from kubernetes.client import AppsV1Api
 from tests import utils
 
 
-# Constants {{{
-
-
-DEFAULT_CSC_CONFIG_YAML = """
-apiVersion: addons.metalk8s.scality.com
-kind: DexConfig
-spec:
-  deployment:
-    replicas: {replicas}
-"""
-
-
-# }}}
-
 # Fixtures {{{
 
 
@@ -92,29 +78,21 @@ def update_service_configuration(
     value
 ):
 
-    csc_from_yaml = yaml.safe_load(
-        DEFAULT_CSC_CONFIG_YAML.format(replicas=value)
-    )
+    csc_obj = csc.get(name, namespace)
+    csc_content = csc.load(csc_obj, name, namespace)
+
+    utils.set_dict_element(csc_content, path, value)
+
     patch = {
         'data': {
             'config.yaml': yaml.safe_dump(
-                csc_from_yaml, default_flow_style=False
+                csc_content, default_flow_style=False
             )
         }
     }
     response = csc.update(name, namespace, patch)
 
     assert response
-
-    patched_csc = csc.get(name, namespace)
-    patched_value = utils.get_dict_element(
-        csc.load(patched_csc, name, namespace), path
-    )
-
-    assert literal_eval(value) == patched_value, (
-        "Expected value {} for key {} in ConfigMap {} found in namespace {}, "
-        "got {}".format(value, path, name, namespace, patched_value)
-    )
 
 
 @when(parsers.parse("we apply the '{state}' salt state"))
@@ -237,13 +215,13 @@ class ClusterServiceConfiguration:
             csc_obj = yaml.safe_load(full_csc.data['config.yaml'])
         except yaml.YAMLError as exc:
             raise Exception(
-                'Invalid YAML format in ConfigMap {} found in namespace {}: {!s}'
-                .format(name, namespace, exc)
+                'Invalid YAML format in ConfigMap {} found in namespace {}: '
+                '{!s}'.format(name, namespace, exc)
             )
         except Exception as exc:
             raise Exception(
-                "Failed loading `config.yaml` from ConfigMap {} in namespace {}: "
-                "{!s}".format(name, namespace, exc)
+                "Failed loading `config.yaml` from ConfigMap {} in namespace "
+                "{}: {!s}".format(name, namespace, exc)
             )
         return csc_obj
 
