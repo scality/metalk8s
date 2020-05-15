@@ -51,7 +51,6 @@ type VolumeSpec struct {
 }
 
 // Describes the PersistentVolume that will be created to back the Volume.
-// +k8s:openapi-gen=true
 type PersistentVolumeTemplateSpec struct {
 	// Standard object's metadata.
 	// +optional
@@ -95,14 +94,17 @@ const (
 
 type VolumeCondition struct {
 	// Type of volume condition.
+	// +kubebuilder:validation:Enum=Ready
 	Type VolumeConditionType `json:"type"`
 	// Status of the condition, one of True, False, Unknown.
+	// +kubebuilder:validation:Enum=True;False;Unknown
 	Status corev1.ConditionStatus `json:"status"`
 	// Last time the condition was updated (optional).
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
 	// Last time the condition transited from one status to another (optional).
 	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
 	// Unique, one-word, CamelCase reason for the condition's last transition.
+	// +kubebuilder:validation:Enum=Pending;Terminating;InternalError;CreationError;DestructionError;UnavailableError
 	Reason ConditionReason `json:"reason,omitempty"`
 	// Human readable message indicating details about last transition.
 	Message string `json:"message,omitempty"`
@@ -116,7 +118,8 @@ type VolumeStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// List of conditions through which the Volume has or has not passed.
-	// +kubebuilder:validation:Enum=Available,Pending,Failed,Terminating
+	// +listType=map
+	// +listMapKey=type
 	Conditions []VolumeCondition `json:"conditions,omitempty"`
 
 	// Job in progress
@@ -128,7 +131,7 @@ type VolumeStatus struct {
 // Volume is the Schema for the volumes API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-// +genclient:nonNamespaced
+// +kubebuilder:resource:path=volumes,scope=Cluster
 // +kubebuilder:printcolumn:name="Node",type="string",JSONPath=".spec.nodeName",description="The node on which the volume is available"
 // +kubebuilder:printcolumn:name="StorageClass",type="string",JSONPath=".spec.storageClassName",description="The storage class of the volume"
 type Volume struct {

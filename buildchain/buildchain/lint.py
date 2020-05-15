@@ -120,7 +120,7 @@ def check_go_codegen() -> Optional[doit.exceptions.TaskError]:
     cwd  = constants.STORAGE_OPERATOR_ROOT
     git_diff = [config.ExtCommand.GIT.value, 'diff']
     base = subprocess.check_output(git_diff)
-    for target in ('k8s', 'openapi'):
+    for target in ('k8s', 'crds'):
         cmd = [config.ExtCommand.OPERATOR_SDK.value, 'generate', target]
         subprocess.check_call(cmd, cwd=cwd)
     current = subprocess.check_output(git_diff)
