@@ -1,6 +1,7 @@
 import requests
 import json
 
+import pytest
 from pytest_bdd import scenario, given, then, parsers
 
 import kubernetes.client
@@ -45,10 +46,11 @@ def test_node_metrics(host):
 # Given {{{
 
 @given("the Prometheus API is available")
-def check_prometheus_api(host):
-    response = _query_prometheus_api(host, 'targets')
-
-    assert response.status_code == 200, response.text
+def check_prometheus_api(prometheus_api):
+    try:
+        prometheus_api.get_targets()
+    except utils.PrometheusApiError as exc:
+        pytest.fail(str(exc))
 
 
 @given(parsers.parse("the '{name}' APIService exists"))
@@ -66,17 +68,20 @@ def apiservice_exists(host, name, k8s_apiclient, request):
     utils.retry(_check_object_exists, times=20, wait=3)
 
 
-
 # }}}
 # Then {{{
 
 @then(parsers.parse(
     "job '{job}' in namespace '{namespace}' is '{health}'"
 ))
-def check_job_health(host, job, namespace, health):
+def check_job_health(prometheus_api, job, namespace, health):
     def _wait_job_status():
-        response = _query_prometheus_api(host, 'targets')
-        active_targets = response.json()['data']['activeTargets']
+        try:
+            response = prometheus_api.get_targets()
+        except utils.PrometheusApiError as exc:
+            pytest.fail(str(exc))
+
+        active_targets = response['data']['activeTargets']
 
         job_found = False
         for target in active_targets:
@@ -172,29 +177,6 @@ def node_has_metrics(label, k8s_apiclient):
 
     # Metrics are only available after a while (by design)
     utils.retry(_node_has_metrics, times=60, wait=3)
-
-
-# }}}
-# Helpers {{{
-
-def _query_prometheus_api(host, route):
-    ip = _get_local_grain(host, 'metalk8s:control_plane_ip')
-
-    return requests.get(
-        'https://{ip}:8443/api/prometheus/api/v1/{route}'
-        .format(ip=ip, route=route),
-        verify=False,
-    )
-
-
-def _get_local_grain(host, key):
-    with host.sudo():
-        output = host.check_output(
-            'salt-call --local --out=json grains.get "{}"'.format(key)
-        )
-        ip = json.loads(output)['local']
-
-    return ip
 
 
 # }}}

@@ -10,6 +10,9 @@ from tests import kube_utils
 from tests import utils
 
 
+CONTROL_PLANE_INGRESS_PORT = 8443
+
+
 # Pytest command-line options
 def pytest_addoption(parser):
     parser.addoption(
@@ -266,6 +269,14 @@ def request_retry_session(request):
     params = getattr(request, 'param', {})
 
     return utils.requests_retry_session(**params)
+
+
+@pytest.fixture
+def prometheus_api(host):
+    return utils.PrometheusApi(
+        utils.get_grain(host, 'metalk8s:control_plane_ip'),
+        CONTROL_PLANE_INGRESS_PORT
+    )
 
 
 def count_running_pods(

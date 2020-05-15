@@ -188,3 +188,62 @@ def get_grain(host, key):
         grain = json.loads(output)['local']
 
     return grain
+
+
+class PrometheusApiError(Exception):
+    pass
+
+
+class PrometheusApi:
+    def __init__(self, host, port=9090):
+        self.host = host
+        self.port = port
+        self.session = requests_retry_session()
+
+    def query(self, method, route, **kwargs):
+        try:
+            kwargs.setdefault('verify', False)
+            response = self.session.request(
+                method,
+                "https://{}:{}/api/prometheus/api/v1/{}".format(
+                    self.host, self.port, route
+                ),
+                **kwargs
+            )
+            response.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            raise PrometheusApiError(exc)
+
+        try:
+            result = response.json()
+        except ValueError as exc:
+            raise PrometheusApiError(exc)
+
+        return result
+
+    def get_alerts(self, **kwargs):
+        return self.query('GET', 'alerts', **kwargs)
+
+    def get_rules(self, **kwargs):
+        return self.query('GET', 'rules', **kwargs)
+
+    def find_rules(self, name=None, group=None, labels=None, **kwargs):
+        if not labels:
+            labels = {}
+        rules = []
+
+        response = self.get_rules(**kwargs)
+
+        for rule_group in response.get('data', {}).get('groups', []):
+            group_name = rule_group.get('name')
+            if group in (group_name, None):
+                for rule in rule_group.get('rules', []):
+                    if name in (rule.get('name'), None):
+                        if labels.items() <= rule.get('labels', {}).items():
+                            rule['group'] = group_name
+                            rules.append(rule)
+
+        return rules
+
+    def get_targets(self, **kwargs):
+        return self.query('GET', 'targets', **kwargs)
