@@ -33,6 +33,7 @@
         'is_bootstrap': True,
         'metalk8s': {
             'nodes': {
+                '_errors': None,
                 pillar.bootstrap_id: {
                     'roles': ['bootstrap', 'master', 'etcd', 'ca', 'infra'],
                     'version': version,
