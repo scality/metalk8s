@@ -13,10 +13,11 @@ events {
 {%- if pillar.get('apiserver_ip') %}
 {%-     set masters_request = {'ip': pillar.apiserver_ip} %}
 {%- else %}
+{%-     set master_minions = salt['metalk8s.minions_by_role']('master') %}
 {%-     set masters_request = salt['mine.get'](
-            tgt='I@metalk8s:nodes:*:roles:master',
+            tgt=master_minions | join(','),
             fun='control_plane_ip',
-            tgt_type='compound',
+            tgt_type='list',
         )
 %}
 {%- endif %}
