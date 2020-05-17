@@ -88,7 +88,7 @@ class ApiClient(object):
                  method_names=None, all_namespaces_name=None):
         if api_cls not in ALL_APIS:
             raise ValueError(
-                '`api_cls` must be an API from `kubernetes.client.apis`'
+                '`api_cls` must be an API from `kubernetes.client.api`'
             )
         methods = self.CRUD_METHODS
         if isinstance(method_names, six.string_types):
