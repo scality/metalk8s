@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- set archives = salt.metalk8s.get_archives() %}
 
 Configure salt minion for local mode:
@@ -10,6 +11,7 @@ Configure salt minion for local mode:
     - makedirs: true
     - backup: false
     - dataset:
+        log_level_logfile: {{ 'debug' if metalk8s.debug else 'info' }}
         file_roots:
         {%- for env, info in archives.items() | sort(attribute='0') %}
           {{ env }}:
