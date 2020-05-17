@@ -48,20 +48,23 @@ Create containerd service drop-in:
     - makedirs: true
     - dir_mode: 0755
     - context:
-      environment:
-      {%- if proxies %}
-        {%- set no_proxy = ["localhost", "127.0.0.1"] + networks.values() %}
-        {%- if proxies.no_proxy | default %}
-          {%- do no_proxy.extend(proxies.no_proxy) %}
+        containerd_args:
+          - --log-level
+          - {{ "debug" if metalk8s.debug else "info" }}
+        environment:
+        {%- if proxies %}
+          {%- set no_proxy = ["localhost", "127.0.0.1"] + networks.values() %}
+          {%- if proxies.no_proxy | default %}
+            {%- do no_proxy.extend(proxies.no_proxy) %}
+          {%- endif %}
+          NO_PROXY: "{{ no_proxy | unique | join(",") }}"
+          {%- if proxies.http | default %}
+          HTTP_PROXY: "{{ proxies.http }}"
+          {%- endif %}
+          {%- if proxies.https | default %}
+          HTTPS_PROXY: "{{ proxies.https }}"
+          {%- endif %}
         {%- endif %}
-        NO_PROXY: "{{ no_proxy | unique | join(",") }}"
-        {%- if proxies.http | default %}
-        HTTP_PROXY: "{{ proxies.http }}"
-        {%- endif %}
-        {%- if proxies.https | default %}
-        HTTPS_PROXY: "{{ proxies.https }}"
-        {%- endif %}
-      {%- endif %}
 
 Install and configure cri-tools:
   {{ pkg_installed('cri-tools') }}
@@ -84,4 +87,7 @@ Configure registry IP in containerd conf:
     - makedirs: true
     - contents: |
         [plugins.cri.registry.mirrors."{{ repo.registry_endpoint }}"]
-          endpoint = ["http://{{ registry_ip }}:{{ registry_port }}"]
+        endpoint = ["http://{{ registry_ip }}:{{ registry_port }}"]
+
+        [debug]
+        level = "{{ 'debug' if metalk8s.debug else 'info' }}"
