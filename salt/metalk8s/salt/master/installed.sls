@@ -38,6 +38,7 @@ Install and start salt master manifest:
       - /etc/salt/master.d/99-metalk8s.conf
       - /etc/salt/master.d/99-metalk8s-roots.conf
     - context:
+        debug: {{ metalk8s.debug }}
         image: {{ image_name }}
         version: {{ image_version }}
         archives: {{ salt.metalk8s.get_archives() | tojson }}
