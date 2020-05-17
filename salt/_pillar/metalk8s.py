@@ -132,6 +132,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
         metal_data = {
             'archives': _load_iso_path(config),
             'ca': _load_ca(config),
+            'debug': config.get('debug', False),
         }
 
         result = {
