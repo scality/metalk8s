@@ -173,11 +173,13 @@ def get_dict_element(data, path, delimiter='.'):
 def set_dict_element(data, path, value, delimiter='.'):
     """
     Traverse a nested dict using a delimiter on a target string
-    replaces the value of a key within a dictionary and returns the new dict
+    and replace the value of a key
     """
-    path, _, key = path.rpartition(delimiter)
-    (get_dict_element(data, path) if path else data)[key] = value
-    return data
+    current = data
+    elements = path.split(delimiter)
+    for element in elements[:-1]:
+        current = current.setdefault(element, {})
+    current[elements[-1]] = value
 
 
 def get_grain(host, key):
