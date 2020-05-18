@@ -43,11 +43,12 @@ models:
         SLEEP_TIME: "5"
         STABILIZATION_TIME: "30"
         STATUS: "Running"
+        EXTRA_OPTS: ""
       command: >
         git checkout "%(prop:branch)s" &&
         sudo eve/wait_pods_status.sh
         --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
-        --status "$STATUS" --retry "$RETRY"
+        --status "$STATUS" --retry "$RETRY" $EXTRA_OPTS
       usePTY: true
       haltOnFailure: true
   - ShellCommand: &wait_pods_running_ssh
@@ -56,12 +57,13 @@ models:
         <<: *_env_wait_pods_running
         SSH_CONFIG: ssh_config
         SSH_HOST: bootstrap
+        EXTRA_OPTS: ""
       command: >
         git checkout "%(prop:branch)s" &&
         scp -F "$SSH_CONFIG" eve/wait_pods_status.sh "$SSH_HOST":/tmp/ &&
         ssh -F "$SSH_CONFIG" "$SSH_HOST" sudo /tmp/wait_pods_status.sh
         --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
-        --status "$STATUS" --retry "$RETRY"
+        --status "$STATUS" --retry "$RETRY" $EXTRA_OPTS
       usePTY: true
       haltOnFailure: true
   - ShellCommand: &build_all
