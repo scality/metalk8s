@@ -537,6 +537,7 @@ stages:
             - single-node-upgrade-centos
             - single-node-downgrade-centos
             - single-node-patch-version
+            - bootstrap-restore
           waitForFinish: True
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
@@ -1459,7 +1460,7 @@ stages:
         CLASS_NAME: multi node.centos7
         TEST_NAME: 1 bootstrap 1 master,etcd
     simultaneous_builds: 20
-    worker:
+    worker: &multi_node_worker
       <<: *single_node_worker
       flavor: m1.medium
       path: eve/workers/openstack-multiple-nodes
@@ -1490,19 +1491,19 @@ stages:
           haltOnFailure: true
       - ShellCommand: *terraform_install
       - ShellCommand: *terraform_install_check
-      - ShellCommand:
+      - ShellCommand: &terraform_init_multi_node
           <<: *terraform_init
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+      - ShellCommand: &terraform_validate_multi_node
           <<: *terraform_validate
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+      - ShellCommand: &terraform_apply_multi_node
           <<: *terraform_apply
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           env:
             <<: *_env_terraform
             TF_VAR_nodes_count: "1"
-      - ShellCommand:
+      - ShellCommand: &check_ssh_config_bootstrap
           name: Check SSH config for bootstrap node
           command: |-
             if [ ! -f ssh_config ]; then
@@ -1519,7 +1520,7 @@ stages:
           <<: *copy_bastion_pub_key_ssh
           env:
             HOSTS_LIST: "bootstrap node1"
-      - ShellCommand:
+      - ShellCommand: &copy_bastion_priv_key_to_bootstrap
           # FIXME: find a cleaner way with Terraform.
           name: Send bastion private key to bootstrap
           command: >
@@ -1527,27 +1528,27 @@ stages:
               scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
               ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+      - ShellCommand: &copy_iso_to_bootstrap
           name: Copy ISO to bootstrap node
           command: >
             scp -F ssh_config ../../../../metalk8s.iso bootstrap:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &create_mountpoint_on_bootstrap
           name: Create mountpoint in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo mkdir -p /var/tmp/metalk8s
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &mount_iso_on_bootstrap
           name: Mount ISO image in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo mount -o loop metalk8s.iso /var/tmp/metalk8s
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &bootstrap_on_bootstrap
           name: Start the bootstrap process in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
@@ -1562,7 +1563,7 @@ stages:
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+      - ShellCommand: &enable_ipip_ssh
           name: Enable IPIP
           env:
             SSH_CONFIG: >-
@@ -1570,7 +1571,7 @@ stages:
           command: >
             ssh -F $SSH_CONFIG bootstrap
             'bash /home/centos/scripts/enable_ipip.sh'
-      - ShellCommand:
+      - ShellCommand: &copy_test_source_to_bastion
           # FIXME: should find a cleaner way to do this (git clone may be
           # cumbersome, unless we assume the repo is public and don't use
           # authentication)
@@ -1581,7 +1582,7 @@ stages:
           command: >
             tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
             | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
-      - ShellCommand:
+      - ShellCommand: &wait_kube_system_pods_running_multi_node
           <<: *wait_pods_running_ssh
           name: Wait for "kube-system" Pods to be in running state
           env:
@@ -1595,7 +1596,7 @@ stages:
           env:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "install and ci and multinodes and not node2"
-      - ShellCommand:
+      - ShellCommand: &provision_volumes_on_node1
           name: Provision Prometheus and AlertManager storage
           env:
             SSH_CONFIG: >-
@@ -1609,19 +1610,19 @@ stages:
             NODE_NAME=node1
             /tmp/create-volumes.sh
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &wait_pods_running_multi_node
           <<: *wait_pods_running_ssh
           env:
             <<: *_env_wait_pods_running_ssh
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
-      - ShellCommand:
+      - ShellCommand: &multi_node_fast_tests
           <<: *bastion_tests
           name: Run fast tests on the bastion
           env:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "post and ci and not slow"
-      - ShellCommand:
+      - ShellCommand: &multi_node_slow_tests
           <<: *bastion_tests
           name: Run slow tests on the bastion
           env:
@@ -1629,16 +1630,16 @@ stages:
             PYTEST_ARGS: "--suppress-no-test-exit-code"
             PYTEST_FILTERS: >-
               post and ci and slow and not bootstrap and not restore
-      - ShellCommand:
+      - ShellCommand: &generate_report_multi_node
           <<: *generate_report_over_ssh
-          env:
+          env: &_env_generate_report_multi_node
             <<: *_env_generate_report_over_ssh
             HOSTS_LIST: "bootstrap node1"
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
-      - ShellCommand:
+      - ShellCommand: &collect_report_multi_node
           <<: *collect_report_over_ssh
-          env:
+          env: &_env_collect_report_multi_node
             <<: *_env_collect_report_over_ssh
             HOSTS_LIST: "bootstrap node1"
             SSH_CONFIG: >-
@@ -1658,6 +1659,193 @@ stages:
           env:
             STEP_NAME: multiple-nodes-centos
             DURATION: "14400"
-      - ShellCommand:
+      - ShellCommand: &terraform_destroy_multi_node
           <<: *terraform_destroy
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+
+  bootstrap-restore:
+    _metalk8s_internal_info:
+      junit_info: &_bootstrap_restore_junit_info
+        TEST_SUITE: install
+        CLASS_NAME: multi node.centos7
+        TEST_NAME: bootstrap restore
+      simultaneous_builds: 20
+    worker: *multi_node_worker
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_bootstrap_restore_junit_info
+            STEP_NAME: bootstrap-restore
+      - ShellCommand: *setup_cache
+      - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
+      - ShellCommand: *terraform_install
+      - ShellCommand: *terraform_install_check
+      - ShellCommand: *terraform_init_multi_node
+      - ShellCommand: *terraform_validate_multi_node
+      - ShellCommand:
+          <<: *terraform_apply_multi_node
+          env: &_env_terraform_bootstrap_restore
+            <<: *_env_terraform
+            TF_VAR_nodes_count: "2"
+      - ShellCommand: *check_ssh_config_bootstrap
+      - ShellCommand:
+          <<: *copy_bastion_pub_key_ssh
+          env:
+            HOSTS_LIST: "bootstrap node1 node2"
+      - ShellCommand: *copy_bastion_priv_key_to_bootstrap
+      - ShellCommand: *copy_iso_to_bootstrap
+      - ShellCommand: *create_mountpoint_on_bootstrap
+      - ShellCommand: *mount_iso_on_bootstrap
+      - ShellCommand: *bootstrap_on_bootstrap
+      - ShellCommand: *enable_ipip_ssh
+      - ShellCommand: *copy_test_source_to_bastion
+      - ShellCommand: *wait_kube_system_pods_running_multi_node
+      - ShellCommand:
+          <<: *bastion_tests
+          name: Run installation scenario on the bastion
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "install and ci and multinodes"
+      - ShellCommand: *provision_volumes_on_node1
+      - ShellCommand: *wait_pods_running_multi_node
+      - ShellCommand: *multi_node_fast_tests
+      - ShellCommand: *multi_node_slow_tests
+      - SetPropertyFromCommand:
+          name: Set bootstrap backup archive property
+          property: bootstrap_backup_archive
+          command: >
+            ssh -F ssh_config bootstrap
+            "sudo find /var/lib/metalk8s -name 'backup_*.tar.gz'
+            -printf '%f\n' | sort | tail -n1"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Retrieve the backup archive from the bootstrap node
+          command: >
+            scp -F ssh_config
+            bootstrap:"/var/lib/metalk8s/%(prop:bootstrap_backup_archive)s"
+            /tmp
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Destroy the bootstrap node
+          env: *_env_terraform_bootstrap_restore
+          command: >
+            terraform destroy -auto-approve
+            -target openstack_compute_instance_v2.bootstrap
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - SetPropertyFromCommand:
+          name: Set node1 etcd container id
+          property: node1_etcd_container_id
+          command: >
+            ssh -F ssh_config node1
+            sudo crictl ps -q --label io.kubernetes.pod.namespace=kube-system
+            --label io.kubernetes.container.name=etcd --state Running
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - SetPropertyFromCommand:
+          name: Set boostrap node etcd member id
+          property: bootstrap_etcd_member_id
+          command: >
+            ssh -F ssh_config node1
+            sudo crictl exec -i "%(prop:node1_etcd_container_id)s" sh -c \"
+            ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379
+            --cert /etc/kubernetes/pki/etcd/server.crt
+            --key /etc/kubernetes/pki/etcd/server.key
+            --cacert /etc/kubernetes/pki/etcd/ca.crt
+            member list\" | awk -F ', ' '$3 ~ "bootstrap" { print $1 }'
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Remove bootstrap node from etcd members
+          command: >
+            ssh -F ssh_config node1
+            sudo crictl exec -i "%(prop:node1_etcd_container_id)s" sh -c \"
+            ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379
+            --cert /etc/kubernetes/pki/etcd/server.crt
+            --key /etc/kubernetes/pki/etcd/server.key
+            --cacert /etc/kubernetes/pki/etcd/ca.crt
+            member remove %(prop:bootstrap_etcd_member_id)s\"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Remove bootstrap node object
+          command: >
+            ssh -F ssh_config node1
+            sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf delete
+            node --selector="node-role.kubernetes.io/bootstrap"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Create a new bootstrap node
+          env: *_env_terraform_bootstrap_restore
+          command:
+            terraform apply -auto-approve -refresh
+            -target openstack_compute_instance_v2.bootstrap
+            -target null_resource.ssh_config
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand: *copy_bastion_pub_key_ssh
+      - ShellCommand:
+          name: Copy the backup archive to the new bootstrap node
+          command: >
+            scp -F ssh_config
+            "/tmp/%(prop:bootstrap_backup_archive)s" bootstrap:/tmp
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *copy_iso_to_bootstrap
+          name: Copy ISO to the new bootstrap node
+      - ShellCommand:
+          <<: *create_mountpoint_on_bootstrap
+          name: Create mountpoint on the new bootstrap node
+      - ShellCommand:
+          <<: *mount_iso_on_bootstrap
+          name: Mount ISO image on the new bootstrap node
+      - ShellCommand:
+          <<: *bastion_tests
+          name: Run restore tests on the bastion
+          # NOTE: Increase timeout as restore may take some time
+          # Since we use pytest we do not have any output until restore totaly
+          # finished
+          timeout: 1800
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "restore"
+            BOOTSTRAP_BACKUP_ARCHIVE: "/tmp/%(prop:bootstrap_backup_archive)s"
+      - ShellCommand: *wait_pods_running_multi_node
+      - ShellCommand: *multi_node_fast_tests
+      - ShellCommand: *multi_node_slow_tests
+      - ShellCommand:
+          <<: *generate_report_multi_node
+          env:
+            <<: *_env_generate_report_multi_node
+            HOSTS_LIST: "bootstrap node1 node2"
+      - ShellCommand:
+          <<: *collect_report_multi_node
+          env:
+            <<: *_env_collect_report_multi_node
+            HOSTS_LIST: "bootstrap node1 node2"
+            STEP_NAME: bootstrap-restore
+      - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_bootstrap_restore_junit_info
+            STEP_NAME: bootstrap-restore
+      - Upload: *upload_final_status_artifact
+      - ShellCommand:
+          <<: *wait_debug
+          timeout: 14400
+          env:
+            STEP_NAME: bootstrap-restore
+            DURATION: "14400"
+      - ShellCommand: *terraform_destroy_multi_node
