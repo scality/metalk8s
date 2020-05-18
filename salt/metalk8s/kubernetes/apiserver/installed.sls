@@ -1,4 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/addons/nginx-ingress-control-plane/control-plane-ip.sls"
     import ingress_control_plane with context
@@ -84,6 +85,7 @@ Create kube-apiserver Pod manifest:
           - --oidc-ca-file=/etc/metalk8s/pki/nginx-ingress/ca.crt
           - --oidc-username-claim=email
           - --oidc-groups-claim=groups
+          - --v={{ 2 if metalk8s.debug else 0 }}
         requested_cpu: 250m
         volumes:
           - path: {{ encryption_k8s_path }}
