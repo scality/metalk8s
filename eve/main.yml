@@ -245,6 +245,7 @@ models:
       name: Create bootstrap configuration file
       env:
         PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+        DEBUG: "%(prop:metalk8s_debug:-false)s"
       command: |
         sudo bash << EOF
         mkdir -p /etc/metalk8s
@@ -260,6 +261,7 @@ models:
           host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
         archives:
           - "/srv/scality/metalk8s-${PRODUCT_VERSION}"
+        debug: ${DEBUG}
         END
         EOF
       haltOnFailure: true
@@ -414,6 +416,7 @@ models:
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
         TF_VAR_prefix: "%(prop:buildnumber)s-%(prop:stage_name)s"
+        TF_VAR_debug: "%(prop:metalk8s_debug:-false)s"
         MAX_RETRIES: "3"
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
@@ -1103,7 +1106,9 @@ stages:
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
           <<: *bootstrap_config
-          env: *_env_version_prev
+          env:
+            <<: *_env_version_prev
+            DEBUG: "%(prop:metalk8s_debug:-false)s"
       # --- Install version N-1 ---
       - ShellCommand:
           <<: *run_bootstrap
@@ -1408,7 +1413,9 @@ stages:
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
           <<: *bootstrap_config
-          env: *_env_promoted_version
+          env:
+            <<: *_env_promoted_version
+            DEBUG: "%(prop:metalk8s_debug:-false)s"
       # --- Install promoted version ---
       - ShellCommand:
           <<: *run_bootstrap
