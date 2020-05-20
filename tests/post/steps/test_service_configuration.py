@@ -8,23 +8,6 @@ from kubernetes.client import AppsV1Api
 
 from tests import utils
 
-
-# Fixtures {{{
-
-
-@pytest.fixture
-def k8s_appsv1_client(k8s_apiclient):
-    return AppsV1Api(api_client=k8s_apiclient)
-
-
-@pytest.fixture
-def csc(k8s_client):
-    return ClusterServiceConfiguration(k8s_client)
-
-
-# }}}
-
-
 # Scenarios {{{
 
 
@@ -40,8 +23,6 @@ def test_prometheus_rules_customization(host):
     pass
 
 # }}}
-
-
 # Given {{{
 
 
@@ -65,8 +46,6 @@ def check_csc_configuration(
 
 
 # }}}
-
-
 # When {{{
 
 
@@ -114,38 +93,34 @@ def apply_service_config(host, version, request, k8s_client, state):
 
 
 # }}}
-
-
 # Then {{{
 
 
 @then(parsers.parse(
-    "we have '{value}' at '{path}' for '{service}' Deployment in namespace "
-    "'{namespace}'"))
+    "we have '{value}' at '{path}' for '{deployment}' Deployment in "
+    "namespace '{namespace}'"))
 def get_deployments(
-    k8s_appsv1_client,
+    k8s_apiclient,
     value,
     path,
-    service,
+    deployment,
     namespace,
-    check_csc_configuration,
-    csc
-
 ):
     def _wait_for_deployment():
         try:
+            k8s_appsv1_client = AppsV1Api(api_client=k8s_apiclient)
             response = k8s_appsv1_client.read_namespaced_deployment(
-                name=service, namespace=namespace
+                name=deployment, namespace=namespace
             ).to_dict()
         except Exception as exc:
             pytest.fail(
                 "Unable to read {} Deployment with error: {!s}".format(
-                    service, exc
+                    deployment, exc
                 )
             )
         assert literal_eval(value) == utils.get_dict_element(response, path), (
-            "Expected value {} for service {}, got {}".format(
-                value, service, utils.get_dict_element(response, path)
+            "Expected value {} for deployment {}, got {}".format(
+                value, deployment, utils.get_dict_element(response, path)
             )
         )
     utils.retry(
