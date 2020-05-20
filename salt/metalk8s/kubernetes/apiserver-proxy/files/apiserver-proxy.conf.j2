@@ -11,20 +11,26 @@ events {
 }
 
 {%- if pillar.get('apiserver_ip') %}
-{%-     set masters_request = {'ip': pillar.apiserver_ip} %}
+{%-     set apiservers = [pillar.apiserver_ip] %}
 {%- else %}
-{%-     set masters_request = salt['mine.get'](
-            tgt='I@metalk8s:nodes:*:roles:master',
-            fun='control_plane_ip',
-            tgt_type='compound',
-        )
+{%-     set masters = salt['metalk8s.minions_by_role']('master') %}
+{%-     if not masters %}
+            {{ raise("No master nodes in pillar 'metalk8s:nodes', "
+                     ~ "can't deploy apiserver-proxy") }}
+{%-     else %}
+{%-         set master_ips = salt['mine.get'](
+                tgt=masters | join(','),
+                fun='control_plane_ip',
+                tgt_type='list',
+            )
 %}
-{%- endif %}
-{%- if not masters_request %}
-{# In this case, we're (likely) bootstrapping #}
-{%-   set apiservers = ['127.0.0.1'] %}
-{%- else %}
-{%-   set apiservers = masters_request.values() | sort %}
+{%-         if not master_ips and grains.id in masters %}
+{# In case we're bootstrapping, the Mine wouldn't be available #}
+{%-             set apiservers = ["127.0.0.1"] %}
+{%-         else %}
+{%-             set apiservers = master_ips.values() | sort %}
+{%-         endif %}
+{%-     endif %}
 {%- endif %}
 
 stream {
