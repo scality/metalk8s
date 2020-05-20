@@ -1,0 +1,590 @@
+[
+    {
+        "message": "The configuration of the instances of the Alertmanager cluster `{{$labels.service}}` are out of sync.",
+        "name": "AlertmanagerConfigInconsistent",
+        "query": "count_values by(service) (\"config_hash\", alertmanager_config_hash{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}) / on(service) group_left() label_replace(max by(name, job, namespace, controller) (prometheus_operator_spec_replicas{controller=\"alertmanager\",job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}), \"service\", \"$1\", \"name\", \"(.*)\") != 1",
+        "severity": "critical"
+    },
+    {
+        "message": "Reloading Alertmanager's configuration has failed for {{ $labels.namespace }}/{{ $labels.pod}}.",
+        "name": "AlertmanagerFailedReload",
+        "query": "alertmanager_config_last_reload_successful{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"} == 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Alertmanager has not found all other members of the cluster.",
+        "name": "AlertmanagerMembersInconsistent",
+        "query": "alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"} != on(service) group_left() count by(service) (alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": insufficient members ({{ $value }}).",
+        "name": "etcdInsufficientMembers",
+        "query": "sum by(job) (up{job=~\".*etcd.*\"} == bool 1) < ((count by(job) (up{job=~\".*etcd.*\"}) + 1) / 2)",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": member {{ $labels.instance }} has no leader.",
+        "name": "etcdNoLeader",
+        "query": "etcd_server_has_leader{job=~\".*etcd.*\"} == 0",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour.",
+        "name": "etcdHighNumberOfLeaderChanges",
+        "query": "rate(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}[15m]) > 3",
+        "severity": "warning"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}.",
+        "name": "etcdHighNumberOfFailedGRPCRequests",
+        "query": "100 * sum by(job, instance, grpc_service, grpc_method) (rate(grpc_server_handled_total{grpc_code!=\"OK\",job=~\".*etcd.*\"}[5m])) / sum by(job, instance, grpc_service, grpc_method) (rate(grpc_server_handled_total{job=~\".*etcd.*\"}[5m])) > 1",
+        "severity": "warning"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}.",
+        "name": "etcdHighNumberOfFailedGRPCRequests",
+        "query": "100 * sum by(job, instance, grpc_service, grpc_method) (rate(grpc_server_handled_total{grpc_code!=\"OK\",job=~\".*etcd.*\"}[5m])) / sum by(job, instance, grpc_service, grpc_method) (rate(grpc_server_handled_total{job=~\".*etcd.*\"}[5m])) > 5",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": gRPC requests to {{ $labels.grpc_method }} are taking {{ $value }}s on etcd instance {{ $labels.instance }}.",
+        "name": "etcdGRPCRequestsSlow",
+        "query": "histogram_quantile(0.99, sum by(job, instance, grpc_service, grpc_method, le) (rate(grpc_server_handling_seconds_bucket{grpc_type=\"unary\",job=~\".*etcd.*\"}[5m]))) > 0.15",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": member communication with {{ $labels.To }} is taking {{ $value }}s on etcd instance {{ $labels.instance }}.",
+        "name": "etcdMemberCommunicationSlow",
+        "query": "histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{job=~\".*etcd.*\"}[5m])) > 0.15",
+        "severity": "warning"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }} proposal failures within the last hour on etcd instance {{ $labels.instance }}.",
+        "name": "etcdHighNumberOfFailedProposals",
+        "query": "rate(etcd_server_proposals_failed_total{job=~\".*etcd.*\"}[15m]) > 5",
+        "severity": "warning"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": 99th percentile fync durations are {{ $value }}s on etcd instance {{ $labels.instance }}.",
+        "name": "etcdHighFsyncDurations",
+        "query": "histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job=~\".*etcd.*\"}[5m])) > 0.5",
+        "severity": "warning"
+    },
+    {
+        "message": "etcd cluster \"{{ $labels.job }}\": 99th percentile commit durations {{ $value }}s on etcd instance {{ $labels.instance }}.",
+        "name": "etcdHighCommitDurations",
+        "query": "histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{job=~\".*etcd.*\"}[5m])) > 0.25",
+        "severity": "warning"
+    },
+    {
+        "message": "{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}",
+        "name": "etcdHighNumberOfFailedHTTPRequests",
+        "query": "sum by(method) (rate(etcd_http_failed_total{code!=\"404\",job=~\".*etcd.*\"}[5m])) / sum by(method) (rate(etcd_http_received_total{job=~\".*etcd.*\"}[5m])) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}.",
+        "name": "etcdHighNumberOfFailedHTTPRequests",
+        "query": "sum by(method) (rate(etcd_http_failed_total{code!=\"404\",job=~\".*etcd.*\"}[5m])) / sum by(method) (rate(etcd_http_received_total{job=~\".*etcd.*\"}[5m])) > 0.05",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd instance {{ $labels.instance }} HTTP requests to {{ $labels.method }} are slow.",
+        "name": "etcdHTTPRequestsSlow",
+        "query": "histogram_quantile(0.99, rate(etcd_http_successful_duration_seconds_bucket[5m])) > 0.15",
+        "severity": "warning"
+    },
+    {
+        "message": "{{ printf \"%.4g\" $value }}% of the {{ $labels.job }} targets in {{ $labels.namespace }} namespace are down.",
+        "name": "TargetDown",
+        "query": "100 * (count by(job, namespace, service) (up == 0) / count by(job, namespace, service) (up)) > 10",
+        "severity": "warning"
+    },
+    {
+        "message": "This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n\"DeadMansSnitch\" integration in PagerDuty.",
+        "name": "Watchdog",
+        "query": "vector(1)",
+        "severity": "none"
+    },
+    {
+        "message": "Alertmanager has disappeared from Prometheus target discovery.",
+        "name": "AlertmanagerDown",
+        "query": "absent(up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "KubeAPI has disappeared from Prometheus target discovery.",
+        "name": "KubeAPIDown",
+        "query": "absent(up{job=\"apiserver\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "KubeControllerManager has disappeared from Prometheus target discovery.",
+        "name": "KubeControllerManagerDown",
+        "query": "absent(up{job=\"kube-controller-manager\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "KubeScheduler has disappeared from Prometheus target discovery.",
+        "name": "KubeSchedulerDown",
+        "query": "absent(up{job=\"kube-scheduler\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "KubeStateMetrics has disappeared from Prometheus target discovery.",
+        "name": "KubeStateMetricsDown",
+        "query": "absent(up{job=\"kube-state-metrics\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "Kubelet has disappeared from Prometheus target discovery.",
+        "name": "KubeletDown",
+        "query": "absent(up{job=\"kubelet\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "NodeExporter has disappeared from Prometheus target discovery.",
+        "name": "NodeExporterDown",
+        "query": "absent(up{job=\"node-exporter\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "Prometheus has disappeared from Prometheus target discovery.",
+        "name": "PrometheusDown",
+        "query": "absent(up{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "PrometheusOperator has disappeared from Prometheus target discovery.",
+        "name": "PrometheusOperatorDown",
+        "query": "absent(up{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is restarting {{ printf \"%.2f\" $value }} times / 5 minutes.",
+        "name": "KubePodCrashLooping",
+        "query": "rate(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\"}[15m]) * 60 * 5 > 0",
+        "severity": "critical"
+    },
+    {
+        "message": "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for longer than 15 minutes.",
+        "name": "KubePodNotReady",
+        "query": "sum by(namespace, pod) (kube_pod_status_phase{job=\"kube-state-metrics\",phase=~\"Failed|Pending|Unknown\"} * on(namespace, pod) group_left(owner_kind) kube_pod_owner{owner_kind!=\"Job\"}) > 0",
+        "severity": "critical"
+    },
+    {
+        "message": "Deployment generation for {{ $labels.namespace }}/{{ $labels.deployment }} does not match, this indicates that the Deployment has failed but has not been rolled back.",
+        "name": "KubeDeploymentGenerationMismatch",
+        "query": "kube_deployment_status_observed_generation{job=\"kube-state-metrics\"} != kube_deployment_metadata_generation{job=\"kube-state-metrics\"}",
+        "severity": "critical"
+    },
+    {
+        "message": "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has not matched the expected number of replicas for longer than 15 minutes.",
+        "name": "KubeDeploymentReplicasMismatch",
+        "query": "kube_deployment_spec_replicas{job=\"kube-state-metrics\"} != kube_deployment_status_replicas_available{job=\"kube-state-metrics\"}",
+        "severity": "critical"
+    },
+    {
+        "message": "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has not matched the expected number of replicas for longer than 15 minutes.",
+        "name": "KubeStatefulSetReplicasMismatch",
+        "query": "kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\"} != kube_statefulset_status_replicas{job=\"kube-state-metrics\"}",
+        "severity": "critical"
+    },
+    {
+        "message": "StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset }} does not match, this indicates that the StatefulSet has failed but has not been rolled back.",
+        "name": "KubeStatefulSetGenerationMismatch",
+        "query": "kube_statefulset_status_observed_generation{job=\"kube-state-metrics\"} != kube_statefulset_metadata_generation{job=\"kube-state-metrics\"}",
+        "severity": "critical"
+    },
+    {
+        "message": "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} update has not been rolled out.",
+        "name": "KubeStatefulSetUpdateNotRolledOut",
+        "query": "max without(revision) (kube_statefulset_status_current_revision{job=\"kube-state-metrics\"} unless kube_statefulset_status_update_revision{job=\"kube-state-metrics\"}) * (kube_statefulset_replicas{job=\"kube-state-metrics\"} != kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\"})",
+        "severity": "critical"
+    },
+    {
+        "message": "Only {{ $value | humanizePercentage }} of the desired Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are scheduled and ready.",
+        "name": "KubeDaemonSetRolloutStuck",
+        "query": "kube_daemonset_status_number_ready{job=\"kube-state-metrics\"} / kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\"} < 1",
+        "severity": "critical"
+    },
+    {
+        "message": "Pod {{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container}} has been in waiting state for longer than 1 hour.",
+        "name": "KubeContainerWaiting",
+        "query": "sum by(namespace, pod, container) (kube_pod_container_status_waiting_reason{job=\"kube-state-metrics\"}) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are not scheduled.",
+        "name": "KubeDaemonSetNotScheduled",
+        "query": "kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\"} - kube_daemonset_status_current_number_scheduled{job=\"kube-state-metrics\"} > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are running where they are not supposed to run.",
+        "name": "KubeDaemonSetMisScheduled",
+        "query": "kube_daemonset_status_number_misscheduled{job=\"kube-state-metrics\"} > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is taking more than 1h to complete.",
+        "name": "KubeCronJobRunning",
+        "query": "time() - kube_cronjob_next_schedule_time{job=\"kube-state-metrics\"} > 3600",
+        "severity": "warning"
+    },
+    {
+        "message": "Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking more than one hour to complete.",
+        "name": "KubeJobCompletion",
+        "query": "kube_job_spec_completions{job=\"kube-state-metrics\"} - kube_job_status_succeeded{job=\"kube-state-metrics\"} > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete.",
+        "name": "KubeJobFailed",
+        "query": "kube_job_failed{job=\"kube-state-metrics\"} > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "HPA {{ $labels.namespace }}/{{ $labels.hpa }} has not matched the desired number of replicas for longer than 15 minutes.",
+        "name": "KubeHpaReplicasMismatch",
+        "query": "(kube_hpa_status_desired_replicas{job=\"kube-state-metrics\"} != kube_hpa_status_current_replicas{job=\"kube-state-metrics\"}) and changes(kube_hpa_status_current_replicas[15m]) == 0",
+        "severity": "warning"
+    },
+    {
+        "message": "HPA {{ $labels.namespace }}/{{ $labels.hpa }} has been running at max replicas for longer than 15 minutes.",
+        "name": "KubeHpaMaxedOut",
+        "query": "kube_hpa_status_current_replicas{job=\"kube-state-metrics\"} == kube_hpa_spec_max_replicas{job=\"kube-state-metrics\"}",
+        "severity": "warning"
+    },
+    {
+        "message": "Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.",
+        "name": "KubeCPUOvercommit",
+        "query": "sum(namespace:kube_pod_container_resource_requests_cpu_cores:sum) / sum(kube_node_status_allocatable_cpu_cores) > (count(kube_node_status_allocatable_cpu_cores) - 1) / count(kube_node_status_allocatable_cpu_cores)",
+        "severity": "warning"
+    },
+    {
+        "message": "Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.",
+        "name": "KubeMemOvercommit",
+        "query": "sum(namespace:kube_pod_container_resource_requests_memory_bytes:sum) / sum(kube_node_status_allocatable_memory_bytes) > (count(kube_node_status_allocatable_memory_bytes) - 1) / count(kube_node_status_allocatable_memory_bytes)",
+        "severity": "warning"
+    },
+    {
+        "message": "Cluster has overcommitted CPU resource requests for Namespaces.",
+        "name": "KubeCPUOvercommit",
+        "query": "sum(kube_resourcequota{job=\"kube-state-metrics\",resource=\"cpu\",type=\"hard\"}) / sum(kube_node_status_allocatable_cpu_cores) > 1.5",
+        "severity": "warning"
+    },
+    {
+        "message": "Cluster has overcommitted memory resource requests for Namespaces.",
+        "name": "KubeMemOvercommit",
+        "query": "sum(kube_resourcequota{job=\"kube-state-metrics\",resource=\"memory\",type=\"hard\"}) / sum(kube_node_status_allocatable_memory_bytes{job=\"node-exporter\"}) > 1.5",
+        "severity": "warning"
+    },
+    {
+        "message": "Namespace {{ $labels.namespace }} is using {{ $value | humanizePercentage }} of its {{ $labels.resource }} quota.",
+        "name": "KubeQuotaExceeded",
+        "query": "kube_resourcequota{job=\"kube-state-metrics\",type=\"used\"} / ignoring(instance, job, type) (kube_resourcequota{job=\"kube-state-metrics\",type=\"hard\"} > 0) > 0.9",
+        "severity": "warning"
+    },
+    {
+        "message": "{{ $value | humanizePercentage }} throttling of CPU in namespace {{ $labels.namespace }} for container {{ $labels.container }} in pod {{ $labels.pod }}.",
+        "name": "CPUThrottlingHigh",
+        "query": "sum by(container, pod, namespace) (increase(container_cpu_cfs_throttled_periods_total{container!=\"\"}[5m])) / sum by(container, pod, namespace) (increase(container_cpu_cfs_periods_total[5m])) > (25 / 100)",
+        "severity": "warning"
+    },
+    {
+        "message": "The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is only {{ $value | humanizePercentage }} free.",
+        "name": "KubePersistentVolumeUsageCritical",
+        "query": "kubelet_volume_stats_available_bytes{job=\"kubelet\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\"} < 0.03",
+        "severity": "critical"
+    },
+    {
+        "message": "Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is expected to fill up within four days. Currently {{ $value | humanizePercentage }} is available.",
+        "name": "KubePersistentVolumeFullInFourDays",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\"}) < 0.15 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\"}[6h], 4 * 24 * 3600) < 0",
+        "severity": "critical"
+    },
+    {
+        "message": "The persistent volume {{ $labels.persistentvolume }} has status {{ $labels.phase }}.",
+        "name": "KubePersistentVolumeErrors",
+        "query": "kube_persistentvolume_status_phase{job=\"kube-state-metrics\",phase=~\"Failed|Pending\"} > 0",
+        "severity": "critical"
+    },
+    {
+        "message": "The API server has a 99th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}.",
+        "name": "KubeAPILatencyHigh",
+        "query": "cluster_quantile:apiserver_request_duration_seconds:histogram_quantile{job=\"apiserver\",quantile=\"0.99\",subresource!=\"log\",verb!~\"LIST|WATCH|WATCHLIST|PROXY|CONNECT\"} > 1",
+        "severity": "warning"
+    },
+    {
+        "message": "The API server has a 99th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}.",
+        "name": "KubeAPILatencyHigh",
+        "query": "cluster_quantile:apiserver_request_duration_seconds:histogram_quantile{job=\"apiserver\",quantile=\"0.99\",subresource!=\"log\",verb!~\"LIST|WATCH|WATCHLIST|PROXY|CONNECT\"} > 4",
+        "severity": "critical"
+    },
+    {
+        "message": "API server is returning errors for {{ $value | humanizePercentage }} of requests.",
+        "name": "KubeAPIErrorsHigh",
+        "query": "sum(rate(apiserver_request_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum(rate(apiserver_request_total{job=\"apiserver\"}[5m])) > 0.03",
+        "severity": "critical"
+    },
+    {
+        "message": "API server is returning errors for {{ $value | humanizePercentage }} of requests.",
+        "name": "KubeAPIErrorsHigh",
+        "query": "sum(rate(apiserver_request_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum(rate(apiserver_request_total{job=\"apiserver\"}[5m])) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "API server is returning errors for {{ $value | humanizePercentage }} of requests for {{ $labels.verb }} {{ $labels.resource }} {{ $labels.subresource }}.",
+        "name": "KubeAPIErrorsHigh",
+        "query": "sum by(resource, subresource, verb) (rate(apiserver_request_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by(resource, subresource, verb) (rate(apiserver_request_total{job=\"apiserver\"}[5m])) > 0.1",
+        "severity": "critical"
+    },
+    {
+        "message": "API server is returning errors for {{ $value | humanizePercentage }} of requests for {{ $labels.verb }} {{ $labels.resource }} {{ $labels.subresource }}.",
+        "name": "KubeAPIErrorsHigh",
+        "query": "sum by(resource, subresource, verb) (rate(apiserver_request_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by(resource, subresource, verb) (rate(apiserver_request_total{job=\"apiserver\"}[5m])) > 0.05",
+        "severity": "warning"
+    },
+    {
+        "message": "A client certificate used to authenticate to the apiserver is expiring in less than 7.0 days.",
+        "name": "KubeClientCertificateExpiration",
+        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and histogram_quantile(0.01, sum by(job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 604800",
+        "severity": "warning"
+    },
+    {
+        "message": "A client certificate used to authenticate to the apiserver is expiring in less than 24.0 hours.",
+        "name": "KubeClientCertificateExpiration",
+        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and histogram_quantile(0.01, sum by(job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 86400",
+        "severity": "critical"
+    },
+    {
+        "message": "KubeAPI has disappeared from Prometheus target discovery.",
+        "name": "KubeAPIDown",
+        "query": "absent(up{job=\"apiserver\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "KubeControllerManager has disappeared from Prometheus target discovery.",
+        "name": "KubeControllerManagerDown",
+        "query": "absent(up{job=\"kube-controller-manager\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "{{ $labels.node }} has been unready for more than 15 minutes.",
+        "name": "KubeNodeNotReady",
+        "query": "kube_node_status_condition{condition=\"Ready\",job=\"kube-state-metrics\",status=\"true\"} == 0",
+        "severity": "warning"
+    },
+    {
+        "message": "{{ $labels.node }} is unreachable and some workloads may be rescheduled.",
+        "name": "KubeNodeUnreachable",
+        "query": "kube_node_spec_taint{effect=\"NoSchedule\",job=\"kube-state-metrics\",key=\"node.kubernetes.io/unreachable\"} == 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Kubelet '{{ $labels.node }}' is running at {{ $value | humanizePercentage }} of its Pod capacity.",
+        "name": "KubeletTooManyPods",
+        "query": "max by(node) (max by(instance) (kubelet_running_pod_count{job=\"kubelet\"}) * on(instance) group_left(node) kubelet_node_name{job=\"kubelet\"}) / max by(node) (kube_node_status_capacity_pods{job=\"kube-state-metrics\"}) > 0.95",
+        "severity": "warning"
+    },
+    {
+        "message": "Kubelet has disappeared from Prometheus target discovery.",
+        "name": "KubeletDown",
+        "query": "absent(up{job=\"kubelet\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "KubeScheduler has disappeared from Prometheus target discovery.",
+        "name": "KubeSchedulerDown",
+        "query": "absent(up{job=\"kube-scheduler\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "There are {{ $value }} different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count(count by(gitVersion) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"gitVersion\", \"$1\", \"gitVersion\", \"(v[0-9]*.[0-9]*.[0-9]*).*\"))) > 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Kubernetes API server client '{{ $labels.job }}/{{ $labels.instance }}' is experiencing {{ $value | humanizePercentage }} errors.'",
+        "name": "KubeClientErrors",
+        "query": "(sum by(instance, job) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(instance, job) (rate(rest_client_requests_total[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem is predicted to run out of space within the next 24 hours.",
+        "name": "NodeFilesystemSpaceFillingUp",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 40 and predict_linear(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"}[6h], 24 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem is predicted to run out of space within the next 4 hours.",
+        "name": "NodeFilesystemSpaceFillingUp",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and predict_linear(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"}[6h], 4 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "critical"
+    },
+    {
+        "message": "Filesystem has less than 5% space left.",
+        "name": "NodeFilesystemAlmostOutOfSpace",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 5 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem has less than 3% space left.",
+        "name": "NodeFilesystemAlmostOutOfSpace",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 3 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "critical"
+    },
+    {
+        "message": "Filesystem is predicted to run out of inodes within the next 24 hours.",
+        "name": "NodeFilesystemFilesFillingUp",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 40 and predict_linear(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"}[6h], 24 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem is predicted to run out of inodes within the next 4 hours.",
+        "name": "NodeFilesystemFilesFillingUp",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and predict_linear(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"}[6h], 4 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "critical"
+    },
+    {
+        "message": "Filesystem has less than 5% inodes left.",
+        "name": "NodeFilesystemAlmostOutOfFiles",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 5 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem has less than 3% inodes left.",
+        "name": "NodeFilesystemAlmostOutOfFiles",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 3 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "critical"
+    },
+    {
+        "message": "Network interface is reporting many receive errors.",
+        "name": "NodeNetworkReceiveErrs",
+        "query": "increase(node_network_receive_errs_total[2m]) > 10",
+        "severity": "warning"
+    },
+    {
+        "message": "Network interface is reporting many transmit errors.",
+        "name": "NodeNetworkTransmitErrs",
+        "query": "increase(node_network_transmit_errs_total[2m]) > 10",
+        "severity": "warning"
+    },
+    {
+        "message": "Network interface \"{{ $labels.device }}\" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}\"",
+        "name": "NodeNetworkInterfaceFlapping",
+        "query": "changes(node_network_up{device!~\"veth.+\",job=\"node-exporter\"}[2m]) > 2",
+        "severity": "warning"
+    },
+    {
+        "message": "Clock skew detected on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}. Ensure NTP is configured correctly on this host.",
+        "name": "ClockSkewDetected",
+        "query": "abs(node_timex_offset_seconds{job=\"node-exporter\"}) > 0.05",
+        "severity": "warning"
+    },
+    {
+        "message": "Errors while reconciling {{ $labels.controller }} in {{ $labels.namespace }} Namespace.",
+        "name": "PrometheusOperatorReconcileErrors",
+        "query": "rate(prometheus_operator_reconcile_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) > 0.1",
+        "severity": "warning"
+    },
+    {
+        "message": "Errors while reconciling Prometheus in {{ $labels.namespace }} Namespace.",
+        "name": "PrometheusOperatorNodeLookupErrors",
+        "query": "rate(prometheus_operator_node_address_lookup_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) > 0.1",
+        "severity": "warning"
+    },
+    {
+        "message": "Failed Prometheus configuration reload.",
+        "name": "PrometheusBadConfig",
+        "query": "max_over_time(prometheus_config_last_reload_successful{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) == 0",
+        "severity": "critical"
+    },
+    {
+        "message": "Prometheus alert notification queue predicted to run full in less than 30m.",
+        "name": "PrometheusNotificationQueueRunningFull",
+        "query": "(predict_linear(prometheus_notifications_queue_length{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m], 60 * 30) > min_over_time(prometheus_notifications_queue_capacity{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]))",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus has encountered more than 1% errors sending alerts to a specific Alertmanager.",
+        "name": "PrometheusErrorSendingAlertsToSomeAlertmanagers",
+        "query": "(rate(prometheus_notifications_errors_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(prometheus_notifications_sent_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) * 100 > 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus encounters more than 3% errors sending alerts to any Alertmanager.",
+        "name": "PrometheusErrorSendingAlertsToAnyAlertmanager",
+        "query": "min without(alertmanager) (rate(prometheus_notifications_errors_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(prometheus_notifications_sent_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) * 100 > 3",
+        "severity": "critical"
+    },
+    {
+        "message": "Prometheus is not connected to any Alertmanagers.",
+        "name": "PrometheusNotConnectedToAlertmanagers",
+        "query": "max_over_time(prometheus_notifications_alertmanagers_discovered{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) < 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus has issues reloading blocks from disk.",
+        "name": "PrometheusTSDBReloadsFailing",
+        "query": "increase(prometheus_tsdb_reloads_failures_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[3h]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus has issues compacting blocks.",
+        "name": "PrometheusTSDBCompactionsFailing",
+        "query": "increase(prometheus_tsdb_compactions_failed_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[3h]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus is not ingesting samples.",
+        "name": "PrometheusNotIngestingSamples",
+        "query": "rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) <= 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus is dropping samples with duplicate timestamps.",
+        "name": "PrometheusDuplicateTimestamps",
+        "query": "rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus drops samples with out-of-order timestamps.",
+        "name": "PrometheusOutOfOrderTimestamps",
+        "query": "rate(prometheus_target_scrapes_sample_out_of_order_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus fails to send samples to remote storage.",
+        "name": "PrometheusRemoteStorageFailures",
+        "query": "(rate(prometheus_remote_storage_failed_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / (rate(prometheus_remote_storage_failed_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) + rate(prometheus_remote_storage_succeeded_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]))) * 100 > 1",
+        "severity": "critical"
+    },
+    {
+        "message": "Prometheus remote write is behind.",
+        "name": "PrometheusRemoteWriteBehind",
+        "query": "(max_over_time(prometheus_remote_storage_highest_timestamp_in_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) - on(job, instance) group_right() max_over_time(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) > 120",
+        "severity": "critical"
+    },
+    {
+        "message": "Prometheus remote write desired shards calculation wants to run more than configured max shards.",
+        "name": "PrometheusRemoteWriteDesiredShards",
+        "query": "(max_over_time(prometheus_remote_storage_shards_desired{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > max_over_time(prometheus_remote_storage_shards_max{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]))",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus is failing rule evaluations.",
+        "name": "PrometheusRuleFailures",
+        "query": "increase(prometheus_rule_evaluation_failures_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "critical"
+    },
+    {
+        "message": "Prometheus is missing rule evaluations due to slow rule group evaluation.",
+        "name": "PrometheusMissingRuleEvaluations",
+        "query": "increase(prometheus_rule_group_iterations_missed_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    }
+]
