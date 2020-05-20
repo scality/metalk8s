@@ -51,6 +51,20 @@ from a working Node with the ``etcd`` role:
       --cert /etc/kubernetes/pki/etcd/server.crt \
       member remove <etcd_id>
 
+Since multiple bootstrap nodes are not supported for the moment, the old
+bootstrap Node needs to be removed before performing the restoration. To do so,
+run the following commands from a working Node with ``master`` role:
+
+.. code::
+
+  # List all nodes to get the node name of the old bootstrap node that need
+  # to get removed
+  kubectl get node --selector="node-role.kubernetes.io/bootstrap" \
+     --kubeconfig=/etc/kubernetes/admin.conf
+
+  # Remove the old bootstrap node (replace <node_name> in the command)
+  kubectl delete node <node_name> --kubeconfig=/etc/kubernetes/admin.conf
+
 To restore a bootstrap node you need a backup archive and **MetalK8s** ISOs.
 
 All the ISOs referenced in the bootstrap configuration file
