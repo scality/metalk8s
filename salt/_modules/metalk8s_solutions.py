@@ -7,6 +7,7 @@ import collections
 import errno
 import os
 import logging
+import re
 import yaml
 
 import salt
@@ -20,6 +21,12 @@ SUPPORTED_CONFIG_VERSIONS = [
     'solutions.metalk8s.scality.com/{}'.format(version)
     for version in ['v1alpha1']
 ]
+# https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-label-names
+# - contain at most 63 characters
+# - contain only lowercase alphanumeric characters or '-'
+# - start with an alphanumeric character
+# - end with an alphanumeric character
+DNS_LABEL_NAME_RFC1123_RE = '^(?!-)[0-9a-z-]{1,63}(?<!-)$'
 
 __virtualname__ = 'metalk8s_solutions'
 
@@ -175,6 +182,7 @@ def _is_solution_mount(mount_tuple):
     return True
 
 
+SOLUTION_MANIFEST = 'manifest.yaml'
 SOLUTION_CONFIG_KIND = 'SolutionConfig'
 SOLUTION_CONFIG_APIVERSIONS = [
     'solutions.metalk8s.scality.com/v1alpha1',
@@ -248,6 +256,71 @@ def read_solution_config(mountpoint, name, version):
 
     salt.utils.dictupdate.update(config, provided_config)
     return config
+
+
+def _archive_info_from_manifest(manifest):
+    name = manifest.get('metadata', {}).get('name')
+    version = manifest.get('spec', {}).get('version')
+
+    if any(key is None for key in [name, version]):
+        raise CommandExecutionError(
+            'Missing mandatory key(s) in Solution "{}": must provide '
+            '"metadata.name" and "spec.version"'
+            .format(SOLUTION_MANIFEST)
+        )
+
+    if not re.match(DNS_LABEL_NAME_RFC1123_RE, name):
+        raise CommandExecutionError(
+            '"metadata.name" key in Solution {} does not follow naming '
+            'convention established by DNS label name RFC1123'
+            .format(SOLUTION_MANIFEST)
+        )
+
+    display_name = manifest.get('annotations', {}).get(
+        'solutions.metalk8s.scality.com/display-name', name
+    )
+
+    return {
+        'name': name,
+        'version': version,
+        'display_name': display_name,
+        'id': '-'.join([name, version]),
+    }
+
+
+def manifest_from_iso(path):
+    """Extract the manifest from a Solution ISO
+
+    Arguments:
+        path (str): path to an ISO
+    """
+    log.debug('Reading Solution archive version from %r', path)
+
+    cmd = ' '.join([
+        'isoinfo',
+        '-x', '/{}\;1'.format(SOLUTION_MANIFEST.upper()),
+        '-i', '"{}"'.format(path),
+    ])
+    result = __salt__['cmd.run_all'](cmd=cmd)
+    log.debug('Result: %r', result)
+
+    if result['retcode'] != 0:
+        raise CommandExecutionError(
+            'Failed to run isoinfo: {}'.format(
+                result.get('stderr', result['stdout'])
+            )
+        )
+
+    try:
+        manifest = yaml.safe_load(result['stdout'])
+    except yaml.YAMLError as exc:
+        raise CommandExecutionError(
+            "Failed to load YAML from Solution manifest {}: {!s}".format(
+                path, exc
+            )
+        )
+
+    return _archive_info_from_manifest(manifest)
 
 
 def list_available():
