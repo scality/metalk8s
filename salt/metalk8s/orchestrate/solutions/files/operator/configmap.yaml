@@ -19,5 +19,5 @@ data:
       {{ version_info.version }}:
         - endpoint: {{ registry }}/{{ version_info.id }}
           images:
-            {{ version_info.config.images | yaml(False) | indent(12) }}
+            {{ version_info.manifest.spec.images | yaml(False) | indent(12) }}
 {%- endfor %}
