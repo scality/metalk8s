@@ -4,7 +4,7 @@
 {%- set nodes_versions = pillar.metalk8s.nodes.values() | map(attribute='version') | list %}
 {%- do nodes_versions.sort(cmp=salt.pkg.version_cmp, reverse=True) %}
 {%- set expected = nodes_versions | first %}
-{%- if salt.pkg.version_cmp(saltenv | replace('metalk8s-', ''), expected) >= 0 %}
+{%- if salt.pkg.version_cmp(saltenv | replace('metalk8s-', ''), expected) < 0 %}
 
 Invalid saltenv "{{ saltenv }}" consider using "metalk8s-{{ expected }}":
   test.fail_without_changes
