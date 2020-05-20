@@ -32,8 +32,6 @@ __virtualname__ = 'metalk8s_solutions'
 
 
 def __virtual__():
-    if 'metalk8s.archive_info_from_iso' not in __salt__:
-        return False, "Failed to load 'metalk8s' module."
     return __virtualname__
 
 
@@ -183,8 +181,8 @@ def _is_solution_mount(mount_tuple):
 
 
 SOLUTION_MANIFEST = 'manifest.yaml'
-SOLUTION_CONFIG_KIND = 'SolutionConfig'
-SOLUTION_CONFIG_APIVERSIONS = [
+SOLUTION_MANIFEST_KIND = 'Solution'
+SOLUTION_MANIFEST_APIVERSIONS = [
     'solutions.metalk8s.scality.com/v1alpha1',
 ]
 
@@ -210,52 +208,58 @@ def list_solution_images(mountpoint):
     return solution_images
 
 
-def _default_solution_config(mountpoint, name, version):
+def _default_solution_manifest(mountpoint, name, version):
     return {
-        'kind': SOLUTION_CONFIG_KIND,
-        'apiVersion': SOLUTION_CONFIG_APIVERSIONS[0],
-        'operator': {
-            'image': {
-                'name': '{}-operator'.format(name),
-                'tag': version,
+        'spec': {
+            'operator': {
+                'image': {
+                    'name': '{}-operator'.format(name),
+                    'tag': version,
+                },
             },
-        },
-        'ui': {
-            'image': {
-                'name': '{}-ui'.format(name),
-                'tag': version,
+            'ui': {
+                'image': {
+                    'name': '{}-ui'.format(name),
+                    'tag': version,
+                },
             },
+            'images': list_solution_images(mountpoint),
+            'customApiGroups': [],
         },
-        'images': list_solution_images(mountpoint),
-        'customApiGroups': [],
     }
 
 
-def read_solution_config(mountpoint, name, version):
-    log.debug('Reading Solution config from %r', mountpoint)
-    config = _default_solution_config(mountpoint, name, version)
-    config_path = os.path.join(mountpoint, 'config.yaml')
+def read_solution_manifest(mountpoint):
+    log.debug('Reading Solution manifest from %r', mountpoint)
+    manifest_path = os.path.join(mountpoint, SOLUTION_MANIFEST)
 
-    if not os.path.isfile(config_path):
-        log.debug('Solution mounted at %r has no "config.yaml"', mountpoint)
-        return config
-
-    with salt.utils.files.fopen(config_path, 'r') as stream:
-        provided_config = salt.utils.yaml.safe_load(stream)
-
-    provided_kind = provided_config.pop('kind', None)
-    provided_api_version = provided_config.pop('apiVersion', None)
-
-    if (
-        provided_kind != SOLUTION_CONFIG_KIND or
-        provided_api_version not in SOLUTION_CONFIG_APIVERSIONS
-    ):
+    if not os.path.isfile(manifest_path):
         raise CommandExecutionError(
-            'Wrong apiVersion/kind for {}'.format(config_path)
+            'Solution mounted at "{}" has no "{}"'
+            .format(mountpoint, SOLUTION_MANIFEST)
         )
 
-    salt.utils.dictupdate.update(config, provided_config)
-    return config
+    with salt.utils.files.fopen(manifest_path, 'r') as stream:
+        manifest = salt.utils.yaml.safe_load(stream)
+
+    if (
+        manifest.get('kind') != SOLUTION_MANIFEST_KIND or
+        manifest.get('apiVersion') not in SOLUTION_MANIFEST_APIVERSIONS
+    ):
+        raise CommandExecutionError(
+            'Wrong apiVersion/kind for {}'.format(manifest_path)
+        )
+
+    info = _archive_info_from_manifest(manifest)
+    default_manifest = _default_solution_manifest(
+        mountpoint, info['name'], info['version']
+    )
+
+    manifest = salt.utils.dictupdate.merge(
+        default_manifest, manifest, strategy='recurse'
+    )
+
+    return manifest, info
 
 
 def _archive_info_from_manifest(manifest):
@@ -336,18 +340,15 @@ def list_available():
     solution_mounts = filter(_is_solution_mount, active_mounts.items())
 
     for mountpoint, mount_info in solution_mounts:
-        solution_info = __salt__['metalk8s.archive_info_from_tree'](mountpoint)
-        name = solution_info['name']
-        machine_name = name.replace(' ', '-').lower()
-        version = solution_info['version']
+        manifest, info = read_solution_manifest(mountpoint)
 
-        result[machine_name].append({
-            'name': name,
-            'id': '{}-{}'.format(machine_name, version),
+        result[info['name']].append({
+            'name': info['display_name'],
+            'id': info['id'],
             'mountpoint': mountpoint,
             'archive': mount_info['alt_device'],
-            'version': version,
-            'config': read_solution_config(mountpoint, machine_name, version),
+            'version': info['version'],
+            'manifest': manifest,
         })
 
     return dict(result)
