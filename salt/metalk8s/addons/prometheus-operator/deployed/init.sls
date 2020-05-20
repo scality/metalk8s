@@ -6,3 +6,4 @@ include:
   - .alertmanager-configuration-secret
   - .dashboards
   - .service-configuration
+  - .prometheus-rules

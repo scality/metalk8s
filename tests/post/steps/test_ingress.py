@@ -1,10 +1,10 @@
-import json
-
 import requests
 import requests.exceptions
 
 import pytest
 from pytest_bdd import given, parsers, scenario, then, when
+
+from tests import utils
 
 
 @scenario('../features/ingress.feature', 'Access HTTP services')
@@ -30,14 +30,7 @@ def context():
 
 @given('the node control-plane IP is not equal to its workload-plane IP')
 def node_control_plane_ip_is_not_equal_to_its_workload_plane_ip(host):
-    with host.sudo():
-        output = host.check_output(' '.join([
-            'salt-call --local',
-            'grains.get metalk8s',
-            '--out json',
-        ]))
-
-    data = json.loads(output)['local']
+    data = utils.get_grain(host, 'metalk8s')
 
     assert 'control_plane_ip' in data
     assert 'workload_plane_ip' in data
@@ -65,13 +58,7 @@ def perform_request(host, context, protocol, port, plane):
     if plane not in grains:
         raise NotImplementedError
 
-    with host.sudo():
-        ip_output = host.check_output(' '.join([
-            'salt-call --local',
-            'grains.get {grain}'.format(grain=grains[plane]),
-            '--out json',
-        ]))
-    ip = json.loads(ip_output)['local']
+    ip = utils.get_grain(host, grains[plane])
 
     try:
         context['response'] = requests.get(

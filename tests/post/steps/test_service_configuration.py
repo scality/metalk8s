@@ -1,44 +1,13 @@
 from ast import literal_eval
+import copy
 import yaml
 
 import pytest
 from pytest_bdd import scenario, given, then, when, parsers
 
-import kubernetes.client
 from kubernetes.client import AppsV1Api
-from kubernetes.client.rest import ApiException
 
 from tests import utils
-
-
-# Constants {{{
-
-
-DEFAULT_CSC_CONFIG_YAML = """
-apiVersion: addons.metalk8s.scality.com
-kind: DexConfig
-spec:
-  deployment:
-    replicas: {replicas}
-"""
-
-
-# }}}
-
-# Fixtures {{{
-
-
-@pytest.fixture
-def k8s_appsv1_client(k8s_apiclient):
-    return AppsV1Api(api_client=k8s_apiclient)
-
-@pytest.fixture
-def csc(k8s_client):
-    return ClusterServiceConfiguration(k8s_client)
-
-
-# }}}
-
 
 # Scenarios {{{
 
@@ -49,119 +18,74 @@ def test_service_config_propagation(host):
     pass
 
 
+@scenario('../features/service_configuration.feature',
+          'Customization of pre-defined Prometheus rules')
+def test_prometheus_rules_customization(host):
+    pass
+
 # }}}
-
-
 # Given {{{
 
 
 @given(parsers.parse(
     "we have a '{name}' CSC in namespace '{namespace}'"))
-def check_csc_configuration(
-    k8s_client,
-    csc,
-    name,
-    namespace,
-):
-    csc_response = csc.get(name, namespace)
+def csc(host, ssh_config, version, k8s_client, name, namespace):
+    """Retrieve the content of a CSC"""
+    csc_obj = ClusterServiceConfiguration(
+        k8s_client, name, namespace,
+        host, ssh_config, version,
+    )
+    csc_content = csc_obj.get()
 
-    assert csc_response, (
+    assert csc_content, (
         "No ConfigMap with name {} in namespace {} found".format(
             name, namespace
         )
     )
 
-    csc_obj = csc.load(csc_response, name, namespace)
-    return dict(csc_obj=csc_obj)
+    yield csc_obj
 
+    csc_obj.restore()
 
 # }}}
-
-
 # When {{{
 
 
-@when(parsers.parse(
-    "we update '{name}' CSC in namespace '{namespace}' "
-    "'{path}' to '{value}'"))
-def update_service_configuration(
-    k8s_client,
-    csc,
-    name,
-    namespace,
-    path,
-    value
-):
-
-    csc_from_yaml = yaml.safe_load(
-        DEFAULT_CSC_CONFIG_YAML.format(replicas=value)
-    )
-    patch = {
-        'data': {
-            'config.yaml': yaml.safe_dump(
-                csc_from_yaml, default_flow_style=False
-            )
-        }
-    }
-    response = csc.update(name, namespace, patch)
-
-    assert response
-
-    patched_csc = csc.get(name, namespace)
-    patched_value = utils.get_dict_element(
-        csc.load(patched_csc, name, namespace), path
-    )
-
-    assert literal_eval(value) == patched_value, (
-        "Expected value {} for key {} in ConfigMap {} found in namespace {}, "
-        "got {}".format(value, path, name, namespace, patched_value)
-    )
-
-
-@when(parsers.parse("we apply the '{state}' salt state"))
-def apply_service_config(host, version, request, k8s_client, state):
-    ssh_config = request.config.getoption('--ssh-config')
-
-    cmd = [
-        'salt-run', 'state.sls', '{}'.format(state),
-        'saltenv=metalk8s-{}'.format(version)
-    ]
-    utils.run_salt_command(host, cmd, ssh_config)
-
+@when(parsers.parse("we update the CSC '{path}' to '{value}'"))
+def update_csc(csc, path, value):
+    csc_content = csc.get()
+    utils.set_dict_element(csc_content, path, value)
+    csc.update(csc_content)
 
 # }}}
-
-
 # Then {{{
 
 
 @then(parsers.parse(
-    "we have '{value}' at '{path}' for '{service}' Deployment in namespace "
-    "'{namespace}'"))
+    "we have '{value}' at '{path}' for '{deployment}' Deployment in "
+    "namespace '{namespace}'"))
 def get_deployments(
-    k8s_appsv1_client,
+    k8s_apiclient,
     value,
     path,
-    service,
+    deployment,
     namespace,
-    check_csc_configuration,
-    csc
-
 ):
     def _wait_for_deployment():
         try:
+            k8s_appsv1_client = AppsV1Api(api_client=k8s_apiclient)
             response = k8s_appsv1_client.read_namespaced_deployment(
-                name=service, namespace=namespace
+                name=deployment, namespace=namespace
             ).to_dict()
         except Exception as exc:
             pytest.fail(
                 "Unable to read {} Deployment with error: {!s}".format(
-                    service, exc
+                    deployment, exc
                 )
             )
         assert literal_eval(value) == utils.get_dict_element(response, path), (
-            "Expected value {} for service {}, got {}".format(
-                value, service, utils.get_dict_element(response, path)
+            "Expected value {} for deployment {}, got {}".format(
+                value, deployment, utils.get_dict_element(response, path)
             )
         )
     utils.retry(
@@ -173,80 +97,130 @@ def get_deployments(
 
 
 @then(parsers.parse(
-    "we restore original state of '{name}' CSC in namespace '{namespace}'"))
-def restore_csc(
-    k8s_client,
-    name,
-    namespace,
-    check_csc_configuration,
-    csc
-):
-    # csc object returned from Given block will be used to
-    # patch back the ConfigMap to its original state
-    original_csc_obj = check_csc_configuration['csc_obj']
+    "we have an alert rule '{rule_name}' in group '{group_name}' with "
+    "severity '{severity}' and '{path}' equal to '{value}'"
+))
+def check_prometheus_alert_rule(
+        prometheus_api, rule_name, group_name, severity, path, value):
+    """Retrieve an alert rule from the Prometheus API, then
+    checks if the given path matches the value.
+    """
 
-    patch = {
-        'data': {
-            'config.yaml': yaml.safe_dump(
-                original_csc_obj, default_flow_style=False
+    def _wait_prometheus_config_reload():
+        try:
+            rules = prometheus_api.find_rules(
+                rule_name, group_name, {'severity': severity}
             )
-        }
-    }
-    result = csc.update(name, namespace, patch)
-    assert result, (
-        "Failed patching CSC with name {} in namespace {} using patch {}"
-        .format(name, namespace, patch)
+        except utils.PrometheusApiError as exc:
+            pytest.fail(str(exc))
+
+        n_rules = len(rules)
+        assert n_rules == 1, (
+            "Expecting 1 alert rule '{}' in group '{}' with severity '{}', "
+            "but found '{}'."
+        ).format(rule_name, group_name, severity, n_rules)
+
+        assert utils.get_dict_element(rules[0], path) == value
+
+    utils.retry(
+        _wait_prometheus_config_reload,
+        times=10,
+        wait=5,
+        name="wait for Prometheus configuration reload"
     )
 
-
 # }}}
-
-
 # Helpers {{{
 
 
-class ClusterServiceConfiguration:
-    def __init__(self, k8s_client):
-        self.client = k8s_client
+class ClusterServiceConfigurationError(Exception):
+    pass
 
-    def get(self, name, namespace):
+
+class ClusterServiceConfiguration:
+    CSC_KEY = 'config.yaml'
+
+    def __init__(self, k8s_client, name, namespace, host, ssh_config, version):
+        self.client = k8s_client
+        self.name = name
+        self.namespace = namespace
+        self.host = host
+        self.ssh_config = ssh_config
+        self.version = version
+        self.csc = None
+        self._csc_origin = None
+
+    def get(self):
+        if self.csc:
+            return self.csc
+
         try:
             response = self.client.read_namespaced_config_map(
-                name, namespace
+                self.name, self.namespace
             )
         except Exception as exc:
-            pytest.fail(
-                "Unable to read {} ConfigMap  in namespace {} with error: {!s}"
-                .format(name, namespace, exc)
+            raise ClusterServiceConfigurationError(
+                "Unable to read {} ConfigMap in namespace {} with error: {!s}"
+                .format(self.name, self.namespace, exc)
             )
-        return response
 
-    def update(self, name, namespace, patch):
         try:
-            response = self.client.patch_namespaced_config_map(
-                name, namespace, patch
+            csc_data = response.data[self.CSC_KEY]
+        except KeyError:
+            raise ClusterServiceConfigurationError(
+                "Missing 'data.{}' key in '{}' ConfigMap in namespace '{}'"
+                .format(self.CSC_KEY, self.name, self.namespace)
             )
-        except Exception as exc:
-            pytest.fail(
-                "Unable to patch ConfigMap {} in namespace {} with error {!s}"
-                .format(name, namespace, exc)
-            )
-        return response
 
-    def load(self, full_csc, name, namespace):
         try:
-            csc_obj = yaml.safe_load(full_csc.data['config.yaml'])
+            self.csc = yaml.safe_load(csc_data)
         except yaml.YAMLError as exc:
-            raise Exception(
-                'Invalid YAML format in ConfigMap {} found in namespace {}: {!s}'
-                .format(name, namespace, exc)
+            raise ClusterServiceConfigurationError(
+                'Invalid YAML format in ConfigMap {} in Namespace {} under '
+                'key {}: {!s}'
+                .format(self.name, self.namespace, self.CSC_KEY, exc)
+            )
+
+        self._csc_origin = copy.deepcopy(self.csc)
+
+        return self.csc
+
+    def apply(self):
+        cmd = [
+            'salt-run',
+            'state.sls',
+            'metalk8s.deployed',
+            'saltenv=metalk8s-{}'.format(self.version),
+        ]
+
+        utils.run_salt_command(self.host, cmd, self.ssh_config)
+
+    def update(self, config, apply_config=True):
+        patch = {
+            'data': {
+                self.CSC_KEY: yaml.safe_dump(
+                    config, default_flow_style=False
+                )
+            }
+        }
+
+        try:
+            self.client.patch_namespaced_config_map(
+                self.name, self.namespace, patch
             )
         except Exception as exc:
-            raise Exception(
-                "Failed loading `config.yaml` from ConfigMap {} in namespace {}: "
-                "{!s}".format(name, namespace, exc)
+            raise ClusterServiceConfigurationError(
+                "Unable to patch ConfigMap {} in namespace {} with error {!s}"
+                .format(self.name, self.namespace, exc)
             )
-        return csc_obj
 
+        self.csc = config
+
+        if apply_config:
+            self.apply()
+
+    def restore(self):
+        """ """
+        self.update(self._csc_origin)
 
 # }}}

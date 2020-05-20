@@ -1,5 +1,6 @@
 import functools
 import ipaddress
+import json
 import logging
 import re
 import operator
@@ -67,10 +68,7 @@ def get_node_name(nodename, ssh_config=None):
     """Get a node name (from SSH config)."""
     if ssh_config is not None:
         node = testinfra.get_host(nodename, ssh_config=ssh_config)
-        with node.sudo():
-            return node.check_output(
-                'salt-call --local --out txt grains.get id | cut -c 8-'
-            )
+        return get_grain(node, 'id')
     return nodename
 
 
@@ -175,8 +173,79 @@ def get_dict_element(data, path, delimiter='.'):
 def set_dict_element(data, path, value, delimiter='.'):
     """
     Traverse a nested dict using a delimiter on a target string
-    replaces the value of a key within a dictionary and returns the new dict
+    and replace the value of a key
     """
-    path, _, key = path.rpartition(delimiter)
-    (get_dict_element(data, path) if path else data)[key] = value
-    return data
+    current = data
+    elements = path.split(delimiter)
+    for element in elements[:-1]:
+        current = current.setdefault(element, {})
+    current[elements[-1]] = value
+
+
+def get_grain(host, key):
+    with host.sudo():
+        output = host.check_output(
+            'salt-call --local --out=json grains.get "{}"'.format(key)
+        )
+        grain = json.loads(output)['local']
+
+    return grain
+
+
+class PrometheusApiError(Exception):
+    pass
+
+
+class PrometheusApi:
+    def __init__(self, host, port=9090):
+        self.host = host
+        self.port = port
+        self.session = requests_retry_session()
+
+    def query(self, method, route, **kwargs):
+        try:
+            kwargs.setdefault('verify', False)
+            response = self.session.request(
+                method,
+                "https://{}:{}/api/prometheus/api/v1/{}".format(
+                    self.host, self.port, route
+                ),
+                **kwargs
+            )
+            response.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            raise PrometheusApiError(exc)
+
+        try:
+            result = response.json()
+        except ValueError as exc:
+            raise PrometheusApiError(exc)
+
+        return result
+
+    def get_alerts(self, **kwargs):
+        return self.query('GET', 'alerts', **kwargs)
+
+    def get_rules(self, **kwargs):
+        return self.query('GET', 'rules', **kwargs)
+
+    def find_rules(self, name=None, group=None, labels=None, **kwargs):
+        if not labels:
+            labels = {}
+        rules = []
+
+        response = self.get_rules(**kwargs)
+
+        for rule_group in response.get('data', {}).get('groups', []):
+            group_name = rule_group.get('name')
+            if group in (group_name, None):
+                for rule in rule_group.get('rules', []):
+                    if name in (rule.get('name'), None):
+                        if labels.items() <= rule.get('labels', {}).items():
+                            rule['group'] = group_name
+                            rules.append(rule)
+
+        return rules
+
+    def get_targets(self, **kwargs):
+        return self.query('GET', 'targets', **kwargs)

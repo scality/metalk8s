@@ -27,6 +27,7 @@ It performs the following tasks:
 '''
 
 import argparse
+import copy
 import io
 import re
 import sys
@@ -166,6 +167,30 @@ def replace_magic_strings(rendered_yaml):
     return result
 
 
+def remove_prometheus_rules(template, drop_rules):
+    updated_template = None
+    groups = []
+
+    existing_groups = template.get('spec', {}).get('groups', [])
+    for group in existing_groups:
+        group_rules = group.get('rules', [])
+        new_rules = group_rules[:]
+        to_drop = drop_rules.get(group.get('name'), [])
+        if to_drop:
+            for rule in group_rules:
+                if any(rule.get(key) in to_drop
+                        for key in ['alert', 'record']):
+                    new_rules.remove(rule)
+        if new_rules:
+            groups.append(dict(group, rules=new_rules))
+
+    if groups:
+        updated_template = copy.deepcopy(template)
+        updated_template['spec']['groups'] = groups
+
+    return updated_template
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('name', help="Denotes the name of the chart")
@@ -195,6 +220,10 @@ def main():
         dest="service_configs",
         help="Example: --service-config grafana metalk8s-grafana-config"
     )
+    parser.add_argument(
+        '--drop-prometheus-rules',
+        help="YAML formatted file to drop some pre-defined Prometheus rules"
+    )
     parser.add_argument('path', help="Path to the chart directory")
     args = parser.parse_args()
 
@@ -206,13 +235,23 @@ def main():
         args.path,
     ])
 
-    fixup = lambda doc: \
-        fixup_metadata(
+    drop_prometheus_rules = {}
+    if args.drop_prometheus_rules:
+        with open(args.drop_prometheus_rules, "r") as fd:
+            drop_prometheus_rules = yaml.safe_load(fd)
+
+    def fixup(doc):
+        if drop_prometheus_rules and isinstance(doc, dict) \
+               and doc.get('kind') == 'PrometheusRule':
+            doc = remove_prometheus_rules(doc, drop_prometheus_rules)
+
+        return fixup_metadata(
             namespace=args.namespace,
             doc=fixup_doc(
                 doc=doc
             )
-        )
+        ) if doc else None
+
     if args.service_configs:
         import_csc_yaml = '\n'.join(
             ("{{% import_yaml 'metalk8s/addons/{0}/config/{1}.yaml' as "
@@ -236,11 +275,16 @@ def main():
     )
     sys.stdout.write('\n')
 
+    manifests = []
+    for doc in yaml.safe_load_all(template):
+        if keep_doc(doc):
+            doc = fixup(doc)
+        if doc:
+            manifests.append(doc)
+
     stream = io.StringIO()
     yaml.safe_dump_all(
-        (fixup(doc)
-            for doc in yaml.safe_load_all(template)
-            if keep_doc(doc)),
+        manifests,
         stream,
         default_flow_style=False,
     )
