@@ -301,6 +301,18 @@ reconfigure_k8s_obj() {
     "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
         metalk8s.addons.nginx-ingress-control-plane.deployed \
         saltenv=metalk8s-@@VERSION
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.addons.dex.deployed \
+        saltenv=metalk8s-@@VERSION
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.addons.prometheus-operator.deployed \
+        saltenv=metalk8s-@@VERSION
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.addons.ui.deployed \
+        saltenv=metalk8s-@@VERSION
 }
 
 if [ ! -f "$BACKUP_ARCHIVE" ]; then
