@@ -283,7 +283,7 @@ highstate_bootstrap() {
     )
 
     "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
-        metalk8s.salt.master.certs.etcd-client \
+        metalk8s.salt.master.certs \
         saltenv=metalk8s-@@VERSION
     "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
         metalk8s.orchestrate.deploy_node \
