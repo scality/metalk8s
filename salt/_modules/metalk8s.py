@@ -87,6 +87,12 @@ def minions_by_role(role, nodes=None):
             Defaults to `pillar.metalk8s.nodes`.
     '''
     nodes = nodes or __pillar__['metalk8s']['nodes']
+    pillar_errors = nodes.pop('_errors', None)
+    if pillar_errors:
+        raise CommandExecutionError(
+            "Can't retrieve minions by role because of errors in pillar "
+            "'metalk8s:nodes': {}".format(', '.join(pillar_errors))
+        )
 
     return [
         node
