@@ -95,9 +95,11 @@ models:
   - Upload: &upload_artifacts
       name: Upload artifacts
       source: artifacts
+      alwaysRun: True
   - Upload: &upload_report_artifacts
       name: Upload sosreport logs to artifacts
       source: sosreport
+      alwaysRun: True
   - ShellCommand: &collect_sosreport
       name: Collect logs using sosreport
       command: >
@@ -106,6 +108,7 @@ models:
         -o containerd -kcontainerd.all=True -kcontainerd.logs=True
         --batch --tmp-dir /var/tmp &&
         sudo chown eve:eve /var/tmp/sosreport*
+      alwaysRun: true
   - ShellCommand: &wait_debug
       name: Debug step - wait before allowing resource destruction
       env:
