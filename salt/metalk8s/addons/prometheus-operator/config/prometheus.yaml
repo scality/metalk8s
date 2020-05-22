@@ -25,7 +25,7 @@ spec:
           hours: 24  # Hours before there is no inode left
           threshold: 40  # Min space left to trigger prediction
         critical:
-          hours: 6
+          hours: 4
           threshold: 20
       node_filesystem_almost_out_of_files:
         warning:
