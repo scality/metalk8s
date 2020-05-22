@@ -1620,7 +1620,7 @@ stages:
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
           command: >
-            tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py
+            tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py tools/
             | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
       - ShellCommand:
           <<: *wait_pods_running_ssh

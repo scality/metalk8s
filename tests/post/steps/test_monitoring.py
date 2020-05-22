@@ -1,17 +1,23 @@
-import requests
 import json
-
-import pytest
-from pytest_bdd import scenario, given, then, parsers
+import pathlib
 
 import kubernetes.client
 from kubernetes.client.rest import ApiException
 
-from tests import kube_utils
+import pytest
+from pytest_bdd import scenario, given, then, parsers
+
 from tests import utils
 
+# Constants {{{
 
+ALERT_RULE_FILE_NAME = 'alerting_rules.json'
+ALERT_RULE_FILE_PATH = (pathlib.Path(__file__)/'..'/'..'/'..'/'..'
+            /'tools'/'rule_extractor'/ALERT_RULE_FILE_NAME).resolve()
+
+# }}}
 # Scenarios {{{
+
 
 @scenario('../features/monitoring.feature', 'List Pods')
 def test_list_pods(host):
@@ -39,6 +45,13 @@ def test_pod_metrics(host):
     '../features/monitoring.feature',
     'Node metrics can be retrieved using metrics.k8s.io/v1beta1')
 def test_node_metrics(host):
+    pass
+
+
+@scenario(
+    '../features/monitoring.feature',
+    'Ensure deployed Prometheus rules match the default')
+def test_deployed_prometheus_rules(host):
     pass
 
 
@@ -177,6 +190,51 @@ def node_has_metrics(label, k8s_apiclient):
 
     # Metrics are only available after a while (by design)
     utils.retry(_node_has_metrics, times=60, wait=3)
+
+
+@then(
+    "the deployed Prometheus alert rules are the same as the default "
+    "alert rules")
+def check_deployed_rules(host, prometheus_api):
+    try:
+        deployed_rules = prometheus_api.get_rules()
+    except utils.PrometheusApiError as exc:
+        pytest.fail(str(exc))
+
+    rule_group = deployed_rules.get('data', {}).get('groups', [])
+    deployed_alert_rules = []
+    for item in rule_group:
+        for rule in item.get('rules', []):
+            # rule type can be alerting or recording
+            # For now, we only need alerting rules
+            if rule['type'] == "alerting":
+                message = rule['annotations'].get('message') or \
+                    rule['annotations'].get('summary')
+                fixup_alerting_rule = {
+                    'name': rule['name'],
+                    'severity': rule['labels']['severity'],
+                    'message': message,
+                    'query': rule['query']
+                }
+                deployed_alert_rules.append(fixup_alerting_rule)
+
+    try:
+        with open(ALERT_RULE_FILE_PATH) as f:
+            try:
+                default_alert_rules = json.load(f)
+            except json.JSONDecodeError as exc:
+                pytest.fail("Failed to decode JSON from {}: {!s}".format(
+                    ALERT_RULE_FILE_PATH, exc)
+                )
+    except IOError as exc:
+        pytest.fail(
+            "Failed to open file {}: {!s}"
+            .format(ALERT_RULE_FILE_NAME, exc)
+        )
+
+    assert default_alert_rules == deployed_alert_rules, (
+        "Expected default Prometheus rules to be equal to deployed rules."
+    )
 
 
 # }}}
