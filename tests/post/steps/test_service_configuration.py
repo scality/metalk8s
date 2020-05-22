@@ -124,7 +124,7 @@ def check_prometheus_alert_rule(
 
     utils.retry(
         _wait_prometheus_config_reload,
-        times=10,
+        times=20,
         wait=5,
         name="wait for Prometheus configuration reload"
     )
