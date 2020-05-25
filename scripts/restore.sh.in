@@ -273,6 +273,10 @@ reconfigure_nodes() {
     # See htpps://github.com/saltstack/salt/issues/20590
     "${SALT_MASTER_CALL[@]}" salt '*' saltutil.refresh_pillar && sleep 20
     "${SALT_MASTER_CALL[@]}" salt '*' mine.update
+
+    "${SALT_MASTER_CALL[@]}" salt -L "$non_bootstrap" --state-output=mixed \
+        state.sls metalk8s.kubernetes.apiserver-proxy \
+        saltenv=metalk8s-@@VERSION
 }
 
 highstate_bootstrap() {
