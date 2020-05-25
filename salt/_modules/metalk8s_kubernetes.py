@@ -14,6 +14,7 @@ import re
 
 from salt.exceptions import CommandExecutionError
 from salt.utils import yaml
+import salt.utils.data
 
 MISSING_DEPS = []
 
@@ -354,3 +355,34 @@ def list_objects(kind, apiVersion, namespace='default', all_namespaces=False,
         raise CommandExecutionError('{}: {!s}'.format(base_msg, exc))
 
     return [obj.to_dict() for obj in result.items]
+
+
+def get_object_digest(path=None, checksum='sha256', *args, **kwargs):
+    """
+    Helper to get the digest of one kubernetes object or from a specific key
+    of this object using a path
+    (usefull to get the digest of one config from ConfigMap)
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_kubernetes.get_object_digest kind="ConfigMap" apiVersion="v1" name="my-config-map" path="data:config.yaml"
+        salt-call metalk8s_kubernetes.get_object_digest kind="Pod" apiVersion="v1" name="my-pod"
+    """
+    obj = get_object(*args, **kwargs)
+
+    if not obj:
+        raise CommandExecutionError('Unable to find the object')
+
+    if path:
+        obj = salt.utils.data.traverse_dict_and_list(obj, path, delimiter=':')
+
+        if not obj:
+            raise CommandExecutionError(
+                'Unable to find key "{}" in the object'.format(
+                    path
+                )
+            )
+
+    return __salt__.hashutil.digest(str(obj), checksum=checksum)
