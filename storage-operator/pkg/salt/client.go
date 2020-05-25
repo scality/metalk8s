@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -72,10 +71,10 @@ func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 //     saltenv:    saltenv to use
 //
 // Returns
-//     The Salt job ID.
+//     The Salt job handle.
 func (self *Client) PrepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
-) (string, error) {
+) (*JobHandle, error) {
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -93,7 +92,7 @@ func (self *Client) PrepareVolume(
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
-		return "", errors.Wrapf(
+		return nil, errors.Wrapf(
 			err,
 			"PrepareVolume failed (env=%s, target=%s, volume=%s)",
 			saltenv, nodeName, volumeName,
@@ -101,7 +100,7 @@ func (self *Client) PrepareVolume(
 	}
 	// TODO(#1461): make this more robust.
 	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return result["jid"].(string), nil
+	return newJob("PrepareVolume", result["jid"].(string)), nil
 }
 
 // Spawn a job, asynchronously, to unprepare the volume on the specified node.
@@ -113,10 +112,10 @@ func (self *Client) PrepareVolume(
 //     saltenv:    saltenv to use
 //
 // Returns
-//     The Salt job ID.
+//     The Salt job handle.
 func (self *Client) UnprepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
-) (string, error) {
+) (*JobHandle, error) {
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -135,7 +134,7 @@ func (self *Client) UnprepareVolume(
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
-		return "", errors.Wrapf(
+		return nil, errors.Wrapf(
 			err,
 			"UnrepareVolume failed (env=%s, target=%s, volume=%s)",
 			saltenv, nodeName, volumeName,
@@ -143,29 +142,29 @@ func (self *Client) UnprepareVolume(
 	}
 	// TODO(#1461): make this more robust.
 	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return result["jid"].(string), nil
+	return newJob("UnprepareVolume", result["jid"].(string)), nil
 }
 
 // Poll the status of an asynchronous Salt job.
 //
 // Arguments
 //     ctx:      the request context (used for cancellation)
-//     jobId:    Salt job ID
+//     job:      Salt job handle
 //     nodeName: node on which the job is executed
 //
 // Returns
 //     The result of the job if the execution is over, otherwise nil.
 func (self *Client) PollJob(
-	ctx context.Context, jobId string, nodeName string,
+	ctx context.Context, job *JobHandle, nodeName string,
 ) (map[string]interface{}, error) {
-	jobLogger := self.logger.WithValues("Salt.JobId", jobId)
+	jobLogger := self.logger.WithValues("Salt.JobId", job.ID)
 	jobLogger.Info("polling Salt job")
 
-	endpoint := fmt.Sprintf("/jobs/%s", jobId)
+	endpoint := fmt.Sprintf("/jobs/%s", job.ID)
 	ans, err := self.authenticatedRequest(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, errors.Wrapf(
-			err, "Salt job polling failed for ID %s", jobId,
+			err, "Salt job polling failed for ID %s", job.ID,
 		)
 	}
 
@@ -176,7 +175,7 @@ func (self *Client) PollJob(
 	if errmsg, found := info["Error"]; found {
 		jobLogger.Info("Salt job not found")
 		reason := fmt.Sprintf(
-			"cannot get status for job %s: %s", jobId, (errmsg).(string),
+			"cannot get status for job %s: %s", job.ID, (errmsg).(string),
 		)
 		return nil, errors.New(reason)
 	}
@@ -189,14 +188,14 @@ func (self *Client) PollJob(
 	nodeResult := result[nodeName].(map[string]interface{})
 
 	// The job is done: check if it has succeeded.
-	retcode := result[nodeName].(map[string]interface{})["retcode"].(float64)
+	retcode := nodeResult["retcode"].(float64)
 
 	switch int(retcode) {
 	case 0:
 		jobLogger.Info("Salt job succeeded")
-		return nodeResult, nil
+		return nodeResult["return"].(map[string]interface{}), nil
 	case 1: // Concurrent state execution.
-		return nil, fmt.Errorf("Salt job %s failed to run", jobId)
+		return nil, fmt.Errorf("Salt job %s failed to run", job.ID)
 	default:
 		jobLogger.Info("Salt job failed")
 		reason := getStateFailureRootCause(nodeResult["return"])
@@ -227,45 +226,42 @@ func getStateFailureRootCause(output interface{}) string {
 
 // Return the size of the specified device on the given node.
 //
-// This request is synchronous.
+// This request is asynchronous.
 //
 // Arguments
 //     ctx:        the request context (used for cancellation)
 //     nodeName:   name of the node where the volume will be
+//     volumeName: name of the volume to prepare
 //     devicePath: path of the device for which we want the size
 //
 // Returns
-//     The size of the device, in bytes.
+//     The Salt job handle.
 func (self *Client) GetVolumeSize(
-	ctx context.Context, nodeName string, devicePath string,
-) (int64, error) {
+	ctx context.Context, nodeName string, volumeName string, devicePath string,
+) (*JobHandle, error) {
 	payload := map[string]interface{}{
-		"client":  "local",
+		"client":  "local_async",
 		"tgt":     nodeName,
 		"fun":     "disk.dump",
 		"arg":     devicePath,
 		"timeout": 1,
 	}
 
-	self.logger.Info("disk.dump")
+	self.logger.Info(
+		"GetVolumeSize", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
-		return 0, errors.Wrapf(
-			err, "disk.dump failed (target=%s, path=%s)", nodeName, devicePath,
+		return nil, errors.Wrapf(
+			err,
+			"GetVolumeSize failed (target=%s, volume=%s, device=%s)",
+			nodeName, volumeName, devicePath,
 		)
 	}
 	// TODO(#1461): make this more robust.
 	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	if nodeResult, ok := result[nodeName].(map[string]interface{}); ok {
-		size_str := nodeResult["getsize64"].(string)
-		return strconv.ParseInt(size_str, 10, 64)
-	}
-
-	return 0, fmt.Errorf(
-		"no size in disk.dump response (target=%s, path=%s)",
-		nodeName, devicePath,
-	)
+	return newJob("GetVolumeSize", result["jid"].(string)), nil
 }
 
 // Send an authenticated request to Salt API.
