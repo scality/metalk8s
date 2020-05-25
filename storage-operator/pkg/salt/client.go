@@ -189,12 +189,12 @@ func (self *Client) PollJob(
 	nodeResult := result[nodeName].(map[string]interface{})
 
 	// The job is done: check if it has succeeded.
-	retcode := result[nodeName].(map[string]interface{})["retcode"].(float64)
+	retcode := nodeResult["retcode"].(float64)
 
 	switch int(retcode) {
 	case 0:
 		jobLogger.Info("Salt job succeeded")
-		return nodeResult, nil
+		return nodeResult["return"].(map[string]interface{}), nil
 	case 1: // Concurrent state execution.
 		return nil, fmt.Errorf("Salt job %s failed to run", job.ID)
 	default:
