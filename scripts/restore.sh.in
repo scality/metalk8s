@@ -277,6 +277,12 @@ reconfigure_nodes() {
     "${SALT_MASTER_CALL[@]}" salt -L "$non_bootstrap" --state-output=mixed \
         state.sls metalk8s.kubernetes.apiserver-proxy \
         saltenv=metalk8s-@@VERSION
+
+    # For kubelet 1.16+ in case of connection failure kubelet will not
+    # reconnect until restart (since we are in restore we have lose the old
+    # bootstrap node so connection may have fail)
+    # See https://github.com/kubernetes/kubernetes/issues/87615
+    "${SALT_MASTER_CALL[@]}" salt -L "$non_bootstrap" service.restart kubelet
 }
 
 highstate_bootstrap() {
