@@ -186,6 +186,7 @@ def declare_bootstrap(machine, os_data)
   machine.vm.hostname = "bootstrap"
   machine.vm.provider "virtualbox" do |v|
     v.memory = 4086
+    v.customize ["modifyvm", :id, "--audio", "none"]
     machine.vm.synced_folder ".", "/vagrant", type: "virtualbox"
   end
 
@@ -273,7 +274,7 @@ Vagrant.configure("2") do |config|
     v.linked_clone = true
     v.memory = 2048
     v.cpus = 2
-    v.customize ["modifyvm", :id, "--chipset", "ich9"]
+    v.customize ["modifyvm", :id, "--chipset", "ich9", "--audio", "none"]
   end
 
   config.vm.network "private_network",
