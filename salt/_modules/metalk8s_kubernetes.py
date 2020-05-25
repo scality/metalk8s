@@ -133,6 +133,9 @@ def _object_manipulation_function(action):
                 )
             )
 
+        # Format slots on the manifest
+        manifest = __salt__.metalk8s.format_slots(manifest)
+
         # Adding label containing metalk8s version (retrieved from saltenv)
         if action in ['create', 'replace']:
             match = re.search(r'^metalk8s-(?P<version>.+)$', saltenv)
