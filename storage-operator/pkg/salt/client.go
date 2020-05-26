@@ -180,39 +180,11 @@ func (self *Client) PollJob(
 		)
 	}
 
-	// TODO(#1461): make this more robust.
-	info := ans["info"].([]interface{})[0].(map[string]interface{})
-
-	// Unknown Job ID: maybe the Salt server restarted or something like that.
-	if errmsg, found := info["Error"]; found {
-		jobLogger.Info("Salt job not found")
-		reason := fmt.Sprintf(
-			"cannot get status for job %s: %s", job.ID, (errmsg).(string),
-		)
-		return nil, errors.New(reason)
+	result, err := parsePollAnswer(jobLogger, job.ID, nodeName, ans)
+	if err != nil {
+		return nil, err
 	}
-	result := info["Result"].(map[string]interface{})
-	// No result yet, the job is still running.
-	if len(result) == 0 {
-		jobLogger.Info("Salt job is still running")
-		return nil, nil
-	}
-	nodeResult := result[nodeName].(map[string]interface{})
-
-	// The job is done: check if it has succeeded.
-	retcode := nodeResult["retcode"].(float64)
-
-	switch int(retcode) {
-	case 0:
-		jobLogger.Info("Salt job succeeded")
-		return nodeResult["return"].(map[string]interface{}), nil
-	case 1: // Concurrent state execution.
-		return nil, fmt.Errorf("Salt job %s failed to run", job.ID)
-	default:
-		jobLogger.Info("Salt job failed")
-		reason := getStateFailureRootCause(nodeResult["return"])
-		return nil, &AsyncJobFailed{reason}
-	}
+	return result, nil
 }
 
 func getStateFailureRootCause(output interface{}) string {
@@ -530,4 +502,65 @@ func extractToken(ans map[string]interface{}) (*authToken, error) {
 		}
 	}
 	return nil, fmt.Errorf("cannot extract authentication token from %v", ans)
+}
+
+func parsePollAnswer(
+	logger logr.Logger,
+	jobID string,
+	nodeName string,
+	ans map[string]interface{},
+) (map[string]interface{}, error) {
+	// Extract info subkey.
+	info_arr, ok := ans["info"].([]interface{})
+	if !ok || len(info_arr) == 0 {
+		return nil, fmt.Errorf("missing 'info' key in %v", ans)
+	}
+	info, ok := info_arr[0].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid 'info' key in %v", ans)
+	}
+	// Check for "Error" field.
+	if reason, found := info["Error"]; found {
+		// Unknown Job ID: maybe the Salt server restarted or something like that.
+		logger.Info("Salt job not found")
+		return nil, fmt.Errorf("cannot get status for job %s: %v", jobID, reason)
+	}
+	// Extract results.
+	result, ok := info["Result"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("missing 'Result' key in %v", info)
+	}
+	// No result yet, the job is still running.
+	if len(result) == 0 {
+		logger.Info("Salt job is still running")
+		return nil, nil
+	}
+	// Get result for the given node.
+	nodeResult, found := result[nodeName].(map[string]interface{})
+	if !found {
+		return nil, fmt.Errorf(
+			"missing or invalid result for node %s in %v", nodeName, result,
+		)
+	}
+	// Inspect "retcode" and "result".
+	retcode, ok := nodeResult["retcode"].(float64)
+	if !ok {
+		return nil, fmt.Errorf("missing or invalid retcode in %v", nodeResult)
+	}
+	output, found := nodeResult["return"]
+	switch int(retcode) {
+	case 0: // Success.
+		logger.Info("Salt job succeeded")
+		if returnedDict, ok := output.(map[string]interface{}); !ok {
+			return nil, fmt.Errorf("invalid return value in %v", nodeResult)
+		} else {
+			return returnedDict, nil
+		}
+	case 1: // Concurrent state execution.
+		return nil, fmt.Errorf("Salt job %s failed to run", jobID)
+	default: // "Normal" error.
+		logger.Info("Salt job failed")
+		reason := getStateFailureRootCause(output)
+		return nil, &AsyncJobFailed{reason}
+	}
 }

@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 func TestNewClientDefault(t *testing.T) {
@@ -215,6 +217,178 @@ func TestExtractToken(t *testing.T) {
 				assert.Equal(t, tc.tok, token)
 			} else {
 				assert.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestParsePollAnswer(t *testing.T) {
+	tests := map[string]struct {
+		ans map[string]interface{}
+		res map[string]interface{}
+		err string
+	}{
+		"ok": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{
+					"bootstrap": map[string]interface{}{
+						"retcode": 0.0,
+						"return": map[string]interface{}{
+							"foo": "bar", "baz": "qux",
+						},
+					},
+				}},
+			}},
+			res: map[string]interface{}{"foo": "bar", "baz": "qux"},
+			err: "",
+		},
+		"empty": {
+			ans: map[string]interface{}{},
+			res: nil,
+			err: "missing 'info' key",
+		},
+		"invalidInfo": {
+			ans: map[string]interface{}{"info": "nope"},
+			res: nil,
+			err: "missing 'info' key",
+		},
+		"emptyInfo": {
+			ans: map[string]interface{}{"info": []interface{}{}},
+			res: nil,
+			err: "missing 'info' key",
+		},
+		"invalidInfoEntry": {
+			ans: map[string]interface{}{"info": []interface{}{"foo", "bar"}},
+			res: nil,
+			err: "invalid 'info' key",
+		},
+		"withErrorString": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Error": "job not found"},
+			}},
+			res: nil,
+			err: "cannot get status .+ job not found",
+		},
+		"withErrorNotString": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Error": 42},
+			}},
+			res: nil,
+			err: "cannot get status .+ 42",
+		},
+		"missingResult": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{},
+			}},
+			res: nil,
+			err: "missing 'Result' key",
+		},
+		"jobInProgress": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{}},
+			}},
+			res: nil,
+			err: "",
+		},
+		"noResultForNode": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{
+					"master": map[string]interface{}{
+						"retcode": 0.0,
+						"return": map[string]interface{}{
+							"foo": "bar", "baz": "qux",
+						},
+					},
+				}},
+			}},
+			res: nil,
+			err: "missing or invalid result for node bootstrap",
+		},
+		"invalidResultForNode": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{
+					"bootstrap": true,
+				}},
+			}},
+			res: nil,
+			err: "missing or invalid result for node bootstrap",
+		},
+		"missingRetcode": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{
+					"bootstrap": map[string]interface{}{
+						"return": map[string]interface{}{
+							"foo": "bar", "baz": "qux",
+						},
+					},
+				}},
+			}},
+			res: nil,
+			err: "missing or invalid retcode",
+		},
+		"invalidRetcode": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{
+					"bootstrap": map[string]interface{}{
+						"retcode": true,
+						"return": map[string]interface{}{
+							"foo": "bar", "baz": "qux",
+						},
+					},
+				}},
+			}},
+			res: nil,
+			err: "missing or invalid retcode",
+		},
+		"invalidReturn": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{
+					"bootstrap": map[string]interface{}{
+						"retcode": 0.0,
+						"return":  true,
+					},
+				}},
+			}},
+			res: nil,
+			err: "invalid return value",
+		},
+		"failedconcurrent": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{
+					"bootstrap": map[string]interface{}{
+						"retcode": 1.0,
+						"return":  map[string]interface{}{},
+					},
+				}},
+			}},
+			res: nil,
+			err: "Salt job .+ failed to run",
+		},
+		"failure": {
+			ans: map[string]interface{}{"info": []interface{}{
+				map[string]interface{}{"Result": map[string]interface{}{
+					"bootstrap": map[string]interface{}{
+						"retcode": 2.0,
+						"return":  "BOOM",
+					},
+				}},
+			}},
+			res: nil,
+			err: "BOOM",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			logger := log.Log.WithName("test")
+			result, err := parsePollAnswer(logger, "foo", "bootstrap", tc.ans)
+
+			if tc.err != "" {
+				require.Error(t, err)
+				assert.Regexp(t, regexp.MustCompile(tc.err), err.Error())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.res, result)
 			}
 		})
 	}
