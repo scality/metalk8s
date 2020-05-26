@@ -410,7 +410,7 @@
     {
         "message": "Filesystem is predicted to run out of space within the next 4 hours.",
         "name": "NodeFilesystemSpaceFillingUp",
-        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 15 and predict_linear(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"}[6h], 4 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and predict_linear(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"}[6h], 4 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
         "severity": "critical"
     },
     {
