@@ -38,3 +38,14 @@ spec:
       node_network_transmit_errors:
         warning:
           errors: 10  # Number of transmit errors for the last 2m
+      node_high_number_conntrack_entries_used:
+        warning:
+          threshold: 0.75
+      node_clock_skew_detected:
+        warning:
+          threshold:
+            high: 0.05
+            low: -0.05
+      node_clock_not_synchronising:
+        warning:
+          threshold: 0
