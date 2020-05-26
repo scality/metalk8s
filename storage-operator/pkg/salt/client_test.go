@@ -1,6 +1,7 @@
 package salt
 
 import (
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -102,48 +103,24 @@ func TestDecodeApiResponse(t *testing.T) {
 
 func TestExtractJID(t *testing.T) {
 	tests := map[string]struct {
-		ans map[string]interface{}
-		jid string
+		json string
+		jid  string
 	}{
-		"ok": {
-			ans: map[string]interface{}{"return": []interface{}{
-				map[string]interface{}{"jid": "foobar"},
-			}},
-			jid: "foobar",
-		},
-		"empty": {
-			ans: map[string]interface{}{},
-			jid: "",
-		},
-		"missingReturn": {
-			ans: map[string]interface{}{"jid": "foo"},
-			jid: "",
-		},
-		"invalidReturn": {
-			ans: map[string]interface{}{"return": "foo"},
-			jid: "",
-		},
-		"noResult": {
-			ans: map[string]interface{}{"return": []interface{}{}},
-			jid: "",
-		},
-		"missingJID": {
-			ans: map[string]interface{}{"return": []interface{}{
-				map[string]interface{}{"id": "foo"},
-			}},
-			jid: "",
-		},
-		"invalidJID": {
-			ans: map[string]interface{}{"return": []interface{}{
-				map[string]interface{}{"jid": 42},
-			}},
-			jid: "",
-		},
+		"ok":            {json: `{"return": [{"jid": "foo"}]}`, jid: "foo"},
+		"empty":         {json: `{}`, jid: ""},
+		"missingReturn": {json: `{"jid": "foobar"}`, jid: ""},
+		"invalidReturn": {json: `{"return": "foo"}`, jid: ""},
+		"noResult":      {json: `{"return": []}`, jid: ""},
+		"missingJID":    {json: `{"return": [{"id": "foo"}]}`, jid: ""},
+		"invalidJID":    {json: `{"return": [{"id": 42}]}`, jid: ""},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			jid, err := extractJID(tc.ans)
+			var ans map[string]interface{}
+			err := json.Unmarshal([]byte(tc.json), &ans)
+			require.NoError(t, err)
+			jid, err := extractJID(ans)
 
 			if tc.jid != "" {
 				assert.NoError(t, err)
@@ -157,60 +134,35 @@ func TestExtractJID(t *testing.T) {
 
 func TestExtractToken(t *testing.T) {
 	tests := map[string]struct {
-		ans map[string]interface{}
-		tok *authToken
+		json string
+		tok  *authToken
 	}{
 		"ok": {
-			ans: map[string]interface{}{"return": []interface{}{
-				map[string]interface{}{"token": "foobar", "expire": 3.14},
-			}},
-			tok: newToken("foobar", 3.14),
-		},
-		"empty": {
-			ans: map[string]interface{}{},
-			tok: nil,
-		},
-		"missingReturn": {
-			ans: map[string]interface{}{"jid": "foo"},
-			tok: nil,
-		},
-		"invalidReturn": {
-			ans: map[string]interface{}{"return": "foo"},
-			tok: nil,
-		},
-		"noResult": {
-			ans: map[string]interface{}{"return": []interface{}{}},
-			tok: nil,
-		},
-		"missingExpire": {
-			ans: map[string]interface{}{"return": []interface{}{
-				map[string]interface{}{"token": "foo"},
-			}},
-			tok: nil,
+			json: `{"return": [{"token": "foobar", "expire": 3600}]}`,
+			tok:  newToken("foobar", 3600),
 		},
 		"invalidExpire": {
-			ans: map[string]interface{}{"return": []interface{}{
-				map[string]interface{}{"token": "foo", "expire": "bar"},
-			}},
-			tok: nil,
-		},
-		"missingToken": {
-			ans: map[string]interface{}{"return": []interface{}{
-				map[string]interface{}{"expire": 3.14},
-			}},
-			tok: nil,
+			json: `{"return": [{"token": "foobar", "expire": "bar"}]}`,
+			tok:  nil,
 		},
 		"invalidToken": {
-			ans: map[string]interface{}{"return": []interface{}{
-				map[string]interface{}{"token": 42, "expire": "bar"},
-			}},
-			tok: nil,
+			json: `{"return": [{"token": 42, "expire": 3600}]}`,
+			tok:  nil,
 		},
+		"empty":         {json: `{}`, tok: nil},
+		"missingReturn": {json: `{"token": "foo"}`, tok: nil},
+		"invalidReturn": {json: `{"return": "foo"}`, tok: nil},
+		"noResult":      {json: `{"return": []}`, tok: nil},
+		"missingExpire": {json: `{"return": [{"token": "foobar"}]}`, tok: nil},
+		"missingToken":  {json: `{"return": [{"expire": 3600}]}`, tok: nil},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			token, err := extractToken(tc.ans)
+			var ans map[string]interface{}
+			err := json.Unmarshal([]byte(tc.json), &ans)
+			require.NoError(t, err)
+			token, err := extractToken(ans)
 
 			if tc.tok != nil {
 				assert.NoError(t, err)
@@ -224,155 +176,101 @@ func TestExtractToken(t *testing.T) {
 
 func TestParsePollAnswer(t *testing.T) {
 	tests := map[string]struct {
-		ans map[string]interface{}
-		res map[string]interface{}
-		err string
+		json string
+		res  map[string]interface{}
+		err  string
 	}{
 		"ok": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{
-					"bootstrap": map[string]interface{}{
-						"retcode": 0.0,
-						"return": map[string]interface{}{
-							"foo": "bar", "baz": "qux",
-						},
-					},
-				}},
-			}},
+			json: `{"info": [{"Result":{"bootstrap": {
+                       "retcode": 0, "return": {"foo": "bar", "baz": "qux"}
+                   }}}]}`,
 			res: map[string]interface{}{"foo": "bar", "baz": "qux"},
 			err: "",
 		},
 		"empty": {
-			ans: map[string]interface{}{},
-			res: nil,
-			err: "missing 'info' key",
+			json: `{}`,
+			res:  nil,
+			err:  "missing 'info' key",
 		},
 		"invalidInfo": {
-			ans: map[string]interface{}{"info": "nope"},
-			res: nil,
-			err: "missing 'info' key",
+			json: `{"info": "nope"}`,
+			res:  nil,
+			err:  "missing 'info' key",
 		},
 		"emptyInfo": {
-			ans: map[string]interface{}{"info": []interface{}{}},
-			res: nil,
-			err: "missing 'info' key",
+			json: `{"info": []}`,
+			res:  nil,
+			err:  "missing 'info' key",
 		},
 		"invalidInfoEntry": {
-			ans: map[string]interface{}{"info": []interface{}{"foo", "bar"}},
-			res: nil,
-			err: "invalid 'info' key",
+			json: `{"info": ["foo", "bar"]}`,
+			res:  nil,
+			err:  "invalid 'info' key",
 		},
 		"withErrorString": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Error": "job not found"},
-			}},
-			res: nil,
-			err: "cannot get status .+ job not found",
+			json: `{"info": [{"Error": "job not found"}]}`,
+			res:  nil,
+			err:  "cannot get status .+ job not found",
 		},
 		"withErrorNotString": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Error": 42},
-			}},
-			res: nil,
-			err: "cannot get status .+ 42",
+			json: `{"info": [{"Error": 42}]}`,
+			res:  nil,
+			err:  "cannot get status .+ 42",
 		},
 		"missingResult": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{},
-			}},
-			res: nil,
-			err: "missing 'Result' key",
+			json: `{"info": [{}]}`,
+			res:  nil,
+			err:  "missing 'Result' key",
 		},
 		"jobInProgress": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{}},
-			}},
-			res: nil,
-			err: "",
+			json: `{"info": [{"Result": {}}]}`,
+			res:  nil,
+			err:  "",
 		},
 		"noResultForNode": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{
-					"master": map[string]interface{}{
-						"retcode": 0.0,
-						"return": map[string]interface{}{
-							"foo": "bar", "baz": "qux",
-						},
-					},
-				}},
-			}},
+			json: `{"info": [{"Result":{"master": {
+                       "retcode": 0, "return": {"foo": "bar", "baz": "qux"}
+                   }}}]}`,
 			res: nil,
 			err: "missing or invalid result for node bootstrap",
 		},
 		"invalidResultForNode": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{
-					"bootstrap": true,
-				}},
-			}},
-			res: nil,
-			err: "missing or invalid result for node bootstrap",
+			json: `{"info": [{"Result":{"bootstrap": true}}]}`,
+			res:  nil,
+			err:  "missing or invalid result for node bootstrap",
 		},
 		"missingRetcode": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{
-					"bootstrap": map[string]interface{}{
-						"return": map[string]interface{}{
-							"foo": "bar", "baz": "qux",
-						},
-					},
-				}},
-			}},
+			json: `{"info": [{"Result":{"bootstrap": {
+                       "return": {"foo": "bar", "baz": "qux"}
+                   }}}]}`,
 			res: nil,
 			err: "missing or invalid retcode",
 		},
 		"invalidRetcode": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{
-					"bootstrap": map[string]interface{}{
-						"retcode": true,
-						"return": map[string]interface{}{
-							"foo": "bar", "baz": "qux",
-						},
-					},
-				}},
-			}},
+			json: `{"info": [{"Result":{"bootstrap": {
+                       "retcode": true, "return": {"foo": "bar", "baz": "qux"}
+                   }}}]}`,
 			res: nil,
 			err: "missing or invalid retcode",
 		},
 		"invalidReturn": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{
-					"bootstrap": map[string]interface{}{
-						"retcode": 0.0,
-						"return":  true,
-					},
-				}},
-			}},
+			json: `{"info": [{"Result":{"bootstrap": {
+                       "retcode": 0, "return": true
+                   }}}]}`,
 			res: nil,
 			err: "invalid return value",
 		},
 		"failedconcurrent": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{
-					"bootstrap": map[string]interface{}{
-						"retcode": 1.0,
-						"return":  map[string]interface{}{},
-					},
-				}},
-			}},
+			json: `{"info": [{"Result":{"bootstrap": {
+                       "retcode": 1, "return": {}
+                   }}}]}`,
 			res: nil,
 			err: "Salt job .+ failed to run",
 		},
 		"failure": {
-			ans: map[string]interface{}{"info": []interface{}{
-				map[string]interface{}{"Result": map[string]interface{}{
-					"bootstrap": map[string]interface{}{
-						"retcode": 2.0,
-						"return":  "BOOM",
-					},
-				}},
-			}},
+			json: `{"info": [{"Result":{"bootstrap": {
+                       "retcode": 2, "return": "BOOM"
+                   }}}]}`,
 			res: nil,
 			err: "BOOM",
 		},
@@ -381,7 +279,10 @@ func TestParsePollAnswer(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			logger := log.Log.WithName("test")
-			result, err := parsePollAnswer(logger, "foo", "bootstrap", tc.ans)
+			var ans map[string]interface{}
+			err := json.Unmarshal([]byte(tc.json), &ans)
+			require.NoError(t, err)
+			result, err := parsePollAnswer(logger, "foo", "bootstrap", ans)
 
 			if tc.err != "" {
 				require.Error(t, err)
