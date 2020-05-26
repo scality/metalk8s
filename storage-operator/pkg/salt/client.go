@@ -98,9 +98,15 @@ func (self *Client) PrepareVolume(
 			saltenv, nodeName, volumeName,
 		)
 	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return newJob("PrepareVolume", result["jid"].(string)), nil
+	if jid, err := extractJID(ans); err != nil {
+		return nil, errors.Wrapf(
+			err,
+			"Cannot extract JID from PrepareVolume response for volume %s",
+			volumeName,
+		)
+	} else {
+		return newJob("PrepareVolume", jid), nil
+	}
 }
 
 // Spawn a job, asynchronously, to unprepare the volume on the specified node.
@@ -140,9 +146,15 @@ func (self *Client) UnprepareVolume(
 			saltenv, nodeName, volumeName,
 		)
 	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return newJob("UnprepareVolume", result["jid"].(string)), nil
+	if jid, err := extractJID(ans); err != nil {
+		return nil, errors.Wrapf(
+			err,
+			"Cannot extract JID from UnprepareVolume response for volume %s",
+			volumeName,
+		)
+	} else {
+		return newJob("UnprepareVolume", jid), nil
+	}
 }
 
 // Poll the status of an asynchronous Salt job.
@@ -259,9 +271,15 @@ func (self *Client) GetVolumeSize(
 			nodeName, volumeName, devicePath,
 		)
 	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return newJob("GetVolumeSize", result["jid"].(string)), nil
+	if jid, err := extractJID(ans); err != nil {
+		return nil, errors.Wrapf(
+			err,
+			"Cannot extract JID from GetVolumeSize response for volume %s",
+			volumeName,
+		)
+	} else {
+		return newJob("GetVolumeSize", jid), nil
+	}
 }
 
 // Send an authenticated request to Salt API.
@@ -487,4 +505,16 @@ func decodeApiResponse(response *http.Response) (map[string]interface{}, error) 
 		return nil, errors.Wrap(err, "cannot decode Salt API response")
 	}
 	return result, nil
+}
+
+// Try to extract the JID from a Salt answer.
+func extractJID(ans map[string]interface{}) (string, error) {
+	if results, ok := ans["return"].([]interface{}); ok && len(results) > 0 {
+		if result, ok := results[0].(map[string]interface{}); ok {
+			if jid, ok := result["jid"].(string); ok {
+				return jid, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("cannot extract jid from %v", ans)
 }

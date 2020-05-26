@@ -98,6 +98,61 @@ func TestDecodeApiResponse(t *testing.T) {
 	}
 }
 
+func TestExtractJID(t *testing.T) {
+	tests := map[string]struct {
+		ans map[string]interface{}
+		jid string
+	}{
+		"ok": {
+			ans: map[string]interface{}{"return": []interface{}{
+				map[string]interface{}{"jid": "foobar"},
+			}},
+			jid: "foobar",
+		},
+		"empty": {
+			ans: map[string]interface{}{},
+			jid: "",
+		},
+		"missingReturn": {
+			ans: map[string]interface{}{"jid": "foo"},
+			jid: "",
+		},
+		"invalidReturn": {
+			ans: map[string]interface{}{"return": "foo"},
+			jid: "",
+		},
+		"noResult": {
+			ans: map[string]interface{}{"return": []interface{}{}},
+			jid: "",
+		},
+		"missingJID": {
+			ans: map[string]interface{}{"return": []interface{}{
+				map[string]interface{}{"id": "foo"},
+			}},
+			jid: "",
+		},
+		"invalidJID": {
+			ans: map[string]interface{}{"return": []interface{}{
+				map[string]interface{}{"jid": 42},
+			}},
+			jid: "",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			jid, err := extractJID(tc.ans)
+
+			if tc.jid != "" {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.jid, jid)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
 func httpBody(body string) io.ReadCloser {
 	return ioutil.NopCloser(strings.NewReader(body))
 }
