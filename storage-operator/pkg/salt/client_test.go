@@ -153,6 +153,73 @@ func TestExtractJID(t *testing.T) {
 	}
 }
 
+func TestExtractToken(t *testing.T) {
+	tests := map[string]struct {
+		ans map[string]interface{}
+		tok *authToken
+	}{
+		"ok": {
+			ans: map[string]interface{}{"return": []interface{}{
+				map[string]interface{}{"token": "foobar", "expire": 3.14},
+			}},
+			tok: newToken("foobar", 3.14),
+		},
+		"empty": {
+			ans: map[string]interface{}{},
+			tok: nil,
+		},
+		"missingReturn": {
+			ans: map[string]interface{}{"jid": "foo"},
+			tok: nil,
+		},
+		"invalidReturn": {
+			ans: map[string]interface{}{"return": "foo"},
+			tok: nil,
+		},
+		"noResult": {
+			ans: map[string]interface{}{"return": []interface{}{}},
+			tok: nil,
+		},
+		"missingExpire": {
+			ans: map[string]interface{}{"return": []interface{}{
+				map[string]interface{}{"token": "foo"},
+			}},
+			tok: nil,
+		},
+		"invalidExpire": {
+			ans: map[string]interface{}{"return": []interface{}{
+				map[string]interface{}{"token": "foo", "expire": "bar"},
+			}},
+			tok: nil,
+		},
+		"missingToken": {
+			ans: map[string]interface{}{"return": []interface{}{
+				map[string]interface{}{"expire": 3.14},
+			}},
+			tok: nil,
+		},
+		"invalidToken": {
+			ans: map[string]interface{}{"return": []interface{}{
+				map[string]interface{}{"token": 42, "expire": "bar"},
+			}},
+			tok: nil,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			token, err := extractToken(tc.ans)
+
+			if tc.tok != nil {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.tok, token)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
 func httpBody(body string) io.ReadCloser {
 	return ioutil.NopCloser(strings.NewReader(body))
 }

@@ -364,11 +364,11 @@ func (self *Client) authenticate(ctx context.Context) error {
 		)
 	}
 
-	// TODO(#1461): make this more robust.
-	output := result["return"].([]interface{})[0].(map[string]interface{})
-	self.token = newToken(
-		output["token"].(string), output["expire"].(float64),
-	)
+	token, err := extractToken(result)
+	if err != nil {
+		return err
+	}
+	self.token = token
 	return nil
 }
 
@@ -517,4 +517,17 @@ func extractJID(ans map[string]interface{}) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("cannot extract jid from %v", ans)
+}
+
+func extractToken(ans map[string]interface{}) (*authToken, error) {
+	if results, ok := ans["return"].([]interface{}); ok && len(results) > 0 {
+		if result, ok := results[0].(map[string]interface{}); ok {
+			token, token_ok := result["token"].(string)
+			expire, expire_ok := result["expire"].(float64)
+			if token_ok && expire_ok {
+				return newToken(token, expire), nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("cannot extract authentication token from %v", ans)
 }
