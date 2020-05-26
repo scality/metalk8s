@@ -179,4 +179,43 @@ spec:
       for: 1h
       labels:
         severity: warning
+    - alert: NodeHighNumberConntrackEntriesUsed
+      annotations:
+        description: '{{ $value | humanizePercentage }} of conntrack entries are used'
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodehighnumberconntrackentriesused
+        summary: Number of conntrack are getting close to the limit
+      expr: (node_nf_conntrack_entries / node_nf_conntrack_entries_limit) > {% endraw %}{{ rules.node_exporter.node_high_number_conntrack_entries_used.warning.threshold }}{% raw %}
+      labels:
+        severity: warning
+    - alert: NodeClockSkewDetected
+      annotations:
+        message: Clock on {{ $labels.instance }} is out of sync by more than 300s.
+          Ensure NTP is configured correctly on this host.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclockskewdetected
+        summary: Clock skew detected.
+      expr: |-
+        (
+          node_timex_offset_seconds > {% endraw %}{{ rules.node_exporter.node_clock_skew_detected.warning.threshold.high }}{% raw %}
+        and
+          deriv(node_timex_offset_seconds[5m]) >= 0
+        )
+        or
+        (
+          node_timex_offset_seconds < {% endraw %}{{ rules.node_exporter.node_clock_skew_detected.warning.threshold.low }}{% raw %}
+        and
+          deriv(node_timex_offset_seconds[5m]) <= 0
+        )
+      for: 10m
+      labels:
+        severity: warning
+    - alert: NodeClockNotSynchronising
+      annotations:
+        message: Clock on {{ $labels.instance }} is not synchronising. Ensure NTP
+          is configured on this host.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclocknotsynchronising
+        summary: Clock not synchronising.
+      expr: min_over_time(node_timex_sync_status[5m]) == {% endraw %}{{ rules.node_exporter.node_clock_not_synchronising.warning.threshold }}{% raw %}
+      for: 10m
+      labels:
+        severity: warning
 {%- endraw %}
