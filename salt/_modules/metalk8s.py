@@ -10,6 +10,7 @@ import time
 
 from salt.pillar import get_pillar
 from salt.exceptions import CommandExecutionError
+import salt.utils.args
 import salt.utils.files
 
 log = logging.getLogger(__name__)
@@ -287,3 +288,49 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
             return False
 
     return True
+
+
+def format_slots(data):
+    """Helper to replace slots in nested dictionnary
+
+    "__slots__:salt:module.function(arg1, arg2, kwarg1=abc, kwargs2=cde)
+
+    Arguments:
+        data: Data structure to format
+    """
+    slots_callers = {
+        "salt": __salt__
+    }
+
+    if isinstance(data, list):
+        return [format_slots(elt) for elt in data]
+
+    if isinstance(data, dict):
+        return {key: format_slots(value) for key, value in data.items()}
+
+    if isinstance(data, basestring) and data.startswith('__slot__:'):
+        fmt = data.split(":", 2)
+        if len(fmt) != 3:
+            log.warning(
+                "Malformed slot %s: expecting "
+                "'__slot__:<caller>:<module>.<function>(...)'",
+                data
+            )
+            return data
+        if fmt[1] not in slots_callers:
+            log.warning(
+                "Malformed slot '%s': invalid caller, must use one of '%s'",
+                data, "', '".join(slots_callers.keys())
+            )
+            return data
+
+        fun, args, kwargs = salt.utils.args.parse_function(fmt[2])
+
+        try:
+            return slots_callers[fmt[1]][fun](*args, **kwargs)
+        except Exception as exc:
+            raise CommandExecutionError(
+                "Unable to compute slot '{}': {}".format(data, exc)
+            )
+
+    return data

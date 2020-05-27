@@ -18,6 +18,12 @@ def test_service_config_propagation(host):
     pass
 
 
+@scenario('../features/service_configuration.feature',
+          'Update Admin static user password')
+def test_static_user_change(host):
+    pass
+
+
 # }}}
 # Given {{{
 
