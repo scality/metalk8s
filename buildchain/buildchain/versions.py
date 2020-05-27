@@ -57,7 +57,7 @@ CENTOS_BASE_IMAGE : str = 'docker.io/centos'
 CENTOS_BASE_IMAGE_SHA256 : str = \
     '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
-GRAFANA_IMAGE_VERSION : str = '6.4.2'
+GRAFANA_IMAGE_VERSION : str = '6.7.1'
 NGINX_IMAGE_VERSION   : str = '1.15.8'
 NODEJS_IMAGE_VERSION  : str = '10.16.0'
 
@@ -79,8 +79,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     # Remote images
     Image(
         name='alertmanager',
-        version='v0.19.0',
-        digest='sha256:7dbf4949a317a056d11ed8f379826b04d0665fad5b9334e1d69b23e946056cd3',
+        version='v0.20.0',
+        digest='sha256:7e4e9f7a0954b45736d149c40e9620a6664036bb05f0dce447bef5042b139f5d',
     ),
     Image(
         name='calico-node',
@@ -139,8 +139,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='kube-state-metrics',
-        version='v1.8.0',
-        digest='sha256:f75c3e5c5c7f65846ddd6883d6187b38f77721a3938f241c9e5d0ebe7beb8e19',
+        version='v1.9.5',
+        digest='sha256:9d29333ad1cc8e14b26e40daea3739cec21b765f6077c6764546779deec3f54b',
     ),
     Image(
         name='nginx',
@@ -169,8 +169,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='prometheus',
-        version='v2.13.1',
-        digest='sha256:0a8caa2e9f19907608915db6e62a67383fe44b9876a467b297ee6f64e51dd58a',
+        version='v2.16.0',
+        digest='sha256:e4ca62c0d62f3e886e684806dfe9d4e0cda60d54986898173c1083856cfda0f4',
     ),
     Image(
         name='k8s-prometheus-adapter-amd64',
@@ -179,13 +179,13 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='prometheus-config-reloader',
-        version='v0.34.0',
-        digest='sha256:459bc1b1fc51420cd244b082fe14444f6d8596997c2e40f52c08d1f5a09ab860',
+        version='v0.38.1',
+        digest='sha256:d1cce64093d4a850d28726ec3e48403124808f76567b5bd7b26e4416300996a7',
     ),
     Image(
         name='prometheus-operator',
-        version='v0.34.0',
-        digest='sha256:c0bcb231fe67cd11fd26f7adf5ac1080dfac189ac94705538bd4ab7dd99a98a9',
+        version='v0.38.1',
+        digest='sha256:62b8cf466e9b238a9fcf0bcba74562c8833e7451042321e323a46de3f1dbe1bc',
     ),
     # Local images
     Image(
