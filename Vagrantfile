@@ -176,6 +176,8 @@ subscription-manager repos --enable=rhel-7-server-optional-rpms \
 SCRIPT
 RHSM_UNREGISTER = 'subscription-manager unregister || true'
 
+EXPORT_KUBECONFIG = 'echo KUBECONFIG=/etc/kubernetes/admin.conf >> /etc/environment'
+
 # To support VirtualBox linked clones
 Vagrant.require_version(">= 1.8")
 
@@ -216,6 +218,10 @@ def declare_bootstrap(machine, os_data)
   machine.vm.provision "bootstrap",
     type: "shell",
     inline: BOOTSTRAP
+
+  machine.vm.provision "export-kubeconfig",
+    type: "shell",
+    inline: EXPORT_KUBECONFIG
 
   machine.vm.provision "create-volumes",
     type: "shell",
