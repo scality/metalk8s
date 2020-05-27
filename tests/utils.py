@@ -167,7 +167,11 @@ def get_dict_element(data, path, delimiter='.'):
     Traverse a dict using a 'delimiter' on a target string.
     getitem(a, b) returns the value of a at index b
     """
-    return functools.reduce(operator.getitem, path.split(delimiter), data)
+    return functools.reduce(
+        operator.getitem,
+        (int(k) if k.isdigit() else k for k in path.split(delimiter)),
+        data
+    )
 
 
 def set_dict_element(data, path, value, delimiter='.'):
@@ -176,9 +180,12 @@ def set_dict_element(data, path, value, delimiter='.'):
     and replace the value of a key
     """
     current = data
-    elements = path.split(delimiter)
+    elements = [int(k) if k.isdigit() else k for k in path.split(delimiter)]
     for element in elements[:-1]:
-        current = current.setdefault(element, {})
+        if isinstance(element, int):
+            current = current[element] if len(current) > element else []
+        else:
+            current = current.setdefault(element, {})
     current[elements[-1]] = value
 
 

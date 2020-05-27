@@ -1,5 +1,7 @@
 import json
 import pathlib
+import re
+import requests.exceptions
 
 import kubernetes
 import pytest
@@ -352,6 +354,36 @@ def check_resource_list(host, resource, namespace):
             resource, namespace)
 
 
+@then(parsers.parse(
+    "we are able to login to Dex as '{username}' using password '{password}'"))
+def dex_successful_login(username, password,
+                         control_plane_ip, request_retry_session):
+
+    response = _dex_login(
+        username, password,
+        control_plane_ip, request_retry_session
+    )
+    assert response.text is not None
+    assert response.status_code == 303
+    assert response.headers.get('location') is not None
+
+
+@then(parsers.parse(
+    "we are not able to login to Dex "
+    "as '{username}' using password '{password}'"))
+def dex_failed_login(username, password,
+                     control_plane_ip, request_retry_session):
+    response = _dex_login(
+        username, password,
+        control_plane_ip, request_retry_session
+    )
+    assert response.text is not None
+    assert response.status_code == 200
+    # 'Invalid Email Address and password' is found in reponse text
+    assert 'Invalid Email Address and password' in response.text
+    assert response.headers.get('locaction') is None
+
+
 # }}}
 # Helpers {{{
 
@@ -362,5 +394,54 @@ def _verify_kubeapi_service(host):
         res = host.run(cmd)
         if res.rc != 0:
             pytest.fail(res.stderr)
+
+
+def _dex_login(username, password, control_plane_ip, request_retry_session):
+    """Login to Dex and return the result"""
+    try:
+        response = request_retry_session.post(
+            'https://{}:{}/oidc/auth?'.format(
+                control_plane_ip, CONTROL_PLANE_INGRESS_PORT
+            ),
+            data={
+                'response_type': 'id_token',
+                'client_id': 'metalk8s-ui',
+                'scope': 'openid audience:server:client_id:oidc-auth-client',
+                'redirect_uri': 'https://{}:{}/oauth2/callback'.format(
+                    control_plane_ip, CONTROL_PLANE_INGRESS_PORT
+                ),
+                'nonce': 'nonce'
+            },
+            verify=False
+        )
+    except requests.exceptions.ConnectionError as exc:
+        pytest.fail("Dex authentication request failed with error: {}".format(
+            exc
+        ))
+
+    auth_request = response.text  # response is an html form
+    # form action looks like:
+    # <a href="/oidc/auth/local?req=ovc5qdll5zznlubewjok266rl" target="_self">
+    reqpath = re.search(
+        r'href=[\'"](?P<reqpath>/oidc/\S+)[\'"] ', auth_request
+    ).group('reqpath')
+
+    try:
+        result = requests.post(
+            'https://{}:{}{}'.format(
+                control_plane_ip, CONTROL_PLANE_INGRESS_PORT, reqpath
+            ),
+            data={
+                'login': username,
+                'password': password
+            },
+            verify=False,
+            allow_redirects=False
+        )
+    except requests.exceptions.ConnectionError as exc:
+        pytest.fail("Unable to login: {}".format(exc))
+
+    return result
+
 
 # }}}

@@ -40,6 +40,10 @@ extraVolumeMounts:
   - name: dex-login
     mountPath: /web/themes/scality
 
+podAnnotations:
+  # Override default checksum as we want to manage it with salt
+  checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-auth", name="dex", path="data:config.yaml")'
+
 certs:
   web:
     create: false
