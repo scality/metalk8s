@@ -26,12 +26,10 @@ Feature: Authentication is up and running
         Given the Kubernetes API is available
         And the control-plane Ingress path '/oidc' is available
         And pods with label 'app.kubernetes.io/name=dex' are 'Ready'
-        When we login to Dex as 'admin@metalk8s.com' using password 'password'
-        Then authentication fails with login error
+        Then we are not able to login to Dex as 'admin@metalk8s.com' using password 'password'
 
     Scenario: Login to Dex using correct email and password
         Given the Kubernetes API is available
         And the control-plane Ingress path '/oidc' is available
         And pods with label 'app.kubernetes.io/name=dex' are 'Ready'
-        When we login to Dex as 'admin@metalk8s.invalid' using password 'password'
-        Then the server returns '303' with an ID token
+        Then we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'

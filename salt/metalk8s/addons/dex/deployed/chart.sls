@@ -187,7 +187,8 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: d58a2489f8f7fd4df3f78cad5ea6ac51e7eda9ca076c41689ce853539ff2a15b
+        checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
+          apiVersion="v1", namespace="metalk8s-auth", name="dex", path="data:config.yaml")
       labels:
         app.kubernetes.io/component: dex
         app.kubernetes.io/instance: dex

@@ -19,6 +19,12 @@ def test_service_config_propagation(host):
 
 
 @scenario('../features/service_configuration.feature',
+          'Update Admin static user password')
+def test_static_user_change(host):
+    pass
+
+
+@scenario('../features/service_configuration.feature',
           'Customization of pre-defined Prometheus rules')
 def test_prometheus_rules_customization(host):
     pass
