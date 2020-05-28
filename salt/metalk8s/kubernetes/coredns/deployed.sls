@@ -15,7 +15,9 @@ Create coredns ConfigMap:
           Corefile: |
             .:53 {
                 errors
-                health
+                health {
+                  lameduck 5s
+                }
                 ready
                 kubernetes {{ coredns.cluster_domain }} {{ coredns.reverse_cidrs }} {
                   pods insecure
