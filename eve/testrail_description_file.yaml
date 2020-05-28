@@ -47,3 +47,12 @@ Install:
             CentOs 7 tests
           cases:
             Solutions: {}
+    Multi Node:
+      description: >-
+        Multiple nodes test environment
+      sub_sections:
+        CentOs7:
+          description: >-
+            CentOs 7 tests
+          cases:
+            Bootstrap restore: {}

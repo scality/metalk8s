@@ -7,7 +7,7 @@ Feature: Authentication is up and running
     Scenario: Expected Pods
         Given the Kubernetes API is available
         And pods with label 'release=nginx-ingress-control-plane' are 'Ready'
-        Then we have 2 running pod labeled 'app.kubernetes.io/name=dex' in namespace 'metalk8s-auth' on node 'bootstrap'
+        Then we have 2 running pod labeled 'app.kubernetes.io/name=dex' in namespace 'metalk8s-auth'
 
     Scenario: Reach the OpenID Config
         Given the Kubernetes API is available
