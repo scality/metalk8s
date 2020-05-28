@@ -2,6 +2,17 @@
 
 ## Release 2.5.1 (in development)
 
+### Breaking changes
+
+- Solutions product information format has changed, there is a new
+  `manifest.yaml` file to describe the whole Solution instead of the
+  `product.txt` and `config.yaml`
+  ([#2422](https://github.com/scality/metalk8s/issues/2422)).
+  Solution archives working on previous versions of MetalK8s will no
+  longer be compatible and will need to be regenerated.
+  See [Solutions documentation](https://metal-k8s.readthedocs.io/en/development-2.5/developer/solutions/archive.html#product-information)
+  for details about the new format.
+
 ## Release 2.5.0
 
 ### Breaking changes
