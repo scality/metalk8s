@@ -289,6 +289,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/prometheus-operator/deployed/',
             'service-configuration.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/storageclass.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/pre-downgrade.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/pre-upgrade.sls'),
 
     Path('salt/metalk8s/addons/ui/deployed/dependencies.sls'),
     Path('salt/metalk8s/addons/ui/deployed/ingress.sls'),
