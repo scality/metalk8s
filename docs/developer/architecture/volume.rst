@@ -1,13 +1,8 @@
-Volume Management v1.0
-======================
+Volume Management
+=================
 
-* MetalK8s-Version: 2.4
-* Replaces:
-* Superseded-By:
-
-
-Absract
--------
+Abstract
+--------
 
 To be able to run stateful services (such as Prometheus, Zenko or Hyperdrive),
 MetalK8s needs the ability to provide and manage persistent storage resources.
@@ -26,10 +21,6 @@ delete MetalK8s volumes.
 
 Scope
 -----
-
-The scope of this first version of Volume Management will be minimalist but
-still functionally useful.
-
 
 Goals
 ^^^^^
@@ -125,9 +116,9 @@ system) through the Salt API. Authentication to the Salt API will be done
 though a dedicated Salt account (with limited privileges) using credentials
 from a dedicated cluster **Service Account**.
 
-.. uml:: volume_v1.0-creation_seqdiag.uml
+.. uml:: volume-creation_seqdiag.uml
 
-.. uml:: volume_v1.0-deletion_seqdiag.uml
+.. uml:: volume-deletion_seqdiag.uml
 
 
 Implementation Details
@@ -185,7 +176,7 @@ Once pre-checks are done, there are four cases:
 4. the backing **PersistentVolume** exists: the operator will check its status
    to update the volume's status accordingly.
 
-.. uml:: volume_v1.0-main_loop_flowchart.uml
+.. uml:: volume-main_loop_flowchart.uml
 
 
 .. _volume-deployment:
@@ -217,7 +208,7 @@ Once the **PersistentVolume** is successfuly created, the operator will move
 the **Volume** to the `Available` state and reschedule the request (the next
 iteration will check the health of the **PersistentVolume** just created).
 
-.. uml:: volume_v1.0-deploy_volume_flowchart.uml
+.. uml:: volume-deploy_volume_flowchart.uml
 
 
 .. _volume-finalization:
@@ -241,7 +232,7 @@ becomes unused (this is done by rescheduling). Once the backing
 **PersistentVolume** becomes unused, the operator will reclaim its storage and
 remove the finalizers to let the object be deleted.
 
-.. uml:: volume_v1.0-finalize_volume_flowchart.uml
+.. uml:: volume-finalize_volume_flowchart.uml
 
 
 Volume Deletion Criteria
@@ -270,7 +261,7 @@ In the end, a **Volume** can be deleted in two cases:
 - the backing **PersistentVolume** is not bound (**Available**, **Released** or
   **Failed**)
 
-.. uml:: volume_v1.0-deletion_decision_tree.uml
+.. uml:: volume-deletion_decision_tree.uml
 
 
 Documentation
