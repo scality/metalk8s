@@ -6,10 +6,6 @@
 
 {%- from "metalk8s/map.jinja" import repo with context %}
 
-{%- macro extract_info(archive_path) %}
-  {{ machine_name }},{{ display_name }},{{ mount_path }}
-{%- endmacro %}
-
 {%- set available = pillar.metalk8s.solutions.available | d({}) %}
 {%- set configured = pillar.metalk8s.solutions.config.archives | d([]) %}
 
@@ -25,11 +21,9 @@ No Solution found in configuration:
 {%- else %}
   {#- Mount configured #}
   {%- for archive_path in configured %}
-    {%- set solution = salt['metalk8s.archive_info_from_iso'](archive_path) %}
-    {%- set machine_name = solution.name | replace(' ', '-') | lower %}
-    {%- set id = machine_name ~ '-' ~ solution.version %}
-    {%- set display_name = solution.name ~ ' ' ~ solution.version %}
-    {%- set mount_path = "/srv/scality/" ~ id -%}
+    {%- set solution = salt['metalk8s_solutions.manifest_from_iso'](archive_path) %}
+    {%- set display_name = solution.display_name ~ ' ' ~ solution.version %}
+    {%- set mount_path = "/srv/scality/" ~ solution.id -%}
 
 {# Mount the archive #}
 Mountpoint for Solution {{ display_name }} exists:
@@ -57,7 +51,7 @@ Archive of Solution {{ display_name }} is mounted at {{ mount_path }}:
    custom module #}
 Product information for Solution {{ display_name }} exists:
   file.exists:
-    - name: {{ mount_path }}/product.txt
+    - name: {{ mount_path }}/manifest.yaml
     - require:
       - mount: Archive of Solution {{ display_name }} is mounted at {{ mount_path }}
 
@@ -70,10 +64,10 @@ Container images for Solution {{ display_name }} exist:
 Expose container images for Solution {{ display_name }}:
   file.managed:
     - source: {{ mount_path }}/registry-config.inc.j2
-    - name: {{ repo.config.directory }}/{{ id }}-registry-config.inc
+    - name: {{ repo.config.directory }}/{{ solution.id }}-registry-config.inc
     - template: jinja
     - defaults:
-        repository: {{ id }}
+        repository: {{ solution.id }}
         registry_root: {{ mount_path }}/images
     - require:
       - file: Container images for Solution {{ display_name }} exist

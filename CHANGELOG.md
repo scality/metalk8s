@@ -13,6 +13,17 @@
 
 ## Release 2.5.1 (in development)
 
+### Breaking changes
+
+- Solutions product information format has changed, there is a new
+  `manifest.yaml` file to describe the whole Solution instead of the
+  `product.txt` and `config.yaml`
+  ([#2422](https://github.com/scality/metalk8s/issues/2422)).
+  Solution archives working on previous versions of MetalK8s will no
+  longer be compatible and will need to be regenerated.
+  See [Solutions documentation](https://metal-k8s.readthedocs.io/en/development-2.5/developer/solutions/archive.html#product-information)
+  for details about the new format.
+
 ## Release 2.5.0
 
 ### Breaking changes
@@ -28,11 +39,11 @@
       credentials `admin@metalk8s.invalid`:`password` which can be used to
       access the MetalK8s UI and Grafana
     - Procedures to edit and add new users can now be found
-      [here](https://metal-k8s.readthedocs.io/en/development-2.5/operation/account_administration.html)
+      [here](https://metal-k8s.readthedocs.io/en/2.5.0/operation/account_administration.html)
 
 - A new framework for persisting Cluster and Services Configurations (CSC) has
   been added to ensure configurations set by administrators are not lost during
-  upgrade or downgrade and can be found [here](https://metal-k8s.readthedocs.io/en/development-2.5/developer/architecture/configurations.html).
+  upgrade or downgrade and can be found [here](https://metal-k8s.readthedocs.io/en/2.5.0/developer/architecture/configurations.html).
 
   - User-provided configuration is now stored in ConfigMaps, and MetalK8s
     tooling will honor the values provided when deploying its services:
@@ -42,7 +53,7 @@
       - Alertmanager uses `metalk8s-monitoring/metalk8s-alertmanager-config`
 
   - Documentation for changing and applying configuration values is
-    found [here](https://metal-k8s.readthedocs.io/en/development-2.5/operation/cluster_and_service_configuration.html).
+    found [here](https://metal-k8s.readthedocs.io/en/2.5.0/operation/cluster_and_service_configuration.html).
 
     Note that any configuration applied on other Kubernetes objects
     (e.g. a configuration Secret that Alertmanager uses, or the
@@ -50,7 +61,7 @@
     should make sure to prepare the relevant ConfigMaps from their
     existing configuration before upgrading to this version.
 
-- The MetalK8s [UI](https://metal-k8s.readthedocs.io/en/development-2.5/installation/services.html#metalk8s-gui)
+- The MetalK8s [UI](https://metal-k8s.readthedocs.io/en/2.5.0/installation/services.html#metalk8s-gui)
   has been re-branded with lots of changes to the Login screens and Navbar to
   offer a smoother experience.
 
