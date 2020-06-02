@@ -32,6 +32,7 @@ def version(request, host):
             'source %s && echo $VERSION', str(product_path)
         )
 
+
 @pytest.fixture(scope="module")
 def hostname(host):
     """Return the result of `hostname` on the `host` fixture.
@@ -49,10 +50,14 @@ def nodename(host):
     Node name need to be equal to the salt minion id so just retrieve the
     salt minion id
     """
-    with host.sudo():
-        return host.check_output(
-            'salt-call --local --out txt grains.get id | cut -c 8-'
-        )
+    return utils.get_grain(host, 'id')
+
+
+@pytest.fixture(scope="module")
+def control_plane_ip(host):
+    """Return the Kubernetes control plane IP based on the salt grain
+    """
+    return utils.get_grain(host, 'metalk8s:control_plane_ip')
 
 
 @pytest.fixture(scope="module")
@@ -223,6 +228,13 @@ def check_resource_list(host, resource, namespace):
             resource, namespace)
 
 
+@then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
+def check_etcd_role(ssh_config, k8s_client, node_name):
+    """Check if the given node is a member of the etcd cluster."""
+    etcd_member_list = etcdctl(k8s_client, ['member', 'list'], ssh_config)
+    assert node_name in etcd_member_list, \
+        'node {} is not part of the etcd cluster'.format(node_name)
+
 # }}}
 # Helpers {{{
 
@@ -233,5 +245,27 @@ def _verify_kubeapi_service(host):
         res = host.run(cmd)
         if res.rc != 0:
             pytest.fail(res.stderr)
+
+
+def etcdctl(k8s_client, command, ssh_config):
+    """Run an etcdctl command inside the etcd container."""
+    name = 'etcd-{}'.format(
+        utils.get_node_name('bootstrap', ssh_config)
+    )
+
+    etcd_command = [
+        'etcdctl',
+        '--endpoints', 'https://localhost:2379',
+        '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
+        '--key-file', '/etc/kubernetes/pki/etcd/server.key',
+        '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
+    ] + command
+    output = kubernetes.stream.stream(
+        k8s_client.connect_get_namespaced_pod_exec,
+        name=name, namespace='kube-system',
+        command=etcd_command,
+        stderr=True, stdin=False, stdout=True, tty=False
+    )
+    return output
 
 # }}}

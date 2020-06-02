@@ -13,7 +13,12 @@ from tests import utils
 
 # Scenarios
 @scenario('../features/expansion.feature', 'Add one node to the cluster')
-def test_cluster_expansion(host):
+def test_cluster_expansion_1_node(host):
+    pass
+
+
+@scenario('../features/expansion.feature', 'Add a second node to the cluster')
+def test_cluster_expansion_2_nodes(host):
     pass
 
 # When {{{
@@ -80,14 +85,6 @@ def check_node_status(k8s_client, node_name, expected_status):
         times=10, wait=5,
         name="check node '{}' status".format(node_name)
     )
-
-
-@then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
-def check_etcd_role(ssh_config, k8s_client, node_name):
-    """Check if the given node is a member of the etcd cluster."""
-    etcd_member_list = etcdctl(k8s_client, ['member', 'list'], ssh_config)
-    assert node_name in etcd_member_list, \
-        'node {} is not part of the etcd cluster'.format(node_name)
 
 
 # }}}
@@ -164,26 +161,5 @@ def run_salt_command(host, command, ssh_config):
             output.stdout,
             output.stderr
         )
-
-def etcdctl(k8s_client, command, ssh_config):
-    """Run an etcdctl command inside the etcd container."""
-    name = 'etcd-{}'.format(
-        utils.get_node_name('bootstrap', ssh_config)
-    )
-
-    etcd_command = [
-        'etcdctl',
-        '--endpoints', 'https://localhost:2379',
-        '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
-        '--key-file', '/etc/kubernetes/pki/etcd/server.key',
-        '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
-    ] + command
-    output = k8s.stream.stream(
-        k8s_client.connect_get_namespaced_pod_exec,
-        name=name, namespace='kube-system',
-        command=etcd_command,
-        stderr=True, stdin=False, stdout=True, tty=False
-    )
-    return output
 
 # }}}

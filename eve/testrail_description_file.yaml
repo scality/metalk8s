@@ -33,3 +33,17 @@ Downgrade:
   description: >-
     Downgrade tests
   sections: *lifecycle_sections
+
+Install:
+  description: >-
+    Installation tests
+  sections:
+    Multi Node:
+      description: >-
+        Multiple nodes test environment
+      sub_sections:
+        CentOs7:
+          description: >-
+            CentOs 7 tests
+          cases:
+            Bootstrap restore: {}

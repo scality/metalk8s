@@ -37,7 +37,7 @@ check_pod_is_in_phase() {
     [[ $phase = "$expected_phase" ]]
 }
 
-BOOTSTRAP_NODE_NAME=${BOOTSTRAP_NODE_NAME:-$(salt-call --local --out txt grains.get id | cut -c 8-)}
+NODE_NAME=${NODE_NAME:-$(salt-call --local --out txt grains.get id | cut -c 8-)}
 PRODUCT_TXT=${PRODUCT_TXT:-/vagrant/_build/root/product.txt}
 MAX_TRIES=300
 
@@ -55,17 +55,18 @@ KUBECONFIG=${KUBECONFIG:-/etc/kubernetes/admin.conf}
 export KUBECONFIG
 
 echo "Creating storage volumes"
-sed "s/BOOTSTRAP_NODE_NAME/${BOOTSTRAP_NODE_NAME}/" "${PRODUCT_MOUNT}/examples/prometheus-sparse.yaml" | \
+sed "s/NODE_NAME/${NODE_NAME}/" \
+    "${PRODUCT_MOUNT}/examples/prometheus-sparse.yaml" | \
     kubectl apply -f -
 
-echo "Waiting for PV 'bootstrap-alertmanager' to be provisioned"
-if ! retry "$MAX_TRIES" check_pv_exists bootstrap-alertmanager; then
+echo "Waiting for PV '$NODE_NAME-alertmanager' to be provisioned"
+if ! retry "$MAX_TRIES" check_pv_exists "$NODE_NAME-alertmanager"; then
     echo "PV not created"
     exit 1
 fi
 
-echo "Waiting for PV 'bootstrap-prometheus' to be provisioned"
-if ! retry "$MAX_TRIES" check_pv_exists bootstrap-prometheus; then
+echo "Waiting for PV '$NODE_NAME-prometheus' to be provisioned"
+if ! retry "$MAX_TRIES" check_pv_exists "$NODE_NAME-prometheus"; then
     echo "PV not created"
     exit 1
 fi
