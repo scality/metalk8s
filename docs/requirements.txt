@@ -151,7 +151,7 @@ sphinx-autobuild==0.7.1 \
 sphinx-rtd-theme==0.4.3 \
     --hash=sha256:00cf895504a7895ee433807c62094cf1e95f065843bf3acd17037c3e9a2becd4 \
     --hash=sha256:728607e34d60456d736cc7991fd236afb828b21b82f956c5ea75f94c8414040a
-sphinx==3.0.0 \
+sphinx==3.0.4 \
     --hash=sha256:6a099e6faffdc3ceba99ca8c2d09982d43022245e409249375edf111caf79ed3 \
     --hash=sha256:b63a0c879c4ff9a4dffcb05217fa55672ce07abdeb81e33c73303a563f8d8901
 sphinxcontrib-applehelp==1.0.2 \
