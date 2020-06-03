@@ -26,14 +26,14 @@ The MetalK8s monitoring stack consist of the following main components;
 
 .. todo::
 
-   - For each of the components list above, provide a detail description of
+   - For each of the components listed above, provide a detailed description of
      its role within the Monitoring stack.
-   - How to customize default alerting & recording rules
-   - Default alerting & recording rules are available as a json file, we should
-     use the json to generate a corresponding rst table as below
+   - Default alerting & recording rules are available as a JSON file, we should
+     use this file to generate a corresponding rst table as below
 
 Prometheus
 ^^^^^^^^^^
+
 In a MetalK8s cluster, the Prometheus service is responsible for recording
 real-time metrics in a time series database. Prometheus is capable of querying
 a list of datasources called `exporters` at specific polling frequency and then
@@ -41,18 +41,21 @@ aggregating this data across the various sources.
 Prometheus makes use of a special language Prometheus Query Language - PromQL
 for writing alerting and recording rules which we will later see.
 
-Default Alerting rules
-""""""""""""""""""""""
+Default Alert Rules
+"""""""""""""""""""
 
-Alerting rules enable a user to specify a condition that must occur before an
+Alert rules enable a user to specify a condition that must occur before an
 external system like slack is notified. For example, MetalK8s administrators
 could want to raise an alert for any node that is unreachable for a duration
 >1 minutes.
 
-Out-of-the-box, MetalK8s ships with preconfigured alerting rules. These
-alerting rules are typically written as PromQL queries.
-The table below outlines some of the preconfigured alerting rules exposed from
+Out-of-the-box, MetalK8s ships with preconfigured alert rules.
+These are typically written as PromQL queries.
+The table below outlines all the preconfigured alert rules exposed from
 a newly deployed MetalK8s cluster.
+
+For predefined alert rules customization, see
+:ref:`csc-prometheus-customization`.
 
 .. csv-table:: Default Prometheus Alerting rules
    :file: ../../tools/rule_extractor/alerting_rules.csv
