@@ -453,13 +453,6 @@ class CustomApiClient(ApiClient):
 
             result = base_method(*args, **kwargs)
 
-            if verb == 'list':
-                return CustomObject({
-                    'kind': '{}List'.format(self.kind),
-                    'apiVersion': '{s.group}/{s.version}'.format(s=self),
-                    'items': [CustomObject(obj) for obj in result],
-                })
-
             # TODO: do we have a result for `delete` methods?
             return CustomObject(result)
 
