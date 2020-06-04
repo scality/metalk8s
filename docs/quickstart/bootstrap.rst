@@ -113,8 +113,8 @@ Check if all :term:`Pods <Pod>` on the Bootstrap node are in the
 
    On all subsequent :term:`kubectl` commands, you may omit the
    ``--kubeconfig`` argument if you have exported the ``KUBECONFIG``
-   environment variable set to the path of the administrator :term:`kubeconfig`
-   file for the cluster.
+   environment variable set to the path of the administrator
+   :term:`kubeconfig <Kubeconfig>` file for the cluster.
 
    By default, this path is ``/etc/kubernetes/admin.conf``.
 
