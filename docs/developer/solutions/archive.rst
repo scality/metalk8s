@@ -67,18 +67,13 @@ Here is the file tree expected by MetalK8s to exist in each Solution archive::
    │           ├── <layer_digest>
    │           ├── manifest.json
    │           └── version
-   ├── registry-config.inc
+   ├── manifest.yaml
    ├── operator
    |   └── deploy
    │       ├── crds
-   │       |   └── some_crd_name.yaml
-   │       ├── operator.yaml
-   │       ├── role.yaml
-   │       ├── role_binding.yaml
-   │       └── service_account.yaml
-   ├── product.txt
-   └── ui
-       └── deployment.yaml
+   │       │   └── some_crd_name.yaml
+   │       └── role.yaml
+   └── registry-config.inc
 
 .. _solution-archive-product-info:
 
@@ -86,37 +81,64 @@ Product information
 -------------------
 
 General product information about the packaged Solution must be stored in the
-``product.txt`` file, stored at the archive root.
+``manifest.yaml`` file, stored at the archive root.
 
-It must respect the following format (currently version 1, as specified by the
-``ARCHIVE_LAYOUT_VERSION`` value)::
+It must respect the following format (currently
+``solutions.metalk8s.scality.com/v1alpha1``, as specified by the
+``apiVersion`` value)::
 
-   NAME=Example
-   VERSION=1.0.0-dev
-   REQUIRE_METALK8S=">=2.0"
-   ARCHIVE_LAYOUT_VERSION=1
+   apiVersion: solutions.metalk8s.scality.com/v1alpha1
+   kind: Solution
+   metadata:
+     annotations:
+       solutions.metalk8s.scality.com/display-name: Solution Name
+     labels: {}
+     name: solution-name
+   spec:
+     images:
+       - some-extra-image:2.0.0
+       - solution-name-operator:1.0.0
+       - solution-name-ui:1.0.0
+     operator:
+       image:
+         name: solution-name-operator
+         tag: 1.0.0
+     ui:
+       image:
+         name: solution-name-ui
+         tag: 1.0.0
+     version: 1.0.0
 
-It is recommended for inspection purposes to include information related to
-the build-time conditions, such as the following (where command invocations
-should be statically replaced in the generated ``product.txt``)::
+.. note:: `spec.ui` is an optional key to let MetalK8s handle the deployment
+          of the Solution UI. This mechanism is deprecated and will be removed
+          in later versions. The Operator will need to handle the
+          deployment and lifecycle of the UI.
 
-   GIT=$(git describe --always --long --tags --dirty)
-   BUILD_TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%SZ)
+It is recommended for inspection purposes to include some annotations related
+to the build-time conditions, such as the following (where command invocations
+should be statically replaced in the generated ``manifest.yaml``)::
 
-.. note::
+   solutions.metalk8s.scality.com/build-timestamp: \
+     $(date -u +%Y-%m-%dT%H:%M:%SZ)
+   solutions.metalk8s.scality.com/git-revision: \
+     $(git describe --always --long --tags --dirty)
 
-   If a Solution can require specific versions of MetalK8s on which to be
-   deployed, requiring specific services (and their respective versions) to be
-   shipped with MetalK8s (e.g. Prometheus/Grafana) is not yet feasible.
-   It will probably be handled in the Operator declaration, maybe using a CR.
+A simple script to generate this manifest can be found in MetalK8s
+repository `examples/metalk8s-solution-example/manifest.py`, use it as
+follows::
 
-It is recommended for inspection purposes to include information related to
-the build-time conditions, such as the following (where command invocations
-should be statically replaced in the generated ``product.txt``)::
-
-   GIT=$(git describe --always --long --tags --dirty)
-   BUILD_TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%SZ)
-
+   ./manifest.py --name "example-solution" \
+       --annotation "solutions.metalk8s.scality.com/build-timestamp" \
+       "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+       --annotation "solutions.metalk8s.scality.com/build-host" "$(hostname)" \
+       --annotation "solutions.metalk8s.scality.com/development-release" "1" \
+       --annotation "solutions.metalk8s.scality.com/display-name" "Example Solution" \
+       --annotation "solutions.metalk8s.scality.com/git-revision" \
+       "$(git describe --always --long --tags --dirty)" \
+       --extra-image "base-server" "0.1.0-dev" \
+       --operator-image "example-solution-operator" "0.1.0-dev" \
+       --ui-image "example-solution-ui" "0.1.0-dev" \
+       --version "0.1.0-dev"
 
 .. _solution-archive-images:
 
@@ -128,7 +150,7 @@ read-only registry. This registry is built with nginx_, and relies on having
 a specific layout of image layers to then replicate the necessary parts of the
 Registry API that CRI clients (such as ``containerd`` or ``cri-o``) rely on.
 
-Using skopeo_, you can save images as a directory of layers::
+Using skopeo_, images can be saved as a directory of layers::
 
    $ mkdir images/my_image
    $ # from your local Docker daemon
@@ -136,7 +158,7 @@ Using skopeo_, you can save images as a directory of layers::
    $ # from Docker Hub
    $ skopeo copy --format v2s2 --dest-compress docker://docker.io/example/my_image:1.0.0 dir:images/my_image/1.0.0
 
-Your ``images`` directory should now resemble this::
+The ``images`` directory should now resemble this::
 
    images
    └── my_image
@@ -146,15 +168,15 @@ Your ``images`` directory should now resemble this::
            ├── manifest.json
            └── version
 
-Once all your images were stored this way, you can de-duplicate layers using
-hardlinks, using the tool hardlink_::
+Once all the images are stored this way, de-duplication of layers can be done
+with hardlinks, using the tool hardlink_::
 
    $ hardlink -c images
 
 A detailed procedure for generating the expected layout is available at
-`NicolasT/static-container-registry`_. You can use the script provided there,
-or use the one vendored in this repository (located at
-``buildchain/buildchain/static-container-registry``) to generate the NGINX
+`NicolasT/static-container-registry`_. The script provided there,
+or the one vendored in this repository (located at
+``buildchain/static-container-registry``) can be used to generate the NGINX
 configuration to serve these image layers with the Docker Registry API.
 MetalK8s, when deploying the Solution, will include the ``registry-config.inc``
 file provided at the root of the archive. In order to let MetalK8s control
@@ -167,15 +189,16 @@ following options::
        /path/to/archive/images > /path/to/archive/registry-config.inc.j2
 
 Each archive will be exposed as a single repository, where the name will be
-computed as ``<NAME>-<VERSION>`` from :ref:`solution-archive-product-info`, and
-will be mounted at ``/srv/scality/<NAME>-<VERSION>``.
+computed as ``<metadata:name>-<spec:version>`` from
+:ref:`solution-archive-product-info`, and will be mounted at
+``/srv/scality/<metadata:name>-<spec:version>``.
 
 .. warning::
 
    Operators should not rely on this naming pattern for finding the images for
-   their resources. Instead, the full repository prefix will be exposed to
-   the Operator container as an environment variable when deployed with
-   MetalK8s. See :doc:`./operator` for more details.
+   their resources. Instead, the full repository endpoints will be exposed to
+   the Operator container through a configuration file passed to the operator
+   binary. See :doc:`./operator` for more details.
 
 The images names and tags will be inferred from the directory names chosen when
 using ``skopeo copy``. Using `hardlink` is highly recommended if one wants to

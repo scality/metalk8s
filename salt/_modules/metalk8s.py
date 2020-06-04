@@ -148,7 +148,7 @@ def archive_info_from_tree(path):
         raise CommandExecutionError(
             'Path {} has no "product.txt"'.format(path))
 
-    with salt.utils.files.fopen(os.path.join(path, 'product.txt')) as fd:
+    with salt.utils.files.fopen(product_txt) as fd:
         return _get_archive_info(fd.read())
 
 
