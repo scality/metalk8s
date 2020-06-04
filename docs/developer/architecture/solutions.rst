@@ -116,35 +116,32 @@ Here is how it will look::
 
 In this configuration file, no explicit information about the contents of
 archives should appear. When read by Salt at import time, the archive metadata
-will be discovered from the archive itself using a well-known file
-(``/product.txt``), which needs to define at least these 2 lines::
-
-    NAME=<solution-name>
-    VERSION=<solution-version>
-
-It will also be possible to define specific configuration for a Solution, using
-a ``config.yaml`` file at the root of the archive, with the following format::
+will be discovered from the archive itself using a ``manifest.yaml`` file at
+the root of the archive, with the following format::
 
     apiVersion: solutions.metalk8s.scality.com/v1alpha1
-    kind: SolutionConfig
-    operator:
-      image:
-        name: solution-name-operator
-        tag: 1.0.0
-    ui:
-      image:
-        name: solution-name-ui
-        tag: 1.0.0
-    customApiGroups:
-      - custom-api-group
+    kind: Solution
+    metadata:
+      annotations:
+        solutions.metalk8s.scality.com/display-name: Solution Name
+      labels: {}
+      name: solution-name
+    spec:
+      images:
+        - some-extra-image:2.0.0
+        - solution-name-operator:1.0.0
+        - solution-name-ui:1.0.0
+      operator:
+        image:
+          name: solution-name-operator
+          tag: 1.0.0
+      ui:
+        image:
+          name: solution-name-ui
+          tag: 1.0.0
+      version: 1.0.0
 
-.. todo:: Operator roles management will be handled differently in the
-          future, see #2389 for details.
-
-.. todo:: config.yaml and product.txt should be merged in only one file
-          such as a manifest.yaml, see #2422 for details.
-
-These configuration files will be read by a Salt external pillar module,
+This manifest will be read by a Salt external pillar module,
 which will permit the consumption of them by Salt modules and states.
 
 The external pillar will be structured as follows::
@@ -155,19 +152,29 @@ The external pillar will be structured as follows::
           solution-name:
             - active: True
               archive: /path/to/solution/archive.iso
-              config:
-                # The content of config.yaml (or a default configuration
-                # computed from product.txt, if there is no such file).
-                customApiGroups:
-                  - custom-api-group
-                operator:
-                  image:
-                    name: solution-name-operator
-                    tag: 1.0.0
-                ui:
-                  image:
-                    name: solution-name-ui
-                    tag: 1.0.0
+              manifest:
+                # The content of Solution manifest.yaml
+                apiVersion: solutions.metalk8s.scality.com/v1alpha1
+                kind: Solution
+                metadata:
+                  annotations:
+                    solutions.metalk8s.scality.com/display-name: Solution Name
+                  labels: {}
+                  name: solution-name
+                spec:
+                  images:
+                    - some-extra-image:2.0.0
+                    - solution-name-operator:1.0.0
+                    - solution-name-ui:1.0.0
+                  operator:
+                    image:
+                      name: solution-name-operator
+                      tag: 1.0.0
+                  ui:
+                    image:
+                      name: solution-name-ui
+                      tag: 1.0.0
+                  version: 1.0.0
               id: solution-name-1.0.0
               mountpoint: /srv/scality/solution-name-1.0.0
               name: Solution Name
@@ -211,26 +218,26 @@ can be easily verified).
 Solution archive will be structured as follows::
 
    .
-   ├── config.yaml
    ├── images
    │   └── some_image_name
    │       └── 1.0.1
    │           ├── <layer_digest>
    │           ├── manifest.json
    │           └── version
-   ├── registry-config.inc
+   ├── manifest.yaml
    ├── operator
    |   └── deploy
-   │       └── crds
-   │           └── some_crd_name.yaml
-   └── product.txt
+   │       ├── crds
+   │       │   └── some_crd_name.yaml
+   │       └── role.yaml
+   └── registry-config.inc
 
 OCI Images registry
 ~~~~~~~~~~~~~~~~~~~
 
 Every container images from Solution archive will be exposed as a single
 repository through MetalK8s registry. The name of this repository will be
-computed from the product information ``<NAME>-<VERSION>``.
+computed from the Solution manifest ``<metadata.name>-<spec.version>``.
 
 
 Operator Configuration
