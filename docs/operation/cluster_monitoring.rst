@@ -61,3 +61,8 @@ For predefined alert rules customization, see
    :file: ../../tools/rule_extractor/alerting_rules.csv
    :header: "Name", "Severity", "Description"
 
+Monitoring Configuration
+************************
+
+To configure monitoring, see the :doc:`./cluster_and_service_configuration`
+page.
