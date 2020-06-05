@@ -288,6 +288,14 @@ if HAS_LIBS:
             name='namespaced_ingress'
         ),
         # }}}
+        # /apis/apiextensions.k8s.io/v1/ {{{
+        ('apiextensions.k8s.io/v1', 'CustomResourceDefinition'): \
+        KindInfo(
+            model=k8s_client.V1CustomResourceDefinition,
+            api_cls=k8s_client.ApiextensionsV1Api,
+            name='custom_resource_definition',
+        ),
+        # }}}
         # /apis/apiextensions.k8s.io/v1beta1/ {{{
         ('apiextensions.k8s.io/v1beta1', 'CustomResourceDefinition'): \
         KindInfo(
