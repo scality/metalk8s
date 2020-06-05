@@ -92,6 +92,13 @@ launch_pre_downgrade () {
         saltenv="$SALTENV"
 }
 
+launch_post_downgrade () {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.downgrade.post \
+        saltenv="$SALTENV"
+}
+
 launch_downgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
@@ -172,3 +179,4 @@ run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-downgrade" launch_pre_downgrade
 run "Downgrading bootstrap" downgrade_bootstrap
 run "Launching the downgrade" launch_downgrade
+run "Launching the post-downgrade" launch_post_downgrade

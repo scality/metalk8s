@@ -219,6 +219,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-adapter/deployed/init.sls'),
 
+    Path('salt/metalk8s/addons/prometheus-operator/post-cleanup.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/cleanup.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls'),
@@ -424,10 +425,12 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/pre.sls'),
+    Path('salt/metalk8s/orchestrate/downgrade/post.sls'),
 
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/pre.sls'),
+    Path('salt/metalk8s/orchestrate/upgrade/post.sls'),
 
     Path('salt/metalk8s/orchestrate/solutions/import-components.sls'),
     Path('salt/metalk8s/orchestrate/solutions/prepare-environment.sls'),
