@@ -557,7 +557,7 @@ func parsePollAnswer(
 			return returnedDict, nil
 		}
 	case 1: // Concurrent state execution.
-		return nil, fmt.Errorf("Salt job %s failed to run", jobID)
+		return nil, fmt.Errorf("Salt job %s failed to run: %v", jobID, output)
 	default: // "Normal" error.
 		logger.Info("Salt job failed")
 		reason := getStateFailureRootCause(output)
