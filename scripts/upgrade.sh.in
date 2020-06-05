@@ -107,6 +107,12 @@ launch_pre_upgrade () {
         saltenv="$SALTENV"
 }
 
+launch_post_upgrade () {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.upgrade.post \
+        saltenv="$SALTENV"
+}
 
 launch_upgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
@@ -169,3 +175,4 @@ run "Upgrading bootstrap" upgrade_bootstrap
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-upgrade" launch_pre_upgrade
 run "Launching the upgrade" launch_upgrade
+run "Launching the post-upgrade" launch_post_upgrade
