@@ -2,10 +2,79 @@
 
 ## Release 2.4.4 (in development)
 
+### Features added
+- [#2561](https://github.com/scality/metalk8s/issues/2561) - install `kubectl`
+on all master nodes (PR [#2562](https://github.com/scality/metalk8s/pull/2562))
+
+### Security fixes
+- Due to critical vulnerabilities (
+[CVE-2020-11652](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-11652)
+and
+[CVE-2020-11651](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-11651))
+with CVSS score of 10.0 that was discovered affecting all `Salt Master`
+versions inferior to `3000.2`, this release ships with a `Salt Master` version
+updated to `3000.3`. Users, especially those who expose the `Salt Master` to
+the internet must therefore upgrade immediately.
+
+    [#650](https://github.com/scality/metalk8s/issues/650) - Upgrade Salt master
+    to version `3000.3`
+    (PR [#2549](https://github.com/scality/metalk8s/pull/2549))
+
+- Due to an access control vulnerability
+[CVE-2020-13379](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-13379)
+with CVSS score of 5.3 that was discovered affecting Grafana versions from
+`3.0.1` through `7.0.1`, this release ships with a Grafana version updated to
+`6.7.4`. For more, see [here](https://grafana.com/blog/2020/06/03/grafana-6.7.4-and-7.0.2-released-with-important-security-fix/)
+
+    [#2600](https://github.com/scality/metalk8s/issues/2600) - Upgrade Grafana
+    to `6.7.4` (PR [#2605](https://github.com/scality/metalk8s/issues/2605))
+
+### Enhancements
+- [#2589](https://github.com/scality/metalk8s/issues/2589) - Bump Kubernetes
+version to 1.15.12 (PR [#2595](https://github.com/scality/metalk8s/pull/2595))
+
+- [#2029](https://github.com/scality/metalk8s/issues/2029) - Bump
+python-kubernetes client to `v11`
+(PR [#2554](https://github.com/scality/metalk8s/pull/2554))
+
+- Make `etcd` expansions more resilient
+(PR [#2147](https://github.com/scality/metalk8s/pull/2147))
+
+- [#2585](https://github.com/scality/metalk8s/issues/2585) - Add state to
+cleanup PrometheusRule CRs after upgrade/downgrade
+(PR [#2594](https://github.com/scality/metalk8s/pull/2594))
+
 ### Bug fixes
-- [#2600](https://github.com/scality/metalk8s/issues/2600) - Upgrade Grafana to
-6.7.4 to handle CVE-2020-13379
-(PR [#2605](https://github.com/scality/metalk8s/issues/2605))
+
+- [#2444](https://github.com/scality/metalk8s/issues/2444) - Fix flaky SLS
+rendering missing pillar key
+(PR [#2445](https://github.com/scality/metalk8s/pull/2445))
+
+- [#2524](https://github.com/scality/metalk8s/issues/2524) - Fix salt-minion
+upgrade and downgrade
+(PR [#2525](https://github.com/scality/metalk8s/pull/2525))
+
+- [#2551](https://github.com/scality/metalk8s/issues/2551)  Fix downgrade
+pre-check regarding the saltenv version
+(PR [#2552](https://github.com/scality/metalk8s/pull/2552))
+
+- [#2592](https://github.com/scality/metalk8s/issues/2592) - Fix invalid custom
+object Listing in `metalk8s_kubernetes` Salt module
+(PR [#2593](https://github.com/scality/metalk8s/pull/2593))
+
+- Fix apiserver-proxy to no longer proxy to non-master nodes
+(PR [#2555](https://github.com/scality/metalk8s/pull/2555))
+
+- [#2530](https://github.com/scality/metalk8s/issues/2530) - Make cluster
+upgrade more robust to PodDisruption
+(PR [#2531](https://github.com/scality/metalk8s/pull/2531))
+
+- [#2028](https://github.com/scality/metalk8s/issues/2028) - Improve the
+resilience of node deployment
+(PR [#2147](https://github.com/scality/metalk8s/pull/2147))
+
+- Fix various issues in the bootstrap restore script
+(PR [#2061](https://github.com/scality/metalk8s/pull/2061))
 
 ## Release 2.4.3
 
