@@ -525,6 +525,11 @@ func parsePollAnswer(
 		logger.Info("Salt job not found")
 		return nil, fmt.Errorf("cannot get status for job %s: %v", jobID, reason)
 	}
+	// Extract function.
+	function, ok := info["Function"].(string)
+	if !ok {
+		return nil, fmt.Errorf("missing 'Function' key in %v", info)
+	}
 	// Extract results.
 	result, ok := info["Result"].(map[string]interface{})
 	if !ok {
@@ -548,19 +553,23 @@ func parsePollAnswer(
 		return nil, fmt.Errorf("missing or invalid retcode in %v", nodeResult)
 	}
 	output, found := nodeResult["return"]
-	switch int(retcode) {
-	case 0: // Success.
+	if int(retcode) == 0 { // Success
 		logger.Info("Salt job succeeded")
+
 		if returnedDict, ok := output.(map[string]interface{}); !ok {
 			return nil, fmt.Errorf("invalid return value in %v", nodeResult)
 		} else {
 			return returnedDict, nil
 		}
-	case 1: // Concurrent state execution.
-		return nil, fmt.Errorf("Salt job %s failed to run: %v", jobID, output)
-	default: // "Normal" error.
+	} else {
+		// Concurrent state execution: the job failed to run.
+		if int(retcode) == 1 && function == "state.sls" {
+			return nil, fmt.Errorf("Salt job %s failed to run: %v", jobID, output)
+		}
+		// The salt job failed.
 		logger.Info("Salt job failed")
 		reason := getStateFailureRootCause(output)
+
 		return nil, &AsyncJobFailed{reason}
 	}
 }
