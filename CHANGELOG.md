@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Release 2.4.4 (in development)
+
+### Bug fixes
+- [#2600](https://github.com/scality/metalk8s/issues/2600) - Upgrade Grafana to
+6.7.4 to handle CVE-2020-13379
+(PR [#2605](https://github.com/scality/metalk8s/issues/2605))
+
 ## Release 2.4.3
 
 ### Features added
