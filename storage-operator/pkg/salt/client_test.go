@@ -181,9 +181,15 @@ func TestParsePollAnswer(t *testing.T) {
 		err  string
 	}{
 		"ok": {
-			json: `{"info": [{"Result":{"bootstrap": {
-                       "retcode": 0, "return": {"foo": "bar", "baz": "qux"}
-                   }}}]}`,
+			json: `{"info": [{
+                       "Function": "state.sls",
+                       "Result": {
+                           "bootstrap": {
+                               "retcode": 0,
+                               "return": {"foo": "bar", "baz": "qux"}
+                           }
+                       }
+                   }]}`,
 			res: map[string]interface{}{"foo": "bar", "baz": "qux"},
 			err: "",
 		},
@@ -218,58 +224,73 @@ func TestParsePollAnswer(t *testing.T) {
 			err:  "cannot get status .+ 42",
 		},
 		"missingResult": {
-			json: `{"info": [{}]}`,
+			json: `{"info": [{"Function": "state.sls"}]}`,
 			res:  nil,
 			err:  "missing 'Result' key",
 		},
-		"jobInProgress": {
+		"missingFunction": {
 			json: `{"info": [{"Result": {}}]}`,
+			res:  nil,
+			err:  "missing 'Function' key",
+		},
+		"jobInProgress": {
+			json: `{"info": [{"Function": "state.sls", "Result": {}}]}`,
 			res:  nil,
 			err:  "",
 		},
 		"noResultForNode": {
-			json: `{"info": [{"Result":{"master": {
+			json: `{"info": [{"Function": "state.sls", "Result":{"master": {
                        "retcode": 0, "return": {"foo": "bar", "baz": "qux"}
                    }}}]}`,
 			res: nil,
 			err: "missing or invalid result for node bootstrap",
 		},
 		"invalidResultForNode": {
-			json: `{"info": [{"Result":{"bootstrap": true}}]}`,
-			res:  nil,
-			err:  "missing or invalid result for node bootstrap",
+			json: `{"info": [{
+                       "Function": "state.sls",
+                       "Result":{"bootstrap": true}
+                   }]}`,
+			res: nil,
+			err: "missing or invalid result for node bootstrap",
 		},
 		"missingRetcode": {
-			json: `{"info": [{"Result":{"bootstrap": {
+			json: `{"info": [{"Function": "state.sls", "Result":{"bootstrap": {
                        "return": {"foo": "bar", "baz": "qux"}
                    }}}]}`,
 			res: nil,
 			err: "missing or invalid retcode",
 		},
 		"invalidRetcode": {
-			json: `{"info": [{"Result":{"bootstrap": {
+			json: `{"info": [{"Function": "state.sls", "Result":{"bootstrap": {
                        "retcode": true, "return": {"foo": "bar", "baz": "qux"}
                    }}}]}`,
 			res: nil,
 			err: "missing or invalid retcode",
 		},
 		"invalidReturn": {
-			json: `{"info": [{"Result":{"bootstrap": {
+			json: `{"info": [{"Function": "state.sls", "Result":{"bootstrap": {
                        "retcode": 0, "return": true
                    }}}]}`,
 			res: nil,
 			err: "invalid return value",
 		},
-		"failedconcurrent": {
-			json: `{"info": [{"Result":{"bootstrap": {
+		"failedConcurrentState": {
+			json: `{"info": [{"Function": "state.sls", "Result":{"bootstrap": {
                        "retcode": 1, "return": {}
                    }}}]}`,
 			res: nil,
 			err: "Salt job .+ failed to run",
 		},
-		"failure": {
-			json: `{"info": [{"Result":{"bootstrap": {
+		"failureState": {
+			json: `{"info": [{"Function": "state.sls", "Result":{"bootstrap": {
                        "retcode": 2, "return": "BOOM"
+                   }}}]}`,
+			res: nil,
+			err: "BOOM",
+		},
+		"failureModule": {
+			json: `{"info": [{"Function": "disk.dump", "Result":{"bootstrap": {
+                       "retcode": 1, "return": "BOOM"
                    }}}]}`,
 			res: nil,
 			err: "BOOM",
