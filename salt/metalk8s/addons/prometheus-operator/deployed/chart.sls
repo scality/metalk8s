@@ -25052,7 +25052,7 @@ spec:
             secretKeyRef:
               key: admin-password
               name: prometheus-operator-grafana
-        image: '{%- endraw -%}{{ build_image_name("grafana", False) }}{%- raw -%}:6.4.2'
+        image: '{%- endraw -%}{{ build_image_name("grafana", False) }}{%- raw -%}:6.7.4'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
