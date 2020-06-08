@@ -13,6 +13,59 @@
   See [Solutions documentation](https://metal-k8s.readthedocs.io/en/development-2.5/developer/solutions/archive.html#product-information)
   for details about the new format.
 
+### Enhancements
+- [#2590](https://github.com/scality/metalk8s/issues/2590) - Bump Kubernetes
+version to 1.16.10 (PR [#2597](https://github.com/scality/metalk8s/pull/2597))
+
+- [#2423](https://github.com/scality/metalk8s/issues/2423) - Bump
+nginx-ingress-controller version to 0.30.0
+(PR [#2446](https://github.com/scality/metalk8s/pull/2446))
+
+- [#2429](https://github.com/scality/metalk8s/issues/2429) - Bump Dex
+version to 2.23.0
+(PR [#2437](https://github.com/scality/metalk8s/pull/2437))
+
+- [#2430](https://github.com/scality/metalk8s/issues/2430) - Bump
+prometheus-operator version to 8.13.0
+(PR [#2557](https://github.com/scality/metalk8s/pull/2557))
+
+- [#2431](https://github.com/scality/metalk8s/issues/2431) - Bump
+Prometheus-adapter version to 0.6.0
+(PR [#2441](https://github.com/scality/metalk8s/pull/2441))
+
+- [#2488](https://github.com/scality/metalk8s/issues/2488) - Update default
+CSC value during upgrade/downgrade
+(PR [#2513](https://github.com/scality/metalk8s/pull/2513))
+
+- [#2493](https://github.com/scality/metalk8s/issues/2493) - Use async call
+for disk.dump during Volume provisioning
+(PR [#2571](https://github.com/scality/metalk8s/pull/2571))
+
+- Add support for CustomResourceDefinition apiextensions.k8s.io/v1 in
+`metalk8s_kubernetes` Salt module
+(PR [#2583](https://github.com/scality/metalk8s/pull/2583))
+
+### Bug fixes
+- [#2434](https://github.com/scality/metalk8s/issues/2434) - Wait for a
+single Salt Master container during Bootstrap
+(PR [#2435](https://github.com/scality/metalk8s/pull/2435))
+
+- [#2526](https://github.com/scality/metalk8s/issues/2526) - Add 'groups'
+scope when requesting an id_token from Dex in the UI
+(PR [#2529](https://github.com/scality/metalk8s/pull/2529))
+
+- [#2443](https://github.com/scality/metalk8s/issues/2443) - Improve error
+handling for Salt jobs in the UI
+(PR [#2475](https://github.com/scality/metalk8s/pull/2475))
+
+- [#2495](https://github.com/scality/metalk8s/issues/2495) - Fix monitoring
+page to display all alerts in the UI
+(PR [#2503](https://github.com/scality/metalk8s/pull/2503))
+
+- [#2569](https://github.com/scality/metalk8s/issues/2569) - Restart Dex Pod
+automatically upon CSC Dex configuration changes
+(PR [#2573](https://github.com/scality/metalk8s/pull/2573))
+
 ## Release 2.5.0
 
 ### Breaking changes
