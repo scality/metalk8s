@@ -46,11 +46,17 @@ spec:
                 devicePath:
                   description: Path of the block device on the node to back the PersistentVolume.
                   type: string
+                noFormat:
+                  description: When true, do not format the device with a filesystem.
+                  type: boolean
               required:
               - devicePath
               type: object
             sparseLoopDevice:
               properties:
+                noFormat:
+                  description: When true, do not format the device with a filesystem.
+                  type: boolean
                 size:
                   description: Size of the generated sparse file backing the PersistentVolume.
                   type: string

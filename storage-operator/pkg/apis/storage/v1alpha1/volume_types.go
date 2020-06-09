@@ -16,11 +16,17 @@ import (
 type SparseLoopDeviceVolumeSource struct {
 	// Size of the generated sparse file backing the PersistentVolume.
 	Size resource.Quantity `json:"size"`
+	// When true, do not format the device with a filesystem.
+	// +optional
+	NoFormat bool `json:"noFormat,omitempty"`
 }
 
 type RawBlockDeviceVolumeSource struct {
 	// Path of the block device on the node to back the PersistentVolume.
 	DevicePath string `json:"devicePath"`
+	// When true, do not format the device with a filesystem.
+	// +optional
+	NoFormat bool `json:"noFormat,omitempty"`
 }
 
 type VolumeSource struct {
