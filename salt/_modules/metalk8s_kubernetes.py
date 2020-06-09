@@ -303,6 +303,22 @@ get_object = _object_manipulation_function('retrieve')
 update_object = _object_manipulation_function('update')
 
 
+# Check if a specific object exists
+def object_exists(kind, apiVersion, name, **kwargs):
+    """
+    Simple helper to check if an object exists or not
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_kubernetes.object_exists kind="Node" apiVersion="v1" name="MyNode"
+    """
+    return get_object(
+        kind=kind, apiVersion=apiVersion, name=name, **kwargs
+    ) is not None
+
+
 # Listing resources can benefit from a simpler signature
 def list_objects(kind, apiVersion, namespace='default', all_namespaces=False,
                  field_selector=None, label_selector=None, **kwargs):
