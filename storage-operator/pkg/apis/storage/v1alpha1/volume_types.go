@@ -292,6 +292,17 @@ func (self *Volume) GetPath() string {
 	return fmt.Sprintf("/dev/disk/by-uuid/%s", self.UID)
 }
 
+func (self *Volume) IsFormatted() bool {
+	switch {
+	case self.Spec.RawBlockDevice != nil:
+		return !self.Spec.RawBlockDevice.NoFormat
+	case self.Spec.SparseLoopDevice != nil:
+		return !self.Spec.SparseLoopDevice.NoFormat
+	default:
+		panic("invalid volume: VolumeSource is not defined")
+	}
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // VolumeList contains a list of Volume

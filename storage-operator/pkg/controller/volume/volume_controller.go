@@ -930,9 +930,6 @@ func newPersistentVolume(
 	storageClass *storagev1.StorageClass,
 	volumeSize resource.Quantity,
 ) (*corev1.PersistentVolume, error) {
-	// We only support this mode for now.
-	mode := corev1.PersistentVolumeFilesystem
-
 	// We must have `fsType` as parameter, otherwise we can't create our PV.
 	scName := volume.Spec.StorageClassName
 	fsType, found := storageClass.Parameters["fsType"]
@@ -940,6 +937,12 @@ func newPersistentVolume(
 		return nil, fmt.Errorf(
 			"missing field 'parameters.fsType' in StorageClass '%s'", scName,
 		)
+	}
+	var mode corev1.PersistentVolumeMode
+	if volume.IsFormatted() {
+		mode = corev1.PersistentVolumeFilesystem
+	} else {
+		mode = corev1.PersistentVolumeBlock
 	}
 
 	pv := corev1.PersistentVolume{
