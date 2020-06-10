@@ -1,14 +1,6 @@
 import fnmatch
 import logging
 
-try:
-    import kubernetes.client
-    import kubernetes.config
-    HAS_DEPS = True
-except ImportError:
-    HAS_DEPS = False
-
-
 log = logging.getLogger(__name__)
 
 
@@ -16,12 +8,7 @@ __virtualname__ = 'kubernetes'
 
 
 def __virtual__():
-    if HAS_DEPS:
-        return HAS_DEPS
-    else:
-        return False, 'Unable to load the kubernetes nodes roster: '\
-            'dependencies for Kubernetes Python client library '\
-            'are unavailable.'
+    return __virtualname__
 
 
 def targets(tgt, tgt_type='glob', **kwargs):
@@ -30,37 +17,32 @@ def targets(tgt, tgt_type='glob', **kwargs):
         return {}
 
     try:
-        client = kubernetes.config.new_client_from_config(
-            config_file='/etc/kubernetes/admin.conf',
+        nodes = __runner__['salt.cmd'](
+            'metalk8s_kubernetes.list_objects',
+            kind='Node', apiVersion='v1'
         )
-    except:
-        log.exception('Failed to load kubeconfig')
-        raise
-
-    v1 = kubernetes.client.CoreV1Api(api_client=client)
-    try:
-        nodes = v1.list_node()
-    except:
+    except Exception:
         log.exception('Failed to retrieve v1/NodeList')
         raise
 
     # TODO Use `tgt_type`
     prefix = 'metalk8s.scality.com/ssh-'
     targets = {}
-    for item in nodes.items:
+    for item in nodes:
         match = False
+        node_name = item['metadata']['name']
         if tgt_type == "glob":
-            if fnmatch.fnmatch(item.metadata.name, tgt):
+            if fnmatch.fnmatch(node_name, tgt):
                 match = True
         elif tgt_type == "list":
-            if item.metadata.name in tgt:
+            if node_name in tgt:
                 match = True
 
         if match:
-            annotations = item.metadata.annotations
-            targets[item.metadata.name] = {
+            annotations = item['metadata']['annotations']
+            targets[node_name] = {
                 # Assume node name is resolvable
-                'host': annotations.get(prefix + 'host', item.metadata.name),
+                'host': annotations.get(prefix + 'host', node_name),
                 'port': int(annotations.get(prefix + 'port', 22)),
                 'user': annotations.get(prefix + 'user', 'root'),
                 'priv': annotations.get(prefix + 'key-path', 'salt-ssh.rsa'),
