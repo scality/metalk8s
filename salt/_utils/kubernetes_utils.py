@@ -512,6 +512,8 @@ if HAS_LIBS:
                    scope='namespaced', plural='prometheusrules'),
         CRKindInfo('monitoring.coreos.com/v1', 'ServiceMonitor',
                    scope='namespaced', plural='servicemonitors'),
+        CRKindInfo('storage.metalk8s.scality.com/v1alpha1', 'Volume',
+                   scope='cluster', plural='volumes'),
     ]
 
     KNOWN_CUSTOM_KINDS = {kind.key: kind for kind in _CUSTOM_KINDS}
