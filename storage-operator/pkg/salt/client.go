@@ -211,6 +211,44 @@ func (self *Client) GetVolumeSize(
 	return self.submitJob(ctx, jobName, volumeName, payload)
 }
 
+// Return the name of the block device designed by `devicePath`.
+//
+// This request is synchronous.
+//
+// Arguments
+//     ctx:        the request context (used for cancellation)
+//     nodeName:   name of the node where the device is
+//     volumeName: name of the associated volume
+//     devicePath: path of the device for which we want the name
+//
+// Returns
+//     The Salt job handle.
+func (self *Client) GetDeviceName(
+	ctx context.Context, nodeName string, volumeName string, devicePath string,
+) (string, error) {
+	const jobName string = "GetDeviceName"
+	payload := map[string]interface{}{
+		"client":  "local",
+		"tgt":     nodeName,
+		"fun":     "metalk8s_volumes.device_name",
+		"arg":     devicePath,
+		"timeout": 1,
+	}
+
+	self.logger.Info(
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+	)
+
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
+	if err != nil {
+		return "", errors.Wrapf(
+			err, "%s failed (target=%s, path=%s)", jobName, nodeName, devicePath,
+		)
+	}
+
+	return extractDeviceName(ans, nodeName)
+}
+
 // Submit a Salt job and return the job handle.
 func (self *Client) submitJob(
 	ctx context.Context,
@@ -555,4 +593,18 @@ func parsePollAnswer(
 
 		return nil, &AsyncJobFailed{reason}
 	}
+}
+
+// Try to extract the device name from a Salt answer.
+func extractDeviceName(ans map[string]interface{}, nodeName string) (string, error) {
+	if results, ok := ans["return"].([]interface{}); ok && len(results) > 0 {
+		if result, ok := results[0].(map[string]interface{}); ok {
+			if name, ok := result[nodeName].(string); ok {
+				return name, nil
+			}
+		}
+	}
+	return "", fmt.Errorf(
+		"cannot extract device name for %s from %v", nodeName, ans,
+	)
 }
