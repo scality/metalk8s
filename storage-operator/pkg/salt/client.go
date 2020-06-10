@@ -92,23 +92,7 @@ func (self *Client) PrepareVolume(
 		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"%s failed (env=%s, target=%s, volume=%s)",
-			jobName, saltenv, nodeName, volumeName,
-		)
-	}
-	if jid, err := extractJID(ans); err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"Cannot extract JID from %s response for volume %s",
-			jobName, volumeName,
-		)
-	} else {
-		return newJob(jobName, jid), nil
-	}
+	return self.submitJob(ctx, jobName, volumeName, payload)
 }
 
 // Spawn a job, asynchronously, to unprepare the volume on the specified node.
@@ -141,23 +125,7 @@ func (self *Client) UnprepareVolume(
 		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"%s failed (env=%s, target=%s, volume=%s)",
-			jobName, saltenv, nodeName, volumeName,
-		)
-	}
-	if jid, err := extractJID(ans); err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"Cannot extract JID from %s response for volume %s",
-			jobName, volumeName,
-		)
-	} else {
-		return newJob(jobName, jid), nil
-	}
+	return self.submitJob(ctx, jobName, volumeName, payload)
 }
 
 // Poll the status of an asynchronous Salt job.
@@ -240,12 +208,22 @@ func (self *Client) GetVolumeSize(
 		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
+	return self.submitJob(ctx, jobName, volumeName, payload)
+}
+
+// Submit a Salt job and return the job handle.
+func (self *Client) submitJob(
+	ctx context.Context,
+	jobName string,
+	volumeName string,
+	payload map[string]interface{},
+) (*JobHandle, error) {
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"%s failed (target=%s, volume=%s, device=%s)",
-			jobName, nodeName, volumeName, devicePath,
+			"%s failed for volume %s (%v)",
+			jobName, volumeName, payload,
 		)
 	}
 	if jid, err := extractJID(ans); err != nil {
