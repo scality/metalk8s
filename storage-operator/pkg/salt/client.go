@@ -75,6 +75,8 @@ func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 func (self *Client) PrepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (*JobHandle, error) {
+	const jobName string = "PrepareVolume"
+
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -87,25 +89,25 @@ func (self *Client) PrepareVolume(
 	}
 
 	self.logger.Info(
-		"PrepareVolume", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"PrepareVolume failed (env=%s, target=%s, volume=%s)",
-			saltenv, nodeName, volumeName,
+			"%s failed (env=%s, target=%s, volume=%s)",
+			jobName, saltenv, nodeName, volumeName,
 		)
 	}
 	if jid, err := extractJID(ans); err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"Cannot extract JID from PrepareVolume response for volume %s",
-			volumeName,
+			"Cannot extract JID from %s response for volume %s",
+			jobName, volumeName,
 		)
 	} else {
-		return newJob("PrepareVolume", jid), nil
+		return newJob(jobName, jid), nil
 	}
 }
 
@@ -122,6 +124,8 @@ func (self *Client) PrepareVolume(
 func (self *Client) UnprepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (*JobHandle, error) {
+	const jobName string = "UnprepareVolume"
+
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -134,26 +138,25 @@ func (self *Client) UnprepareVolume(
 	}
 
 	self.logger.Info(
-		"UnprepareVolume",
-		"Volume.NodeName", nodeName, "Volume.Name", volumeName,
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"UnrepareVolume failed (env=%s, target=%s, volume=%s)",
-			saltenv, nodeName, volumeName,
+			"%s failed (env=%s, target=%s, volume=%s)",
+			jobName, saltenv, nodeName, volumeName,
 		)
 	}
 	if jid, err := extractJID(ans); err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"Cannot extract JID from UnprepareVolume response for volume %s",
-			volumeName,
+			"Cannot extract JID from %s response for volume %s",
+			jobName, volumeName,
 		)
 	} else {
-		return newJob("UnprepareVolume", jid), nil
+		return newJob(jobName, jid), nil
 	}
 }
 
@@ -223,6 +226,8 @@ func getStateFailureRootCause(output interface{}) string {
 func (self *Client) GetVolumeSize(
 	ctx context.Context, nodeName string, volumeName string, devicePath string,
 ) (*JobHandle, error) {
+	const jobName string = "GetVolumeSize"
+
 	payload := map[string]interface{}{
 		"client":  "local_async",
 		"tgt":     nodeName,
@@ -232,25 +237,25 @@ func (self *Client) GetVolumeSize(
 	}
 
 	self.logger.Info(
-		"GetVolumeSize", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"GetVolumeSize failed (target=%s, volume=%s, device=%s)",
-			nodeName, volumeName, devicePath,
+			"%s failed (target=%s, volume=%s, device=%s)",
+			jobName, nodeName, volumeName, devicePath,
 		)
 	}
 	if jid, err := extractJID(ans); err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"Cannot extract JID from GetVolumeSize response for volume %s",
-			volumeName,
+			"Cannot extract JID from %s response for volume %s",
+			jobName, volumeName,
 		)
 	} else {
-		return newJob("GetVolumeSize", jid), nil
+		return newJob(jobName, jid), nil
 	}
 }
 
