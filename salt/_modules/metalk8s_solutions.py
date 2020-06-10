@@ -352,3 +352,46 @@ def list_available():
         })
 
     return dict(result)
+
+
+OPERATOR_ROLES_MANIFEST = 'operator/deploy/role.yaml'
+
+
+def operator_roles_from_manifest(mountpoint, namespace='default'):
+    """Read Solution Operator roles manifest, check if object kinds
+    are authorized and fill metadata.namespace key for namespaced
+    resources with provided `namespace`, then return a list of
+    manifests of Kubernetes objects to create.
+
+    Arguments:
+        mountpoint(str): Solution mountpoint path
+        namespace(str): Namespace used for namespaced objects
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_solutions.operator_roles_from_manifest \
+            mountpoint=/srv/scality/example-solution-0.1.0-dev
+    """
+    manifest_path = os.path.join(mountpoint, OPERATOR_ROLES_MANIFEST)
+
+    if not os.path.isfile(manifest_path):
+        return []
+
+    manifests = []
+    with salt.utils.files.fopen(manifest_path, 'r') as stream:
+        for manifest in yaml.safe_load_all(stream):
+            if not manifest:
+                continue
+            kind = manifest.get('kind')
+            if kind not in ['Role', 'ClusterRole']:
+                raise CommandExecutionError(
+                    "Forbidden object kind '{}' provided in '{}'"
+                    .format(kind, manifest_path)
+                )
+            if kind == 'Role':
+                manifest['metadata']['namespace'] = namespace
+            manifests.append(manifest)
+
+    return manifests
