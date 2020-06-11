@@ -62,15 +62,6 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        '-u',
-        '--ui-image',
-        required=True,
-        nargs=2,
-        metavar=('NAME', 'TAG'),
-        help="set the UI image name and tag in the manifest spec",
-    )
-
-    parser.add_argument(
         '-v',
         '--version',
         required=True,
@@ -93,14 +84,11 @@ def build_manifest(args):
         'spec': {
             'images': list(set(
                 ':'.join(image) for image in (
-                    args.extra_images + [args.ui_image, args.operator_image]
+                    args.extra_images + [args.operator_image]
                 )
             )),
             'operator': {
                 'image': dict(zip(('name', 'tag'), args.operator_image)),
-            },
-            'ui': {
-                'image': dict(zip(('name', 'tag'), args.ui_image)),
             },
             'version': args.version,
         },
