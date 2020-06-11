@@ -31,7 +31,7 @@ RUN yum install -y \
     && adduser -u 1042 --home /home/eve eve --groups docker \
     && mkdir -p /home/eve/.cache /home/eve/go \
     && chown eve:eve /home/eve/workspace /home/eve/.cache /home/eve/go \
-    && pip install buildbot-worker==${BUILDBOT_VERSION}
+    && pip install buildbot-worker==${BUILDBOT_VERSION} pyyaml
 
 # Add eve to sudoers.
 RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve
