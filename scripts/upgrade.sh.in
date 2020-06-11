@@ -85,11 +85,10 @@ upgrade_bootstrap () {
         metalk8s.orchestrate.bootstrap.pre-upgrade \
         saltenv="$SALTENV"
 
-    "${SALT_CALL}" --local state.sls metalk8s.roles.bootstrap sync_mods="all" \
-        saltenv="$SALTENV" \
+    "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
+        metalk8s.roles.bootstrap.local saltenv="$SALTENV" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
-        'repositories': $repo_endpoint}}}" \
-        --retcode-passthrough
+        'repositories': $repo_endpoint}}}"
 }
 
 launch_pre_upgrade () {
