@@ -13,18 +13,19 @@ Apply ServiceAccount for Operator of Solution {{ solution.name }}:
         namespace: {{ namespace }}
         version: {{ solution.version }}
 
-Apply Role for Operator of Solution {{ solution.name }}:
+  {%- set role_manifests =
+          salt['metalk8s_solutions.operator_roles_from_manifest'](
+              solution.mountpoint, namespace
+          )
+  %}
+  {%- for manifest in role_manifests %}
+    {%- set role_kind = manifest.kind %}
+    {%- set role_name = manifest.metadata.name %}
+Apply Operator {{ role_kind }} {{ role_name }} for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/operator/role.yaml
-    - template: jinja
-    - defaults:
-        solution: {{ name }}
-        namespace: {{ namespace }}
-        custom_api_groups: {{
-          solution.manifest.spec.customApiGroups | tojson }}
-        version: {{ solution.version }}
+    - manifest: {{ manifest | tojson }}
 
-Apply RoleBinding for Operator of Solution {{ solution.name }}:
+Apply RoleBinding of {{ role_kind }} {{ role_name }} for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/operator/role_binding.yaml
     - template: jinja
@@ -32,9 +33,14 @@ Apply RoleBinding for Operator of Solution {{ solution.name }}:
         solution: {{ name }}
         namespace: {{ namespace }}
         version: {{ solution.version }}
+        role_name: {{ role_name }}
+        role_kind: {{ role_kind }}
     - require:
         - metalk8s_kubernetes: Apply ServiceAccount for Operator of Solution {{ solution.name }}
-        - metalk8s_kubernetes: Apply Role for Operator of Solution {{ solution.name }}
+        - metalk8s_kubernetes: Apply Operator {{ role_kind }} {{ role_name }} for Solution {{ solution.name }}
+    - require_in:
+        - metalk8s_kubernetes: Apply Operator Deployment for Solution {{ solution.name }}
+  {%- endfor %}
 
 {# Store info for image repositories in some Operator ConfigMap
    TODO: add documentation about this file #}
@@ -60,7 +66,6 @@ Apply Operator Deployment for Solution {{ solution.name }}:
         image_tag: {{ solution.manifest.spec.operator.image.tag }}
         repository: {{ repo.registry_endpoint ~ '/' ~ solution.id }}
     - require:
-        - metalk8s_kubernetes: Apply RoleBinding for Operator of Solution {{ solution.name }}
         - metalk8s_kubernetes: Apply Operator ConfigMap for Solution {{ solution.name }}
 
 {%- endmacro %}

@@ -1,7 +1,10 @@
+{%- set role_binding_name = "{}-operator-{}-{}".format(
+  solution, role_kind | lower, role_name
+) %}
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ solution }}-operator
+  name: {{ role_binding_name[:63] }}
   namespace: {{ namespace }}
   labels:
     app: {{ solution }}-operator
@@ -14,6 +17,6 @@ subjects:
 - kind: ServiceAccount
   name: {{ solution }}-operator
 roleRef:
-  kind: Role
-  name: {{ solution }}-operator
+  kind: {{ role_kind }}
+  name: {{ role_name }}
   apiGroup: rbac.authorization.k8s.io

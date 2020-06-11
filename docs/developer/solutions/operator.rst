@@ -105,3 +105,8 @@ directory. This file is a manifest which declares all necessary ``Role`` and
 MetalK8s will take care of deploying these objects, create a ``ServiceAccount``
 named ``<solution_name>-operator`` and all needed ``RoleBinding`` to bind these
 roles to this account.
+
+.. warning::
+
+   Only ``Role`` and ``ClusterRole`` kinds are allowed in this file,
+   the deployment of the Solution fails if any other resource is found.
