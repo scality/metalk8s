@@ -328,7 +328,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/apiserver/installed.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/cryptconfig.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/kubeconfig.sls'),
-    Path('salt/metalk8s/kubernetes/apiserver/pre-upgrade.sls'),
 
     Path('salt/metalk8s/kubernetes/apiserver-proxy/files/'
             'apiserver-proxy.conf.j2'),
