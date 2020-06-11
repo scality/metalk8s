@@ -2,6 +2,11 @@
 
 ## Release 2.6.0 (in development)
 
+### Breaking changes
+- [#2581](https://github.com/scality/metalk8s/issues/2851) - Solution UI are
+  no longer deployed by MetalK8s, it's now the responsibility of the Solution
+  Operators (PR [#2617](https://github.com/scality/metalk8s/pull/2617))
+
 ### Features Added
 - Extend the set of packages installed in the `metalk8s-utils` container image
   (Partially resolves issue [#2156](https://github.com/scality/metalk8s/issues/2156),
