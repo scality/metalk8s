@@ -201,6 +201,7 @@ reclaim its storage and remove the finalizers to let the object be deleted.
 
 }}} */
 
+const DEVICE_ANNOTATION = "storage.metalk8s.scality.com/device"
 const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
 const JOB_DONE_MARKER = "DONE"
 
@@ -633,7 +634,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return delayedRequeue(err)
 	}
 	reqLogger.Info("backing PersistentVolume is healthy")
-	return endReconciliation()
+	return r.refreshDeviceName(ctx, volume, pv)
 }
 
 // Deploy a volume (i.e prepare the storage and create a PV).
@@ -711,6 +712,38 @@ func (self *ReconcileVolume) finalizeVolume(
 
 	// PersistentVolume still in use: wait before reclaiming the storage.
 	return delayedRequeue(nil)
+}
+
+func (self *ReconcileVolume) refreshDeviceName(
+	ctx context.Context,
+	volume *storagev1alpha1.Volume,
+	pv *corev1.PersistentVolume,
+) (reconcile.Result, error) {
+	path := pv.Spec.PersistentVolumeSource.Local.Path
+	nodeName := string(volume.Spec.NodeName)
+	reqLogger := log.WithValues(
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
+	)
+
+	name, err := self.salt.GetDeviceName(ctx, nodeName, volume.Name, path)
+	if err != nil {
+		self.recorder.Event(
+			volume, corev1.EventTypeNormal, "SaltCall",
+			"device path resolution failed",
+		)
+		reqLogger.Error(err, "cannot get device name from Salt response")
+		return delayedRequeue(err)
+	}
+	if pv.ObjectMeta.Annotations[DEVICE_ANNOTATION] != name {
+		metav1.SetMetaDataAnnotation(&pv.ObjectMeta, DEVICE_ANNOTATION, name)
+		if err := self.client.Update(ctx, pv); err != nil {
+			reqLogger.Error(err, "cannot update device name: requeue")
+			return delayedRequeue(err)
+		}
+		reqLogger.Info("update device name", "Volume.DeviceName", name)
+	}
+
+	return endReconciliation()
 }
 
 func (self *ReconcileVolume) prepareStorage(
