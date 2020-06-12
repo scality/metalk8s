@@ -7,9 +7,8 @@ WORKDIR /home/eve/workspace
 
 RUN yum install -y \
     epel-release \
-    https://centos7.iuscommunity.org/ius-release.rpm \
-    && yum-config-manager \
-    --add-repo \
+    https://repo.ius.io/ius-release-el7.rpm \
+    && yum-config-manager --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo \
     && yum install -y \
     sudo \
@@ -17,13 +16,13 @@ RUN yum install -y \
     hardlinks \
     make \
     genisoimage \
-    git2u \
     golang \
     python-devel \
     python-pip \
     skopeo \
     yum-utils \
     docker-ce-cli-18.09.6 \
+    git224 \
     && curl -LO https://github.com/operator-framework/operator-sdk/releases/download/$OPERATOR_SDK_VERSION/operator-sdk-$OPERATOR_SDK_VERSION-x86_64-linux-gnu \
     && chmod +x operator-sdk-$OPERATOR_SDK_VERSION-x86_64-linux-gnu \
     && mkdir -p /usr/local/bin/ \
