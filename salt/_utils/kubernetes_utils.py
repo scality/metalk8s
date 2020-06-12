@@ -452,6 +452,18 @@ class CustomApiClient(ApiClient):
 
         return method
 
+    def _method_name(self, verb):
+        # Override super(_method_name) for `delete` as two different functions
+        # exist to delete a custom object, one that take a `name` argument
+        # and another one that does not
+        # In our case we want to use the one with `name`
+        # See: https://github.com/scality/metalk8s/issues/2621
+        # NOTE: This may need to be removed once we will change the
+        # python-kubernetes version installed in salt-master
+        if verb == "delete":
+            return "{}_{}_0".format(verb, self.name)
+        return super(CustomApiClient, self)._method_name(verb)
+
 
 class CRKindInfo(object):
     """Equivalent of `KindInfo` for custom objects.
