@@ -457,6 +457,16 @@ class CustomApiClient(ApiClient):
 
         return method
 
+    def _method_name(self, verb):
+        # Override super(_method_name) for `delete` as two different function
+        # exists to delete a custom object, one that take `name` argument
+        # and another one that didn't
+        # In our case we want to use the one with `name`
+        # Sees: https://github.com/scality/metalk8s/issues/2621
+        if verb == "delete":
+            return "{}_{}_0".format(verb, self.name)
+        return super(CustomApiClient, self)._method_name(verb)
+
 
 class CRKindInfo(object):
     """Equivalent of `KindInfo` for custom objects.
