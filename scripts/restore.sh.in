@@ -215,6 +215,11 @@ configure_salt_master() {
         metalk8s.kubernetes.apiserver.kubeconfig \
         saltenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
+
+    "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
+        metalk8s.salt.master.kubeconfig \
+        saltenv=metalk8s-@@VERSION \
+        pillar="${pillar[*]}"
 }
 
 push_cas() {
