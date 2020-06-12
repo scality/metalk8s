@@ -103,16 +103,7 @@ It must respect the following format (currently
        image:
          name: solution-name-operator
          tag: 1.0.0
-     ui:
-       image:
-         name: solution-name-ui
-         tag: 1.0.0
      version: 1.0.0
-
-.. note:: `spec.ui` is an optional key to let MetalK8s handle the deployment
-          of the Solution UI. This mechanism is deprecated and will be removed
-          in later versions. The Operator will need to handle the
-          deployment and lifecycle of the UI.
 
 It is recommended for inspection purposes to include some annotations related
 to the build-time conditions, such as the following (where command invocations

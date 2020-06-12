@@ -107,7 +107,7 @@ to only delete a single Namespace, using:
 Add a Solution in an Environment
 --------------------------------
 
-Adding a Solution will deploy its UI and Operator resources in the Environment.
+Adding a Solution will deploy its Operator in the Environment.
 
 To add a Solution in an Environment, use the ``add-solution`` subcommand:
 
