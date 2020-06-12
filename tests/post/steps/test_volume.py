@@ -330,6 +330,26 @@ def check_pv_label(name, key, value, pv_client):
     )
 
 
+@then(parsers.parse(
+    "the PersistentVolume '{name}' has annotations '{key}' with value '{value}'"
+))
+def check_pv_annotations(name, key, value, pv_client):
+    def _check_pv_annotations():
+        pv = pv_client.get(name)
+        assert pv is not None, 'PersistentVolume {} not found'.format(name)
+        annotations = pv.metadata.annotations or {}
+        assert key in annotations, 'Annotations {} is missing'.format(key)
+        assert re.match(value, annotations[key]) is not None,\
+            'Unexpected value for annotations {}: expected {}, got {}'.format(
+                key, value, annotations[key]
+            )
+
+    utils.retry(
+        _check_pv_annotations, times=10, wait=2,
+        name='checking annotations of PersistentVolume {}'.format(name)
+    )
+
+
 @then(parsers.parse("the Volume '{name}' does not exist"))
 def check_volume_absent(name, volume_client):
     volume_client.wait_for_deletion(name)
