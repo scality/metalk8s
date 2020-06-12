@@ -44,6 +44,10 @@ python-kubernetes client to `v11`
 cleanup PrometheusRule CRs after upgrade/downgrade
 (PR [#2594](https://github.com/scality/metalk8s/pull/2594))
 
+- [#2533](https://github.com/scality/metalk8s/issues/2533) - Use dedicated
+kubeconfig for Salt master
+(PR [#2534](https://github.com/scality/meltalk8s/pull/2534))
+
 ### Bug fixes
 
 - [#2444](https://github.com/scality/metalk8s/issues/2444) - Fix flaky SLS
