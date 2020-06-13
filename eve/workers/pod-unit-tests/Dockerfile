@@ -9,8 +9,10 @@ ENV LANG=en_US.utf8
 WORKDIR /home/eve/workspace
 
 RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash -
-RUN yum install -y epel-release \
-    && yum install -y gcc \
+RUN yum install -y --setopt=skip_missing_names_on_install=False \
+    epel-release \
+    && yum install -y --setopt=skip_missing_names_on_install=False \
+    gcc \
     sudo \
     make \
     python-devel \

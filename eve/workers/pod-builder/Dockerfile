@@ -4,11 +4,11 @@ ARG BUILDBOT_VERSION=0.9.12
 
 WORKDIR /home/eve/workspace
 
-RUN yum install -y epel-release \
-    && yum-config-manager \
-    --add-repo \
+RUN yum install -y --setopt=skip_missing_names_on_install=False \
+    epel-release \
+    && yum-config-manager --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo \
-    && yum install -y \
+    && yum install -y --setopt=skip_missing_names_on_install=False \
     sudo \
     gcc \
     hardlinks \

@@ -5,12 +5,12 @@ ARG OPERATOR_SDK_VERSION=v0.16.0
 
 WORKDIR /home/eve/workspace
 
-RUN yum install -y \
+RUN yum install -y --setopt=skip_missing_names_on_install=False \
     epel-release \
     https://repo.ius.io/ius-release-el7.rpm \
     && yum-config-manager --add-repo \
     https://download.docker.com/linux/centos/docker-ce.repo \
-    && yum install -y \
+    && yum install -y --setopt=skip_missing_names_on_install=False \
     sudo \
     gcc \
     hardlinks \
