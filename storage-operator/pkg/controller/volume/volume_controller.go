@@ -719,11 +719,16 @@ func (self *ReconcileVolume) refreshDeviceName(
 	volume *storagev1alpha1.Volume,
 	pv *corev1.PersistentVolume,
 ) (reconcile.Result, error) {
-	path := pv.Spec.PersistentVolumeSource.Local.Path
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
+
+	if pv.Spec.PersistentVolumeSource.Local == nil {
+		reqLogger.Info("skipping volume: not a local storage")
+		return endReconciliation()
+	}
+	path := pv.Spec.PersistentVolumeSource.Local.Path
 
 	name, err := self.salt.GetDeviceName(ctx, nodeName, volume.Name, path)
 	if err != nil {
