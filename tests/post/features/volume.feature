@@ -28,7 +28,7 @@ Feature: Volume management
         Then the Volume 'test-volume1' is 'Available'
         And the PersistentVolume 'test-volume1' has size '10Gi'
         And the PersistentVolume 'test-volume1' has label 'random-key' with value 'random-value'
-        And the PersistentVolume 'test-volume1' has annotations 'storage.metalk8s.scality.com/device' with value 'loop\d+'
+        And the PersistentVolume 'test-volume1' has annotations 'storage.metalk8s.scality.com/device-name' with value 'loop\d+'
         And the backing storage for Volume 'test-volume1' is created
 
     Scenario: Test volume deletion (sparseLoopDevice)

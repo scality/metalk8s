@@ -201,7 +201,7 @@ reclaim its storage and remove the finalizers to let the object be deleted.
 
 }}} */
 
-const DEVICE_ANNOTATION = "storage.metalk8s.scality.com/device"
+const DEVICE_ANNOTATION = "storage.metalk8s.scality.com/device-name"
 const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
 const JOB_DONE_MARKER = "DONE"
 
