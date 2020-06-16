@@ -514,6 +514,39 @@ stages:
           haltOnFailure: True
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand: *set_short_version_prop
+      - TriggerStages:
+          name: Trigger post-merge lifecycle and solutions stages simultaneously
+          stage_names:
+            - post-merge-lifecycle
+            - post-merge-solutions
+          haltOnFailure: true
+      - ShellCommand: *add_final_status_artifact_success
+      - Upload: *upload_final_status_artifact
+      - TriggerStages:
+          name: Trigger TestRail objects creation and results upload
+          stage_names:
+            - create-upload-testrail-objects
+          alwaysRun: True
+
+  post-merge-solutions:
+    worker:
+      type: local
+    steps:
+      - TriggerStages:
+          name: Trigger build of Example Solution archive
+          stage_names:
+            - build-example-solution
+          haltOnFailure: true
+      - TriggerStages:
+          name: Trigger Solutions framework tests
+          stage_names:
+            - single-node-solutions
+          haltOnFailure: true
+
+  post-merge-lifecycle:
+    worker:
+      type: local
+    steps:
       - SetPropertyFromCommand:
           name: Set previous version to upgrade from and downgrade to
           property: product_version_prev
@@ -522,10 +555,9 @@ stages:
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
               echo "$major.$(( $minor-1 ))"
       - TriggerStages:
-          name: Trigger build of previous version and example solution simultaneously
+          name: Trigger build of previous version
           stage_names:
             - buildprev
-            - build-example-solution
           haltOnFailure: true
       - SetPropertyFromCommand:
           <<: *set_version_prop
@@ -534,22 +566,14 @@ stages:
           env:
             BASE_URL: "%(prop:artifacts_private_url)s/pre"
       - TriggerStages:
-          name: Trigger Post-merge test stages simultaneously
+          name: Trigger upgrade, downgrade and restore test stages simultaneously
           stage_names:
             - single-node-upgrade-centos
             # Cannot downgrade from a 3.4 etcd cluster to 3.3
             # - single-node-downgrade-centos
             - single-node-patch-version
-            - single-node-solutions
             - bootstrap-restore
           waitForFinish: True
-      - ShellCommand: *add_final_status_artifact_success
-      - Upload: *upload_final_status_artifact
-      - TriggerStages:
-          name: Trigger TestRail objects creation and results upload
-          stage_names:
-            - create-upload-testrail-objects
-          alwaysRun: True
 
   create-upload-testrail-objects:
     worker:
