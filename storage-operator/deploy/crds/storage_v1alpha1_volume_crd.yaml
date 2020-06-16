@@ -111,6 +111,9 @@ spec:
                 - status
                 type: object
               type: array
+            deviceName:
+              description: Name of the underlying block device.
+              type: string
             job:
               description: Job in progress
               type: string

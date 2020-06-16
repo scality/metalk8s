@@ -201,7 +201,6 @@ reclaim its storage and remove the finalizers to let the object be deleted.
 
 }}} */
 
-const DEVICE_ANNOTATION = "storage.metalk8s.scality.com/device-name"
 const VOLUME_PROTECTION = "storage.metalk8s.scality.com/volume-protection"
 const JOB_DONE_MARKER = "DONE"
 
@@ -739,13 +738,10 @@ func (self *ReconcileVolume) refreshDeviceName(
 		reqLogger.Error(err, "cannot get device name from Salt response")
 		return delayedRequeue(err)
 	}
-	if pv.ObjectMeta.Annotations[DEVICE_ANNOTATION] != name {
-		metav1.SetMetaDataAnnotation(&pv.ObjectMeta, DEVICE_ANNOTATION, name)
-		if err := self.client.Update(ctx, pv); err != nil {
-			reqLogger.Error(err, "cannot update device name: requeue")
-			return delayedRequeue(err)
-		}
+	if volume.Status.DeviceName != name {
+		volume.Status.DeviceName = name
 		reqLogger.Info("update device name", "Volume.DeviceName", name)
+		return self.setAvailableVolumeStatus(ctx, volume)
 	}
 
 	return endReconciliation()

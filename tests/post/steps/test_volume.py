@@ -331,22 +331,23 @@ def check_pv_label(name, key, value, pv_client):
 
 
 @then(parsers.parse(
-    "the PersistentVolume '{name}' has annotations '{key}' with value '{value}'"
+    "the Volume '{name}' has device name '{value}'"
 ))
-def check_pv_annotations(name, key, value, pv_client):
-    def _check_pv_annotations():
-        pv = pv_client.get(name)
-        assert pv is not None, 'PersistentVolume {} not found'.format(name)
-        annotations = pv.metadata.annotations or {}
-        assert key in annotations, 'Annotations {} is missing'.format(key)
-        assert re.match(value, annotations[key]) is not None,\
-            'Unexpected value for annotations {}: expected {}, got {}'.format(
-                key, value, annotations[key]
+def check_device_name(name, value, volume_client):
+    def _check_device_name():
+        volume = volume_client.get(name)
+        assert volume is not None, 'Volume {} not found'.format(name)
+        status = volume.get('status')
+        assert status is not None, 'no status for volume {}'.format(name)
+        deviceName = status.get('deviceName', '')
+        assert re.match(value, deviceName) is not None,\
+            'Unexpected value for deviceName: expected {}, got {}'.format(
+                value, deviceName
             )
 
     utils.retry(
-        _check_pv_annotations, times=10, wait=2,
-        name='checking annotations of PersistentVolume {}'.format(name)
+        _check_device_name, times=10, wait=2,
+        name='checking deviceName of Volume {}'.format(name)
     )
 
 
