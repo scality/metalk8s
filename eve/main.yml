@@ -537,6 +537,11 @@ stages:
           stage_names:
             - build-example-solution
           haltOnFailure: true
+      - TriggerStages:
+          name: Trigger Solutions framework tests
+          stage_names:
+            - single-node-solutions
+          haltOnFailure: true
 
   post-merge-lifecycle:
     worker:
@@ -567,7 +572,6 @@ stages:
             # Cannot downgrade from a 3.4 etcd cluster to 3.3
             # - single-node-downgrade-centos
             - single-node-patch-version
-            - single-node-solutions
             - bootstrap-restore
           waitForFinish: True
 
