@@ -180,6 +180,25 @@ def device_name(path):
     return os.path.basename(realpath)
 
 
+def device_info(name):
+    """Return information about the backing storage device of the given volume.
+
+    Returned information are:
+    - a stable path (e.g.: constant across reboots) to the storage device
+    - the size of the storage device (in bytes)
+
+    Args:
+        name (str): volume name
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '<NODE_NAME>' metalk8s_volumes.device_info example-volume
+    """
+    return _get_volume(name).device_info()
+
+
 # Volume {{{
 
 
@@ -221,6 +240,12 @@ class Volume(object):
     def clean_up(self):
         """Clean up the backing storage device."""
         return
+
+    def device_info(self):
+        """Return size and path of the underlying block device"""
+        path = '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
+        size = __salt__['disk.dump'](path)['getsize64']
+        return {'size': size, 'path': path}
 
     @abc.abstractproperty
     def path(self):
