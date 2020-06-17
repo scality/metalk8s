@@ -315,6 +315,13 @@ def manifest_from_iso(path):
             )
         )
 
+    if not result['stdout']:
+        raise CommandExecutionError(
+            "Solution ISO at '{}' must contain a '{}' file".format(
+                path, SOLUTION_MANIFEST
+            )
+        )
+
     try:
         manifest = yaml.safe_load(result['stdout'])
     except yaml.YAMLError as exc:
