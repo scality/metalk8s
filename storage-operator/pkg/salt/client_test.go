@@ -316,6 +316,40 @@ func TestParsePollAnswer(t *testing.T) {
 	}
 }
 
+func TestExtractDeviceName(t *testing.T) {
+	tests := map[string]struct {
+		json string
+		name string
+	}{
+		"ok": {
+			json: `{"return": [{"bootstrap": "loop0"}]}`,
+			name: "loop0",
+		},
+		"empty":         {json: `{}`, name: ""},
+		"missingReturn": {json: `{"name": "foobar"}`, name: ""},
+		"invalidReturn": {json: `{"return": "foo"}`, name: ""},
+		"noResult":      {json: `{"return": []}`, name: ""},
+		"missingNone":   {json: `{"return": [{"node1": "loop0"}]}`, name: ""},
+		"invalidJID":    {json: `{"return": [{"bootstrap": 42}]}`, name: ""},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var ans map[string]interface{}
+			err := json.Unmarshal([]byte(tc.json), &ans)
+			require.NoError(t, err)
+			name, err := extractDeviceName(ans, "bootstrap")
+
+			if tc.name != "" {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.name, name)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
 func httpBody(body string) io.ReadCloser {
 	return ioutil.NopCloser(strings.NewReader(body))
 }

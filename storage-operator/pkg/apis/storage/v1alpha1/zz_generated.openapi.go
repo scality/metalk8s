@@ -158,6 +158,13 @@ func schema_pkg_apis_storage_v1alpha1_VolumeStatus(ref common.ReferenceCallback)
 							Format:      "",
 						},
 					},
+					"deviceName": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Name of the underlying block device.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 			},
 		},
