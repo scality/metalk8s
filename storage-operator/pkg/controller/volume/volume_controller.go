@@ -633,7 +633,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return delayedRequeue(err)
 	}
 	reqLogger.Info("backing PersistentVolume is healthy")
-	return endReconciliation()
+	return r.refreshDeviceName(ctx, volume, pv)
 }
 
 // Deploy a volume (i.e prepare the storage and create a PV).
@@ -711,6 +711,40 @@ func (self *ReconcileVolume) finalizeVolume(
 
 	// PersistentVolume still in use: wait before reclaiming the storage.
 	return delayedRequeue(nil)
+}
+
+func (self *ReconcileVolume) refreshDeviceName(
+	ctx context.Context,
+	volume *storagev1alpha1.Volume,
+	pv *corev1.PersistentVolume,
+) (reconcile.Result, error) {
+	nodeName := string(volume.Spec.NodeName)
+	reqLogger := log.WithValues(
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
+	)
+
+	if pv.Spec.PersistentVolumeSource.Local == nil {
+		reqLogger.Info("skipping volume: not a local storage")
+		return endReconciliation()
+	}
+	path := pv.Spec.PersistentVolumeSource.Local.Path
+
+	name, err := self.salt.GetDeviceName(ctx, nodeName, volume.Name, path)
+	if err != nil {
+		self.recorder.Event(
+			volume, corev1.EventTypeNormal, "SaltCall",
+			"device path resolution failed",
+		)
+		reqLogger.Error(err, "cannot get device name from Salt response")
+		return delayedRequeue(err)
+	}
+	if volume.Status.DeviceName != name {
+		volume.Status.DeviceName = name
+		reqLogger.Info("update device name", "Volume.DeviceName", name)
+		return self.setAvailableVolumeStatus(ctx, volume)
+	}
+
+	return endReconciliation()
 }
 
 func (self *ReconcileVolume) prepareStorage(

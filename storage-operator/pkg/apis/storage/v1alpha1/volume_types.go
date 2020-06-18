@@ -124,6 +124,8 @@ type VolumeStatus struct {
 
 	// Job in progress
 	Job string `json:"job,omitempty"`
+	// Name of the underlying block device.
+	DeviceName string `json:"deviceName,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

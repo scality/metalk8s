@@ -75,6 +75,8 @@ func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 func (self *Client) PrepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (*JobHandle, error) {
+	const jobName string = "PrepareVolume"
+
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -87,26 +89,10 @@ func (self *Client) PrepareVolume(
 	}
 
 	self.logger.Info(
-		"PrepareVolume", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"PrepareVolume failed (env=%s, target=%s, volume=%s)",
-			saltenv, nodeName, volumeName,
-		)
-	}
-	if jid, err := extractJID(ans); err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"Cannot extract JID from PrepareVolume response for volume %s",
-			volumeName,
-		)
-	} else {
-		return newJob("PrepareVolume", jid), nil
-	}
+	return self.submitJob(ctx, jobName, volumeName, payload)
 }
 
 // Spawn a job, asynchronously, to unprepare the volume on the specified node.
@@ -122,6 +108,8 @@ func (self *Client) PrepareVolume(
 func (self *Client) UnprepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (*JobHandle, error) {
+	const jobName string = "UnprepareVolume"
+
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -134,27 +122,10 @@ func (self *Client) UnprepareVolume(
 	}
 
 	self.logger.Info(
-		"UnprepareVolume",
-		"Volume.NodeName", nodeName, "Volume.Name", volumeName,
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"UnrepareVolume failed (env=%s, target=%s, volume=%s)",
-			saltenv, nodeName, volumeName,
-		)
-	}
-	if jid, err := extractJID(ans); err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"Cannot extract JID from UnprepareVolume response for volume %s",
-			volumeName,
-		)
-	} else {
-		return newJob("UnprepareVolume", jid), nil
-	}
+	return self.submitJob(ctx, jobName, volumeName, payload)
 }
 
 // Poll the status of an asynchronous Salt job.
@@ -223,6 +194,8 @@ func getStateFailureRootCause(output interface{}) string {
 func (self *Client) GetVolumeSize(
 	ctx context.Context, nodeName string, volumeName string, devicePath string,
 ) (*JobHandle, error) {
+	const jobName string = "GetVolumeSize"
+
 	payload := map[string]interface{}{
 		"client":  "local_async",
 		"tgt":     nodeName,
@@ -232,25 +205,73 @@ func (self *Client) GetVolumeSize(
 	}
 
 	self.logger.Info(
-		"GetVolumeSize", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+	)
+
+	return self.submitJob(ctx, jobName, volumeName, payload)
+}
+
+// Return the name of the block device designed by `devicePath`.
+//
+// This request is synchronous.
+//
+// Arguments
+//     ctx:        the request context (used for cancellation)
+//     nodeName:   name of the node where the device is
+//     volumeName: name of the associated volume
+//     devicePath: path of the device for which we want the name
+//
+// Returns
+//     The Salt job handle.
+func (self *Client) GetDeviceName(
+	ctx context.Context, nodeName string, volumeName string, devicePath string,
+) (string, error) {
+	const jobName string = "GetDeviceName"
+	payload := map[string]interface{}{
+		"client":  "local",
+		"tgt":     nodeName,
+		"fun":     "metalk8s_volumes.device_name",
+		"arg":     devicePath,
+		"timeout": 1,
+	}
+
+	self.logger.Info(
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
+		return "", errors.Wrapf(
+			err, "%s failed (target=%s, path=%s)", jobName, nodeName, devicePath,
+		)
+	}
+
+	return extractDeviceName(ans, nodeName)
+}
+
+// Submit a Salt job and return the job handle.
+func (self *Client) submitJob(
+	ctx context.Context,
+	jobName string,
+	volumeName string,
+	payload map[string]interface{},
+) (*JobHandle, error) {
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
+	if err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"GetVolumeSize failed (target=%s, volume=%s, device=%s)",
-			nodeName, volumeName, devicePath,
+			"%s failed for volume %s (%v)",
+			jobName, volumeName, payload,
 		)
 	}
 	if jid, err := extractJID(ans); err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"Cannot extract JID from GetVolumeSize response for volume %s",
-			volumeName,
+			"Cannot extract JID from %s response for volume %s",
+			jobName, volumeName,
 		)
 	} else {
-		return newJob("GetVolumeSize", jid), nil
+		return newJob(jobName, jid), nil
 	}
 }
 
@@ -572,4 +593,18 @@ func parsePollAnswer(
 
 		return nil, &AsyncJobFailed{reason}
 	}
+}
+
+// Try to extract the device name from a Salt answer.
+func extractDeviceName(ans map[string]interface{}, nodeName string) (string, error) {
+	if results, ok := ans["return"].([]interface{}); ok && len(results) > 0 {
+		if result, ok := results[0].(map[string]interface{}); ok {
+			if name, ok := result[nodeName].(string); ok {
+				return name, nil
+			}
+		}
+	}
+	return "", fmt.Errorf(
+		"cannot extract device name for %s from %v", nodeName, ans,
+	)
 }
