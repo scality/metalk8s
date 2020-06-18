@@ -5,7 +5,7 @@ This section summarizes centralized logging design architecture which is closely
 linked to the above requirements (to be merged).
 
 The following terms will be used throughout the context of this document so it
-is fair that we describe their meanings.
+is important that we describe their meanings.
 
 Collector/Shipper
 -----------------
@@ -13,12 +13,21 @@ A log Collector allows you to collect logs from different sources, unify
 and send them to multiple destinations. An example of such a system is the
 Linux utility Rsyslog
 
-Distributor
------------
+Distributor/Router
+------------------
 A log Distributor is a utility capable of adding metadata to logs and
-forwarding these logs to unique sources.
+forwarding these logs to unique sources. Log Distributors can also be configured
+to perform some processing abilities like parsing.
 The metadata (labels) set on log streams are used by log visualizers for
 querying purposes. An example of such system is Logstash.
+
+Database
+--------
+A log Database is typically where logs are stored. This could be a filesystem
+store using K8s persistent Volumes or an external store like S3. The log storage
+in our case should offer log data persistence and high availability using
+whatever replication technique possible. An example of such a system is
+Elasticsearch.
 
 Visualizer
 ----------
@@ -26,6 +35,37 @@ A log Visualizer allows one to query and visualize logs. This can be possible
 mainly because of the metadata set on logs by log Distributors. Note also that a
 log Visualizer is not designed to perform log indexing duties. An example
 of such a system is Kibana.
+
+Schema
+------
+
+   .. parsed-literal::
+
+        +--------------------------+                                  +----------------------+
+        |     MetalK8s Node A      |                                  |                      |
+        |  +--------------------+  |                     +------------>   Customer external  |
+        |  | +----------------+ |  |                     |            |    log aggregator    |
+        |  | |                | |  |                     |            |                      |
+        |  | |    Pod 1       | |  |                     |            +----------------------+
+        |  | +----------------+ +----------++            |
+        |  | +----------------+ |  |        |            |
+        |  | |  Collector     | |  |        |     +------+-----+      +-------------+
+        |  | +----------------+ |  |        |     |            |      |             |
+        |  +--------------------+  |        |     |   Router   |      | Database    |
+        |  +--------------------+  |        +-----+  (Buffer) (+------> (Log index) |
+        |  | +--------------+   |  |        +-----+            |      |             |
+        |  | |              |   |  |        |     +------------+      +-------^-----+
+        |  | |    Pod 2     |   |  |        |                                 |
+        |  | |              |   |  |        |                                 |
+        |  | +--------------+   +-----------+                                 |
+        |  | +--------------+   |  |                                          |
+        |  | |              |   |  |                                          |
+        |  | |  Collector   |   |  |                                  +-------+----------+
+        |  | +--------------+   |  |                                  |                  |
+        |  +--------------------+  |                                  |  Visualizer      |
+        |                          |                                  |                  |
+        +--------------------------+                                  |                  |
+                                                                      +------------------+
 
 
 Log Shipper choices
@@ -233,3 +273,19 @@ Random ideas...
 
 Scaling the service
 +++++++++++++++++++
+
+- Collectors are scheduled as DaemonSet and so scaling them can be done
+  horizontally by scaling more replicas for its pods. Vertically scaling
+  collectors require bumping the memory and cpu requests.
+
+- Routers can be deployed as DaemonSet so they can be scaled horizontally for
+  most cases.
+
+- Database; In a MetalK8s cluster, the closest available database store for
+  Loki happens to be a filesystem store using BoltDB.
+
+  - Using a filesystem store has drawbacks to the limit of files that can
+    be written to a directory. We have no limits yet but we can easily
+    assumably get over Terabytes of logs.
+  - Replication of the filesystem store in Loki is fairly experimental and not
+    advisable for use in Production.
