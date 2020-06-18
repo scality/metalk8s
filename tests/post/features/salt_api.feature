@@ -14,6 +14,7 @@ Feature: SaltAPI
         When we login to SaltAPI with the ServiceAccount 'storage-operator'
         Then we can invoke '["disk.dump", "state.sls"]' on '*'
         And we have '@jobs' perms
+        And we can not ping all minions
 
     Scenario: Login to SaltAPI using an incorrect password
         Given the Kubernetes API is available
