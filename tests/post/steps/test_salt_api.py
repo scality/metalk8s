@@ -97,6 +97,21 @@ def ping_all_minions(host, context, negated):
         assert result_data['return'][0] != []
 
 
+@then(parsers.cfparse(
+    "we can{negated:Negation?} run state '{module}' on '{targets}'",
+    extra_types={'Negation': _negation}
+))
+def run_state_on_targets(host, context, negated, module, targets):
+    result = _salt_call(context, 'state.sls', tgt=targets,
+                        kwarg={'mods': module})
+
+    if negated:
+        assert result.status_code == 401
+        assert 'No permission' in result.text
+    else:
+        assert result.status_code == 200
+
+
 @then('authentication fails')
 def authentication_fails(host, context):
     assert context['salt-api']['login-status-code'] == 401
