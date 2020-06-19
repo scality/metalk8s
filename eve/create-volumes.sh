@@ -59,28 +59,33 @@ sed "s/NODE_NAME/${NODE_NAME}/" \
     "${PRODUCT_MOUNT}/examples/prometheus-sparse.yaml" | \
     kubectl apply -f -
 
-echo "Waiting for PV '$NODE_NAME-alertmanager' to be provisioned"
-if ! retry "$MAX_TRIES" check_pv_exists "$NODE_NAME-alertmanager"; then
-    echo "PV not created"
-    exit 1
-fi
+wait_for_pv() {
+    local -r pv="$1"
 
-echo "Waiting for PV '$NODE_NAME-prometheus' to be provisioned"
-if ! retry "$MAX_TRIES" check_pv_exists "$NODE_NAME-prometheus"; then
-    echo "PV not created"
-    exit 1
-fi
+    echo "Waiting for PV '$pv' to be provisioned"
+    if ! retry "$MAX_TRIES" check_pv_exists "$pv"; then
+        echo "PV '$pv' not created"
+        kubectl logs -n kube-system deploy/storage-operator
+        exit 1
+    fi
+}
 
-echo 'Waiting for AlertManager to be running'
-if ! retry "$MAX_TRIES" check_pod_is_in_phase metalk8s-monitoring \
-      alertmanager-prometheus-operator-alertmanager-0 Running; then
-    echo "AlertManager is not Running"
-    exit 1
-fi
+wait_for_pv "$NODE_NAME-alertmanager"
+wait_for_pv "$NODE_NAME-prometheus"
 
-echo 'Waiting for Prometheus to be running'
-if ! retry "$MAX_TRIES" check_pod_is_in_phase metalk8s-monitoring \
-      prometheus-prometheus-operator-prometheus-0 Running; then
-    echo "Prometheus is not Running"
-    exit 1
-fi
+wait_for_pod() {
+    local -r name="$1" namespace="$2" pod="$3"
+
+    echo "Waiting for $name to be running"
+    if ! retry "$MAX_TRIES" check_pod_is_in_phase "$namespace" "$pod" Running
+    then
+        echo "$name is not Running"
+        kubectl describe pod -n "$namespace" "$pod"
+        exit 1
+    fi
+}
+
+wait_for_pod "AlertManager" \
+    metalk8s-monitoring alertmanager-prometheus-operator-alertmanager-0
+wait_for_pod "Prometheus" \
+    metalk8s-monitoring prometheus-prometheus-operator-prometheus-0
