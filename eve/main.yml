@@ -389,7 +389,11 @@ models:
       haltOnFailure: true
   - ShellCommand: &terraform_apply
       name: Spawn openstack virtual infra
-      command: terraform apply -auto-approve
+      command: |-
+        for _ in $(seq 1 3); do
+            terraform apply -auto-approve && break
+            sleep 300
+        done
       env: &_env_terraform
         OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
         OS_REGION_NAME: "%(secret:scality_cloud_region)s"
