@@ -8,6 +8,17 @@ import pytest
 from pytest_bdd import parsers, scenario, then, when
 
 
+def _negation(value):
+    """Parse an optional negation after a verb (in a Gherkin feature spec)."""
+    if value == "":
+        return False
+    elif value in [" not", "not"]:
+        return True
+    else:
+        raise ValueError(
+            "Cannot parse '{}' as an optional negation".format(value)
+        )
+
 # Scenario {{{
 
 
@@ -71,26 +82,34 @@ def login_salt_api_token(host, k8s_client, account_name, version, context):
 # Then {{{
 
 
-@then('we can ping all minions')
-def ping_all_minions(host, context):
-    result = requests.post(
-        context['salt-api']['url'],
-        json=[
-            {
-                'client': 'local',
-                'tgt': '*',
-                'fun': 'test.ping',
-            },
-        ],
-        headers={
-            'X-Auth-Token': context['salt-api']['token'],
-        },
-        verify=False,
-    )
+@then(parsers.cfparse(
+    'we can{negated:Negation?} ping all minions',
+    extra_types={'Negation': _negation}
+))
+def ping_all_minions(host, context, negated):
+    result = _salt_call(context, 'test.ping', tgt='*')
 
-    result_data = result.json()
+    if negated:
+        assert result.status_code == 401
+        assert 'No permission' in result.text
+    else:
+        result_data = result.json()
+        assert result_data['return'][0] != []
 
-    assert result_data['return'][0] != []
+
+@then(parsers.cfparse(
+    "we can{negated:Negation?} run state '{module}' on '{targets}'",
+    extra_types={'Negation': _negation}
+))
+def run_state_on_targets(host, context, negated, module, targets):
+    result = _salt_call(context, 'state.sls', tgt=targets,
+                        kwarg={'mods': module})
+
+    if negated:
+        assert result.status_code == 401
+        assert 'No permission' in result.text
+    else:
+        assert result.status_code == 200
 
 
 @then('authentication fails')
@@ -162,6 +181,27 @@ def _salt_api_login(address, username=None, password=None, token=None):
         result['token'] = json_data['return'][0]['token']
         result['perms'] = json_data['return'][0]['perms']
     return result
+
+
+def _salt_call(context, fun, tgt='*', arg=None, kwarg=None):
+    action = {
+        'client': 'local',
+        'tgt': tgt,
+        'fun': fun,
+    }
+    if arg is not None:
+        action['arg'] = arg
+    if kwarg is not None:
+        action['kwarg'] = kwarg
+
+    return requests.post(
+        context['salt-api']['url'],
+        json=[action],
+        headers={
+            'X-Auth-Token': context['salt-api']['token'],
+        },
+        verify=False,
+    )
 
 
 # }}}

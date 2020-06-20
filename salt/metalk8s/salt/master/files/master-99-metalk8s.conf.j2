@@ -45,7 +45,9 @@ external_auth:
     storage-operator:
       - '*':
         - 'disk.dump'
-        - 'state.sls'
+        - 'state.sls':
+            kwargs:
+              mods: 'metalk8s\.volumes.*'
       - '@jobs'
 
 # `kubeconfig` file and `context` used by salt to interact with apiserver
