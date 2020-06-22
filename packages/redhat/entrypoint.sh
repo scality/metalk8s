@@ -97,6 +97,7 @@ download_packages() {
         "--downloadonly"
         "--releasever=$releasever"
         "--installroot=/install_root"
+        "--setopt=obsoletes=0"
     )
 
     get_rpm_gpg_keys
