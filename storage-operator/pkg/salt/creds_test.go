@@ -9,19 +9,19 @@ import (
 func TestNewCredential(t *testing.T) {
 	tests := map[string]struct {
 		username string
-		token    string
+		secret   string
 	}{
-		"Basic":  {username: "foo", token: "bar"},
-		"Bearer": {username: "baz", token: "qux"},
+		"Basic":  {username: "foo", secret: "bar"},
+		"Bearer": {username: "baz", secret: "qux"},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			creds := NewCredential(tc.username, tc.token, TokenType(name))
+			creds := NewCredential(tc.username, tc.secret, AuthType(name))
 
 			assert.Equal(t, tc.username, creds.username)
-			assert.Equal(t, tc.token, creds.token)
-			assert.Equal(t, TokenType(name), creds.kind)
+			assert.Equal(t, tc.secret, creds.secret)
+			assert.Equal(t, AuthType(name), creds.kind)
 		})
 	}
 }

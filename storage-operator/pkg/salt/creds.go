@@ -2,30 +2,30 @@ package salt
 
 import "fmt"
 
-type TokenType string
+type AuthType string
 
-// "Enum" representing the preparation steps of a volume.
+// Supported SaltAPI authentication methods.
 const (
-	BasicToken  TokenType = "Basic"
-	BearerToken TokenType = "Bearer"
+	Basic  AuthType = "Basic"
+	Bearer AuthType = "Bearer"
 )
 
 // Credentials for Salt API.
 type Credential struct {
-	username string    // User name.
-	token    string    // User token.
-	kind     TokenType // Token type: Basic or Bearer.
+	username string   // User name.
+	secret   string   // User secret (token or password).
+	kind     AuthType // Authentication method (can be Basic or Bearer).
 }
 
 // Create a new Salt API client.
 //
 // Arguments
 //     username: user name
-//     token:    user token
-//     kind:     token type (must be either Basic or Bearer)
-func NewCredential(username string, token string, kind TokenType) *Credential {
-	if kind != BasicToken && kind != BearerToken {
-		panic(fmt.Sprintf("invalid token type: %s", kind))
+//     secret:   user token or password (interpretation depends on authType)
+//     authType: authentication method
+func NewCredential(username string, secret string, authType AuthType) *Credential {
+	if authType != Basic && authType != Bearer {
+		panic(fmt.Sprintf("invalid authentication method: %s", authType))
 	}
-	return &Credential{username: username, token: token, kind: kind}
+	return &Credential{username: username, secret: secret, kind: authType}
 }

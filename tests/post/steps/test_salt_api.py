@@ -54,11 +54,8 @@ def context():
     "we login to SaltAPI as '{username}' using password '{password}'"))
 def login_salt_api_basic(host, username, password, version, context):
     address = _get_salt_api_address(host, version)
-    token = base64.encodebytes(
-        '{}:{}'.format(username, password).encode('utf-8')
-    ).rstrip()
     context['salt-api'] = _salt_api_login(
-        address, username=username, password=token
+        address, username=username, password=password
     )
 
 

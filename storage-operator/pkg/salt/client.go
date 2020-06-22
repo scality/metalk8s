@@ -325,10 +325,10 @@ func (self *Client) authenticate(ctx context.Context) error {
 		"username": self.creds.username,
 	}
 
-	if self.creds.kind == BearerToken {
-		payload["token"] = self.creds.token
+	if self.creds.kind == Bearer {
+		payload["token"] = self.creds.secret
 	} else {
-		payload["password"] = self.creds.token
+		payload["password"] = self.creds.secret
 	}
 
 	self.logger.Info(

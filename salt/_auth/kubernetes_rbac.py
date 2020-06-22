@@ -1,4 +1,5 @@
 import base64
+from functools import wraps
 import logging
 
 MISSING_DEPS = []
@@ -6,6 +7,7 @@ MISSING_DEPS = []
 try:
     import kubernetes.client
     import kubernetes.config
+    from kubernetes.client.rest import ApiException
 except ImportError:
     MISSING_DEPS.append('kubernetes')
 
@@ -58,23 +60,32 @@ def _check_k8s_creds(kubeconfig, token):
         raise
 
 
-@_log_exceptions
-def _auth_basic(kubeconfig, username, token):
-    decoded = base64.decodestring(token)
-    if ':' not in decoded:
-        log.warning('Invalid Basic token format: missing ":"')
-        return False
+def _check_auth_args(f):
+    @wraps(f)
+    def wrapped(username, password=None, token=None, **kwargs):
+        error = None
 
-    (token_username, _) = decoded.split(':', 1)
-    if token_username != username:
-        log.warning('Invalid Basic token: username mismatch')
-        return False
+        if token and password:
+            error = 'cannot provide both "token" and "password"'
+        if not any([token, password and username]):
+            error = (
+                'must provide either a "token" or both a "username" and '
+                'a "password"'
+            )
 
-    return _check_k8s_creds(kubeconfig, 'Basic {}'.format(token))
+        if error is not None:
+            log.error('Invalid authentication request: %s', error)
+            raise CommandExecutionError(
+                'Invalid authentication request: {}'.format(error)
+            )
+
+        return f(username, password=password, token=token, **kwargs)
+
+    return wrapped
 
 
-@_log_exceptions
-def _groups_basic(kubeconfig, username, token):
+def _patch_kubeconfig_for_basic(kubeconfig, username, password):
+    token = base64.encodestring(':'.join([username, password])).rstrip('\n')
     kubeconfig.api_key = {
         'authorization': token,
     }
@@ -82,26 +93,68 @@ def _groups_basic(kubeconfig, username, token):
         'authorization': 'Basic',
     }
     kubeconfig.username = username
-    kubeconfig.password = None
     kubeconfig.cert_file = None
     kubeconfig.key_file = None
 
-    client = kubernetes.client.ApiClient(configuration=kubeconfig)
 
+def _review_access(kubeconfig, resource, verb):
+    client = kubernetes.client.ApiClient(configuration=kubeconfig)
     authz_api = kubernetes.client.AuthorizationV1Api(api_client=client)
 
-    groups = set()
-
-    result = authz_api.create_self_subject_access_review(
+    return authz_api.create_self_subject_access_review(
         body=kubernetes.client.V1SelfSubjectAccessReview(
             spec=kubernetes.client.V1SelfSubjectAccessReviewSpec(
                 resource_attributes=kubernetes.client.V1ResourceAttributes(
-                    resource='nodes',
-                    verb='*',
+                    resource=resource,
+                    verb=verb,
                 ),
             ),
         ),
     )
+
+
+@_log_exceptions
+def _auth_basic(kubeconfig, username, password):
+    _patch_kubeconfig_for_basic(kubeconfig, username, password)
+
+    try:
+        access_review = _review_access(
+            kubeconfig, resource='version', verb='get'
+        )
+    except ApiException as exc:
+        if exc.status == 401:
+            log.warning("Could not authenticate user '%s'", username)
+            return False
+        if exc.status == 403:
+            log.warning("Authenticated user '%s' cannot GET /version",
+                        username)
+            return False
+        raise
+
+    if access_review.status.evaluation_error:
+        log.error('Failed to review access for %s: %s', username,
+                  access_review.status.evaluation_error)
+
+    if not access_review.status.allowed:
+        log.error('Failed authentication for %s: %s', username,
+                  access_review.status.reason)
+    return access_review.status.allowed
+
+
+@_log_exceptions
+def _groups_basic(kubeconfig, username, password):
+    _patch_kubeconfig_for_basic(kubeconfig, username, password)
+
+    groups = set()
+
+    try:
+        result = _review_access(kubeconfig, resource='nodes', verb='*')
+    except ApiException as exc:
+        if exc.status != 403:
+            log.warning("Authenticated user '%s' cannot manage /v1/nodes",
+                        username)
+        else:
+            raise
 
     if result.status.allowed:
         groups.add('node-admins')
@@ -148,23 +201,13 @@ def _load_kubeconfig(opts):
     return kubeconfig
 
 
+@_check_auth_args
 def auth(username, password=None, token=None, **kwargs):
-    log.info('Authentication request for "%s"', username)
+    auth_method = 'basic' if password else 'bearer'
+    log.info('Authentication (%s) request for "%s"',
+             auth_method.capitalize(), username)
 
-    if token and password:
-        log.warning(
-            'Invalid authentication request cannot provide "token" and '
-            '"password" at the same time'
-        )
-        return False
-    if not token and (not password or not username):
-        log.warning(
-            'Invalid authentication request need a "token" or '
-            'a "username" and "password"'
-        )
-        return False
-
-    handler = AUTH_HANDLERS['basic' if password else 'bearer']
+    handler = AUTH_HANDLERS[auth_method]
 
     kubeconfig = _load_kubeconfig(__opts__)
     if kubeconfig is None:
@@ -184,21 +227,9 @@ def auth(username, password=None, token=None, **kwargs):
     return result
 
 
+@_check_auth_args
 def groups(username, password=None, token=None, **kwargs):
     log.info('Groups request for "%s"', username)
-
-    if token and password:
-        log.warning(
-            'Invalid groups request cannot provide "token" and "password" '
-            'at the same time'
-        )
-        return []
-    if not token and (not password or not username):
-        log.warning(
-            'Invalid groups request need a "token" or '
-            'a "username" and "password"'
-        )
-        return []
 
     handler = AUTH_HANDLERS['basic' if password else 'bearer']
 

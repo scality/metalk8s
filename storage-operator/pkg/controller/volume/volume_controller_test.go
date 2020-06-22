@@ -18,19 +18,19 @@ func TestGetAuthCredential(t *testing.T) {
 		"ServiceAccount": {
 			token: "foo", username: "", password: "",
 			expected: salt.NewCredential(
-				"storage-operator", "foo", salt.BearerToken,
+				"storage-operator", "foo", salt.Bearer,
 			),
 		},
 		"BasicAuth": {
 			token: "", username: "foo", password: "bar",
 			expected: salt.NewCredential(
-				"foo", "Zm9vOmJhcg==", salt.BasicToken,
+				"foo", "bar", salt.Basic,
 			),
 		},
 		"DefaultCreds": {
 			token: "", username: "", password: "",
 			expected: salt.NewCredential(
-				"admin", "YWRtaW46YWRtaW4=", salt.BasicToken,
+				"admin", "admin", salt.Basic,
 			),
 		},
 	}
