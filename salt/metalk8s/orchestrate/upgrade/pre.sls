@@ -6,4 +6,3 @@ include:
   - metalk8s.addons.nginx-ingress.pre-upgrade
   - metalk8s.addons.nginx-ingress-control-plane.pre-upgrade
   - metalk8s.addons.prometheus-operator.pre-upgrade
-  - metalk8s.kubernetes.apiserver.pre-upgrade
