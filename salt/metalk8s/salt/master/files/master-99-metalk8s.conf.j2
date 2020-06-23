@@ -42,7 +42,7 @@ external_auth:
       - '@wheel'
       - '@runner'
       - '@jobs'
-    storage-operator:
+    'system:serviceaccount:kube-system:storage-operator':
       - '*':
         - 'disk.dump'
         - 'state.sls':

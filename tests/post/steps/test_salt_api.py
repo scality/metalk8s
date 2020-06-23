@@ -27,8 +27,19 @@ def test_login_basic_auth_to_salt_api(host):
     pass
 
 @scenario('../features/salt_api.feature',
-          'Login to SaltAPI using a ServiceAccount')
-def test_login_bearer_auth_to_salt_api(host):
+          'Login to SaltAPI using the storage-operator ServiceAccount')
+def test_login_salt_api_storage_operator(host):
+    pass
+
+
+@scenario('../features/salt_api.feature',
+          'Login to SaltAPI using any ServiceAccount')
+def test_login_salt_api_service_account(host):
+    pass
+
+@scenario('../features/salt_api.feature',
+          'SaltAPI impersonation using a ServiceAccount')
+def test_salt_api_impersonation_with_bearer_auth(host):
     pass
 
 @scenario('../features/salt_api.feature', 'Login to SaltAPI using an incorrect password')
@@ -60,20 +71,27 @@ def login_salt_api_basic(host, username, password, version, context):
 
 
 @when(parsers.parse(
-    "we login to SaltAPI with the ServiceAccount '{account_name}'"))
-def login_salt_api_token(host, k8s_client, account_name, version, context):
+    "we login to SaltAPI with the ServiceAccount '{namespace}/{account_name}'"))
+def login_salt_api_token(
+    host, k8s_client, namespace, account_name, version, context
+):
     address = _get_salt_api_address(host, version)
-    service_account = k8s_client.read_namespaced_service_account(
-        name=account_name, namespace='kube-system'
-    )
-    secret = k8s_client.read_namespaced_secret(
-        name=service_account.secrets[0].name, namespace='kube-system'
-    )
-    token = base64.decodebytes(secret.data['token'].encode('utf-8'))
-    context['salt-api'] = _salt_api_login(
-        address, username=account_name, token=token
+    context['salt-api'] = _login_salt_api_sa(
+        address, k8s_client, account_name, namespace,
     )
 
+
+@when(parsers.parse(
+    "we impersonate user '{username}' against SaltAPI "
+    "using the ServiceAccount '{namespace}/{account_name}'"
+))
+def login_salt_api_token_override_username(
+    host, k8s_client, namespace, account_name, username, version, context
+):
+    address = _get_salt_api_address(host, version)
+    context['salt-api'] = _login_salt_api_sa(
+        address, k8s_client, account_name, namespace, username=username,
+    )
 
 # }}}
 # Then {{{
@@ -121,9 +139,27 @@ def invoke_module_on_target(host, context, modules, targets):
 def have_perms(host, context, perms):
     assert perms in context['salt-api']['perms']
 
+@then(parsers.parse("we have no permissions"))
+def have_no_perms(host, context):
+    assert context['salt-api']['perms'] == {}
 
 # }}}
 # Helpers {{{
+
+
+def _login_salt_api_sa(address, k8s_client, name, namespace, username=None):
+    service_account = k8s_client.read_namespaced_service_account(
+        name=name, namespace=namespace
+    )
+    secret = k8s_client.read_namespaced_secret(
+        name=service_account.secrets[0].name, namespace=namespace
+    )
+    token = base64.decodebytes(secret.data['token'].encode('utf-8'))
+
+    if username is None:
+        username = 'system:serviceaccount:{}:{}'.format(namespace, name)
+
+    return _salt_api_login(address, username=username, token=token)
 
 
 def _get_salt_api_address(host, version):

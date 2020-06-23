@@ -2,7 +2,6 @@ package volume
 
 import (
 	"context"
-	b64 "encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"time"
@@ -975,7 +974,10 @@ func getAuthCredential(config *rest.Config) *salt.Credential {
 	if config.BearerToken != "" {
 		log.Info("using ServiceAccount bearer token")
 		return salt.NewCredential(
-			"storage-operator", config.BearerToken, salt.Bearer,
+			// FIXME: this should depend on the actual SA used
+			"system:serviceaccount:kube-system:storage-operator",
+			config.BearerToken,
+			salt.Bearer,
 		)
 	} else if config.Username != "" && config.Password != "" {
 		log.Info("using Basic HTTP authentication")

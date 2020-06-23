@@ -43,23 +43,6 @@ def _log_exceptions(f):
     return wrapped
 
 
-def _check_k8s_creds(kubeconfig, token):
-    """Check the provided credentials against /version."""
-    # Using the '/version/' endpoint which is unauthenticated by default but,
-    # when presented authentication data, will process this information and fail
-    # accordingly.
-    url = '{}/version/'.format(kubeconfig.host)
-    verify = kubeconfig.ssl_ca_cert if kubeconfig.verify_ssl else False
-    try:
-        response = requests.get(
-            url, headers={'Authorization': token}, verify=verify
-        )
-        return 200 <= response.status_code < 300
-    except:
-        log.exception('Error during request')
-        raise
-
-
 def _check_auth_args(f):
     @wraps(f)
     def wrapped(username, password=None, token=None, **kwargs):
@@ -169,7 +152,34 @@ AUTH_HANDLERS['basic'] = {
 
 @_log_exceptions
 def _auth_bearer(kubeconfig, username, token):
-    return _check_k8s_creds(kubeconfig, 'Bearer {}'.format(token))
+    """Check the provided bearer token using the TokenReview API."""
+    client = kubernetes.client.ApiClient(configuration=kubeconfig)
+    authn_api = kubernetes.client.AuthenticationV1Api(api_client=client)
+
+    token_review = authn_api.create_token_review(
+        body=kubernetes.client.V1TokenReview(
+            spec=kubernetes.client.V1TokenReviewSpec(token=token)
+        )
+    )
+
+    if token_review.status.error:
+        log.error("Failed to create TokenReview for '%s': %s",
+                  username, token_review.status.error)
+        return False
+
+    if token_review.status.authenticated:
+        if token_review.status.user.username != username:
+            log.error(
+                "Provided token belongs to '%s', does not match '%s'",
+                token_review.status.user.username,
+                username,
+            )
+            return False
+        else:
+            return True
+    else:
+        log.error("Provided token for '%s' failed to authenticate", username)
+        return False
 
 AUTH_HANDLERS['bearer'] = {
     'auth': _auth_bearer,
