@@ -13,7 +13,7 @@ Configure salt master:
     - template: jinja
     - defaults:
         salt_ip: "{{ salt_ip }}"
-        kubeconfig: "/etc/kubernetes/admin.conf"
+        kubeconfig: "/etc/salt/master-kubeconfig.conf"
 
 Configure salt master roots paths:
   file.serialize:

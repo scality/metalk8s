@@ -43,7 +43,7 @@ Ensure SA private key is present:
 
 {%- else %}
 
-Unable to get SA private key, missing 'metalk8s:certs:sa_private_key' in pillar:
+Unable to get SA private key, missing 'metalk8s:private:sa_private_key' in pillar:
   test.fail_without_changes: []
 
 {%- endif %}

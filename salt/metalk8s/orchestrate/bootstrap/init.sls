@@ -107,17 +107,6 @@ Wait for API server to be available:
   - require:
     - salt: Bring bootstrap minion to highstate
 
-Generate etcd client certs for salt master:
-  salt.state:
-  - sls:
-    - metalk8s.salt.master.certs
-  - tgt: {{ pillar.bootstrap_id }}
-  - pillar: {{ pillar_data | tojson }}
-  - saltenv: {{ saltenv }}
-  - require:
-    - salt: Deploy CA role on bootstrap minion
-    - http: Wait for API server to be available
-
 Configure bootstrap Node object:
   salt.runner:
   - name: state.orchestrate
