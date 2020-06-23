@@ -879,7 +879,7 @@ func (self *ReconcileVolume) createPersistentVolume(
 	if !found {
 		reqLogger.Error(err, "no device info")
 		// Reschedule a call to `metalk8s_volumes.device_info`.
-		job := salt.JobHandle{Name: "GetDeviceInfo", ID: "", Result: ""}
+		job := salt.JobHandle{Name: "GetDeviceInfo", ID: ""}
 		return self.setPendingVolumeStatus(ctx, volume, job.String())
 	}
 	// Create the PersistentVolume object.
