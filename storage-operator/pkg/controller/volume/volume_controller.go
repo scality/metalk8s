@@ -661,7 +661,7 @@ func (self *ReconcileVolume) deployVolume(
 	// Since it's the first step, the name can be unset the very first time.
 	case "", "PrepareVolume":
 		return self.prepareStorage(ctx, volume, saltenv, job)
-	case "GetVolumeSize":
+	case "GetDeviceInfo":
 		return self.getStorageSize(ctx, volume, job)
 	default:
 		// Shouldn't happen, except if someome somehow tampered our status field…
@@ -783,7 +783,7 @@ func (self *ReconcileVolume) prepareStorage(
 			return self.setPendingVolumeStatus(ctx, volume, job.String())
 		}
 	case JOB_DONE_MARKER: // Storage is ready, let's get its size.
-		job.Name = "GetVolumeSize"
+		job.Name = "GetDeviceInfo"
 		job.ID = ""
 		return self.getStorageSize(ctx, volume, job)
 	default: // PrepareVolume in progress: poll its state.
@@ -805,16 +805,15 @@ func (self *ReconcileVolume) getStorageSize(
 	job *salt.JobHandle,
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
-	devicePath := volume.GetPath()
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
 
 	switch job.ID {
 	case "": // No job in progress: call Salt to get the volume size.
-		job, err := self.salt.GetVolumeSize(ctx, nodeName, volume.Name, devicePath)
+		job, err := self.salt.GetDeviceInfo(ctx, nodeName, volume.Name)
 		if err != nil {
-			reqLogger.Error(err, "failed to run GetVolumeSize")
+			reqLogger.Error(err, "failed to run GetDeviceInfo")
 			return delayedRequeue(err)
 		} else {
 			reqLogger.Info("try to retrieve the volume size")
@@ -836,15 +835,15 @@ func (self *ReconcileVolume) getStorageSize(
 				ctx, volume, *resource.NewQuantity(size, resource.BinarySI),
 			)
 		}
-	default: // GetVolumeSize in progress: poll its state.
+	default: // GetDeviceInfo in progress: poll its state.
 		return self.pollSaltJob(
 			ctx, "volume provisioning (2/2)", volume, nil,
 			self.setPendingVolumeStatus,
 			storagev1alpha1.ReasonCreationError,
 			func(result map[string]interface{}) (reconcile.Result, error) {
-				size, err := getDiskSize(result)
+				size, err := parseDeviceInfo(result)
 				if err != nil {
-					reqLogger.Error(err, "cannot get disk size from Salt response")
+					reqLogger.Error(err, "cannot get device info from Salt response")
 					self.recorder.Event(
 						volume, corev1.EventTypeNormal, "SaltCall",
 						"volume provisioning step 2/2 failed",
@@ -1128,12 +1127,12 @@ func getAuthCredential(config *rest.Config) *salt.Credential {
 	)
 }
 
-// Extract the disk size for a `disk.dump` result from Salt.
-func getDiskSize(result map[string]interface{}) (int64, error) {
-	size_str, ok := result["getsize64"].(string)
+// Extract the device info from a Salt result.
+func parseDeviceInfo(result map[string]interface{}) (int64, error) {
+	size_str, ok := result["size"].(string)
 	if !ok {
 		return 0, fmt.Errorf(
-			"cannot find a string value for key 'getsize64' in %v", result,
+			"cannot find a string value for key 'size' in %v", result,
 		)
 	}
 

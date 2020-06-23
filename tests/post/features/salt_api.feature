@@ -19,7 +19,7 @@ Feature: SaltAPI
         Given the Kubernetes API is available
         When we login to SaltAPI with the ServiceAccount 'kube-system/storage-operator'
         Then authentication succeeds
-        And we can invoke '["disk.dump", "metalk8s_volumes.device_name", {"state.sls": {"kwargs": {"mods": r"metalk8s\.volumes.*"}}}]' on '*'
+        Then we can invoke '["metalk8s_volumes.device_info", "metalk8s_volumes.device_name", {"state.sls": {"kwargs": {"mods": r"metalk8s\.volumes.*"}}}]' on '*'
         And we have '@jobs' perms
         And we can not ping all minions
         And we can not run state 'test.nop' on '*'

@@ -44,7 +44,7 @@ external_auth:
       - '@jobs'
     'system:serviceaccount:kube-system:storage-operator':
       - '*':
-        - 'disk.dump'
+        - 'metalk8s_volumes.device_info'
         - 'metalk8s_volumes.device_name'
         - 'state.sls':
             kwargs:
