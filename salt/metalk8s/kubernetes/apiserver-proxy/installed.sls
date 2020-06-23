@@ -1,9 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
-include:
-- metalk8s.node.grains
-- metalk8s.kubernetes.kubelet.running
-
 Create apiserver-proxy nginx configuration:
   file.managed:
     - name: /var/lib/metalk8s/apiserver-proxy.conf
