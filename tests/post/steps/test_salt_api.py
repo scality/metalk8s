@@ -131,6 +131,12 @@ def run_state_on_targets(host, context, negated, module, targets):
 def authentication_fails(host, context):
     assert context['salt-api']['login-status-code'] == 401
 
+
+@then('authentication succeeds')
+def authentication_succeeds(host, context):
+    assert context['salt-api']['login-status-code'] == 200
+
+
 @then(parsers.parse("we can invoke '{modules}' on '{targets}'"))
 def invoke_module_on_target(host, context, modules, targets):
     assert {targets: ast.literal_eval(modules)} in context['salt-api']['perms']
