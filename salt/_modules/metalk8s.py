@@ -87,7 +87,14 @@ def minions_by_role(role, nodes=None):
         nodes (dict(str, dict)): Nodes to inspect
             Defaults to `pillar.metalk8s.nodes`.
     '''
-    nodes = nodes or __pillar__['metalk8s']['nodes']
+    if nodes is None:
+        try:
+            nodes = __pillar__['metalk8s']['nodes']
+        except Exception as exc:
+            raise CommandExecutionError(
+                "Can't retrieve 'metalk8s:nodes' pillar: {}".format(exc)
+            )
+
     pillar_errors = nodes.pop('_errors', None)
     if pillar_errors:
         raise CommandExecutionError(

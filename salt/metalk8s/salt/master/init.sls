@@ -1,4 +1,5 @@
 include:
-  - .certs.salt-api
+  - .certs
+  - .kubeconfig
   - .configured
   - .installed
