@@ -97,13 +97,13 @@ If we do have a job ID, then something is in progress and we monitor it until
 it's over.
 If it has ended with an error, we move the volume into a failed state.
 
-Otherwise we make another asynchronous Salt call to get the size of the backing
-storage device (the polling is done exactly as described above).
+Otherwise we make another asynchronous Salt call to get information on the
+backing storage device (the polling is done exactly as described above).
 
-If we successfully retrive the size, we proceed with the PersistentVolume
-creation, taking care of putting a finalizer on the PersistentVolume (so that
-its lifetime is tied to ours) and setting ourself as the owner of the
-PersistentVolume.
+If we successfully retrieve the device information, we proceed with the
+PersistentVolume creation, taking care of putting a finalizer on the
+PersistentVolume (so that its lifetime is tied to ours) and setting ourself as
+the owner of the PersistentVolume.
 
 Once we have successfuly created the PersistentVolume, we can move into the
 `Available` state and reschedule the request (the next iteration will check the
@@ -245,6 +245,7 @@ func newReconciler(mgr manager.Manager) (reconcile.Reconciler, error) {
 		scheme:   mgr.GetScheme(),
 		recorder: mgr.GetRecorder("volume-controller"),
 		salt:     saltClient,
+		devices:  make(map[string]deviceInfo),
 	}, nil
 }
 
@@ -277,6 +278,11 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 // blank assignment to verify that ReconcileVolume implements reconcile.Reconciler
 var _ reconcile.Reconciler = &ReconcileVolume{}
 
+type deviceInfo struct {
+	size int64  // Size of the device (in bytes)
+	path string // Reliable path to the device.
+}
+
 // ReconcileVolume reconciles a Volume object
 type ReconcileVolume struct {
 	// This client, initialized using mgr.Client() above, is a split client
@@ -285,6 +291,7 @@ type ReconcileVolume struct {
 	scheme   *runtime.Scheme
 	recorder record.EventRecorder
 	salt     *salt.Client
+	devices  map[string]deviceInfo
 }
 
 // Trace a state transition, using logging and Kubernetes events.
@@ -782,7 +789,7 @@ func (self *ReconcileVolume) prepareStorage(
 			)
 			return self.setPendingVolumeStatus(ctx, volume, job.String())
 		}
-	case JOB_DONE_MARKER: // Storage is ready, let's get its size.
+	case JOB_DONE_MARKER: // Storage is ready, let's get its information.
 		job.Name = "GetDeviceInfo"
 		job.ID = ""
 		return self.getStorageSize(ctx, volume, job)
@@ -810,13 +817,13 @@ func (self *ReconcileVolume) getStorageSize(
 	)
 
 	switch job.ID {
-	case "": // No job in progress: call Salt to get the volume size.
+	case "": // No job in progress: call Salt to get the volume information.
 		job, err := self.salt.GetDeviceInfo(ctx, nodeName, volume.Name)
 		if err != nil {
 			reqLogger.Error(err, "failed to run GetDeviceInfo")
 			return delayedRequeue(err)
 		} else {
-			reqLogger.Info("try to retrieve the volume size")
+			reqLogger.Info("try to retrieve the volume information")
 			self.recorder.Event(
 				volume, corev1.EventTypeNormal, "SaltCall",
 				"volume provisioning step 2/2 started",
@@ -824,24 +831,14 @@ func (self *ReconcileVolume) getStorageSize(
 			return self.setPendingVolumeStatus(ctx, volume, job.String())
 		}
 	case JOB_DONE_MARKER: // We have everything we need: let's create the PV!
-		if size, err := strconv.ParseInt(job.Result, 10, 64); err != nil {
-			// Shouldn't happen, except if someome somehow tampered our status field…
-			return self.setFailedVolumeStatus(
-				ctx, volume, nil, storagev1alpha1.ReasonCreationError,
-				"Tampered Salt job handle: invalid result (%s)", job.Result,
-			)
-		} else {
-			return self.createPersistentVolume(
-				ctx, volume, *resource.NewQuantity(size, resource.BinarySI),
-			)
-		}
+		return self.createPersistentVolume(ctx, volume)
 	default: // GetDeviceInfo in progress: poll its state.
 		return self.pollSaltJob(
 			ctx, "volume provisioning (2/2)", volume, nil,
 			self.setPendingVolumeStatus,
 			storagev1alpha1.ReasonCreationError,
 			func(result map[string]interface{}) (reconcile.Result, error) {
-				size, err := parseDeviceInfo(result)
+				info, err := parseDeviceInfo(result)
 				if err != nil {
 					reqLogger.Error(err, "cannot get device info from Salt response")
 					self.recorder.Event(
@@ -853,7 +850,7 @@ func (self *ReconcileVolume) getStorageSize(
 						"Salt job '%s' failed with: %s", job.Name, err.Error(),
 					)
 				}
-				job.Result = strconv.FormatInt(size, 10)
+				self.devices[volume.Name] = *info
 				job.ID = JOB_DONE_MARKER
 				return self.setPendingVolumeStatus(ctx, volume, job.String())
 			},
@@ -863,7 +860,7 @@ func (self *ReconcileVolume) getStorageSize(
 
 // Create a PersistentVolume in the Kubernetes API server.
 func (self *ReconcileVolume) createPersistentVolume(
-	ctx context.Context, volume *storagev1alpha1.Volume, size resource.Quantity,
+	ctx context.Context, volume *storagev1alpha1.Volume,
 ) (reconcile.Result, error) {
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name,
@@ -878,8 +875,15 @@ func (self *ReconcileVolume) createPersistentVolume(
 		reqLogger.Error(err, errmsg, "StorageClass.Name", scName)
 		return delayedRequeue(err)
 	}
+	deviceInfo, found := self.devices[volume.Name]
+	if !found {
+		reqLogger.Error(err, "no device info")
+		// Reschedule a call to `metalk8s_volumes.device_info`.
+		job := salt.JobHandle{Name: "GetDeviceInfo", ID: "", Result: ""}
+		return self.setPendingVolumeStatus(ctx, volume, job.String())
+	}
 	// Create the PersistentVolume object.
-	pv, err := newPersistentVolume(volume, sc, size)
+	pv, err := newPersistentVolume(volume, sc, deviceInfo)
 	if err != nil {
 		reqLogger.Error(
 			err, "cannot create the PersistentVolume object: requeue",
@@ -920,15 +924,16 @@ func (self *ReconcileVolume) createPersistentVolume(
 // Arguments
 //     volume:       a Volume object
 //     storageClass: a StorageClass object
-//     volumeSize:   the volume size
+//     deviceInfo:   the device information
 //
 // Returns
 //     The PersistentVolume representing the given Volume.
 func newPersistentVolume(
 	volume *storagev1alpha1.Volume,
 	storageClass *storagev1.StorageClass,
-	volumeSize resource.Quantity,
+	deviceInfo deviceInfo,
 ) (*corev1.PersistentVolume, error) {
+	volumeSize := *resource.NewQuantity(deviceInfo.size, resource.BinarySI)
 	// We must have `fsType` as parameter, otherwise we can't create our PV.
 	scName := volume.Spec.StorageClassName
 	fsType, found := storageClass.Parameters["fsType"]
@@ -962,7 +967,7 @@ func newPersistentVolume(
 	pv.Spec.VolumeMode = &mode
 	pv.Spec.PersistentVolumeSource = corev1.PersistentVolumeSource{
 		Local: &corev1.LocalVolumeSource{
-			Path:   volume.GetPath(),
+			Path:   deviceInfo.path,
 			FSType: &fsType,
 		},
 	}
@@ -1128,13 +1133,25 @@ func getAuthCredential(config *rest.Config) *salt.Credential {
 }
 
 // Extract the device info from a Salt result.
-func parseDeviceInfo(result map[string]interface{}) (int64, error) {
+func parseDeviceInfo(result map[string]interface{}) (*deviceInfo, error) {
 	size_str, ok := result["size"].(string)
 	if !ok {
-		return 0, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"cannot find a string value for key 'size' in %v", result,
 		)
 	}
+	path, ok := result["path"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"cannot find a string value for key 'path' in %v", result,
+		)
+	}
 
-	return strconv.ParseInt(size_str, 10, 64)
+	if size, err := strconv.ParseInt(size_str, 10, 64); err != nil {
+		return nil, errorsng.Wrapf(
+			err, "cannot parse device size (%s)", size_str,
+		)
+	} else {
+		return &deviceInfo{size, path}, nil
+	}
 }
