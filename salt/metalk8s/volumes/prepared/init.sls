@@ -48,4 +48,11 @@ Provision backing storage for {{ volume }}:
     - require:
       - metalk8s_volumes: Format backing storage for {{ volume }}
 
+Update pillar after volume provisionning:
+  module.run:
+    - saltutil.refresh_pillar:
+      - wait: True
+    - require:
+      - metalk8s_volumes: Provision backing storage for {{ volume }}
+
 {%- endfor %}

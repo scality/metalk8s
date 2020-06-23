@@ -196,7 +196,14 @@ def device_info(name):
 
         salt '<NODE_NAME>' metalk8s_volumes.device_info example-volume
     """
-    return _get_volume(name).device_info()
+    try:
+        volume = _get_volume(name)
+    # Unlikely, but could happen if we crash/restart between the refresh from
+    # the `volumes.prepared` state and the call to this module.
+    except KeyError:
+        __salt__['saltutil.refresh_pillar'](wait=True)
+        volume = _get_volume(name)
+    return volume.device_info()
 
 
 # Volume {{{
