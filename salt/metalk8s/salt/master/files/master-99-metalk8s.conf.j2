@@ -12,8 +12,8 @@ grains_cache: True
 ext_pillar_first: true
 ext_pillar:
   - metalk8s: /etc/metalk8s/bootstrap.yaml
-  - metalk8s_endpoints: /etc/kubernetes/admin.conf
-  - metalk8s_nodes: /etc/kubernetes/admin.conf
+  - metalk8s_endpoints: {{ kubeconfig }}
+  - metalk8s_nodes: {{ kubeconfig }}
   - metalk8s_private: {}
   - metalk8s_solutions: {}
   - metalk8s_etcd: {}
@@ -35,7 +35,7 @@ rest_cherrypy:
 
 external_auth:
   kubernetes_rbac:
-    ^kubeconfig: /etc/kubernetes/admin.conf
+    ^kubeconfig: {{ kubeconfig }}
     node-admins%:
       - '*':
         - '.*'

@@ -181,7 +181,7 @@ configure_salt_master() {
     )
 
     "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
-        '["metalk8s.roles.bootstrap", "metalk8s.roles.minion", "metalk8s.kubernetes.apiserver-proxy"]' \
+        '["metalk8s.roles.internal.early-stage-bootstrap", "metalk8s.kubernetes.apiserver-proxy"]' \
         saltenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
 
@@ -213,6 +213,11 @@ configure_salt_master() {
 
     "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
         metalk8s.kubernetes.apiserver.kubeconfig \
+        saltenv=metalk8s-@@VERSION \
+        pillar="${pillar[*]}"
+
+    "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
+        metalk8s.salt.master.kubeconfig \
         saltenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
 }

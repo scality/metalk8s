@@ -328,7 +328,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/apiserver/installed.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/cryptconfig.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/kubeconfig.sls'),
-    Path('salt/metalk8s/kubernetes/apiserver/pre-upgrade.sls'),
 
     Path('salt/metalk8s/kubernetes/apiserver-proxy/files/'
             'apiserver-proxy.conf.j2'),
@@ -423,6 +422,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
+    Path('salt/metalk8s/orchestrate/bootstrap/pre-downgrade.sls'),
+    Path('salt/metalk8s/orchestrate/bootstrap/pre-upgrade.sls'),
 
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
@@ -465,12 +466,14 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/roles/bootstrap/absent.sls'),
     Path('salt/metalk8s/roles/bootstrap/init.sls'),
+    Path('salt/metalk8s/roles/bootstrap/local.sls'),
     Path('salt/metalk8s/roles/ca/absent.sls'),
     Path('salt/metalk8s/roles/ca/init.sls'),
     Path('salt/metalk8s/roles/etcd/absent.sls'),
     Path('salt/metalk8s/roles/etcd/init.sls'),
     Path('salt/metalk8s/roles/infra/init.sls'),
     Path('salt/metalk8s/roles/infra/absent.sls'),
+    Path('salt/metalk8s/roles/internal/early-stage-bootstrap.sls'),
     Path('salt/metalk8s/roles/internal/node-without-calico.sls'),
     Path('salt/metalk8s/roles/master/absent.sls'),
     Path('salt/metalk8s/roles/master/init.sls'),
@@ -484,6 +487,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/master/files/salt-master-manifest.yaml.j2'),
     Path('salt/metalk8s/salt/master/init.sls'),
     Path('salt/metalk8s/salt/master/installed.sls'),
+    Path('salt/metalk8s/salt/master/kubeconfig.sls'),
     Path('salt/metalk8s/salt/master/certs/etcd-client.sls'),
     Path('salt/metalk8s/salt/master/certs/init.sls'),
     Path('salt/metalk8s/salt/master/certs/salt-api.sls'),
