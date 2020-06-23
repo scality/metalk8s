@@ -374,14 +374,20 @@ models:
   - ShellCommand: &terraform_init
       name: Init terraform
       command: |-
-        for _ in $(seq 1 12); do
+        for try in $(seq 1 $MAX_RETRIES); do
           if terraform init; then
             break
-          else
+          elif [ $try -lt $MAX_RETRIES ]; then
             rm -rf .terraform/
             sleep 5
+          else
+            echo "Error: unable to initialize terraform after" \
+                 "$MAX_RETRIES tries" >&2
+            exit 1
           fi
-        done;
+        done
+      env:
+        MAX_RETRIES: "12"
       haltOnFailure: true
   - ShellCommand: &terraform_validate
       name: Validate terraform definition
@@ -390,9 +396,16 @@ models:
   - ShellCommand: &terraform_apply
       name: Spawn openstack virtual infra
       command: |-
-        for _ in $(seq 1 3); do
-            terraform apply -auto-approve && break
+        for try in $(seq 1 $MAX_RETRIES); do
+          if terraform apply -auto-approve; then
+            break
+          elif [ $try -lt $MAX_RETRIES ]; then
             sleep 300
+          else
+            echo "Error: unable to spawn openstack virtual infra after" \
+                 "$MAX_RETRIES tries" >&2
+            exit 1
+          fi
         done
       env: &_env_terraform
         OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
@@ -401,13 +414,22 @@ models:
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
         TF_VAR_prefix: "%(prop:buildnumber)s-%(prop:stage_name)s"
+        MAX_RETRIES: "3"
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
       name: Destroy openstack virtual infra
       command: |-
-        for _ in $(seq 1 3); do
-           terraform destroy -auto-approve && break
-        done;
+        for try in $(seq 1 $MAX_RETRIES); do
+          if terraform destroy -auto-approve; then
+            break
+          elif [ $try -lt $MAX_RETRIES ]; then
+            sleep 300
+          else
+            echo "Error: unable to destroy openstack virtual infra after" \
+                 "$MAX_RETRIES tries" >&2
+            exit 1
+          fi
+        done
       env: *_env_terraform
       alwaysRun: true
       sigtermTime: 600
