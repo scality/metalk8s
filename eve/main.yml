@@ -933,7 +933,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_downgrade_minor_single-node_junit_info
         TEST_SUITE: downgrade
-        CLASS_NAME: minor.single node.centos7
+        CLASS_NAME: minor dev.single node.centos7
         TEST_NAME: simple environment
     simultaneous_builds: 20
     worker: &single_node_worker
@@ -1051,7 +1051,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_upgrade_minor_single-node_junit_info
         TEST_SUITE: upgrade
-        CLASS_NAME: minor.single node.centos7
+        CLASS_NAME: minor dev.single node.centos7
         TEST_NAME: simple environment
     simultaneous_builds: 20
     worker: *single_node_worker
