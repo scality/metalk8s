@@ -11,7 +11,6 @@ func TestNewCredential(t *testing.T) {
 		username string
 		secret   string
 	}{
-		"Basic":  {username: "foo", secret: "bar"},
 		"Bearer": {username: "baz", secret: "qux"},
 	}
 
@@ -26,8 +25,8 @@ func TestNewCredential(t *testing.T) {
 	}
 }
 
-func TestNewCredentialBadToken(t *testing.T) {
+func TestNewCredentialBadMethod(t *testing.T) {
 	assert.Panics(t, func() {
-		NewCredential("foo", "*****", "Secret")
+		NewCredential("admin", "admin", "Basic")
 	})
 }

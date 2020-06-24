@@ -16,36 +16,27 @@ func TestGetAuthCredential(t *testing.T) {
 		expected *salt.Credential
 	}{
 		"ServiceAccount": {
-			token: "foo", username: "", password: "",
+			token: "foo",
 			expected: salt.NewCredential(
 				"system:serviceaccount:kube-system:storage-operator",
 				"foo",
 				salt.Bearer,
 			),
 		},
-		"BasicAuth": {
-			token: "", username: "foo", password: "bar",
-			expected: salt.NewCredential(
-				"foo", "bar", salt.Basic,
-			),
-		},
-		"DefaultCreds": {
-			token: "", username: "", password: "",
-			expected: salt.NewCredential(
-				"admin", "admin", salt.Basic,
-			),
-		},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			config := rest.Config{
-				BearerToken: tc.token,
-				Username:    tc.username,
-				Password:    tc.password,
-			}
+			config := rest.Config{BearerToken: tc.token}
 			creds := getAuthCredential(&config)
 
 			assert.Equal(t, tc.expected, creds)
 		})
 	}
+}
+
+func TestGetAuthCredentialNoToken(t *testing.T) {
+	config := rest.Config{Username: "admin", Password: "admin"}
+	assert.Panics(t, func() {
+		getAuthCredential(&config)
+	})
 }

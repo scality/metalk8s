@@ -6,7 +6,6 @@ type AuthType string
 
 // Supported SaltAPI authentication methods.
 const (
-	Basic  AuthType = "Basic"
 	Bearer AuthType = "Bearer"
 )
 
@@ -24,7 +23,7 @@ type Credential struct {
 //     secret:   user token or password (interpretation depends on authType)
 //     authType: authentication method
 func NewCredential(username string, secret string, authType AuthType) *Credential {
-	if authType != Basic && authType != Bearer {
+	if authType != Bearer {
 		panic(fmt.Sprintf("invalid authentication method: %s", authType))
 	}
 	return &Credential{username: username, secret: secret, kind: authType}

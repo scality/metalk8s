@@ -1107,21 +1107,16 @@ func endReconciliation() (reconcile.Result, error) {
 
 // Return the credential to use to authenticate with Salt API.
 func getAuthCredential(config *rest.Config) *salt.Credential {
-	if config.BearerToken != "" {
-		log.Info("using ServiceAccount bearer token")
-		return salt.NewCredential(
-			// FIXME: this should depend on the actual SA used
-			"system:serviceaccount:kube-system:storage-operator",
-			config.BearerToken,
-			salt.Bearer,
-		)
-	} else if config.Username != "" && config.Password != "" {
-		log.Info("using Basic HTTP authentication")
-		return salt.NewCredential(config.Username, config.Password, salt.Basic)
-	} else {
-		log.Info("using default Basic HTTP authentication")
-		return salt.NewCredential("admin", "admin", salt.Basic)
+	if config.BearerToken == "" {
+		panic("must use a BearerToken for SaltAPI authentication")
 	}
+	log.Info("using ServiceAccount bearer token")
+	return salt.NewCredential(
+		// FIXME: this should depend on the actual SA used
+		"system:serviceaccount:kube-system:storage-operator",
+		config.BearerToken,
+		salt.Bearer,
+	)
 }
 
 // Extract the disk size for a `disk.dump` result from Salt.

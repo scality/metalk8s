@@ -59,18 +59,17 @@ def _check_auth_args(f):
                 'Invalid authentication request: {}'.format(error)
             )
 
-        return f(username, password=password, token=token, **kwargs)
+        return f(username, token=token, **kwargs)
 
     return wrapped
 
 
-def _patch_kubeconfig_for_basic(kubeconfig, username, password):
-    token = base64.encodestring(':'.join([username, password])).rstrip('\n')
+def _patch_kubeconfig(kubeconfig, username, token):
     kubeconfig.api_key = {
         'authorization': token,
     }
     kubeconfig.api_key_prefix = {
-        'authorization': 'Basic',
+        'authorization': 'Bearer',
     }
     kubeconfig.username = username
     kubeconfig.cert_file = None
@@ -93,76 +92,7 @@ def _review_access(kubeconfig, resource, verb):
     )
 
 
-@_log_exceptions
-def _auth_basic(kubeconfig, username, password):
-    _patch_kubeconfig_for_basic(kubeconfig, username, password)
-
-    try:
-        access_review = _review_access(
-            kubeconfig, resource='version', verb='get'
-        )
-    except ApiException as exc:
-        if exc.status == 401:
-            log.warning("Could not authenticate user '%s'", username)
-            return False
-        if exc.status == 403:
-            log.warning("Authenticated user '%s' cannot GET /version",
-                        username)
-            return False
-        raise
-
-    if access_review.status.evaluation_error:
-        log.error('Failed to review access for %s: %s', username,
-                  access_review.status.evaluation_error)
-
-    if not access_review.status.allowed:
-        log.error('Failed authentication for %s: %s', username,
-                  access_review.status.reason)
-    return access_review.status.allowed
-
-
-@_log_exceptions
-def _groups_basic(kubeconfig, username, password):
-    _patch_kubeconfig_for_basic(kubeconfig, username, password)
-
-    groups = set()
-
-    try:
-        result = _review_access(kubeconfig, resource='nodes', verb='*')
-    except ApiException as exc:
-        if exc.status != 403:
-            log.warning("Authenticated user '%s' cannot manage /v1/nodes",
-                        username)
-        else:
-            raise
-
-    if result.status.allowed:
-        groups.add('node-admins')
-
-    return list(groups)
-
-
-def _check_node_admin(kubeconfig):
-    return _review_access(kubeconfig, 'nodes', '*').status.allowed
-
-
-AVAILABLES_GROUPS = {
-    'node-admins': _check_node_admin
-}
-
-
-def _get_groups(kubeconfig):
-    groups = set()
-
-    for group, func in AVAILABLES_GROUPS.items():
-        if func(kubeconfig):
-            groups.add(group)
-
-    return list(groups)
-
-
-@_log_exceptions
-def _auth_bearer(kubeconfig, username, token):
+def _review_token(kubeconfig, username, token):
     """Check the provided bearer token using the TokenReview API."""
     client = kubernetes.client.ApiClient(configuration=kubeconfig)
     authn_api = kubernetes.client.AuthenticationV1Api(api_client=client)
@@ -193,26 +123,25 @@ def _auth_bearer(kubeconfig, username, token):
         return False
 
 
-@_log_exceptions
-def _groups_bearer(kubeconfig, _username, token):
-    kubeconfig.api_key = {
-        'authorization': token,
-    }
-    kubeconfig.api_key_prefix = {
-        'authorization': 'Bearer',
-    }
-    kubeconfig.username = None
-    kubeconfig.password = None
-    kubeconfig.cert_file = None
-    kubeconfig.key_file = None
-
-    return _get_groups(kubeconfig)
+def _check_node_admin(kubeconfig):
+    return _review_access(kubeconfig, 'nodes', '*').status.allowed
 
 
-AUTH_HANDLERS['bearer'] = {
-    'auth': _auth_bearer,
-    'groups': _groups_bearer
+AVAILABLES_GROUPS = {
+    'node-admins': _check_node_admin
 }
+
+
+def _get_groups(kubeconfig, username, token):
+    _patch_kubeconfig(kubeconfig, username, token)
+
+    groups = set()
+
+    for group, func in AVAILABLES_GROUPS.items():
+        if func(kubeconfig):
+            groups.add(group)
+
+    return list(groups)
 
 
 @_log_exceptions
@@ -242,23 +171,15 @@ def _load_kubeconfig(opts):
 
 
 @_check_auth_args
-def auth(username, password=None, token=None, **kwargs):
-    auth_method = 'basic' if password else 'bearer'
-    log.info('Authentication (%s) request for "%s"',
-             auth_method.capitalize(), username)
-
-    handler = AUTH_HANDLERS['bearer']
+def auth(username, token=None, **kwargs):
+    log.info('Authentication request for "%s"', username)
 
     kubeconfig = _load_kubeconfig(__opts__)
     if kubeconfig is None:
         log.info('Failed to load Kubernetes API client configuration')
         return False
 
-    result = handler.get('auth', lambda _c, _u, _t: False)(
-        kubeconfig,
-        username,
-        token or password
-    )
+    result = _review_token(kubeconfig, username, token)
     if result:
         log.info('Authentication request for "%s" succeeded', username)
     else:
@@ -271,18 +192,11 @@ def auth(username, password=None, token=None, **kwargs):
 def groups(username, password=None, token=None, **kwargs):
     log.info('Groups request for "%s"', username)
 
-    handler = AUTH_HANDLERS['bearer']
-
     kubeconfig = _load_kubeconfig(__opts__)
     if kubeconfig is None:
         log.info('Failed to load Kubernetes API client configuration')
         return []
 
-    result = handler.get('groups', lambda _c, _u, _t: [])(
-        kubeconfig,
-        username,
-        token or password
-    )
-    log.debug('Groups for "%s": %r', username, result)
-
+    result = _get_groups(kubeconfig, username, token)
+    log.debug('Groups for "%s": %s', username, ', '.join(result))
     return result
