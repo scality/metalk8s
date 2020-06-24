@@ -7,6 +7,7 @@ require 'ipaddr'
 if File.exists?('vagrant_config.rb')
   require_relative 'vagrant_config'
 else
+  DEBUG = 'false'
   RHSM_USERNAME = ''
   RHSM_PASSWORD = ''
   RHSM_POOL = ''
@@ -136,6 +137,7 @@ ca:
   minion: bootstrap
 archives:
   - /srv/scality/metalk8s-$VERSION
+debug: #{DEBUG}
 EOF
 
 echo "Launching bootstrap"
