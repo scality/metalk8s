@@ -80,6 +80,11 @@ def _review_access(kubeconfig, resource, verb):
     client = kubernetes.client.ApiClient(configuration=kubeconfig)
     authz_api = kubernetes.client.AuthorizationV1Api(api_client=client)
 
+    # NOTE: any authenticated user can use this API.
+    # This comes from the fact that an authenticated user will always belong to
+    # the `system:authenticated` group, and this group is bound to the
+    # `system:basic-user` ClusterRole, which enables creating
+    # SelfSubjectAccessReviews and SelfSubjectRulesReviews.
     return authz_api.create_self_subject_access_review(
         body=kubernetes.client.V1SelfSubjectAccessReview(
             spec=kubernetes.client.V1SelfSubjectAccessReviewSpec(
