@@ -61,7 +61,6 @@ it('authentication success', () => {
       payload: {
         username: 'admin',
         password: 'admin',
-        token,
       },
     }),
   );
@@ -94,7 +93,6 @@ it('fetchUserInfo success', () => {
       payload: {
         username: 'test',
         password: 'test',
-        token: 'dGVzdDp0ZXN0',
       },
     }),
   );

@@ -106,7 +106,6 @@ export function* authenticate({ payload }) {
       setAuthenticationSuccessAction({
         username,
         password,
-        token,
       }),
     );
     yield call(authenticateSaltApi, true);
@@ -156,7 +155,6 @@ export function* fetchUserInfo() {
       setAuthenticationSuccessAction({
         username,
         password,
-        token,
       }),
     );
     yield call(authenticateSaltApi);
