@@ -29,6 +29,19 @@ with CVSS score of 5.3 that was discovered affecting Grafana versions from
     [#2600](https://github.com/scality/metalk8s/issues/2600) - Upgrade Grafana
     to `6.7.4` (PR [#2605](https://github.com/scality/metalk8s/issues/2605))
 
+- A potential risk for privilege escalation in SaltAPI described
+[here](https://github.com/scality/metalk8s/issues/2634) was fixed in this
+release.
+
+    [#2634](https://github.com/scality/metalk8s/issues/2634) - Prevent
+    impersonation in SaltAPI
+    (PR [#2642](https://github.com/scality/metalk8s/pull/2642))
+
+    [#1528](https://github.com/scality/metalk8s/issues/1528) and
+    [#2084](https://github.com/scality/metalk8s/issues/2084) - Tighten
+    storage-operator permissions against Salt
+    (PR [#2635](https://github.com/scality/metalk8s/pull/2635))
+
 ### Enhancements
 - [#2589](https://github.com/scality/metalk8s/issues/2589) - Bump Kubernetes
 version to 1.15.12 (PR [#2595](https://github.com/scality/metalk8s/pull/2595))
