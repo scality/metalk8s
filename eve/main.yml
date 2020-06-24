@@ -541,8 +541,10 @@ stages:
       - TriggerStages:
           name: Trigger post-merge lifecycle and solutions stages simultaneously
           stage_names:
-            - post-merge-lifecycle
             - post-merge-solutions
+            - lifecycle-dev-branch
+            - single-node-patch-version
+            - bootstrap-restore
           haltOnFailure: true
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
@@ -562,7 +564,7 @@ stages:
             - build-example-solution
           haltOnFailure: true
 
-  post-merge-lifecycle:
+  lifecycle-dev-branch:
     worker:
       type: local
     steps:
@@ -585,12 +587,10 @@ stages:
           env:
             BASE_URL: "%(prop:artifacts_private_url)s/pre"
       - TriggerStages:
-          name: Trigger upgrade, downgrade and restore test stages simultaneously
+          name: Trigger upgrade and downgrade test stages simultaneously
           stage_names:
             - single-node-upgrade-centos
             - single-node-downgrade-centos
-            - single-node-patch-version
-            - bootstrap-restore
           waitForFinish: True
 
   create-upload-testrail-objects:
