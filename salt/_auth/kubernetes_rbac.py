@@ -1,4 +1,5 @@
 import base64
+from functools import wraps
 import logging
 
 MISSING_DEPS = []
@@ -6,6 +7,7 @@ MISSING_DEPS = []
 try:
     import kubernetes.client
     import kubernetes.config
+    from kubernetes.client.rest import ApiException
 except ImportError:
     MISSING_DEPS.append('kubernetes')
 
@@ -41,40 +43,88 @@ def _log_exceptions(f):
     return wrapped
 
 
-def _check_k8s_creds(kubeconfig, token):
-    """Check the provided credentials against /version."""
-    # Using the '/version/' endpoint which is unauthenticated by default but,
-    # when presented authentication data, will process this information and fail
-    # accordingly.
-    url = '{}/version/'.format(kubeconfig.host)
-    verify = kubeconfig.ssl_ca_cert if kubeconfig.verify_ssl else False
-    try:
-        response = requests.get(
-            url, headers={'Authorization': token}, verify=verify
-        )
-        return 200 <= response.status_code < 300
-    except:
-        log.exception('Error during request')
-        raise
+def _check_auth_args(f):
+    @wraps(f)
+    def wrapped(username, password=None, token=None, **kwargs):
+        error = None
+
+        if password:
+            error = 'Basic authentication (using "password") is not supported'
+        if not (token and username):
+            error = 'must provide both a "token" and a "username"'
+
+        if error is not None:
+            log.error('Invalid authentication request: %s', error)
+            raise CommandExecutionError(
+                'Invalid authentication request: {}'.format(error)
+            )
+
+        return f(username, token=token, **kwargs)
+
+    return wrapped
 
 
-def _check_node_admin(kubeconfig):
+def _patch_kubeconfig(kubeconfig, username, token):
+    kubeconfig.api_key = {
+        'authorization': token,
+    }
+    kubeconfig.api_key_prefix = {
+        'authorization': 'Bearer',
+    }
+    kubeconfig.username = username
+    kubeconfig.cert_file = None
+    kubeconfig.key_file = None
+
+
+def _review_access(kubeconfig, resource, verb):
     client = kubernetes.client.ApiClient(configuration=kubeconfig)
-
     authz_api = kubernetes.client.AuthorizationV1Api(api_client=client)
 
-    result = authz_api.create_self_subject_access_review(
+    return authz_api.create_self_subject_access_review(
         body=kubernetes.client.V1SelfSubjectAccessReview(
             spec=kubernetes.client.V1SelfSubjectAccessReviewSpec(
                 resource_attributes=kubernetes.client.V1ResourceAttributes(
-                    resource='nodes',
-                    verb='*',
+                    resource=resource,
+                    verb=verb,
                 ),
             ),
         ),
     )
 
-    return result.status.allowed
+
+def _review_token(kubeconfig, username, token):
+    """Check the provided bearer token using the TokenReview API."""
+    client = kubernetes.client.ApiClient(configuration=kubeconfig)
+    authn_api = kubernetes.client.AuthenticationV1Api(api_client=client)
+
+    token_review = authn_api.create_token_review(
+        body=kubernetes.client.V1TokenReview(
+            spec=kubernetes.client.V1TokenReviewSpec(token=token)
+        )
+    )
+
+    if token_review.status.error:
+        log.error("Failed to create TokenReview for '%s': %s",
+                  username, token_review.status.error)
+        return False
+
+    if token_review.status.authenticated:
+        if token_review.status.user.username != username:
+            log.error(
+                "Provided token belongs to '%s', does not match '%s'",
+                token_review.status.user.username,
+                username,
+            )
+            return False
+        else:
+            return True
+    else:
+        log.error("Provided token for '%s' failed to authenticate", username)
+        return False
+
+
+def _check_node_admin(kubeconfig):
+    return _review_access(kubeconfig, 'nodes', '*').status.allowed
 
 
 AVAILABLES_GROUPS = {
@@ -82,7 +132,9 @@ AVAILABLES_GROUPS = {
 }
 
 
-def _get_groups(kubeconfig):
+def _get_groups(kubeconfig, username, token):
+    _patch_kubeconfig(kubeconfig, username, token)
+
     groups = set()
 
     for group, func in AVAILABLES_GROUPS.items():
@@ -90,33 +142,6 @@ def _get_groups(kubeconfig):
             groups.add(group)
 
     return list(groups)
-
-
-@_log_exceptions
-def _auth_bearer(kubeconfig, username, token):
-    return _check_k8s_creds(kubeconfig, 'Bearer {}'.format(token))
-
-
-@_log_exceptions
-def _groups_bearer(kubeconfig, _username, token):
-    kubeconfig.api_key = {
-        'authorization': token,
-    }
-    kubeconfig.api_key_prefix = {
-        'authorization': 'Bearer',
-    }
-    kubeconfig.username = None
-    kubeconfig.password = None
-    kubeconfig.cert_file = None
-    kubeconfig.key_file = None
-
-    return _get_groups(kubeconfig)
-
-
-AUTH_HANDLERS['bearer'] = {
-    'auth': _auth_bearer,
-    'groups': _groups_bearer
-}
 
 
 @_log_exceptions
@@ -145,41 +170,16 @@ def _load_kubeconfig(opts):
     return kubeconfig
 
 
-def auth(username, password=None, token=None, **kwargs):
+@_check_auth_args
+def auth(username, token=None, **kwargs):
     log.info('Authentication request for "%s"', username)
-
-    if token and password:
-        log.warning(
-            'Invalid authentication request cannot provide "token" and '
-            '"password" at the same time'
-        )
-        return False
-    if not token and (not password or not username):
-        log.warning(
-            'Invalid authentication request need a "token" or '
-            'a "username" and "password"'
-        )
-        return False
-
-    # Password authentication request no longer supported
-    if password:
-        log.warning(
-            'Authentication request with "username", "password" is '
-            'no longer supported')
-        return False
-
-    handler = AUTH_HANDLERS['bearer']
 
     kubeconfig = _load_kubeconfig(__opts__)
     if kubeconfig is None:
         log.info('Failed to load Kubernetes API client configuration')
         return False
 
-    result = handler.get('auth', lambda _c, _u, _t: False)(
-        kubeconfig,
-        username,
-        token or password
-    )
+    result = _review_token(kubeconfig, username, token)
     if result:
         log.info('Authentication request for "%s" succeeded', username)
     else:
@@ -188,41 +188,15 @@ def auth(username, password=None, token=None, **kwargs):
     return result
 
 
+@_check_auth_args
 def groups(username, password=None, token=None, **kwargs):
     log.info('Groups request for "%s"', username)
-
-    if token and password:
-        log.warning(
-            'Invalid groups request cannot provide "token" and "password" '
-            'at the same time'
-        )
-        return []
-    if not token and (not password or not username):
-        log.warning(
-            'Invalid groups request need a "token" or '
-            'a "username" and "password"'
-        )
-        return []
-
-    # Password groups request no longer supported
-    if password:
-        log.warning(
-            'Groups request with "username", "password" is '
-            'no longer supported')
-        return []
-
-    handler = AUTH_HANDLERS['bearer']
 
     kubeconfig = _load_kubeconfig(__opts__)
     if kubeconfig is None:
         log.info('Failed to load Kubernetes API client configuration')
         return []
 
-    result = handler.get('groups', lambda _c, _u, _t: [])(
-        kubeconfig,
-        username,
-        token or password
-    )
-    log.debug('Groups for "%s": %r', username, result)
-
+    result = _get_groups(kubeconfig, username, token)
+    log.debug('Groups for "%s": %s', username, ', '.join(result))
     return result

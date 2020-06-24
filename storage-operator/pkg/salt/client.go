@@ -330,12 +330,7 @@ func (self *Client) authenticate(ctx context.Context) error {
 	payload := map[string]interface{}{
 		"eauth":    "kubernetes_rbac",
 		"username": self.creds.username,
-	}
-
-	if self.creds.kind == BearerToken {
-		payload["token"] = self.creds.token
-	} else {
-		payload["password"] = self.creds.token
+		"token":    self.creds.secret,
 	}
 
 	self.logger.Info(
