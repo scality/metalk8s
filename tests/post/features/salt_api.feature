@@ -8,16 +8,30 @@ Feature: SaltAPI
     Scenario: Login to SaltAPI using an admin ServiceAccount
         Given the Kubernetes API is available
         When we login to SaltAPI with an admin ServiceAccount
-        Then we can ping all minions
+        Then authentication succeeds
+        And we can ping all minions
         And we can invoke '[".*"]' on '*'
         And we have '@wheel' perms
         And we have '@runner' perms
         And we have '@jobs' perms
 
-    Scenario: Login to SaltAPI using a ServiceAccount
+    Scenario: Login to SaltAPI using the storage-operator ServiceAccount
         Given the Kubernetes API is available
-        When we login to SaltAPI with the ServiceAccount 'storage-operator'
-        Then we can invoke '["disk.dump", "metalk8s_volumes.device_name", {"state.sls": {"kwargs": {"mods": r"metalk8s\.volumes.*"}}}]' on '*'
+        When we login to SaltAPI with the ServiceAccount 'kube-system/storage-operator'
+        Then authentication succeeds
+        And we can invoke '["disk.dump", "metalk8s_volumes.device_name", {"state.sls": {"kwargs": {"mods": r"metalk8s\.volumes.*"}}}]' on '*'
         And we have '@jobs' perms
         And we can not ping all minions
         And we can not run state 'test.nop' on '*'
+
+    Scenario: Login to SaltAPI using any ServiceAccount
+        Given the Kubernetes API is available
+        When we login to SaltAPI with the ServiceAccount 'kube-system/default'
+        Then authentication succeeds
+        And we have no permissions
+
+    Scenario: SaltAPI impersonation using a ServiceAccount
+        Given the Kubernetes API is available
+        When we impersonate user 'system:serviceaccount:kube-system:storage-operator' against SaltAPI using the ServiceAccount 'kube-system/default'
+        Then authentication fails
+
