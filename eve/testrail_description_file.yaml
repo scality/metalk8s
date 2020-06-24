@@ -10,9 +10,10 @@ Upgrade:
   description: >-
     Upgrade tests
   sections: &lifecycle_sections
-    Minor:
+    Minor Dev:
       description: >-
         Previous minor version tests
+        (last commit of previous development branch)
       sub_sections:
         Single Node:
           description: >-
