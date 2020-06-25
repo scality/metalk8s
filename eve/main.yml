@@ -544,6 +544,7 @@ stages:
             - post-merge-solutions
             - lifecycle-dev-branch
             - lifecycle-patch-version
+            - lifecycle-minor-version
             - bootstrap-restore
           haltOnFailure: true
       - ShellCommand: *add_final_status_artifact_success
@@ -1310,6 +1311,41 @@ stages:
           stage_names:
             - single-node-upgrade-promoted-centos
             - single-node-downgrade-promoted-centos
+
+  lifecycle-minor-version:
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set promoted version type to minor
+          property: promoted_version_type
+          value: minor
+      - Git: *git_pull
+      - SetPropertyFromCommand:
+          name: Set previous minor version to upgrade from and downgrade to
+          property: product_promoted_version
+          command: >
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+              git tag --list "$major.$(( $minor-1 )).*" | tail -1
+      - SetPropertyFromCommand:
+          name: Set the minor version flag
+          property: minor_present
+          env:
+            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
+          command: |-
+              if [ -z "$PRODUCT_VERSION_PREV_patch" ]; then
+                echo "false"
+              else
+                echo "true"
+              fi
+      - TriggerStages:
+          name: Trigger single-node steps with minor Artifact ISO
+          doStepIf: "%(prop:minor_present)s"
+          stage_names:
+            - single-node-upgrade-promoted-centos
+            - single-node-downgrade-promoted-centos
+
 
 # --- Upgrade for promoted versions ---
   single-node-upgrade-promoted-centos:

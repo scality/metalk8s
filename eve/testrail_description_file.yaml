@@ -25,6 +25,10 @@ Upgrade:
                 CentOs 7 tests
               cases:
                 Simple environment: {}
+    Minor:
+      description: >-
+        Last released minor version tests
+      sub_sections: *lifecycle_sub_sections
     Patch:
       description: >-
         Last released patch version tests
