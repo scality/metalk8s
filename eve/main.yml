@@ -541,8 +541,11 @@ stages:
       - TriggerStages:
           name: Trigger post-merge lifecycle and solutions stages simultaneously
           stage_names:
-            - post-merge-lifecycle
             - post-merge-solutions
+            - lifecycle-dev-branch
+            - lifecycle-patch-version
+            - lifecycle-minor-version
+            - bootstrap-restore
           haltOnFailure: true
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
@@ -562,7 +565,7 @@ stages:
             - build-example-solution
           haltOnFailure: true
 
-  post-merge-lifecycle:
+  lifecycle-dev-branch:
     worker:
       type: local
     steps:
@@ -585,12 +588,10 @@ stages:
           env:
             BASE_URL: "%(prop:artifacts_private_url)s/pre"
       - TriggerStages:
-          name: Trigger upgrade, downgrade and restore test stages simultaneously
+          name: Trigger upgrade and downgrade test stages simultaneously
           stage_names:
             - single-node-upgrade-centos
             - single-node-downgrade-centos
-            - single-node-patch-version
-            - bootstrap-restore
           waitForFinish: True
 
   create-upload-testrail-objects:
@@ -1283,13 +1284,17 @@ stages:
             TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
           workdir: build/eve/workers/openstack-single-node-rhel/terraform
 
-  single-node-patch-version:
+  lifecycle-patch-version:
     worker:
       type: local
     steps:
+      - SetProperty:
+          name: Set promoted version type to patch
+          property: promoted_version_type
+          value: patch
       - SetPropertyFromCommand:
           name: Set previous patch version to upgrade from and downgrade to
-          property: product_version_prev_patch
+          property: product_promoted_version
           command: >
               major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
@@ -1300,7 +1305,7 @@ stages:
           property: patch_present
           env:
             PRODUCT_VERSION: "%(prop:product_version)s"
-            PRODUCT_VERSION_PREV_patch: "%(prop:product_version_prev_patch)s"
+            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
           command: |-
               if [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV_patch" ]; then
                 echo "true"
@@ -1311,15 +1316,51 @@ stages:
           name: Trigger single-node steps with patch Artifact ISO
           doStepIf: "%(prop:patch_present)s"
           stage_names:
-            - single-node-upgrade-patch-centos
-            - single-node-downgrade-patch-centos
+            - single-node-upgrade-promoted-centos
+            - single-node-downgrade-promoted-centos
 
-# --- Upgrade for patch versions ---
-  single-node-upgrade-patch-centos:
+  lifecycle-minor-version:
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set promoted version type to minor
+          property: promoted_version_type
+          value: minor
+      - Git: *git_pull
+      - SetPropertyFromCommand:
+          name: Set previous minor version to upgrade from and downgrade to
+          property: product_promoted_version
+          command: >
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+              git tag --list "$major.$(( $minor-1 )).*" | tail -1
+      - SetPropertyFromCommand:
+          name: Set the minor version flag
+          property: minor_present
+          env:
+            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
+          command: |-
+              if [ -z "$PRODUCT_VERSION_PREV_patch" ]; then
+                echo "false"
+              else
+                echo "true"
+              fi
+      - TriggerStages:
+          name: Trigger single-node steps with minor Artifact ISO
+          doStepIf: "%(prop:minor_present)s"
+          stage_names:
+            - single-node-upgrade-promoted-centos
+            - single-node-downgrade-promoted-centos
+
+
+# --- Upgrade for promoted versions ---
+  single-node-upgrade-promoted-centos:
     _metalk8s_internal_info:
-      junit_info: &_upgrade_patch_single-node_junit_info
+      junit_info: &_upgrade_promoted_single-node_junit_info
         TEST_SUITE: upgrade
-        CLASS_NAME: patch.single node.centos7
+        # NOTE: promoted_version_type should be "patch" or "minor"
+        CLASS_NAME: "%(prop:promoted_version_type)s.single node.centos7"
         TEST_NAME: simple environment
     simultaneous_build: 20
     worker: *single_node_worker
@@ -1329,69 +1370,69 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            <<: *_upgrade_patch_single-node_junit_info
-            STEP_NAME: single-node-upgrade-patch-centos
+            <<: *_upgrade_promoted_single-node_junit_info
+            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
-      # --- Get VERSION patch ISO for version N-1 from Artefacts ---
-      - ShellCommand: &retrieve_prev_patch_version_iso_checksum
+      # --- Get ISO for promoted version from Artefacts ---
+      - ShellCommand: &retrieve_promoted_version_iso_checksum
           <<: *retrieve_iso_checksum
-          name: Retrieve previous patch ISO image checksum
-          env: &_env_previous_patch
+          name: Retrieve promoted ISO image checksum
+          env: &_env_promoted_artifacts
             DEST_DIR: "/tmp"
             BASE_URL: "http://artifacts/builds/github:scality:metalk8s:\
-                      promoted-%(prop:product_version_prev_patch)s"
-      - ShellCommand: &retrieve_prev_patch_version_iso
+                      promoted-%(prop:product_promoted_version)s"
+      - ShellCommand: &retrieve_promoted_version_iso
           <<: *retrieve_iso
-          name: Retrieve previous patch ISO image
+          name: Retrieve promoted ISO image
           env:
-            <<: *_env_previous_patch
+            <<: *_env_promoted_artifacts
             MAX_ATTEMPTS: "300"
-      - ShellCommand: &check_prev_patch_version_iso_checksum
+      - ShellCommand: &check_promoted_version_iso_checksum
           <<: *check_iso_checksum
-          name: Check previous patch ISO image with checksum
+          name: Check promoted ISO image with checksum
           workdir: "/tmp"
-      # --- Prepare for Bootstrap with patch version N-1 ---
+      # --- Prepare for Bootstrap with promoted version ---
       - ShellCommand:
           <<: *create_mountpoint
-          env: &_env_prev_patch_version
-            PRODUCT_VERSION: "%(prop:product_version_prev_patch)s"
+          env: &_env_promoted_version
+            PRODUCT_VERSION: "%(prop:product_promoted_version)s"
       - ShellCommand:
           <<: *mount_iso
           env:
-            <<: *_env_prev_patch_version
+            <<: *_env_promoted_version
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
           <<: *bootstrap_config
-          env: *_env_prev_patch_version
-      # --- Install patch version N-1 ---
+          env: *_env_promoted_version
+      # --- Install promoted version ---
       - ShellCommand:
           <<: *run_bootstrap
-          env: *_env_prev_patch_version
+          env: *_env_promoted_version
       - ShellCommand:
           name: Provision Prometheus and AlertManager storage
           command: >
-            git checkout %(prop:product_version_prev_patch)s --quiet &&
+            git checkout %(prop:product_promoted_version)s --quiet &&
             sudo env
-            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:product_version_prev_patch)s/product.txt
-            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:product_version_prev_patch)s
+            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:product_promoted_version)s/product.txt
+            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:product_promoted_version)s
             eve/create-volumes.sh
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
-      # --- We do not need to Test patch version N-1 ---
+      # --- We do not need to Test promoted version ---
       # --- Upgrade to version N ---
       - ShellCommand:
           <<: *add_archive
           name: Add current ISO to cluster
           env:
             <<: *_env_add_archive
-            PRODUCT_VERSION: "%(prop:product_version_prev_patch)s"
+            <<: *_env_promoted_version
       - ShellCommand:
-          name: Run upgrade from previous patch version
+          name: Run upgrade from promoted version
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
@@ -1406,26 +1447,26 @@ stages:
       - ShellCommand:
           <<: *copy_report_artifacts
           env:
-            DEST_DIR: sosreport/sosreport/single-node-upgrade-patch-centos
+            DEST_DIR: sosreport/sosreport/single-node-upgrade-%(prop:promoted_version_type)s-centos
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            <<: *_upgrade_patch_single-node_junit_info
-            STEP_NAME: single-node-upgrade-patch-centos
+            <<: *_upgrade_promoted_single-node_junit_info
+            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           env:
-            STEP_NAME: single-node-upgrade-patch-centos
+            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
 
-  # --- Downgrade for patch versions ---
-  single-node-downgrade-patch-centos:
+  # --- Downgrade for promoted versions ---
+  single-node-downgrade-promoted-centos:
     _metalk8s_internal_info:
-      junit_info: &_downgrade_patch_single-node_junit_info
+      junit_info: &_downgrade_promoted_single-node_junit_info
         TEST_SUITE: downgrade
-        CLASS_NAME: patch.single node.centos7
+        CLASS_NAME: "%(prop:promoted_version_type)s.single node.centos7"
         TEST_NAME: simple environment
     simultaneous_builds: 20
     worker: *single_node_worker
@@ -1435,29 +1476,29 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            <<: *_downgrade_patch_single-node_junit_info
-            STEP_NAME: single-node-downgrade-patch-centos
+            <<: *_downgrade_promoted_single-node_junit_info
+            STEP_NAME: "single-node-downgrade-%(prop:promoted_version_type)s-centos"
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
-      # --- Get VERSION patch ISO for version N-1 from Artefacts ---
-      - ShellCommand: *retrieve_prev_patch_version_iso_checksum
-      - ShellCommand: *retrieve_prev_patch_version_iso
-      - ShellCommand: *check_prev_patch_version_iso_checksum
-      # --- Prepare for Bootstrap with patch version N ---
+      # --- Get ISO for promoted version from Artefacts ---
+      - ShellCommand: *retrieve_promoted_version_iso_checksum
+      - ShellCommand: *retrieve_promoted_version_iso
+      - ShellCommand: *check_promoted_version_iso_checksum
+      # --- Prepare for Bootstrap with version N ---
       - ShellCommand: *create_mountpoint
       - ShellCommand: *mount_iso
       - ShellCommand: *bootstrap_config
-      # --- Install patch version N ---
+      # --- Install version N ---
       - ShellCommand: *run_bootstrap
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
-      # --- Test patch version N ---
+      # --- Test version N ---
       - ShellCommand: *fast_tests
-      # --- Downgrade to patch version N-1 ---
+      # --- Downgrade to promoted version ---
       - ShellCommand:
           <<: *add_archive
           name: Add previous ISO to cluster
@@ -1465,40 +1506,40 @@ stages:
             <<: *_env_add_archive
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
-          name: Run downgrade to previous version
+          name: Run downgrade to promoted version
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:product_version_prev_patch)s
+            --destination-version %(prop:product_promoted_version)s
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
-      # --- Test patch version N-1 ---
+      # --- Test promoted version ---
       - ShellCommand:
           <<: *local_tests
-          name: Run fast tests locally for previous patch version
+          name: Run fast tests locally for promoted version
           env:
             <<: *_env_fast_tests
-            BRANCH: "%(prop:product_version_prev_patch)s"
+            BRANCH: "%(prop:product_promoted_version)s"
             ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:product_version_prev_patch)s
+              /srv/scality/metalk8s-%(prop:product_promoted_version)s
       # --- Collect logs ---
       - ShellCommand: *collect_sosreport
       - ShellCommand:
           <<: *copy_report_artifacts
           env:
-            DEST_DIR: sosreport/sosreport/single-node-downgrade-patch-centos
+            DEST_DIR: sosreport/sosreport/single-node-downgrade-%(prop:promoted_version_type)s-centos
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            <<: *_downgrade_patch_single-node_junit_info
-            STEP_NAME: single-node-downgrade-patch-centos
+            <<: *_downgrade_promoted_single-node_junit_info
+            STEP_NAME: "single-node-downgrade-%(prop:promoted_version_type)s-centos"
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           env:
-            STEP_NAME: single-node-downgrade-patch-centos
+            STEP_NAME: "single-node-downgrade-%(prop:promoted_version_type)s-centos"
 
   multiple-nodes-centos:
     _metalk8s_internal_info:
