@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Release 2.5.1 (in development)
+## Release 2.5.2 (in development)
+
+## Release 2.5.1
 
 ### Breaking changes
 
