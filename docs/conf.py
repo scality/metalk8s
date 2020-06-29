@@ -104,6 +104,8 @@ master_doc = 'index'
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+if RELEASE_BUILD:
+    exclude_patterns.append('developer/*')
 
 # -- Options for HTML output -------------------------------------------------
 
