@@ -6,6 +6,7 @@ import contextlib
 import errno
 import fcntl
 import functools
+import glob
 import json
 import re
 import operator
@@ -394,13 +395,7 @@ class SparseLoopDeviceNoFormat(SparseLoopDevice):
         return re.search(pattern, result['stdout']) is not None
 
     def prepare(self, force=False):
-        # Create a GPT partition table.
-        _run_cmd(' '.join(['parted', self.path, 'mktable', 'gpt']))
-        # Create a single partition labelled with the volume UUID.
-        _run_cmd(' '.join([
-            'parted', '--align', 'optimal', self.path,
-            'mkpart', self.get('metadata.uid'), '0%', '100%',
-        ]))
+        prepare_noformat(self.path, self.get('metadata.uid'))
 
 
 # }}}
@@ -441,6 +436,70 @@ class RawBlockDevice(Volume):
     def clean_up(self):
         return  # Nothing to do
 
+class RawBlockDeviceNoFormat(RawBlockDevice):
+    def __init__(self, volume):
+        super(RawBlockDeviceNoFormat, self).__init__(volume)
+        # Detect which kind of device we have: a real disk, only a partition or
+        # an LVM volume.
+        name = device_name(self.path)
+        self._partition = None
+        for symlink in glob.glob('/dev/disk/by-id/dm-uuid-LVM-*'):
+            realpath = os.path.realpath(symlink)
+            if os.path.basename(realpath) == name:
+                self._kind = DeviceType.LVM
+                return
+        match = re.search('(?P<partition>\d+)$', name)
+        if match is not None:
+            self._kind = DeviceType.PARTITION
+            self._partition = match.groupdict()['partition']
+        else:
+            self._kind = DeviceType.DISK
+
+    @property
+    def persistent_path(self):
+        if self._kind == DeviceType.LVM:
+            name = device_name(self.path)
+            for symlink in glob.glob('/dev/disk/by-id/dm-uuid-LVM-*'):
+                realpath = os.path.realpath(symlink)
+                if os.path.basename(realpath) == name:
+                    return symlink
+        return '/dev/disk/by-partlabel/{}'.format(self.get('metadata.uid'))
+
+    @property
+    def device_path(self):
+        path = self.path
+        if self._kind == DeviceType.PARTITION:
+            path = path.rstrip(self._partition)
+        return path
+
+    @property
+    def is_prepared(self):
+        # Nothing to do in LVM case (we use LVM UUID).
+        if self._kind == DeviceType.LVM:
+            return True
+        partition = self._partition or '1'
+        pattern = '{}.+{}'.format(partition, self.get('metadata.uid').lower())
+        result  = _run_cmd(' '.join(['parted', self.device_path, 'print']))
+        return re.search(pattern, result['stdout']) is not None
+
+    def prepare(self, force=False):
+        # Nothing to do in LVM case.
+        if self._kind == DeviceType.LVM:
+            return
+        uuid = self.get('metadata.uid')
+        # In case of partition, set the label to volume UUID.
+        if self._kind == DeviceType.PARTITION:
+            _run_cmd(' '.join([
+                'parted', self.device_path, 'name', self._partition, uuid
+            ]))
+        # Otherwise, create a GPT table and a unique partition.
+        else:
+            prepare_noformat(self.path, uuid)
+
+class DeviceType:
+    DISK      = 1
+    PARTITION = 2
+    LVM       = 3
 
 # }}}
 # Helpers {{{
@@ -452,7 +511,10 @@ def _get_volume(name):
     if volume is None:
         raise ValueError('volume {} not found in pillar'.format(name))
     if 'rawBlockDevice' in volume['spec']:
-        return RawBlockDevice(volume)
+        if volume['spec']['rawBlockDevice'].get('noFormat', False):
+            return RawBlockDeviceNoFormat(volume)
+        else:
+            return RawBlockDevice(volume)
     elif 'sparseLoopDevice' in volume['spec']:
         if volume['spec']['sparseLoopDevice'].get('noFormat', False):
             return SparseLoopDeviceNoFormat(volume)
@@ -589,5 +651,17 @@ def _mkfs_xfs(path, uuid, force=False, options=None):
     command.append(path)
     return command
 
+def prepare_noformat(path, uuid):
+    """Prepare a "noformat" volume.
+
+    We use a GPT table and a single partition to have a link between the volume
+    UUID and the paritition label.
+    """
+    # Create a GPT partition table.
+    _run_cmd(' '.join(['parted', path, 'mktable', 'gpt']))
+    # Create a single partition labelled with the volume UUID.
+    _run_cmd(' '.join([
+        'parted', '--align', 'optimal', path, 'mkpart', uuid, '0%', '100%',
+    ]))
 
 # }}}
