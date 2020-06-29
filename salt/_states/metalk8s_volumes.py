@@ -88,8 +88,8 @@ def provisioned(name):
     return ret
 
 
-def formatted(name):
-    """Format the given volume.
+def prepared(name):
+    """Prepare the given volume.
 
     Args:
         name (str): Volume name
@@ -99,26 +99,26 @@ def formatted(name):
     """
     ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
     # Idempotence.
-    if __salt__['metalk8s_volumes.is_formatted'](name):
+    if __salt__['metalk8s_volumes.is_prepared'](name):
         ret['result'] = True
-        ret['comment'] = 'Volume {} already formatted.'.format(name)
+        ret['comment'] = 'Volume {} already prepared.'.format(name)
         return ret
     # Dry-run.
     if __opts__['test']:
-        ret['changes'][name] = 'Formatted'
+        ret['changes'][name] = 'Prepared'
         ret['result'] = None
-        ret['comment'] = 'Volume {} is going to be formatted.'.format(name)
+        ret['comment'] = 'Volume {} is going to be prepared.'.format(name)
         return ret
     # Let's go for real.
     try:
-        __salt__['metalk8s_volumes.format'](name)
+        __salt__['metalk8s_volumes.prepare'](name)
     except Exception as exn:
         ret['result'] = False
-        ret['comment'] = 'Failed to format volume {}: {}.'.format(name, exn)
+        ret['comment'] = 'Failed to prepare volume {}: {}.'.format(name, exn)
     else:
-        ret['changes'][name] = 'Formatted'
+        ret['changes'][name] = 'Prepared'
         ret['result'] = True
-        ret['comment'] = 'Volume {} formatted.'.format(name)
+        ret['comment'] = 'Volume {} prepared.'.format(name)
     return ret
 
 

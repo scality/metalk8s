@@ -34,8 +34,8 @@ Create backing storage for {{ volume }}:
     - require:
       - file: Create the sparse file directory
 
-Format backing storage for {{ volume }}:
-  metalk8s_volumes.formatted:
+Prepare backing storage for {{ volume }}:
+  metalk8s_volumes.prepared:
     - name: {{ volume }}
     - require:
       - metalk8s_package_manager: Install e2fsprogs
@@ -47,7 +47,7 @@ Provision backing storage for {{ volume }}:
   metalk8s_volumes.provisioned:
     - name: {{ volume }}
     - require:
-      - metalk8s_volumes: Format backing storage for {{ volume }}
+      - metalk8s_volumes: Prepare backing storage for {{ volume }}
 
 Update pillar after volume provisionning:
   module.run:

@@ -92,26 +92,26 @@ def provision(name):
     _get_volume(name).provision()
 
 
-def is_formatted(name):
-    """Check if the given volume is formatted.
+def is_prepared(name):
+    """Check if the given volume is prepared.
 
     Args:
         name (str): volume name
 
     Returns:
-        bool: True if the volume is already formatted, otherwise False
+        bool: True if the volume is already prepared, otherwise False
 
     CLI Example:
 
     .. code-block:: bash
 
-        salt '<NODE_NAME>' metalk8s_volumes.volume_is_formatted example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.is_prepared example-volume
     """
-    return _get_volume(name).is_formatted
+    return _get_volume(name).is_prepared
 
 
-def format(name):
-    """Format the given volume.
+def prepare(name):
+    """Prepare the given volume.
 
     Args:
         name (str): volume name
@@ -120,9 +120,9 @@ def format(name):
 
     .. code-block:: bash
 
-        salt '<NODE_NAME>' metalk8s_volumes.format example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.prepare example-volume
     """
-    _get_volume(name).format()
+    _get_volume(name).prepare()
 
 
 def is_cleaned_up(name):
@@ -260,13 +260,13 @@ class Volume(object):
         return
 
     @property
-    def is_formatted(self):
-        """Check if the volume is already formatted by us."""
+    def is_prepared(self):
+        """Check if the volume is already prepared by us."""
         uuid = self.get('metadata.uid').lower()
         return _get_from_blkid(self.path).uuid == uuid
 
-    def format(self, force=False):
-        """Format the volume.
+    def prepare(self, force=False):
+        """Prepare the volume.
 
         The volume is formatted according to its StorageClass.
         """
@@ -356,9 +356,9 @@ class SparseLoopDevice(Volume):
         command = ' '.join(list(self.PROVISIONING_COMMAND) + [self.path])
         return _run_cmd(command)
 
-    def format(self, force=False):
+    def prepare(self, force=False):
         # We format a "normal" file, not a block device: we need force=True.
-        super(SparseLoopDevice, self).format(force=True)
+        super(SparseLoopDevice, self).prepare(force=True)
 
     @property
     def is_cleaned_up(self):
@@ -385,14 +385,15 @@ class SparseLoopDeviceNoFormat(SparseLoopDevice):
     def device_path(self):
         return '/dev/disk/by-partlabel/{}'.format(self.get('metadata.uid'))
 
-    def is_formatted(self):
-        """Check if the volume is already formatted by us."""
+    @property
+    def is_prepared(self):
+        """Check if the volume is already prepared."""
         # Partition 1 should be labelled with the volume UUID.
         pattern = '1.+{}'.format(self.get('metadata.uid').lower())
         result  = _run_cmd(' '.join(['parted', self.path, 'print']))
         return re.search(pattern, result['stdout']) is not None
 
-    def format(self, force=False):
+    def prepare(self, force=False):
         # Create a GPT partition table.
         _run_cmd(' '.join(['parted', self.path, 'mktable', 'gpt']))
         # Create a single partition labelled with the volume UUID.
