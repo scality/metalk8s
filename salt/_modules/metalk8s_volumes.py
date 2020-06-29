@@ -251,14 +251,18 @@ class Volume(object):
 
     def device_info(self):
         """Return size and path of the underlying block device"""
-        path = '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
-        size = __salt__['disk.dump'](path)['getsize64']
-        return {'size': size, 'path': path}
+        size = __salt__['disk.dump'](self.persistent_path)['getsize64']
+        return {'size': size, 'path': self.persistent_path}
 
     @abc.abstractproperty
     def path(self):
         """Path to the backing device."""
         return
+
+    @property
+    def persistent_path(self):
+        """Return a persistent path to the backing device."""
+        return '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
 
     @property
     def is_prepared(self):
@@ -315,10 +319,6 @@ class SparseLoopDevice(Volume):
         )
 
     @property
-    def device_path(self):
-        return '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
-
-    @property
     def size(self):
         return _quantity_to_bytes(self.get('spec.sparseLoopDevice.size'))
 
@@ -368,7 +368,7 @@ class SparseLoopDevice(Volume):
     def clean_up(self):
         LOOP_CLR_FD = 0x4C01  # From /usr/include/linux/loop.h
         try:
-            with _open_fd(self.device_path, os.O_RDONLY) as fd:
+            with _open_fd(self.persistent_path, os.O_RDONLY) as fd:
                 fcntl.ioctl(fd, LOOP_CLR_FD, 0)
             os.remove(self.path)
         except OSError as exn:
@@ -383,7 +383,7 @@ class SparseLoopDeviceNoFormat(SparseLoopDevice):
     PROVISIONING_COMMAND = ('losetup', '--find', '--partscan')
 
     @property
-    def device_path(self):
+    def persistent_path(self):
         return '/dev/disk/by-partlabel/{}'.format(self.get('metadata.uid'))
 
     @property
