@@ -26,6 +26,7 @@ This section describes how to create a **Volume** from the **CLI**.
          storageClassName: <storageclass_name>
          rawBlockDevice:
            devicePath: <device_path>
+           noFormat: false
 
    Set the following fields:
 
@@ -33,6 +34,8 @@ This section describes how to create a **Volume** from the **CLI**.
    - **nodeName**: the name of the node where the volume will be located.
    - **storageClassName**: the **StorageClass** to use
    - **devicePath**: path to the block device (for example, `/dev/sda1`).
+   - **noFormat**: skip the volume formatting if **true**, optional (default to
+     **false**, i.e. apply a formatting according to the **StorageClass**).
 
 #. Create the **Volume**
 
