@@ -303,11 +303,19 @@ class Volume(object):
 
 
 class SparseLoopDevice(Volume):
+    # Recent losetup support `--nooverlap` but not the one shipped with
+    # CentOS 7.
+    PROVISIONING_COMMAND = ('losetup', '--find')
+
     @property
     def path(self):
         return '/var/lib/metalk8s/storage/sparse/{}'.format(
             self.get('metadata.uid')
         )
+
+    @property
+    def device_path(self):
+        return '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
 
     @property
     def size(self):
@@ -345,9 +353,7 @@ class SparseLoopDevice(Volume):
         return re.search(pattern, result['stdout']) is not None
 
     def provision(self):
-        # Recent losetup support `--nooverlap` but not the one shipped with
-        # CentOS 7.
-        command = ' '.join(['losetup', '--find', self.path])
+        command = ' '.join(list(self.PROVISIONING_COMMAND) + [self.path])
         return _run_cmd(command)
 
     def format(self, force=False):
@@ -360,15 +366,40 @@ class SparseLoopDevice(Volume):
 
     def clean_up(self):
         LOOP_CLR_FD = 0x4C01  # From /usr/include/linux/loop.h
-        device_path = '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
         try:
-            with _open_fd(device_path, os.O_RDONLY) as fd:
+            with _open_fd(self.device_path, os.O_RDONLY) as fd:
                 fcntl.ioctl(fd, LOOP_CLR_FD, 0)
             os.remove(self.path)
         except OSError as exn:
             if exn.errno != errno.ENOENT:
                 raise
             log.warning('{} already removed'.format(exn.filename))
+
+
+class SparseLoopDeviceNoFormat(SparseLoopDevice):
+    # Recent losetup support `--nooverlap` but not the one shipped with
+    # CentOS 7.
+    PROVISIONING_COMMAND = ('losetup', '--find', '--partscan')
+
+    @property
+    def device_path(self):
+        return '/dev/disk/by-partlabel/{}'.format(self.get('metadata.uid'))
+
+    def is_formatted(self):
+        """Check if the volume is already formatted by us."""
+        # Partition 1 should be labelled with the volume UUID.
+        pattern = '1.+{}'.format(self.get('metadata.uid').lower())
+        result  = _run_cmd(' '.join(['parted', self.path, 'print']))
+        return re.search(pattern, result['stdout']) is not None
+
+    def format(self, force=False):
+        # Create a GPT partition table.
+        _run_cmd(' '.join(['parted', self.path, 'mktable', 'gpt']))
+        # Create a single partition labelled with the volume UUID.
+        _run_cmd(' '.join([
+            'parted', '--align', 'optimal', self.path,
+            'mkpart', self.get('metadata.uid'), '0%', '100%',
+        ]))
 
 
 # }}}
@@ -422,7 +453,10 @@ def _get_volume(name):
     if 'rawBlockDevice' in volume['spec']:
         return RawBlockDevice(volume)
     elif 'sparseLoopDevice' in volume['spec']:
-        return SparseLoopDevice(volume)
+        if volume['spec']['sparseLoopDevice'].get('noFormat', False):
+            return SparseLoopDeviceNoFormat(volume)
+        else:
+            return SparseLoopDevice(volume)
     else:
         raise ValueError('unsupported Volume type for Volume {}'.format(name))
 
