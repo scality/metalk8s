@@ -29,7 +29,6 @@ spec:
   containers:
     - name: salt-master
       image: {{ image }}
-      args: ['--log-level=info']
       ports:
         - name: publisher
           containerPort: 4505
@@ -82,7 +81,6 @@ spec:
     - name: salt-api
       image: {{ image }}
       command: ['salt-api']
-      args: ['--log-level=info']
       ports:
         - name: api
           containerPort: 4507

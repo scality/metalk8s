@@ -1,4 +1,5 @@
 {% from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{% from "metalk8s/map.jinja" import metalk8s with context %}
 {% from "metalk8s/map.jinja" import networks with context %}
 
 include:
@@ -32,6 +33,7 @@ Create kube-controller-manager Pod manifest:
           - --root-ca-file=/etc/kubernetes/pki/ca.crt
           - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
           - --use-service-account-credentials=true
+          - --v={{ 2 if metalk8s.debug else 0 }}
         requested_cpu: 200m
         ports:
           - name: http-metrics

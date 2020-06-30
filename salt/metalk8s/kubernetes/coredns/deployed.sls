@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import coredns with context %}
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 
 {%- set cluster_dns_ip = salt.metalk8s_network.get_cluster_dns_ip() %}
 
@@ -26,6 +27,9 @@ Create coredns ConfigMap:
                 loop
                 reload
                 loadbalance
+                {%- if metalk8s.debug %}
+                log
+                {%- endif %}
             }
 
 Create coredns deployment:

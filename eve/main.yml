@@ -95,9 +95,11 @@ models:
   - Upload: &upload_artifacts
       name: Upload artifacts
       source: artifacts
+      alwaysRun: True
   - Upload: &upload_report_artifacts
       name: Upload sosreport logs to artifacts
       source: sosreport
+      alwaysRun: True
   - ShellCommand: &collect_sosreport
       name: Collect logs using sosreport
       command: >
@@ -106,6 +108,7 @@ models:
         -o containerd -kcontainerd.all=True -kcontainerd.logs=True
         --batch --tmp-dir /var/tmp &&
         sudo chown eve:eve /var/tmp/sosreport*
+      alwaysRun: true
   - ShellCommand: &wait_debug
       name: Debug step - wait before allowing resource destruction
       env:
@@ -247,6 +250,7 @@ models:
       name: Create bootstrap configuration file
       env:
         PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+        DEBUG: "%(prop:metalk8s_debug:-false)s"
       command: |
         sudo bash << EOF
         mkdir -p /etc/metalk8s
@@ -262,6 +266,7 @@ models:
           host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
         archives:
           - "/srv/scality/metalk8s-${PRODUCT_VERSION}"
+        debug: ${DEBUG}
         END
         EOF
       haltOnFailure: true
@@ -282,7 +287,7 @@ models:
       command: >
         sudo bash
         "/srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh"
-        --archive "$(readlink -f "${ISO_PATH}")"
+        --archive "$(readlink -f "${ISO_PATH}")" --verbose
       haltOnFailure: true
   - ShellCommand: &local_tests
       name: Run tests locally
@@ -416,6 +421,7 @@ models:
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
         TF_VAR_prefix: "%(prop:buildnumber)s-%(prop:stage_name)s"
+        TF_VAR_debug: "%(prop:metalk8s_debug:-false)s"
         MAX_RETRIES: "3"
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
@@ -1039,7 +1045,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:metalk8s_version_prev)s
+            --destination-version "%(prop:metalk8s_version_prev)s" --verbose
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
@@ -1108,7 +1114,9 @@ stages:
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
           <<: *bootstrap_config
-          env: *_env_version_prev
+          env:
+            <<: *_env_version_prev
+            DEBUG: "%(prop:metalk8s_debug:-false)s"
       # --- Install version N-1 ---
       - ShellCommand:
           <<: *run_bootstrap
@@ -1134,7 +1142,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version %(prop:metalk8s_version)s
+            --destination-version "%(prop:metalk8s_version)s" --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
@@ -1448,7 +1456,9 @@ stages:
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
           <<: *bootstrap_config
-          env: *_env_promoted_version
+          env:
+            <<: *_env_promoted_version
+            DEBUG: "%(prop:metalk8s_debug:-false)s"
       # --- Install promoted version ---
       - ShellCommand:
           <<: *run_bootstrap
@@ -1476,7 +1486,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version %(prop:metalk8s_version)s
+            --destination-version %(prop:metalk8s_version)s --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
@@ -1550,7 +1560,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:product_promoted_version)s
+            --destination-version %(prop:product_promoted_version)s --verbose
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
       # --- Test promoted version ---
