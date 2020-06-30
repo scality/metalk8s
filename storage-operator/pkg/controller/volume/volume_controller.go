@@ -134,7 +134,13 @@ health of the PersistentVolume we just created).
             |                                                    |
             +----------------------------------------------------+
 
+================
+= Steady state =
+================
 
+Once the volume is deployed, we update, with a synchronous Salt call, the
+`deviceName` status field at each reconciliation loop iteration. This field
+contains the name of the underlying block device (as found under `/dev`).
 
 ===================
 = Finalize Volume =
