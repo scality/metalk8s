@@ -880,6 +880,7 @@ stages:
           stage_names:
             - unit_tests_ui
             - unit_tests_storage_operator
+            - unit_tests_salt
 
   unit_tests_ui:
     _metalk8s_internal_info:
@@ -967,6 +968,41 @@ stages:
             <<: *_env_final_status_artifact_success
             <<: *_unit-test_storage_operator_junit_info
             STEP_NAME: unit_tests_storage_operator
+      - Upload: *upload_final_status_artifact
+
+  unit_tests_salt:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_salt_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: salt
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'salt'
+          dockerfile: eve/workers/pod-unit-tests/salt/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-salt-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_salt_junit_info
+            STEP_NAME: unit_tests_salt
+      - ShellCommand: *setup_cache
+      - ShellCommand:
+          name: Run all salt unit tests
+          command: tox -e unit-tests
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_salt_junit_info
+            STEP_NAME: unit_tests_salt
       - Upload: *upload_final_status_artifact
 
   single-node-downgrade-centos:
