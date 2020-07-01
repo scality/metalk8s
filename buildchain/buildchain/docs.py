@@ -116,9 +116,6 @@ def task_doc() -> Iterator[types.TaskDict]:
             command=['/entrypoint.sh', target.command],
             builder=builder.DOC_BUILDER,
             run_config=run_config,
-            environment={
-                'O': '-t release',
-            },
             mounts=[
                 utils.bind_mount(
                     target=Path('/usr/src/metalk8s/docs/_build/'),
