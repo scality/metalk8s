@@ -878,26 +878,38 @@ stages:
       - Upload: *upload_final_status_artifact
 
   unit_tests:
+    worker:
+      type: local
+    steps:
+      - TriggerStages:
+          name: Trigger all unit tests simultaneously
+          stage_names:
+            - unit_tests_ui
+            - unit_tests_storage_operator
+            - unit_tests_salt
+
+  unit_tests_ui:
     _metalk8s_internal_info:
-      junit_info: &_unit-test_junit_info
+      junit_info: &_unit-test_ui_junit_info
         TEST_SUITE: unit test
-        # This one should be split in different test case for each unit tests
-        TEST_NAME: full
+        TEST_NAME: ui
     worker:
       type: kube_pod
       path: eve/workers/pod-unit-tests/pod.yaml
       images:
         docker-unit-tests:
-          context: 'storage-operator'
-          dockerfile: eve/workers/pod-unit-tests/Dockerfile
+          context: 'ui'
+          dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-ui-worker"
     steps:
       - Git: *git_pull
       - ShellCommand:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            <<: *_unit-test_junit_info
-            STEP_NAME: unit_tests
+            <<: *_unit-test_ui_junit_info
+            STEP_NAME: unit_tests_ui
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all UI unit tests
@@ -909,7 +921,7 @@ stages:
             -q
             --no-update-notifier &&
             npm run test:nowatch --no-update-notifier
-          haltOnFailure: false
+          haltOnFailure: true
       - ShellCommand:
           name: Prepare upload folder
           command: >
@@ -921,16 +933,82 @@ stages:
           source: ui/upload
           alwaysRun: true
       - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_ui_junit_info
+            STEP_NAME: unit_tests_ui
+      - Upload: *upload_final_status_artifact
+
+  unit_tests_storage_operator:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_storage_operator_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: storage operator
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'storage-operator'
+          dockerfile: eve/workers/pod-unit-tests/storage-operator/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-storage-operator-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_storage_operator_junit_info
+            STEP_NAME: unit_tests_storage_operator
+      - ShellCommand: *setup_cache
+      - ShellCommand:
           name: Run all storage-operator unit tests
           workdir: build/storage-operator
           command: go test -cover -v ./...
-          haltOnFailure: false
+          haltOnFailure: true
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            <<: *_unit-test_junit_info
-            STEP_NAME: unit_tests
+            <<: *_unit-test_storage_operator_junit_info
+            STEP_NAME: unit_tests_storage_operator
+      - Upload: *upload_final_status_artifact
+
+  unit_tests_salt:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_salt_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: salt
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'salt'
+          dockerfile: eve/workers/pod-unit-tests/salt/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-salt-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_salt_junit_info
+            STEP_NAME: unit_tests_salt
+      - ShellCommand: *setup_cache
+      - ShellCommand:
+          name: Run all salt unit tests
+          command: tox -e unit-tests
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_salt_junit_info
+            STEP_NAME: unit_tests_salt
       - Upload: *upload_final_status_artifact
 
   single-node-downgrade-centos:

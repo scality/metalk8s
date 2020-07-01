@@ -1,0 +1,5 @@
+pytest ~= 4.3.0
+salt == 3000.3
+salttesting == 2018.9.21
+mock == 3.0.5
+parameterized == 0.7.4
