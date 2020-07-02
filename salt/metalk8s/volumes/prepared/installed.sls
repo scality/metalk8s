@@ -12,3 +12,8 @@ Install xfsprogs:
   {{ pkg_installed('xfsprogs') }}
     - require:
       - test: Repositories configured
+
+Install parted:
+  {{ pkg_installed('parted') }}
+    - require:
+      - test: Repositories configured
