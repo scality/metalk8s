@@ -11,6 +11,7 @@ import json
 import re
 import operator
 import os
+import time
 
 import logging
 
@@ -174,11 +175,15 @@ def device_name(path):
 
         salt '<NODE_NAME>' metalk8s_volumes.device_name /dev/disk/by-uuid/668efc89-be5b-4b13-b3d1-1294e829f33b
     """
-    # TOCTTOU, but `realpath` doesn't return error on non-existing path…
-    if not os.path.exists(path):
-        raise Exception('device `{}` not found'.format(path))
-    realpath = os.path.realpath(path)
-    return os.path.basename(realpath)
+    # Have some retry logic, because some device manipulations may lead to
+    # transient absence.
+    for _ in range(10):
+        # TOCTTOU, but `realpath` doesn't return error on non-existing path…
+        if os.path.exists(path):
+            realpath = os.path.realpath(path)
+            return os.path.basename(realpath)
+        time.sleep(0.1)
+    raise Exception('device `{}` not found'.format(path))
 
 
 def device_info(name):
