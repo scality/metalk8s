@@ -22,6 +22,12 @@ class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
         }
     }
 
+    def test_virtual(self):
+        """
+        Tests the return of `__virtual__` function
+        """
+        self.assertEqual(metalk8s_network.__virtual__(), 'metalk8s_network')
+
     def test_get_kubernetes_service_ip_success(self):
         """
         Tests the return of `get_kubernetes_service_ip` function, success

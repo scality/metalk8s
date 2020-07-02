@@ -124,6 +124,10 @@ def execute(name, command, *args):
         return None
 
     container_id = out['stdout']
+    if not container_id:
+        log.error('Container "%s" does not exists', name)
+        return None
+
     cmd_opts = "{0} {1}".format(command, " ".join(args))
 
     log.info('Executing command "%s"', cmd_opts)

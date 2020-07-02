@@ -1,0 +1,194 @@
+import json
+
+from parameterized import parameterized
+
+from salttesting.mixins import LoaderModuleMockMixin
+from salttesting.unit import TestCase
+from salttesting.mock import MagicMock, patch
+
+from tests.unit import utils
+
+import cri
+
+
+IMAGES_LIST = [{
+    "id": "sha256:da86e6ba6ca197bf6bc5e9d900febd906b133eaa4750e6bed647b0fbe50ed43e",
+    "repoTags": [
+        "k8s.gcr.io/pause:3.1"
+    ],
+    "repoDigests": [
+    ],
+    "size": "746400",
+    "uid": None,
+    "username": ""
+}, {
+    "id": "sha256:2c4adeb21b4ff8ed3309d0e42b6b4ae39872399f7b37e0856e673b13c4aba13d",
+    "repoTags": [
+        "metalk8s-registry-from-config.invalid/metalk8s-2.4.2/etcd:3.3.10",
+        "myEtcdTag"
+    ],
+    "repoDigests": [
+        "metalk8s-registry-from-config.invalid/metalk8s-2.4.2/etcd@sha256:240bd81c2f54873804363665c5d1a9b8e06ec5c63cfc181e026ddec1d81585bb"
+    ],
+    "size": "76160693",
+    "uid": None,
+    "username": ""
+}]
+
+COMPONENT_LIST = [{
+    "id": "225a77f7ef0df4347ac7ac81a351f3b122b592cbbee62e157061cf28a811ac45",
+    "metadata": {
+        "name": "etcd-bootstrap",
+        "uid": "f556b9016283651c92291c6d844ea468",
+        "namespace": "kube-system",
+        "attempt": 2
+    },
+    "state": "SANDBOX_READY",
+    "createdAt": "1593676785281403260",
+    "labels": {
+        "component": "etcd",
+        "io.kubernetes.pod.name": "etcd-bootstrap",
+        "io.kubernetes.pod.namespace": "kube-system",
+        "io.kubernetes.pod.uid": "f556b9016283651c92291c6d844ea468",
+        "metalk8s.scality.com/version": "2.5.1-dev",
+        "tier": "control-plane"
+    },
+    "annotations": {
+        "kubernetes.io/config.hash": "f556b9016283651c92291c6d844ea468",
+        "kubernetes.io/config.seen": "2020-07-02T07:59:42.325844296Z",
+        "kubernetes.io/config.source": "file",
+        "scheduler.alpha.kubernetes.io/critical-pod": ""
+    }
+}]
+
+
+class CriTestCase(TestCase, LoaderModuleMockMixin):
+    """
+    TestCase for `cri` module
+    """
+    loader_module = cri
+
+    def test_virtual(self):
+        """
+        Tests the return of `__virtual__` function
+        """
+        self.assertEqual(cri.__virtual__(), 'cri')
+
+    @parameterized.expand([
+        (0, json.dumps({'images': IMAGES_LIST}, indent=4), IMAGES_LIST),
+        (1, 'this command failed', None),
+        (0, json.dumps({'images': []}, indent=4), [])
+    ])
+    def test_list_image(self, retcode, stdout, result):
+        """
+        Tests the return of `list_images` function
+        """
+        cmd = utils.cmd_output(retcode=retcode, stdout=stdout)
+        mock_cmd = MagicMock(return_value=cmd)
+        with patch.dict(cri.__salt__, {'cmd.run_all': mock_cmd}):
+            self.assertEqual(cri.list_images(), result)
+            mock_cmd.assert_called_once_with('crictl images -o json')
+
+    @parameterized.expand([
+        (IMAGES_LIST, "k8s.gcr.io/pause:3.1", True),
+        (IMAGES_LIST, "metalk8s-registry-from-config.invalid/metalk8s-2.4.2/etcd:3.3.10", True),
+        (IMAGES_LIST, "myEtcdTag", True),
+        (IMAGES_LIST, "metalk8s-registry-from-config.invalid/metalk8s-2.4.2/etcd@sha256:240bd81c2f54873804363665c5d1a9b8e06ec5c63cfc181e026ddec1d81585bb", True),
+        (IMAGES_LIST, "Abc", False),
+        (None, "k8s.gcr.io/pause:3.1", False),
+        ([], "k8s.gcr.io/pause:3.1", False)
+    ])
+    def test_available(self, images_list, name, result):
+        """
+        Tests the return of `available` function
+        """
+        with patch("cri.list_images", MagicMock(return_value=images_list)):
+            self.assertEqual(cri.available(name), result)
+
+    @parameterized.expand([
+        (0, "Image is up to date for sha256:2bd222736f60f13a760bcfcc0728e4bd0812169d9d3068c01319c72102c9972a", {'digests': {'sha256': '2bd222736f60f13a760bcfcc0728e4bd0812169d9d3068c01319c72102c9972a'}}),
+        (1, "", None),
+        (0, "Not expected result", {'digests': {}})
+    ])
+    def test_pull_image(self, retcode, stdout, result):
+        """
+        Tests the return of `pull_image` function
+        """
+        cmd = utils.cmd_output(retcode=retcode, stdout=stdout)
+        mock_cmd = MagicMock(return_value=cmd)
+        with patch.dict(cri.__salt__, {'cmd.run_all': mock_cmd}):
+            self.assertEqual(cri.pull_image("my-images"), result)
+            mock_cmd.assert_called_once_with('crictl pull "my-images"')
+
+    @parameterized.expand([
+        (0, "292c3b07b", 0, "All ok", "All ok"),
+        (1, "292c3b07b", 0, "All ok", None),
+        (0, "", 0, "All ok", None),
+        (0, "292c3b07b", 1, "All not ok", None),
+        (0, "292c3b07b", 0, "", "")
+    ])
+    def test_execute(self, ret_ps, stdout_ps, ret_exec, stdout_exec, result):
+        """
+        Tests the return of `execute` function
+        """
+        cmd_ps = utils.cmd_output(retcode=ret_ps, stdout=stdout_ps)
+        cmd_exec = utils.cmd_output(retcode=ret_exec, stdout=stdout_exec)
+
+        def _cmd_run_all_mock(cmd):
+            if "crictl ps" in cmd:
+                return cmd_ps
+            elif "crictl exec" in cmd:
+                return cmd_exec
+            return None
+
+        mock_cmd = MagicMock(side_effect=_cmd_run_all_mock)
+        with patch.dict(cri.__salt__, {"cmd.run_all": mock_cmd}):
+            self.assertEqual(cri.execute("my_cont", "my command"), result)
+            mock_cmd.assert_any_call(
+                'crictl ps -q --label io.kubernetes.container.name="my_cont"'
+            )
+            if ret_ps == 0 and stdout_ps:
+                mock_cmd.assert_called_with(
+                    'crictl exec {} my command '.format(stdout_ps)
+                )
+
+    @parameterized.expand([
+        (None, 6, 0, "292c3b07b", True),
+        (None, 6, 0, "", False),
+        (None, 6, 1, "Error occurred", False),
+        ("running", 6, 0, "292c3b07b", True),
+        ("running", 6, 0, "", False),
+        ("running", 6, 1, "Error occurred", False)
+    ])
+    def test_wait_container(self, state, timeout, retcode, stdout, result):
+        """
+        Tests the return of `wait_container` function
+        """
+        cmd = utils.cmd_output(retcode=retcode, stdout=stdout)
+        mock_cmd = MagicMock(return_value=cmd)
+        with patch.dict(cri.__salt__, {'cmd.run_all': mock_cmd}), \
+                patch("time.sleep", MagicMock()):
+            self.assertEqual(cri.wait_container(
+                "my_cont",
+                state=state, timeout=timeout
+            ), result)
+            cmd_call = (
+                'crictl ps -q --label io.kubernetes.container.name="my_cont"'
+            )
+            if state:
+                cmd_call += " --state {}".format(state)
+            mock_cmd.assert_called_with(cmd_call)
+
+    @parameterized.expand([
+        (0, json.dumps({'items': COMPONENT_LIST}, indent=4), True),
+        (1, 'this command failed', False),
+        (0, json.dumps({'items': []}, indent=4), False)
+    ])
+    def test_component_is_running(self, retcode, stdout, result):
+        """
+        Tests the return of `component_is_running` function
+        """
+        cmd = utils.cmd_output(retcode=retcode, stdout=stdout)
+        mock_cmd = MagicMock(return_value=cmd)
+        with patch.dict(cri.__salt__, {'cmd.run_all': mock_cmd}):
+            self.assertEqual(cri.component_is_running('my_comp'), result)
