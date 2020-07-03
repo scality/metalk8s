@@ -382,7 +382,7 @@ class SparseLoopDevice(Volume):
             log.warning('{} already removed'.format(exn.filename))
 
 
-class SparseLoopDeviceNoFormat(SparseLoopDevice):
+class SparseLoopDeviceBlock(SparseLoopDevice):
     # Recent losetup support `--nooverlap` but not the one shipped with
     # CentOS 7.
     PROVISIONING_COMMAND = ('losetup', '--find', '--partscan')
@@ -400,7 +400,7 @@ class SparseLoopDeviceNoFormat(SparseLoopDevice):
         return re.search(pattern, result['stdout']) is not None
 
     def prepare(self, force=False):
-        prepare_noformat(self.path, self.get('metadata.uid'))
+        prepare_block(self.path, self.get('metadata.uid'))
 
 
 # }}}
@@ -441,9 +441,9 @@ class RawBlockDevice(Volume):
     def clean_up(self):
         return  # Nothing to do
 
-class RawBlockDeviceNoFormat(RawBlockDevice):
+class RawBlockDeviceBlock(RawBlockDevice):
     def __init__(self, volume):
-        super(RawBlockDeviceNoFormat, self).__init__(volume)
+        super(RawBlockDeviceBlock, self).__init__(volume)
         # Detect which kind of device we have: a real disk, only a partition or
         # an LVM volume.
         name = device_name(self.path)
@@ -499,7 +499,7 @@ class RawBlockDeviceNoFormat(RawBlockDevice):
             ]))
         # Otherwise, create a GPT table and a unique partition.
         else:
-            prepare_noformat(self.path, uuid)
+            prepare_block(self.path, uuid)
 
 class DeviceType:
     DISK      = 1
@@ -515,16 +515,17 @@ def _get_volume(name):
     volume = __pillar__['metalk8s']['volumes'].get(name)
     if volume is None:
         raise ValueError('volume {} not found in pillar'.format(name))
+    mode = volume['spec'].get('mode', 'Filesystem')
     if 'rawBlockDevice' in volume['spec']:
-        if volume['spec']['rawBlockDevice'].get('noFormat', False):
-            return RawBlockDeviceNoFormat(volume)
-        else:
+        if mode == 'Filesystem':
             return RawBlockDevice(volume)
-    elif 'sparseLoopDevice' in volume['spec']:
-        if volume['spec']['sparseLoopDevice'].get('noFormat', False):
-            return SparseLoopDeviceNoFormat(volume)
         else:
+            return RawBlockDeviceBlock(volume)
+    elif 'sparseLoopDevice' in volume['spec']:
+        if mode == 'Filesystem':
             return SparseLoopDevice(volume)
+        else:
+            return SparseLoopDeviceBlock(volume)
     else:
         raise ValueError('unsupported Volume type for Volume {}'.format(name))
 
@@ -656,8 +657,8 @@ def _mkfs_xfs(path, uuid, force=False, options=None):
     command.append(path)
     return command
 
-def prepare_noformat(path, uuid):
-    """Prepare a "noformat" volume.
+def prepare_block(path, uuid):
+    """Prepare a "Block" volume.
 
     We use a GPT table and a single partition to have a link between the volume
     UUID and the paritition label.

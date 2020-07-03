@@ -24,18 +24,18 @@ This section describes how to create a **Volume** from the **CLI**.
        spec:
          nodeName: <node_name>
          storageClassName: <storageclass_name>
+         mode: "Filesystem"
          rawBlockDevice:
            devicePath: <device_path>
-           noFormat: false
 
    Set the following fields:
 
    - **name**: the name of your volume, must be unique
    - **nodeName**: the name of the node where the volume will be located.
    - **storageClassName**: the **StorageClass** to use
+   - **mode**: describes how the volume is intended to be consumed, either
+     Block or Filesystem (default to Filesystem if not specified).
    - **devicePath**: path to the block device (for example, `/dev/sda1`).
-   - **noFormat**: skip the volume formatting if **true**, optional (default to
-     **false**, i.e. apply a formatting according to the **StorageClass**).
 
 #. Create the **Volume**
 

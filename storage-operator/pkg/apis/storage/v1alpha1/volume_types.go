@@ -16,17 +16,11 @@ import (
 type SparseLoopDeviceVolumeSource struct {
 	// Size of the generated sparse file backing the PersistentVolume.
 	Size resource.Quantity `json:"size"`
-	// When true, do not format the device with a filesystem.
-	// +optional
-	NoFormat bool `json:"noFormat,omitempty"`
 }
 
 type RawBlockDeviceVolumeSource struct {
 	// Path of the block device on the node to back the PersistentVolume.
 	DevicePath string `json:"devicePath"`
-	// When true, do not format the device with a filesystem.
-	// +optional
-	NoFormat bool `json:"noFormat,omitempty"`
 }
 
 type VolumeSource struct {
@@ -48,6 +42,12 @@ type VolumeSpec struct {
 	// mount options are copied from the StorageClass to the
 	// PersistentVolume if present.
 	StorageClassName string `json:"storageClassName"`
+
+	// How the volume is intended to be consumed, either Block or Filesystem
+	// (default is Filesystem).
+	// +optional
+	// +kubebuilder:validation:Enum=Filesystem,Block
+	Mode corev1.PersistentVolumeMode `json:"mode,omitempty"`
 
 	// Template for the underlying PersistentVolume.
 	// +optional
@@ -272,6 +272,11 @@ func (self *Volume) IsValid() error {
 		}
 	}
 
+	// Default to Filesystem when mode is not specified.
+	if self.Spec.Mode == "" {
+		self.Spec.Mode = corev1.PersistentVolumeFilesystem
+	}
+
 	return nil
 }
 
@@ -288,14 +293,7 @@ func (self *Volume) IsInUnrecoverableFailedState() *VolumeCondition {
 }
 
 func (self *Volume) IsFormatted() bool {
-	switch {
-	case self.Spec.RawBlockDevice != nil:
-		return !self.Spec.RawBlockDevice.NoFormat
-	case self.Spec.SparseLoopDevice != nil:
-		return !self.Spec.SparseLoopDevice.NoFormat
-	default:
-		panic("invalid volume: VolumeSource is not defined")
-	}
+	return self.Spec.Mode == corev1.PersistentVolumeFilesystem
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

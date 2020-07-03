@@ -107,6 +107,13 @@ func schema_pkg_apis_storage_v1alpha1_VolumeSpec(ref common.ReferenceCallback) c
 							Format:      "",
 						},
 					},
+					"mode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "How the volume is intended to be consumed, either Block or Filesystem (default is Filesystem).",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"template": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Template for the underlying PersistentVolume.",

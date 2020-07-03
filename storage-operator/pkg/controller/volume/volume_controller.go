@@ -942,12 +942,6 @@ func newPersistentVolume(
 			"missing field 'parameters.fsType' in StorageClass '%s'", scName,
 		)
 	}
-	var mode corev1.PersistentVolumeMode
-	if volume.IsFormatted() {
-		mode = corev1.PersistentVolumeFilesystem
-	} else {
-		mode = corev1.PersistentVolumeBlock
-	}
 
 	pv := corev1.PersistentVolume{
 		ObjectMeta: volume.Spec.Template.Metadata,
@@ -964,7 +958,7 @@ func newPersistentVolume(
 		corev1.ResourceStorage: volumeSize,
 	}
 	pv.Spec.MountOptions = storageClass.MountOptions
-	pv.Spec.VolumeMode = &mode
+	pv.Spec.VolumeMode = &volume.Spec.Mode
 	pv.Spec.PersistentVolumeSource = corev1.PersistentVolumeSource{
 		Local: &corev1.LocalVolumeSource{
 			Path:   deviceInfo.path,

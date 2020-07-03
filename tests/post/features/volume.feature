@@ -167,7 +167,7 @@ Feature: Volume management
         Then the Volume 'test-volume11' does not exist
         And the PersistentVolume 'test-volume11' does not exist
 
-    Scenario: Test volume creation (raw sparseLoopDevice)
+    Scenario: Test volume creation (sparseLoopDevice Block mode)
         Given the Kubernetes API is available
         When I create the following Volume:
             apiVersion: storage.metalk8s.scality.com/v1alpha1
@@ -177,9 +177,9 @@ Feature: Volume management
             spec:
               nodeName: bootstrap
               storageClassName: metalk8s-prometheus
+              mode: Block
               sparseLoopDevice:
                 size: 10Gi
-                noFormat: true
         Then the Volume 'test-volume12' is 'Available'
         And the PersistentVolume 'test-volume12' has size '10Gi'
         And the backing storage for Volume 'test-volume12' is created
