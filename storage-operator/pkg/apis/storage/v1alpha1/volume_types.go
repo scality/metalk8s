@@ -175,9 +175,10 @@ func (self *Volume) SetCondition(
 
 	for idx, cond := range self.Status.Conditions {
 		if cond.Type == kind {
-			// Don't update LastTransitionTime if status hasn't changed.
+			// Don't update timestamps if status hasn't changed.
 			if cond.Status == condition.Status {
 				condition.LastTransitionTime = cond.LastTransitionTime
+				condition.LastUpdateTime = cond.LastUpdateTime
 			}
 			self.Status.Conditions[idx] = condition
 			return
