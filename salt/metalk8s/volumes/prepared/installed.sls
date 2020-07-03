@@ -13,7 +13,7 @@ Install xfsprogs:
     - require:
       - test: Repositories configured
 
-Install parted:
-  {{ pkg_installed('parted') }}
+Install gdisk:
+  {{ pkg_installed('gdisk') }}
     - require:
       - test: Repositories configured

@@ -40,7 +40,7 @@ Prepare backing storage for {{ volume }}:
     - require:
       - metalk8s_package_manager: Install e2fsprogs
       - metalk8s_package_manager: Install xfsprogs
-      - metalk8s_package_manager: Install parted
+      - metalk8s_package_manager: Install gdisk
       - metalk8s_volumes: Create backing storage for {{ volume }}
 
 Provision backing storage for {{ volume }}:

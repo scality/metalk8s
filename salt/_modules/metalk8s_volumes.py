@@ -265,15 +265,18 @@ class Volume(object):
         return
 
     @property
+    def uuid(self):
+        return self.get('metadata.uid').lower()
+
+    @property
     def persistent_path(self):
         """Return a persistent path to the backing device."""
-        return '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
+        return '/dev/disk/by-uuid/{}'.format(self.uuid)
 
     @property
     def is_prepared(self):
         """Check if the volume is already prepared by us."""
-        uuid = self.get('metadata.uid').lower()
-        return _get_from_blkid(self.path).uuid == uuid
+        return _get_from_blkid(self.path).uuid == self.uuid
 
     def prepare(self, force=False):
         """Prepare the volume.
@@ -298,9 +301,7 @@ class Volume(object):
         # mkfs options, if any, are stored as JSON-encoded list.
         options = json.loads(params.get('mkfsOptions', '[]'))
         fs_type = params['fsType']
-        command = _mkfs(
-            self.path, fs_type, self.get('metadata.uid'), force, options
-        )
+        command = _mkfs(self.path, fs_type, self.uuid, force, options)
         _run_cmd(' '.join(command))
 
     def get(self, path):
@@ -319,9 +320,7 @@ class SparseLoopDevice(Volume):
 
     @property
     def path(self):
-        return '/var/lib/metalk8s/storage/sparse/{}'.format(
-            self.get('metadata.uid')
-        )
+        return '/var/lib/metalk8s/storage/sparse/{}'.format(self.uuid)
 
     @property
     def size(self):
@@ -389,18 +388,20 @@ class SparseLoopDeviceBlock(SparseLoopDevice):
 
     @property
     def persistent_path(self):
-        return '/dev/disk/by-partlabel/{}'.format(self.get('metadata.name'))
+        return '/dev/disk/by-partuuid/{}'.format(self.uuid)
 
     @property
     def is_prepared(self):
         """Check if the volume is already prepared."""
-        # Partition 1 should be labelled with the volume UUID.
-        pattern = '1.+{}'.format(re.escape(self.get('metadata.name').lower()))
-        result  = _run_cmd(' '.join(['parted', self.path, 'print']))
-        return re.search(pattern, result['stdout']) is not None
+        # Partition 1 should be identified with the volume UUID.
+        device = os.path.basename(self.path) + '1'
+        try:
+            return device_name(self.persistent_path) == device
+        except: # Expected exception if the symlink doesn't exist.
+            return False
 
     def prepare(self, force=False):
-        prepare_block(self.path, self.get('metadata.name'))
+        prepare_block(self.path, self.get('metadata.name'), self.uuid)
 
 
 # }}}
@@ -468,7 +469,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
                 realpath = os.path.realpath(symlink)
                 if os.path.basename(realpath) == name:
                     return symlink
-        return '/dev/disk/by-partlabel/{}'.format(self.get('metadata.name'))
+        return '/dev/disk/by-partuuid/{}'.format(self.uuid)
 
     @property
     def device_path(self):
@@ -482,26 +483,30 @@ class RawBlockDeviceBlock(RawBlockDevice):
         # Nothing to do in LVM case (we use LVM UUID).
         if self._kind == DeviceType.LVM:
             return True
-        partition = self._partition or '1'
-        pattern = '{}.+{}'.format(
-            partition, re.escape(self.get('metadata.name').lower())
-        )
-        result  = _run_cmd(' '.join(['parted', self.device_path, 'print']))
-        return re.search(pattern, result['stdout']) is not None
+        device = os.path.basename(self.path)
+        if self._kind == DeviceType.DISK:
+            device += '1' # In DISK case we always have a single partition.
+        try:
+            return device_name(self.persistent_path) == device
+        except: # Expected exception if the symlink doesn't exist.
+            return False
 
     def prepare(self, force=False):
         # Nothing to do in LVM case.
         if self._kind == DeviceType.LVM:
             return
         name = self.get('metadata.name')
-        # In case of partition, set the label to volume name.
+        # For partition, set the partition's label & UID to the volume's ones.
         if self._kind == DeviceType.PARTITION:
             _run_cmd(' '.join([
-                'parted', self.device_path, 'name', self._partition, name
+                'sgdisk',
+                '--partition-guid', '{}:{}'.format(self._partition, self.uuid),
+                '--change-name', '{}:{}'.format(self._partition, name),
+                self.device_path,
             ]))
         # Otherwise, create a GPT table and a unique partition.
         else:
-            prepare_block(self.path, name)
+            prepare_block(self.path, name, self.uuid)
 
 class DeviceType:
     DISK      = 1
@@ -659,17 +664,18 @@ def _mkfs_xfs(path, uuid, force=False, options=None):
     command.append(path)
     return command
 
-def prepare_block(path, name):
+def prepare_block(path, name, uuid):
     """Prepare a "Block" volume.
 
     We use a GPT table and a single partition to have a link between the volume
-    name and the paritition label.
+    name/uuid and the partition label/GUID.
     """
-    # Create a GPT partition table.
-    _run_cmd(' '.join(['parted', path, 'mktable', 'gpt']))
-    # Create a single partition labelled with the volume UUID.
     _run_cmd(' '.join([
-        'parted', '--align', 'optimal', path, 'mkpart', name, '0%', '100%',
+        'sgdisk',
+        '--largest-new', '1',
+        '--partition-guid', '1:{}'.format(uuid),
+        '--change-name', '1:{}'.format(name),
+        path,
     ]))
 
 # }}}

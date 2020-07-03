@@ -159,15 +159,15 @@ device. We use different strategies according to the **Volume** type:
   ``dev/disk/by-uuid/<volume-uuid>`` as device path.
 * **sparseLoopDevice** without filesystem: we create a GUID Partition Table on
   the sparse file and create a single partition encompassing the whole device,
-  setting the label of the partition to the **Volume** UUID. We can then use
-  ``/dev/disk/by-partlabel/<volume-name>`` as device path.
+  setting the GUID of the partition to the **Volume** UUID. We can then use
+  ``/dev/disk/by-partuuid/<volume-uuid>`` as device path.
 * **rawBlockDevice** without filesystem:
 
   * the **rawBlockDevice** is a disk (e.g. ``/dev/sdb``): we use the same
     strategy as above.
-  * the **rawBlockDevice** is a partition (e.g. ``/dev/sdb1``): we re-label the
-    partition using the **Volume** UUID and use
-    ``/dev/disk/by-partlabel/<volume-name>`` as device path.
+  * the **rawBlockDevice** is a partition (e.g. ``/dev/sdb1``): we change the
+    partition GUID using the **Volume** UUID and use
+    ``/dev/disk/by-partuuid/<volume-uuid>`` as device path.
   * The **rawBlockDevice** is a LVM volume: we use the existing LVM UUID and
     use ``/dev/disk/by-id/dm-uuid-LVM-<lvm-uuid>`` as device path.
 
