@@ -437,7 +437,7 @@ def check_storage_is_created(context, host, name):
     if volume['spec'].get('mode', 'Filesystem') == 'Filesystem':
         host.run_test('test -b /dev/disk/by-uuid/{}'.format(uuid))
     else:
-        host.run_test('test -b /dev/disk/by-partlabel/{}'.format(uuid))
+        host.run_test('test -b /dev/disk/by-partlabel/{}'.format(name))
 
 
 @then(parsers.parse("the backing storage for Volume '{name}' is deleted"))
