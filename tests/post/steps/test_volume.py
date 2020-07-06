@@ -330,6 +330,27 @@ def check_pv_label(name, key, value, pv_client):
     )
 
 
+@then(parsers.parse(
+    "the Volume '{name}' has device name '{value}'"
+))
+def check_device_name(name, value, volume_client):
+    def _check_device_name():
+        volume = volume_client.get(name)
+        assert volume is not None, 'Volume {} not found'.format(name)
+        status = volume.get('status')
+        assert status is not None, 'no status for volume {}'.format(name)
+        deviceName = status.get('deviceName', '')
+        assert re.match(value, deviceName) is not None,\
+            'Unexpected value for deviceName: expected {}, got {}'.format(
+                value, deviceName
+            )
+
+    utils.retry(
+        _check_device_name, times=10, wait=2,
+        name='checking deviceName of Volume {}'.format(name)
+    )
+
+
 @then(parsers.parse("the Volume '{name}' does not exist"))
 def check_volume_absent(name, volume_client):
     volume_client.wait_for_deletion(name)

@@ -19,6 +19,7 @@ ca:
   minion: $(cat /etc/salt/minion_id)
 archives:
   - /var/tmp/metalk8s
+debug: ${DEBUG:-false}
 EOF
 
 ls "$(dirname $OUTPUT_FILE)"

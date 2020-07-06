@@ -43,11 +43,12 @@ models:
         SLEEP_TIME: "5"
         STABILIZATION_TIME: "30"
         STATUS: "Running"
+        EXTRA_OPTS: ""
       command: >
         git checkout "%(prop:branch)s" &&
         sudo eve/wait_pods_status.sh
         --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
-        --status "$STATUS" --retry "$RETRY"
+        --status "$STATUS" --retry "$RETRY" $EXTRA_OPTS
       usePTY: true
       haltOnFailure: true
   - ShellCommand: &wait_pods_running_ssh
@@ -56,12 +57,13 @@ models:
         <<: *_env_wait_pods_running
         SSH_CONFIG: ssh_config
         SSH_HOST: bootstrap
+        EXTRA_OPTS: ""
       command: >
         git checkout "%(prop:branch)s" &&
         scp -F "$SSH_CONFIG" eve/wait_pods_status.sh "$SSH_HOST":/tmp/ &&
         ssh -F "$SSH_CONFIG" "$SSH_HOST" sudo /tmp/wait_pods_status.sh
         --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
-        --status "$STATUS" --retry "$RETRY"
+        --status "$STATUS" --retry "$RETRY" $EXTRA_OPTS
       usePTY: true
       haltOnFailure: true
   - ShellCommand: &build_all
@@ -93,9 +95,11 @@ models:
   - Upload: &upload_artifacts
       name: Upload artifacts
       source: artifacts
+      alwaysRun: True
   - Upload: &upload_report_artifacts
       name: Upload sosreport logs to artifacts
       source: sosreport
+      alwaysRun: True
   - ShellCommand: &collect_sosreport
       name: Collect logs using sosreport
       command: >
@@ -104,6 +108,7 @@ models:
         -o containerd -kcontainerd.all=True -kcontainerd.logs=True
         --batch --tmp-dir /var/tmp &&
         sudo chown eve:eve /var/tmp/sosreport*
+      alwaysRun: true
   - ShellCommand: &wait_debug
       name: Debug step - wait before allowing resource destruction
       env:
@@ -243,6 +248,7 @@ models:
       name: Create bootstrap configuration file
       env:
         PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+        DEBUG: "%(prop:metalk8s_debug:-false)s"
       command: |
         sudo bash << EOF
         mkdir -p /etc/metalk8s
@@ -258,6 +264,7 @@ models:
           host: $(ip route get 10.100.0.0 | awk '/10.100.0.0/{ print $6 }')
         archives:
           - "/srv/scality/metalk8s-${PRODUCT_VERSION}"
+        debug: ${DEBUG}
         END
         EOF
       haltOnFailure: true
@@ -278,7 +285,7 @@ models:
       command: >
         sudo bash
         "/srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh"
-        --archive "$(readlink -f "${ISO_PATH}")"
+        --archive "$(readlink -f "${ISO_PATH}")" --verbose
       haltOnFailure: true
   - ShellCommand: &local_tests
       name: Run tests locally
@@ -297,12 +304,14 @@ models:
         ISO_MOUNTPOINT: "/var/tmp/metalk8s"
         TEST_HOSTS_LIST: "bootstrap"
         PYTEST_FILTERS: "post and ci"
+        BOOTSTRAP_BACKUP_ARCHIVE: ""
       command: >
         ssh -F ssh_config bastion --
         "cd metalk8s &&
         export SSH_CONFIG_FILE=\"${SSH_CONFIG_FILE}\" &&
         export ISO_MOUNTPOINT=\"${ISO_MOUNTPOINT}\" &&
         export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
+        export BOOTSTRAP_BACKUP_ARCHIVE=\"${BOOTSTRAP_BACKUP_ARCHIVE}\" &&
         tox -e tests -- ${PYTEST_ARGS:-""} -m \"${PYTEST_FILTERS}\""
       workdir: build/eve/workers/openstack-multiple-nodes/terraform/
       haltOnFailure: true
@@ -370,14 +379,20 @@ models:
   - ShellCommand: &terraform_init
       name: Init terraform
       command: |-
-        for _ in $(seq 1 12); do
+        for try in $(seq 1 $MAX_RETRIES); do
           if terraform init; then
             break
-          else
+          elif [ $try -lt $MAX_RETRIES ]; then
             rm -rf .terraform/
             sleep 5
+          else
+            echo "Error: unable to initialize terraform after" \
+                 "$MAX_RETRIES tries" >&2
+            exit 1
           fi
-        done;
+        done
+      env:
+        MAX_RETRIES: "12"
       haltOnFailure: true
   - ShellCommand: &terraform_validate
       name: Validate terraform definition
@@ -385,7 +400,18 @@ models:
       haltOnFailure: true
   - ShellCommand: &terraform_apply
       name: Spawn openstack virtual infra
-      command: terraform apply -auto-approve
+      command: |-
+        for try in $(seq 1 $MAX_RETRIES); do
+          if terraform apply -auto-approve; then
+            break
+          elif [ $try -lt $MAX_RETRIES ]; then
+            sleep 300
+          else
+            echo "Error: unable to spawn openstack virtual infra after" \
+                 "$MAX_RETRIES tries" >&2
+            exit 1
+          fi
+        done
       env: &_env_terraform
         OS_AUTH_URL: "%(secret:scality_cloud_auth_url)s"
         OS_REGION_NAME: "%(secret:scality_cloud_region)s"
@@ -393,13 +419,23 @@ models:
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
         TF_VAR_prefix: "%(prop:buildnumber)s-%(prop:stage_name)s"
+        TF_VAR_debug: "%(prop:metalk8s_debug:-false)s"
+        MAX_RETRIES: "3"
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
       name: Destroy openstack virtual infra
       command: |-
-        for _ in $(seq 1 3); do
-           terraform destroy -auto-approve && break
-        done;
+        for try in $(seq 1 $MAX_RETRIES); do
+          if terraform destroy -auto-approve; then
+            break
+          elif [ $try -lt $MAX_RETRIES ]; then
+            sleep 300
+          else
+            echo "Error: unable to destroy openstack virtual infra after" \
+                 "$MAX_RETRIES tries" >&2
+            exit 1
+          fi
+        done
       env: *_env_terraform
       alwaysRun: true
       sigtermTime: 600
@@ -443,6 +479,17 @@ models:
           "sosreport/sosreport/$STEP_NAME/$host-sosreport.tar.xz"
         done
       alwaysRun: true
+
+  - ShellCommand: &copy_bastion_pub_key_ssh
+      name: Send bastion public key to nodes
+      command: >
+        for host in $HOSTS_LIST; do
+          ssh -F ssh_config bastion "cat .ssh/bastion.pub" |
+          ssh -F ssh_config $host "cat >> .ssh/authorized_keys"
+        done
+      env:
+        HOSTS_LIST: bootstrap
+      workdir: build/eve/workers/openstack-multiple-nodes/terraform/
 
 stages:
   pre-merge:
@@ -497,6 +544,37 @@ stages:
           haltOnFailure: True
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand: *set_short_version_prop
+      - TriggerStages:
+          name: Trigger post-merge lifecycle and solutions stages simultaneously
+          stage_names:
+            - post-merge-solutions
+            - lifecycle-dev-branch
+            - lifecycle-patch-version
+            - lifecycle-minor-version
+            - bootstrap-restore
+          haltOnFailure: true
+      - ShellCommand: *add_final_status_artifact_success
+      - Upload: *upload_final_status_artifact
+      - TriggerStages:
+          name: Trigger TestRail objects creation and results upload
+          stage_names:
+            - create-upload-testrail-objects
+          alwaysRun: True
+
+  post-merge-solutions:
+    worker:
+      type: local
+    steps:
+      - TriggerStages:
+          name: Trigger build of Example Solution archive
+          stage_names:
+            - build-example-solution
+          haltOnFailure: true
+
+  lifecycle-dev-branch:
+    worker:
+      type: local
+    steps:
       - SetPropertyFromCommand:
           name: Set previous version to upgrade from and downgrade to
           property: product_version_prev
@@ -505,10 +583,9 @@ stages:
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
               echo "$major.$(( $minor-1 ))"
       - TriggerStages:
-          name: Trigger build of previous version and example solution simultaneously
+          name: Trigger build of previous version
           stage_names:
             - buildprev
-            - build-example-solution
           haltOnFailure: true
       - SetPropertyFromCommand:
           <<: *set_version_prop
@@ -517,19 +594,11 @@ stages:
           env:
             BASE_URL: "%(prop:artifacts_private_url)s/pre"
       - TriggerStages:
-          name: Trigger Post-merge test stages simultaneously
+          name: Trigger upgrade and downgrade test stages simultaneously
           stage_names:
             - single-node-upgrade-centos
             - single-node-downgrade-centos
-            - single-node-patch-version
           waitForFinish: True
-      - ShellCommand: *add_final_status_artifact_success
-      - Upload: *upload_final_status_artifact
-      - TriggerStages:
-          name: Trigger TestRail objects creation and results upload
-          stage_names:
-            - create-upload-testrail-objects
-          alwaysRun: True
 
   create-upload-testrail-objects:
     worker:
@@ -809,26 +878,38 @@ stages:
       - Upload: *upload_final_status_artifact
 
   unit_tests:
+    worker:
+      type: local
+    steps:
+      - TriggerStages:
+          name: Trigger all unit tests simultaneously
+          stage_names:
+            - unit_tests_ui
+            - unit_tests_storage_operator
+            - unit_tests_salt
+
+  unit_tests_ui:
     _metalk8s_internal_info:
-      junit_info: &_unit-test_junit_info
+      junit_info: &_unit-test_ui_junit_info
         TEST_SUITE: unit test
-        # This one should be split in different test case for each unit tests
-        TEST_NAME: full
+        TEST_NAME: ui
     worker:
       type: kube_pod
       path: eve/workers/pod-unit-tests/pod.yaml
       images:
         docker-unit-tests:
-          context: 'storage-operator'
-          dockerfile: eve/workers/pod-unit-tests/Dockerfile
+          context: 'ui'
+          dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-ui-worker"
     steps:
       - Git: *git_pull
       - ShellCommand:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            <<: *_unit-test_junit_info
-            STEP_NAME: unit_tests
+            <<: *_unit-test_ui_junit_info
+            STEP_NAME: unit_tests_ui
       - ShellCommand: *setup_cache
       - ShellCommand:
           name: Run all UI unit tests
@@ -840,7 +921,7 @@ stages:
             -q
             --no-update-notifier &&
             npm run test:nowatch --no-update-notifier
-          haltOnFailure: false
+          haltOnFailure: true
       - ShellCommand:
           name: Prepare upload folder
           command: >
@@ -852,23 +933,89 @@ stages:
           source: ui/upload
           alwaysRun: true
       - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_ui_junit_info
+            STEP_NAME: unit_tests_ui
+      - Upload: *upload_final_status_artifact
+
+  unit_tests_storage_operator:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_storage_operator_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: storage operator
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'storage-operator'
+          dockerfile: eve/workers/pod-unit-tests/storage-operator/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-storage-operator-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_storage_operator_junit_info
+            STEP_NAME: unit_tests_storage_operator
+      - ShellCommand: *setup_cache
+      - ShellCommand:
           name: Run all storage-operator unit tests
           workdir: build/storage-operator
           command: go test -cover -v ./...
-          haltOnFailure: false
+          haltOnFailure: true
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            <<: *_unit-test_junit_info
-            STEP_NAME: unit_tests
+            <<: *_unit-test_storage_operator_junit_info
+            STEP_NAME: unit_tests_storage_operator
+      - Upload: *upload_final_status_artifact
+
+  unit_tests_salt:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_salt_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: salt
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'salt'
+          dockerfile: eve/workers/pod-unit-tests/salt/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-salt-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_salt_junit_info
+            STEP_NAME: unit_tests_salt
+      - ShellCommand: *setup_cache
+      - ShellCommand:
+          name: Run all salt unit tests
+          command: tox -e unit-tests
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_salt_junit_info
+            STEP_NAME: unit_tests_salt
       - Upload: *upload_final_status_artifact
 
   single-node-downgrade-centos:
     _metalk8s_internal_info:
       junit_info: &_downgrade_minor_single-node_junit_info
         TEST_SUITE: downgrade
-        CLASS_NAME: minor.single node.centos7
+        CLASS_NAME: minor dev.single node.centos7
         TEST_NAME: simple environment
     simultaneous_builds: 20
     worker: &single_node_worker
@@ -937,7 +1084,8 @@ stages:
           name: Run slow tests locally
           env:
             <<: *_env_local_tests
-            PYTEST_FILTERS: "post and ci and not multinode and slow"
+            PYTEST_FILTERS: >-
+              post and ci and not multinode and slow and not restore
       - ShellCommand:
           name: Cypress test
           command: bash cypress.sh
@@ -970,7 +1118,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:metalk8s_version_prev)s
+            --destination-version "%(prop:metalk8s_version_prev)s" --verbose
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
       # --- Test version N-1 ---
@@ -1005,7 +1153,7 @@ stages:
     _metalk8s_internal_info:
       junit_info: &_upgrade_minor_single-node_junit_info
         TEST_SUITE: upgrade
-        CLASS_NAME: minor.single node.centos7
+        CLASS_NAME: minor dev.single node.centos7
         TEST_NAME: simple environment
     simultaneous_builds: 20
     worker: *single_node_worker
@@ -1039,7 +1187,9 @@ stages:
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
           <<: *bootstrap_config
-          env: *_env_version_prev
+          env:
+            <<: *_env_version_prev
+            DEBUG: "%(prop:metalk8s_debug:-false)s"
       # --- Install version N-1 ---
       - ShellCommand:
           <<: *run_bootstrap
@@ -1065,7 +1215,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version %(prop:metalk8s_version)s
+            --destination-version "%(prop:metalk8s_version)s" --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
@@ -1220,13 +1370,17 @@ stages:
             TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
           workdir: build/eve/workers/openstack-single-node-rhel/terraform
 
-  single-node-patch-version:
+  lifecycle-patch-version:
     worker:
       type: local
     steps:
+      - SetProperty:
+          name: Set promoted version type to patch
+          property: promoted_version_type
+          value: patch
       - SetPropertyFromCommand:
           name: Set previous patch version to upgrade from and downgrade to
-          property: product_version_prev_patch
+          property: product_promoted_version
           command: >
               major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
@@ -1237,7 +1391,7 @@ stages:
           property: patch_present
           env:
             PRODUCT_VERSION: "%(prop:product_version)s"
-            PRODUCT_VERSION_PREV_patch: "%(prop:product_version_prev_patch)s"
+            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
           command: |-
               if [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV_patch" ]; then
                 echo "true"
@@ -1248,15 +1402,51 @@ stages:
           name: Trigger single-node steps with patch Artifact ISO
           doStepIf: "%(prop:patch_present)s"
           stage_names:
-            - single-node-upgrade-patch-centos
-            - single-node-downgrade-patch-centos
+            - single-node-upgrade-promoted-centos
+            - single-node-downgrade-promoted-centos
 
-# --- Upgrade for patch versions ---
-  single-node-upgrade-patch-centos:
+  lifecycle-minor-version:
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set promoted version type to minor
+          property: promoted_version_type
+          value: minor
+      - Git: *git_pull
+      - SetPropertyFromCommand:
+          name: Set previous minor version to upgrade from and downgrade to
+          property: product_promoted_version
+          command: >
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+              git tag --list "$major.$(( $minor-1 )).*" | tail -1
+      - SetPropertyFromCommand:
+          name: Set the minor version flag
+          property: minor_present
+          env:
+            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
+          command: |-
+              if [ -z "$PRODUCT_VERSION_PREV_patch" ]; then
+                echo "false"
+              else
+                echo "true"
+              fi
+      - TriggerStages:
+          name: Trigger single-node steps with minor Artifact ISO
+          doStepIf: "%(prop:minor_present)s"
+          stage_names:
+            - single-node-upgrade-promoted-centos
+            - single-node-downgrade-promoted-centos
+
+
+# --- Upgrade for promoted versions ---
+  single-node-upgrade-promoted-centos:
     _metalk8s_internal_info:
-      junit_info: &_upgrade_patch_single-node_junit_info
+      junit_info: &_upgrade_promoted_single-node_junit_info
         TEST_SUITE: upgrade
-        CLASS_NAME: patch.single node.centos7
+        # NOTE: promoted_version_type should be "patch" or "minor"
+        CLASS_NAME: "%(prop:promoted_version_type)s.single node.centos7"
         TEST_NAME: simple environment
     simultaneous_build: 20
     worker: *single_node_worker
@@ -1266,73 +1456,75 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            <<: *_upgrade_patch_single-node_junit_info
-            STEP_NAME: single-node-upgrade-patch-centos
+            <<: *_upgrade_promoted_single-node_junit_info
+            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
-      # --- Get VERSION patch ISO for version N-1 from Artefacts ---
-      - ShellCommand: &retrieve_prev_patch_version_iso_checksum
+      # --- Get ISO for promoted version from Artefacts ---
+      - ShellCommand: &retrieve_promoted_version_iso_checksum
           <<: *retrieve_iso_checksum
-          name: Retrieve previous patch ISO image checksum
-          env: &_env_previous_patch
+          name: Retrieve promoted ISO image checksum
+          env: &_env_promoted_artifacts
             DEST_DIR: "/tmp"
             BASE_URL: "http://artifacts/builds/github:scality:metalk8s:\
-                      promoted-%(prop:product_version_prev_patch)s"
-      - ShellCommand: &retrieve_prev_patch_version_iso
+                      promoted-%(prop:product_promoted_version)s"
+      - ShellCommand: &retrieve_promoted_version_iso
           <<: *retrieve_iso
-          name: Retrieve previous patch ISO image
+          name: Retrieve promoted ISO image
           env:
-            <<: *_env_previous_patch
+            <<: *_env_promoted_artifacts
             MAX_ATTEMPTS: "300"
-      - ShellCommand: &check_prev_patch_version_iso_checksum
+      - ShellCommand: &check_promoted_version_iso_checksum
           <<: *check_iso_checksum
-          name: Check previous patch ISO image with checksum
+          name: Check promoted ISO image with checksum
           workdir: "/tmp"
-      # --- Prepare for Bootstrap with patch version N-1 ---
+      # --- Prepare for Bootstrap with promoted version ---
       - ShellCommand:
           <<: *create_mountpoint
-          env: &_env_prev_patch_version
-            PRODUCT_VERSION: "%(prop:product_version_prev_patch)s"
+          env: &_env_promoted_version
+            PRODUCT_VERSION: "%(prop:product_promoted_version)s"
       - ShellCommand:
           <<: *mount_iso
           env:
-            <<: *_env_prev_patch_version
+            <<: *_env_promoted_version
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
           <<: *bootstrap_config
-          env: *_env_prev_patch_version
-      # --- Install patch version N-1 ---
+          env:
+            <<: *_env_promoted_version
+            DEBUG: "%(prop:metalk8s_debug:-false)s"
+      # --- Install promoted version ---
       - ShellCommand:
           <<: *run_bootstrap
-          env: *_env_prev_patch_version
+          env: *_env_promoted_version
       - ShellCommand:
           name: Provision Prometheus and AlertManager storage
           command: >
-            git checkout %(prop:product_version_prev_patch)s --quiet &&
+            git checkout %(prop:product_promoted_version)s --quiet &&
             sudo env
-            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:product_version_prev_patch)s/product.txt
-            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:product_version_prev_patch)s
+            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:product_promoted_version)s/product.txt
+            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:product_promoted_version)s
             eve/create-volumes.sh
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
-      # --- We do not need to Test patch version N-1 ---
+      # --- We do not need to Test promoted version ---
       # --- Upgrade to version N ---
       - ShellCommand:
           <<: *add_archive
           name: Add current ISO to cluster
           env:
             <<: *_env_add_archive
-            PRODUCT_VERSION: "%(prop:product_version_prev_patch)s"
+            <<: *_env_promoted_version
       - ShellCommand:
-          name: Run upgrade from previous patch version
+          name: Run upgrade from promoted version
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version %(prop:metalk8s_version)s
+            --destination-version %(prop:metalk8s_version)s --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
@@ -1343,26 +1535,26 @@ stages:
       - ShellCommand:
           <<: *copy_report_artifacts
           env:
-            DEST_DIR: sosreport/sosreport/single-node-upgrade-patch-centos
+            DEST_DIR: sosreport/sosreport/single-node-upgrade-%(prop:promoted_version_type)s-centos
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            <<: *_upgrade_patch_single-node_junit_info
-            STEP_NAME: single-node-upgrade-patch-centos
+            <<: *_upgrade_promoted_single-node_junit_info
+            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           env:
-            STEP_NAME: single-node-upgrade-patch-centos
+            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
 
-  # --- Downgrade for patch versions ---
-  single-node-downgrade-patch-centos:
+  # --- Downgrade for promoted versions ---
+  single-node-downgrade-promoted-centos:
     _metalk8s_internal_info:
-      junit_info: &_downgrade_patch_single-node_junit_info
+      junit_info: &_downgrade_promoted_single-node_junit_info
         TEST_SUITE: downgrade
-        CLASS_NAME: patch.single node.centos7
+        CLASS_NAME: "%(prop:promoted_version_type)s.single node.centos7"
         TEST_NAME: simple environment
     simultaneous_builds: 20
     worker: *single_node_worker
@@ -1372,29 +1564,29 @@ stages:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            <<: *_downgrade_patch_single-node_junit_info
-            STEP_NAME: single-node-downgrade-patch-centos
+            <<: *_downgrade_promoted_single-node_junit_info
+            STEP_NAME: "single-node-downgrade-%(prop:promoted_version_type)s-centos"
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
-      # --- Get VERSION patch ISO for version N-1 from Artefacts ---
-      - ShellCommand: *retrieve_prev_patch_version_iso_checksum
-      - ShellCommand: *retrieve_prev_patch_version_iso
-      - ShellCommand: *check_prev_patch_version_iso_checksum
-      # --- Prepare for Bootstrap with patch version N ---
+      # --- Get ISO for promoted version from Artefacts ---
+      - ShellCommand: *retrieve_promoted_version_iso_checksum
+      - ShellCommand: *retrieve_promoted_version_iso
+      - ShellCommand: *check_promoted_version_iso_checksum
+      # --- Prepare for Bootstrap with version N ---
       - ShellCommand: *create_mountpoint
       - ShellCommand: *mount_iso
       - ShellCommand: *bootstrap_config
-      # --- Install patch version N ---
+      # --- Install version N ---
       - ShellCommand: *run_bootstrap
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
-      # --- Test patch version N ---
+      # --- Test version N ---
       - ShellCommand: *fast_tests
-      # --- Downgrade to patch version N-1 ---
+      # --- Downgrade to promoted version ---
       - ShellCommand:
           <<: *add_archive
           name: Add previous ISO to cluster
@@ -1402,40 +1594,40 @@ stages:
             <<: *_env_add_archive
             ISO_PATH: /tmp/metalk8s.iso
       - ShellCommand:
-          name: Run downgrade to previous version
+          name: Run downgrade to promoted version
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
-            --destination-version %(prop:product_version_prev_patch)s
+            --destination-version %(prop:product_promoted_version)s --verbose
           haltOnFailure: true
       - ShellCommand: *wait_pods_running
-      # --- Test patch version N-1 ---
+      # --- Test promoted version ---
       - ShellCommand:
           <<: *local_tests
-          name: Run fast tests locally for previous patch version
+          name: Run fast tests locally for promoted version
           env:
             <<: *_env_fast_tests
-            BRANCH: "%(prop:product_version_prev_patch)s"
+            BRANCH: "%(prop:product_promoted_version)s"
             ISO_MOUNTPOINT: >
-              /srv/scality/metalk8s-%(prop:product_version_prev_patch)s
+              /srv/scality/metalk8s-%(prop:product_promoted_version)s
       # --- Collect logs ---
       - ShellCommand: *collect_sosreport
       - ShellCommand:
           <<: *copy_report_artifacts
           env:
-            DEST_DIR: sosreport/sosreport/single-node-downgrade-patch-centos
+            DEST_DIR: sosreport/sosreport/single-node-downgrade-%(prop:promoted_version_type)s-centos
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            <<: *_downgrade_patch_single-node_junit_info
-            STEP_NAME: single-node-downgrade-patch-centos
+            <<: *_downgrade_promoted_single-node_junit_info
+            STEP_NAME: "single-node-downgrade-%(prop:promoted_version_type)s-centos"
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           env:
-            STEP_NAME: single-node-downgrade-patch-centos
+            STEP_NAME: "single-node-downgrade-%(prop:promoted_version_type)s-centos"
 
   multiple-nodes-centos:
     _metalk8s_internal_info:
@@ -1444,7 +1636,7 @@ stages:
         CLASS_NAME: multi node.centos7
         TEST_NAME: 1 bootstrap 1 master,etcd
     simultaneous_builds: 20
-    worker:
+    worker: &multi_node_worker
       <<: *single_node_worker
       flavor: m1.medium
       path: eve/workers/openstack-multiple-nodes
@@ -1475,19 +1667,19 @@ stages:
           haltOnFailure: true
       - ShellCommand: *terraform_install
       - ShellCommand: *terraform_install_check
-      - ShellCommand:
+      - ShellCommand: &terraform_init_multi_node
           <<: *terraform_init
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+      - ShellCommand: &terraform_validate_multi_node
           <<: *terraform_validate
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+      - ShellCommand: &terraform_apply_multi_node
           <<: *terraform_apply
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           env:
             <<: *_env_terraform
             TF_VAR_nodes_count: "1"
-      - ShellCommand:
+      - ShellCommand: &check_ssh_config_bootstrap
           name: Check SSH config for bootstrap node
           command: |-
             if [ ! -f ssh_config ]; then
@@ -1501,18 +1693,10 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
-          # FIXME: find a way to share bastion public key to all spawned
-          # instances from Terraform
-          name: Send bastion public key to nodes
-          command: >
-            scp -F ssh_config -3 bastion:.ssh/bastion.pub bootstrap:.ssh/ &&
-            ssh -F ssh_config bootstrap
-            "cat .ssh/bastion.pub >> .ssh/authorized_keys" &&
-            scp -F ssh_config -3 bastion:.ssh/bastion.pub node1:.ssh/ &&
-            ssh -F ssh_config node1
-            "cat .ssh/bastion.pub >> .ssh/authorized_keys"
-          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+          <<: *copy_bastion_pub_key_ssh
+          env:
+            HOSTS_LIST: "bootstrap node1"
+      - ShellCommand: &copy_bastion_priv_key_to_bootstrap
           # FIXME: find a cleaner way with Terraform.
           name: Send bastion private key to bootstrap
           command: >
@@ -1520,27 +1704,27 @@ stages:
               scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
               ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+      - ShellCommand: &copy_iso_to_bootstrap
           name: Copy ISO to bootstrap node
           command: >
             scp -F ssh_config ../../../../metalk8s.iso bootstrap:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &create_mountpoint_on_bootstrap
           name: Create mountpoint in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo mkdir -p /var/tmp/metalk8s
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &mount_iso_on_bootstrap
           name: Mount ISO image in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo mount -o loop metalk8s.iso /var/tmp/metalk8s
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
-      - ShellCommand:
+      - ShellCommand: &bootstrap_on_bootstrap
           name: Start the bootstrap process in bootstrap node
           command: >
             ssh -F ssh_config bootstrap
@@ -1549,26 +1733,13 @@ stages:
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
           haltOnFailure: true
       - ShellCommand:
-          name: Provision Prometheus and AlertManager storage
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-multiple-nodes/terraform/ssh_config
-          command: >
-            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
-            ssh -F $SSH_CONFIG bootstrap
-            sudo env
-            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
-            PRODUCT_MOUNT=/var/tmp/metalk8s
-            /tmp/create-volumes.sh
-          haltOnFailure: true
-      - ShellCommand:
           name: Install kubectl on the boostrap node
           command: >
             ssh -F ssh_config bootstrap
             sudo yum install -y kubectl --disablerepo=*
             --enablerepo=metalk8s-kubernetes
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
-      - ShellCommand:
+      - ShellCommand: &enable_ipip_ssh
           name: Enable IPIP
           env:
             SSH_CONFIG: >-
@@ -1576,7 +1747,7 @@ stages:
           command: >
             ssh -F $SSH_CONFIG bootstrap
             'bash /home/centos/scripts/enable_ipip.sh'
-      - ShellCommand:
+      - ShellCommand: &copy_test_source_to_bastion
           # FIXME: should find a cleaner way to do this (git clone may be
           # cumbersome, unless we assume the repo is public and don't use
           # authentication)
@@ -1587,10 +1758,12 @@ stages:
           command: >
             tar cfp - tox.ini VERSION tests/ buildchain/buildchain/versions.py tools/
             | ssh -F $SSH_CONFIG bastion '(mkdir metalk8s; cd "$_"; tar xf -)'
-      - ShellCommand:
+      - ShellCommand: &wait_kube_system_pods_running_multi_node
           <<: *wait_pods_running_ssh
+          name: Wait for "kube-system" Pods to be in running state
           env:
             <<: *_env_wait_pods_running_ssh
+            EXTRA_OPTS: "--namespace kube-system"
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
       - ShellCommand:
@@ -1598,30 +1771,51 @@ stages:
           name: Run installation scenarii on the bastion
           env:
             <<: *_env_bastion_tests
-            PYTEST_FILTERS: "install and ci and multinodes"
-      - ShellCommand:
+            PYTEST_FILTERS: "install and ci and multinodes and not node2"
+      - ShellCommand: &provision_volumes_on_node1
+          name: Provision Prometheus and AlertManager storage
+          env:
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+          command: >
+            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
+            ssh -F $SSH_CONFIG bootstrap
+            sudo env
+            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
+            PRODUCT_MOUNT=/var/tmp/metalk8s
+            NODE_NAME=node1
+            /tmp/create-volumes.sh
+          haltOnFailure: true
+      - ShellCommand: &wait_pods_running_multi_node
+          <<: *wait_pods_running_ssh
+          env:
+            <<: *_env_wait_pods_running_ssh
+            SSH_CONFIG: >-
+              eve/workers/openstack-multiple-nodes/terraform/ssh_config
+      - ShellCommand: &multi_node_fast_tests
           <<: *bastion_tests
           name: Run fast tests on the bastion
           env:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "post and ci and not slow"
-      - ShellCommand:
+      - ShellCommand: &multi_node_slow_tests
           <<: *bastion_tests
           name: Run slow tests on the bastion
           env:
             <<: *_env_bastion_tests
             PYTEST_ARGS: "--suppress-no-test-exit-code"
-            PYTEST_FILTERS: "post and ci and slow and not bootstrap"
-      - ShellCommand:
+            PYTEST_FILTERS: >-
+              post and ci and slow and not bootstrap and not restore
+      - ShellCommand: &generate_report_multi_node
           <<: *generate_report_over_ssh
-          env:
+          env: &_env_generate_report_multi_node
             <<: *_env_generate_report_over_ssh
             HOSTS_LIST: "bootstrap node1"
             SSH_CONFIG: >-
               eve/workers/openstack-multiple-nodes/terraform/ssh_config
-      - ShellCommand:
+      - ShellCommand: &collect_report_multi_node
           <<: *collect_report_over_ssh
-          env:
+          env: &_env_collect_report_multi_node
             <<: *_env_collect_report_over_ssh
             HOSTS_LIST: "bootstrap node1"
             SSH_CONFIG: >-
@@ -1641,6 +1835,193 @@ stages:
           env:
             STEP_NAME: multiple-nodes-centos
             DURATION: "14400"
-      - ShellCommand:
+      - ShellCommand: &terraform_destroy_multi_node
           <<: *terraform_destroy
           workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+
+  bootstrap-restore:
+    _metalk8s_internal_info:
+      junit_info: &_bootstrap_restore_junit_info
+        TEST_SUITE: install
+        CLASS_NAME: multi node.centos7
+        TEST_NAME: bootstrap restore
+      simultaneous_builds: 20
+    worker: *multi_node_worker
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_bootstrap_restore_junit_info
+            STEP_NAME: bootstrap-restore
+      - ShellCommand: *setup_cache
+      - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
+      - ShellCommand: *terraform_install
+      - ShellCommand: *terraform_install_check
+      - ShellCommand: *terraform_init_multi_node
+      - ShellCommand: *terraform_validate_multi_node
+      - ShellCommand:
+          <<: *terraform_apply_multi_node
+          env: &_env_terraform_bootstrap_restore
+            <<: *_env_terraform
+            TF_VAR_nodes_count: "2"
+      - ShellCommand: *check_ssh_config_bootstrap
+      - ShellCommand:
+          <<: *copy_bastion_pub_key_ssh
+          env:
+            HOSTS_LIST: "bootstrap node1 node2"
+      - ShellCommand: *copy_bastion_priv_key_to_bootstrap
+      - ShellCommand: *copy_iso_to_bootstrap
+      - ShellCommand: *create_mountpoint_on_bootstrap
+      - ShellCommand: *mount_iso_on_bootstrap
+      - ShellCommand: *bootstrap_on_bootstrap
+      - ShellCommand: *enable_ipip_ssh
+      - ShellCommand: *copy_test_source_to_bastion
+      - ShellCommand: *wait_kube_system_pods_running_multi_node
+      - ShellCommand:
+          <<: *bastion_tests
+          name: Run installation scenario on the bastion
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "install and ci and multinodes"
+      - ShellCommand: *provision_volumes_on_node1
+      - ShellCommand: *wait_pods_running_multi_node
+      - ShellCommand: *multi_node_fast_tests
+      - ShellCommand: *multi_node_slow_tests
+      - SetPropertyFromCommand:
+          name: Set bootstrap backup archive property
+          property: bootstrap_backup_archive
+          command: >
+            ssh -F ssh_config bootstrap
+            "sudo find /var/lib/metalk8s -name 'backup_*.tar.gz'
+            -printf '%f\n' | sort | tail -n1"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Retrieve the backup archive from the bootstrap node
+          command: >
+            scp -F ssh_config
+            bootstrap:"/var/lib/metalk8s/%(prop:bootstrap_backup_archive)s"
+            /tmp
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Destroy the bootstrap node
+          env: *_env_terraform_bootstrap_restore
+          command: >
+            terraform destroy -auto-approve
+            -target openstack_compute_instance_v2.bootstrap
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - SetPropertyFromCommand:
+          name: Set node1 etcd container id
+          property: node1_etcd_container_id
+          command: >
+            ssh -F ssh_config node1
+            sudo crictl ps -q --label io.kubernetes.pod.namespace=kube-system
+            --label io.kubernetes.container.name=etcd --state Running
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - SetPropertyFromCommand:
+          name: Set boostrap node etcd member id
+          property: bootstrap_etcd_member_id
+          command: >
+            ssh -F ssh_config node1
+            sudo crictl exec -i "%(prop:node1_etcd_container_id)s" sh -c \"
+            ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379
+            --cert /etc/kubernetes/pki/etcd/server.crt
+            --key /etc/kubernetes/pki/etcd/server.key
+            --cacert /etc/kubernetes/pki/etcd/ca.crt
+            member list\" | awk -F ', ' '$3 ~ "bootstrap" { print $1 }'
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Remove bootstrap node from etcd members
+          command: >
+            ssh -F ssh_config node1
+            sudo crictl exec -i "%(prop:node1_etcd_container_id)s" sh -c \"
+            ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379
+            --cert /etc/kubernetes/pki/etcd/server.crt
+            --key /etc/kubernetes/pki/etcd/server.key
+            --cacert /etc/kubernetes/pki/etcd/ca.crt
+            member remove %(prop:bootstrap_etcd_member_id)s\"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Remove bootstrap node object
+          command: >
+            ssh -F ssh_config node1
+            sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf delete
+            node --selector="node-role.kubernetes.io/bootstrap"
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          name: Create a new bootstrap node
+          env: *_env_terraform_bootstrap_restore
+          command:
+            terraform apply -auto-approve -refresh
+            -target openstack_compute_instance_v2.bootstrap
+            -target null_resource.ssh_config
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand: *copy_bastion_pub_key_ssh
+      - ShellCommand:
+          name: Copy the backup archive to the new bootstrap node
+          command: >
+            scp -F ssh_config
+            "/tmp/%(prop:bootstrap_backup_archive)s" bootstrap:/tmp
+          workdir: build/eve/workers/openstack-multiple-nodes/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *copy_iso_to_bootstrap
+          name: Copy ISO to the new bootstrap node
+      - ShellCommand:
+          <<: *create_mountpoint_on_bootstrap
+          name: Create mountpoint on the new bootstrap node
+      - ShellCommand:
+          <<: *mount_iso_on_bootstrap
+          name: Mount ISO image on the new bootstrap node
+      - ShellCommand:
+          <<: *bastion_tests
+          name: Run restore tests on the bastion
+          # NOTE: Increase timeout as restore may take some time
+          # Since we use pytest we do not have any output until restore totaly
+          # finished
+          timeout: 1800
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "restore"
+            BOOTSTRAP_BACKUP_ARCHIVE: "/tmp/%(prop:bootstrap_backup_archive)s"
+      - ShellCommand: *wait_pods_running_multi_node
+      - ShellCommand: *multi_node_fast_tests
+      - ShellCommand: *multi_node_slow_tests
+      - ShellCommand:
+          <<: *generate_report_multi_node
+          env:
+            <<: *_env_generate_report_multi_node
+            HOSTS_LIST: "bootstrap node1 node2"
+      - ShellCommand:
+          <<: *collect_report_multi_node
+          env:
+            <<: *_env_collect_report_multi_node
+            HOSTS_LIST: "bootstrap node1 node2"
+            STEP_NAME: bootstrap-restore
+      - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_bootstrap_restore_junit_info
+            STEP_NAME: bootstrap-restore
+      - Upload: *upload_final_status_artifact
+      - ShellCommand:
+          <<: *wait_debug
+          timeout: 14400
+          env:
+            STEP_NAME: bootstrap-restore
+            DURATION: "14400"
+      - ShellCommand: *terraform_destroy_multi_node

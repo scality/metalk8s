@@ -270,6 +270,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls'),
     Path('salt/metalk8s/addons/prometheus-adapter/deployed/init.sls'),
 
+    Path('salt/metalk8s/addons/prometheus-operator/post-cleanup.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/post-downgrade.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/post-upgrade.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/config/alertmanager.yaml'),
     Path('salt/metalk8s/addons/prometheus-operator/config/grafana.yaml'),
     Path('salt/metalk8s/addons/prometheus-operator/config/prometheus.yaml'),
@@ -285,6 +288,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/prometheus-operator/deployed/',
             'service-configuration.sls'),
     Path('salt/metalk8s/addons/prometheus-operator/deployed/storageclass.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/pre-downgrade.sls'),
+    Path('salt/metalk8s/addons/prometheus-operator/pre-upgrade.sls'),
 
     Path('salt/metalk8s/addons/ui/deployed/dependencies.sls'),
     Path('salt/metalk8s/addons/ui/deployed/ingress.sls'),
@@ -384,7 +389,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/kubernetes/apiserver/installed.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/cryptconfig.sls'),
     Path('salt/metalk8s/kubernetes/apiserver/kubeconfig.sls'),
-    Path('salt/metalk8s/kubernetes/apiserver/pre-upgrade.sls'),
 
     Path('salt/metalk8s/kubernetes/apiserver-proxy/files/'
             'apiserver-proxy.conf.j2'),
@@ -479,21 +483,24 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap/accept-minion.sls'),
+    Path('salt/metalk8s/orchestrate/bootstrap/pre-downgrade.sls'),
+    Path('salt/metalk8s/orchestrate/bootstrap/pre-upgrade.sls'),
 
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/pre.sls'),
+    Path('salt/metalk8s/orchestrate/downgrade/post.sls'),
 
     Path('salt/metalk8s/orchestrate/upgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/upgrade/pre.sls'),
+    Path('salt/metalk8s/orchestrate/upgrade/post.sls'),
 
     Path('salt/metalk8s/orchestrate/solutions/import-components.sls'),
     Path('salt/metalk8s/orchestrate/solutions/prepare-environment.sls'),
     Path('salt/metalk8s/orchestrate/solutions/deploy-components.sls'),
     Path('salt/metalk8s/orchestrate/solutions/files/operator/configmap.yaml'),
     Path('salt/metalk8s/orchestrate/solutions/files/operator/deployment.yaml'),
-    Path('salt/metalk8s/orchestrate/solutions/files/operator/role.yaml'),
     Path('salt/metalk8s/orchestrate/solutions/files/operator/role_binding.yaml'),
     Path('salt/metalk8s/orchestrate/solutions/files/operator/service_account.yaml'),
     Path('salt/metalk8s/orchestrate/solutions/files/ui/configmap.yaml'),
@@ -521,12 +528,14 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/roles/bootstrap/absent.sls'),
     Path('salt/metalk8s/roles/bootstrap/init.sls'),
+    Path('salt/metalk8s/roles/bootstrap/local.sls'),
     Path('salt/metalk8s/roles/ca/absent.sls'),
     Path('salt/metalk8s/roles/ca/init.sls'),
     Path('salt/metalk8s/roles/etcd/absent.sls'),
     Path('salt/metalk8s/roles/etcd/init.sls'),
     Path('salt/metalk8s/roles/infra/init.sls'),
     Path('salt/metalk8s/roles/infra/absent.sls'),
+    Path('salt/metalk8s/roles/internal/early-stage-bootstrap.sls'),
     Path('salt/metalk8s/roles/internal/node-without-calico.sls'),
     Path('salt/metalk8s/roles/master/absent.sls'),
     Path('salt/metalk8s/roles/master/init.sls'),
@@ -540,6 +549,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/master/files/salt-master-manifest.yaml.j2'),
     Path('salt/metalk8s/salt/master/init.sls'),
     Path('salt/metalk8s/salt/master/installed.sls'),
+    Path('salt/metalk8s/salt/master/kubeconfig.sls'),
     Path('salt/metalk8s/salt/master/certs/etcd-client.sls'),
     Path('salt/metalk8s/salt/master/certs/init.sls'),
     Path('salt/metalk8s/salt/master/certs/salt-api.sls'),

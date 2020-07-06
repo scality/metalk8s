@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import metalk8s with context -%}
 {%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
 {%- set archives = salt.metalk8s.get_archives() %}
 
@@ -12,8 +13,9 @@ Configure salt master:
     - backup: false
     - template: jinja
     - defaults:
+        debug: {{ metalk8s.debug }}
         salt_ip: "{{ salt_ip }}"
-        kubeconfig: "/etc/kubernetes/admin.conf"
+        kubeconfig: "/etc/salt/master-kubeconfig.conf"
 
 Configure salt master roots paths:
   file.serialize:

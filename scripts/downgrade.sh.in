@@ -92,6 +92,13 @@ launch_pre_downgrade () {
         saltenv="$SALTENV"
 }
 
+launch_post_downgrade () {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.downgrade.post \
+        saltenv="$SALTENV"
+}
+
 launch_downgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
@@ -116,20 +123,25 @@ downgrade_bootstrap () {
         | cut -d' ' -f2- )"
 
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
-    ca_minion="$($SALT_CALL pillar.get \
-        metalk8s:ca:minion --out txt | cut -c 8-)"
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.bootstrap.pre-downgrade \
+        saltenv="$SALTENV"
 
-    "${SALT_MASTER_CALL[@]}" salt "$ca_minion" state.sls sync_mods="all" \
-        metalk8s.roles.ca saltenv="metalk8s-$DESTINATION_VERSION"
+    # Salt Master states changed in 2.4.4/2.5.1
+    # NOTE: (this fix can be removed in 2.7 and higher)
+    local -r version_no_suffix="${DESTINATION_VERSION%%*-}"
+    if [ "$version_no_suffix" = "2.5.0" ] || \
+       [ "$("$SALT_CALL" --local --out txt pkg.version_cmp \
+            "$version_no_suffix" "2.4.3" | cut -c 8-)" -le 0 ]; then
+        bootstrap_state="metalk8s.roles.bootstrap"
+    else
+        bootstrap_state="metalk8s.roles.bootstrap.local"
+    fi
 
-    $SALT_CALL state.sls metalk8s.salt.master.certs sync_mods="all" \
-        saltenv="metalk8s-$DESTINATION_VERSION" --retcode-passthrough
-
-    $SALT_CALL --local state.sls metalk8s.roles.bootstrap sync_mods="all" \
-        saltenv="metalk8s-$DESTINATION_VERSION" \
+    "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
+        "$bootstrap_state" saltenv="metalk8s-$DESTINATION_VERSION" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
-        'repositories': $repo_endpoint}}}" \
-        --retcode-passthrough
+        'repositories': $repo_endpoint}}}"
 }
 
 # patch the kube-system namespace annotation with <destination-version> input
@@ -172,3 +184,4 @@ run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-downgrade" launch_pre_downgrade
 run "Downgrading bootstrap" downgrade_bootstrap
 run "Launching the downgrade" launch_downgrade
+run "Launching the post-downgrade" launch_post_downgrade

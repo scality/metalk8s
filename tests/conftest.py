@@ -1,5 +1,7 @@
 import json
 import pathlib
+import re
+import requests.exceptions
 
 import kubernetes
 import pytest
@@ -35,6 +37,7 @@ def version(request, host):
             'source %s && echo $VERSION', str(product_path)
         )
 
+
 @pytest.fixture(scope="module")
 def hostname(host):
     """Return the result of `hostname` on the `host` fixture.
@@ -52,10 +55,14 @@ def nodename(host):
     Node name need to be equal to the salt minion id so just retrieve the
     salt minion id
     """
-    with host.sudo():
-        return host.check_output(
-            'salt-call --local --out txt grains.get id | cut -c 8-'
-        )
+    return utils.get_grain(host, 'id')
+
+
+@pytest.fixture(scope="module")
+def control_plane_ip(host):
+    """Return the Kubernetes control plane IP based on the salt grain
+    """
+    return utils.get_grain(host, 'metalk8s:control_plane_ip')
 
 
 @pytest.fixture(scope="module")
@@ -347,6 +354,44 @@ def check_resource_list(host, resource, namespace):
             resource, namespace)
 
 
+@then(parsers.parse(
+    "we are able to login to Dex as '{username}' using password '{password}'"))
+def dex_successful_login(username, password,
+                         control_plane_ip, request_retry_session):
+
+    response = _dex_login(
+        username, password,
+        control_plane_ip, request_retry_session
+    )
+    assert response.text is not None
+    assert response.status_code == 303
+    assert response.headers.get('location') is not None
+
+
+@then(parsers.parse(
+    "we are not able to login to Dex "
+    "as '{username}' using password '{password}'"))
+def dex_failed_login(username, password,
+                     control_plane_ip, request_retry_session):
+    response = _dex_login(
+        username, password,
+        control_plane_ip, request_retry_session
+    )
+    assert response.text is not None
+    assert response.status_code == 200
+    # 'Invalid Email Address and password' is found in reponse text
+    assert 'Invalid Email Address and password' in response.text
+    assert response.headers.get('locaction') is None
+
+
+@then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
+def check_etcd_role(ssh_config, k8s_client, node_name):
+    """Check if the given node is a member of the etcd cluster."""
+    etcd_member_list = etcdctl(k8s_client, ['member', 'list'], ssh_config)
+    assert node_name in etcd_member_list, \
+        'node {} is not part of the etcd cluster'.format(node_name)
+
+
 # }}}
 # Helpers {{{
 
@@ -357,5 +402,75 @@ def _verify_kubeapi_service(host):
         res = host.run(cmd)
         if res.rc != 0:
             pytest.fail(res.stderr)
+
+
+def _dex_login(username, password, control_plane_ip, request_retry_session):
+    """Login to Dex and return the result"""
+    try:
+        response = request_retry_session.post(
+            'https://{}:{}/oidc/auth?'.format(
+                control_plane_ip, CONTROL_PLANE_INGRESS_PORT
+            ),
+            data={
+                'response_type': 'id_token',
+                'client_id': 'metalk8s-ui',
+                'scope': 'openid audience:server:client_id:oidc-auth-client',
+                'redirect_uri': 'https://{}:{}/oauth2/callback'.format(
+                    control_plane_ip, CONTROL_PLANE_INGRESS_PORT
+                ),
+                'nonce': 'nonce'
+            },
+            verify=False
+        )
+    except requests.exceptions.ConnectionError as exc:
+        pytest.fail("Dex authentication request failed with error: {}".format(
+            exc
+        ))
+
+    auth_request = response.text  # response is an html form
+    # form action looks like:
+    # <a href="/oidc/auth/local?req=ovc5qdll5zznlubewjok266rl" target="_self">
+    reqpath = re.search(
+        r'href=[\'"](?P<reqpath>/oidc/\S+)[\'"] ', auth_request
+    ).group('reqpath')
+
+    try:
+        result = requests.post(
+            'https://{}:{}{}'.format(
+                control_plane_ip, CONTROL_PLANE_INGRESS_PORT, reqpath
+            ),
+            data={
+                'login': username,
+                'password': password
+            },
+            verify=False,
+            allow_redirects=False
+        )
+    except requests.exceptions.ConnectionError as exc:
+        pytest.fail("Unable to login: {}".format(exc))
+
+    return result
+
+
+def etcdctl(k8s_client, command, ssh_config):
+    """Run an etcdctl command inside the etcd container."""
+    name = 'etcd-{}'.format(
+        utils.get_node_name('bootstrap', ssh_config)
+    )
+
+    etcd_command = [
+        'etcdctl',
+        '--endpoints', 'https://localhost:2379',
+        '--ca-file', '/etc/kubernetes/pki/etcd/ca.crt',
+        '--key-file', '/etc/kubernetes/pki/etcd/server.key',
+        '--cert-file', '/etc/kubernetes/pki/etcd/server.crt',
+    ] + command
+    output = kubernetes.stream.stream(
+        k8s_client.connect_get_namespaced_pod_exec,
+        name=name, namespace='kube-system',
+        command=etcd_command,
+        stderr=True, stdin=False, stdout=True, tty=False
+    )
+    return output
 
 # }}}

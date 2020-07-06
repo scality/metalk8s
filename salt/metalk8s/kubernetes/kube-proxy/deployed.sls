@@ -1,4 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
 {%- set image = build_image_name("kube-proxy") -%}
@@ -130,6 +131,7 @@ Deploy kube-proxy (DaemonSet):
                 - /usr/local/bin/kube-proxy
                 - --config=/var/lib/kube-proxy/config.conf
                 - --hostname-override=$(NODE_NAME)
+                - --v={{ 2 if metalk8s.debug else 0 }}
                 env:
                 - name: NODE_NAME
                   valueFrom:

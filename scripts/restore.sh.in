@@ -181,7 +181,7 @@ configure_salt_master() {
     )
 
     "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
-        '["metalk8s.roles.bootstrap", "metalk8s.roles.minion", "metalk8s.kubernetes.apiserver-proxy"]' \
+        '["metalk8s.roles.internal.early-stage-bootstrap", "metalk8s.kubernetes.apiserver-proxy"]' \
         saltenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
 
@@ -213,6 +213,11 @@ configure_salt_master() {
 
     "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
         metalk8s.kubernetes.apiserver.kubeconfig \
+        saltenv=metalk8s-@@VERSION \
+        pillar="${pillar[*]}"
+
+    "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
+        metalk8s.salt.master.kubeconfig \
         saltenv=metalk8s-@@VERSION \
         pillar="${pillar[*]}"
 }
@@ -273,6 +278,16 @@ reconfigure_nodes() {
     # See htpps://github.com/saltstack/salt/issues/20590
     "${SALT_MASTER_CALL[@]}" salt '*' saltutil.refresh_pillar && sleep 20
     "${SALT_MASTER_CALL[@]}" salt '*' mine.update
+
+    "${SALT_MASTER_CALL[@]}" salt -L "$non_bootstrap" --state-output=mixed \
+        state.sls metalk8s.kubernetes.apiserver-proxy \
+        saltenv=metalk8s-@@VERSION
+
+    # For kubelet 1.16+ in case of connection failure kubelet will not
+    # reconnect until restart (since we are in restore we have lose the old
+    # bootstrap node so connection may have fail)
+    # See https://github.com/kubernetes/kubernetes/issues/87615
+    "${SALT_MASTER_CALL[@]}" salt -L "$non_bootstrap" service.restart kubelet
 }
 
 highstate_bootstrap() {
@@ -283,7 +298,7 @@ highstate_bootstrap() {
     )
 
     "${SALT_CALL}" --retcode-passthrough --state-output=mixed state.sls \
-        metalk8s.salt.master.certs.etcd-client \
+        metalk8s.salt.master.certs \
         saltenv=metalk8s-@@VERSION
     "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
         metalk8s.orchestrate.deploy_node \
@@ -296,6 +311,18 @@ reconfigure_k8s_obj() {
 
     "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
         metalk8s.addons.nginx-ingress-control-plane.deployed \
+        saltenv=metalk8s-@@VERSION
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.addons.dex.deployed \
+        saltenv=metalk8s-@@VERSION
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.addons.prometheus-operator.deployed \
+        saltenv=metalk8s-@@VERSION
+
+    "${SALT_MASTER_CALL[@]}" salt-run --state-output=mixed state.orchestrate \
+        metalk8s.addons.ui.deployed \
         saltenv=metalk8s-@@VERSION
 }
 

@@ -29,7 +29,6 @@ spec:
   containers:
     - name: salt-master
       image: {{ image }}
-      args: ['--log-level=info']
       ports:
         - name: publisher
           containerPort: 4505
@@ -76,13 +75,12 @@ spec:
         - name: metalk8s-config
           mountPath: '/etc/metalk8s'
           readOnly: true
-        - name: kubernetes-config
-          mountPath: '/etc/kubernetes'
+        - name: kubernetes-pki
+          mountPath: '/etc/kubernetes/pki'
           readOnly: true
     - name: salt-api
       image: {{ image }}
       command: ['salt-api']
-      args: ['--log-level=info']
       ports:
         - name: api
           containerPort: 4507
@@ -105,8 +103,8 @@ spec:
           readOnly: true
         - name: run
           mountPath: '/var/run/salt'
-        - name: kubernetes-config
-          mountPath: '/etc/kubernetes'
+        - name: kubernetes-pki
+          mountPath: '/etc/kubernetes/pki'
           readOnly: true
   volumes:
     - name: config
@@ -141,7 +139,7 @@ spec:
       hostPath:
         path: '/etc/metalk8s'
         type: Directory
-    - name: kubernetes-config
+    - name: kubernetes-pki
       hostPath:
-        path: '/etc/kubernetes'
+        path: '/etc/kubernetes/pki'
         type: Directory

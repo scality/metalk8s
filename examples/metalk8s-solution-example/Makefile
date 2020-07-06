@@ -1,7 +1,7 @@
 .POSIX:
 
 .DEFAULT_GOAL := all
-all: images ui operator config product_info
+all: images ui operator manifest
 .PHONY: all
 
 # Use this empty target to force execution of a rule
@@ -217,30 +217,25 @@ $(ISO_ROOT)/operator/%: $(OPERATOR_SRC)/%
 	@rm -f $@
 	@cp -a $< $@
 
-# Solution default configuration
-config: $(ISO_ROOT)/config.yaml
-.PHONY: config
+# Solution manifest
+manifest: $(ISO_ROOT)/manifest.yaml
+.PHONY: manifest
 
-$(ISO_ROOT)/config.yaml: $(PWD)/config.yaml
-	cp -f $< $@
-
-# Product information
-product_info: $(ISO_ROOT)/product.txt
-.PHONY: product_info
-
-$(ISO_ROOT)/product.txt: $(PWD)/product.sh $(PWD)/VERSION FORCE
-	@echo Generate "product.txt".
+$(ISO_ROOT)/manifest.yaml: $(PWD)/manifest.py $(PWD)/VERSION FORCE
+	@echo Write Solution info to "manifest.yaml".
 	@rm -f $@
 	@mkdir -p $(@D)
-	@env \
-		NAME="$(PRODUCT_NAME)" \
-		VERSION=$(VERSION_FULL) \
-		SHORT_VERSION=$(VERSION_MAJOR)-$(VERSION_MINOR) \
-		GIT=$(GIT_REVISION) \
-		DEVELOPMENT_RELEASE=$(DEVELOPMENT_RELEASE) \
-		BUILD_TIMESTAMP=$(BUILD_TIMESTAMP) \
-		BUILD_HOST=$(BUILD_HOST) \
-		$< > $@ || (rm -f $@; false)
+	$< --name "$(PRODUCT_LOWERNAME)" \
+	   --annotation "solutions.metalk8s.scality.com/build-timestamp" "$(BUILD_TIMESTAMP)" \
+	   --annotation "solutions.metalk8s.scality.com/build-host" "$(BUILD_HOST)" \
+	   --annotation "solutions.metalk8s.scality.com/development-release" "$(DEVELOPMENT_RELEASE)" \
+	   --annotation "solutions.metalk8s.scality.com/display-name" "$(PRODUCT_NAME)" \
+	   --annotation "solutions.metalk8s.scality.com/git-revision" "$(GIT_REVISION)" \
+	   --extra-image "base-server" "$(VERSION_FULL)" \
+	   --operator-image "$(OPERATOR_IMG_NAME)" "$(VERSION_FULL)" \
+	   --ui-image "$(UI_IMG_NAME)" "$(VERSION_FULL)" \
+	   --version "$(VERSION_FULL)" \
+	   > $@ || (rm -f $@; false)
 
 
 # }}}
@@ -249,9 +244,9 @@ $(ISO_ROOT)/product.txt: $(PWD)/product.sh $(PWD)/VERSION FORCE
 iso: $(ISO)
 .PHONY: iso
 
-# Since product.txt is generated every time, we don't need explicit requisites
-# for this ISO generation - it will happen every time. We leave the `all`
-# target handle generation of the ISO contents.
+# Since manifest.yaml is generated every time, we don't need explicit
+# requisites for this ISO generation - it will happen every time.
+# We leave the `all` target handle generation of the ISO contents.
 $(ISO): all
 	mkisofs -output $@ \
 		-quiet \

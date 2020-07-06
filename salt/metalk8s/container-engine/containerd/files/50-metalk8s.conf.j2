@@ -1,4 +1,11 @@
 [Service]
+# Allow passing arguments to containerd daemon
+ExecStart=
+{%- if containerd_args %}
+ExecStart=/usr/bin/containerd "{{ containerd_args | join('" "') }}"
+{%- else %}
+ExecStart=/usr/bin/containerd
+{%- endif %}
 # See https://github.com/containerd/containerd/issues/3201
 # See https://github.com/containerd/containerd/pull/3202
 LimitNOFILE=1048576

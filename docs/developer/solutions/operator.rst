@@ -14,8 +14,7 @@ Solution Operator guidelines
 MetalK8s *Solutions* are a concept mostly centered around the Operator pattern.
 While there is no explicit requirements except the ones described below (see
 :ref:`solution-operator-requirements`), we recommend using the `Operator SDK`_
-as it will embed best practices from the Kubernetes_ community. We also include
-some :ref:`solution-operator-recommendations`.
+as it will embed best practices from the Kubernetes_ community.
 
 .. _`Operator SDK`: https://github.com/operator-framework/operator-sdk/
 .. _Kubernetes: https://kubernetes.io/
@@ -36,22 +35,10 @@ archive. Those files should be organized as follows::
    operator
    └── deploy
        ├── crds
-       │   └── some_crd_name.yaml
-       ├── operator.yaml
-       ├── role.yaml
-       ├── role_binding.yaml
-       └── service_account.yaml
+       │   └── some_crd.yaml
+       └── role.yaml
 
 Most of these files are generated when using the Operator SDK.
-
-.. todo::
-
-   Specify each of them, include example (after `#1060`_ is done).
-   Remember to note specificities about ``OCI_REPOSITORY_PREFIX`` / namespaces.
-   Think about using ``kustomize`` (or ``kubectl apply -k``, though only
-   available from K8s 1.14).
-
-.. _`#1060`: https://github.com/scality/metalk8s/issues/1060
 
 Monitoring
 ^^^^^^^^^^
@@ -69,28 +56,57 @@ to set up monitoring of your application services.
 
 .. _`Prometheus Operator`: https://github.com/coreos/prometheus-operator
 
-.. _solution-operator-recommendations:
+Configuration
+^^^^^^^^^^^^^
 
-Recommendations
----------------
+Solution Operator must implement a ``--config`` option which will be used
+by MetalK8s to provide various useful information needed by the Operator, such
+as the endpoints for the container images.
+The given configuration looks like::
 
-Permissions
-^^^^^^^^^^^
+   apiVersion: solutions.metalk8s.scality.com/v1alpha1
+   kind: OperatorConfig
+   repositories:
+     <solution-version-x>:
+       - endpoint: metalk8s-registry/<solution-name>-<solution-version-x>
+         images:
+           - <image-x>:<tag-x>
+           - <image-y>:<tag-y>
+     <solution-version-y>:
+       - endpoint: metalk8s-registry/<solution-name>-<solution-version-y>
+         images:
+           - <image-x>:<tag-x>
+           - <image-y>:<tag-y>
 
-MetalK8s does not provide tools to deploy the Operator itself, so that users
-can have better control over which version runs where.
+In example, for an online installation without MetalK8s providing the
+repository, this configuration could be::
 
-The best-practice encouraged here is to use namespace-scoped permissions for
-the Operator, instead of cluster-scoped.
+    apiVersion: solutions.metalk8s.scality.com/v1alpha1
+    kind: OperatorConfig
+    repositories:
+      1.0.0:
+        - endpoint: registry.scality.com/zenko
+          images:
+            - cloudserver:1.0.0
+            - zenko-quorum:1.0.0
+        - endpoint: quay.io/coreos
+          images:
+            - prometheus-operator:v0.34.0
 
-This allows for better isolation between different application deployments from
-a single Solution, for instance when trying out a new version before affecting
-production machines, or when managing two independent application stacks.
+This configuration allows the Operator to retrieve dynamically where
+the container images are stored for each version of a given Solution.
 
-.. note::
+Roles
+^^^^^
 
-   Future improvements to MetalK8s may include the addition of an "Operator for
-   Operators", such as the `Operator Lifecycle Manager`_.
+Solution must ship a ``role.yaml`` file located in ``/operator/deploy``
+directory. This file is a manifest which declares all necessary ``Role`` and
+``ClusterRole`` objects needed by the Operator.
+MetalK8s will take care of deploying these objects, create a ``ServiceAccount``
+named ``<solution_name>-operator`` and all needed ``RoleBinding`` to bind these
+roles to this account.
 
-.. _`Operator Lifecycle Manager`:
-   https://github.com/operator-framework/operator-lifecycle-manager
+.. warning::
+
+   Only ``Role`` and ``ClusterRole`` kinds are allowed in this file,
+   the deployment of the Solution fails if any other resource is found.

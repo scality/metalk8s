@@ -7,6 +7,7 @@ require 'ipaddr'
 if File.exists?('vagrant_config.rb')
   require_relative 'vagrant_config'
 else
+  DEBUG = 'false'
   RHSM_USERNAME = ''
   RHSM_PASSWORD = ''
   RHSM_POOL = ''
@@ -136,6 +137,7 @@ ca:
   minion: bootstrap
 archives:
   - /srv/scality/metalk8s-$VERSION
+debug: #{DEBUG}
 EOF
 
 echo "Launching bootstrap"
@@ -175,6 +177,8 @@ subscription-manager repos --enable=rhel-7-server-optional-rpms \
                            --enable=rhel-7-server-extras-rpms
 SCRIPT
 RHSM_UNREGISTER = 'subscription-manager unregister || true'
+
+EXPORT_KUBECONFIG = 'echo KUBECONFIG=/etc/kubernetes/admin.conf >> /etc/environment'
 
 # To support VirtualBox linked clones
 Vagrant.require_version(">= 1.8")
@@ -216,6 +220,10 @@ def declare_bootstrap(machine, os_data)
   machine.vm.provision "bootstrap",
     type: "shell",
     inline: BOOTSTRAP
+
+  machine.vm.provision "export-kubeconfig",
+    type: "shell",
+    inline: EXPORT_KUBECONFIG
 
   machine.vm.provision "create-volumes",
     type: "shell",

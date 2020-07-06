@@ -2,9 +2,9 @@ package volume
 
 import (
 	"context"
-	b64 "encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 	"time"
 
 	errorsng "github.com/pkg/errors"
@@ -97,10 +97,13 @@ If we do have a job ID, then something is in progress and we monitor it until
 it's over.
 If it has ended with an error, we move the volume into a failed state.
 
-Otherwise we proceed with the PersistentVolume creation (which require an extra
-Salt call, synchronous this time, to get the volume size), taking care of
-putting a finalizer on the PersistentVolume (so that its lifetime is tied to
-ours) and setting ourself as the owner of the PersistentVolume.
+Otherwise we make another asynchronous Salt call to get the size of the backing
+storage device (the polling is done exactly as described above).
+
+If we successfully retrive the size, we proceed with the PersistentVolume
+creation, taking care of putting a finalizer on the PersistentVolume (so that
+its lifetime is tied to ours) and setting ourself as the owner of the
+PersistentVolume.
 
 Once we have successfuly created the PersistentVolume, we can move into the
 `Available` state and reschedule the request (the next iteration will check the
@@ -412,18 +415,6 @@ func (self *ReconcileVolume) removeVolumeFinalizer(
 	return self.client.Update(ctx, volume)
 }
 
-// Get the disk size for the volume.
-func (self *ReconcileVolume) getDiskSizeForVolume(
-	ctx context.Context, volume *storagev1alpha1.Volume,
-) (resource.Quantity, error) {
-	nodeName := string(volume.Spec.NodeName)
-	size, err := self.salt.GetVolumeSize(ctx, nodeName, volume.GetPath())
-	if err != nil {
-		return *resource.NewQuantity(0, resource.BinarySI), err
-	}
-	return *resource.NewQuantity(size, resource.BinarySI), err
-}
-
 // Get the PersistentVolume associated to the given volume.
 //
 // Return `nil` if no such volume exists.
@@ -475,25 +466,33 @@ type stateSetter func(
 	context.Context, *storagev1alpha1.Volume, string,
 ) (reconcile.Result, error)
 
+type jobSuccessCallback func(map[string]interface{}) (reconcile.Result, error)
+
 // Poll a Salt state job.
 func (self *ReconcileVolume) pollSaltJob(
 	ctx context.Context,
 	stepName string,
-	jobName string,
 	volume *storagev1alpha1.Volume,
 	pv *corev1.PersistentVolume,
 	setState stateSetter,
 	reason storagev1alpha1.ConditionReason,
+	onSuccess jobSuccessCallback,
 ) (reconcile.Result, error) {
 	nodeName := string(volume.Spec.NodeName)
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
 
-	jid := volume.Status.Job
-	if result, err := self.salt.PollJob(ctx, jid, nodeName); err != nil {
+	job, err := salt.JobFromString(volume.Status.Job)
+	if err != nil {
+		reqLogger.Error(err, "cannot parse Salt job from Volume status")
+		return self.setFailedVolumeStatus(
+			ctx, volume, pv, reason, "cannot parse Salt job from Volume status",
+		)
+	}
+	if result, err := self.salt.PollJob(ctx, job, nodeName); err != nil {
 		reqLogger.Error(
-			err, fmt.Sprintf("failed to poll Salt job '%s' status", jobName),
+			err, fmt.Sprintf("failed to poll Salt job '%s' status", job.Name),
 		)
 		// This one is not retryable.
 		if failure, ok := err.(*salt.AsyncJobFailed); ok {
@@ -503,15 +502,16 @@ func (self *ReconcileVolume) pollSaltJob(
 			)
 			return self.setFailedVolumeStatus(
 				ctx, volume, pv, reason,
-				"Salt job '%s' failed with: %s", jobName, failure.Error(),
+				"Salt job '%s' failed with: %s", job.Name, failure.Error(),
 			)
 		}
 		// Job salt not found or failed to run, let's retry.
-		return setState(ctx, volume, "")
+		job.ID = ""
+		return setState(ctx, volume, job.String())
 	} else {
 		if result == nil {
 			reqLogger.Info(
-				fmt.Sprintf("Salt job '%s' still in progress", jobName),
+				fmt.Sprintf("Salt job '%s' still in progress", job.Name),
 			)
 			return delayedRequeue(nil)
 		}
@@ -519,7 +519,7 @@ func (self *ReconcileVolume) pollSaltJob(
 			volume, corev1.EventTypeNormal, "SaltCall",
 			"step '%s' succeeded", stepName,
 		)
-		return setState(ctx, volume, JOB_DONE_MARKER)
+		return onSuccess(result)
 	}
 }
 
@@ -632,7 +632,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return delayedRequeue(err)
 	}
 	reqLogger.Info("backing PersistentVolume is healthy")
-	return endReconciliation()
+	return r.refreshDeviceName(ctx, volume, pv)
 }
 
 // Deploy a volume (i.e prepare the storage and create a PV).
@@ -645,33 +645,23 @@ func (self *ReconcileVolume) deployVolume(
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
+	job, err := salt.JobFromString(volume.Status.Job)
+	if err != nil {
+		reqLogger.Error(err, "cannot parse Salt job from Volume status")
+		return requeue(err)
+	}
 
-	switch volume.Status.Job {
-	case "": // No job in progress: call Salt to prepare the volume.
-		// Set volume-protection finalizer on the volume.
-		if err := self.addVolumeFinalizer(ctx, volume); err != nil {
-			reqLogger.Error(err, "cannot set volume-protection: requeue")
-			return delayedRequeue(err)
-		}
-		jid, err := self.salt.PrepareVolume(ctx, nodeName, volume.Name, saltenv)
-		if err != nil {
-			reqLogger.Error(err, "failed to run PrepareVolume")
-			return delayedRequeue(err)
-		} else {
-			reqLogger.Info("start to prepare the volume")
-			self.recorder.Event(
-				volume, corev1.EventTypeNormal, "SaltCall",
-				"volume provisioning started",
-			)
-			return self.setPendingVolumeStatus(ctx, volume, jid)
-		}
-	case JOB_DONE_MARKER: // Salt job is done, now let's create the PV.
-		return self.createPersistentVolume(ctx, volume)
-	default: // PrepareVolume in progress: poll its state.
-		return self.pollSaltJob(
-			ctx, "volume provisioning", "PrepareVolume",
-			volume, nil, self.setPendingVolumeStatus,
-			storagev1alpha1.ReasonCreationError,
+	switch job.Name {
+	// Since it's the first step, the name can be unset the very first time.
+	case "", "PrepareVolume":
+		return self.prepareStorage(ctx, volume, saltenv, job)
+	case "GetVolumeSize":
+		return self.getStorageSize(ctx, volume, job)
+	default:
+		// Shouldn't happen, except if someome somehow tampered our status field…
+		return self.setFailedVolumeStatus(
+			ctx, volume, nil, storagev1alpha1.ReasonCreationError,
+			"Tampered Salt job handle: invalid name (%s)", job.Name,
 		)
 	}
 }
@@ -722,24 +712,159 @@ func (self *ReconcileVolume) finalizeVolume(
 	return delayedRequeue(nil)
 }
 
+func (self *ReconcileVolume) refreshDeviceName(
+	ctx context.Context,
+	volume *storagev1alpha1.Volume,
+	pv *corev1.PersistentVolume,
+) (reconcile.Result, error) {
+	nodeName := string(volume.Spec.NodeName)
+	reqLogger := log.WithValues(
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
+	)
+
+	if pv.Spec.PersistentVolumeSource.Local == nil {
+		reqLogger.Info("skipping volume: not a local storage")
+		return endReconciliation()
+	}
+	path := pv.Spec.PersistentVolumeSource.Local.Path
+
+	name, err := self.salt.GetDeviceName(ctx, nodeName, volume.Name, path)
+	if err != nil {
+		self.recorder.Event(
+			volume, corev1.EventTypeNormal, "SaltCall",
+			"device path resolution failed",
+		)
+		reqLogger.Error(err, "cannot get device name from Salt response")
+		return delayedRequeue(err)
+	}
+	if volume.Status.DeviceName != name {
+		volume.Status.DeviceName = name
+		reqLogger.Info("update device name", "Volume.DeviceName", name)
+		return self.setAvailableVolumeStatus(ctx, volume)
+	}
+
+	return endReconciliation()
+}
+
+func (self *ReconcileVolume) prepareStorage(
+	ctx context.Context,
+	volume *storagev1alpha1.Volume,
+	saltenv string,
+	job *salt.JobHandle,
+) (reconcile.Result, error) {
+	nodeName := string(volume.Spec.NodeName)
+	reqLogger := log.WithValues(
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
+	)
+
+	switch job.ID {
+	case "": // No job in progress: call Salt to prepare the volume.
+		// Set volume-protection finalizer on the volume.
+		if err := self.addVolumeFinalizer(ctx, volume); err != nil {
+			reqLogger.Error(err, "cannot set volume-protection: requeue")
+			return delayedRequeue(err)
+		}
+		job, err := self.salt.PrepareVolume(ctx, nodeName, volume.Name, saltenv)
+		if err != nil {
+			reqLogger.Error(err, "failed to run PrepareVolume")
+			return delayedRequeue(err)
+		} else {
+			reqLogger.Info("start to prepare the volume")
+			self.recorder.Event(
+				volume, corev1.EventTypeNormal, "SaltCall",
+				"volume provisioning step 1/2 started",
+			)
+			return self.setPendingVolumeStatus(ctx, volume, job.String())
+		}
+	case JOB_DONE_MARKER: // Storage is ready, let's get its size.
+		job.Name = "GetVolumeSize"
+		job.ID = ""
+		return self.getStorageSize(ctx, volume, job)
+	default: // PrepareVolume in progress: poll its state.
+		return self.pollSaltJob(
+			ctx, "volume provisioning (1/2)", volume, nil,
+			self.setPendingVolumeStatus,
+			storagev1alpha1.ReasonCreationError,
+			func(_ map[string]interface{}) (reconcile.Result, error) {
+				job.ID = JOB_DONE_MARKER
+				return self.setPendingVolumeStatus(ctx, volume, job.String())
+			},
+		)
+	}
+}
+
+func (self *ReconcileVolume) getStorageSize(
+	ctx context.Context,
+	volume *storagev1alpha1.Volume,
+	job *salt.JobHandle,
+) (reconcile.Result, error) {
+	nodeName := string(volume.Spec.NodeName)
+	devicePath := volume.GetPath()
+	reqLogger := log.WithValues(
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
+	)
+
+	switch job.ID {
+	case "": // No job in progress: call Salt to get the volume size.
+		job, err := self.salt.GetVolumeSize(ctx, nodeName, volume.Name, devicePath)
+		if err != nil {
+			reqLogger.Error(err, "failed to run GetVolumeSize")
+			return delayedRequeue(err)
+		} else {
+			reqLogger.Info("try to retrieve the volume size")
+			self.recorder.Event(
+				volume, corev1.EventTypeNormal, "SaltCall",
+				"volume provisioning step 2/2 started",
+			)
+			return self.setPendingVolumeStatus(ctx, volume, job.String())
+		}
+	case JOB_DONE_MARKER: // We have everything we need: let's create the PV!
+		if size, err := strconv.ParseInt(job.Result, 10, 64); err != nil {
+			// Shouldn't happen, except if someome somehow tampered our status field…
+			return self.setFailedVolumeStatus(
+				ctx, volume, nil, storagev1alpha1.ReasonCreationError,
+				"Tampered Salt job handle: invalid result (%s)", job.Result,
+			)
+		} else {
+			return self.createPersistentVolume(
+				ctx, volume, *resource.NewQuantity(size, resource.BinarySI),
+			)
+		}
+	default: // GetVolumeSize in progress: poll its state.
+		return self.pollSaltJob(
+			ctx, "volume provisioning (2/2)", volume, nil,
+			self.setPendingVolumeStatus,
+			storagev1alpha1.ReasonCreationError,
+			func(result map[string]interface{}) (reconcile.Result, error) {
+				size, err := getDiskSize(result)
+				if err != nil {
+					reqLogger.Error(err, "cannot get disk size from Salt response")
+					self.recorder.Event(
+						volume, corev1.EventTypeNormal, "SaltCall",
+						"volume provisioning step 2/2 failed",
+					)
+					return self.setFailedVolumeStatus(
+						ctx, volume, nil, storagev1alpha1.ReasonCreationError,
+						"Salt job '%s' failed with: %s", job.Name, err.Error(),
+					)
+				}
+				job.Result = strconv.FormatInt(size, 10)
+				job.ID = JOB_DONE_MARKER
+				return self.setPendingVolumeStatus(ctx, volume, job.String())
+			},
+		)
+	}
+}
+
 // Create a PersistentVolume in the Kubernetes API server.
 func (self *ReconcileVolume) createPersistentVolume(
-	ctx context.Context, volume *storagev1alpha1.Volume,
+	ctx context.Context, volume *storagev1alpha1.Volume, size resource.Quantity,
 ) (reconcile.Result, error) {
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name,
 		"Volume.NodeName", string(volume.Spec.NodeName),
 	)
 
-	// Fetch disk size.
-	diskSize, err := self.getDiskSizeForVolume(ctx, volume)
-	if err != nil {
-		reqLogger.Error(err, "call to GetVolumeSize failed")
-		return self.setFailedVolumeStatus(
-			ctx, volume, nil, storagev1alpha1.ReasonCreationError,
-			"call to GetVolumeSize failed: %s", err.Error(),
-		)
-	}
 	// Fetch referenced storage class.
 	scName := volume.Spec.StorageClassName
 	sc, err := self.getStorageClass(ctx, scName)
@@ -749,7 +874,7 @@ func (self *ReconcileVolume) createPersistentVolume(
 		return delayedRequeue(err)
 	}
 	// Create the PersistentVolume object.
-	pv, err := newPersistentVolume(volume, sc, diskSize)
+	pv, err := newPersistentVolume(volume, sc, size)
 	if err != nil {
 		reqLogger.Error(
 			err, "cannot create the PersistentVolume object: requeue",
@@ -904,16 +1029,22 @@ func (self *ReconcileVolume) reclaimStorage(
 	reqLogger := log.WithValues(
 		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
 	)
-	saltJob := volume.Status.Job
+	job, err := salt.JobFromString(volume.Status.Job)
+	if err != nil {
+		reqLogger.Error(err, "cannot parse Salt job from Volume status")
+		return requeue(err)
+	}
+	jobId := job.ID
+
 	// Ignore existing Job ID in Failed case (no job are running), JID only here
 	// for debug (which is now useless as we're going to delete the Volume).
 	if volume.ComputePhase() == storagev1alpha1.VolumeFailed {
-		saltJob = ""
+		jobId = ""
 	}
 
-	switch saltJob {
+	switch jobId {
 	case "": // No job in progress: call Salt to unprepare the volume.
-		jid, err := self.salt.UnprepareVolume(
+		job, err := self.salt.UnprepareVolume(
 			ctx, nodeName, volume.Name, saltenv,
 		)
 		if err != nil {
@@ -925,7 +1056,7 @@ func (self *ReconcileVolume) reclaimStorage(
 				volume, corev1.EventTypeNormal, "SaltCall",
 				"volume finalization started",
 			)
-			return self.setTerminatingVolumeStatus(ctx, volume, jid)
+			return self.setTerminatingVolumeStatus(ctx, volume, job.String())
 		}
 	case JOB_DONE_MARKER: // Salt job is done, now let's remove the finalizers.
 		if pv != nil {
@@ -947,9 +1078,13 @@ func (self *ReconcileVolume) reclaimStorage(
 		return endReconciliation()
 	default: // UnprepareVolume in progress: poll its state.
 		return self.pollSaltJob(
-			ctx, "volume finalization", "UnprepareVolume",
-			volume, pv, self.setTerminatingVolumeStatus,
+			ctx, "volume finalization", volume, pv,
+			self.setTerminatingVolumeStatus,
 			storagev1alpha1.ReasonDestructionError,
+			func(_ map[string]interface{}) (reconcile.Result, error) {
+				job.ID = JOB_DONE_MARKER
+				return self.setTerminatingVolumeStatus(ctx, volume, job.String())
+			},
 		)
 	}
 }
@@ -972,19 +1107,26 @@ func endReconciliation() (reconcile.Result, error) {
 
 // Return the credential to use to authenticate with Salt API.
 func getAuthCredential(config *rest.Config) *salt.Credential {
-	if config.BearerToken != "" {
-		log.Info("using ServiceAccount bearer token")
-		return salt.NewCredential(
-			"storage-operator", config.BearerToken, salt.BearerToken,
-		)
-	} else if config.Username != "" && config.Password != "" {
-		log.Info("using Basic HTTP authentication")
-		creds := fmt.Sprintf("%s:%s", config.Username, config.Password)
-		token := b64.StdEncoding.EncodeToString([]byte(creds))
-		return salt.NewCredential(config.Username, token, salt.BasicToken)
-	} else {
-		log.Info("using default Basic HTTP authentication")
-		token := b64.StdEncoding.EncodeToString([]byte("admin:admin"))
-		return salt.NewCredential("admin", token, salt.BasicToken)
+	if config.BearerToken == "" {
+		panic("must use a BearerToken for SaltAPI authentication")
 	}
+	log.Info("using ServiceAccount bearer token")
+	return salt.NewCredential(
+		// FIXME: this should depend on the actual SA used
+		"system:serviceaccount:kube-system:storage-operator",
+		config.BearerToken,
+		salt.Bearer,
+	)
+}
+
+// Extract the disk size for a `disk.dump` result from Salt.
+func getDiskSize(result map[string]interface{}) (int64, error) {
+	size_str, ok := result["getsize64"].(string)
+	if !ok {
+		return 0, fmt.Errorf(
+			"cannot find a string value for key 'getsize64' in %v", result,
+		)
+	}
+
+	return strconv.ParseInt(size_str, 10, 64)
 }

@@ -1,3 +1,4 @@
+{% from "metalk8s/map.jinja" import metalk8s with context %}
 {% from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 include:
@@ -20,6 +21,7 @@ Create kube-scheduler Pod manifest:
           - --address={{ grains['metalk8s']['control_plane_ip'] }}
           - --kubeconfig=/etc/kubernetes/scheduler.conf
           - --leader-elect=true
+          - --v={{ 2 if metalk8s.debug else 0 }}
         requested_cpu: 100m
         ports:
           - name: http-metrics

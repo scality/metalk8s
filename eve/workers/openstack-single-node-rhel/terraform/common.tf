@@ -21,3 +21,8 @@ variable "rhsm_username" {
 variable "rhsm_password" {
   type = string
 }
+
+variable "debug" {
+  type    = bool
+  default = false
+}

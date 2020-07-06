@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -72,10 +71,12 @@ func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 //     saltenv:    saltenv to use
 //
 // Returns
-//     The Salt job ID.
+//     The Salt job handle.
 func (self *Client) PrepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
-) (string, error) {
+) (*JobHandle, error) {
+	const jobName string = "PrepareVolume"
+
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -88,20 +89,10 @@ func (self *Client) PrepareVolume(
 	}
 
 	self.logger.Info(
-		"PrepareVolume", "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return "", errors.Wrapf(
-			err,
-			"PrepareVolume failed (env=%s, target=%s, volume=%s)",
-			saltenv, nodeName, volumeName,
-		)
-	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return result["jid"].(string), nil
+	return self.submitJob(ctx, jobName, volumeName, payload)
 }
 
 // Spawn a job, asynchronously, to unprepare the volume on the specified node.
@@ -113,10 +104,12 @@ func (self *Client) PrepareVolume(
 //     saltenv:    saltenv to use
 //
 // Returns
-//     The Salt job ID.
+//     The Salt job handle.
 func (self *Client) UnprepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
-) (string, error) {
+) (*JobHandle, error) {
+	const jobName string = "UnprepareVolume"
+
 	payload := map[string]interface{}{
 		"client": "local_async",
 		"tgt":    nodeName,
@@ -129,79 +122,40 @@ func (self *Client) UnprepareVolume(
 	}
 
 	self.logger.Info(
-		"UnprepareVolume",
-		"Volume.NodeName", nodeName, "Volume.Name", volumeName,
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
 	)
 
-	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
-	if err != nil {
-		return "", errors.Wrapf(
-			err,
-			"UnrepareVolume failed (env=%s, target=%s, volume=%s)",
-			saltenv, nodeName, volumeName,
-		)
-	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	return result["jid"].(string), nil
+	return self.submitJob(ctx, jobName, volumeName, payload)
 }
 
 // Poll the status of an asynchronous Salt job.
 //
 // Arguments
 //     ctx:      the request context (used for cancellation)
-//     jobId:    Salt job ID
+//     job:      Salt job handle
 //     nodeName: node on which the job is executed
 //
 // Returns
 //     The result of the job if the execution is over, otherwise nil.
 func (self *Client) PollJob(
-	ctx context.Context, jobId string, nodeName string,
+	ctx context.Context, job *JobHandle, nodeName string,
 ) (map[string]interface{}, error) {
-	jobLogger := self.logger.WithValues("Salt.JobId", jobId)
+	jobLogger := self.logger.WithValues("Salt.JobId", job.ID)
 	jobLogger.Info("polling Salt job")
 
-	endpoint := fmt.Sprintf("/jobs/%s", jobId)
+	endpoint := fmt.Sprintf("/jobs/%s", job.ID)
 	ans, err := self.authenticatedRequest(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, errors.Wrapf(
-			err, "Salt job polling failed for ID %s", jobId,
+			err, "Salt job polling failed for ID %s", job.ID,
 		)
 	}
 
-	// TODO(#1461): make this more robust.
-	info := ans["info"].([]interface{})[0].(map[string]interface{})
-
-	// Unknown Job ID: maybe the Salt server restarted or something like that.
-	if errmsg, found := info["Error"]; found {
-		jobLogger.Info("Salt job not found")
-		reason := fmt.Sprintf(
-			"cannot get status for job %s: %s", jobId, (errmsg).(string),
-		)
-		return nil, errors.New(reason)
+	result, err := parsePollAnswer(jobLogger, job.ID, nodeName, ans)
+	if err != nil {
+		return nil, err
 	}
-	result := info["Result"].(map[string]interface{})
-	// No result yet, the job is still running.
-	if len(result) == 0 {
-		jobLogger.Info("Salt job is still running")
-		return nil, nil
-	}
-	nodeResult := result[nodeName].(map[string]interface{})
-
-	// The job is done: check if it has succeeded.
-	retcode := result[nodeName].(map[string]interface{})["retcode"].(float64)
-
-	switch int(retcode) {
-	case 0:
-		jobLogger.Info("Salt job succeeded")
-		return nodeResult, nil
-	case 1: // Concurrent state execution.
-		return nil, fmt.Errorf("Salt job %s failed to run", jobId)
-	default:
-		jobLogger.Info("Salt job failed")
-		reason := getStateFailureRootCause(nodeResult["return"])
-		return nil, &AsyncJobFailed{reason}
-	}
+	return result, nil
 }
 
 func getStateFailureRootCause(output interface{}) string {
@@ -227,45 +181,98 @@ func getStateFailureRootCause(output interface{}) string {
 
 // Return the size of the specified device on the given node.
 //
-// This request is synchronous.
+// This request is asynchronous.
 //
 // Arguments
 //     ctx:        the request context (used for cancellation)
 //     nodeName:   name of the node where the volume will be
+//     volumeName: name of the volume to prepare
 //     devicePath: path of the device for which we want the size
 //
 // Returns
-//     The size of the device, in bytes.
+//     The Salt job handle.
 func (self *Client) GetVolumeSize(
-	ctx context.Context, nodeName string, devicePath string,
-) (int64, error) {
+	ctx context.Context, nodeName string, volumeName string, devicePath string,
+) (*JobHandle, error) {
+	const jobName string = "GetVolumeSize"
+
 	payload := map[string]interface{}{
-		"client":  "local",
+		"client":  "local_async",
 		"tgt":     nodeName,
 		"fun":     "disk.dump",
 		"arg":     devicePath,
 		"timeout": 1,
 	}
 
-	self.logger.Info("disk.dump")
+	self.logger.Info(
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+	)
+
+	return self.submitJob(ctx, jobName, volumeName, payload)
+}
+
+// Return the name of the block device designed by `devicePath`.
+//
+// This request is synchronous.
+//
+// Arguments
+//     ctx:        the request context (used for cancellation)
+//     nodeName:   name of the node where the device is
+//     volumeName: name of the associated volume
+//     devicePath: path of the device for which we want the name
+//
+// Returns
+//     The Salt job handle.
+func (self *Client) GetDeviceName(
+	ctx context.Context, nodeName string, volumeName string, devicePath string,
+) (string, error) {
+	const jobName string = "GetDeviceName"
+	payload := map[string]interface{}{
+		"client":  "local",
+		"tgt":     nodeName,
+		"fun":     "metalk8s_volumes.device_name",
+		"arg":     devicePath,
+		"timeout": 1,
+	}
+
+	self.logger.Info(
+		jobName, "Volume.NodeName", nodeName, "Volume.Name", volumeName,
+	)
 
 	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
 	if err != nil {
-		return 0, errors.Wrapf(
-			err, "disk.dump failed (target=%s, path=%s)", nodeName, devicePath,
+		return "", errors.Wrapf(
+			err, "%s failed (target=%s, path=%s)", jobName, nodeName, devicePath,
 		)
 	}
-	// TODO(#1461): make this more robust.
-	result := ans["return"].([]interface{})[0].(map[string]interface{})
-	if nodeResult, ok := result[nodeName].(map[string]interface{}); ok {
-		size_str := nodeResult["getsize64"].(string)
-		return strconv.ParseInt(size_str, 10, 64)
-	}
 
-	return 0, fmt.Errorf(
-		"no size in disk.dump response (target=%s, path=%s)",
-		nodeName, devicePath,
-	)
+	return extractDeviceName(ans, nodeName)
+}
+
+// Submit a Salt job and return the job handle.
+func (self *Client) submitJob(
+	ctx context.Context,
+	jobName string,
+	volumeName string,
+	payload map[string]interface{},
+) (*JobHandle, error) {
+	ans, err := self.authenticatedRequest(ctx, "POST", "/", payload)
+	if err != nil {
+		return nil, errors.Wrapf(
+			err,
+			"%s failed for volume %s (%v)",
+			jobName, volumeName, payload,
+		)
+	}
+	if jid, err := extractJID(ans); err != nil {
+		return nil, errors.Wrapf(
+			err,
+			"Cannot extract JID from %s response for volume %s",
+			jobName, volumeName,
+		)
+	} else {
+		return newJob(jobName, jid), nil
+	}
 }
 
 // Send an authenticated request to Salt API.
@@ -323,12 +330,7 @@ func (self *Client) authenticate(ctx context.Context) error {
 	payload := map[string]interface{}{
 		"eauth":    "kubernetes_rbac",
 		"username": self.creds.username,
-	}
-
-	if self.creds.kind == BearerToken {
-		payload["token"] = self.creds.token
-	} else {
-		payload["password"] = self.creds.token
+		"token":    self.creds.secret,
 	}
 
 	self.logger.Info(
@@ -350,11 +352,11 @@ func (self *Client) authenticate(ctx context.Context) error {
 		)
 	}
 
-	// TODO(#1461): make this more robust.
-	output := result["return"].([]interface{})[0].(map[string]interface{})
-	self.token = newToken(
-		output["token"].(string), output["expire"].(float64),
-	)
+	token, err := extractToken(result)
+	if err != nil {
+		return err
+	}
+	self.token = token
 	return nil
 }
 
@@ -491,4 +493,113 @@ func decodeApiResponse(response *http.Response) (map[string]interface{}, error) 
 		return nil, errors.Wrap(err, "cannot decode Salt API response")
 	}
 	return result, nil
+}
+
+// Try to extract the JID from a Salt answer.
+func extractJID(ans map[string]interface{}) (string, error) {
+	if results, ok := ans["return"].([]interface{}); ok && len(results) > 0 {
+		if result, ok := results[0].(map[string]interface{}); ok {
+			if jid, ok := result["jid"].(string); ok {
+				return jid, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("cannot extract jid from %v", ans)
+}
+
+func extractToken(ans map[string]interface{}) (*authToken, error) {
+	if results, ok := ans["return"].([]interface{}); ok && len(results) > 0 {
+		if result, ok := results[0].(map[string]interface{}); ok {
+			token, token_ok := result["token"].(string)
+			expire, expire_ok := result["expire"].(float64)
+			if token_ok && expire_ok {
+				return newToken(token, expire), nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("cannot extract authentication token from %v", ans)
+}
+
+func parsePollAnswer(
+	logger logr.Logger,
+	jobID string,
+	nodeName string,
+	ans map[string]interface{},
+) (map[string]interface{}, error) {
+	// Extract info subkey.
+	info_arr, ok := ans["info"].([]interface{})
+	if !ok || len(info_arr) == 0 {
+		return nil, fmt.Errorf("missing 'info' key in %v", ans)
+	}
+	info, ok := info_arr[0].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid 'info' key in %v", ans)
+	}
+	// Check for "Error" field.
+	if reason, found := info["Error"]; found {
+		// Unknown Job ID: maybe the Salt server restarted or something like that.
+		logger.Info("Salt job not found")
+		return nil, fmt.Errorf("cannot get status for job %s: %v", jobID, reason)
+	}
+	// Extract function.
+	function, ok := info["Function"].(string)
+	if !ok {
+		return nil, fmt.Errorf("missing 'Function' key in %v", info)
+	}
+	// Extract results.
+	result, ok := info["Result"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("missing 'Result' key in %v", info)
+	}
+	// No result yet, the job is still running.
+	if len(result) == 0 {
+		logger.Info("Salt job is still running")
+		return nil, nil
+	}
+	// Get result for the given node.
+	nodeResult, found := result[nodeName].(map[string]interface{})
+	if !found {
+		return nil, fmt.Errorf(
+			"missing or invalid result for node %s in %v", nodeName, result,
+		)
+	}
+	// Inspect "retcode" and "result".
+	retcode, ok := nodeResult["retcode"].(float64)
+	if !ok {
+		return nil, fmt.Errorf("missing or invalid retcode in %v", nodeResult)
+	}
+	output, found := nodeResult["return"]
+	if int(retcode) == 0 { // Success
+		logger.Info("Salt job succeeded")
+
+		if returnedDict, ok := output.(map[string]interface{}); !ok {
+			return nil, fmt.Errorf("invalid return value in %v", nodeResult)
+		} else {
+			return returnedDict, nil
+		}
+	} else {
+		// Concurrent state execution: the job failed to run.
+		if int(retcode) == 1 && function == "state.sls" {
+			return nil, fmt.Errorf("Salt job %s failed to run: %v", jobID, output)
+		}
+		// The salt job failed.
+		logger.Info("Salt job failed")
+		reason := getStateFailureRootCause(output)
+
+		return nil, &AsyncJobFailed{reason}
+	}
+}
+
+// Try to extract the device name from a Salt answer.
+func extractDeviceName(ans map[string]interface{}, nodeName string) (string, error) {
+	if results, ok := ans["return"].([]interface{}); ok && len(results) > 0 {
+		if result, ok := results[0].(map[string]interface{}); ok {
+			if name, ok := result[nodeName].(string); ok {
+				return name, nil
+			}
+		}
+	}
+	return "", fmt.Errorf(
+		"cannot extract device name for %s from %v", nodeName, ans,
+	)
 }
