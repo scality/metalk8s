@@ -5,9 +5,9 @@
 apiVersion: storage.metalk8s.scality.com/v1alpha1
 kind: Volume
 metadata:
-  name: bootstrap-prometheus
+  name: NODE_NAME-prometheus
 spec:
-  nodeName: BOOTSTRAP_NODE_NAME
+  nodeName: NODE_NAME
   storageClassName: metalk8s-prometheus
   sparseLoopDevice:
     size: 10Gi
@@ -19,9 +19,9 @@ spec:
 apiVersion: storage.metalk8s.scality.com/v1alpha1
 kind: Volume
 metadata:
-  name: bootstrap-alertmanager
+  name: NODE_NAME-alertmanager
 spec:
-  nodeName: BOOTSTRAP_NODE_NAME
+  nodeName: NODE_NAME
   storageClassName: metalk8s-prometheus
   sparseLoopDevice:
     size: 1Gi

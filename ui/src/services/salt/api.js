@@ -14,14 +14,8 @@ export function authenticate(user) {
   var payload = {
     eauth: 'kubernetes_rbac',
     username: user.profile.email,
-  }
-
-  if (user.token_type.toLowerCase() === 'bearer') {
-    payload.token = user.id_token
-  } else {
-    payload.password = user.id_token
-  }
-
+    token: user.id_token,
+  };
   return saltApiClient.post('/login', payload);
 }
 

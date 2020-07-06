@@ -2,7 +2,6 @@ package volume
 
 import (
 	"context"
-	b64 "encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"strconv"
@@ -633,7 +632,7 @@ func (r *ReconcileVolume) Reconcile(request reconcile.Request) (reconcile.Result
 		return delayedRequeue(err)
 	}
 	reqLogger.Info("backing PersistentVolume is healthy")
-	return endReconciliation()
+	return r.refreshDeviceName(ctx, volume, pv)
 }
 
 // Deploy a volume (i.e prepare the storage and create a PV).
@@ -711,6 +710,40 @@ func (self *ReconcileVolume) finalizeVolume(
 
 	// PersistentVolume still in use: wait before reclaiming the storage.
 	return delayedRequeue(nil)
+}
+
+func (self *ReconcileVolume) refreshDeviceName(
+	ctx context.Context,
+	volume *storagev1alpha1.Volume,
+	pv *corev1.PersistentVolume,
+) (reconcile.Result, error) {
+	nodeName := string(volume.Spec.NodeName)
+	reqLogger := log.WithValues(
+		"Volume.Name", volume.Name, "Volume.NodeName", nodeName,
+	)
+
+	if pv.Spec.PersistentVolumeSource.Local == nil {
+		reqLogger.Info("skipping volume: not a local storage")
+		return endReconciliation()
+	}
+	path := pv.Spec.PersistentVolumeSource.Local.Path
+
+	name, err := self.salt.GetDeviceName(ctx, nodeName, volume.Name, path)
+	if err != nil {
+		self.recorder.Event(
+			volume, corev1.EventTypeNormal, "SaltCall",
+			"device path resolution failed",
+		)
+		reqLogger.Error(err, "cannot get device name from Salt response")
+		return delayedRequeue(err)
+	}
+	if volume.Status.DeviceName != name {
+		volume.Status.DeviceName = name
+		reqLogger.Info("update device name", "Volume.DeviceName", name)
+		return self.setAvailableVolumeStatus(ctx, volume)
+	}
+
+	return endReconciliation()
 }
 
 func (self *ReconcileVolume) prepareStorage(
@@ -1074,21 +1107,16 @@ func endReconciliation() (reconcile.Result, error) {
 
 // Return the credential to use to authenticate with Salt API.
 func getAuthCredential(config *rest.Config) *salt.Credential {
-	if config.BearerToken != "" {
-		log.Info("using ServiceAccount bearer token")
-		return salt.NewCredential(
-			"storage-operator", config.BearerToken, salt.BearerToken,
-		)
-	} else if config.Username != "" && config.Password != "" {
-		log.Info("using Basic HTTP authentication")
-		creds := fmt.Sprintf("%s:%s", config.Username, config.Password)
-		token := b64.StdEncoding.EncodeToString([]byte(creds))
-		return salt.NewCredential(config.Username, token, salt.BasicToken)
-	} else {
-		log.Info("using default Basic HTTP authentication")
-		token := b64.StdEncoding.EncodeToString([]byte("admin:admin"))
-		return salt.NewCredential("admin", token, salt.BasicToken)
+	if config.BearerToken == "" {
+		panic("must use a BearerToken for SaltAPI authentication")
 	}
+	log.Info("using ServiceAccount bearer token")
+	return salt.NewCredential(
+		// FIXME: this should depend on the actual SA used
+		"system:serviceaccount:kube-system:storage-operator",
+		config.BearerToken,
+		salt.Bearer,
+	)
 }
 
 // Extract the disk size for a `disk.dump` result from Salt.

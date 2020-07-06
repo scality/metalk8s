@@ -1,5 +1,6 @@
 ---
-metalk8s: {}
+metalk8s:
+  debug: false
 
 kubernetes:
   cluster: kubernetes

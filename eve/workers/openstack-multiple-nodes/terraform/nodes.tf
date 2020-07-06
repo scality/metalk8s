@@ -92,7 +92,10 @@ resource "openstack_compute_instance_v2" "bootstrap" {
 
   # Generate BootstrapConfiguration
   provisioner "remote-exec" {
-    inline = ["sudo bash scripts/bootstrap-config.sh"]
+    inline = [
+      "sudo chmod +x scripts/bootstrap-config.sh",
+      "sudo env DEBUG=${tostring(var.debug)} scripts/bootstrap-config.sh",
+    ]
   }
 }
 

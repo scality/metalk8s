@@ -2,39 +2,45 @@
 
 {%- set env_name = pillar.orchestrate.env_name %}
 
-{%- macro deploy_operator(namespace, solution) %}
-  {%- set solution_id = solution.name | lower | replace(' ', '-') %}
+{%- macro deploy_operator(namespace, name, solution) %}
 
 Apply ServiceAccount for Operator of Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/operator/service_account.yaml
     - template: jinja
     - defaults:
-        solution: {{ solution_id }}
+        solution: {{ name }}
         namespace: {{ namespace }}
         version: {{ solution.version }}
 
-Apply Role for Operator of Solution {{ solution.name }}:
+  {%- set role_manifests =
+          salt['metalk8s_solutions.operator_roles_from_manifest'](
+              solution.mountpoint, namespace
+          )
+  %}
+  {%- for manifest in role_manifests %}
+    {%- set role_kind = manifest.kind %}
+    {%- set role_name = manifest.metadata.name %}
+Apply Operator {{ role_kind }} {{ role_name }} for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/operator/role.yaml
-    - template: jinja
-    - defaults:
-        solution: {{ solution_id }}
-        namespace: {{ namespace }}
-        custom_api_groups: {{ solution.config.customApiGroups | tojson }}
-        version: {{ solution.version }}
+    - manifest: {{ manifest | tojson }}
 
-Apply RoleBinding for Operator of Solution {{ solution.name }}:
+Apply RoleBinding of {{ role_kind }} {{ role_name }} for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/operator/role_binding.yaml
     - template: jinja
     - defaults:
-        solution: {{ solution_id }}
+        solution: {{ name }}
         namespace: {{ namespace }}
         version: {{ solution.version }}
+        role_name: {{ role_name }}
+        role_kind: {{ role_kind }}
     - require:
         - metalk8s_kubernetes: Apply ServiceAccount for Operator of Solution {{ solution.name }}
-        - metalk8s_kubernetes: Apply Role for Operator of Solution {{ solution.name }}
+        - metalk8s_kubernetes: Apply Operator {{ role_kind }} {{ role_name }} for Solution {{ solution.name }}
+    - require_in:
+        - metalk8s_kubernetes: Apply Operator Deployment for Solution {{ solution.name }}
+  {%- endfor %}
 
 {# Store info for image repositories in some Operator ConfigMap
    TODO: add documentation about this file #}
@@ -43,7 +49,7 @@ Apply Operator ConfigMap for Solution {{ solution.name }}:
     - name: salt://{{ slspath }}/files/operator/configmap.yaml
     - template: jinja
     - defaults:
-        solution: {{ solution_id }}
+        solution: {{ name }}
         namespace: {{ namespace }}
         registry: {{ repo.registry_endpoint }}
         version: {{ solution.version }}
@@ -53,27 +59,25 @@ Apply Operator Deployment for Solution {{ solution.name }}:
     - name: salt://{{ slspath }}/files/operator/deployment.yaml
     - template: jinja
     - defaults:
-        solution: {{ solution_id }}
+        solution: {{ name }}
         version: {{ solution.version }}
         namespace: {{ namespace }}
-        image_name: {{ solution.config.operator.image.name }}
-        image_tag: {{ solution.config.operator.image.tag }}
+        image_name: {{ solution.manifest.spec.operator.image.name }}
+        image_tag: {{ solution.manifest.spec.operator.image.tag }}
         repository: {{ repo.registry_endpoint ~ '/' ~ solution.id }}
     - require:
-        - metalk8s_kubernetes: Apply RoleBinding for Operator of Solution {{ solution.name }}
         - metalk8s_kubernetes: Apply Operator ConfigMap for Solution {{ solution.name }}
 
 {%- endmacro %}
 
-{%- macro deploy_admin_ui(namespace, solution) %}
-  {%- set solution_id = solution.name | lower | replace(' ', '-') %}
+{%- macro deploy_admin_ui(namespace, name, solution) %}
 
 Apply ConfigMap for UI of Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/ui/configmap.yaml
     - template: jinja
     - defaults:
-        solution: {{ solution_id }}
+        solution: {{ name }}
         version: {{ solution.version }}
         namespace: {{ namespace }}
 
@@ -82,11 +86,11 @@ Apply Deployment for UI of Solution {{ solution.name }}:
     - name: salt://{{ slspath }}/files/ui/deployment.yaml
     - template: jinja
     - defaults:
-        solution: {{ solution_id }}
+        solution: {{ name }}
         version: {{ solution.version }}
         namespace: {{ namespace }}
-        image_name: {{ solution.config.ui.image.name }}
-        image_tag: {{ solution.config.ui.image.tag }}
+        image_name: {{ solution.manifest.spec.ui.image.name }}
+        image_tag: {{ solution.manifest.spec.ui.image.tag }}
         repository: {{ repo.registry_endpoint ~ "/" ~ solution.id }}
 
 Apply Service for UI of Solution {{ solution.name }}:
@@ -94,7 +98,7 @@ Apply Service for UI of Solution {{ solution.name }}:
     - name: salt://{{ slspath }}/files/ui/service.yaml
     - template: jinja
     - defaults:
-        solution: {{ solution_id }}
+        solution: {{ name }}
         namespace: {{ namespace }}
         version: {{ solution.version }}
 
@@ -103,7 +107,7 @@ Apply Ingress for UI of Solution {{ solution.name }}:
     - name: salt://{{ slspath }}/files/ui/ingress.yaml
     - template: jinja
     - defaults:
-        solution: {{ solution_id }}
+        solution: {{ name }}
         namespace: {{ namespace }}
         environment: {{ env_name }}
         version: {{ solution.version }}
@@ -155,8 +159,8 @@ Cannot deploy Solution {{ name }}-{{ version }} for environment {{ env_name }}:
                                  | selectattr('version', 'equalto', version)
                                  | first %}
 
-              {{- deploy_operator(namespace, solution) }}
-              {{- deploy_admin_ui(namespace, solution) }}
+              {{- deploy_operator(namespace, name, solution) }}
+              {{- deploy_admin_ui(namespace, name, solution) }}
 
             {%- endif %}
           {%- endfor %} {# name, version in env_config #}

@@ -158,6 +158,28 @@ def clean_up(name):
     _get_volume(name).clean_up()
 
 
+def device_name(path):
+    """Resolve the given device path into the "real" device name.
+
+    For instance, `/dev/disk/by-uuid/668efc89-be5b-4b13-b3d1-1294e829f33b` could
+    resolve to `sda`.
+
+    Args:
+        name (str): volume name
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '<NODE_NAME>' metalk8s_volumes.device_name /dev/disk/by-uuid/668efc89-be5b-4b13-b3d1-1294e829f33b
+    """
+    # TOCTTOU, but `realpath` doesn't return error on non-existing path…
+    if not os.path.exists(path):
+        raise Exception('device `{}` not found'.format(path))
+    realpath = os.path.realpath(path)
+    return os.path.basename(realpath)
+
+
 # Volume {{{
 
 

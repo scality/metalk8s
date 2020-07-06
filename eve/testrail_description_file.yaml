@@ -11,9 +11,10 @@ Upgrade:
   description: >-
     Upgrade tests
   sections: &lifecycle_sections
-    Minor:
+    Minor Dev:
       description: >-
         Previous minor version tests
+        (last commit of previous development branch)
       sub_sections: &lifecycle_sub_sections
         Single Node:
           description: >-
@@ -24,6 +25,10 @@ Upgrade:
                 CentOs 7 tests
               cases:
                 Simple environment: {}
+    Minor:
+      description: >-
+        Last released minor version tests
+      sub_sections: *lifecycle_sub_sections
     Patch:
       description: >-
         Last released patch version tests
@@ -47,3 +52,12 @@ Install:
             CentOs 7 tests
           cases:
             Solutions: {}
+    Multi Node:
+      description: >-
+        Multiple nodes test environment
+      sub_sections:
+        CentOs7:
+          description: >-
+            CentOs 7 tests
+          cases:
+            Bootstrap restore: {}

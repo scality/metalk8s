@@ -11,7 +11,77 @@
   (Issue [#2259](https://github.com/scality/metalk8s/issues/2259),
   PR [#2369](https://github.com/scality/metalk8s/pull/2369))
 
-## Release 2.5.1 (in development)
+## Release 2.5.2 (in development)
+
+## Release 2.5.1
+
+### Breaking changes
+
+- Solutions product information format has changed, there is a new
+  `manifest.yaml` file to describe the whole Solution instead of the
+  `product.txt` and `config.yaml`
+  ([#2422](https://github.com/scality/metalk8s/issues/2422)).
+  Solution archives working on previous versions of MetalK8s will no
+  longer be compatible and will need to be regenerated.
+  See [Solutions documentation](https://metal-k8s.readthedocs.io/en/development-2.5/developer/solutions/archive.html#product-information)
+  for details about the new format.
+
+### Enhancements
+- [#2590](https://github.com/scality/metalk8s/issues/2590) - Bump Kubernetes
+version to 1.16.10 (PR [#2597](https://github.com/scality/metalk8s/pull/2597))
+
+- [#2423](https://github.com/scality/metalk8s/issues/2423) - Bump
+nginx-ingress-controller version to 0.30.0
+(PR [#2446](https://github.com/scality/metalk8s/pull/2446))
+
+- [#2429](https://github.com/scality/metalk8s/issues/2429) - Bump Dex
+version to 2.23.0
+(PR [#2437](https://github.com/scality/metalk8s/pull/2437))
+
+- [#2430](https://github.com/scality/metalk8s/issues/2430) - Bump
+prometheus-operator version to 8.13.0
+(PR [#2557](https://github.com/scality/metalk8s/pull/2557))
+
+- [#2431](https://github.com/scality/metalk8s/issues/2431) - Bump
+Prometheus-adapter version to 0.6.0
+(PR [#2441](https://github.com/scality/metalk8s/pull/2441))
+
+- [#2488](https://github.com/scality/metalk8s/issues/2488) - Update default
+CSC value during upgrade/downgrade
+(PR [#2513](https://github.com/scality/metalk8s/pull/2513))
+
+- [#2493](https://github.com/scality/metalk8s/issues/2493) - Use async call
+for disk.dump during Volume provisioning
+(PR [#2571](https://github.com/scality/metalk8s/pull/2571))
+
+- Add support for CustomResourceDefinition apiextensions.k8s.io/v1 in
+`metalk8s_kubernetes` Salt module
+(PR [#2583](https://github.com/scality/metalk8s/pull/2583))
+
+### Bug fixes
+- [#2434](https://github.com/scality/metalk8s/issues/2434) - Wait for a
+single Salt Master container during Bootstrap
+(PR [#2435](https://github.com/scality/metalk8s/pull/2435))
+
+- [#2526](https://github.com/scality/metalk8s/issues/2526) - Add 'groups'
+scope when requesting an id_token from Dex in the UI
+(PR [#2529](https://github.com/scality/metalk8s/pull/2529))
+
+- [#2443](https://github.com/scality/metalk8s/issues/2443) - Improve error
+handling for Salt jobs in the UI
+(PR [#2475](https://github.com/scality/metalk8s/pull/2475))
+
+- [#2495](https://github.com/scality/metalk8s/issues/2495) - Fix monitoring
+page to display all alerts in the UI
+(PR [#2503](https://github.com/scality/metalk8s/pull/2503))
+
+- [#2569](https://github.com/scality/metalk8s/issues/2569) - Restart Dex Pod
+automatically upon CSC Dex configuration changes
+(PR [#2573](https://github.com/scality/metalk8s/pull/2573))
+
+- [#2533](https://github.com/scality/metalk8s/issues/2533) - Use dedicated
+kubeconfig for Salt master
+(PR [#2534](https://github.com/scality/meltalk8s/pull/2534))
 
 ## Release 2.5.0
 
@@ -28,11 +98,11 @@
       credentials `admin@metalk8s.invalid`:`password` which can be used to
       access the MetalK8s UI and Grafana
     - Procedures to edit and add new users can now be found
-      [here](https://metal-k8s.readthedocs.io/en/development-2.5/operation/account_administration.html)
+      [here](https://metal-k8s.readthedocs.io/en/2.5.0/operation/account_administration.html)
 
 - A new framework for persisting Cluster and Services Configurations (CSC) has
   been added to ensure configurations set by administrators are not lost during
-  upgrade or downgrade and can be found [here](https://metal-k8s.readthedocs.io/en/development-2.5/developer/architecture/configurations.html).
+  upgrade or downgrade and can be found [here](https://metal-k8s.readthedocs.io/en/2.5.0/developer/architecture/configurations.html).
 
   - User-provided configuration is now stored in ConfigMaps, and MetalK8s
     tooling will honor the values provided when deploying its services:
@@ -42,7 +112,7 @@
       - Alertmanager uses `metalk8s-monitoring/metalk8s-alertmanager-config`
 
   - Documentation for changing and applying configuration values is
-    found [here](https://metal-k8s.readthedocs.io/en/development-2.5/operation/cluster_and_service_configuration.html).
+    found [here](https://metal-k8s.readthedocs.io/en/2.5.0/operation/cluster_and_service_configuration.html).
 
     Note that any configuration applied on other Kubernetes objects
     (e.g. a configuration Secret that Alertmanager uses, or the
@@ -50,7 +120,7 @@
     should make sure to prepare the relevant ConfigMaps from their
     existing configuration before upgrading to this version.
 
-- The MetalK8s [UI](https://metal-k8s.readthedocs.io/en/development-2.5/installation/services.html#metalk8s-gui)
+- The MetalK8s [UI](https://metal-k8s.readthedocs.io/en/2.5.0/installation/services.html#metalk8s-gui)
   has been re-branded with lots of changes to the Login screens and Navbar to
   offer a smoother experience.
 
@@ -103,6 +173,101 @@ documentation with default credentials for Metalk8s UI and Grafana UI
 - [#2264](https://github.com/scality/metalk8s/issues/2264) - Add documentation
 on the list of Cluster and Service configurations
 (PR [#2291](https://github.com/scality/metalk8s/pull/2291))
+
+## Release 2.4.5 (in development)
+
+## Release 2.4.4
+
+### Features added
+- [#2561](https://github.com/scality/metalk8s/issues/2561) - install `kubectl`
+on all master nodes (PR [#2562](https://github.com/scality/metalk8s/pull/2562))
+
+### Security fixes
+- Due to critical vulnerabilities (
+[CVE-2020-11652](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-11652)
+and
+[CVE-2020-11651](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-11651))
+with CVSS score of 10.0 affecting all Salt master versions inferior to
+`3000.2`, this release ships with all Saltstack updated to `3000.3`.
+Users, especially those who expose the Salt master to the Internet must
+therefore upgrade immediately.
+
+    [#650](https://github.com/scality/metalk8s/issues/650) - Upgrade Salt master
+    to version `3000.3`
+    (PR [#2549](https://github.com/scality/metalk8s/pull/2549))
+
+- Due to an access control vulnerability
+[CVE-2020-13379](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-13379)
+with CVSS score of 5.3 that was discovered affecting Grafana versions from
+`3.0.1` through `7.0.1`, this release ships with a Grafana version updated to
+`6.7.4`. For more, see [here](https://grafana.com/blog/2020/06/03/grafana-6.7.4-and-7.0.2-released-with-important-security-fix/)
+
+    [#2600](https://github.com/scality/metalk8s/issues/2600) - Upgrade Grafana
+    to `6.7.4` (PR [#2605](https://github.com/scality/metalk8s/issues/2605))
+
+- A potential risk for privilege escalation in SaltAPI described
+[here](https://github.com/scality/metalk8s/issues/2634) was fixed in this
+release.
+
+    [#2634](https://github.com/scality/metalk8s/issues/2634) - Prevent
+    impersonation in SaltAPI
+    (PR [#2642](https://github.com/scality/metalk8s/pull/2642))
+
+    [#1528](https://github.com/scality/metalk8s/issues/1528) and
+    [#2084](https://github.com/scality/metalk8s/issues/2084) - Tighten
+    storage-operator permissions against Salt
+    (PR [#2635](https://github.com/scality/metalk8s/pull/2635))
+
+### Enhancements
+- [#2589](https://github.com/scality/metalk8s/issues/2589) - Bump Kubernetes
+version to 1.15.12 (PR [#2595](https://github.com/scality/metalk8s/pull/2595))
+
+- [#2029](https://github.com/scality/metalk8s/issues/2029) - Bump
+python-kubernetes client to v11
+(PR [#2554](https://github.com/scality/metalk8s/pull/2554))
+
+- Make etcd expansions more resilient
+(PR [#2147](https://github.com/scality/metalk8s/pull/2147))
+
+- [#2585](https://github.com/scality/metalk8s/issues/2585) - Add state to
+cleanup PrometheusRule CRs after upgrade/downgrade
+(PR [#2594](https://github.com/scality/metalk8s/pull/2594))
+
+- [#2533](https://github.com/scality/metalk8s/issues/2533) - Use dedicated
+kubeconfig for Salt master
+(PR [#2534](https://github.com/scality/meltalk8s/pull/2534))
+
+### Bug fixes
+
+- [#2444](https://github.com/scality/metalk8s/issues/2444) - Fix flaky SLS
+rendering when missing a pillar key
+(PR [#2445](https://github.com/scality/metalk8s/pull/2445))
+
+- [#2524](https://github.com/scality/metalk8s/issues/2524) - Fix salt-minion
+upgrade and downgrade
+(PR [#2525](https://github.com/scality/metalk8s/pull/2525))
+
+- [#2551](https://github.com/scality/metalk8s/issues/2551)  Fix downgrade
+pre-check regarding the saltenv version
+(PR [#2552](https://github.com/scality/metalk8s/pull/2552))
+
+- [#2592](https://github.com/scality/metalk8s/issues/2592) - Fix invalid custom
+object listing in `metalk8s_kubernetes` Salt module
+(PR [#2593](https://github.com/scality/metalk8s/pull/2593))
+
+- Fix apiserver-proxy to no longer proxy to non-master nodes
+(PR [#2555](https://github.com/scality/metalk8s/pull/2555))
+
+- [#2530](https://github.com/scality/metalk8s/issues/2530) - Make cluster
+upgrade more robust to Pod disruption constraints
+(PR [#2531](https://github.com/scality/metalk8s/pull/2531))
+
+- [#2028](https://github.com/scality/metalk8s/issues/2028) - Improve the
+resilience of node deployment
+(PR [#2147](https://github.com/scality/metalk8s/pull/2147))
+
+- Fix various issues in the bootstrap restore script
+(PR [#2061](https://github.com/scality/metalk8s/pull/2061))
 
 ## Release 2.4.3
 

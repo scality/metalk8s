@@ -3,6 +3,11 @@ variable "prefix" {
   default = ""
 }
 
+variable "debug" {
+  type    = bool
+  default = false
+}
+
 resource "random_string" "current" {
   length  = 5
   special = false

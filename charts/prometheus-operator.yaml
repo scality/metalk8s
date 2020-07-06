@@ -119,6 +119,7 @@ grafana:
 
   image:
     repository: '__image__(grafana)'
+    tag: '6.7.4'
 
   sidecar:
     image: '__image__(k8s-sidecar):0.1.20'

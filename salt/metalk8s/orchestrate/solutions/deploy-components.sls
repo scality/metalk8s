@@ -7,8 +7,6 @@ include:
 {%- set kubernetes_absent_renderer =
       kubernetes_present_renderer ~ " absent=True" %}
 
-{%- set ui_relpath = "ui" %}
-{%- set ui_files = ["deployment.yaml", "service.yaml"] %}
 {%- set crds_relpath = "operator/deploy/crds" %}
 {%- set crds_name_pattern = "*_crd.yaml" %}
 

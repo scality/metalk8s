@@ -1,5 +1,7 @@
 interface: {{ salt_ip }}
 
+log_level: {{ 'debug' if debug else 'info' }}
+
 peer:
   .*:
     - x509.sign_remote_certificate
@@ -12,8 +14,8 @@ grains_cache: True
 ext_pillar_first: true
 ext_pillar:
   - metalk8s: /etc/metalk8s/bootstrap.yaml
-  - metalk8s_endpoints: /etc/kubernetes/admin.conf
-  - metalk8s_nodes: /etc/kubernetes/admin.conf
+  - metalk8s_endpoints: {{ kubeconfig }}
+  - metalk8s_nodes: {{ kubeconfig }}
   - metalk8s_private: {}
   - metalk8s_solutions: {}
   - metalk8s_etcd: {}
@@ -29,23 +31,27 @@ no_host_keys: true
 rest_cherrypy:
   port: 4507
   host: {{ salt_ip }}
+  debug: {{ debug }}
   ssl_crt: /etc/salt/pki/api/salt-api.crt
   ssl_key: /etc/salt/pki/api/salt-api.key
   ssl_chain: /etc/kubernetes/pki/ca.crt
 
 external_auth:
   kubernetes_rbac:
-    ^kubeconfig: /etc/kubernetes/admin.conf
+    ^kubeconfig: {{ kubeconfig }}
     node-admins%:
       - '*':
         - '.*'
       - '@wheel'
       - '@runner'
       - '@jobs'
-    storage-operator:
+    'system:serviceaccount:kube-system:storage-operator':
       - '*':
         - 'disk.dump'
-        - 'state.sls'
+        - 'metalk8s_volumes.device_name'
+        - 'state.sls':
+            kwargs:
+              mods: 'metalk8s\.volumes.*'
       - '@jobs'
 
 # `kubeconfig` file and `context` used by salt to interact with apiserver

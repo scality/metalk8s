@@ -288,6 +288,14 @@ if HAS_LIBS:
             name='namespaced_ingress'
         ),
         # }}}
+        # /apis/apiextensions.k8s.io/v1/ {{{
+        ('apiextensions.k8s.io/v1', 'CustomResourceDefinition'): \
+        KindInfo(
+            model=k8s_client.V1CustomResourceDefinition,
+            api_cls=k8s_client.ApiextensionsV1Api,
+            name='custom_resource_definition',
+        ),
+        # }}}
         # /apis/apiextensions.k8s.io/v1beta1/ {{{
         ('apiextensions.k8s.io/v1beta1', 'CustomResourceDefinition'): \
         KindInfo(
@@ -433,13 +441,6 @@ class CustomApiClient(ApiClient):
 
             result = base_method(*args, **kwargs)
 
-            if verb == 'list':
-                return CustomObject({
-                    'kind': '{}List'.format(self.kind),
-                    'apiVersion': '{s.group}/{s.version}'.format(s=self),
-                    'items': [CustomObject(obj) for obj in result],
-                })
-
             # TODO: do we have a result for `delete` methods?
             return CustomObject(result)
 
@@ -450,6 +451,18 @@ class CustomApiClient(ApiClient):
         )
 
         return method
+
+    def _method_name(self, verb):
+        # Override super(_method_name) for `delete` as two different functions
+        # exist to delete a custom object, one that take a `name` argument
+        # and another one that does not
+        # In our case we want to use the one with `name`
+        # See: https://github.com/scality/metalk8s/issues/2621
+        # NOTE: This may need to be removed once we will change the
+        # python-kubernetes version installed in salt-master
+        if verb == "delete":
+            return "{}_{}_0".format(verb, self.name)
+        return super(CustomApiClient, self)._method_name(verb)
 
 
 class CRKindInfo(object):
@@ -499,6 +512,8 @@ if HAS_LIBS:
                    scope='namespaced', plural='prometheusrules'),
         CRKindInfo('monitoring.coreos.com/v1', 'ServiceMonitor',
                    scope='namespaced', plural='servicemonitors'),
+        CRKindInfo('storage.metalk8s.scality.com/v1alpha1', 'Volume',
+                   scope='cluster', plural='volumes'),
     ]
 
     KNOWN_CUSTOM_KINDS = {kind.key: kind for kind in _CUSTOM_KINDS}
