@@ -1,0 +1,141 @@
+- dashboard: null
+  raises: True
+  result: 'Unable to load file contents'
+- dashboard: {
+    "editable": true,
+    "title": "my dashboard",
+    "tags": ["my tag"]
+  }
+  result: {
+    "editable": false,
+    "title": "my dashboard",
+    "tags": ["my tag"]
+  }
+- dashboard: {
+    "title": "my dashboard",
+    "tags": []
+  }
+  title: "my new dashboard"
+  result: {
+    "title": "my new dashboard"
+  }
+- dashboard: {
+    "title": "my dashboard",
+    "tags": []
+  }
+  tags: ["my new tag"]
+  result: {
+    "tags": ["my new tag"]
+  }
+- dashboard: {
+    "title": "my dashboard",
+    "tags": ["my tag"]
+  }
+  tags: ["my new tag"]
+  result: {
+    "tags": ["my new tag"]
+  }
+- dashboard: {
+    "title": "my dashboard",
+    "tags": []
+  }
+  datasource_variable: "my datasource"
+  result: {
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          },
+          "hide": 2,
+          "name": "my datasource",
+          "query": "prometheus",
+          "type": "datasource"
+        }
+      ]
+    }
+  }
+- dashboard: {
+    "title": "my dashboard",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "current": {},
+          "hide": 0,
+          "name": "my first datasource",
+          "query": "prom",
+          "type": "datasource"
+        }
+      ]
+    }
+  }
+  datasource_variable: "my new datasource"
+  result: {
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          },
+          "hide": 2,
+          "name": "my new datasource",
+          "query": "prometheus",
+          "type": "datasource"
+        },
+        {
+          "current": {},
+          "hide": 0,
+          "name": "my first datasource",
+          "query": "prom",
+          "type": "datasource"
+        }
+      ]
+    }
+  }
+- dashboard: {
+    "title": "my dashboard",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "current": {},
+          "hide": 0,
+          "name": "my first datasource",
+          "query": "prom",
+          "type": "datasource"
+        }
+      ]
+    }
+  }
+  title: "my new dashboard title"
+  tags: ["my new tag 1", "my new tag 2"]
+  datasource_variable: "my new datasource"
+  result: {
+    "editable": False,
+    "title": "my new dashboard title",
+    "tags": ["my new tag 1", "my new tag 2"],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          },
+          "hide": 2,
+          "name": "my new datasource",
+          "query": "prometheus",
+          "type": "datasource"
+        },
+        {
+          "current": {},
+          "hide": 0,
+          "name": "my first datasource",
+          "query": "prom",
+          "type": "datasource"
+        }
+      ]
+    }
+  }  
