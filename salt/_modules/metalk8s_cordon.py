@@ -4,6 +4,8 @@ Module for cordoning and uncordoning a Kubernetes node.
 This module's functions are merged into the `metalk8s_kubernetes`
 module when called by salt by virtue of its `__virtualname__` attribute.
 '''
+from salt.exceptions import CommandExecutionError
+
 
 __virtualname__ = 'metalk8s_kubernetes'
 
