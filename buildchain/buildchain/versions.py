@@ -310,7 +310,8 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(name='genisoimage'),
         PackageVersion(name='iproute'),
         PackageVersion(name='iptables'),
-        PackageVersion(name='kubernetes-cni'),
+        # NOTE: kubelet require `kubernetes-cni = 0.7.5`
+        PackageVersion(name='kubernetes-cni', version='0.7.5'),
         PackageVersion(name='m2crypto'),
         PackageVersion(name='runc'),
         PackageVersion(name='salt-minion', version=SALT_VERSION),
