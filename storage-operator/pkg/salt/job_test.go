@@ -13,7 +13,6 @@ func TestNew(t *testing.T) {
 	assert.NotNil(job)
 	assert.Equal("ping", job.Name)
 	assert.Equal("deadbeef", job.ID)
-	assert.Equal("", job.Result)
 	assert.Equal("ping/deadbeef", job.String())
 }
 
@@ -24,8 +23,8 @@ func TestFromString(t *testing.T) {
 		success  bool
 		expected *JobHandle
 	}{
-		"empty":   {input: "", success: true, expected: &JobHandle{"", "", ""}},
-		"valid":   {input: "ping/pong", success: true, expected: &JobHandle{"ping", "pong", ""}},
+		"empty":   {input: "", success: true, expected: &JobHandle{"", ""}},
+		"valid":   {input: "ping/pong", success: true, expected: &JobHandle{"ping", "pong"}},
 		"invalid": {input: "ping:pong", success: false, expected: nil},
 	}
 

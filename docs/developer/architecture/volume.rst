@@ -1,13 +1,8 @@
-Volume Management v1.0
-======================
+Volume Management
+=================
 
-* MetalK8s-Version: 2.4
-* Replaces:
-* Superseded-By:
-
-
-Absract
--------
+Abstract
+--------
 
 To be able to run stateful services (such as Prometheus, Zenko or Hyperdrive),
 MetalK8s needs the ability to provide and manage persistent storage resources.
@@ -27,10 +22,6 @@ delete MetalK8s volumes.
 Scope
 -----
 
-The scope of this first version of Volume Management will be minimalist but
-still functionally useful.
-
-
 Goals
 ^^^^^
 
@@ -43,6 +34,7 @@ Goals
 * add support for volume deletion (one by one) in the Platform UI
 * add support for volume listing/monitoring (show status, size, …) in the
   Platform UI
+* expose raw block device (unformated) as **Volume**
 * document how to create a volume
 * document how to create a **StorageClass** object
 * automated tests on volume workflow (creation, deletion, …)
@@ -53,7 +45,6 @@ Non-Goals
 
 * RAID support
 * LVM support
-* expose raw block device (unformated) as **Volume**
 * use an **Admission Controller** for semantic validation
 * auto-discovery of the disks
 * batch provisioning from the Platform UI
@@ -125,9 +116,9 @@ system) through the Salt API. Authentication to the Salt API will be done
 though a dedicated Salt account (with limited privileges) using credentials
 from a dedicated cluster **Service Account**.
 
-.. uml:: volume_v1.0-creation_seqdiag.uml
+.. uml:: volume-creation_seqdiag.uml
 
-.. uml:: volume_v1.0-deletion_seqdiag.uml
+.. uml:: volume-deletion_seqdiag.uml
 
 
 Implementation Details
@@ -157,6 +148,28 @@ Similarly, our **Volume** object will have the following states:
 * **Terminating**: cleanup of the backing storage in progress (e.g.
   an asynchronous Salt call is still running).
 
+Persistent block device naming
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+In order to have a reliable automount through kubelet, we need to create the
+underlying **PersistentVolume** using a persistent name for the backing storage
+device. We use different strategies according to the **Volume** type:
+
+* **sparseLoopDevice** and **rawBlockDevice** with a filesystem: during the
+  formatting, we set the filesystem UUID to the **Volume** UUID and use
+  ``dev/disk/by-uuid/<volume-uuid>`` as device path.
+* **sparseLoopDevice** without filesystem: we create a GUID Partition Table on
+  the sparse file and create a single partition encompassing the whole device,
+  setting the GUID of the partition to the **Volume** UUID. We can then use
+  ``/dev/disk/by-partuuid/<volume-uuid>`` as device path.
+* **rawBlockDevice** without filesystem:
+
+  * the **rawBlockDevice** is a disk (e.g. ``/dev/sdb``): we use the same
+    strategy as above.
+  * the **rawBlockDevice** is a partition (e.g. ``/dev/sdb1``): we change the
+    partition GUID using the **Volume** UUID and use
+    ``/dev/disk/by-partuuid/<volume-uuid>`` as device path.
+  * The **rawBlockDevice** is a LVM volume: we use the existing LVM UUID and
+    use ``/dev/disk/by-id/dm-uuid-LVM-<lvm-uuid>`` as device path.
 
 Operator Reconciliation Loop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -185,7 +198,7 @@ Once pre-checks are done, there are four cases:
 4. the backing **PersistentVolume** exists: the operator will check its status
    to update the volume's status accordingly.
 
-.. uml:: volume_v1.0-main_loop_flowchart.uml
+.. uml:: volume-main_loop_flowchart.uml
 
 
 .. _volume-deployment:
@@ -202,23 +215,31 @@ deployment hasn't started, thus the operator will set a finalizer on the
 asynchronous Salt call (which gives a job ID) before rescheduling the request
 to monitor the evolution of the job.
 
-If the **Volume** object has a job ID, then the storage preparation is in
-progress and the operator will monitor it until it's over.
-If the Salt job ends with an error, the operator will move the volume into a
-failed state.
+If we do have a job ID, then something is in progress and we monitor it until
+it's over.
+If it has ended with an error, we move the volume into a failed state.
 
-Otherwise (i.e. Salt job succeeded), the operator will proceed with the
-**PersistentVolume creation** (which requires an extra Salt call, synchronous
-this time, to get the volume size), taking care of putting a finalizer on the
-**PersistentVolume** (so that its lifetime is tied to the **Volume**'s) and
-set the **Volume** as the owner of the created **PersistentVolume**.
+Otherwise we make another asynchronous Salt call to get information (size,
+persistent path, …) on the backing storage device (the polling is done exactly
+as described above).
+
+If we successfully retrieved the storage device information, we proceed with
+the **PersistentVolume** creation, taking care of putting a finalizer on the
+**PersistentVolume** (so that its lifetime is tied to ours) and setting ourself
+as the owner of the **PersistentVolume**.
 
 Once the **PersistentVolume** is successfuly created, the operator will move
 the **Volume** to the `Available` state and reschedule the request (the next
 iteration will check the health of the **PersistentVolume** just created).
 
-.. uml:: volume_v1.0-deploy_volume_flowchart.uml
+.. uml:: volume-deploy_volume_flowchart.uml
 
+Steady state
+~~~~~~~~~~~~
+
+Once the volume is deployed, we update, with a synchronous Salt call, the
+`deviceName` status field at each reconciliation loop iteration. This field
+contains the name of the underlying block device (as found under `/dev`).
 
 .. _volume-finalization:
 
@@ -241,7 +262,7 @@ becomes unused (this is done by rescheduling). Once the backing
 **PersistentVolume** becomes unused, the operator will reclaim its storage and
 remove the finalizers to let the object be deleted.
 
-.. uml:: volume_v1.0-finalize_volume_flowchart.uml
+.. uml:: volume-finalize_volume_flowchart.uml
 
 
 Volume Deletion Criteria
@@ -270,7 +291,7 @@ In the end, a **Volume** can be deleted in two cases:
 - the backing **PersistentVolume** is not bound (**Available**, **Released** or
   **Failed**)
 
-.. uml:: volume_v1.0-deletion_decision_tree.uml
+.. uml:: volume-deletion_decision_tree.uml
 
 
 Documentation

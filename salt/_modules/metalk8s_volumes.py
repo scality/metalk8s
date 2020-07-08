@@ -6,10 +6,12 @@ import contextlib
 import errno
 import fcntl
 import functools
+import glob
 import json
 import re
 import operator
 import os
+import time
 
 import logging
 
@@ -92,26 +94,26 @@ def provision(name):
     _get_volume(name).provision()
 
 
-def is_formatted(name):
-    """Check if the given volume is formatted.
+def is_prepared(name):
+    """Check if the given volume is prepared.
 
     Args:
         name (str): volume name
 
     Returns:
-        bool: True if the volume is already formatted, otherwise False
+        bool: True if the volume is already prepared, otherwise False
 
     CLI Example:
 
     .. code-block:: bash
 
-        salt '<NODE_NAME>' metalk8s_volumes.volume_is_formatted example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.is_prepared example-volume
     """
-    return _get_volume(name).is_formatted
+    return _get_volume(name).is_prepared
 
 
-def format(name):
-    """Format the given volume.
+def prepare(name):
+    """Prepare the given volume.
 
     Args:
         name (str): volume name
@@ -120,9 +122,9 @@ def format(name):
 
     .. code-block:: bash
 
-        salt '<NODE_NAME>' metalk8s_volumes.format example-volume
+        salt '<NODE_NAME>' metalk8s_volumes.prepare example-volume
     """
-    _get_volume(name).format()
+    _get_volume(name).prepare()
 
 
 def is_cleaned_up(name):
@@ -173,11 +175,41 @@ def device_name(path):
 
         salt '<NODE_NAME>' metalk8s_volumes.device_name /dev/disk/by-uuid/668efc89-be5b-4b13-b3d1-1294e829f33b
     """
-    # TOCTTOU, but `realpath` doesn't return error on non-existing path…
-    if not os.path.exists(path):
-        raise Exception('device `{}` not found'.format(path))
-    realpath = os.path.realpath(path)
-    return os.path.basename(realpath)
+    # Have some retry logic, because some device manipulations may lead to
+    # transient absence.
+    for _ in range(10):
+        # TOCTTOU, but `realpath` doesn't return error on non-existing path…
+        if os.path.exists(path):
+            realpath = os.path.realpath(path)
+            return os.path.basename(realpath)
+        time.sleep(0.1)
+    raise Exception('device `{}` not found'.format(path))
+
+
+def device_info(name):
+    """Return information about the backing storage device of the given volume.
+
+    Returned information are:
+    - a stable path (e.g.: constant across reboots) to the storage device
+    - the size of the storage device (in bytes)
+
+    Args:
+        name (str): volume name
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '<NODE_NAME>' metalk8s_volumes.device_info example-volume
+    """
+    try:
+        volume = _get_volume(name)
+    # Unlikely, but could happen if we crash/restart between the refresh from
+    # the `volumes.prepared` state and the call to this module.
+    except KeyError:
+        __salt__['saltutil.refresh_pillar'](wait=True)
+        volume = _get_volume(name)
+    return volume.device_info()
 
 
 # Volume {{{
@@ -222,19 +254,32 @@ class Volume(object):
         """Clean up the backing storage device."""
         return
 
+    def device_info(self):
+        """Return size and path of the underlying block device"""
+        size = __salt__['disk.dump'](self.persistent_path)['getsize64']
+        return {'size': size, 'path': self.persistent_path}
+
     @abc.abstractproperty
     def path(self):
         """Path to the backing device."""
         return
 
     @property
-    def is_formatted(self):
-        """Check if the volume is already formatted by us."""
-        uuid = self.get('metadata.uid').lower()
-        return _get_from_blkid(self.path).uuid == uuid
+    def uuid(self):
+        return self.get('metadata.uid').lower()
 
-    def format(self, force=False):
-        """Format the volume.
+    @property
+    def persistent_path(self):
+        """Return a persistent path to the backing device."""
+        return '/dev/disk/by-uuid/{}'.format(self.uuid)
+
+    @property
+    def is_prepared(self):
+        """Check if the volume is already prepared by us."""
+        return _get_from_blkid(self.path).uuid == self.uuid
+
+    def prepare(self, force=False):
+        """Prepare the volume.
 
         The volume is formatted according to its StorageClass.
         """
@@ -256,9 +301,7 @@ class Volume(object):
         # mkfs options, if any, are stored as JSON-encoded list.
         options = json.loads(params.get('mkfsOptions', '[]'))
         fs_type = params['fsType']
-        command = _mkfs(
-            self.path, fs_type, self.get('metadata.uid'), force, options
-        )
+        command = _mkfs(self.path, fs_type, self.uuid, force, options)
         _run_cmd(' '.join(command))
 
     def get(self, path):
@@ -271,11 +314,13 @@ class Volume(object):
 
 
 class SparseLoopDevice(Volume):
+    # Recent losetup support `--nooverlap` but not the one shipped with
+    # CentOS 7.
+    PROVISIONING_COMMAND = ('losetup', '--find')
+
     @property
     def path(self):
-        return '/var/lib/metalk8s/storage/sparse/{}'.format(
-            self.get('metadata.uid')
-        )
+        return '/var/lib/metalk8s/storage/sparse/{}'.format(self.uuid)
 
     @property
     def size(self):
@@ -313,14 +358,12 @@ class SparseLoopDevice(Volume):
         return re.search(pattern, result['stdout']) is not None
 
     def provision(self):
-        # Recent losetup support `--nooverlap` but not the one shipped with
-        # CentOS 7.
-        command = ' '.join(['losetup', '--find', self.path])
+        command = ' '.join(list(self.PROVISIONING_COMMAND) + [self.path])
         return _run_cmd(command)
 
-    def format(self, force=False):
+    def prepare(self, force=False):
         # We format a "normal" file, not a block device: we need force=True.
-        super(SparseLoopDevice, self).format(force=True)
+        super(SparseLoopDevice, self).prepare(force=True)
 
     @property
     def is_cleaned_up(self):
@@ -328,15 +371,37 @@ class SparseLoopDevice(Volume):
 
     def clean_up(self):
         LOOP_CLR_FD = 0x4C01  # From /usr/include/linux/loop.h
-        device_path = '/dev/disk/by-uuid/{}'.format(self.get('metadata.uid'))
         try:
-            with _open_fd(device_path, os.O_RDONLY) as fd:
+            with _open_fd(self.persistent_path, os.O_RDONLY) as fd:
                 fcntl.ioctl(fd, LOOP_CLR_FD, 0)
             os.remove(self.path)
         except OSError as exn:
             if exn.errno != errno.ENOENT:
                 raise
             log.warning('{} already removed'.format(exn.filename))
+
+
+class SparseLoopDeviceBlock(SparseLoopDevice):
+    # Recent losetup support `--nooverlap` but not the one shipped with
+    # CentOS 7.
+    PROVISIONING_COMMAND = ('losetup', '--find', '--partscan')
+
+    @property
+    def persistent_path(self):
+        return '/dev/disk/by-partuuid/{}'.format(self.uuid)
+
+    @property
+    def is_prepared(self):
+        """Check if the volume is already prepared."""
+        # Partition 1 should be identified with the volume UUID.
+        device = os.path.basename(self.path) + '1'
+        try:
+            return device_name(self.persistent_path) == device
+        except: # Expected exception if the symlink doesn't exist.
+            return False
+
+    def prepare(self, force=False):
+        prepare_block(self.path, self.get('metadata.name'), self.uuid)
 
 
 # }}}
@@ -377,6 +442,82 @@ class RawBlockDevice(Volume):
     def clean_up(self):
         return  # Nothing to do
 
+class RawBlockDeviceBlock(RawBlockDevice):
+    def __init__(self, volume):
+        super(RawBlockDeviceBlock, self).__init__(volume)
+        # Detect which kind of device we have: a real disk, only a partition or
+        # an LVM volume.
+        name = device_name(self.path)
+        match = re.search('(?P<partition>\d+)$', name)
+        self._partition = None
+        if self._get_lvm_path() is not None:
+            self._kind = DeviceType.LVM
+        elif match is not None:
+            self._kind = DeviceType.PARTITION
+            self._partition = match.groupdict()['partition']
+        else:
+            self._kind = DeviceType.DISK
+
+    @property
+    def persistent_path(self):
+        if self._kind == DeviceType.LVM:
+            return self._get_lvm_path()
+        return '/dev/disk/by-partuuid/{}'.format(self.uuid)
+
+    @property
+    def device_path(self):
+        path = self.path
+        if self._kind == DeviceType.PARTITION:
+            path = path.rstrip(self._partition)
+        return path
+
+    @property
+    def is_prepared(self):
+        # Nothing to do in LVM case (we use LVM UUID).
+        if self._kind == DeviceType.LVM:
+            return True
+        device = os.path.basename(self.path)
+        if self._kind == DeviceType.DISK:
+            device += '1' # In DISK case we always have a single partition.
+        try:
+            return device_name(self.persistent_path) == device
+        except: # Expected exception if the symlink doesn't exist.
+            return False
+
+    def prepare(self, force=False):
+        # Nothing to do in LVM case.
+        if self._kind == DeviceType.LVM:
+            return
+        name = self.get('metadata.name')
+        # For partition, set the partition's label & UID to the volume's ones.
+        if self._kind == DeviceType.PARTITION:
+            _run_cmd(' '.join([
+                'sgdisk',
+                '--partition-guid', '{}:{}'.format(self._partition, self.uuid),
+                '--change-name', '{}:{}'.format(self._partition, name),
+                self.device_path,
+            ]))
+        # Otherwise, create a GPT table and a unique partition.
+        else:
+            prepare_block(self.path, name, self.uuid)
+
+    def _get_lvm_path(self):
+        """Return the persistent path for a LVM volume.
+
+        If the backing storage device is not an LVM volume, return None.
+        """
+        name = device_name(self.path)
+        for symlink in glob.glob('/dev/disk/by-id/dm-uuid-LVM-*'):
+            realpath = os.path.realpath(symlink)
+            if os.path.basename(realpath) == name:
+                return symlink
+        return None
+
+
+class DeviceType:
+    DISK      = 1
+    PARTITION = 2
+    LVM       = 3
 
 # }}}
 # Helpers {{{
@@ -387,10 +528,17 @@ def _get_volume(name):
     volume = __pillar__['metalk8s']['volumes'].get(name)
     if volume is None:
         raise ValueError('volume {} not found in pillar'.format(name))
+    mode = volume['spec'].get('mode', 'Filesystem')
     if 'rawBlockDevice' in volume['spec']:
-        return RawBlockDevice(volume)
+        if mode == 'Filesystem':
+            return RawBlockDevice(volume)
+        else:
+            return RawBlockDeviceBlock(volume)
     elif 'sparseLoopDevice' in volume['spec']:
-        return SparseLoopDevice(volume)
+        if mode == 'Filesystem':
+            return SparseLoopDevice(volume)
+        else:
+            return SparseLoopDeviceBlock(volume)
     else:
         raise ValueError('unsupported Volume type for Volume {}'.format(name))
 
@@ -522,5 +670,18 @@ def _mkfs_xfs(path, uuid, force=False, options=None):
     command.append(path)
     return command
 
+def prepare_block(path, name, uuid):
+    """Prepare a "Block" volume.
+
+    We use a GPT table and a single partition to have a link between the volume
+    name/uuid and the partition label/GUID.
+    """
+    _run_cmd(' '.join([
+        'sgdisk',
+        '--largest-new', '1',
+        '--partition-guid', '1:{}'.format(uuid),
+        '--change-name', '1:{}'.format(name),
+        path,
+    ]))
 
 # }}}

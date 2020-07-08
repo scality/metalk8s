@@ -179,28 +179,27 @@ func getStateFailureRootCause(output interface{}) string {
 	}
 }
 
-// Return the size of the specified device on the given node.
+// Return the info of the specified device on the given node.
 //
 // This request is asynchronous.
 //
 // Arguments
 //     ctx:        the request context (used for cancellation)
 //     nodeName:   name of the node where the volume will be
-//     volumeName: name of the volume to prepare
-//     devicePath: path of the device for which we want the size
+//     volumeName: name of the volume to target
 //
 // Returns
 //     The Salt job handle.
-func (self *Client) GetVolumeSize(
-	ctx context.Context, nodeName string, volumeName string, devicePath string,
+func (self *Client) GetDeviceInfo(
+	ctx context.Context, nodeName string, volumeName string,
 ) (*JobHandle, error) {
-	const jobName string = "GetVolumeSize"
+	const jobName string = "GetDeviceInfo"
 
 	payload := map[string]interface{}{
 		"client":  "local_async",
 		"tgt":     nodeName,
-		"fun":     "disk.dump",
-		"arg":     devicePath,
+		"fun":     "metalk8s_volumes.device_info",
+		"arg":     volumeName,
 		"timeout": 1,
 	}
 
