@@ -227,12 +227,13 @@ def get_archives(archives=None):
         env_name = 'metalk8s-{0}'.format(version)
 
         # Warn if we have 2 archives with the same version
-        if env_name in archives:
+        if env_name in res:
             archive = res[env_name]
             log.warning(
-                'Skip, archive %s has the same version as %s: %s.',
-                archive, archive['iso'] or archive['path'], version
+                'Archives have the same version: %s is overridden by %s.',
+                archive, info
             )
+
         res.update({env_name: info})
     return res
 
