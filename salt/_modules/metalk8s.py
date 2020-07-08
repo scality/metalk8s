@@ -52,7 +52,7 @@ def format_san(names):
         for af_name in ['AF_INET', 'AF_INET6']:
             try:
                 af = getattr(socket, af_name)
-            except AttributeError:
+            except AttributeError:  # pragma: no cover
                 log.info('Unkown address family: %s', af_name)
                 continue
 
