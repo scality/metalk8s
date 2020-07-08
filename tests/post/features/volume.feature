@@ -166,3 +166,20 @@ Feature: Volume management
         When I delete the Volume 'test-volume11'
         Then the Volume 'test-volume11' does not exist
         And the PersistentVolume 'test-volume11' does not exist
+
+    Scenario: Test volume creation (sparseLoopDevice Block mode)
+        Given the Kubernetes API is available
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: test-volume12
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s-prometheus
+              mode: Block
+              sparseLoopDevice:
+                size: 10Gi
+        Then the Volume 'test-volume12' is 'Available'
+        And the PersistentVolume 'test-volume12' has size '10Gi'
+        And the backing storage for Volume 'test-volume12' is created

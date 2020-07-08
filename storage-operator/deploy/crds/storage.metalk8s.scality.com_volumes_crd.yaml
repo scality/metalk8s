@@ -40,6 +40,13 @@ spec:
         spec:
           description: VolumeSpec defines the desired state of Volume
           properties:
+            mode:
+              description: How the volume is intended to be consumed, either Block
+                or Filesystem (default is Filesystem).
+              enum:
+              - Filesystem
+              - Block
+              type: string
             nodeName:
               description: Name of the node on which the volume is available.
               type: string

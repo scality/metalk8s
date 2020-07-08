@@ -12,3 +12,8 @@ Install xfsprogs:
   {{ pkg_installed('xfsprogs') }}
     - require:
       - test: Repositories configured
+
+Install gdisk:
+  {{ pkg_installed('gdisk') }}
+    - require:
+      - test: Repositories configured

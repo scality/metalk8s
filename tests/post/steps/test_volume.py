@@ -434,7 +434,10 @@ def check_storage_is_created(context, host, name):
     size = int(host.check_output('stat -c %s {}'.format(path)))
     assert _quantity_to_bytes(capacity) == size
     # Check that the loop device is mounted.
-    host.run_test('test -b /dev/disk/by-uuid/{}'.format(uuid))
+    if volume['spec'].get('mode', 'Filesystem') == 'Filesystem':
+        host.run_test('test -b /dev/disk/by-uuid/{}'.format(uuid))
+    else:
+        host.run_test('test -b /dev/disk/by-partuuid/{}'.format(uuid))
 
 
 @then(parsers.parse("the backing storage for Volume '{name}' is deleted"))

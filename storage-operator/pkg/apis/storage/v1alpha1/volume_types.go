@@ -43,6 +43,12 @@ type VolumeSpec struct {
 	// PersistentVolume if present.
 	StorageClassName string `json:"storageClassName"`
 
+	// How the volume is intended to be consumed, either Block or Filesystem
+	// (default is Filesystem).
+	// +optional
+	// +kubebuilder:validation:Enum=Filesystem;Block
+	Mode corev1.PersistentVolumeMode `json:"mode,omitempty"`
+
 	// Template for the underlying PersistentVolume.
 	// +optional
 	Template PersistentVolumeTemplateSpec `json:"template,omitempty"`
@@ -172,9 +178,10 @@ func (self *Volume) SetCondition(
 
 	for idx, cond := range self.Status.Conditions {
 		if cond.Type == kind {
-			// Don't update LastTransitionTime if status hasn't changed.
+			// Don't update timestamps if status hasn't changed.
 			if cond.Status == condition.Status {
 				condition.LastTransitionTime = cond.LastTransitionTime
+				condition.LastUpdateTime = cond.LastUpdateTime
 			}
 			self.Status.Conditions[idx] = condition
 			return
@@ -269,6 +276,11 @@ func (self *Volume) IsValid() error {
 		}
 	}
 
+	// Default to Filesystem when mode is not specified.
+	if self.Spec.Mode == "" {
+		self.Spec.Mode = corev1.PersistentVolumeFilesystem
+	}
+
 	return nil
 }
 
@@ -284,9 +296,8 @@ func (self *Volume) IsInUnrecoverableFailedState() *VolumeCondition {
 	return nil
 }
 
-// Return the volume path on the node.
-func (self *Volume) GetPath() string {
-	return fmt.Sprintf("/dev/disk/by-uuid/%s", self.UID)
+func (self *Volume) IsFormatted() bool {
+	return self.Spec.Mode == corev1.PersistentVolumeFilesystem
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

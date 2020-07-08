@@ -13,3 +13,4 @@ Architecture Documents
    requirements
    solutions
    ci
+   volume

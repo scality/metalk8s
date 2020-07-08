@@ -81,13 +81,14 @@ func TestGetCondition(t *testing.T) {
 
 			if tc.transitionExpected {
 				assert.True(t, now.Before(&condition.LastTransitionTime))
+				assert.True(t, now.Before(&condition.LastUpdateTime))
 			} else {
 				assert.Equal(t, now, condition.LastTransitionTime)
+				assert.Equal(t, now, condition.LastUpdateTime)
 			}
 
 			assert.Equal(t, tc.condType, condition.Type)
 			assert.Equal(t, tc.condStatus, condition.Status)
-			assert.True(t, now.Before(&condition.LastUpdateTime))
 			assert.Equal(t, ConditionReason("Baz"), condition.Reason)
 			assert.Equal(t, "Qux", condition.Message)
 		})
