@@ -448,14 +448,11 @@ class RawBlockDeviceBlock(RawBlockDevice):
         # Detect which kind of device we have: a real disk, only a partition or
         # an LVM volume.
         name = device_name(self.path)
-        self._partition = None
-        for symlink in glob.glob('/dev/disk/by-id/dm-uuid-LVM-*'):
-            realpath = os.path.realpath(symlink)
-            if os.path.basename(realpath) == name:
-                self._kind = DeviceType.LVM
-                return
         match = re.search('(?P<partition>\d+)$', name)
-        if match is not None:
+        self._partition = None
+        if self._get_lvm_path() is not None:
+            self._kind = DeviceType.LVM
+        elif match is not None:
             self._kind = DeviceType.PARTITION
             self._partition = match.groupdict()['partition']
         else:
@@ -464,11 +461,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
     @property
     def persistent_path(self):
         if self._kind == DeviceType.LVM:
-            name = device_name(self.path)
-            for symlink in glob.glob('/dev/disk/by-id/dm-uuid-LVM-*'):
-                realpath = os.path.realpath(symlink)
-                if os.path.basename(realpath) == name:
-                    return symlink
+            return self._get_lvm_path()
         return '/dev/disk/by-partuuid/{}'.format(self.uuid)
 
     @property
@@ -507,6 +500,19 @@ class RawBlockDeviceBlock(RawBlockDevice):
         # Otherwise, create a GPT table and a unique partition.
         else:
             prepare_block(self.path, name, self.uuid)
+
+    def _get_lvm_path(self):
+        """Return the persistent path for a LVM volume.
+
+        If the backing storage device is not an LVM volume, return None.
+        """
+        name = device_name(self.path)
+        for symlink in glob.glob('/dev/disk/by-id/dm-uuid-LVM-*'):
+            realpath = os.path.realpath(symlink)
+            if os.path.basename(realpath) == name:
+                return symlink
+        return None
+
 
 class DeviceType:
     DISK      = 1
