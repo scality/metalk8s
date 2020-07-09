@@ -429,7 +429,7 @@ const CreateVolume = props => {
                     />
                     <Input
                       id="type_input"
-                      label={intl.translate('type')}
+                      label={intl.translate('volume_type')}
                       clearable={false}
                       type="select"
                       options={optionsTypes}

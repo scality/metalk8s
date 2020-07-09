@@ -25,12 +25,12 @@ const VolumeInformation = styled.div`
 const VolumeNameTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.large};
-  padding: 10px 0 10px 22px;
+  padding: 10px 0 10px 20px;
 `;
 
 const InformationSpan = styled.div`
   padding-bottom: 7px;
-  padding-left: 22px;
+  padding-left: 20px;
   display: flex;
 `;
 
@@ -49,7 +49,7 @@ const InformationValue = styled.span`
 
 const DeleteButton = styled(Button)`
   margin-right: 100px;
-  width: 135px;
+  width: 163px;
   height: 30px;
   font-size: ${fontSize.small};
   background-color: #be2443;
@@ -203,7 +203,7 @@ const VolumeDetailCard = (props) => {
         <DeleteButtonContainer>
           <DeleteButton
             icon={<i className="fas fa-sm fa-trash" />}
-            text="Delete Volume"
+            text={intl.translate('delete_volume')}
             onClick={(e) => {
               e.stopPropagation();
               setisDeleteConfirmationModalOpen(true);
@@ -215,7 +215,7 @@ const VolumeDetailCard = (props) => {
       <Modal
         close={() => setisDeleteConfirmationModalOpen(false)}
         isOpen={isDeleteConfirmationModalOpen}
-        title={intl.translate('delete_a_volume')}
+        title={intl.translate('delete_volume')}
         footer={
           <NotificationButtonGroup>
             <CancelButton
