@@ -1,0 +1,262 @@
+get_archives:
+  - archives: "/my/path/iso"
+    infos: {"version": "2.5.0", "name": "MetalK8s"}
+    is_files: True
+    result: {
+      "metalk8s-2.5.0": {
+        "iso": "/my/path/iso",
+        "version": "2.5.0",
+        "name": "MetalK8s",
+        "path": "/srv/scality/metalk8s-2.5.0"
+      }
+    }
+  - archives: null
+    pillar_archives:
+      - "/my/path/iso"
+    infos: {"version": "2.5.0", "name": "MetalK8s"}
+    is_files: True
+    result: {
+      "metalk8s-2.5.0": {
+        "iso": "/my/path/iso",
+        "version": "2.5.0",
+        "name": "MetalK8s",
+        "path": "/srv/scality/metalk8s-2.5.0"
+      }
+    }
+  - archives: "/my/path"
+    infos: {"version": "2.5.0", "name": "MetalK8s"}
+    is_dirs: True
+    result: {
+      "metalk8s-2.5.0": {
+        "iso": null,
+        "version": "2.5.0",
+        "name": "MetalK8s",
+        "path": "/my/path"
+      }
+    }
+  - archives:
+      - "/my/path"
+      - "/my/path/iso"
+    infos: {"version": "2.5.0", "name": "MetalK8s"}
+    is_dirs:
+      - True
+      - False
+    is_files: True
+    result: {
+      "metalk8s-2.5.0": {
+        "iso": "/my/path/iso",
+        "version": "2.5.0",
+        "name": "MetalK8s",
+        "path": "/srv/scality/metalk8s-2.5.0"
+      }
+    }
+  - archives:
+      - "/my/path/iso"
+      - "/my/path"
+    infos: {"version": "2.5.0", "name": "MetalK8s"}
+    is_dirs:
+      - False
+      - True
+    is_files: True
+    result: {
+      "metalk8s-2.5.0": {
+        "iso": null,
+        "version": "2.5.0",
+        "name": "MetalK8s",
+        "path": "/my/path"
+      }
+    }
+  - archives:
+      - "/my/first/iso"
+      - "/my/second/iso"
+    infos:
+      - {"version": "2.5.0", "name": "MetalK8s"}
+      - {"version": "2.5.1", "name": "MetalK8s"}
+    is_files: True
+    result: {
+      "metalk8s-2.5.0": {
+        "iso": "/my/first/iso",
+        "version": "2.5.0",
+        "name": "MetalK8s",
+        "path": "/srv/scality/metalk8s-2.5.0"
+      },
+      "metalk8s-2.5.1": {
+        "iso": "/my/second/iso",
+        "version": "2.5.1",
+        "name": "MetalK8s",
+        "path": "/srv/scality/metalk8s-2.5.1"
+      }
+    }
+  - archives:
+      - "/my/path/does/not/exists"
+    infos: null
+    result: {}
+  - archives: null
+    infos: null
+    result: {}
+  - archives: {"invalid": "archives", "style": "123"}
+    infos: null
+    raises: True
+    result: "Invalid archives: list or string expected, got .*"
+  - archives:
+      - "/my/first/iso"
+      - "/my/first/path"
+      - "/my/path/does/not/exists"
+      - "/my/second/path"
+      - "/my/second/iso"
+    infos:
+      - {"version": "2.5.1", "name": "MetalK8s"}
+      - {"version": "2.5.0", "name": "MetalK8s"}
+      - {"version": "2.5.1", "name": "MetalK8s"}
+      - {"version": "2.5.2", "name": "MetalK8s"}
+    is_dirs:
+      - False
+      - True
+      - False
+      - True
+      - False
+    is_files:
+      - True
+      - False
+      - True
+    result: {
+      "metalk8s-2.5.0": {
+        "iso": null,
+        "version": "2.5.0",
+        "name": "MetalK8s",
+        "path": "/my/first/path"
+      },
+      "metalk8s-2.5.1": {
+        "iso": null,
+        "version": "2.5.1",
+        "name": "MetalK8s",
+        "path": "/my/second/path"
+      },
+      "metalk8s-2.5.2": {
+        "iso": "/my/second/iso",
+        "version": "2.5.2",
+        "name": "MetalK8s",
+        "path": "/srv/scality/metalk8s-2.5.2"
+      }
+    }
+check_pillar_keys:
+  - keys: "my-simple-key"
+    pillar_content: {
+      "my-simple-key": "my-value"
+    }
+    refresh: False
+    result: True
+  - keys: "my-simple-key"
+    pillar_content: {
+      "my-simple-key": "my-value"
+    }
+    result: True
+    refresh_called: True
+  - keys: "my-simple-key"
+    pillar: {
+      "my-simple-key": "my-value"
+    }
+    result: True
+  - keys: "my.complex.key"
+    pillar: {
+      "my": {
+        "complex": {
+          "key": "my-value"
+        }
+      }
+    }
+    result: True
+  - keys:
+      - - "my"
+        - "complex.key"
+        - "with.dot.in.key"
+    pillar: {
+      "my": {
+        "complex.key": {
+          "with.dot.in.key": "my-value"
+        }
+      }
+    }
+    result: True
+  - keys:
+      - "my.first.key"
+      - "my-second-key"
+    pillar: {
+      "my": {
+        "first": {
+          "key": "my-value"
+        }
+      },
+      "my-second-key": "OK"
+    }
+    result: True
+  - keys: "this.key.does.not.exists"
+    pillar: {
+      "my": {
+        "complex": {
+          "key": "my-value"
+        }
+      }
+    }
+    raises: True
+    result: "Unable to get this.key.does.not.exists:\n\tEmpty value for this"
+  - keys: "this.key.does.not.exists"
+    pillar: {
+      "my": {
+        "complex": {
+          "key": "my-value"
+        }
+      }
+    }
+    raise_error: False
+    result: False
+  - keys:
+      - "my.first.key"
+      - "my-second-key"
+      - "my.third.key.does.not.exists"
+    pillar: {
+      "my": {
+        "first": {
+          "key": "my-value"
+        }
+      },
+      "my-second-key": "OK"
+    }
+    raises: True
+    result: "Unable to get my.third.key.does.not.exists:\n\tEmpty value for third"
+  - keys:
+      - "my.first.key"
+      - "does-not.exists"
+      - "my-second-key"
+      - "my.third.key.does.not.exists"
+    pillar: {
+      "my": {
+        "first": {
+          "key": "my-value"
+        }
+      },
+      "my-second-key": "OK"
+    }
+    raises: True
+    result: "Unable to get does-not.exists:\n\tEmpty value for does-not\nUnable to get my.third.key.does.not.exists:\n\tEmpty value for third"
+  - keys:
+      - "my.first.key"
+      - "my-second-key"
+      - - "my"
+        - "third.key"
+        - "does-not-exists"
+    pillar: {
+      "my": {
+        "first": {
+          "key": "my-value"
+        },
+        "third": {
+          "key": {
+            "does-not-exits": "ignored"
+          }
+        }
+      },
+      "my-second-key": "OK"
+    }
+    raises: True
+    result: "Unable to get my.third.key.does-not-exists:\n\tEmpty value for third.key"
