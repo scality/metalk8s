@@ -73,7 +73,7 @@
   "create_new_volume": "Créer un nouveau volume",
   "no_volume_found": "Aucun volume sur ce nœud",
   "no_searched_volume_found": "Aucun volume correspondant à la recherche",
-  "type": "Type",
+  "volume_type": "Type de volume",
   "volume_size": "Capacité du volume",
   "device_path": "Chemin du disque",
   "details": "Détails",
@@ -136,5 +136,11 @@
   "import_solution_hint": "Vous devez importer une solution pour préparer votre environnement",
   "redirecting": "Redirection…",
   "documentation": "Documentation",
-  "salt_job": "Salt job"
+  "salt_job": "Salt job",
+  "platform": "Platform",
+  "node": "Nœud",
+  "used_by": "Utilisé Par",
+  "backend_disk": "Backend Disk",
+  "active_alerts": "ALERTS ACTIVES",
+  "performaces": "PERFORMANCES"
 }

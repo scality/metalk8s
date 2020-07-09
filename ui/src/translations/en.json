@@ -73,7 +73,7 @@
   "create_new_volume": "Create a New Volume",
   "no_volume_found": "No volumes on this node",
   "no_searched_volume_found": "No volumes matching the search",
-  "type": "Type",
+  "volume_type": "Volume Type",
   "volume_size": "Volume Capacity",
   "device_path": "Device path",
   "details": "Details",
@@ -136,5 +136,11 @@
   "import_solution_hint": "You should import a solution to prepare your environment",
   "redirecting": "Redirecting…",
   "documentation": "Documentation",
-  "salt_job": "Salt job"
+  "salt_job": "Salt job",
+  "platform": "Platform",
+  "node": "Node",
+  "used_by": "Used By",
+  "backend_disk": "Backend Disk",
+  "active_alerts": "ACTIVE ALERTES",
+  "performaces": "PERFORMANCES"
 }
