@@ -53,3 +53,21 @@ spec:
   ports:
     - name: http
       port: 9090
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: alertmanager-api
+  namespace: metalk8s-ui
+  labels:
+    app: metalk8s-ui
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: metalk8s-ui
+    app.kubernetes.io/part-of: metalk8s
+    heritage: metalk8s
+spec:
+  type: ExternalName
+  externalName: prometheus-operator-alertmanager.metalk8s-monitoring.svc.cluster.local
+  ports:
+    - name: http
+      port: 9093
