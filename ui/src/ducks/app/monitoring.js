@@ -1,5 +1,10 @@
 import { put, takeEvery, call, all, delay, select } from 'redux-saga/effects';
-import { getAlerts, queryPrometheus } from '../../services/prometheus/api';
+import {
+  getAlerts,
+  queryPrometheus,
+  queryPrometheusRange,
+} from '../../services/prometheus/api';
+import { getAlertsfromAlertManager } from '../../services/alertmanager/api';
 import { REFRESH_TIMEOUT } from '../../constants';
 import * as ApiK8s from '../../services/k8s/api';
 
@@ -16,6 +21,8 @@ export const CLUSTER_STATUS_DOWN = 'CLUSTER_STATUS_DOWN';
 export const CLUSTER_STATUS_UNKNOWN = 'CLUSTER_STATUS_UNKNOWN ';
 
 export const SET_PROMETHEUS_API_AVAILABLE = 'SET_PROMETHEUS_API_AVAILABLE';
+const UPDATE_VOLUMESTATS = 'UPDATE_VOLUMESTATS';
+const REFRESH_VOLUMESTATS = 'REFRESH_VOLUMESTATS';
 
 // Reducer
 const defaultState = {
@@ -35,6 +42,7 @@ const defaultState = {
     isPrometheusVolumeProvisioned: true,
   },
   isPrometheusApiUp: false,
+  volumeStats: {},
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -48,6 +56,8 @@ export default function reducer(state = defaultState, action = {}) {
         ...state,
         cluster: { ...state.cluster, ...action.payload },
       };
+    case UPDATE_VOLUMESTATS:
+      return { ...state, volumeStats: action.payload };
     default:
       return state;
   }
@@ -62,11 +72,11 @@ export const stopRefreshClusterStatusAction = () => {
   return { type: STOP_REFRESH_CLUSTER_STATUS };
 };
 
-export const updateClusterStatusAction = payload => {
+export const updateClusterStatusAction = (payload) => {
   return { type: UPDATE_CLUSTER_STATUS, payload };
 };
 
-const setPrometheusApiAvailable = payload => {
+const setPrometheusApiAvailable = (payload) => {
   return { type: SET_PROMETHEUS_API_AVAILABLE, payload };
 };
 
@@ -78,14 +88,22 @@ export const stopRefreshAlertsAction = () => {
   return { type: STOP_REFRESH_ALERTS };
 };
 
-export const updateAlertsAction = payload => {
+export const updateAlertsAction = (payload) => {
   return { type: UPDATE_ALERTS, payload };
 };
 
+export const updateVolumeStatsAction = (payload) => {
+  return { type: UPDATE_VOLUMESTATS, payload };
+};
+
+export const refreshVolumeStatsAction = () => {
+  return { type: REFRESH_VOLUMESTATS };
+};
+
 // Selectors
-export const isAlertRefreshing = state =>
+export const isAlertRefreshing = (state) =>
   state.app.monitoring.alert.isRefreshing;
-export const isClusterRefreshing = state =>
+export const isClusterRefreshing = (state) =>
   state.app.monitoring.cluster.isRefreshing;
 
 // Sagas
@@ -111,7 +129,7 @@ export function* handlePrometheusError(clusterHealth, result) {
     if (!prometheusPod.error) {
       const conditions = prometheusPod?.body?.items[0]?.status?.conditions;
       const scheduledCondition = conditions?.find(
-        c => c.type === 'PodScheduled',
+        (c) => c.type === 'PodScheduled',
       );
       if (
         scheduledCondition?.message?.includes(
@@ -146,7 +164,7 @@ export function* fetchClusterStatus() {
     call(queryPrometheus, kubeControllerManagerQuery),
   ]);
 
-  const errorResult = results.find(result => result.error);
+  const errorResult = results.find((result) => result.error);
 
   if (!errorResult) {
     clusterHealth.apiServerStatus = getClusterQueryStatus(results[0]);
@@ -171,6 +189,8 @@ export function* fetchAlerts() {
     list: [],
     error: null,
   };
+  // get the alerts from Alertmanager
+  const resultAlertsfromAlertmanager = yield call(getAlertsfromAlertManager);
 
   if (!resultAlerts.error) {
     yield put(setPrometheusApiAvailable(true));
@@ -216,7 +236,140 @@ export function* stopRefreshClusterStatus() {
   yield put(updateClusterStatusAction({ isRefreshing: false }));
 }
 
+export function* refreshVolumeStats() {
+  let volumeUsed = {};
+  let volumeUsedCurrent = {};
+  let volumeThroughputWrite = {};
+  let volumeThroughputRead = {};
+  let volumeLatency = {};
+  let volumeLatencyCurrent = {};
+  let volumeIOPSRead = {};
+  let volumeIOPSWrite = {};
+
+  const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
+  const volumeLatencyCurrentQuery = 'node_disk_io_time_seconds_total';
+
+  const volumeUsedCurrentQueryResult = yield call(
+    queryPrometheus,
+    volumeUsedQuery,
+  );
+
+  if (!volumeUsedCurrentQueryResult.error) {
+    volumeUsedCurrent = volumeUsedCurrentQueryResult.data.result;
+  }
+
+  const volumeLantencyCurrentResult = yield call(
+    queryPrometheus,
+    volumeLatencyCurrentQuery,
+  );
+  if (!volumeLantencyCurrentResult.error) {
+    volumeLatencyCurrent = volumeLantencyCurrentResult.data.result;
+  }
+
+  // To query Prometheus the date should follow `RFC3339` format
+  const currentTimestamp = new Date().toISOString();
+  let date = new Date();
+  date.setDate(date.getDate() - 7);
+  const sevenDaysAgoTime = date;
+  const sevenDaysAgoTimestamp = date.toISOString();
+
+  const volumeUsedQueryResult = yield call(
+    queryPrometheusRange,
+    sevenDaysAgoTimestamp,
+    currentTimestamp,
+    3600,
+    volumeUsedQuery,
+  );
+
+  if (!volumeUsedQueryResult.error) {
+    volumeUsed = volumeUsedQueryResult.data.result;
+  }
+
+  // the queries for Throughput/Latency/IOPS
+  // rate calculates the per-second average rate of increase of the time series in the range vector.
+  const volumeThroughputReadQuery = `rate(node_disk_read_bytes_total{job="node-exporter"}[1m])`;
+  const volumeThroughputWriteQuery = `rate(node_disk_written_bytes_total{job="node-exporter"}[1m])`;
+  const volumeLatencyQuery = `rate(node_disk_io_time_seconds_total{job="node-exporter"}[1m])`;
+  const volumeIOPSReadQuery = `irate(node_disk_reads_completed_total{job="node-exporter"}[5m])`;
+  const volumeIOPSWriteQuery = `irate(node_disk_writes_completed_total{job="node-exporter"}[5m])`;
+
+  const volumeThroughputReadQueryResult = yield call(
+    queryPrometheusRange,
+    sevenDaysAgoTimestamp,
+    currentTimestamp,
+    3600, // samplingFrequency: time in seconds
+    volumeThroughputReadQuery,
+  );
+
+  const volumeThroughputWriteQueryResult = yield call(
+    queryPrometheusRange,
+    sevenDaysAgoTimestamp,
+    currentTimestamp,
+    3600,
+    volumeThroughputWriteQuery,
+  );
+
+  const volumeLatencyQueryResult = yield call(
+    queryPrometheusRange,
+    sevenDaysAgoTimestamp,
+    currentTimestamp,
+    3600,
+    volumeLatencyQuery,
+  );
+
+  const volumeIOPSReadQueryResult = yield call(
+    queryPrometheusRange,
+    sevenDaysAgoTimestamp,
+    currentTimestamp,
+    3600,
+    volumeIOPSReadQuery,
+  );
+
+  const volumeIOPSWriteQueryResult = yield call(
+    queryPrometheusRange,
+    sevenDaysAgoTimestamp,
+    currentTimestamp,
+    3600,
+    volumeIOPSWriteQuery,
+  );
+
+  if (!volumeThroughputReadQueryResult.error) {
+    volumeThroughputRead = volumeThroughputReadQueryResult.data.result;
+  }
+
+  if (!volumeThroughputWriteQueryResult.error) {
+    volumeThroughputWrite = volumeThroughputWriteQueryResult.data.result;
+  }
+
+  if (!volumeLatencyQueryResult.error) {
+    volumeLatency = volumeLatencyQueryResult.data.result;
+  }
+
+  if (!volumeIOPSReadQueryResult.error) {
+    volumeIOPSRead = volumeIOPSReadQueryResult.data.result;
+  }
+
+  if (!volumeIOPSWriteQueryResult.error) {
+    volumeIOPSWrite = volumeIOPSWriteQueryResult.data.result;
+  }
+
+  yield put(
+    updateVolumeStatsAction({
+      volumeUsedCurrent: volumeUsedCurrent,
+      volumeUsed: volumeUsed,
+      volumeThroughputWrite: volumeThroughputWrite,
+      volumeThroughputRead: volumeThroughputRead,
+      volumeLatency: volumeLatency,
+      volumeLatencyCurrent: volumeLatencyCurrent,
+      volumeIOPSRead: volumeIOPSRead,
+      volumeIOPSWrite: volumeIOPSWrite,
+      queryStartingTime: sevenDaysAgoTime,
+    }),
+  );
+}
+
 export function* monitoringSaga() {
+  yield takeEvery(REFRESH_VOLUMESTATS, refreshVolumeStats);
   yield takeEvery(REFRESH_CLUSTER_STATUS, refreshClusterStatus);
   yield takeEvery(REFRESH_ALERTS, refreshAlerts);
   yield takeEvery(STOP_REFRESH_ALERTS, stopRefreshAlerts);
