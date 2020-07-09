@@ -20,7 +20,7 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const CreateNodeContainter = styled.div`
   height: 100%;
-  padding: ${padding.base};
+  padding-left: ${padding.base};
   display: inline-block;
 `;
 
@@ -34,7 +34,7 @@ const CreateNodeLayout = styled.div`
       margin: ${padding.smaller} 0;
       .sc-input-label {
         width: 200px;
-        color: ${props => props.theme.brand.textPrimary};
+        color: ${(props) => props.theme.brand.textPrimary};
       }
     }
   }
@@ -51,8 +51,8 @@ const ActionContainer = styled.div`
 `;
 
 const ErrorMessage = styled.span`
-  visibility: ${props => (props.visible ? 'visible' : 'hidden')};
-  color: ${props => props.theme.brand.danger};
+  visibility: ${(props) => (props.visible ? 'visible' : 'hidden')};
+  color: ${(props) => props.theme.brand.danger};
   font-size: ${fontSize.small};
 `;
 
@@ -69,7 +69,7 @@ const CheckboxGroup = styled.div`
 
 const FormSectionTitle = styled.h3`
   margin: 0 ${padding.small} 0;
-  color: ${props => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.brand.textPrimary};
 `;
 
 const FormSection = styled.div`
@@ -85,7 +85,7 @@ const InputContainer = styled.div`
 const InputLabel = styled.label`
   padding: ${padding.small};
   font-size: ${fontSize.base};
-  color: ${props => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.brand.textPrimary};
 `;
 
 const InputValue = styled(InputLabel)`
@@ -108,11 +108,7 @@ const validationSchema = yup.object().shape({
   name: yup.string().required(),
   ssh_user: yup.string().required(),
   hostName_ip: yup.string().required(),
-  ssh_port: yup
-    .number()
-    .min(0)
-    .max(65535)
-    .required(),
+  ssh_port: yup.number().min(0).max(65535).required(),
   ssh_key_path: yup.string().required(),
   sudo_required: yup.boolean().required(),
   workload_plane: yup.boolean().required(),
@@ -121,11 +117,11 @@ const validationSchema = yup.object().shape({
 });
 
 const NodeCreateForm = () => {
-  const asyncErrors = useSelector(state => state.app.nodes.errors);
-  const clusterVersion = useSelector(state => state.app.nodes.clusterVersion);
-  const theme = useSelector(state => state.config.theme);
+  const asyncErrors = useSelector((state) => state.app.nodes.errors);
+  const clusterVersion = useSelector((state) => state.app.nodes.clusterVersion);
+  const theme = useSelector((state) => state.config.theme);
   const dispatch = useDispatch();
-  const createNode = body => dispatch(createNodeAction(body));
+  const createNode = (body) => dispatch(createNodeAction(body));
   const history = useHistory();
 
   useEffect(() => {
@@ -153,7 +149,7 @@ const NodeCreateForm = () => {
           validationSchema={validationSchema}
           onSubmit={createNode}
         >
-          {props => {
+          {(props) => {
             const {
               values,
               touched,
@@ -164,12 +160,12 @@ const NodeCreateForm = () => {
             } = props;
 
             //handleChange of the Formik props does not update 'values' when field value is empty
-            const handleChange = field => e => {
+            const handleChange = (field) => (e) => {
               const { value, checked, type } = e.target;
               setFieldValue(field, type === 'checkbox' ? checked : value, true);
             };
             //touched is not "always" correctly set
-            const handleOnBlur = e => setFieldTouched(e.target.name, true);
+            const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
 
             return (
               <Form>

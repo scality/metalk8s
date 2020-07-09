@@ -30,7 +30,7 @@ import { intl } from '../translations/IntlGlobalProvider';
 const CreateVolumeFormContainer = styled.div`
   display: inline-block;
   height: 100%;
-  padding: ${padding.base};
+  padding-left: ${padding.base};
 `;
 
 const FormSection = styled.div`
@@ -60,7 +60,7 @@ const CreateVolumeLayout = styled.div`
       margin: ${padding.smaller} 0;
       .sc-input-label {
         width: 150px;
-        color: ${props => props.theme.brand.textPrimary};
+        color: ${(props) => props.theme.brand.textPrimary};
       }
     }
   }
@@ -96,9 +96,9 @@ const InputContainer = styled.div`
 const InputLabel = styled.label`
   padding: ${padding.small};
   font-size: ${fontSize.base};
-  color: ${props => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.brand.textPrimary};
   .sc-input-label {
-    color: ${props => props.theme.brand.textPrimary};
+    color: ${(props) => props.theme.brand.textPrimary};
   }
 `;
 
@@ -148,25 +148,25 @@ const DocumentationIcon = styled.div`
   }
 `;
 
-const CreateVolume = props => {
+const CreateVolume = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const match = useRouteMatch();
   const createVolume = (body, nodeName) =>
     dispatch(createVolumeAction(body, nodeName));
 
-  const storageClass = useSelector(state => state.app.volumes.storageClass);
-  const theme = useSelector(state => state.config.theme);
-  const api = useSelector(state => state.config.api);
+  const storageClass = useSelector((state) => state.app.volumes.storageClass);
+  const theme = useSelector((state) => state.config.theme);
+  const api = useSelector((state) => state.config.api);
 
   useEffect(() => {
     dispatch(fetchStorageClassAction());
   }, [dispatch]);
 
   const nodeName = match.params.id;
-  const storageClassesName = storageClass.map(item => item.metadata.name);
+  const storageClassesName = storageClass.map((item) => item.metadata.name);
   const isStorageClassLoading = useSelector(
-    state => state.app.volumes.isSCLoading,
+    (state) => state.app.volumes.isSCLoading,
   );
 
   const [labelName, setLabelName] = useState('');
@@ -280,13 +280,13 @@ const CreateVolume = props => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={values => {
+            onSubmit={(values) => {
               const newVolume = { ...values };
               newVolume.size = `${values.sizeInput}${values.selectedUnit}`;
               createVolume(newVolume, nodeName);
             }}
           >
-            {formikProps => {
+            {(formikProps) => {
               const {
                 values,
                 handleChange,
@@ -298,13 +298,13 @@ const CreateVolume = props => {
               } = formikProps;
 
               //touched is not "always" correctly set
-              const handleOnBlur = e => setFieldTouched(e.target.name, true);
-              const handleSelectChange = field => selectedObj => {
+              const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
+              const handleSelectChange = (field) => (selectedObj) => {
                 setFieldValue(field, selectedObj ? selectedObj.value : '');
               };
               //get the select item from the object array
               const getSelectedObjectItem = (items, selectedValue) => {
-                return items.find(item => item.value === selectedValue);
+                return items.find((item) => item.value === selectedValue);
               };
 
               const addLabel = () => {
@@ -315,13 +315,13 @@ const CreateVolume = props => {
                 setLabelValue('');
               };
 
-              const removeLabel = key => {
+              const removeLabel = (key) => {
                 const labels = values.labels;
                 delete labels[key];
                 setFieldValue('labels', labels);
               };
 
-              const optionsStorageClasses = storageClassesName.map(SCName => {
+              const optionsStorageClasses = storageClassesName.map((SCName) => {
                 return {
                   label: SCName,
                   value: SCName,
@@ -372,7 +372,7 @@ const CreateVolume = props => {
                             name="labelName"
                             placeholder={intl.translate('enter_label_name')}
                             value={labelName}
-                            onChange={e => {
+                            onChange={(e) => {
                               setLabelName(e.target.value);
                             }}
                           />
@@ -380,7 +380,7 @@ const CreateVolume = props => {
                             name="labelValue"
                             placeholder={intl.translate('enter_label_value')}
                             value={labelValue}
-                            onChange={e => {
+                            onChange={(e) => {
                               setLabelValue(e.target.value);
                             }}
                           />

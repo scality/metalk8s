@@ -1,11 +1,10 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { fontSize } from '@scality/core-ui/dist/style/theme';
 
 export const BreadcrumbContainer = styled.div`
-  margin-left: ${padding.small};
   .sc-breadcrumb {
-    padding: ${padding.smaller};
+    height: 24px;
   }
 `;
 

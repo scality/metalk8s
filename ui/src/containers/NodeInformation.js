@@ -42,7 +42,7 @@ const NodeInformationContainer = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   height: 100%;
-  padding: ${padding.base};
+  padding-left: ${padding.base};
 
   .sc-tabs {
     flex-grow: 1;
@@ -62,7 +62,7 @@ const NodeInformationContainer = styled.div`
     flex-direction: column;
     flex-grow: 1;
     padding: ${padding.smaller};
-    background-color: ${props => props.theme.brand.primary};
+    background-color: ${(props) => props.theme.brand.primary};
   }
 `;
 
@@ -71,7 +71,7 @@ const PodsContainer = styled.div`
   margin-top: ${padding.base};
 `;
 
-const NodeInformation = props => {
+const NodeInformation = (props) => {
   const history = useHistory();
   const match = useRouteMatch();
   const location = useLocation();
@@ -87,11 +87,11 @@ const NodeInformation = props => {
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setsortDirection] = useState('ASC');
 
-  const node = useSelector(state => makeGetNodeFromUrl(state, props));
-  const theme = useSelector(state => state.config.theme);
-  const pods = useSelector(state => makeGetPodsFromUrl(state, props));
-  const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
-  const pVList = useSelector(state => state.app.volumes.pVList);
+  const node = useSelector((state) => makeGetNodeFromUrl(state, props));
+  const theme = useSelector((state) => state.config.theme);
+  const pods = useSelector((state) => makeGetPodsFromUrl(state, props));
+  const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
+  const pVList = useSelector((state) => state.app.volumes.pVList);
 
   const columns = [
     {
@@ -110,7 +110,7 @@ const NodeInformation = props => {
     {
       label: intl.translate('start_time'),
       dataKey: 'startTime',
-      renderer: data => (
+      renderer: (data) => (
         <span>
           <FormattedDate value={data} /> <FormattedTime value={data} />
         </span>
@@ -173,9 +173,9 @@ const NodeInformation = props => {
     </>
   );
 
-  const volumeData = volumes.map(volume => {
+  const volumeData = volumes.map((volume) => {
     const volumePV = pVList.find(
-      pV => pV.metadata.name === volume.metadata.name,
+      (pV) => pV.metadata.name === volume.metadata.name,
     );
     return {
       name: volume.metadata.name,
