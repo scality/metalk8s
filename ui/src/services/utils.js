@@ -36,7 +36,7 @@ export function convertK8sMemoryToBytes(memory) {
 export const sortSelector = createSelector(
   (list, sortBy, sortDirection) => {
     const sortedList = sortByArray(list, [
-      item => {
+      (item) => {
         return typeof item[sortBy] === 'string'
           ? item[sortBy].toLowerCase()
           : item[sortBy];
@@ -48,7 +48,7 @@ export const sortSelector = createSelector(
     }
     return sortedList;
   },
-  list => list,
+  (list) => list,
 );
 
 /**
@@ -82,13 +82,13 @@ export const sortCapacity = createSelector(
     ) {
       const sizeRegex = /^(?<size>[1-9][0-9]*)(?<unit>[kKMGTP]i?)?/;
       const notSortableList = list.filter(
-        item => !sizeRegex.test(item?.[sortBy]),
+        (item) => !sizeRegex.test(item?.[sortBy]),
       );
 
       const sortedList = list
         // Filter wrong value (ie: null or incorrect unit)
-        .filter(item => sizeRegex.test(item?.[sortBy]))
-        .map(item => {
+        .filter((item) => sizeRegex.test(item?.[sortBy]))
+        .map((item) => {
           /**
            * This regex help us to seperate the capacity into
            * the size and the unit
@@ -100,7 +100,7 @@ export const sortCapacity = createSelector(
           const tmpInternalUnit = groups?.unit ?? '';
           const tmpInternalSize = groups?.size;
           const tmpInternalUnitBase =
-            sizeUnits.find(sizeUnit => sizeUnit.value === tmpInternalUnit)
+            sizeUnits.find((sizeUnit) => sizeUnit.value === tmpInternalUnit)
               ?.base ?? sizeUnits[0].value;
 
           return {
@@ -122,7 +122,7 @@ export const sortCapacity = createSelector(
           }
         })
         // Cleanup temporary fields
-        .map(item => {
+        .map((item) => {
           const cleanItem = { ...item };
           delete cleanItem.tmpInternalSize;
           delete cleanItem.tmpInternalUnitBase;
@@ -134,7 +134,7 @@ export const sortCapacity = createSelector(
       return [];
     }
   },
-  list => list,
+  (list) => list,
 );
 
 export const getNodeNameFromUrl = (state, props) => {
@@ -145,25 +145,25 @@ export const getNodeNameFromUrl = (state, props) => {
   }
 };
 
-export const getNodes = state =>
+export const getNodes = (state) =>
   (state && state.app && state.app.nodes && state.app.nodes.list) || [];
 
-export const getPods = state =>
+export const getPods = (state) =>
   (state && state.app && state.app.pods && state.app.pods.list) || [];
 
-export const getVolumes = state =>
+export const getVolumes = (state) =>
   (state && state.app && state.app.volumes && state.app.volumes.list) || [];
 
 export const makeGetNodeFromUrl = createSelector(
   getNodeNameFromUrl,
   getNodes,
-  (nodeName, nodes) => nodes.find(node => node.name === nodeName) || {},
+  (nodeName, nodes) => nodes.find((node) => node.name === nodeName) || {},
 );
 
 export const makeGetPodsFromUrl = createSelector(
   getNodeNameFromUrl,
   getPods,
-  (nodeName, pods) => pods.filter(pod => pod.nodeName === nodeName) || [],
+  (nodeName, pods) => pods.filter((pod) => pod.nodeName === nodeName) || [],
 );
 
 export const makeGetVolumesFromUrl = createSelector(
@@ -171,7 +171,7 @@ export const makeGetVolumesFromUrl = createSelector(
   getVolumes,
   (nodeName, volumes) =>
     volumes.filter(
-      volume => volume && volume.spec && volume.spec.nodeName === nodeName,
+      (volume) => volume && volume.spec && volume.spec.nodeName === nodeName,
     ),
 );
 
@@ -198,3 +198,111 @@ export const sizeUnits = [
   { label: 'T', value: 'T', base: 10 ** 12 },
   { label: 'P', value: 'P', base: 10 ** 15 },
 ];
+
+export function allSizeUnitsToBytes(size) {
+  if (size) {
+    const sizeRegex = /^(?<size>[1-9][0-9]*)(?<unit>[kKMGTP]i?)?/;
+    const { groups } = size?.match(sizeRegex);
+
+    if (groups) {
+      const tmpInternalUnit = groups?.unit ?? '';
+      const tmpInternalSize = groups?.size;
+      const tmpInternalUnitBase =
+        sizeUnits.find((sizeUnit) => sizeUnit.value === tmpInternalUnit)
+          ?.base ?? sizeUnits[0].value;
+
+      return tmpInternalUnitBase * tmpInternalSize;
+    }
+  }
+}
+
+export function formatDate(date) {
+  let d = new Date(date),
+    month = '' + (d.getMonth() + 1),
+    day = '' + d.getDate(),
+    year = d.getFullYear();
+
+  if (month.length < 2) month = '0' + month;
+  if (day.length < 2) day = '0' + day;
+
+  return [year, month, day].join('-');
+}
+
+export function bytesToSize(bytes) {
+  let sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
+  if (bytes === 0) return '0 Byte';
+  let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return Math.round(bytes / Math.pow(1024, i), 2) + sizes[i];
+}
+
+// Exclamation: Failed + Unbound
+// Unlink: Available + Unbound
+// Link: Available + Bound
+export function computeVolumeCondition(status, isBound) {
+  if (status === 'Failed' && isBound === 'No') {
+    return 'exclamation';
+  } else if (status === 'Ready' && isBound === 'No') {
+    return 'unlink';
+  } else if (status === 'Ready' && isBound === 'Yes') {
+    return 'link';
+  }
+}
+
+/**
+ * This function combines the
+ *
+ * @param {array} result - The array of the data points are already sorted according to the time series
+ *
+ */
+export function jointDataPointBaseonTimeSeries(result) {
+  let values = [];
+  if (result) {
+    for (const timeseries of result) {
+      if (values.length === 0) {
+        values = values.concat(timeseries.values);
+      } else if (timeseries.values[0][0] > values[0][0]) {
+        values.concat(timeseries.values);
+      } else if (timeseries.values[0][0] < values[0][0]) {
+        timeseries.values.concat(values);
+      }
+    }
+
+    return values;
+  }
+}
+
+/**
+ * This function manually adds the missing data points with `null` value caused by downtime of the VMs
+ *
+ * @param {array} orginalValues - The array of the data points are already sorted according to the time series
+ * @param {object} startingTime - The starting time
+ * @param {number} duration - The timespan value in days
+ * @param {number} samplingFrequency - The time difference between two data point (in hour)
+ *
+ */
+export function addMissingDataPoint(
+  orginalValues,
+  startingTime,
+  duration,
+  samplingFrequency,
+) {
+  const newValues = [];
+  const numberOfDataPoints = (duration * 24) / samplingFrequency;
+  let samplingPointTime = startingTime.getTime() / 1000; //time converted to Unix seconds
+
+  // initialize the array with all `null` value
+  for (let i = 0; i < numberOfDataPoints; i++) {
+    newValues.push([samplingPointTime, null]);
+    samplingPointTime += 3600;
+  }
+
+  // copy the existing data points from `orginalValue` array to `newValues`
+  let nextIndex = 0;
+  for (let i = 0; i < newValues.length; i++) {
+    if (newValues[i][0] === orginalValues[nextIndex][0]) {
+      newValues[i][1] = orginalValues[nextIndex][1];
+      nextIndex++;
+    }
+  }
+  return newValues;
+}
