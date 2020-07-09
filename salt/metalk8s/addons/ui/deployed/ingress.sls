@@ -53,6 +53,10 @@ spec:
         backend:
           serviceName: prometheus-api
           servicePort: 9090
+      - path: /api/alertmanager(/|$)(.*)
+        backend:
+          serviceName: alertmanager-api
+          servicePort: 9093
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
