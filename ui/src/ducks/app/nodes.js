@@ -175,11 +175,11 @@ export const fetchClusterVersionAction = () => {
   return { type: FETCH_CLUSTER_VERSION };
 };
 
-export const updateNodesAction = payload => {
+export const updateNodesAction = (payload) => {
   return { type: UPDATE_NODES, payload };
 };
 
-export const createNodeAction = payload => {
+export const createNodeAction = (payload) => {
   return { type: CREATE_NODE, payload };
 };
 
@@ -187,7 +187,7 @@ export const clearCreateNodeErrorAction = () => {
   return { type: CLEAR_CREATE_NODE_ERROR };
 };
 
-export const deployNodeAction = payload => {
+export const deployNodeAction = (payload) => {
   return { type: DEPLOY_NODE, payload };
 };
 
@@ -200,8 +200,8 @@ export const stopRefreshNodesAction = () => {
 };
 
 // Selectors
-export const clusterVersionSelector = state => state.app.nodes.clusterVersion;
-export const nodesRefreshingSelector = state => state.app.nodes.isRefreshing;
+export const clusterVersionSelector = (state) => state.app.nodes.clusterVersion;
+export const nodesRefreshingSelector = (state) => state.app.nodes.isRefreshing;
 
 // Sagas
 export function* fetchClusterVersion() {
@@ -224,17 +224,19 @@ export function* fetchNodes() {
 
   const allJobs = yield select(allJobsSelector);
   const deployingNodes = allJobs
-    .filter(job => job.type === 'deploy-node' && !job.completed)
-    .map(job => job.node);
+    .filter((job) => job.type === 'deploy-node' && !job.completed)
+    .map((job) => job.node);
 
   const result = yield call(ApiK8s.getNodes);
   if (!result.error) {
     yield put(
       updateNodesAction({
-        list: result.body.items.map(node => {
+        list: result?.body?.items?.map((node) => {
           const statusType =
             node.status.conditions &&
-            node.status.conditions.find(conditon => conditon.type === 'Ready');
+            node.status.conditions.find(
+              (conditon) => conditon.type === 'Ready',
+            );
           let status;
           if (statusType && statusType.status === 'True') {
             status = API_STATUS_READY;
@@ -244,17 +246,17 @@ export function* fetchNodes() {
             status = API_STATUS_UNKNOWN;
           }
 
-          const roleTaintMatched = roleTaintMap.find(item => {
-            const nodeRoles = Object.keys(node.metadata.labels).filter(role =>
+          const roleTaintMatched = roleTaintMap.find((item) => {
+            const nodeRoles = Object.keys(node.metadata.labels).filter((role) =>
               role.includes(ROLE_PREFIX),
             );
 
             return (
               nodeRoles.length === item.roles.length &&
-              nodeRoles.every(role => item.roles.includes(role)) &&
+              nodeRoles.every((role) => item.roles.includes(role)) &&
               (item.taints && node.spec.taints
-                ? node.spec.taints.every(taint =>
-                    item.taints.find(item => item.key === taint.key),
+                ? node.spec.taints.every((taint) =>
+                    item.taints.find((item) => item.key === taint.key),
                   )
                 : item.taints === node.spec.taints)
             );
@@ -286,6 +288,9 @@ export function* fetchNodes() {
             infra: roleTaintMatched && roleTaintMatched.infra,
             roles: rolesLabel.join(' / '),
             deploying: deployingNodes.includes(node.metadata.name),
+            internalIP: node?.status?.addresses?.find(
+              (ip) => ip.type === 'InternalIP',
+            ).address,
           };
         }),
       }),
@@ -316,7 +321,7 @@ export function* createNode({ payload }) {
   };
 
   const roleTaintMatched = roleTaintMap.find(
-    role =>
+    (role) =>
       role.control_plane === payload.control_plane &&
       role.workload_plane === payload.workload_plane &&
       role.infra === payload.infra,
@@ -324,7 +329,7 @@ export function* createNode({ payload }) {
 
   if (roleTaintMatched) {
     body.spec.taints = roleTaintMatched.taints;
-    roleTaintMatched.roles.map(role => (body.metadata.labels[role] = ''));
+    roleTaintMatched.roles.map((role) => (body.metadata.labels[role] = ''));
   }
 
   const result = yield call(ApiK8s.createNode, body);
@@ -355,7 +360,9 @@ export function* createNode({ payload }) {
 }
 
 export function* deployNode({ payload }) {
-  const clusterVersion = yield select(state => state.app.nodes.clusterVersion);
+  const clusterVersion = yield select(
+    (state) => state.app.nodes.clusterVersion,
+  );
   const result = yield call(ApiSalt.deployNode, payload.name, clusterVersion);
   if (result.error) {
     yield put(
@@ -377,8 +384,8 @@ export function* deployNode({ payload }) {
 }
 
 export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
-  const jobs = yield select(state => state.app.salt.jobs);
-  const job = jobs.find(job => job.jid === jid);
+  const jobs = yield select((state) => state.app.salt.jobs);
+  const job = jobs.find((job) => job.jid === jid);
   if (job?.type === 'deploy-node') {
     if (status.success) {
       yield put(
