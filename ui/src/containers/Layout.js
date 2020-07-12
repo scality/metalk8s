@@ -97,19 +97,6 @@ const Layout = (props) => {
       // },
       // need to remove the solutions since it's not working in 2.5 or should be backported
       {
-        label: intl.translate('volumes'),
-        icon: <i className="fas fa-database" />,
-        onClick: () => {
-          history.push('/volumes');
-        },
-        active: useRouteMatch({
-          path: '/volumes',
-          exact: false,
-          strict: true,
-        }),
-      },
-      // need to remove the solutions since it's not working in 2.5 or should be backported
-      {
         label: intl.translate('solutions'),
         icon: <i className="fas fa-th" />,
         onClick: () => {
