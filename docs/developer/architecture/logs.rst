@@ -22,7 +22,7 @@ Browsing the logs is accessible through an API and a UI. The UI should ease
 correlation between logs and health/performance KPIs as well as alerts.
 
 For organisations having their own Log centralization system (like Splunk or
-Elasticsearch), MetalK8s should provide some documentation in order guide the
+Elasticsearch), MetalK8s should provide some documentation to guide the
 customer to deploy and configure its own log collection agent.
 
 The following requirements focus on application logs. Audit logs are not part
@@ -197,6 +197,531 @@ overview page.
 A Grafana dashboard gathering health/performance KPIs, as well as alerts for
 log centralization service is available when deploying/upgrading MetalK8s.
 
+Components
+----------
+
+Our Log Centralization system can be split into several components as follows:
+
+.. uml:: logs-components-diagram.uml
+
+Collector
+~~~~~~~~~
+
+The collector is responsible for processing logs from all the sources
+(files, journal, containers, ...), enriching the logs with metadata (labels)
+coming from parsing/filtering them (e.g. drop record on regexp match), from the
+context (e.g. file path, host) or by querying external sources such as APIs,
+then finally forwarding these logs to one or multiple distributors.
+
+Distributor (Router)
+~~~~~~~~~~~~~~~~~~~~
+
+The distributor is the component that receives incoming streams from the
+collectors, it validates them (e.g. labels format, timestamp), then forwards
+them to the ingester.
+The distributor can also do parsing/filtering on the streams to enrich
+them with metadata (labels), route to a specific ingester or even drop them.
+It can as well do some buffering to avoid nagging the ingester with queries
+or to wait a bit in case the ingester would be unresponsive for a moment.
+
+Ingester (Storage)
+~~~~~~~~~~~~~~~~~~
+
+The ingester serves as a buffer between distributor and storage, because
+writing large chunks of data is more efficient than writing each event
+individually as it arrives.
+As such, a querier may need to ask an ingester about what is in the buffer.
+
+Querier
+~~~~~~~
+
+The querier interprets the queries it receives from clients and then asks the
+ingesters for the corresponding data, then fallback on storage backend if not
+present in memory and returns it to the clients.
+It also takes care of deduplication of data because of the replication.
+
+Design Choices
+--------------
+
+To choose which solution fits best our needs, we did a benchmark of the
+shortlisted collectors to compare their performances, on a 4 K8s nodes
+architecture (3 infra + 1 workload), with Loki as backend.
+
+Our choice for the final design has been greatly motivated by these numbers,
+it represents the global resources consumption for the whole log centralization
+stack (Loki included).
+
+With 10k events/sec, composed of 10 distinct streams:
+
+   +----------------------+------------------+--------------------+
+   |                      | **CPU avg in m** | **RAM avg in MiB** |
+   +----------------------+------------------+--------------------+
+   | promtail             | 975              | 928                |
+   +----------------------+------------------+--------------------+
+   | fluent-bit           | 790              | 830                |
+   +----------------------+------------------+--------------------+
+   | fluent-bit + fluentd | 1311             | 1967               |
+   +----------------------+------------------+--------------------+
+
+With 10k events/sec, composed of 1000 distinct streams:
+
+   +----------------------+------------------+--------------------+
+   |                      | **CPU avg in m** | **RAM avg in MiB** |
+   +----------------------+------------------+--------------------+
+   | promtail             | 1292             | 1925               |
+   +----------------------+------------------+--------------------+
+   | fluent-bit           | 1040             | 834                |
+   +----------------------+------------------+--------------------+
+   | fluent-bit + fluentd | 1447             | 1902               |
+   +----------------------+------------------+--------------------+
+
+We can see that the Fluent Bit + Loki couple has the smallest impact on
+resources, but also that the Fluent Bit + Fluentd + Loki architecture seems
+to offer a better scaling, with the possiblity of keeping less pressure on
+workload nodes (Fluent Bit), relying more on dedicated infra nodes (Fluentd).
+
+.. todo::
+
+   define sizing rules for CPU & RAM based on log streams and rate
+
+Fluent Bit + Loki
+~~~~~~~~~~~~~~~~~
+
+Fluent Bit
+""""""""""
+
+We choose Fluent Bit as the collector because it allows to scrape all the logs
+we need (journal & containers), enriches them with the Kubernetes API and it
+has a very low resources footprint.
+
+Moreover, it supports multiple backend such as Loki, ES, Splunk, etc. at
+the same time, which is a very important point if a user also wants to forward
+the logs to an external log centralization system (e.g. long term archiving).
+
+Check `here <https://docs.fluentbit.io/manual/pipeline/outputs>`__
+for the official list of supported outputs.
+
+Loki
+""""
+
+Loki has been chosen as the distributor, ingester & querier because, like
+Fluent Bit, it has a really small impact on resources and is very cost
+effective regarding storage needs.
+
+It also uses the LogQL syntax for queries, which is pretty close to what
+we already have with Prometheus and PromQL, so it eases the integration
+in our tools.
+
+Rejected Design Choices
+-----------------------
+
+Promtail + Loki
+~~~~~~~~~~~~~~~
+
+Promtail has been rejected because, even if it consumes very few resources,
+it can only integrate with Loki and we need something more versatile, with
+the ability to interact with different distributors.
+
+Fluentd + Loki
+~~~~~~~~~~~~~~
+
+This architecture has been rejected because it means we need 1 Fluentd instance
+per node, which increases a lot the resources consumption compared to other
+solutions.
+
+Fluent Bit + Fluentd + Loki
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We have considered this architecture as the Fluent Bit + Fluentd couple seems
+to be a standard in the industry, but we didn't find any reason of keeping
+Fluentd, apart for its large panel of plugins which we don't really need.
+Fluent Bit alone seems to be sufficient for what we want to achieve and adding
+an extra Fluentd means more resources consumption and add unnecessary
+complexity in the log centralization stack.
+
+Logging Operator
+~~~~~~~~~~~~~~~~
+
+`Logging Operator`_ seemed to be a good candidate for the implementation
+we choose, offering the ability to deploy and configure Fluent Bit and Fluentd,
+but Fluentd is not optional and seems to have a central place as most of the
+parsing/filtering is done by this one, which means a bigger footprint on the
+hardware resources.
+
+.. _Logging Operator: https://github.com/banzaicloud/logging-operator
+
+Logstash + Elasticsearch
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This architecture is probably the most common one, but it has not been taken
+into consideration because we want to focus on having the minimum resources
+consumption and these components can really hog RAM & CPU. Beats could be used
+as the log collector to reduce the impact of Logstash, but Elasticsearch still
+consumes a lot of resources.
+Even if this solution offers a lot of powerful functionalities
+(e.g. distributed storage, full-text indexing), we don't really need them and
+want to focus on the smallest hardware footprint.
+
+Implementation Details
+----------------------
+
+Deployment
+~~~~~~~~~~
+
+All the components will be deployed using Kubernetes manifests through Salt
+inside a ``metalk8s-logging`` Namespace.
+
+Fluent Bit
+""""""""""
+
+Fluent Bit will be deployed as a DaemonSet, because we need one collector on
+each node to be able to collect logs from both the Kubernetes platform, the
+applications that run on top of it and all the system daemons running alongside
+(e.g. Salt minion, Kubelet).
+
+This DaemonSet and Fluent Bit configuration will be handled by the Fluent Bit
+Operator.
+For this, we need to deploy the manifests found
+`here <https://github.com/kubesphere/fluentbit-operator/tree/master/manifests/setup>`__,
+using our Salt Kubernetes renderer.
+
+We will then need to also automatically deploy CRs with Fluent Bit default
+configuration, examples can be found
+`here <https://github.com/kubesphere/fluentbit-operator/tree/master/manifests/logging-stack>`__.
+
+Loki
+""""
+
+Loki has 2 deployment mode, either as microservices (with distributor, ingester
+and querier in distinct pods), either as a monolith.
+We must use the monolithic mode, because we use filesystem as the storage
+backend and microservice mode does not support it.
+
+Loki will be deployed as a ``StatefulSet`` as it needs ``PersistentVolume``
+to write the logs. It will be running only on infra nodes and we need at least
+2 replicas of it (except on a single node platform), to ensure its high
+availability.
+
+As we already did for other components (e.g. Prometheus Operator), the
+manifests for Loki will be generated statically by rendering
+the `loki helm chart`_::
+
+  helm repo add loki https://grafana.github.io/loki/charts
+  helm repo update
+  helm fetch -d charts --untar loki/loki
+  ./charts/render.py loki --namespace metalk8s-logging \
+    charts/loki.yaml charts/loki/ \
+    > salt/metalk8s/addons/loki/deployed/charts.sls
+
+.. _loki helm chart: https://github.com/grafana/loki/tree/master/production/helm
+
+Loki Storage
+____________
+
+Since we're using filesystem to store Loki's data, we have basically 2 ways
+for having multiple Loki instances running at the same time, with the same
+set of data.
+
+Either we do like Prometheus and we store everything on every instance of
+Loki, but it means we raise the storage, RAM and CPU needs for each additionnal
+instance, either we use a `new experimental feature`_ from Loki 1.5.0 where
+Loki ingesters use a hash ring and talk between them to route the queries to
+the right one. This approach needs an external KV store to work such as
+etcd or Consul.
+
+We choose to use the first approach as the second is not production ready
+and since we plan to only do short term retention on Loki, the impact on
+storage will not be that much important.
+Moreover, it eases the deployment and maintenance since there is not an
+extra component.
+
+.. _new experimental feature: https://github.com/grafana/loki/blob/master/docs/operations/storage/filesystem.md#new-and-very-experimental-in-150-horizontal-scaling-of-the-filesystem-store
+
+.. todo::
+
+  define loki storage sizing depending on retention, ingestion rate,
+  average size of logs, number of streams, ...
+
+Configuration
+~~~~~~~~~~~~~
+
+Fluent Bit
+""""""""""
+
+Fluent Bit needs to be configured to scrape and handle properly journal and
+containers logs by default.
+
+For containers logs, we want to add the following labels:
+
+ - node: the node it comes from
+ - namespace: the namespace the pod is running in
+ - instance: the name of the pod
+ - container: the name of the container
+
+For journal we want these labels:
+
+ - node: the node it comes from
+ - unit: the name of the unit generating these logs
+
+This configuration will also be customizable by the user to be able to
+add new routes (Output) to push the log streams to.
+
+This configuration will be done through various CRs provided by the Fluent Bit
+Operator:
+
+ - FluentBit: Defines Fluent Bit instances and its associated config
+ - FluentBitConfig: Select input/filter/output plugins and generates the final
+   config into a Secret
+ - Input: Defines input config sections
+ - Filter: Defines filter config sections
+ - Output: Defines output config sections
+
+For example, if a user wants to forward all Kubernetes logs to an external log
+centralization system (e.g. Elasticsearch), he will need to define an
+``Output`` CR as follows:
+
+.. code-block:: yaml
+
+  kind: Output
+  metadata:
+    name: my-output-to-external-es
+    namespace: my-namespace
+  spec:
+    match: kube.*
+    es:
+      host: 10.0.0.1
+      port: 9200
+
+More details can be found on `Fluent Bit Operator repository`_ and manifest
+samples are
+`here <https://github.com/kubesphere/fluentbit-operator/tree/master/manifests/logging-stack>`_.
+
+.. _Fluent Bit Operator repository: https://github.com/kubesphere/fluentbit-operator
+
+Loki
+""""
+
+Loki's configuration is stored as a Secret.
+we need to expose few parameters to the user for customization
+(e.g. retention).
+Since we do not have Operator and CRs for Loki, we will use the CSC mechanism
+to provide the interface for customization, with a ConfigMap
+``metalk8s-loki-config`` in the ``metalk8s-logging`` Namespace.
+CSC is not as powerful as an Operator with CRs (no watch and reconciliation on
+resources and need to run Salt state manually), but the Loki configuration will
+not change that much, probably during deployment and to tune few parameters
+afterwards, so it does not worth to invest on an Operator.
+
+The CSC ``ConfigMap`` will look like the followings:
+
+.. code-block:: yaml
+
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: metalk8s-loki-config
+    namespace: metalk8s-logging
+  data:
+    config.yaml: |-
+      apiVersion: addons.metalk8s.scality.com
+      kind: LokiConfig
+      spec:
+        deployment:
+          replicas: 1
+        config:
+          auth_enabled: false
+          chunk_store_config:
+            max_look_back_period: 168h
+          ingester:
+            chunk_block_size: 262144
+            chunk_idle_period: 3m
+            chunk_retain_period: 1m
+            [...]
+
+With default values fetched from a YAML file as it is already done for Dex,
+Alertmanager and Prometheus.
+
+Monitoring
+~~~~~~~~~~
+
+Prometheus
+""""""""""
+
+To monitor every services in our log centralization stack, we will need to
+deploy ``ServiceMonitor`` object and expose the ``/metrics`` route of all
+these components.
+It will allow Prometheus Operator to configure Prometheus and automatically
+start scraping these services.
+For Loki, this can be achieved by adding the following configuration in its
+helm chart ``charts/loki.yaml`` values:
+
+.. code-block:: yaml
+
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: "prometheus-operator"
+
+For Fluent Bit, we will need to define a ``ServiceMonitor`` object:
+
+.. code-block:: yaml
+
+  apiVersion: monitoring.coreos.com/v1
+  kind: ServiceMonitor
+  metadata:
+    labels:
+      app: fluent-bit
+      release: prometheus-operator
+    name: fluent-bit
+    namespace: metalk8s-logging
+  spec:
+    endpoints:
+    - path: /api/v1/metrics/prometheus
+      port: http-metrics
+    namespaceSelector:
+      matchNames:
+      - metalk8s-logging
+    selector:
+      matchLabels:
+        app: fluent-bit
+
+We also need to define alert rules based on metrics exposed by these services.
+This is done deploying new ``PrometheusRules`` object in ``metalk8s-logging``
+Namespace:
+
+.. code-block:: yaml
+
+  apiVersion: monitoring.coreos.com/v1
+  kind: PrometheusRule
+  metadata:
+    labels:
+      release: prometheus-operator
+    name: loki.rules
+    namespace: metalk8s-logging
+  spec:
+    groups:
+    - name: loki.rules
+      rules: <RULES DEFINITION>
+
+There is some recording and alert rules defined in the `Loki repository`_ that
+could be used as a base, then we could enrich these rules later when we will
+have better operational knowledge.
+
+.. _Loki repository: https://github.com/grafana/loki/tree/master/production/loki-mixin
+
+Grafana
+"""""""
+
+To be able to query logs from Loki, we need to add a Grafana datasource,
+this is done adding a ConfigMap ``loki-grafana-datasource`` in
+``metalk8s-monitoring`` Namespace as follows:
+
+.. code-block:: yaml
+
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: loki-grafana-datasource
+    namespace: metalk8s-monitoring
+    labels:
+      grafana_datasource: "1"
+  data:
+    loki-datasource.yaml: |-
+      apiVersion: 1
+      datasources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki.loki.svc.cluster.local:3100
+        version: 1
+
+To display the logs we also need a dashboard, adding a ConfigMap
+``loki-logs-dashboard`` in Namespace ``metalk8s-monitoring``:
+
+.. code-block:: yaml
+
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: loki-logs-dashboard
+    namespace: metalk8s-monitoring
+    labels:
+      grafana_dashboard: "1"
+  data:
+    loki-logs.json: <DASHBOARD DEFINITION>
+
+For the dashboard we will use a view with a simple log panel and variables
+representing labels to filter on.
+Since journal and kubernetes logs will not have the same labels, we could
+either have 2 distinct dashboards or 2 log panels in the same.
+An example of what we want is `Loki dashboard`_.
+
+.. _Loki dashboard: https://github.com/grafana/loki/blob/master/production/loki-mixin/dashboard-loki-logs.json
+
+.. note::
+
+  The ``grafana_datasource: "1"`` and ``grafana_dashboard: "1"`` labels are
+  what is used by the Prometheus Operator to retrieve datasource and dashboard
+  for Grafana, resources must be deployed in `metalk8s-monitoring` namespace.
+
+Loki Volume Purge
+~~~~~~~~~~~~~~~~~
+
+Even with a max retention period, the logs could grow faster than what was
+expected and fill up the volume.
+Since there is no retention based on size in Loki yet, we need to add some
+specific monitoring (with prediction on volume usage) and alerting to ensure
+that an administrator will be warned if such a case would happen.
+The alert message should be clear and provide an URL to a run book to help
+the administrator resolving the issue.
+
+To fix this issue, the administrator should purge oldest log chunk files
+from Loki volume, which can be achieved by connecting to the pod and manually
+removing them.
+If the growth of logs is not something transient, the administrator should
+also be advised to lower the retention period or replace the Loki volume
+by a bigger one.
+
+.. todo::
+
+   Define what should be done for the purge, is it automatic (side-car pod)
+   or is it only alerts with manual operations?
+   If we go with an automatic purge, we should at least expose few parameters
+   for the user to be able to customize this mechanism:
+     - whether this mechanism is activated or not (defaulted to yes or no?)
+     - % of space used for the purge to be triggered (90%?)
+     - minimum days of retention (even if we're above the threshold) to ensure
+       we're not removing everything in case of massive amount of logs
+   We also need to trigger alerts everytime this purge is activated to be sure
+   that the operator is aware that Loki volume is undersized.
+
+Iterations
+~~~~~~~~~~
+
+Iteration 1
+"""""""""""
+
+The goal is to have a working log centralization system, with logs accessible
+from Grafana:
+
+* Deploy Fluent Bit and Loki
+* Customization of Loki with CSC mechanisms
+* Document customization of Loki through CSC
+* Deploy Grafana datasource & dashboard
+* Document the log centralization system (sizing, configuration, ...)
+* Simple pre-merge test to ensure the default log pipeline is working
+
+Iteration 2
+"""""""""""
+
+* Deployment of Fluent Bit with Fluent Bit Operator
+* Document customization of Fluent Bit through CRs
+* Define Prometheus record and alert rules
+* Deploy Loki volumes purge mechanism (TBD)
+* Display log centralization system status on the MetalK8s UI
+* Post-merge tests to ensure customization is working (replicas, custom
+  parser/filter rules, ...)
+
 Documentation
 -------------
 
@@ -209,7 +734,19 @@ the workload properties.
 The Post Installation page is updated to indicate that persistent storage is
 needed for log centralization service.
 
-A new page should be added to explains how to operate the service.
+A new page should be added to explain how to operate the service and how to
+forward logs to an external log centralization system.
 
 The Cluster Monitoring page is updated to describe the log centralization
 service.
+
+Test Plan
+---------
+
+Log centralization system will be deployed by default with MetalK8s, so its
+deployment will automatically be tested during pre-merge integration tests.
+However, we still need to develop specific pytest-bdd test scenario to ensure
+that the default logging pipeline is fully functionnal, and run it during
+these pre-merge tests.
+We will also add more complex tests in post-merge such as configuring
+specific parsers/filters, scaling the system, etc.
