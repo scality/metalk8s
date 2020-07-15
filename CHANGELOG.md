@@ -13,6 +13,10 @@
 
 ## Release 2.5.2 (in development)
 
+### Enhancements
+- [#2572](https://github.com/scality/metalk8s/issues/2572) - Bump CoreDNS
+version to 1.6.2 (PR [#2575](https://github.com/scality/metalk8s/pull/2575))
+
 ## Release 2.5.1
 
 ### Breaking changes
