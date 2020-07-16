@@ -171,37 +171,37 @@ class Volume(object):
         self._volume = volume
 
     @abc.abstractproperty
-    def exists(self):
+    def exists(self):  # pragma: no cover
         """Does the backing storage device exists?"""
         return
 
     @abc.abstractmethod
-    def create(self):
+    def create(self):  # pragma: no cover
         """Create the backing storage device."""
         return
 
     @abc.abstractproperty
-    def is_provisioned(self):
+    def is_provisioned(self):  # pragma: no cover
         """Check if the backing storage device is provisioned."""
         return
 
     @abc.abstractmethod
-    def provision(self):
+    def provision(self):  # pragma: no cover
         """Provision the backing storage device."""
         return
 
     @abc.abstractproperty
-    def is_cleaned_up(self):
+    def is_cleaned_up(self):  # pragma: no cover
         """Check if the backing storage device is cleaned up."""
         return
 
     @abc.abstractmethod
-    def clean_up(self):
+    def clean_up(self):  # pragma: no cover
         """Clean up the backing storage device."""
         return
 
     @abc.abstractproperty
-    def path(self):
+    def path(self):  # pragma: no cover
         """Path to the backing device."""
         return
 
