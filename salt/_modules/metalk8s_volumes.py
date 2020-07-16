@@ -431,9 +431,9 @@ class RawBlockDevice(Volume):
     def path(self):
         return self.get('spec.rawBlockDevice.devicePath')
 
-    def format(self, force=False):
+    def prepare(self, force=False):
         # We format an entire device, not just a partition: we need force=True.
-        super(RawBlockDevice, self).format(force=True)
+        super(RawBlockDevice, self).prepare(force=True)
 
     @property
     def is_cleaned_up(self):
