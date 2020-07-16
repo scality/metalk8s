@@ -1,0 +1,230 @@
+# test cases for `list_active` function
+list_active:
+  # 0. one solution - active - single version
+  - configmap:
+      data:
+        my-solution: '[
+          {"version": "1.0.0", "active": true}
+        ]'
+    result:
+      my-solution: "1.0.0"
+  # 1. two solutions - one active, one inactive - multiple versions
+  - configmap:
+      data:
+        my-solution: '[
+          {"version": "1.0.0", "active": false},
+          {"version": "2.0.0", "active": true}
+        ]'
+        my-other-solution: '[
+          {"version": "1.1.0", "active": false}
+        ]'
+    result:
+      my-solution: "2.0.0"
+  # 2. two solutions - both actives - multiple versions
+  - configmap:
+      data:
+        my-solution: '[
+          {"version": "1.0.0", "active": false},
+          {"version": "2.0.0", "active": true}
+        ]'
+        my-other-solution: '[
+          {"version": "1.1.0", "active": true},
+          {"version": "1.2.0", "active": false}
+        ]'
+    result:
+      my-solution: "2.0.0"
+      my-other-solution: "1.1.0"
+  # 3. two solutions - both inactives - single version
+  - configmap:
+      data:
+        my-solution: '[
+          {"version": "1.0.0", "active": false}
+        ]'
+        my-other-solution: '[
+          {"version": "1.1.0", "active": false}
+        ]'
+    result: {}
+  # 4. no solution
+  - configmap:
+      data: {}
+    result: {}
+  # 5. no solution configmap
+  - configmap: null
+    result: {}
+
+# test cases for `list_environments` function
+list_environments:
+  # 0. one environment - single namespace - no solution
+  - namespaces:
+      - metadata:
+          name: my-environment
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my environment description
+    result:
+      my-environment:
+        name: my-environment
+        description: my environment description
+        namespaces:
+          my-environment:
+            config: null
+  # 1. one environment - single namespace (environment != namespace) - no solution
+  - namespaces:
+      - metadata:
+          name: my-namespace
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my environment description
+    result:
+      my-environment:
+        name: my-environment
+        description: my environment description
+        namespaces:
+          my-namespace:
+            config: null
+  # 2. one environment - single namespace - with solution
+  - namespaces:
+      - metadata:
+          name: my-environment
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my environment description
+    configmaps:
+      - namespace: my-environment
+        data:
+          my-solution: 1.0.0
+    result:
+      my-environment:
+        name: my-environment
+        description: my environment description
+        namespaces:
+          my-environment:
+            config:
+              my-solution: 1.0.0
+  # 3. one environment - single namespace - no solution - no description
+  - namespaces:
+      - metadata:
+          name: my-environment
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+    result:
+      my-environment:
+        name: my-environment
+        namespaces:
+          my-environment:
+            config: null
+  # 4. one environment - multiple namespaces - no solution - different env descriptions
+  - namespaces:
+      - metadata:
+          name: my-namespace
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my environment description
+      - metadata:
+          name: my-other-namespace
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my other environment description
+    result:
+      my-environment:
+        name: my-environment
+        description: my environment description
+        namespaces:
+          my-namespace:
+            config: null
+          my-other-namespace:
+            config: null
+  # 5. two environments - single namespace - with solutions
+  - namespaces:
+      - metadata:
+          name: my-environment
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my environment description
+      - metadata:
+          name: my-other-environment
+          labels:
+            solutions.metalk8s.scality.com/environment: my-other-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my other environment description
+    configmaps:
+      - namespace: my-environment
+        data:
+          my-solution: 1.1.0
+      - namespace: my-other-environment
+        data:
+          my-solution: 1.0.0
+    result:
+      my-environment:
+        name: my-environment
+        description: my environment description
+        namespaces:
+          my-environment:
+            config:
+              my-solution: 1.1.0
+      my-other-environment:
+        name: my-other-environment
+        description: my other environment description
+        namespaces:
+          my-other-environment:
+            config:
+              my-solution: 1.0.0
+  # 6. two environments - multiple namespaces - with multiple solutions
+  - namespaces:
+      - metadata:
+          name: my-environment-1
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my environment description
+      - metadata:
+          name: my-environment-2
+          labels:
+            solutions.metalk8s.scality.com/environment: my-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my environment description
+      - metadata:
+          name: my-other-environment
+          labels:
+            solutions.metalk8s.scality.com/environment: my-other-environment
+          annotations:
+            solutions.metalk8s.scality.com/environment-description: my other environment description
+    configmaps:
+      - namespace: my-environment-1
+        data:
+          my-solution: 1.0.0
+          my-other-solution: 2.1.0
+      - namespace: my-environment-2
+        data:
+          my-new-solution: 0.0.1
+      - namespace: my-other-environment
+        data:
+          my-solution: 3.0.0
+    result:
+      my-environment:
+        name: my-environment
+        description: my environment description
+        namespaces:
+          my-environment-1:
+            config:
+              my-solution: 1.0.0
+              my-other-solution: 2.1.0
+          my-environment-2:
+            config:
+              my-new-solution: 0.0.1
+      my-other-environment:
+        name: my-other-environment
+        description: my other environment description
+        namespaces:
+          my-other-environment:
+            config:
+              my-solution: 3.0.0
+  # 7. no environment
+  - namespaces: []
+    result: {}
