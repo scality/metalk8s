@@ -199,12 +199,12 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
 
     @parameterized.expand(
         param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["is_formatted"]
+        for test_case in YAML_TESTS_CASES["is_prepared"]
     )
-    def test_is_formatted(self, name, result, raises=False,
-                          uuid_return=None, pillar_volumes=None):
+    def test_is_prepared(self, name, result, raises=False,
+                         uuid_return=None, pillar_volumes=None):
         """
-        Tests the return of `is_formatted` function
+        Tests the return of `is_prepared` function
         """
         pillar_dict = {
             'metalk8s': {
@@ -227,24 +227,24 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 self.assertRaisesRegexp(
                     Exception,
                     result,
-                    metalk8s_volumes.is_formatted,
+                    metalk8s_volumes.is_prepared,
                     name
                 )
             else:
                 self.assertEqual(
-                    metalk8s_volumes.is_formatted(name),
+                    metalk8s_volumes.is_prepared(name),
                     result
                 )
 
     @parameterized.expand(
         param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["format"]
+        for test_case in YAML_TESTS_CASES["prepare"]
     )
-    def test_format(self, name, raise_msg=False,
-                    current_fstype=None, has_partition=False,
-                    pillar_volumes=None, mkfs_output=None):
+    def test_prepare(self, name, raise_msg=False,
+                     current_fstype=None, has_partition=False,
+                     pillar_volumes=None, mkfs_output=None):
         """
-        Tests the return of `format` function
+        Tests the return of `prepare` function
         """
         pillar_dict = {
             'metalk8s': {
@@ -285,12 +285,12 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 self.assertRaisesRegexp(
                     Exception,
                     raise_msg,
-                    metalk8s_volumes.format,
+                    metalk8s_volumes.prepare,
                     name
                 )
             else:
                 # This function does not return anything
-                metalk8s_volumes.format(name)
+                metalk8s_volumes.prepare(name)
 
     @parameterized.expand(
         param.explicit(kwargs=test_case)

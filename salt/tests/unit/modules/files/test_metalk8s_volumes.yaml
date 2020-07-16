@@ -335,28 +335,28 @@ provision:
     pillar_volumes: *volumes_details
     raise_msg: volume unknown-volume not found in pillar
 
-is_formatted:
+is_prepared:
   ## SPARSE volume
-  # sparse volume already formatted - right UUID
+  # sparse volume already prepared - right UUID
   - name: my-sparse-volume
     pillar_volumes: *volumes_details
     uuid_return: f1d78810-3787-4ca4-b712-50a269e42560
     result: True
 
-  # sparse volume already formatted - wrong UUID
+  # sparse volume already prepared - wrong UUID
   - name: my-sparse-volume
     pillar_volumes: *volumes_details
     uuid_return: e1d78810-3787-4ca4-b712-50a269e42560
     result: False
 
   ## RAW BLOCK DEVICE volume
-  # raw block device volume already formatted - right UUID
+  # raw block device volume already prepared - right UUID
   - name: my-raw-block-device-volume
     pillar_volumes: *volumes_details
     uuid_return: 9474cda7-0dbe-40fc-9842-3cb0404a725a
     result: True
 
-  # raw block device volume already formatted - wrong UUID
+  # raw block device volume already prepared - wrong UUID
   - name: my-raw-block-device-volume
     pillar_volumes: *volumes_details
     uuid_return: 8474cda7-0dbe-40fc-9842-3cb0404a725a
@@ -369,9 +369,9 @@ is_formatted:
     raises: True
     result: volume unknown-volume not found in pillar
 
-format:
+prepare:
   ## SPARSE volume
-  # format the sparse volume in ext4
+  # prepare the sparse volume in ext4
   - name: my-sparse-volume
     pillar_volumes: *volumes_details
     mkfs_output: |
@@ -394,7 +394,7 @@ format:
     raise_msg: "backing device `/var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560` contains a partition table"
 
   ## RAW BLOCK DEVICE volume
-  # format the raw block device volume in ext4
+  # prepare the raw block device volume in ext4
   - name: my-raw-block-device-volume
     pillar_volumes: *volumes_details
     mkfs_output: |
@@ -404,7 +404,7 @@ format:
     pillar_volumes: *volumes_details
     raise_msg: "error while trying to run `mkfs.ext4 -F .* /dev/sda1`: An error has occurred"
 
-  # format the raw block device volume in xfs
+  # prepare the raw block device volume in xfs
   - name: my-xfs-volume
     pillar_volumes: *volumes_details
     mkfs_output: |
