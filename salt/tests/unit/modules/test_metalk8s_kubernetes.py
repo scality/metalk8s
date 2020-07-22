@@ -63,6 +63,26 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
 
             return obj
 
+        salt_dict = {
+            'metalk8s_kubernetes.get_kubeconfig': MagicMock(
+                return_value=('/my/kube/config', 'my-context')
+            )
+        }
+
+        # We need an object for `__salt__` since in `metalk8s_kubernetes`
+        # we use attribute to call `format_slots` function
+        salt_obj = MagicMock()
+
+        salt_obj.__getitem__.side_effect = salt_dict.__getitem__
+        salt_obj.__setitem__.side_effect = salt_dict.__setitem__
+        salt_obj.__iter__.side_effect = salt_dict.__iter__
+        salt_obj.copy.side_effect = salt_dict.copy
+        salt_obj.update.side_effect = salt_dict.update
+        salt_obj.clear.side_effect = salt_dict.clear
+
+        # Consider we have no slots in these tests
+        salt_obj.metalk8s.format_slots.side_effect = lambda manifest: manifest
+
         return {
             '__utils__': {
                 'metalk8s_kubernetes.get_kind_info': MagicMock(),
@@ -70,11 +90,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                     side_effect=_manifest_to_object_mock
                 ),
             },
-            '__salt__': {
-                'metalk8s_kubernetes.get_kubeconfig': MagicMock(
-                    return_value=('/my/kube/config', 'my-context')
-                )
-            }
+            '__salt__': salt_obj
         }
 
     def test_virtual_success(self):
