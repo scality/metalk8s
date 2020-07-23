@@ -106,3 +106,26 @@ def get_ip_from_cidrs(cidrs, current_ip=None):
         )
 
     return first_ip
+
+
+def get_mtu_from_ip(ip):
+    '''
+    Return the MTU of the first interface with the specified IP
+    '''
+    ifaces = __salt__['network.ifacestartswith'](ip)
+
+    if not ifaces:
+        raise CommandExecutionError(
+            'Unable to get interface for "{}"'.format(ip)
+        )
+
+    iface = ifaces[0]
+
+    if len(ifaces) > 1:
+        log.warning(
+            'Several interfaces match the IP "%s", %s will be used: %s',
+            ip,
+            iface, ', '.join(ifaces)
+        )
+
+    return int(__salt__['file.read']('/sys/class/net/{}/mtu'.format(iface)))
