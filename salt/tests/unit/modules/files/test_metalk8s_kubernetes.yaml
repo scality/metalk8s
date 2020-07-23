@@ -1,0 +1,519 @@
+# Tests that can be run by different `metalk8s_kubernetes` functions
+common_tests:
+  # Error missing args
+  - raises: True
+    result: 'Must provide one of .* to .* object'
+
+  # Error invalid manifest
+  - manifest:
+      invalid: manifest
+      content: wrong
+      a: b
+    info_scope: null
+    raises: True
+    result: "Invalid manifest: An error has occurred"
+
+  # Error giving manifest and name (manifest file path)
+  - name: /path/to/my/manifest.yaml
+    manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    raises: True
+    result: 'Cannot use both "manifest" and "name".'
+
+  # Error reading manifest file
+  - name: /invalid/path/manifest.yaml
+    manifest_file_content: null
+    raises: True
+    result: 'Failed to read file "/invalid/path/manifest.yaml": An error has occurred'
+
+  # Invalid YAML manifest file
+  - name: /path/to/my/invalid-manifest.yaml
+    manifest_file_content: False
+    raises: True
+    result: 'Invalid YAML in file "/path/to/my/invalid-manifest.yaml": An error has occurred'
+
+create_object:
+  # Simple manifest without labels
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    result: &simple_node_create_result
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+
+  # Simple manifest with labels
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+        labels:
+          my.first.label: First
+          my.second.label: Second
+    result:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+        labels:
+          my.first.label: First
+          my.second.label: Second
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+
+  # Simple manifest with saltenv (matching version)
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    saltenv: metalk8s-2.5.0
+    result:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+        labels:
+          metalk8s.scality.com/version: 2.5.0
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+
+  # Simple manifest with saltenv (NOT matching version)
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    saltenv: my-custom-salt-env
+    result: *simple_node_create_result
+
+  # Simple manifest using manifest file
+  - name: /path/to/my/manifest.yaml
+    manifest_file_content:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    result: *simple_node_create_result
+
+  # Error when creating object
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    api_status_code: 0
+    raises: True
+    result: |
+      Failed to create object: \(0\)
+      Reason: An error has occurred
+
+delete_object:
+  # Simple Pod deletion (using manifest) - No namespace
+  - manifest:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: my_pod
+    called_with:
+      name: my_pod
+      namespace: null
+    result: "<my_pod deleted object dict>"
+
+  # Simple Pod deletion (using manifest)
+  - manifest:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: my_pod
+        namespace: my-custom-namespace
+    called_with:
+      name: my_pod
+      namespace: my-custom-namespace
+    result: "<my_pod deleted object dict>"
+
+  # Simple Pod deletion (no manifest) - No namespace
+  - apiVersion: v1
+    kind: Pod
+    name: my_pod
+    called_with:
+      name: my_pod
+      namespace: default
+    result: "<my_pod deleted object dict>"
+
+  # Simple Pod deletion (no manifest)
+  - apiVersion: v1
+    kind: Pod
+    name: my_pod
+    namespace: my-custom-namespace
+    called_with:
+      name: my_pod
+      namespace: my-custom-namespace
+    result: "<my_pod deleted object dict>"
+
+  # Simple already deleted Pod deletion (raise 404, expected)
+  - apiVersion: v1
+    kind: Pod
+    name: my_already_deleted_pod
+    api_status_code: 404
+    called_with:
+      name: my_already_deleted_pod
+      namespace: default
+    result: null
+
+  # Error when deleting object
+  - apiVersion: v1
+    kind: Pod
+    name: my_pod
+    api_status_code: 0
+    raises: True
+    result: |
+      Failed to delete object: \(0\)
+      Reason: An error has occurred
+
+replace_object:
+  # Simple replace object (same behavior as create)
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    called_with:
+      name: my_node
+    result: *simple_node_create_result
+
+  # Simple replace object - with old_object
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    old_object: &simple_old_node_object
+      # Old object is considered as k8s object so snake case
+      api_version: v1
+      kind: Node
+      metadata:
+        name: my_node
+        resource_version: "123456"
+    result: &simple_node_replace_result
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+
+  # Simple replace object - with old_object (resourceVersion overrided)
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+        resourceVersion: "987654"
+    old_object: *simple_old_node_object
+    result: *simple_node_replace_result
+
+  # Replace custom object - with old_object
+  - manifest:
+      apiVersion: custom/v1
+      kind: MyCustomObject
+      metadata:
+        name: my_object
+    old_object:
+      # For custom object we keep YAML style as k8s object do not exists in
+      # python-kubernetes
+      apiVersion: custom/v1
+      kind: MyCustomObject
+      metadata:
+        name: my_object
+        resourceVersion: "123456"
+    result:
+      apiVersion: custom/v1
+      kind: MyCustomObject
+      metadata:
+        name: my_object
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+
+    # Replace service object (special case we need to keep cluster_ip)
+  - manifest:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+    old_object:
+      # Old object is considered as k8s object so snake case
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+        resource_version: "123456"
+      spec:
+        cluster_ip: "10.11.12.13"
+    result:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+      spec:
+        clusterIP: "10.11.12.13"
+
+  # Error when replacing object
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    api_status_code: 0
+    raises: True
+    result: |
+      Failed to replace object: \(0\)
+      Reason: An error has occurred
+
+get_object:
+  # Simple Get Pod (using manifest) - No namespace
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    called_with:
+      name: my_node
+      namespace: null
+    result: "<my_node object dict>"
+
+  # Simple Get Pod (using manifest)
+  - manifest:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: my_pod
+        namespace: my-custom-namespace
+    called_with:
+      name: my_pod
+      namespace: my-custom-namespace
+    result: "<my_pod object dict>"
+
+  # Simple Get Pod  (no manifest) - No namespace
+  - apiVersion: v1
+    kind: Pod
+    name: my_pod
+    called_with:
+      name: my_pod
+      namespace: default
+    result: "<my_pod object dict>"
+
+  # Simple Pod deletion (no manifest)
+  - apiVersion: v1
+    kind: Pod
+    name: my_pod
+    namespace: my-custom-namespace
+    called_with:
+      name: my_pod
+      namespace: my-custom-namespace
+    result: "<my_pod object dict>"
+
+  # Simple Get unexisting Pod (raise 404, expected)
+  - apiVersion: v1
+    kind: Pod
+    name: my_absent_pod
+    api_status_code: 404
+    called_with:
+      name: my_absent_pod
+      namespace: default
+    result: null
+
+  # Error when retrieving object
+  - apiVersion: v1
+    kind: Pod
+    name: my_pod
+    api_status_code: 0
+    raises: True
+    result: |
+      Failed to retrieve object: \(0\)
+      Reason: An error has occurred
+
+update_object:
+  # Simple Node update (using manifest)
+  - manifest:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+        labels:
+          my.new.label: my-new-label
+    initial_obj:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    called_with: &simple_node_update_called_with
+      name: my_node
+      body:
+        metadata:
+          labels:
+            my.new.label: my-new-label
+    result: &simple_node_update_result
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+        labels:
+          my.new.label: my-new-label
+
+  # Simple Node update
+  - apiVersion: v1
+    kind: Node
+    name: my_node
+    patch:
+      metadata:
+        labels:
+          my.new.label: my-new-label
+    initial_obj:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    called_with: *simple_node_update_called_with
+    result: *simple_node_update_result
+
+  # Error patch arg missing
+  - apiVersion: v1
+    kind: Node
+    name: my_node
+    raises: True
+    result: 'Must provide one of "manifest" or "name" \(path to a file\) or "name" and "kind" and "apiVersion" and "patch" to update object.'
+
+  # Error when updating object
+  - apiVersion: v1
+    kind: Node
+    name: my_node
+    patch:
+      metadata:
+        labels:
+          my.new.label: my-new-label
+    raises: True
+    result: |
+      Failed to update object: \(0\)
+      Reason: An error has occurred
+
+list_objects:
+  # Simple list Pod
+  - apiVersion: v1
+    kind: Pod
+    called_with:
+      namespace: default
+    result: &list_object_result
+      - "<my first object dict>"
+      - "<my second object dict>"
+
+  # Simple list Node
+  - apiVersion: v1
+    kind: Node
+    info_scope: cluster
+    result: *list_object_result
+
+  # List Pod for a specific namespace
+  - apiVersion: v1
+    kind: Pod
+    namespace: my-custom-namespace
+    called_with:
+      namespace: my-custom-namespace
+    result: *list_object_result
+
+  # List Pod for all namespace
+  - apiVersion: v1
+    kind: Pod
+    all_namespaces: True
+    called_with:
+      all_namespaces: True
+    result: *list_object_result
+
+  # List with field_selector
+  - apiVersion: v1
+    kind: Pod
+    namespace: my-custom-namespace
+    field_selector: "spec.nodeName=my_node"
+    called_with:
+      namespace: my-custom-namespace
+      field_selector: "spec.nodeName=my_node"
+    result: *list_object_result
+
+  # List with label_selector
+  - apiVersion: v1
+    kind: Pod
+    label_selector: "my.simple.label=abcd"
+    called_with:
+      label_selector: "my.simple.label=abcd"
+    result: *list_object_result
+
+  # List all_namespace with field_selector and label_selector
+  - apiVersion: v1
+    kind: Pod
+    all_namespaces: True
+    field_selector: "spec.nodeName=my_node"
+    label_selector: "my.simple.label=abcd"
+    called_with:
+      all_namespaces: True
+      field_selector: "spec.nodeName=my_node"
+      label_selector: "my.simple.label=abcd"
+    result: *list_object_result
+
+  # Invalid object listing
+  - apiVersion: v1
+    kind: MyInvalidKind
+    info_scope: null
+    raises: True
+    result: 'Unsupported resource "v1/MyInvalidKind": An error has occurred'
+
+  # Error when listing namespaced resource (default namespace)
+  - apiVersion: v1
+    kind: Pod
+    api_status_code: 0
+    raises: True
+    result: |-
+      Failed to list resources "v1/Pod" in namespace "default": \(0\)
+      Reason: An error has occurred
+
+  # Error when listing namespaced resource (specified namespace)
+  - apiVersion: v1
+    kind: Pod
+    namespace: my-custom-namespace
+    api_status_code: 0
+    raises: True
+    result: |-
+      Failed to list resources "v1/Pod" in namespace "my-custom-namespace": \(0\)
+      Reason: An error has occurred
+
+  # Error when listing cluster resource
+  - apiVersion: v1
+    kind: Node
+    info_scope: cluster
+    api_status_code: 0
+    raises: True
+    result: |-
+      Failed to list resources "v1/Node": \(0\)
+      Reason: An error has occurred
