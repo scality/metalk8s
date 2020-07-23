@@ -23,7 +23,8 @@ data:
   calico_backend: "bird"
 
   # Configure the MTU to use
-  veth_mtu: "1440"
+  # NOTE: MTU for calico = workload MTU - 20 (for IPinIP header)
+  veth_mtu: "{{ networks.workload_plane.mtu - 20 }}"
 
   # The CNI network configuration to install on each node.  The special
   # values in this config will be automatically populated.

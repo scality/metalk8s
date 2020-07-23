@@ -15,6 +15,7 @@ EXPECTED_APIVERSIONS = [
 
 DEFAULT_POD_NETWORK = '10.233.0.0/16'
 DEFAULT_SERVICE_NETWORK = '10.96.0.0/12'
+DEFAULT_MTU = 1460
 
 
 def _load_config(path):
@@ -100,6 +101,9 @@ def _load_networks(config_data):
 
     if errors:
         return __utils__['pillar_utils.errors_to_dict'](errors)
+
+    if 'mtu' not in networks_data['workloadPlane']:
+        networks_data['workloadPlane']['mtu'] = DEFAULT_MTU
 
     return {
         'control_plane': networks_data['controlPlane'],

@@ -1,7 +1,15 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
+{%- from "metalk8s/map.jinja" import networks with context %}
 
 {%- set kubernetes_service_ip = salt.metalk8s_network.get_kubernetes_service_ip() %}
+
+{#- Check that workload MTU configured is smaller than the local workload interface one #}
+{%- set workload_local_mtu = salt.metalk8s_network.get_mtu_from_ip(grains.metalk8s.workload_plane_ip) %}
+{%- if networks.workload_plane.mtu > workload_local_mtu %}
+  {{ raise('Trying to configure CNI with ' ~ networks.workload_plane.mtu
+           ~ ' MTU but local workload interface MTU is smaller: ' ~ workload_local_mtu) }}
+{%- endif %}
 
 include:
   - metalk8s.internal.m2crypto
@@ -36,7 +44,8 @@ Create CNI calico configuration file:
             log_level: "info"
             datastore_type: "kubernetes"
             nodename: {{ grains.id }}
-            mtu: 1440
+            # NOTE: MTU for calico = workload MTU - 20 (for IPinIP header)
+            mtu: {{ networks.workload_plane.mtu - 20 }}
             ipam:
               type: "calico-ipam"
             policy:
