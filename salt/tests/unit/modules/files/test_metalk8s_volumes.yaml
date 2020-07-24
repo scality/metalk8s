@@ -1,0 +1,499 @@
+_volumes_details: &volumes_details
+  my-sparse-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"name":"my-sparse-volume"},"spec":{"nodeName":"bootstrap","sparseLoopDevice":{"size":"1Gi"},"storageClassName":"metalk8s-prometheus","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"}}}}}
+
+'
+      creationTimestamp: '2020-06-12T13:33:44Z'
+      finalizers:
+      - storage.metalk8s.scality.com/volume-protection
+      generation: 2
+      name: my-sparse-volume
+      resourceVersion: '3106735'
+      selfLink: /apis/storage.metalk8s.scality.com/v1alpha1/volumes/my-sparse-volume
+      uid: f1d78810-3787-4ca4-b712-50a269e42560
+    spec:
+      nodeName: bootstrap
+      sparseLoopDevice:
+        size: 1Gi
+      storageClass:
+        allow_volume_expansion: null
+        allowed_topologies: null
+        api_version: null
+        kind: null
+        metadata:
+          annotations: null
+          cluster_name: null
+          creation_timestamp: '2020-06-12T13:30:34+00:00'
+          deletion_grace_period_seconds: null
+          deletion_timestamp: null
+          finalizers: null
+          generate_name: null
+          generation: null
+          initializers: null
+          labels:
+            app.kubernetes.io/managed-by: salt
+            app.kubernetes.io/part-of: metalk8s
+            heritage: salt
+            metalk8s.scality.com/version: 2.5.1-dev
+          managed_fields: null
+          name: metalk8s-prometheus
+          namespace: null
+          owner_references: null
+          resource_version: '29117'
+          self_link: /apis/storage.k8s.io/v1/storageclasses/metalk8s-prometheus
+          uid: 17ba89c5-0774-49d4-9e34-dc999ec69545
+        mount_options:
+        - rw
+        - discard
+        parameters:
+          fsType: ext4
+          mkfsOptions: '["-m", "0"]'
+        provisioner: kubernetes.io/no-provisioner
+        reclaim_policy: Retain
+        volume_binding_mode: WaitForFirstConsumer
+      storageClassName: metalk8s-prometheus
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app.kubernetes.io/name: prometheus-operator-alertmanager
+        spec: {}
+    status:
+      conditions:
+      - lastTransitionTime: '2020-06-12T15:09:55Z'
+        lastUpdateTime: '2020-07-11T13:55:26Z'
+        status: 'True'
+        type: Ready
+  my-raw-block-device-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"name":"my-raw-block-device-volume"},"spec":{"nodeName":"bootstrap","sparseLoopDevice":{"size":"10Gi"},"storageClassName":"metalk8s-prometheus","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"}}}}}
+
+'
+      creationTimestamp: '2020-06-12T13:33:44Z'
+      finalizers:
+      - storage.metalk8s.scality.com/volume-protection
+      generation: 2
+      name: my-raw-block-device-volume
+      resourceVersion: '3106733'
+      selfLink: /apis/storage.metalk8s.scality.com/v1alpha1/volumes/my-raw-block-device-volume
+      uid: 9474cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      rawBlockDevice:
+        devicePath: /dev/sda1
+      storageClass:
+        allow_volume_expansion: null
+        allowed_topologies: null
+        api_version: null
+        kind: null
+        metadata:
+          annotations: null
+          cluster_name: null
+          creation_timestamp: '2020-06-12T13:30:34+00:00'
+          deletion_grace_period_seconds: null
+          deletion_timestamp: null
+          finalizers: null
+          generate_name: null
+          generation: null
+          initializers: null
+          labels:
+            app.kubernetes.io/managed-by: salt
+            app.kubernetes.io/part-of: metalk8s
+            heritage: salt
+            metalk8s.scality.com/version: 2.5.1-dev
+          managed_fields: null
+          name: metalk8s-prometheus
+          namespace: null
+          owner_references: null
+          resource_version: '29117'
+          self_link: /apis/storage.k8s.io/v1/storageclasses/metalk8s-prometheus
+          uid: 17ba89c5-0774-49d4-9e34-dc999ec69545
+        mount_options:
+        - rw
+        - discard
+        parameters:
+          fsType: ext4
+          mkfsOptions: '["-m", "0"]'
+        provisioner: kubernetes.io/no-provisioner
+        reclaim_policy: Retain
+        volume_binding_mode: WaitForFirstConsumer
+      storageClassName: metalk8s-prometheus
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app.kubernetes.io/name: prometheus-operator-prometheus
+        spec: {}
+    status:
+      conditions:
+      - lastTransitionTime: '2020-06-12T15:09:42Z'
+        lastUpdateTime: '2020-07-11T13:55:26Z'
+        status: 'True'
+        type: Ready
+  my-xfs-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-xfs-volume
+      uid: 7474cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass:
+        metadata:
+          name: xfs-storage-class
+        provisioner: kubernetes.io/no-provisioner
+        reclaimPolicy: Retain
+        volumeBindingMode: WaitForFirstConsumer
+        mount_options:
+        - rw
+        parameters:
+          fsType: xfs
+          mkfsOptions: '["-m", "0"]'
+      storageClassName: xfs-storage-class
+      rawBlockDevice:
+        devicePath: /dev/sda2
+  my-invalid-storage-class-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-invalid-type-volume
+      uid: 6474cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass: invalid-storage-class
+      storageClassName: invalid-storage-class
+      rawBlockDevice:
+        devicePath: /dev/sda2
+  my-invalid-fstype-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-invalid-fstype-volume
+      uid: 5474cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass:
+        metadata:
+          name: invalid-fstype-storage-class
+        provisioner: kubernetes.io/no-provisioner
+        reclaimPolicy: Retain
+        volumeBindingMode: WaitForFirstConsumer
+        mount_options:
+        - rw
+        parameters:
+          fsType: invalid-fstype
+      storageClassName: invalid-fstype-storage-class
+      rawBlockDevice:
+        devicePath: /dev/sda2
+  my-invalid-type-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-invalid-type-volume
+    spec:
+      nodeName: bootstrap
+      storageClassName: metalk8s-prometheus
+      someRandomDevice:
+        capacity: 10Gi
+
+exists:
+  ## SPARSE volume
+  # sparse file exists
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  # sparse does not exists
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    is_file: False
+    get_size: 0
+    result: False
+
+  # sparse file exists but wrong size
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    is_file: True
+    get_size: 42
+    result: False
+
+  ## RAW BLOCK DEVICE volume
+  # specified path correspond to a block device
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  # specified path does not correspond to a block device
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    is_blkdev: False
+    result: False
+
+  ## Invalid volumes
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raises: True
+    result: volume unknown-volume not found in pillar
+
+  # empty pillar
+  - name: my-sparse-volume
+    raises: True
+    result: volume my-sparse-volume not found in pillar
+
+create:
+  ## SPARSE volume
+  # create a simple sparse volume
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+
+  # unable to truncate the sparse file
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    ftruncate: False
+    raise_msg: "cannot create sparse file at .*: An error has occurred"
+
+  ## RAW BLOCK DEVICE volume
+  # create on raw block device (nothing to create)
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    # We do not need to create block device
+    raise_msg: block device /dev/sda1 does not exists
+
+  ## Invalid volumes
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raise_msg: volume unknown-volume not found in pillar
+
+  # empty pillar
+  - name: my-invalid-type-volume
+    pillar_volumes: *volumes_details
+    raise_msg: unsupported Volume type for Volume my-invalid-type-volume
+
+is_provisioned:
+  ## SPARSE volume
+  # sparse file associated with a loop device
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    losetup_output: |
+      /dev/loop3: [64769]:41159 (/var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560)
+    result: True
+
+  # sparse file not associated with any device
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    losetup_output: |
+    result: False
+
+  # error when checking sparse file association
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    raises: True
+    result: "error while trying to run `losetup --associated /var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560`: An error has occurred"
+
+  ## RAW BLOCK DEVICE volume
+  # raw block device always provisioned (nothing to provision)
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## Invalid volumes
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raises: True
+    result: volume unknown-volume not found in pillar
+
+provision:
+  ## SPARSE volume
+  # provision a sparse file with a loop device
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    losetup_output: |
+
+  # error when searching a loop device for the sparse file
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `losetup --find /var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560`: An error has occurred"
+
+  ## RAW BLOCK DEVICE volume
+  # nothing to provision for raw block device
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+
+  ## Invalid volumes
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raise_msg: volume unknown-volume not found in pillar
+
+is_prepared:
+  ## SPARSE volume
+  # sparse volume already prepared - right UUID
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    uuid_return: f1d78810-3787-4ca4-b712-50a269e42560
+    result: True
+
+  # sparse volume already prepared - wrong UUID
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    uuid_return: e1d78810-3787-4ca4-b712-50a269e42560
+    result: False
+
+  ## RAW BLOCK DEVICE volume
+  # raw block device volume already prepared - right UUID
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    uuid_return: 9474cda7-0dbe-40fc-9842-3cb0404a725a
+    result: True
+
+  # raw block device volume already prepared - wrong UUID
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    uuid_return: 8474cda7-0dbe-40fc-9842-3cb0404a725a
+    result: False
+
+  ## Invalid volumes
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raises: True
+    result: volume unknown-volume not found in pillar
+
+prepare:
+  ## SPARSE volume
+  # prepare the sparse volume in ext4
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    mkfs_output: |
+
+  # error when formatting the sparse volume in ext4
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `mkfs.ext4 -F .*`: An error has occurred"
+
+  # sparse volume already formatted
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    current_fstype: ext4
+    raise_msg: "backing device `/var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560` already formatted"
+
+  # sparse volume already have a partition table
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    has_partition: True
+    raise_msg: "backing device `/var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560` contains a partition table"
+
+  ## RAW BLOCK DEVICE volume
+  # prepare the raw block device volume in ext4
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    mkfs_output: |
+
+  # error when formatting the raw block device volume in ext4
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `mkfs.ext4 -F .* /dev/sda1`: An error has occurred"
+
+  # prepare the raw block device volume in xfs
+  - name: my-xfs-volume
+    pillar_volumes: *volumes_details
+    mkfs_output: |
+
+  # error when formatting the raw block device volume in xfs
+  - name: my-xfs-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `mkfs.xfs -f .* /dev/sda2`: An error has occurred"
+
+  ## Invalid volumes
+  # volume with invalid storage class name
+  - name: my-invalid-storage-class-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "StorageClass invalid-storage-class not found"
+
+  # volume with storage class with invalid filesystem
+  - name: my-invalid-fstype-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "unsupported filesystem: invalid-fstype"
+
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raise_msg: volume unknown-volume not found in pillar
+
+is_cleaned_up:
+  ## SPARSE volume
+  # sparse file does not exists
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  # sparse file exists and associated with a loop device
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    is_provisioned: True
+    exists: True
+    result: False
+
+  # sparse file exists but not associated with any device
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    is_provisioned: False
+    exists: True
+    result: False
+
+  ## RAW BLOCK DEVICE volume
+  # raw block device always cleaned up (nothing to clean)
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## Invalid volumes
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raises: True
+    result: volume unknown-volume not found in pillar
+
+clean_up:
+  ## SPARSE volume
+  # clean up a sparse file
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+
+  # sparse file does not exists
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    remove_error: [2, "No such file or directory", "..."]
+
+  # error when trying to remove the sparse file
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    remove_error: "An error has occurred during remove"
+    raise_msg: "An error has occurred during remove"
+
+  # error when running ioctl on the sparse file
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    ioctl_error: "An error has occurred during ioctl"
+    raise_msg: "An error has occurred during ioctl"
+
+  ## RAW BLOCK DEVICE volume
+  # nothing to clean up for raw block device
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+
+  ## Invalid volumes
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raise_msg: volume unknown-volume not found in pillar
