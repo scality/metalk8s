@@ -17,6 +17,9 @@
 - [#2572](https://github.com/scality/metalk8s/issues/2572) - Bump CoreDNS
 version to 1.6.2 (PR [#2575](https://github.com/scality/metalk8s/pull/2575))
 
+- [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump K8S version
+to 1.16.13 (PR [#2363](https://github.com/scality/metalk8s/pull/2679))
+
 ## Release 2.5.1
 
 ### Breaking changes
