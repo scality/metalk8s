@@ -11,6 +11,10 @@
   (Issue [#2259](https://github.com/scality/metalk8s/issues/2259),
   PR [#2369](https://github.com/scality/metalk8s/pull/2369))
 
+### Enhancements
+- [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump K8S version
+to 1.17.9 (PR [#2363](https://github.com/scality/metalk8s/pull/2679))
+
 ## Release 2.5.2 (in development)
 
 ### Enhancements
