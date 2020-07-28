@@ -35,12 +35,21 @@ Wait minion available:
       - salt: Cordon the node
 {%- endif %}
 
+Sync module on the node:
+  salt.function:
+    - name: saltutil.sync_all
+    - tgt: {{ node_name }}
+    - kwarg:
+        saltenv: metalk8s-{{ version }}
+
 Set grains:
   salt.state:
     - tgt: {{ node_name }}
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.node.grains
+    - require:
+      - salt: Sync module on the node
 
 Refresh the mine:
   salt.function:
@@ -65,13 +74,6 @@ Drain the node:
       - salt: Run the highstate
 
 {%- endif %}
-
-Sync module on the node:
-  salt.function:
-    - name: saltutil.sync_all
-    - tgt: {{ node_name }}
-    - kwarg:
-        saltenv: {{ saltenv }}
 
 {%- if node_name in salt.saltutil.runner('manage.up') %}
 

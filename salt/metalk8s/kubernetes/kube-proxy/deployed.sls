@@ -77,8 +77,7 @@ Deploy kube-proxy (ConfigMap):
             kind: KubeProxyConfiguration
             metricsBindAddress: 0.0.0.0:10249
             mode: ""
-            nodePortAddresses:
-            - {{ networks.workload_plane }}
+            nodePortAddresses: {{ networks.workload_plane.cidr | tojson }}
             oomScoreAdj: -999
             portRange: ""
             resourceContainer: /kube-proxy

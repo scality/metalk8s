@@ -53,7 +53,11 @@ Create containerd service drop-in:
           - {{ "debug" if metalk8s.debug else "info" }}
         environment:
         {%- if proxies %}
-          {%- set no_proxy = ["localhost", "127.0.0.1"] + networks.values() %}
+          {%- set no_proxy = ["localhost", "127.0.0.1"] %}
+          {%- do no_proxy.extend(networks.control_plane.cidr) %}
+          {%- do no_proxy.extend(networks.workload_plane.cidr) %}
+          {%- do no_proxy.append(networks.pod) %}
+          {%- do no_proxy.append(networks.service) %}
           {%- if proxies.no_proxy | default %}
             {%- do no_proxy.extend(proxies.no_proxy) %}
           {%- endif %}

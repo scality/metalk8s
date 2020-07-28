@@ -8,6 +8,11 @@ import salt.utils.yaml
 log = logging.getLogger(__name__)
 
 
+EXPECTED_APIVERSIONS = [
+    'metalk8s.scality.com/v1alpha2',
+    'metalk8s.scality.com/v1alpha3'
+]
+
 DEFAULT_POD_NETWORK = '10.233.0.0/16'
 DEFAULT_SERVICE_NETWORK = '10.96.0.0/12'
 
@@ -32,7 +37,6 @@ def _load_config(path):
         )
 
     expected = {
-        'apiVersion': 'metalk8s.scality.com/v1alpha2',
         'kind': 'BootstrapConfiguration'
     }
 
@@ -40,6 +44,12 @@ def _load_config(path):
         __utils__['pillar_utils.assert_equals'](config, expected) +
         __utils__['pillar_utils.assert_keys'](config, ['archives'])
     )
+
+    if config['apiVersion'] not in EXPECTED_APIVERSIONS:
+        errors.append(
+            "Expected one of '{}' for apiVersion, got '{}'"
+            .format("', '".join(EXPECTED_APIVERSIONS), config['apiVersion'])
+        )
 
     if errors:
         return __utils__['pillar_utils.errors_to_dict'](errors)
@@ -62,6 +72,32 @@ def _load_networks(config_data):
         networks_data,
         ['controlPlane', 'workloadPlane']
     )
+    if errors:
+        return __utils__['pillar_utils.errors_to_dict'](errors)
+
+    for net in ['controlPlane', 'workloadPlane']:
+        if config_data['apiVersion'] == 'metalk8s.scality.com/v1alpha2':
+            networks_data[net] = {
+                'cidr': [networks_data[net]]
+            }
+
+        elif config_data['apiVersion'] == 'metalk8s.scality.com/v1alpha3':
+            if not isinstance(networks_data[net], Mapping):
+                errors.append(
+                    "Invalid '{}' network format in config file, "
+                    "mapping expected got {}"
+                    .format(net, networks_data[net])
+                )
+                continue
+
+            if 'cidr' not in networks_data[net]:
+                errors.append(
+                    "Invalid '{}' network 'cidr' is mandatory".format(net)
+                )
+
+            if not isinstance(networks_data[net]['cidr'], list):
+                networks_data[net]['cidr'] = [networks_data[net]['cidr']]
+
     if errors:
         return __utils__['pillar_utils.errors_to_dict'](errors)
 

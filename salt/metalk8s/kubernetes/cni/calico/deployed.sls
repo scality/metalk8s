@@ -634,7 +634,9 @@ spec:
             - name: IP
               value: "autodetect"
             - name: IP_AUTODETECTION_METHOD
-              value: can-reach={{ networks.workload_plane.split('/')[0] }}
+              # NOTE: Use first CIDR as all calico node should have route to
+              #       all workload CIDR
+              value: can-reach={{ networks.workload_plane.cidr[0].split('/')[0] }}
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
               value: "CrossSubnet"
