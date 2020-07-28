@@ -28,9 +28,6 @@ import {
   makeGetVolumesFromUrl,
   useRefreshEffect,
   allSizeUnitsToBytes,
-  formatDate,
-  bytesToSize,
-  computeVolumeCondition,
   jointDataPointBaseonTimeSeries,
   addMissingDataPoint,
 } from '../services/utils';
@@ -52,15 +49,10 @@ import {
   BreadcrumbLabel,
   StyledLink,
 } from '../components/BreadcrumbStyle';
-import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
 import {
-  STATUS_BOUND,
-  STATUS_WARNING,
-  STATUS_CRITICAL,
-  STATUS_NONE,
-  STATUS_HEALTH,
-} from '../constants';
-
+  computeVolumeGlobalStatus,
+  getVolumeListData,
+} from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 
 // should be extracted to the common style, need to change the position of other's breadcrumb
@@ -187,14 +179,10 @@ const VolumePage = (props) => {
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
   const pVList = useSelector((state) => state.app.volumes.pVList);
-  const pVCList = useSelector((state) => state.app.volumes.pVCList);
   const alerts = useSelector((state) => state.app.monitoring.alert);
 
   const volumeUsedList = useSelector(
     (state) => state.app.monitoring.volumeStats.volumeUsed,
-  );
-  const volumeUsedCurrentList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeUsedCurrent,
   );
   const volumeThroughputWriteList = useSelector(
     (state) => state.app.monitoring.volumeStats.volumeThroughputWrite,
@@ -204,9 +192,6 @@ const VolumePage = (props) => {
   );
   const volumeLatencyList = useSelector(
     (state) => state.app.monitoring.volumeStats.volumeLatency,
-  );
-  const volumeLatencyCurrent = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeLatencyCurrent,
   );
   const volumeIOPSReadList = useSelector(
     (state) => state.app.monitoring.volumeStats.volumeIOPSRead,
@@ -245,97 +230,15 @@ const VolumePage = (props) => {
     (alert) => alert.labels.persistentvolumeclaim === PVCName,
   );
 
-  // Data for volume table
-  const volumeListData = volumes.map((volume) => {
-    const volumePV = pVList.find(
-      (pV) => pV.metadata.name === volume.metadata.name,
-    );
-    // find the mapping PVC of this specific volume
-    const volumePVC = pVCList.find(
-      (pVC) => pVC.spec.volumeName === volume.metadata.name,
-    );
+  const volumeListData = useSelector((state) =>
+    getVolumeListData(state, props),
+  );
 
-    const volumeComputedCondition = computeVolumeCondition(
-      computeVolumeGlobalStatus(volume.metadata.name, volume?.status),
-      volumePV?.status?.phase === STATUS_BOUND
-        ? intl.translate('yes')
-        : intl.translate('no'),
-    );
-
-    let volumeUsedCurren = null;
-    let volumeAlerts = [];
-    let volumeHealth = '';
-
-    // if volume is bounded
-    if (volumePVC) {
-      volumeUsedCurren = volumeUsedCurrentList?.find(
-        (volStat) =>
-          volStat.metric.persistentvolumeclaim === volumePVC.metadata.name,
-      );
-
-      // filter the alerts related to the current volume.
-      volumeAlerts = alerts?.list?.filter(
-        (alert) =>
-          alert.labels.persistentvolumeclaim === volumePVC.metadata.name,
-      );
-    } else {
-      volumeHealth = STATUS_NONE;
-    }
-
-    // THE RULES TO COMPUTE THE HEALTH
-    // compute the volume health based on the severity of the alerts
-    // critical => if there is at least one critical
-    if (volumeAlerts.length) {
-      volumeHealth = volumeAlerts.find(
-        (vol) => vol.labels.severity === STATUS_CRITICAL,
-      )
-        ? STATUS_CRITICAL
-        : STATUS_WARNING;
-    } else if (volumeComputedCondition === ('exclamation' || 'unlink')) {
-      volumeHealth = STATUS_NONE;
-    } else {
-      volumeHealth = STATUS_HEALTH;
-    }
-
-    return {
-      name: volume.metadata.name,
-      node: node.name,
-      usage: volumeUsedCurren?.value[1]
-        ? Math.round(
-            (volumeUsedCurren?.value[1] /
-              (volumePV?.spec?.capacity?.storage &&
-                allSizeUnitsToBytes(volumePV?.spec?.capacity?.storage))) *
-              100,
-          )
-        : 0,
-      status: volumeComputedCondition,
-      bound:
-        volumePV?.status?.phase === STATUS_BOUND
-          ? intl.translate('yes')
-          : intl.translate('no'),
-      storageCapacity:
-        volumePV?.spec?.capacity?.storage || intl.translate('unknown'),
-      storageClass: volume.spec.storageClassName,
-      creationTime: formatDate(volume.metadata.creationTimestamp),
-      usageRawData: volumeUsedCurren?.value[1]
-        ? bytesToSize(volumeUsedCurren?.value[1])
-        : 0,
-      health: volumeHealth,
-      // when the data is not ready, display `loading` for the moment
-      latency: volumeLatencyCurrent
-        ? Math.round(
-            volumeLatencyCurrent?.find(
-              (vLV) => vLV.metric.device === volume.status.deviceName,
-            )?.value[1] * 100,
-          ) + 'ms'
-        : 'loading',
-    };
-  });
-
-  const currentVolume = volumeListData.find(
+  const currentVolume = volumeListData?.find(
     (vol) => vol.name === currentVolumeName,
   );
 
+  // Todo: should be extracted outside VolumePage
   // Define a default UI for filtering
   function GlobalFilter({
     preGlobalFilteredRows,

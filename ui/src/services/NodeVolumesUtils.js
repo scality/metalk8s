@@ -1,3 +1,13 @@
+import { createSelector } from 'reselect';
+import {
+  getNodeNameFromUrl,
+  getVolumes,
+  getNodes,
+  computeVolumeCondition,
+  allSizeUnitsToBytes,
+  formatDate,
+  bytesToSize,
+} from './utils.js';
 import {
   STATUS_UNKNOWN,
   STATUS_TERMINATING,
@@ -7,7 +17,12 @@ import {
   STATUS_BOUND,
   STATUS_RELEASED,
   STATUS_READY,
+  STATUS_WARNING,
+  STATUS_CRITICAL,
+  STATUS_NONE,
+  STATUS_HEALTH,
 } from '../constants';
+import { intl } from '../translations/IntlGlobalProvider';
 
 export const isVolumeDeletable = (rowData, persistentVolumes) => {
   const volumeStatus = rowData.status;
@@ -24,7 +39,7 @@ export const isVolumeDeletable = (rowData, persistentVolumes) => {
         return true;
       } else {
         const persistentVolume = persistentVolumes.find(
-          pv => pv?.metadata?.name === volumeName,
+          (pv) => pv?.metadata?.name === volumeName,
         );
         if (!persistentVolume) {
           return true;
@@ -68,7 +83,7 @@ export const computeVolumeGlobalStatus = (name, status) => {
     return STATUS_UNKNOWN;
   }
   const condition = status?.conditions.find(
-    condition => condition.type === 'Ready',
+    (condition) => condition.type === 'Ready',
   );
 
   if (condition === undefined) {
@@ -110,13 +125,137 @@ export const computeVolumeGlobalStatus = (name, status) => {
 //
 // Returns
 //     a tuple (error code, error message).
-export const volumeGetError = status => {
+export const volumeGetError = (status) => {
   if (!Array.isArray(status?.conditions)) {
     return ['', ''];
   }
   const condition = status?.conditions.find(
-    condition => condition.type === 'Ready',
+    (condition) => condition.type === 'Ready',
   );
 
   return [condition?.reason ?? '', condition?.message ?? ''];
 };
+
+const getPVList = (state) => state?.app?.volumes?.pVList;
+const getPVCList = (state) => state?.app?.volumes?.pVCList;
+const getVolumeUsedCurrent = (state) =>
+  state?.app?.monitoring?.volumeStats?.volumeUsedCurrent;
+
+const getAlerts = (state) => state?.app?.monitoring?.alert;
+
+const getVolumeLatencyCurrent = (state) =>
+  state?.app?.monitoring?.volumeStats?.volumeLatencyCurrent;
+
+// Todo: Add unit test for getVolumeListData function
+export const getVolumeListData = createSelector(
+  getNodeNameFromUrl,
+  getVolumes,
+  getPVList,
+  getPVCList,
+  getVolumeUsedCurrent,
+  getAlerts,
+  getVolumeLatencyCurrent,
+  getNodes,
+  (
+    nodeName,
+    volumes,
+    pVList,
+    pVCList,
+    volumeUsedCurrentList,
+    alerts,
+    volumeLatencyCurrent,
+    nodes,
+  ) => {
+    // filter the volumes by the Node from URL
+    volumes.filter(
+      (volume) => volume && volume.spec && volume.spec.nodeName === nodeName,
+    );
+
+    return volumes.map((volume) => {
+      const volumePV = pVList.find(
+        (pV) => pV.metadata.name === volume.metadata.name,
+      );
+      // find the mapping PVC of this specific volume
+      const volumePVC = pVCList.find(
+        (pVC) => pVC.spec.volumeName === volume.metadata.name,
+      );
+      const node = nodes?.find((node) => node.name === nodeName);
+
+      const volumeComputedCondition = computeVolumeCondition(
+        computeVolumeGlobalStatus(volume.metadata.name, volume?.status),
+        volumePV?.status?.phase === STATUS_BOUND
+          ? intl.translate('yes')
+          : intl.translate('no'),
+      );
+
+      let volumeUsedCurren = null;
+      let volumeAlerts = [];
+      let volumeHealth = '';
+
+      // if volume is bounded
+      if (volumePVC) {
+        volumeUsedCurren = volumeUsedCurrentList?.find(
+          (volStat) =>
+            volStat.metric.persistentvolumeclaim === volumePVC.metadata.name,
+        );
+
+        // filter the alerts related to the current volume.
+        volumeAlerts = alerts?.list?.filter(
+          (alert) =>
+            alert.labels.persistentvolumeclaim === volumePVC.metadata.name,
+        );
+      } else {
+        volumeHealth = STATUS_NONE;
+      }
+
+      // THE RULES TO COMPUTE THE HEALTH
+      // compute the volume health based on the severity of the alerts
+      // critical => if there is at least one critical
+      if (volumeAlerts.length) {
+        volumeHealth = volumeAlerts.find(
+          (vol) => vol.labels.severity === STATUS_CRITICAL,
+        )
+          ? STATUS_CRITICAL
+          : STATUS_WARNING;
+      } else if (volumeComputedCondition === ('exclamation' || 'unlink')) {
+        volumeHealth = STATUS_NONE;
+      } else {
+        volumeHealth = STATUS_HEALTH;
+      }
+
+      return {
+        name: volume.metadata.name,
+        node: node?.name,
+        usage: volumeUsedCurren?.value[1]
+          ? Math.round(
+              (volumeUsedCurren?.value[1] /
+                (volumePV?.spec?.capacity?.storage &&
+                  allSizeUnitsToBytes(volumePV?.spec?.capacity?.storage))) *
+                100,
+            )
+          : 0,
+        status: volumeComputedCondition,
+        bound:
+          volumePV?.status?.phase === STATUS_BOUND
+            ? intl.translate('yes')
+            : intl.translate('no'),
+        storageCapacity:
+          volumePV?.spec?.capacity?.storage || intl.translate('unknown'),
+        storageClass: volume.spec.storageClassName,
+        creationTime: formatDate(volume.metadata.creationTimestamp),
+        usageRawData: volumeUsedCurren?.value[1]
+          ? bytesToSize(volumeUsedCurren?.value[1])
+          : 0,
+        health: volumeHealth,
+        // when the data is not ready, display `loading` for the moment
+        latency: volumeLatencyCurrent
+          ? Math.round(
+              volumeLatencyCurrent?.find(
+                (vLV) => vLV.metric.device === volume.status.deviceName,
+              )?.value[1] * 100,
+            ) + 'ms'
+          : 'loading',
+      };
+    });
+  },
+);
