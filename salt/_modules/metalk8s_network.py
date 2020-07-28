@@ -79,3 +79,30 @@ def get_oidc_service_ip():
     range.
     '''
     return _pick_nth_service_ip(OIDC_ADDRESS_NUMBER)
+
+
+def get_ip_from_cidrs(cidrs, current_ip=None):
+    '''
+    Return the first IP available
+
+    A current_ip can be given so that if the current_ip is already part of
+    one cidr we keep this IP (otherwise we return the first one)
+    '''
+    first_ip = None
+
+    for cidr in cidrs:
+        ip_addrs = __salt__["network.ip_addrs"](cidr=cidr)
+        if current_ip and current_ip in ip_addrs:
+            # Current IP still valid, return it
+            return current_ip
+
+        if ip_addrs and first_ip is None:
+            first_ip = ip_addrs[0]
+
+    if not first_ip:
+        raise CommandExecutionError(
+            "Unable to find an IP on this host in one of this cidr: {}"
+            .format(', '.join(cidrs))
+        )
+
+    return first_ip
