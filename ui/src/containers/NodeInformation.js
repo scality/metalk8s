@@ -42,7 +42,6 @@ const NodeInformationContainer = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   height: 100%;
-  padding-left: ${padding.base};
 
   .sc-tabs {
     flex-grow: 1;

@@ -67,7 +67,6 @@ import { intl } from '../translations/IntlGlobalProvider';
 const PageContainer = styled.div`
   display: flex;
   box-sizing: border-box;
-  padding-left: ${padding.base};
   height: 100%;
   flex-wrap: wrap;
 `;
@@ -676,7 +675,7 @@ const VolumePage = (props) => {
           ></ActiveAlertsCard>
           <PerformanceGraphCard
             volumeUsed={
-              volumeUsed
+              volumeUsed?.length
                 ? addMissingDataPoint(
                     jointDataPointBaseonTimeSeries(volumeUsed),
                     queryStartingTime,
