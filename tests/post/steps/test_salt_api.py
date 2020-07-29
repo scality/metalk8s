@@ -49,6 +49,11 @@ def test_salt_api_impersonation_with_bearer_auth(host):
     pass
 
 
+@pytest.fixture
+def salt_api_address(control_plane_ip):
+    return '{}:{}'.format(control_plane_ip, 4507)
+
+
 @pytest.fixture(scope='function')
 def context():
     return {}
@@ -60,20 +65,20 @@ def context():
 
 @when(parsers.parse(
     "we login to SaltAPI as '{username}' using password '{password}'"))
-def login_salt_api_basic(host, username, password, version, context):
-    address = _get_salt_api_address(host, version)
+def login_salt_api_basic(host, username, password, salt_api_address, context):
     context['salt-api'] = _salt_api_login(
-        address, username=username, password=password
+        salt_api_address, username=username, password=password
     )
 
 
 @when("we login to SaltAPI with an admin ServiceAccount")
-def login_salt_api_admin_sa(host, k8s_client, admin_sa, version, context):
+def login_salt_api_admin_sa(
+    host, k8s_client, admin_sa, salt_api_address, context
+):
     sa_name, sa_namespace = admin_sa
-    address = _get_salt_api_address(host, version)
 
     context['salt-api'] = _login_salt_api_sa(
-        address, k8s_client,
+        salt_api_address, k8s_client,
         sa_name, sa_namespace
     )
 
@@ -81,11 +86,10 @@ def login_salt_api_admin_sa(host, k8s_client, admin_sa, version, context):
 @when(parsers.parse(
     "we login to SaltAPI with the ServiceAccount '{namespace}/{account_name}'"))
 def login_salt_api_system_sa(
-    host, k8s_client, namespace, account_name, version, context
+    host, k8s_client, namespace, account_name, salt_api_address, context
 ):
-    address = _get_salt_api_address(host, version)
     context['salt-api'] = _login_salt_api_sa(
-        address, k8s_client, account_name, namespace,
+        salt_api_address, k8s_client, account_name, namespace,
     )
 
 
@@ -94,11 +98,12 @@ def login_salt_api_system_sa(
     "using the ServiceAccount '{namespace}/{account_name}'"
 ))
 def login_salt_api_token_override_username(
-    host, k8s_client, namespace, account_name, username, version, context
+    host, k8s_client, namespace, account_name, username, salt_api_address,
+    context
 ):
-    address = _get_salt_api_address(host, version)
     context['salt-api'] = _login_salt_api_sa(
-        address, k8s_client, account_name, namespace, username=username,
+        salt_api_address, k8s_client, account_name, namespace,
+        username=username,
     )
 
 # }}}
@@ -174,30 +179,6 @@ def _login_salt_api_sa(address, k8s_client, name, namespace, username=None):
         username = 'system:serviceaccount:{}:{}'.format(namespace, name)
 
     return _salt_api_login(address, username=username, token=token)
-
-
-def _get_salt_api_address(host, version):
-    SALT_API_PORT = 4507
-    cmd_cidr = ' '.join([
-        'salt-call', 'pillar.get',
-        'networks:control_plane',
-        'saltenv=metalk8s-{version}'.format(version=version),
-        '--out', 'json',
-    ])
-    with host.sudo():
-        cidr_output = host.check_output(cmd_cidr)
-    cidr = json.loads(cidr_output)['local']
-
-    cmd_ip = ' '.join([
-        'salt-call', '--local',
-        'network.ip_addrs',
-        'cidr="{cidr}"'.format(cidr=cidr),
-        '--out', 'json',
-    ])
-    with host.sudo():
-        cmd_output = host.check_output(cmd_ip)
-    ip = json.loads(cmd_output)['local'][0]
-    return '{}:{}'.format(ip, SALT_API_PORT)
 
 
 def _salt_api_login(address, username=None, password=None, token=None):
