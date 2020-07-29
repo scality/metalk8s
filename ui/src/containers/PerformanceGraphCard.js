@@ -1,17 +1,21 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import {
   fontSize,
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { bytesToSize } from '../services/utils';
+import {
+  bytesToSize,
+  jointDataPointBaseonTimeSeries,
+  addMissingDataPoint,
+} from '../services/utils';
 import { LineChart, Dropdown } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const PerformanceGraphCardContainer = styled.div`
   background-color: ${(props) => props.theme.brand.primaryDark1};
-  /* min-height: 250px; */
   margin: ${padding.small};
   padding-bottom: 20px;
 `;
@@ -20,7 +24,7 @@ const PerformanceGraphTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding: 10px 0 0 29px;
+  padding: 10px 0 0 20px;
   display: flex;
   .sc-dropdown {
     padding-left: 25px;
@@ -58,7 +62,7 @@ const UsageGraph = styled.div`
 
 const LatencyGraph = styled.div`
   min-width: 308px;
-  padding-left: 20px;
+  padding-left: 22px;
 `;
 
 const TroughputGraph = styled.div`
@@ -67,23 +71,102 @@ const TroughputGraph = styled.div`
 
 const IOPSGraph = styled.div`
   min-width: 227px;
-  padding-left: 20px;
+  padding-left: 22px;
 `;
 
 const PerformanceGraphCard = (props) => {
-  const {
-    volumeUsed,
-    volumeStorageCapacity,
-    volumeLatency,
-    volumeThroughputWrite,
-    volumeThroughputRead,
-    volumeIOPSRead,
-    volumeIOPSWrite,
-  } = props;
+  const { deviceName, PVCName, volumeStorageCapacity, instance } = props;
+
+  const volumeUsedList = useSelector(
+    (state) => state.app.monitoring.volumeStats.volumeUsed,
+  );
+  const volumeThroughputWriteList = useSelector(
+    (state) => state.app.monitoring.volumeStats.volumeThroughputWrite,
+  );
+  const volumeThroughputReadList = useSelector(
+    (state) => state.app.monitoring.volumeStats.volumeThroughputRead,
+  );
+  const volumeLatencyList = useSelector(
+    (state) => state.app.monitoring.volumeStats.volumeLatency,
+  );
+  const volumeIOPSReadList = useSelector(
+    (state) => state.app.monitoring.volumeStats.volumeIOPSRead,
+  );
+  const volumeIOPSWriteList = useSelector(
+    (state) => state.app.monitoring.volumeStats.volumeIOPSWrite,
+  );
+  const queryStartingTime = useSelector(
+    (state) => state.app.monitoring.volumeStats.queryStartingTime,
+  );
+
+  const volumeThroughputRead = volumeThroughputReadList?.filter(
+    (vTR) =>
+      vTR.metric.instance === instance && vTR.metric.device === deviceName,
+  );
+  const volumeThroughputWrite = volumeThroughputWriteList?.filter(
+    (vTW) =>
+      vTW.metric.instance === instance && vTW.metric.device === deviceName,
+  );
+  const volumeLatency = volumeLatencyList?.filter(
+    (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
+  );
+
+  const volumeIOPSRead = volumeIOPSReadList?.filter(
+    (vIOPSR) =>
+      vIOPSR.metric.instance === instance &&
+      vIOPSR.metric.device === deviceName,
+  );
+  const volumeIOPSWrite = volumeIOPSWriteList?.filter(
+    (vIOPSW) =>
+      vIOPSW.metric.instance === instance &&
+      vIOPSW.metric.device === deviceName,
+  );
+
+  const volumeUsed = volumeUsedList?.filter(
+    (vU) => vU.metric.persistentvolumeclaim === PVCName,
+  );
+
+  // We need to manually add the missing data points due to the shutdown of VM
+  const volumeUsedOperated = addMissingDataPoint(
+    jointDataPointBaseonTimeSeries(volumeUsed),
+    queryStartingTime,
+    7,
+    1,
+  );
+  const volumeLatencyOperated = addMissingDataPoint(
+    jointDataPointBaseonTimeSeries(volumeLatency),
+    queryStartingTime,
+    7,
+    1,
+  );
+  const volumeThroughputWriteOperated = addMissingDataPoint(
+    jointDataPointBaseonTimeSeries(volumeThroughputWrite),
+    queryStartingTime,
+    7,
+    1,
+  );
+  const volumeThroughputReadOperated = addMissingDataPoint(
+    jointDataPointBaseonTimeSeries(volumeThroughputRead),
+    queryStartingTime,
+    7,
+    1,
+  );
+  const volumeIOPSReadOperated = addMissingDataPoint(
+    jointDataPointBaseonTimeSeries(volumeIOPSRead),
+    queryStartingTime,
+    7,
+    1,
+  );
+  const volumeIOPSWriteOperated = addMissingDataPoint(
+    jointDataPointBaseonTimeSeries(volumeIOPSWrite),
+    queryStartingTime,
+    7,
+    1,
+  );
 
   // slot[0] => timestamp
   // slot[1] => value
-  const volumeUsageData = volumeUsed?.map((slot) => {
+  const volumeUsageData = volumeUsedOperated?.map((slot) => {
     return {
       date: new Date(slot[0] * 1000), // convert from the RFC 3339 to time in JS
       usageWithUnit: bytesToSize(slot[1]),
@@ -94,30 +177,24 @@ const PerformanceGraphCard = (props) => {
     };
   });
 
-  const volumeLatencyData = volumeLatency?.map((slot) => {
+  const volumeLatencyData = volumeLatencyOperated?.map((slot) => {
     return {
       date: new Date(slot[0] * 1000),
       y: slot[1] === null ? null : Math.round(slot[1] * 1000000),
     };
   });
 
-  const volumeThroughputWriteData = volumeThroughputWrite?.map((slot) => {
-    return {
-      date: new Date(slot[0] * 1000),
-      write: slot[1] === null ? null : slot[1],
-      type: 'write',
-    };
-  });
+  const volumeThroughputWriteData = volumeThroughputWriteOperated?.map(
+    (slot) => {
+      return {
+        date: new Date(slot[0] * 1000),
+        write: slot[1] === null ? null : slot[1],
+        type: 'write',
+      };
+    },
+  );
 
-  const volumeThroughtReadData = volumeThroughputRead?.map((slot) => {
-    return {
-      date: new Date(slot[0] * 1000),
-      read: slot[1] === null ? null : slot[1],
-      type: 'read',
-    };
-  });
-
-  const volumeIOPSReadData = volumeIOPSRead?.map((slot) => {
+  const volumeThroughtReadData = volumeThroughputReadOperated?.map((slot) => {
     return {
       date: new Date(slot[0] * 1000),
       read: slot[1] === null ? null : slot[1],
@@ -125,7 +202,15 @@ const PerformanceGraphCard = (props) => {
     };
   });
 
-  const volumeIOPSWriteData = volumeIOPSWrite?.map((slot) => {
+  const volumeIOPSReadData = volumeIOPSReadOperated?.map((slot) => {
+    return {
+      date: new Date(slot[0] * 1000),
+      read: slot[1] === null ? null : slot[1],
+      type: 'read',
+    };
+  });
+
+  const volumeIOPSWriteData = volumeIOPSWriteOperated?.map((slot) => {
     return {
       date: new Date(slot[0] * 1000),
       write: slot[1] === null ? null : slot[1],
@@ -245,7 +330,7 @@ const PerformanceGraphCard = (props) => {
   return (
     <PerformanceGraphCardContainer>
       <PerformanceGraphTitle>
-        {intl.translate('performances')}
+        {intl.translate('metrics')}
         <Dropdown items={[]} text="7 days" size="smaller" />
       </PerformanceGraphTitle>
       <GraphsContainer>

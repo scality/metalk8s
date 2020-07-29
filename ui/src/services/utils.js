@@ -2,6 +2,14 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { createSelector } from 'reselect';
 import sortByArray from 'lodash.sortby';
+import { intl } from '../translations/IntlGlobalProvider';
+import {
+  STATUS_FAILED,
+  STATUS_READY,
+  VOLUME_CONDITION_EXCLAMATION,
+  VOLUME_CONDITION_UNLINK,
+  VOLUME_CONDITION_LINK,
+} from '../constants';
 
 export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
@@ -235,27 +243,29 @@ export function bytesToSize(bytes) {
   return Math.round(bytes / Math.pow(1024, i), 2) + sizes[i];
 }
 
-// Exclamation: Failed + Unbound
-// Unlink: Available + Unbound
-// Link: Available + Bound
+// The rules to compute the volume condition
+//  Exclamation: Failed + Unbound
+//  Unlink: Ready + Unbound
+//  Link: Ready + Bound
 export function computeVolumeCondition(status, isBound) {
-  if (status === 'Failed' && (isBound === 'No' || 'Non')) {
-    return 'exclamation';
-  } else if (status === 'Ready' && (isBound === 'No' || 'Non')) {
-    return 'unlink';
-  } else if (status === 'Ready' && (isBound === 'Yes' || 'Oui')) {
-    return 'link';
+  if (status === STATUS_FAILED && isBound === intl.translate('no')) {
+    return VOLUME_CONDITION_EXCLAMATION;
+  } else if (status === STATUS_READY && isBound === intl.translate('no')) {
+    return VOLUME_CONDITION_UNLINK;
+  } else if (status === STATUS_READY && isBound === intl.translate('yes')) {
+    return VOLUME_CONDITION_LINK;
   }
   console.error('Unknown volume condition');
 }
 
 /**
- * This function combines the
+ * This function combines the values in different pods caused by the restart
  *
  * @param {array} result - The array of the data points are already sorted according to the time series
  *
  */
 export function jointDataPointBaseonTimeSeries(result) {
+  console.log('result in jointDataPointBaseonTimeSeries', result);
   let values = [];
   if (result) {
     for (const timeseries of result) {
@@ -287,9 +297,15 @@ export function addMissingDataPoint(
   duration,
   samplingFrequency,
 ) {
+  if (!orginalValues || orginalValues.length === 0) {
+    return;
+  }
   const newValues = [];
   const numberOfDataPoints = (duration * 24) / samplingFrequency;
-  let samplingPointTime = startingTime.getTime() / 1000; //time converted to Unix seconds
+  let samplingPointTime;
+  if (startingTime) {
+    samplingPointTime = startingTime.getTime() / 1000; //time converted to Unix seconds
+  }
 
   // initialize the array with all `null` value
   for (let i = 0; i < numberOfDataPoints; i++) {

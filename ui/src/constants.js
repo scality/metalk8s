@@ -24,3 +24,7 @@ export const STATUS_READY = 'Ready';
 
 export const SPARSE_LOOP_DEVICE = 'sparseLoopDevice';
 export const RAW_BLOCK_DEVICE = 'rawBlockDevice';
+
+export const VOLUME_CONDITION_EXCLAMATION = 'exclamation';
+export const VOLUME_CONDITION_UNLINK = 'unlink';
+export const VOLUME_CONDITION_LINK = 'link';

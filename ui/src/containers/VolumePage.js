@@ -11,7 +11,7 @@ import {
 import { Breadcrumb, Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import ActiveAlertsCard from '../components/ActiveAlertsCard';
 import VolumeDetailCard from './VolumeDetailCard';
-import PerformanceGraphCard from '../components/PerformanceGraphCard';
+import PerformanceGraphCard from './PerformanceGraphCard';
 import CircleStatus from '../components/CircleStatus';
 import {
   useTable,
@@ -28,8 +28,6 @@ import {
   makeGetVolumesFromUrl,
   useRefreshEffect,
   allSizeUnitsToBytes,
-  jointDataPointBaseonTimeSeries,
-  addMissingDataPoint,
 } from '../services/utils';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
@@ -180,28 +178,6 @@ const VolumePage = (props) => {
   const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const alerts = useSelector((state) => state.app.monitoring.alert);
-
-  const volumeUsedList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeUsed,
-  );
-  const volumeThroughputWriteList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeThroughputWrite,
-  );
-  const volumeThroughputReadList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeThroughputRead,
-  );
-  const volumeLatencyList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeLatency,
-  );
-  const volumeIOPSReadList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeIOPSRead,
-  );
-  const volumeIOPSWriteList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeIOPSWrite,
-  );
-  const queryStartingTime = useSelector(
-    (state) => state.app.monitoring.volumeStats.queryStartingTime,
-  );
 
   // Should be the selected volume from the volume list
   const [currentVolumeName, setCurrentVolumeName] = useState(
@@ -470,38 +446,8 @@ const VolumePage = (props) => {
     history.push(`/nodes/${node.name}/volumes/${rowobject.values.name}`);
   };
 
-  // Hardcode the port number for prometheus metrics
-  const instance = node?.internalIP + `:9100`;
   // filter the query according instance and deviceName
   // should extract an util function here, given the instance and device as input
-  const volumeThroughputRead = volumeThroughputReadList?.filter(
-    (vTR) =>
-      vTR.metric.instance === instance &&
-      vTR.metric.device === volume?.status?.deviceName,
-  );
-  const volumeThroughputWrite = volumeThroughputWriteList?.filter(
-    (vTW) =>
-      vTW.metric.instance === instance &&
-      vTW.metric.device === volume?.status?.deviceName,
-  );
-  const volumeLatency = volumeLatencyList?.filter(
-    (vL) =>
-      vL.metric.instance === instance &&
-      vL.metric.device === volume?.status?.deviceName,
-  );
-  const volumeIOPSRead = volumeIOPSReadList?.filter(
-    (vIOPSR) =>
-      vIOPSR.metric.instance === instance &&
-      vIOPSR.metric.device === volume?.status?.deviceName,
-  );
-  const volumeIOPSWrite = volumeIOPSWriteList?.filter(
-    (vIOPSW) =>
-      vIOPSW.metric.instance === instance &&
-      vIOPSW.metric.device === volume?.status?.deviceName,
-  );
-  const volumeUsed = volumeUsedList?.filter(
-    (vU) => vU.metric.persistentvolumeclaim === PVCName,
-  );
 
   return currentVolumeName && volume ? (
     <PageContainer>
@@ -577,71 +523,14 @@ const VolumePage = (props) => {
             PVCName={PVCName}
           ></ActiveAlertsCard>
           <PerformanceGraphCard
-            volumeUsed={
-              volumeUsed?.length
-                ? addMissingDataPoint(
-                    jointDataPointBaseonTimeSeries(volumeUsed),
-                    queryStartingTime,
-                    7,
-                    1,
-                  )
-                : null
-            }
+            deviceName={volume?.status?.deviceName}
+            PVCName={PVCName}
             volumeStorageCapacity={allSizeUnitsToBytes(
               pV?.spec?.capacity?.storage,
             )}
-            volumeLatency={
-              volumeLatency
-                ? addMissingDataPoint(
-                    jointDataPointBaseonTimeSeries(volumeLatency),
-                    queryStartingTime,
-                    7,
-                    1,
-                  )
-                : null
-            }
-            volumeThroughputWrite={
-              volumeThroughputWrite
-                ? addMissingDataPoint(
-                    jointDataPointBaseonTimeSeries(volumeThroughputWrite),
-                    queryStartingTime,
-                    7,
-                    1,
-                  )
-                : null
-            }
-            volumeThroughputRead={
-              volumeThroughputRead
-                ? addMissingDataPoint(
-                    jointDataPointBaseonTimeSeries(volumeThroughputRead),
-                    queryStartingTime,
-                    7,
-                    1,
-                  )
-                : null
-            }
-            volumeIOPSRead={
-              volumeIOPSRead
-                ? addMissingDataPoint(
-                    jointDataPointBaseonTimeSeries(volumeIOPSRead),
-                    queryStartingTime,
-                    7,
-                    1,
-                  )
-                : null
-            }
-            volumeIOPSWrite={
-              volumeIOPSWrite
-                ? addMissingDataPoint(
-                    jointDataPointBaseonTimeSeries(volumeIOPSWrite),
-                    queryStartingTime,
-                    7,
-                    1,
-                  )
-                : null
-            }
+            // Hardcode the port number for prometheus metrics
+            instance={node?.internalIP + `:9100`}
           ></PerformanceGraphCard>
-          }
         </RightSidePanel>
       </VolumeContent>
     </PageContainer>
