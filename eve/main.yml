@@ -621,7 +621,7 @@ stages:
       - ShellCommand:
           name: Install test tools requirements
           command: >
-            git clone git@bitbucket.org:scality/test_tools.git &&
+            git clone git@github.com:scality/test_tools.git &&
             sudo yum install -y epel-release &&
             sudo yum install -y wget python3.6 python3-pip &&
             pip3 install --user -r test_tools/testrail/requirements.txt
