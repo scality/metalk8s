@@ -128,11 +128,13 @@ fi
 
 echo "Creating bootstrap configuration"
 cat > /etc/metalk8s/bootstrap.yaml << EOF
-apiVersion: metalk8s.scality.com/v1alpha2
+apiVersion: metalk8s.scality.com/v1alpha3
 kind: BootstrapConfiguration
 networks:
-  controlPlane: #{CONTROL_PLANE_IP}/#{prefixlen(CONTROL_PLANE_NETMASK)}
-  workloadPlane: #{WORKLOAD_PLANE_IP}/#{prefixlen(WORKLOAD_PLANE_NETMASK)}
+  controlPlane:
+    cidr: #{CONTROL_PLANE_IP}/#{prefixlen(CONTROL_PLANE_NETMASK)}
+  workloadPlane:
+    cidr: #{WORKLOAD_PLANE_IP}/#{prefixlen(WORKLOAD_PLANE_NETMASK)}
 ca:
   minion: bootstrap
 archives:
