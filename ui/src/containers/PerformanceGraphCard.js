@@ -11,20 +11,22 @@ import {
   jointDataPointBaseonTimeSeries,
   addMissingDataPoint,
 } from '../services/utils';
+import { VOLUME_CONDITION_LINK } from '../constants';
 import { LineChart, Dropdown } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const PerformanceGraphCardContainer = styled.div`
+  min-height: 270px;
   background-color: ${(props) => props.theme.brand.primaryDark1};
   margin: ${padding.small};
-  padding-bottom: 20px;
+  padding-bottom: ${padding.large};
 `;
 
 const PerformanceGraphTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding: 10px 0 0 20px;
+  padding: ${padding.small} 0 0 ${padding.large};
   display: flex;
   .sc-dropdown {
     padding-left: 25px;
@@ -34,7 +36,7 @@ const PerformanceGraphTitle = styled.div`
 const GraphsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding-left: 10px;
+  padding-left: ${padding.small};
 `;
 
 const RowGraphContainer = styled.div`
@@ -53,7 +55,7 @@ const GraphTitle = styled.div`
   font-size: ${fontSize.small};
   font-weight: ${fontWeight.bold};
   color: ${(props) => props.theme.brand.textSecondary};
-  padding: 10px 0 0 22px;
+  padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
 const UsageGraph = styled.div`
@@ -62,20 +64,33 @@ const UsageGraph = styled.div`
 
 const LatencyGraph = styled.div`
   min-width: 308px;
-  padding-left: 22px;
+  padding-left: ${padding.large};
 `;
 
 const TroughputGraph = styled.div`
-  min-width: 227px;
+  min-width: 308px;
 `;
 
 const IOPSGraph = styled.div`
-  min-width: 227px;
-  padding-left: 22px;
+  min-width: 308px;
+  padding-left: ${padding.large};
+`;
+
+// No data rendering should be extracted an common style
+const NoMetricsText = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.base};
+  padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
 const PerformanceGraphCard = (props) => {
-  const { deviceName, PVCName, volumeStorageCapacity, instance } = props;
+  const {
+    deviceName,
+    PVCName,
+    volumeStorageCapacity,
+    volumeCondition,
+    instance,
+  } = props;
 
   const volumeUsedList = useSelector(
     (state) => state.app.monitoring.volumeStats.volumeUsed,
@@ -331,67 +346,72 @@ const PerformanceGraphCard = (props) => {
     <PerformanceGraphCardContainer>
       <PerformanceGraphTitle>
         {intl.translate('metrics')}
-        <Dropdown items={[]} text="7 days" size="smaller" />
+        {volumeCondition === VOLUME_CONDITION_LINK && (
+          <Dropdown items={[]} text="7 days" size="smaller" />
+        )}
       </PerformanceGraphTitle>
-      <GraphsContainer>
-        <RowGraphContainer>
-          <UsageGraph>
-            <GraphTitle>USAGE (%)</GraphTitle>
-            <LineChart
-              id={'volume_usage_id'}
-              data={volumeUsageData}
-              xAxis={xAxis}
-              yAxis={yAxisUsauge}
-              color={colorUsage}
-              width={285}
-              height={80}
-              tooltip={false}
-            />
-          </UsageGraph>
-          <LatencyGraph>
-            <GraphTitle>LATENCY (µs) </GraphTitle>
-            <LineChart
-              id={'volume_latency_id'}
-              data={volumeLatencyData}
-              xAxis={xAxis}
-              yAxis={yAxisUsauge}
-              color={colorLatency}
-              width={285}
-              height={80}
-              tooltip={false}
-            />
-          </LatencyGraph>
-        </RowGraphContainer>
-        <SecondRowGraphContainer>
-          <TroughputGraph>
-            <GraphTitle>THROUGHPUT (bytes/s)</GraphTitle>
-            <LineChart
-              id={'volume_throughput_id'}
-              data={volumeThroughputData}
-              xAxis={xAxis}
-              yAxis={yAxisThroughput}
-              color={colorThroughput}
-              width={285}
-              height={80}
-              tooltip={false}
-            />
-          </TroughputGraph>
-          <IOPSGraph>
-            <GraphTitle>IOPS</GraphTitle>
-            <LineChart
-              id={'volume_IOPS_id'}
-              data={volumeIOPSData}
-              xAxis={xAxis}
-              yAxis={yAxisIOPS}
-              color={colorIOPS}
-              width={285}
-              height={80}
-              tooltip={false}
-            />
-          </IOPSGraph>
-        </SecondRowGraphContainer>
-      </GraphsContainer>
-      )
+      {volumeCondition === VOLUME_CONDITION_LINK ? (
+        <GraphsContainer>
+          <RowGraphContainer>
+            <UsageGraph>
+              <GraphTitle>USAGE (%)</GraphTitle>
+              <LineChart
+                id={'volume_usage_id'}
+                data={volumeUsageData}
+                xAxis={xAxis}
+                yAxis={yAxisUsauge}
+                color={colorUsage}
+                width={285}
+                height={80}
+                tooltip={false}
+              />
+            </UsageGraph>
+            <LatencyGraph>
+              <GraphTitle>LATENCY (µs) </GraphTitle>
+              <LineChart
+                id={'volume_latency_id'}
+                data={volumeLatencyData}
+                xAxis={xAxis}
+                yAxis={yAxisUsauge}
+                color={colorLatency}
+                width={285}
+                height={80}
+                tooltip={false}
+              />
+            </LatencyGraph>
+          </RowGraphContainer>
+          <SecondRowGraphContainer>
+            <TroughputGraph>
+              <GraphTitle>THROUGHPUT (bytes/s)</GraphTitle>
+              <LineChart
+                id={'volume_throughput_id'}
+                data={volumeThroughputData}
+                xAxis={xAxis}
+                yAxis={yAxisThroughput}
+                color={colorThroughput}
+                width={285}
+                height={80}
+                tooltip={false}
+              />
+            </TroughputGraph>
+            <IOPSGraph>
+              <GraphTitle>IOPS</GraphTitle>
+              <LineChart
+                id={'volume_IOPS_id'}
+                data={volumeIOPSData}
+                xAxis={xAxis}
+                yAxis={yAxisIOPS}
+                color={colorIOPS}
+                width={285}
+                height={80}
+                tooltip={false}
+              />
+            </IOPSGraph>
+          </SecondRowGraphContainer>
+        </GraphsContainer>
+      ) : (
+        <NoMetricsText>{intl.translate('volume_is_not_bound')}</NoMetricsText>
+      )}
     </PerformanceGraphCardContainer>
   );
 };

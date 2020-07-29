@@ -265,7 +265,6 @@ export function computeVolumeCondition(status, isBound) {
  *
  */
 export function jointDataPointBaseonTimeSeries(result) {
-  console.log('result in jointDataPointBaseonTimeSeries', result);
   let values = [];
   if (result) {
     for (const timeseries of result) {

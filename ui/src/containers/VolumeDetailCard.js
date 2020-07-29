@@ -8,13 +8,14 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import { deleteVolumeAction } from '../ducks/app/volumes';
+import { VOLUME_CONDITION_LINK } from '../constants';
 import { Button, Modal, ProgressBar } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumeDetailCardContainer = styled.div`
   display: flex;
   background-color: ${(props) => props.theme.brand.primaryDark1};
-  min-height: 315px;
+  min-height: 270px;
   margin: ${padding.small};
 `;
 
@@ -25,12 +26,12 @@ const VolumeInformation = styled.div`
 const VolumeNameTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.large};
-  padding: 10px 0 10px 20px;
+  padding: ${padding.small} 0 ${padding.small} ${padding.large};
 `;
 
 const InformationSpan = styled.div`
   padding-bottom: 7px;
-  padding-left: 20px;
+  padding-left: ${padding.large};
   display: flex;
 `;
 
@@ -49,38 +50,36 @@ const InformationValue = styled.span`
 
 const DeleteButton = styled(Button)`
   margin-right: 100px;
-  width: 163px;
+  width: 165px;
   height: 30px;
   font-size: ${fontSize.small};
-  background-color: #be2443;
+  background-color: ${(props) => props.theme.brand.critical};
 `;
 
 const DeleteButtonContainer = styled.div`
   display: flex;
   justify-content: center;
-  padding-top: ${padding.larger};
+  padding-bottom: ${padding.base};
 `;
 
 const VolumeGraph = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  width: 37vw;
+  justify-content: flex-end;
 `;
 
 const VolumeUsage = styled.div`
   min-height: 94px;
   background-color: ${(props) => props.theme.brand.primary};
-  margin: 20px 10px 0 0;
-  padding: 10px 10px 0 0;
+  margin: ${padding.large} ${padding.small} ${padding.large} 0;
+  padding: 0 ${padding.base} 0 0;
 `;
 
 const VolumeUsageTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding-bottom: ${padding.large};
-  padding-left: ${padding.small};
+  padding: ${padding.small} 0 ${padding.base} ${padding.small};
 `;
 
 const ProgressBarContainer = styled.div`
@@ -114,6 +113,7 @@ const VolumeDetailCard = (props) => {
     volumeUsagePercentage,
     volumeUsageBytes,
     storageCapacity,
+    condition,
   } = props;
 
   const dispatch = useDispatch();
@@ -187,19 +187,22 @@ const VolumeDetailCard = (props) => {
           <InformationValue>{devicePath}</InformationValue>
         </InformationSpan>
       </VolumeInformation>
+
       <VolumeGraph>
-        <VolumeUsage>
-          <VolumeUsageTitle>Volume Usage</VolumeUsageTitle>
-          <ProgressBarContainer>
-            <ProgressBar
-              size="base"
-              percentage={volumeUsagePercentage}
-              topRightLabel={`${volumeUsagePercentage}%`}
-              bottomLeftLabel={`${volumeUsageBytes} USED`}
-              bottomRightLabel={`${storageCapacity} TOTAL`}
-            />
-          </ProgressBarContainer>
-        </VolumeUsage>
+        {condition === VOLUME_CONDITION_LINK && (
+          <VolumeUsage>
+            <VolumeUsageTitle>Volume Usage</VolumeUsageTitle>
+            <ProgressBarContainer>
+              <ProgressBar
+                size="base"
+                percentage={volumeUsagePercentage}
+                topRightLabel={`${volumeUsagePercentage}%`}
+                bottomLeftLabel={`${volumeUsageBytes} USED`}
+                bottomRightLabel={`${storageCapacity} TOTAL`}
+              />
+            </ProgressBarContainer>
+          </VolumeUsage>
+        )}
         <DeleteButtonContainer>
           <DeleteButton
             icon={<i className="fas fa-sm fa-trash" />}
@@ -211,7 +214,6 @@ const VolumeDetailCard = (props) => {
           />
         </DeleteButtonContainer>
       </VolumeGraph>
-
       <Modal
         close={() => setisDeleteConfirmationModalOpen(false)}
         isOpen={isDeleteConfirmationModalOpen}

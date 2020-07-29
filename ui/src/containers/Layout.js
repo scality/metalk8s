@@ -23,7 +23,6 @@ import { removeNotificationAction } from '../ducks/app/notifications';
 import { updateLanguageAction, logoutAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
-import VolumeInformation from './VolumeInformation';
 import { useRefreshEffect } from '../services/utils';
 import {
   refreshSolutionsAction,
@@ -225,11 +224,6 @@ const Layout = (props) => {
             path={`/nodes/:id/createVolume`}
             component={CreateVolume}
           />
-          {/* <PrivateRoute
-            path="/nodes/:id/volumes/:volumeName"
-            component={VolumeInformation}
-          /> */}
-          {/* New Volume Page to replace the volumeInformation page */}
           <PrivateRoute
             path="/nodes/:id/volumes/:volumeName"
             component={VolumePage}

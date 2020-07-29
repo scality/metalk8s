@@ -4,6 +4,7 @@ import { useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
 import { Breadcrumb } from '@scality/core-ui';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import VolumeListTable from './VolumeListTable';
 import ActiveAlertsCard from '../components/ActiveAlertsCard';
 import VolumeDetailCard from './VolumeDetailCard';
@@ -47,6 +48,7 @@ const PageContainer = styled.div`
   box-sizing: border-box;
   height: 100%;
   flex-wrap: wrap;
+  padding: ${padding.small};
 `;
 
 const VolumeContent = styled.div`
@@ -60,12 +62,12 @@ const VolumeContent = styled.div`
 const LeftSideVolumeList = styled.div`
   flex-direction: column;
   min-height: 696px;
-  width: 40vw;
+  width: 40%;
 `;
 
 const RightSidePanel = styled.div`
   flex-direction: column;
-  width: 50vw;
+  width: 60%;
   /* Make it scrollable for the small laptop screen */
   overflow-y: scroll;
 `;
@@ -127,9 +129,6 @@ const VolumePage = (props) => {
   const currentVolume = volumeListData?.find(
     (vol) => vol.name === currentVolumeName,
   );
-
-  // filter the query according instance and deviceName
-  // should extract an util function here, given the instance and device as input
 
   return currentVolumeName && volume ? (
     <PageContainer>
@@ -200,6 +199,7 @@ const VolumePage = (props) => {
               volumeListData?.find((vol) => vol.name === currentVolumeName)
                 .health
             }
+            condition={currentVolume.status}
           ></VolumeDetailCard>
           <ActiveAlertsCard
             alertlist={alertlist}
@@ -211,6 +211,8 @@ const VolumePage = (props) => {
             volumeStorageCapacity={allSizeUnitsToBytes(
               pV?.spec?.capacity?.storage,
             )}
+            // the volume condition compute base on the `status` and `bound/unbound`
+            volumeCondition={currentVolume.status}
             // Hardcode the port number for prometheus metrics
             instance={node?.internalIP + `:9100`}
           ></PerformanceGraphCard>

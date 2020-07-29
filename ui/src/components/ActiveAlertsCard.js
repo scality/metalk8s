@@ -11,16 +11,17 @@ import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const ActiveAlertsCardContainer = styled.div`
+  min-height: 75px;
   background-color: ${(props) => props.theme.brand.primaryDark1};
   margin: ${padding.small};
-  padding-right: 20px;
+  padding: 0 ${padding.large} ${padding.small} 0;
 `;
 
 const ActiveAlertsTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding: 10px 0 0 20px;
+  padding: ${padding.small} 0 0 ${padding.large};
 `;
 
 const ActiveAlertsTableContainer = styled.div`
@@ -28,7 +29,7 @@ const ActiveAlertsTableContainer = styled.div`
   padding: 1rem;
   font-family: 'Lato';
   font-size: ${fontSize.base};
-  border-color: #2c3137;
+  border-color: ${(props) => props.theme.brand.borderLight};
   table {
     border-spacing: 0;
 
@@ -62,7 +63,7 @@ const ActiveAlertsTableContainer = styled.div`
 const NoActiveAlerts = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
-  padding: 10px 0 0 29px;
+  padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
 const ActiveAlertsCard = (props) => {
@@ -168,7 +169,7 @@ const ActiveAlertsCard = (props) => {
           <Table columns={columns} data={activeAlertListData} />
         </ActiveAlertsTableContainer>
       ) : (
-        <NoActiveAlerts>No active alerts</NoActiveAlerts>
+        <NoActiveAlerts>{intl.translate('no_active_alerts')}</NoActiveAlerts>
       )}
     </ActiveAlertsCardContainer>
   );

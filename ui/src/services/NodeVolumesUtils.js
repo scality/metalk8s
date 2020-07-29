@@ -2,7 +2,6 @@ import { createSelector } from 'reselect';
 import {
   getNodeNameFromUrl,
   getVolumes,
-  getNodes,
   computeVolumeCondition,
   allSizeUnitsToBytes,
   formatDate,
@@ -155,7 +154,6 @@ export const getVolumeListData = createSelector(
   getVolumeUsedCurrent,
   getAlerts,
   getVolumeLatencyCurrent,
-  getNodes,
   (
     nodeName,
     volumes,
@@ -164,7 +162,6 @@ export const getVolumeListData = createSelector(
     volumeUsedCurrentList,
     alerts,
     volumeLatencyCurrent,
-    nodes,
   ) => {
     // filter the volumes by the Node from URL
     volumes.filter(
@@ -179,8 +176,6 @@ export const getVolumeListData = createSelector(
       const volumePVC = pVCList.find(
         (pVC) => pVC.spec.volumeName === volume.metadata.name,
       );
-      const node = nodes?.find((node) => node.name === nodeName);
-
       const volumeComputedCondition = computeVolumeCondition(
         computeVolumeGlobalStatus(volume.metadata.name, volume?.status),
         volumePV?.status?.phase === STATUS_BOUND
@@ -224,8 +219,7 @@ export const getVolumeListData = createSelector(
       }
 
       return {
-        name: volume.metadata.name,
-        node: node?.name,
+        name: volume?.metadata?.name,
         usage: volumeUsedCurren?.value[1]
           ? Math.round(
               (volumeUsedCurren?.value[1] /
@@ -233,7 +227,7 @@ export const getVolumeListData = createSelector(
                   allSizeUnitsToBytes(volumePV?.spec?.capacity?.storage))) *
                 100,
             )
-          : 0,
+          : intl.translate('unknown'),
         status: volumeComputedCondition,
         bound:
           volumePV?.status?.phase === STATUS_BOUND
@@ -241,20 +235,25 @@ export const getVolumeListData = createSelector(
             : intl.translate('no'),
         storageCapacity:
           volumePV?.spec?.capacity?.storage || intl.translate('unknown'),
-        storageClass: volume.spec.storageClassName,
-        creationTime: formatDate(volume.metadata.creationTimestamp),
+        storageClass: volume?.spec?.storageClassName,
+        creationTime: formatDate(volume?.metadata?.creationTimestamp),
         usageRawData: volumeUsedCurren?.value[1]
           ? bytesToSize(volumeUsedCurren?.value[1])
           : 0,
         health: volumeHealth,
-        // when the data is not ready, display `loading` for the moment
-        latency: volumeLatencyCurrent
-          ? Math.round(
-              volumeLatencyCurrent?.find(
-                (vLV) => vLV.metric.device === volume.status.deviceName,
-              )?.value[1] * 100,
-            ) + 'ms'
-          : 'loading',
+        // we have problem from latency
+        latency:
+          volumeLatencyCurrent &&
+          volumeLatencyCurrent?.find(
+            (vLV) => vLV.metric.device === volume.status.deviceName,
+          )
+            ? Math.round(
+                volumeLatencyCurrent?.find(
+                  (vLV) => vLV.metric.device === volume.status.deviceName,
+                )?.value[1] * 100,
+              ) + 'ms'
+            : intl.translate('unknown'),
+        errorReason: volume?.status?.conditions[0]?.reason,
       };
     });
   },
