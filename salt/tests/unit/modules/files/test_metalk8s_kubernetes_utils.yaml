@@ -1,0 +1,110 @@
+# test case for `get_kubeconfig` function
+# This test case gets the kubeconfig and context based on the order below:
+  # 1. args
+  # 2. directly from pillars
+  # 3. from the salt-master configuration `config.option`
+get_kubeconfig:
+  # 1. get kubeconfig from kwargs options only
+  - kwargs: {"kubeconfig": "my-kwargs-kubeconfig.conf", "context": "my-kwargs-mycontext"}
+    result: ['my-kwargs-kubeconfig.conf', 'my-kwargs-mycontext']
+  # 2. get kubeconfig from api-server pillars only
+  - api_server_pillar: {
+      "kubeconfig": "my-pillar-kubeconfig.conf",
+      "context": "my-pillar-context"
+    }
+    result: ['my-pillar-kubeconfig.conf', 'my-pillar-context']
+  # 3. get kubeconfig from salt config options only
+  - config_options: {
+      "kubernetes.kubeconfig": "my-config-option-kubeconfig.conf",
+      "kubernetes.context": "my-config-option-mycontext"
+    }
+    result: ['my-config-option-kubeconfig.conf', 'my-config-option-mycontext']
+
+  # 4. get kubeconfig partly from kwargs and salt config options
+  - kwargs: {"context": "my-kwargs-mycontext"}
+    config_options: {"kubernetes.kubeconfig": "my-config-option-kubeconfig.conf"}
+    result: ['my-config-option-kubeconfig.conf', 'my-kwargs-mycontext']
+  # 5. get kubeconfig partly from kwargs and api-server pillars
+  - kwargs: {"context": "my-kwargs-mycontext"}
+    api_server_pillar: {"kubeconfig": "my-kwargs-kubeconfig.conf"}
+    result: ['my-kwargs-kubeconfig.conf', 'my-kwargs-mycontext']
+  # 6. get kubeconfig partly from salt config options and context result is None
+  - config_options: {"kubernetes.kubeconfig": "my-config-option-kubeconfig.conf"}
+    result: ['my-config-option-kubeconfig.conf', null]
+  # 7. get kubeconfig partly from api-server pillar and context result is None
+  - api_server_pillar: {"kubeconfig": "my-pillar-kubeconfig.conf"}
+    result: ['my-pillar-kubeconfig.conf', null]
+  # 8. get kubeconfig partly from kwargs and context result is None
+  - kwargs: {"kubeconfig": "my-kwargs-kubeconfig.conf"}
+    result: ['my-kwargs-kubeconfig.conf', null]
+  # 9. test that kwargs overrides pillar and salt config option
+  - kwargs: {"kubeconfig": "my-kwargs-kubeconfig.conf", "context": "my-kwargs-mycontext"}
+    api_server_pillar: {
+      "kubeconfig": "my-pillar-kubeconfig.conf",
+      "context": "my-pillar-context"
+    }
+    config_options: {"kubernetes.kubeconfig": "my-config-option-kubeconfig.conf"}
+    result: ['my-kwargs-kubeconfig.conf', 'my-kwargs-mycontext']
+  # 10. test that kubeconfig is defined in the lowest level and context is being overridden
+  - api_server_pillar: {"context": "my-pillar-context"}
+    config_options: {
+      "kubernetes.kubeconfig": "my-config-option-kubeconfig.conf",
+      "kubernetes.context": "my-config-option-mycontext"
+    }
+    result: ['my-config-option-kubeconfig.conf', 'my-pillar-context']
+
+read_and_render_yaml_file:
+  # 1. read and render a valid yaml file
+  - source: |-
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: kube-apiserver
+    result:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: "kube-apiserver"
+  #. 2. Raise error when source file does not exist
+  - source: null
+    raises: True
+    result: "Source file 'my-source-file' not found"
+  # 3. Raise error when a valid template is given but salt is unable to render the file
+  # Note:
+  # Here, we need to test that salt rendering with a source file and a valid
+  # salt template such as `jinja` could yield a `render file path error`.
+  # For this to happen, we patch the `opts` argument with an empty dict.
+  - source: |-
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: {{ name }}
+    context:
+      name: kube-apiserver
+    template: 'jinja'
+    raises: True
+    opts: False
+    result: 'Failed to render file path with error'
+  # 4. Raise error when the salt template is invalid or unrecognized
+  - source: |-
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: kube-apiserver
+    template: 'invalid_template'
+    raises: True
+    result: 'Unknown template specified'
+  # 5. Test jinja templating with context values using valid opts args
+  - source: |-
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: {{ name }}
+    template: 'jinja'
+    context:
+      name: kube-apiserver1
+    result:
+      apiVersion: v1
+      metadata:
+        name: kube-apiserver1
+      kind: Pod
