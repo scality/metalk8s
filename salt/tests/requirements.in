@@ -5,3 +5,4 @@ mock == 3.0.5
 parameterized == 0.7.4
 etcd3 != 0.11.0
 kubernetes
+urllib3
