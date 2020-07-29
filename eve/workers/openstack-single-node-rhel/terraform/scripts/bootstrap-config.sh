@@ -10,11 +10,14 @@ mkdir -p /etc/salt
 echo "bootstrap-rhel" > /etc/salt/minion_id
 
 cat > "$OUTPUT_FILE" << EOF
-apiVersion: metalk8s.scality.com/v1alpha2
+apiVersion: metalk8s.scality.com/v1alpha3
 kind: BootstrapConfiguration
 networks:
-  controlPlane: 10.100.0.0/16
-  workloadPlane: 10.100.0.0/16
+  controlPlane:
+    cidr: 10.100.0.0/16
+  workloadPlane:
+    cidr:
+      - 10.100.0.0/16
 ca:
   minion: $(cat /etc/salt/minion_id)
 archives:
