@@ -42,6 +42,7 @@ Configuration
           cidr: <CIDR-notation>
         workloadPlane:
           cidr: <CIDR-notation>
+          mtu: <network-MTU>
         pods: <CIDR-notation>
         services: <CIDR-notation>
       proxies:
@@ -69,6 +70,11 @@ notation for it's various subfields.
         network. This is an :ref:`advanced configuration<multiple CIDR network>`
         which we do not recommend for non-experts.
 
+      For ``workloadPlane`` entry an
+      `MTU <https://en.wikipedia.org/wiki/Maximum_transmission_unit>`_ can
+      also be provided, this MTU value should be the lowest MTU value accross
+      all the workload plane network. The default value for this MTU is 1460.
+
       .. code-block:: yaml
 
             networks:
@@ -76,6 +82,7 @@ notation for it's various subfields.
                 cidr: 10.200.1.0/28
               workloadPlane:
                 cidr: 10.200.1.0/28
+                mtu: 1500
 
       All nodes within the cluster **must** connect to both the control plane
       and workload plane networks. If the same network range is chosen for both
