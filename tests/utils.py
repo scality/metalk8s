@@ -199,6 +199,17 @@ def get_grain(host, key):
     return grain
 
 
+def get_pillar(host, key, local=False):
+    with host.sudo():
+        output = host.check_output(
+            'salt-call {} --out=json pillar.get "{}"'.format(
+                '--local' if local else '',
+                key
+            )
+        )
+        return json.loads(output)['local']
+
+
 class PrometheusApiError(Exception):
     pass
 
