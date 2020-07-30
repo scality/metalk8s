@@ -35,11 +35,13 @@ Configuration
 
    .. code-block:: yaml
 
-      apiVersion: metalk8s.scality.com/v1alpha2
+      apiVersion: metalk8s.scality.com/v1alpha3
       kind: BootstrapConfiguration
       networks:
-        controlPlane: <CIDR-notation>
-        workloadPlane: <CIDR-notation>
+        controlPlane:
+          cidr: <CIDR-notation>
+        workloadPlane:
+          cidr: <CIDR-notation>
         pods: <CIDR-notation>
         services: <CIDR-notation>
       proxies:
@@ -60,11 +62,20 @@ notation for it's various subfields.
       These values specify the range of IP addresses that will be used at the
       host level for each member of the cluster.
 
+
+      .. info::
+
+        Several CIDRs can be provided if all nodes do not sit in the same
+        network. This is an :ref:`advanced configuration<multiple CIDR network>`
+        which we do not recommend for non-experts.
+
       .. code-block:: yaml
 
             networks:
-              controlPlane: 10.200.1.0/28
-              workloadPlane: 10.200.1.0/28
+              controlPlane:
+                cidr: 10.200.1.0/28
+              workloadPlane:
+                cidr: 10.200.1.0/28
 
       All nodes within the cluster **must** connect to both the control plane
       and workload plane networks. If the same network range is chosen for both

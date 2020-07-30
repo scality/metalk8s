@@ -17,3 +17,4 @@ and shows how to access various services after completing the setup.
    expansion
    post-install
    services
+   advanced-guide
