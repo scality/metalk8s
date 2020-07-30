@@ -10,6 +10,10 @@
 - Enable `seccomp` support in `containerd`
   (Issue [#2259](https://github.com/scality/metalk8s/issues/2259),
   PR [#2369](https://github.com/scality/metalk8s/pull/2369))
+- [#1095](https://github.com/scality/metalk8s/issues/1095) - Ability to use
+  multiple CIDRs for control plane and workload plane networks and to specify
+  the workload plane MTU to compute the MTU used by Calico
+  (PR [#2677](https://github.com/scality/metalk8s/pull/2677))
 
 ### Enhancements
 - [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump K8S version
