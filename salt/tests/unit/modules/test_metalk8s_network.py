@@ -130,3 +130,41 @@ class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
                         cidrs=cidrs, current_ip=current_ip
                     )
                 )
+
+    @parameterized.expand([
+        # Simple test
+        (['eth0'], '1500', 1500),
+        # Mutliple ifaces (first one taken)
+        (['eth1', 'eth0'], {'eth0': '1500', 'eth1': '1442'}, 1442),
+        # No iface, error
+        ([], None, 'Unable to get interface for "10.200.0.42"', True)
+    ])
+    def test_get_mtu_from_ip(self, ifaces, read_mtu, result, raises=False):
+        """
+        Tests the return of `get_mtu_from_ip` function
+        """
+        def _read_mtu_file(path):
+            if isinstance(read_mtu, dict):
+                # path = "/sys/class/net/<iface>/mtu"
+                iface = path.split('/')[-2]
+                return read_mtu.get(iface, "")
+            return read_mtu
+
+        salt_dict = {
+            'network.ifacestartswith': MagicMock(return_value=ifaces),
+            'file.read': MagicMock(side_effect=_read_mtu_file)
+        }
+
+        with patch.dict(metalk8s_network.__salt__, salt_dict):
+            if raises:
+                self.assertRaisesRegexp(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_network.get_mtu_from_ip,
+                    '10.200.0.42'
+                )
+            else:
+                self.assertEqual(
+                    result,
+                    metalk8s_network.get_mtu_from_ip('10.200.0.42')
+                )
