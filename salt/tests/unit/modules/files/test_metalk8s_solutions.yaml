@@ -1,0 +1,298 @@
+read_config:
+  # Ok - no solutions configuration file, create set to True
+  - create: True
+    result:
+      kind: SolutionsConfiguration
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      archives: []
+      active: {}
+  # Ok - existing configuration file
+  - config: |-
+      kind: SolutionsConfiguration
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      archives:
+        - /tmp/my-solution.iso
+      active:
+        my-solution: 1.0.0
+    result:
+      kind: SolutionsConfiguration
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      archives:
+        - /tmp/my-solution.iso
+      active:
+        my-solution: 1.0.0
+  # Nok - no solutions configuration file, create left to default (False)
+  - raises: True
+    result: 'Failed to load ".*": .*'
+  # Nok - no solutions configuration kind
+  - raises: True
+    config: |-
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+    result: >-
+      Invalid `kind` in configuration \(None\), must be
+      "SolutionsConfiguration"
+  # Nok - invalid solutions configuration kind
+  - raises: True
+    config: |-
+      kind: InvalidSolutionsConfiguration
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+    result: >-
+      Invalid `kind` in configuration \(InvalidSolutionsConfiguration\),
+      must be "SolutionsConfiguration"
+  # Nok - no solutions configuration apiVersion
+  - raises: True
+    config: |-
+      kind: SolutionsConfiguration
+    result: >-
+      Invalid `apiVersion` in configuration \(None\), must be one of: .*
+  # Nok - invalid solutions configuration apiVersion
+  - raises: True
+    config: |-
+      kind: SolutionsConfiguration
+      apiVersion: invalid.metalk8s.scality.com/v1alpha1
+    result: >-
+      Invalid `apiVersion` in configuration
+      \(invalid.metalk8s.scality.com/v1alpha1\), must be one of: .*
+
+configure_archive:
+  # Ok - add a solution archive
+  - archive: /tmp/my-solution.iso
+    config:
+      archives: []
+    result:
+      archives:
+         - /tmp/my-solution.iso
+  # Ok - remove a solution archive
+  - archive: /tmp/my-solution.iso
+    removed: True
+    config:
+      archives:
+        - /tmp/my-solution.iso
+        - /tmp/my-other-solution.iso
+    result:
+      archives:
+        - /tmp/my-other-solution.iso
+  # Ok - remove a non-existing archive
+  - archive: /tmp/my-solution.iso
+    removed: True
+    config:
+      archives:
+        - /tmp/my-other-solution.iso
+    result:
+      archives:
+        - /tmp/my-other-solution.iso
+  # Nok - solution config is not writable
+  - archive: /tmp/my-solution.iso
+    raises: True
+    config:
+      archives: []
+
+activate_solution:
+  # Ok - solution with specific version
+  - solution: my-solution
+    version: 1.0.0
+    available:
+      my-solution:
+        - version: 1.0.0
+        - version: 2.0.0
+      another-solution:
+        - version: 1.1.1
+    config:
+      active:
+        another-solution: 1.1.1
+    result:
+      active:
+        my-solution: 1.0.0
+        another-solution: 1.1.1
+  # Ok - solution with no version provided (default to latest)
+  - solution: my-solution
+    available:
+      my-solution:
+        - version: 1.0.0
+    config:
+      active: {}
+    result:
+      active:
+        my-solution: latest
+  # Ok - activate another version of a solution
+  - solution: my-solution
+    version: 1.0.0
+    available:
+      my-solution:
+        - version: 1.0.0
+        - version: 2.0.0
+    config:
+      active:
+        my-solution: 2.0.0
+    result:
+      active:
+        my-solution: 1.0.0
+  # Nok - solution version is not available
+  - solution: my-solution
+    version: 1.1.0
+    available:
+      my-solution:
+        - version: 1.0.0
+    result: >-
+      Cannot activate version "1.1.0" for Solution "my-solution": not available
+    raises: True
+  # Nok - solution is not available
+  - solution: my-solution
+    version: 1.1.0
+    result: 'Cannot activate Solution "my-solution": not available'
+    raises: True
+  # Nok - solution config is not writable
+  - solution: my-solution
+    version: 1.0.0
+    available:
+      my-solution:
+        - version: 1.0.0
+    config:
+      active: {}
+    result: Failed to write Solutions config file
+    raises: True
+
+deactivate_solution:
+  # Ok - deactivate an active solution
+  - solution: my-solution
+    config:
+      active:
+        my-solution: ''
+        my-other-solution: ''
+    result:
+      active:
+        my-other-solution: ''
+  # Ok - deactivate a non-active solution
+  - solution: my-solution
+    config:
+      active:
+        my-other-solution: ''
+    result:
+      active:
+        my-other-solution: ''
+  # Nok - solution config file is not writable
+  - solution: my-solution
+    config:
+      active: {}
+    raises: True
+
+list_solution_images:
+  # Ok - images directories with some extra files.
+  - images:
+      some-extra-file: False
+      my-solution-ui:
+        1.1.0: True
+        another-extra-file: False
+      my-solution-operator:
+        1.0.0: True
+    result:
+      - my-solution-ui:1.1.0
+      - my-solution-operator:1.0.0
+  # Nok - no images directory at solution root
+  - raises: True
+    result: .* does not exist or is not a directory
+
+read_solution_config:
+  # Ok - with config.yaml file
+  - config: |-
+      kind: SolutionConfig
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      operator:
+        image:
+          name: my-custom-operator
+          tag: 1.1.0
+      images:
+        - my-extra-image:1.1.0
+    result:
+      kind: SolutionConfig
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      operator:
+        image:
+          name: my-custom-operator
+          tag: 1.1.0
+      ui:
+        image:
+          name: my-solution-ui
+          tag: 1.0.0
+      images:
+        - my-extra-image:1.1.0
+      customApiGroups: []
+  # Ok - with empty config.yaml file (except kind and apiVersion)
+  - config: |-
+      kind: SolutionConfig
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+    result:
+      kind: SolutionConfig
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      operator:
+        image:
+          name: my-solution-operator
+          tag: 1.0.0
+      ui:
+        image:
+          name: my-solution-ui
+          tag: 1.0.0
+      images: []
+      customApiGroups: []
+  # Ok - without config.yaml file
+  - result:
+      kind: SolutionConfig
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      operator:
+        image:
+          name: my-solution-operator
+          tag: 1.0.0
+      ui:
+        image:
+          name: my-solution-ui
+          tag: 1.0.0
+      images: []
+      customApiGroups: []
+  # Nok - bad or no solution config kind
+  - config: |-
+      kind: InvalidSolutionConfigKind
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+    result: Wrong apiVersion/kind for .*
+    raises: True
+  # Nok - solution config apiVersion not provided
+  - config: |-
+      kind: SolutionConfig
+    result: Wrong apiVersion/kind for .*
+    raises: True
+
+list_available:
+  # Ok - 1 Solution
+  - mountpoints:
+      /: {}
+      /srv/scality/metalk8s-x.y.z: {}
+      /srv/scality/my-solution:
+        alt_device: /tmp/my-solution-1.0.0.iso
+        fstype: iso9660
+    archive_infos:
+      name: My Solution
+      version: 1.0.0
+    result:
+      my-solution:
+        - name: My Solution
+          id: my-solution-1.0.0
+          mountpoint: /srv/scality/my-solution
+          archive: /tmp/my-solution-1.0.0.iso
+          version: 1.0.0
+          config: null
+  # Nok - 1 Solution - fstype not iso9660
+  - mountpoints:
+      /srv/scality/my-solution:
+        alt_device: /tmp/my-solution-1.0.0.iso
+        fstype: xfs
+  # Nok - 1 Solution - no product.txt
+  - mountpoints:
+      /srv/scality/my-solution:
+        alt_device: /tmp/my-solution-1.0.0.iso
+        fstype: iso9660
+    raises: True
+  # Ok - No Solution mountpoint
+  - mountpoints:
+      /: {}
+      /srv/scality/metalk8s-x.y.z: {}
+  # Ok - No mountpoint
+  - {}
