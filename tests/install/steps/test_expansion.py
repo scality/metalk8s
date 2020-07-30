@@ -25,10 +25,10 @@ def test_cluster_expansion_2_nodes(host):
 
 @when(parsers.parse('we declare a new "{node_type}" node on host "{node_name}"'))
 def declare_node(
-    ssh_config, version, k8s_client, node_type, node_name, bootstrap_config
+    host, ssh_config, version, k8s_client, node_type, node_name
 ):
     """Declare the given node in Kubernetes."""
-    node_ip = get_node_ip(node_name, ssh_config, bootstrap_config)
+    node_ip = get_node_ip(host, node_name, ssh_config)
     node_manifest = get_node_manifest(
         node_type, version, node_ip, node_name
     )
@@ -90,14 +90,15 @@ def check_node_status(k8s_client, node_name, expected_status):
 # }}}
 # Helpers {{{
 
-def get_node_ip(node_name, ssh_config, bootstrap_config):
+def get_node_ip(host, node_name, ssh_config):
     """Return the IP of the node `node_name`.
     We have to jump through hoops because `testinfra` does not provide a simple
     way to get this information…
     """
     infra_node = testinfra.get_host(node_name, ssh_config=ssh_config)
-    control_plane_cidr = bootstrap_config['networks']['controlPlane']
-    return utils.get_ip_from_cidr(infra_node, control_plane_cidr)
+    control_plane_cidrs = utils.get_pillar(host, 'networks:control_plane:cidr')
+    # Consider we have only one CIDR for control plane in this tests
+    return utils.get_ip_from_cidr(infra_node, control_plane_cidrs[0])
 
 def get_node_manifest(node_type, metalk8s_version, node_ip, node_name):
     """Return the YAML to declare a node with the specified IP."""
