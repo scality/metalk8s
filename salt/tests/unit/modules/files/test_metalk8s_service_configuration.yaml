@@ -1,0 +1,152 @@
+get_service_config:
+  #. Success: a retrieved Configmap object with `config.yaml` in the data section is merged with a `default_csc` correctly
+  - configmap_name: 'my_configmap'
+    default_csc:
+      apiVersion: my_apiVersion1
+      kind: my_kind1
+      spec:
+        deployment:
+          replicas: my_replicas
+          containers: my_containers
+    configmap_obj:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: my_configmap
+      data:
+        config.yaml: |-
+          kind: my_kind1
+          apiVersion: my_apiVersion1
+          spec:
+            deployment:
+              replicas: my_new_replicas
+    result:
+      apiVersion: my_apiVersion1
+      kind: my_kind1
+      spec:
+        deployment:
+          replicas: my_new_replicas
+          containers: my_containers
+
+  #. Success: a retrieved Configmap object with `config.yaml` in the data
+  #  section is merged with a `default_csc` correctly given the apiVersion and
+  #  kind from args matches the corresponding value in `config.yaml` section
+  - configmap_name: 'my_configmap'
+    apiVersion: my_apiVersion4
+    kind: my_kind4
+    default_csc:
+      apiVersion: my_apiVersion4
+      kind: my_kind4
+      spec:
+        deployment:
+          replicas: my_replicas
+          containers: null
+    configmap_obj:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: my_configmap
+      data:
+        config.yaml: |-
+          kind: my_kind4
+          apiVersion: my_apiVersion4
+          spec:
+            deployment:
+              replicas: my_new_replicas
+              containers:
+                - name: my_new_container
+    result:
+      apiVersion: my_apiVersion4
+      kind: my_kind4
+      spec:
+        deployment:
+          replicas: my_new_replicas
+          containers:
+            - name: my_new_container
+
+  #. Error: missing configmap_name
+  - configmap_name: null
+    result: "Expected a ConfigMap name but got None"
+    raises: True
+
+  #. Error: default_csc is not of type `dict`
+  - configmap_name: 'my_configmap'
+    default_csc: 'my_default_csc'
+    result: "Expected default CSC for ConfigMap my_configmap but got my_default_csc"
+    raises: True
+
+  #. Error: unable to retrieve a ConfigMap object
+  - configmap_name: 'my_configmap'
+    object_get: False
+    result: "Failed to read ConfigMap object my_configmap"
+    raises: True
+
+  #. Error: retrieved ConfigMap manifest is empty
+  - configmap_name: 'my_configmap'
+    configmap_obj: null
+    result: "Expected ConfigMap object but got None"
+    raises: True
+
+  #. Error: yaml error raised when reading config.yaml
+  - configmap_name: 'my_configmap'
+    configmap_obj:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: my_configmap
+      data:
+        config.yaml: |-
+          my: invalid: yaml
+    result: "Invalid YAML format in ConfigMap"
+    raises: True
+
+  #. Error: retrieved ConfigMap object has no `data` section with `config.yaml` as key
+  - configmap_name: 'my_configmap'
+    configmap_obj:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: my_configmap
+      data:
+    result: "Failed loading `config.yaml` from ConfigMap my_configmap"
+    raises: True
+
+  #. Error: retrieved Configmap object has an empty `config.yaml`
+  - configmap_name: 'my_configmap'
+    configmap_obj:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: my_configmap
+      data:
+        config.yaml: ''
+    result: "Expected `config.yaml` as yaml in the ConfigMap my_configmap but got {}"
+    raises: True
+
+  # Error: apiVersion provided as args does not match corresponding apiVersion found in the `config.yaml` section
+  - configmap_name: 'my_configmap'
+    apiVersion: "my_apiVersion"
+    configmap_obj:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: my_configmap
+      data:
+        config.yaml: |-
+          apiVersion: my_addon_apiVersion
+    result: "Expected value my_apiVersion for key apiVersion, got my_addon_apiVersion"
+    raises: True
+
+  # Error: `kind` provided as args does not match corresponding `kind` found in the `config.yaml` section
+  - configmap_name: 'my_configmap'
+    kind: "my_kind"
+    configmap_obj:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: my_configmap
+      data:
+        config.yaml: |-
+          kind: my_addon_kind
+    result: "Expected value my_kind for key kind, got my_addon_kind"
+    raises: True
