@@ -241,7 +241,6 @@ export const getVolumeListData = createSelector(
           ? bytesToSize(volumeUsedCurren?.value[1])
           : 0,
         health: volumeHealth,
-        // we have problem from latency
         latency:
           volumeLatencyCurrent &&
           volumeLatencyCurrent?.find(
