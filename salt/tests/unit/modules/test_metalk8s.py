@@ -274,3 +274,39 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
                 pillar_get_mock.assert_called_once()
             else:
                 pillar_get_mock.assert_not_called()
+
+    @parameterized.expand(
+        param.explicit(kwargs=test_case)
+        for test_case in yaml.safe_load(open(YAML_TESTS_FILE))["format_slots"]
+    )
+    def test_format_slots(self, data, result, slots_returns=None,
+                          raises=False):
+        """
+        Tests the return of `format_slots` function
+        """
+        salt_dict = {}
+
+        if not slots_returns:
+            slots_returns = {}
+
+        for slot_name, slot_return in slots_returns.items():
+            if slot_return is None:
+                salt_dict[slot_name] = MagicMock(
+                    side_effect=Exception('An error has occurred')
+                )
+            else:
+                salt_dict[slot_name] = MagicMock(return_value=slot_return)
+
+        with patch.dict(metalk8s.__salt__, salt_dict):
+            if raises:
+                self.assertRaisesRegexp(
+                    CommandExecutionError,
+                    result,
+                    metalk8s.format_slots,
+                    data
+                )
+            else:
+                self.assertEqual(
+                    metalk8s.format_slots(data),
+                    result
+                )

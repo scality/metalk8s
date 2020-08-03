@@ -517,3 +517,46 @@ list_objects:
     result: |-
       Failed to list resources "v1/Node": \(0\)
       Reason: An error has occurred
+
+get_object_digest:
+  # Simple full object digest
+  - obj:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    result: 134164353c059f0e1c55c5d4f40eb500997399f0f1fcbb8dd373baec3a9e8c39
+
+  # Object specific key digest
+  - obj:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    path: 'metadata:name'
+    result: e74a1c5e32ef10c596001d2ba43bc94d6687919769e67e8b90386b77cc6f3a3a
+
+  # Object digest md5
+  - obj:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    path: 'metadata:name'
+    checksum: 'md5'
+    result: d98adbe109489058e7a6ec9716acdadb
+
+  # Unable to get object
+  - obj: null
+    raises: True
+    result: 'Unable to find the object'
+
+  # Unable to find the key in the object
+  - obj:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    path: 'metadata:invalid:path'
+    raises: True
+    result: 'Unable to find key "metadata:invalid:path" in the object'
