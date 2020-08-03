@@ -9,6 +9,7 @@ module, while other methods can be found in `metalk8s_kubernetes_utils.py`,
 `metalk8s_drain.py` and `metalk8s_cordon.py`.
 """
 
+import json
 import logging
 import re
 
@@ -400,5 +401,8 @@ def get_object_digest(path=None, checksum='sha256', *args, **kwargs):
                     path
                 )
             )
+
+    if isinstance(obj, dict):
+        obj = json.dumps(obj, sort_keys=True)
 
     return __salt__.hashutil.digest(str(obj), checksum=checksum)
