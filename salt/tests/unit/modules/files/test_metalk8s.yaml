@@ -260,3 +260,71 @@ check_pillar_keys:
     }
     raises: True
     result: "Unable to get my.third.key.does-not-exists:\n\tEmpty value for third.key"
+
+format_slots:
+  # Simple format slots (no slots)
+  - data:
+      my: simple
+      data:
+        - content
+        - without
+        - any: slots
+    result:
+      my: simple
+      data:
+        - content
+        - without
+        - any: slots
+
+  # Simple single slot returning string
+  - data: __slot__:salt:my_mod.my_fun()
+    slots_returns:
+      my_mod.my_fun: 'ABC123'
+    result: 'ABC123'
+
+  # Invalid slot ignored (malformed)
+  - data: __slot__:malformed_slot_call
+    result: __slot__:malformed_slot_call
+
+  # Invalid slot ignored (invalid caller)
+  - data: __slot__:my_invalid_caller:slot.call()
+    result: __slot__:my_invalid_caller:slot.call()
+
+  # Multiple slots nested (with some invalid call ignored)
+  - data:
+      mykey:
+        abc: __slot__:salt:my_mod.first_fun()
+        def:
+          - 123
+          - __slot__:salt:my_mod.second_fun(with, some, x=args)
+          - __slot:malformed_slot_call
+      otherkey: __slot__:invalid_caller:slot.call()
+    slots_returns:
+      my_mod.first_fun: 'First fun simple return'
+      my_mod.second_fun:
+        Dict: return
+        For:
+          - second
+          - funct: ion
+    result:
+      mykey:
+        abc: 'First fun simple return'
+        def:
+          - 123
+          - Dict: return
+            For:
+              - second
+              - funct: ion
+          - __slot:malformed_slot_call
+      otherkey: __slot__:invalid_caller:slot.call()
+
+    # Error during slot execution
+    data:
+      my_key:
+        abc:
+          - def
+          - __slot__:salt:my_mod.my_fun()
+    slots_returns:
+      my_mod.my_fun: null
+    raises: True
+    result: "Unable to compute slot '__slot__:salt:my_mod.my_fun\\(\\)': An error has occurred"
