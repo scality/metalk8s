@@ -186,6 +186,7 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
     ],
     constants.GRAFANA_REPOSITORY: [
         'loki',
+        'fluent-bit-plugin-loki',
     ],
     constants.INGRESS_REPOSITORY: [
         'nginx-ingress-controller',

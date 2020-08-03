@@ -222,6 +222,11 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         version='1.5.0',
         digest='sha256:922b3f412fdd9a8fb01115b6aebf5dac162647ce1c5ee3637ce1e2cff69e097b',
     ),
+    Image(
+        name='fluent-bit-plugin-loki',
+        version='1.5.0-amd64',
+        digest='sha256:2d0e9b06a2bf894fa91300fa38a185ac44a7bedcb8a2c63b8f6077e5cf80fc4d',
+    ),
 )
 
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
