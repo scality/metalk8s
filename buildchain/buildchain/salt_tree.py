@@ -269,6 +269,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         renderer=targets.Renderer.SLS,
     ),
 
+    Path('salt/metalk8s/addons/logging/deployed/init.sls'),
+    Path('salt/metalk8s/addons/logging/deployed/namespace.sls'),
+    Path('salt/metalk8s/addons/logging/loki/deployed/chart.sls'),
     Path('salt/metalk8s/addons/logging/loki/deployed/init.sls'),
     Path('salt/metalk8s/addons/logging/loki/deployed/storageclass.sls'),
 
