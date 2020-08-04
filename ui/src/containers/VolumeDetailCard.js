@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import {
@@ -9,7 +10,7 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import { deleteVolumeAction } from '../ducks/app/volumes';
 import { VOLUME_CONDITION_LINK } from '../constants';
-import { Button, Modal, ProgressBar } from '@scality/core-ui';
+import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumeDetailCardContainer = styled.div`
@@ -59,13 +60,12 @@ const DeleteButton = styled(Button)`
 const DeleteButtonContainer = styled.div`
   display: flex;
   justify-content: center;
-  padding-bottom: ${padding.base};
+  padding-top: ${padding.base};
 `;
 
 const VolumeGraph = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
 `;
 
 const VolumeUsage = styled.div`
@@ -98,6 +98,9 @@ const ModalBody = styled.div`
 const CancelButton = styled(Button)`
   margin-right: ${padding.small};
 `;
+const LoaderContainer = styled(Loader)`
+  padding-left: ${padding.small};
+`;
 
 const VolumeDetailCard = (props) => {
   const {
@@ -114,19 +117,25 @@ const VolumeDetailCard = (props) => {
     volumeUsageBytes,
     storageCapacity,
     condition,
+    volumeListData,
   } = props;
 
   const dispatch = useDispatch();
+  const history = useHistory();
+
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
   const [
     isDeleteConfirmationModalOpen,
     setisDeleteConfirmationModalOpen,
   ] = useState(false);
+
   // Confirm the deletion
-  const onClickDeleteButton = (deleteVolumeName) => {
+  const onClickDeleteButton = (deleteVolumeName, nodeName) => {
+    const firstVolumeName = volumeListData[0].name;
     deleteVolume(deleteVolumeName);
     setisDeleteConfirmationModalOpen(false);
+    history.push(`/volumes/?node=${nodeName}&volume=${firstVolumeName}`);
   };
 
   const onClickCancelButton = () => {
@@ -189,20 +198,6 @@ const VolumeDetailCard = (props) => {
       </VolumeInformation>
 
       <VolumeGraph>
-        {condition === VOLUME_CONDITION_LINK && (
-          <VolumeUsage>
-            <VolumeUsageTitle>Volume Usage</VolumeUsageTitle>
-            <ProgressBarContainer>
-              <ProgressBar
-                size="base"
-                percentage={volumeUsagePercentage}
-                topRightLabel={`${volumeUsagePercentage}%`}
-                bottomLeftLabel={`${volumeUsageBytes} USED`}
-                bottomRightLabel={`${storageCapacity} TOTAL`}
-              />
-            </ProgressBarContainer>
-          </VolumeUsage>
-        )}
         <DeleteButtonContainer>
           <DeleteButton
             icon={<i className="fas fa-sm fa-trash" />}
@@ -213,6 +208,24 @@ const VolumeDetailCard = (props) => {
             }}
           />
         </DeleteButtonContainer>
+        {condition === VOLUME_CONDITION_LINK && (
+          <VolumeUsage>
+            <VolumeUsageTitle>Volume Usage</VolumeUsageTitle>
+            {volumeUsagePercentage !== intl.translate('unknown') ? (
+              <ProgressBarContainer>
+                <ProgressBar
+                  size="base"
+                  percentage={volumeUsagePercentage}
+                  topRightLabel={`${volumeUsagePercentage}%`}
+                  bottomLeftLabel={`${volumeUsageBytes} USED`}
+                  bottomRightLabel={`${storageCapacity} TOTAL`}
+                />
+              </ProgressBarContainer>
+            ) : (
+              <LoaderContainer size="small" />
+            )}
+          </VolumeUsage>
+        )}
       </VolumeGraph>
       <Modal
         close={() => setisDeleteConfirmationModalOpen(false)}
@@ -225,12 +238,12 @@ const VolumeDetailCard = (props) => {
               text={intl.translate('cancel')}
               onClick={onClickCancelButton}
             />
+
             <Button
               variant="danger"
               text={intl.translate('delete')}
-              onClick={(e) => {
-                e.stopPropagation();
-                onClickDeleteButton(name);
+              onClick={() => {
+                onClickDeleteButton(name, nodeName);
               }}
             />
           </NotificationButtonGroup>

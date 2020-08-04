@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { createSelector } from 'reselect';
 import sortByArray from 'lodash.sortby';
 import { intl } from '../translations/IntlGlobalProvider';
 import {
   STATUS_FAILED,
   STATUS_READY,
+  STATUS_UNKNOWN,
   VOLUME_CONDITION_EXCLAMATION,
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_LINK,
@@ -146,10 +148,25 @@ export const sortCapacity = createSelector(
 );
 
 export const getNodeNameFromUrl = (state, props) => {
-  if (props && props.match && props.match.params && props.match.params.id) {
-    return props.match.params.id;
-  } else {
-    return '';
+  // There are two different URLs which we want to extract the node name from
+  // `/nodes/<node-name>`
+  // `/volumes/?node=<node-name>`
+  const location = props.location.pathname.split('/')[1];
+
+  if (location === 'volumes') {
+    const query = new URLSearchParams(props.location.search);
+    const nodeName = query.get('node');
+    if (nodeName) {
+      return nodeName;
+    } else {
+      return '';
+    }
+  } else if (location === 'nodes') {
+    if (props && props.match && props.match.params && props.match.params.id) {
+      return props.match.params.id;
+    } else {
+      return '';
+    }
   }
 };
 
@@ -254,8 +271,10 @@ export function computeVolumeCondition(status, isBound) {
     return VOLUME_CONDITION_UNLINK;
   } else if (status === STATUS_READY && isBound === intl.translate('yes')) {
     return VOLUME_CONDITION_LINK;
+  } else {
+    console.error('Unknown volume condition');
+    return STATUS_UNKNOWN;
   }
-  console.error('Unknown volume condition');
 }
 
 /**
@@ -296,7 +315,7 @@ export function addMissingDataPoint(
   duration,
   samplingFrequency,
 ) {
-  if (!orginalValues || orginalValues.length === 0) {
+  if (!orginalValues || orginalValues.length === 0 || duration === 0) {
     return;
   }
   const newValues = [];
@@ -313,6 +332,7 @@ export function addMissingDataPoint(
   }
 
   // copy the existing data points from `orginalValue` array to `newValues`
+  if (newValues.length === 0) return;
   let nextIndex = 0;
   for (let i = 0; i < newValues.length; i++) {
     if (newValues[i][0] === orginalValues[nextIndex][0]) {
@@ -322,3 +342,8 @@ export function addMissingDataPoint(
   }
   return newValues;
 }
+
+// A custom hook that builds on useLocation to parse the query string.
+export const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};

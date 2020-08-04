@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
 import { Breadcrumb } from '@scality/core-ui';
@@ -17,6 +16,7 @@ import {
   makeGetVolumesFromUrl,
   useRefreshEffect,
   allSizeUnitsToBytes,
+  useQuery,
 } from '../services/utils';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
@@ -73,7 +73,6 @@ const RightSidePanel = styled.div`
 `;
 
 const VolumePage = (props) => {
-  const match = useRouteMatch();
   const dispatch = useDispatch();
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
@@ -92,14 +91,17 @@ const VolumePage = (props) => {
     return () => dispatch(stopRefreshAlertsAction());
   }, [dispatch]);
 
+  // get the volume name through URL
+  const query = useQuery();
+  const currentVolumeName = query.get('volume');
+
   const theme = useSelector((state) => state.config.theme);
   const pods = useSelector((state) => makeGetPodsFromUrl(state, props));
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
+
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const alerts = useSelector((state) => state.app.monitoring.alert);
-
-  const currentVolumeName = match.params.volumeName;
 
   const pV = pVList.find((pv) => pv.metadata.name === currentVolumeName);
   const volume = volumes.find(
@@ -130,9 +132,8 @@ const VolumePage = (props) => {
     (vol) => vol.name === currentVolumeName,
   );
 
-  return currentVolumeName && volume ? (
+  return (
     <PageContainer>
-      {/* There are two cases could be redirected to the Volume Page. */}
       <BreadcrumbContainer>
         {node.name !== undefined ? (
           <Breadcrumb
@@ -171,56 +172,60 @@ const VolumePage = (props) => {
             nodeName={node?.name}
           ></VolumeListTable>
         </LeftSideVolumeList>
-        <RightSidePanel>
-          <VolumeDetailCard
-            name={currentVolumeName}
-            nodeName={volume?.spec?.nodeName}
-            storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
-            status={volumeStatus ?? intl.translate('unknown')}
-            storageClassName={volume?.spec?.storageClassName}
-            creationTimestamp={volume?.metadata?.creationTimestamp}
-            volumeType={
-              volume?.spec?.rawBlockDevice
-                ? RAW_BLOCK_DEVICE
-                : SPARSE_LOOP_DEVICE
-            }
-            usedPodName={UsedPod?.name}
-            devicePath={
-              volume?.spec?.rawBlockDevice?.devicePath ??
-              intl.translate('not_applicable')
-            }
-            volumeUsagePercentage={currentVolume?.usage}
-            volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-            storageCapacity={
-              volumeListData?.find((vol) => vol.name === currentVolumeName)
-                .storageCapacity
-            }
-            health={
-              volumeListData?.find((vol) => vol.name === currentVolumeName)
-                .health
-            }
-            condition={currentVolume.status}
-          ></VolumeDetailCard>
-          <ActiveAlertsCard
-            alertlist={alertlist}
-            PVCName={PVCName}
-          ></ActiveAlertsCard>
-          <PerformanceGraphCard
-            deviceName={volume?.status?.deviceName}
-            PVCName={PVCName}
-            volumeStorageCapacity={allSizeUnitsToBytes(
-              pV?.spec?.capacity?.storage,
-            )}
-            // the volume condition compute base on the `status` and `bound/unbound`
-            volumeCondition={currentVolume.status}
-            // Hardcode the port number for prometheus metrics
-            instance={node?.internalIP + `:9100`}
-          ></PerformanceGraphCard>
-        </RightSidePanel>
+        {currentVolumeName && volume ? (
+          <RightSidePanel>
+            <VolumeDetailCard
+              name={currentVolumeName}
+              nodeName={volume?.spec?.nodeName}
+              storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
+              status={volumeStatus ?? intl.translate('unknown')}
+              storageClassName={volume?.spec?.storageClassName}
+              creationTimestamp={volume?.metadata?.creationTimestamp}
+              volumeType={
+                volume?.spec?.rawBlockDevice
+                  ? RAW_BLOCK_DEVICE
+                  : SPARSE_LOOP_DEVICE
+              }
+              usedPodName={UsedPod?.name}
+              devicePath={
+                volume?.spec?.rawBlockDevice?.devicePath ??
+                intl.translate('not_applicable')
+              }
+              volumeUsagePercentage={currentVolume?.usage}
+              volumeUsageBytes={currentVolume?.usageRawData ?? 0}
+              storageCapacity={
+                volumeListData?.find((vol) => vol.name === currentVolumeName)
+                  .storageCapacity
+              }
+              health={
+                volumeListData?.find((vol) => vol.name === currentVolumeName)
+                  .health
+              }
+              condition={currentVolume.status}
+              // the delete button inside the volume detail card should know that which volume is the first one
+              volumeListData={volumeListData}
+            ></VolumeDetailCard>
+            <ActiveAlertsCard
+              alertlist={alertlist}
+              PVCName={PVCName}
+            ></ActiveAlertsCard>
+            <PerformanceGraphCard
+              deviceName={volume?.status?.deviceName}
+              PVCName={PVCName}
+              volumeStorageCapacity={allSizeUnitsToBytes(
+                pV?.spec?.capacity?.storage,
+              )}
+              // the volume condition compute base on the `status` and `bound/unbound`
+              volumeCondition={currentVolume.status}
+              // Hardcode the port number for prometheus metrics
+              instance={node?.internalIP + `:9100`}
+            ></PerformanceGraphCard>
+          </RightSidePanel>
+        ) : (
+          <Loader />
+        )}
       </VolumeContent>
     </PageContainer>
-  ) : (
-    <Loader />
   );
 };
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useHistory } from 'react-router';
-import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   useTable,
@@ -13,6 +12,7 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
+import { useQuery } from '../services/utils';
 import CircleStatus from '../components/CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -142,7 +142,7 @@ function GlobalFilter({
   );
 }
 
-function Table({ columns, data, nodeName, rowClicked }) {
+function Table({ columns, data, nodeName, rowClicked, volumeName }) {
   // Use the state and functions returned from useTable to build your UI
   const defaultColumn = React.useMemo(
     () => ({
@@ -170,7 +170,6 @@ function Table({ columns, data, nodeName, rowClicked }) {
     useFilters,
     useGlobalFilter,
   );
-  const { volumeName } = useParams();
 
   return (
     <>
@@ -276,7 +275,11 @@ function Table({ columns, data, nodeName, rowClicked }) {
                           </td>
                         );
                       default:
-                        console.error('Unknown volume condition');
+                        return (
+                          <td {...cell.getCellProps()}>
+                            <div>{intl.translate('unknown')}</div>
+                          </td>
+                        );
                     }
                   } else if (cell.column.Header === 'Health') {
                     return (
@@ -305,11 +308,13 @@ function Table({ columns, data, nodeName, rowClicked }) {
 const VolumeListTable = (props) => {
   const { nodeName, volumeListData } = props;
   const history = useHistory();
+  const query = useQuery();
+  const volumeName = query?.get('volume');
 
   const columns = React.useMemo(() => [
     { Header: 'Name', accessor: 'name' },
     // volumes filter by node don't necessarily to display the node name
-    // { Header: 'Node', accessor: 'node' },
+    //{ Header: 'Node', accessor: 'node' },
     { Header: 'Usage', accessor: 'usage' },
     { Header: 'Size', accessor: 'storageCapacity' },
     { Header: 'Health', accessor: 'health' },
@@ -320,7 +325,8 @@ const VolumeListTable = (props) => {
 
   // handle the row selection by updating the URL
   const onClickRow = (row) => {
-    history.push(`/nodes/${nodeName}/volumes/${row.values.name}`);
+    //history.push(`/nodes/${nodeName}/volumes/${row.values.name}`);
+    history.push(`/volumes/?node=${nodeName}&volume=${row.values.name}`);
   };
 
   return (
@@ -330,6 +336,7 @@ const VolumeListTable = (props) => {
         data={volumeListData}
         nodeName={nodeName}
         rowClicked={onClickRow}
+        volumeName={volumeName}
       />
     </VolumeListContainer>
   );
