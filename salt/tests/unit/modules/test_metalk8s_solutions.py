@@ -31,20 +31,8 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
         """
         Tests the return of `__virtual__` function, success
         """
-        dict_patch = {'metalk8s.archive_info_from_iso': MagicMock()}
-        with patch.dict(metalk8s_solutions.__salt__, dict_patch):
-            self.assertEqual(
-                metalk8s_solutions.__virtual__(), 'metalk8s_solutions'
-            )
-
-    def test_virtual_missing_metalk8s_module(self):
-        """
-        Tests the return of `__virtual__` function,
-        when metalk8s module is missing
-        """
         self.assertEqual(
-            metalk8s_solutions.__virtual__(),
-            (False, "Failed to load 'metalk8s' module.")
+            metalk8s_solutions.__virtual__(), 'metalk8s_solutions'
         )
 
     @parameterized.expand([
@@ -255,20 +243,18 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
 
     @parameterized.expand([
         param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["read_solution_config"]
+        for test_case in YAML_TESTS_CASES["read_solution_manifest"]
     ])
-    def test_read_solution_config(self, config=None, result=None,
-                                  raises=False):
+    def test_read_solution_manifest(self, manifest=None, result=None,
+                                    raises=False):
         """
-        Tests the return of `read_solution_config` function
+        Tests the return of `read_solution_manifest` function
         """
-        path_isfile_mock = MagicMock(return_value=config is not None)
+        path_isfile_mock = MagicMock(return_value=manifest is not None)
         list_solution_images_mock = MagicMock(return_value=[])
-        fopen_mock = mock_open(read_data=config)
+        fopen_mock = mock_open(read_data=manifest)
 
-        read_solution_config_args = [
-            '/srv/scality/my-solution', 'my-solution', '1.0.0'
-        ]
+        mountpoint = '/srv/scality/my-solution'
         with patch("os.path.isfile", path_isfile_mock), \
                 patch("salt.utils.files.fopen", fopen_mock), \
                 patch("metalk8s_solutions.list_solution_images",
@@ -277,14 +263,43 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                 self.assertRaisesRegexp(
                     CommandExecutionError,
                     result,
-                    metalk8s_solutions.read_solution_config,
-                    *read_solution_config_args
+                    metalk8s_solutions.read_solution_manifest,
+                    mountpoint
                 )
             else:
                 self.assertEqual(
-                    metalk8s_solutions.read_solution_config(
-                        *read_solution_config_args
-                    ),
+                    metalk8s_solutions.read_solution_manifest(mountpoint),
+                    tuple(result)
+                )
+
+    @parameterized.expand(
+        param.explicit(kwargs=test_case)
+        for test_case in YAML_TESTS_CASES["manifest_from_iso"]
+    )
+    def test_manifest_from_iso(self, manifest=None, result=None, raises=False):
+        """
+        Tests the return of `manifest_from_iso` function
+        """
+        def _cmd_run_all_mock(**_):
+            if manifest is None:
+                return {'retcode': 1, 'stderr': 'isoinfo error', 'stdout': ''}
+            return {'retcode': 0, 'stdout': manifest}
+
+        cmd_run_all_mock = MagicMock(side_effect=_cmd_run_all_mock)
+
+        patch_dict = {'cmd.run_all': cmd_run_all_mock}
+        path = '/tmp/my-solution.iso'
+        with patch.dict(metalk8s_solutions.__salt__, patch_dict):
+            if raises:
+                self.assertRaisesRegexp(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_solutions.manifest_from_iso,
+                    path
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_solutions.manifest_from_iso(path),
                     result
                 )
 
@@ -297,29 +312,17 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
         """
         Tests the return of `list_available` function
         """
-        def _archive_info_from_tree(path):
-            if archive_infos:
-                return archive_infos
-            raise Exception('Path has no "product.txt"')
-
-        if not mountpoints:
-            mountpoints = {}
-        if not result:
-            result = {}
-
-        mount_active_mock = MagicMock(return_value=mountpoints)
-        archive_info_from_tree_mock = MagicMock(
-            side_effect=_archive_info_from_tree
+        mount_active_mock = MagicMock(return_value=mountpoints or {})
+        read_solution_manifest_mock = MagicMock(
+            return_value=(None, archive_infos)
         )
-        read_solution_config_mock = MagicMock(return_value=None)
 
         salt_dict_patch = {
             'mount.active': mount_active_mock,
-            'metalk8s.archive_info_from_tree': archive_info_from_tree_mock,
         }
         with patch.dict(metalk8s_solutions.__salt__, salt_dict_patch), \
-                patch("metalk8s_solutions.read_solution_config",
-                      read_solution_config_mock):
+                patch("metalk8s_solutions.read_solution_manifest",
+                      read_solution_manifest_mock):
             if raises:
                 self.assertRaisesRegexp(
                     Exception,
@@ -329,5 +332,35 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
             else:
                 self.assertEqual(
                     metalk8s_solutions.list_available(),
+                    result or {}
+                )
+
+    @parameterized.expand(
+        param.explicit(kwargs=test_case)
+        for test_case in YAML_TESTS_CASES["operator_roles_from_manifest"]
+    )
+    def test_operator_roles_from_manifest(self, manifest=None, result=None,
+                                          raises=False):
+        """
+        Tests the return of `operator_roles_from_manifest` function
+        """
+        path_isfile_mock = MagicMock(return_value=manifest is not None)
+        fopen_mock = mock_open(read_data=manifest)
+
+        mountpoint = '/srv/scality/my-solution'
+        with patch("os.path.isfile", path_isfile_mock), \
+                patch("salt.utils.files.fopen", fopen_mock):
+            if raises:
+                self.assertRaisesRegexp(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_solutions.operator_roles_from_manifest,
+                    mountpoint
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_solutions.operator_roles_from_manifest(
+                        mountpoint
+                    ),
                     result
                 )
