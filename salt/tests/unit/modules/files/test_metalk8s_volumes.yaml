@@ -137,6 +137,105 @@ _volumes_details: &volumes_details
         lastUpdateTime: '2020-07-11T13:55:26Z'
         status: 'True'
         type: Ready
+  my-sparse-block-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-sparse-block-volume
+      uid: 8474cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass:
+        metadata:
+          name: metalk8s-monitoring
+        mount_options:
+        - rw
+        - discard
+        parameters:
+          fsType: ext4
+          mkfsOptions: '["-m", "0"]'
+        provisioner: kubernetes.io/no-provisioner
+        reclaim_policy: Retain
+        volume_binding_mode: WaitForFirstConsumer
+      storageClassName: metalk8s-monitoring
+      mode: Block
+      sparseLoopDevice:
+        size: 1Gi
+  my-raw-block-device-block-disk-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-raw-block-device-block-disk-volume
+      uid: 9474cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass:
+        metadata:
+          name: metalk8s-monitoring
+        mount_options:
+        - rw
+        - discard
+        parameters:
+          fsType: ext4
+          mkfsOptions: '["-m", "0"]'
+        provisioner: kubernetes.io/no-provisioner
+        reclaim_policy: Retain
+        volume_binding_mode: WaitForFirstConsumer
+      storageClassName: metalk8s-monitoring
+      mode: Block
+      rawBlockDevice:
+        devicePath: /dev/sdb
+  my-raw-block-device-block-partition-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-raw-block-device-block-partition-volume
+      uid: 9574cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass:
+        metadata:
+          name: metalk8s-monitoring
+        mount_options:
+        - rw
+        - discard
+        parameters:
+          fsType: ext4
+          mkfsOptions: '["-m", "0"]'
+        provisioner: kubernetes.io/no-provisioner
+        reclaim_policy: Retain
+        volume_binding_mode: WaitForFirstConsumer
+      storageClassName: metalk8s-monitoring
+      mode: Block
+      rawBlockDevice:
+        devicePath: /dev/sda3
+  my-raw-block-device-block-lvm-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-raw-block-device-block-lvm-volume
+      uid: 9674cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass:
+        metadata:
+          name: metalk8s-monitoring
+        mount_options:
+        - rw
+        - discard
+        parameters:
+          fsType: ext4
+          mkfsOptions: '["-m", "0"]'
+        provisioner: kubernetes.io/no-provisioner
+        reclaim_policy: Retain
+        volume_binding_mode: WaitForFirstConsumer
+      storageClassName: metalk8s-monitoring
+      mode: Block
+      rawBlockDevice:
+        # Use realpath here, so that we can mock `device_name` function
+        # and suppose we already have realpath
+        # devicePath: /dev/mapper/my-lvm-volume
+        devicePath: /dev/dm-1
   my-xfs-volume:
     apiVersion: storage.metalk8s.scality.com/v1alpha1
     kind: Volume
@@ -224,6 +323,26 @@ exists:
     get_size: 42
     result: False
 
+  ## SPARSE block volume
+  # sparse file exists
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  # sparse does not exists
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    is_file: False
+    get_size: 0
+    result: False
+
+  # sparse file exists but wrong size
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    is_file: True
+    get_size: 42
+    result: False
+
   ## RAW BLOCK DEVICE volume
   # specified path correspond to a block device
   - name: my-raw-block-device-volume
@@ -232,6 +351,42 @@ exists:
 
   # specified path does not correspond to a block device
   - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    is_blkdev: False
+    result: False
+
+  ## RAW BLOCK DEVICE block disk volume
+  # specified path correspond to a block device
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  # specified path does not correspond to a block device
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    is_blkdev: False
+    result: False
+
+  ## RAW BLOCK DEVICE block partition volume
+  # specified path correspond to a block device
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  # specified path does not correspond to a block device
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    is_blkdev: False
+    result: False
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # specified path correspond to a block device
+  - name: my-raw-block-device-block-lvm-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  # specified path does not correspond to a block device
+  - name: my-raw-block-device-block-lvm-volume
     pillar_volumes: *volumes_details
     is_blkdev: False
     result: False
@@ -260,12 +415,44 @@ create:
     ftruncate: False
     raise_msg: "cannot create sparse file at .*: An error has occurred"
 
+  ## SPARSE block volume
+  # create a simple sparse volume
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+
+  # unable to truncate the sparse file
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    ftruncate: False
+    raise_msg: "cannot create sparse file at .*: An error has occurred"
+
   ## RAW BLOCK DEVICE volume
   # create on raw block device (nothing to create)
   - name: my-raw-block-device-volume
     pillar_volumes: *volumes_details
     # We do not need to create block device
     raise_msg: block device /dev/sda1 does not exists
+
+  ## RAW BLOCK DEVICE block disk volume
+  # create on raw block device (nothing to create)
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    # We do not need to create block device
+    raise_msg: block device /dev/sdb does not exists
+
+  ## RAW BLOCK DEVICE block partition volume
+  # create on raw block device (nothing to create)
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    # We do not need to create block device
+    raise_msg: block device /dev/sda3 does not exists
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # create on raw block device (nothing to create)
+  - name: my-raw-block-device-block-lvm-volume
+    pillar_volumes: *volumes_details
+    # We do not need to create block device
+    raise_msg: block device /dev/dm-1 does not exists
 
   ## Invalid volumes
   # specified volume is not in the pillar
@@ -299,9 +486,47 @@ is_provisioned:
     raises: True
     result: "error while trying to run `losetup --associated /var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560`: An error has occurred"
 
+  ## SPARSE block volume
+  # sparse file associated with a loop device
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    losetup_output: |
+      /dev/loop4: [64769]:41159 (/var/lib/metalk8s/storage/sparse/8474cda7-0dbe-40fc-9842-3cb0404a725a)
+    result: True
+
+  # sparse file not associated with any device
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    losetup_output: |
+    result: False
+
+  # error when checking sparse file association
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    raises: True
+    result: "error while trying to run `losetup --associated /var/lib/metalk8s/storage/sparse/8474cda7-0dbe-40fc-9842-3cb0404a725a`: An error has occurred"
+
   ## RAW BLOCK DEVICE volume
   # raw block device always provisioned (nothing to provision)
   - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## RAW BLOCK DEVICE block disk volume
+  # raw block device always provisioned (nothing to provision)
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## RAW BLOCK DEVICE block partition volume
+  # raw block device always provisioned (nothing to provision)
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # raw block device always provisioned (nothing to provision)
+  - name: my-raw-block-device-block-lvm-volume
     pillar_volumes: *volumes_details
     result: True
 
@@ -324,9 +549,35 @@ provision:
     pillar_volumes: *volumes_details
     raise_msg: "error while trying to run `losetup --find /var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560`: An error has occurred"
 
+  ## SPARSE block volume
+  # provision a sparse file with a loop device
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    losetup_output: |
+
+  # error when searching a loop device for the sparse file
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `losetup --find --partscan /var/lib/metalk8s/storage/sparse/8474cda7-0dbe-40fc-9842-3cb0404a725a`: An error has occurred"
+
   ## RAW BLOCK DEVICE volume
   # nothing to provision for raw block device
   - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+
+  ## RAW BLOCK DEVICE block disk volume
+  # nothing to provision for raw block device
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+
+  ## RAW BLOCK DEVICE block partition volume
+  # nothing to provision for raw block device
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # nothing to provision for raw block device
+  - name: my-raw-block-device-block-lvm-volume
     pillar_volumes: *volumes_details
 
   ## Invalid volumes
@@ -349,6 +600,25 @@ is_prepared:
     uuid_return: e1d78810-3787-4ca4-b712-50a269e42560
     result: False
 
+  ## SPARSE block volume
+  # sparse volume already prepared - right UUID
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    device_name_return: 8474cda7-0dbe-40fc-9842-3cb0404a725a1
+    result: True
+
+  # sparse volume already prepared - wrong UUID
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    device_name_return: 4274cda7-0dbe-40fc-9842-3cb0404a725a
+    result: False
+
+  # sparse volume block partition does not exists
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    device_name_return: False
+    result: False
+
   ## RAW BLOCK DEVICE volume
   # raw block device volume already prepared - right UUID
   - name: my-raw-block-device-volume
@@ -362,6 +632,50 @@ is_prepared:
     uuid_return: 8474cda7-0dbe-40fc-9842-3cb0404a725a
     result: False
 
+  ## RAW BLOCK DEVICE block disk volume
+  # raw block device volume already prepared - right UUID
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    device_name_return: sdb1
+    result: True
+
+  # raw block device volume already prepared - wrong UUID
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    device_name_return: sda5
+    result: False
+
+  # raw block device volume block disk partition 1 does not exists
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    device_name_return: False
+    result: False
+
+  ## RAW BLOCK DEVICE block partition volume
+  # raw block device volume already prepared - right UUID
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    device_name_return: sda3
+    result: True
+
+  # raw block device volume already prepared - wrong UUID
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    device_name_return: sda5
+    result: False
+
+  # raw block device volume block partition does not exists
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    device_name_return: False
+    result: False
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # raw block device lvm volume always prepared (nothing to prepare)
+  - name: my-raw-block-device-block-lvm-volume
+    pillar_volumes: *volumes_details
+    result: True
+
   ## Invalid volumes
   # specified volume is not in the pillar
   - name: unknown-volume
@@ -374,7 +688,7 @@ prepare:
   # prepare the sparse volume in ext4
   - name: my-sparse-volume
     pillar_volumes: *volumes_details
-    mkfs_output: |
+    cmd_output: |
 
   # error when formatting the sparse volume in ext4
   - name: my-sparse-volume
@@ -393,11 +707,22 @@ prepare:
     has_partition: True
     raise_msg: "backing device `/var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560` contains a partition table"
 
+  ## SPARSE block volume
+  # prepare the sparse volume in ext4
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    cmd_output: |
+
+  # error when creating the partition table on the sparse volume
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `sgdisk --largest-new 1 --partition-guid .*`: An error has occurred"
+
   ## RAW BLOCK DEVICE volume
   # prepare the raw block device volume in ext4
   - name: my-raw-block-device-volume
     pillar_volumes: *volumes_details
-    mkfs_output: |
+    cmd_output: |
 
   # error when formatting the raw block device volume in ext4
   - name: my-raw-block-device-volume
@@ -407,12 +732,39 @@ prepare:
   # prepare the raw block device volume in xfs
   - name: my-xfs-volume
     pillar_volumes: *volumes_details
-    mkfs_output: |
+    cmd_output: |
 
   # error when formatting the raw block device volume in xfs
   - name: my-xfs-volume
     pillar_volumes: *volumes_details
     raise_msg: "error while trying to run `mkfs.xfs -f .* /dev/sda2`: An error has occurred"
+
+  ## RAW BLOCK DEVICE block disk volume
+  # prepare the raw block device volume
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    cmd_output: |
+
+  # error when creating the partition table on the raw block device volume
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `sgdisk --largest-new 1 --partition-guid .* /dev/sdb`: An error has occurred"
+
+  ## RAW BLOCK DEVICE block partition volume
+  # prepare the raw block device volume
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    cmd_output: |
+
+  # error when creating the partition table on the raw block device volume
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `sgdisk --partition-guid .* /dev/sda`: An error has occurred"
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # Nothing to prepare for lvm raw block device volume
+  - name: my-raw-block-device-block-lvm-volume
+    pillar_volumes: *volumes_details
 
   ## Invalid volumes
   # volume with invalid storage class name
@@ -451,9 +803,47 @@ is_cleaned_up:
     exists: True
     result: False
 
+  ## SPARSE block volume
+  # sparse file does not exists
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  # sparse file exists and associated with a loop device
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    is_provisioned: True
+    exists: True
+    result: False
+
+  # sparse file exists but not associated with any device
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    is_provisioned: False
+    exists: True
+    result: False
+
   ## RAW BLOCK DEVICE volume
   # raw block device always cleaned up (nothing to clean)
   - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## RAW BLOCK DEVICE block disk volume
+  # raw block device always cleaned up (nothing to clean)
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## RAW BLOCK DEVICE block partition volume
+  # raw block device always cleaned up (nothing to clean)
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # raw block device always cleaned up (nothing to clean)
+  - name: my-raw-block-device-block-lvm-volume
     pillar_volumes: *volumes_details
     result: True
 
@@ -487,9 +877,46 @@ clean_up:
     ioctl_error: "An error has occurred during ioctl"
     raise_msg: "An error has occurred during ioctl"
 
+  ## SPARSE block volume
+  # clean up a sparse file
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+
+  # sparse file does not exists
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    remove_error: [2, "No such file or directory", "..."]
+
+  # error when trying to remove the sparse file
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    remove_error: "An error has occurred during remove"
+    raise_msg: "An error has occurred during remove"
+
+  # error when running ioctl on the sparse file
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    ioctl_error: "An error has occurred during ioctl"
+    raise_msg: "An error has occurred during ioctl"
+
   ## RAW BLOCK DEVICE volume
   # nothing to clean up for raw block device
   - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+
+  ## RAW BLOCK DEVICE block disk volume
+  # nothing to clean up for raw block device
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+
+  ## RAW BLOCK DEVICE block partition volume
+  # nothing to clean up for raw block device
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # nothing to clean up for raw block device
+  - name: my-raw-block-device-block-lvm-volume
     pillar_volumes: *volumes_details
 
   ## Invalid volumes
@@ -497,3 +924,65 @@ clean_up:
   - name: unknown-volume
     pillar_volumes: *volumes_details
     raise_msg: volume unknown-volume not found in pillar
+
+device_info:
+  ## SPARSE volume
+  # sparse volume info
+  - name: my-sparse-volume
+    pillar_volumes: *volumes_details
+    result:
+      size: 4242
+      path: /dev/disk/by-uuid/f1d78810-3787-4ca4-b712-50a269e42560
+
+  ## SPARSE block volume
+  # sparse volume info
+  - name: my-sparse-block-volume
+    pillar_volumes: *volumes_details
+    result:
+      size: 4242
+      path: /dev/disk/by-partuuid/8474cda7-0dbe-40fc-9842-3cb0404a725a
+
+  ## RAW BLOCK DEVICE volume
+  # raw block device info
+  - name: my-raw-block-device-volume
+    pillar_volumes: *volumes_details
+    result:
+      size: 4242
+      path: /dev/disk/by-uuid/9474cda7-0dbe-40fc-9842-3cb0404a725a
+
+  ## RAW BLOCK DEVICE block disk volume
+  # raw block device info
+  - name: my-raw-block-device-block-disk-volume
+    pillar_volumes: *volumes_details
+    result:
+      size: 4242
+      path: /dev/disk/by-partuuid/9474cda7-0dbe-40fc-9842-3cb0404a725a
+
+  ## RAW BLOCK DEVICE block partition volume
+  # raw block device info
+  - name: my-raw-block-device-block-partition-volume
+    pillar_volumes: *volumes_details
+    result:
+      size: 4242
+      path: /dev/disk/by-partuuid/9574cda7-0dbe-40fc-9842-3cb0404a725a
+
+  ## RAW BLOCK DEVICE block lvm volume
+  # raw block device info
+  - name: my-raw-block-device-block-lvm-volume
+    pillar_volumes: *volumes_details
+    result:
+      size: 4242
+      path: /dev/dm-1
+
+  ## Invalid volumes
+  # specified volume is not in the pillar
+  - name: unknown-volume
+    pillar_volumes: *volumes_details
+    raises: True
+    result: volume unknown-volume not found in pillar
+
+  # no pillar informations
+  - name: my-volume
+    raises: True
+    # KeyError in pillar on `metalk8s:volumes`
+    result: 'volumes'
