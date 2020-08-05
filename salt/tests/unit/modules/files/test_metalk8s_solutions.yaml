@@ -192,72 +192,150 @@ list_solution_images:
   - raises: True
     result: .* does not exist or is not a directory
 
-read_solution_config:
-  # Ok - with config.yaml file
-  - config: |-
-      kind: SolutionConfig
+read_solution_manifest:
+  # Ok - full manifest
+  - manifest: |-
+      kind: Solution
       apiVersion: solutions.metalk8s.scality.com/v1alpha1
-      operator:
-        image:
-          name: my-custom-operator
-          tag: 1.1.0
-      images:
-        - my-extra-image:1.1.0
+      metadata:
+        name: my-solution
+      annotations:
+        solutions.metalk8s.scality.com/display-name: My Solution
+      spec:
+        version: 1.0.0
+        operator:
+          image:
+            name: my-solution-operator
+            tag: 1.1.0
+        ui:
+          image:
+            name: my-solution-ui
+            tag: 1.0.1
+        images: []
+        customApiGroups: []
     result:
-      kind: SolutionConfig
+      - kind: Solution
+        apiVersion: solutions.metalk8s.scality.com/v1alpha1
+        metadata:
+          name: my-solution
+        annotations:
+          solutions.metalk8s.scality.com/display-name: My Solution
+        spec:
+          version: 1.0.0
+          operator:
+            image:
+              name: my-solution-operator
+              tag: 1.1.0
+          ui:
+            image:
+              name: my-solution-ui
+              tag: 1.0.1
+          images: []
+          customApiGroups: []
+      - name: my-solution
+        version: 1.0.0
+        display_name: My Solution
+        id: my-solution-1.0.0
+  # Ok - missing spec, fallback to default
+  - manifest: |-
+      kind: Solution
       apiVersion: solutions.metalk8s.scality.com/v1alpha1
-      operator:
-        image:
-          name: my-custom-operator
-          tag: 1.1.0
-      ui:
-        image:
-          name: my-solution-ui
-          tag: 1.0.0
-      images:
-        - my-extra-image:1.1.0
-      customApiGroups: []
-  # Ok - with empty config.yaml file (except kind and apiVersion)
-  - config: |-
-      kind: SolutionConfig
-      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      metadata:
+        name: my-solution
+      spec:
+        version: 1.0.0
     result:
-      kind: SolutionConfig
-      apiVersion: solutions.metalk8s.scality.com/v1alpha1
-      operator:
-        image:
-          name: my-solution-operator
-          tag: 1.0.0
-      ui:
-        image:
-          name: my-solution-ui
-          tag: 1.0.0
-      images: []
-      customApiGroups: []
-  # Ok - without config.yaml file
-  - result:
-      kind: SolutionConfig
-      apiVersion: solutions.metalk8s.scality.com/v1alpha1
-      operator:
-        image:
-          name: my-solution-operator
-          tag: 1.0.0
-      ui:
-        image:
-          name: my-solution-ui
-          tag: 1.0.0
-      images: []
-      customApiGroups: []
-  # Nok - bad or no solution config kind
-  - config: |-
-      kind: InvalidSolutionConfigKind
+      - kind: Solution
+        apiVersion: solutions.metalk8s.scality.com/v1alpha1
+        metadata:
+          name: my-solution
+        spec:
+          version: 1.0.0
+          operator:
+            image:
+              name: my-solution-operator
+              tag: 1.0.0
+          ui:
+            image:
+              name: my-solution-ui
+              tag: 1.0.0
+          images: []
+          customApiGroups: []
+      - name: my-solution
+        version: 1.0.0
+        display_name: my-solution
+        id: my-solution-1.0.0
+  # Nok - bad or no solution kind
+  - manifest: |-
+      kind: InvalidSolutionKind
       apiVersion: solutions.metalk8s.scality.com/v1alpha1
     result: Wrong apiVersion/kind for .*
     raises: True
-  # Nok - solution config apiVersion not provided
-  - config: |-
-      kind: SolutionConfig
+  # Nok - solution apiVersion not provided
+  - manifest: |-
+      kind: Solution
     result: Wrong apiVersion/kind for .*
+    raises: True
+  # Nok - no solution metadata.name
+  - manifest: |-
+      kind: Solution
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      spec:
+        version: 1.0.0
+    result: >-
+      Missing mandatory key\(s\) in Solution ".*": must provide
+      "metadata.name" and "spec.version"
+    raises: True
+  # Nok - no solution spec.version
+  - manifest: |-
+      kind: Solution
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      metadata:
+        name: my-solution
+    result: >-
+      Missing mandatory key\(s\) in Solution ".*": must provide
+      "metadata.name" and "spec.version"
+    raises: True
+  # Nok - invalid metadata.name
+  - manifest: |-
+      kind: Solution
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      metadata:
+        name: Invalid Name
+      spec:
+        version: 1.0.0
+    result: >-
+      "metadata.name" key in Solution .* does not follow naming convention
+      established by DNS label name RFC1123
+    raises: True
+  # Nok - no solution manifest
+  - result: Solution mounted at ".*" has no ".*"
+    raises: True
+
+manifest_from_iso:
+  # Ok - valid solution manifest in ISO
+  - manifest: |-
+      kind: Solution
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      metadata:
+        name: my-solution
+      spec:
+        version: 1.0.0
+    result:
+      name: my-solution
+      version: 1.0.0
+      display_name: my-solution
+      id: my-solution-1.0.0
+  # Nok - error with isoinfo command
+  - result: 'Failed to run isoinfo: .*'
+    raises: True
+  # Nok - no solution manifest
+  - manifest: ''
+    result: Solution ISO at '.*' must contain a '.*' file
+    raises: True
+  # Nok - invalid YAML
+  - manifest: '{'
+    result: Failed to load YAML from Solution manifest .*
     raises: True
 
 list_available:
@@ -269,8 +347,10 @@ list_available:
         alt_device: /tmp/my-solution-1.0.0.iso
         fstype: iso9660
     archive_infos:
-      name: My Solution
+      name: my-solution
       version: 1.0.0
+      display_name: My Solution
+      id: my-solution-1.0.0
     result:
       my-solution:
         - name: My Solution
@@ -278,21 +358,40 @@ list_available:
           mountpoint: /srv/scality/my-solution
           archive: /tmp/my-solution-1.0.0.iso
           version: 1.0.0
-          config: null
-  # Nok - 1 Solution - fstype not iso9660
+          manifest: null
+  # Ok - 1 Solution - fstype not iso9660
   - mountpoints:
       /srv/scality/my-solution:
         alt_device: /tmp/my-solution-1.0.0.iso
         fstype: xfs
-  # Nok - 1 Solution - no product.txt
-  - mountpoints:
-      /srv/scality/my-solution:
-        alt_device: /tmp/my-solution-1.0.0.iso
-        fstype: iso9660
-    raises: True
   # Ok - No Solution mountpoint
   - mountpoints:
       /: {}
       /srv/scality/metalk8s-x.y.z: {}
   # Ok - No mountpoint
   - {}
+
+operator_roles_from_manifest:
+  # Ok -valid manifest
+  - manifest: |-
+      kind: Role
+      metadata:
+        namespace: my-namespace
+      ---
+      kind: ClusterRole
+    result:
+      - kind: Role
+        metadata:
+          namespace: default
+      - kind: ClusterRole
+  # Ok - empty role manifest
+  - manifest: |-
+      ---
+    result: []
+  # Ok - no role manifest
+  - result: []
+  # Nok - invalid kind
+  - manifest: |-
+      kind: Node
+    result: Forbidden object kind 'Node' provided in '.*'
+    raises: True
