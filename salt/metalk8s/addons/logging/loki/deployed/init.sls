@@ -1,2 +1,3 @@
 include:
+  - .chart
   - .storageclass
