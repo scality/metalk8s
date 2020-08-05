@@ -108,3 +108,104 @@ read_and_render_yaml_file:
       metadata:
         name: kube-apiserver1
       kind: Pod
+
+get_service_endpoints:
+  # 1. Get classic service endpoint
+  - obj:
+      api_version: v1
+      kind: Endpoints
+      metadata:
+        annotations:
+          endpoints.kubernetes.io/last-change-trigger-time: '2020-06-12T13:30:33Z'
+        cluster_name: null
+        creation_timestamp: 2020-06-12 13:30:33+00:00
+        deletion_grace_period_seconds: null
+        deletion_timestamp: null
+        finalizers: null
+        generate_name: null
+        generation: null
+        initializers: null
+        labels:
+          app: salt-master
+          app.kubernetes.io/component: salt
+          app.kubernetes.io/managed-by: salt
+          app.kubernetes.io/name: salt-master
+          app.kubernetes.io/part-of: metalk8s
+          heritage: salt
+          metalk8s.scality.com/version: 2.6.0
+        managed_fields: null
+        name: salt-master
+        namespace: kube-system
+        owner_references: null
+        resource_version: '6238714'
+        self_link: /api/v1/namespaces/kube-system/endpoints/salt-master
+        uid: bff48030-c572-46e4-9bf7-415a52fe7fcd
+      subsets:
+      - addresses:
+        - hostname: null
+          ip: 10.11.12.13
+          node_name: my-node
+          target_ref:
+            api_version: null
+            field_path: null
+            kind: Pod
+            name: salt-master-bootstrap
+            namespace: kube-system
+            resource_version: '6238408'
+            uid: c59244ce-1063-4fcc-abe0-33684286af99
+        not_ready_addresses: null
+        ports:
+        - name: requestserver
+          port: 4506
+          protocol: TCP
+        - name: publisher
+          port: 4505
+          protocol: TCP
+        - name: api
+          port: 4507
+          protocol: TCP
+    result:
+      ip: 10.11.12.13
+      node_name: my-node
+      hostname: null
+      ports:
+        requestserver: 4506
+        publisher: 4505
+        api: 4507
+
+  # 2. Error when getting the Endpoint object
+  - obj: False
+    raises: True
+    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace:\nAn error has occurred"
+
+  # 3. Endpoint object does not exists
+  - obj: null
+    raises: True
+    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace:\nEndpoint not found"
+
+  # 4. Endpoint do not have any addresses
+  - obj:
+      api_version: v1
+      kind: Endpoints
+      metadata:
+        annotations:
+          control-plane.alpha.kubernetes.io/leader: '{"holderIdentity":"node02.novalocal_97ff62d0-a498-4517-9364-37dee636b1f9","leaseDurationSeconds":15,"acquireTime":"2020-08-03T12:35:22Z","renewTime":"2020-08-03T12:54:06Z","leaderTransitions":17}'
+        cluster_name: null
+        creation_timestamp: 2020-06-12 13:27:18+00:00
+        deletion_grace_period_seconds: null
+        deletion_timestamp: null
+        finalizers: null
+        generate_name: null
+        generation: null
+        initializers: null
+        labels: null
+        managed_fields: null
+        name: kube-scheduler
+        namespace: kube-system
+        owner_references: null
+        resource_version: '6241901'
+        self_link: /api/v1/namespaces/kube-system/endpoints/kube-scheduler
+        uid: fad86410-00d9-43c2-b91c-8288b18b0337
+      subsets: null
+    raises: True
+    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace:\n'NoneType' object has no attribute '__getitem__'"

@@ -83,6 +83,32 @@ class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
                 metalk8s_network.get_cluster_dns_ip
             )
 
+    def test_get_oidc_service_ip_success(self):
+        """
+        Tests the return of `get_oidc_service_ip` function, success
+        """
+        self.assertEqual(metalk8s_network.get_oidc_service_ip(), "10.0.0.7")
+
+    @parameterized.expand([
+        (None, 'Pillar key "networks:service" must be set.'),
+        (
+            '10.0.0.0/32',
+            'Could not obtain an IP in the network range 10.0.0.0/32'
+        )
+    ])
+    def test_get_oidc_service_ip_raise(self, service_ip, error_msg):
+        """
+        Tests the return of `get_oidc_service_ip` function, when raising
+        """
+        with patch.dict(
+                metalk8s_network.__pillar__,
+                {'networks': {'service': service_ip}}):
+            self.assertRaisesRegexp(
+                CommandExecutionError,
+                error_msg,
+                metalk8s_network.get_oidc_service_ip
+            )
+
     @parameterized.expand([
         # 1 CIDR, 2 IP, take the first one
         (['10.200.0.0/16'], ['10.200.0.1', '10.200.0.42'], '10.200.0.1'),
