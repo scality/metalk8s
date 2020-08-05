@@ -4,7 +4,7 @@ import yaml
 from parameterized import param, parameterized
 
 from kubernetes.client.rest import ApiException
-from salt.utils import dictupdate
+from salt.utils import dictupdate, hashutils
 from salt.exceptions import CommandExecutionError
 
 from salttesting.mixins import LoaderModuleMockMixin
@@ -80,6 +80,16 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
         salt_obj.update.side_effect = salt_dict.update
         salt_obj.clear.side_effect = salt_dict.clear
 
+        def _hashutil_digest(instr, checksum="md5"):
+            if checksum == "sha256":
+                return hashutils.sha256_digest(instr)
+            elif checksum == "md5":
+                return hashutils.md5_digest(instr)
+            raise CommandExecutionError(
+                "Invalid hash func {}".format(checksum)
+            )
+
+        salt_obj.hashutil.digest.side_effect = _hashutil_digest
         # Consider we have no slots in these tests
         salt_obj.metalk8s.format_slots.side_effect = lambda manifest: manifest
 
@@ -574,3 +584,28 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                         called_with,
                         list_mock.call_args.kwargs
                     )
+
+    @parameterized.expand(
+        param.explicit(kwargs=test_case)
+        for test_case in YAML_TESTS_CASES['get_object_digest']
+    )
+    def test_get_object_digest(self, obj, result, raises=False,
+                               **kwargs):
+        """
+        Tests the return of `get_object_digest` function
+        """
+        get_obj_mock = MagicMock(return_value=obj)
+
+        with patch("metalk8s_kubernetes.get_object", get_obj_mock):
+            if raises:
+                self.assertRaisesRegexp(
+                    Exception,
+                    result,
+                    metalk8s_kubernetes.get_object_digest,
+                    **kwargs
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_kubernetes.get_object_digest(**kwargs),
+                    result
+                )
