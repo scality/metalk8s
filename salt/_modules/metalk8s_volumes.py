@@ -448,7 +448,9 @@ class RawBlockDeviceBlock(RawBlockDevice):
         # Detect which kind of device we have: a real disk, only a partition or
         # an LVM volume.
         name = device_name(self.path)
-        match = re.search('(?P<partition>\d+)$', name)
+        match = re.search(
+            '(?:(?:h|s|v|xv)d[a-z]|nvme\d+n\d+p)(?P<partition>\d+)$', name
+        )
         self._partition = None
         if self._get_lvm_path() is not None:
             self._kind = DeviceType.LVM
