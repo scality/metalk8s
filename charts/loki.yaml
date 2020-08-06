@@ -150,7 +150,7 @@ readinessProbe:
     port: http-metrics
   initialDelaySeconds: 45
 
-replicas: 1
+replicas: '__var__(loki.spec.deployment.replicas)'
 
 resources: {}
 # limits:

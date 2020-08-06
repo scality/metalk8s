@@ -1,8 +1,8 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-
-
+{% import_yaml 'metalk8s/addons/logging/loki/config/loki.yaml' as loki_defaults with context %}
+{%- set loki = salt.metalk8s_service_configuration.get_service_conf('metalk8s-logging', 'metalk8s-loki-config', loki_defaults) %}
 
 {% raw %}
 
@@ -175,7 +175,7 @@ metadata:
   namespace: metalk8s-logging
 spec:
   podManagementPolicy: OrderedReady
-  replicas: 1
+  replicas: {% endraw -%}{{ loki.spec.deployment.replicas }}{%- raw %}
   selector:
     matchLabels:
       app: loki
@@ -184,7 +184,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: f9c7883a31a1ef8ef3264cfb5160f3cc015a91cf46c6687d7f2777a62af6936b
+        checksum/config: f6917e98336282f93b8cf80b99ca1e78f7adfd297b98c367c1cc420a1cb8d1ac
         prometheus.io/port: http-metrics
         prometheus.io/scrape: 'true'
       labels:
