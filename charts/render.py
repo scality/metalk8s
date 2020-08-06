@@ -116,6 +116,15 @@ def fixup_doc(doc):
         return doc
 
 
+def remove_doc(doc, remove_manifests):
+    for to_remove in remove_manifests:
+        if doc.get('kind') == to_remove[0] and \
+                doc.get('metadata').get('name') == to_remove[1]:
+            return True
+
+    return False
+
+
 def keep_doc(doc):
     if not doc:
         return False
@@ -224,6 +233,14 @@ def main():
         '--drop-prometheus-rules',
         help="YAML formatted file to drop some pre-defined Prometheus rules"
     )
+    parser.add_argument(
+        '--remove-manifest',
+        action='append',
+        nargs=2,
+        dest="remove_manifests",
+        metavar=('KIND', 'NAME'),
+        help="Remove a given manifest from the resulting chart",
+    )
     parser.add_argument('path', help="Path to the chart directory")
     args = parser.parse_args()
 
@@ -279,7 +296,7 @@ def main():
     for doc in yaml.safe_load_all(template):
         if keep_doc(doc):
             doc = fixup(doc)
-        if doc:
+        if doc and not remove_doc(doc, args.remove_manifests):
             manifests.append(doc)
 
     stream = io.StringIO()
