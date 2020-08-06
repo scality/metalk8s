@@ -165,7 +165,11 @@ const NodeVolumes = (props) => {
       disableSort: true,
       width: 150,
       renderer: (data, rowData) => {
-        const isEnableClick = isVolumeDeletable(rowData, persistentVolumes);
+        const isEnableClick = isVolumeDeletable(
+          rowData.status,
+          rowData.name,
+          persistentVolumes,
+        );
 
         const hintPopup = () => {
           let hintMessage = '';

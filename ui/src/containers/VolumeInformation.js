@@ -67,7 +67,7 @@ const InformationValueSection = styled.div`
 
 const LoaderContainer = styled(Loader)`
   padding: ${padding.small} 0 0 ${padding.larger};
-  visibility: ${props => {
+  visibility: ${(props) => {
     if (props.isLoading) {
       return `visible`;
     } else {
@@ -76,7 +76,8 @@ const LoaderContainer = styled(Loader)`
   }};
 `;
 
-const VolumeInformation = props => {
+// Abort page
+const VolumeInformation = (props) => {
   const dispatch = useDispatch();
   const match = useRouteMatch();
 
@@ -90,21 +91,21 @@ const VolumeInformation = props => {
     dispatch(fetchStorageClassAction());
   }, [dispatch]);
 
-  const theme = useSelector(state => state.config.theme);
-  const node = useSelector(state => makeGetNodeFromUrl(state, props));
-  const volumes = useSelector(state => makeGetVolumesFromUrl(state, props));
-  const pVList = useSelector(state => state.app.volumes.pVList);
-  const storageClasses = useSelector(state => state.app.volumes.storageClass);
+  const theme = useSelector((state) => state.config.theme);
+  const node = useSelector((state) => makeGetNodeFromUrl(state, props));
+  const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
+  const pVList = useSelector((state) => state.app.volumes.pVList);
+  const storageClasses = useSelector((state) => state.app.volumes.storageClass);
 
-  const isLoading = useSelector(state => state.app.volumes.isLoading);
+  const isLoading = useSelector((state) => state.app.volumes.isLoading);
 
   const currentVolumeName = match.params.volumeName;
   const volume = volumes.find(
-    volume => volume.metadata.name === currentVolumeName,
+    (volume) => volume.metadata.name === currentVolumeName,
   );
-  const pV = pVList.find(pv => pv.metadata.name === currentVolumeName);
+  const pV = pVList.find((pv) => pv.metadata.name === currentVolumeName);
   const storageClass = storageClasses.find(
-    SC => SC.metadata.name === volume?.spec?.storageClassName,
+    (SC) => SC.metadata.name === volume?.spec?.storageClassName,
   );
   const volumeStatus = computeVolumeGlobalStatus(
     volume?.metadata?.name,
@@ -122,7 +123,7 @@ const VolumeInformation = props => {
     },
   ];
   const labels = pV?.metadata?.labels //persistent Volume labels
-    ? Object.keys(pV.metadata.labels).map(key => {
+    ? Object.keys(pV.metadata.labels).map((key) => {
         return {
           name: key,
           value: pV.metadata.labels[key],

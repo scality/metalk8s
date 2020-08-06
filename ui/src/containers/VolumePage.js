@@ -1,13 +1,9 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import Loader from '../components/Loader';
 import { Breadcrumb } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import VolumeListTable from './VolumeListTable';
-import ActiveAlertsCard from '../components/ActiveAlertsCard';
-import VolumeDetailCard from './VolumeDetailCard';
-import PerformanceGraphCard from './PerformanceGraphCard';
+import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import {
@@ -15,10 +11,7 @@ import {
   makeGetPodsFromUrl,
   makeGetVolumesFromUrl,
   useRefreshEffect,
-  allSizeUnitsToBytes,
-  useQuery,
 } from '../services/utils';
-import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
   refreshVolumesAction,
   stopRefreshVolumesAction,
@@ -36,10 +29,7 @@ import {
   BreadcrumbLabel,
   StyledLink,
 } from '../components/BreadcrumbStyle';
-import {
-  computeVolumeGlobalStatus,
-  getVolumeListData,
-} from '../services/NodeVolumesUtils';
+import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 
 // should be extracted to the common style, need to change the position of other's breadcrumb
@@ -51,27 +41,8 @@ const PageContainer = styled.div`
   padding: ${padding.small};
 `;
 
-const VolumeContent = styled.div`
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  width: 100%;
-  background-color: ${(props) => props.theme.brand.primary};
-`;
-
-const LeftSideVolumeList = styled.div`
-  flex-direction: column;
-  min-height: 696px;
-  width: 40%;
-`;
-
-const RightSidePanel = styled.div`
-  flex-direction: column;
-  width: 60%;
-  /* Make it scrollable for the small laptop screen */
-  overflow-y: scroll;
-`;
-
+// <VolumePage> component fetchs all the data used by volume page from redux store.
+// <VolumeContent> component extracts the current volume name from URL and sends volume specific data to sub components.
 const VolumePage = (props) => {
   const dispatch = useDispatch();
 
@@ -91,45 +62,16 @@ const VolumePage = (props) => {
     return () => dispatch(stopRefreshAlertsAction());
   }, [dispatch]);
 
-  // get the volume name through URL
-  const query = useQuery();
-  const currentVolumeName = query.get('volume');
-
   const theme = useSelector((state) => state.config.theme);
   const pods = useSelector((state) => makeGetPodsFromUrl(state, props));
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
-
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const alerts = useSelector((state) => state.app.monitoring.alert);
-
-  const pV = pVList.find((pv) => pv.metadata.name === currentVolumeName);
-  const volume = volumes.find(
-    (volume) => volume.metadata.name === currentVolumeName,
-  );
-
-  const volumeStatus = computeVolumeGlobalStatus(
-    volume?.metadata?.name,
-    volume?.status,
-  );
-
-  // in order to get the used pod(s)
-  const PVCName = pV?.spec?.claimRef?.name;
-  const UsedPod = pods.find((pod) =>
-    pod.volumes.find((volume) => volume.persistentVolumeClaim === PVCName),
-  );
-
-  // get the alert base on the current
-  const alertlist = alerts?.list?.filter(
-    (alert) => alert.labels.persistentvolumeclaim === PVCName,
-  );
+  const volumeStats = useSelector((state) => state.app.monitoring.volumeStats);
 
   const volumeListData = useSelector((state) =>
     getVolumeListData(state, props),
-  );
-
-  const currentVolume = volumeListData?.find(
-    (vol) => vol.name === currentVolumeName,
   );
 
   return (
@@ -165,66 +107,15 @@ const VolumePage = (props) => {
           />
         )}
       </BreadcrumbContainer>
-      <VolumeContent>
-        <LeftSideVolumeList>
-          <VolumeListTable
-            volumeListData={volumeListData}
-            nodeName={node?.name}
-          ></VolumeListTable>
-        </LeftSideVolumeList>
-        {currentVolumeName && volume ? (
-          <RightSidePanel>
-            <VolumeDetailCard
-              name={currentVolumeName}
-              nodeName={volume?.spec?.nodeName}
-              storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
-              status={volumeStatus ?? intl.translate('unknown')}
-              storageClassName={volume?.spec?.storageClassName}
-              creationTimestamp={volume?.metadata?.creationTimestamp}
-              volumeType={
-                volume?.spec?.rawBlockDevice
-                  ? RAW_BLOCK_DEVICE
-                  : SPARSE_LOOP_DEVICE
-              }
-              usedPodName={UsedPod?.name}
-              devicePath={
-                volume?.spec?.rawBlockDevice?.devicePath ??
-                intl.translate('not_applicable')
-              }
-              volumeUsagePercentage={currentVolume?.usage}
-              volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-              storageCapacity={
-                volumeListData?.find((vol) => vol.name === currentVolumeName)
-                  .storageCapacity
-              }
-              health={
-                volumeListData?.find((vol) => vol.name === currentVolumeName)
-                  .health
-              }
-              condition={currentVolume.status}
-              // the delete button inside the volume detail card should know that which volume is the first one
-              volumeListData={volumeListData}
-            ></VolumeDetailCard>
-            <ActiveAlertsCard
-              alertlist={alertlist}
-              PVCName={PVCName}
-            ></ActiveAlertsCard>
-            <PerformanceGraphCard
-              deviceName={volume?.status?.deviceName}
-              PVCName={PVCName}
-              volumeStorageCapacity={allSizeUnitsToBytes(
-                pV?.spec?.capacity?.storage,
-              )}
-              // the volume condition compute base on the `status` and `bound/unbound`
-              volumeCondition={currentVolume.status}
-              // Hardcode the port number for prometheus metrics
-              instance={node?.internalIP + `:9100`}
-            ></PerformanceGraphCard>
-          </RightSidePanel>
-        ) : (
-          <Loader />
-        )}
-      </VolumeContent>
+      <VolumeContent
+        volumes={volumes}
+        volumeListData={volumeListData}
+        node={node}
+        pVList={pVList}
+        pods={pods}
+        alerts={alerts}
+        volumeStats={volumeStats}
+      ></VolumeContent>
     </PageContainer>
   );
 };

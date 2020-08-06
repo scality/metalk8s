@@ -8,6 +8,7 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
+import { isVolumeDeletable } from '../services/NodeVolumesUtils';
 import { deleteVolumeAction } from '../ducks/app/volumes';
 import { VOLUME_CONDITION_LINK } from '../constants';
 import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
@@ -55,6 +56,9 @@ const DeleteButton = styled(Button)`
   height: 30px;
   font-size: ${fontSize.small};
   background-color: ${(props) => props.theme.brand.critical};
+  ${(props) => {
+    if (props.disabled) return { opacity: 0.2 };
+  }};
 `;
 
 const DeleteButtonContainer = styled.div`
@@ -118,6 +122,7 @@ const VolumeDetailCard = (props) => {
     storageCapacity,
     condition,
     volumeListData,
+    pVList,
   } = props;
 
   const dispatch = useDispatch();
@@ -141,6 +146,8 @@ const VolumeDetailCard = (props) => {
   const onClickCancelButton = () => {
     setisDeleteConfirmationModalOpen(false);
   };
+
+  const isEnableClick = isVolumeDeletable(status, name, pVList);
 
   return (
     <VolumeDetailCardContainer>
@@ -200,13 +207,15 @@ const VolumeDetailCard = (props) => {
       <VolumeGraph>
         <DeleteButtonContainer>
           <DeleteButton
+            variant="danger"
             icon={<i className="fas fa-sm fa-trash" />}
             text={intl.translate('delete_volume')}
             onClick={(e) => {
               e.stopPropagation();
               setisDeleteConfirmationModalOpen(true);
             }}
-          />
+            disabled={!isEnableClick}
+          ></DeleteButton>
         </DeleteButtonContainer>
         {condition === VOLUME_CONDITION_LINK && (
           <VolumeUsage>
@@ -238,14 +247,13 @@ const VolumeDetailCard = (props) => {
               text={intl.translate('cancel')}
               onClick={onClickCancelButton}
             />
-
             <Button
               variant="danger"
               text={intl.translate('delete')}
               onClick={() => {
                 onClickDeleteButton(name, nodeName);
               }}
-            />
+            ></Button>
           </NotificationButtonGroup>
         }
       >

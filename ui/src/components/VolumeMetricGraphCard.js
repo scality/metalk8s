@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { LineChart, Dropdown } from '@scality/core-ui';
 import {
   fontSize,
   padding,
@@ -12,17 +12,16 @@ import {
   addMissingDataPoint,
 } from '../services/utils';
 import { VOLUME_CONDITION_LINK } from '../constants';
-import { LineChart, Dropdown } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
-const PerformanceGraphCardContainer = styled.div`
+const MetricGraphCardContainer = styled.div`
   min-height: 270px;
   background-color: ${(props) => props.theme.brand.primaryDark1};
   margin: ${padding.small};
   padding-bottom: ${padding.large};
 `;
 
-const PerformanceGraphTitle = styled.div`
+const MetricGraphTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
@@ -76,107 +75,52 @@ const IOPSGraph = styled.div`
   padding-left: ${padding.large};
 `;
 
-// No data rendering should be extracted an common style
+// No data rendering should be extracted to an common style
 const NoMetricsText = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
-const PerformanceGraphCard = (props) => {
+const MetricGraphCard = (props) => {
   const {
-    deviceName,
-    PVCName,
     volumeStorageCapacity,
     volumeCondition,
-    instance,
+    volumeMetricGraphData,
   } = props;
 
-  const volumeUsedList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeUsed,
-  );
-  const volumeThroughputWriteList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeThroughputWrite,
-  );
-  const volumeThroughputReadList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeThroughputRead,
-  );
-  const volumeLatencyList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeLatency,
-  );
-  const volumeIOPSReadList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeIOPSRead,
-  );
-  const volumeIOPSWriteList = useSelector(
-    (state) => state.app.monitoring.volumeStats.volumeIOPSWrite,
-  );
-  const queryStartingTime = useSelector(
-    (state) => state.app.monitoring.volumeStats.queryStartingTime,
-  );
-
-  const volumeThroughputRead = volumeThroughputReadList?.filter(
-    (vTR) =>
-      vTR.metric.instance === instance && vTR.metric.device === deviceName,
-  );
-  const volumeThroughputWrite = volumeThroughputWriteList?.filter(
-    (vTW) =>
-      vTW.metric.instance === instance && vTW.metric.device === deviceName,
-  );
-  const volumeLatency = volumeLatencyList?.filter(
-    (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
-  );
-
-  const volumeIOPSRead = volumeIOPSReadList?.filter(
-    (vIOPSR) =>
-      vIOPSR.metric.instance === instance &&
-      vIOPSR.metric.device === deviceName,
-  );
-  const volumeIOPSWrite = volumeIOPSWriteList?.filter(
-    (vIOPSW) =>
-      vIOPSW.metric.instance === instance &&
-      vIOPSW.metric.device === deviceName,
-  );
-
-  const volumeUsed = volumeUsedList?.filter(
-    (vU) => vU.metric.persistentvolumeclaim === PVCName,
-  );
-
+  const queryStartingTime = volumeMetricGraphData?.queryStartingTime;
+  // Sample duration can be changed through the dropdown, by default is 7 days
+  const SAMPLE_DURATION_SEVEN_DAYS = 7;
+  const SAMPLE_FREQUENCY_ONE_HOUR = 1;
+  const sampleDuration = SAMPLE_DURATION_SEVEN_DAYS;
+  const sampleFrequency = SAMPLE_FREQUENCY_ONE_HOUR;
   // We need to manually add the missing data points due to the shutdown of VM
-  const volumeUsedOperated = addMissingDataPoint(
-    jointDataPointBaseonTimeSeries(volumeUsed),
-    queryStartingTime,
-    7,
-    1,
+  const operateMetricRawData = (metricRawData) =>
+    addMissingDataPoint(
+      jointDataPointBaseonTimeSeries(metricRawData),
+      queryStartingTime,
+      sampleDuration,
+      sampleFrequency,
+    );
+
+  const volumeUsedOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeUsed,
   );
-  const volumeLatencyOperated = addMissingDataPoint(
-    jointDataPointBaseonTimeSeries(volumeLatency),
-    queryStartingTime,
-    7,
-    1,
+  const volumeLatencyOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeLatency,
   );
-  const volumeThroughputWriteOperated = addMissingDataPoint(
-    jointDataPointBaseonTimeSeries(volumeThroughputWrite),
-    queryStartingTime,
-    7,
-    1,
+  const volumeThroughputWriteOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeThroughputWrite,
   );
-  const volumeThroughputReadOperated = addMissingDataPoint(
-    jointDataPointBaseonTimeSeries(volumeThroughputRead),
-    queryStartingTime,
-    7,
-    1,
+  const volumeThroughputReadOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeThroughputRead,
   );
-  const volumeIOPSReadOperated = addMissingDataPoint(
-    jointDataPointBaseonTimeSeries(volumeIOPSRead),
-    queryStartingTime,
-    7,
-    1,
+  const volumeIOPSReadOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeIOPSRead,
   );
-  const volumeIOPSWriteOperated = addMissingDataPoint(
-    jointDataPointBaseonTimeSeries(volumeIOPSWrite),
-    queryStartingTime,
-    7,
-    1,
+  const volumeIOPSWriteOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeIOPSWrite,
   );
 
   // slot[0] => timestamp
@@ -343,13 +287,13 @@ const PerformanceGraphCard = (props) => {
     },
   };
   return (
-    <PerformanceGraphCardContainer>
-      <PerformanceGraphTitle>
+    <MetricGraphCardContainer>
+      <MetricGraphTitle>
         {intl.translate('metrics')}
         {volumeCondition === VOLUME_CONDITION_LINK && (
           <Dropdown items={[]} text="7 days" size="smaller" />
         )}
-      </PerformanceGraphTitle>
+      </MetricGraphTitle>
       {volumeCondition === VOLUME_CONDITION_LINK ? (
         <GraphsContainer>
           <RowGraphContainer>
@@ -412,8 +356,8 @@ const PerformanceGraphCard = (props) => {
       ) : (
         <NoMetricsText>{intl.translate('volume_is_not_bound')}</NoMetricsText>
       )}
-    </PerformanceGraphCardContainer>
+    </MetricGraphCardContainer>
   );
 };
 
-export default PerformanceGraphCard;
+export default MetricGraphCard;

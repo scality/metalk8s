@@ -12,8 +12,7 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { useQuery } from '../services/utils';
-import CircleStatus from '../components/CircleStatus';
+import CircleStatus from './CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -306,10 +305,8 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
 }
 
 const VolumeListTable = (props) => {
-  const { nodeName, volumeListData } = props;
+  const { nodeName, volumeListData, volumeName } = props;
   const history = useHistory();
-  const query = useQuery();
-  const volumeName = query?.get('volume');
 
   const columns = React.useMemo(() => [
     { Header: 'Name', accessor: 'name' },
@@ -325,7 +322,6 @@ const VolumeListTable = (props) => {
 
   // handle the row selection by updating the URL
   const onClickRow = (row) => {
-    //history.push(`/nodes/${nodeName}/volumes/${row.values.name}`);
     history.push(`/volumes/?node=${nodeName}&volume=${row.values.name}`);
   };
 

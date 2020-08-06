@@ -23,10 +23,11 @@ import {
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
-export const isVolumeDeletable = (rowData, persistentVolumes) => {
-  const volumeStatus = rowData.status;
-  const volumeName = rowData.name;
-
+export const isVolumeDeletable = (
+  volumeStatus,
+  volumeName,
+  persistentVolumes,
+) => {
   switch (volumeStatus) {
     case STATUS_UNKNOWN:
     case STATUS_PENDING:
