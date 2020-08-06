@@ -447,16 +447,11 @@ class RawBlockDeviceBlock(RawBlockDevice):
         super(RawBlockDeviceBlock, self).__init__(volume)
         # Detect which kind of device we have: a real disk, only a partition or
         # an LVM volume.
-        name = device_name(self.path)
-        match = re.search(
-            '(?:(?:h|s|v|xv)d[a-z]|nvme\d+n\d+p)(?P<partition>\d+)$', name
-        )
-        self._partition = None
+        self._partition = self._get_partition(device_name(self.path))
         if self._get_lvm_path() is not None:
             self._kind = DeviceType.LVM
-        elif match is not None:
+        elif self._partition is not None:
             self._kind = DeviceType.PARTITION
-            self._partition = match.groupdict()['partition']
         else:
             self._kind = DeviceType.DISK
 
@@ -514,6 +509,12 @@ class RawBlockDeviceBlock(RawBlockDevice):
             if os.path.basename(realpath) == name:
                 return symlink
         return None
+
+    @staticmethod
+    def _get_partition(device_name):
+        part_re = r'(?:(?:h|s|v|xv)d[a-z]|nvme\d+n\d+p)(?P<partition>\d+)$'
+        match = re.search(part_re, device_name)
+        return match.groupdict()['partition'] if match else None
 
 
 class DeviceType:
