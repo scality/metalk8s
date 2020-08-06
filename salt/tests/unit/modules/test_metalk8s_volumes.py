@@ -510,3 +510,18 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                     result,
                     metalk8s_volumes.device_info(name)
                 )
+
+
+class RawBlockDeviceBlockTestCase(TestCase):
+    @parameterized.expand([
+        ('/dev/sda', None),
+        ('/dev/sda1', '1'),
+        ('/dev/vdc', None),       # Virtual disk
+        ('/dev/vdc2', '2'),       # Partition on a virtual disk
+        ('/dev/nvme0n1', None),   # NVME disk
+        ('/dev/nvme0n1p3', '3'),  # Partition on a NVME disk
+        ('/dev/dm-0', None),      # LVM device
+    ])
+    def test_get_partition(self, name, expected):
+        partition = metalk8s_volumes.RawBlockDeviceBlock._get_partition(name)
+        self.assertEqual(partition, expected)
