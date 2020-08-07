@@ -58,6 +58,9 @@ echo "Creating storage volumes"
 sed "s/NODE_NAME/${NODE_NAME}/" \
     "${PRODUCT_MOUNT}/examples/prometheus-sparse.yaml" | \
     kubectl apply -f -
+sed "s/NODE_NAME/${NODE_NAME}/" \
+    "${PRODUCT_MOUNT}/examples/loki-sparse.yaml" | \
+    kubectl apply -f -
 
 wait_for_pv() {
     local -r pv="$1"
@@ -72,6 +75,7 @@ wait_for_pv() {
 
 wait_for_pv "$NODE_NAME-alertmanager"
 wait_for_pv "$NODE_NAME-prometheus"
+wait_for_pv "$NODE_NAME-loki"
 
 wait_for_pod() {
     local -r name="$1" namespace="$2" pod="$3"
@@ -89,3 +93,5 @@ wait_for_pod "AlertManager" \
     metalk8s-monitoring alertmanager-prometheus-operator-alertmanager-0
 wait_for_pod "Prometheus" \
     metalk8s-monitoring prometheus-prometheus-operator-prometheus-0
+wait_for_pod "Loki" \
+    metalk8s-logging loki-0

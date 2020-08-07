@@ -1,0 +1,13 @@
+# This file contains manifests to create `sparseLoopDevice` volumes for
+# Loki to be deployed.
+# Make sure to change the `nodeName` to the node name of your bootstrap node.
+---
+apiVersion: storage.metalk8s.scality.com/v1alpha1
+kind: Volume
+metadata:
+  name: NODE_NAME-loki
+spec:
+  nodeName: NODE_NAME
+  storageClassName: metalk8s-loki
+  sparseLoopDevice:
+    size: 10Gi
