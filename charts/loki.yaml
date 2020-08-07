@@ -118,11 +118,12 @@ nodeSelector: {}
 ## - create a pv which above 10Gi and has same namespace with loki
 ## - keep storageClassName same with below setting
 persistence:
-  enabled: false
+  enabled: true
   accessModes:
   - ReadWriteOnce
   size: 10Gi
   annotations: {}
+  storageClassName: metalk8s-loki
   # subPath: ""
   # existingClaim:
 
