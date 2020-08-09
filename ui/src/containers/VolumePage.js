@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import { Breadcrumb } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
@@ -30,6 +29,7 @@ import {
   StyledLink,
 } from '../components/BreadcrumbStyle';
 import { getVolumeListData } from '../services/NodeVolumesUtils';
+import { Breadcrumb } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
 // should be extracted to the common style, need to change the position of other's breadcrumb
@@ -62,14 +62,18 @@ const VolumePage = (props) => {
     return () => dispatch(stopRefreshAlertsAction());
   }, [dispatch]);
 
+  //const pods = useSelector((state) => makeGetPodsFromUrl(state, props));
+  // get all the pods for all the nodes
   const theme = useSelector((state) => state.config.theme);
-  const pods = useSelector((state) => makeGetPodsFromUrl(state, props));
+  const pods = useSelector((state) => state.app.pods.list);
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
-  const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
+  const nodes = useSelector((state) => state.app.nodes.list);
+  // const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
+  const volumes = useSelector((state) => state.app.volumes.list);
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const alerts = useSelector((state) => state.app.monitoring.alert);
   const volumeStats = useSelector((state) => state.app.monitoring.volumeStats);
-
+  // all the volumes
   const volumeListData = useSelector((state) =>
     getVolumeListData(state, props),
   );
@@ -77,39 +81,22 @@ const VolumePage = (props) => {
   return (
     <PageContainer>
       <BreadcrumbContainer>
-        {node.name !== undefined ? (
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <BreadcrumbLabel title={intl.translate('platform')}>
-                {intl.translate('platform')}
-              </BreadcrumbLabel>,
-              <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
-              <StyledLink to={`/nodes/${node.name}`} title={node.name}>
-                {node.name}
-              </StyledLink>,
-              <BreadcrumbLabel title={intl.translate('volumes')}>
-                {intl.translate('volumes')}
-              </BreadcrumbLabel>,
-            ]}
-          />
-        ) : (
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <BreadcrumbLabel title={intl.translate('platform')}>
-                {intl.translate('platform')}
-              </BreadcrumbLabel>,
-              <BreadcrumbLabel title={intl.translate('volumes')}>
-                {intl.translate('volumes')}
-              </BreadcrumbLabel>,
-            ]}
-          />
-        )}
+        <Breadcrumb
+          activeColor={theme.brand.secondary}
+          paths={[
+            <BreadcrumbLabel title={intl.translate('platform')}>
+              {intl.translate('platform')}
+            </BreadcrumbLabel>,
+            <BreadcrumbLabel title={intl.translate('volumes')}>
+              {intl.translate('volumes')}
+            </BreadcrumbLabel>,
+          ]}
+        />
       </BreadcrumbContainer>
       <VolumeContent
         volumes={volumes}
         volumeListData={volumeListData}
+        nodes={nodes}
         node={node}
         pVList={pVList}
         pods={pods}

@@ -137,10 +137,10 @@ const VolumeDetailCard = (props) => {
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
-    const firstVolumeName = volumeListData[0].name;
+    const firstVolumeName = volumeListData[0]?.name;
     deleteVolume(deleteVolumeName);
     setisDeleteConfirmationModalOpen(false);
-    history.push(`/volumes/?node=${nodeName}&volume=${firstVolumeName}`);
+    history.push(`/volumes/${firstVolumeName}/?node=${nodeName}`);
   };
 
   const onClickCancelButton = () => {

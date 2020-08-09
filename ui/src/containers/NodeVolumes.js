@@ -236,9 +236,13 @@ const NodeVolumes = (props) => {
 
   const onRowClick = (row) => {
     if (row.rowData && row.rowData.name) {
-      history.push(
-        `/volumes/?node=${props.nodeName}&volume=${row.rowData.name}`,
-      );
+      const location = {
+        pathname: `/volumes/${row.rowData.name}`,
+        search: `?node=${props.nodeName}`,
+        // access the Volume Page from Node Page
+        state: { fromNodePage: true },
+      };
+      history.push(location);
     }
   };
 

@@ -18,12 +18,15 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
-  padding: 1rem;
+  padding: ${padding.smaller};
   font-family: 'Lato';
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
   .sc-progressbarcontainer {
-    width: 84px;
+    width: 65px;
+  }
+  .ReactTable .rt-thead {
+    overflow-y: scroll;
   }
   table {
     border-spacing: 0;
@@ -61,7 +64,14 @@ const VolumeListContainer = styled.div`
   }
 `;
 
-const TableRow = styled.tr`
+const HeadRow = styled.tr`
+  width: 100%;
+  /* To display scroll bar on the table */
+  /* display: table;
+  table-layout: initial; */
+`;
+
+const TableRow = styled(HeadRow)`
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
@@ -75,6 +85,21 @@ const TableRow = styled.tr`
     props.volumeName === props.row.values.name
       ? props.theme.brand.backgroundBluer
       : props.theme.brand.primary};
+`;
+
+// * table body
+const Body = styled.tbody`
+  /* To display scroll bar on the table */
+  /* display: block; 
+ height: calc(100vh - 10px);
+  overflow: auto;  */
+  height: 500px;
+  overflow-y: scroll;
+`;
+
+const Cell = styled.td`
+  overflow-wrap: break-word;
+  border-top: 1px solid #424242;
 `;
 
 const ActionContainer = styled.span`
@@ -134,7 +159,12 @@ function GlobalFilter({
         text={intl.translate('create_new_volume')}
         icon={<i className="fas fa-plus-circle"></i>}
         onClick={() => {
-          history.push(`/nodes/${nodeName}/createVolume`);
+          // depends on if we add node filter
+          if (nodeName) {
+            history.push(`/nodes/${nodeName}/createVolume`);
+          } else {
+            history.push('/volumes/createVolume');
+          }
         }}
       />
     </ActionContainer>
@@ -191,14 +221,14 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
             </th>
           </tr>
           {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
+            <HeadRow {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map((column) => (
                 <th {...column.getHeaderProps()}>{column.render('Header')}</th>
               ))}
-            </tr>
+            </HeadRow>
           ))}
         </thead>
-        <tbody {...getTableBodyProps()}>
+        <Body {...getTableBodyProps()}>
           {rows.map((row, i) => {
             prepareRow(row);
             return (
@@ -208,27 +238,33 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
                 row={row}
               >
                 {row.cells.map((cell) => {
-                  if (
+                  if (cell.column.Header === 'Name') {
+                    return (
+                      <Cell {...cell.getCellProps()}>
+                        {cell.render('Cell')}
+                      </Cell>
+                    );
+                  } else if (
                     cell.column.Header === 'Usage' &&
                     cell.value !== intl.translate('unknown')
                   ) {
                     return (
-                      <td {...cell.getCellProps()}>
+                      <Cell {...cell.getCellProps()}>
                         <ProgressBar
                           size="base"
                           percentage={cell.value}
                           buildinLabel={`${cell.value}%`}
                         />
-                      </td>
+                      </Cell>
                     );
                   } else if (
                     cell.column.Header === 'Usage' &&
                     cell.value === intl.translate('unknown')
                   ) {
                     return (
-                      <td {...cell.getCellProps()}>
+                      <Cell {...cell.getCellProps()}>
                         <div>{intl.translate('unknown')}</div>
-                      </td>
+                      </Cell>
                     );
                   } else if (cell.column.Header === 'Status') {
                     const volume = data?.find(
@@ -238,7 +274,7 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
                     switch (cell.value) {
                       case 'exclamation':
                         return (
-                          <td {...cell.getCellProps()}>
+                          <Cell {...cell.getCellProps()}>
                             <Tooltip
                               placement="top"
                               overlay={
@@ -249,56 +285,58 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
                             >
                               <i className="fas fa-exclamation"></i>
                             </Tooltip>
-                          </td>
+                          </Cell>
                         );
                       case 'link':
                         return (
-                          <td {...cell.getCellProps()}>
+                          <Cell {...cell.getCellProps()}>
                             <Tooltip
                               placement="top"
                               overlay={<TooltipContent>In use</TooltipContent>}
                             >
                               <i className="fas fa-link"></i>
                             </Tooltip>
-                          </td>
+                          </Cell>
                         );
                       case 'unlink':
                         return (
-                          <td {...cell.getCellProps()}>
+                          <Cell {...cell.getCellProps()}>
                             <Tooltip
                               placement="top"
                               overlay={<TooltipContent>Unused</TooltipContent>}
                             >
                               <i className="fas fa-unlink"></i>
                             </Tooltip>
-                          </td>
+                          </Cell>
                         );
                       default:
                         return (
-                          <td {...cell.getCellProps()}>
+                          <Cell {...cell.getCellProps()}>
                             <div>{intl.translate('unknown')}</div>
-                          </td>
+                          </Cell>
                         );
                     }
                   } else if (cell.column.Header === 'Health') {
                     return (
-                      <td {...cell.getCellProps()}>
+                      <Cell {...cell.getCellProps()}>
                         <CircleStatus
                           className="fas fa-circle"
                           status={cell.value}
                         />
-                      </td>
+                      </Cell>
                     );
                   } else {
                     return (
-                      <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                      <Cell {...cell.getCellProps()}>
+                        {cell.render('Cell')}
+                      </Cell>
                     );
                   }
                 })}
               </TableRow>
             );
           })}
-        </tbody>
+        </Body>
       </table>
     </>
   );
@@ -311,18 +349,28 @@ const VolumeListTable = (props) => {
   const columns = React.useMemo(() => [
     { Header: 'Name', accessor: 'name' },
     // volumes filter by node don't necessarily to display the node name
-    //{ Header: 'Node', accessor: 'node' },
+    { Header: 'Node', accessor: 'node' },
     { Header: 'Usage', accessor: 'usage' },
     { Header: 'Size', accessor: 'storageCapacity' },
     { Header: 'Health', accessor: 'health' },
     { Header: 'Status', accessor: 'status' },
-    { Header: 'Created', accessor: 'creationTime' },
     { Header: 'Latency', accessor: 'latency' },
   ]);
 
   // handle the row selection by updating the URL
   const onClickRow = (row) => {
-    history.push(`/volumes/?node=${nodeName}&volume=${row.values.name}`);
+    // there are two possiable URLs
+    if (history?.location?.state?.fromNodePage) {
+      const location = {
+        pathname: `/volumes/${row.values.name}`,
+        search: `?node=${nodeName}`,
+        // access the Volume Page from Node Page
+        state: { fromNodePage: true },
+      };
+      history.push(location);
+    } else {
+      history.push(`/volumes/${row.values.name}`);
+    }
   };
 
   return (

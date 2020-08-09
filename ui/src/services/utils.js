@@ -241,18 +241,6 @@ export function allSizeUnitsToBytes(size) {
   }
 }
 
-export function formatDate(date) {
-  let d = new Date(date),
-    month = '' + (d.getMonth() + 1),
-    day = '' + d.getDate(),
-    year = d.getFullYear();
-
-  if (month.length < 2) month = '0' + month;
-  if (day.length < 2) day = '0' + day;
-
-  return [year, month, day].join('-');
-}
-
 export function bytesToSize(bytes) {
   let sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
   if (bytes === 0) return '0 Byte';
@@ -315,9 +303,10 @@ export function addMissingDataPoint(
   duration,
   samplingFrequency,
 ) {
-  if (!orginalValues || orginalValues.length === 0 || duration === 0) {
+  if (!orginalValues || orginalValues.length === 0) {
     return;
   }
+
   const newValues = [];
   const numberOfDataPoints = (duration * 24) / samplingFrequency;
   let samplingPointTime;
@@ -335,7 +324,10 @@ export function addMissingDataPoint(
   if (newValues.length === 0) return;
   let nextIndex = 0;
   for (let i = 0; i < newValues.length; i++) {
-    if (newValues[i][0] === orginalValues[nextIndex][0]) {
+    if (
+      orginalValues[nextIndex] &&
+      newValues[i][0] === orginalValues[nextIndex][0]
+    ) {
       newValues[i][1] = orginalValues[nextIndex][1];
       nextIndex++;
     }

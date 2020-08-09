@@ -82,18 +82,18 @@ const Layout = (props) => {
         }),
       },
       // deactive the access to the global volumes page now, we can only access the volume page through the node page
-      // {
-      //   label: intl.translate('volumes'),
-      //   icon: <i className="fas fa-database" />,
-      //   onClick: () => {
-      //     history.push('/volumes');
-      //   },
-      //   active: useRouteMatch({
-      //     path: '/volumes',
-      //     exact: false,
-      //     strict: true,
-      //   }),
-      // },
+      {
+        label: intl.translate('volumes'),
+        icon: <i className="fas fa-database" />,
+        onClick: () => {
+          history.push('/volumes');
+        },
+        active: useRouteMatch({
+          path: '/volumes',
+          exact: false,
+          strict: true,
+        }),
+      },
       // need to remove the solutions since it's not working in 2.5 or should be backported
       {
         label: intl.translate('solutions'),
@@ -224,13 +224,14 @@ const Layout = (props) => {
             path={`/nodes/:id/createVolume`}
             component={CreateVolume}
           />
-          <PrivateRoute
-            path="/nodes/:id/volumes/:volumeName"
-            component={VolumePage}
-          />
           <PrivateRoute path="/nodes/:id" component={NodeInformation} />
           <PrivateRoute exact path="/nodes" component={NodeList} />
           <PrivateRoute exact path="/solutions" component={SolutionList} />
+          <PrivateRoute
+            exact
+            path="/volumes/createVolume"
+            component={CreateVolume}
+          />
           <PrivateRoute path="/volumes" component={VolumePage} />
           <PrivateRoute
             exact

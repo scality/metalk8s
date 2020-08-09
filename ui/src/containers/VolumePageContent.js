@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
 import { useQuery, allSizeUnitsToBytes } from '../services/utils';
@@ -8,6 +9,7 @@ import ActiveAlertsCard from '../components/VolumeActiveAlertsCard';
 import MetricGraphCard from '../components/VolumeMetricGraphCard';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
+
 import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumePageContentContainer = styled.div`
@@ -26,7 +28,7 @@ const LeftSideVolumeList = styled.div`
 
 const RightSidePanel = styled.div`
   flex-direction: column;
-  width: 60%;
+  width: 55%;
   /* Make it scrollable for the small laptop screen */
   overflow-y: scroll;
 `;
@@ -37,6 +39,7 @@ const RightSidePanel = styled.div`
 const VolumePageContent = (props) => {
   const {
     volumes,
+    nodes,
     node,
     volumeListData,
     pVList,
@@ -45,8 +48,8 @@ const VolumePageContent = (props) => {
     volumeStats,
   } = props;
 
-  const query = useQuery();
-  const currentVolumeName = query.get('volume');
+  const history = useHistory();
+  const currentVolumeName = history?.location?.pathname?.split('/').pop();
 
   const volume = volumes?.find(
     (volume) => volume.metadata.name === currentVolumeName,
@@ -60,6 +63,7 @@ const VolumePageContent = (props) => {
     volume?.metadata?.name,
     volume?.status,
   );
+
   // get the used pod(s)
   const PVCName = pV?.spec?.claimRef?.name;
   const UsedPod = pods?.find((pod) =>
@@ -73,7 +77,16 @@ const VolumePageContent = (props) => {
 
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;
-  const instance = node?.internalIP + `:9100`;
+  let instance;
+
+  if (!node.internalIP) {
+    // find the node name of this volume
+    const nodeName = volume?.spec?.nodeName;
+    const currentNode = nodes.find((node) => node.name === nodeName);
+    instance = currentNode?.internalIP + `:9100`;
+  } else {
+    instance = node?.internalIP + `:9100`;
+  }
 
   const queryStartingTime = volumeStats?.queryStartingTime;
   const volumeUsed = volumeStats?.volumeUsed?.filter(

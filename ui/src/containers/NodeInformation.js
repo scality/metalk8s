@@ -42,6 +42,7 @@ const NodeInformationContainer = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   height: 100%;
+  padding: ${padding.small};
 
   .sc-tabs {
     flex-grow: 1;
@@ -220,6 +221,9 @@ const NodeInformation = (props) => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
+            <BreadcrumbLabel title={intl.translate('platform')}>
+              {intl.translate('platform')}
+            </BreadcrumbLabel>,
             <StyledLink to="/nodes">{intl.translate('nodes')} </StyledLink>,
             <BreadcrumbLabel title={node.name}>{node.name}</BreadcrumbLabel>,
           ]}

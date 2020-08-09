@@ -4,7 +4,6 @@ import {
   getVolumes,
   computeVolumeCondition,
   allSizeUnitsToBytes,
-  formatDate,
   bytesToSize,
 } from './utils.js';
 import {
@@ -164,17 +163,19 @@ export const getVolumeListData = createSelector(
     alerts,
     volumeLatencyCurrent,
   ) => {
-    // filter the volumes by the Node from URL
-    volumes.filter(
-      (volume) => volume && volume.spec && volume.spec.nodeName === nodeName,
-    );
-
-    return volumes.map((volume) => {
-      const volumePV = pVList.find(
+    let nodeVolumes = volumes;
+    // filter the volumes by the node name from URL
+    if (nodeName) {
+      nodeVolumes = volumes?.filter(
+        (volume) => volume.spec.nodeName === nodeName,
+      );
+    }
+    return nodeVolumes?.map((volume) => {
+      const volumePV = pVList?.find(
         (pV) => pV.metadata.name === volume.metadata.name,
       );
       // find the mapping PVC of this specific volume
-      const volumePVC = pVCList.find(
+      const volumePVC = pVCList?.find(
         (pVC) => pVC.spec.volumeName === volume.metadata.name,
       );
       const volumeComputedCondition = computeVolumeCondition(
@@ -221,6 +222,7 @@ export const getVolumeListData = createSelector(
 
       return {
         name: volume?.metadata?.name,
+        node: volume?.spec?.nodeName,
         usage: volumeUsedCurren?.value[1]
           ? Math.round(
               (volumeUsedCurren?.value[1] /
@@ -237,7 +239,6 @@ export const getVolumeListData = createSelector(
         storageCapacity:
           volumePV?.spec?.capacity?.storage || intl.translate('unknown'),
         storageClass: volume?.spec?.storageClassName,
-        creationTime: formatDate(volume?.metadata?.creationTimestamp),
         usageRawData: volumeUsedCurren?.value[1]
           ? bytesToSize(volumeUsedCurren?.value[1])
           : 0,
@@ -245,11 +246,11 @@ export const getVolumeListData = createSelector(
         latency:
           volumeLatencyCurrent &&
           volumeLatencyCurrent?.find(
-            (vLV) => vLV.metric.device === volume.status.deviceName,
+            (vLV) => vLV.metric.device === volume?.status?.deviceName,
           )
             ? Math.round(
                 volumeLatencyCurrent?.find(
-                  (vLV) => vLV.metric.device === volume.status.deviceName,
+                  (vLV) => vLV.metric.device === volume?.status?.deviceName,
                 )?.value[1] * 100,
               ) + 'ms'
             : intl.translate('unknown'),
