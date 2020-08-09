@@ -211,7 +211,7 @@ export function* fetchStorageClass() {
  * createVolumes(action)
  */
 export function* createVolumes({ payload }) {
-  const { newVolume, nodeName } = payload;
+  const { newVolume } = payload;
 
   const body = {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -221,7 +221,7 @@ export function* createVolumes({ payload }) {
       labels: newVolume.labels,
     },
     spec: {
-      nodeName,
+      nodeName: newVolume.node,
       storageClassName: newVolume.storageClass,
       template: {
         metadata: {
@@ -242,7 +242,7 @@ export function* createVolumes({ payload }) {
     ((newVolume.type === SPARSE_LOOP_DEVICE && newVolume.size) ||
       (newVolume.type === RAW_BLOCK_DEVICE && newVolume.path));
 
-  if (isNewVolumeValid && nodeName) {
+  if (isNewVolumeValid) {
     if (newVolume.type === SPARSE_LOOP_DEVICE) {
       body.spec.sparseLoopDevice = { size: newVolume.size };
     } else {
@@ -253,7 +253,7 @@ export function* createVolumes({ payload }) {
     if (!result.error) {
       yield call(
         history.push,
-        `/volumes/?node=${nodeName}&volume=${newVolume.name}`,
+        `/volumes/${newVolume.name}?node=${newVolume.node}`,
       );
       yield put(
         addNotificationSuccessAction({

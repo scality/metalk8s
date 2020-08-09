@@ -115,6 +115,7 @@
   "delete_a_volume_confirm": "Do you want to delete ",
   "select_a_storageClass": "Select a Storage Class…",
   "select_a_type": "Select a type of volume…",
+  "select_a_node": "Select a node",
   "no_results": "No results",
   "search": "Search…",
   "failed_to_create_volume":"Failed to create volume.",

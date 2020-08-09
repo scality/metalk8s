@@ -11,6 +11,7 @@ import {
   fetchStorageClassAction,
   createVolumeAction,
 } from '../ducks/app/volumes';
+import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   padding,
   fontSize,
@@ -30,7 +31,7 @@ import { intl } from '../translations/IntlGlobalProvider';
 const CreateVolumeFormContainer = styled.div`
   display: inline-block;
   height: 100%;
-  padding-left: ${padding.base};
+  padding: ${padding.small};
 `;
 
 const FormSection = styled.div`
@@ -128,10 +129,12 @@ const LabelsValue = styled.div`
   width: 200px;
   padding: ${padding.small} 0;
   margin-right: ${padding.small};
+  color: ${(props) => props.theme.brand.textPrimary};
 `;
 
 const LabelsName = styled(LabelsValue)`
   font-weight: ${fontWeight.bold};
+  color: ${(props) => props.theme.brand.textPrimary};
 `;
 
 const PageContainer = styled.div`
@@ -152,18 +155,21 @@ const CreateVolume = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const match = useRouteMatch();
-  const createVolume = (body, nodeName) =>
-    dispatch(createVolumeAction(body, nodeName));
 
+  const createVolume = (newVolumes) => dispatch(createVolumeAction(newVolumes));
+
+  const nodes = useSelector((state) => state.app.nodes.list);
   const storageClass = useSelector((state) => state.app.volumes.storageClass);
   const theme = useSelector((state) => state.config.theme);
   const api = useSelector((state) => state.config.api);
 
   useEffect(() => {
+    dispatch(fetchNodesAction());
     dispatch(fetchStorageClassAction());
   }, [dispatch]);
 
   const nodeName = match.params.id;
+
   const storageClassesName = storageClass.map((item) => item.metadata.name);
   const isStorageClassLoading = useSelector(
     (state) => state.app.volumes.isSCLoading,
@@ -186,6 +192,7 @@ const CreateVolume = (props) => {
 
   const initialValues = {
     name: '',
+    node: nodeName ? nodeName : nodes[0]?.name,
     storageClass: storageClassesName[0],
     type: types[0].value,
     path: '',
@@ -193,6 +200,7 @@ const CreateVolume = (props) => {
     sizeInput: '',
     labels: {},
   };
+
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   const positiveIntegerRegex = /^[1-9][0-9]*$/;
 
@@ -205,6 +213,7 @@ const CreateVolume = (props) => {
           field: intl.translate('name').toLowerCase(),
         }),
       ),
+    node: yup.string().required(),
     storageClass: yup.string().required(),
     type: yup.string().required(),
     path: yup
@@ -235,6 +244,7 @@ const CreateVolume = (props) => {
     }),
     labels: yup.object(),
   });
+
   const isStorageClassExist = storageClassesName.length > 0;
 
   return isStorageClassLoading ? (
@@ -243,21 +253,38 @@ const CreateVolume = (props) => {
     <PageContainer>
       <CreateVolumeFormContainer>
         <BreadcrumbContainer>
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
-              <StyledLink
-                to={`/nodes/${match.params.id}/volumes`}
-                title={match.params.id}
-              >
-                {match.params.id}
-              </StyledLink>,
-              <BreadcrumbLabel>
-                {intl.translate('create_new_volume')}
-              </BreadcrumbLabel>,
-            ]}
-          />
+          {nodeName ? (
+            <Breadcrumb
+              activeColor={theme.brand.secondary}
+              paths={[
+                <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
+                <StyledLink
+                  to={`/nodes/${match.params.id}/volumes`}
+                  title={match.params.id}
+                >
+                  {match.params.id}
+                </StyledLink>,
+                <BreadcrumbLabel>
+                  {intl.translate('create_new_volume')}
+                </BreadcrumbLabel>,
+              ]}
+            />
+          ) : (
+            <Breadcrumb
+              activeColor={theme.brand.secondary}
+              paths={[
+                <BreadcrumbLabel title={intl.translate('platform')}>
+                  {intl.translate('platform')}
+                </BreadcrumbLabel>,
+                <StyledLink to="/volumes">
+                  {intl.translate('volumes')}
+                </StyledLink>,
+                <BreadcrumbLabel>
+                  {intl.translate('create_new_volume')}
+                </BreadcrumbLabel>,
+              ]}
+            />
+          )}
         </BreadcrumbContainer>
 
         {isStorageClassExist ? null : (
@@ -283,7 +310,7 @@ const CreateVolume = (props) => {
             onSubmit={(values) => {
               const newVolume = { ...values };
               newVolume.size = `${values.sizeInput}${values.selectedUnit}`;
-              createVolume(newVolume, nodeName);
+              createVolume(newVolume);
             }}
           >
             {(formikProps) => {
@@ -351,6 +378,15 @@ const CreateVolume = (props) => {
                     'data-cy': `size-${label}`,
                   };
                 });
+
+              const optionsNodes = nodes?.map((node) => {
+                return {
+                  label: node.name,
+                  value: node.name,
+                  'data-cy': `node-${node.name}`,
+                };
+              });
+
               return (
                 <Form>
                   <FormSection>
@@ -360,6 +396,21 @@ const CreateVolume = (props) => {
                       onChange={handleChange('name')}
                       label={intl.translate('name')}
                       error={touched.name && errors.name}
+                      onBlur={handleOnBlur}
+                    />
+                    {/* The node input will be prefilled if we create volume from node*/}
+                    <Input
+                      id="node_input"
+                      label={intl.translate('node')}
+                      clearable={false}
+                      type="select"
+                      options={optionsNodes}
+                      placeholder={intl.translate('select_a_node')}
+                      noOptionsMessage={() => intl.translate('no_results')}
+                      name="node"
+                      onChange={handleSelectChange('node')}
+                      value={getSelectedObjectItem(optionsNodes, values?.node)}
+                      error={touched.node && errors.node}
                       onBlur={handleOnBlur}
                     />
                     <InputContainer className="sc-input">
@@ -410,6 +461,7 @@ const CreateVolume = (props) => {
                         )}
                       </LabelsContainer>
                     </InputContainer>
+
                     <Input
                       id="storageClass_input"
                       label={intl.translate('storageClass')}
