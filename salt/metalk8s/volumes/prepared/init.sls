@@ -48,12 +48,21 @@ Provision backing storage for {{ volume }}:
     - name: {{ volume }}
     - require:
       - metalk8s_volumes: Prepare backing storage for {{ volume }}
+    - require_in:
+      - module: Update pillar after volume provisioning
 
-Update pillar after volume provisionning:
+{%- endfor %}
+
+{%- if volumes_to_create %}
+
+Update pillar after volume provisioning:
   module.run:
     - saltutil.refresh_pillar:
       - wait: True
-    - require:
-      - metalk8s_volumes: Provision backing storage for {{ volume }}
 
-{%- endfor %}
+{%- else %}
+
+No volume to create:
+  test.succeed_without_changes: []
+
+{%- endif %}
