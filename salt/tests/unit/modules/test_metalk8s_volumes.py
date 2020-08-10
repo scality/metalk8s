@@ -435,38 +435,25 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 # This function does not return anything
                 metalk8s_volumes.clean_up(name)
 
+
     @parameterized.expand([
-        param('my-device'),
-        param(exists_return=False, raises=True, result='device `/dev/my-device` not found'),
-        param(exists_return=[False, False, False, True], result='my-device')
+        # Nominal case: device exists.
+        ([True], 'my-device'),
+        # Error case: device doesn't exists.
+        ([False]*10, 'device `/dev/my-device` not found'),
+        # Device is temporarily missing.
+        ([False, False, False, True], 'my-device'),
     ])
-    def test_device_name(self, result, exists_return=True, raises=False):
-        """
-        Tests the return of `device_name` function
-        """
-        os_exists_mock = MagicMock()
-        if isinstance(exists_return, list):
-            os_exists_mock.side_effect = exists_return
-        else:
-            os_exists_mock.return_value = exists_return
-
+    def test_device_name(self, exist_values, result):
+        expected = {'success': any(exist_values), 'result': result}
+        exists_mock = MagicMock(side_effect=exist_values)
         realpath_mock = MagicMock(side_effect=lambda path: path)
+        with patch("os.path.exists", exists_mock), \
+             patch("os.path.realpath", realpath_mock), \
+             patch("time.sleep", MagicMock()):
+            result = metalk8s_volumes.device_name('/dev/my-device')
+            self.assertEqual(result, expected)
 
-        with patch("os.path.exists", os_exists_mock), \
-                patch("os.path.realpath", realpath_mock), \
-                patch("time.sleep", MagicMock()):
-            if raises:
-                self.assertRaisesRegexp(
-                    Exception,
-                    result,
-                    metalk8s_volumes.device_name,
-                    "/dev/my-device"
-                )
-            else:
-                self.assertEqual(
-                    metalk8s_volumes.device_name("/dev/my-device"),
-                    result
-                )
 
     @parameterized.expand(
         param.explicit(kwargs=test_case)

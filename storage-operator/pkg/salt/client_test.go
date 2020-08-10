@@ -322,15 +322,21 @@ func TestExtractDeviceName(t *testing.T) {
 		name string
 	}{
 		"ok": {
-			json: `{"return": [{"bootstrap": "loop0"}]}`,
+			json: `{"return": [{"bootstrap": {"success": true, "result": "loop0"}}]}`,
 			name: "loop0",
 		},
-		"empty":         {json: `{}`, name: ""},
-		"missingReturn": {json: `{"name": "foobar"}`, name: ""},
-		"invalidReturn": {json: `{"return": "foo"}`, name: ""},
-		"noResult":      {json: `{"return": []}`, name: ""},
-		"missingNone":   {json: `{"return": [{"node1": "loop0"}]}`, name: ""},
-		"invalidJID":    {json: `{"return": [{"bootstrap": 42}]}`, name: ""},
+		"error": {
+			json: `{"return": [{"bootstrap": {"success": false, "result": "ERROR"}}]}`,
+			name: "",
+		},
+		"empty":          {json: `{}`, name: ""},
+		"missingReturn":  {json: `{"name": "foobar"}`, name: ""},
+		"invalidReturn":  {json: `{"return": "foo"}`, name: ""},
+		"noResult":       {json: `{"return": []}`, name: ""},
+		"missingNode":    {json: `{"return": [{"node1": "loop0"}]}`, name: ""},
+		"invalidResult":  {json: `{"return": [{"bootstrap": 42}]}`, name: ""},
+		"invalidSuccess": {json: `{"return": [{"bootstrap": {"success": 0, "result": ""}}]}`, name: ""},
+		"invalidOutput":  {json: `{"return": [{"bootstrap": {"success": true, "result": 42}}]}`, name: ""},
 	}
 
 	for name, tc := range tests {
