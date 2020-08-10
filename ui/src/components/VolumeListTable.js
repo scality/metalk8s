@@ -67,8 +67,8 @@ const VolumeListContainer = styled.div`
 const HeadRow = styled.tr`
   width: 100%;
   /* To display scroll bar on the table */
-  /* display: table;
-  table-layout: initial; */
+  display: table;
+  table-layout: fixed;
 `;
 
 const TableRow = styled(HeadRow)`
@@ -90,9 +90,9 @@ const TableRow = styled(HeadRow)`
 // * table body
 const Body = styled.tbody`
   /* To display scroll bar on the table */
-  /* display: block; 
- height: calc(100vh - 10px);
-  overflow: auto;  */
+  display: block;
+  height: calc(100vh - 10px);
+  overflow: auto;
   height: 500px;
   overflow-y: scroll;
 `;
@@ -346,16 +346,19 @@ const VolumeListTable = (props) => {
   const { nodeName, volumeListData, volumeName } = props;
   const history = useHistory();
 
-  const columns = React.useMemo(() => [
-    { Header: 'Name', accessor: 'name' },
-    // volumes filter by node don't necessarily to display the node name
-    { Header: 'Node', accessor: 'node' },
-    { Header: 'Usage', accessor: 'usage' },
-    { Header: 'Size', accessor: 'storageCapacity' },
-    { Header: 'Health', accessor: 'health' },
-    { Header: 'Status', accessor: 'status' },
-    { Header: 'Latency', accessor: 'latency' },
-  ]);
+  const columns = React.useMemo(
+    () => [
+      { Header: 'Name', accessor: 'name' },
+      // volumes filter by node don't necessarily to display the node name
+      { Header: 'Node', accessor: 'node' },
+      { Header: 'Usage', accessor: 'usage' },
+      { Header: 'Size', accessor: 'storageCapacity' },
+      { Header: 'Health', accessor: 'health' },
+      { Header: 'Status', accessor: 'status' },
+      { Header: 'Latency', accessor: 'latency' },
+    ],
+    [],
+  );
 
   // handle the row selection by updating the URL
   const onClickRow = (row) => {
