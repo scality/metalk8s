@@ -3,3 +3,4 @@ include:
   - .loki-configuration-secret
   - .chart
   - .storageclass
+  - .datasource
