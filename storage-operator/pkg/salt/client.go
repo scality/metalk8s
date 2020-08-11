@@ -590,14 +590,27 @@ func parsePollAnswer(
 }
 
 // Try to extract the device name from a Salt answer.
+// e.g:
+// {"return": [{"bootstrap": {"result": "an error message", "success": false}}]}
+// {"return": [{"bootstrap": {"result": "loop1", "success": true}}]}
 func extractDeviceName(ans map[string]interface{}, nodeName string) (string, error) {
 	if results, ok := ans["return"].([]interface{}); ok && len(results) > 0 {
-		if result, ok := results[0].(map[string]interface{}); ok {
-			if name, ok := result[nodeName].(string); ok {
-				return name, nil
+		if nodeResults, ok := results[0].(map[string]interface{}); ok {
+			if result, ok := nodeResults[nodeName].(map[string]interface{}); ok {
+				// Inspect "success" and "result".
+				is_success, has_success := result["success"].(bool)
+				output, has_result := result["result"].(string)
+				if !has_success || !has_result {
+					goto invalidFormat
+				}
+				if is_success {
+					return output, nil
+				}
+				return "", errors.New(output)
 			}
 		}
 	}
+invalidFormat:
 	return "", fmt.Errorf(
 		"cannot extract device name for %s from %v", nodeName, ans,
 	)

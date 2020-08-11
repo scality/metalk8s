@@ -435,38 +435,25 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 # This function does not return anything
                 metalk8s_volumes.clean_up(name)
 
+
     @parameterized.expand([
-        param('my-device'),
-        param(exists_return=False, raises=True, result='device `/dev/my-device` not found'),
-        param(exists_return=[False, False, False, True], result='my-device')
+        # Nominal case: device exists.
+        ('exists', [True], 'my-device'),
+        # Error case: device doesn't exists.
+        ('missing', [False]*10, 'device `/dev/my-device` not found'),
+        # Device is temporarily missing.
+        ('transient-missing', [False, False, False, True], 'my-device'),
     ])
-    def test_device_name(self, result, exists_return=True, raises=False):
-        """
-        Tests the return of `device_name` function
-        """
-        os_exists_mock = MagicMock()
-        if isinstance(exists_return, list):
-            os_exists_mock.side_effect = exists_return
-        else:
-            os_exists_mock.return_value = exists_return
-
+    def test_device_name(self, _, exist_values, result):
+        expected = {'success': any(exist_values), 'result': result}
+        exists_mock = MagicMock(side_effect=exist_values)
         realpath_mock = MagicMock(side_effect=lambda path: path)
+        with patch("os.path.exists", exists_mock), \
+             patch("os.path.realpath", realpath_mock), \
+             patch("time.sleep", MagicMock()):
+            result = metalk8s_volumes.device_name('/dev/my-device')
+            self.assertEqual(result, expected)
 
-        with patch("os.path.exists", os_exists_mock), \
-                patch("os.path.realpath", realpath_mock), \
-                patch("time.sleep", MagicMock()):
-            if raises:
-                self.assertRaisesRegexp(
-                    Exception,
-                    result,
-                    metalk8s_volumes.device_name,
-                    "/dev/my-device"
-                )
-            else:
-                self.assertEqual(
-                    metalk8s_volumes.device_name("/dev/my-device"),
-                    result
-                )
 
     @parameterized.expand(
         param.explicit(kwargs=test_case)
@@ -514,14 +501,14 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
 
 class RawBlockDeviceBlockTestCase(TestCase):
     @parameterized.expand([
-        ('/dev/sda', None),
-        ('/dev/sda1', '1'),
-        ('/dev/vdc', None),       # Virtual disk
-        ('/dev/vdc2', '2'),       # Partition on a virtual disk
-        ('/dev/nvme0n1', None),   # NVME disk
-        ('/dev/nvme0n1p3', '3'),  # Partition on a NVME disk
-        ('/dev/dm-0', None),      # LVM device
+        ('disk', '/dev/sda', None),
+        ('partition', '/dev/sda1', '1'),
+        ('virtual-disk', '/dev/vdc', None),
+        ('virtual-disk-part', '/dev/vdc2', '2'),
+        ('nvme', '/dev/nvme0n1', None),
+        ('nvme-part', '/dev/nvme0n1p3', '3'),
+        ('lvm', '/dev/dm-0', None),
     ])
-    def test_get_partition(self, name, expected):
+    def test_get_partition(self, _, name, expected):
         partition = metalk8s_volumes.RawBlockDeviceBlock._get_partition(name)
         self.assertEqual(partition, expected)

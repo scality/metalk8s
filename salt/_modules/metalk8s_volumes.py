@@ -181,9 +181,9 @@ def device_name(path):
         # TOCTTOU, but `realpath` doesn't return error on non-existing path…
         if os.path.exists(path):
             realpath = os.path.realpath(path)
-            return os.path.basename(realpath)
+            return {'success': True, 'result': os.path.basename(realpath)}
         time.sleep(0.1)
-    raise Exception('device `{}` not found'.format(path))
+    return {'success': False, 'result': 'device `{}` not found'.format(path)}
 
 
 def device_info(name):
