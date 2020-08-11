@@ -185,13 +185,13 @@ export const getVolumeListData = createSelector(
           : intl.translate('no'),
       );
 
-      let volumeUsedCurren = null;
+      let volumeUsedCurrent = null;
       let volumeAlerts = [];
       let volumeHealth = '';
 
       // if volume is bounded
       if (volumePVC) {
-        volumeUsedCurren = volumeUsedCurrentList?.find(
+        volumeUsedCurrent = volumeUsedCurrentList?.find(
           (volStat) =>
             volStat.metric.persistentvolumeclaim === volumePVC.metadata.name,
         );
@@ -223,9 +223,9 @@ export const getVolumeListData = createSelector(
       return {
         name: volume?.metadata?.name,
         node: volume?.spec?.nodeName,
-        usage: volumeUsedCurren?.value[1]
+        usage: volumeUsedCurrent?.value[1]
           ? Math.round(
-              (volumeUsedCurren?.value[1] /
+              (volumeUsedCurrent?.value[1] /
                 (volumePV?.spec?.capacity?.storage &&
                   allSizeUnitsToBytes(volumePV?.spec?.capacity?.storage))) *
                 100,
@@ -239,8 +239,8 @@ export const getVolumeListData = createSelector(
         storageCapacity:
           volumePV?.spec?.capacity?.storage || intl.translate('unknown'),
         storageClass: volume?.spec?.storageClassName,
-        usageRawData: volumeUsedCurren?.value[1]
-          ? bytesToSize(volumeUsedCurren?.value[1])
+        usageRawData: volumeUsedCurrent?.value[1]
+          ? bytesToSize(volumeUsedCurrent?.value[1])
           : 0,
         health: volumeHealth,
         latency:

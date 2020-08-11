@@ -16,9 +16,11 @@ import CircleStatus from './CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
+const VOLUME_TABLE_SEARCH = 'VOLUME_TABLE_SEARCH';
+
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
-  padding: ${padding.smaller};
+  padding: ${padding.base};
   font-family: 'Lato';
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
@@ -126,6 +128,7 @@ function GlobalFilter({
   const [value, setValue] = React.useState(globalFilter);
   const onChange = useAsyncDebounce((value) => {
     setGlobalFilter(value || undefined);
+    localStorage.setItem(VOLUME_TABLE_SEARCH, value);
   }, 500);
 
   return (
@@ -195,6 +198,7 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
       columns,
       data,
       defaultColumn,
+      initialState: { globalFilter: localStorage.getItem(VOLUME_TABLE_SEARCH) },
     },
     useFilters,
     useGlobalFilter,

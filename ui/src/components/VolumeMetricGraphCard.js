@@ -299,57 +299,65 @@ const MetricGraphCard = (props) => {
           <RowGraphContainer>
             <UsageGraph>
               <GraphTitle>USAGE (%)</GraphTitle>
-              <LineChart
-                id={'volume_usage_id'}
-                data={volumeUsageData}
-                xAxis={xAxis}
-                yAxis={yAxisUsauge}
-                color={colorUsage}
-                width={285}
-                height={80}
-                tooltip={false}
-              />
+              {volumeUsageData && (
+                <LineChart
+                  id={'volume_usage_id'}
+                  data={volumeUsageData}
+                  xAxis={xAxis}
+                  yAxis={yAxisUsauge}
+                  color={colorUsage}
+                  width={285}
+                  height={80}
+                  tooltip={false}
+                />
+              )}
             </UsageGraph>
             <LatencyGraph>
               <GraphTitle>LATENCY (µs) </GraphTitle>
-              <LineChart
-                id={'volume_latency_id'}
-                data={volumeLatencyData}
-                xAxis={xAxis}
-                yAxis={yAxisUsauge}
-                color={colorLatency}
-                width={285}
-                height={80}
-                tooltip={false}
-              />
+              {volumeLatencyData && (
+                <LineChart
+                  id={'volume_latency_id'}
+                  data={volumeLatencyData}
+                  xAxis={xAxis}
+                  yAxis={yAxisUsauge}
+                  color={colorLatency}
+                  width={285}
+                  height={80}
+                  tooltip={false}
+                />
+              )}
             </LatencyGraph>
           </RowGraphContainer>
           <SecondRowGraphContainer>
             <TroughputGraph>
               <GraphTitle>THROUGHPUT (bytes/s)</GraphTitle>
-              <LineChart
-                id={'volume_throughput_id'}
-                data={volumeThroughputData}
-                xAxis={xAxis}
-                yAxis={yAxisThroughput}
-                color={colorThroughput}
-                width={285}
-                height={80}
-                tooltip={false}
-              />
+              {volumeThroughputData && (
+                <LineChart
+                  id={'volume_throughput_id'}
+                  data={volumeThroughputData}
+                  xAxis={xAxis}
+                  yAxis={yAxisThroughput}
+                  color={colorThroughput}
+                  width={285}
+                  height={80}
+                  tooltip={false}
+                />
+              )}
             </TroughputGraph>
             <IOPSGraph>
               <GraphTitle>IOPS</GraphTitle>
-              <LineChart
-                id={'volume_IOPS_id'}
-                data={volumeIOPSData}
-                xAxis={xAxis}
-                yAxis={yAxisIOPS}
-                color={colorIOPS}
-                width={285}
-                height={80}
-                tooltip={false}
-              />
+              {volumeIOPSData && (
+                <LineChart
+                  id={'volume_IOPS_id'}
+                  data={volumeIOPSData}
+                  xAxis={xAxis}
+                  yAxis={yAxisIOPS}
+                  color={colorIOPS}
+                  width={285}
+                  height={80}
+                  tooltip={false}
+                />
+              )}
             </IOPSGraph>
           </SecondRowGraphContainer>
         </GraphsContainer>

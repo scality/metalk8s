@@ -1,15 +1,13 @@
 import React from 'react';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import Loader from '../components/Loader';
-import { useQuery, allSizeUnitsToBytes } from '../services/utils';
+import { allSizeUnitsToBytes } from '../services/utils';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeDetailCard from '../components/VolumeDetailCard';
 import ActiveAlertsCard from '../components/VolumeActiveAlertsCard';
 import MetricGraphCard from '../components/VolumeMetricGraphCard';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
-
 import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumePageContentContainer = styled.div`
@@ -23,7 +21,7 @@ const VolumePageContentContainer = styled.div`
 const LeftSideVolumeList = styled.div`
   flex-direction: column;
   min-height: 696px;
-  width: 40%;
+  width: 45%;
 `;
 
 const RightSidePanel = styled.div`
@@ -31,6 +29,14 @@ const RightSidePanel = styled.div`
   width: 55%;
   /* Make it scrollable for the small laptop screen */
   overflow-y: scroll;
+`;
+
+const NoVolumeSelected = styled.div`
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${(props) => props.theme.brand.textPrimary};
+  text-align: center;
 `;
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
@@ -66,14 +72,20 @@ const VolumePageContent = (props) => {
 
   // get the used pod(s)
   const PVCName = pV?.spec?.claimRef?.name;
-  const UsedPod = pods?.find((pod) =>
-    pod.volumes.find((volume) => volume.persistentVolumeClaim === PVCName),
-  );
 
-  // get the alert base on the current
-  const alertlist = alerts?.list?.filter(
-    (alert) => alert.labels.persistentvolumeclaim === PVCName,
-  );
+  // we need to make sure that `PVCName` is exist otherwise may return undefined `persistentVolumeClaim` pod
+  const UsedPod =
+    PVCName &&
+    pods?.find((pod) =>
+      pod.volumes.find((volume) => volume.persistentVolumeClaim === PVCName),
+    );
+
+  // get the alert
+  const alertlist =
+    PVCName &&
+    alerts?.list?.filter(
+      (alert) => alert.labels.persistentvolumeclaim === PVCName,
+    );
 
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;
@@ -132,57 +144,62 @@ const VolumePageContent = (props) => {
           volumeName={currentVolumeName}
         ></VolumeListTable>
       </LeftSideVolumeList>
-      {currentVolumeName && volume ? (
-        <RightSidePanel>
-          <VolumeDetailCard
-            name={currentVolumeName}
-            nodeName={volume?.spec?.nodeName}
-            storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
-            status={volumeStatus ?? intl.translate('unknown')}
-            storageClassName={volume?.spec?.storageClassName}
-            creationTimestamp={volume?.metadata?.creationTimestamp}
-            volumeType={
-              volume?.spec?.rawBlockDevice
-                ? RAW_BLOCK_DEVICE
-                : SPARSE_LOOP_DEVICE
-            }
-            usedPodName={UsedPod?.name}
-            devicePath={
-              volume?.spec?.rawBlockDevice?.devicePath ??
-              intl.translate('not_applicable')
-            }
-            volumeUsagePercentage={currentVolume?.usage}
-            volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-            storageCapacity={
-              volumeListData?.find((vol) => vol.name === currentVolumeName)
-                .storageCapacity
-            }
-            health={
-              volumeListData?.find((vol) => vol.name === currentVolumeName)
-                .health
-            }
-            condition={currentVolume.status}
-            // the delete button inside the volume detail card should know that which volume is the first one
-            volumeListData={volumeListData}
-            pVList={pVList}
-          ></VolumeDetailCard>
-          <ActiveAlertsCard
-            alertlist={alertlist}
-            PVCName={PVCName}
-          ></ActiveAlertsCard>
-          <MetricGraphCard
-            volumeMetricGraphData={volumeMetricGraphData}
-            volumeStorageCapacity={allSizeUnitsToBytes(
-              pV?.spec?.capacity?.storage,
-            )}
-            // the volume condition compute base on the `status` and `bound/unbound`
-            volumeCondition={currentVolume.status}
-            // Hardcode the port number for prometheus metrics
-          ></MetricGraphCard>
-        </RightSidePanel>
-      ) : (
-        <Loader />
-      )}
+
+      <RightSidePanel>
+        {currentVolumeName && volume ? (
+          <>
+            <VolumeDetailCard
+              name={currentVolumeName}
+              nodeName={volume?.spec?.nodeName}
+              storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
+              status={volumeStatus ?? intl.translate('unknown')}
+              storageClassName={volume?.spec?.storageClassName}
+              creationTimestamp={volume?.metadata?.creationTimestamp}
+              volumeType={
+                volume?.spec?.rawBlockDevice
+                  ? RAW_BLOCK_DEVICE
+                  : SPARSE_LOOP_DEVICE
+              }
+              usedPodName={UsedPod ? UsedPod?.name : intl.translate('not_used')}
+              devicePath={
+                volume?.spec?.rawBlockDevice?.devicePath ??
+                intl.translate('not_applicable')
+              }
+              volumeUsagePercentage={currentVolume?.usage}
+              volumeUsageBytes={currentVolume?.usageRawData ?? 0}
+              storageCapacity={
+                volumeListData?.find((vol) => vol.name === currentVolumeName)
+                  .storageCapacity
+              }
+              health={
+                volumeListData?.find((vol) => vol.name === currentVolumeName)
+                  .health
+              }
+              condition={currentVolume.status}
+              // the delete button inside the volume detail card should know that which volume is the first one
+              volumeListData={volumeListData}
+              pVList={pVList}
+            ></VolumeDetailCard>
+            <ActiveAlertsCard
+              alertlist={alertlist}
+              PVCName={PVCName}
+            ></ActiveAlertsCard>
+            <MetricGraphCard
+              volumeMetricGraphData={volumeMetricGraphData}
+              volumeStorageCapacity={allSizeUnitsToBytes(
+                pV?.spec?.capacity?.storage,
+              )}
+              // the volume condition compute base on the `status` and `bound/unbound`
+              volumeCondition={currentVolume.status}
+              // Hardcode the port number for prometheus metrics
+            ></MetricGraphCard>
+          </>
+        ) : (
+          <NoVolumeSelected>
+            {intl.translate('no_volume_selected')}
+          </NoVolumeSelected>
+        )}
+      </RightSidePanel>
     </VolumePageContentContainer>
   );
 };

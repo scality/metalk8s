@@ -69,7 +69,7 @@ const NoActiveAlerts = styled.div`
 const ActiveAlertsCard = (props) => {
   const { alertlist, PVCName } = props;
 
-  const activeAlertListData = alertlist.map((alert) => {
+  const activeAlertListData = alertlist?.map((alert) => {
     return {
       name: alert.labels.alertname,
       severity: alert.labels.severity,
@@ -154,12 +154,15 @@ const ActiveAlertsCard = (props) => {
     );
   }
   // columns for alert table
-  const columns = React.useMemo(() => [
-    { Header: 'Name', accessor: 'name' },
-    { Header: 'Severity', accessor: 'severity' },
-    { Header: 'Description', accessor: 'alert_description' },
-    { Header: 'Active since', accessor: 'active_since' },
-  ]);
+  const columns = React.useMemo(
+    () => [
+      { Header: 'Name', accessor: 'name' },
+      { Header: 'Severity', accessor: 'severity' },
+      { Header: 'Description', accessor: 'alert_description' },
+      { Header: 'Active since', accessor: 'active_since' },
+    ],
+    [],
+  );
 
   return (
     <ActiveAlertsCardContainer>
