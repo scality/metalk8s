@@ -85,7 +85,10 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
                 task_name='bootstrap.sh',
                 source=constants.ROOT/'scripts'/'bootstrap.sh.in',
                 destination=constants.ISO_ROOT/'bootstrap.sh',
-                context={'VERSION': versions.VERSION},
+                context={
+                    'VERSION': versions.VERSION,
+                    'SALT_VERSION': versions.SALT_VERSION
+                },
                 file_dep=[versions.VERSION_FILE],
                 task_dep=['_iso_mkdir_root'],
             ),
@@ -101,7 +104,10 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
                 task_name='restore.sh',
                 source=constants.ROOT/'scripts'/'restore.sh.in',
                 destination=constants.ISO_ROOT/'restore.sh',
-                context={'VERSION': versions.VERSION},
+                context={
+                    'VERSION': versions.VERSION,
+                    'SALT_VERSION': versions.SALT_VERSION
+                },
                 file_dep=[versions.VERSION_FILE],
                 task_dep=['_iso_mkdir_root'],
             ),
