@@ -1,0 +1,169 @@
+alertmanager_api_helper:
+  - _id: nominal
+    endpoint: &alertmanager_endpoint
+      ip: '10.0.0.1'
+      ports:
+        web: 1234
+    route: api/v1/alerts
+    resp_body:
+      status: success
+      data: some result
+    result: some result
+    called_with:
+      args: [GET, 'http://10.0.0.1:1234/api/v1/alerts']
+
+  - _id: custom-method
+    endpoint: *alertmanager_endpoint
+    route: my-route
+    method: POST
+    json:
+      my-data: my-value
+    resp_body:
+      status: success
+      data: some result
+    result: some result
+    called_with:
+      args: [POST, 'http://10.0.0.1:1234/my-route']
+      kwargs:
+        json: {my-data: my-value}
+
+  - _id: request-error
+    endpoint: *alertmanager_endpoint
+    route: api/v1/alerts
+    request_raises: 'some request error'
+    raises: True
+    result: >-
+      Unable to query Alertmanager API on http://10.0.0.1:1234/api/v1/alerts:
+      some request error
+
+  - _id: response-error
+    endpoint: *alertmanager_endpoint
+    route: api/v1/alerts
+    resp_body:
+      status: error
+      error: 'some error happened'
+      errorType: 'IMPOSSIBRU'
+    raises: True
+    result: 'IMPOSSIBRU: some error happened'
+
+  - _id: response-bad-format
+    endpoint: *alertmanager_endpoint
+    route: api/v1/alerts
+    resp_body: 'wrong format'
+    resp_status: 200
+    raises: True
+    result: >-
+      Malformed response returned from Alertmanager API: .*: wrong format
+
+  - _id: response-bad-status
+    endpoint: *alertmanager_endpoint
+    route: api/v1/alerts
+    resp_body: null
+    resp_status: 401
+    raises: True
+    result: >-
+      Received HTTP code 401 when querying Alertmanager API on
+      http://10.0.0.1:1234/api/v1/alerts
+
+add_silence:
+  - _id: nominal
+    value: SomeAlertName
+    now_mock: "2020-06-01T00:00:00"
+    call_body:
+      matchers:
+        - name: alertname
+          isRegex: false
+          value: SomeAlertName
+      startsAt: "2020-06-01T00:00:00Z"
+      endsAt: "2020-06-01T01:00:00Z"  # 1 hour duration by default
+      createdBy: ''
+      comment: ''
+      status:
+        state: active
+
+  - _id: custom-matcher
+    name: namespace
+    value: metalk8s.*
+    is_regex: true
+    call_body:
+      matchers:
+        - name: namespace
+          isRegex: true
+          value: metalk8s.*
+
+  - _id: custom-time-boundaries
+    value: WhatEver
+    starts_at: "2020-06-01T00:00:00"
+    ends_at: "2020-06-02T00:00:00"
+    call_body:
+      startsAt: "2020-06-01T00:00:00Z"
+      endsAt: "2020-06-02T00:00:00Z"
+
+  - _id: custom-time-format
+    value: WhatEver
+    starts_at: "01/06/20 00h00"
+    ends_at: "01/06/20 01h30"
+    time_format: "%d/%m/%y %Hh%M"
+    call_body:
+      startsAt: "2020-06-01T00:00:00Z"
+      endsAt: "2020-06-01T01:30:00Z"
+
+  - _id: custom-duration
+    value: WhatEver
+    duration: 10
+    now_mock: "2020-06-01T00:00:00"
+    call_body:
+      startsAt: "2020-06-01T00:00:00Z"
+      endsAt: "2020-06-01T00:00:10Z"
+
+  - _id: custom-author
+    value: WhatEver
+    author: the-best-sysadmin
+    call_body:
+      createdBy: the-best-sysadmin
+
+  - _id: custom-comment
+    value: WhatEver
+    comment: &_comment That's a really interesting comment
+    call_body:
+      comment: *_comment
+
+get_silences:
+  - _id: without-state
+    response: &silences_list
+      - &active_silence
+        id: d287796c-cf59-4d10-8e5b-d5cc3ff51b9c
+        status:
+          state: active
+      - id: 858e47f8-982a-4993-803b-8b795682f092
+        status:
+          state: expired
+    result: *silences_list
+
+  - _id: with-state
+    state: active
+    response: *silences_list
+    result:
+      - *active_silence
+
+get_alerts:
+  - _id: without-state
+    response: &alerts_list
+      - &active_alert
+        fingerprint: 6d23e53004c504c7
+        labels:
+          alertname: KubeAPIErrorBudgetBurn
+        status:
+          state: active
+      - fingerprint: ffbe34d127f90d4c
+        labels:
+          alertname: NodeClockNotSynchronising
+        status:
+          state: suppressed
+    result: *alerts_list
+
+  - _id: with-state
+    state: active
+    response: *alerts_list
+    result:
+      - *active_alert
