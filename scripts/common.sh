@@ -95,6 +95,7 @@ configure_yum_local_repository() {
 name=$repo_name
 baseurl=file://$repo_path
 enabled=1
+priority=1
 gpgcheck=$gpgcheck
 ${gpg_keys:+gpgkey=${gpg_keys%?}}
 EOF
