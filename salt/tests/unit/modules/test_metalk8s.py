@@ -18,6 +18,9 @@ YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "files", "test_metalk8s.yaml"
 )
+with open(YAML_TESTS_FILE) as fd:
+    YAML_TESTS_CASES = yaml.safe_load(fd)
+
 
 PRODUCT_TXT = '''
 NAME=MetalK8s
@@ -194,10 +197,7 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
 
             iso_info_cmd_mock.assert_called_once()
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in yaml.safe_load(open(YAML_TESTS_FILE))["get_archives"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_archives"])
     def test_get_archives(self, archives, infos, result,
                           is_dirs=False, is_files=False,
                           raises=False, pillar_archives=None):
@@ -240,10 +240,7 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
                     result
                 )
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in yaml.safe_load(open(YAML_TESTS_FILE))["check_pillar_keys"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["check_pillar_keys"])
     def test_check_pillar_keys(self, keys, result, raises=False,
                                pillar_content=None, refresh_called=False,
                                **kwargs):

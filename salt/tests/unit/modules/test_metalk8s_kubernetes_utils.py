@@ -14,6 +14,8 @@ from salttesting.helpers import ForceImportErrorOn
 
 import metalk8s_kubernetes_utils
 
+from tests.unit import utils
+
 
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -57,10 +59,7 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, LoaderModuleMockMixin):
                 ))
             )
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["get_kubeconfig"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_kubeconfig"])
     def test_get_kubeconfig(
         self,
         result,
@@ -158,10 +157,9 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, LoaderModuleMockMixin):
                 metalk8s_kubernetes_utils.ping(),
             )
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["read_and_render_yaml_file"]
-    ])
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES["read_and_render_yaml_file"]
+    )
     def test_read_and_render_yaml_file(
         self,
         source,

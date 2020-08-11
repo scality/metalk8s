@@ -10,11 +10,14 @@ from salttesting.mock import MagicMock, patch
 
 import metalk8s_grafana
 
+from tests.unit import utils
 
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "files", "test_metalk8s_grafana.yaml"
 )
+with open(YAML_TESTS_FILE) as fd:
+    YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
 class Metalk8sGrafanaTestCase(TestCase, LoaderModuleMockMixin):
@@ -29,10 +32,7 @@ class Metalk8sGrafanaTestCase(TestCase, LoaderModuleMockMixin):
         """
         self.assertEqual(metalk8s_grafana.__virtual__(), 'metalk8s_grafana')
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in yaml.safe_load(open(YAML_TESTS_FILE))
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES)
     def test_load_dashboard(self, dashboard, result, raises=False, **kwargs):
         """
         Tests the return of `load_dashboard` function

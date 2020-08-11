@@ -14,6 +14,8 @@ from salttesting.helpers import ForceImportErrorOn
 
 import metalk8s_kubernetes
 
+from tests.unit import utils
+
 
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -118,9 +120,8 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                 (False, 'Missing `metalk8s_kubernetes` utils module')
             )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES['create_object'] + YAML_TESTS_CASES['common_tests']
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES['create_object'] + YAML_TESTS_CASES['common_tests']
     )
     def test_create_object(self, result, raises=False, api_status_code=None,
                            info_scope="cluster", manifest_file_content=None,
@@ -189,9 +190,8 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                         create_mock.call_args.kwargs
                     )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES['delete_object'] + YAML_TESTS_CASES['common_tests']
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES['delete_object'] + YAML_TESTS_CASES['common_tests']
     )
     def test_delete_object(self, result, raises=False, api_status_code=None,
                            info_scope="namespaced", manifest_file_content=None,
@@ -263,9 +263,8 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                         delete_mock.call_args.kwargs
                     )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES['replace_object'] + YAML_TESTS_CASES['common_tests']
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES['replace_object'] + YAML_TESTS_CASES['common_tests']
     )
     def test_replace_object(self, result, raises=False, api_status_code=None,
                             info_scope="cluster", manifest_file_content=None,
@@ -334,9 +333,8 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                         replace_mock.call_args.kwargs
                     )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES['get_object'] + YAML_TESTS_CASES['common_tests']
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES['get_object'] + YAML_TESTS_CASES['common_tests']
     )
     def test_get_object(self, result, raises=False, api_status_code=None,
                         info_scope="namespaced", manifest_file_content=None,
@@ -408,9 +406,8 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                         retrieve_mock.call_args.kwargs
                     )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES['update_object'] + YAML_TESTS_CASES['common_tests']
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES['update_object'] + YAML_TESTS_CASES['common_tests']
     )
     def test_update_object(self, result, raises=False, initial_obj=None,
                            info_scope="cluster", manifest_file_content=None,
@@ -499,9 +496,8 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
             )
             get_object_mock.assert_called_once()
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES['list_objects']
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES['list_objects']
     )
     def test_list_objects(self, result, raises=False, api_status_code=None,
                           info_scope="namespaced", called_with=None, **kwargs):
