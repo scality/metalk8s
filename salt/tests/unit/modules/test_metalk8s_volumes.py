@@ -438,13 +438,13 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
 
     @parameterized.expand([
         # Nominal case: device exists.
-        ([True], 'my-device'),
+        ('exists', [True], 'my-device'),
         # Error case: device doesn't exists.
-        ([False]*10, 'device `/dev/my-device` not found'),
+        ('missing', [False]*10, 'device `/dev/my-device` not found'),
         # Device is temporarily missing.
-        ([False, False, False, True], 'my-device'),
+        ('transient-missing', [False, False, False, True], 'my-device'),
     ])
-    def test_device_name(self, exist_values, result):
+    def test_device_name(self, _, exist_values, result):
         expected = {'success': any(exist_values), 'result': result}
         exists_mock = MagicMock(side_effect=exist_values)
         realpath_mock = MagicMock(side_effect=lambda path: path)
@@ -501,14 +501,14 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
 
 class RawBlockDeviceBlockTestCase(TestCase):
     @parameterized.expand([
-        ('/dev/sda', None),
-        ('/dev/sda1', '1'),
-        ('/dev/vdc', None),       # Virtual disk
-        ('/dev/vdc2', '2'),       # Partition on a virtual disk
-        ('/dev/nvme0n1', None),   # NVME disk
-        ('/dev/nvme0n1p3', '3'),  # Partition on a NVME disk
-        ('/dev/dm-0', None),      # LVM device
+        ('disk', '/dev/sda', None),
+        ('partition', '/dev/sda1', '1'),
+        ('virtual-disk', '/dev/vdc', None),
+        ('virtual-disk-part', '/dev/vdc2', '2'),
+        ('nvme', '/dev/nvme0n1', None),
+        ('nvme-part', '/dev/nvme0n1p3', '3'),
+        ('lvm', '/dev/dm-0', None),
     ])
-    def test_get_partition(self, name, expected):
+    def test_get_partition(self, _, name, expected):
         partition = metalk8s_volumes.RawBlockDeviceBlock._get_partition(name)
         self.assertEqual(partition, expected)
