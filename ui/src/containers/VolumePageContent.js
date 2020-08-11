@@ -1,6 +1,7 @@
 import React from 'react';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import { allSizeUnitsToBytes } from '../services/utils';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeDetailCard from '../components/VolumeDetailCard';
@@ -37,6 +38,13 @@ const NoVolumeSelected = styled.div`
   transform: translateY(-50%);
   color: ${(props) => props.theme.brand.textPrimary};
   text-align: center;
+`;
+
+const NoVolumeSelectedContainer = styled.div`
+  margin: ${padding.small};
+  width: 55%;
+  min-height: 700px;
+  background-color: ${(props) => props.theme.brand.primaryDark1};
 `;
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
@@ -145,61 +153,61 @@ const VolumePageContent = (props) => {
         ></VolumeListTable>
       </LeftSideVolumeList>
 
-      <RightSidePanel>
-        {currentVolumeName && volume ? (
-          <>
-            <VolumeDetailCard
-              name={currentVolumeName}
-              nodeName={volume?.spec?.nodeName}
-              storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
-              status={volumeStatus ?? intl.translate('unknown')}
-              storageClassName={volume?.spec?.storageClassName}
-              creationTimestamp={volume?.metadata?.creationTimestamp}
-              volumeType={
-                volume?.spec?.rawBlockDevice
-                  ? RAW_BLOCK_DEVICE
-                  : SPARSE_LOOP_DEVICE
-              }
-              usedPodName={UsedPod ? UsedPod?.name : intl.translate('not_used')}
-              devicePath={
-                volume?.spec?.rawBlockDevice?.devicePath ??
-                intl.translate('not_applicable')
-              }
-              volumeUsagePercentage={currentVolume?.usage}
-              volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-              storageCapacity={
-                volumeListData?.find((vol) => vol.name === currentVolumeName)
-                  .storageCapacity
-              }
-              health={
-                volumeListData?.find((vol) => vol.name === currentVolumeName)
-                  .health
-              }
-              condition={currentVolume.status}
-              // the delete button inside the volume detail card should know that which volume is the first one
-              volumeListData={volumeListData}
-              pVList={pVList}
-            ></VolumeDetailCard>
-            <ActiveAlertsCard
-              alertlist={alertlist}
-              PVCName={PVCName}
-            ></ActiveAlertsCard>
-            <MetricGraphCard
-              volumeMetricGraphData={volumeMetricGraphData}
-              volumeStorageCapacity={allSizeUnitsToBytes(
-                pV?.spec?.capacity?.storage,
-              )}
-              // the volume condition compute base on the `status` and `bound/unbound`
-              volumeCondition={currentVolume.status}
-              // Hardcode the port number for prometheus metrics
-            ></MetricGraphCard>
-          </>
-        ) : (
+      {currentVolumeName && volume ? (
+        <RightSidePanel>
+          <VolumeDetailCard
+            name={currentVolumeName}
+            nodeName={volume?.spec?.nodeName}
+            storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
+            status={volumeStatus ?? intl.translate('unknown')}
+            storageClassName={volume?.spec?.storageClassName}
+            creationTimestamp={volume?.metadata?.creationTimestamp}
+            volumeType={
+              volume?.spec?.rawBlockDevice
+                ? RAW_BLOCK_DEVICE
+                : SPARSE_LOOP_DEVICE
+            }
+            usedPodName={UsedPod ? UsedPod?.name : intl.translate('not_used')}
+            devicePath={
+              volume?.spec?.rawBlockDevice?.devicePath ??
+              intl.translate('not_applicable')
+            }
+            volumeUsagePercentage={currentVolume?.usage}
+            volumeUsageBytes={currentVolume?.usageRawData ?? 0}
+            storageCapacity={
+              volumeListData?.find((vol) => vol.name === currentVolumeName)
+                .storageCapacity
+            }
+            health={
+              volumeListData?.find((vol) => vol.name === currentVolumeName)
+                .health
+            }
+            condition={currentVolume.status}
+            // the delete button inside the volume detail card should know that which volume is the first one
+            volumeListData={volumeListData}
+            pVList={pVList}
+          ></VolumeDetailCard>
+          <ActiveAlertsCard
+            alertlist={alertlist}
+            PVCName={PVCName}
+          ></ActiveAlertsCard>
+          <MetricGraphCard
+            volumeMetricGraphData={volumeMetricGraphData}
+            volumeStorageCapacity={allSizeUnitsToBytes(
+              pV?.spec?.capacity?.storage,
+            )}
+            // the volume condition compute base on the `status` and `bound/unbound`
+            volumeCondition={currentVolume.status}
+            // Hardcode the port number for prometheus metrics
+          ></MetricGraphCard>
+        </RightSidePanel>
+      ) : (
+        <NoVolumeSelectedContainer>
           <NoVolumeSelected>
             {intl.translate('no_volume_selected')}
           </NoVolumeSelected>
-        )}
-      </RightSidePanel>
+        </NoVolumeSelectedContainer>
+      )}
     </VolumePageContentContainer>
   );
 };
