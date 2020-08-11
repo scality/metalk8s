@@ -1,13 +1,26 @@
-import json
+import os
+import pathlib
 import time
 import uuid
+import yaml
 
+from kubernetes import client
 import pytest
-from pytest_bdd import scenario, given, when, then
+from pytest_bdd import scenario, given, when, then, parsers
 
-from tests import utils
+from tests import utils, kube_utils
+
+# Constants {{{
+
+MANIFESTS_PATH = pathlib.Path("/etc/kubernetes/manifests/")
+LOGGER_POD_TEMPLATE = (
+    pathlib.Path(__file__) / ".." / "files" / "logger-pod.yaml.tpl"
+).resolve()
+
+# }}}
 
 # Fixtures {{{
+
 
 @pytest.fixture(scope='function')
 def context():
@@ -33,6 +46,11 @@ def test_push_log_to_loki(host):
     pass
 
 
+@scenario('../features/logging.feature', 'Logging pipeline is working')
+def test_logging_pipeline_is_working(host):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -53,6 +71,48 @@ def check_loki_api(k8s_client):
         times=10,
         wait=2,
         name="checking Loki API ready"
+    )
+
+
+@given("we have set up a logger pod", target_fixture='pod_creation_ts')
+def set_up_logger_pod(k8s_client, utils_image):
+    manifest_file = os.path.join(
+        os.path.realpath(os.path.dirname(__file__)),
+        "files",
+        "logger-pod.yaml"
+    )
+    with open(manifest_file, encoding='utf-8') as fd:
+        manifest = yaml.safe_load(fd)
+
+    manifest["spec"]["containers"][0]["image"] = utils_image
+    name = manifest["metadata"]["name"]
+    namespace = manifest['metadata']['namespace']
+
+    result = k8s_client.create_namespaced_pod(
+        body=manifest, namespace=namespace
+    )
+    pod_creation_ts = int(result.metadata.creation_timestamp.timestamp())
+
+    utils.retry(
+        kube_utils.check_pod_status(
+            k8s_client,
+            name=name,
+            namespace=namespace,
+            state="Succeeded",
+        ),
+        times=10,
+        wait=5,
+        name="wait for Pod '{}'".format(name),
+    )
+
+    yield pod_creation_ts
+
+    k8s_client.delete_namespaced_pod(
+        name=name,
+        namespace=namespace,
+        body=client.V1DeleteOptions(
+            grace_period_seconds=0,
+        ),
     )
 
 
@@ -102,28 +162,8 @@ def push_log_to_loki(k8s_client, context):
 
 @then("we can query this example log from Loki")
 def query_log_from_loki(k8s_client, context):
-    # With current k8s client we cannot pass query_params so we need to
-    # use `call_api` directly
-    path_params = {
-        'name': 'loki:http-metrics',
-        'namespace': 'metalk8s-logging',
-        'path': 'loki/api/v1/query'
-    }
-    query_params = {
-        'query': '{identifier="' + context['test_log_id'] + '"}'
-    }
-    response = k8s_client.api_client.call_api(
-        '/api/v1/namespaces/{namespace}/services/{name}/proxy/{path}',
-        'GET',
-        path_params,
-        query_params,
-        {"Accept": "*/*"},
-        response_type=object,
-        auth_settings=["BearerToken"]
-    )
-
-    assert response[0]['status'] == 'success'
-
+    query = {'query': '{{identifier="{0}"}}'.format(context['test_log_id'])}
+    response = query_loki_api(k8s_client, query)
     result_data = response[0]['data']['result']
 
     assert result_data, \
@@ -132,5 +172,56 @@ def query_log_from_loki(k8s_client, context):
         )
     assert result_data[0]['stream']['identifier'] == context['test_log_id']
 
+
+@then("we can retrieve logs from logger pod in Loki API")
+def retrieve_pod_logs_from_loki(k8s_client, nodename, pod_creation_ts):
+    query = {
+        'query': '{pod="logger"}',
+        'start': pod_creation_ts,
+    }
+
+    def _check_log_line_exists():
+        response = query_loki_api(k8s_client, query, route='query_range')
+        try:
+            result_data = response[0]['data']['result'][0]['values']
+        except IndexError:
+            result_data = []
+        assert any("logging pipeline is working" in v[1]
+                   for v in result_data), \
+            "No log found in Loki for 'logger' pod"
+
+    utils.retry(
+        _check_log_line_exists,
+        times=20,
+        wait=3,
+        name="check that a log exists for 'logger' pod"
+    )
+
+# }}}
+
+# Helpers {{{
+
+
+def query_loki_api(k8s_client, content, route='query'):
+    # With current k8s client we cannot pass query_params so we need to
+    # use `call_api` directly
+    path_params = {
+        'name': 'loki:http-metrics',
+        'namespace': 'metalk8s-logging',
+        'path': 'loki/api/v1/{0}'.format(route)
+    }
+    response = k8s_client.api_client.call_api(
+        '/api/v1/namespaces/{namespace}/services/{name}/proxy/{path}',
+        'GET',
+        path_params,
+        content,
+        {"Accept": "*/*"},
+        response_type=object,
+        auth_settings=["BearerToken"]
+    )
+
+    assert response[0]['status'] == 'success'
+
+    return response
 
 # }}}
