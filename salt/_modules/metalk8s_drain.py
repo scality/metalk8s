@@ -64,7 +64,8 @@ def _mirrorpod_filter(pod):
 
     Args:
       - pod: kubernetes pod object
-    Returns: True if the pod has the mirror annotation, False if not
+    Returns: (False, "") if the pod has the mirror annotation,
+             (True, "") if not
     '''
     mirror_annotation = "kubernetes.io/config.mirror"
 
@@ -248,8 +249,11 @@ class Drain(object):
             pod['metadata']['namespace'], controller_ref
         )
         if not response:
+            meta = pod['metadata']
             raise DrainException(
-                "Missing pod controller for '{0}'".format(controller_ref.name)
+                "Missing controller for pod '{}/{}'".format(
+                    meta['namespace'], meta['name']
+                )
             )
         return controller_ref
 
@@ -284,7 +288,9 @@ class Drain(object):
                 )
 
             raise DrainException(
-                "Missing pod controller for '{0}'".format(controller_ref.name)
+                "Missing controller for pod '{}/{}'".format(
+                    pod['metadata']['namespace'], pod['metadata']['name']
+                )
             )
 
         if not self.ignore_daemonset:
@@ -324,6 +330,7 @@ class Drain(object):
                     warnings.setdefault(
                         warning, []).append(pod['metadata']['name'])
                 is_deletable &= filter_deletable
+
             if is_deletable:
                 pods.append(pod)
 
