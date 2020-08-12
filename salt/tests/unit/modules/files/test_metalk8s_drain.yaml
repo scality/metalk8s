@@ -1,0 +1,558 @@
+evict_pod:
+  ## NOMINAL CASES
+
+  # Nominal (successful eviction)
+  - name: my-pod
+    result: True
+
+  # Custom parameters
+  - name: my-pod
+    namespace: my-ns
+    grace_period: 0
+    result: True
+
+  # Pod not found (no need to evict)
+  - name: not-found-pod
+    create_raises: ApiException
+    create_error_status: 404
+    result: True
+    log_lines:
+    - level: DEBUG
+      contains: >-
+        Received '404 Not Found' when creating Eviction for not-found-pod,
+        ignoring
+
+  # Temporary failure (eviction rejected because of forbidden disruption)
+  - name: busy-pod
+    create_raises: ApiException
+    create_error_status: 429
+    create_error_body:
+      message: this pod is meditating
+    result: False
+    log_lines:
+    - level: INFO
+      contains: "Cannot evict busy-pod at the moment: this pod is meditating"
+
+  ## ERROR CASES
+
+  # Unknown API error
+  - name: my-pod
+    create_raises: ApiException
+    create_error_status: 500
+    result: 'Failed to evict pod "my-pod" in namespace "default"'
+    raises: True
+
+  # Unknown HTTP error
+  - name: my-pod
+    create_raises: HTTPError
+    result: 'Failed to evict pod "my-pod" in namespace "default"'
+    raises: True
+
+
+drain:
+  ## NOMINAL
+  nominal:
+    # No pod at all
+    - node_name: my-node
+      dataset: empty
+      pods_to_evict: []
+      log_lines:
+      - level: DEBUG
+        contains: Beginning drain of Node my-node
+      - level: DEBUG
+        contains: "Starting eviction of pods: no pods to evict."
+
+    # One pod with a standard controller
+    - node_name: my-node
+      dataset: single-replicaset
+      pods_to_evict:
+      - my-replicaset-pod
+      events:
+        # Evicted after a single tick
+        1:
+          - resource: pods
+            verb: delete
+            name: my-replicaset-pod
+      log_lines:
+      - level: DEBUG
+        contains: Beginning drain of Node my-node
+      - level: DEBUG
+        contains: "Starting eviction of pods: my-replicaset-pod"
+      - level: DEBUG
+        contains: >-
+          Waiting for eviction of Pod my-replicaset-pod
+          (current status: Running)
+      - level: INFO
+        contains: my-replicaset-pod evicted
+
+    # Multiple pods
+    - node_name: my-node
+      dataset: multiple-pods
+      pods_to_evict:
+        - my-pod-1
+        - my-pod-2
+        - my-pod-3
+      events:
+        # All evicted after one tick
+        1:
+          - resource: pods
+            verb: delete
+            name: my-pod-1
+          - resource: pods
+            verb: delete
+            name: my-pod-2
+          - resource: pods
+            verb: delete
+            name: my-pod-3
+      log_lines:
+      - level: DEBUG
+        contains: Beginning drain of Node my-node
+      - level: DEBUG
+        contains: "Starting eviction of pods: my-pod-1, my-pod-2, my-pod-3"
+      - level: DEBUG
+        contains: >-
+          Waiting for eviction of Pod my-pod-1 (current status: Running)
+      - level: DEBUG
+        contains: >-
+          Waiting for eviction of Pod my-pod-2 (current status: Running)
+      - level: DEBUG
+        contains: >-
+          Waiting for eviction of Pod my-pod-3 (current status: Running)
+      - level: INFO
+        contains: my-pod-1 evicted
+      - level: INFO
+        contains: my-pod-2 evicted
+      - level: INFO
+        contains: my-pod-3 evicted
+
+  dry-run:
+    # No pod
+    - node_name: my-node
+      dataset: empty
+      pods_to_evict: []
+
+    # Single pod with a RS controller
+    - node_name: my-node
+      dataset: single-replicaset
+      pods_to_evict:
+        - my-replicaset-pod
+
+    # No pod matching this node
+    - node_name: unknown-node
+      dataset: single-pod
+      pods_to_evict: []
+
+    # Finished pod
+    - node_name: my-node
+      dataset: finished-pod
+      pods_to_evict:
+        - my-finished-pod
+
+    # Finished orphan pod
+    - node_name: my-node
+      dataset: finished-orphaned-pod
+      pods_to_evict:
+        - my-finished-pod
+
+    # All possible pods (ReplicaSet, DaemonSet, unmanaged, with local storage)
+    - node_name: my-node
+      dataset: full
+      # Add some args to evict the special pods
+      force: true
+      delete_local_data: true
+      ignore_daemonset: true
+      # DaemonSet-managed and static pods are ignored
+      pods_to_evict:
+        - my-pod
+        - my-replicaset-pod
+        - my-pod-with-local-storage
+
+  # Filters are applied before attempting the actual eviction, so the test
+  # will run in dry-run mode
+  # Logs captured in this test are only above WARNING level
+  eviction-filters:
+    ## NOMINAL
+    # Static pods (ignored, silently)
+    # FIXME: all filters are executed, and we see some incorrect warnings
+    - node_name: my-node
+      dataset: single-static-pod
+      pods_to_evict: []
+      log_lines:
+        - level: WARNING
+          contains: >-
+            Deleting pods not managed by ReplicationController, ReplicaSet,
+            Job, DaemonSet or StatefulSet: my-static-pod
+
+    # DaemonSet-managed pods (ignored, with a warning)
+    - node_name: my-node
+      dataset: single-daemonset
+      pods_to_evict: []
+      ignore_daemonset: true
+      log_lines:
+        - level: WARNING
+          contains: "Ignoring DaemonSet-managed pods: my-daemonset-pod"
+
+    # Orphaned DaemonSet-managed pods (evicted, with a warning)
+    - node_name: my-node
+      dataset: orphaned-daemonset-pod
+      pods_to_evict:
+        - my-daemonset-pod
+      force: true
+      log_lines:
+        - level: WARNING
+          contains: >-
+            Deleting pods not managed by ReplicationController, ReplicaSet,
+            Job, DaemonSet or StatefulSet: my-daemonset-pod
+
+    # Unmanaged pods (evicted, with a warning)
+    - node_name: my-node
+      dataset: single-pod
+      pods_to_evict:
+        - my-pod
+      force: true
+      log_lines:
+      - level: WARNING
+        contains: >-
+          Deleting pods not managed by ReplicationController, ReplicaSet,
+          Job, DaemonSet or StatefulSet: my-pod
+
+    # Orphaned pods (evicted, with a warning)
+    - node_name: my-node
+      dataset: orphaned-replicaset-pod
+      pods_to_evict:
+        - my-replicaset-pod
+      force: true
+      log_lines:
+      - level: WARNING
+        contains: >-
+          Deleting pods not managed by ReplicationController, ReplicaSet,
+          Job, DaemonSet or StatefulSet: my-replicaset-pod
+
+    # Local storage (evicted, with a warning)
+    - node_name: my-node
+      dataset: single-local-storage
+      pods_to_evict:
+        - my-pod-with-local-storage
+      delete_local_data: true
+      log_lines:
+      - level: WARNING
+        contains: "Deleting pods with local storage: my-pod-with-local-storage"
+
+    ## ERROR
+    # Daemonset-managed pods
+    - node_name: my-node
+      dataset: single-daemonset
+      pods_to_evict: []
+      raises: true
+      raise_msg: "DaemonSet-managed pods: my-daemonset-pod."
+
+    # Orphaned Daemonset-managed pods
+    - node_name: my-node
+      dataset: orphaned-daemonset-pod
+      pods_to_evict: []
+      raises: true
+      # FIXME: weird error
+      raise_msg: >-
+        Missing controller for pod 'my-namespace/my-daemonset-pod':
+        my-daemonset-pod, my-daemonset-pod.
+
+    # Other orphaned pods
+    - node_name: my-node
+      dataset: orphaned-replicaset-pod
+      pods_to_evict: []
+      raises: true
+      raise_msg: >-
+        Missing controller for pod 'my-namespace/my-replicaset-pod':
+        my-replicaset-pod.
+
+    # Local storage (evicted, with a warning)
+    - node_name: my-node
+      dataset: single-local-storage
+      pods_to_evict:
+        - my-pod-with-local-storage
+      raises: true
+      raise_msg: "pods with local storage: my-pod-with-local-storage."
+
+  # Check how eviction is retried on temporary failure
+  eviction-retry:
+    # No retry
+    - node_name: my-node
+      dataset: single-replicaset
+      events:
+        1:
+          - resource: pods
+            verb: delete
+            name: my-replicaset-pod
+      eviction_attempts: 1
+
+    # Retry until eviction isn't locked
+    - node_name: my-node
+      dataset: blocked-eviction
+      events:
+        # evict_pods sleeps 5 seconds between each eviction attempt, so we will
+        # try to evict twice with an error, and third attempt will work
+        8:
+          - resource: evictionmocks
+            verb: delete
+            pod: my-namespace/my-replicaset-pod
+        # we delete the pod 2 second after success when creating the eviction
+        10:
+          - resource: pods
+            verb: delete
+            name: my-replicaset-pod
+            namespace: my-namespace
+      eviction_attempts: 3
+
+  waiting-for-eviction:
+    # Instantaneous
+    - node_name: my-node
+      dataset: single-replicaset
+      events:
+        0:
+          - resource: pods
+            verb: delete
+            name: my-replicaset-pod
+      sleep_time: 0
+
+    # One pod waits 5 seconds
+    - node_name: my-node
+      dataset: single-replicaset
+      events:
+        5:
+          - resource: pods
+            verb: delete
+            name: my-replicaset-pod
+      sleep_time: 5
+
+    # One pod waits 10 seconds, the others wait 2 seconds
+    - node_name: my-node
+      dataset: multiple-pods
+      events:
+        2:
+          - resource: pods
+            verb: delete
+            name: my-pod-1
+          - resource: pods
+            verb: delete
+            name: my-pod-2
+        10:
+          - resource: pods
+            verb: delete
+            name: my-pod-3
+      sleep_time: 10
+
+  ## ERROR
+  timeout:
+    # Eviction creation is retried but never succeeds
+    - node_name: my-node
+      dataset: blocked-eviction
+
+    # Eviction creation succeeds, but the pod is never removed
+    - node_name: my-node
+      dataset: single-replicaset
+
+  eviction-error:
+    - node_name: my-node
+      dataset: broken-eviction
+
+
+datasets:
+  __common:
+    base-pod: &base_pod
+      api_version: v1
+      kind: Pod
+      metadata: &base_pod_meta
+        name: my-pod
+        namespace: my-namespace
+        owner_references: null
+        annotations: {}
+        uid: ede4ed1b-9a5e-4168-961c-b1bdad691ec7
+      spec: &base_pod_spec
+        containers: []
+        volumes: []
+        # NOTE: this should be `node_name` from our PoV, but we use this
+        # key for filtering server-side so we keep it as-is in our mock
+        nodeName: my-node
+      status: &base_pod_status
+        phase: Running
+
+    pod-with-local-storage: &local_storage_pod
+      <<: *base_pod
+      metadata:
+        <<: *base_pod_meta
+        name: my-pod-with-local-storage
+      spec:
+        <<: *base_pod_spec
+        volumes:
+        - name: tmp-volume
+          empty_dir: {}
+
+    static-pod: &static_pod
+      <<: *base_pod
+      metadata:
+        <<: *base_pod_meta
+        name: my-static-pod
+        annotations:
+          kubernetes.io/config.hash: be5260b5b984bb8a9b56204adf9d3a46
+          kubernetes.io/config.mirror: be5260b5b984bb8a9b56204adf9d3a46
+          kubernetes.io/config.source: file
+
+    finished-pod: &finished_pod
+      <<: *base_pod
+      metadata:
+        <<: *base_pod_meta
+        name: my-finished-pod
+        owner_references:
+        - api_version: batch/v1
+          kind: Job
+          controller: true
+          name: my-job
+      status:
+        <<: *base_pod_status
+        phase: Succeeded
+
+    replicaset-pod: &replicaset_pod
+      <<: *base_pod
+      metadata: &replicaset_pod_meta
+        <<: *base_pod_meta
+        name: my-replicaset-pod
+        owner_references:
+        - api_version: apps/v1
+          kind: ReplicaSet
+          controller: true
+          name: my-replicaset
+
+    daemonset-pod: &daemonset_pod
+      <<: *base_pod
+      metadata:
+        <<: *base_pod_meta
+        name: my-daemonset-pod
+        owner_references:
+        - api_version: apps/v1
+          kind: DaemonSet
+          controller: true
+          name: my-daemonset
+
+    common-replicaset: &common_replicaset
+      api_version: apps/v1
+      kind: ReplicaSet
+      metadata:
+        name: my-replicaset
+        namespace: my-namespace
+
+    common-daemonset: &common_daemonset
+      api_version: apps/v1
+      kind: DaemonSet
+      metadata:
+        name: my-daemonset
+        namespace: my-namespace
+
+    common-job: &common_job
+      api_version: batch/v1
+      kind: Job
+      metadata:
+        name: my-job
+        namespace: my-namespace
+
+  empty: &empty_dataset
+    # Real K8s resources
+    pods: []
+    replicasets: []
+    daemonsets: []
+    jobs: []
+
+    # Test utility resources
+    evictionmocks: []
+
+  single-pod:
+    <<: *empty_dataset
+    pods:
+      - *base_pod
+
+  single-static-pod:
+    <<: *empty_dataset
+    pods:
+      - *static_pod
+
+  finished-pod: &finished_pod_dataset
+    <<: *empty_dataset
+    pods:
+      - *finished_pod
+    jobs:
+      - *common_job
+
+  finished-orphaned-pod:
+    <<: *finished_pod_dataset
+    jobs: []
+
+  single-local-storage:
+    <<: *empty_dataset
+    pods:
+      - *local_storage_pod
+
+  single-replicaset: &single_replicaset_dataset
+    <<: *empty_dataset
+    pods:
+      - *replicaset_pod
+    replicasets:
+      - *common_replicaset
+
+  orphaned-replicaset-pod:
+    <<: *single_replicaset_dataset
+    replicasets: []
+
+  single-daemonset: &single_daemonset_dataset
+    <<: *empty_dataset
+    pods:
+      - *daemonset_pod
+    daemonsets:
+      - *common_daemonset
+
+  orphaned-daemonset-pod:
+    <<: *single_daemonset_dataset
+    daemonsets: []
+
+  multiple-pods:
+    <<: *single_replicaset_dataset
+    pods:
+      - <<: *replicaset_pod
+        metadata:
+          <<: *replicaset_pod_meta
+          name: my-pod-1
+      - <<: *replicaset_pod
+        metadata:
+          <<: *replicaset_pod_meta
+          name: my-pod-2
+      - <<: *replicaset_pod
+        metadata:
+          <<: *replicaset_pod_meta
+          name: my-pod-3
+
+  full:
+    <<: *empty_dataset
+    pods:
+      - *base_pod
+      - *replicaset_pod
+      - *static_pod
+      - *local_storage_pod
+      - *daemonset_pod
+    replicasets:
+      - *common_replicaset
+    daemonsets:
+      - *common_daemonset
+
+  blocked-eviction:
+    <<: *single_replicaset_dataset
+    evictionmocks:
+      - kind: EvictionMock
+        api_version: __tests__
+        pod: my-namespace/my-replicaset-pod
+        locked: true
+
+  broken-eviction:
+    <<: *single_replicaset_dataset
+    evictionmocks:
+      - kind: EvictionMock
+        api_version: __tests__
+        pod: my-namespace/my-replicaset-pod
+        raises: true
