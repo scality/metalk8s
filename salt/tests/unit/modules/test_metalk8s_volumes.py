@@ -1,10 +1,9 @@
 import os.path
 import yaml
 
-from parameterized import param, parameterized
-
 from salt.exceptions import CommandExecutionError
 
+from parameterized import param, parameterized
 from salttesting.mixins import LoaderModuleMockMixin
 from salttesting.unit import TestCase
 from salttesting.mock import MagicMock, patch
@@ -34,10 +33,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
         """
         self.assertEqual(metalk8s_volumes.__virtual__(), 'metalk8s_volumes')
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["exists"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["exists"])
     def test_exists(self, name, result, raises=False, pillar_volumes=None,
                     is_file=True, get_size=1073741824, is_blkdev=True):
         """
@@ -80,10 +76,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                     result
                 )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["create"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["create"])
     def test_create(self, name, raise_msg=None, pillar_volumes=None,
                     ftruncate=True):
         """
@@ -121,10 +114,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 # This function does not return anything
                 metalk8s_volumes.create(name)
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["is_provisioned"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["is_provisioned"])
     def test_is_provisioned(self, name, result, raises=False,
                             pillar_volumes=None, losetup_output=None):
         """
@@ -174,10 +164,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                     result
                 )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["provision"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["provision"])
     def test_provision(self, name, raise_msg=False,
                        pillar_volumes=None, losetup_output=None):
         """
@@ -225,10 +212,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 # This function does not return anything
                 metalk8s_volumes.provision(name)
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["is_prepared"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["is_prepared"])
     def test_is_prepared(self, name, result, raises=False,
                          uuid_return=None, device_name_return=True,
                          pillar_volumes=None):
@@ -282,10 +266,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                     result
                 )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["prepare"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["prepare"])
     def test_prepare(self, name, raise_msg=False,
                      current_fstype=None, has_partition=False,
                      pillar_volumes=None, cmd_output=None):
@@ -345,10 +326,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 # This function does not return anything
                 metalk8s_volumes.prepare(name)
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["is_cleaned_up"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["is_cleaned_up"])
     def test_is_cleaned_up(self, name, result, raises=False,
                            is_provisioned=False, exists=False,
                            pillar_volumes=None):
@@ -388,10 +366,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                     result
                 )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["clean_up"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["clean_up"])
     def test_clean_up(self, name, raise_msg=False, pillar_volumes=None,
                       remove_error=None, ioctl_error=None):
         """
@@ -455,10 +430,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
             self.assertEqual(result, expected)
 
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["device_info"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["device_info"])
     def test_device_info(self, name, result, raises=False,
                          pillar_volumes=None):
         """
