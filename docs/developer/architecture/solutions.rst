@@ -135,10 +135,6 @@ the root of the archive, with the following format::
         image:
           name: solution-name-operator
           tag: 1.0.0
-      ui:
-        image:
-          name: solution-name-ui
-          tag: 1.0.0
       version: 1.0.0
 
 This manifest will be read by a Salt external pillar module,
@@ -169,10 +165,6 @@ The external pillar will be structured as follows::
                   operator:
                     image:
                       name: solution-name-operator
-                      tag: 1.0.0
-                  ui:
-                    image:
-                      name: solution-name-ui
                       tag: 1.0.0
                   version: 1.0.0
               id: solution-name-1.0.0
@@ -288,7 +280,7 @@ versions, on the same cluster, without collision between them.
 Each namespace in an environment will have a :term:`ConfigMap`
 ``metalk8s-environment`` deployed which will describe what an environment is
 composed of (Solutions and versions). This :term:`ConfigMap` will then be
-consumed by Salt to deploy Solutions Operators and UIs.
+consumed by Salt to deploy Solutions Operators.
 
 This :term:`ConfigMap` will be structured as follows::
 
@@ -301,8 +293,8 @@ This :term:`ConfigMap` will be structured as follows::
       <solution-x-name>: <solution-x-version>
       <solution-y-name>: <solution-y-version>
 
-``Environments`` will be created by a CLI tool or through the Solution UI
-(both should be available), prior to deploy Solutions.
+``Environments`` will be created by a CLI tool or through the MetalK8s
+Environment page (both should be available), prior to deploy Solutions.
 
 Solution management
 ~~~~~~~~~~~~~~~~~~~
@@ -330,7 +322,7 @@ Solution does, but with the need of an extra container with almost full access
 to the Kubernetes cluster and that’s the reason why we did choose to not use
 it.
 
-We also want to enforce some practices (Operator, UI, ...) in Solutions
+We also want to enforce some practices (Operator pattern) in Solutions
 and this is not easily doable using it.
 
 Moreover, CNAB_ is a pretty young project and has not yet been adopted by a

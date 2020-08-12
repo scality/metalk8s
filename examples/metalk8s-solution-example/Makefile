@@ -232,8 +232,8 @@ $(ISO_ROOT)/manifest.yaml: $(PWD)/manifest.py $(PWD)/VERSION FORCE
 	   --annotation "solutions.metalk8s.scality.com/display-name" "$(PRODUCT_NAME)" \
 	   --annotation "solutions.metalk8s.scality.com/git-revision" "$(GIT_REVISION)" \
 	   --extra-image "base-server" "$(VERSION_FULL)" \
+	   --extra-image "$(UI_IMG_NAME)" "$(VERSION_FULL)" \
 	   --operator-image "$(OPERATOR_IMG_NAME)" "$(VERSION_FULL)" \
-	   --ui-image "$(UI_IMG_NAME)" "$(VERSION_FULL)" \
 	   --version "$(VERSION_FULL)" \
 	   > $@ || (rm -f $@; false)
 

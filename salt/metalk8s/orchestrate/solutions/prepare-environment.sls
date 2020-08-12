@@ -70,50 +70,6 @@ Apply Operator Deployment for Solution {{ solution.name }}:
 
 {%- endmacro %}
 
-{%- macro deploy_admin_ui(namespace, name, solution) %}
-
-Apply ConfigMap for UI of Solution {{ solution.name }}:
-  metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/ui/configmap.yaml
-    - template: jinja
-    - defaults:
-        solution: {{ name }}
-        version: {{ solution.version }}
-        namespace: {{ namespace }}
-
-Apply Deployment for UI of Solution {{ solution.name }}:
-  metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/ui/deployment.yaml
-    - template: jinja
-    - defaults:
-        solution: {{ name }}
-        version: {{ solution.version }}
-        namespace: {{ namespace }}
-        image_name: {{ solution.manifest.spec.ui.image.name }}
-        image_tag: {{ solution.manifest.spec.ui.image.tag }}
-        repository: {{ repo.registry_endpoint ~ "/" ~ solution.id }}
-
-Apply Service for UI of Solution {{ solution.name }}:
-  metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/ui/service.yaml
-    - template: jinja
-    - defaults:
-        solution: {{ name }}
-        namespace: {{ namespace }}
-        version: {{ solution.version }}
-
-Apply Ingress for UI of Solution {{ solution.name }}:
-  metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/ui/ingress.yaml
-    - template: jinja
-    - defaults:
-        solution: {{ name }}
-        namespace: {{ namespace }}
-        environment: {{ env_name }}
-        version: {{ solution.version }}
-
-{%- endmacro %}
-
 {%- if '_errors' in pillar.metalk8s.solutions.environments %}
 
 Cannot proceed with preparation of environment {{ env_name }}:
@@ -160,7 +116,6 @@ Cannot deploy Solution {{ name }}-{{ version }} for environment {{ env_name }}:
                                  | first %}
 
               {{- deploy_operator(namespace, name, solution) }}
-              {{- deploy_admin_ui(namespace, name, solution) }}
 
             {%- endif %}
           {%- endfor %} {# name, version in env_config #}

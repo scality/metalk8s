@@ -63,7 +63,7 @@ details in :doc:`./archive`), and to discover it at import time.
 
 Note that Solutions are **imported** based on this file contents, i.e.
 the images they contain are made available in the registry and the Operator
-and the UI are deployed, however **deploying** subsequent application(s)
+is deployed, however **deploying** subsequent application(s)
 is left to the user, through manual operations or the Solution UI.
 
 .. note::
@@ -85,7 +85,7 @@ MetalK8s
 **MUST**:
 
 - Handle reading and mounting of the Solution ISO archive
-- Provide tooling to deploy/upgrade a Solution's CRDs, Operator and UI
+- Provide tooling to deploy/upgrade a Solution's CRDs and Operator
 
 **MAY**:
 
@@ -99,8 +99,7 @@ Solution
 
 - Comply with the standard archive structure defined by MetalK8s
 - If providing a UI, expose management of its Operator instances
-- Handle monitoring of its own services (both Operator and application, except
-  the UI)
+- Handle monitoring of its own services (both Operator and application)
 
 **SHOULD**:
 

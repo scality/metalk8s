@@ -17,7 +17,6 @@ Feature: Solutions
         When we remove Taints on node 'bootstrap' before deployment
         And we deploy Solution 'example-solution' in environment 'example-environment' with version '0.1.0-dev'
         Then we have 1 running pod labeled 'app=example-solution-operator' in namespace 'example-environment'
-        And we have 1 running pod labeled 'app=example-solution-ui' in namespace 'example-environment'
         When we deactivate Solution 'example-solution'
         And we delete Solution 'example-solution' in environment 'example-environment'
         And we delete Solution environment 'example-environment'

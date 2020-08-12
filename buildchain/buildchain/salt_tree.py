@@ -518,10 +518,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/solutions/files/operator/deployment.yaml'),
     Path('salt/metalk8s/orchestrate/solutions/files/operator/role_binding.yaml'),
     Path('salt/metalk8s/orchestrate/solutions/files/operator/service_account.yaml'),
-    Path('salt/metalk8s/orchestrate/solutions/files/ui/configmap.yaml'),
-    Path('salt/metalk8s/orchestrate/solutions/files/ui/deployment.yaml'),
-    Path('salt/metalk8s/orchestrate/solutions/files/ui/ingress.yaml'),
-    Path('salt/metalk8s/orchestrate/solutions/files/ui/service.yaml'),
 
     Path('salt/metalk8s/archives/configured.sls'),
     Path('salt/metalk8s/archives/init.sls'),
