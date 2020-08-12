@@ -65,6 +65,9 @@ Configure {{ repo_name }} repository:
   {%- endif %}
     - repo_gpg_check: {{ repo_config.repo_gpg_check }}
     - enabled: {{ repo_config.enabled }}
+    # Set priority to 1, even if the `yum-plugin-priorities` is not installed,
+    # so that our repos has priority over others
+    - priority: 1
     # URL to the proxy server for this repository.
     # Set to '_none_' to disable the global proxy setting
     # for this repository.
