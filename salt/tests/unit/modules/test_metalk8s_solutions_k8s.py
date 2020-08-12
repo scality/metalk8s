@@ -9,6 +9,8 @@ from salttesting.mock import MagicMock, patch
 
 import metalk8s_solutions_k8s
 
+from tests.unit import utils
+
 
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -32,10 +34,7 @@ class Metalk8sSolutionsK8sTestCase(TestCase, LoaderModuleMockMixin):
             metalk8s_solutions_k8s.__virtual__(), 'metalk8s_solutions'
         )
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["list_active"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["list_active"])
     def test_list_active(self, configmap, result):
         """
         Tests the return of `list_active` function
@@ -47,10 +46,7 @@ class Metalk8sSolutionsK8sTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_solutions_k8s.__salt__, patch_dict):
             self.assertEqual(metalk8s_solutions_k8s.list_active(), result)
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["list_environments"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["list_environments"])
     def test_list_environments(self, namespaces, result, configmaps=None):
         """
         Tests the return of `list_environments` function

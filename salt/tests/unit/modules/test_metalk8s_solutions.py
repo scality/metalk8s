@@ -12,6 +12,8 @@ from salttesting.mock import MagicMock, mock_open, patch
 
 import metalk8s_solutions
 
+from tests.unit import utils
+
 
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -47,10 +49,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
             (False, "Failed to load 'metalk8s' module.")
         )
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["read_config"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["read_config"])
     def test_read_config(self, create=False, config=None, result=None,
                          raises=False):
         """
@@ -82,10 +81,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                         result
                     )
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["configure_archive"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["configure_archive"])
     def test_configure_archive(self, archive, removed=None, config=None,
                                result=None, raises=False):
         """
@@ -120,10 +116,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                 )
                 self.assertEqual(config, result)
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["activate_solution"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["activate_solution"])
     def test_activate_solution(self, solution, version=None, config=None,
                                result=None, available=None, raises=False):
         """
@@ -166,10 +159,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
 
                 self.assertEqual(config, result)
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["deactivate_solution"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["deactivate_solution"])
     def test_deactivate_solution(self, solution, config=None, raises=False,
                                  result=None):
         """
@@ -200,10 +190,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                 )
                 self.assertEqual(config, result)
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["list_solution_images"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["list_solution_images"])
     def test_list_solution_images(self, images=None, result=None,
                                   raises=False):
         """
@@ -253,10 +240,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                     result
                 )
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["read_solution_config"]
-    ])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["read_solution_config"])
     def test_read_solution_config(self, config=None, result=None,
                                   raises=False):
         """
@@ -288,10 +272,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                     result
                 )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["list_available"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["list_available"])
     def test_list_available(self, mountpoints=None, archive_infos=None,
                             result=None, raises=False):
         """

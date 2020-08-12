@@ -56,10 +56,7 @@ class Metalk8sPackageManagerYumTestCase(TestCase, LoaderModuleMockMixin):
                 False
             )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["list_dependents"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["list_dependents"])
     def test_list_dependents(self, repoquery_output, result, **kwargs):
         """
         Tests the return of `_list_dependents` function
@@ -99,10 +96,7 @@ class Metalk8sPackageManagerYumTestCase(TestCase, LoaderModuleMockMixin):
                     repoquery_cmd_mock.call_args[0][0]
                 )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["list_pkg_dependents"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["list_pkg_dependents"])
     def test_list_pkg_dependents(self, result,
                                  list_dependents=None, rpm_qa_outputs=None,
                                  **kwargs):
@@ -144,10 +138,7 @@ class Metalk8sPackageManagerYumTestCase(TestCase, LoaderModuleMockMixin):
                 result
             )
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["check_pkg_availability"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["check_pkg_availability"])
     def test_check_pkg_availability(self, pkgs_info, raise_msg=None,
                                     ybase_installs=True,
                                     ybase_process_trans=True):
