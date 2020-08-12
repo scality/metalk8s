@@ -23,7 +23,7 @@ import {
   BreadcrumbLabel,
   StyledLink,
 } from '../components/BreadcrumbStyle';
-import { sizeUnits } from '../services/utils';
+import { sizeUnits, useQuery } from '../services/utils';
 import { intl } from '../translations/IntlGlobalProvider';
 
 // We might want to do a factorization later for
@@ -168,7 +168,8 @@ const CreateVolume = (props) => {
     dispatch(fetchStorageClassAction());
   }, [dispatch]);
 
-  const nodeName = match.params.id;
+  const query = useQuery();
+  const nodeName = query.get('node');
 
   const storageClassesName = storageClass.map((item) => item.metadata.name);
   const isStorageClassLoading = useSelector(
@@ -253,38 +254,20 @@ const CreateVolume = (props) => {
     <PageContainer>
       <CreateVolumeFormContainer>
         <BreadcrumbContainer>
-          {nodeName ? (
-            <Breadcrumb
-              activeColor={theme.brand.secondary}
-              paths={[
-                <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
-                <StyledLink
-                  to={`/nodes/${match.params.id}/volumes`}
-                  title={match.params.id}
-                >
-                  {match.params.id}
-                </StyledLink>,
-                <BreadcrumbLabel>
-                  {intl.translate('create_new_volume')}
-                </BreadcrumbLabel>,
-              ]}
-            />
-          ) : (
-            <Breadcrumb
-              activeColor={theme.brand.secondary}
-              paths={[
-                <BreadcrumbLabel title={intl.translate('platform')}>
-                  {intl.translate('platform')}
-                </BreadcrumbLabel>,
-                <StyledLink to="/volumes">
-                  {intl.translate('volumes')}
-                </StyledLink>,
-                <BreadcrumbLabel>
-                  {intl.translate('create_new_volume')}
-                </BreadcrumbLabel>,
-              ]}
-            />
-          )}
+          <Breadcrumb
+            activeColor={theme.brand.secondary}
+            paths={[
+              <BreadcrumbLabel title={intl.translate('platform')}>
+                {intl.translate('platform')}
+              </BreadcrumbLabel>,
+              <StyledLink to="/volumes">
+                {intl.translate('volumes')}
+              </StyledLink>,
+              <BreadcrumbLabel>
+                {intl.translate('create_new_volume')}
+              </BreadcrumbLabel>,
+            ]}
+          />
         </BreadcrumbContainer>
 
         {isStorageClassExist ? null : (

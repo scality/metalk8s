@@ -1,5 +1,6 @@
 import React from 'react';
 import { useHistory } from 'react-router';
+import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   useTable,
@@ -7,6 +8,7 @@ import {
   useGlobalFilter,
   useAsyncDebounce,
 } from 'react-table';
+import { useQuery } from '../services/utils';
 import {
   fontSize,
   padding,
@@ -15,8 +17,6 @@ import {
 import CircleStatus from './CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
-
-const VOLUME_TABLE_SEARCH = 'VOLUME_TABLE_SEARCH';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -124,11 +124,21 @@ function GlobalFilter({
   setGlobalFilter,
   nodeName,
 }) {
-  const history = useHistory();
   const [value, setValue] = React.useState(globalFilter);
+  const history = useHistory();
+  const location = useLocation();
   const onChange = useAsyncDebounce((value) => {
     setGlobalFilter(value || undefined);
-    localStorage.setItem(VOLUME_TABLE_SEARCH, value);
+
+    // update the URL with the content of search
+    const searchParams = new URLSearchParams(location.search);
+    const isSearch = searchParams.has('search');
+    if (!isSearch) {
+      searchParams.append('search', value);
+    } else {
+      searchParams.set('search', value);
+    }
+    history.push(`?${searchParams.toString()}`);
   }, 500);
 
   return (
@@ -164,7 +174,7 @@ function GlobalFilter({
         onClick={() => {
           // depends on if we add node filter
           if (nodeName) {
-            history.push(`/nodes/${nodeName}/createVolume`);
+            history.push(`/volumes/createVolume?node=${nodeName}`);
           } else {
             history.push('/volumes/createVolume');
           }
@@ -175,6 +185,10 @@ function GlobalFilter({
 }
 
 function Table({ columns, data, nodeName, rowClicked, volumeName }) {
+  // to initialize the globar filer
+  const query = useQuery();
+  const querySearch = query.get('search');
+
   // Use the state and functions returned from useTable to build your UI
   const defaultColumn = React.useMemo(
     () => ({
@@ -198,7 +212,7 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
       columns,
       data,
       defaultColumn,
-      initialState: { globalFilter: localStorage.getItem(VOLUME_TABLE_SEARCH) },
+      initialState: { globalFilter: querySearch },
     },
     useFilters,
     useGlobalFilter,
