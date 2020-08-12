@@ -184,6 +184,9 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
         'kube-scheduler',
         'nginx-ingress-defaultbackend-amd64',
     ],
+    constants.GRAFANA_REPOSITORY: [
+        'loki',
+    ],
     constants.INGRESS_REPOSITORY: [
         'nginx-ingress-controller',
     ],

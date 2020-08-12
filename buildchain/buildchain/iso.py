@@ -55,6 +55,7 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
             Path('examples/new-node.yaml'),
             Path('examples/new-node_vagrant.yaml'),
             Path('examples/prometheus-sparse.yaml'),
+            Path('examples/loki-sparse.yaml'),
         ),
         destination_directory=constants.ISO_ROOT,
         task_dep=['_iso_mkdir_root']

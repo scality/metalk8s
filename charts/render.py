@@ -116,6 +116,15 @@ def fixup_doc(doc):
         return doc
 
 
+def remove_doc(doc, remove_manifests):
+    for to_remove in remove_manifests:
+        if doc.get('kind') == to_remove[0] and \
+                doc.get('metadata').get('name') == to_remove[1]:
+            return True
+
+    return False
+
+
 def keep_doc(doc):
     if not doc:
         return False
@@ -202,6 +211,32 @@ def main():
     )
     parser.add_argument('values', help="Our custom chart values")
 
+    class ActionServiceConfigArgs(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            if len(values) > 3:
+                raise argparse.ArgumentTypeError(
+                    'Argument "{0}" requires between 1 and 3 arguments'
+                    .format(option_string)
+                )
+
+            name = values.pop(0)
+            try:
+                configmap = values.pop(0)
+            except IndexError:
+                configmap = 'metalk8s-{0}-config'.format(name)
+            try:
+                path = values.pop(0)
+            except IndexError:
+                path = 'metalk8s/addons/{0}/config/{1}.yaml'.format(
+                    args.name, name
+                )
+
+            option = getattr(args, self.dest)
+            if option is None:
+                setattr(args, self.dest, [[name, configmap, path]])
+            else:
+                option.append([name, configmap, path])
+
     '''
     To use this argument, follow the format below:
         --service-config service_name service_configmap_name
@@ -214,15 +249,24 @@ def main():
     # Todo: Add kind & apiVersion to the service-config nargs
     parser.add_argument(
         '--service-config',
-        action='append',
-        nargs=2,
+        action=ActionServiceConfigArgs,
+        nargs='+',
         required=False,
         dest="service_configs",
-        help="Example: --service-config grafana metalk8s-grafana-config"
+        help="Example: --service-config grafana metalk8s-grafana-config "
+             "metalk8s/addons/prometheus-operator/config/grafana.yaml"
     )
     parser.add_argument(
         '--drop-prometheus-rules',
         help="YAML formatted file to drop some pre-defined Prometheus rules"
+    )
+    parser.add_argument(
+        '--remove-manifest',
+        action='append',
+        nargs=2,
+        dest="remove_manifests",
+        metavar=('KIND', 'NAME'),
+        help="Remove a given manifest from the resulting chart",
     )
     parser.add_argument('path', help="Path to the chart directory")
     args = parser.parse_args()
@@ -252,26 +296,25 @@ def main():
             )
         ) if doc else None
 
-    if args.service_configs:
-        import_csc_yaml = '\n'.join(
-            ("{{% import_yaml 'metalk8s/addons/{0}/config/{1}.yaml' as "
-                "{1}_defaults with context %}}").format(
-                args.name, service_config[0]
-            ) for service_config in args.service_configs
+    import_csc_yaml = []
+    config = []
+    for name, configmap, path in args.service_configs:
+        import_csc_yaml.append(
+            "{{% import_yaml '{0}' as {1}_defaults with context %}}".format(
+                path, name
+            )
         )
-
-        config = '\n'.join(
-            ("{{%- set {0} = salt.metalk8s_service_configuration"
-                ".get_service_conf('{1}', '{2}', {0}_defaults) %}}").format(
-                service_config[0], args.namespace, service_config[1]
-            ) for service_config in args.service_configs
+        config.append(
+            "{{%- set {0} = salt.metalk8s_service_configuration"
+            ".get_service_conf('{1}', '{2}', {0}_defaults) %}}".format(
+                name, args.namespace, configmap
+            )
         )
-    else:
-        import_csc_yaml = ''
-        config = ''
 
     sys.stdout.write(START_BLOCK.format(
-        csc_defaults=import_csc_yaml, configlines=config).lstrip()
+            csc_defaults='\n'.join(import_csc_yaml),
+            configlines='\n'.join(config)
+        ).lstrip()
     )
     sys.stdout.write('\n')
 
@@ -279,7 +322,7 @@ def main():
     for doc in yaml.safe_load_all(template):
         if keep_doc(doc):
             doc = fixup(doc)
-        if doc:
+        if doc and not remove_doc(doc, args.remove_manifests):
             manifests.append(doc)
 
     stream = io.StringIO()

@@ -217,6 +217,11 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         version='latest',
         digest=None,
     ),
+    Image(
+        name='loki',
+        version='1.5.0',
+        digest='sha256:922b3f412fdd9a8fb01115b6aebf5dac162647ce1c5ee3637ce1e2cff69e097b',
+    ),
 )
 
 CONTAINER_IMAGES_MAP = {image.name: image for image in CONTAINER_IMAGES}
