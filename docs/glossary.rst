@@ -84,6 +84,12 @@ Glossary
      |see K8s docs|
      `kube-state-metrics <https://github.com/kubernetes/kube-state-metrics/tree/master/docs/>`_.
 
+   Loki
+     Loki is a log aggregation system designed to be cost-effective, only
+     indexing metadata (labels).
+
+     For more details, see `Loki documentation <https://grafana.com/docs/loki/latest/>`_.
+
    Namespace
      A Namespace is a Kubernetes abstraction to support multiple virtual
      clusters backed by the same physical cluster, providing a scope for
