@@ -28,3 +28,16 @@ export const RAW_BLOCK_DEVICE = 'rawBlockDevice';
 export const VOLUME_CONDITION_EXCLAMATION = 'exclamation';
 export const VOLUME_CONDITION_UNLINK = 'unlink';
 export const VOLUME_CONDITION_LINK = 'link';
+
+// metrics chart
+export const LAST_SEVEN_DAYS = 'Last 7 days';
+export const LAST_TWENTY_FOUR_HOURS = 'Last 24 hours';
+export const LAST_ONE_HOUR = 'Last 1 hour';
+
+export const SAMPLE_DURATION_LAST_SEVEN_DAYS = 7 * 24 * 60 * 60;
+export const SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS = 24 * 60 * 60;
+export const SAMPLE_DURATION_LAST_ONE_HOUR = 60 * 60;
+
+export const SAMPLE_FREQUENCY_LAST_SEVEN_DAYS = 60 * 60;
+export const SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS = 720;
+export const SAMPLE_FREQUENCY_LAST_ONE_HOUR = 30;

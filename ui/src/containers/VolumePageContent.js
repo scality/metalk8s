@@ -30,6 +30,7 @@ const RightSidePanel = styled.div`
   width: 55%;
   /* Make it scrollable for the small laptop screen */
   overflow-y: scroll;
+  margin: ${padding.small} ${padding.small} ${padding.small} 0;
 `;
 
 const NoVolumeSelected = styled.div`
@@ -41,7 +42,7 @@ const NoVolumeSelected = styled.div`
 `;
 
 const NoVolumeSelectedContainer = styled.div`
-  margin: ${padding.small};
+  margin: ${padding.small} ${padding.small} ${padding.small} 0;
   width: 55%;
   min-height: 700px;
   background-color: ${(props) => props.theme.brand.primaryDark1};
@@ -60,6 +61,7 @@ const VolumePageContent = (props) => {
     pods,
     alerts,
     volumeStats,
+    volumeCurrentStats,
   } = props;
 
   const history = useHistory();

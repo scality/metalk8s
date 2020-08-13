@@ -143,7 +143,7 @@ const getVolumeUsedCurrent = (state) =>
 const getAlerts = (state) => state?.app?.monitoring?.alert;
 
 const getVolumeLatencyCurrent = (state) =>
-  state?.app?.monitoring?.volumeStats?.volumeLatencyCurrent;
+  state?.app?.monitoring?.volumeCurrentStats?.volumeLatencyCurrent;
 
 // Todo: Add unit test for getVolumeListData function
 export const getVolumeListData = createSelector(
@@ -251,8 +251,8 @@ export const getVolumeListData = createSelector(
             ? Math.round(
                 volumeLatencyCurrent?.find(
                   (vLV) => vLV.metric.device === volume?.status?.deviceName,
-                )?.value[1] * 100,
-              ) + 'ms'
+                )?.value[1] * 1000000,
+              ) + 'µs'
             : intl.translate('unknown'),
         errorReason: volume?.status?.conditions[0]?.reason,
       };

@@ -292,32 +292,29 @@ export function jointDataPointBaseonTimeSeries(result) {
  * This function manually adds the missing data points with `null` value caused by downtime of the VMs
  *
  * @param {array} orginalValues - The array of the data points are already sorted according to the time series
- * @param {object} startingTime - The starting time
- * @param {number} duration - The timespan value in days
- * @param {number} samplingFrequency - The time difference between two data point (in hour)
+ * @param {number} startingTimeStamp - The starting timestamp
+ * @param {number} sampleDuration - The time span value in seconds
+ * @param {number} sampleFrequency - The time difference between two data points in seconds
  *
  */
 export function addMissingDataPoint(
   orginalValues,
-  startingTime,
-  duration,
-  samplingFrequency,
+  startingTimeStamp,
+  sampleDuration,
+  sampleFrequency,
 ) {
   if (!orginalValues || orginalValues.length === 0) {
     return;
   }
 
   const newValues = [];
-  const numberOfDataPoints = (duration * 24) / samplingFrequency;
-  let samplingPointTime;
-  if (startingTime) {
-    samplingPointTime = startingTime.getTime() / 1000; //time converted to Unix seconds
-  }
+  const numberOfDataPoints = sampleDuration / sampleFrequency;
+  let samplingPointTime = startingTimeStamp;
 
   // initialize the array with all `null` value
   for (let i = 0; i < numberOfDataPoints; i++) {
     newValues.push([samplingPointTime, null]);
-    samplingPointTime += 3600;
+    samplingPointTime += sampleFrequency;
   }
 
   // copy the existing data points from `orginalValue` array to `newValues`

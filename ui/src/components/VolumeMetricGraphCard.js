@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { LineChart, Dropdown } from '@scality/core-ui';
+import { refreshVolumeStatsAction } from '../ducks/app/monitoring';
 import {
   fontSize,
   padding,
@@ -11,7 +13,18 @@ import {
   jointDataPointBaseonTimeSeries,
   addMissingDataPoint,
 } from '../services/utils';
-import { VOLUME_CONDITION_LINK } from '../constants';
+import {
+  VOLUME_CONDITION_LINK,
+  LAST_SEVEN_DAYS,
+  LAST_TWENTY_FOUR_HOURS,
+  LAST_ONE_HOUR,
+  SAMPLE_DURATION_LAST_SEVEN_DAYS,
+  SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
+  SAMPLE_DURATION_LAST_ONE_HOUR,
+  SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
+  SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
+  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
+} from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const MetricGraphCardContainer = styled.div`
@@ -88,13 +101,35 @@ const MetricGraphCard = (props) => {
     volumeCondition,
     volumeMetricGraphData,
   } = props;
+  const dispatch = useDispatch();
+  const updateMetricsGraph = (metricsTimeSpan) =>
+    dispatch(refreshVolumeStatsAction(metricsTimeSpan));
+
+  const [metricsTimeSpan, setMetricsTimeSpan] = useState(
+    LAST_TWENTY_FOUR_HOURS,
+  );
 
   const queryStartingTime = volumeMetricGraphData?.queryStartingTime;
-  // Sample duration can be changed through the dropdown, by default is 7 days
-  const SAMPLE_DURATION_SEVEN_DAYS = 7;
-  const SAMPLE_FREQUENCY_ONE_HOUR = 1;
-  const sampleDuration = SAMPLE_DURATION_SEVEN_DAYS;
-  const sampleFrequency = SAMPLE_FREQUENCY_ONE_HOUR;
+
+  // the item chosed by the metrics time span dropdown
+  // we should have a unified unit, second, for all the props related to prometheus
+  let sampleDuration = SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS;
+  let sampleFrequency = SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS;
+
+  if (metricsTimeSpan === LAST_SEVEN_DAYS) {
+    // do the query every 1 hour
+    sampleDuration = SAMPLE_DURATION_LAST_SEVEN_DAYS;
+    sampleFrequency = SAMPLE_FREQUENCY_LAST_SEVEN_DAYS;
+  } else if (metricsTimeSpan === LAST_TWENTY_FOUR_HOURS) {
+    // do the query every 1 minute
+    sampleDuration = SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS;
+    sampleFrequency = SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS;
+  } else if (metricsTimeSpan === LAST_ONE_HOUR) {
+    // do the query every 1 second
+    sampleDuration = SAMPLE_DURATION_LAST_ONE_HOUR;
+    sampleFrequency = SAMPLE_FREQUENCY_LAST_ONE_HOUR;
+  }
+
   // We need to manually add the missing data points due to the shutdown of VM
   const operateMetricRawData = (metricRawData) =>
     addMissingDataPoint(
@@ -147,7 +182,7 @@ const MetricGraphCard = (props) => {
     (slot) => {
       return {
         date: new Date(slot[0] * 1000),
-        write: slot[1] === null ? null : slot[1],
+        write: slot[1] === null ? null : slot[1] / 1000000,
         type: 'write',
       };
     },
@@ -156,7 +191,7 @@ const MetricGraphCard = (props) => {
   const volumeThroughtReadData = volumeThroughputReadOperated?.map((slot) => {
     return {
       date: new Date(slot[0] * 1000),
-      read: slot[1] === null ? null : slot[1],
+      read: slot[1] === null ? null : slot[1] / 1000000,
       type: 'read',
     };
   });
@@ -187,7 +222,7 @@ const MetricGraphCard = (props) => {
     type: 'temporal',
     axis: {
       // Refer to all the available time format: https://github.com/d3/d3-time-format#locale_format
-      format: '%d %b',
+      format: '%m/%d %H:%M',
       // Boolean value that determines whether the axis should include ticks.
       ticks: true,
       tickCount: 4,
@@ -201,12 +236,13 @@ const MetricGraphCard = (props) => {
     {
       field: 'write',
       type: 'quantitative',
-      axis: { title: null, format: '~s' },
+      // automatically add the unit for y axis labels: display 40k instead of 40000.  axis: { title: null, format: '~s' },
+      axis: { title: null },
     },
     {
       field: 'read',
       type: 'quantitative',
-      axis: { title: null, format: '~s' },
+      axis: { title: null },
     },
   ];
 
@@ -224,6 +260,16 @@ const MetricGraphCard = (props) => {
   ];
 
   const yAxisUsauge = [
+    {
+      field: 'y',
+      type: 'quantitative',
+      axis: { title: null },
+      // the max value of usage chart should always be 100%
+      scale: { domain: [0, 100] },
+    },
+  ];
+
+  const yAxisLatency = [
     {
       field: 'y',
       type: 'quantitative',
@@ -286,12 +332,49 @@ const MetricGraphCard = (props) => {
       range: ['#B877D9', '#FF9830'],
     },
   };
+
+  // the time span of metrics graph, by default is `Last 24 hours`
+  const metricsTimeSpanItems = [
+    {
+      label: LAST_SEVEN_DAYS,
+      onClick: () => {
+        setMetricsTimeSpan(LAST_SEVEN_DAYS);
+        updateMetricsGraph(LAST_SEVEN_DAYS);
+      },
+      selected: metricsTimeSpan === LAST_SEVEN_DAYS,
+    },
+    {
+      label: LAST_TWENTY_FOUR_HOURS,
+      onClick: () => {
+        setMetricsTimeSpan(LAST_TWENTY_FOUR_HOURS);
+        updateMetricsGraph(LAST_TWENTY_FOUR_HOURS);
+      },
+      selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
+    },
+    {
+      label: LAST_ONE_HOUR,
+      onClick: () => {
+        setMetricsTimeSpan(LAST_ONE_HOUR);
+        updateMetricsGraph(LAST_ONE_HOUR);
+      },
+      selected: metricsTimeSpan === LAST_ONE_HOUR,
+    },
+  ];
+
+  const metricsTimeSpanDropdownItems = metricsTimeSpanItems?.filter(
+    (mTS) => mTS.label !== metricsTimeSpan,
+  );
+
   return (
     <MetricGraphCardContainer>
       <MetricGraphTitle>
         {intl.translate('metrics')}
         {volumeCondition === VOLUME_CONDITION_LINK && (
-          <Dropdown items={[]} text="7 days" size="smaller" />
+          <Dropdown
+            items={metricsTimeSpanDropdownItems}
+            text={metricsTimeSpan}
+            size="smaller"
+          />
         )}
       </MetricGraphTitle>
       {volumeCondition === VOLUME_CONDITION_LINK ? (
@@ -319,7 +402,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_latency_id'}
                   data={volumeLatencyData}
                   xAxis={xAxis}
-                  yAxis={yAxisUsauge}
+                  yAxis={yAxisLatency}
                   color={colorLatency}
                   width={285}
                   height={80}
@@ -330,7 +413,7 @@ const MetricGraphCard = (props) => {
           </RowGraphContainer>
           <SecondRowGraphContainer>
             <TroughputGraph>
-              <GraphTitle>THROUGHPUT (bytes/s)</GraphTitle>
+              <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
               {volumeThroughputData && (
                 <LineChart
                   id={'volume_throughput_id'}

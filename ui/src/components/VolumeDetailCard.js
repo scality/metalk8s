@@ -22,7 +22,7 @@ const VolumeDetailCardContainer = styled.div`
 `;
 
 const VolumeInformation = styled.div`
-  width: 40vw;
+  width: 50vw;
 `;
 
 const VolumeNameTitle = styled.div`
@@ -106,6 +106,16 @@ const LoaderContainer = styled(Loader)`
   padding-left: ${padding.small};
 `;
 
+const LabelName = styled.span`
+  font-size: ${fontSize.small};
+  color: ${(props) => props.theme.brand.textPrimary};
+  padding-right: ${padding.base};
+`;
+const LabelValue = styled.span`
+  font-size: ${fontSize.small};
+  color: ${(props) => props.theme.brand.textPrimary};
+`;
+
 const VolumeDetailCard = (props) => {
   const {
     name,
@@ -148,6 +158,16 @@ const VolumeDetailCard = (props) => {
   };
 
   const isEnableClick = isVolumeDeletable(status, name, pVList);
+
+  const pV = pVList.find((pv) => pv.metadata.name === name);
+  const labels = pV?.metadata?.labels //persistent Volume labels
+    ? Object.keys(pV.metadata.labels).map((key) => {
+        return {
+          name: key,
+          value: pV.metadata.labels[key],
+        };
+      })
+    : [];
 
   return (
     <VolumeDetailCardContainer>
@@ -201,6 +221,19 @@ const VolumeDetailCard = (props) => {
         <InformationSpan>
           <InformationLabel>{intl.translate('backend_disk')}</InformationLabel>
           <InformationValue>{devicePath}</InformationValue>
+        </InformationSpan>
+        <InformationSpan>
+          <InformationLabel>{intl.translate('labels')}</InformationLabel>
+          <InformationValue>
+            {labels?.map((label) => {
+              return (
+                <div key={label.name}>
+                  <LabelName>{label.name}</LabelName>
+                  <LabelValue>{label.value}</LabelValue>
+                </div>
+              );
+            })}
+          </InformationValue>
         </InformationSpan>
       </VolumeInformation>
 
