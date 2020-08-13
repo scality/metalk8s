@@ -1,4 +1,5 @@
-pytest ~= 4.3.0
+pytest
+pytest-cov
 salt == 3000.3
 salttesting == 2018.9.21
 mock == 3.0.5
