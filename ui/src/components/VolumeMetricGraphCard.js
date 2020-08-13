@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { LineChart, Dropdown } from '@scality/core-ui';
-import { refreshVolumeStatsAction } from '../ducks/app/monitoring';
+import {
+  fetchVolumeStatsAction,
+  updateVolumeStatsAction,
+} from '../ducks/app/monitoring';
 import {
   fontSize,
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import {
-  bytesToSize,
   jointDataPointBaseonTimeSeries,
   addMissingDataPoint,
 } from '../services/utils';
@@ -102,19 +104,17 @@ const MetricGraphCard = (props) => {
     volumeMetricGraphData,
   } = props;
   const dispatch = useDispatch();
-  const updateMetricsGraph = (metricsTimeSpan) =>
-    dispatch(refreshVolumeStatsAction(metricsTimeSpan));
-
-  const [metricsTimeSpan, setMetricsTimeSpan] = useState(
-    LAST_TWENTY_FOUR_HOURS,
+  const metricsTimeSpan = useSelector(
+    (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
 
-  const queryStartingTime = volumeMetricGraphData?.queryStartingTime;
+  const updateMetricsGraph = () => dispatch(fetchVolumeStatsAction());
 
+  const queryStartingTime = volumeMetricGraphData?.queryStartingTime;
   // the item chosed by the metrics time span dropdown
   // we should have a unified unit, second, for all the props related to prometheus
-  let sampleDuration = SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS;
-  let sampleFrequency = SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS;
+  let sampleDuration = null;
+  let sampleFrequency = null;
 
   if (metricsTimeSpan === LAST_SEVEN_DAYS) {
     // do the query every 1 hour
@@ -131,6 +131,7 @@ const MetricGraphCard = (props) => {
   }
 
   // We need to manually add the missing data points due to the shutdown of VM
+
   const operateMetricRawData = (metricRawData) =>
     addMissingDataPoint(
       jointDataPointBaseonTimeSeries(metricRawData),
@@ -163,7 +164,6 @@ const MetricGraphCard = (props) => {
   const volumeUsageData = volumeUsedOperated?.map((slot) => {
     return {
       date: new Date(slot[0] * 1000), // convert from the RFC 3339 to time in JS
-      usageWithUnit: bytesToSize(slot[1]),
       y:
         slot[1] === null
           ? null
@@ -338,24 +338,26 @@ const MetricGraphCard = (props) => {
     {
       label: LAST_SEVEN_DAYS,
       onClick: () => {
-        setMetricsTimeSpan(LAST_SEVEN_DAYS);
-        updateMetricsGraph(LAST_SEVEN_DAYS);
+        dispatch(updateVolumeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }));
+        updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_SEVEN_DAYS,
     },
     {
       label: LAST_TWENTY_FOUR_HOURS,
       onClick: () => {
-        setMetricsTimeSpan(LAST_TWENTY_FOUR_HOURS);
-        updateMetricsGraph(LAST_TWENTY_FOUR_HOURS);
+        dispatch(
+          updateVolumeStatsAction({ metricsTimeSpan: LAST_TWENTY_FOUR_HOURS }),
+        );
+        updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
     },
     {
       label: LAST_ONE_HOUR,
       onClick: () => {
-        setMetricsTimeSpan(LAST_ONE_HOUR);
-        updateMetricsGraph(LAST_ONE_HOUR);
+        dispatch(updateVolumeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }));
+        updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_ONE_HOUR,
     },

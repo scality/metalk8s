@@ -137,13 +137,12 @@ export const volumeGetError = (status) => {
 
 const getPVList = (state) => state?.app?.volumes?.pVList;
 const getPVCList = (state) => state?.app?.volumes?.pVCList;
-const getVolumeUsedCurrent = (state) =>
-  state?.app?.monitoring?.volumeStats?.volumeUsedCurrent;
-
 const getAlerts = (state) => state?.app?.monitoring?.alert;
 
 const getVolumeLatencyCurrent = (state) =>
-  state?.app?.monitoring?.volumeCurrentStats?.volumeLatencyCurrent;
+  state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeLatencyCurrent;
+const getVolumeUsedCurrent = (state) =>
+  state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeUsedCurrent;
 
 // Todo: Add unit test for getVolumeListData function
 export const getVolumeListData = createSelector(

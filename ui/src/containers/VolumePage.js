@@ -6,7 +6,6 @@ import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
-import { LAST_TWENTY_FOUR_HOURS } from '../constants';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   refreshVolumesAction,
@@ -16,10 +15,12 @@ import {
   fetchPersistentVolumeClaimAction,
 } from '../ducks/app/volumes';
 import {
-  refreshVolumeStatsAction,
+  fetchVolumeStatsAction,
   refreshAlertsAction,
   stopRefreshAlertsAction,
+  fetchCurrentVolumeStatsAction,
   refreshCurrentVolumeStatsAction,
+  stopRefreshCurrentVolumeStatsAction,
 } from '../ducks/app/monitoring';
 import {
   BreadcrumbContainer,
@@ -50,12 +51,16 @@ const VolumePage = (props) => {
     refreshPersistentVolumesAction,
     stopRefreshPersistentVolumesAction,
   );
+  useRefreshEffect(
+    refreshCurrentVolumeStatsAction,
+    stopRefreshCurrentVolumeStatsAction,
+  );
+
   useEffect(() => {
     dispatch(fetchPodsAction());
     dispatch(fetchNodesAction());
-    // fetch the last 24 hours data for metrics graph
-    dispatch(refreshVolumeStatsAction(LAST_TWENTY_FOUR_HOURS));
-    dispatch(refreshCurrentVolumeStatsAction());
+    dispatch(fetchVolumeStatsAction());
+    dispatch(fetchCurrentVolumeStatsAction());
     dispatch(fetchPersistentVolumeClaimAction());
   }, [dispatch]);
   useEffect(() => {
@@ -68,13 +73,11 @@ const VolumePage = (props) => {
   const pods = useSelector((state) => state.app.pods.list);
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const nodes = useSelector((state) => state.app.nodes.list);
-  // const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
   const volumes = useSelector((state) => state.app.volumes.list);
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const alerts = useSelector((state) => state.app.monitoring.alert);
-  const volumeStats = useSelector((state) => state.app.monitoring.volumeStats);
-  const volumeCurrentStats = useSelector(
-    (state) => state.app.monitoring.volumeCurrentStats,
+  const volumeStats = useSelector(
+    (state) => state.app.monitoring.volumeStats.metrics,
   );
   // get all the volumes maybe filter by node
   const volumeListData = useSelector((state) =>
@@ -105,7 +108,6 @@ const VolumePage = (props) => {
         pods={pods}
         alerts={alerts}
         volumeStats={volumeStats}
-        volumeCurrentStats={volumeCurrentStats}
       ></VolumeContent>
     </PageContainer>
   );

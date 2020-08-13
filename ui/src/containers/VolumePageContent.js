@@ -61,7 +61,6 @@ const VolumePageContent = (props) => {
     pods,
     alerts,
     volumeStats,
-    volumeCurrentStats,
   } = props;
 
   const history = useHistory();
