@@ -1,19 +1,26 @@
 import json
 import pathlib
+import random
+import string
 
 import kubernetes.client
+from kubernetes.client import CustomObjectsApi
 from kubernetes.client.rest import ApiException
 
 import pytest
 from pytest_bdd import scenario, given, then, parsers
+import testinfra
 
 from tests import utils
+from tests import kube_utils
 
 # Constants {{{
 
 ALERT_RULE_FILE_NAME = 'alerting_rules.json'
 ALERT_RULE_FILE_PATH = (pathlib.Path(__file__)/'..'/'..'/'..'/'..'
             /'tools'/'rule_extractor'/ALERT_RULE_FILE_NAME).resolve()
+
+NODE_EXPORTER_PORT = 9100
 
 # }}}
 # Scenarios {{{
@@ -55,6 +62,13 @@ def test_deployed_prometheus_rules(host):
     pass
 
 
+@scenario(
+    '../features/monitoring.feature',
+    'Volume metrics can be found based on device name')
+def test_volume_metrics(host):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -80,6 +94,35 @@ def apiservice_exists(host, name, k8s_apiclient, request):
 
     utils.retry(_check_object_exists, times=20, wait=3)
 
+
+# FIXME: make these fixtures / helpers generic and easier to share
+@given("I have created a test Volume")
+def test_volume(k8s_apiclient, ssh_config):
+    client = kube_utils.VolumeClient(
+        CustomObjectsApi(api_client=k8s_apiclient), ssh_config
+    )
+    random_salt = ''.join(
+        random.choice(string.ascii_lowercase) for _ in range(8)
+    )
+    volume_name = "test-volume-{}".format(random_salt)
+    client.create_from_yaml(kube_utils.DEFAULT_VOLUME.format(name=volume_name))
+
+    def _check_volume_ready():
+        volume = client.get(volume_name)
+        assert volume is not None, 'Volume not found'
+        assert 'status' in volume, 'Volume has no status'
+        phase = kube_utils.VolumeClient.compute_phase(volume['status'])
+        assert phase == 'Available', 'Volume not ready'
+        assert volume['status'].get('deviceName') is not None, \
+            'Volume status.deviceName has not been reconciled'
+        return volume
+
+    yield utils.retry(
+        _check_volume_ready, times=30, wait=2,
+        name='waiting for Volume {} to be ready'.format(volume_name)
+    )
+
+    client.delete(volume_name, sync=True)
 
 # }}}
 # Then {{{
@@ -190,6 +233,36 @@ def node_has_metrics(label, k8s_apiclient):
 
     # Metrics are only available after a while (by design)
     utils.retry(_node_has_metrics, times=60, wait=3)
+
+
+@then("I can get I/O stats for this test Volume's device")
+def volume_has_io_stats(host, ssh_config, prometheus_api, test_volume):
+    # Retrieve control-plane IP of another Node through Salt master, not
+    # through testinfra, because the actual Node name may not match our
+    # SSH config file
+    node_name = test_volume['spec']['nodeName']
+    command = [
+        'salt',
+        '--out json',
+        node_name,
+        'grains.get',
+        'metalk8s:control_plane_ip'
+    ]
+    result = utils.run_salt_command(host, command, ssh_config)
+    control_plane_ip = json.loads(result.stdout)[node_name]
+
+    def _volume_has_io_stats():
+        for verb in ["read", "write"]:
+            result = prometheus_api.query(
+                "node_disk_{}s_completed_total".format(verb),
+                instance="{}:{}".format(control_plane_ip, NODE_EXPORTER_PORT),
+                device=test_volume['status']['deviceName'],
+            )
+            assert result['status'] == 'success'
+            assert len(result['data']['result']) > 0
+
+    # May need to wait for metrics to be scraped for our new volume
+    utils.retry(_volume_has_io_stats, times=60, wait=3)
 
 
 @then(
