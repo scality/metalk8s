@@ -1,9 +1,40 @@
 # coding: utf-8
+
+from kubernetes.client import CustomObjectsApi
+from kubernetes.client import StorageV1Api
+import pytest
 from pytest_bdd import given, parsers
 
 from tests import kube_utils, utils
 
 
+# Fixtures {{{
+
+@pytest.fixture
+def volume_client(k8s_apiclient, ssh_config):
+    return kube_utils.VolumeClient(
+        CustomObjectsApi(api_client=k8s_apiclient), ssh_config
+    )
+
+@pytest.fixture
+def pv_client(k8s_client):
+    return kube_utils.PersistentVolumeClient(k8s_client)
+
+@pytest.fixture
+def pvc_client(k8s_client):
+    return kube_utils.PersistentVolumeClaimClient(k8s_client)
+
+@pytest.fixture
+def pod_client(k8s_client, utils_image):
+    return kube_utils.PodClient(k8s_client, utils_image)
+
+@pytest.fixture
+def sc_client(k8s_apiclient):
+    return kube_utils.StorageClassClient(
+        StorageV1Api(api_client=k8s_apiclient)
+    )
+
+# }}}
 # Helpers {{{
 
 def _check_pods_status(k8s_client, expected_status, ssh_config,
