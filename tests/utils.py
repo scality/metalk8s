@@ -209,7 +209,7 @@ class PrometheusApi:
         self.port = port
         self.session = requests_retry_session()
 
-    def query(self, method, route, **kwargs):
+    def request(self, method, route, **kwargs):
         try:
             kwargs.setdefault('verify', False)
             response = self.session.request(
@@ -224,17 +224,24 @@ class PrometheusApi:
             raise PrometheusApiError(exc)
 
         try:
-            result = response.json()
+            return response.json()
         except ValueError as exc:
             raise PrometheusApiError(exc)
 
-        return result
+    def query(self, metric_name, **query_matchers):
+        matchers = [
+            '{}="{}"'.format(key, value)
+            for key, value in query_matchers.items()
+        ]
+        query_string = metric_name + "{" + ','.join(matchers) + "}"
+        return self.request('GET', 'query', params={'query': query_string})
+
 
     def get_alerts(self, **kwargs):
-        return self.query('GET', 'alerts', **kwargs)
+        return self.request('GET', 'alerts', **kwargs)
 
     def get_rules(self, **kwargs):
-        return self.query('GET', 'rules', **kwargs)
+        return self.request('GET', 'rules', **kwargs)
 
     def find_rules(self, name=None, group=None, labels=None, **kwargs):
         if not labels:
@@ -255,4 +262,4 @@ class PrometheusApi:
         return rules
 
     def get_targets(self, **kwargs):
-        return self.query('GET', 'targets', **kwargs)
+        return self.request('GET', 'targets', **kwargs)
