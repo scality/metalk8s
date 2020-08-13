@@ -32,6 +32,7 @@ import abc
 import importlib
 from pathlib import Path
 import sys
+import textwrap
 from typing import Any, Iterator, Tuple, Union
 
 from buildchain import config
@@ -179,6 +180,8 @@ OPERATOR_ROLE        : Path = OPERATOR_YAML_ROOT/'role.yaml'
 OPERATOR_ROLEBINDING : Path = OPERATOR_YAML_ROOT/'role_binding.yaml'
 OPERATOR_DEPLOYMENT  : Path = OPERATOR_YAML_ROOT/'operator.yaml'
 
+LOKI_DASHBOARD          : Path = constants.ROOT/'charts/loki-dashboard.json'
+
 SCALITY_LOGO : Path = constants.ROOT/'ui/public/brand/assets/login/logo.png'
 SCALITY_FAVICON : Path = constants.ROOT.joinpath(
     'ui/public/brand/assets/login/favicon.png'
@@ -276,6 +279,22 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/logging/fluent-bit/deployed/init.sls'),
     Path('salt/metalk8s/addons/logging/loki/config/loki.yaml'),
     Path('salt/metalk8s/addons/logging/loki/deployed/chart.sls'),
+    targets.TemplateFile(
+        task_name='loki dashboard.sls',
+        source=constants.ROOT.joinpath(
+            'salt/metalk8s/addons/logging/loki/deployed/dashboard.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/logging/loki/deployed/dashboard.sls'
+        ),
+        context={
+            'LokiDashboard': textwrap.indent(
+                LOKI_DASHBOARD.read_text(encoding='utf-8'),
+                12 * ' '
+            )
+        },
+        file_dep=[LOKI_DASHBOARD],
+    ),
     Path('salt/metalk8s/addons/logging/loki/deployed/datasource.sls'),
     Path('salt/metalk8s/addons/logging/loki/deployed/init.sls'),
     Path('salt/metalk8s/addons/logging/loki/deployed/',

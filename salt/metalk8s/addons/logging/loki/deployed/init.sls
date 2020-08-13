@@ -5,3 +5,4 @@ include:
   - .services
   - .storageclass
   - .datasource
+  - .dashboard
