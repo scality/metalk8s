@@ -332,7 +332,7 @@ Consider the `official recommendations for etcd sizing
 as the stability of a MetalK8s installation depends on the stability of the
 backing etcd (see the :ref:`etcd<Setup etcd partition>` section for more
 details). Prometheus and Alertmanager also require storage, as explained in
-:ref:`Provision Prometheus Storage`.
+:ref:`Provision Storage for Services`.
 
 .. _installation-intro-cloud:
 

@@ -1,12 +1,13 @@
 Post-Installation Procedure
 ===========================
 
-.. _Provision Prometheus Storage:
+.. _Provision Storage for Services:
 
-Provision Storage for Prometheus Services
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Provision Storage for Services
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After bootstrapping the cluster, the Prometheus and AlertManager services used
-to monitor the system **will not be running** (the respective :term:`Pods
+to monitor the system and the Loki service, used to aggregate the logs of the
+platform, **will not be running** (the respective :term:`Pods
 <Pod>` will remain in *Pending* state), because they require persistent storage
 to be available.
 
@@ -51,6 +52,19 @@ path for the partitions to use:
          labels:
            app.kubernetes.io/name: 'prometheus-operator-alertmanager'
    ---
+   apiVersion: storage.metalk8s.scality.com/v1alpha1
+   kind: Volume
+   metadata:
+     name: <node_name>-loki
+   spec:
+     nodeName: <node_name>
+     storageClassName: metalk8s-loki
+     rawBlockDevice:  # Choose a device with at least 10GiB capacity
+       devicePath: <device_path3>
+     template:
+       metadata:
+         labels:
+           app.kubernetes.io/name: 'loki'
 
 Once this file is created with the right values filled in, run the following
 command to create the *Volume* objects (replacing ``<file_path>`` with the path

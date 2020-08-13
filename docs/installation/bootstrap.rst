@@ -233,6 +233,7 @@ Validate the install
    metalk8s-ingress      nginx-ingress-control-plane-controller-5nkkx              1/1     Running   0          6m6s    10.233.220.137   bootstrap   <none>           <none>
    metalk8s-ingress      nginx-ingress-controller-shg7x                            1/1     Running   0          6m7s    10.233.220.135   bootstrap   <none>           <none>
    metalk8s-ingress      nginx-ingress-default-backend-7d8898655c-jj7l6            1/1     Running   0          6m7s    10.233.220.136   bootstrap   <none>           <none>
+   metalk8s-logging      loki-0                                                    0/1     Pending   0          6m21s    <none>           <none>      <none>           <none>
    metalk8s-monitoring   alertmanager-prometheus-operator-alertmanager-0           0/2     Pending   0          6m1s    <none>           <none>      <none>           <none>
    metalk8s-monitoring   prometheus-operator-grafana-775fbb5b-sgngh                2/2     Running   0          6m17s   10.233.220.130   bootstrap   <none>           <none>
    metalk8s-monitoring   prometheus-operator-kube-state-metrics-7587b4897c-tt79q   1/1     Running   0          6m17s   10.233.220.131   bootstrap   <none>           <none>
@@ -241,10 +242,11 @@ Validate the install
    metalk8s-monitoring   prometheus-prometheus-operator-prometheus-0               0/3     Pending   0          5m50s   <none>           <none>      <none>           <none>
    metalk8s-ui           metalk8s-ui-6f74ff4bc-fgk86                               1/1     Running   0          6m4s    10.233.220.139   bootstrap   <none>           <none>
 
-- From the console output above, :term:`Prometheus` and :term:`Alertmanager`
-  pods are in a ``Pending`` state because their respective persistent
-  storage volumes need to be provisioned. To provision these persistent storage
-  volumes, follow :ref:`this procedure <Provision Prometheus storage>`.
+- From the console output above, :term:`Prometheus`, :term:`Alertmanager` and
+  :term:`Loki` pods are in a ``Pending`` state because their respective
+  persistent storage volumes need to be provisioned. To provision these
+  persistent storage volumes, follow
+  :ref:`this procedure <Provision Storage for Services>`.
 
 - Check that you can access the MetalK8s GUI after the
   :ref:`installation <Bootstrap installation>` is completed by following
