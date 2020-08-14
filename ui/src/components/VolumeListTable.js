@@ -363,7 +363,7 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
 const VolumeListTable = (props) => {
   const { nodeName, volumeListData, volumeName } = props;
   const history = useHistory();
-
+  const location = useLocation();
   const columns = React.useMemo(
     () => [
       { Header: 'Name', accessor: 'name' },
@@ -380,15 +380,12 @@ const VolumeListTable = (props) => {
 
   // handle the row selection by updating the URL
   const onClickRow = (row) => {
+    const query = new URLSearchParams(location.search);
+    const isAddNodeFilter = query.has('node');
+
     // there are two possiable URLs
-    if (history?.location?.state?.fromNodePage) {
-      const location = {
-        pathname: `/volumes/${row.values.name}`,
-        search: `?node=${nodeName}`,
-        // access the Volume Page from Node Page
-        state: { fromNodePage: true },
-      };
-      history.push(location);
+    if (isAddNodeFilter) {
+      history.push(`/volumes/${row.values.name}?node=${nodeName}`);
     } else {
       history.push(`/volumes/${row.values.name}`);
     }

@@ -251,7 +251,7 @@ export const getVolumeListData = createSelector(
                 volumeLatencyCurrent?.find(
                   (vLV) => vLV.metric.device === volume?.status?.deviceName,
                 )?.value[1] * 1000000,
-              ) + 'µs'
+              ) + ' µs'
             : intl.translate('unknown'),
         errorReason: volume?.status?.conditions[0]?.reason,
       };

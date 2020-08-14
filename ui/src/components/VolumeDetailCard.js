@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { useHistory } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
@@ -137,7 +138,7 @@ const VolumeDetailCard = (props) => {
 
   const dispatch = useDispatch();
   const history = useHistory();
-
+  const location = useLocation();
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
   const [
@@ -147,10 +148,29 @@ const VolumeDetailCard = (props) => {
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
-    const firstVolumeName = volumeListData[0]?.name;
+    const query = new URLSearchParams(location.search);
+    const isAddNodefilter = query.has('node');
+
     deleteVolume(deleteVolumeName);
     setisDeleteConfirmationModalOpen(false);
-    history.push(`/volumes/${firstVolumeName}/?node=${nodeName}`);
+
+    let hightvolumeName;
+    if (volumeListData[0]?.name === deleteVolumeName) {
+      // delete the first volume
+      hightvolumeName = volumeListData[1]?.name;
+    } else {
+      // after the deletion, automatically select the first volume
+      hightvolumeName = volumeListData[0]?.name;
+    }
+    if (isAddNodefilter && hightvolumeName) {
+      history.push(`/volumes/${hightvolumeName}?node=${nodeName}`);
+    } else if (!isAddNodefilter && hightvolumeName) {
+      history.push(`/volumes/${hightvolumeName}`);
+    } else if (isAddNodefilter && !hightvolumeName) {
+      history.push(`/volumes/?node=${nodeName}`);
+    } else {
+      history.push('/volumes');
+    }
   };
 
   const onClickCancelButton = () => {
