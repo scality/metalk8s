@@ -44,7 +44,7 @@ HELM_SRC = https://storage.googleapis.com/kubernetes-helm/helm-v$(HELM_VERSION)-
 HELM_SRC_SHA256SUM = $(HELM_SRC_SHA256SUM.$(UNAME_KERNEL))
 HELM_BIN_SHA256SUM = $(HELM_BIN_SHA256SUM.$(UNAME_KERNEL))
 
-PYTHON = python
+PYTHON = python2
 
 SHELL_ENV = .shell-env
 
