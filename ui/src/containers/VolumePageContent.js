@@ -42,7 +42,7 @@ const NoVolumeSelected = styled.div`
 `;
 
 const NoVolumeSelectedContainer = styled.div`
-  margin: ${padding.small} ${padding.small} ${padding.small} 0;
+  margin: ${padding.large};
   width: 55%;
   min-height: 700px;
   background-color: ${(props) => props.theme.brand.primaryDark1};

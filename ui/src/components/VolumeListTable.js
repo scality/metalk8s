@@ -25,7 +25,7 @@ const VolumeListContainer = styled.div`
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
   .sc-progressbarcontainer {
-    width: 65px;
+    width: 100%;
   }
   .ReactTable .rt-thead {
     overflow-y: scroll;
@@ -57,7 +57,7 @@ const VolumeListContainer = styled.div`
       padding: 0.5rem;
       border-bottom: 1px solid black;
       text-align: left;
-      padding: 5px 5px 5px 0;
+      padding: 5px;
 
       :last-child {
         border-right: 0;
@@ -93,9 +93,8 @@ const TableRow = styled(HeadRow)`
 const Body = styled.tbody`
   /* To display scroll bar on the table */
   display: block;
-  height: calc(100vh - 10px);
+  height: calc(100vh - 250px);
   overflow: auto;
-  height: 500px;
   overflow-y: scroll;
 `;
 
@@ -186,6 +185,17 @@ function GlobalFilter({
 
 function Table({ columns, data, nodeName, rowClicked, volumeName }) {
   // to initialize the globar filer
+  /**
+   * FIXME
+   * You can leave it here for the moment but it will most likely be
+   * move very soon.
+   *
+   * This shoud not be here IMO because, it should be controlled
+   * outside of the Table because it can be challenging in the future
+   * to handle all the possible filtering inside the component.
+   * I assume that the filtering of Node is a bit different from the
+   * filtering of Volume, Pods, XCore Server...
+   */
   const query = useQuery();
   const querySearch = query.get('search');
 
@@ -238,13 +248,20 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
               />
             </th>
           </tr>
-          {headerGroups.map((headerGroup) => (
-            <HeadRow {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
-              ))}
-            </HeadRow>
-          ))}
+          {headerGroups.map((headerGroup) => {
+            return (
+              <HeadRow {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column) => {
+                  const headerStyleProps = column.getHeaderProps({
+                    style: column.cellStyle,
+                  });
+                  return (
+                    <th {...headerStyleProps}>{column.render('Header')}</th>
+                  );
+                })}
+              </HeadRow>
+            );
+          })}
         </thead>
         <Body {...getTableBodyProps()}>
           {rows.map((row, i) => {
@@ -256,99 +273,25 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
                 row={row}
               >
                 {row.cells.map((cell) => {
-                  if (cell.column.Header === 'Name') {
-                    return (
-                      <Cell {...cell.getCellProps()}>
-                        {cell.render('Cell')}
-                      </Cell>
-                    );
-                  } else if (
-                    cell.column.Header === 'Usage' &&
-                    cell.value !== intl.translate('unknown')
-                  ) {
-                    return (
-                      <Cell {...cell.getCellProps()}>
-                        <ProgressBar
-                          size="base"
-                          percentage={cell.value}
-                          buildinLabel={`${cell.value}%`}
-                        />
-                      </Cell>
-                    );
-                  } else if (
-                    cell.column.Header === 'Usage' &&
+                  let cellProps = cell.getCellProps({
+                    style: {
+                      ...cell.column.cellStyle,
+                    },
+                  });
+                  /**
+                   * We may want to add some logic for that
+                   */
+                  if (
+                    cell.column.Header !== 'Name' &&
                     cell.value === intl.translate('unknown')
                   ) {
                     return (
-                      <Cell {...cell.getCellProps()}>
+                      <Cell {...cellProps}>
                         <div>{intl.translate('unknown')}</div>
                       </Cell>
                     );
-                  } else if (cell.column.Header === 'Status') {
-                    const volume = data?.find(
-                      (vol) => vol.name === cell.row.values.name,
-                    );
-
-                    switch (cell.value) {
-                      case 'exclamation':
-                        return (
-                          <Cell {...cell.getCellProps()}>
-                            <Tooltip
-                              placement="top"
-                              overlay={
-                                <TooltipContent>
-                                  {volume?.errorReason}
-                                </TooltipContent>
-                              }
-                            >
-                              <i className="fas fa-exclamation"></i>
-                            </Tooltip>
-                          </Cell>
-                        );
-                      case 'link':
-                        return (
-                          <Cell {...cell.getCellProps()}>
-                            <Tooltip
-                              placement="top"
-                              overlay={<TooltipContent>In use</TooltipContent>}
-                            >
-                              <i className="fas fa-link"></i>
-                            </Tooltip>
-                          </Cell>
-                        );
-                      case 'unlink':
-                        return (
-                          <Cell {...cell.getCellProps()}>
-                            <Tooltip
-                              placement="top"
-                              overlay={<TooltipContent>Unused</TooltipContent>}
-                            >
-                              <i className="fas fa-unlink"></i>
-                            </Tooltip>
-                          </Cell>
-                        );
-                      default:
-                        return (
-                          <Cell {...cell.getCellProps()}>
-                            <div>{intl.translate('unknown')}</div>
-                          </Cell>
-                        );
-                    }
-                  } else if (cell.column.Header === 'Health') {
-                    return (
-                      <Cell {...cell.getCellProps()}>
-                        <CircleStatus
-                          className="fas fa-circle"
-                          status={cell.value}
-                        />
-                      </Cell>
-                    );
                   } else {
-                    return (
-                      <Cell {...cell.getCellProps()}>
-                        {cell.render('Cell')}
-                      </Cell>
-                    );
+                    return <Cell {...cellProps}>{cell.render('Cell')}</Cell>;
                   }
                 })}
               </TableRow>
@@ -366,16 +309,86 @@ const VolumeListTable = (props) => {
   const location = useLocation();
   const columns = React.useMemo(
     () => [
-      { Header: 'Name', accessor: 'name' },
-      // volumes filter by node don't necessarily to display the node name
+      {
+        Header: 'Name',
+        accessor: 'name',
+        width: 200,
+      },
       { Header: 'Node', accessor: 'node' },
-      { Header: 'Usage', accessor: 'usage' },
-      { Header: 'Size', accessor: 'storageCapacity' },
-      { Header: 'Health', accessor: 'health' },
-      { Header: 'Status', accessor: 'status' },
-      { Header: 'Latency', accessor: 'latency' },
+      {
+        Header: 'Usage',
+        accessor: 'usage',
+        cellStyle: { textAlign: 'center' },
+        Cell: ({ value }) => {
+          return (
+            <ProgressBar
+              size="base"
+              percentage={value}
+              buildinLabel={`${value}%`}
+            />
+          );
+        },
+      },
+      {
+        Header: 'Size',
+        accessor: 'storageCapacity',
+        cellStyle: { textAlign: 'center', width: '70px' },
+      },
+      {
+        Header: 'Health',
+        accessor: 'health',
+        cellStyle: { textAlign: 'center', width: '50px' },
+      },
+      {
+        Header: 'Status',
+        accessor: 'status',
+        cellStyle: { textAlign: 'center', width: '50px' },
+        Cell: (cellProps) => {
+          const volume = volumeListData?.find(
+            (vol) => vol.name === cellProps.cell.row.values.name,
+          );
+          switch (cellProps.value) {
+            case 'exclamation':
+              return (
+                <Tooltip
+                  placement="top"
+                  overlay={
+                    <TooltipContent>{volume?.errorReason}</TooltipContent>
+                  }
+                >
+                  <i className="fas fa-exclamation"></i>
+                </Tooltip>
+              );
+            case 'link':
+              return (
+                <Tooltip
+                  placement="top"
+                  overlay={<TooltipContent>In use</TooltipContent>}
+                >
+                  <i className="fas fa-link"></i>
+                </Tooltip>
+              );
+            case 'unlink':
+              return (
+                <Tooltip
+                  placement="top"
+                  overlay={<TooltipContent>Unused</TooltipContent>}
+                >
+                  <i className="fas fa-unlink"></i>
+                </Tooltip>
+              );
+            default:
+              return <div>{intl.translate('unknown')}</div>;
+          }
+        },
+      },
+      {
+        Header: 'Latency',
+        accessor: 'latency',
+        cellStyle: { textAlign: 'center', width: '70px' },
+      },
     ],
-    [],
+    [volumeListData],
   );
 
   // handle the row selection by updating the URL
