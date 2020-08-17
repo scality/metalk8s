@@ -36,11 +36,11 @@
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
-- name: 'deploy ElasticSearch Exporter ServiceMonitor'
-  kube:
-    kubectl: '{{ bin_dir }}/kubectl'
-    filename: '{{ es_addon_dir }}/servicemonitor.yml'
-    namespace: '{{ elasticsearch_exporter_namespace }}'
-    state: 'latest'
-  run_once: true
-  delegate_to: "{{ groups['kube-master'][0] }}"
+#- name: 'deploy ElasticSearch Exporter ServiceMonitor'
+#  kube:
+#    kubectl: '{{ bin_dir }}/kubectl'
+#    filename: '{{ es_addon_dir }}/servicemonitor.yml'
+#    namespace: '{{ elasticsearch_exporter_namespace }}'
+#    state: 'latest'
+#  run_once: true
+#  delegate_to: "{{ groups['kube-master'][0] }}"

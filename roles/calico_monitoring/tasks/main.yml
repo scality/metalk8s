@@ -10,12 +10,12 @@
   run_once: true
   delegate_to: "{{ groups['kube-master'][0] }}"
 
-- name: 'Deploy Calico monitoring'
-  kube:
-    kubectl: '{{ bin_dir }}/kubectl'
-    filename: '{{ calico_monitoring_addon_dir }}/{{ item.file | basename }}'
-    namespace: '{{ item.namespace }}'
-    state: 'latest'
-  with_items: '{{ calico_monitoring_manifests }}'
-  run_once: true
-  delegate_to: "{{ groups['kube-master'][0] }}"
+#- name: 'Deploy Calico monitoring'
+#  kube:
+#    kubectl: '{{ bin_dir }}/kubectl'
+#    filename: '{{ calico_monitoring_addon_dir }}/{{ item.file | basename }}'
+#    namespace: '{{ item.namespace }}'
+#    state: 'latest'
+#  with_items: '{{ calico_monitoring_manifests }}'
+#  run_once: true
+#  delegate_to: "{{ groups['kube-master'][0] }}"
