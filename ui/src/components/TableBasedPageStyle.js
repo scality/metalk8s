@@ -6,7 +6,7 @@ const TableBasedPageStyle = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: ${padding.base};
+  padding: ${padding.small};
 `;
 
 export default TableBasedPageStyle;
