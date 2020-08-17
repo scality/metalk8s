@@ -21,6 +21,14 @@ import {
 import PageContainer from '../components/TableBasedPageStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
+const PageContainer = styled.div`
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: ${padding.small};
+`;
+
 const ActionContainer = styled.div`
   margin-bottom: ${padding.base};
   display: flex;
@@ -148,7 +156,12 @@ const NodeList = () => {
       <BreadcrumbContainer>
         <Breadcrumb
           activeColor={theme.brand.secondary}
-          paths={[<BreadcrumbLabel>{intl.translate('nodes')}</BreadcrumbLabel>]}
+          paths={[
+            <BreadcrumbLabel title={intl.translate('platform')}>
+              {intl.translate('platform')}
+            </BreadcrumbLabel>,
+            <BreadcrumbLabel>{intl.translate('nodes')}</BreadcrumbLabel>,
+          ]}
         />
       </BreadcrumbContainer>
       <ActionContainer>
