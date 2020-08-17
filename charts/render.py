@@ -117,7 +117,7 @@ def fixup_doc(doc):
 
 
 def remove_doc(doc, remove_manifests):
-    for to_remove in remove_manifests:
+    for to_remove in remove_manifests or []:
         if doc.get('kind') == to_remove[0] and \
                 doc.get('metadata').get('name') == to_remove[1]:
             return True
@@ -305,7 +305,7 @@ def main():
 
     import_csc_yaml = []
     config = []
-    for name, configmap, path, service_namespace in args.service_configs:
+    for name, configmap, path, service_namespace in args.service_configs or []:
         import_csc_yaml.append(
             "{{% import_yaml '{0}' as {1}_defaults with context %}}".format(
                 path, name
