@@ -213,9 +213,9 @@ def main():
 
     class ActionServiceConfigArgs(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
-            if len(values) > 3:
+            if len(values) > 4:
                 raise argparse.ArgumentTypeError(
-                    'Argument "{0}" requires between 1 and 3 arguments'
+                    'Argument "{0}" requires between 1 and 4 arguments'
                     .format(option_string)
                 )
 
@@ -230,21 +230,26 @@ def main():
                 path = 'metalk8s/addons/{0}/config/{1}.yaml'.format(
                     args.name, name
                 )
+            service_namespace = values.pop(0)
 
             option = getattr(args, self.dest)
             if option is None:
-                setattr(args, self.dest, [[name, configmap, path]])
+                setattr(
+                    args,
+                    self.dest,
+                    [[name, configmap, path, service_namespace]]
+                )
             else:
-                option.append([name, configmap, path])
+                option.append([name, configmap, path, service_namespace])
 
     '''
     To use this argument, follow the format below:
-        --service-config service_name service_configmap_name
+        --service-config service_name service_configmap_name service_namespace
     where service_name is actually the jinja variable which will hold
     ConfigMap contents.
     Note that you can specify multiple service config arguments using:
-        --service-config grafana metalk8s-grafana-config
-        --service-config prometheus metalk8s-prometheus-config
+        --service-config grafana metalk8s-grafana-config metalk8s-monitoring
+        --service-config dex metalk8s-dex-config metalk8s-auth
     '''
     # Todo: Add kind & apiVersion to the service-config nargs
     parser.add_argument(
@@ -254,19 +259,8 @@ def main():
         required=False,
         dest="service_configs",
         help="Example: --service-config grafana metalk8s-grafana-config "
-             "metalk8s/addons/prometheus-operator/config/grafana.yaml"
-    )
-    parser.add_argument(
-        '--drop-prometheus-rules',
-        help="YAML formatted file to drop some pre-defined Prometheus rules"
-    )
-    parser.add_argument(
-        '--remove-manifest',
-        action='append',
-        nargs=2,
-        dest="remove_manifests",
-        metavar=('KIND', 'NAME'),
-        help="Remove a given manifest from the resulting chart",
+             "metalk8s/addons/prometheus-operator/config/grafana.yaml "
+             "metalk8s-monitoring"
     )
     parser.add_argument('path', help="Path to the chart directory")
     args = parser.parse_args()
@@ -298,7 +292,7 @@ def main():
 
     import_csc_yaml = []
     config = []
-    for name, configmap, path in args.service_configs:
+    for name, configmap, path, service_namespace in args.service_configs:
         import_csc_yaml.append(
             "{{% import_yaml '{0}' as {1}_defaults with context %}}".format(
                 path, name
@@ -307,7 +301,7 @@ def main():
         config.append(
             "{{%- set {0} = salt.metalk8s_service_configuration"
             ".get_service_conf('{1}', '{2}', {0}_defaults) %}}".format(
-                name, args.namespace, configmap
+                name, service_namespace, configmap
             )
         )
 
