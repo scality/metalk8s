@@ -28,11 +28,11 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: ${padding.base};
+  padding-left: ${padding.base};
 `;
 
 const PageSubtitle = styled.h3`
-  color: ${props => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.brand.textPrimary};
   margin: ${padding.small} 0;
   display: flex;
   align-items: center;
@@ -61,7 +61,7 @@ const FormStyle = styled.div`
 `;
 
 const ButtonContainer = styled.span`
-  margin-left: ${props => (props.marginLeft ? '10px' : '0')};
+  margin-left: ${(props) => (props.marginLeft ? '10px' : '0')};
 `;
 
 const TableContainer = styled.div`
@@ -88,16 +88,16 @@ const SelectContainer = styled.div`
   margin-top: 20px;
 `;
 
-const SolutionsList = props => {
+const SolutionsList = (props) => {
   const [solutionSortBy, setSolutionSortBy] = useState('name');
   const [solutionSortDirection, setSolutionSortDirection] = useState('ASC');
   const [envSortBy, setEnvSortBy] = useState('name');
   const [envSortDirection, setEnvSortDirection] = useState('ASC');
   const [isAddSolutionModalOpen, setisAddSolutionModalOpen] = useState(false);
   const [selectedEnvironment, setSelectedEnvironment] = useState('');
-  const theme = useSelector(state => state.config.theme);
-  const solutions = useSelector(state => state.app.solutions.solutions);
-  const environments = useSelector(state => state.app.solutions.environments);
+  const theme = useSelector((state) => state.config.theme);
+  const solutions = useSelector((state) => state.app.solutions.solutions);
+  const environments = useSelector((state) => state.app.solutions.environments);
   const history = useHistory();
 
   const onSort = (setSortBy, setSortDirection) => ({
@@ -117,7 +117,7 @@ const SolutionsList = props => {
     {
       label: intl.translate('versions'),
       dataKey: 'versions',
-      renderer: versions =>
+      renderer: (versions) =>
         versions.map((version, index) => (
           <VersionLabel key={`version_${index}`}>
             {version.version}
@@ -144,11 +144,11 @@ const SolutionsList = props => {
         const solutionsLinks = solutions
           .map((solution, idx) => {
             const solutionRow = sortedSolutions.find(
-              s => s.name === solution.name,
+              (s) => s.name === solution.name,
             );
 
             const solutionVersion = solutionRow?.versions?.find(
-              v => v.version === solution.version,
+              (v) => v.version === solution.version,
             );
 
             return solutionVersion?.ui_url ? (
@@ -165,7 +165,7 @@ const SolutionsList = props => {
               </ButtonContainer>
             ) : null;
           })
-          .filter(solution => solution != null);
+          .filter((solution) => solution != null);
 
         return (
           <div>
@@ -193,7 +193,7 @@ const SolutionsList = props => {
   const sortedEnvironments =
     sortSelector(environments, envSortBy, envSortDirection) ?? [];
 
-  const formattedEnvironments = sortedEnvironments.map(environment => {
+  const formattedEnvironments = sortedEnvironments.map((environment) => {
     return {
       name: environment?.metadata?.name ?? '',
       description: environment?.spec?.description ?? '',
@@ -300,13 +300,13 @@ const SolutionsList = props => {
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={values => {
+            onSubmit={(values) => {
               const selectedSolution = sortedSolutions.find(
-                solution => solution.name === values.solution.value,
+                (solution) => solution.name === values.solution.value,
               );
 
               const selectedVersion = selectedSolution.versions.find(
-                version => version.version === values.version.value,
+                (version) => version.version === values.version.value,
               );
 
               if (
@@ -319,25 +319,27 @@ const SolutionsList = props => {
               }
             }}
           >
-            {formikProps => {
+            {(formikProps) => {
               const { setFieldValue, values } = formikProps;
 
-              const handleSelectChange = field => selectedObj => {
+              const handleSelectChange = (field) => (selectedObj) => {
                 setFieldValue(field, selectedObj ? selectedObj : '');
               };
 
-              const solutionsSelectOptions = sortedSolutions.map(solution => ({
-                label: solution.name,
-                value: solution.name,
-              }));
+              const solutionsSelectOptions = sortedSolutions.map(
+                (solution) => ({
+                  label: solution.name,
+                  value: solution.name,
+                }),
+              );
 
               const selectedSolutionVersions =
                 sortedSolutions.find(
-                  solution => solution.name === values.solution.value,
+                  (solution) => solution.name === values.solution.value,
                 )?.versions ?? [];
 
               const selectedSolutionVersionsOptions = selectedSolutionVersions.map(
-                solutionVersion => ({
+                (solutionVersion) => ({
                   label: solutionVersion.version,
                   value: solutionVersion.version,
                 }),

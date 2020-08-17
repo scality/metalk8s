@@ -15,13 +15,14 @@ import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
 import About from './About';
 import PrivateRoute from './PrivateRoute';
+import VolumePage from './VolumePage';
+
 import { toggleSideBarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
 import { updateLanguageAction, logoutAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
-import VolumeInformation from './VolumeInformation';
 import { useRefreshEffect } from '../services/utils';
 import {
   refreshSolutionsAction,
@@ -81,18 +82,18 @@ const Layout = (props) => {
         }),
       },
       // deactive the access to the global volumes page now, we can only access the volume page through the node page
-      // {
-      //   label: intl.translate('volumes'),
-      //   icon: <i className="fas fa-database" />,
-      //   onClick: () => {
-      //     history.push('/volumes');
-      //   },
-      //   active: useRouteMatch({
-      //     path: '/volumes',
-      //     exact: false,
-      //     strict: true,
-      //   }),
-      // },
+      {
+        label: intl.translate('volumes'),
+        icon: <i className="fas fa-database" />,
+        onClick: () => {
+          history.push('/volumes');
+        },
+        active: useRouteMatch({
+          path: '/volumes',
+          exact: false,
+          strict: true,
+        }),
+      },
       // need to remove the solutions since it's not working in 2.5 or should be backported
       {
         label: intl.translate('solutions'),
@@ -223,13 +224,15 @@ const Layout = (props) => {
             path={`/nodes/:id/createVolume`}
             component={CreateVolume}
           />
-          <PrivateRoute
-            path="/nodes/:id/volumes/:volumeName"
-            component={VolumeInformation}
-          />
           <PrivateRoute path="/nodes/:id" component={NodeInformation} />
           <PrivateRoute exact path="/nodes" component={NodeList} />
           <PrivateRoute exact path="/solutions" component={SolutionList} />
+          <PrivateRoute
+            exact
+            path="/volumes/createVolume"
+            component={CreateVolume}
+          />
+          <PrivateRoute path="/volumes" component={VolumePage} />
           <PrivateRoute
             exact
             path="/solutions/create-environment"

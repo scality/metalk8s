@@ -18,7 +18,7 @@ import { createEnvironmentAction } from '../ducks/app/solutions';
 
 const EnvironmentCreationFormContainer = styled.div`
   display: inline-block;
-  padding: ${padding.base};
+  padding-left: ${padding.base};
 
   /* FIXME we might want to change that in core-ui later */
   .sc-breadcrumb_item {
@@ -56,10 +56,10 @@ const FormSection = styled.div`
   }
 `;
 
-const EnvironmentCreationForm = props => {
+const EnvironmentCreationForm = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
-  const theme = useSelector(state => state.config.theme);
+  const theme = useSelector((state) => state.config.theme);
 
   const initialValues = {
     name: '',
@@ -94,15 +94,15 @@ const EnvironmentCreationForm = props => {
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={values => {
+          onSubmit={(values) => {
             dispatch(createEnvironmentAction(values));
           }}
         >
-          {formikProps => {
+          {(formikProps) => {
             const { setFieldValue, errors, dirty } = formikProps;
 
             //handleChange of the Formik props does not update 'values' when field value is empty
-            const handleChange = field => e => {
+            const handleChange = (field) => (e) => {
               const { value, checked, type } = e.target;
               setFieldValue(field, type === 'checkbox' ? checked : value, true);
             };
