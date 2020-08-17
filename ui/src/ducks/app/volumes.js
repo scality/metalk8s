@@ -75,11 +75,11 @@ export const fetchVolumesAction = () => {
   return { type: FETCH_VOLUMES };
 };
 
-export const setVolumesAction = payload => {
+export const setVolumesAction = (payload) => {
   return { type: SET_VOLUMES, payload };
 };
 
-export const deleteVolumeAction = payload => {
+export const deleteVolumeAction = (payload) => {
   return { type: DELETE_VOLUME, payload };
 };
 
@@ -87,7 +87,7 @@ export const fetchPersistentVolumeAction = () => {
   return { type: FETCH_PERSISTENT_VOLUMES };
 };
 
-export const setPersistentVolumesAction = payload => {
+export const setPersistentVolumesAction = (payload) => {
   return { type: SET_PERSISTENT_VOLUMES, payload };
 };
 
@@ -95,7 +95,7 @@ export const fetchPersistentVolumeClaimAction = () => {
   return { type: FETCH_PERSISTENT_VOLUME_CLAIMS };
 };
 
-export const setPersistentVolumeClaimAction = payload => {
+export const setPersistentVolumeClaimAction = (payload) => {
   return { type: SET_PERSISTENT_VOLUME_CLAIMS, payload };
 };
 
@@ -103,11 +103,11 @@ export const fetchStorageClassAction = () => {
   return { type: FETCH_STORAGECLASS };
 };
 
-export const setStorageClassAction = payload => {
+export const setStorageClassAction = (payload) => {
   return { type: SET_STORAGECLASS, payload };
 };
 
-export const updateStorageClassAction = payload => {
+export const updateStorageClassAction = (payload) => {
   return { type: UPDATE_STORAGECLASS, payload };
 };
 
@@ -119,7 +119,7 @@ export const refreshVolumesAction = () => {
   return { type: REFRESH_VOLUMES };
 };
 
-export const updateVolumesRefreshingAction = payload => {
+export const updateVolumesRefreshingAction = (payload) => {
   return { type: UPDATE_VOLUMES_REFRESHING, payload };
 };
 
@@ -131,7 +131,7 @@ export const refreshPersistentVolumesAction = () => {
   return { type: REFRESH_PERSISTENT_VOLUMES };
 };
 
-export const updatePersistentVolumesRefreshingAction = payload => {
+export const updatePersistentVolumesRefreshingAction = (payload) => {
   return { type: UPDATE_PERSISTENT_VOLUMES_REFRESHING, payload };
 };
 
@@ -139,14 +139,14 @@ export const stopRefreshPersistentVolumesAction = () => {
   return { type: STOP_REFRESH_PERSISTENT_VOLUMES };
 };
 
-export const updateVolumesAction = payload => {
+export const updateVolumesAction = (payload) => {
   return { type: UPDATE_VOLUMES, payload };
 };
 
 // Selectors
-export const volumesRefreshingSelector = state =>
+export const volumesRefreshingSelector = (state) =>
   state.app.volumes.isRefreshing;
-export const persistentVolumesRefreshingSelector = state =>
+export const persistentVolumesRefreshingSelector = (state) =>
   state.app.volumes.isPVRefreshing;
 
 // Sagas
@@ -211,7 +211,7 @@ export function* fetchStorageClass() {
  * createVolumes(action)
  */
 export function* createVolumes({ payload }) {
-  const { newVolume, nodeName } = payload;
+  const { newVolume } = payload;
 
   const body = {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -221,7 +221,7 @@ export function* createVolumes({ payload }) {
       labels: newVolume.labels,
     },
     spec: {
-      nodeName,
+      nodeName: newVolume.node,
       storageClassName: newVolume.storageClass,
       template: {
         metadata: {
@@ -242,7 +242,7 @@ export function* createVolumes({ payload }) {
     ((newVolume.type === SPARSE_LOOP_DEVICE && newVolume.size) ||
       (newVolume.type === RAW_BLOCK_DEVICE && newVolume.path));
 
-  if (isNewVolumeValid && nodeName) {
+  if (isNewVolumeValid) {
     if (newVolume.type === SPARSE_LOOP_DEVICE) {
       body.spec.sparseLoopDevice = { size: newVolume.size };
     } else {
@@ -251,7 +251,10 @@ export function* createVolumes({ payload }) {
 
     const result = yield call(ApiK8s.createVolume, body);
     if (!result.error) {
-      yield call(history.push, `/nodes/${nodeName}/volumes`);
+      yield call(
+        history.push,
+        `/volumes/${newVolume.name}?node=${newVolume.node}`,
+      );
       yield put(
         addNotificationSuccessAction({
           title: intl.translate('volume_creation'),
