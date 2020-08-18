@@ -17,7 +17,30 @@
   "graphTooltip": 1,
   "id": 8,
   "iteration": 1583185057230,
-  "links": [],
+  "links": [
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Loki",
+      "tooltip": "",
+      "type": "link",
+      "url": "/grafana/d/g6fe30815b172c9da7e813c15ddfe607/loki"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Fluent Bit",
+      "tooltip": "",
+      "type": "link",
+      "url": "/grafana/d/fluentbit/fluent-bit"
+    }
+  ],
   "panels": [
     {
       "aliasColors": {},
@@ -60,7 +83,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(go_goroutines{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\"})",
+          "expr": "sum(go_goroutines{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\"})",
           "refId": "A"
         }
       ],
@@ -146,7 +169,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(go_gc_duration_seconds{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\"}) by (quantile)",
+          "expr": "sum(go_gc_duration_seconds{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\"}) by (quantile)",
           "legendFormat": "{{quantile}}",
           "refId": "A"
         }
@@ -233,8 +256,14 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\", container=~\"$container\"}[5m]))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\", container=~\"$container\"}[5m]))",
+          "legendFormat": "total",
           "refId": "A"
+        },
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\", container=~\"$container\"}[5m])",
+          "legendFormat": "{{container}}",
+          "refId": "B"
         }
       ],
       "thresholds": [],
@@ -293,6 +322,99 @@
         "y": 0
       },
       "hiddenSeries": false,
+      "id": 42,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(rate(container_memory_usage_bytes{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\", container=~\"$container\"}[5m]))",
+          "legendFormat": "total",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(container_memory_usage_bytes{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\", container=~\"$container\"}[5m])",
+          "legendFormat": "{{container}}",
+          "refId": "B"
+        }
+
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Memory",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$metrics",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 0
+      },
+      "hiddenSeries": false,
       "id": 40,
       "legend": {
         "avg": false,
@@ -319,7 +441,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\", container=~\"$container\"})",
+          "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\", container=~\"$container\"})",
           "refId": "A"
         }
       ],
@@ -375,7 +497,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 12,
+        "x": 15,
         "y": 0
       },
       "hiddenSeries": false,
@@ -405,7 +527,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\"}[5m]))",
+          "expr": "sum(rate(container_network_transmit_bytes_total{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
           "refId": "A"
         }
       ],
@@ -461,7 +583,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 15,
+        "x": 18,
         "y": 0
       },
       "hiddenSeries": false,
@@ -491,7 +613,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\"}[5m]))",
+          "expr": "sum(rate(container_network_receive_bytes_total{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
           "refId": "A"
         }
       ],
@@ -547,7 +669,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 18,
+        "x": 21,
         "y": 0
       },
       "hiddenSeries": false,
@@ -577,7 +699,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(kube_pod_container_status_last_terminated_reason{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\", container=~\"$container\"}[30m]) > 0",
+          "expr": "increase(kube_pod_container_status_last_terminated_reason{cluster=\"$cluster\", instance=~\"$instance\", namespace=~\"$namespace\", pod=~\"$pod\", container=~\"$container\"}[30m]) > 0",
           "legendFormat": "{{reason}}",
           "refId": "A"
         }
@@ -625,101 +747,14 @@
     },
     {
       "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$metrics",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 21,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 42,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sum(rate(promtail_custom_bad_words_total{cluster=\"$cluster\", exported_namespace=\"$namespace\", exported_pod=~\"$deployment.*\", exported_pod=~\"$pod\", container=~\"$container\"}[5m])) by (level)",
-          "legendFormat": "{{level}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "bad words",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "bytes",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "$logmetrics",
+      "datasource": "$logs",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 2,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 4
@@ -745,33 +780,19 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "alias": "warn",
-          "color": "#FF780A"
-        },
-        {
-          "alias": "error",
-          "color": "#E02F44"
-        },
-        {
-          "alias": "info",
-          "color": "#56A64B"
-        },
-        {
-          "alias": "debug",
-          "color": "#3274D9"
-        }
-      ],
       "spaceLength": 10,
-      "stack": true,
+      "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate({cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\", container=~\"$container\", level=~\"$level\"}$filter[5m])) by (level)",
-          "intervalFactor": 3,
-          "legendFormat": "{{level}}",
-          "refId": "A"
+          "expr": "sum(count_over_time({cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\", container=~\"$container\", hostname=~\"$podlogs\"} |~ \"$filter\"[$__interval]))",
+          "refId": "A",
+          "legendFormat": "Pod Logs"
+        },
+        {
+          "expr": "sum(count_over_time({cluster=\"$cluster\", hostname=~\"$hostname\", unit=~\"$unit\", node=~\"$systemlogs\"} |~ \"$filter\"[$__interval]))",
+          "refId": "B",
+          "legendFormat": "System Logs"
         }
       ],
       "thresholds": [],
@@ -781,7 +802,7 @@
       "title": "",
       "tooltip": {
         "shared": true,
-        "sort": 2,
+        "sort": 0,
         "value_type": "individual"
       },
       "type": "graph",
@@ -789,7 +810,7 @@
         "buckets": null,
         "mode": "time",
         "name": null,
-        "show": false,
+        "show": true,
         "values": []
       },
       "yaxes": [
@@ -821,7 +842,7 @@
         "h": 19,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 7
       },
       "id": 29,
       "maxDataPoints": "",
@@ -833,8 +854,12 @@
       },
       "targets": [
         {
-          "expr": "{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\", pod=~\"$pod\", container=~\"$container\", level=~\"$level\"} $filter",
+          "expr": "{cluster=\"$cluster\", node=~\"$node\", namespace=~\"$namespace\", pod=~\"$pod\", container=~\"$container\", hostname=~\"$podlogs\"} |~ \"$filter\"",
           "refId": "A"
+        },
+        {
+          "expr": "{cluster=\"$cluster\", hostname=~\"$hostname\", unit=~\"$unit\", node=~\"$systemlogs\"} |~ \"$filter\"",
+          "refId": "B"
         }
       ],
       "timeFrom": null,
@@ -890,9 +915,65 @@
       },
       {
         "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "Enabled",
+          "value": ".*"
+         },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Pod Logs",
+        "multi": false,
+        "name": "podlogs",
+        "options": [
+          {
+            "selected": true,
+            "text": "Enabled",
+            "value": ".*"
+          },
+          {
+            "selected": false,
+            "text": "Disabled",
+            "value": ".+"
+          }
+        ],
+        "query": "Enabled,Disabled",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "Enabled",
+          "value": ".*"
+         },
+        "hide": 0,
+        "includeAll": false,
+        "label": "System Logs",
+        "multi": false,
+        "name": "systemlogs",
+        "options": [
+          {
+            "selected": true,
+            "text": "Enabled",
+            "value": ".*"
+          },
+          {
+            "selected": false,
+            "text": "Disabled",
+            "value": ".+"
+          }
+        ],
+        "query": "Enabled,Disabled",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "allValue": null,
         "datasource": "$metrics",
         "definition": "label_values(kube_pod_container_info, cluster)",
-        "hide": 0,
+        "hide": 2,
         "includeAll": false,
         "label": null,
         "multi": false,
@@ -910,16 +991,16 @@
         "useTags": false
       },
       {
-        "allValue": null,
+        "allValue": ".*",
         "datasource": "$metrics",
-        "definition": "label_values(kube_pod_container_info{cluster=\"$cluster\"}, namespace)",
+        "definition": "label_values(kube_pod_info{cluster=\"$cluster\"}, node)",
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": null,
-        "multi": false,
-        "name": "namespace",
+        "multi": true,
+        "name": "node",
         "options": [],
-        "query": "label_values(kube_pod_container_info{cluster=\"$cluster\"}, namespace)",
+        "query": "label_values(kube_pod_info{cluster=\"$cluster\"}, node)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -933,14 +1014,56 @@
       {
         "allValue": ".*",
         "datasource": "$metrics",
-        "definition": "label_values(kube_deployment_created{cluster=\"$cluster\", namespace=\"$namespace\"}, deployment)",
+        "definition": "label_values(kube_node_info{cluster=\"$cluster\", node=~\"$node\"}, instance)",
+        "hide": 2,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "instance",
+        "options": [],
+        "query": "label_values(kube_node_info{cluster=\"$cluster\", node=~\"$node\"}, instance)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "datasource": "$metrics",
+        "definition": "label_values(kube_pod_container_info{cluster=\"$cluster\", instance=~\"$instance\"}, namespace)",
         "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "namespace",
+        "options": [],
+        "query": "label_values(kube_pod_container_info{cluster=\"$cluster\", instance=~\"$instance\"}, namespace)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "datasource": "$metrics",
+        "definition": "label_values(kube_deployment_created{cluster=\"$cluster\", instance=~\"$instance\", namespace=~\"$namespace\"}, deployment)",
+        "hide": 2,
         "includeAll": false,
         "label": null,
         "multi": false,
         "name": "deployment",
         "options": [],
-        "query": "label_values(kube_deployment_created{cluster=\"$cluster\", namespace=\"$namespace\"}, deployment)",
+        "query": "label_values(kube_deployment_created{cluster=\"$cluster\", instance=~\"$instance\", namespace=~\"$namespace\"}, deployment)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -954,14 +1077,14 @@
       {
         "allValue": ".*",
         "datasource": "$metrics",
-        "definition": "label_values(kube_pod_container_info{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\"}, pod)",
+        "definition": "label_values(kube_pod_container_info{cluster=\"$cluster\", instance=~\"$instance\", namespace=~\"$namespace\"}, pod)",
         "hide": 0,
         "includeAll": true,
         "label": null,
-        "multi": false,
+        "multi": true,
         "name": "pod",
         "options": [],
-        "query": "label_values(kube_pod_container_info{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$deployment.*\"}, pod)",
+        "query": "label_values(kube_pod_container_info{cluster=\"$cluster\", instance=~\"$instance\", namespace=~\"$namespace\"}, pod)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -975,14 +1098,14 @@
       {
         "allValue": ".*",
         "datasource": "$metrics",
-        "definition": "label_values(kube_pod_container_info{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\", pod=~\"$deployment.*\"}, container)",
+        "definition": "label_values(kube_pod_container_info{cluster=\"$cluster\", instance=~\"$instance\", namespace=~\"$namespace\", pod=~\"$pod\"}, container)",
         "hide": 0,
         "includeAll": true,
         "label": null,
-        "multi": false,
+        "multi": true,
         "name": "container",
         "options": [],
-        "query": "label_values(kube_pod_container_info{cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\", pod=~\"$deployment.*\"}, container)",
+        "query": "label_values(kube_pod_container_info{cluster=\"$cluster\", instance=~\"$instance\", namespace=~\"$namespace\", pod=~\"$pod\"}, container)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -995,7 +1118,49 @@
       },
       {
         "allValue": ".*",
+        "datasource": "$logs",
+        "definition": "label_values({cluster=\"$cluster\"}, hostname)",
         "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "hostname",
+        "options": [],
+        "query": "label_values({cluster=\"$cluster\"}, hostname)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "datasource": "$logs",
+        "definition": "label_values({cluster=\"$cluster\", hostname=~\"$hostname\"}, unit)",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "unit",
+        "options": [],
+        "query": "label_values({cluster=\"$cluster\", hostname=~\"$hostname\"}, unit)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "hide": 2,
         "includeAll": true,
         "label": null,
         "multi": true,
@@ -1032,6 +1197,11 @@
         "type": "custom"
       },
       {
+        "current": {
+          "selected": true,
+          "text": "",
+          "value": ""
+         },
         "hide": 0,
         "label": "LogQL Filter",
         "name": "filter",
@@ -1046,10 +1216,11 @@
         "skipUrlSync": false,
         "type": "textbox"
       }
+
     ]
   },
   "time": {
-    "from": "now-12h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
