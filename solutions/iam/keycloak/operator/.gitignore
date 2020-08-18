@@ -1,0 +1,31 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+build
+tmp
+
+# OpenAPI
+bin/openapi-gen
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# HTML file from test coverage
+*.html
+
+# Temporary e2e Test Files
+deploy/empty-init.yaml
+
+# Test coverage
+*.coverprofile
+
+# IDE files
+.idea
+.vscode

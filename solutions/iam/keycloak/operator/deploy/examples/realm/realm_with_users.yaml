@@ -1,0 +1,39 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  name: example-keycloakrealm
+  labels:
+    app: sso
+spec:
+  realm:
+    id: "user_realm"
+    realm: "user_realm"
+    enabled: True
+    displayName: "Realm with users"
+    eventsListeners:
+      - "metrics-listener"
+    users:
+      - username: "realm_admin"
+        firstName: "John"
+        lastName: "Doe"
+        email: "jdoe@redhat.com"
+        enabled: True
+        emailVerified: False
+        realmRoles:
+          - "offline_access"
+          - "uma_authorization"
+        clientRoles:
+          account:
+            - "manage-account"
+            - "view-profile"
+          realm-management:
+            - "manage-users"
+            - "view-users"
+            - "query-users"
+            - "create-client"
+  realmOverrides:
+    - forFlow: "browser"
+      identityProvider: "openshift-v4"
+  instanceSelector:
+    matchLabels:
+      app: sso

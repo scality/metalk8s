@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/keycloak/keycloak-operator.git
+	branch = 10.0.0
+	commit = 1208fdd1bb4f7c37ae8f6291939ee5823269cca1
+	parent = 57084dcc6b629ecf7a47114f3164fe71c445fe0b
+	cmdver = 0.3.1

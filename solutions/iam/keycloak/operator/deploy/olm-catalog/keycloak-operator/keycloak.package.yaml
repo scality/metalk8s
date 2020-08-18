@@ -1,0 +1,5 @@
+channels:
+- currentCSV: keycloak-operator.v9.0.2
+  name: alpha
+defaultChannel: alpha
+packageName: keycloak-operator
