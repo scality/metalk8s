@@ -429,7 +429,7 @@ export function* fetchCurrentVolumeStats() {
   let volumeUsedCurrent = {};
   let volumeLatencyCurrent = {};
 
-  const volumeLatencyCurrentQuery = `rate(node_disk_io_time_seconds_total{job="node-exporter"}[1m])`;
+  const volumeLatencyCurrentQuery = `rate(node_disk_io_time_seconds_total{job="node-exporter"}[1h])`;
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
 
   const volumeUsedCurrentQueryResult = yield call(
