@@ -111,8 +111,8 @@ export const updateStorageClassAction = (payload) => {
   return { type: UPDATE_STORAGECLASS, payload };
 };
 
-export const createVolumeAction = (newVolume, nodeName) => {
-  return { type: CREATE_VOLUMES, payload: { newVolume, nodeName } };
+export const createVolumeAction = (newVolume) => {
+  return { type: CREATE_VOLUMES, payload: { newVolume } };
 };
 
 export const refreshVolumesAction = () => {
@@ -200,11 +200,11 @@ export function* fetchStorageClass() {
  *  payload: {
  *    newVolume: {
  *      name: 'volume1',
+ *      node: 'bootrap',
  *      storageClass: 'metalk8s-default',
  *      type: 'sparseLoopDevice',
  *      size: '1Gi'
  *    },
- *    nodeName: 'bootstrap'
  *  }
  * };
  *

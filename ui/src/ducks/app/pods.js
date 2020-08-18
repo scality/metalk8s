@@ -44,7 +44,7 @@ export function* fetchPods() {
             pod.status.containerStatuses && pod.status.containerStatuses.length
               ? pod.status.containerStatuses[0].restartCount
               : 0,
-          volumes: pod.spec.volumes.map((volume) => ({
+          volumes: pod?.spec?.volumes?.map((volume) => ({
             name: volume.name,
             persistentVolumeClaim: volume?.persistentVolumeClaim?.claimName,
           })),
