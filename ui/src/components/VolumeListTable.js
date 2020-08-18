@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -122,6 +123,7 @@ function GlobalFilter({
   globalFilter,
   setGlobalFilter,
   nodeName,
+  theme,
 }) {
   const [value, setValue] = React.useState(globalFilter);
   const history = useHistory();
@@ -151,15 +153,15 @@ function GlobalFilter({
         placeholder={`Search`}
         style={{
           fontSize: '1.1rem',
-          color: '#ffffff',
+          color: theme.brand.textPrimary,
           border: 'solid 1px #3b4045',
           width: '223px',
           height: '27px',
           borderRadius: '4px',
-          backgroundColor: '#141416',
+          backgroundColor: theme.brand.primaryDark2,
           fontFamily: 'Lato',
           fontStyle: 'italic',
-          opacity: '0.5',
+          opacity: '0.6',
           lineHeight: '1.43',
           letterSpacing: 'normal',
           paddingLeft: '10px',
@@ -183,7 +185,7 @@ function GlobalFilter({
   );
 }
 
-function Table({ columns, data, nodeName, rowClicked, volumeName }) {
+function Table({ columns, data, nodeName, rowClicked, volumeName, theme }) {
   const query = useQuery();
   const querySearch = query.get('search');
 
@@ -233,6 +235,7 @@ function Table({ columns, data, nodeName, rowClicked, volumeName }) {
                 globalFilter={state.globalFilter}
                 setGlobalFilter={setGlobalFilter}
                 nodeName={nodeName}
+                theme={theme}
               />
             </th>
           </tr>
@@ -295,6 +298,9 @@ const VolumeListTable = (props) => {
   const { nodeName, volumeListData, volumeName } = props;
   const history = useHistory();
   const location = useLocation();
+
+  const theme = useSelector((state) => state.config.theme);
+
   const columns = React.useMemo(
     () => [
       {
@@ -313,6 +319,7 @@ const VolumeListTable = (props) => {
               size="base"
               percentage={value}
               buildinLabel={`${value}%`}
+              backgroundColor={theme.brand.primaryDark1}
             />
           );
         },
@@ -381,7 +388,7 @@ const VolumeListTable = (props) => {
         cellStyle: { textAlign: 'center', width: '70px' },
       },
     ],
-    [volumeListData],
+    [volumeListData, theme],
   );
 
   // handle the row selection by updating the URL
@@ -405,6 +412,7 @@ const VolumeListTable = (props) => {
         nodeName={nodeName}
         rowClicked={onClickRow}
         volumeName={volumeName}
+        theme={theme}
       />
     </VolumeListContainer>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { useHistory } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
@@ -139,6 +139,8 @@ const VolumeDetailCard = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const location = useLocation();
+  const theme = useSelector((state) => state.config.theme);
+
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
   const [
@@ -281,6 +283,7 @@ const VolumeDetailCard = (props) => {
                   topRightLabel={`${volumeUsagePercentage}%`}
                   bottomLeftLabel={`${volumeUsageBytes} USED`}
                   bottomRightLabel={`${storageCapacity} TOTAL`}
+                  backgroundColor={theme.brand.borderLight}
                 />
               </ProgressBarContainer>
             ) : (
