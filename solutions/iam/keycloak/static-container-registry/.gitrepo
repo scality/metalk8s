@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/NicolasT/static-container-registry.git
+	branch = master
+	commit = de9ad9be0a87645bf0850d90c5111b637b3fdbb7
+	parent = 00695a02161b1a0d69efcd2cff7e108b3cd79903
+	cmdver = 0.3.1

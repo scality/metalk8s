@@ -1,0 +1,22 @@
+language: c
+dist: xenial
+
+services:
+  - docker
+
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:projectatomic/ppa'
+      - sourceline: 'deb https://pgrange.github.io/bash-unit_deb/debian/ unstable/'
+        key_url: 'https://pgrange.github.io/bash-unit_deb/keys.asc'
+    packages:
+      - bash-unit
+      - cri-o-1.12
+      - hardlink
+
+before_install:
+  - ./ci/before-install.sh
+
+script:
+  - bash_unit ./test.sh
