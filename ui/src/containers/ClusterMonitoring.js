@@ -36,6 +36,7 @@ const PageContainer = styled.div`
   .sc-loader {
     padding: 0 ${padding.smaller};
   }
+  background-color: ${(props) => props.theme.brand.primary};
 `;
 
 const TableContainer = styled.div`

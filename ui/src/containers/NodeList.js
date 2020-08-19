@@ -148,7 +148,12 @@ const NodeList = () => {
       <BreadcrumbContainer>
         <Breadcrumb
           activeColor={theme.brand.secondary}
-          paths={[<BreadcrumbLabel>{intl.translate('nodes')}</BreadcrumbLabel>]}
+          paths={[
+            <BreadcrumbLabel title={intl.translate('platform')}>
+              {intl.translate('platform')}
+            </BreadcrumbLabel>,
+            <BreadcrumbLabel>{intl.translate('nodes')}</BreadcrumbLabel>,
+          ]}
         />
       </BreadcrumbContainer>
       <ActionContainer>

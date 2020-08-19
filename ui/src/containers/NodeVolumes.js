@@ -165,7 +165,11 @@ const NodeVolumes = (props) => {
       disableSort: true,
       width: 150,
       renderer: (data, rowData) => {
-        const isEnableClick = isVolumeDeletable(rowData, persistentVolumes);
+        const isEnableClick = isVolumeDeletable(
+          rowData.status,
+          rowData.name,
+          persistentVolumes,
+        );
 
         const hintPopup = () => {
           let hintMessage = '';
@@ -234,7 +238,7 @@ const NodeVolumes = (props) => {
 
   const onRowClick = (row) => {
     if (row.rowData && row.rowData.name) {
-      history.push(`/nodes/${props.nodeName}/volumes/${row.rowData.name}`);
+      history.push(`/volumes/${row.rowData.name}?node=${props.nodeName}`);
     }
   };
 
@@ -268,7 +272,7 @@ const NodeVolumes = (props) => {
       <Modal
         close={() => setisDeleteConfirmationModalOpen(false)}
         isOpen={isDeleteConfirmationModalOpen}
-        title={intl.translate('delete_a_volume')}
+        title={intl.translate('delete_volume')}
         footer={
           <NotificationButtonGroup>
             <Button

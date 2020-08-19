@@ -12,13 +12,13 @@ const CompressionPlugin = require('compression-webpack-plugin');
  *
  * https://webpack.js.org/configuration/performance/#performancehints
  */
-const setWebpackPerformance = () => config => {
+const setWebpackPerformance = () => (config) => {
   config.performance = {
     hints: 'error',
-    // ~684 KiB for production
+    // ~732 KiB for production
     // ~1953 KiB for development because flow increase the size of assets.
-    maxAssetSize: process.env.NODE_ENV === 'production' ? 700000 : 2000000,
-    assetFilter: assetFilename => {
+    maxAssetSize: process.env.NODE_ENV === 'production' ? 750000 : 2000000,
+    assetFilter: (assetFilename) => {
       return (
         !assetFilename.endsWith('.map.gz') && assetFilename.endsWith('.gz')
       );

@@ -231,7 +231,7 @@ export function* fetchNodes() {
   if (!result.error) {
     yield put(
       updateNodesAction({
-        list: result.body.items.map((node) => {
+        list: result?.body?.items?.map((node) => {
           const statusType =
             node.status.conditions &&
             node.status.conditions.find(
@@ -288,6 +288,9 @@ export function* fetchNodes() {
             infra: roleTaintMatched && roleTaintMatched.infra,
             roles: rolesLabel.join(' / '),
             deploying: deployingNodes.includes(node.metadata.name),
+            internalIP: node?.status?.addresses?.find(
+              (ip) => ip.type === 'InternalIP',
+            ).address,
           };
         }),
       }),

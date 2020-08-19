@@ -7,7 +7,7 @@ export const SET_PODS = 'SET_PODS';
 
 // Reducer
 const defaultState = {
-  list: []
+  list: [],
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -24,7 +24,7 @@ export const fetchPodsAction = () => {
   return { type: FETCH_PODS };
 };
 
-export const setPodsAction = payload => {
+export const setPodsAction = (payload) => {
   return { type: SET_PODS, payload };
 };
 
@@ -34,7 +34,7 @@ export function* fetchPods() {
   if (!result.error) {
     yield put(
       setPodsAction(
-        result.body.items.map(pod => ({
+        result.body.items.map((pod) => ({
           name: pod.metadata.name,
           namespace: pod.metadata.namespace,
           nodeName: pod.spec.nodeName,
@@ -43,9 +43,13 @@ export function* fetchPods() {
           restartCount:
             pod.status.containerStatuses && pod.status.containerStatuses.length
               ? pod.status.containerStatuses[0].restartCount
-              : 0
-        }))
-      )
+              : 0,
+          volumes: pod?.spec?.volumes?.map((volume) => ({
+            name: volume.name,
+            persistentVolumeClaim: volume?.persistentVolumeClaim?.claimName,
+          })),
+        })),
+      ),
     );
   }
 }

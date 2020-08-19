@@ -13,121 +13,137 @@ import {
 
 // isVolumeDeletable {{{
 // Test data {{{
-
 const testcaseVolumeUnknown = {
-  rowData: { status: 'Unknown', name: 'test' },
+  status: 'Unknown',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Available' } },
   ],
 };
 
 const testcaseVolumePending = {
-  rowData: { status: 'Pending', name: 'test' },
+  status: 'Pending',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Available' } },
   ],
 };
 
 const testcaseVolumeTerminating = {
-  rowData: { status: 'Terminating', name: 'test' },
+  status: 'Terminating',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Available' } },
   ],
 };
 
 const testcaseVolumeFailedWithoutPv = {
-  rowData: { status: 'Failed', name: 'test' },
+  status: 'Failed',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'testnoPV' }, status: { phase: 'Available' } },
   ],
 };
 
 const testcaseVolumeFailedPvFailed = {
-  rowData: { status: 'Failed', name: 'test' },
+  status: 'Failed',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Failed' } },
   ],
 };
 
 const testcaseVolumeFailedPvAvailable = {
-  rowData: { status: 'Failed', name: 'test' },
+  status: 'Failed',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Available' } },
   ],
 };
 
 const testcaseVolumeFailedPvReleased = {
-  rowData: { status: 'Failed', name: 'test' },
+  status: 'Failed',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Released' } },
   ],
 };
 
 const testcaseVolumeFailedPvPending = {
-  rowData: { status: 'Failed', name: 'test' },
+  status: 'Failed',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Pending' } },
   ],
 };
 
 const testcaseVolumeFailedPvBound = {
-  rowData: { status: 'Failed', name: 'test' },
+  status: 'Failed',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Bound' } },
   ],
 };
 
 const testcaseVolumeFailedPvUnknown = {
-  rowData: { status: 'Failed', name: 'test' },
+  status: 'Failed',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Unknown' } },
   ],
 };
 
 const testcaseVolumeReadyPvFailed = {
-  rowData: { status: 'Ready', name: 'test' },
+  status: 'Ready',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Failed' } },
   ],
 };
 
 const testcaseVolumeReadyPvAvailable = {
-  rowData: { status: 'Ready', name: 'test' },
+  status: 'Ready',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Available' } },
   ],
 };
 
 const testcaseVolumeReadyPvReleased = {
-  rowData: { status: 'Ready', name: 'test' },
+  status: 'Ready',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Released' } },
   ],
 };
 
 const testcaseVolumeAvailablePvPending = {
-  rowData: { status: 'Ready', name: 'test' },
+  status: 'Ready',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Pending' } },
   ],
 };
 
 const testcaseVolumeReadyPvBound = {
-  rowData: { status: 'Ready', name: 'test' },
+  status: 'Ready',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Bound' } },
   ],
 };
 
 const testcaseVolumeReadyPvUnknown = {
-  rowData: { status: 'Ready', name: 'test' },
+  status: 'Ready',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'test' }, status: { phase: 'Unknown' } },
   ],
 };
 
 const testcaseVolumeReadyWithoutPv = {
-  rowData: { status: 'Ready', name: 'test' },
+  status: 'Ready',
+  name: 'test',
   persistentVolumes: [
     { metadata: { name: 'testnoPV' }, status: { phase: 'Available' } },
   ],
@@ -138,7 +154,8 @@ const testcaseVolumeReadyWithoutPv = {
 
 it('should return false when volume is unknown', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeUnknown.rowData,
+    testcaseVolumeUnknown.status,
+    testcaseVolumeUnknown.name,
     testcaseVolumeUnknown.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -146,7 +163,8 @@ it('should return false when volume is unknown', () => {
 
 it('should return false when volume is pending', () => {
   const result = isVolumeDeletable(
-    testcaseVolumePending.rowData,
+    testcaseVolumePending.status,
+    testcaseVolumePending.name,
     testcaseVolumePending.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -154,7 +172,8 @@ it('should return false when volume is pending', () => {
 
 it('should return false when volume is terminating', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeTerminating.rowData,
+    testcaseVolumeTerminating.status,
+    testcaseVolumeTerminating.name,
     testcaseVolumeTerminating.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -162,7 +181,8 @@ it('should return false when volume is terminating', () => {
 
 it('should return false when volume is failed and there is no PV', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeFailedWithoutPv.rowData,
+    testcaseVolumeFailedWithoutPv.status,
+    testcaseVolumeFailedWithoutPv.name,
     testcaseVolumeFailedWithoutPv.persistentVolumes,
   );
   expect(result).toEqual(true);
@@ -170,7 +190,8 @@ it('should return false when volume is failed and there is no PV', () => {
 
 it('should return true when volume is failed and PV is failed', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeFailedPvFailed.rowData,
+    testcaseVolumeFailedPvFailed.status,
+    testcaseVolumeFailedPvFailed.name,
     testcaseVolumeFailedPvFailed.persistentVolumes,
   );
   expect(result).toEqual(true);
@@ -178,7 +199,8 @@ it('should return true when volume is failed and PV is failed', () => {
 
 it('should return true when volume is failed and PV is available', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeFailedPvAvailable.rowData,
+    testcaseVolumeFailedPvAvailable.status,
+    testcaseVolumeFailedPvAvailable.name,
     testcaseVolumeFailedPvAvailable.persistentVolumes,
   );
   expect(result).toEqual(true);
@@ -186,7 +208,8 @@ it('should return true when volume is failed and PV is available', () => {
 
 it('should return true when volume is failed and PV is released', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeFailedPvReleased.rowData,
+    testcaseVolumeFailedPvReleased.status,
+    testcaseVolumeFailedPvReleased.name,
     testcaseVolumeFailedPvReleased.persistentVolumes,
   );
   expect(result).toEqual(true);
@@ -194,7 +217,8 @@ it('should return true when volume is failed and PV is released', () => {
 
 it('should return false when volume is failed and PV is pending', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeFailedPvPending.rowData,
+    testcaseVolumeFailedPvPending.status,
+    testcaseVolumeFailedPvPending.name,
     testcaseVolumeFailedPvPending.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -202,7 +226,8 @@ it('should return false when volume is failed and PV is pending', () => {
 
 it('should return false when volume is failed and PV is bound', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeFailedPvBound.rowData,
+    testcaseVolumeFailedPvBound.status,
+    testcaseVolumeFailedPvBound.name,
     testcaseVolumeFailedPvBound.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -210,7 +235,8 @@ it('should return false when volume is failed and PV is bound', () => {
 
 it('should return false when volume is failed and PV is unknown', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeFailedPvUnknown.rowData,
+    testcaseVolumeFailedPvUnknown.status,
+    testcaseVolumeFailedPvUnknown.name,
     testcaseVolumeFailedPvUnknown.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -218,7 +244,8 @@ it('should return false when volume is failed and PV is unknown', () => {
 
 it('should return true when volume is ready and PV is failed', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeReadyPvFailed.rowData,
+    testcaseVolumeReadyPvFailed.status,
+    testcaseVolumeReadyPvFailed.name,
     testcaseVolumeReadyPvFailed.persistentVolumes,
   );
   expect(result).toEqual(true);
@@ -226,7 +253,8 @@ it('should return true when volume is ready and PV is failed', () => {
 
 it('should return true when volume is ready and PV is available', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeReadyPvAvailable.rowData,
+    testcaseVolumeReadyPvAvailable.status,
+    testcaseVolumeReadyPvAvailable.name,
     testcaseVolumeReadyPvAvailable.persistentVolumes,
   );
   expect(result).toEqual(true);
@@ -234,7 +262,8 @@ it('should return true when volume is ready and PV is available', () => {
 
 it('should return true when volume is ready and PV is released', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeReadyPvReleased.rowData,
+    testcaseVolumeReadyPvReleased.status,
+    testcaseVolumeReadyPvReleased.name,
     testcaseVolumeReadyPvReleased.persistentVolumes,
   );
   expect(result).toEqual(true);
@@ -242,7 +271,8 @@ it('should return true when volume is ready and PV is released', () => {
 
 it('should return false when volume is ready and PV is pending', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeAvailablePvPending.rowData,
+    testcaseVolumeAvailablePvPending.status,
+    testcaseVolumeAvailablePvPending.name,
     testcaseVolumeAvailablePvPending.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -250,7 +280,8 @@ it('should return false when volume is ready and PV is pending', () => {
 
 it('should return false when volume is ready and PV is bound', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeReadyPvBound.rowData,
+    testcaseVolumeReadyPvBound.status,
+    testcaseVolumeReadyPvBound.name,
     testcaseVolumeReadyPvBound.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -258,7 +289,8 @@ it('should return false when volume is ready and PV is bound', () => {
 
 it('should return false when volume is ready and PV is unknown', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeReadyPvUnknown.rowData,
+    testcaseVolumeReadyPvUnknown.status,
+    testcaseVolumeReadyPvUnknown.name,
     testcaseVolumeReadyPvUnknown.persistentVolumes,
   );
   expect(result).toEqual(false);
@@ -266,7 +298,8 @@ it('should return false when volume is ready and PV is unknown', () => {
 
 it('should return false when volume is ready and there is no PV', () => {
   const result = isVolumeDeletable(
-    testcaseVolumeReadyWithoutPv.rowData,
+    testcaseVolumeReadyWithoutPv.status,
+    testcaseVolumeReadyWithoutPv.name,
     testcaseVolumeReadyWithoutPv.persistentVolumes,
   );
   expect(result).toEqual(true);

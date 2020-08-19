@@ -281,6 +281,7 @@ it('create volume with the type sparseloopdevice', () => {
     payload: {
       newVolume: {
         name: 'volume1',
+        node: 'bootstrap',
         storageClass: 'metalk8s-default',
         type: 'sparseLoopDevice',
         size: '1Gi',
@@ -288,11 +289,10 @@ it('create volume with the type sparseloopdevice', () => {
           name: 'carlito',
         },
       },
-      nodeName: 'bootstrap',
     },
   };
 
-  const { newVolume, nodeName } = action.payload;
+  const { newVolume } = action.payload;
 
   const gen = createVolumes(action);
 
@@ -306,7 +306,7 @@ it('create volume with the type sparseloopdevice', () => {
       },
     },
     spec: {
-      nodeName: nodeName,
+      nodeName: newVolume.node,
       storageClassName: newVolume.storageClass,
       sparseLoopDevice: { size: newVolume.size },
       storageClassName: 'metalk8s-default',
@@ -345,7 +345,7 @@ it('create volume with the type sparseloopdevice', () => {
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/nodes/${nodeName}/volumes`),
+    call(history.push, `/volumes/${newVolume.name}?node=${newVolume.node}`),
   );
 
   expect(gen.next().value.payload.action.type).toEqual(
@@ -360,6 +360,7 @@ it('create a volume with the type rawBlockdevice', () => {
     payload: {
       newVolume: {
         name: 'volume1',
+        node: 'bootstrap',
         storageClass: 'metalk8s-default',
         type: 'rawBlockDevice',
         path: '/dev/disk1',
@@ -367,10 +368,9 @@ it('create a volume with the type rawBlockdevice', () => {
           name: 'carlito',
         },
       },
-      nodeName: 'bootstrap',
     },
   };
-  const { newVolume, nodeName } = action.payload;
+  const { newVolume } = action.payload;
   const gen = createVolumes(action);
 
   const body = {
@@ -383,7 +383,7 @@ it('create a volume with the type rawBlockdevice', () => {
       },
     },
     spec: {
-      nodeName: nodeName,
+      nodeName: newVolume.node,
       storageClassName: newVolume.storageClass,
       rawBlockDevice: { devicePath: newVolume.path },
       template: {
@@ -419,7 +419,7 @@ it('create a volume with the type rawBlockdevice', () => {
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/nodes/${nodeName}/volumes`),
+    call(history.push, `/volumes/${newVolume.name}?node=${newVolume.node}`),
   );
   expect(gen.next().value.payload.action.type).toEqual(
     ADD_NOTIFICATION_SUCCESS,
@@ -452,6 +452,7 @@ it('does not create a volume when there is an error', () => {
     payload: {
       newVolume: {
         name: 'volume1',
+        node: 'bootstrap',
         storageClass: 'metalk8s-default',
         type: 'rawBlockDevice',
         path: '/dev/disk1',
@@ -459,10 +460,9 @@ it('does not create a volume when there is an error', () => {
           name: 'carlito',
         },
       },
-      nodeName: 'bootstrap',
     },
   };
-  const { newVolume, nodeName } = action.payload;
+  const { newVolume } = action.payload;
   const gen = createVolumes(action);
   const body = {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -474,7 +474,7 @@ it('does not create a volume when there is an error', () => {
       },
     },
     spec: {
-      nodeName: nodeName,
+      nodeName: newVolume.node,
       storageClassName: newVolume.storageClass,
       rawBlockDevice: { devicePath: newVolume.path },
       template: {
@@ -653,7 +653,9 @@ it('should not refresh volume if volume have an error', () => {
 it('should delete volume', () => {
   const payload = { payload: 'test-volume' };
   const gen = deleteVolume(payload);
-  expect(gen.next().value).toEqual(call(VolumesApi.deleteVolume, 'test-volume'));
+  expect(gen.next().value).toEqual(
+    call(VolumesApi.deleteVolume, 'test-volume'),
+  );
   const result = {
     body: {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -692,7 +694,9 @@ it('should delete volume', () => {
 it('should display the error notification when there is error in delete volume', () => {
   const payload = { payload: 'test-volume' };
   const gen = deleteVolume(payload);
-  expect(gen.next().value).toEqual(call(VolumesApi.deleteVolume, 'test-volume'));
+  expect(gen.next().value).toEqual(
+    call(VolumesApi.deleteVolume, 'test-volume'),
+  );
   const result = { error: {} };
   expect(gen.next(result).value.payload.action.type).toEqual(
     ADD_NOTIFICATION_ERROR,
