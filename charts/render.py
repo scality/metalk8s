@@ -262,6 +262,19 @@ def main():
              "metalk8s/addons/prometheus-operator/config/grafana.yaml "
              "metalk8s-monitoring"
     )
+    parser.add_argument(
+        '--drop-prometheus-rules',
+        help="YAML formatted file to drop some pre-defined Prometheus rules"
+    )
+    parser.add_argument(
+        '--remove-manifest',
+        action='append',
+        nargs=2,
+        dest="remove_manifests",
+        metavar=('KIND', 'NAME'),
+        help="Remove a given manifest from the resulting chart",
+    )
+
     parser.add_argument('path', help="Path to the chart directory")
     args = parser.parse_args()
 
