@@ -147,7 +147,6 @@ const getVolumeUsedCurrent = (state) =>
 const getVolumeCapacityCurrent = (state) =>
   state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeCapacityCurrent;
 
-// Todo: Add unit test for getVolumeListData function
 export const getVolumeListData = createSelector(
   getNodeNameFromUrl,
   getVolumes,

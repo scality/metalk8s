@@ -9,7 +9,9 @@ import {
   computeVolumeGlobalStatus,
   isVolumeDeletable,
   volumeGetError,
+  getVolumeListData,
 } from './NodeVolumesUtils';
+import { state_volume_filtered_by_node_master0 } from './NodeVolumesUtilsData';
 
 // isVolumeDeletable {{{
 // Test data {{{
@@ -420,3 +422,96 @@ it('should return error when called with failed Ready condition', () => {
 });
 
 // }}}
+
+// getVolumeListData
+const props_volume_filtered_by_node_master0 = {
+  history: {
+    length: 12,
+    action: 'POP',
+    location: {
+      pathname: '/volumes/prom-m0-reldev',
+      search: '?node=master-0',
+      hash: '',
+      key: 'u757uz',
+    },
+  },
+  location: {
+    pathname: '/volumes/prom-m0-reldev',
+    search: '?node=master-0',
+    hash: '',
+    key: 'u757uz',
+  },
+  match: {
+    path: '/volumes',
+    url: '/volumes',
+    isExact: false,
+    params: {},
+  },
+};
+
+it('should return the volume list', () => {
+  const result = getVolumeListData(
+    state_volume_filtered_by_node_master0,
+    props_volume_filtered_by_node_master0,
+  );
+  const volumelist_filtered_by_node_master0 = [
+    {
+      name: 'master-0-alertmanager',
+      node: 'master-0',
+      usage: '0.41',
+      status: 'link',
+      bound: 'Yes',
+      storageCapacity: '5Gi',
+      storageClass: 'metalk8s-prometheus',
+      usageRawData: '20MiB',
+      health: 'health',
+      latency: 'Unknown',
+    },
+    {
+      name: 'prom-m0-reldev',
+      node: 'master-0',
+      usage: '30.13',
+      status: 'link',
+      bound: 'Yes',
+      storageCapacity: '20Gi',
+      storageClass: 'metalk8s-prometheus',
+      usageRawData: '6GiB',
+      health: 'health',
+      latency: '4542 µs',
+    },
+  ];
+  expect(result).toEqual(volumelist_filtered_by_node_master0);
+});
+
+const props_empty_volumelist = {
+  history: {
+    length: 12,
+    action: 'POP',
+    location: {
+      pathname: '/volumes/prom-m0-reldev',
+      search: '?node=master-0',
+      hash: '',
+      key: 'u757uz',
+    },
+  },
+  location: {
+    pathname: '/volumes',
+    search: '?node=fake-node-name',
+    hash: '',
+    key: 'u757uz',
+  },
+  match: {
+    path: '/volumes',
+    url: '/volumes',
+    isExact: false,
+    params: {},
+  },
+};
+
+it('should return an empty array when there is no volume', () => {
+  const result = getVolumeListData(
+    state_volume_filtered_by_node_master0,
+    props_empty_volumelist,
+  );
+  expect(result).toEqual([]);
+});
