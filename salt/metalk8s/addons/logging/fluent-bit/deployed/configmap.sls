@@ -1,3 +1,6 @@
+{%- import_yaml 'metalk8s/addons/logging/loki/config/loki.yaml' as loki_defaults with context %}
+{%- set loki = salt.metalk8s_service_configuration.get_service_conf('metalk8s-logging', 'metalk8s-loki-config', loki_defaults) %}
+
 include:
   - ...deployed.namespace
 
@@ -67,10 +70,11 @@ Create fluent-bit ConfigMap:
                 Remove         BOOT_ID
                 Remove         UID
                 Remove         GID
+{%- for index in range(loki.spec.deployment.replicas) %}
             [Output]
                 Name           loki
                 Match          *
-                Url            http://loki:3100/loki/api/v1/push
+                Url            http://loki-{{ index }}:3100/loki/api/v1/push
                 TenantID       ""
                 BatchWait      1
                 BatchSize      10240
@@ -80,6 +84,7 @@ Create fluent-bit ConfigMap:
                 LabelMapPath   /fluent-bit/etc/labelmap.json
                 LineFormat     json
                 LogLevel       warn
+{%- endfor %}
           labelmap.json: |-
             {
               "kubernetes": {
