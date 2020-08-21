@@ -1,11 +1,13 @@
 {%- from "metalk8s/map.jinja" import front_proxy with context %}
 
+{%- set private_key_path = "/etc/kubernetes/pki/front-proxy-ca.key" %}
+
 include:
   - metalk8s.internal.m2crypto
 
 Create front proxy CA private key:
   x509.private_key_managed:
-    - name: /etc/kubernetes/pki/front-proxy-ca.key
+    - name: {{ private_key_path }}
     - bits: 4096
     - verbose: False
     - user: root
@@ -15,11 +17,13 @@ Create front proxy CA private key:
     - dir_mode: 755
     - require:
       - metalk8s_package_manager: Install m2crypto
+    - unless:
+      - test -f "{{ private_key_path }}"
 
 Generate front proxy CA certificate:
   x509.certificate_managed:
     - name: /etc/kubernetes/pki/front-proxy-ca.crt
-    - signing_private_key: /etc/kubernetes/pki/front-proxy-ca.key
+    - signing_private_key: {{ private_key_path }}
     - CN: front-proxy-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
