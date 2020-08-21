@@ -182,6 +182,9 @@ OPERATOR_DEPLOYMENT  : Path = OPERATOR_YAML_ROOT/'operator.yaml'
 
 LOKI_DASHBOARD          : Path = constants.ROOT/'charts/loki-dashboard.json'
 LOGS_DASHBOARD          : Path = constants.ROOT/'charts/logs-dashboard.json'
+FLUENT_BIT_DASHBOARD    : Path = constants.ROOT.joinpath(
+    'charts/fluent-bit-dashboard.json'
+)
 
 SCALITY_LOGO : Path = constants.ROOT/'ui/public/brand/assets/login/logo.png'
 SCALITY_FAVICON : Path = constants.ROOT.joinpath(
@@ -293,6 +296,22 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/logging/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/logging/fluent-bit/deployed/chart.sls'),
     Path('salt/metalk8s/addons/logging/fluent-bit/deployed/configmap.sls'),
+    targets.TemplateFile(
+        task_name='fluent-bit dashboard.sls',
+        source=constants.ROOT.joinpath(
+            'salt/metalk8s/addons/logging/fluent-bit/deployed/dashboard.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/logging/fluent-bit/deployed/dashboard.sls'
+        ),
+        context={
+            'FluentBitDashboard': textwrap.indent(
+                FLUENT_BIT_DASHBOARD.read_text(encoding='utf-8'),
+                12 * ' '
+            )
+        },
+        file_dep=[FLUENT_BIT_DASHBOARD],
+    ),
     Path('salt/metalk8s/addons/logging/fluent-bit/deployed/init.sls'),
     Path('salt/metalk8s/addons/logging/loki/config/loki.yaml'),
     Path('salt/metalk8s/addons/logging/loki/deployed/chart.sls'),
