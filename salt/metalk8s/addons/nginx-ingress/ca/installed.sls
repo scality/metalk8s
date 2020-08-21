@@ -1,11 +1,13 @@
 {%- from "metalk8s/map.jinja" import nginx_ingress with context %}
 
+{%- set private_key_path = "/etc/metalk8s/pki/nginx-ingress/ca.key" %}
+
 include:
   - metalk8s.internal.m2crypto
 
 Create Ingress CA private key:
   x509.private_key_managed:
-    - name: /etc/metalk8s/pki/nginx-ingress/ca.key
+    - name: {{ private_key_path }}
     - bits: 4096
     - verbose: False
     - user: root
@@ -15,11 +17,13 @@ Create Ingress CA private key:
     - dir_mode: 755
     - require:
       - metalk8s_package_manager: Install m2crypto
+    - unless:
+      - test -f "{{ private_key_path }}"
 
 Generate Ingress CA certificate:
   x509.certificate_managed:
     - name: /etc/metalk8s/pki/nginx-ingress/ca.crt
-    - signing_private_key: /etc/metalk8s/pki/nginx-ingress/ca.key
+    - signing_private_key: {{ private_key_path }}
     - CN: ingress-ca
     - keyUsage: "critical digitalSignature, keyEncipherment, keyCertSign"
     - basicConstraints: "critical CA:true"
