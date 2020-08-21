@@ -64,6 +64,18 @@ The default configuration values for Prometheus are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/prometheus.yaml
 
+
+Loki Default Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Loki is a log aggregation system, its job is to receive logs from collectors
+(fluent-bit), store them on persistent storage, then make them queryable
+through its API.
+
+The default configuration values for Loki are specified below:
+
+.. literalinclude:: ../../salt/metalk8s/addons/logging/loki/config/loki.yaml
+
 Service Configurations Customization
 ------------------------------------
 
@@ -498,6 +510,52 @@ To change the password of an existing user, perform the following operations:
       - Configuring LDAP
       - Configuring Active Directory(AD)
 
+Loki Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default configuration for Loki can be overridden by editing its
+Cluster and Service ConfigMap ``metalk8s-loki-config`` in namespace
+``metalk8s-logging`` under the key ``data.config.yaml``:
+
+.. code-block:: shell
+
+    root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                       edit configmap -n metalk8s-logging \
+                       metalk8s-loki-config
+
+The following documentation is not exhaustive and is just here to give
+some hints on basic usage, for more details or advanced
+configuration, see the official `Loki documentation`_.
+
+.. _Loki documentation: https://grafana.com/docs/loki/latest/configuration/
+
+Changing the logs retention period
+""""""""""""""""""""""""""""""""""
+
+Retention period is the time the logs will be stored and available before
+getting purged.
+
+For example, to set the retention period to 1 week, the ConfigMap must be
+edited as follows:
+
+.. code-block:: yaml
+
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      config.yaml: |-
+        apiVersion: addons.metalk8s.scality.com
+        kind: LokiConfig
+        spec:
+          config:
+            table_manager:
+              retention_period: 168h
+
+.. note::
+
+   Due to internal implementation, ``retention_period`` must be a multiple of
+   ``24h`` in order to get the expected behavior
+
 Replicas Count Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -517,6 +575,8 @@ pod per service.
    | Prometheus        |                     | metalk8s-prometheus-config   |
    +-------------------+---------------------+------------------------------+
    | Dex               | metalk8s-auth       | metalk8s-dex-config          |
+   +-------------------+---------------------+------------------------------+
+   | Loki              | metalk8s-logging    | metalk8s-loki-config         |
    +-------------------+---------------------+------------------------------+
 
 To change the number of replicas, perform the following operations:
@@ -563,8 +623,8 @@ To change the number of replicas, perform the following operations:
 
    .. note::
 
-      Scaling the number of pods for services like ``Prometheus`` and
-      ``Alertmanager`` requires provisioning extra persistent volumes for
-      these pods to startup normally. Refer to
-      :ref:`this procedure <Provision Prometheus storage>`
+      Scaling the number of pods for services like ``Prometheus``,
+      ``Alertmanager`` and ``Loki`` requires provisioning extra persistent
+      volumes for these pods to startup normally. Refer to
+      :ref:`this procedure <Provision Storage for Services>`
       for more information.
