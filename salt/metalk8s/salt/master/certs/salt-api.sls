@@ -1,11 +1,13 @@
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
+{%- set private_key_path = "/etc/salt/pki/api/salt-api.key" %}
+
 include:
   - metalk8s.internal.m2crypto
 
 Create Salt API private key:
   x509.private_key_managed:
-    - name: /etc/salt/pki/api/salt-api.key
+    - name: {{ private_key_path }}
     - bits: 2048
     - verbose: False
     - user: root
@@ -15,6 +17,8 @@ Create Salt API private key:
     - dir_mode: 755
     - require:
       - metalk8s_package_manager: Install m2crypto
+    - unless:
+      - test -f "{{ private_key_path }}"
 
 {% set certSANs = [
     grains['fqdn'],
@@ -29,7 +33,7 @@ Create Salt API private key:
 Generate Salt API certificate:
   x509.certificate_managed:
     - name: /etc/salt/pki/api/salt-api.crt
-    - public_key: /etc/salt/pki/api/salt-api.key
+    - public_key: {{ private_key_path }}
 {%- if salt.config.get('file_client') != 'local' %}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
 {%- endif %}
