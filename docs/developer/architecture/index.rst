@@ -14,3 +14,4 @@ Architecture Documents
    solutions
    ci
    volume
+   logs

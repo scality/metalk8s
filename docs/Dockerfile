@@ -15,6 +15,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         latexmk \
         make \
         plantuml \
+        graphviz \
         python3.6 \
         python3-buildbot-worker \
         python3-pip \
