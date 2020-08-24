@@ -266,29 +266,6 @@ export function computeVolumeCondition(status, isBound) {
 }
 
 /**
- * This function combines the values in different pods caused by the restart
- *
- * @param {array} result - The array of the data points are already sorted according to the time series
- *
- */
-export function jointDataPointBaseonTimeSeries(result) {
-  let values = [];
-  if (result) {
-    for (const timeseries of result) {
-      if (values.length === 0) {
-        values = values.concat(timeseries.values);
-      } else if (timeseries.values[0][0] > values[0][0]) {
-        values.concat(timeseries.values);
-      } else if (timeseries.values[0][0] < values[0][0]) {
-        timeseries.values.concat(values);
-      }
-    }
-
-    return values;
-  }
-}
-
-/**
  * This function manually adds the missing data points with `null` value caused by downtime of the VMs
  *
  * @param {array} orginalValues - The array of the data points are already sorted according to the time series

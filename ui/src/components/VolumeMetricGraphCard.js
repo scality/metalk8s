@@ -11,10 +11,7 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import {
-  jointDataPointBaseonTimeSeries,
-  addMissingDataPoint,
-} from '../services/utils';
+import { addMissingDataPoint } from '../services/utils';
 import {
   VOLUME_CONDITION_LINK,
   LAST_SEVEN_DAYS,
@@ -131,10 +128,9 @@ const MetricGraphCard = (props) => {
   }
 
   // We need to manually add the missing data points due to the shutdown of VM
-
   const operateMetricRawData = (metricRawData) =>
     addMissingDataPoint(
-      jointDataPointBaseonTimeSeries(metricRawData),
+      metricRawData,
       queryStartingTime,
       sampleDuration,
       sampleFrequency,
