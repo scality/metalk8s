@@ -280,7 +280,13 @@ export function addMissingDataPoint(
   sampleDuration,
   sampleFrequency,
 ) {
-  if (!orginalValues || orginalValues.length === 0) {
+  if (
+    !orginalValues ||
+    orginalValues.length === 0 ||
+    !startingTimeStamp ||
+    !sampleDuration ||
+    !sampleFrequency
+  ) {
     return;
   }
 
