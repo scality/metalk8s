@@ -53,7 +53,30 @@
   "gnetId": 7752,
   "graphTooltip": 1,
   "id": null,
-  "links": [],
+  "links": [
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Logs",
+      "tooltip": "",
+      "type": "link",
+      "url": "/grafana/d/a7e130cb82be229d6f3edbfd0a438001/logs"
+    },
+    {
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Loki",
+      "tooltip": "",
+      "type": "link",
+      "url": "/grafana/d/g6fe30815b172c9da7e813c15ddfe607/loki"
+    }
+  ],
   "panels": [
     {
       "cacheTimeout": null,
@@ -1417,7 +1440,18 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "text": "Prometheus",
+          "value": "Prometheus"
+        },
+        "hide": 2,
+        "name": "DS_PROMETHEUS",
+        "query": "prometheus",
+        "type": "datasource"
+      }
+    ]
   },
   "time": {
     "from": "now-15m",
