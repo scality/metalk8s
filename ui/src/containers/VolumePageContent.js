@@ -114,30 +114,30 @@ const VolumePageContent = (props) => {
   }
 
   const queryStartingTime = volumeStats?.queryStartingTime;
-  const volumeUsed = volumeStats?.volumeUsed?.filter(
+  const volumeUsed = volumeStats?.volumeUsed?.find(
     (vU) => vU.metric.persistentvolumeclaim === PVCName,
-  );
-  const volumeThroughputWrite = volumeStats?.volumeThroughputWrite?.filter(
+  )?.values;
+  const volumeThroughputWrite = volumeStats?.volumeThroughputWrite?.find(
     (vTW) =>
       vTW.metric.instance === instance && vTW.metric.device === deviceName,
-  );
-  const volumeThroughputRead = volumeStats?.volumeThroughputRead?.filter(
+  )?.values;
+  const volumeThroughputRead = volumeStats?.volumeThroughputRead?.find(
     (vTR) =>
       vTR.metric.instance === instance && vTR.metric.device === deviceName,
-  );
-  const volumeLatency = volumeStats?.volumeLatency?.filter(
+  )?.values;
+  const volumeLatency = volumeStats?.volumeLatency?.find(
     (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
-  );
-  const volumeIOPSRead = volumeStats?.volumeIOPSRead?.filter(
+  )?.values;
+  const volumeIOPSRead = volumeStats?.volumeIOPSRead?.find(
     (vIOPSR) =>
       vIOPSR.metric.instance === instance &&
       vIOPSR.metric.device === deviceName,
-  );
-  const volumeIOPSWrite = volumeStats?.volumeIOPSWrite?.filter(
+  )?.values;
+  const volumeIOPSWrite = volumeStats?.volumeIOPSWrite?.find(
     (vIOPSW) =>
       vIOPSW.metric.instance === instance &&
       vIOPSW.metric.device === deviceName,
-  );
+  )?.values;
   const volumeMetricGraphData = {
     volumeUsed,
     volumeThroughputWrite,

@@ -74,7 +74,11 @@ const defaultState = {
     isRefreshing: false,
   },
   volumeCurrentStats: {
-    metrics: { volumeUsedCurrent: [], volumeLatencyCurrent: [] },
+    metrics: {
+      volumeUsedCurrent: [],
+      volumeCapacityCurrent: [],
+      volumeLatencyCurrent: [],
+    },
     isRefreshing: false,
   },
 };
@@ -330,15 +334,20 @@ export function* fetchVolumeStats() {
   const startingTimestamp =
     Math.round(currentTime.getTime() / 1000) - sampleDuration;
   const startingTimeISO = new Date(startingTimestamp * 1000).toISOString();
-
-  // the queries for Throughput/Latency/IOPS
-  // rate calculates the per-second average rate of increase of the time series in the range vector.
-  const volumeThroughputReadQuery = `rate(node_disk_read_bytes_total{job="node-exporter"}[1m])`;
-  const volumeThroughputWriteQuery = `rate(node_disk_written_bytes_total{job="node-exporter"}[1m])`;
-  const volumeLatencyQuery = `rate(node_disk_io_time_seconds_total{job="node-exporter"}[1m])`;
-  const volumeIOPSReadQuery = `irate(node_disk_reads_completed_total{job="node-exporter"}[5m])`;
-  const volumeIOPSWriteQuery = `irate(node_disk_writes_completed_total{job="node-exporter"}[5m])`;
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
+
+  // the queries for Throughput/IOPS
+  // rate calculates the per-second average rate of increase of the time series in the range vector.
+  // group the result of the query by instance and device (remove the filter {job="node-exporter"})
+  const volumeThroughputReadQuery = `sum(irate(node_disk_read_bytes_total[1m])) by (instance, device)`;
+  const volumeThroughputWriteQuery = `sum(irate(node_disk_written_bytes_total[1m])) by (instance, device)`;
+  const volumeIOPSReadQuery = `sum(irate(node_disk_reads_completed_total[5m])) by (instance, device)`;
+  const volumeIOPSWriteQuery = `sum(irate(node_disk_writes_completed_total[5m])) by (instance, device)`;
+
+  // the query for latency
+  // Disk latency is the time that it takes to complete a single I/O operation on a block device
+  // rate(node_disk_read_time_seconds_total[5m]) / rate(node_disk_reads_completed_total[5m]
+  const volumeLatencyQuery = `sum(irate(node_disk_io_time_seconds_total[1m])) by (instance, device)`;
 
   const volumeUsedQueryResult = yield call(
     queryPrometheusRange,
@@ -427,19 +436,29 @@ export function* fetchVolumeStats() {
 
 export function* fetchCurrentVolumeStats() {
   let volumeUsedCurrent = {};
+  let volumeCapacityCurrent = {};
   let volumeLatencyCurrent = {};
 
-  const volumeLatencyCurrentQuery = `rate(node_disk_io_time_seconds_total{job="node-exporter"}[1h])`;
+  const volumeLatencyCurrentQuery = `irate(node_disk_io_time_seconds_total{job="node-exporter"}[1h])`;
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
-
+  // Grafana - Used Space: kubelet_volume_stats_capacity_bytes - kubelet_volume_stats_available_bytes
+  const volumeCapacityQuery = 'kubelet_volume_stats_capacity_bytes';
   const volumeUsedCurrentQueryResult = yield call(
     queryPrometheus,
     volumeUsedQuery,
   );
-
   if (!volumeUsedCurrentQueryResult.error) {
     volumeUsedCurrent = volumeUsedCurrentQueryResult.data.result;
   }
+
+  const volumeCapacityCurrentQueryResult = yield call(
+    queryPrometheus,
+    volumeCapacityQuery,
+  );
+  if (!volumeCapacityCurrentQueryResult.error) {
+    volumeCapacityCurrent = volumeCapacityCurrentQueryResult.data.result;
+  }
+
   const volumeLantencyCurrentResult = yield call(
     queryPrometheus,
     volumeLatencyCurrentQuery,
@@ -447,8 +466,10 @@ export function* fetchCurrentVolumeStats() {
   if (!volumeLantencyCurrentResult.error) {
     volumeLatencyCurrent = volumeLantencyCurrentResult.data.result;
   }
+
   const metrics = {
     volumeUsedCurrent: volumeUsedCurrent,
+    volumeCapacityCurrent: volumeCapacityCurrent,
     volumeLatencyCurrent: volumeLatencyCurrent,
   };
   yield put(updateCurrentVolumeStatsAction({ metrics: metrics }));
