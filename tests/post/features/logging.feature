@@ -7,9 +7,16 @@ Feature: Logging stack is up and running
   Scenario: Expected Pods
     Given the Kubernetes API is available
     Then we have 1 running pod labeled 'app=loki' in namespace 'metalk8s-logging'
+    And we have 1 running pod labeled 'app=fluent-bit' in namespace 'metalk8s-logging' on node 'bootstrap'
 
   Scenario: Pushing log to Loki directly
     Given the Kubernetes API is available
     And the Loki API is available
     When we push an example log to Loki
     Then we can query this example log from Loki
+
+  Scenario: Logging pipeline is working
+    Given the Kubernetes API is available
+    And the Loki API is available
+    And we have set up a logger pod
+    Then we can retrieve logs from logger pod in Loki API
