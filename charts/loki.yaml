@@ -123,7 +123,10 @@ persistence:
   - ReadWriteOnce
   size: 10Gi
   annotations: {}
-  storageClassName: metalk8s-loki
+  storageClassName: metalk8s
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: loki
   # subPath: ""
   # existingClaim:
 
