@@ -158,7 +158,7 @@ export const getVolumeListData = createSelector(
   getVolumeLatencyCurrent,
   getVolumeCapacityCurrent,
   (
-    nodeName,
+    nodeFilter,
     volumes,
     pVList,
     pVCList,
@@ -168,13 +168,26 @@ export const getVolumeListData = createSelector(
     volumeLatencyCurrent,
     volumeCapacityCurrentList,
   ) => {
-    let nodeVolumes = volumes;
-    // filter the volumes by the node name from URL
-    if (nodeName) {
-      nodeVolumes = volumes?.filter(
-        (volume) => volume.spec.nodeName === nodeName,
-      );
+    let nodeVolumes = null;
+
+    if (nodeFilter) {
+      // when there is node filter in URL, check if the node name is valid / exist
+      const node = nodeList?.find((node) => node.name === nodeFilter);
+      if (!node) {
+        return [];
+      } else {
+        // the node name exists, check if there is any volume belong to this node
+        nodeVolumes = volumes?.filter(
+          (volume) => volume.spec.nodeName === nodeFilter,
+        );
+        if (!nodeVolumes) {
+          return [];
+        }
+      }
+    } else {
+      nodeVolumes = volumes;
     }
+
     return nodeVolumes?.map((volume) => {
       const volumePV = pVList?.find(
         (pV) => pV.metadata.name === volume.metadata.name,

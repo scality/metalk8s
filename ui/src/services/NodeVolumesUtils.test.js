@@ -429,14 +429,14 @@ const props_volume_filtered_by_node_master0 = {
     length: 12,
     action: 'POP',
     location: {
-      pathname: '/volumes/prom-m0-reldev',
+      pathname: '/volumes',
       search: '?node=master-0',
       hash: '',
       key: 'u757uz',
     },
   },
   location: {
-    pathname: '/volumes/prom-m0-reldev',
+    pathname: '/volumes',
     search: '?node=master-0',
     hash: '',
     key: 'u757uz',
@@ -483,7 +483,7 @@ it('should return the volume list', () => {
   expect(result).toEqual(volumelist_filtered_by_node_master0);
 });
 
-const props_empty_volumelist = {
+const props_wrong_node_filter = {
   history: {
     length: 12,
     action: 'POP',
@@ -508,10 +508,59 @@ const props_empty_volumelist = {
   },
 };
 
-it('should return an empty array when there is no volume', () => {
+it('should return an empty array when the node filter in URL is wrong', () => {
   const result = getVolumeListData(
     state_volume_filtered_by_node_master0,
-    props_empty_volumelist,
+    props_wrong_node_filter,
+  );
+  expect(result).toEqual([]);
+});
+
+const props_no_volume_node = {
+  history: {
+    length: 12,
+    action: 'POP',
+    location: {
+      pathname: '/volumes',
+      search: '?node=bootstrap',
+      hash: '',
+      key: 'u757uz',
+    },
+  },
+  location: {
+    pathname: '/volumes',
+    search: '?node=bootstrap',
+    hash: '',
+    key: 'u757uz',
+  },
+  match: {
+    path: '/volumes',
+    url: '/volumes',
+    isExact: false,
+    params: {},
+  },
+};
+it('should return an empty array when there is no volume in this node', () => {
+  const result = getVolumeListData(
+    state_volume_filtered_by_node_master0,
+    props_no_volume_node,
+  );
+  expect(result).toEqual([]);
+});
+
+const state_empty_volume_list = {
+  app: {
+    nodes: {
+      list: [],
+    },
+    pods: {},
+    volumes: { list: [], storageClass: [], pVList: [] },
+  },
+};
+it('should return an empty array when there is no volume at all in this platform', () => {
+  const result = getVolumeListData(
+    state_empty_volume_list,
+    props_volume_filtered_by_node_master0,
   );
   expect(result).toEqual([]);
 });
