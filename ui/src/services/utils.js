@@ -11,6 +11,8 @@ import {
   VOLUME_CONDITION_EXCLAMATION,
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_LINK,
+  SAMPLE_DURATION_LIST,
+  SAMPLE_FREQUENCY_LIST,
 } from '../constants';
 
 export function prettifyBytes(bytes, decimals) {
@@ -285,7 +287,10 @@ export function addMissingDataPoint(
     orginalValues.length === 0 ||
     !startingTimeStamp ||
     !sampleDuration ||
-    !sampleFrequency
+    !sampleFrequency ||
+    // if the `sampleDuration` and `sampleFrequency` is not from the predefined value
+    !SAMPLE_DURATION_LIST.includes(sampleDuration) ||
+    !SAMPLE_FREQUENCY_LIST.includes(sampleFrequency)
   ) {
     return;
   }

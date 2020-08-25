@@ -462,6 +462,17 @@ it('should return undefined when sample frequency is null or 0', () => {
   );
   expect(result).toEqual(undefined);
 });
+
+it('should return undefined when sample frequency is not valid', () => {
+  const result = addMissingDataPoint(
+    originalValue_all_0,
+    startingTimeStamp,
+    sampleDuration,
+    1234,
+  );
+  expect(result).toEqual(undefined);
+});
+
 const originalValue_all_0 = [
   [1597220571, '0'],
   [1597224171, '0'],
