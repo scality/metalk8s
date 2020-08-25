@@ -8,7 +8,7 @@ metadata:
   name: NODE_NAME-prometheus
 spec:
   nodeName: NODE_NAME
-  storageClassName: metalk8s-prometheus
+  storageClassName: metalk8s
   sparseLoopDevice:
     size: 10Gi
   template:
@@ -22,7 +22,7 @@ metadata:
   name: NODE_NAME-alertmanager
 spec:
   nodeName: NODE_NAME
-  storageClassName: metalk8s-prometheus
+  storageClassName: metalk8s
   sparseLoopDevice:
     size: 1Gi
   template:
