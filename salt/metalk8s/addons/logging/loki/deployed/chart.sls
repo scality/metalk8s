@@ -252,10 +252,13 @@ spec:
     spec:
       accessModes:
       - ReadWriteOnce
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: loki
       resources:
         requests:
           storage: 10Gi
-      storageClassName: metalk8s-loki
+      storageClassName: metalk8s
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
