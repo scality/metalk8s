@@ -3,7 +3,7 @@
 Feature: Volume management
     Scenario: Our StorageClass is deployed
         Given the Kubernetes API is available
-        Then we have a StorageClass 'metalk8s-prometheus'
+        Then we have a StorageClass 'metalk8s'
 
     Scenario: The storage operator is up
         Given the Kubernetes API is available
@@ -18,7 +18,7 @@ Feature: Volume management
               name: test-volume1
             spec:
               nodeName: bootstrap
-              storageClassName: metalk8s-prometheus
+              storageClassName: metalk8s
               sparseLoopDevice:
                 size: 10Gi
               template:
@@ -56,7 +56,7 @@ Feature: Volume management
               name: test-volume4
             spec:
               nodeName: bootstrap
-              storageClassName: metalk8s-prometheus
+              storageClassName: metalk8s
         Then the Volume 'test-volume4' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
 
     Scenario: Create a volume with an invalid volume type
@@ -68,7 +68,7 @@ Feature: Volume management
               name: test-volume5
             spec:
               nodeName: bootstrap
-              storageClassName: metalk8s-prometheus
+              storageClassName: metalk8s
               someRandomDevice:
                 capacity: 10Gi
         Then the Volume 'test-volume5' is 'Failed' with code 'InternalError' and message matches 'volume type not found'
@@ -159,7 +159,7 @@ Feature: Volume management
               name: test-volume11
             spec:
               nodeName: bootstrap
-              storageClassName: metalk8s-prometheus
+              storageClassName: metalk8s
               sparseLoopDevice:
                 size: 10Gi
         Then the Volume 'test-volume11' is 'Pending'
@@ -176,7 +176,7 @@ Feature: Volume management
               name: test-volume12
             spec:
               nodeName: bootstrap
-              storageClassName: metalk8s-prometheus
+              storageClassName: metalk8s
               mode: Block
               sparseLoopDevice:
                 size: 10Gi

@@ -30,7 +30,7 @@ path for the partitions to use:
      name: <node_name>-prometheus
    spec:
      nodeName: <node_name>
-     storageClassName: metalk8s-prometheus
+     storageClassName: metalk8s
      rawBlockDevice:  # Choose a device with at least 10GiB capacity
        devicePath: <device_path>
      template:
@@ -44,7 +44,7 @@ path for the partitions to use:
      name: <node_name>-alertmanager
    spec:
      nodeName: <node_name>
-     storageClassName: metalk8s-prometheus
+     storageClassName: metalk8s
      rawBlockDevice:  # Choose a device with at least 1GiB capacity
        devicePath: <device_path2>
      template:
