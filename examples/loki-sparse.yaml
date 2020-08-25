@@ -8,6 +8,10 @@ metadata:
   name: NODE_NAME-loki
 spec:
   nodeName: NODE_NAME
-  storageClassName: metalk8s-loki
+  storageClassName: metalk8s
   sparseLoopDevice:
     size: 10Gi
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: loki
