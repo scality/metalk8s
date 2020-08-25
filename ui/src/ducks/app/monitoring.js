@@ -310,7 +310,8 @@ export function* fetchVolumeStats() {
   let volumeUsed = {};
   let volumeThroughputWrite = {};
   let volumeThroughputRead = {};
-  let volumeLatency = {};
+  let volumeLatencyWrite = {};
+  let volumeLatencyRead = {};
   let volumeIOPSRead = {};
   let volumeIOPSWrite = {};
 
@@ -336,7 +337,7 @@ export function* fetchVolumeStats() {
   const startingTimeISO = new Date(startingTimestamp * 1000).toISOString();
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
 
-  // the queries for Throughput/IOPS
+  // the queries for `Throughput` and `IOPS`
   // rate calculates the per-second average rate of increase of the time series in the range vector.
   // group the result of the query by instance and device (remove the filter {job="node-exporter"})
   const volumeThroughputReadQuery = `sum(irate(node_disk_read_bytes_total[1m])) by (instance, device)`;
@@ -344,10 +345,10 @@ export function* fetchVolumeStats() {
   const volumeIOPSReadQuery = `sum(irate(node_disk_reads_completed_total[5m])) by (instance, device)`;
   const volumeIOPSWriteQuery = `sum(irate(node_disk_writes_completed_total[5m])) by (instance, device)`;
 
-  // the query for latency
+  // the query for `latency`
   // Disk latency is the time that it takes to complete a single I/O operation on a block device
-  // rate(node_disk_read_time_seconds_total[5m]) / rate(node_disk_reads_completed_total[5m]
-  const volumeLatencyQuery = `sum(irate(node_disk_io_time_seconds_total[1m])) by (instance, device)`;
+  const volumeLatencyWriteQuery = `sum(irate(node_disk_write_time_seconds_total[5m]) / irate(node_disk_writes_completed_total[5m])) by (instance, device)`;
+  const volumeLatencyReadQuery = `sum(irate(node_disk_read_time_seconds_total[5m]) / irate(node_disk_reads_completed_total[5m])) by (instance, device)`;
 
   const volumeUsedQueryResult = yield call(
     queryPrometheusRange,
@@ -373,12 +374,20 @@ export function* fetchVolumeStats() {
     volumeThroughputWriteQuery,
   );
 
-  const volumeLatencyQueryResult = yield call(
+  const volumeLatencyQueryWriteResult = yield call(
     queryPrometheusRange,
     startingTimeISO,
     currentTimeISO,
     sampleFrequency,
-    volumeLatencyQuery,
+    volumeLatencyWriteQuery,
+  );
+
+  const volumeLatencyQueryReadResult = yield call(
+    queryPrometheusRange,
+    startingTimeISO,
+    currentTimeISO,
+    sampleFrequency,
+    volumeLatencyReadQuery,
   );
 
   const volumeIOPSReadQueryResult = yield call(
@@ -409,8 +418,12 @@ export function* fetchVolumeStats() {
     volumeThroughputWrite = volumeThroughputWriteQueryResult.data.result;
   }
 
-  if (!volumeLatencyQueryResult.error) {
-    volumeLatency = volumeLatencyQueryResult.data.result;
+  if (!volumeLatencyQueryWriteResult.error) {
+    volumeLatencyWrite = volumeLatencyQueryWriteResult.data.result;
+  }
+
+  if (!volumeLatencyQueryReadResult.error) {
+    volumeLatencyRead = volumeLatencyQueryReadResult.data.result;
   }
 
   if (!volumeIOPSReadQueryResult.error) {
@@ -425,9 +438,10 @@ export function* fetchVolumeStats() {
     volumeUsed: volumeUsed,
     volumeThroughputWrite: volumeThroughputWrite,
     volumeThroughputRead: volumeThroughputRead,
-    volumeLatency: volumeLatency,
-    volumeIOPSRead: volumeIOPSRead,
+    volumeLatencyWrite: volumeLatencyWrite,
+    volumeLatencyRead: volumeLatencyRead,
     volumeIOPSWrite: volumeIOPSWrite,
+    volumeIOPSRead: volumeIOPSRead,
     queryStartingTime: startingTimestamp,
   };
 

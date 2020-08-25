@@ -145,8 +145,11 @@ const MetricGraphCard = (props) => {
   const volumeUsedOperated = operateMetricRawData(
     volumeMetricGraphData?.volumeUsed,
   );
-  const volumeLatencyOperated = operateMetricRawData(
-    volumeMetricGraphData?.volumeLatency,
+  const volumeLatencyWriteOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeLatencyWrite,
+  );
+  const volumeLatencyReadOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeLatencyRead,
   );
   const volumeThroughputWriteOperated = operateMetricRawData(
     volumeMetricGraphData?.volumeThroughputWrite,
@@ -173,10 +176,19 @@ const MetricGraphCard = (props) => {
     };
   });
 
-  const volumeLatencyData = volumeLatencyOperated?.map((slot) => {
+  const volumeLatencyWriteData = volumeLatencyWriteOperated?.map((slot) => {
     return {
       date: new Date(slot[0] * 1000),
-      y: slot[1] === null ? null : Math.round(slot[1] * 1000000),
+      write: slot[1] === null ? null : Math.round(slot[1] * 1000000),
+      type: 'write',
+    };
+  });
+
+  const volumeLatencyReadData = volumeLatencyReadOperated?.map((slot) => {
+    return {
+      date: new Date(slot[0] * 1000),
+      read: slot[1] === null ? null : Math.round(slot[1] * 1000000),
+      type: 'read',
     };
   });
 
@@ -217,7 +229,12 @@ const MetricGraphCard = (props) => {
   const volumeThroughputData = volumeThroughputWriteData?.concat(
     volumeThroughtReadData,
   );
+
   const volumeIOPSData = volumeIOPSWriteData?.concat(volumeIOPSReadData);
+
+  const volumeLatencyData = volumeLatencyWriteData?.concat(
+    volumeLatencyReadData,
+  );
 
   const xAxis = {
     field: 'date',
@@ -234,24 +251,11 @@ const MetricGraphCard = (props) => {
     title: null,
   };
 
-  const yAxisThroughput = [
+  const yAxis = [
     {
       field: 'write',
       type: 'quantitative',
       // automatically add the unit for y axis labels: display 40k instead of 40000.  axis: { title: null, format: '~s' },
-      axis: { title: null },
-    },
-    {
-      field: 'read',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
-
-  const yAxisIOPS = [
-    {
-      field: 'write',
-      type: 'quantitative',
       axis: { title: null },
     },
     {
@@ -271,14 +275,6 @@ const MetricGraphCard = (props) => {
     },
   ];
 
-  const yAxisLatency = [
-    {
-      field: 'y',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
-
   const colorUsage = {
     field: 'type',
     type: 'nominal',
@@ -289,35 +285,7 @@ const MetricGraphCard = (props) => {
     },
   };
 
-  const colorLatency = {
-    field: 'type',
-    type: 'nominal',
-    legend: null,
-    domain: ['y'],
-    scale: {
-      range: ['#BA43A9'],
-    },
-  };
-
-  const colorThroughput = {
-    field: 'type',
-    type: 'nominal',
-    legend: {
-      direction: 'horizontal',
-      orient: 'bottom',
-      title: null,
-      symbolType: 'stroke',
-      labelFontSize: 15,
-      columnPadding: 50,
-      symbolStrokeWidth: 5,
-    },
-    domain: ['write', 'read'],
-    scale: {
-      range: ['#73BF69', '#E0B400'],
-    },
-  };
-
-  const colorIOPS = {
+  const colors = {
     field: 'type',
     type: 'nominal',
     legend: {
@@ -408,8 +376,8 @@ const MetricGraphCard = (props) => {
                   id={'volume_latency_id'}
                   data={volumeLatencyData}
                   xAxis={xAxis}
-                  yAxis={yAxisLatency}
-                  color={colorLatency}
+                  yAxis={yAxis}
+                  color={colors}
                   width={285}
                   height={80}
                   tooltip={false}
@@ -427,8 +395,8 @@ const MetricGraphCard = (props) => {
                   id={'volume_throughput_id'}
                   data={volumeThroughputData}
                   xAxis={xAxis}
-                  yAxis={yAxisThroughput}
-                  color={colorThroughput}
+                  yAxis={yAxis}
+                  color={colors}
                   width={285}
                   height={80}
                   tooltip={false}
@@ -444,8 +412,8 @@ const MetricGraphCard = (props) => {
                   id={'volume_IOPS_id'}
                   data={volumeIOPSData}
                   xAxis={xAxis}
-                  yAxis={yAxisIOPS}
-                  color={colorIOPS}
+                  yAxis={yAxis}
+                  color={colors}
                   width={285}
                   height={80}
                   tooltip={false}

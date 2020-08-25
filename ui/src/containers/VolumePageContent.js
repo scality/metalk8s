@@ -125,7 +125,10 @@ const VolumePageContent = (props) => {
     (vTR) =>
       vTR.metric.instance === instance && vTR.metric.device === deviceName,
   )?.values;
-  const volumeLatency = volumeStats?.volumeLatency?.find(
+  const volumeLatencyWrite = volumeStats?.volumeLatencyWrite?.find(
+    (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
+  )?.values;
+  const volumeLatencyRead = volumeStats?.volumeLatencyRead?.find(
     (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
   )?.values;
   const volumeIOPSRead = volumeStats?.volumeIOPSRead?.find(
@@ -142,7 +145,8 @@ const VolumePageContent = (props) => {
     volumeUsed,
     volumeThroughputWrite,
     volumeThroughputRead,
-    volumeLatency,
+    volumeLatencyWrite,
+    volumeLatencyRead,
     volumeIOPSRead,
     volumeIOPSWrite,
     queryStartingTime,
