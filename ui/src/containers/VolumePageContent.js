@@ -2,7 +2,6 @@ import React from 'react';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import { allSizeUnitsToBytes } from '../services/utils';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeDetailCard from '../components/VolumeDetailCard';
 import ActiveAlertsCard from '../components/VolumeActiveAlertsCard';
@@ -114,7 +113,7 @@ const VolumePageContent = (props) => {
   }
 
   const queryStartingTime = volumeStats?.queryStartingTime;
-  const volumeUsed = volumeStats?.volumeUsed?.find(
+  const volumeUsage = volumeStats?.volumeUsage?.find(
     (vU) => vU.metric.persistentvolumeclaim === PVCName,
   )?.values;
   const volumeThroughputWrite = volumeStats?.volumeThroughputWrite?.find(
@@ -142,7 +141,7 @@ const VolumePageContent = (props) => {
       vIOPSW.metric.device === deviceName,
   )?.values;
   const volumeMetricGraphData = {
-    volumeUsed,
+    volumeUsage,
     volumeThroughputWrite,
     volumeThroughputRead,
     volumeLatencyWrite,
@@ -202,9 +201,6 @@ const VolumePageContent = (props) => {
           ></ActiveAlertsCard>
           <MetricGraphCard
             volumeMetricGraphData={volumeMetricGraphData}
-            volumeStorageCapacity={allSizeUnitsToBytes(
-              pV?.spec?.capacity?.storage,
-            )}
             // the volume condition compute base on the `status` and `bound/unbound`
             volumeCondition={currentVolume.status}
             // Hardcode the port number for prometheus metrics

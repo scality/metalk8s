@@ -101,11 +101,7 @@ const NoDataGraphText = styled.div`
 `;
 
 const MetricGraphCard = (props) => {
-  const {
-    volumeStorageCapacity,
-    volumeCondition,
-    volumeMetricGraphData,
-  } = props;
+  const { volumeCondition, volumeMetricGraphData } = props;
   const dispatch = useDispatch();
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
@@ -142,8 +138,8 @@ const MetricGraphCard = (props) => {
       sampleFrequency,
     );
 
-  const volumeUsedOperated = operateMetricRawData(
-    volumeMetricGraphData?.volumeUsed,
+  const volumeUsageOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeUsage,
   );
   const volumeLatencyWriteOperated = operateMetricRawData(
     volumeMetricGraphData?.volumeLatencyWrite,
@@ -166,13 +162,10 @@ const MetricGraphCard = (props) => {
 
   // slot[0] => timestamp
   // slot[1] => value
-  const volumeUsageData = volumeUsedOperated?.map((slot) => {
+  const volumeUsageData = volumeUsageOperated?.map((slot) => {
     return {
       date: new Date(slot[0] * 1000), // convert from the RFC 3339 to time in JS
-      y:
-        slot[1] === null
-          ? null
-          : Math.round((slot[1] / volumeStorageCapacity) * 100),
+      y: slot[1] === null ? null : Math.round(slot[1] * 100),
     };
   });
 

@@ -307,7 +307,7 @@ export function* stopRefreshClusterStatus() {
 }
 
 export function* fetchVolumeStats() {
-  let volumeUsed = {};
+  let volumeUsage = {};
   let volumeThroughputWrite = {};
   let volumeThroughputRead = {};
   let volumeLatencyWrite = {};
@@ -335,7 +335,8 @@ export function* fetchVolumeStats() {
   const startingTimestamp =
     Math.round(currentTime.getTime() / 1000) - sampleDuration;
   const startingTimeISO = new Date(startingTimestamp * 1000).toISOString();
-  const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
+  const volumeUsageQuery =
+    'kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes';
 
   // the queries for `Throughput` and `IOPS`
   // rate calculates the per-second average rate of increase of the time series in the range vector.
@@ -350,12 +351,12 @@ export function* fetchVolumeStats() {
   const volumeLatencyWriteQuery = `sum(irate(node_disk_write_time_seconds_total[5m]) / irate(node_disk_writes_completed_total[5m])) by (instance, device)`;
   const volumeLatencyReadQuery = `sum(irate(node_disk_read_time_seconds_total[5m]) / irate(node_disk_reads_completed_total[5m])) by (instance, device)`;
 
-  const volumeUsedQueryResult = yield call(
+  const volumeUsageQueryResult = yield call(
     queryPrometheusRange,
     startingTimeISO,
     currentTimeISO,
     sampleFrequency,
-    volumeUsedQuery,
+    volumeUsageQuery,
   );
 
   const volumeThroughputReadQueryResult = yield call(
@@ -406,8 +407,8 @@ export function* fetchVolumeStats() {
     volumeIOPSWriteQuery,
   );
 
-  if (!volumeUsedQueryResult.error) {
-    volumeUsed = volumeUsedQueryResult.data.result;
+  if (!volumeUsageQueryResult.error) {
+    volumeUsage = volumeUsageQueryResult.data.result;
   }
 
   if (!volumeThroughputReadQueryResult.error) {
@@ -435,7 +436,7 @@ export function* fetchVolumeStats() {
   }
 
   const metrics = {
-    volumeUsed: volumeUsed,
+    volumeUsage: volumeUsage,
     volumeThroughputWrite: volumeThroughputWrite,
     volumeThroughputRead: volumeThroughputRead,
     volumeLatencyWrite: volumeLatencyWrite,
@@ -457,6 +458,7 @@ export function* fetchCurrentVolumeStats() {
   // Grafana - Used Space: kubelet_volume_stats_capacity_bytes - kubelet_volume_stats_available_bytes
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
   const volumeCapacityQuery = 'kubelet_volume_stats_capacity_bytes';
+
   const volumeUsedCurrentQueryResult = yield call(
     queryPrometheus,
     volumeUsedQuery,
