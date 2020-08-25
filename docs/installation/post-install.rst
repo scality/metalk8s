@@ -58,7 +58,7 @@ path for the partitions to use:
      name: <node_name>-loki
    spec:
      nodeName: <node_name>
-     storageClassName: metalk8s-loki
+     storageClassName: metalk8s
      rawBlockDevice:  # Choose a device with at least 10GiB capacity
        devicePath: <device_path3>
      template:
