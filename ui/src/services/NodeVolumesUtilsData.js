@@ -44,7 +44,7 @@ export const state_volume_filtered_by_node_master0 = {
           metadata: {
             annotations: {
               'kubectl.kubernetes.io/last-applied-configuration':
-                '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"},"name":"master-0-alertmanager"},"spec":{"nodeName":"master-0","sparseLoopDevice":{"size":"5Gi"},"storageClassName":"metalk8s-prometheus","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"}}}}}\n',
+                '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"},"name":"master-0-alertmanager"},"spec":{"nodeName":"master-0","sparseLoopDevice":{"size":"5Gi"},"storageClassName":"metalk8s","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"}}}}}\n',
             },
             creationTimestamp: '2020-08-06T15:16:37Z',
             finalizers: ['storage.metalk8s.scality.com/volume-protection'],
@@ -64,7 +64,7 @@ export const state_volume_filtered_by_node_master0 = {
             sparseLoopDevice: {
               size: '5Gi',
             },
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             template: {
               metadata: {
                 creationTimestamp: null,
@@ -93,7 +93,7 @@ export const state_volume_filtered_by_node_master0 = {
           metadata: {
             annotations: {
               'kubectl.kubernetes.io/last-applied-configuration':
-                '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"},"name":"master-1-alertmanager"},"spec":{"nodeName":"master-1","sparseLoopDevice":{"size":"5Gi"},"storageClassName":"metalk8s-prometheus","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"}}}}}\n',
+                '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"},"name":"master-1-alertmanager"},"spec":{"nodeName":"master-1","sparseLoopDevice":{"size":"5Gi"},"storageClassName":"metalk8s","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"}}}}}\n',
             },
             creationTimestamp: '2020-08-06T15:16:38Z',
             finalizers: ['storage.metalk8s.scality.com/volume-protection'],
@@ -113,7 +113,7 @@ export const state_volume_filtered_by_node_master0 = {
             sparseLoopDevice: {
               size: '5Gi',
             },
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             template: {
               metadata: {
                 creationTimestamp: null,
@@ -142,7 +142,7 @@ export const state_volume_filtered_by_node_master0 = {
           metadata: {
             annotations: {
               'kubectl.kubernetes.io/last-applied-configuration':
-                '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"labels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"},"name":"master-1-prometheus"},"spec":{"nodeName":"master-1","sparseLoopDevice":{"size":"20Gi"},"storageClassName":"metalk8s-prometheus","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"}}}}}\n',
+                '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"labels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"},"name":"master-1-prometheus"},"spec":{"nodeName":"master-1","sparseLoopDevice":{"size":"20Gi"},"storageClassName":"metalk8s","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"}}}}}\n',
             },
             creationTimestamp: '2020-08-06T15:16:38Z',
             finalizers: ['storage.metalk8s.scality.com/volume-protection'],
@@ -162,7 +162,7 @@ export const state_volume_filtered_by_node_master0 = {
             sparseLoopDevice: {
               size: '20Gi',
             },
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             template: {
               metadata: {
                 creationTimestamp: null,
@@ -207,7 +207,7 @@ export const state_volume_filtered_by_node_master0 = {
             rawBlockDevice: {
               devicePath: '/dev/vdd',
             },
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             template: {
               metadata: {
                 creationTimestamp: null,
@@ -296,7 +296,7 @@ export const state_volume_filtered_by_node_master0 = {
               },
             },
             persistentVolumeReclaimPolicy: 'Retain',
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             volumeMode: 'Filesystem',
           },
           status: {
@@ -366,7 +366,7 @@ export const state_volume_filtered_by_node_master0 = {
               },
             },
             persistentVolumeReclaimPolicy: 'Retain',
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             volumeMode: 'Filesystem',
           },
           status: {
@@ -436,7 +436,7 @@ export const state_volume_filtered_by_node_master0 = {
               },
             },
             persistentVolumeReclaimPolicy: 'Retain',
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             volumeMode: 'Filesystem',
           },
           status: {
@@ -506,7 +506,7 @@ export const state_volume_filtered_by_node_master0 = {
               },
             },
             persistentVolumeReclaimPolicy: 'Retain',
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             volumeMode: 'Filesystem',
           },
           status: {
@@ -813,7 +813,7 @@ export const state_volume_filtered_by_node_master0 = {
                 'app.kubernetes.io/name': 'prometheus-operator-alertmanager',
               },
             },
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             volumeMode: 'Filesystem',
             volumeName: 'master-0-alertmanager',
           },
@@ -857,7 +857,7 @@ export const state_volume_filtered_by_node_master0 = {
                 'app.kubernetes.io/name': 'prometheus-operator-alertmanager',
               },
             },
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             volumeMode: 'Filesystem',
             volumeName: 'master-1-alertmanager',
           },
@@ -901,7 +901,7 @@ export const state_volume_filtered_by_node_master0 = {
                 'app.kubernetes.io/name': 'prometheus-operator-prometheus',
               },
             },
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             volumeMode: 'Filesystem',
             volumeName: 'master-1-prometheus',
           },
@@ -917,7 +917,7 @@ export const state_volume_filtered_by_node_master0 = {
           metadata: {
             annotations: {
               'kubectl.kubernetes.io/last-applied-configuration':
-                '{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"labels":{"app":"prometheus","prometheus":"prometheus-operator-prometheus"},"name":"prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1","namespace":"metalk8s-monitoring"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}},"selector":{"matchLabels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"}},"storageClassName":"metalk8s-prometheus"}}\n',
+                '{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"labels":{"app":"prometheus","prometheus":"prometheus-operator-prometheus"},"name":"prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1","namespace":"metalk8s-monitoring"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}},"selector":{"matchLabels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"}},"storageClassName":"metalk8s"}}\n',
               'pv.kubernetes.io/bind-completed': 'yes',
               'pv.kubernetes.io/bound-by-controller': 'yes',
             },
@@ -947,7 +947,7 @@ export const state_volume_filtered_by_node_master0 = {
                 'app.kubernetes.io/name': 'prometheus-operator-prometheus',
               },
             },
-            storageClassName: 'metalk8s-prometheus',
+            storageClassName: 'metalk8s',
             volumeMode: 'Filesystem',
             volumeName: 'prom-m0-reldev',
           },
