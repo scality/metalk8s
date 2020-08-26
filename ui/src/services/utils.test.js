@@ -423,54 +423,54 @@ it('should add the missing data points of null for the last 7 days', () => {
   expect(result).toEqual(newValues_happy_path);
 });
 
-it('should return undefined when the original dataset is empty', () => {
+it('should return an empty array when the original dataset is empty', () => {
   const result = addMissingDataPoint(
     [],
     startingTimeStamp,
     sampleDuration,
     sampleFrequency,
   );
-  expect(result).toEqual(undefined);
+  expect(result).toEqual([]);
 });
 
-it('should return undefined when the starting timestamp is undefined', () => {
+it('should return an empty array when the starting timestamp is undefined', () => {
   const result = addMissingDataPoint(
     originalValue_happy_path,
     undefined,
     sampleDuration,
     sampleFrequency,
   );
-  expect(result).toEqual(undefined);
+  expect(result).toEqual([]);
 });
 
-it('should return undefined when sample duration is null or 0', () => {
+it('should return an empty array when sample duration is null or 0', () => {
   const result = addMissingDataPoint(
     originalValue_all_0,
     startingTimeStamp,
     0,
     sampleFrequency,
   );
-  expect(result).toEqual(undefined);
+  expect(result).toEqual([]);
 });
 
-it('should return undefined when sample frequency is null or 0', () => {
+it('should return an empty array when sample frequency is null or 0', () => {
   const result = addMissingDataPoint(
     originalValue_all_0,
     startingTimeStamp,
     sampleDuration,
     0,
   );
-  expect(result).toEqual(undefined);
+  expect(result).toEqual([]);
 });
 
-it('should return undefined when sample frequency is not valid', () => {
+it('should return an empty array when sample frequency is not valid', () => {
   const result = addMissingDataPoint(
     originalValue_all_0,
     startingTimeStamp,
     sampleDuration,
     1234,
   );
-  expect(result).toEqual(undefined);
+  expect(result).toEqual([]);
 });
 
 const originalValue_all_0 = [

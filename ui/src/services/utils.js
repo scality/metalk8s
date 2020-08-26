@@ -292,7 +292,7 @@ export function addMissingDataPoint(
     !SAMPLE_DURATION_LIST.includes(sampleDuration) ||
     !SAMPLE_FREQUENCY_LIST.includes(sampleFrequency)
   ) {
-    return;
+    return [];
   }
 
   const newValues = [];
