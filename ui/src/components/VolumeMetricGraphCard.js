@@ -94,6 +94,12 @@ const NoMetricsText = styled.div`
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
+const NoDataGraphText = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.small};
+  padding: ${padding.small} 0 0 ${padding.larger};
+`;
+
 const MetricGraphCard = (props) => {
   const {
     volumeStorageCapacity,
@@ -380,7 +386,7 @@ const MetricGraphCard = (props) => {
           <RowGraphContainer>
             <UsageGraph>
               <GraphTitle>USAGE (%)</GraphTitle>
-              {volumeUsageData && (
+              {volumeUsageData?.length > 0 ? (
                 <LineChart
                   id={'volume_usage_id'}
                   data={volumeUsageData}
@@ -391,11 +397,13 @@ const MetricGraphCard = (props) => {
                   height={80}
                   tooltip={false}
                 />
+              ) : (
+                <NoDataGraphText>No available usage data</NoDataGraphText>
               )}
             </UsageGraph>
             <LatencyGraph>
               <GraphTitle>LATENCY (µs) </GraphTitle>
-              {volumeLatencyData && (
+              {volumeLatencyData?.length > 0 ? (
                 <LineChart
                   id={'volume_latency_id'}
                   data={volumeLatencyData}
@@ -406,13 +414,15 @@ const MetricGraphCard = (props) => {
                   height={80}
                   tooltip={false}
                 />
+              ) : (
+                <NoDataGraphText>No available latency data</NoDataGraphText>
               )}
             </LatencyGraph>
           </RowGraphContainer>
           <SecondRowGraphContainer>
             <TroughputGraph>
               <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
-              {volumeThroughputData && (
+              {volumeThroughputData?.length > 0 ? (
                 <LineChart
                   id={'volume_throughput_id'}
                   data={volumeThroughputData}
@@ -423,11 +433,13 @@ const MetricGraphCard = (props) => {
                   height={80}
                   tooltip={false}
                 />
+              ) : (
+                <NoDataGraphText>No available throughput data</NoDataGraphText>
               )}
             </TroughputGraph>
             <IOPSGraph>
               <GraphTitle>IOPS</GraphTitle>
-              {volumeIOPSData && (
+              {volumeIOPSData?.length > 0 ? (
                 <LineChart
                   id={'volume_IOPS_id'}
                   data={volumeIOPSData}
@@ -438,6 +450,8 @@ const MetricGraphCard = (props) => {
                   height={80}
                   tooltip={false}
                 />
+              ) : (
+                <NoDataGraphText>No available IOPS data</NoDataGraphText>
               )}
             </IOPSGraph>
           </SecondRowGraphContainer>
