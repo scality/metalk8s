@@ -180,6 +180,7 @@ function GlobalFilter({
             history.push('/volumes/createVolume');
           }
         }}
+        data-cy="create-volume-button"
       />
     </ActionContainer>
   );

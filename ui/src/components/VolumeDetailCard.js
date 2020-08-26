@@ -194,7 +194,9 @@ const VolumeDetailCard = (props) => {
   return (
     <VolumeDetailCardContainer>
       <VolumeInformation>
-        <VolumeNameTitle>{name}</VolumeNameTitle>
+        <VolumeNameTitle data-cy="volume_detail_card_name">
+          {name}
+        </VolumeNameTitle>
         <InformationSpan>
           <InformationLabel>{intl.translate('node')}</InformationLabel>
           <InformationValue>{nodeName}</InformationValue>
@@ -205,7 +207,9 @@ const VolumeDetailCard = (props) => {
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.translate('status')}</InformationLabel>
-          <InformationValue>{status}</InformationValue>
+          <InformationValue data-cy="volume_status_value">
+            {status}
+          </InformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.translate('storageClass')}</InformationLabel>
@@ -250,8 +254,12 @@ const VolumeDetailCard = (props) => {
             {labels?.map((label) => {
               return (
                 <div key={label.name}>
-                  <LabelName>{label.name}</LabelName>
-                  <LabelValue>{label.value}</LabelValue>
+                  <LabelName data-cy="volume_label_name">
+                    {label.name}
+                  </LabelName>
+                  <LabelValue data-cy="volume_label_value">
+                    {label.value}
+                  </LabelValue>
                 </div>
               );
             })}
