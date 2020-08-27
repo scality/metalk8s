@@ -11,7 +11,12 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { addMissingDataPoint } from '../services/utils';
+import {
+  addMissingDataPoint,
+  toMicro,
+  toMega,
+  fromUnixTimestampToDate,
+} from '../services/utils';
 import {
   VOLUME_CONDITION_LINK,
   LAST_SEVEN_DAYS,
@@ -162,25 +167,26 @@ const MetricGraphCard = (props) => {
 
   // slot[0] => timestamp
   // slot[1] => value
+
   const volumeUsageData = volumeUsageOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000), // convert from the RFC 3339 to time in JS
+      date: fromUnixTimestampToDate(slot[0]),
       y: slot[1] === null ? null : Math.round(slot[1] * 100),
     };
   });
 
   const volumeLatencyWriteData = volumeLatencyWriteOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
-      write: slot[1] === null ? null : Math.round(slot[1] * 1000000),
+      date: fromUnixTimestampToDate(slot[0]),
+      write: slot[1] === null ? null : Math.round(toMicro(slot[1])),
       type: 'write',
     };
   });
 
   const volumeLatencyReadData = volumeLatencyReadOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
-      read: slot[1] === null ? null : Math.round(slot[1] * 1000000),
+      date: fromUnixTimestampToDate(slot[0]),
+      read: slot[1] === null ? null : Math.round(toMicro(slot[1])),
       type: 'read',
     };
   });
@@ -188,8 +194,8 @@ const MetricGraphCard = (props) => {
   const volumeThroughputWriteData = volumeThroughputWriteOperated?.map(
     (slot) => {
       return {
-        date: new Date(slot[0] * 1000),
-        write: slot[1] === null ? null : slot[1] / 1000000,
+        date: fromUnixTimestampToDate(slot[0]),
+        write: slot[1] === null ? null : toMega(slot[1]),
         type: 'write',
       };
     },
@@ -197,15 +203,15 @@ const MetricGraphCard = (props) => {
 
   const volumeThroughtReadData = volumeThroughputReadOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
-      read: slot[1] === null ? null : slot[1] / 1000000,
+      date: fromUnixTimestampToDate(slot[0]),
+      read: slot[1] === null ? null : toMega(slot[1]),
       type: 'read',
     };
   });
 
   const volumeIOPSReadData = volumeIOPSReadOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
+      date: fromUnixTimestampToDate(slot[0]),
       read: slot[1] === null ? null : slot[1],
       type: 'read',
     };
@@ -213,7 +219,7 @@ const MetricGraphCard = (props) => {
 
   const volumeIOPSWriteData = volumeIOPSWriteOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
+      date: fromUnixTimestampToDate(slot[0]),
       write: slot[1] === null ? null : slot[1],
       type: 'write',
     };
