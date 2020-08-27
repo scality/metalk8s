@@ -50,6 +50,7 @@ stringData:
       trustedPeers:
       - metalk8s-ui
       - grafana-ui
+      - external-oidc-ui
     - id: metalk8s-ui
       name: MetalK8s UI
       redirectURIs:
@@ -60,6 +61,10 @@ stringData:
       redirectURIs:
       - "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth{%- raw %}"
       secret: 4lqK98NcsWG5qBRHJUqYM1
+    - id: external-oidc-ui
+      name: {% endraw -%}{{ dex.spec.externalIDP.staticClient.name }}{%- raw %}
+      redirectURIs: {% endraw -%}{{ dex.spec.externalIDP.staticClient.redirectURIs | tojson }}{%- raw %}
+      secret: ZXhhbXBsZS1hcHAtc2VjcmV0
     enablePasswordDB: {% endraw -%}{{ dex.spec.localuserstore.enabled }}{%- raw %}
     staticPasswords:
       {% endraw -%}{{ dex.spec.localuserstore.userlist | tojson }}{%- raw %}

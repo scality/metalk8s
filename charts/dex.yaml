@@ -79,6 +79,7 @@ config:
     trustedPeers:
     - metalk8s-ui
     - grafana-ui
+    - external-oidc-ui
   - id: metalk8s-ui
     redirectURIs:
     - '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback)'
@@ -89,6 +90,10 @@ config:
     redirectURIs:
     - '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth)'
     secret: "4lqK98NcsWG5qBRHJUqYM1"
+  - id: external-oidc-ui
+    name: '__var__(dex.spec.externalIDP.staticClient.name)'
+    redirectURIs: '__var_tojson_nospace__(dex.spec.externalIDP.staticClient.redirectURIs)'
+    secret: "ZXhhbXBsZS1hcHAtc2VjcmV0" #Secret cannot be put in a CSC ConfigMap
 
   enablePasswordDB: '__var__(dex.spec.localuserstore.enabled)'
 
