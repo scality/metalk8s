@@ -72,3 +72,12 @@ refer to :ref:`this procedure <Change-dex-static-user-password>`
    - Dex connectors
 
    - How to add a new connector (LDAP, AD, SAML)
+
+Adding an External Identity Provider
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MetalK8s is capable of federating (delegating) it's OIDC provider capabilities
+to an external full-fledge Identity and Access Management (IAM) system like
+Keycloak.
+
+To add a new external Identity Provider to MetalK8s, refer to
+:ref:`this procedure <Add-new-external-identity-provider>`

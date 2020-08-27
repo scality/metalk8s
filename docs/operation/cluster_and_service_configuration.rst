@@ -510,6 +510,55 @@ To change the password of an existing user, perform the following operations:
       - Configuring LDAP
       - Configuring Active Directory(AD)
 
+.. _Add-new-external-identity-provider:
+
+Add new external Identity Provider
+""""""""""""""""""""""""""""""""""
+
+#. From the Bootstrap node, edit the ConfigMap ``metalk8s-dex-config`` as
+   follows
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         edit configmaps metalk8s-dex-config -n metalk8s-auth
+
+   - Add the following mandatory fields where:
+
+      - <oidc-client-name> refers to any chosen alphanumeric e.g Keycloak-UI
+      - <redirectURIs> refers to an HTTP endpoint where the authorization code
+        or tokens are sent to. It must match a registered and valid callback
+        URI available on your external Identity Provider.
+
+   .. code-block:: yaml
+
+      [...]
+      data:
+         config.yaml: |-
+            spec:
+              externalIDP:
+                staticClient:
+                  name: "<oidc-client-name>"
+                  redirectURIs:
+                    - "<redirectURIs_1>"
+                    - "<redirectURIs_2>"
+      [...]
+
+#. Save the ConfigMap changes.
+
+#. From the Bootstrap node, run the following to propagate the
+   changes.
+
+   .. parsed-literal::
+
+      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                         --kubeconfig /etc/kubernetes/admin.conf \\
+                         salt-master-bootstrap -- salt-run \\
+                         state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+
+#. Verify that your configured external Identity Provider correctly redirects
+   when a login request is initiated.
+
 Loki Configuration Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
