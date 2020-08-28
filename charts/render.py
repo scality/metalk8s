@@ -152,6 +152,12 @@ def replace_magic_strings(rendered_yaml):
         result,
     )
 
+    result = re.sub(
+        r'__var_tojson_nospace__\((?P<varname>[\w\-_]+(?:\.[\w\-_()|]+)*)\)',
+        r'{% endraw -%}{{ \g<varname> | tojson }}{%- raw %}',
+        result,
+    )
+
     # Handle __escape__
     result = re.sub(
         r'__escape__\((?P<varname>.*)\)',
