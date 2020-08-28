@@ -278,6 +278,7 @@ const VolumeDetailCard = (props) => {
               setisDeleteConfirmationModalOpen(true);
             }}
             disabled={!isEnableClick}
+            data-cy="delete_volume_button"
           ></DeleteButton>
         </DeleteButtonContainer>
         {condition === VOLUME_CONDITION_LINK && (
@@ -317,6 +318,7 @@ const VolumeDetailCard = (props) => {
               onClick={() => {
                 onClickDeleteButton(name, nodeName);
               }}
+              data-cy="confirm_deletion_button"
             ></Button>
           </NotificationButtonGroup>
         }

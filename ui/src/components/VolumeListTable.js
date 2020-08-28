@@ -270,7 +270,13 @@ function Table({ columns, data, nodeName, rowClicked, volumeName, theme }) {
                       ...cell.column.cellStyle,
                     },
                   });
-                  if (
+                  if (cell.column.Header === 'Name') {
+                    return (
+                      <Cell {...cellProps} data-cy="volume_table_name_cell">
+                        {cell.render('Cell')}
+                      </Cell>
+                    );
+                  } else if (
                     cell.column.Header !== 'Name' &&
                     cell.value === undefined
                   ) {
