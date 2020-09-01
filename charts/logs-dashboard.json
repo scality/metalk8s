@@ -991,7 +991,7 @@
         "useTags": false
       },
       {
-        "allValue": ".*",
+        "allValue": ".+",
         "datasource": "$metrics",
         "definition": "label_values(kube_pod_info{cluster=\"$cluster\"}, node)",
         "hide": 0,
@@ -1117,7 +1117,7 @@
         "useTags": false
       },
       {
-        "allValue": ".*",
+        "allValue": ".+",
         "datasource": "$logs",
         "definition": "label_values({cluster=\"$cluster\"}, hostname)",
         "hide": 0,
