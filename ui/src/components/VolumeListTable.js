@@ -269,12 +269,9 @@ function Table({ columns, data, nodeName, rowClicked, volumeName, theme }) {
                       ...cell.column.cellStyle,
                     },
                   });
-                  /**
-                   * We may want to add some logic for that
-                   */
                   if (
                     cell.column.Header !== 'Name' &&
-                    cell.value === intl.translate('unknown')
+                    cell.value === undefined
                   ) {
                     return (
                       <Cell {...cellProps}>

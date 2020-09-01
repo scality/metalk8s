@@ -440,8 +440,8 @@ export function* fetchCurrentVolumeStats() {
   let volumeLatencyCurrent = {};
 
   const volumeLatencyCurrentQuery = `irate(node_disk_io_time_seconds_total{job="node-exporter"}[1h])`;
-  const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
   // Grafana - Used Space: kubelet_volume_stats_capacity_bytes - kubelet_volume_stats_available_bytes
+  const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
   const volumeCapacityQuery = 'kubelet_volume_stats_capacity_bytes';
   const volumeUsedCurrentQueryResult = yield call(
     queryPrometheus,
@@ -459,12 +459,12 @@ export function* fetchCurrentVolumeStats() {
     volumeCapacityCurrent = volumeCapacityCurrentQueryResult.data.result;
   }
 
-  const volumeLantencyCurrentResult = yield call(
+  const volumeLatencyCurrentResult = yield call(
     queryPrometheus,
     volumeLatencyCurrentQuery,
   );
-  if (!volumeLantencyCurrentResult.error) {
-    volumeLatencyCurrent = volumeLantencyCurrentResult.data.result;
+  if (!volumeLatencyCurrentResult.error) {
+    volumeLatencyCurrent = volumeLatencyCurrentResult.data.result;
   }
 
   const metrics = {

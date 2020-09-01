@@ -250,7 +250,7 @@ export const getVolumeListData = createSelector(
       const volumeCurrentLatency = volumeLatencyCurrent?.find(
         (vLV) =>
           vLV.metric.device === volume?.status?.deviceName &&
-          vLV.metric.instance === instanceIP + PORT_NUMBER_PROMETHEUS,
+          vLV.metric.instance === `${instanceIP}:${PORT_NUMBER_PROMETHEUS}`,
       );
 
       return {
@@ -262,14 +262,13 @@ export const getVolumeListData = createSelector(
                 (volumeUsedCurrent?.value[1] / volumeCapacityCurrent.value[1]) *
                 100
               ).toFixed(2)
-            : intl.translate('unknown'),
+            : undefined,
         status: volumeComputedCondition,
         bound:
           volumePV?.status?.phase === STATUS_BOUND
             ? intl.translate('yes')
             : intl.translate('no'),
-        storageCapacity:
-          volumePV?.spec?.capacity?.storage || intl.translate('unknown'),
+        storageCapacity: volumePV?.spec?.capacity?.storage,
         storageClass: volume?.spec?.storageClassName,
         usageRawData: volumeUsedCurrent?.value[1]
           ? bytesToSize(volumeUsedCurrent?.value[1])
@@ -278,14 +277,8 @@ export const getVolumeListData = createSelector(
         latency:
           // for latency we need to query the volumeLatecyCurrent based on both `instance` and `deviceName`
           volumeCurrentLatency
-            ? Math.round(
-                volumeLatencyCurrent?.find(
-                  (vLV) =>
-                    vLV.metric.device === volume?.status?.deviceName &&
-                    vLV.metric.instance === instanceIP + PORT_NUMBER_PROMETHEUS,
-                )?.value[1] * 1000000,
-              ) + ' µs'
-            : intl.translate('unknown'),
+            ? Math.round(volumeCurrentLatency?.value[1] * 1000000) + ' µs'
+            : undefined,
         errorReason: volume?.status?.conditions[0]?.reason,
       };
     });
