@@ -108,9 +108,9 @@ const VolumePageContent = (props) => {
     // find the node name of this volume
     const nodeName = volume?.spec?.nodeName;
     const currentNode = nodes.find((node) => node.name === nodeName);
-    instance = currentNode?.internalIP + PORT_NUMBER_PROMETHEUS;
+    instance = `${currentNode?.internalIP}:${PORT_NUMBER_PROMETHEUS}`;
   } else {
-    instance = node?.internalIP + PORT_NUMBER_PROMETHEUS;
+    instance = `${node?.internalIP}:${PORT_NUMBER_PROMETHEUS}`;
   }
 
   const queryStartingTime = volumeStats?.queryStartingTime;
