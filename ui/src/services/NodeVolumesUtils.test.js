@@ -11,7 +11,7 @@ import {
   volumeGetError,
   getVolumeListData,
 } from './NodeVolumesUtils';
-import { state_volume_filtered_by_node_master0 } from './NodeVolumesUtilsData';
+import { stateApp } from './NodeVolumesUtilsData';
 
 // isVolumeDeletable {{{
 // Test data {{{
@@ -423,38 +423,17 @@ it('should return error when called with failed Ready condition', () => {
 
 // }}}
 
-// getVolumeListData
-const props_volume_filtered_by_node_master0 = {
-  history: {
-    length: 12,
-    action: 'POP',
-    location: {
-      pathname: '/volumes',
-      search: '?node=master-0',
-      hash: '',
-      key: 'u757uz',
-    },
-  },
+// test for getVolumeListData function
+const propsWithNodeFilter = {
   location: {
     pathname: '/volumes',
     search: '?node=master-0',
-    hash: '',
-    key: 'u757uz',
-  },
-  match: {
-    path: '/volumes',
-    url: '/volumes',
-    isExact: false,
-    params: {},
   },
 };
 
-it('should return the volume list', () => {
-  const result = getVolumeListData(
-    state_volume_filtered_by_node_master0,
-    props_volume_filtered_by_node_master0,
-  );
-  const volumelist_filtered_by_node_master0 = [
+it('should return the volume list filtered by a specific node', () => {
+  const result = getVolumeListData(stateApp, propsWithNodeFilter);
+  const volumelistFilteredByNode = [
     {
       name: 'master-0-alertmanager',
       node: 'master-0',
@@ -465,7 +444,7 @@ it('should return the volume list', () => {
       storageClass: 'metalk8s',
       usageRawData: '20MiB',
       health: 'health',
-      latency: 'Unknown',
+      latency: undefined,
     },
     {
       name: 'prom-m0-reldev',
@@ -480,75 +459,33 @@ it('should return the volume list', () => {
       latency: '4542 µs',
     },
   ];
-  expect(result).toEqual(volumelist_filtered_by_node_master0);
+  expect(result).toEqual(volumelistFilteredByNode);
 });
 
-const props_wrong_node_filter = {
-  history: {
-    length: 12,
-    action: 'POP',
-    location: {
-      pathname: '/volumes/prom-m0-reldev',
-      search: '?node=master-0',
-      hash: '',
-      key: 'u757uz',
-    },
-  },
+const propsWrongNodeFilter = {
   location: {
     pathname: '/volumes',
     search: '?node=fake-node-name',
-    hash: '',
-    key: 'u757uz',
-  },
-  match: {
-    path: '/volumes',
-    url: '/volumes',
-    isExact: false,
-    params: {},
   },
 };
 
-it('should return an empty array when the node filter in URL is wrong', () => {
-  const result = getVolumeListData(
-    state_volume_filtered_by_node_master0,
-    props_wrong_node_filter,
-  );
+it('should return an empty array when the node filter in URL does not exist', () => {
+  const result = getVolumeListData(stateApp, propsWrongNodeFilter);
   expect(result).toEqual([]);
 });
 
-const props_no_volume_node = {
-  history: {
-    length: 12,
-    action: 'POP',
-    location: {
-      pathname: '/volumes',
-      search: '?node=bootstrap',
-      hash: '',
-      key: 'u757uz',
-    },
-  },
+const propsWithNonVolumeNodeFilter = {
   location: {
     pathname: '/volumes',
     search: '?node=bootstrap',
-    hash: '',
-    key: 'u757uz',
-  },
-  match: {
-    path: '/volumes',
-    url: '/volumes',
-    isExact: false,
-    params: {},
   },
 };
 it('should return an empty array when there is no volume in this node', () => {
-  const result = getVolumeListData(
-    state_volume_filtered_by_node_master0,
-    props_no_volume_node,
-  );
+  const result = getVolumeListData(stateApp, propsWithNonVolumeNodeFilter);
   expect(result).toEqual([]);
 });
 
-const state_empty_volume_list = {
+const stateEmptyVolume = {
   app: {
     nodes: {
       list: [],
@@ -557,10 +494,15 @@ const state_empty_volume_list = {
     volumes: { list: [], storageClass: [], pVList: [] },
   },
 };
+const props = {
+  location: {
+    pathname: '/volumes',
+    search: '',
+  },
+};
+
+// Todo: in this case, it should be redirect to the Empty State Page.
 it('should return an empty array when there is no volume at all in this platform', () => {
-  const result = getVolumeListData(
-    state_empty_volume_list,
-    props_volume_filtered_by_node_master0,
-  );
+  const result = getVolumeListData(stateEmptyVolume, props);
   expect(result).toEqual([]);
 });
