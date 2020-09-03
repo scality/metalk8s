@@ -323,13 +323,6 @@ export const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 };
 
-// Convert the number to Mega(M)
-export const toMega = (num) => {
-  if (!isNaN(num) && num) {
-    return num * 0.000001;
-  }
-};
-
 // Convert the Unix Time Stamp to JS Date Object
 export const fromUnixTimestampToDate = (date) => {
   if (date) {

@@ -341,8 +341,8 @@ export function* fetchVolumeStats() {
   // the queries for `Throughput` and `IOPS`
   // rate calculates the per-second average rate of increase of the time series in the range vector.
   // group the result of the query by instance and device (remove the filter {job="node-exporter"})
-  const volumeThroughputReadQuery = `sum(irate(node_disk_read_bytes_total[1m])) by (instance, device)`;
-  const volumeThroughputWriteQuery = `sum(irate(node_disk_written_bytes_total[1m])) by (instance, device)`;
+  const volumeThroughputReadQuery = `sum(irate(node_disk_read_bytes_total[1m])) by (instance, device) * 0.000001`;
+  const volumeThroughputWriteQuery = `sum(irate(node_disk_written_bytes_total[1m])) by (instance, device) * 0.000001`;
   const volumeIOPSReadQuery = `sum(irate(node_disk_reads_completed_total[5m])) by (instance, device)`;
   const volumeIOPSWriteQuery = `sum(irate(node_disk_writes_completed_total[5m])) by (instance, device)`;
 

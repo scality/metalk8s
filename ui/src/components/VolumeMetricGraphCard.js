@@ -13,7 +13,6 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import {
   addMissingDataPoint,
-  toMega,
   fromUnixTimestampToDate,
 } from '../services/utils';
 import {
@@ -194,7 +193,7 @@ const MetricGraphCard = (props) => {
     (slot) => {
       return {
         date: fromUnixTimestampToDate(slot[0]),
-        write: slot[1] === null ? null : toMega(slot[1]),
+        write: slot[1],
         type: 'write',
       };
     },
@@ -203,7 +202,7 @@ const MetricGraphCard = (props) => {
   const volumeThroughtReadData = volumeThroughputReadOperated?.map((slot) => {
     return {
       date: fromUnixTimestampToDate(slot[0]),
-      read: slot[1] === null ? null : toMega(slot[1]),
+      read: slot[1],
       type: 'read',
     };
   });
