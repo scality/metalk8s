@@ -13,7 +13,6 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import {
   addMissingDataPoint,
-  toMicro,
   toMega,
   fromUnixTimestampToDate,
 } from '../services/utils';
@@ -178,7 +177,7 @@ const MetricGraphCard = (props) => {
   const volumeLatencyWriteData = volumeLatencyWriteOperated?.map((slot) => {
     return {
       date: fromUnixTimestampToDate(slot[0]),
-      write: slot[1] === null ? null : Math.round(toMicro(slot[1])),
+      write: slot[1],
       type: 'write',
     };
   });
@@ -186,7 +185,7 @@ const MetricGraphCard = (props) => {
   const volumeLatencyReadData = volumeLatencyReadOperated?.map((slot) => {
     return {
       date: fromUnixTimestampToDate(slot[0]),
-      read: slot[1] === null ? null : Math.round(toMicro(slot[1])),
+      read: slot[1],
       type: 'read',
     };
   });

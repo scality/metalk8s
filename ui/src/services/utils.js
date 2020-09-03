@@ -323,13 +323,6 @@ export const useQuery = () => {
   return new URLSearchParams(useLocation().search);
 };
 
-// Convert the number to Micro(µ)
-export const toMicro = (num) => {
-  if (!isNaN(num) && num) {
-    return num * 1000000;
-  }
-};
-
 // Convert the number to Mega(M)
 export const toMega = (num) => {
   if (!isNaN(num) && num) {

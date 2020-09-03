@@ -264,7 +264,7 @@ export const getVolumeListData = createSelector(
         latency:
           // for latency we need to query the volumeLatecyCurrent based on both `instance` and `deviceName`
           volumeCurrentLatency
-            ? Math.round(volumeCurrentLatency?.value[1] * 1000000) + ' µs'
+            ? Math.round(volumeCurrentLatency?.value[1]) + ' µs'
             : undefined,
         errorReason: volume?.status?.conditions[0]?.reason,
       };

@@ -348,8 +348,8 @@ export function* fetchVolumeStats() {
 
   // the query for `latency`
   // Disk latency is the time that it takes to complete a single I/O operation on a block device
-  const volumeLatencyWriteQuery = `sum(irate(node_disk_write_time_seconds_total[5m]) / irate(node_disk_writes_completed_total[5m])) by (instance, device)`;
-  const volumeLatencyReadQuery = `sum(irate(node_disk_read_time_seconds_total[5m]) / irate(node_disk_reads_completed_total[5m])) by (instance, device)`;
+  const volumeLatencyWriteQuery = `sum(irate(node_disk_write_time_seconds_total[5m]) / irate(node_disk_writes_completed_total[5m])) by (instance, device) * 1000000`;
+  const volumeLatencyReadQuery = `sum(irate(node_disk_read_time_seconds_total[5m]) / irate(node_disk_reads_completed_total[5m])) by (instance, device) * 1000000`;
 
   const volumeUsageQueryResult = yield call(
     queryPrometheusRange,
@@ -454,7 +454,7 @@ export function* fetchCurrentVolumeStats() {
   let volumeCapacityCurrent = {};
   let volumeLatencyCurrent = {};
 
-  const volumeLatencyCurrentQuery = `irate(node_disk_io_time_seconds_total{job="node-exporter"}[1h])`;
+  const volumeLatencyCurrentQuery = `irate(node_disk_io_time_seconds_total[1h]) * 1000000`;
   // Grafana - Used Space: kubelet_volume_stats_capacity_bytes - kubelet_volume_stats_available_bytes
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
   const volumeCapacityQuery = 'kubelet_volume_stats_capacity_bytes';
