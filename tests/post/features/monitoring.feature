@@ -46,6 +46,6 @@ Feature: Monitoring is up and running
 
     Scenario: Volume metrics can be found based on device name
         Given the Kubernetes API is available
-        And I have created a test Volume
         And the Prometheus API is available
+        And a test Volume 'test-monitoring1' exists
         Then I can get I/O stats for this test Volume's device

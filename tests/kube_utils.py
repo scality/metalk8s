@@ -286,6 +286,32 @@ class VolumeClient(Client):
             name=name, body=body, grace_period_seconds=0
         )
 
+    def wait_for_status(self, name, status, wait_for_device_name=False):
+        def _wait_for_status():
+            volume = self.get(name)
+            assert volume is not None, 'Volume not found'
+
+            try:
+                actual_status = volume['status']
+            except KeyError:
+                assert status == 'Unknown', \
+                    'Unexpected status: expected {}, got none'.format(status)
+
+            phase = self.compute_phase(actual_status)
+            assert phase == status, \
+                'Unexpected status: expected {}, got {}'.format(status, phase)
+
+            if wait_for_device_name:
+                assert 'deviceName' in actual_status, \
+                    'Volume status.deviceName has not been reconciled'
+
+            return volume
+
+        return utils.retry(
+            _wait_for_status, times=24, wait=5,  # wait for 2mn
+            name='waiting for Volume {} to become {}'.format(name, status)
+        )
+
     @staticmethod
     def compute_phase(volume_status):
         for condition in volume_status.get('conditions', []):

@@ -4,7 +4,6 @@ import random
 import string
 
 import kubernetes.client
-from kubernetes.client import CustomObjectsApi
 from kubernetes.client.rest import ApiException
 
 import pytest
@@ -94,35 +93,6 @@ def apiservice_exists(host, name, k8s_apiclient, request):
 
     utils.retry(_check_object_exists, times=20, wait=3)
 
-
-# FIXME: make these fixtures / helpers generic and easier to share
-@given("I have created a test Volume")
-def test_volume(k8s_apiclient, ssh_config):
-    client = kube_utils.VolumeClient(
-        CustomObjectsApi(api_client=k8s_apiclient), ssh_config
-    )
-    random_salt = ''.join(
-        random.choice(string.ascii_lowercase) for _ in range(8)
-    )
-    volume_name = "test-volume-{}".format(random_salt)
-    client.create_from_yaml(kube_utils.DEFAULT_VOLUME.format(name=volume_name))
-
-    def _check_volume_ready():
-        volume = client.get(volume_name)
-        assert volume is not None, 'Volume not found'
-        assert 'status' in volume, 'Volume has no status'
-        phase = kube_utils.VolumeClient.compute_phase(volume['status'])
-        assert phase == 'Available', 'Volume not ready'
-        assert volume['status'].get('deviceName') is not None, \
-            'Volume status.deviceName has not been reconciled'
-        return volume
-
-    yield utils.retry(
-        _check_volume_ready, times=30, wait=2,
-        name='waiting for Volume {} to be ready'.format(volume_name)
-    )
-
-    client.delete(volume_name, sync=True)
 
 # }}}
 # Then {{{

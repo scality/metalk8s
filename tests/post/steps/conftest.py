@@ -96,4 +96,23 @@ def check_all_pods_status(request, host, k8s_client, expected_status):
     _check_pods_status(
         k8s_client, expected_status, ssh_config
     )
+
+@given(parsers.parse("a test Volume '{name}' exists"))
+def test_volume(volume_client, name):
+    """Get or create a Volume by name and return it as a fixture.
+
+    Volume will be deleted after execution of the test.
+    """
+    if volume_client.get(name) is None:
+        volume_client.create_from_yaml(
+            kube_utils.DEFAULT_VOLUME.format(name=name)
+        )
+
+    try:
+        yield volume_client.wait_for_status(
+            name, 'Available', wait_for_device_name=True
+        )
+    finally:
+        volume_client.delete(name, sync=True)
+
 # }}}

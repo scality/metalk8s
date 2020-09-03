@@ -94,7 +94,8 @@ def volume_exist(context, name, volume_client):
         volume_client.create_from_yaml(
             kube_utils.DEFAULT_VOLUME.format(name=name)
         )
-        check_volume_status(context, name, 'Available', volume_client)
+        volume = volume_client.wait_for_status(name, 'Available')
+        context[name] = volume
 
 
 @given(parsers.parse("a PersistentVolumeClaim exists for '{volume_name}'"))
@@ -178,22 +179,8 @@ def check_storage_class(name, sc_client):
 
 @then(parsers.parse("the Volume '{name}' is '{status}'"))
 def check_volume_status(context, name, status, volume_client):
-    def _check_volume_status():
-        volume = volume_client.get(name)
-        assert volume is not None, 'Volume {} not found'.format(name)
-        context[name] = volume
-        try:
-            phase = kube_utils.VolumeClient.compute_phase(volume['status'])
-            assert phase == status,\
-                'Unexpected status: expected {}, got {}'.format(status, phase)
-        except KeyError:
-            assert status == 'Unknown', \
-                'Unexpected status: expected {}, got none'.format(status)
-
-    utils.retry(
-        _check_volume_status, times=30, wait=2,
-        name='checking status of Volume {}'.format(name)
-    )
+    volume = volume_client.wait_for_status(name, status)
+    context[name] = volume
 
 
 @then(parsers.parse("the PersistentVolume '{name}' has size '{size}'"))
@@ -271,25 +258,14 @@ def check_pv_deletion_marker(name, pv_client):
 @then(parsers.parse("the Volume '{name}' is 'Failed' "
                     "with code '{code}' and message matches '{pattern}'"))
 def check_volume_error(context, name, code, pattern, volume_client):
-    def _check_error():
-        volume = volume_client.get(name)
-        assert volume is not None, 'Volume {} not found'.format(name)
-        context[name] = volume
-        status = volume.get('status')
-        assert status is not None, 'no status for volume {}'.format(name)
-        phase = kube_utils.VolumeClient.compute_phase(status)
-        errcode, errmsg = kube_utils.VolumeClient.get_error(status)
-        assert phase == 'Failed',\
-            'Unexpected status: expected Failed, got {}'.format(status, phase)
-        assert errcode == code,\
-            'Unexpected error code: expected {}, got {}'.format(code, errcode)
-        assert re.search(pattern, errmsg) is not None,\
-            "error message `{}` doesn't match `{}`".format(errmsg, pattern)
-
-    utils.retry(
-        _check_error, times=30, wait=2,
-        name='checking error for Volume {}'.format(name)
-    )
+    volume = volume_client.wait_for_status(name, 'Failed')
+    status = volume['status']
+    errcode, errmsg = kube_utils.VolumeClient.get_error(status)
+    assert errcode == code, \
+        'Unexpected error code: expected {}, got {}'.format(code, errcode)
+    assert re.search(pattern, errmsg) is not None, \
+        "Error message `{}` doesn't match `{}`".format(errmsg, pattern)
+    context[name] = volume
 
 
 @then(parsers.parse("the Volume '{name}' is marked for deletion"))
