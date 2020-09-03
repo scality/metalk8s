@@ -449,14 +449,14 @@ it('should return the volume list filtered by a specific node', () => {
     {
       name: 'prom-m0-reldev',
       node: 'master-0',
-      usage: '30.13',
+      usage: '22.87',
       status: 'link',
       bound: 'Yes',
       storageCapacity: '20Gi',
       storageClass: 'metalk8s',
-      usageRawData: '6GiB',
+      usageRawData: '4GiB',
       health: 'health',
-      latency: '4542 µs',
+      latency: '900 µs',
     },
   ];
   expect(result).toEqual(volumelistFilteredByNode);
