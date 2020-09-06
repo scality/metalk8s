@@ -74,7 +74,7 @@
     "compression-webpack-plugin": "^3.0.0",
     "customize-cra": "^0.4.1",
     "cypress": "^3.2.0",
-    "cypress-cucumber-preprocessor": "1.12.0",
+    "cypress-cucumber-preprocessor": "^2.5.5",
     "cypress-wait-until": "1.6.0",
     "flow-bin": "^0.107.0",
     "jest-junit": "^7.0.0",
