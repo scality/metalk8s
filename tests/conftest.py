@@ -274,11 +274,8 @@ def request_retry_session(request):
 
 
 @pytest.fixture
-def prometheus_api(host):
-    return utils.PrometheusApi(
-        utils.get_grain(host, 'metalk8s:control_plane_ip'),
-        CONTROL_PLANE_INGRESS_PORT
-    )
+def prometheus_api(control_plane_ip):
+    return utils.PrometheusApi(control_plane_ip, CONTROL_PLANE_INGRESS_PORT)
 
 
 def count_running_pods(
