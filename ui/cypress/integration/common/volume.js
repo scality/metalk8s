@@ -1,16 +1,5 @@
 import { And, Then, When } from 'cypress-cucumber-preprocessor/steps';
 
-And(
-  'I go to the bootstrap node by click on the bootstrap row in the list',
-  () => {
-    cy.get('.sc-table-row').eq(1).click();
-  },
-);
-
-And('I choose the Volumes tag', () => {
-  cy.get('.sc-tabs-bar .sc-tabs-item-title').eq(1).click();
-});
-
 And('I am on the volume creation page', () => {
   cy.get('.sc-sidebar-item').eq(2).click();
   cy.get('[data-cy="create-volume-button"]').click();
