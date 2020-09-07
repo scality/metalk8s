@@ -155,11 +155,13 @@ def run_salt_command(host, command, ssh_config):
     )
 
     assert output.exit_status == 0, \
-        'command {} failed with: \nout: {}\nerr:'.format(
+        'command {} failed with: \nout: {}\nerr: {}'.format(
             command,
             output.stdout,
             output.stderr
         )
+
+    return output
 
 
 def get_dict_element(data, path, delimiter='.'):
