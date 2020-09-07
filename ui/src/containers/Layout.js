@@ -78,20 +78,6 @@ const Layout = (props) => {
           strict: true,
         }),
       },
-      // deactive the access to the global volumes page now, we can only access the volume page through the node page
-      // {
-      //   label: intl.translate('volumes'),
-      //   icon: <i className="fas fa-database" />,
-      //   onClick: () => {
-      //     history.push('/volumes');
-      //   },
-      //   active: useRouteMatch({
-      //     path: '/volumes',
-      //     exact: false,
-      //     strict: true,
-      //   }),
-      // },
-      // need to remove the solutions since it's not working in 2.5 or should be backported
       {
         label: intl.translate('volumes'),
         icon: <i className="fas fa-database" />,
