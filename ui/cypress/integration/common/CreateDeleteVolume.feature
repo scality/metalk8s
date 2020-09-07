@@ -14,3 +14,6 @@ Feature: Create and delete volume scenario
     And the label of volume "test-volume-sparse" presents:
         | labelName  | kubernetest.io/name |
         | labelValue | test                |
+    When I click [Delete] button
+    And I confirm the deletion
+    Then the "test-volume-sparse" volume is removed from the list
