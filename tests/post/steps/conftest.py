@@ -1,9 +1,40 @@
 # coding: utf-8
+
+from kubernetes.client import CustomObjectsApi
+from kubernetes.client import StorageV1Api
+import pytest
 from pytest_bdd import given, parsers, then
 
 from tests import kube_utils, utils
 
 
+# Fixtures {{{
+
+@pytest.fixture
+def volume_client(k8s_apiclient, ssh_config):
+    return kube_utils.VolumeClient(
+        CustomObjectsApi(api_client=k8s_apiclient), ssh_config
+    )
+
+@pytest.fixture
+def pv_client(k8s_client):
+    return kube_utils.PersistentVolumeClient(k8s_client)
+
+@pytest.fixture
+def pvc_client(k8s_client):
+    return kube_utils.PersistentVolumeClaimClient(k8s_client)
+
+@pytest.fixture
+def pod_client(k8s_client, utils_image):
+    return kube_utils.PodClient(k8s_client, utils_image)
+
+@pytest.fixture
+def sc_client(k8s_apiclient):
+    return kube_utils.StorageClassClient(
+        StorageV1Api(api_client=k8s_apiclient)
+    )
+
+# }}}
 # Helpers {{{
 
 def _check_pods_status(k8s_client, expected_status, ssh_config,
@@ -71,6 +102,25 @@ def check_all_pods_status(request, host, k8s_client, expected_status):
     _check_pods_status(
         k8s_client, expected_status, ssh_config
     )
+
+@given(parsers.parse("a test Volume '{name}' exists"))
+def test_volume(volume_client, name):
+    """Get or create a Volume by name and return it as a fixture.
+
+    Volume will be deleted after execution of the test.
+    """
+    if volume_client.get(name) is None:
+        volume_client.create_from_yaml(
+            kube_utils.DEFAULT_VOLUME.format(name=name)
+        )
+
+    try:
+        yield volume_client.wait_for_status(
+            name, 'Available', wait_for_device_name=True
+        )
+    finally:
+        volume_client.delete(name, sync=True)
+
 # }}}
 
 # Then {{{

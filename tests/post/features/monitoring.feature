@@ -43,3 +43,9 @@ Feature: Monitoring is up and running
         Given the Kubernetes API is available
         And we have 1 running pod labeled 'prometheus=prometheus-operator-prometheus' in namespace 'metalk8s-monitoring'
         Then the deployed Prometheus alert rules are the same as the default alert rules
+
+    Scenario: Volume metrics can be found based on device name
+        Given the Kubernetes API is available
+        And the Prometheus API is available
+        And a test Volume 'test-monitoring1' exists
+        Then I can get I/O stats for this test Volume's device

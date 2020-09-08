@@ -1,19 +1,25 @@
 import json
 import pathlib
+import random
+import string
 
 import kubernetes.client
 from kubernetes.client.rest import ApiException
 
 import pytest
 from pytest_bdd import scenario, given, then, parsers
+import testinfra
 
 from tests import utils
+from tests import kube_utils
 
 # Constants {{{
 
 ALERT_RULE_FILE_NAME = 'alerting_rules.json'
 ALERT_RULE_FILE_PATH = (pathlib.Path(__file__)/'..'/'..'/'..'/'..'
             /'tools'/'rule_extractor'/ALERT_RULE_FILE_NAME).resolve()
+
+NODE_EXPORTER_PORT = 9100
 
 # }}}
 # Scenarios {{{
@@ -52,6 +58,13 @@ def test_node_metrics(host):
     '../features/monitoring.feature',
     'Ensure deployed Prometheus rules match the default')
 def test_deployed_prometheus_rules(host):
+    pass
+
+
+@scenario(
+    '../features/monitoring.feature',
+    'Volume metrics can be found based on device name')
+def test_volume_metrics(host):
     pass
 
 
@@ -190,6 +203,36 @@ def node_has_metrics(label, k8s_apiclient):
 
     # Metrics are only available after a while (by design)
     utils.retry(_node_has_metrics, times=60, wait=3)
+
+
+@then("I can get I/O stats for this test Volume's device")
+def volume_has_io_stats(host, ssh_config, prometheus_api, test_volume):
+    # Retrieve control-plane IP of another Node through Salt master, not
+    # through testinfra, because the actual Node name may not match our
+    # SSH config file
+    node_name = test_volume['spec']['nodeName']
+    command = [
+        'salt',
+        '--out json',
+        node_name,
+        'grains.get',
+        'metalk8s:control_plane_ip'
+    ]
+    result = utils.run_salt_command(host, command, ssh_config)
+    control_plane_ip = json.loads(result.stdout)[node_name]
+
+    def _volume_has_io_stats():
+        for verb in ["read", "write"]:
+            result = prometheus_api.query(
+                "node_disk_{}s_completed_total".format(verb),
+                instance="{}:{}".format(control_plane_ip, NODE_EXPORTER_PORT),
+                device=test_volume['status']['deviceName'],
+            )
+            assert result['status'] == 'success'
+            assert len(result['data']['result']) > 0
+
+    # May need to wait for metrics to be scraped for our new volume
+    utils.retry(_volume_has_io_stats, times=60, wait=3)
 
 
 @then(
