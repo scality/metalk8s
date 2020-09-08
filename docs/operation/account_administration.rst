@@ -65,6 +65,8 @@ authenticating their users. As such, changing the credentials of a
 Kubernetes API user will also change the credentials required to
 connect to either one of these services.
 
+.. _managing_kubernetes_api_username_password:
+
 Managing Kubernetes API username and password
 ---------------------------------------------
 
