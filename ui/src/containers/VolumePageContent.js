@@ -35,8 +35,8 @@ const VolumePageContent = (props) => {
   } = props;
 
   const history = useHistory();
-  const currentVolumeName = history?.location?.pathname?.split('/').pop();
-
+  const currentVolumeName =
+    history?.location?.pathname?.split('/').slice(2)[0] || '';
   const volume = volumes?.find(
     (volume) => volume.metadata.name === currentVolumeName,
   );
