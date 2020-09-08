@@ -20,7 +20,7 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const CreateNodeContainter = styled.div`
   height: 100%;
-  padding-left: ${padding.base};
+  padding: ${padding.small};
   display: inline-block;
 `;
 
@@ -136,6 +136,7 @@ const NodeCreateForm = () => {
         <Breadcrumb
           activeColor={theme.brand.secondary}
           paths={[
+            <BreadcrumbLabel>{intl.translate('platform')}</BreadcrumbLabel>,
             <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
             <BreadcrumbLabel>
               {intl.translate('create_new_node')}
