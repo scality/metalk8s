@@ -163,5 +163,6 @@
   "volume_is_not_bound": "The volume is not bound yet",
   "no_active_alerts": "No active alerts",
   "not_used": "Not used",
-  "no_volume_selected": "No Volume Selected"
+  "no_volume_selected": "No Volume Selected",
+  "no_node_selected": "No Node Selected"
 }
