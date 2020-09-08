@@ -1,7 +1,5 @@
 import React from 'react';
 import { useHistory } from 'react-router';
-import styled from 'styled-components';
-import { padding } from '@scality/core-ui/dist/style/theme';
 import { allSizeUnitsToBytes } from '../services/utils';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeDetailCard from '../components/VolumeDetailCard';
@@ -13,44 +11,14 @@ import {
   PORT_NUMBER_PROMETHEUS,
 } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
+import {
+  LeftSideInstanceList,
+  RightSidePanel,
+  NoInstanceSelectedContainer,
+  NoInstanceSelected,
+  PageContentContainer,
+} from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
-
-const VolumePageContentContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  width: 100%;
-  background-color: ${(props) => props.theme.brand.primary};
-`;
-
-const LeftSideVolumeList = styled.div`
-  flex-direction: column;
-  min-height: 696px;
-  width: 45%;
-`;
-
-const RightSidePanel = styled.div`
-  flex-direction: column;
-  width: 55%;
-  /* Make it scrollable for the small laptop screen */
-  overflow-y: scroll;
-  margin: ${padding.small} ${padding.small} ${padding.small} 0;
-`;
-
-const NoVolumeSelected = styled.div`
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
-  color: ${(props) => props.theme.brand.textPrimary};
-  text-align: center;
-`;
-
-const NoVolumeSelectedContainer = styled.div`
-  margin: ${padding.small} ${padding.small} ${padding.small} 0;
-  width: 55%;
-  min-height: 700px;
-  background-color: ${(props) => props.theme.brand.primaryDark1};
-`;
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
 // The three components in RightSidePanel (<VolumeDetailCard> / <ActiveAlertsCard> / <MetricGraphCard>) are dumb components,
@@ -149,14 +117,14 @@ const VolumePageContent = (props) => {
   };
 
   return (
-    <VolumePageContentContainer>
-      <LeftSideVolumeList>
+    <PageContentContainer>
+      <LeftSideInstanceList>
         <VolumeListTable
           volumeListData={volumeListData}
           nodeName={node?.name}
           volumeName={currentVolumeName}
         ></VolumeListTable>
-      </LeftSideVolumeList>
+      </LeftSideInstanceList>
 
       {currentVolumeName && volume ? (
         <RightSidePanel>
@@ -207,13 +175,13 @@ const VolumePageContent = (props) => {
           ></MetricGraphCard>
         </RightSidePanel>
       ) : (
-        <NoVolumeSelectedContainer>
-          <NoVolumeSelected>
+        <NoInstanceSelectedContainer>
+          <NoInstanceSelected>
             {intl.translate('no_volume_selected')}
-          </NoVolumeSelected>
-        </NoVolumeSelectedContainer>
+          </NoInstanceSelected>
+        </NoInstanceSelectedContainer>
       )}
-    </VolumePageContentContainer>
+    </PageContentContainer>
   );
 };
 
