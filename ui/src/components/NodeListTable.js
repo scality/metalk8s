@@ -103,6 +103,32 @@ const ActionContainer = styled.span`
   display: flex;
 `;
 
+const NodeNameText = styled.div`
+  font-size: ${fontSize.large};
+`;
+
+const IPText = styled.span`
+  font-size: ${fontSize.smaller};
+  padding-right: ${padding.small};
+  color: ${(props) => props.theme.brand.textSecondary};
+`;
+
+// the color of the status depends on the `Status` and `Condition` of the Node
+const StatusText = styled.div`
+  color: ${(props) => {
+    switch (props.textColor) {
+      case 'green':
+        return props.theme.brand.healthy;
+      case 'yellow':
+        return props.theme.brand.warning;
+      case 'red':
+        return props.theme.brand.critical;
+      default:
+        return props.theme.brand.textSecondary;
+    }
+  }};
+`;
+
 function GlobalFilter({
   preGlobalFilteredRows,
   globalFilter,
@@ -247,10 +273,17 @@ function Table({ columns, data, rowClicked, theme }) {
                       ...cell.column.cellStyle,
                     },
                   });
-                  if (
-                    cell.column.Header !== 'Name' &&
-                    cell.value === intl.translate('unknown')
-                  ) {
+                  if (cell.column.Header === 'Name') {
+                    return (
+                      <Cell {...cellProps}>
+                        <NodeNameText>{cell.value.name}</NodeNameText>
+                        <div>
+                          <IPText>CP: {cell.value.control_plane_ip}</IPText>
+                          <IPText>WP: {cell.value.workload_plane_ip}</IPText>
+                        </div>
+                      </Cell>
+                    );
+                  } else if (cell.value === intl.translate('unknown')) {
                     return (
                       <Cell {...cellProps}>
                         <div>{intl.translate('unknown')}</div>
@@ -270,19 +303,34 @@ function Table({ columns, data, rowClicked, theme }) {
 }
 
 const NodeListTable = (props) => {
+  const { nodeListData } = props;
+
   const theme = useSelector((state) => state.config.theme);
 
   const columns = React.useMemo(
     () => [
       {
-        Header: 'Name',
-        accessor: 'name',
-        width: 200,
+        Header: 'Health',
+        accessor: 'health',
+        cellStyle: { textAlign: 'center', width: '50px' },
+        Cell: (cellProps) => {
+          return (
+            <CircleStatus
+              className="fa fa-circle fa-2x"
+              status={cellProps.value}
+            />
+          );
+        },
       },
       {
-        Header: 'Role',
-        accessor: 'role',
-        width: 100,
+        Header: 'Name',
+        accessor: 'name',
+        cellStyle: { width: '180px' },
+      },
+      {
+        Header: 'Roles',
+        accessor: 'roles',
+        cellStyle: { width: '200px' },
       },
       {
         Header: 'Health',
@@ -298,6 +346,39 @@ const NodeListTable = (props) => {
         Header: 'Status',
         accessor: 'status',
         cellStyle: { textAlign: 'center', width: '100px' },
+        Cell: (cellProps) => {
+          const { status, conditions } = cellProps.value;
+          // green for status.conditions['Ready'] == True and all other conditions are false
+          // yellow for status.conditions['Ready'] == True and some other conditions are true
+          // red for status.conditions['Ready'] == False
+          // grey when there is no status.conditions
+          const otherConditions = conditions?.filter(
+            (cond) => cond !== 'ready',
+          );
+          if (status === 'ready' && otherConditions.length === 0) {
+            return (
+              <StatusText textColor="green">
+                {intl.translate('ready')}
+              </StatusText>
+            );
+          } else if (status === 'ready' && otherConditions.length !== 0) {
+            otherConditions.map((cond) => {
+              return <StatusText textColor="yellow">{cond}</StatusText>;
+            });
+          } else if (status !== 'ready') {
+            return (
+              <StatusText textColor="red">
+                {intl.translate('not_ready')}
+              </StatusText>
+            );
+          } else if (!otherConditions) {
+            return (
+              <StatusText textColor="gray">
+                {intl.translate('unknown')}
+              </StatusText>
+            );
+          }
+        },
       },
     ],
     [],
@@ -310,7 +391,7 @@ const NodeListTable = (props) => {
     <NodeListContainer>
       <Table
         columns={columns}
-        data={[]}
+        data={nodeListData}
         rowClicked={onClickRow}
         theme={theme}
         defaultPageSize={10}
