@@ -15,7 +15,7 @@ import {
   addNotificationSuccessAction,
   addNotificationErrorAction,
 } from './notifications';
-
+import { authenticateSaltApi } from '../login';
 import { intl } from '../../translations/IntlGlobalProvider';
 import { addJobAction, JOB_COMPLETED, allJobsSelector } from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
@@ -37,6 +37,10 @@ const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
+
+// Todo: We need to handle the refresh
+const FETCH_NODES_IPS_INTERFACES = 'FETCH_NODES_IPS_INTERFACES';
+const UPDATE_NODES_IPS_INTERFACES = 'UPDATE_NODES_IPS_INTERFACES';
 
 export const ROLE_MASTER = 'node-role.kubernetes.io/master';
 export const ROLE_NODE = 'node-role.kubernetes.io/node';
@@ -145,6 +149,7 @@ const defaultState = {
   list: [],
   isRefreshing: false,
   isLoading: false,
+  nodesIPsInterfaces: {},
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -161,6 +166,8 @@ export default function reducer(state = defaultState, action = {}) {
         ...state,
         errors: { create_node: null },
       };
+    case UPDATE_NODES_IPS_INTERFACES:
+      return { ...state, ...action.payload };
     default:
       return state;
   }
@@ -197,6 +204,14 @@ export const refreshNodesAction = () => {
 
 export const stopRefreshNodesAction = () => {
   return { type: STOP_REFRESH_NODES };
+};
+
+export const fetchNodesIPsInterfaceAction = () => {
+  return { type: FETCH_NODES_IPS_INTERFACES };
+};
+
+export const updateNodesIPsInterfacesAction = (payload) => {
+  return { type: UPDATE_NODES_IPS_INTERFACES, payload };
 };
 
 // Selectors
@@ -439,6 +454,21 @@ export function* stopRefreshNodes() {
   );
 }
 
+export function* fetchNodesIPsInterface() {
+  // Action FETCH_NODES_IPS_INTERFACES is faster than SALT_AUTHENTICATION_SUCCESS, hence we get 401 Unauthorized here
+  // Manually authenticate salt API before get the IPs and Interfaces for Nodes
+  yield call(authenticateSaltApi);
+  const result = yield call(ApiSalt.getNodesIPsInterfaces);
+
+  if (!result.error) {
+    yield put(
+      updateNodesIPsInterfacesAction({
+        nodesIPsInterfaces: result.return[0],
+      }),
+    );
+  }
+}
+
 export function* nodesSaga() {
   yield all([
     takeEvery(FETCH_NODES, fetchNodes),
@@ -448,5 +478,6 @@ export function* nodesSaga() {
     takeEvery(STOP_REFRESH_NODES, stopRefreshNodes),
     takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion),
     takeEvery(JOB_COMPLETED, notifyDeployJobCompleted),
+    takeEvery(FETCH_NODES_IPS_INTERFACES, fetchNodesIPsInterface),
   ]);
 }
