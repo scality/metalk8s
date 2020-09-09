@@ -217,6 +217,9 @@ export const updateNodesIPsInterfacesAction = (payload) => {
 // Selectors
 export const clusterVersionSelector = (state) => state.app.nodes.clusterVersion;
 export const nodesRefreshingSelector = (state) => state.app.nodes.isRefreshing;
+export const nodesIPsInterfacesSelector = (state) =>
+  state.app.nodes.nodesIPsInterfaces;
+export const nodesSelector = (state) => state.app.nodes.list;
 
 // Sagas
 export function* fetchClusterVersion() {
@@ -252,6 +255,17 @@ export function* fetchNodes() {
             node.status.conditions.find(
               (conditon) => conditon.type === 'Ready',
             );
+
+          // Store the name of conditions which the status are True in the array
+          // given the avaiable conditions (Ready, DiskPressure, MemoryPressure, PIDPressure, Network Unavailable, Unschedulable)
+          let conditions = [];
+          const activeCondition = node.status.conditions.find(
+            (cond) => cond.status === 'True',
+          );
+          if (activeCondition && activeCondition.types) {
+            conditions.push(activeCondition.type);
+          }
+
           let status;
           if (statusType && statusType.status === 'True') {
             status = API_STATUS_READY;
@@ -260,7 +274,6 @@ export function* fetchNodes() {
           } else {
             status = API_STATUS_UNKNOWN;
           }
-
           const roleTaintMatched = roleTaintMap.find((item) => {
             const nodeRoles = Object.keys(node.metadata.labels).filter((role) =>
               role.includes(ROLE_PREFIX),
@@ -291,12 +304,12 @@ export function* fetchNodes() {
               rolesLabel.push(intl.translate('infra'));
             }
           }
-
           return {
             name: node.metadata.name,
             metalk8s_version:
               node.metadata.labels['metalk8s.scality.com/version'],
             status: status,
+            conditions: conditions,
             control_plane: roleTaintMatched && roleTaintMatched.control_plane,
             workload_plane: roleTaintMatched && roleTaintMatched.workload_plane,
             bootstrap: roleTaintMatched && roleTaintMatched.bootstrap,
