@@ -74,7 +74,11 @@ const defaultState = {
     isRefreshing: false,
   },
   volumeCurrentStats: {
-    metrics: { volumeUsedCurrent: [], volumeLatencyCurrent: [] },
+    metrics: {
+      volumeUsedCurrent: [],
+      volumeCapacityCurrent: [],
+      volumeLatencyCurrent: [],
+    },
     isRefreshing: false,
   },
 };
@@ -303,10 +307,11 @@ export function* stopRefreshClusterStatus() {
 }
 
 export function* fetchVolumeStats() {
-  let volumeUsed = {};
+  let volumeUsage = {};
   let volumeThroughputWrite = {};
   let volumeThroughputRead = {};
-  let volumeLatency = {};
+  let volumeLatencyWrite = {};
+  let volumeLatencyRead = {};
   let volumeIOPSRead = {};
   let volumeIOPSWrite = {};
 
@@ -330,22 +335,28 @@ export function* fetchVolumeStats() {
   const startingTimestamp =
     Math.round(currentTime.getTime() / 1000) - sampleDuration;
   const startingTimeISO = new Date(startingTimestamp * 1000).toISOString();
+  const volumeUsageQuery =
+    'kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes';
 
-  // the queries for Throughput/Latency/IOPS
+  // the queries for `Throughput` and `IOPS`
   // rate calculates the per-second average rate of increase of the time series in the range vector.
-  const volumeThroughputReadQuery = `rate(node_disk_read_bytes_total{job="node-exporter"}[1m])`;
-  const volumeThroughputWriteQuery = `rate(node_disk_written_bytes_total{job="node-exporter"}[1m])`;
-  const volumeLatencyQuery = `rate(node_disk_io_time_seconds_total{job="node-exporter"}[1m])`;
-  const volumeIOPSReadQuery = `irate(node_disk_reads_completed_total{job="node-exporter"}[5m])`;
-  const volumeIOPSWriteQuery = `irate(node_disk_writes_completed_total{job="node-exporter"}[5m])`;
-  const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
+  // group the result of the query by instance and device (remove the filter {job="node-exporter"})
+  const volumeThroughputReadQuery = `sum(irate(node_disk_read_bytes_total[1m])) by (instance, device) * 0.000001`;
+  const volumeThroughputWriteQuery = `sum(irate(node_disk_written_bytes_total[1m])) by (instance, device) * 0.000001`;
+  const volumeIOPSReadQuery = `sum(irate(node_disk_reads_completed_total[5m])) by (instance, device)`;
+  const volumeIOPSWriteQuery = `sum(irate(node_disk_writes_completed_total[5m])) by (instance, device)`;
 
-  const volumeUsedQueryResult = yield call(
+  // the query for `latency`
+  // Disk latency is the time that it takes to complete a single I/O operation on a block device
+  const volumeLatencyWriteQuery = `sum(irate(node_disk_write_time_seconds_total[5m]) / irate(node_disk_writes_completed_total[5m])) by (instance, device) * 1000000`;
+  const volumeLatencyReadQuery = `sum(irate(node_disk_read_time_seconds_total[5m]) / irate(node_disk_reads_completed_total[5m])) by (instance, device) * 1000000`;
+
+  const volumeUsageQueryResult = yield call(
     queryPrometheusRange,
     startingTimeISO,
     currentTimeISO,
     sampleFrequency,
-    volumeUsedQuery,
+    volumeUsageQuery,
   );
 
   const volumeThroughputReadQueryResult = yield call(
@@ -364,12 +375,20 @@ export function* fetchVolumeStats() {
     volumeThroughputWriteQuery,
   );
 
-  const volumeLatencyQueryResult = yield call(
+  const volumeLatencyQueryWriteResult = yield call(
     queryPrometheusRange,
     startingTimeISO,
     currentTimeISO,
     sampleFrequency,
-    volumeLatencyQuery,
+    volumeLatencyWriteQuery,
+  );
+
+  const volumeLatencyQueryReadResult = yield call(
+    queryPrometheusRange,
+    startingTimeISO,
+    currentTimeISO,
+    sampleFrequency,
+    volumeLatencyReadQuery,
   );
 
   const volumeIOPSReadQueryResult = yield call(
@@ -388,8 +407,8 @@ export function* fetchVolumeStats() {
     volumeIOPSWriteQuery,
   );
 
-  if (!volumeUsedQueryResult.error) {
-    volumeUsed = volumeUsedQueryResult.data.result;
+  if (!volumeUsageQueryResult.error) {
+    volumeUsage = volumeUsageQueryResult.data.result;
   }
 
   if (!volumeThroughputReadQueryResult.error) {
@@ -400,8 +419,12 @@ export function* fetchVolumeStats() {
     volumeThroughputWrite = volumeThroughputWriteQueryResult.data.result;
   }
 
-  if (!volumeLatencyQueryResult.error) {
-    volumeLatency = volumeLatencyQueryResult.data.result;
+  if (!volumeLatencyQueryWriteResult.error) {
+    volumeLatencyWrite = volumeLatencyQueryWriteResult.data.result;
+  }
+
+  if (!volumeLatencyQueryReadResult.error) {
+    volumeLatencyRead = volumeLatencyQueryReadResult.data.result;
   }
 
   if (!volumeIOPSReadQueryResult.error) {
@@ -413,12 +436,13 @@ export function* fetchVolumeStats() {
   }
 
   const metrics = {
-    volumeUsed: volumeUsed,
+    volumeUsage: volumeUsage,
     volumeThroughputWrite: volumeThroughputWrite,
     volumeThroughputRead: volumeThroughputRead,
-    volumeLatency: volumeLatency,
-    volumeIOPSRead: volumeIOPSRead,
+    volumeLatencyWrite: volumeLatencyWrite,
+    volumeLatencyRead: volumeLatencyRead,
     volumeIOPSWrite: volumeIOPSWrite,
+    volumeIOPSRead: volumeIOPSRead,
     queryStartingTime: startingTimestamp,
   };
 
@@ -427,28 +451,41 @@ export function* fetchVolumeStats() {
 
 export function* fetchCurrentVolumeStats() {
   let volumeUsedCurrent = {};
+  let volumeCapacityCurrent = {};
   let volumeLatencyCurrent = {};
 
-  const volumeLatencyCurrentQuery = `rate(node_disk_io_time_seconds_total{job="node-exporter"}[1h])`;
+  const volumeLatencyCurrentQuery = `irate(node_disk_io_time_seconds_total[1h]) * 1000000`;
+  // Grafana - Used Space: kubelet_volume_stats_capacity_bytes - kubelet_volume_stats_available_bytes
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
+  const volumeCapacityQuery = 'kubelet_volume_stats_capacity_bytes';
 
   const volumeUsedCurrentQueryResult = yield call(
     queryPrometheus,
     volumeUsedQuery,
   );
-
   if (!volumeUsedCurrentQueryResult.error) {
     volumeUsedCurrent = volumeUsedCurrentQueryResult.data.result;
   }
-  const volumeLantencyCurrentResult = yield call(
+
+  const volumeCapacityCurrentQueryResult = yield call(
+    queryPrometheus,
+    volumeCapacityQuery,
+  );
+  if (!volumeCapacityCurrentQueryResult.error) {
+    volumeCapacityCurrent = volumeCapacityCurrentQueryResult.data.result;
+  }
+
+  const volumeLatencyCurrentResult = yield call(
     queryPrometheus,
     volumeLatencyCurrentQuery,
   );
-  if (!volumeLantencyCurrentResult.error) {
-    volumeLatencyCurrent = volumeLantencyCurrentResult.data.result;
+  if (!volumeLatencyCurrentResult.error) {
+    volumeLatencyCurrent = volumeLatencyCurrentResult.data.result;
   }
+
   const metrics = {
     volumeUsedCurrent: volumeUsedCurrent,
+    volumeCapacityCurrent: volumeCapacityCurrent,
     volumeLatencyCurrent: volumeLatencyCurrent,
   };
   yield put(updateCurrentVolumeStatsAction({ metrics: metrics }));

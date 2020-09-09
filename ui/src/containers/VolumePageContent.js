@@ -2,7 +2,6 @@ import React from 'react';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import { allSizeUnitsToBytes } from '../services/utils';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeDetailCard from '../components/VolumeDetailCard';
 import ActiveAlertsCard from '../components/VolumeActiveAlertsCard';
@@ -108,41 +107,45 @@ const VolumePageContent = (props) => {
     // find the node name of this volume
     const nodeName = volume?.spec?.nodeName;
     const currentNode = nodes.find((node) => node.name === nodeName);
-    instance = currentNode?.internalIP + PORT_NUMBER_PROMETHEUS;
+    instance = `${currentNode?.internalIP}:${PORT_NUMBER_PROMETHEUS}`;
   } else {
-    instance = node?.internalIP + PORT_NUMBER_PROMETHEUS;
+    instance = `${node?.internalIP}:${PORT_NUMBER_PROMETHEUS}`;
   }
 
   const queryStartingTime = volumeStats?.queryStartingTime;
-  const volumeUsed = volumeStats?.volumeUsed?.filter(
+  const volumeUsage = volumeStats?.volumeUsage?.find(
     (vU) => vU.metric.persistentvolumeclaim === PVCName,
-  );
-  const volumeThroughputWrite = volumeStats?.volumeThroughputWrite?.filter(
+  )?.values;
+  const volumeThroughputWrite = volumeStats?.volumeThroughputWrite?.find(
     (vTW) =>
       vTW.metric.instance === instance && vTW.metric.device === deviceName,
-  );
-  const volumeThroughputRead = volumeStats?.volumeThroughputRead?.filter(
+  )?.values;
+  const volumeThroughputRead = volumeStats?.volumeThroughputRead?.find(
     (vTR) =>
       vTR.metric.instance === instance && vTR.metric.device === deviceName,
-  );
-  const volumeLatency = volumeStats?.volumeLatency?.filter(
+  )?.values;
+  const volumeLatencyWrite = volumeStats?.volumeLatencyWrite?.find(
     (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
-  );
-  const volumeIOPSRead = volumeStats?.volumeIOPSRead?.filter(
+  )?.values;
+  const volumeLatencyRead = volumeStats?.volumeLatencyRead?.find(
+    (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
+  )?.values;
+  const volumeIOPSRead = volumeStats?.volumeIOPSRead?.find(
     (vIOPSR) =>
       vIOPSR.metric.instance === instance &&
       vIOPSR.metric.device === deviceName,
-  );
-  const volumeIOPSWrite = volumeStats?.volumeIOPSWrite?.filter(
+  )?.values;
+  const volumeIOPSWrite = volumeStats?.volumeIOPSWrite?.find(
     (vIOPSW) =>
       vIOPSW.metric.instance === instance &&
       vIOPSW.metric.device === deviceName,
-  );
+  )?.values;
   const volumeMetricGraphData = {
-    volumeUsed,
+    volumeUsage,
     volumeThroughputWrite,
     volumeThroughputRead,
-    volumeLatency,
+    volumeLatencyWrite,
+    volumeLatencyRead,
     volumeIOPSRead,
     volumeIOPSWrite,
     queryStartingTime,
@@ -198,9 +201,6 @@ const VolumePageContent = (props) => {
           ></ActiveAlertsCard>
           <MetricGraphCard
             volumeMetricGraphData={volumeMetricGraphData}
-            volumeStorageCapacity={allSizeUnitsToBytes(
-              pV?.spec?.capacity?.storage,
-            )}
             // the volume condition compute base on the `status` and `bound/unbound`
             volumeCondition={currentVolume.status}
             // Hardcode the port number for prometheus metrics

@@ -9,7 +9,9 @@ import {
   computeVolumeGlobalStatus,
   isVolumeDeletable,
   volumeGetError,
+  getVolumeListData,
 } from './NodeVolumesUtils';
+import { stateApp } from './NodeVolumesUtilsData';
 
 // isVolumeDeletable {{{
 // Test data {{{
@@ -420,3 +422,87 @@ it('should return error when called with failed Ready condition', () => {
 });
 
 // }}}
+
+// test for getVolumeListData function
+const propsWithNodeFilter = {
+  location: {
+    pathname: '/volumes',
+    search: '?node=master-0',
+  },
+};
+
+it('should return the volume list filtered by a specific node', () => {
+  const result = getVolumeListData(stateApp, propsWithNodeFilter);
+  const volumelistFilteredByNode = [
+    {
+      name: 'master-0-alertmanager',
+      node: 'master-0',
+      usage: '0.41',
+      status: 'link',
+      bound: 'Yes',
+      storageCapacity: '5Gi',
+      storageClass: 'metalk8s',
+      usageRawData: '20MiB',
+      health: 'health',
+      latency: undefined,
+    },
+    {
+      name: 'prom-m0-reldev',
+      node: 'master-0',
+      usage: '22.87',
+      status: 'link',
+      bound: 'Yes',
+      storageCapacity: '20Gi',
+      storageClass: 'metalk8s',
+      usageRawData: '4GiB',
+      health: 'health',
+      latency: '900 µs',
+    },
+  ];
+  expect(result).toEqual(volumelistFilteredByNode);
+});
+
+const propsWrongNodeFilter = {
+  location: {
+    pathname: '/volumes',
+    search: '?node=fake-node-name',
+  },
+};
+
+it('should return an empty array when the node filter in URL does not exist', () => {
+  const result = getVolumeListData(stateApp, propsWrongNodeFilter);
+  expect(result).toEqual([]);
+});
+
+const propsWithNonVolumeNodeFilter = {
+  location: {
+    pathname: '/volumes',
+    search: '?node=bootstrap',
+  },
+};
+it('should return an empty array when there is no volume in this node', () => {
+  const result = getVolumeListData(stateApp, propsWithNonVolumeNodeFilter);
+  expect(result).toEqual([]);
+});
+
+const stateEmptyVolume = {
+  app: {
+    nodes: {
+      list: [],
+    },
+    pods: {},
+    volumes: { list: [], storageClass: [], pVList: [] },
+  },
+};
+const props = {
+  location: {
+    pathname: '/volumes',
+    search: '',
+  },
+};
+
+// Todo: in this case, it should be redirect to the Empty State Page.
+it('should return an empty array when there is no volume at all in this platform', () => {
+  const result = getVolumeListData(stateEmptyVolume, props);
+  expect(result).toEqual([]);
+});

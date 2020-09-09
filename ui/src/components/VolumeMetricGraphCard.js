@@ -12,8 +12,8 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import {
-  jointDataPointBaseonTimeSeries,
   addMissingDataPoint,
+  fromUnixTimestampToDate,
 } from '../services/utils';
 import {
   VOLUME_CONDITION_LINK,
@@ -97,12 +97,14 @@ const NoMetricsText = styled.div`
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
+const NoDataGraphText = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.small};
+  padding: ${padding.small} 0 0 ${padding.larger};
+`;
+
 const MetricGraphCard = (props) => {
-  const {
-    volumeStorageCapacity,
-    volumeCondition,
-    volumeMetricGraphData,
-  } = props;
+  const { volumeCondition, volumeMetricGraphData } = props;
   const dispatch = useDispatch();
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
@@ -131,20 +133,22 @@ const MetricGraphCard = (props) => {
   }
 
   // We need to manually add the missing data points due to the shutdown of VM
-
   const operateMetricRawData = (metricRawData) =>
     addMissingDataPoint(
-      jointDataPointBaseonTimeSeries(metricRawData),
+      metricRawData,
       queryStartingTime,
       sampleDuration,
       sampleFrequency,
     );
 
-  const volumeUsedOperated = operateMetricRawData(
-    volumeMetricGraphData?.volumeUsed,
+  const volumeUsageOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeUsage,
   );
-  const volumeLatencyOperated = operateMetricRawData(
-    volumeMetricGraphData?.volumeLatency,
+  const volumeLatencyWriteOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeLatencyWrite,
+  );
+  const volumeLatencyReadOperated = operateMetricRawData(
+    volumeMetricGraphData?.volumeLatencyRead,
   );
   const volumeThroughputWriteOperated = operateMetricRawData(
     volumeMetricGraphData?.volumeThroughputWrite,
@@ -161,28 +165,35 @@ const MetricGraphCard = (props) => {
 
   // slot[0] => timestamp
   // slot[1] => value
-  const volumeUsageData = volumeUsedOperated?.map((slot) => {
+
+  const volumeUsageData = volumeUsageOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000), // convert from the RFC 3339 to time in JS
-      y:
-        slot[1] === null
-          ? null
-          : Math.round((slot[1] / volumeStorageCapacity) * 100),
+      date: fromUnixTimestampToDate(slot[0]),
+      y: slot[1] === null ? null : Math.round(slot[1] * 100),
     };
   });
 
-  const volumeLatencyData = volumeLatencyOperated?.map((slot) => {
+  const volumeLatencyWriteData = volumeLatencyWriteOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
-      y: slot[1] === null ? null : Math.round(slot[1] * 1000000),
+      date: fromUnixTimestampToDate(slot[0]),
+      write: slot[1],
+      type: 'write',
+    };
+  });
+
+  const volumeLatencyReadData = volumeLatencyReadOperated?.map((slot) => {
+    return {
+      date: fromUnixTimestampToDate(slot[0]),
+      read: slot[1],
+      type: 'read',
     };
   });
 
   const volumeThroughputWriteData = volumeThroughputWriteOperated?.map(
     (slot) => {
       return {
-        date: new Date(slot[0] * 1000),
-        write: slot[1] === null ? null : slot[1] / 1000000,
+        date: fromUnixTimestampToDate(slot[0]),
+        write: slot[1],
         type: 'write',
       };
     },
@@ -190,15 +201,15 @@ const MetricGraphCard = (props) => {
 
   const volumeThroughtReadData = volumeThroughputReadOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
-      read: slot[1] === null ? null : slot[1] / 1000000,
+      date: fromUnixTimestampToDate(slot[0]),
+      read: slot[1],
       type: 'read',
     };
   });
 
   const volumeIOPSReadData = volumeIOPSReadOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
+      date: fromUnixTimestampToDate(slot[0]),
       read: slot[1] === null ? null : slot[1],
       type: 'read',
     };
@@ -206,7 +217,7 @@ const MetricGraphCard = (props) => {
 
   const volumeIOPSWriteData = volumeIOPSWriteOperated?.map((slot) => {
     return {
-      date: new Date(slot[0] * 1000),
+      date: fromUnixTimestampToDate(slot[0]),
       write: slot[1] === null ? null : slot[1],
       type: 'write',
     };
@@ -215,7 +226,12 @@ const MetricGraphCard = (props) => {
   const volumeThroughputData = volumeThroughputWriteData?.concat(
     volumeThroughtReadData,
   );
+
   const volumeIOPSData = volumeIOPSWriteData?.concat(volumeIOPSReadData);
+
+  const volumeLatencyData = volumeLatencyWriteData?.concat(
+    volumeLatencyReadData,
+  );
 
   const xAxis = {
     field: 'date',
@@ -232,24 +248,11 @@ const MetricGraphCard = (props) => {
     title: null,
   };
 
-  const yAxisThroughput = [
+  const yAxis = [
     {
       field: 'write',
       type: 'quantitative',
       // automatically add the unit for y axis labels: display 40k instead of 40000.  axis: { title: null, format: '~s' },
-      axis: { title: null },
-    },
-    {
-      field: 'read',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
-
-  const yAxisIOPS = [
-    {
-      field: 'write',
-      type: 'quantitative',
       axis: { title: null },
     },
     {
@@ -269,14 +272,6 @@ const MetricGraphCard = (props) => {
     },
   ];
 
-  const yAxisLatency = [
-    {
-      field: 'y',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
-
   const colorUsage = {
     field: 'type',
     type: 'nominal',
@@ -287,35 +282,7 @@ const MetricGraphCard = (props) => {
     },
   };
 
-  const colorLatency = {
-    field: 'type',
-    type: 'nominal',
-    legend: null,
-    domain: ['y'],
-    scale: {
-      range: ['#BA43A9'],
-    },
-  };
-
-  const colorThroughput = {
-    field: 'type',
-    type: 'nominal',
-    legend: {
-      direction: 'horizontal',
-      orient: 'bottom',
-      title: null,
-      symbolType: 'stroke',
-      labelFontSize: 15,
-      columnPadding: 50,
-      symbolStrokeWidth: 5,
-    },
-    domain: ['write', 'read'],
-    scale: {
-      range: ['#73BF69', '#E0B400'],
-    },
-  };
-
-  const colorIOPS = {
+  const colors = {
     field: 'type',
     type: 'nominal',
     legend: {
@@ -384,7 +351,7 @@ const MetricGraphCard = (props) => {
           <RowGraphContainer>
             <UsageGraph>
               <GraphTitle>USAGE (%)</GraphTitle>
-              {volumeUsageData && (
+              {volumeUsageData?.length > 0 ? (
                 <LineChart
                   id={'volume_usage_id'}
                   data={volumeUsageData}
@@ -395,53 +362,61 @@ const MetricGraphCard = (props) => {
                   height={80}
                   tooltip={false}
                 />
+              ) : (
+                <NoDataGraphText>No available usage data</NoDataGraphText>
               )}
             </UsageGraph>
             <LatencyGraph>
               <GraphTitle>LATENCY (µs) </GraphTitle>
-              {volumeLatencyData && (
+              {volumeLatencyData?.length > 0 ? (
                 <LineChart
                   id={'volume_latency_id'}
                   data={volumeLatencyData}
                   xAxis={xAxis}
-                  yAxis={yAxisLatency}
-                  color={colorLatency}
+                  yAxis={yAxis}
+                  color={colors}
                   width={285}
                   height={80}
                   tooltip={false}
                 />
+              ) : (
+                <NoDataGraphText>No available latency data</NoDataGraphText>
               )}
             </LatencyGraph>
           </RowGraphContainer>
           <SecondRowGraphContainer>
             <TroughputGraph>
               <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
-              {volumeThroughputData && (
+              {volumeThroughputData?.length > 0 ? (
                 <LineChart
                   id={'volume_throughput_id'}
                   data={volumeThroughputData}
                   xAxis={xAxis}
-                  yAxis={yAxisThroughput}
-                  color={colorThroughput}
+                  yAxis={yAxis}
+                  color={colors}
                   width={285}
                   height={80}
                   tooltip={false}
                 />
+              ) : (
+                <NoDataGraphText>No available throughput data</NoDataGraphText>
               )}
             </TroughputGraph>
             <IOPSGraph>
               <GraphTitle>IOPS</GraphTitle>
-              {volumeIOPSData && (
+              {volumeIOPSData?.length > 0 ? (
                 <LineChart
                   id={'volume_IOPS_id'}
                   data={volumeIOPSData}
                   xAxis={xAxis}
-                  yAxis={yAxisIOPS}
-                  color={colorIOPS}
+                  yAxis={yAxis}
+                  color={colors}
                   width={285}
                   height={80}
                   tooltip={false}
                 />
+              ) : (
+                <NoDataGraphText>No available IOPS data</NoDataGraphText>
               )}
             </IOPSGraph>
           </SecondRowGraphContainer>

@@ -266,29 +266,6 @@ export function computeVolumeCondition(status, isBound) {
 }
 
 /**
- * This function combines the values in different pods caused by the restart
- *
- * @param {array} result - The array of the data points are already sorted according to the time series
- *
- */
-export function jointDataPointBaseonTimeSeries(result) {
-  let values = [];
-  if (result) {
-    for (const timeseries of result) {
-      if (values.length === 0) {
-        values = values.concat(timeseries.values);
-      } else if (timeseries.values[0][0] > values[0][0]) {
-        values.concat(timeseries.values);
-      } else if (timeseries.values[0][0] < values[0][0]) {
-        timeseries.values.concat(values);
-      }
-    }
-
-    return values;
-  }
-}
-
-/**
  * This function manually adds the missing data points with `null` value caused by downtime of the VMs
  *
  * @param {array} orginalValues - The array of the data points are already sorted according to the time series
@@ -303,8 +280,17 @@ export function addMissingDataPoint(
   sampleDuration,
   sampleFrequency,
 ) {
-  if (!orginalValues || orginalValues.length === 0) {
-    return;
+  if (
+    !orginalValues ||
+    orginalValues.length === 0 ||
+    startingTimeStamp === undefined ||
+    !sampleDuration ||
+    !sampleFrequency ||
+    startingTimeStamp < 0 ||
+    sampleDuration <= 0 ||
+    sampleFrequency <= 0
+  ) {
+    return [];
   }
 
   const newValues = [];
@@ -335,4 +321,11 @@ export function addMissingDataPoint(
 // A custom hook that builds on useLocation to parse the query string.
 export const useQuery = () => {
   return new URLSearchParams(useLocation().search);
+};
+
+// Convert the Unix Time Stamp to JS Date Object
+export const fromUnixTimestampToDate = (date) => {
+  if (date) {
+    return new Date(date * 1000);
+  }
 };
