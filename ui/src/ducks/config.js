@@ -9,6 +9,7 @@ import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
+import * as ApiAlertmanager from '../services/alertmanager/api';
 import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 
 import { authenticateSaltApi } from './login';
@@ -162,6 +163,8 @@ export function* fetchConfig() {
     yield put(setApiConfigAction(result));
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
+    yield call(ApiAlertmanager.initialize, result.url_alertmanager);
+
     yield put(
       setUserManagerConfigAction({
         authority: result.url_oidc_provider,
