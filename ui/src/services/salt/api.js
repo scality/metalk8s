@@ -50,3 +50,16 @@ export async function prepareEnvironment(environment, version) {
     },
   });
 }
+
+export async function getNodesIPsInterfaces() {
+  return saltApiClient.post('/', {
+    client: 'local',
+    tgt: '*',
+    fun: 'grains.item',
+    arg: [
+      'metalk8s:control_plane_ip',
+      'metalk8s:workload_plane_ip',
+      'ip_interfaces',
+    ],
+  });
+}
