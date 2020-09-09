@@ -8,6 +8,7 @@ import { solutionsSaga } from './app/solutions';
 import { volumesSaga } from './app/volumes';
 import { authenticateSaga } from './login';
 import { configSaga } from './config';
+import { alertsSaga } from './app/alerts';
 
 export default function* rootSaga() {
   yield all([
@@ -20,5 +21,6 @@ export default function* rootSaga() {
     fork(saltSaga),
     fork(solutionsSaga),
     fork(volumesSaga),
+    fork(alertsSaga),
   ]);
 }
