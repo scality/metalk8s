@@ -46,7 +46,8 @@ Create metalk8s-ui ConfigMap:
               "url_grafana": "/grafana",
               "url_oidc_provider": "/oidc",
               "url_redirect": "https://{{ ingress_control_plane }}/oauth2/callback",
-              "url_doc": "/docs"
+              "url_doc": "/docs",
+              "url_alertmanager": "/api/alertmanager"
             }
 
 Create ui-branding ConfigMap:
