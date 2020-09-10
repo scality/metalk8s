@@ -11,7 +11,7 @@ import notifications from './app/notifications';
 import salt from './app/salt';
 import monitoring from './app/monitoring';
 import solutions from './app/solutions';
-
+import alerts from './app/alerts';
 const rootReducer = combineReducers({
   config,
   login,
@@ -24,6 +24,7 @@ const rootReducer = combineReducers({
     monitoring,
     volumes,
     solutions,
+    alerts,
   }),
   oidc: oidcReducer,
 });
