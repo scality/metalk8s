@@ -310,19 +310,6 @@ const NodeListTable = (props) => {
   const columns = React.useMemo(
     () => [
       {
-        Header: 'Health',
-        accessor: 'health',
-        cellStyle: { textAlign: 'center', width: '50px' },
-        Cell: (cellProps) => {
-          return (
-            <CircleStatus
-              className="fa fa-circle fa-2x"
-              status={cellProps.value}
-            />
-          );
-        },
-      },
-      {
         Header: 'Name',
         accessor: 'name',
         cellStyle: { width: '180px' },
@@ -338,7 +325,10 @@ const NodeListTable = (props) => {
         cellStyle: { textAlign: 'center', width: '50px' },
         Cell: (cellProps) => {
           return (
-            <CircleStatus className="fas fa-circle" status={cellProps.value} />
+            <CircleStatus
+              className="fa fa-circle fa-2x"
+              status={cellProps.value}
+            />
           );
         },
       },
