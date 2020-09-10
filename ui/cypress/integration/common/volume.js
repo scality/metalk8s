@@ -41,16 +41,13 @@ And('I click [Create] button', () => {
   cy.get('[data-cy="submit-create-volume"]').click();
 });
 
-Then('I am redirected to the "test-volume-sparse" volume page', () => {
-  cy.location('pathname').should('eq', '/volumes/test-volume-sparse');
+Then(`I am redirected to the {string} volume page`, (volumeName) => {
+  cy.location('pathname').should('eq', `/volumes/${volumeName}`);
 });
 
-And('the volume "test-volume-sparse" becomes Ready', () => {
+And(`the volume {string} becomes Ready`, (volumeName) => {
   // Check if the right side panel updates
-  cy.get('[data-cy="volume_detail_card_name"]').should(
-    'contain',
-    'test-volume-sparse',
-  );
+  cy.get('[data-cy="volume_detail_card_name"]').should('contain', volumeName);
   // Wait until the volume is ready
   cy.waitUntil(
     () =>
@@ -58,14 +55,14 @@ And('the volume "test-volume-sparse" becomes Ready', () => {
         .get('[data-cy=volume_status_value]')
         .then(($span) => $span.text() === 'Ready'),
     {
-      errorMsg: `Volume test-volume-sparse is not ready`,
+      errorMsg: `Volume ${volumeName} is not ready`,
       timeout: 120000, // waits up to 120000 ms, default to 5000
       interval: 5000, // performs the check every 5000 ms, default to 200
     },
   );
 });
 
-And('the label of volume "test-volume-sparse" presents:', (dataTable) => {
+And('the labels the volume include:', (dataTable) => {
   const dataTableObject = dataTable.rowsHash();
 
   const volumeLabelName = dataTableObject.labelName;
@@ -83,13 +80,17 @@ And('I confirm the deletion', () => {
   cy.get('[data-cy="confirm_deletion_button"]').click();
 });
 
-Then('the "test-volume-sparse" volume is removed from the list', () => {
-  // fiter delete this volume, we should only have 3 default volume in CI.
+Then(`the {string} volume is removed from the list`, (volumeName) => {
   cy.waitUntil(
     () =>
-      cy.get('[data-cy="volume_table_row"]').then(($el) => $el.length === 3),
+      cy.get('[data-cy="volume_table_row"]').then(
+        ($rows) =>
+          // Note that: you cannot put assertions inside checkFunction.
+          // in Cypress, a failing assertion forces the whole test to fail and you cannot restore it
+          $rows.length === 3,
+      ),
     {
-      errorMsg: `Volume test-volume-sparse is not deleted`,
+      errorMsg: `Volume ${volumeName} is not deleted`,
       timeout: 120000, // waits up to 120000 ms, default to 5000
       interval: 5000, // performs the check every 5000 ms, default to 200
     },

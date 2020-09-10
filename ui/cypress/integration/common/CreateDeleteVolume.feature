@@ -6,13 +6,13 @@ Feature: Create and delete volume scenario
         | name       | test-volume-sparse  |
         | type       | sparseLoopDevice    |
         | size       | 1 GiB               |
-        | labelName  | kubernetest.io/name |
+        | labelName  | kubernetes.io/name  |
         | labelValue | test                |
     And I click [Create] button
     Then I am redirected to the "test-volume-sparse" volume page
     And the volume "test-volume-sparse" becomes Ready
-    And the label of volume "test-volume-sparse" presents:
-        | labelName  | kubernetest.io/name |
+    And the labels the volume include:
+        | labelName  | kubernetes.io/name  |
         | labelValue | test                |
     When I click [Delete] button
     And I confirm the deletion
