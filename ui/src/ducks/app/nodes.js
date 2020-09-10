@@ -274,14 +274,17 @@ export function* fetchNodes() {
           } else {
             status = API_STATUS_UNKNOWN;
           }
+
+          // the Roles of the Node should be the ones that are stored in the labels `node-role.kubernetes.io/<role-name>`
+          let nodeRolesLabels = [];
           const roleTaintMatched = roleTaintMap.find((item) => {
-            const nodeRoles = Object.keys(node.metadata.labels).filter((role) =>
+            nodeRolesLabels = Object.keys(node.metadata.labels).filter((role) =>
               role.includes(ROLE_PREFIX),
             );
 
             return (
-              nodeRoles.length === item.roles.length &&
-              nodeRoles.every((role) => item.roles.includes(role)) &&
+              nodeRolesLabels.length === item.roles.length &&
+              nodeRolesLabels.every((role) => item.roles.includes(role)) &&
               (item.taints && node.spec.taints
                 ? node.spec.taints.every((taint) =>
                     item.taints.find((item) => item.key === taint.key),
@@ -289,6 +292,8 @@ export function* fetchNodes() {
                 : item.taints === node.spec.taints)
             );
           });
+
+          const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
           const rolesLabel = [];
           if (roleTaintMatched) {
             if (roleTaintMatched.bootstrap) {
@@ -314,7 +319,7 @@ export function* fetchNodes() {
             workload_plane: roleTaintMatched && roleTaintMatched.workload_plane,
             bootstrap: roleTaintMatched && roleTaintMatched.bootstrap,
             infra: roleTaintMatched && roleTaintMatched.infra,
-            roles: rolesLabel.join(' / '),
+            roles: nodeRoles.join(' / '),
             deploying: deployingNodes.includes(node.metadata.name),
             internalIP: node?.status?.addresses?.find(
               (ip) => ip.type === 'InternalIP',
