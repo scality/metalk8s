@@ -1,5 +1,5 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Breadcrumb } from '@scality/core-ui';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { useRefreshEffect } from '../services/utils';
@@ -9,13 +9,22 @@ import {
 } from '../components/BreadcrumbStyle';
 import NodePageContent from './NodePageContent';
 import { PageContainer } from '../components/CommonLayoutStyle';
+import { fetchNodesIPsInterfaceAction } from '../ducks/app/nodes';
+import { fetchAlertsAlertmanagerAction } from '../ducks/app/alerts';
+import { getNodeListData } from '../services/NodeUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePage = (props) => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchNodesIPsInterfaceAction());
+    dispatch(fetchAlertsAlertmanagerAction());
+  }, [dispatch]);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
-  const theme = useSelector((state) => state.config.theme);
 
+  const theme = useSelector((state) => state.config.theme);
   const nodes = useSelector((state) => state.app.nodes.list);
+  const nodeListData = useSelector((state) => getNodeListData(state, props));
 
   return (
     <PageContainer>
@@ -32,7 +41,10 @@ const NodePage = (props) => {
           ]}
         />
       </BreadcrumbContainer>
-      <NodePageContent nodes={nodes}></NodePageContent>
+      <NodePageContent
+        nodes={nodes}
+        nodeListData={nodeListData}
+      ></NodePageContent>
     </PageContainer>
   );
 };
