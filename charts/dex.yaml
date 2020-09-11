@@ -50,16 +50,17 @@ certs:
   grpc:
     create: false
 
+# NOTE: Ignore these values, the configuration is computed from
+#       - salt/metalk8s/addons/dex/config/dex.yaml
+#       - salt/metalk8s/addons/dex/deployed/service-configuration.sls
 config:
-  issuer: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc)'
+  issuer: 'dex.scality.com'
   web:
     tlsCert: /etc/dex/tls/https/server/tls.crt
     tlsKey: /etc/dex/tls/https/server/tls.key
   frontend:
     theme: "scality"
     issuer: "MetalK8s"
-
-  connectors: '__var_tojson__(dex.spec.connectors)'
 
   oauth2:
     alwaysShowLoginScreen: true
@@ -70,26 +71,7 @@ config:
     signingKeys: "6h"
     idTokens: "24h"
 
-  staticClients:
-  - id: oidc-auth-client
-    redirectURIs:
-    - 'urn:ietf:wg:oauth:2.0:oob'
-    name: 'oidc-auth-client'
-    secret: "lkfa9jaf3kfakqyeoikfjakf93k2l"
-    trustedPeers:
-    - metalk8s-ui
-    - grafana-ui
-  - id: metalk8s-ui
-    redirectURIs:
-    - '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback)'
-    name: 'MetalK8s UI'
-    secret: "ybrMJpVMQxsiZw26MhJzCjA2ut"
-  - id: grafana-ui
-    name: 'Grafana UI'
-    redirectURIs:
-    - '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth)'
-    secret: "4lqK98NcsWG5qBRHJUqYM1"
+  staticClients: []
 
-  enablePasswordDB: '__var__(dex.spec.localuserstore.enabled)'
-
-  staticPasswords: '__var_tojson__(dex.spec.localuserstore.userlist)'
+  enablePasswordDB: true
+  staticPasswords: []
