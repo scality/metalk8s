@@ -342,17 +342,17 @@ const NodeListTable = (props) => {
           // yellow for status.conditions['Ready'] == True and some other conditions are true
           // red for status.conditions['Ready'] == False
           // grey when there is no status.conditions
-          const otherConditions = conditions?.filter(
-            (cond) => cond !== 'ready',
+          const notReadyConditions = conditions?.filter(
+            (cond) => cond !== 'ready' ?? [],
           );
-          if (status === 'ready' && otherConditions.length === 0) {
+          if (status === 'ready' && notReadyConditions.length === 0) {
             return (
               <StatusText textColor="green">
                 {intl.translate('ready')}
               </StatusText>
             );
-          } else if (status === 'ready' && otherConditions.length !== 0) {
-            otherConditions.map((cond) => {
+          } else if (status === 'ready' && notReadyConditions.length !== 0) {
+            notReadyConditions.map((cond) => {
               return <StatusText textColor="yellow">{cond}</StatusText>;
             });
           } else if (status !== 'ready') {
@@ -361,7 +361,7 @@ const NodeListTable = (props) => {
                 {intl.translate('not_ready')}
               </StatusText>
             );
-          } else if (!otherConditions) {
+          } else {
             return (
               <StatusText textColor="gray">
                 {intl.translate('unknown')}
