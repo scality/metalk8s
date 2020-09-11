@@ -29,6 +29,7 @@ import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
+import * as ApiAlertmanager from '../services/alertmanager/api';
 
 it('update the theme state and logo path when fetchTheme', () => {
   const gen = fetchTheme();
@@ -68,6 +69,7 @@ it('update the config state when fetchConfig', () => {
     url_prometheus: 'http://172.21.254.46:30222',
     url_oidc_provider: 'http://172.21.254.46:32000',
     url_redirect: 'http://172.21.254.46:3000',
+    url_alertmanager: 'http://172.21.254.46:8443',
   };
 
   expect(gen.next(result).value).toEqual(call(fetchTheme));
@@ -82,6 +84,10 @@ it('update the config state when fetchConfig', () => {
 
   expect(gen.next(result).value).toEqual(
     call(ApiPrometheus.initialize, 'http://172.21.254.46:30222'),
+  );
+
+  expect(gen.next(result).value).toEqual(
+    call(ApiAlertmanager.initialize, 'http://172.21.254.46:8443'),
   );
 
   expect(gen.next().value).toEqual(
