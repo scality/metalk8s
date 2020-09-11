@@ -45,3 +45,9 @@ export const PageContentContainer = styled.div`
   width: 100%;
   background-color: ${(props) => props.theme.brand.primary};
 `;
+
+export const TabContainer = styled.div`
+  background-color: ${(props) => props.theme.brand.primaryDark1};
+  color: ${(props) => props.theme.brand.textPrimary};
+  min-height: 650px;
+`;
