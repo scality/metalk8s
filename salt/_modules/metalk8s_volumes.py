@@ -396,8 +396,9 @@ class SparseLoopDeviceBlock(SparseLoopDevice):
         # Partition 1 should be identified with the volume UUID.
         device = os.path.basename(self.path) + '1'
         try:
-            return device_name(self.persistent_path) == device
-        except: # Expected exception if the symlink doesn't exist.
+            return _device_name(self.persistent_path) == device
+        # Expected exception if the symlink doesn't exist.
+        except CommandExecutionError:
             return False
 
     def prepare(self, force=False):
@@ -447,7 +448,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
         super(RawBlockDeviceBlock, self).__init__(volume)
         # Detect which kind of device we have: a real disk, only a partition or
         # an LVM volume.
-        self._partition = self._get_partition(device_name(self.path))
+        self._partition = self._get_partition(_device_name(self.path))
         if self._get_lvm_path() is not None:
             self._kind = DeviceType.LVM
         elif self._partition is not None:
@@ -477,8 +478,9 @@ class RawBlockDeviceBlock(RawBlockDevice):
         if self._kind == DeviceType.DISK:
             device += '1' # In DISK case we always have a single partition.
         try:
-            return device_name(self.persistent_path) == device
-        except: # Expected exception if the symlink doesn't exist.
+            return _device_name(self.persistent_path) == device
+        # Expected exception if the symlink doesn't exist.
+        except CommandExecutionError:
             return False
 
     def prepare(self, force=False):
@@ -503,7 +505,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
 
         If the backing storage device is not an LVM volume, return None.
         """
-        name = device_name(self.path)
+        name = _device_name(self.path)
         for symlink in glob.glob('/dev/disk/by-id/dm-uuid-LVM-*'):
             realpath = os.path.realpath(symlink)
             if os.path.basename(realpath) == name:
@@ -544,6 +546,14 @@ def _get_volume(name):
             return SparseLoopDeviceBlock(volume)
     else:
         raise ValueError('unsupported Volume type for Volume {}'.format(name))
+
+
+def _device_name(path):
+    """Return the device name from the path, raise on error."""
+    res = device_name(path)
+    if res['success']:
+        return res['result']
+    raise CommandExecutionError(message=res['result'])
 
 
 def _run_cmd(cmd):

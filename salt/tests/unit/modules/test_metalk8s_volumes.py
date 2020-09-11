@@ -20,6 +20,8 @@ YAML_TESTS_FILE = os.path.join(
 with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
+def device_name_mock(path):
+    return {'success': True, 'result': os.path.basename(path)}
 
 class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
     """
@@ -51,8 +53,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
 
         is_file_mock = MagicMock(return_value=is_file)
         get_size_mock = MagicMock(return_value=get_size)
-
-        device_name_mock = MagicMock(side_effect=os.path.basename)
 
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
@@ -91,8 +91,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
         ftruncate_mock = MagicMock(return_value=ftruncate)
         if not ftruncate:
             ftruncate_mock.side_effect = OSError("An error has occurred")
-
-        device_name_mock = MagicMock(side_effect=os.path.basename)
 
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
@@ -142,8 +140,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
             )
         }
 
-        device_name_mock = MagicMock(side_effect=os.path.basename)
-
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
 
@@ -192,8 +188,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
             )
         }
 
-        device_name_mock = MagicMock(side_effect=os.path.basename)
-
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
 
@@ -237,21 +231,19 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
         def _device_name(path):
             if path.startswith('/dev/disk/by-partuuid/'):
                 if device_name_return is True:
-                    return os.path.basename(path)
+                    return {'success': True, 'result': os.path.basename(path)}
                 elif device_name_return is False or device_name_return is None:
-                    raise Exception("An error has occurred")
+                    return {'success': False, 'result': "An error has occurred"}
                 else:
-                    return device_name_return
-            return os.path.basename(path)
-
-        device_name_mock = MagicMock(side_effect=_device_name)
+                    return {'success': True, 'result': device_name_return}
+            return {'success': True, 'result': os.path.basename(path)}
 
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), \
                 patch.dict(metalk8s_volumes.__utils__, utils_dict), \
-                patch("metalk8s_volumes.device_name", device_name_mock), \
+                patch("metalk8s_volumes.device_name", _device_name), \
                 patch("glob.glob", glob_mock):
             if raises:
                 self.assertRaisesRegexp(
@@ -305,8 +297,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
             )
         }
 
-        device_name_mock = MagicMock(side_effect=os.path.basename)
-
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
 
@@ -338,8 +328,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 'volumes': pillar_volumes or {}
             }
         }
-
-        device_name_mock = MagicMock(side_effect=os.path.basename)
 
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
@@ -387,8 +375,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
         ioctl_mock = MagicMock()
         if ioctl_error:
             ioctl_mock.side_effect = IOError(ioctl_error)
-
-        device_name_mock = MagicMock(side_effect=os.path.basename)
 
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
@@ -447,8 +433,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
             'saltutil.refresh_pillar': MagicMock(),
             'disk.dump': MagicMock(return_value={'getsize64': 4242})
         }
-
-        device_name_mock = MagicMock(side_effect=os.path.basename)
 
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
