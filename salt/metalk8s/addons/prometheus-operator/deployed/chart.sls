@@ -329,7 +329,7 @@ data:
     client_id = grafana-ui
     client_secret = 4lqK98NcsWG5qBRHJUqYM1
     enabled = true
-    role_attribute_path = contains(email, '{% endraw -%}{{ dex.spec.localuserstore.userlist[0]['email'] }}{%- raw %}') && 'Admin'
+    role_attribute_path = contains(`{% endraw %}{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}{% raw %}`, email) && 'Admin'
     scopes = openid profile email groups
     tls_skip_verify_insecure = true
     token_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token{%- raw %}"
@@ -51236,7 +51236,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 99946dc6287166fccab96ec15282aa472c91e332872d5ad4a89dca37ff7f30ee
+        checksum/config: 16ef595de03dac4a229323336dcea31859538d6299b3917921fcb0d8ff20ec98
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: d8d82dc736b65dc3ccf0e743a2f7a371fe340cf2874c76f164366f347b23b6b4
         checksum/secret: 0b5d0cba774f73eb434cecec5282d028eb34e57b1ff23bb3aa075519de6d1892
