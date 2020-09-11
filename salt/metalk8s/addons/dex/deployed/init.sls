@@ -14,5 +14,6 @@ include:
 - .tls-secret
 - .theme-configmap
 - .service-configuration
+- .secret
 - .chart
 - .clusterrolebinding
