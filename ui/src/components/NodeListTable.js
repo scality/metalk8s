@@ -83,6 +83,11 @@ const TableRow = styled(HeadRow)`
     outline: none;
     cursor: pointer;
   }
+
+  background-color: ${(props) =>
+    props.selectedNodeName === props.row.values.name.name
+      ? props.theme.brand.backgroundBluer
+      : props.theme.brand.primary};
 `;
 
 // * table body
@@ -191,7 +196,7 @@ function GlobalFilter({
   );
 }
 
-function Table({ columns, data, rowClicked, theme }) {
+function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
   const query = useQuery();
   const querySearch = query.get('search');
 
@@ -266,6 +271,7 @@ function Table({ columns, data, rowClicked, theme }) {
               <TableRow
                 {...row.getRowProps({ onClick: () => rowClicked(row) })}
                 row={row}
+                selectedNodeName={selectedNodeName}
               >
                 {row.cells.map((cell) => {
                   let cellProps = cell.getCellProps({
@@ -303,7 +309,9 @@ function Table({ columns, data, rowClicked, theme }) {
 }
 
 const NodeListTable = (props) => {
-  const { nodeTableData } = props;
+  const history = useHistory();
+  const location = useLocation();
+  const { nodeTableData, selectedNodeName } = props;
 
   const theme = useSelector((state) => state.config.theme);
 
@@ -373,7 +381,24 @@ const NodeListTable = (props) => {
   );
 
   // handle the row selection by updating the URL
-  const onClickRow = (row) => {};
+  const onClickRow = (row) => {
+    const nodeName = row.values.name.name;
+    const isTabSelected =
+      location.pathname.endsWith('health') ||
+      location.pathname.endsWith('alerts') ||
+      location.pathname.endsWith('metrics') ||
+      location.pathname.endsWith('volumes') ||
+      location.pathname.endsWith('pods');
+
+    if (isTabSelected) {
+      // When switch between the nodes, keep the same tab selected
+      const currentTab = location?.pathname?.split('/')?.pop();
+      history.push(`/newNodes/${nodeName}/${currentTab}`);
+    } else {
+      // Set Health tab as default tab
+      history.push(`/newNodes/${nodeName}/health`);
+    }
+  };
 
   return (
     <NodeListContainer>
@@ -382,6 +407,7 @@ const NodeListTable = (props) => {
         data={nodeTableData}
         rowClicked={onClickRow}
         theme={theme}
+        selectedNodeName={selectedNodeName}
       />
     </NodeListContainer>
   );
