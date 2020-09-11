@@ -3,6 +3,7 @@
 # the current version (salt-master should not have been downgraded yet)
 
 include:
+  - metalk8s.addons.dex.pre-downgrade
   - metalk8s.addons.nginx-ingress.pre-downgrade
   - metalk8s.addons.nginx-ingress-control-plane.pre-downgrade
   - metalk8s.addons.prometheus-operator.pre-downgrade
