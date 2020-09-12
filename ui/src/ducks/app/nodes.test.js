@@ -1,4 +1,4 @@
-import { call, put, all, delay, select } from 'redux-saga/effects';
+import { call, put, delay, select } from 'redux-saga/effects';
 import { cloneableGenerator } from '@redux-saga/testing-utils';
 import * as CoreApi from '../../services/k8s/core';
 import history from '../../history';
@@ -72,7 +72,7 @@ const nodeForApi = ({ taintRoles = [], showStatus = true, ...props }) => ({
     : undefined,
   spec: {
     taints: taintRoles.length
-      ? taintRoles.map(role => ({
+      ? taintRoles.map((role) => ({
           key: `node-role.kubernetes.io/${role}`,
           effect: 'NoSchedule',
         }))
@@ -89,7 +89,8 @@ const defaultNodeForState = {
   infra: false,
   status: 'ready',
   deploying: false,
-  roles: 'Workload Plane',
+  roles: 'node',
+  conditions: [],
 };
 
 const formPayload = ({
@@ -125,7 +126,7 @@ describe('`fetchNodes` saga', () => {
 
   expect(gen.next().value).toEqual(select(allJobsSelector));
 
-  const _checkCompletion = _gen => {
+  const _checkCompletion = (_gen) => {
     expect(_gen.next().value).toEqual(delay(1000));
     expect(_gen.next().value).toEqual(
       put({ type: UPDATE_NODES, payload: { isLoading: false } }),
@@ -156,7 +157,7 @@ describe('`fetchNodes` saga', () => {
     const clone = gen.clone();
     const jobs = [
       {
-        type: "deploy-node",
+        type: 'deploy-node',
         node: DEFAULT_NAME,
         jid: '12345',
         completed,
@@ -187,7 +188,7 @@ describe('`fetchNodes` saga', () => {
         cp: true,
         infra: false,
         bootstrap: false,
-        labels: 'Control Plane',
+        labels: 'master / etcd',
       },
     ],
     [
@@ -198,7 +199,7 @@ describe('`fetchNodes` saga', () => {
         cp: false,
         infra: false,
         bootstrap: true,
-        labels: 'Bootstrap',
+        labels: 'bootstrap / master / etcd / infra',
       },
     ],
     [
@@ -209,7 +210,7 @@ describe('`fetchNodes` saga', () => {
         cp: false,
         infra: false,
         bootstrap: false,
-        labels: 'Workload Plane',
+        labels: 'node',
       },
     ],
     [
@@ -220,7 +221,7 @@ describe('`fetchNodes` saga', () => {
         cp: true,
         infra: false,
         bootstrap: false,
-        labels: 'Control Plane / Workload Plane',
+        labels: 'node / master / etcd',
       },
     ],
     [
@@ -231,7 +232,7 @@ describe('`fetchNodes` saga', () => {
         cp: false,
         infra: true,
         bootstrap: false,
-        labels: 'Infra',
+        labels: 'infra',
       },
     ],
     [
@@ -242,7 +243,7 @@ describe('`fetchNodes` saga', () => {
         cp: false,
         infra: true,
         bootstrap: false,
-        labels: 'Workload Plane / Infra',
+        labels: 'infra',
       },
     ],
     [
@@ -253,7 +254,7 @@ describe('`fetchNodes` saga', () => {
         cp: true,
         infra: true,
         bootstrap: false,
-        labels: 'Control Plane / Infra',
+        labels: 'infra / master / etcd',
       },
     ],
   ])('handles Node roles (%j) and taints (%j)', (roles, taints, expected) => {
