@@ -15,7 +15,6 @@ import {
   addNotificationSuccessAction,
   addNotificationErrorAction,
 } from './notifications';
-import { authenticateSaltApi } from '../login';
 import { intl } from '../../translations/IntlGlobalProvider';
 import { addJobAction, JOB_COMPLETED, allJobsSelector } from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
@@ -470,9 +469,6 @@ export function* stopRefreshNodes() {
 }
 
 export function* fetchNodesIPsInterface() {
-  // Action FETCH_NODES_IPS_INTERFACES is faster than SALT_AUTHENTICATION_SUCCESS, hence we get 401 Unauthorized here
-  // Manually authenticate salt API before get the IPs and Interfaces for Nodes
-  yield call(authenticateSaltApi);
   const result = yield call(ApiSalt.getNodesIPsInterfaces);
 
   if (!result.error) {
