@@ -6,10 +6,6 @@ And('I am on the volume creation page', () => {
 });
 
 When('I fill out the volume creation form using:', (dataTable) => {
-  cy.route('GET', '/api/kubernetes/api/v1/persistentvolumes').as(
-    'getPersistentVolumes',
-  );
-
   // rowsHash: returns an object where each row corresponds to an entry (first column is the key, second column is the value).
   const dataTableObject = dataTable.rowsHash();
 
@@ -81,18 +77,7 @@ And('I confirm the deletion', () => {
 });
 
 Then(`the {string} volume is removed from the list`, (volumeName) => {
-  cy.waitUntil(
-    () =>
-      cy.get('[data-cy="volume_table_row"]').then(
-        ($rows) =>
-          // Note that: you cannot put assertions inside checkFunction.
-          // in Cypress, a failing assertion forces the whole test to fail and you cannot restore it
-          $rows.length === 3,
-      ),
-    {
-      errorMsg: `Volume ${volumeName} is not deleted`,
-      timeout: 120000, // waits up to 120000 ms, default to 5000
-      interval: 5000, // performs the check every 5000 ms, default to 200
-    },
-  );
+  cy.contains('[data-cy=volume_table_name_cell]', volumeName, {
+    timeout: 120000,
+  }).should('not.exist');
 });
