@@ -33,7 +33,7 @@ metadata:
   name: {name}
 spec:
   nodeName: bootstrap
-  storageClassName: metalk8s
+  storageClassName: metalk8s-prometheus
   sparseLoopDevice:
     size: 10Gi
 """
