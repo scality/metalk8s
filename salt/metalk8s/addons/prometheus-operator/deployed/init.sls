@@ -1,6 +1,6 @@
 include:
-  - ...storageclass.deployed
   - .namespace
+  - .storageclass
   - .cleanup
   - .chart
   - .alertmanager-configuration-secret

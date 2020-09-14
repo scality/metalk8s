@@ -3,7 +3,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: metalk8s
+  name: metalk8s-prometheus
   labels:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/part-of: metalk8s

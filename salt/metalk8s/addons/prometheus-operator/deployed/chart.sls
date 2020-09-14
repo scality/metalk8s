@@ -51578,7 +51578,7 @@ spec:
         selector:
           matchLabels:
             app.kubernetes.io/name: prometheus-operator-alertmanager
-        storageClassName: metalk8s
+        storageClassName: metalk8s-prometheus
   tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/bootstrap
@@ -51661,7 +51661,7 @@ spec:
         selector:
           matchLabels:
             app.kubernetes.io/name: prometheus-operator-prometheus
-        storageClassName: metalk8s
+        storageClassName: metalk8s-prometheus
   tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/bootstrap
