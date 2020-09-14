@@ -675,7 +675,7 @@ it('should delete volume', () => {
         sparseLoopDevice: {
           size: '45Gi',
         },
-        storageClassName: 'metalk8s',
+        storageClassName: 'metalk8s-prometheus',
       },
       status: {
         phase: 'Available',

@@ -32,7 +32,7 @@ Then(
       .eq(0)
       .click();
     cy.get('.sc-select__menu')
-      .find('[data-cy=storageClass-metalk8s]')
+      .find('[data-cy=storageClass-metalk8s-prometheus]')
       .click();
 
     cy.get('.sc-select')
@@ -72,7 +72,7 @@ Then(
       .eq(0)
       .click();
     cy.get('.sc-select__menu')
-      .find('[data-cy=storageClass-metalk8s]')
+      .find('[data-cy=storageClass-metalk8s-prometheus]')
       .click();
 
     cy.get('.sc-select')

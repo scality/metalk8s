@@ -4,7 +4,7 @@ _volumes_details: &volumes_details
     kind: Volume
     metadata:
       annotations:
-        kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"name":"my-sparse-volume"},"spec":{"nodeName":"bootstrap","sparseLoopDevice":{"size":"1Gi"},"storageClassName":"metalk8s","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"}}}}}
+        kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"name":"my-sparse-volume"},"spec":{"nodeName":"bootstrap","sparseLoopDevice":{"size":"1Gi"},"storageClassName":"metalk8s-prometheus","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-alertmanager"}}}}}
 
 '
       creationTimestamp: '2020-06-12T13:33:44Z'
@@ -40,11 +40,11 @@ _volumes_details: &volumes_details
             heritage: salt
             metalk8s.scality.com/version: 2.5.1-dev
           managed_fields: null
-          name: metalk8s
+          name: metalk8s-prometheus
           namespace: null
           owner_references: null
           resource_version: '29117'
-          self_link: /apis/storage.k8s.io/v1/storageclasses/metalk8s
+          self_link: /apis/storage.k8s.io/v1/storageclasses/metalk8s-prometheus
           uid: 17ba89c5-0774-49d4-9e34-dc999ec69545
         mount_options:
         - rw
@@ -55,7 +55,7 @@ _volumes_details: &volumes_details
         provisioner: kubernetes.io/no-provisioner
         reclaim_policy: Retain
         volume_binding_mode: WaitForFirstConsumer
-      storageClassName: metalk8s
+      storageClassName: metalk8s-prometheus
       template:
         metadata:
           creationTimestamp: null
@@ -73,7 +73,7 @@ _volumes_details: &volumes_details
     kind: Volume
     metadata:
       annotations:
-        kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"name":"my-raw-block-device-volume"},"spec":{"nodeName":"bootstrap","sparseLoopDevice":{"size":"10Gi"},"storageClassName":"metalk8s","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"}}}}}
+        kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"storage.metalk8s.scality.com/v1alpha1","kind":"Volume","metadata":{"annotations":{},"name":"my-raw-block-device-volume"},"spec":{"nodeName":"bootstrap","sparseLoopDevice":{"size":"10Gi"},"storageClassName":"metalk8s-prometheus","template":{"metadata":{"labels":{"app.kubernetes.io/name":"prometheus-operator-prometheus"}}}}}
 
 '
       creationTimestamp: '2020-06-12T13:33:44Z'
@@ -109,11 +109,11 @@ _volumes_details: &volumes_details
             heritage: salt
             metalk8s.scality.com/version: 2.5.1-dev
           managed_fields: null
-          name: metalk8s
+          name: metalk8s-prometheus
           namespace: null
           owner_references: null
           resource_version: '29117'
-          self_link: /apis/storage.k8s.io/v1/storageclasses/metalk8s
+          self_link: /apis/storage.k8s.io/v1/storageclasses/metalk8s-prometheus
           uid: 17ba89c5-0774-49d4-9e34-dc999ec69545
         mount_options:
         - rw
@@ -124,7 +124,7 @@ _volumes_details: &volumes_details
         provisioner: kubernetes.io/no-provisioner
         reclaim_policy: Retain
         volume_binding_mode: WaitForFirstConsumer
-      storageClassName: metalk8s
+      storageClassName: metalk8s-prometheus
       template:
         metadata:
           creationTimestamp: null
@@ -298,7 +298,7 @@ _volumes_details: &volumes_details
       name: my-invalid-type-volume
     spec:
       nodeName: bootstrap
-      storageClassName: metalk8s
+      storageClassName: metalk8s-prometheus
       someRandomDevice:
         capacity: 10Gi
 
