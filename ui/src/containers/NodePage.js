@@ -23,8 +23,7 @@ const NodePage = (props) => {
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   const theme = useSelector((state) => state.config.theme);
-  const nodes = useSelector((state) => state.app.nodes.list);
-  const nodeListData = useSelector((state) => getNodeListData(state, props));
+  const nodeTableData = useSelector((state) => getNodeListData(state, props));
 
   return (
     <PageContainer>
@@ -41,10 +40,7 @@ const NodePage = (props) => {
           ]}
         />
       </BreadcrumbContainer>
-      <NodePageContent
-        nodes={nodes}
-        nodeListData={nodeListData}
-      ></NodePageContent>
+      <NodePageContent nodeTableData={nodeTableData}></NodePageContent>
     </PageContainer>
   );
 };

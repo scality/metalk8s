@@ -11,7 +11,7 @@ import {
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageContent = (props) => {
-  const { nodeListData } = props;
+  const { nodeTableData } = props;
 
   const history = useHistory();
   const currentNodeName =
@@ -20,7 +20,7 @@ const NodePageContent = (props) => {
   return (
     <PageContentContainer>
       <LeftSideInstanceList>
-        <NodeListTable nodeListData={nodeListData} />
+        <NodeListTable nodeTableData={nodeTableData} />
       </LeftSideInstanceList>
       {currentNodeName ? (
         <RightSidePanel></RightSidePanel>

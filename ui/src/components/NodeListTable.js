@@ -303,7 +303,7 @@ function Table({ columns, data, rowClicked, theme }) {
 }
 
 const NodeListTable = (props) => {
-  const { nodeListData } = props;
+  const { nodeTableData } = props;
 
   const theme = useSelector((state) => state.config.theme);
 
@@ -380,7 +380,7 @@ const NodeListTable = (props) => {
     <NodeListContainer>
       <Table
         columns={columns}
-        data={nodeListData}
+        data={nodeTableData}
         rowClicked={onClickRow}
         theme={theme}
         defaultPageSize={10}
