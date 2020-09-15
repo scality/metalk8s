@@ -1,10 +1,10 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{% import_yaml 'metalk8s/addons/prometheus-operator/config/grafana.yaml' as grafana_defaults with context %}
-{% import_yaml 'metalk8s/addons/prometheus-operator/config/prometheus.yaml' as prometheus_defaults with context %}
-{% import_yaml 'metalk8s/addons/prometheus-operator/config/alertmanager.yaml' as alertmanager_defaults with context %}
-{% import_yaml 'metalk8s/addons/dex/config/dex.yaml.j2' as dex_defaults with context %}
+{% set grafana_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/grafana.yaml', saltenv=saltenv) %}
+{% set prometheus_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml', saltenv=saltenv) %}
+{% set alertmanager_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml', saltenv=saltenv) %}
+{% set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
 {%- set grafana = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config', grafana_defaults) %}
 {%- set prometheus = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults) %}
 {%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults) %}

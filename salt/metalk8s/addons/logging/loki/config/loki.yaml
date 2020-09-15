@@ -1,4 +1,5 @@
----
+#!yaml
+
 # Configuration of the Loki service
 apiVersion: addons.metalk8s.scality.com
 kind: LokiConfig

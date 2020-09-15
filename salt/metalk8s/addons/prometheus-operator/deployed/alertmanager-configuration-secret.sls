@@ -1,8 +1,12 @@
-{% import_yaml 'metalk8s/addons/prometheus-operator/config/alertmanager.yaml' as alertmanager_defaults with context %}
+{%- set alertmanager_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml',
+        saltenv=saltenv
+    )
+%}
 
 {%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf(
         'metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults
-  )
+    )
 %}
 
 Create Alertmanager Configuration Secret:

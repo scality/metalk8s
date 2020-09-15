@@ -1,5 +1,11 @@
-{%- import_yaml 'metalk8s/addons/logging/loki/config/loki.yaml' as loki_defaults with context %}
-{%- set loki = salt.metalk8s_service_configuration.get_service_conf('metalk8s-logging', 'metalk8s-loki-config', loki_defaults) %}
+{%- set loki_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/logging/loki/config/loki.yaml', saltenv=saltenv
+    )
+%}
+{%- set loki = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-logging', 'metalk8s-loki-config', loki_defaults
+    )
+%}
 
 {%- for index in range(loki.spec.deployment.replicas) %}
 Deploy loki-{{ index }} service object:
