@@ -4,8 +4,10 @@ import {
   delay,
   put,
   select,
+  take,
   takeEvery,
   takeLatest,
+  race,
 } from 'redux-saga/effects';
 
 import * as CoreApi from '../../services/k8s/core';
@@ -16,7 +18,12 @@ import {
   addNotificationErrorAction,
 } from './notifications';
 import { intl } from '../../translations/IntlGlobalProvider';
-import { addJobAction, JOB_COMPLETED, allJobsSelector } from './salt';
+import {
+  addJobAction,
+  JOB_COMPLETED,
+  allJobsSelector,
+  CONNECT_SALT_API,
+} from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
 import { nodesCPWPIPsInterface } from '../../services/NodeUtils';
 import {
@@ -216,6 +223,7 @@ export const updateNodesIPsInterfacesAction = (payload) => {
 // Selectors
 export const clusterVersionSelector = (state) => state.app.nodes.clusterVersion;
 export const nodesRefreshingSelector = (state) => state.app.nodes.isRefreshing;
+export const isSaltAPIAuthenticatedSelector = (state) => state.login.salt;
 
 // Sagas
 export function* fetchClusterVersion() {
@@ -469,7 +477,22 @@ export function* stopRefreshNodes() {
 }
 
 export function* fetchNodesIPsInterface() {
-  const result = yield call(ApiSalt.getNodesIPsInterfaces);
+  let result;
+  // Check if Salt API is already authenticated
+  // If not, wait for the CONNECT_SALT_API action.
+  const isSaltAPIAuthenticated = yield select(isSaltAPIAuthenticatedSelector);
+  if (isSaltAPIAuthenticated) {
+    result = yield call(ApiSalt.getNodesIPsInterfaces);
+  } else {
+    // eslint-disable-next-line no-unused-vars
+    const { success, failure, timeout } = yield race({
+      success: take(CONNECT_SALT_API),
+      timeout: delay(5000),
+    });
+    if (success) {
+      result = yield call(ApiSalt.getNodesIPsInterfaces);
+    }
+  }
 
   if (!result.error) {
     const nodesIPsInfo = result.return[0];
