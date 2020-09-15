@@ -18,7 +18,7 @@ import {
 import { intl } from '../../translations/IntlGlobalProvider';
 import { addJobAction, JOB_COMPLETED, allJobsSelector } from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
-
+import { nodesCPWPIPsInterface } from '../../services/NodeUtils';
 import {
   API_STATUS_READY,
   API_STATUS_NOT_READY,
@@ -148,7 +148,7 @@ const defaultState = {
   list: [],
   isRefreshing: false,
   isLoading: false,
-  nodesIPsInterfaces: {},
+  IPsInfo: {},
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -472,9 +472,15 @@ export function* fetchNodesIPsInterface() {
   const result = yield call(ApiSalt.getNodesIPsInterfaces);
 
   if (!result.error) {
+    const nodesIPsInfo = result.return[0];
+    const IPsInfo = Object.keys(nodesIPsInfo)?.reduce((ipsInfo, nodeName) => {
+      ipsInfo[nodeName] = nodesCPWPIPsInterface(nodesIPsInfo[nodeName]);
+      return ipsInfo;
+    }, {});
+
     yield put(
       updateNodesIPsInterfacesAction({
-        nodesIPsInterfaces: result.return[0],
+        IPsInfo: IPsInfo,
       }),
     );
   }

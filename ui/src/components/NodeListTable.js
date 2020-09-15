@@ -278,8 +278,8 @@ function Table({ columns, data, rowClicked, theme }) {
                       <Cell {...cellProps}>
                         <NodeNameText>{cell.value.name}</NodeNameText>
                         <div>
-                          <IPText>CP: {cell.value.control_plane_ip}</IPText>
-                          <IPText>WP: {cell.value.workload_plane_ip}</IPText>
+                          <IPText>CP: {cell.value.controlPlaneIP}</IPText>
+                          <IPText>WP: {cell.value.workloadPlaneIP}</IPText>
                         </div>
                       </Cell>
                     );
