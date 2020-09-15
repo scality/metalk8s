@@ -261,14 +261,11 @@ export function* fetchNodes() {
             );
 
           // Store the name of conditions which the status are True in the array
-          // given the avaiable conditions (Ready, DiskPressure, MemoryPressure, PIDPressure, Network Unavailable, Unschedulable)
-          let conditions = [];
-          const activeCondition = node.status.conditions.find(
-            (cond) => cond.status === 'True',
-          );
-          if (activeCondition && activeCondition.types) {
-            conditions.push(activeCondition.type);
-          }
+          // given the available conditions (Ready, DiskPressure, MemoryPressure, PIDPressure, Network Unavailable, Unschedulable)
+          const conditions = node?.status?.conditions?.reduce((acc, cond) => {
+            if (cond.status === 'True' && cond?.type) acc.push(cond.type);
+            return acc;
+          }, []);
 
           let status;
           if (statusType && statusType.status === 'True') {

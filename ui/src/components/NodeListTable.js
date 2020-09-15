@@ -342,9 +342,8 @@ const NodeListTable = (props) => {
           // yellow for status.conditions['Ready'] == True and some other conditions are true
           // red for status.conditions['Ready'] == False
           // grey when there is no status.conditions
-          const notReadyConditions = conditions?.filter(
-            (cond) => cond !== 'ready' ?? [],
-          );
+          const notReadyConditions =
+            conditions?.filter((cond) => cond !== 'Ready') ?? [];
           if (status === 'ready' && notReadyConditions.length === 0) {
             return (
               <StatusText textColor="green">
