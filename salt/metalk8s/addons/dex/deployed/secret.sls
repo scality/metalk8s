@@ -1,4 +1,7 @@
-{% import_yaml 'metalk8s/addons/dex/config/dex.yaml' as dex_defaults with context %}
+{%- set dex_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv
+    )
+%}
 
 {%- set dex = salt.metalk8s_service_configuration.get_service_conf(
         'metalk8s-auth', 'metalk8s-dex-config', dex_defaults

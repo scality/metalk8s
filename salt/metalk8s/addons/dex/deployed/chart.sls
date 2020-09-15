@@ -1,7 +1,7 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{% import_yaml 'metalk8s/addons/dex/config/dex.yaml' as dex_defaults with context %}
+{% import_yaml 'metalk8s/addons/dex/config/dex.yaml.j2' as dex_defaults with context %}
 {%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
 
 {% raw %}

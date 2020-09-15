@@ -25,29 +25,6 @@ Create Dex ServiceConfiguration (metalk8s-auth/metalk8s-dex-config):
             kind: DexConfig
             spec:
               config:
-                issuer: https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc
-
-                {#- FIXME: client secrets shouldn't be hardcoded #}
-                staticClients:
-                - id: oidc-auth-client
-                  name: oidc-auth-client
-                  redirectURIs:
-                  - urn:ietf:wg:oauth:2.0:oob
-                  secret: lkfa9jaf3kfakqyeoikfjakf93k2l
-                  trustedPeers:
-                  - metalk8s-ui
-                  - grafana-ui
-                - id: metalk8s-ui
-                  name: MetalK8s UI
-                  redirectURIs:
-                  - https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback
-                  secret: ybrMJpVMQxsiZw26MhJzCjA2ut
-                - id: grafana-ui
-                  name: Grafana UI
-                  redirectURIs:
-                  - https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth
-                  secret: 4lqK98NcsWG5qBRHJUqYM1
-
                 staticPasswords:
                 - email: "admin@metalk8s.invalid"
                   hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
@@ -74,33 +51,11 @@ Convert old Dex ServiceConfiguration to new format:
             kind: DexConfig
             spec:
             {%- if 'deployment' in config_data.spec %}
-              {{ config_data.spec.deployment | yaml(False) | indent(14) }}
+              deployment:
+                {{ config_data.spec.deployment | yaml(False) | indent(16) }}
             {%- endif %}
 
               config:
-                issuer: https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc
-
-                {#- FIXME: client secrets shouldn't be hardcoded #}
-                staticClients:
-                - id: oidc-auth-client
-                  name: oidc-auth-client
-                  redirectURIs:
-                  - urn:ietf:wg:oauth:2.0:oob
-                  secret: lkfa9jaf3kfakqyeoikfjakf93k2l
-                  trustedPeers:
-                  - metalk8s-ui
-                  - grafana-ui
-                - id: metalk8s-ui
-                  name: MetalK8s UI
-                  redirectURIs:
-                  - https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback
-                  secret: ybrMJpVMQxsiZw26MhJzCjA2ut
-                - id: grafana-ui
-                  name: Grafana UI
-                  redirectURIs:
-                  - https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth
-                  secret: 4lqK98NcsWG5qBRHJUqYM1
-
             {%- if 'localuserstore' in config_data.spec %}
                 enablePasswordDB: {{ config_data.spec.localuserstore.enabled }}
                 staticPasswords:

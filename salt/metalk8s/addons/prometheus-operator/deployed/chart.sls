@@ -4,7 +4,7 @@
 {% import_yaml 'metalk8s/addons/prometheus-operator/config/grafana.yaml' as grafana_defaults with context %}
 {% import_yaml 'metalk8s/addons/prometheus-operator/config/prometheus.yaml' as prometheus_defaults with context %}
 {% import_yaml 'metalk8s/addons/prometheus-operator/config/alertmanager.yaml' as alertmanager_defaults with context %}
-{% import_yaml 'metalk8s/addons/dex/config/dex.yaml' as dex_defaults with context %}
+{% import_yaml 'metalk8s/addons/dex/config/dex.yaml.j2' as dex_defaults with context %}
 {%- set grafana = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config', grafana_defaults) %}
 {%- set prometheus = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults) %}
 {%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults) %}

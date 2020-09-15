@@ -235,7 +235,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/dex/ca/advertised.sls'),
     Path('salt/metalk8s/addons/dex/certs/init.sls'),
     Path('salt/metalk8s/addons/dex/certs/server.sls'),
-    Path('salt/metalk8s/addons/dex/config/dex.yaml'),
+    Path('salt/metalk8s/addons/dex/config/dex.yaml.j2'),
     Path('salt/metalk8s/addons/dex/deployed/chart.sls'),
     Path('salt/metalk8s/addons/dex/deployed/init.sls'),
     Path('salt/metalk8s/addons/dex/deployed/namespace.sls'),
