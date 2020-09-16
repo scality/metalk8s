@@ -1,3 +1,3 @@
 include:
-  - metalk8s.roles.internal.node-without-calico
+  - metalk8s.roles.node
   - metalk8s.kubernetes.etcd
