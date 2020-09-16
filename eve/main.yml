@@ -1516,8 +1516,8 @@ stages:
           <<: *retrieve_iso
           name: Retrieve promoted ISO image
           env:
+            <<: *_env_retrieve_artifact_retry
             <<: *_env_promoted_artifacts
-            MAX_ATTEMPTS: "300"
       - ShellCommand: &check_promoted_version_iso_checksum
           <<: *check_iso_checksum
           name: Check promoted ISO image with checksum
