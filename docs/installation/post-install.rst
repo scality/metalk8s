@@ -18,8 +18,8 @@ services <node-role-infra>`.
 
 To create the required *Volume* objects, write a YAML file with the following
 contents, replacing ``<node_name>`` with the name of the :term:`Node` on which
-to run Prometheus and AlertManager, and ``<device_path[2]>`` with the ``/dev``
-path for the partitions to use:
+to run Prometheus, AlertManager and Loki, and ``<device_path[3]>`` with the
+``/dev`` path for the partitions to use:
 
 .. code-block:: yaml
 
@@ -84,6 +84,40 @@ For more details on the available options for storage management, see
    - Sanity check
    - Troubleshooting if needed
 
+Loki volume sizing
+""""""""""""""""""
+
+Since the storage needs for logs greatly depends on the workload and the
+type of application that run on top of the MetalK8s cluster, you need to
+refer to the documentation provided by your applications to define the ideal
+size for the volume.
+
+We still provide some hints for the worst case, which is very unlikely.
+If the entropy of log messages is high, which makes them almost
+incompressible, you will need around **12Mb** per thousands of event per hour
+for an average log line of **512 bytes**.
+
+For **60000** events per hour, with the default retention of **2 weeks**:
+
+``60 (1000 events) * 24 (hours per day) * 7 (days per week) * 3 (weeks) * 12 Mb
+=~ 355 Gb``
+
+This formula is given to calculate the worst case scenario, but with real
+application logs, it should be drastically lower.
+
+Regarding the MetalK8s cluster itself (internal services and system logs),
+**1Gb** per week of retention should be sufficient in most cases.
+
+.. warning::
+
+   When you calculate the storage needs, you must always add an extra week to
+   your actual retention, because of the current week of logs.
+
+   Since there is no size-based purge mechanism, it is also recommended to add
+   a security margin of +50% volume space, in case of log burst.
+
+   Also, when creating the volume, you should take into account the potential
+   growth of the cluster and workload.
 
 Changing credentials
 ^^^^^^^^^^^^^^^^^^^^
