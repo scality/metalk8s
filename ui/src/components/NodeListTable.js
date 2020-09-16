@@ -338,20 +338,19 @@ const NodeListTable = (props) => {
         cellStyle: { textAlign: 'center', width: '100px' },
         Cell: (cellProps) => {
           const { status, conditions } = cellProps.value;
+          // the `conditions` include the other conditions that exclude "Ready".
           // green for status.conditions['Ready'] == True and all other conditions are false
           // yellow for status.conditions['Ready'] == True and some other conditions are true
           // red for status.conditions['Ready'] == False
           // grey when there is no status.conditions
-          const notReadyConditions =
-            conditions?.filter((cond) => cond !== 'Ready') ?? [];
-          if (status === 'ready' && notReadyConditions.length === 0) {
+          if (status === 'ready' && conditions.length === 0) {
             return (
               <StatusText textColor="green">
                 {intl.translate('ready')}
               </StatusText>
             );
-          } else if (status === 'ready' && notReadyConditions.length !== 0) {
-            notReadyConditions.map((cond) => {
+          } else if (status === 'ready' && conditions.length !== 0) {
+            conditions.map((cond) => {
               return <StatusText textColor="yellow">{cond}</StatusText>;
             });
           } else if (status !== 'ready') {
@@ -383,7 +382,6 @@ const NodeListTable = (props) => {
         data={nodeTableData}
         rowClicked={onClickRow}
         theme={theme}
-        defaultPageSize={10}
       />
     </NodeListContainer>
   );

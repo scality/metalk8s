@@ -260,10 +260,11 @@ export function* fetchNodes() {
               (conditon) => conditon.type === 'Ready',
             );
 
-          // Store the name of conditions which the status are True in the array
-          // given the available conditions (Ready, DiskPressure, MemoryPressure, PIDPressure, Network Unavailable, Unschedulable)
+          // Store the name of conditions which the status are True in the array, except "Ready" condition, which we can know from the `status` field.
+          // Given the available conditions (DiskPressure, MemoryPressure, PIDPressure, Network Unavailable, Unschedulable)
           const conditions = node?.status?.conditions?.reduce((acc, cond) => {
-            if (cond.status === 'True' && cond?.type) acc.push(cond.type);
+            if (cond.status === 'True' && cond?.type && cond?.type !== 'Ready')
+              acc.push(cond.type);
             return acc;
           }, []);
 
