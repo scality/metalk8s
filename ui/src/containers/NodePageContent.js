@@ -11,13 +11,16 @@ import {
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageContent = (props) => {
+  const { nodeTableData } = props;
+
   const history = useHistory();
   const currentNodeName =
     history?.location?.pathname?.split('/')?.slice(2)[0] || '';
+
   return (
     <PageContentContainer>
       <LeftSideInstanceList>
-        <NodeListTable />
+        <NodeListTable nodeTableData={nodeTableData} />
       </LeftSideInstanceList>
       {currentNodeName ? (
         <RightSidePanel></RightSidePanel>

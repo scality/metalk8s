@@ -4,8 +4,10 @@ import {
   delay,
   put,
   select,
+  take,
   takeEvery,
   takeLatest,
+  race,
 } from 'redux-saga/effects';
 
 import * as CoreApi from '../../services/k8s/core';
@@ -15,11 +17,15 @@ import {
   addNotificationSuccessAction,
   addNotificationErrorAction,
 } from './notifications';
-
 import { intl } from '../../translations/IntlGlobalProvider';
-import { addJobAction, JOB_COMPLETED, allJobsSelector } from './salt';
+import {
+  addJobAction,
+  JOB_COMPLETED,
+  allJobsSelector,
+  CONNECT_SALT_API,
+} from './salt';
 import { REFRESH_TIMEOUT } from '../../constants';
-
+import { nodesCPWPIPsInterface } from '../../services/NodeUtils';
 import {
   API_STATUS_READY,
   API_STATUS_NOT_READY,
@@ -37,6 +43,10 @@ const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
+
+// Todo: We need to handle the refresh
+const FETCH_NODES_IPS_INTERFACES = 'FETCH_NODES_IPS_INTERFACES';
+const UPDATE_NODES_IPS_INTERFACES = 'UPDATE_NODES_IPS_INTERFACES';
 
 export const ROLE_MASTER = 'node-role.kubernetes.io/master';
 export const ROLE_NODE = 'node-role.kubernetes.io/node';
@@ -145,6 +155,7 @@ const defaultState = {
   list: [],
   isRefreshing: false,
   isLoading: false,
+  IPsInfo: {},
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -161,6 +172,8 @@ export default function reducer(state = defaultState, action = {}) {
         ...state,
         errors: { create_node: null },
       };
+    case UPDATE_NODES_IPS_INTERFACES:
+      return { ...state, ...action.payload };
     default:
       return state;
   }
@@ -199,9 +212,18 @@ export const stopRefreshNodesAction = () => {
   return { type: STOP_REFRESH_NODES };
 };
 
+export const fetchNodesIPsInterfaceAction = () => {
+  return { type: FETCH_NODES_IPS_INTERFACES };
+};
+
+export const updateNodesIPsInterfacesAction = (payload) => {
+  return { type: UPDATE_NODES_IPS_INTERFACES, payload };
+};
+
 // Selectors
 export const clusterVersionSelector = (state) => state.app.nodes.clusterVersion;
 export const nodesRefreshingSelector = (state) => state.app.nodes.isRefreshing;
+export const isSaltAPIAuthenticatedSelector = (state) => state.login.salt;
 
 // Sagas
 export function* fetchClusterVersion() {
@@ -237,6 +259,15 @@ export function* fetchNodes() {
             node.status.conditions.find(
               (conditon) => conditon.type === 'Ready',
             );
+
+          // Store the name of conditions which the status are True in the array, except "Ready" condition, which we can know from the `status` field.
+          // Given the available conditions (DiskPressure, MemoryPressure, PIDPressure, Network Unavailable, Unschedulable)
+          const conditions = node?.status?.conditions?.reduce((acc, cond) => {
+            if (cond.status === 'True' && cond?.type && cond?.type !== 'Ready')
+              acc.push(cond.type);
+            return acc;
+          }, []);
+
           let status;
           if (statusType && statusType.status === 'True') {
             status = API_STATUS_READY;
@@ -246,47 +277,20 @@ export function* fetchNodes() {
             status = API_STATUS_UNKNOWN;
           }
 
-          const roleTaintMatched = roleTaintMap.find((item) => {
-            const nodeRoles = Object.keys(node.metadata.labels).filter((role) =>
-              role.includes(ROLE_PREFIX),
-            );
+          // the Roles of the Node should be the ones that are stored in the labels `node-role.kubernetes.io/<role-name>`
+          const nodeRolesLabels = Object.keys(
+            node.metadata.labels,
+          ).filter((label) => label.startsWith(ROLE_PREFIX));
 
-            return (
-              nodeRoles.length === item.roles.length &&
-              nodeRoles.every((role) => item.roles.includes(role)) &&
-              (item.taints && node.spec.taints
-                ? node.spec.taints.every((taint) =>
-                    item.taints.find((item) => item.key === taint.key),
-                  )
-                : item.taints === node.spec.taints)
-            );
-          });
-          const rolesLabel = [];
-          if (roleTaintMatched) {
-            if (roleTaintMatched.bootstrap) {
-              rolesLabel.push(intl.translate('bootstrap'));
-            }
-            if (roleTaintMatched.control_plane) {
-              rolesLabel.push(intl.translate('control_plane'));
-            }
-            if (roleTaintMatched.workload_plane) {
-              rolesLabel.push(intl.translate('workload_plane'));
-            }
-            if (roleTaintMatched.infra) {
-              rolesLabel.push(intl.translate('infra'));
-            }
-          }
+          const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
 
           return {
             name: node.metadata.name,
             metalk8s_version:
               node.metadata.labels['metalk8s.scality.com/version'],
             status: status,
-            control_plane: roleTaintMatched && roleTaintMatched.control_plane,
-            workload_plane: roleTaintMatched && roleTaintMatched.workload_plane,
-            bootstrap: roleTaintMatched && roleTaintMatched.bootstrap,
-            infra: roleTaintMatched && roleTaintMatched.infra,
-            roles: rolesLabel.join(' / '),
+            conditions: conditions,
+            roles: nodeRoles.join(' / '),
             deploying: deployingNodes.includes(node.metadata.name),
             internalIP: node?.status?.addresses?.find(
               (ip) => ip.type === 'InternalIP',
@@ -439,6 +443,40 @@ export function* stopRefreshNodes() {
   );
 }
 
+export function* fetchNodesIPsInterface() {
+  let result;
+  // Check if Salt API is already authenticated
+  // If not, wait for the CONNECT_SALT_API action.
+  const isSaltAPIAuthenticated = yield select(isSaltAPIAuthenticatedSelector);
+  if (isSaltAPIAuthenticated) {
+    result = yield call(ApiSalt.getNodesIPsInterfaces);
+  } else {
+    // eslint-disable-next-line no-unused-vars
+    const { success, failure, timeout } = yield race({
+      success: take(CONNECT_SALT_API),
+      timeout: delay(5000),
+    });
+    if (success) {
+      result = yield call(ApiSalt.getNodesIPsInterfaces);
+    }
+    //TODO: We're missing proper error-handling here.
+  }
+
+  if (!result.error) {
+    const nodesIPsInfo = result.return[0];
+    const IPsInfo = Object.keys(nodesIPsInfo)?.reduce((ipsInfo, nodeName) => {
+      ipsInfo[nodeName] = nodesCPWPIPsInterface(nodesIPsInfo[nodeName]);
+      return ipsInfo;
+    }, {});
+
+    yield put(
+      updateNodesIPsInterfacesAction({
+        IPsInfo: IPsInfo,
+      }),
+    );
+  }
+}
+
 export function* nodesSaga() {
   yield all([
     takeEvery(FETCH_NODES, fetchNodes),
@@ -448,5 +486,6 @@ export function* nodesSaga() {
     takeEvery(STOP_REFRESH_NODES, stopRefreshNodes),
     takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion),
     takeEvery(JOB_COMPLETED, notifyDeployJobCompleted),
+    takeEvery(FETCH_NODES_IPS_INTERFACES, fetchNodesIPsInterface),
   ]);
 }
