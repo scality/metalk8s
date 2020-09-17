@@ -278,49 +278,18 @@ export function* fetchNodes() {
           }
 
           // the Roles of the Node should be the ones that are stored in the labels `node-role.kubernetes.io/<role-name>`
-          let nodeRolesLabels = [];
-          const roleTaintMatched = roleTaintMap.find((item) => {
-            nodeRolesLabels = Object.keys(node.metadata.labels).filter((role) =>
-              role.includes(ROLE_PREFIX),
-            );
-
-            return (
-              nodeRolesLabels.length === item.roles.length &&
-              nodeRolesLabels.every((role) => item.roles.includes(role)) &&
-              (item.taints && node.spec.taints
-                ? node.spec.taints.every((taint) =>
-                    item.taints.find((item) => item.key === taint.key),
-                  )
-                : item.taints === node.spec.taints)
-            );
-          });
+          const nodeRolesLabels = Object.keys(
+            node.metadata.labels,
+          ).filter((label) => label.startsWith(ROLE_PREFIX));
 
           const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
-          const rolesLabel = [];
-          if (roleTaintMatched) {
-            if (roleTaintMatched.bootstrap) {
-              rolesLabel.push(intl.translate('bootstrap'));
-            }
-            if (roleTaintMatched.control_plane) {
-              rolesLabel.push(intl.translate('control_plane'));
-            }
-            if (roleTaintMatched.workload_plane) {
-              rolesLabel.push(intl.translate('workload_plane'));
-            }
-            if (roleTaintMatched.infra) {
-              rolesLabel.push(intl.translate('infra'));
-            }
-          }
+
           return {
             name: node.metadata.name,
             metalk8s_version:
               node.metadata.labels['metalk8s.scality.com/version'],
             status: status,
             conditions: conditions,
-            control_plane: roleTaintMatched && roleTaintMatched.control_plane,
-            workload_plane: roleTaintMatched && roleTaintMatched.workload_plane,
-            bootstrap: roleTaintMatched && roleTaintMatched.bootstrap,
-            infra: roleTaintMatched && roleTaintMatched.infra,
             roles: nodeRoles.join(' / '),
             deploying: deployingNodes.includes(node.metadata.name),
             internalIP: node?.status?.addresses?.find(
@@ -490,6 +459,7 @@ export function* fetchNodesIPsInterface() {
     if (success) {
       result = yield call(ApiSalt.getNodesIPsInterfaces);
     }
+    //TODO: We're missing proper error-handling here.
   }
 
   if (!result.error) {

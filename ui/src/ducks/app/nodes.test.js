@@ -83,10 +83,6 @@ const nodeForApi = ({ taintRoles = [], showStatus = true, ...props }) => ({
 const defaultNodeForState = {
   name: DEFAULT_NAME,
   metalk8s_version: DEFAULT_CLUSTER_VERSION,
-  workload_plane: true,
-  control_plane: false,
-  bootstrap: false,
-  infra: false,
   status: 'ready',
   deploying: false,
   roles: 'node',
@@ -184,10 +180,6 @@ describe('`fetchNodes` saga', () => {
       ['master', 'etcd'],
       ['master', 'etcd'],
       {
-        wp: false,
-        cp: true,
-        infra: false,
-        bootstrap: false,
         labels: 'master / etcd',
       },
     ],
@@ -195,10 +187,6 @@ describe('`fetchNodes` saga', () => {
       ['bootstrap', 'master', 'etcd', 'infra'],
       ['bootstrap', 'infra'],
       {
-        wp: false,
-        cp: false,
-        infra: false,
-        bootstrap: true,
         labels: 'bootstrap / master / etcd / infra',
       },
     ],
@@ -206,10 +194,6 @@ describe('`fetchNodes` saga', () => {
       ['node'],
       [],
       {
-        wp: true,
-        cp: false,
-        infra: false,
-        bootstrap: false,
         labels: 'node',
       },
     ],
@@ -217,10 +201,6 @@ describe('`fetchNodes` saga', () => {
       ['node', 'master', 'etcd'],
       [],
       {
-        wp: true,
-        cp: true,
-        infra: false,
-        bootstrap: false,
         labels: 'node / master / etcd',
       },
     ],
@@ -228,10 +208,6 @@ describe('`fetchNodes` saga', () => {
       ['infra'],
       ['infra'],
       {
-        wp: false,
-        cp: false,
-        infra: true,
-        bootstrap: false,
         labels: 'infra',
       },
     ],
@@ -239,10 +215,6 @@ describe('`fetchNodes` saga', () => {
       ['infra'],
       [],
       {
-        wp: true,
-        cp: false,
-        infra: true,
-        bootstrap: false,
         labels: 'infra',
       },
     ],
@@ -250,10 +222,6 @@ describe('`fetchNodes` saga', () => {
       ['infra', 'master', 'etcd'],
       ['infra'],
       {
-        wp: false,
-        cp: true,
-        infra: true,
-        bootstrap: false,
         labels: 'infra / master / etcd',
       },
     ],
@@ -267,10 +235,6 @@ describe('`fetchNodes` saga', () => {
 
     const expectedNode = {
       ...defaultNodeForState,
-      workload_plane: expected.wp,
-      control_plane: expected.cp,
-      bootstrap: expected.bootstrap,
-      infra: expected.infra,
       roles: expected.labels,
     };
 
