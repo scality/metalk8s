@@ -59,3 +59,7 @@ kubernetes.kubeconfig: {{ kubeconfig }}
 {%- if kubecontext is defined and kubecontext %}
 kubernetes.context: {{ kubecontext }}
 {%- endif %}
+
+reactor:
+  - 'salt/minion/*/start':
+    - salt://metalk8s/reactor/minion-start.sls?saltenv={{ saltenv }}

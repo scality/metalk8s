@@ -15,6 +15,7 @@ Configure salt master:
     - defaults:
         debug: {{ metalk8s.debug }}
         salt_ip: "{{ salt_ip }}"
+        saltenv: "{{ saltenv }}"
         kubeconfig: "/etc/salt/master-kubeconfig.conf"
 
 Configure salt master roots paths:
