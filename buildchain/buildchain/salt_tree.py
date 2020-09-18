@@ -604,7 +604,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/roles/infra/init.sls'),
     Path('salt/metalk8s/roles/infra/absent.sls'),
     Path('salt/metalk8s/roles/internal/early-stage-bootstrap.sls'),
-    Path('salt/metalk8s/roles/internal/node-without-calico.sls'),
     Path('salt/metalk8s/roles/master/absent.sls'),
     Path('salt/metalk8s/roles/master/init.sls'),
     Path('salt/metalk8s/roles/minion/init.sls'),

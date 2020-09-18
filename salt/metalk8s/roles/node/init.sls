@@ -1,3 +1,7 @@
 include:
-  - metalk8s.roles.internal.node-without-calico
+  - metalk8s.node.grains
+  - metalk8s.kubernetes.cni.loopback
   - metalk8s.kubernetes.cni.calico
+  - metalk8s.kubernetes.kubelet
+  - metalk8s.kubernetes.apiserver-proxy
+  - metalk8s.internal.preflight
