@@ -253,24 +253,6 @@ const NodePageMetricsTab = (props) => {
       range: ['#6ED0E0'],
     },
   };
-  const colorMemory = {
-    field: 'type',
-    type: 'nominal',
-    legend: null,
-    domain: ['y'],
-    scale: {
-      range: ['#EF843C'],
-    },
-  };
-  const colorSystemLoad = {
-    field: 'type',
-    type: 'nominal',
-    legend: null,
-    domain: ['y'],
-    scale: {
-      range: ['#BA43A9'],
-    },
-  };
 
   // the `read` and `out` should be the same color
   // the `write` and `in` should be the same color
@@ -308,7 +290,7 @@ const NodePageMetricsTab = (props) => {
       range: ['#E0B400', '#73BF69'],
     },
   };
-  const lineConfig = { strokeWidth: 1 };
+  const lineConfig = { strokeWidth: 1.5 };
 
   return (
     <TabContainer>
@@ -340,7 +322,7 @@ const NodePageMetricsTab = (props) => {
                 data={systemLoadData}
                 xAxis={xAxis}
                 yAxis={yAxis}
-                color={colorSystemLoad}
+                color={colorUsage}
                 width={315}
                 height={95}
                 tooltip={false}
@@ -360,7 +342,7 @@ const NodePageMetricsTab = (props) => {
                 data={memoryData}
                 xAxis={xAxis}
                 yAxis={yAxisUsauge}
-                color={colorMemory}
+                color={colorUsage}
                 width={315}
                 height={95}
                 tooltip={false}
