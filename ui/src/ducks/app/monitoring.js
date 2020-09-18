@@ -1,4 +1,12 @@
-import { put, takeEvery, takeLatest, call, all, delay, select } from 'redux-saga/effects';
+import {
+  put,
+  takeEvery,
+  takeLatest,
+  call,
+  all,
+  delay,
+  select,
+} from 'redux-saga/effects';
 import {
   getAlerts,
   queryPrometheus,
