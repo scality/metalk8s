@@ -24,6 +24,8 @@ It also takes care of silencing and inhibition of alerts.
 The default configuration values for Alertmanager are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/alertmanager.yaml
+   :language: yaml
+   :lines: 3-
 
 See :ref:`csc-alertmanager-customization` to override these defaults.
 
@@ -35,7 +37,9 @@ management in a MetalK8s cluster.
 
 The default configuration values for Dex are specified below:
 
-.. literalinclude:: ../../salt/metalk8s/addons/dex/config/dex.yaml
+.. literalinclude:: ../../salt/metalk8s/addons/dex/config/dex.yaml.j2
+   :language: yaml
+   :lines: 3-42,45-
 
 See :ref:`csc-dex-customization` for Dex configuration customizations.
 
@@ -48,6 +52,8 @@ Prometheus, with nice graphs.
 The default configuration values for Grafana are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/grafana.yaml
+   :language: yaml
+   :lines: 3-
 
 .. _csc-prometheus-default-configuration:
 
@@ -63,6 +69,8 @@ If a rule matches, Prometheus sends an alert to Alertmanager.
 The default configuration values for Prometheus are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/prometheus.yaml
+   :language: yaml
+   :lines: 3-
 
 
 Loki Default Configuration
@@ -75,6 +83,8 @@ through its API.
 The default configuration values for Loki are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/logging/loki/config/loki.yaml
+   :language: yaml
+   :lines: 3-
 
 Service Configurations Customization
 ------------------------------------
