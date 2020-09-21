@@ -316,27 +316,16 @@ For more details on Alert Rules, see the official
 Dex Configuration Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   .. _Add-dex-static-user:
+.. _add-dex-static-user:
 
-Add a local static user
-"""""""""""""""""""""""
+Add a Static User
+"""""""""""""""""
 
-Local authentication via static users is enabled by default after a fresh
-MetalK8s installation.
+To add a static user, perform the following operations from the Bootstrap node:
 
-   .. important::
+.. _generate-password-hash:
 
-      To continue using MetalK8s in cases where the external authentication
-      system fails, we advise MetalK8s administrators to leave the default
-      super admin account enabled at all times.
-
-To add a new static user, perform the following operations:
-
-   .. _Generate-password-hash:
-
-#. Generate a bcrypt hash of your new password.
-
-   - To generate the bcrypt hash, on the Bootstrap node, run the following.
+#. Generate a bcrypt hash of your password:
 
    .. code-block:: shell
 
@@ -345,180 +334,120 @@ To add a new static user, perform the following operations:
       Re-type new password:
       <your hash here, starting with "$2y$14$">
 
-#. Generate a unique ``UserID`` by running the following command.
+#. Generate a unique identifier:
 
    .. code-block:: shell
 
       root@bootstrap $ python -c 'import uuid; print uuid.uuid4()'
 
-#. From the Bootstrap node, edit the ConfigMap ``metalk8s-dex-config`` and then
-   add a new entry using:
+#. Add a new entry in the ``staticPasswords`` list, using the password hash and
+   user ID generated before, and choosing a new email and username:
 
    .. code-block:: shell
 
       root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
-                         edit configmaps metalk8s-dex-config -n metalk8s-auth
-
-   The new entry should be unique and possess mandatory fields like ``email``,
-   ``hash``, ``username`` and ``userID`` like in the example below.
+                         edit configmap metalk8s-dex-config -n metalk8s-auth
 
    .. code-block:: yaml
 
-      [...]
+      # [...]
       data:
-         config.yaml: |-
-            spec:
-               localuserstore:
-                  userlist:
-                    - email: "<email>"
-                      hash: "<replace-with-hash>"
-                      username: "<username>"
-                      userID: "<uuidv4>"
-      [...]
+        config.yaml: |-
+          apiVersion: addons.metalk8s.scality.com/v1alpha2
+          kind: DexConfiguration
+          spec:
+            # [...]
+            config:
+              # [...]
+              staticPasswords:
+                # [...]
+                - email: "<email>"
+                  hash: "<generated-password-hash>"
+                  username: "<username>"
+                  userID: "<generated-identifier>"
 
-#. Save the ConfigMap changes.
-
-#. From the Bootstrap node, run the following to propagate the
-   changes.
+#. Apply your changes:
 
    .. parsed-literal::
 
       root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
                          --kubeconfig /etc/kubernetes/admin.conf \\
-                         salt-master-bootstrap -- salt-run \\
-                         state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+                         salt-master-bootstrap -- salt-run state.sls \\
+                         metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
 
-#. Finally, create and apply the required :file:`ClusterRoleBinding.yaml` file
-   that ensures that the newly added static user is bound to a Cluster Role.
-
-   .. note::
-
-      MetalK8s installations come with already existing Cluster Roles.
-      Administrators can create new Cluster Roles or refer to the existing
-      Cluster Roles.
-
-      To obtain the list of available Cluster Roles in a MetalK8s cluster,
-      use the following command:
-
-      .. code-block:: shell
-
-         root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
-                            get clusterroles
-
-      For more information about a Cluster Role, run the following command to
-      describe it.
-
-      .. code-block:: shell
-
-         root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
-                            get clusterroles <name> -o yaml
-
-      For starters, MetalK8s administrators can provision new users using the
-      `cluster-admin` Cluster Role. Note that this Cluster Role by default
-      grants cluster-wide permissions to all resources within a cluster.
-      For more information refer to
-      `RBAC <https://kubernetes.io/docs/reference/access-authn-authz/rbac/>`_
-      documentation.
-
-
-   - Use the following template to create the :file:`ClusterRoleBinding.yaml`
-     file where:
-
-      - <name> refers to any freely chosen name
-      - <email> refers to the new user email as defined in step (3) above
-      - <cluster-role> refers to the Cluster Role picked from the list above
-
-   .. code-block:: yaml
-
-      apiVersion: rbac.authorization.k8s.io/v1
-      kind: ClusterRoleBinding
-      metadata:
-        name: <name>
-      subjects:
-      - kind: User
-        name: <email>
-        apiGroup: rbac.authorization.k8s.io
-      roleRef:
-        kind: ClusterRole
-        name: <cluster-role>
-        apiGroup: rbac.authorization.k8s.io
-
-   - Apply the ClusterRoleBinding configurations using:
-
-   .. code-block:: shell
-
-      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
-                         apply -f ClusterRoleBinding.yaml
+#. Bind the user to an existing (Cluster)Role using :ref:`this procedure
+   <bind-user-to-role>`
 
 #. Verify that the user has been successfully added and you can log in to the
-   MetalK8s UI using the new email and password.
+   MetalK8s UI using the new email and password
 
-.. _Change-dex-static-user-password:
+.. _change-dex-static-user-password:
 
-Change password for local static user
-"""""""""""""""""""""""""""""""""""""
+Change Password for an Existing Static User
+"""""""""""""""""""""""""""""""""""""""""""
 
-To change the password of an existing user, perform the following operations:
+.. important::
 
-#. Generate a bcrypt hash of the new password using
-   :ref:`this procedure<Generate-password-hash>` .
+   **Default admin user**
 
-#. From the Bootstrap node, edit the ConfigMap ``metalk8s-dex-config`` and then
-   change the ``hash`` for the selected user:
+   A new MetalK8s install comes provisioned with a default admin account, with
+   a predefined password (see :ref:`this section <default-admin-login>`). It is
+   strongly recommended that you change this password as soon as possible,
+   especially if your control plane network is accessible to untrusted clients.
 
-   .. note::
+To change the password of an existing user, perform the following operations
+from the Bootstrap node:
 
-      **Override default Admin password**
+#. Generate a bcrypt hash of the new password using :ref:`this procedure
+   <generate-password-hash>`
 
-      Newly deployed MetalK8s cluster comes provisioned with a default admin
-      account. To override the password for this default admin account, perform
-      the operation below specifying the email `admin@metalk8s.invalid`.
-      MetalK8s will automatically override the default password with the new
-      entry you have specified.
+#. Find the entry for the selected user in the ``staticPasswords`` list, and
+   update its ``hash``:
 
    .. code-block:: shell
 
       root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
-                         edit configmaps metalk8s-dex-config -n metalk8s-auth
+                         edit configmap metalk8s-dex-config -n metalk8s-auth
 
-      [..]
-      config.yaml: |-
-         localuserstore:
-            enabled: true
-            userlist:
-               - email: "user@metalk8s.invalid"
-                 hash: "<new-password-hash>"
-                 username: "user"
-                 userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
-      [...]
+   .. code-block:: yaml
 
+      # [...]
+      data:
+        config.yaml: |-
+          apiVersion: addons.metalk8s.scality.com/v1alpha2
+          kind: DexConfiguration
+          spec:
+            # [...]
+            config:
+              # [...]
+              staticPasswords:
+                # [...]
+                - email: "<previous-email>"
+                  hash: "<new-password-hash>"
+                  username: "<previous-username>"
+                  userID: "<previous-identifier>"
+                # [...]
 
-#. Save the ConfigMap changes.
-
-#. From the Bootstrap node, run the following to propagate the
-   changes.
+#. Apply your changes:
 
    .. parsed-literal::
 
       root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
                          --kubeconfig /etc/kubernetes/admin.conf \\
-                         salt-master-bootstrap -- salt-run \\
-                         state.sls metalk8s.addons.dex.deployed \\
-                         saltenv=metalk8s-|version|
+                         salt-master-bootstrap -- salt-run state.sls \\
+                         metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
 
 #. Verify that the password has been changed and you can log in to the MetalK8s
    UI using the new password
 
 .. todo::
 
-   Add documentation on the following tracked topics
+   Add documentation for the following:
 
-   - Change static user password (issue #2075)
-
-   - External authentication (issue #2013)
+   - External authentication (:ghissue:`2013`)
 
       - Configuring LDAP
-      - Configuring Active Directory(AD)
+      - Configuring Active Directory (AD)
 
 Loki Configuration Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
