@@ -1,4 +1,6 @@
 {%- set dest_version = pillar.metalk8s.cluster_version %}
+{#- NOTE: This orchestrate is called with a `salt-master` running the
+    `dest_version` so this orchestrate need to be backward compatible. #}
 
 Execute the downgrade prechecks:
   salt.runner:
@@ -39,13 +41,6 @@ Wait for API server to be available on {{ node }}:
     - salt: Deploy node {{ previous_node }}
   {%- endif %}
 
-{#- This orchestrate is called with a `salt-master` running the `dest_version`
-    so this orchestrate need to be backward compatible.
-    Add an if to handle older version that does not have the new
-    `metalk8s_kubernetes` states and need a `kubeconfig`
-    (`2.4.0` and `2.4.1`) #}
-{%- if 'metalk8s_kubernetes.object_updated' in salt.sys.list_state_functions() %}
-
 Set node {{ node }} version to {{ dest_version }}:
   metalk8s_kubernetes.object_updated:
     - name: {{ node }}
@@ -57,19 +52,6 @@ Set node {{ node }} version to {{ dest_version }}:
             metalk8s.scality.com/version: "{{ dest_version }}"
     - require:
       - http: Wait for API server to be available on {{ node }}
-
-{%- else %}
-
-Set node {{ node }} version to {{ dest_version }}:
-  metalk8s_kubernetes.node_label_present:
-    - name: metalk8s.scality.com/version
-    - node: {{ node }}
-    - value: "{{ dest_version }}"
-    - kubeconfig: "/etc/kubernetes/admin.conf"
-    - require:
-      - http: Wait for API server to be available on {{ node }}
-
-{%- endif %}
 
 Deploy node {{ node }}:
   salt.runner:
@@ -119,14 +101,6 @@ Sync module on salt-master:
     - name: saltutil.sync_all
     - saltenv: metalk8s-{{ dest_version }}
 
-{#- In previous MetalK8s releases, Cluster and Service configurations where not
-    persisted throughout. Now in `2.5.0` we have added ConfigMaps to store
-    service configurations. When running a downgrade to a version inferior to
-    `2.5.0` we do not need to deploy these ConfigMap objects. #}
-{#- Only run this step if `dest_version >= 2.5.0` #}
-
-{%- if salt.pkg.version_cmp(dest_version, '2.5.0') >= 0 %}
-
 Deploy Kubernetes service config objects:
   salt.runner:
   - name: state.orchestrate
@@ -137,8 +111,6 @@ Deploy Kubernetes service config objects:
     - salt: Sync module on salt-master
   - require_in:
     - salt: Deploy Kubernetes objects
-
-{%- endif %}
 
 Deploy Kubernetes objects:
   salt.runner:
