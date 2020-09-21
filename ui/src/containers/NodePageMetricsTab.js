@@ -17,12 +17,6 @@ import {
 } from '../components/LinechartSpec';
 import { TabContainer } from '../components/CommonLayoutStyle';
 import {
-  yAxisUsauge,
-  yAxis,
-  yAxisWriteRead,
-  yAxisInOut,
-} from './LinechartSpec';
-import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
   useQuery,
@@ -82,6 +76,13 @@ const DropdownContainer = styled.div`
 const NodePageMetricsTab = (props) => {
   const { nodeStats } = props;
   const dispatch = useDispatch();
+  const {
+    nodeStats,
+    instanceIP,
+    controlPlaneInterface,
+    workloadPlaneInterface,
+  } = props;
+  const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
   const history = useHistory();
   const query = useQuery();
@@ -89,6 +90,15 @@ const NodePageMetricsTab = (props) => {
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
+
+  const updateMetricsGraph = () =>
+    dispatch(
+      fetchNodeStatsAction({
+        instanceIP,
+        controlPlaneInterface,
+        workloadPlaneInterface,
+      }),
+    );
 
   let sampleDuration = null;
   let sampleFrequency = null;
