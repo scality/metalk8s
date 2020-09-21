@@ -107,7 +107,13 @@ const NodePageRSP = (props) => {
           <Route
             path={`/newNodes/${selectedNodeName}/metrics`}
             render={() => (
-              <NodePageMetricsTab nodeStats={nodeStats}></NodePageMetricsTab>
+              <NodePageMetricsTab
+                nodeStats={nodeStats}
+                instanceIP={instanceIP}
+                controlPlaneInterface={controlPlaneInterface}
+                workloadPlaneInterface={workloadPlaneInterface}
+                selectedNodeName={selectedNodeName}
+              />
             )}
           />
           <Route

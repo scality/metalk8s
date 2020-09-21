@@ -1,12 +1,16 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import {
   fontSize,
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { LineChart, Loader } from '@scality/core-ui';
+import { LineChart, Loader, Dropdown } from '@scality/core-ui';
+import {
+  updateNodeStatsAction,
+  fetchNodeStatsAction,
+} from '../ducks/app/monitoring';
 import { TabContainer } from './CommonLayoutStyle';
 import { yAxisUsage, yAxis, yAxisWriteRead, yAxisInOut } from './LinechartSpec';
 import {
@@ -57,12 +61,35 @@ const LoaderContainer = styled(Loader)`
   padding-left: ${padding.larger};
 `;
 
+const DropdownContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: ${padding.base};
+`;
+
 const NodePageMetricsTab = (props) => {
-  const { nodeStats } = props;
+  const {
+    nodeStats,
+    instanceIP,
+    controlPlaneInterface,
+    workloadPlaneInterface,
+  } = props;
+  const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
+
   const metricsTimeSpan = useSelector(
-    (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
+    (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
+
+  const updateMetricsGraph = () =>
+    dispatch(
+      fetchNodeStatsAction({
+        instanceIP,
+        controlPlaneInterface,
+        workloadPlaneInterface,
+      }),
+    );
 
   let sampleDuration = null;
   let sampleFrequency = null;
@@ -212,8 +239,48 @@ const NodePageMetricsTab = (props) => {
   };
   const lineConfig = { strokeWidth: 1.5 };
 
+  const metricsTimeSpanItems = [
+    {
+      label: LAST_SEVEN_DAYS,
+      onClick: () => {
+        dispatch(updateNodeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }));
+        updateMetricsGraph();
+      },
+      selected: metricsTimeSpan === LAST_SEVEN_DAYS,
+    },
+    {
+      label: LAST_TWENTY_FOUR_HOURS,
+      onClick: () => {
+        dispatch(
+          updateNodeStatsAction({ metricsTimeSpan: LAST_TWENTY_FOUR_HOURS }),
+        );
+        updateMetricsGraph();
+      },
+      selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
+    },
+    {
+      label: LAST_ONE_HOUR,
+      onClick: () => {
+        dispatch(updateNodeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }));
+        updateMetricsGraph();
+      },
+      selected: metricsTimeSpan === LAST_ONE_HOUR,
+    },
+  ];
+
+  const metricsTimeSpanDropdownItems = metricsTimeSpanItems?.filter(
+    (mTS) => mTS.label !== metricsTimeSpan,
+  );
+
   return (
     <TabContainer>
+      <DropdownContainer>
+        <Dropdown
+          items={metricsTimeSpanDropdownItems}
+          text={metricsTimeSpan}
+          size="smaller"
+        />
+      </DropdownContainer>
       <GraphsContainer>
         <RowGraphContainer>
           <Graph>
