@@ -81,6 +81,7 @@ const NodePageMetricsTab = (props) => {
     instanceIP,
     controlPlaneInterface,
     workloadPlaneInterface,
+    selectedNodeName,
   } = props;
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
