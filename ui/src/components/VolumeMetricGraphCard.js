@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useHistory } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { LineChart, Dropdown } from '@scality/core-ui';
@@ -106,9 +107,51 @@ const NoDataGraphText = styled.div`
 const MetricGraphCard = (props) => {
   const { volumeCondition, volumeMetricGraphData } = props;
   const dispatch = useDispatch();
+  const history = useHistory();
+  const query = new URLSearchParams(history?.location?.search);
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
+
+  // reference array to ensure consistency in encoding/decoding query params
+  const queryTimeSpansCodes = [
+    {
+      label: 'now-7d',
+      value: LAST_SEVEN_DAYS,
+    },
+    {
+      label: 'now-24h',
+      value: LAST_TWENTY_FOUR_HOURS,
+    },
+    {
+      label: 'now-1h',
+      value: LAST_ONE_HOUR,
+    },
+  ];
+  
+  // write the selected timespan in URL
+  const writeUrlTimeSpan = (timespan) => {
+    let formatted = queryTimeSpansCodes.find(item => item.value === timespan);
+    
+    if (formatted) {
+      // preserves current query params
+      query.set('from', formatted.label);
+      history.push({search : query.toString()});
+    }
+  }
+
+  const handleUrlQuery = () => {
+    const urlTimeSpan = queryTimeSpansCodes.find(
+      item => item.label === query.get('from')
+    );
+    if (urlTimeSpan) {
+      dispatch(updateVolumeStatsAction({ metricsTimeSpan: urlTimeSpan.value }));
+      updateMetricsGraph();
+    }
+  }
+  
+  // set the timespan if specified in url query
+  useEffect(handleUrlQuery, []);
 
   const updateMetricsGraph = () => dispatch(fetchVolumeStatsAction());
 
@@ -306,6 +349,7 @@ const MetricGraphCard = (props) => {
       label: LAST_SEVEN_DAYS,
       onClick: () => {
         dispatch(updateVolumeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }));
+        writeUrlTimeSpan(LAST_SEVEN_DAYS);
         updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_SEVEN_DAYS,
@@ -316,6 +360,7 @@ const MetricGraphCard = (props) => {
         dispatch(
           updateVolumeStatsAction({ metricsTimeSpan: LAST_TWENTY_FOUR_HOURS }),
         );
+        writeUrlTimeSpan(LAST_TWENTY_FOUR_HOURS);
         updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
@@ -324,6 +369,7 @@ const MetricGraphCard = (props) => {
       label: LAST_ONE_HOUR,
       onClick: () => {
         dispatch(updateVolumeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }));
+        writeUrlTimeSpan(LAST_ONE_HOUR);
         updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_ONE_HOUR,
