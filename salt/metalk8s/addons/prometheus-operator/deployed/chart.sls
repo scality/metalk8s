@@ -51236,7 +51236,9 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 16ef595de03dac4a229323336dcea31859538d6299b3917921fcb0d8ff20ec98
+        checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap",
+          apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana",
+          path="data:grafana.ini")
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: d8d82dc736b65dc3ccf0e743a2f7a371fe340cf2874c76f164366f347b23b6b4
         checksum/secret: 0b5d0cba774f73eb434cecec5282d028eb34e57b1ff23bb3aa075519de6d1892
@@ -51558,6 +51560,11 @@ spec:
   nodeSelector:
     node-role.kubernetes.io/infra: ''
   paused: false
+  podMetadata:
+    annotations:
+      checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
+        apiVersion="v1", namespace="metalk8s-monitoring", name="alertmanager-prometheus-operator-alertmanager",
+        path="data:alertmanager.yaml")
   portName: web
   replicas: {% endraw -%}{{ alertmanager.spec.deployment.replicas }}{%- raw %}
   retention: 120h

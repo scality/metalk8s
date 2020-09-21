@@ -24,6 +24,11 @@ alertmanager:
         operator: 'Exists'
         effect: 'NoSchedule'
 
+    podMetadata:
+      annotations:
+        # Override default checksum as we want to manage it with salt
+        checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-monitoring", name="alertmanager-prometheus-operator-alertmanager", path="data:alertmanager.yaml")'
+
     replicas: '__var__(alertmanager.spec.deployment.replicas)'
 
     storage:
@@ -134,6 +139,10 @@ grafana:
     - key: 'node-role.kubernetes.io/infra'
       operator: 'Exists'
       effect: 'NoSchedule'
+
+  podAnnotations:
+    # Override default checksum as we want to manage it with salt
+    checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap", apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana", path="data:grafana.ini")'
 
   replicas: '__var__(grafana.spec.deployment.replicas)'
 

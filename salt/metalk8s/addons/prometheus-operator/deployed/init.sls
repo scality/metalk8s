@@ -2,8 +2,8 @@ include:
   - ...storageclass.deployed
   - .namespace
   - .cleanup
-  - .chart
   - .alertmanager-configuration-secret
   - .dashboards
   - .service-configuration
+  - .chart
   - .prometheus-rules
