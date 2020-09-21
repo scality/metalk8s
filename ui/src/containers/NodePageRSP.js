@@ -153,11 +153,12 @@ const NodePageRSP = (props) => {
           <Route
             path={`${path}/overview`}
             render={() => (
-              <NodePageOverviewTab
-                nodeTableData={nodeTableData}
-                nodes={nodes}
-                volumes={volumes}
-                pods={pods}
+              <NodePageMetricsTab
+                nodeStats={nodeStats}
+                instanceIP={instanceIP}
+                controlPlaneInterface={controlPlaneInterface}
+                workloadPlaneInterface={workloadPlaneInterface}
+                selectedNodeName={selectedNodeName}
               />
             )}
           />
