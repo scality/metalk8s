@@ -43,4 +43,8 @@ export const SAMPLE_FREQUENCY_LAST_SEVEN_DAYS = 60 * 60;
 export const SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS = 720;
 export const SAMPLE_FREQUENCY_LAST_ONE_HOUR = 30;
 
+export const QUERY_LAST_SEVEN_DAYS = 'now-7d';
+export const QUERY_LAST_TWENTY_FOUR_HOURS = 'now-24h';
+export const QUERY_LAST_ONE_HOUR = 'now-1h';
+
 export const PORT_NODE_EXPORTER = '9100';

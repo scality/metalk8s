@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import {
   fontSize,
@@ -27,6 +28,9 @@ import {
   SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
+  QUERY_LAST_SEVEN_DAYS,
+  QUERY_LAST_TWENTY_FOUR_HOURS,
+  QUERY_LAST_ONE_HOUR,
 } from '../constants';
 
 const GraphsContainer = styled.div`
@@ -74,9 +78,11 @@ const NodePageMetricsTab = (props) => {
     instanceIP,
     controlPlaneInterface,
     workloadPlaneInterface,
+    selectedNodeName,
   } = props;
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
+  const history = useHistory();
 
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
@@ -245,6 +251,9 @@ const NodePageMetricsTab = (props) => {
       onClick: () => {
         dispatch(updateNodeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }));
         updateMetricsGraph();
+        history.push(
+          `/newNodes/${selectedNodeName}/metrics?from=${QUERY_LAST_SEVEN_DAYS}`,
+        );
       },
       selected: metricsTimeSpan === LAST_SEVEN_DAYS,
     },
@@ -255,6 +264,9 @@ const NodePageMetricsTab = (props) => {
           updateNodeStatsAction({ metricsTimeSpan: LAST_TWENTY_FOUR_HOURS }),
         );
         updateMetricsGraph();
+        history.push(
+          `/newNodes/${selectedNodeName}/metrics?from=${QUERY_LAST_TWENTY_FOUR_HOURS}`,
+        );
       },
       selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
     },
@@ -263,6 +275,9 @@ const NodePageMetricsTab = (props) => {
       onClick: () => {
         dispatch(updateNodeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }));
         updateMetricsGraph();
+        history.push(
+          `/newNodes/${selectedNodeName}/metrics?from=${QUERY_LAST_ONE_HOUR}`,
+        );
       },
       selected: metricsTimeSpan === LAST_ONE_HOUR,
     },

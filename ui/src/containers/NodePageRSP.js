@@ -5,14 +5,25 @@ import { useHistory, useLocation } from 'react-router';
 import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import { fetchNodeStatsAction } from '../ducks/app/monitoring';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
+import { useQuery } from '../services/utils';
+import {
+  fetchNodeStatsAction,
+  updateNodeStatsAction,
+} from '../ducks/app/monitoring';
 import NodePageHealthTab from '../components/NodePageHealthTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from '../components/NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
+import {
+  LAST_SEVEN_DAYS,
+  LAST_TWENTY_FOUR_HOURS,
+  LAST_ONE_HOUR,
+  QUERY_LAST_SEVEN_DAYS,
+  QUERY_LAST_ONE_HOUR,
+} from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
@@ -36,12 +47,31 @@ const NodePageRSP = (props) => {
   } = props;
   const history = useHistory();
   const location = useLocation();
-
   const dispatch = useDispatch();
   const nodeStats = useSelector(
     (state) => state.app.monitoring.nodeStats.metrics,
   );
   const theme = useSelector((state) => state.config.theme);
+
+  // we should initialize the `metricsTimeSpan` in redux base on the URL query.
+  const query = useQuery();
+  const queryTimespan = query.get('from');
+  let metricsTimeSpan;
+  switch (queryTimespan) {
+    case QUERY_LAST_SEVEN_DAYS:
+      metricsTimeSpan = LAST_SEVEN_DAYS;
+      break;
+    case QUERY_LAST_ONE_HOUR:
+      metricsTimeSpan = LAST_ONE_HOUR;
+      break;
+    default:
+      metricsTimeSpan = LAST_TWENTY_FOUR_HOURS;
+  }
+
+  useEffect(() => {
+    dispatch(updateNodeStatsAction({ metricsTimeSpan: metricsTimeSpan }));
+  }, [metricsTimeSpan, dispatch]);
+
   useEffect(() => {
     dispatch(
       fetchNodeStatsAction({
