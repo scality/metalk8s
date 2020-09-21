@@ -316,6 +316,52 @@ For more details on Alert Rules, see the official
 Dex Configuration Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. _enable-dex-static-user-store:
+
+Enable or Disable the Static User Store
+"""""""""""""""""""""""""""""""""""""""
+
+Dex includes a local store of users and their passwords, which is enabled by
+default.
+
+.. important::
+
+   To continue using MetalK8s OIDC (especially for MetalK8s UI and Grafana)
+   in case of the loss of external identity providers, it is advised to
+   keep the static user store enabled.
+
+To disable (resp. enable) it, perform the following steps:
+
+#. Set the ``enablePasswordDB`` configuration flag to ``false`` (resp.
+   ``true``):
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         edit configmap metalk8s-dex-config -n metalk8s-auth
+
+   .. code-block:: yaml
+
+      # [...]
+      data:
+        config.yaml: |-
+          apiVersion: addons.metalk8s.scality.com/v1alpha2
+          kind: DexConfiguration
+          spec:
+            # [...]
+            config:
+              # [...]
+              enablePasswordDB: false  # or true
+
+#. Apply your changes:
+
+   .. parsed-literal::
+
+      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                         --kubeconfig /etc/kubernetes/admin.conf \\
+                         salt-master-bootstrap -- salt-run state.sls \\
+                         metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+
 .. _add-dex-static-user:
 
 Add a Static User
