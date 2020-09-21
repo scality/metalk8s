@@ -486,6 +486,55 @@ from the Bootstrap node:
 #. Verify that the password has been changed and you can log in to the MetalK8s
    UI using the new password
 
+Additional Configurations
+"""""""""""""""""""""""""
+
+All configuration options exposed by Dex can be changed by following a similar
+procedure to the ones documented above. Refer to `Dex documentation
+<https://github.com/dexidp/dex/tree/v2.23.0/Documentation>`_ for an exhaustive
+explanation of what is supported.
+
+To define (or override) any configuration option, follow these steps:
+
+#. Add (or change) the corresponding field under the ``spec.config`` key of
+   the *metalk8s-auth/metalk8s-dex-config* ConfigMap:
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         edit configmap metalk8s-dex-config -n metalk8s-auth
+
+   For example, registering a client application with Dex can be done by adding
+   a new entry under ``staticClients``:
+
+   .. code-block:: yaml
+
+      # [...]
+      data:
+        config.yaml: |-
+          apiVersion: addons.metalk8s.scality.com/v1alpha2
+          kind: DexConfiguration
+          spec:
+            # [...]
+            config:
+              # [...]
+              staticClients:
+              - id: example-app
+                secret: example-app-secret
+                name: 'Example App'
+                # Where the app will be running.
+                redirectURIs:
+                - 'http://127.0.0.1:5555/callback'
+
+#. Apply your changes by running:
+
+   .. parsed-literal::
+
+      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                         --kubeconfig /etc/kubernetes/admin.conf \\
+                         salt-master-bootstrap -- salt-run state.sls \\
+                         metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+
 .. todo::
 
    Add documentation for the following:
