@@ -3,6 +3,4 @@
 # the destination version (salt-master should have been upgraded)
 
 include:
-  - metalk8s.addons.nginx-ingress.pre-upgrade
-  - metalk8s.addons.nginx-ingress-control-plane.pre-upgrade
   - metalk8s.addons.prometheus-operator.pre-upgrade

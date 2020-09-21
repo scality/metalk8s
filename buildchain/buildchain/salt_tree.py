@@ -416,8 +416,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/nginx-ingress/deployed/chart.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/tls-secret.sls'),
-    Path('salt/metalk8s/addons/nginx-ingress/pre-downgrade.sls'),
-    Path('salt/metalk8s/addons/nginx-ingress/pre-upgrade.sls'),
 
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/certs/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/certs/server.sls'),
@@ -427,8 +425,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
          'tls-secret.sls'),
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/',
          'control-plane-ip.sls'),
-    Path('salt/metalk8s/addons/nginx-ingress-control-plane/pre-downgrade.sls'),
-    Path('salt/metalk8s/addons/nginx-ingress-control-plane/pre-upgrade.sls'),
 
     Path('salt/metalk8s/container-engine/containerd/configured.sls'),
     Path('salt/metalk8s/container-engine/containerd/files/50-metalk8s.conf.j2'),
