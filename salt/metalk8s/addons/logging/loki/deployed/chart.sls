@@ -184,7 +184,8 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: f9c7883a31a1ef8ef3264cfb5160f3cc015a91cf46c6687d7f2777a62af6936b
+        checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
+          apiVersion="v1", namespace="metalk8s-logging", name="loki", path="data:loki.yaml")
         prometheus.io/port: http-metrics
         prometheus.io/scrape: 'true'
       labels:
