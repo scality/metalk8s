@@ -206,9 +206,9 @@ export const isVolumeStatsRefreshing = (state) =>
   state.app.monitoring.volumeStats.isRefreshing;
 export const isCurrentVolumeStatsRefresh = (state) =>
   state.app.monitoring.volumeCurrentStats.isRefreshing;
-export const metricsTimeSpan = (state) =>
+const volumeMetricsTimeSpan = (state) =>
   state.app.monitoring.volumeStats.metricsTimeSpan;
-export const nodeMetricsTimeSpan = (state) =>
+const nodeMetricsTimeSpan = (state) =>
   state.app.monitoring.nodeStats.metricsTimeSpan;
 
 // Sagas
@@ -351,7 +351,7 @@ export function* fetchVolumeStats() {
   let sampleDuration;
   let sampleFrequency;
 
-  const timeSpan = yield select(metricsTimeSpan);
+  const timeSpan = yield select(volumeMetricsTimeSpan);
   if (timeSpan === LAST_TWENTY_FOUR_HOURS) {
     sampleDuration = SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS;
     sampleFrequency = SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS;
