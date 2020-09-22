@@ -17,7 +17,7 @@ import {
   SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
-  PORT_NUMBER_PROMETHEUS,
+  PORT_NODE_EXPORTER,
 } from '../../constants';
 
 const REFRESH_CLUSTER_STATUS = 'REFRESH_CLUSTER_STATUS';
@@ -590,15 +590,15 @@ export function* fetchNodeStats({ payload }) {
     Math.round(currentTime.getTime() / 1000) - sampleDuration;
   const startingTimeISO = new Date(startingTimestamp * 1000).toISOString();
 
-  const cpuUsageQuery = `(((count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"}) by (cpu))) - avg(sum by (mode)(irate(node_cpu_seconds_total{mode='idle',instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"}[5m])))) * 100) / count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"}) by (cpu))`;
-  const systemLoadQuery = `avg(node_load1{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"}) / count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"}) by (cpu)) * 100`;
-  const memoryQuery = `sum(100 - ((node_memory_MemAvailable_bytes{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"} * 100) / node_memory_MemTotal_bytes{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"}))`;
-  const iopsReadQuery = `sum(irate(node_disk_reads_completed_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"}[5m])) by (instance)`;
-  const iopsWriteQuery = `sum(irate(node_disk_writes_completed_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}"}[5m])) by (instance)`;
-  const controlPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}",device="${controlPlaneInterface}"}[5m])) * 0.000001`;
-  const controlPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}",device="${controlPlaneInterface}"}[5m])) * 0.000001`;
-  const workloadPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
-  const workloadPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NUMBER_PROMETHEUS}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
+  const cpuUsageQuery = `(((count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) by (cpu))) - avg(sum by (mode)(irate(node_cpu_seconds_total{mode='idle',instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}[5m])))) * 100) / count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) by (cpu))`;
+  const systemLoadQuery = `avg(node_load1{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) / count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) by (cpu)) * 100`;
+  const memoryQuery = `sum(100 - ((node_memory_MemAvailable_bytes{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"} * 100) / node_memory_MemTotal_bytes{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}))`;
+  const iopsReadQuery = `sum(irate(node_disk_reads_completed_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}[5m])) by (instance)`;
+  const iopsWriteQuery = `sum(irate(node_disk_writes_completed_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}[5m])) by (instance)`;
+  const controlPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m])) * 0.000001`;
+  const controlPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m])) * 0.000001`;
+  const workloadPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
+  const workloadPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
 
   // Running Tasks In Parallel
   const [
