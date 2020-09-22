@@ -54,9 +54,11 @@ const LoaderContainer = styled(Loader)`
 
 const NodePageMetricsTab = (props) => {
   const { nodeStats } = props;
+  const theme = useSelector((state) => state.config.theme);
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
+
   let sampleDuration = null;
   let sampleFrequency = null;
   if (metricsTimeSpan === LAST_SEVEN_DAYS) {
@@ -198,7 +200,7 @@ const NodePageMetricsTab = (props) => {
       ticks: true,
       tickCount: 4,
       labelAngle: -50,
-      labelColor: '#a8b5c1',
+      labelColor: theme.brand.textSecondary,
     },
     title: null,
   };

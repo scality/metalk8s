@@ -109,6 +109,7 @@ const MetricGraphCard = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const query = new URLSearchParams(history?.location?.search);
+  const theme = useSelector((state) => state.config.theme);
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
@@ -128,21 +129,21 @@ const MetricGraphCard = (props) => {
       value: LAST_ONE_HOUR,
     },
   ];
-  
+
   // write the selected timespan in URL
   const writeUrlTimeSpan = (timespan) => {
-    let formatted = queryTimeSpansCodes.find(item => item.value === timespan);
-    
+    let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
+
     if (formatted) {
       // preserves current query params
       query.set('from', formatted.label);
-      history.push({search : query.toString()});
+      history.push({ search: query.toString() });
     }
-  }
+  };
 
   const handleUrlQuery = () => {
     const urlTimeSpan = queryTimeSpansCodes.find(
-      item => item.label === query.get('from')
+      (item) => item.label === query.get('from'),
     );
 
     // If a time span is specified we apply it
@@ -153,8 +154,8 @@ const MetricGraphCard = (props) => {
     } else if (metricsTimeSpan !== LAST_TWENTY_FOUR_HOURS && !urlTimeSpan) {
       writeUrlTimeSpan(metricsTimeSpan);
     }
-  }
-  
+  };
+
   // handle timespan in url query
   useEffect(handleUrlQuery, [volumeName]);
 
@@ -291,7 +292,7 @@ const MetricGraphCard = (props) => {
       ticks: true,
       tickCount: 4,
       labelAngle: -50,
-      labelColor: '#a8b5c1',
+      labelColor: theme.brand.textSecondary,
     },
     title: null,
   };
