@@ -37,7 +37,7 @@ spec:
           operator: "Exists"
           effect: "NoSchedule"
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
         node-role.kubernetes.io/infra: ''
       containers:
       - name: coredns
@@ -83,8 +83,8 @@ spec:
           failureThreshold: 5
         readinessProbe:
           httpGet:
-            path: /health
-            port: 8080
+            path: /ready
+            port: 8181
             scheme: HTTP
       dnsPolicy: Default
       serviceAccountName: coredns
