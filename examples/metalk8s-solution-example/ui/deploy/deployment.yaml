@@ -38,7 +38,7 @@ spec:
         operator: "Exists"
         effect: "NoSchedule"
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
         node-role.kubernetes.io/infra: ''
       containers:
         - name: example-solution-ui
