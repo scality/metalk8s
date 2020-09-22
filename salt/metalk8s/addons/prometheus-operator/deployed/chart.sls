@@ -1,10 +1,10 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{% import_yaml 'metalk8s/addons/prometheus-operator/config/grafana.yaml' as grafana_defaults with context %}
-{% import_yaml 'metalk8s/addons/prometheus-operator/config/prometheus.yaml' as prometheus_defaults with context %}
-{% import_yaml 'metalk8s/addons/prometheus-operator/config/alertmanager.yaml' as alertmanager_defaults with context %}
-{% import_yaml 'metalk8s/addons/dex/config/dex.yaml' as dex_defaults with context %}
+{% set grafana_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/grafana.yaml', saltenv=saltenv) %}
+{% set prometheus_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml', saltenv=saltenv) %}
+{% set alertmanager_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml', saltenv=saltenv) %}
+{% set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
 {%- set grafana = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config', grafana_defaults) %}
 {%- set prometheus = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults) %}
 {%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults) %}
@@ -329,7 +329,7 @@ data:
     client_id = grafana-ui
     client_secret = 4lqK98NcsWG5qBRHJUqYM1
     enabled = true
-    role_attribute_path = contains(email, '{% endraw -%}{{ dex.spec.localuserstore.userlist[0]['email'] }}{%- raw %}') && 'Admin'
+    role_attribute_path = contains(`{% endraw %}{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}{% raw %}`, email) && 'Admin'
     scopes = openid profile email groups
     tls_skip_verify_insecure = true
     token_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token{%- raw %}"
@@ -51236,7 +51236,9 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 99946dc6287166fccab96ec15282aa472c91e332872d5ad4a89dca37ff7f30ee
+        checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap",
+          apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana",
+          path="data:grafana.ini")
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/sc-dashboard-provider-config: d8d82dc736b65dc3ccf0e743a2f7a371fe340cf2874c76f164366f347b23b6b4
         checksum/secret: 0b5d0cba774f73eb434cecec5282d028eb34e57b1ff23bb3aa075519de6d1892
@@ -51558,6 +51560,11 @@ spec:
   nodeSelector:
     node-role.kubernetes.io/infra: ''
   paused: false
+  podMetadata:
+    annotations:
+      checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
+        apiVersion="v1", namespace="metalk8s-monitoring", name="alertmanager-prometheus-operator-alertmanager",
+        path="data:alertmanager.yaml")
   portName: web
   replicas: {% endraw -%}{{ alertmanager.spec.deployment.replicas }}{%- raw %}
   retention: 120h

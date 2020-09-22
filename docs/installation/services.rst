@@ -30,13 +30,15 @@ The login page is loaded, and should resemble the following:
 
 .. image:: img/ui/login.png
 
+.. _default-admin-login:
+
 Log in with the default login / password
 (``admin@metalk8s.invalid`` / ``password``).
 
   .. note::
 
      To change the default password as provided above, refer to
-     :ref:`this procedure <Change-dex-user-password>`.
+     :ref:`this procedure <change-dex-static-user-password>`.
 
 The landing page should look like this:
 

@@ -11,9 +11,9 @@ Feature: Cluster and Services Configurations
     Scenario: Update Admin static user password
         Given the Kubernetes API is available
         And we have a 'metalk8s-dex-config' CSC in namespace 'metalk8s-auth'
-        # NOTE: Consider that admin user is the first of the userlist
+        # NOTE: Consider that admin user is the first static user configured.
         # Update password to "new-password"
-        When we update the CSC 'spec.localuserstore.userlist.0.hash' to '$2y$14$pDe0vj917rR3XJQ5iEZvhuSGoWkZg2/qBN/mMLqwFSz9S7EYcbIpO'
+        When we update the CSC 'spec.config.staticPasswords.0.hash' to '$2y$14$pDe0vj917rR3XJQ5iEZvhuSGoWkZg2/qBN/mMLqwFSz9S7EYcbIpO'
         Then we have 2 running pod labeled 'app.kubernetes.io/name=dex' in namespace 'metalk8s-auth'
         And we are not able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'new-password'

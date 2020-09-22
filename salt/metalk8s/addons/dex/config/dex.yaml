@@ -1,9 +1,0 @@
----
-# Configuration of the Dex (OIDC) service
-apiVersion: addons.metalk8s.scality.com
-kind: DexConfig
-spec:
-  # Configure the Dex Deployment
-  deployment:
-    replicas: 2
-  connectors: []

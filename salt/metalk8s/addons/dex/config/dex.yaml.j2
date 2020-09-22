@@ -1,0 +1,66 @@
+#!jinja|yaml
+
+# Defaults for configuration of Dex (OIDC)
+apiVersion: addons.metalk8s.scality.com/v1alpha2
+kind: DexConfig
+spec:
+  # Deployment configuration
+  deployment:
+    replicas: 2
+
+  # Dex server configuration
+  config:
+    issuer: https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc
+
+    storage:
+      config:
+        inCluster: true
+      type: kubernetes
+
+    logger:
+      level: debug
+
+    web:
+      https: 0.0.0.0:5556
+      tlsCert: /etc/dex/tls/https/server/tls.crt
+      tlsKey: /etc/dex/tls/https/server/tls.key
+
+    frontend:
+      theme: scality
+      issuer: MetalK8s
+
+    connectors: []
+
+    oauth2:
+      alwaysShowLoginScreen: true
+      skipApprovalScreen: true
+      responseTypes: ["code", "token", "id_token"]
+
+    expiry:
+      signingKeys: "6h"
+      idTokens: "24h"
+
+    {#- FIXME: client secrets shouldn't be hardcoded #}
+    {#- TODO: allow overriding these predefined clients #}
+    staticClients:
+    - id: oidc-auth-client
+      name: oidc-auth-client
+      redirectURIs:
+      - urn:ietf:wg:oauth:2.0:oob
+      secret: lkfa9jaf3kfakqyeoikfjakf93k2l
+      trustedPeers:
+      - metalk8s-ui
+      - grafana-ui
+    - id: metalk8s-ui
+      name: MetalK8s UI
+      redirectURIs:
+      - https://{{ grains.metalk8s.control_plane_ip }}:8443/oauth2/callback
+      secret: ybrMJpVMQxsiZw26MhJzCjA2ut
+    - id: grafana-ui
+      name: Grafana UI
+      redirectURIs:
+      - https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth
+      secret: 4lqK98NcsWG5qBRHJUqYM1
+
+    enablePasswordDB: true
+    staticPasswords: []

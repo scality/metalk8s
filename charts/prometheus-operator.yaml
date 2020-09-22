@@ -24,6 +24,11 @@ alertmanager:
         operator: 'Exists'
         effect: 'NoSchedule'
 
+    podMetadata:
+      annotations:
+        # Override default checksum as we want to manage it with salt
+        checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-monitoring", name="alertmanager-prometheus-operator-alertmanager", path="data:alertmanager.yaml")'
+
     replicas: '__var__(alertmanager.spec.deployment.replicas)'
 
     storage:
@@ -135,6 +140,10 @@ grafana:
       operator: 'Exists'
       effect: 'NoSchedule'
 
+  podAnnotations:
+    # Override default checksum as we want to manage it with salt
+    checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap", apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana", path="data:grafana.ini")'
+
   replicas: '__var__(grafana.spec.deployment.replicas)'
 
 
@@ -164,7 +173,8 @@ grafana:
       auth_url: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/auth)'
       token_url:  '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token)'
       api_url: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/userinfo)'
-      role_attribute_path: contains(email, '{% endraw -%}{{ dex.spec.localuserstore.userlist[0]['email'] }}{%- raw %}') && 'Admin'
+      role_attribute_path: >-
+        contains(`{% endraw %}{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}{% raw %}`, email) && 'Admin'
 
   testFramework:
     enabled: false
