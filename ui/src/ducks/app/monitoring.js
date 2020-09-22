@@ -710,15 +710,15 @@ export function* fetchNodeStats({ payload }) {
   }
 
   const metrics = {
-    cpuUsage: cpuUsage,
-    systemLoad: systemLoad,
-    memory: memory,
-    iopsRead: iopsRead,
-    iopsWrite: iopsWrite,
-    controlPlaneNetworkBandwidthIn: controlPlaneNetworkBandwidthIn,
-    controlPlaneNetworkBandwidthOut: controlPlaneNetworkBandwidthOut,
-    workloadPlaneNetworkBandwidthIn: workloadPlaneNetworkBandwidthIn,
-    workloadPlaneNetworkBandwidthOut: workloadPlaneNetworkBandwidthOut,
+    cpuUsage,
+    systemLoad,
+    memory,
+    iopsRead,
+    iopsWrite,
+    controlPlaneNetworkBandwidthIn,
+    controlPlaneNetworkBandwidthOut,
+    workloadPlaneNetworkBandwidthIn,
+    workloadPlaneNetworkBandwidthOut,
     queryStartingTime: startingTimestamp,
   };
 
