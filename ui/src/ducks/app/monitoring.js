@@ -54,6 +54,8 @@ const STOP_REFRESH_CURRENT_VOLUMESTATS = 'STOP_REFRESH_CURRENT_VOLUMESTATS';
 
 const UPDATE_NODESTATS = 'UPDATE_NODESTATS';
 const FETCH_NODESTATS = 'FETCH_NODESTATS';
+const REFRESH_NODESTATS = 'REFRESH_NODESTATS';
+const STOP_REFRESH_NODESTATS = 'STOP_REFRESH_NODESTATS';
 
 // Reducer
 const defaultState = {
@@ -95,6 +97,9 @@ const defaultState = {
   },
   nodeStats: {
     metricsTimeSpan: LAST_TWENTY_FOUR_HOURS,
+    instanceIP: '',
+    controlPlaneInterface: '',
+    workloadPlaneInterface: '',
     metrics: {
       cpuUsage: [],
       systemLoad: [],
@@ -204,6 +209,12 @@ export const fetchNodeStatsAction = (payload) => {
 export const updateNodeStatsAction = (payload) => {
   return { type: UPDATE_NODESTATS, payload };
 };
+export const refreshNodeStatsAction = () => {
+  return { type: REFRESH_NODESTATS };
+};
+export const stopRefreshNodeStatsAction = () => {
+  return { type: STOP_REFRESH_NODESTATS };
+};
 
 // Selectors
 export const isAlertRefreshing = (state) =>
@@ -218,6 +229,13 @@ const volumeMetricsTimeSpan = (state) =>
   state.app.monitoring.volumeStats.metricsTimeSpan;
 const nodeMetricsTimeSpan = (state) =>
   state.app.monitoring.nodeStats.metricsTimeSpan;
+export const isNodeStatsRefreshing = (state) =>
+  state.app.monitoring.nodeStats.isRefreshing;
+const instanceIPSelector = (state) => state.app.monitoring.nodeStats.instanceIP;
+const controlPlaneInterfaceSelector = (state) =>
+  state.app.monitoring.nodeStats.controlPlaneInterface;
+const workloadPlaneInterfaceSelector = (state) =>
+  state.app.monitoring.nodeStats.workloadPlaneInterface;
 
 // Sagas
 function getClusterQueryStatus(result) {
@@ -733,6 +751,33 @@ export function* fetchNodeStats({ payload }) {
   yield put(updateNodeStatsAction({ metrics: metrics }));
 }
 
+export function* refreshNodeStats() {
+  const instanceIP = yield select(instanceIPSelector);
+  const controlPlaneInterface = yield select(controlPlaneInterfaceSelector);
+  const workloadPlaneInterface = yield select(workloadPlaneInterfaceSelector);
+
+  yield put(updateNodeStatsAction({ isRefreshing: true }));
+  if (instanceIP && controlPlaneInterface && workloadPlaneInterface) {
+    yield call(fetchNodeStats, {
+      payload: {
+        instanceIP: instanceIP,
+        controlPlaneInterface: controlPlaneInterface,
+        workloadPlaneInterface: workloadPlaneInterface,
+      },
+    });
+  }
+  yield delay(REFRESH_METRCIS_GRAPH);
+
+  const isRefreshing = yield select(isNodeStatsRefreshing);
+  if (isRefreshing) {
+    yield call(refreshNodeStats);
+  }
+}
+
+export function* stopRefreshNodeStats() {
+  yield put(updateNodeStatsAction({ isRefreshing: false }));
+}
+
 export function* monitoringSaga() {
   yield takeLatest(FETCH_VOLUMESTATS, fetchVolumeStats);
   yield takeEvery(REFRESH_VOLUMESTATS, refreshVolumeStats);
@@ -745,5 +790,6 @@ export function* monitoringSaga() {
   yield takeEvery(STOP_REFRESH_ALERTS, stopRefreshAlerts);
   yield takeEvery(STOP_REFRESH_CLUSTER_STATUS, stopRefreshClusterStatus);
   yield takeEvery(FETCH_NODESTATS, fetchNodeStats);
-  yield takeEvery(UPDATE_NODESTATS, updateNodeStatsAction);
+  yield takeEvery(REFRESH_NODESTATS, refreshNodeStats);
+  yield takeEvery(STOP_REFRESH_NODESTATS, stopRefreshNodeStats);
 }

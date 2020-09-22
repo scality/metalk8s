@@ -7,10 +7,12 @@ import { Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
-import { useQuery } from '../services/utils';
+import { useQuery, useRefreshEffect } from '../services/utils';
 import {
   fetchNodeStatsAction,
   updateNodeStatsAction,
+  refreshNodeStatsAction,
+  stopRefreshNodeStatsAction,
 } from '../ducks/app/monitoring';
 import NodePageHealthTab from '../components/NodePageHealthTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
@@ -38,6 +40,7 @@ const NodePageRSPContainer = styled.div`
 `;
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
+// handles the refresh for the metrics tab
 const NodePageRSP = (props) => {
   const {
     selectedNodeName,
@@ -56,7 +59,7 @@ const NodePageRSP = (props) => {
   // we should initialize the `metricsTimeSpan` in redux base on the URL query.
   const query = useQuery();
   const queryTimespan = query.get('from');
-  let metricsTimeSpan;
+  let metricsTimeSpan = LAST_TWENTY_FOUR_HOURS;
   switch (queryTimespan) {
     case QUERY_LAST_SEVEN_DAYS:
       metricsTimeSpan = LAST_SEVEN_DAYS;
@@ -68,10 +71,9 @@ const NodePageRSP = (props) => {
       metricsTimeSpan = LAST_TWENTY_FOUR_HOURS;
   }
 
-  useEffect(() => {
-    dispatch(updateNodeStatsAction({ metricsTimeSpan: metricsTimeSpan }));
-  }, [metricsTimeSpan, dispatch]);
-
+  // retrieve the podlist data
+  const pods = useSelector((state) => state.app.pods.list);
+  const podsListData = getPodsListData(selectedNodeName, pods);
   useEffect(() => {
     dispatch(
       fetchNodeStatsAction({
@@ -80,14 +82,25 @@ const NodePageRSP = (props) => {
         workloadPlaneInterface,
       }),
     );
-  }, [instanceIP, controlPlaneInterface, workloadPlaneInterface, dispatch]);
-
-  useEffect(() => {
     dispatch(fetchPodsAction());
-  }, [dispatch]);
-  // retrieve the podlist data
-  const pods = useSelector((state) => state.app.pods.list);
-  const podsListData = getPodsListData(selectedNodeName, pods);
+    dispatch(
+      updateNodeStatsAction({
+        metricsTimeSpan,
+        instanceIP,
+        controlPlaneInterface,
+        workloadPlaneInterface,
+      }),
+    );
+  }, [
+    metricsTimeSpan,
+    instanceIP,
+    controlPlaneInterface,
+    workloadPlaneInterface,
+    dispatch,
+  ]);
+
+  useRefreshEffect(refreshNodeStatsAction, stopRefreshNodeStatsAction);
+
   const isHealthTabActive = location.pathname.endsWith('/health');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
