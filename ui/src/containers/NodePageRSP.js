@@ -25,6 +25,7 @@ import {
   LAST_ONE_HOUR,
   QUERY_LAST_SEVEN_DAYS,
   QUERY_LAST_ONE_HOUR,
+  QUERY_LAST_TWENTY_FOUR_HOURS,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -56,19 +57,38 @@ const NodePageRSP = (props) => {
   );
   const theme = useSelector((state) => state.config.theme);
 
-  // we should initialize the `metricsTimeSpan` in redux base on the URL query.
+  // Initialize the `metricsTimeSpan` in redux base on the URL query.
+  // Keep the selected timespan for metrics tab when switch the tabs
   const query = useQuery();
-  const queryTimespan = query.get('from');
-  let metricsTimeSpan = LAST_TWENTY_FOUR_HOURS;
-  switch (queryTimespan) {
-    case QUERY_LAST_SEVEN_DAYS:
-      metricsTimeSpan = LAST_SEVEN_DAYS;
-      break;
-    case QUERY_LAST_ONE_HOUR:
-      metricsTimeSpan = LAST_ONE_HOUR;
-      break;
-    default:
-      metricsTimeSpan = LAST_TWENTY_FOUR_HOURS;
+  const nodeMetricsTimeSpan = useSelector(
+    (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
+  );
+
+  let metricsTimeSpan;
+  let queryTimespan = query.get('from');
+  if (queryTimespan) {
+    switch (queryTimespan) {
+      case QUERY_LAST_SEVEN_DAYS:
+        metricsTimeSpan = LAST_SEVEN_DAYS;
+        break;
+      case QUERY_LAST_ONE_HOUR:
+        metricsTimeSpan = LAST_ONE_HOUR;
+        break;
+      default:
+        metricsTimeSpan = LAST_TWENTY_FOUR_HOURS;
+    }
+  } else {
+    metricsTimeSpan = nodeMetricsTimeSpan;
+    switch (nodeMetricsTimeSpan) {
+      case LAST_SEVEN_DAYS:
+        queryTimespan = QUERY_LAST_SEVEN_DAYS;
+        break;
+      case LAST_ONE_HOUR:
+        queryTimespan = QUERY_LAST_ONE_HOUR;
+        break;
+      default:
+        queryTimespan = QUERY_LAST_TWENTY_FOUR_HOURS;
+    }
   }
 
   // retrieve the podlist data
