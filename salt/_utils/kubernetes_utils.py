@@ -269,18 +269,6 @@ if HAS_LIBS:
             name='namespaced_stateful_set',
         ),
         # }}}
-        # /apis/apps/v1beta2/ {{{
-        ('apps/v1beta2', 'DaemonSet'): KindInfo(
-            model=k8s_client.V1beta2DaemonSet,
-            api_cls=k8s_client.AppsV1beta2Api,
-            name='namespaced_daemon_set',
-        ),
-        ('apps/v1beta2', 'Deployment'): KindInfo(
-            model=k8s_client.V1beta2Deployment,
-            api_cls=k8s_client.AppsV1beta2Api,
-            name='namespaced_deployment',
-        ),
-        # }}}
         # /apis/extensions/v1beta1/ {{{
         ('extensions/v1beta1', 'Ingress'): KindInfo(
             model=k8s_client.ExtensionsV1beta1Ingress,
