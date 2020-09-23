@@ -17,6 +17,12 @@ import {
 } from '../components/LinechartSpec';
 import { TabContainer } from '../components/CommonLayoutStyle';
 import {
+  yAxisUsauge,
+  yAxis,
+  yAxisWriteRead,
+  yAxisInOut,
+} from './LinechartSpec';
+import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
   useQuery,
