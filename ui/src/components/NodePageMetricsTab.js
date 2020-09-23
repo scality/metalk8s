@@ -88,106 +88,43 @@ const NodePageMetricsTab = (props) => {
       sampleFrequency,
     );
 
-  const nodeStatsOperated = Object.keys(nodeStats).map((metricName) => {
-    return {
-      metrics: metricName,
-      data: operateMetricRawData(nodeStats[metricName][0]?.values),
-    };
-  });
+  const typedMetrics = {
+    cpuUsage: 'y',
+    systemLoad: 'y',
+    memory: 'y',
+    iopsRead: 'read',
+    iopsWrite: 'write',
+    controlPlaneNetworkBandwidthIn: 'in',
+    controlPlaneNetworkBandwidthOut: 'out',
+    workloadPlaneNetworkBandwidthIn: 'in',
+    workloadPlaneNetworkBandwidthOut: 'out',
+  };
 
-  const cpuUsageData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'cpuUsage')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        y: slot[1],
-      };
-    });
+  const nodeStatsData = Object.keys(nodeStats).reduce((acc, metricName) => {
+    const data = operateMetricRawData(nodeStats[metricName][0]?.values);
 
-  const systemLoadData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'systemLoad')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        y: slot[1],
-      };
-    });
+    let extra = {};
+    const metricType = typedMetrics[metricName];
+    if (metricType !== undefined) extra.type = metricType;
 
-  const memoryData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'memory')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        y: slot[1],
-      };
-    });
-
-  const nodeIOPSWriteData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'iopsRead')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        write: slot[1],
-        type: 'write',
-      };
-    });
-
-  const nodeIOPSReadData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'iopsWrite')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        read: slot[1],
-        type: 'read',
-      };
-    });
-  const nodeControlPlaneNetworkBandwidthInData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'controlPlaneNetworkBandwidthIn')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        in: slot[1],
-        type: 'in',
-      };
-    });
-
-  const nodeControlPlaneNetworkBandwidthOutData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'controlPlaneNetworkBandwidthOut')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        out: slot[1],
-        type: 'out',
-      };
-    });
-
-  const nodeWorkloadPlaneNetworkBandwidthInData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'workloadPlaneNetworkBandwidthIn')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        in: slot[1],
-        type: 'in',
-      };
-    });
-  const nodeWorkloadPlaneNetworkBandwidthOutData = nodeStatsOperated
-    ?.find((obj) => obj.metrics === 'workloadPlaneNetworkBandwidthOut')
-    ?.data?.map((slot) => {
-      return {
-        date: fromUnixTimestampToDate(slot[0]),
-        out: slot[1],
-        type: 'out',
-      };
-    });
+    acc[metricName] = data.map((slot) => ({
+      date: fromUnixTimestampToDate(slot[0]),
+      [metricType]: slot[1],
+      ...extra,
+    }));
+    return acc;
+  }, {});
 
   // Combine the read/write, in/out into one dataset
-  const iopsData = nodeIOPSWriteData?.concat(nodeIOPSReadData);
-  const controlPlaneNetworkBandwidthData = nodeControlPlaneNetworkBandwidthInData?.concat(
-    nodeControlPlaneNetworkBandwidthOutData,
+  const iopsData = nodeStatsData['iopsRead']?.concat(
+    nodeStatsData['iopsWrite'],
   );
-  const workloadPlaneNetworkBandwidthData = nodeWorkloadPlaneNetworkBandwidthInData?.concat(
-    nodeWorkloadPlaneNetworkBandwidthOutData,
-  );
+  const controlPlaneNetworkBandwidthData = nodeStatsData[
+    'controlPlaneNetworkBandwidthIn'
+  ]?.concat(nodeStatsData['controlPlaneNetworkBandwidthOut']);
+  const workloadPlaneNetworkBandwidthData = nodeStatsData[
+    'workloadPlaneNetworkBandwidthIn'
+  ]?.concat(nodeStatsData['workloadPlaneNetworkBandwidthOut']);
 
   const xAxis = {
     field: 'date',
@@ -298,10 +235,10 @@ const NodePageMetricsTab = (props) => {
         <RowGraphContainer>
           <Graph>
             <GraphTitle>CPU USAGE (%)</GraphTitle>
-            {cpuUsageData.length !== 0 ? (
+            {nodeStatsData['cpuUsage'].length !== 0 ? (
               <LineChart
                 id={'node_cpu_usage_id'}
-                data={cpuUsageData}
+                data={nodeStatsData['cpuUsage']}
                 xAxis={xAxis}
                 yAxis={yAxisUsauge}
                 color={colorUsage}
@@ -316,10 +253,10 @@ const NodePageMetricsTab = (props) => {
           </Graph>
           <Graph>
             <GraphTitle>CPU SYSTEM LOAD (%)</GraphTitle>
-            {systemLoadData.length !== 0 ? (
+            {nodeStatsData['systemLoad'].length !== 0 ? (
               <LineChart
                 id={'node_system_load_id'}
-                data={systemLoadData}
+                data={nodeStatsData['systemLoad']}
                 xAxis={xAxis}
                 yAxis={yAxis}
                 color={colorUsage}
@@ -336,10 +273,10 @@ const NodePageMetricsTab = (props) => {
         <RowGraphContainer>
           <Graph>
             <GraphTitle>MEMORY (%)</GraphTitle>
-            {memoryData.length !== 0 ? (
+            {nodeStatsData['memory'].length !== 0 ? (
               <LineChart
                 id={'node_memory_id'}
-                data={memoryData}
+                data={nodeStatsData['memory']}
                 xAxis={xAxis}
                 yAxis={yAxisUsauge}
                 color={colorUsage}
