@@ -87,98 +87,98 @@ const NodePageMetricsTab = (props) => {
       sampleFrequency,
     );
 
-  const cpuUsageOperated = operateMetricRawData(nodeStats?.cpuUsage[0]?.values);
-  const systemLoadOperated = operateMetricRawData(
-    nodeStats?.systemLoad[0]?.values,
-  );
-  const memoryOperated = operateMetricRawData(nodeStats?.memory[0]?.values);
-  const iopsWriteOperated = operateMetricRawData(
-    nodeStats?.iopsWrite[0]?.values,
-  );
-  const iopsReadOperated = operateMetricRawData(nodeStats?.iopsRead[0]?.values);
-  const controlPlaneNetworkBandwidthInOperated = operateMetricRawData(
-    nodeStats?.controlPlaneNetworkBandwidthIn[0]?.values,
-  );
-  const controlPlaneNetworkBandwidthOutOperated = operateMetricRawData(
-    nodeStats?.controlPlaneNetworkBandwidthOut[0]?.values,
-  );
-  const workloadPlaneNetworkBandwidthInOperated = operateMetricRawData(
-    nodeStats?.workloadPlaneNetworkBandwidthIn[0]?.values,
-  );
-  const workloadPlaneNetworkBandwidthOutOperated = operateMetricRawData(
-    nodeStats?.workloadPlaneNetworkBandwidthOut[0]?.values,
-  );
-
-  const cpuUsageData = cpuUsageOperated?.map((slot) => {
+  const nodeStatsOperated = Object.keys(nodeStats).map((metricName) => {
     return {
-      date: fromUnixTimestampToDate(slot[0]),
-      y: slot[1],
-    };
-  });
-  const systemLoadData = systemLoadOperated?.map((slot) => {
-    return {
-      date: fromUnixTimestampToDate(slot[0]),
-      y: slot[1],
-    };
-  });
-  const memoryData = memoryOperated?.map((slot) => {
-    return {
-      date: fromUnixTimestampToDate(slot[0]),
-      y: slot[1],
+      metrics: metricName,
+      data: operateMetricRawData(nodeStats[metricName][0]?.values),
     };
   });
 
-  const nodeIOPSWriteData = iopsWriteOperated?.map((slot) => {
-    return {
-      date: fromUnixTimestampToDate(slot[0]),
-      write: slot[1],
-      type: 'write',
-    };
-  });
-  const nodeIOPSReadData = iopsReadOperated?.map((slot) => {
-    return {
-      date: fromUnixTimestampToDate(slot[0]),
-      read: slot[1],
-      type: 'read',
-    };
-  });
-  const nodeControlPlaneNetworkBandwidthInData = controlPlaneNetworkBandwidthInOperated?.map(
-    (slot) => {
+  const cpuUsageData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'cpuUsage')
+    ?.data?.map((slot) => {
+      return {
+        date: fromUnixTimestampToDate(slot[0]),
+        y: slot[1],
+      };
+    });
+
+  const systemLoadData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'systemLoad')
+    ?.data?.map((slot) => {
+      return {
+        date: fromUnixTimestampToDate(slot[0]),
+        y: slot[1],
+      };
+    });
+
+  const memoryData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'memory')
+    ?.data?.map((slot) => {
+      return {
+        date: fromUnixTimestampToDate(slot[0]),
+        y: slot[1],
+      };
+    });
+
+  const nodeIOPSWriteData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'iopsRead')
+    ?.data?.map((slot) => {
+      return {
+        date: fromUnixTimestampToDate(slot[0]),
+        write: slot[1],
+        type: 'write',
+      };
+    });
+
+  const nodeIOPSReadData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'iopsWrite')
+    ?.data?.map((slot) => {
+      return {
+        date: fromUnixTimestampToDate(slot[0]),
+        read: slot[1],
+        type: 'read',
+      };
+    });
+
+  const nodeControlPlaneNetworkBandwidthInData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'controlPlaneNetworkBandwidthIn')
+    ?.data?.map((slot) => {
       return {
         date: fromUnixTimestampToDate(slot[0]),
         in: slot[1],
         type: 'in',
       };
-    },
-  );
-  const nodeControlPlaneNetworkBandwidthOutData = controlPlaneNetworkBandwidthOutOperated?.map(
-    (slot) => {
+    });
+
+  const nodeControlPlaneNetworkBandwidthOutData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'controlPlaneNetworkBandwidthOut')
+    ?.data?.map((slot) => {
       return {
         date: fromUnixTimestampToDate(slot[0]),
         out: slot[1],
         type: 'out',
       };
-    },
-  );
+    });
 
-  const nodeWorkloadPlaneNetworkBandwidthInData = workloadPlaneNetworkBandwidthInOperated?.map(
-    (slot) => {
+  const nodeWorkloadPlaneNetworkBandwidthInData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'workloadPlaneNetworkBandwidthIn')
+    ?.data?.map((slot) => {
       return {
         date: fromUnixTimestampToDate(slot[0]),
         in: slot[1],
         type: 'in',
       };
-    },
-  );
-  const nodeWorkloadPlaneNetworkBandwidthOutData = workloadPlaneNetworkBandwidthOutOperated?.map(
-    (slot) => {
+    });
+  const nodeWorkloadPlaneNetworkBandwidthOutData = nodeStatsOperated
+    ?.find((obj) => obj.metrics === 'workloadPlaneNetworkBandwidthOut')
+    ?.data?.map((slot) => {
       return {
         date: fromUnixTimestampToDate(slot[0]),
         out: slot[1],
         type: 'out',
       };
-    },
-  );
+    });
 
   // Combine the read/write, in/out into one dataset
   const iopsData = nodeIOPSWriteData?.concat(nodeIOPSReadData);
