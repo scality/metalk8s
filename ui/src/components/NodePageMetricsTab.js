@@ -6,7 +6,7 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { LineChart } from '@scality/core-ui';
+import { LineChart, Loader } from '@scality/core-ui';
 import { TabContainer } from './CommonLayoutStyle';
 import {
   addMissingDataPoint,
@@ -48,10 +48,8 @@ const Graph = styled.div`
   padding-right: 40px;
 `;
 
-const NoDataGraphText = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
-  font-size: ${fontSize.small};
-  padding: ${padding.small} 0 0 ${padding.larger};
+const LoaderContainer = styled(Loader)`
+  padding-left: ${padding.larger};
 `;
 
 const NodePageMetricsTab = (props) => {
@@ -311,7 +309,7 @@ const NodePageMetricsTab = (props) => {
                 lineConfig={lineConfig}
               />
             ) : (
-              <NoDataGraphText>Loading…</NoDataGraphText>
+              <LoaderContainer size="small"></LoaderContainer>
             )}
           </Graph>
           <Graph>
@@ -329,7 +327,7 @@ const NodePageMetricsTab = (props) => {
                 lineConfig={lineConfig}
               />
             ) : (
-              <NoDataGraphText>Loading…</NoDataGraphText>
+              <LoaderContainer size="small"></LoaderContainer>
             )}
           </Graph>
         </RowGraphContainer>
@@ -349,7 +347,7 @@ const NodePageMetricsTab = (props) => {
                 lineConfig={lineConfig}
               />
             ) : (
-              <NoDataGraphText>Loading…</NoDataGraphText>
+              <LoaderContainer size="small"></LoaderContainer>
             )}
           </Graph>
           <Graph>
@@ -367,7 +365,7 @@ const NodePageMetricsTab = (props) => {
                 lineConfig={lineConfig}
               />
             ) : (
-              <NoDataGraphText>Loading…</NoDataGraphText>
+              <LoaderContainer size="small"></LoaderContainer>
             )}
           </Graph>
         </RowGraphContainer>
@@ -388,7 +386,7 @@ const NodePageMetricsTab = (props) => {
                 lineConfig={lineConfig}
               />
             ) : (
-              <NoDataGraphText>Loading…</NoDataGraphText>
+              <LoaderContainer size="small"></LoaderContainer>
             )}
           </Graph>
           <Graph>
@@ -406,7 +404,7 @@ const NodePageMetricsTab = (props) => {
                 lineConfig={lineConfig}
               />
             ) : (
-              <NoDataGraphText>Loading…</NoDataGraphText>
+              <LoaderContainer size="small"></LoaderContainer>
             )}
           </Graph>
         </RowGraphContainer>
