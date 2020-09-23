@@ -16,7 +16,7 @@ import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
 } from '../services/utils';
-import { yAxisUsage } from './LinechartSpec';
+import { yAxisUsage, yAxisWriteRead } from './LinechartSpec';
 import {
   VOLUME_CONDITION_LINK,
   LAST_SEVEN_DAYS,
@@ -298,30 +298,6 @@ const MetricGraphCard = (props) => {
     title: null,
   };
 
-  const yAxis = [
-    {
-      field: 'write',
-      type: 'quantitative',
-      // automatically add the unit for y axis labels: display 40k instead of 40000.  axis: { title: null, format: '~s' },
-      axis: { title: null },
-    },
-    {
-      field: 'read',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
-
-  const yAxisUsauge = [
-    {
-      field: 'y',
-      type: 'quantitative',
-      axis: { title: null },
-      // the max value of usage chart should always be 100%
-      scale: { domain: [0, 100] },
-    },
-  ];
-
   const colorUsage = {
     field: 'type',
     type: 'nominal',
@@ -426,7 +402,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_latency_id'}
                   data={volumeLatencyData}
                   xAxis={xAxis}
-                  yAxis={yAxis}
+                  yAxis={yAxisWriteRead}
                   color={colors}
                   width={285}
                   height={80}
@@ -445,7 +421,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_throughput_id'}
                   data={volumeThroughputData}
                   xAxis={xAxis}
-                  yAxis={yAxis}
+                  yAxis={yAxisWriteRead}
                   color={colors}
                   width={285}
                   height={80}
@@ -462,7 +438,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_IOPS_id'}
                   data={volumeIOPSData}
                   xAxis={xAxis}
-                  yAxis={yAxis}
+                  yAxis={yAxisWriteRead}
                   color={colors}
                   width={285}
                   height={80}
