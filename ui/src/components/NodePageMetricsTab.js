@@ -8,6 +8,7 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import { LineChart, Loader } from '@scality/core-ui';
 import { TabContainer } from './CommonLayoutStyle';
+import { yAxisUsage, yAxis, yAxisWriteRead, yAxisInOut } from './LinechartSpec';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
@@ -141,46 +142,7 @@ const NodePageMetricsTab = (props) => {
     },
     title: null,
   };
-  const yAxisUsauge = [
-    {
-      field: 'y',
-      type: 'quantitative',
-      axis: { title: null },
-      // the max value of usage chart should always be 100%
-      scale: { domain: [0, 100] },
-    },
-  ];
-  const yAxis = [
-    {
-      field: 'y',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
-  const yAxisWriteRead = [
-    {
-      field: 'write',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-    {
-      field: 'read',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
-  const yAxisInOut = [
-    {
-      field: 'in',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-    {
-      field: 'out',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
+
   const colorUsage = {
     field: 'type',
     type: 'nominal',
@@ -240,7 +202,7 @@ const NodePageMetricsTab = (props) => {
                 id={'node_cpu_usage_id'}
                 data={nodeStatsData['cpuUsage']}
                 xAxis={xAxis}
-                yAxis={yAxisUsauge}
+                yAxis={yAxisUsage}
                 color={colorUsage}
                 width={window.innerWidth / 4 - 50}
                 height={window.innerHeight / 6 - 30}
@@ -278,7 +240,7 @@ const NodePageMetricsTab = (props) => {
                 id={'node_memory_id'}
                 data={nodeStatsData['memory']}
                 xAxis={xAxis}
-                yAxis={yAxisUsauge}
+                yAxis={yAxisUsage}
                 color={colorUsage}
                 width={window.innerWidth / 4 - 50}
                 height={window.innerHeight / 6 - 30}

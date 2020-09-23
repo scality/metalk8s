@@ -16,6 +16,7 @@ import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
 } from '../services/utils';
+import { yAxisUsage } from './LinechartSpec';
 import {
   VOLUME_CONDITION_LINK,
   LAST_SEVEN_DAYS,
@@ -408,7 +409,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_usage_id'}
                   data={volumeUsageData}
                   xAxis={xAxis}
-                  yAxis={yAxisUsauge}
+                  yAxis={yAxisUsage}
                   color={colorUsage}
                   width={285}
                   height={80}
