@@ -1,6 +1,6 @@
 import { Given, Then } from 'cypress-cucumber-preprocessor/steps';
 
-Given('I log in', () => {
+Given('I am logged in', () => {
   const target_url = Cypress.env('target_url');
   cy.visit(target_url);
   cy.server();
