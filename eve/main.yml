@@ -604,8 +604,7 @@ stages:
           name: Trigger upgrade and downgrade test stages simultaneously
           stage_names:
             - single-node-upgrade-centos
-            # Cannot downgrade from a 3.4 etcd cluster to 3.3
-            # - single-node-downgrade-centos
+            - single-node-downgrade-centos
           waitForFinish: True
 
   create-upload-testrail-objects:
@@ -1476,8 +1475,7 @@ stages:
           doStepIf: "%(prop:minor_present)s"
           stage_names:
             - single-node-upgrade-promoted-centos
-            # Cannot downgrade from a 3.4 etcd cluster to 3.3
-            #- single-node-downgrade-promoted-centos
+            - single-node-downgrade-promoted-centos
 
 
 # --- Upgrade for promoted versions ---
