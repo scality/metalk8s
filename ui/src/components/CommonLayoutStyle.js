@@ -48,6 +48,7 @@ export const PageContentContainer = styled.div`
   height: 100%;
   width: 100%;
   background-color: ${(props) => props.theme.brand.primary};
+  overflow: hidden;
 `;
 
 // Common styles for the tabs in NodePageRSP
