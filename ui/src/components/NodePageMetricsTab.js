@@ -29,6 +29,9 @@ const GraphsContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding-left: ${padding.small};
+  background-color: ${(props) => props.theme.brand.primaryDark1};
+  overflow-y: auto;
+  height: 70vh;
 `;
 
 const GraphTitle = styled.div`
