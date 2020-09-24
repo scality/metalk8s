@@ -38,6 +38,7 @@ const NodePageRSP = (props) => {
   const nodeStats = useSelector(
     (state) => state.app.monitoring.nodeStats.metrics,
   );
+  const theme = useSelector((state) => state.config.theme);
   useEffect(() => {
     dispatch(
       fetchNodeStatsAction({
@@ -84,7 +85,7 @@ const NodePageRSP = (props) => {
 
   return (
     <NodePageRSPContainer>
-      <Tabs items={items}>
+      <Tabs items={items} activeTabColor={theme.brand.primaryDark1}>
         <Switch>
           <Route
             path={`/newNodes/${selectedNodeName}/health`}

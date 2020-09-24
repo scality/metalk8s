@@ -40,6 +40,7 @@ const GraphTitle = styled.div`
 const RowGraphContainer = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: space-around;
   padding-left: 3px;
 `;
 
@@ -140,7 +141,6 @@ const NodePageMetricsTab = (props) => {
         type: 'read',
       };
     });
-
   const nodeControlPlaneNetworkBandwidthInData = nodeStatsOperated
     ?.find((obj) => obj.metrics === 'controlPlaneNetworkBandwidthIn')
     ?.data?.map((slot) => {
@@ -305,8 +305,8 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisUsauge}
                 color={colorUsage}
-                width={315}
-                height={95}
+                width={window.innerWidth / 4 - 50}
+                height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
@@ -323,8 +323,8 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxis}
                 color={colorUsage}
-                width={315}
-                height={95}
+                width={window.innerWidth / 4 - 50}
+                height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
@@ -343,8 +343,8 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisUsauge}
                 color={colorUsage}
-                width={315}
-                height={95}
+                width={window.innerWidth / 4 - 50}
+                height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
@@ -361,8 +361,8 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisWriteRead}
                 color={colorsWriteRead}
-                width={315}
-                height={95}
+                width={window.innerWidth / 4 - 50}
+                height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
@@ -382,8 +382,8 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisInOut}
                 color={colorsInOut}
-                width={315}
-                height={95}
+                width={window.innerWidth / 4 - 50}
+                height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
@@ -400,8 +400,8 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisInOut}
                 color={colorsInOut}
-                width={315}
-                height={95}
+                width={window.innerWidth / 4 - 50}
+                height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
