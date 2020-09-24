@@ -168,8 +168,10 @@ const NodePageMetricsTab = (props) => {
     type: 'temporal',
     axis: {
       // Refer to all the available time format: https://github.com/d3/d3-time-format#locale_format
-      // format: '%m/%d %H:%M',
-      format: '%H:%M', // when the timespan is `Last 24 hours`
+      format:
+        metricsTimeSpan === (LAST_ONE_HOUR || LAST_TWENTY_FOUR_HOURS)
+          ? '%H:%M'
+          : '%m/%d',
       // Boolean value that determines whether the axis should include ticks.
       ticks: true,
       tickCount: 4,
