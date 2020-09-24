@@ -16,7 +16,7 @@ import {
 } from '../ducks/app/monitoring';
 import NodePageHealthTab from '../components/NodePageHealthTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
-import NodePageMetricsTab from '../components/NodePageMetricsTab';
+import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
 import {

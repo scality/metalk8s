@@ -12,8 +12,8 @@ import {
   updateNodeStatsAction,
   fetchNodeStatsAction,
 } from '../ducks/app/monitoring';
-import { TabContainer } from './CommonLayoutStyle';
 import { yAxisUsage, yAxis, yAxisWriteRead, yAxisInOut } from './LinechartSpec';
+import { TabContainer } from '../components/CommonLayoutStyle';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
