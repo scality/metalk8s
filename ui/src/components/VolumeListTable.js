@@ -257,6 +257,26 @@ function Table({ columns, data, nodeName, rowClicked, volumeName, theme }) {
           })}
         </thead>
         <Body {...getTableBodyProps()}>
+          {data.length === 0 ? (
+            <HeadRow
+              style={{
+                width: '100%',
+                paddingTop: padding.base,
+                height: '60px',
+              }}
+            >
+              <td
+                style={{
+                  textAlign: 'center',
+                  background: theme.brand.primaryDark2,
+                }}
+              >
+                <i className="fas fa-exclamation-triangle"></i> {'  '}No Volume
+                found
+              </td>
+            </HeadRow>
+          ) : null}
+
           {rows.map((row, i) => {
             prepareRow(row);
             return (
