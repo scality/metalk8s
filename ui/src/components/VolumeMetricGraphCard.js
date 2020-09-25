@@ -105,7 +105,7 @@ const NoDataGraphText = styled.div`
 `;
 
 const MetricGraphCard = (props) => {
-  const { volumeCondition, volumeMetricGraphData } = props;
+  const { volumeCondition, volumeMetricGraphData, volumeName } = props;
   const dispatch = useDispatch();
   const history = useHistory();
   const query = new URLSearchParams(history?.location?.search);
@@ -144,14 +144,19 @@ const MetricGraphCard = (props) => {
     const urlTimeSpan = queryTimeSpansCodes.find(
       item => item.label === query.get('from')
     );
+
+    // If a time span is specified we apply it
+    // Else if a timespan has been set but is not in the URL yet (change of volume) we write it to the URL
     if (urlTimeSpan) {
       dispatch(updateVolumeStatsAction({ metricsTimeSpan: urlTimeSpan.value }));
       updateMetricsGraph();
+    } else if (metricsTimeSpan !== LAST_TWENTY_FOUR_HOURS && !urlTimeSpan) {
+      writeUrlTimeSpan(metricsTimeSpan);
     }
   }
   
-  // set the timespan if specified in url query
-  useEffect(handleUrlQuery, []);
+  // handle timespan in url query
+  useEffect(handleUrlQuery, [volumeName]);
 
   const updateMetricsGraph = () => dispatch(fetchVolumeStatsAction());
 

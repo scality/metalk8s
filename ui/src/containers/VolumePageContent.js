@@ -168,6 +168,7 @@ const VolumePageContent = (props) => {
             PVCName={PVCName}
           ></ActiveAlertsCard>
           <MetricGraphCard
+            volumeName={currentVolumeName}
             volumeMetricGraphData={volumeMetricGraphData}
             // the volume condition compute base on the `status` and `bound/unbound`
             volumeCondition={currentVolume.status}
