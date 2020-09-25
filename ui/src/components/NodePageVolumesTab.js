@@ -30,6 +30,8 @@ const TabContent = styled.div`
 `;
 
 const NodePageVolumesTab = (props) => {
+  const { selectedNodeName } = props;
+
   const dispatch = useDispatch();
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
@@ -59,6 +61,7 @@ const NodePageVolumesTab = (props) => {
           volumeListData={volumeListData}
           isNodeColumn={false}
           isSearchBar={false}
+          nodeName={selectedNodeName}
         ></VolumeListTable>
       </TabContent>
     </TabContainer>
