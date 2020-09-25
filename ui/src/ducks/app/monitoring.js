@@ -1,4 +1,4 @@
-import { put, takeEvery, call, all, delay, select } from 'redux-saga/effects';
+import { put, takeEvery, takeLatest, call, all, delay, select } from 'redux-saga/effects';
 import {
   getAlerts,
   queryPrometheus,
@@ -522,10 +522,10 @@ export function* stopRefreshCurrentStats() {
 }
 
 export function* monitoringSaga() {
-  yield takeEvery(FETCH_VOLUMESTATS, fetchVolumeStats);
+  yield takeLatest(FETCH_VOLUMESTATS, fetchVolumeStats);
   yield takeEvery(REFRESH_VOLUMESTATS, refreshVolumeStats);
   yield takeEvery(STOP_REFRESH_VOLUMESTATS, stopRefreshVolumeStats);
-  yield takeEvery(FETCH_CURRENT_VOLUESTATS, fetchCurrentVolumeStats);
+  yield takeLatest(FETCH_CURRENT_VOLUESTATS, fetchCurrentVolumeStats);
   yield takeEvery(REFRESH_CURRENT_VOLUMESTATS, refreshCurrentVolumeStats);
   yield takeEvery(STOP_REFRESH_CURRENT_VOLUMESTATS, stopRefreshCurrentStats);
   yield takeEvery(REFRESH_CLUSTER_STATUS, refreshClusterStatus);
