@@ -151,8 +151,8 @@ export const getNodeNameFromUrl = (state, props) => {
   // There are two different URLs which we want to extract the node name from
   // `/nodes/<node-name>`
   // `/volumes/?node=<node-name>`
-  const location = props.location.pathname.split('/')[1];
-
+  // `/newNodes/<node-name>` temporary URL
+  const location = props?.location?.pathname?.split('/')[1];
   if (location === 'volumes') {
     const query = new URLSearchParams(props.location.search);
     const nodeName = query.get('node');
@@ -167,6 +167,8 @@ export const getNodeNameFromUrl = (state, props) => {
     } else {
       return '';
     }
+  } else if (location === 'newNodes') {
+    return props?.location?.pathname?.split('/')?.slice(2)[0] ?? '';
   }
 };
 
