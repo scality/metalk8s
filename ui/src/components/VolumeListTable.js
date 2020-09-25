@@ -105,10 +105,6 @@ const Cell = styled.td`
   border-top: 1px solid #424242;
 `;
 
-const ActionContainer = styled.span`
-  display: flex;
-`;
-
 const CreateVolumeButton = styled(Button)`
   margin-left: ${padding.larger};
 `;
@@ -144,50 +140,42 @@ function GlobalFilter({
   }, 500);
 
   return (
-    <ActionContainer>
-      <input
-        value={value || undefined}
-        onChange={(e) => {
-          setValue(e.target.value);
-          onChange(e.target.value);
-        }}
-        placeholder={`Search`}
-        style={{
-          fontSize: '1.1rem',
-          color: theme.brand.textPrimary,
-          border: 'solid 1px #3b4045',
-          width: '223px',
-          height: '27px',
-          borderRadius: '4px',
-          backgroundColor: theme.brand.primaryDark2,
-          fontFamily: 'Lato',
-          fontStyle: 'italic',
-          opacity: '0.6',
-          lineHeight: '1.43',
-          letterSpacing: 'normal',
-          paddingLeft: '10px',
-        }}
-      />
-      <CreateVolumeButton
-        size="small"
-        variant="secondary"
-        text={intl.translate('create_new_volume')}
-        icon={<i className="fas fa-plus-circle"></i>}
-        onClick={() => {
-          // depends on if we add node filter
-          if (nodeName) {
-            history.push(`/volumes/createVolume?node=${nodeName}`);
-          } else {
-            history.push('/volumes/createVolume');
-          }
-        }}
-        data-cy="create-volume-button"
-      />
-    </ActionContainer>
+    <input
+      value={value || undefined}
+      onChange={(e) => {
+        setValue(e.target.value);
+        onChange(e.target.value);
+      }}
+      placeholder={`Search`}
+      style={{
+        fontSize: '1.1rem',
+        color: theme.brand.textPrimary,
+        border: 'solid 1px #3b4045',
+        width: '223px',
+        height: '27px',
+        borderRadius: '4px',
+        backgroundColor: theme.brand.primaryDark2,
+        fontFamily: 'Lato',
+        fontStyle: 'italic',
+        opacity: '0.6',
+        lineHeight: '1.43',
+        letterSpacing: 'normal',
+        paddingLeft: '10px',
+      }}
+    />
   );
 }
 
-function Table({ columns, data, nodeName, rowClicked, volumeName, theme }) {
+function Table({
+  columns,
+  data,
+  nodeName,
+  rowClicked,
+  volumeName,
+  theme,
+  isSearchBar,
+}) {
+  const history = useHistory();
   const query = useQuery();
   const querySearch = query.get('search');
 
@@ -206,7 +194,7 @@ function Table({ columns, data, nodeName, rowClicked, volumeName, theme }) {
     rows,
     prepareRow,
     state,
-    visibleColumns,
+    // visibleColumns,
     preGlobalFilteredRows,
     setGlobalFilter,
   } = useTable(
@@ -225,22 +213,45 @@ function Table({ columns, data, nodeName, rowClicked, volumeName, theme }) {
       <table {...getTableProps()}>
         <thead>
           {/* The first row should be the search bar */}
-          <tr>
+          <HeadRow>
+            {isSearchBar ? (
+              <th
+                style={{
+                  textAlign: 'left',
+                }}
+              >
+                <GlobalFilter
+                  preGlobalFilteredRows={preGlobalFilteredRows}
+                  globalFilter={state.globalFilter}
+                  setGlobalFilter={setGlobalFilter}
+                  nodeName={nodeName}
+                  theme={theme}
+                />
+              </th>
+            ) : null}
             <th
-              colSpan={visibleColumns.length}
               style={{
-                textAlign: 'left',
+                textAlign: 'right',
               }}
             >
-              <GlobalFilter
-                preGlobalFilteredRows={preGlobalFilteredRows}
-                globalFilter={state.globalFilter}
-                setGlobalFilter={setGlobalFilter}
-                nodeName={nodeName}
-                theme={theme}
+              <CreateVolumeButton
+                size="small"
+                variant={isSearchBar ? 'secondary' : 'base'}
+                text={intl.translate('create_new_volume')}
+                icon={<i className="fas fa-plus-circle"></i>}
+                onClick={() => {
+                  // depends on if we add node filter
+                  if (nodeName) {
+                    history.push(`/volumes/createVolume?node=${nodeName}`);
+                  } else {
+                    history.push('/volumes/createVolume');
+                  }
+                }}
+                data-cy="create-volume-button"
               />
             </th>
-          </tr>
+          </HeadRow>
+
           {headerGroups.map((headerGroup) => {
             return (
               <HeadRow {...headerGroup.getHeaderGroupProps()}>
@@ -320,7 +331,13 @@ function Table({ columns, data, nodeName, rowClicked, volumeName, theme }) {
 }
 
 const VolumeListTable = (props) => {
-  const { nodeName, volumeListData, volumeName, isNodeColumn } = props;
+  const {
+    nodeName,
+    volumeListData,
+    volumeName,
+    isNodeColumn,
+    isSearchBar,
+  } = props;
   const history = useHistory();
   const location = useLocation();
 
@@ -440,6 +457,7 @@ const VolumeListTable = (props) => {
         rowClicked={onClickRow}
         volumeName={volumeName}
         theme={theme}
+        isSearchBar={isSearchBar}
       />
     </VolumeListContainer>
   );
