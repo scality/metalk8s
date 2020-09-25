@@ -57,7 +57,8 @@ const NodePageVolumesTab = (props) => {
       <TabContent>
         <VolumeListTable
           volumeListData={volumeListData}
-          isNodeColumn={true}
+          isNodeColumn={false}
+          isSearchBar={false}
         ></VolumeListTable>
       </TabContent>
     </TabContainer>
