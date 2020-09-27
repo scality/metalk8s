@@ -441,13 +441,13 @@ export function* fetchVolumeStats() {
   }
 
   const metrics = {
-    volumeUsage: volumeUsage,
-    volumeThroughputWrite: volumeThroughputWrite,
-    volumeThroughputRead: volumeThroughputRead,
-    volumeLatencyWrite: volumeLatencyWrite,
-    volumeLatencyRead: volumeLatencyRead,
-    volumeIOPSWrite: volumeIOPSWrite,
-    volumeIOPSRead: volumeIOPSRead,
+    volumeUsage,
+    volumeThroughputWrite,
+    volumeThroughputRead,
+    volumeLatencyWrite,
+    volumeLatencyRead,
+    volumeIOPSWrite,
+    volumeIOPSRead,
     queryStartingTime: startingTimestamp,
   };
 
@@ -487,9 +487,9 @@ export function* fetchCurrentVolumeStats() {
   }
 
   const metrics = {
-    volumeUsedCurrent: volumeUsedCurrent,
-    volumeCapacityCurrent: volumeCapacityCurrent,
-    volumeLatencyCurrent: volumeLatencyCurrent,
+    volumeUsedCurrent,
+    volumeCapacityCurrent,
+    volumeLatencyCurrent,
   };
   yield put(updateCurrentVolumeStatsAction({ metrics: metrics }));
 }
