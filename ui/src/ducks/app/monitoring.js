@@ -351,61 +351,66 @@ export function* fetchVolumeStats() {
   const volumeLatencyWriteQuery = `sum(irate(node_disk_write_time_seconds_total[5m]) / irate(node_disk_writes_completed_total[5m])) by (instance, device) * 1000000`;
   const volumeLatencyReadQuery = `sum(irate(node_disk_read_time_seconds_total[5m]) / irate(node_disk_reads_completed_total[5m])) by (instance, device) * 1000000`;
 
-  const volumeUsageQueryResult = yield call(
-    queryPrometheusRange,
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-    volumeUsageQuery,
-  );
-
-  const volumeThroughputReadQueryResult = yield call(
-    queryPrometheusRange,
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-    volumeThroughputReadQuery,
-  );
-
-  const volumeThroughputWriteQueryResult = yield call(
-    queryPrometheusRange,
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-    volumeThroughputWriteQuery,
-  );
-
-  const volumeLatencyQueryWriteResult = yield call(
-    queryPrometheusRange,
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-    volumeLatencyWriteQuery,
-  );
-
-  const volumeLatencyQueryReadResult = yield call(
-    queryPrometheusRange,
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-    volumeLatencyReadQuery,
-  );
-
-  const volumeIOPSReadQueryResult = yield call(
-    queryPrometheusRange,
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-    volumeIOPSReadQuery,
-  );
-
-  const volumeIOPSWriteQueryResult = yield call(
-    queryPrometheusRange,
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-    volumeIOPSWriteQuery,
-  );
+  // Effects will get executed in parallel
+  const [
+    volumeUsageQueryResult,
+    volumeThroughputReadQueryResult,
+    volumeThroughputWriteQueryResult,
+    volumeLatencyQueryWriteResult,
+    volumeLatencyQueryReadResult,
+    volumeIOPSReadQueryResult,
+    volumeIOPSWriteQueryResult,
+  ] = yield all([
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      volumeUsageQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      volumeThroughputReadQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      volumeThroughputWriteQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      volumeLatencyWriteQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      volumeLatencyReadQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      volumeIOPSReadQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      volumeIOPSWriteQuery,
+    ),
+  ]);
 
   if (!volumeUsageQueryResult.error) {
     volumeUsage = volumeUsageQueryResult.data.result;
@@ -459,26 +464,24 @@ export function* fetchCurrentVolumeStats() {
   const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
   const volumeCapacityQuery = 'kubelet_volume_stats_capacity_bytes';
 
-  const volumeUsedCurrentQueryResult = yield call(
-    queryPrometheus,
-    volumeUsedQuery,
-  );
+  const [
+    volumeUsedCurrentQueryResult,
+    volumeCapacityCurrentQueryResult,
+    volumeLatencyCurrentResult,
+  ] = yield all([
+    call(queryPrometheus, volumeUsedQuery),
+    call(queryPrometheus, volumeCapacityQuery),
+    call(queryPrometheus, volumeLatencyCurrentQuery),
+  ]);
+
   if (!volumeUsedCurrentQueryResult.error) {
     volumeUsedCurrent = volumeUsedCurrentQueryResult.data.result;
   }
 
-  const volumeCapacityCurrentQueryResult = yield call(
-    queryPrometheus,
-    volumeCapacityQuery,
-  );
   if (!volumeCapacityCurrentQueryResult.error) {
     volumeCapacityCurrent = volumeCapacityCurrentQueryResult.data.result;
   }
 
-  const volumeLatencyCurrentResult = yield call(
-    queryPrometheus,
-    volumeLatencyCurrentQuery,
-  );
   if (!volumeLatencyCurrentResult.error) {
     volumeLatencyCurrent = volumeLatencyCurrentResult.data.result;
   }
