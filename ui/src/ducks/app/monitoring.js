@@ -307,13 +307,13 @@ export function* stopRefreshClusterStatus() {
 }
 
 export function* fetchVolumeStats() {
-  let volumeUsage = {};
-  let volumeThroughputWrite = {};
-  let volumeThroughputRead = {};
-  let volumeLatencyWrite = {};
-  let volumeLatencyRead = {};
-  let volumeIOPSRead = {};
-  let volumeIOPSWrite = {};
+  let volumeUsage = [];
+  let volumeThroughputWrite = [];
+  let volumeThroughputRead = [];
+  let volumeLatencyWrite = [];
+  let volumeLatencyRead = [];
+  let volumeIOPSRead = [];
+  let volumeIOPSWrite = [];
 
   let sampleDuration;
   let sampleFrequency;
@@ -455,9 +455,9 @@ export function* fetchVolumeStats() {
 }
 
 export function* fetchCurrentVolumeStats() {
-  let volumeUsedCurrent = {};
-  let volumeCapacityCurrent = {};
-  let volumeLatencyCurrent = {};
+  let volumeUsedCurrent = [];
+  let volumeCapacityCurrent = [];
+  let volumeLatencyCurrent = [];
 
   const volumeLatencyCurrentQuery = `irate(node_disk_io_time_seconds_total[1h]) * 1000000`;
   // Grafana - Used Space: kubelet_volume_stats_capacity_bytes - kubelet_volume_stats_available_bytes
