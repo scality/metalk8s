@@ -560,15 +560,15 @@ export function* stopRefreshCurrentStats() {
 export function* fetchNodeStats({ payload }) {
   const { instanceIP, controlPlaneInterface, workloadPlaneInterface } = payload;
 
-  let cpuUsage = {};
-  let systemLoad = {};
-  let memory = {};
-  let iopsRead = {};
-  let iopsWrite = {};
-  let controlPlaneNetworkBandwidthIn = {};
-  let controlPlaneNetworkBandwidthOut = {};
-  let workloadPlaneNetworkBandwidthIn = {};
-  let workloadPlaneNetworkBandwidthOut = {};
+  let cpuUsage = [];
+  let systemLoad = [];
+  let memory = [];
+  let iopsRead = [];
+  let iopsWrite = [];
+  let controlPlaneNetworkBandwidthIn = [];
+  let controlPlaneNetworkBandwidthOut = [];
+  let workloadPlaneNetworkBandwidthIn = [];
+  let workloadPlaneNetworkBandwidthOut = [];
 
   let sampleDuration;
   let sampleFrequency;
