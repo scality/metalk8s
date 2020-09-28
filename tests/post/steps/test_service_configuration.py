@@ -197,6 +197,8 @@ class ClusterServiceConfiguration:
             'state.sls',
             'metalk8s.deployed',
             'saltenv=metalk8s-{}'.format(self.version),
+            '--log-level=warning',
+            '--out=json'
         ]
 
         utils.run_salt_command(self.host, cmd, self.ssh_config)
