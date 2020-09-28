@@ -1020,5 +1020,6 @@ export const stateApp = {
         isRefreshing: true,
       },
     },
+    alerts: { list : [] },
   },
 };

@@ -137,7 +137,7 @@ export const volumeGetError = (status) => {
 
 const getPVList = (state) => state?.app?.volumes?.pVList;
 const getPVCList = (state) => state?.app?.volumes?.pVCList;
-const getAlerts = (state) => state?.app?.monitoring?.alert;
+const getAlerts = (state) => state?.app?.alerts;
 const getNodes = (state) => state?.app?.nodes?.list;
 
 const getVolumeLatencyCurrent = (state) =>
