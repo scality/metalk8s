@@ -522,15 +522,16 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/kubernetes/kube-proxy/deployed.sls'),
 
+    Path('salt/metalk8s/kubernetes/mark-control-plane/deployed.sls'),
     targets.TemplateFile(
-        task_name='configured.sls',
+        task_name='Bootstrap k8s node update file',
         source=constants.ROOT.joinpath(
             'salt', 'metalk8s', 'kubernetes', 'mark-control-plane',
-            'deployed.sls.in'
+            'files', 'bootstrap_node_update.yaml.j2.in'
         ),
         destination=constants.ISO_ROOT.joinpath(
             'salt', 'metalk8s', 'kubernetes', 'mark-control-plane',
-            'deployed.sls'
+            'files', 'bootstrap_node_update.yaml.j2'
         ),
         context={'VERSION': versions.VERSION},
         file_dep=[versions.VERSION_FILE],

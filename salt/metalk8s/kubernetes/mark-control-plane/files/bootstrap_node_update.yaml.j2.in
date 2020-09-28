@@ -1,0 +1,41 @@
+{#- We use a dedicated file here to update Bootstrap node, so that this jinja
+    is rendered right before executing it #}
+{%- set node_obj = salt.metalk8s_kubernetes.get_object(
+        kind='Node',
+        apiVersion='v1',
+        name=node_name
+    ) %}
+
+{#- NOTE: Use a list and not a boolean because in Jinja we cannot update a
+    boolean inside a loop #}
+{%- set update_taints = [] %}
+
+{#- Do not set taints if node already have the role "node" #}
+{%- if 'node-role.kubernetes.io/node' not in node_obj['metadata'].get('labels', {}) %}
+  {%- set node_taints = node_obj['spec'].get('taints') | default([], True) %}
+
+  {%- for key_taint in ['node-role.kubernetes.io/bootstrap', 'node-role.kubernetes.io/infra'] %}
+    {#- Only add taints if not present #}
+    {%- if not (node_taints | selectattr('key', 'equalto', key_taint) | list) %}
+      {%- do node_taints.append({'key': key_taint, 'effect': 'NoSchedule'}) %}
+      {%- do update_taints.append(key_taint) %}
+    {%- endif %}
+  {%- endfor %}
+{%- endif %}
+
+kind: Node
+apiVersion: v1
+metadata:
+  name: {{ node_name }}
+  labels:
+    metalk8s.scality.com/version: "@@VERSION"
+    node-role.kubernetes.io/master: ""
+    node-role.kubernetes.io/etcd: ""
+    node-role.kubernetes.io/bootstrap: ""
+    node-role.kubernetes.io/infra: ""
+  annotations:
+    kubeadm.alpha.kubernetes.io/cri-socket: {{ cri_socket }}
+{%- if update_taints %}
+spec:
+  taints: {{ node_taints | tojson }}
+{%- endif %}
