@@ -75,6 +75,7 @@ const HeadRow = styled.tr`
 `;
 
 const TableRow = styled(HeadRow)`
+  height: 48px;
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
