@@ -6,6 +6,8 @@ import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { fetchNodeStatsAction } from '../ducks/app/monitoring';
+import { fetchPodsAction } from '../ducks/app/pods';
+import { getPodsListData } from '../services/PodUtils';
 import NodePageHealthTab from '../components/NodePageHealthTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from '../components/NodePageMetricsTab';
@@ -49,6 +51,12 @@ const NodePageRSP = (props) => {
     );
   }, [instanceIP, controlPlaneInterface, workloadPlaneInterface, dispatch]);
 
+  useEffect(() => {
+    dispatch(fetchPodsAction());
+  }, [dispatch]);
+  // retrieve the podlist data
+  const pods = useSelector((state) => state.app.pods.list);
+  const podsListData = getPodsListData(selectedNodeName, pods);
   const isHealthTabActive = location.pathname.endsWith('/health');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
@@ -107,7 +115,9 @@ const NodePageRSP = (props) => {
           />
           <Route
             path={`/newNodes/${selectedNodeName}/pods`}
-            component={NodePagePodsTab}
+            render={() => (
+              <NodePagePodsTab pods={podsListData}></NodePagePodsTab>
+            )}
           />
         </Switch>
       </Tabs>
