@@ -13,23 +13,24 @@ it('update the pods state when fetchPods', () => {
         {
           metadata: {
             name: 'coredns',
-            namespace: 'kube-system'
+            namespace: 'kube-system',
           },
           status: {
             phase: 'Running',
             startTime: '2019-29-03',
             containerStatuses: [
               {
-                restartCount: '2'
-              }
-            ]
+                restartCount: '2',
+                ready: true,
+              },
+            ],
           },
           spec: {
-            nodeName: 'bootstrap'
-          }
-        }
-      ]
-    }
+            nodeName: 'bootstrap',
+          },
+        },
+      ],
+    },
   };
 
   const pods = [
@@ -39,11 +40,17 @@ it('update the pods state when fetchPods', () => {
       nodeName: 'bootstrap',
       status: 'Running',
       startTime: '2019-29-03',
-      restartCount: '2'
-    }
+      restartCount: '2',
+      containerStatuses: [
+        {
+          restartCount: '2',
+          ready: true,
+        },
+      ],
+    },
   ];
 
   expect(gen.next(result).value).toEqual(
-    put({ type: SET_PODS, payload: pods })
+    put({ type: SET_PODS, payload: pods }),
   );
 });
