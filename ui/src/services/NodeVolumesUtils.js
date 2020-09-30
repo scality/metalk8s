@@ -18,7 +18,7 @@ import {
   STATUS_CRITICAL,
   STATUS_NONE,
   STATUS_HEALTH,
-  PORT_NUMBER_PROMETHEUS,
+  PORT_NODE_EXPORTER,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -237,7 +237,7 @@ export const getVolumeListData = createSelector(
       const volumeCurrentLatency = volumeLatencyCurrent?.find(
         (vLV) =>
           vLV.metric.device === volume?.status?.deviceName &&
-          vLV.metric.instance === `${instanceIP}:${PORT_NUMBER_PROMETHEUS}`,
+          vLV.metric.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
       );
 
       return {
