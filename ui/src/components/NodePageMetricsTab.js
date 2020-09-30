@@ -152,7 +152,25 @@ const NodePageMetricsTab = (props) => {
     legend: null,
     domain: ['y'],
     scale: {
-      range: ['#6ED0E0'],
+      range: ['#4BE4E2'],
+    },
+  };
+  const colorSystemLoad = {
+    field: 'type',
+    type: 'nominal',
+    legend: null,
+    domain: ['y'],
+    scale: {
+      range: ['#A6B561'],
+    },
+  };
+  const colorMemory = {
+    field: 'type',
+    type: 'nominal',
+    legend: null,
+    domain: ['y'],
+    scale: {
+      range: ['#1F78C1'],
     },
   };
 
@@ -172,7 +190,7 @@ const NodePageMetricsTab = (props) => {
     },
     domain: ['read', 'write'],
     scale: {
-      range: ['#73BF69', '#E0B400'],
+      range: ['#968BFF', '#F6B187'],
     },
   };
   const colorsInOut = {
@@ -189,7 +207,7 @@ const NodePageMetricsTab = (props) => {
     },
     domain: ['in', 'out'],
     scale: {
-      range: ['#E0B400', '#73BF69'],
+      range: ['#F6B187', '#968BFF'],
     },
   };
   const lineConfig = { strokeWidth: 1.5 };
@@ -224,7 +242,7 @@ const NodePageMetricsTab = (props) => {
                 data={nodeStatsData['systemLoad']}
                 xAxis={xAxis}
                 yAxis={yAxis}
-                color={colorUsage}
+                color={colorSystemLoad}
                 width={window.innerWidth / 4 - 50}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
@@ -244,7 +262,7 @@ const NodePageMetricsTab = (props) => {
                 data={nodeStatsData['memory']}
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
-                color={colorUsage}
+                color={colorMemory}
                 width={window.innerWidth / 4 - 50}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
