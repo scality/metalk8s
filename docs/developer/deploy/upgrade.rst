@@ -57,4 +57,4 @@ If upgrading from the same patch, minor and major version:
 
   .. parsed-literal::
 
-    /srv/scality/metalk8s-|version|-dev/upgrade.sh
+    /srv/scality/metalk8s-|version|/upgrade.sh
