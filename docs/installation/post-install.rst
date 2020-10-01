@@ -215,12 +215,11 @@ applications, perform the following sanity checks:
                               --cacert=/etc/kubernetes/pki/etcd/ca.crt \
                               --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
                               --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
-                              cluster-health
+                              endpoint health --cluster
 
-      member 46af28ca4af6c465 is healthy: got healthy result from https://<first-node-ip>:2379
-      member 81de403db853107e is healthy: got healthy result from https://<second-node-ip>:2379
-      member 8878627efe0f46be is healthy: got healthy result from https://<third-node-ip>:2379
-      cluster is healthy
+      https://<first-node-ip>:2379 is healthy: successfully committed proposal: took = 16.285672ms
+      https://<second-node-ip>:2379 is healthy: successfully committed proposal: took = 43.462092ms
+      https://<third-node-ip>:2379 is healthy: successfully committed proposal: took = 52.879358ms
 
 #. Finally, check that the exposed services are accessible, using the
    information from :doc:`this document <./services>`.
