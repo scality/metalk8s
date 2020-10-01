@@ -3667,9 +3667,8 @@ spec:
             - name: IP
               value: "autodetect"
             - name: IP_AUTODETECTION_METHOD
-              # NOTE: Use first CIDR as all calico node should have route to
-              #       all workload CIDR
-              value: can-reach={{ networks.workload_plane.cidr[0].split('/')[0] }}
+              # NOTE: Use all workload CIDRs
+              value: cidr={{ networks.workload_plane.cidr | join(',') }}
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
               value: "CrossSubnet"
