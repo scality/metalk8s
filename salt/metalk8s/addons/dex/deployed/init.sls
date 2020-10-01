@@ -12,6 +12,7 @@
 include:
 - .namespace
 - .tls-secret
+- .nginx-ingress-ca-cert-configmap
 - .theme-configmap
 - .service-configuration
 - .secret
