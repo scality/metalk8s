@@ -27,6 +27,9 @@ to 1.17.9 (PR [#2363](https://github.com/scality/metalk8s/pull/2679))
 - [#2572](https://github.com/scality/metalk8s/issues/2572) - Bump CoreDNS
 version to 1.6.5 (PR [#2582](https://github.com/scality/metalk8s/pull/2582))
 
+- Bump Calico version to 3.16.1
+  (PR[#2824](https://github.com/scality/metalk8s/pull/2824))
+
 ## Release 2.5.2 (in development)
 
 ### Enhancements
