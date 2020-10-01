@@ -3836,6 +3836,7 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
+        node-role.kubernetes.io/master: ''
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
