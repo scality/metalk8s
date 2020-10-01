@@ -4,6 +4,7 @@ import { useTable } from 'react-table';
 import styled from 'styled-components';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { TabContainer } from './CommonLayoutStyle';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const PodTableContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -106,7 +107,15 @@ function Table({ columns, data }) {
                     ...cell.column.cellStyle,
                   },
                 });
-                return <Cell {...cellProps}>{cell.render('Cell')}</Cell>;
+                if (cell.column.Header !== 'Name' && cell.value === undefined) {
+                  return (
+                    <Cell {...cellProps}>
+                      <div>{intl.translate('unknown')}</div>
+                    </Cell>
+                  );
+                } else {
+                  return <Cell {...cellProps}>{cell.render('Cell')}</Cell>;
+                }
               })}
             </TableRow>
           );
