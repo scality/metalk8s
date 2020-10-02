@@ -16,6 +16,7 @@ import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
 } from '../services/utils';
+import { yAxisUsage, yAxisWriteRead } from './LinechartSpec';
 import {
   VOLUME_CONDITION_LINK,
   LAST_SEVEN_DAYS,
@@ -109,6 +110,7 @@ const MetricGraphCard = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const query = new URLSearchParams(history?.location?.search);
+  const theme = useSelector((state) => state.config.theme);
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
@@ -128,21 +130,21 @@ const MetricGraphCard = (props) => {
       value: LAST_ONE_HOUR,
     },
   ];
-  
+
   // write the selected timespan in URL
   const writeUrlTimeSpan = (timespan) => {
-    let formatted = queryTimeSpansCodes.find(item => item.value === timespan);
-    
+    let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
+
     if (formatted) {
       // preserves current query params
       query.set('from', formatted.label);
-      history.push({search : query.toString()});
+      history.push({ search: query.toString() });
     }
-  }
+  };
 
   const handleUrlQuery = () => {
     const urlTimeSpan = queryTimeSpansCodes.find(
-      item => item.label === query.get('from')
+      (item) => item.label === query.get('from'),
     );
 
     // If a time span is specified we apply it
@@ -153,8 +155,8 @@ const MetricGraphCard = (props) => {
     } else if (metricsTimeSpan !== LAST_TWENTY_FOUR_HOURS && !urlTimeSpan) {
       writeUrlTimeSpan(metricsTimeSpan);
     }
-  }
-  
+  };
+
   // handle timespan in url query
   useEffect(handleUrlQuery, [volumeName]);
 
@@ -291,34 +293,10 @@ const MetricGraphCard = (props) => {
       ticks: true,
       tickCount: 4,
       labelAngle: -50,
-      labelColor: '#a8b5c1',
+      labelColor: theme.brand.textSecondary,
     },
     title: null,
   };
-
-  const yAxis = [
-    {
-      field: 'write',
-      type: 'quantitative',
-      // automatically add the unit for y axis labels: display 40k instead of 40000.  axis: { title: null, format: '~s' },
-      axis: { title: null },
-    },
-    {
-      field: 'read',
-      type: 'quantitative',
-      axis: { title: null },
-    },
-  ];
-
-  const yAxisUsauge = [
-    {
-      field: 'y',
-      type: 'quantitative',
-      axis: { title: null },
-      // the max value of usage chart should always be 100%
-      scale: { domain: [0, 100] },
-    },
-  ];
 
   const colorUsage = {
     field: 'type',
@@ -407,7 +385,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_usage_id'}
                   data={volumeUsageData}
                   xAxis={xAxis}
-                  yAxis={yAxisUsauge}
+                  yAxis={yAxisUsage}
                   color={colorUsage}
                   width={285}
                   height={80}
@@ -424,7 +402,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_latency_id'}
                   data={volumeLatencyData}
                   xAxis={xAxis}
-                  yAxis={yAxis}
+                  yAxis={yAxisWriteRead}
                   color={colors}
                   width={285}
                   height={80}
@@ -443,7 +421,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_throughput_id'}
                   data={volumeThroughputData}
                   xAxis={xAxis}
-                  yAxis={yAxis}
+                  yAxis={yAxisWriteRead}
                   color={colors}
                   width={285}
                   height={80}
@@ -460,7 +438,7 @@ const MetricGraphCard = (props) => {
                   id={'volume_IOPS_id'}
                   data={volumeIOPSData}
                   xAxis={xAxis}
-                  yAxis={yAxis}
+                  yAxis={yAxisWriteRead}
                   color={colors}
                   width={285}
                   height={80}
