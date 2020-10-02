@@ -151,6 +151,9 @@ spec:
           name: https-tls
         - mountPath: /web/themes/scality
           name: dex-login
+        - mountPath: /etc/ssl/certs/nginx-ingress-ca.crt
+          name: nginx-ingress-ca-cert
+          subPath: ca.crt
       nodeSelector:
         node-role.kubernetes.io/infra: ''
       serviceAccountName: dex
@@ -176,6 +179,9 @@ spec:
       - configMap:
           name: dex-login
         name: dex-login
+      - configMap:
+          name: nginx-ingress-ca-cert
+        name: nginx-ingress-ca-cert
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
