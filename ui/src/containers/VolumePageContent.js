@@ -7,7 +7,7 @@ import MetricGraphCard from '../components/VolumeMetricGraphCard';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
-  PORT_NUMBER_PROMETHEUS,
+  PORT_NODE_EXPORTER,
 } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
 import {
@@ -75,9 +75,9 @@ const VolumePageContent = (props) => {
     // find the node name of this volume
     const nodeName = volume?.spec?.nodeName;
     const currentNode = nodes.find((node) => node.name === nodeName);
-    instance = `${currentNode?.internalIP}:${PORT_NUMBER_PROMETHEUS}`;
+    instance = `${currentNode?.internalIP}:${PORT_NODE_EXPORTER}`;
   } else {
-    instance = `${node?.internalIP}:${PORT_NUMBER_PROMETHEUS}`;
+    instance = `${node?.internalIP}:${PORT_NODE_EXPORTER}`;
   }
 
   const queryStartingTime = volumeStats?.queryStartingTime;

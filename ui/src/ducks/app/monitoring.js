@@ -17,6 +17,7 @@ import {
   SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
+  PORT_NODE_EXPORTER,
 } from '../../constants';
 
 const REFRESH_CLUSTER_STATUS = 'REFRESH_CLUSTER_STATUS';
@@ -42,6 +43,9 @@ const UPDATE_CURRENT_VOLUMESTATS = 'UPDATE_CURRENT_VOLUMESTATS';
 const FETCH_CURRENT_VOLUESTATS = 'FETCH_CURRENT_VOLUESTATS';
 const REFRESH_CURRENT_VOLUMESTATS = 'REFRESH_CURRENT_VOLUMESTATS';
 const STOP_REFRESH_CURRENT_VOLUMESTATS = 'STOP_REFRESH_CURRENT_VOLUMESTATS';
+
+const UPDATE_NODESTATS = 'UPDATE_NODESTATS';
+const FETCH_NODESTATS = 'FETCH_NODESTATS';
 
 // Reducer
 const defaultState = {
@@ -81,6 +85,22 @@ const defaultState = {
     },
     isRefreshing: false,
   },
+  nodeStats: {
+    metricsTimeSpan: LAST_TWENTY_FOUR_HOURS,
+    metrics: {
+      cpuUsage: [],
+      systemLoad: [],
+      memory: [],
+      iopsRead: [],
+      iopsWrite: [],
+      controlPlaneNetworkBandwidthIn: [],
+      controlPlaneNetworkBandwidthOut: [],
+      workloadPlaneNetworkBandwidthIn: [],
+      workloadPlaneNetworkBandwidthOut: [],
+      queryStartingTime: 0,
+    },
+    isRefreshing: false,
+  },
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -103,6 +123,11 @@ export default function reducer(state = defaultState, action = {}) {
       return {
         ...state,
         volumeCurrentStats: { ...state.volumeCurrentStats, ...action.payload },
+      };
+    case UPDATE_NODESTATS:
+      return {
+        ...state,
+        nodeStats: { ...state.nodeStats, ...action.payload },
       };
     default:
       return state;
@@ -165,6 +190,12 @@ export const stopRefreshCurrentVolumeStatsAction = () => {
 export const updateCurrentVolumeStatsAction = (payload) => {
   return { type: UPDATE_CURRENT_VOLUMESTATS, payload };
 };
+export const fetchNodeStatsAction = (payload) => {
+  return { type: FETCH_NODESTATS, payload };
+};
+export const updateNodeStatsAction = (payload) => {
+  return { type: UPDATE_NODESTATS, payload };
+};
 
 // Selectors
 export const isAlertRefreshing = (state) =>
@@ -175,8 +206,10 @@ export const isVolumeStatsRefreshing = (state) =>
   state.app.monitoring.volumeStats.isRefreshing;
 export const isCurrentVolumeStatsRefresh = (state) =>
   state.app.monitoring.volumeCurrentStats.isRefreshing;
-export const metricsTimeSpan = (state) =>
+const volumeMetricsTimeSpan = (state) =>
   state.app.monitoring.volumeStats.metricsTimeSpan;
+const nodeMetricsTimeSpan = (state) =>
+  state.app.monitoring.nodeStats.metricsTimeSpan;
 
 // Sagas
 function getClusterQueryStatus(result) {
@@ -318,7 +351,7 @@ export function* fetchVolumeStats() {
   let sampleDuration;
   let sampleFrequency;
 
-  const timeSpan = yield select(metricsTimeSpan);
+  const timeSpan = yield select(volumeMetricsTimeSpan);
   if (timeSpan === LAST_TWENTY_FOUR_HOURS) {
     sampleDuration = SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS;
     sampleFrequency = SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS;
@@ -524,6 +557,174 @@ export function* stopRefreshCurrentStats() {
   yield put(updateCurrentVolumeStatsAction({ isRefreshing: false }));
 }
 
+export function* fetchNodeStats({ payload }) {
+  const { instanceIP, controlPlaneInterface, workloadPlaneInterface } = payload;
+
+  let cpuUsage = [];
+  let systemLoad = [];
+  let memory = [];
+  let iopsRead = [];
+  let iopsWrite = [];
+  let controlPlaneNetworkBandwidthIn = [];
+  let controlPlaneNetworkBandwidthOut = [];
+  let workloadPlaneNetworkBandwidthIn = [];
+  let workloadPlaneNetworkBandwidthOut = [];
+
+  let sampleDuration;
+  let sampleFrequency;
+
+  const timeSpan = yield select(nodeMetricsTimeSpan);
+  if (timeSpan === LAST_TWENTY_FOUR_HOURS) {
+    sampleDuration = SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS;
+    sampleFrequency = SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS;
+  } else if (timeSpan === LAST_SEVEN_DAYS) {
+    sampleDuration = SAMPLE_DURATION_LAST_SEVEN_DAYS;
+    sampleFrequency = SAMPLE_FREQUENCY_LAST_SEVEN_DAYS;
+  } else if (timeSpan === LAST_ONE_HOUR) {
+    sampleDuration = SAMPLE_DURATION_LAST_ONE_HOUR;
+    sampleFrequency = SAMPLE_FREQUENCY_LAST_ONE_HOUR;
+  }
+  const currentTime = new Date();
+  const currentTimeISO = currentTime.toISOString(); // To query Prometheus the date should follow `RFC3339` format
+  const startingTimestamp =
+    Math.round(currentTime.getTime() / 1000) - sampleDuration;
+  const startingTimeISO = new Date(startingTimestamp * 1000).toISOString();
+
+  const cpuUsageQuery = `(((count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) by (cpu))) - avg(sum by (mode)(irate(node_cpu_seconds_total{mode='idle',instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}[5m])))) * 100) / count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) by (cpu))`;
+  const systemLoadQuery = `avg(node_load1{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) / count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) by (cpu)) * 100`;
+  const memoryQuery = `sum(100 - ((node_memory_MemAvailable_bytes{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"} * 100) / node_memory_MemTotal_bytes{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}))`;
+  const iopsReadQuery = `sum(irate(node_disk_reads_completed_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}[5m])) by (instance)`;
+  const iopsWriteQuery = `sum(irate(node_disk_writes_completed_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}[5m])) by (instance)`;
+  const controlPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m])) * 0.000001`;
+  const controlPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m])) * 0.000001`;
+  const workloadPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
+  const workloadPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
+
+  // Running Tasks In Parallel
+  const [
+    cpuUsageQueryResult,
+    systemLoadQueryResult,
+    memoryQueryResult,
+    iopsReadQueryResult,
+    iopsWriteQueryResult,
+    controlPlaneNetworkBandwidthInQueryResult,
+    controlPlaneNetworkBandwidthOutQueryResult,
+    workloadPlaneNetworkBandwidthInQueryResult,
+    workloadPlaneNetworkBandwidthOutQueryResult,
+  ] = yield all([
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      cpuUsageQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      systemLoadQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      memoryQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      iopsReadQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      iopsWriteQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      controlPlaneNetworkBandwidthInQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      controlPlaneNetworkBandwidthOutQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      workloadPlaneNetworkBandwidthInQuery,
+    ),
+    call(
+      queryPrometheusRange,
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      workloadPlaneNetworkBandwidthOutQuery,
+    ),
+  ]);
+
+  if (!cpuUsageQueryResult.error) {
+    cpuUsage = cpuUsageQueryResult.data.result;
+  }
+  if (!systemLoadQueryResult.error) {
+    systemLoad = systemLoadQueryResult.data.result;
+  }
+  if (!memoryQueryResult.error) {
+    memory = memoryQueryResult.data.result;
+  }
+  if (!iopsReadQueryResult.error) {
+    iopsRead = iopsReadQueryResult.data.result;
+  }
+  if (!iopsWriteQueryResult.error) {
+    iopsWrite = iopsWriteQueryResult.data.result;
+  }
+  if (!controlPlaneNetworkBandwidthInQueryResult.error) {
+    controlPlaneNetworkBandwidthIn =
+      controlPlaneNetworkBandwidthInQueryResult.data.result;
+  }
+  if (!controlPlaneNetworkBandwidthOutQueryResult.error) {
+    controlPlaneNetworkBandwidthOut =
+      controlPlaneNetworkBandwidthOutQueryResult.data.result;
+  }
+  if (!workloadPlaneNetworkBandwidthInQueryResult.error) {
+    workloadPlaneNetworkBandwidthIn =
+      workloadPlaneNetworkBandwidthInQueryResult.data.result;
+  }
+  if (!workloadPlaneNetworkBandwidthOutQueryResult.error) {
+    workloadPlaneNetworkBandwidthOut =
+      workloadPlaneNetworkBandwidthOutQueryResult.data.result;
+  }
+
+  const metrics = {
+    cpuUsage,
+    systemLoad,
+    memory,
+    iopsRead,
+    iopsWrite,
+    controlPlaneNetworkBandwidthIn,
+    controlPlaneNetworkBandwidthOut,
+    workloadPlaneNetworkBandwidthIn,
+    workloadPlaneNetworkBandwidthOut,
+    queryStartingTime: startingTimestamp,
+  };
+
+  yield put(updateNodeStatsAction({ metrics: metrics }));
+}
+
 export function* monitoringSaga() {
   yield takeLatest(FETCH_VOLUMESTATS, fetchVolumeStats);
   yield takeEvery(REFRESH_VOLUMESTATS, refreshVolumeStats);
@@ -535,4 +736,6 @@ export function* monitoringSaga() {
   yield takeEvery(REFRESH_ALERTS, refreshAlerts);
   yield takeEvery(STOP_REFRESH_ALERTS, stopRefreshAlerts);
   yield takeEvery(STOP_REFRESH_CLUSTER_STATUS, stopRefreshClusterStatus);
+  yield takeEvery(FETCH_NODESTATS, fetchNodeStats);
+  yield takeEvery(UPDATE_NODESTATS, updateNodeStatsAction);
 }
