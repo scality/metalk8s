@@ -35,10 +35,16 @@ extraVolumes:
   - name: dex-login
     configMap:
       name: dex-login
+  - name: nginx-ingress-ca-cert
+    configMap:
+      name: nginx-ingress-ca-cert
 
 extraVolumeMounts:
   - name: dex-login
     mountPath: /web/themes/scality
+  - name: nginx-ingress-ca-cert
+    mountPath: /etc/ssl/certs/nginx-ingress-ca.crt
+    subPath: ca.crt
 
 podAnnotations:
   # Override default checksum as we want to manage it with salt

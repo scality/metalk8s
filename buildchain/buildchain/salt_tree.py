@@ -276,6 +276,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
         file_dep=[SCALITY_LOGO, SCALITY_FAVICON, LOGIN_STYLE],
         renderer=targets.Renderer.SLS,
     ),
+    Path('salt/metalk8s/addons/dex/deployed/',
+         'nginx-ingress-ca-cert-configmap.sls'),
 
     Path('salt/metalk8s/addons/logging/deployed/init.sls'),
     targets.TemplateFile(
