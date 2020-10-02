@@ -8,7 +8,7 @@ To build the ISO of this Solution, you will need to have installed:
 - [`docker`][Docker] 17.03 or higher, to build images
 - [`skopeo`][Skopeo] 0.1.19 or higher, to save images into the desired format
 - [`hardlink`][hardlink], to deduplicate image layers
-- [`go`][Go] 1.12 or higher, and [`operator-sdk`][Operator SDK] 0.9 or higher,
+- [`go`][Go] 1.12 or higher, and [`operator-sdk`][Operator SDK] 0.17 or higher,
   to build the Operator
 - `mkisofs` to generate the ISO
 
