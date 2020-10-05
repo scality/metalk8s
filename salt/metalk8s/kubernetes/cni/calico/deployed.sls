@@ -3712,6 +3712,10 @@ spec:
               value: "info"
             - name: FELIX_HEALTHENABLED
               value: "true"
+            # Note: We do not want to report about outgoing connections
+            #       in Metalk8s
+            - name: FELIX_USAGEREPORTINGENABLED
+              value: "false"
           securityContext:
             privileged: true
           resources:
@@ -3836,6 +3840,8 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
+        # Note: We want to tie `calico-kube-controllers` Pod on master node
+        #       in MetalK8s
         node-role.kubernetes.io/master: ''
       tolerations:
         # Mark the pod as a critical add-on for rescheduling.
@@ -3843,6 +3849,7 @@ spec:
           operator: Exists
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
+        # Note: Add tolerations for MetalK8s taints
         - key: node-role.kubernetes.io/bootstrap
           effect: NoSchedule
         - key: node-role.kubernetes.io/infra
