@@ -5,6 +5,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
+import { refreshAlertManagerAction, stopRefreshAlertManagerAction } from '../ducks/app/alerts';
 import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
@@ -16,8 +17,6 @@ import {
 } from '../ducks/app/volumes';
 import {
   fetchVolumeStatsAction,
-  refreshAlertsAction,
-  stopRefreshAlertsAction,
   fetchCurrentVolumeStatsAction,
   refreshCurrentVolumeStatsAction,
   stopRefreshCurrentVolumeStatsAction,
@@ -63,10 +62,12 @@ const VolumePage = (props) => {
     dispatch(fetchCurrentVolumeStatsAction());
     dispatch(fetchPersistentVolumeClaimAction());
   }, [dispatch]);
-  useEffect(() => {
-    dispatch(refreshAlertsAction());
-    return () => dispatch(stopRefreshAlertsAction());
-  }, [dispatch]);
+
+  useRefreshEffect(
+    refreshAlertManagerAction,
+    stopRefreshAlertManagerAction,
+  );
+
 
   // get all the pods for all the nodes
   const theme = useSelector((state) => state.config.theme);
@@ -75,7 +76,8 @@ const VolumePage = (props) => {
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
   const pVList = useSelector((state) => state.app.volumes.pVList);
-  const alerts = useSelector((state) => state.app.monitoring.alert);
+  const alerts = useSelector((state) => state.app.alerts);
+
   const volumeStats = useSelector(
     (state) => state.app.monitoring.volumeStats.metrics,
   );

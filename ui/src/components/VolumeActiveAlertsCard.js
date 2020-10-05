@@ -74,7 +74,7 @@ const ActiveAlertsCard = (props) => {
       name: alert.labels.alertname,
       severity: alert.labels.severity,
       alert_description: alert.annotations.message,
-      active_since: alert.activeAt,
+      active_since: alert.startsAt,
     };
   });
   // React Table for the volume list
