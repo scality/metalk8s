@@ -1,8 +1,4 @@
-import {
-  sortCapacity,
-  addMissingDataPoint,
-  jointDataPointBaseonTimeSeries,
-} from './utils';
+import { sortCapacity, addMissingDataPoint, fromMilliSectoAge } from './utils';
 
 const testcases = [
   { storageCapacity: '1Ki' },
@@ -217,4 +213,25 @@ it('should return all zero when the original dataset is all zero', () => {
     sampleFrequency,
   );
   expect(result).toEqual(originalValueWithAllZero);
+});
+
+// test for fromMilliSectoAge
+it('should return undefined if {milliSecTime} is zero or negative number', () => {
+  const result = fromMilliSectoAge(0);
+  expect(result).toEqual(undefined);
+});
+
+it('should return undefined if {milliSecTime} is less than 1 second', () => {
+  const result = fromMilliSectoAge(999);
+  expect(result).toEqual(undefined);
+});
+
+it('should return 1h1s if {milliSecTime} is 3601000', () => {
+  const result = fromMilliSectoAge(3601000);
+  expect(result).toEqual('1h1s');
+});
+
+it('should return 1d1m instead of 1d1m1s or 1d1s', () => {
+  const result = fromMilliSectoAge(86461000);
+  expect(result).toEqual('1d1m');
 });

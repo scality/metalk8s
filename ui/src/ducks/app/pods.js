@@ -48,6 +48,7 @@ export function* fetchPods() {
             name: volume.name,
             persistentVolumeClaim: volume?.persistentVolumeClaim?.claimName,
           })),
+          containerStatuses: pod?.status?.containerStatuses,
         })),
       ),
     );
