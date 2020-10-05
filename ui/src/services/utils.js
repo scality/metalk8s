@@ -329,3 +329,35 @@ export const fromUnixTimestampToDate = (date) => {
     return new Date(date * 1000);
   }
 };
+
+// Convert the timestamp from milliseconds to Age.
+// For example: 1h1s, 1d1h, 1d1s, 1d
+export const fromMilliSectoAge = (milliSecTime) => {
+  if (milliSecTime >= 1000) {
+    let day, hour, minute, second;
+    const age = [];
+
+    second = Math.floor(milliSecTime / 1000);
+    minute = Math.floor(second / 60);
+    hour = Math.floor(minute / 60);
+    day = Math.floor(hour / 24);
+
+    second = second % 60;
+    minute = minute % 60;
+    hour = hour % 24;
+
+    if (day > 0) {
+      age.push(day + 'd');
+    }
+    if (hour > 0) {
+      age.push(hour + 'h');
+    }
+    if (minute > 0) {
+      age.push(minute + 'm');
+    }
+    if (second > 0) {
+      age.push(second + 's');
+    }
+    return age.slice(0, 2).join('');
+  }
+};
