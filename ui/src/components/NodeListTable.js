@@ -13,13 +13,6 @@ import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import { Button } from '@scality/core-ui';
-import {
-  LAST_SEVEN_DAYS,
-  LAST_ONE_HOUR,
-  QUERY_LAST_SEVEN_DAYS,
-  QUERY_LAST_TWENTY_FOUR_HOURS,
-  QUERY_LAST_ONE_HOUR,
-} from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeListContainer = styled.div`
@@ -321,22 +314,6 @@ const NodeListTable = (props) => {
   const { nodeTableData, selectedNodeName } = props;
   const theme = useSelector((state) => state.config.theme);
 
-  let queryTimeSpan;
-  const metricsTimeSpan = useSelector(
-    (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
-  );
-
-  switch (metricsTimeSpan) {
-    case LAST_SEVEN_DAYS:
-      queryTimeSpan = QUERY_LAST_SEVEN_DAYS;
-      break;
-    case LAST_ONE_HOUR:
-      queryTimeSpan = QUERY_LAST_ONE_HOUR;
-      break;
-    default:
-      queryTimeSpan = QUERY_LAST_TWENTY_FOUR_HOURS;
-  }
-
   const columns = React.useMemo(
     () => [
       {
@@ -412,17 +389,15 @@ const NodeListTable = (props) => {
       location.pathname.endsWith('volumes') ||
       location.pathname.endsWith('pods');
 
-    if (isTabSelected && location.pathname.endsWith('metrics')) {
-      // Keep the same timespan selected for metrics tab, when switch between the nodes
-      const currentTab = location?.pathname?.split('/')?.pop();
-      history.push(`/newNodes/${nodeName}/${currentTab}?from=${queryTimeSpan}`);
-    } else if (isTabSelected) {
-      // Keep the same tab selected when switch between the nodes
-      const currentTab = location?.pathname?.split('/')?.pop();
-      history.push(`/newNodes/${nodeName}/${currentTab}`);
+    if (isTabSelected) {
+      const newPath = location.pathname.replace(
+        // eslint-disable-next-line no-useless-escape
+        /\/newNodes\/[^\/]*\//,
+        `/newNodes/${nodeName}/`,
+      );
+      history.push(newPath);
     } else {
-      // Set Health tab as default tab
-      history.push(`/newNodes/${nodeName}/health`);
+      history.push({ pathname: `/newNodes/${nodeName}/health` });
     }
   };
 
