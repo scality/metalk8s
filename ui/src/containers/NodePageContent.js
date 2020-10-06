@@ -54,6 +54,7 @@ const NodePageContent = (props) => {
             instanceIP={instanceIP}
             controlPlaneInterface={controlPlaneInterface}
             workloadPlaneInterface={workloadPlaneInterface}
+            nodeTableData={nodeTableData}
           />
         </NodePageRSPContainer>
       ) : (
