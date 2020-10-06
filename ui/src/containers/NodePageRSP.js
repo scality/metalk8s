@@ -17,7 +17,7 @@ import {
   refreshVolumesAction,
   stopRefreshVolumesAction,
 } from '../ducks/app/volumes';
-import NodePageHealthTab from '../components/NodePageHealthTab';
+import NodePageOverviewTab from '../components/NodePageOverviewTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
@@ -142,7 +142,7 @@ const NodePageRSP = (props) => {
           <Route
             path={`/newNodes/${selectedNodeName}/overview`}
             render={() => (
-              <NodePageHealthTab
+              <NodePageOverviewTab
                 selectedNodeName={selectedNodeName}
                 nodeTableData={nodeTableData}
                 nodes={nodes}
