@@ -27,7 +27,7 @@
   "bootstrap": "Bootstrap",
   "roles": "Roles",
   "role_values_error": "At least one role has to be selected!",
-  "create_new_node": "Create a New Node",
+  "create_new_node": "Create Node",
   "create": "Create",
   "cancel": "Cancel",
   "unknown": "Unknown",
@@ -164,5 +164,10 @@
   "no_active_alerts": "No active alerts",
   "not_used": "Not used",
   "no_volume_selected": "No Volume Selected",
-  "no_node_selected": "No Node Selected"
+  "no_node_selected": "No Node Selected",
+  "DiskPressure": "Insufficient disk space",
+  "MemoryPressure": "Insufficient RAM",
+  "PIDPressure": "Insufficient PID available",
+  "NetworkUnavailable": "Network Unavailable",
+  "Unschedulable": "Unschedulable"
 }

@@ -27,7 +27,7 @@
   "bootstrap": "Bootstrap",
   "roles": "Rôles",
   "role_values_error": "Au moins un rôle doit être selectionné!",
-  "create_new_node": "Créer un nouveau nœud",
+  "create_new_node": "Créer un nœud",
   "create": "Créer",
   "cancel": "Annuler",
   "unknown": "Inconnu",
@@ -164,5 +164,10 @@
   "no_active_alerts": "Aucune alerte active",
   "not_used": "Non utilisé",
   "no_volume_selected": "Aucun volume sélectionné",
-  "no_node_selected": "Aucun nœud sélectionné"
+  "no_node_selected": "Aucun nœud sélectionné",
+  "DiskPressure": "Espace disque insuffisant",
+  "MemoryPressure": "RAM insuffisante",
+  "PIDPressure": "PID disponible insuffisant",
+  "NetworkUnavailable": "Réseau indisponible",
+  "Unschedulable": "Non planifiable"
 }
