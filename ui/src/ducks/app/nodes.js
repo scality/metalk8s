@@ -261,7 +261,7 @@ export function* fetchNodes() {
             );
 
           // Store the name of conditions which the status are True in the array, except "Ready" condition, which we can know from the `status` field.
-          // Given the available conditions (DiskPressure, MemoryPressure, PIDPressure, Network Unavailable, Unschedulable)
+          // Given the available conditions ("DiskPressure", "MemoryPressure", "PIDPressure", "NetworkUnavailable", "Unschedulable")
           const conditions = node?.status?.conditions?.reduce((acc, cond) => {
             if (cond.status === 'True' && cond?.type && cond?.type !== 'Ready')
               acc.push(cond.type);
@@ -295,6 +295,8 @@ export function* fetchNodes() {
             internalIP: node?.status?.addresses?.find(
               (ip) => ip.type === 'InternalIP',
             ).address,
+            creationTimestamp: node?.metadata?.creationTimestamp,
+            kubeletVersion: node?.status?.nodeInfo?.kubeletVersion,
           };
         }),
       }),
