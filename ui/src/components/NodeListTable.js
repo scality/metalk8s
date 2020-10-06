@@ -118,19 +118,9 @@ const IPText = styled.span`
   color: ${(props) => props.theme.brand.textSecondary};
 `;
 
-// the color of the status depends on the `Status` and `Condition` of the Node
 const StatusText = styled.div`
   color: ${(props) => {
-    switch (props.textColor) {
-      case 'green':
-        return props.theme.brand.healthy;
-      case 'yellow':
-        return props.theme.brand.warning;
-      case 'red':
-        return props.theme.brand.critical;
-      default:
-        return props.theme.brand.textSecondary;
-    }
+    return props.textColor;
   }};
 `;
 
@@ -345,35 +335,14 @@ const NodeListTable = (props) => {
         accessor: 'status',
         cellStyle: { textAlign: 'center', width: '100px' },
         Cell: (cellProps) => {
-          const { status, conditions } = cellProps.value;
-          // the `conditions` include the other conditions that exclude "Ready".
-          // green for status.conditions['Ready'] == True and all other conditions are false
-          // yellow for status.conditions['Ready'] == True and some other conditions are true
-          // red for status.conditions['Ready'] == False
-          // grey when there is no status.conditions
-          if (status === 'ready' && conditions.length === 0) {
+          const { statusColor, computedStatus } = cellProps.value;
+          return computedStatus.map((status) => {
             return (
-              <StatusText textColor="green">
-                {intl.translate('ready')}
+              <StatusText textColor={statusColor}>
+                {intl.translate(`${status}`)}
               </StatusText>
             );
-          } else if (status === 'ready' && conditions.length !== 0) {
-            conditions.map((cond) => {
-              return <StatusText textColor="yellow">{cond}</StatusText>;
-            });
-          } else if (status !== 'ready') {
-            return (
-              <StatusText textColor="red">
-                {intl.translate('not_ready')}
-              </StatusText>
-            );
-          } else {
-            return (
-              <StatusText textColor="gray">
-                {intl.translate('unknown')}
-              </StatusText>
-            );
-          }
+          });
         },
       },
     ],
