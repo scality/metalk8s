@@ -13,6 +13,10 @@ import {
   refreshNodeStatsAction,
   stopRefreshNodeStatsAction,
 } from '../ducks/app/monitoring';
+import {
+  refreshVolumesAction,
+  stopRefreshVolumesAction,
+} from '../ducks/app/volumes';
 import NodePageHealthTab from '../components/NodePageHealthTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
@@ -40,14 +44,12 @@ const NodePageRSP = (props) => {
     instanceIP,
     controlPlaneInterface,
     workloadPlaneInterface,
+    nodeTableData,
   } = props;
+
   const history = useHistory();
   const location = useLocation();
   const dispatch = useDispatch();
-  const nodeStats = useSelector(
-    (state) => state.app.monitoring.nodeStats.metrics,
-  );
-  const theme = useSelector((state) => state.config.theme);
 
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
@@ -68,9 +70,6 @@ const NodePageRSP = (props) => {
     metricsTimeSpan = nodeMetricsTimeSpan;
   }
 
-  // retrieve the podlist data
-  const pods = useSelector((state) => state.app.pods.list);
-  const podsListData = getPodsListData(selectedNodeName, pods);
   useEffect(() => {
     dispatch(
       updateNodeStatsFetchArgumentAction({
@@ -90,8 +89,19 @@ const NodePageRSP = (props) => {
   ]);
 
   useRefreshEffect(refreshNodeStatsAction, stopRefreshNodeStatsAction);
+  useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
 
-  const isHealthTabActive = location.pathname.endsWith('/health');
+  // retrieve the podlist data
+  const pods = useSelector((state) => state.app.pods.list);
+  const podsListData = getPodsListData(selectedNodeName, pods);
+  const nodes = useSelector((state) => state.app.nodes.list);
+  const volumes = useSelector((state) => state.app.volumes.list);
+  const nodeStats = useSelector(
+    (state) => state.app.monitoring.nodeStats.metrics,
+  );
+  const theme = useSelector((state) => state.config.theme);
+
+  const isHealthTabActive = location.pathname.endsWith('/overview');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
   const isVolumesTabActive = location.pathname.endsWith('/volumes');
@@ -100,8 +110,8 @@ const NodePageRSP = (props) => {
   const items = [
     {
       selected: isHealthTabActive,
-      title: 'Health',
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/health`),
+      title: 'Overview',
+      onClick: () => history.push(`/newNodes/${selectedNodeName}/overview`),
     },
     {
       selected: isAlertsTabActive,
@@ -130,8 +140,16 @@ const NodePageRSP = (props) => {
       <Tabs items={items} activeTabColor={theme.brand.primaryDark1}>
         <Switch>
           <Route
-            path={`/newNodes/${selectedNodeName}/health`}
-            component={NodePageHealthTab}
+            path={`/newNodes/${selectedNodeName}/overview`}
+            render={() => (
+              <NodePageHealthTab
+                selectedNodeName={selectedNodeName}
+                nodeTableData={nodeTableData}
+                nodes={nodes}
+                volumes={volumes}
+                pods={pods}
+              />
+            )}
           />
           <Route
             path={`/newNodes/${selectedNodeName}/alerts`}
