@@ -195,7 +195,9 @@ def _object_manipulation_function(action):
             if 'resourceVersion' in old_object['metadata']:
                 call_kwargs['body'].metadata.resourceVersion = \
                     old_object['metadata']['resourceVersion']
-            if obj.api_version == 'v1' and obj.kind == 'Service':
+            # Keep `cluster_ip` if not present in the body
+            if obj.api_version == 'v1' and obj.kind == 'Service' \
+                    and not call_kwargs['body'].spec.cluster_ip:
                 call_kwargs['body'].spec.cluster_ip = \
                     old_object['spec']['cluster_ip']
 
