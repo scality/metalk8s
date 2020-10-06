@@ -253,7 +253,7 @@ replace_object:
           heritage: salt
         resourceVersion: "123456"
 
-    # Replace service object (special case we need to keep cluster_ip)
+  # Replace service object (special case we need to keep cluster_ip)
   - manifest:
       apiVersion: v1
       kind: Service
@@ -280,6 +280,40 @@ replace_object:
         resourceVersion: "123456"
       spec:
         clusterIP: "10.11.12.13"
+
+  # Replace service object (special case: cluster_ip set in the manifest and
+  # old_object, keep the manifest one)
+  # NOTE: This test just ensure we keep the one from input manifest and not
+  #       replace it with the one from old_object, but in practice apiServer
+  #       will reject this call since cluster_ip is immutable field
+  - manifest:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+      spec:
+        clusterIP: "20.21.22.23"
+    old_object:
+      # Old object is considered as k8s object so snake case
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+        resource_version: "123456"
+      spec:
+        cluster_ip: "10.11.12.13"
+    result:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+      spec:
+        clusterIP: "20.21.22.23"
 
   # Error when replacing object
   - manifest:

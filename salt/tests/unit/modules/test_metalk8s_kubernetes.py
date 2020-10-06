@@ -48,7 +48,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
             obj.metadata.resourceVersion = meta.get('resourceVersion')
             obj.metadata.resource_version = meta.get('resource_version')
 
-            obj.spec.cluster_ip = manifest.get('spec', {}).get('cluster_ip')
+            obj.spec.cluster_ip = manifest.get('spec', {}).get('clusterIP')
 
             def _to_dict():
                 if obj.metadata.resourceVersion:
@@ -58,6 +58,8 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                 if obj.spec.cluster_ip:
                     manifest.setdefault('spec', {})['clusterIP'] = \
                         obj.spec.cluster_ip
+                    if 'cluster_ip' in manifest.get('spec', {}):
+                        del manifest['spec']['cluster_ip']
 
                 return manifest
 
