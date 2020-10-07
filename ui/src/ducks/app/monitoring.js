@@ -60,6 +60,7 @@ const UPDATE_NODESTATS = 'UPDATE_NODESTATS';
 const FETCH_NODESTATS = 'FETCH_NODESTATS';
 const REFRESH_NODESTATS = 'REFRESH_NODESTATS';
 const STOP_REFRESH_NODESTATS = 'STOP_REFRESH_NODESTATS';
+const UPDATE_NODESTATS_FETCH_ARG = 'UPDATE_NODESTATS_FETCH_ARG';
 
 // Reducer
 const defaultState = {
@@ -218,6 +219,9 @@ export const refreshNodeStatsAction = () => {
 };
 export const stopRefreshNodeStatsAction = () => {
   return { type: STOP_REFRESH_NODESTATS };
+};
+export const updateNodeStatsFetchArgumentAction = () => {
+  return { type: UPDATE_NODESTATS_FETCH_ARG };
 };
 
 // Selectors
@@ -769,10 +773,9 @@ export function* watchRefreshNodeStats() {
         // If the refresh period expires before we receive a halt,
         // we can refresh the stats
         requeue: delay(REFRESH_METRCIS_GRAPH),
-        // NOTE: This action doesn't exist, but it should, so that
         // whenever we change one of the parameters for "fetchNodeStats",
         // it gets triggered again
-        // update: take(UPDATE_SELECTED_NODE),
+        update: take(UPDATE_NODESTATS_FETCH_ARG),
       });
       if (interrupt) {
         yield cancel(fetchNodeStats);

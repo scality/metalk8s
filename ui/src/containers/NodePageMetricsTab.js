@@ -10,7 +10,7 @@ import {
 import { LineChart, Loader, Dropdown } from '@scality/core-ui';
 import {
   updateNodeStatsAction,
-  fetchNodeStatsAction,
+  updateNodeStatsFetchArgumentAction,
 } from '../ducks/app/monitoring';
 import {
   yAxisUsage,
@@ -75,12 +75,7 @@ const DropdownContainer = styled.div`
 `;
 
 const NodePageMetricsTab = (props) => {
-  const {
-    nodeStats,
-    instanceIP,
-    controlPlaneInterface,
-    workloadPlaneInterface,
-  } = props;
+  const { nodeStats } = props;
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
   const history = useHistory();
@@ -89,15 +84,6 @@ const NodePageMetricsTab = (props) => {
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
-
-  const updateMetricsGraph = () =>
-    dispatch(
-      fetchNodeStatsAction({
-        instanceIP,
-        controlPlaneInterface,
-        workloadPlaneInterface,
-      }),
-    );
 
   let sampleDuration = null;
   let sampleFrequency = null;
@@ -278,8 +264,10 @@ const NodePageMetricsTab = (props) => {
     {
       label: LAST_SEVEN_DAYS,
       onClick: () => {
-        dispatch(updateNodeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }));
-        updateMetricsGraph();
+        dispatch(
+          updateNodeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }),
+          updateNodeStatsFetchArgumentAction(),
+        );
         writeUrlTimeSpan(LAST_SEVEN_DAYS);
       },
       selected: metricsTimeSpan === LAST_SEVEN_DAYS,
@@ -289,8 +277,8 @@ const NodePageMetricsTab = (props) => {
       onClick: () => {
         dispatch(
           updateNodeStatsAction({ metricsTimeSpan: LAST_TWENTY_FOUR_HOURS }),
+          updateNodeStatsFetchArgumentAction(),
         );
-        updateMetricsGraph();
         writeUrlTimeSpan(LAST_TWENTY_FOUR_HOURS);
       },
       selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
@@ -298,9 +286,11 @@ const NodePageMetricsTab = (props) => {
     {
       label: LAST_ONE_HOUR,
       onClick: () => {
-        dispatch(updateNodeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }));
-        updateMetricsGraph();
-        writeUrlTimeSpan(LAST_TWENTY_FOUR_HOURS);
+        dispatch(
+          updateNodeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }),
+          updateNodeStatsFetchArgumentAction(),
+        );
+        writeUrlTimeSpan(LAST_ONE_HOUR);
       },
       selected: metricsTimeSpan === LAST_ONE_HOUR,
     },
