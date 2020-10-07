@@ -95,13 +95,6 @@ const NodePageRSP = (props) => {
   const pods = useSelector((state) => state.app.pods.list);
   const podsListData = getPodsListData(selectedNodeName, pods);
   useEffect(() => {
-    dispatch(
-      fetchNodeStatsAction({
-        instanceIP,
-        controlPlaneInterface,
-        workloadPlaneInterface,
-      }),
-    );
     dispatch(fetchPodsAction());
     dispatch(
       updateNodeStatsAction({
@@ -111,6 +104,7 @@ const NodePageRSP = (props) => {
         workloadPlaneInterface,
       }),
     );
+    dispatch(fetchNodeStatsAction());
   }, [
     metricsTimeSpan,
     instanceIP,

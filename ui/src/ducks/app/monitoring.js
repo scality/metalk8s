@@ -203,8 +203,8 @@ export const stopRefreshCurrentVolumeStatsAction = () => {
 export const updateCurrentVolumeStatsAction = (payload) => {
   return { type: UPDATE_CURRENT_VOLUMESTATS, payload };
 };
-export const fetchNodeStatsAction = (payload) => {
-  return { type: FETCH_NODESTATS, payload };
+export const fetchNodeStatsAction = () => {
+  return { type: FETCH_NODESTATS };
 };
 export const updateNodeStatsAction = (payload) => {
   return { type: UPDATE_NODESTATS, payload };
@@ -583,8 +583,10 @@ export function* stopRefreshCurrentStats() {
   yield put(updateCurrentVolumeStatsAction({ isRefreshing: false }));
 }
 
-export function* fetchNodeStats({ payload }) {
-  const { instanceIP, controlPlaneInterface, workloadPlaneInterface } = payload;
+export function* fetchNodeStats() {
+  const instanceIP = yield select(instanceIPSelector);
+  const controlPlaneInterface = yield select(controlPlaneInterfaceSelector);
+  const workloadPlaneInterface = yield select(workloadPlaneInterfaceSelector);
 
   let cpuUsage = [];
   let systemLoad = [];
@@ -752,20 +754,10 @@ export function* fetchNodeStats({ payload }) {
 }
 
 export function* refreshNodeStats() {
-  const instanceIP = yield select(instanceIPSelector);
-  const controlPlaneInterface = yield select(controlPlaneInterfaceSelector);
-  const workloadPlaneInterface = yield select(workloadPlaneInterfaceSelector);
-
   yield put(updateNodeStatsAction({ isRefreshing: true }));
-  if (instanceIP && controlPlaneInterface && workloadPlaneInterface) {
-    yield call(fetchNodeStats, {
-      payload: {
-        instanceIP: instanceIP,
-        controlPlaneInterface: controlPlaneInterface,
-        workloadPlaneInterface: workloadPlaneInterface,
-      },
-    });
-  }
+
+  yield call(fetchNodeStats);
+
   yield delay(REFRESH_METRCIS_GRAPH);
 
   const isRefreshing = yield select(isNodeStatsRefreshing);
