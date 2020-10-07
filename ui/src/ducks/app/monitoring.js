@@ -6,6 +6,10 @@ import {
   all,
   delay,
   select,
+  take,
+  cancel,
+  fork,
+  race,
 } from 'redux-saga/effects';
 import {
   getAlerts,
@@ -753,24 +757,33 @@ export function* fetchNodeStats() {
   yield put(updateNodeStatsAction({ metrics: metrics }));
 }
 
-export function* refreshNodeStats() {
-  yield put(updateNodeStatsAction({ isRefreshing: true }));
-
-  yield call(fetchNodeStats);
-
-  yield delay(REFRESH_METRCIS_GRAPH);
-
-  const isRefreshing = yield select(isNodeStatsRefreshing);
-  if (isRefreshing) {
-    yield call(refreshNodeStats);
+// A long-running saga to handle the refresh, we should launch this saga as part of the root saga.
+// Avoid starting it manually to make sure there is only one loop that exists.
+export function* watchRefreshNodeStats() {
+  while (true) {
+    yield take(REFRESH_NODESTATS);
+    while (true) {
+      yield fork(fetchNodeStats);
+      const { interrupt } = yield race({
+        interrupt: take(STOP_REFRESH_NODESTATS),
+        // If the refresh period expires before we receive a halt,
+        // we can refresh the stats
+        requeue: delay(REFRESH_METRCIS_GRAPH),
+        // NOTE: This action doesn't exist, but it should, so that
+        // whenever we change one of the parameters for "fetchNodeStats",
+        // it gets triggered again
+        // update: take(UPDATE_SELECTED_NODE),
+      });
+      if (interrupt) {
+        yield cancel(fetchNodeStats);
+        break;
+      }
+    }
   }
 }
 
-export function* stopRefreshNodeStats() {
-  yield put(updateNodeStatsAction({ isRefreshing: false }));
-}
-
 export function* monitoringSaga() {
+  yield fork(watchRefreshNodeStats);
   yield takeLatest(FETCH_VOLUMESTATS, fetchVolumeStats);
   yield takeEvery(REFRESH_VOLUMESTATS, refreshVolumeStats);
   yield takeEvery(STOP_REFRESH_VOLUMESTATS, stopRefreshVolumeStats);
@@ -782,6 +795,4 @@ export function* monitoringSaga() {
   yield takeEvery(STOP_REFRESH_ALERTS, stopRefreshAlerts);
   yield takeEvery(STOP_REFRESH_CLUSTER_STATUS, stopRefreshClusterStatus);
   yield takeEvery(FETCH_NODESTATS, fetchNodeStats);
-  yield takeEvery(REFRESH_NODESTATS, refreshNodeStats);
-  yield takeEvery(STOP_REFRESH_NODESTATS, stopRefreshNodeStats);
 }
