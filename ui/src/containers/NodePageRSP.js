@@ -19,14 +19,7 @@ import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
-import {
-  LAST_SEVEN_DAYS,
-  LAST_TWENTY_FOUR_HOURS,
-  LAST_ONE_HOUR,
-  QUERY_LAST_SEVEN_DAYS,
-  QUERY_LAST_ONE_HOUR,
-  QUERY_LAST_TWENTY_FOUR_HOURS,
-} from '../constants';
+import { queryTimeSpansCodes } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
@@ -57,38 +50,23 @@ const NodePageRSP = (props) => {
   );
   const theme = useSelector((state) => state.config.theme);
 
-  // Initialize the `metricsTimeSpan` in redux base on the URL query.
-  // Keep the selected timespan for metrics tab when switch the tabs
+  // Initialize the `metricsTimeSpan` in saga state base on the URL query.
+  // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useQuery();
   const nodeMetricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
 
   let metricsTimeSpan;
-  let queryTimespan = query.get('from');
+  const queryTimespan = query.get('from');
+
   if (queryTimespan) {
-    switch (queryTimespan) {
-      case QUERY_LAST_SEVEN_DAYS:
-        metricsTimeSpan = LAST_SEVEN_DAYS;
-        break;
-      case QUERY_LAST_ONE_HOUR:
-        metricsTimeSpan = LAST_ONE_HOUR;
-        break;
-      default:
-        metricsTimeSpan = LAST_TWENTY_FOUR_HOURS;
-    }
+    // If timespan query specified in query string
+    metricsTimeSpan = queryTimeSpansCodes?.find(
+      (timespan) => timespan.label === queryTimespan,
+    )?.value;
   } else {
     metricsTimeSpan = nodeMetricsTimeSpan;
-    switch (nodeMetricsTimeSpan) {
-      case LAST_SEVEN_DAYS:
-        queryTimespan = QUERY_LAST_SEVEN_DAYS;
-        break;
-      case LAST_ONE_HOUR:
-        queryTimespan = QUERY_LAST_ONE_HOUR;
-        break;
-      default:
-        queryTimespan = QUERY_LAST_TWENTY_FOUR_HOURS;
-    }
   }
 
   // retrieve the podlist data
