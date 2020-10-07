@@ -12,7 +12,12 @@ import {
   updateNodeStatsAction,
   fetchNodeStatsAction,
 } from '../ducks/app/monitoring';
-import { yAxisUsage, yAxis, yAxisWriteRead, yAxisInOut } from './LinechartSpec';
+import {
+  yAxisUsage,
+  yAxis,
+  yAxisWriteRead,
+  yAxisInOut,
+} from '../components/LinechartSpec';
 import { TabContainer } from '../components/CommonLayoutStyle';
 import {
   addMissingDataPoint,
@@ -28,9 +33,6 @@ import {
   SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
-  QUERY_LAST_SEVEN_DAYS,
-  QUERY_LAST_TWENTY_FOUR_HOURS,
-  QUERY_LAST_ONE_HOUR,
 } from '../constants';
 
 const GraphsContainer = styled.div`
@@ -78,11 +80,11 @@ const NodePageMetricsTab = (props) => {
     instanceIP,
     controlPlaneInterface,
     workloadPlaneInterface,
-    selectedNodeName,
   } = props;
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
   const history = useHistory();
+  const query = new URLSearchParams(history?.location?.search);
 
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
@@ -247,15 +249,38 @@ const NodePageMetricsTab = (props) => {
   };
   const lineConfig = { strokeWidth: 1.5 };
 
+  const queryTimeSpansCodes = [
+    {
+      label: 'now-7d',
+      value: LAST_SEVEN_DAYS,
+    },
+    {
+      label: 'now-24h',
+      value: LAST_TWENTY_FOUR_HOURS,
+    },
+    {
+      label: 'now-1h',
+      value: LAST_ONE_HOUR,
+    },
+  ];
+
+  // write the selected timespan in URL
+  const writeUrlTimeSpan = (timespan) => {
+    let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
+
+    if (formatted) {
+      query.set('from', formatted.label);
+      history.push({ search: query.toString() });
+    }
+  };
+
   const metricsTimeSpanItems = [
     {
       label: LAST_SEVEN_DAYS,
       onClick: () => {
         dispatch(updateNodeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }));
         updateMetricsGraph();
-        history.push(
-          `/newNodes/${selectedNodeName}/metrics?from=${QUERY_LAST_SEVEN_DAYS}`,
-        );
+        writeUrlTimeSpan(LAST_SEVEN_DAYS);
       },
       selected: metricsTimeSpan === LAST_SEVEN_DAYS,
     },
@@ -266,9 +291,7 @@ const NodePageMetricsTab = (props) => {
           updateNodeStatsAction({ metricsTimeSpan: LAST_TWENTY_FOUR_HOURS }),
         );
         updateMetricsGraph();
-        history.push(
-          `/newNodes/${selectedNodeName}/metrics?from=${QUERY_LAST_TWENTY_FOUR_HOURS}`,
-        );
+        writeUrlTimeSpan(LAST_TWENTY_FOUR_HOURS);
       },
       selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
     },
@@ -277,9 +300,7 @@ const NodePageMetricsTab = (props) => {
       onClick: () => {
         dispatch(updateNodeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }));
         updateMetricsGraph();
-        history.push(
-          `/newNodes/${selectedNodeName}/metrics?from=${QUERY_LAST_ONE_HOUR}`,
-        );
+        writeUrlTimeSpan(LAST_TWENTY_FOUR_HOURS);
       },
       selected: metricsTimeSpan === LAST_ONE_HOUR,
     },
