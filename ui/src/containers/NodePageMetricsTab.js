@@ -19,6 +19,7 @@ import { TabContainer } from '../components/CommonLayoutStyle';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
+  useQuery,
 } from '../services/utils';
 import {
   LAST_SEVEN_DAYS,
@@ -77,7 +78,7 @@ const NodePageMetricsTab = (props) => {
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
   const history = useHistory();
-  const query = new URLSearchParams(history?.location?.search);
+  const query = useQuery();
 
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
