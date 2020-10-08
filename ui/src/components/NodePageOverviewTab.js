@@ -31,7 +31,7 @@ const InformationValue = styled.span`
 const NodeNameContainer = styled.div`
   display: flex;
   align-items: center;
-  padding: ${padding.base} 0 ${padding.base} ${padding.base};
+  padding: ${padding.base} 0 ${padding.larger} ${padding.base};
 `;
 
 const NodeName = styled.div`
@@ -132,7 +132,7 @@ const NodePageOverviewTab = (props) => {
         )}
       </InformationSpan>
       <InformationSpan>
-        <InformationLabel>K8S Version</InformationLabel>
+        <InformationLabel>K8s Version</InformationLabel>
         <InformationValue>
           {currentNodeReturnByK8S?.kubeletVersion}
         </InformationValue>

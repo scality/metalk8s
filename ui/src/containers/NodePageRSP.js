@@ -27,7 +27,7 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
   .sc-tabs {
-    margin: ${padding.smaller} ${padding.small} 0 ${padding.smaller};
+    margin: ${padding.smaller} ${padding.small} 0 0;
   }
 
   .sc-tabs-item-content {
@@ -99,7 +99,6 @@ const NodePageRSP = (props) => {
   const nodeStats = useSelector(
     (state) => state.app.monitoring.nodeStats.metrics,
   );
-  const theme = useSelector((state) => state.config.theme);
 
   const isHealthTabActive = location.pathname.endsWith('/overview');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
@@ -137,7 +136,7 @@ const NodePageRSP = (props) => {
 
   return (
     <NodePageRSPContainer>
-      <Tabs items={items} activeTabColor={theme.brand.primaryDark1}>
+      <Tabs items={items}>
         <Switch>
           <Route
             path={`/newNodes/${selectedNodeName}/overview`}
