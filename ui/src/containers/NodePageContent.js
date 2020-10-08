@@ -17,8 +17,8 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
   flex-direction: column;
-  width: 55%;
-  margin: ${padding.small} ${padding.small} ${padding.small} 0;
+  width: 51%;
+  margin: ${padding.small};
 `;
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
