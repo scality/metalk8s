@@ -313,6 +313,7 @@ const NodeListTable = (props) => {
   const location = useLocation();
   const { nodeTableData, selectedNodeName } = props;
   const theme = useSelector((state) => state.config.theme);
+  const query = useQuery();
 
   const columns = React.useMemo(
     () => [
@@ -391,13 +392,18 @@ const NodeListTable = (props) => {
 
     if (isTabSelected) {
       const newPath = location.pathname.replace(
-        // eslint-disable-next-line no-useless-escape
-        /\/newNodes\/[^\/]*\//,
+        /\/newNodes\/[^/]*\//,
         `/newNodes/${nodeName}/`,
       );
-      history.push(newPath);
+      history.push({
+        pathname: newPath,
+        search: query.toString(),
+      });
     } else {
-      history.push({ pathname: `/newNodes/${nodeName}/health` });
+      history.push({
+        pathname: `/newNodes/${nodeName}/health`,
+        search: query.toString(),
+      });
     }
   };
 
