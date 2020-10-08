@@ -21,6 +21,7 @@ const NodeListContainer = styled.div`
   font-family: 'Lato';
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
+  background-color: ${(props) => props.theme.brand.primary};
   .sc-progressbarcontainer {
     width: 100%;
   }
@@ -34,6 +35,7 @@ const NodeListContainer = styled.div`
       height: 10px;
     }
     tr {
+      border-bottom: 5px solid ${(props) => props.theme.brand.primary};
       :last-child {
         td {
           border-bottom: 0;
@@ -52,9 +54,7 @@ const NodeListContainer = styled.div`
     td {
       margin: 0;
       padding: 0.5rem;
-      border-bottom: 1px solid black;
       text-align: left;
-      padding: 5px;
 
       :last-child {
         border-right: 0;
@@ -75,6 +75,8 @@ const CreateNodeButton = styled(Button)`
 `;
 
 const TableRow = styled(HeadRow)`
+  height: 76px;
+  border-radius: 10px;
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
@@ -87,7 +89,7 @@ const TableRow = styled(HeadRow)`
   background-color: ${(props) =>
     props.selectedNodeName === props.row.values.name.name
       ? props.theme.brand.backgroundBluer
-      : props.theme.brand.primary};
+      : props.theme.brand.primaryDark1};
 `;
 
 // * table body
@@ -101,7 +103,6 @@ const Body = styled.tbody`
 
 const Cell = styled.td`
   overflow-wrap: break-word;
-  border-top: 1px solid #424242;
 `;
 
 const ActionContainer = styled.span`
@@ -315,7 +316,6 @@ const NodeListTable = (props) => {
       {
         Header: 'Roles',
         accessor: 'roles',
-        cellStyle: { width: '200px' },
       },
       {
         Header: 'Health',
@@ -333,7 +333,7 @@ const NodeListTable = (props) => {
       {
         Header: 'Status',
         accessor: 'status',
-        cellStyle: { textAlign: 'center', width: '100px' },
+        cellStyle: { textAlign: 'center', width: '80px' },
         Cell: (cellProps) => {
           const { statusColor, computedStatus } = cellProps.value;
           return computedStatus.map((status) => {
