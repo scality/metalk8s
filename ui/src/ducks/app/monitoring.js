@@ -56,10 +56,12 @@ const FETCH_CURRENT_VOLUESTATS = 'FETCH_CURRENT_VOLUESTATS';
 const REFRESH_CURRENT_VOLUMESTATS = 'REFRESH_CURRENT_VOLUMESTATS';
 const STOP_REFRESH_CURRENT_VOLUMESTATS = 'STOP_REFRESH_CURRENT_VOLUMESTATS';
 
+// To update the `app.monitoring.nodeStats.metrics`
 const UPDATE_NODESTATS = 'UPDATE_NODESTATS';
 const FETCH_NODESTATS = 'FETCH_NODESTATS';
 const REFRESH_NODESTATS = 'REFRESH_NODESTATS';
 const STOP_REFRESH_NODESTATS = 'STOP_REFRESH_NODESTATS';
+// To update the arguments to fetch nodeStats
 const UPDATE_NODESTATS_FETCH_ARG = 'UPDATE_NODESTATS_FETCH_ARG';
 
 // Reducer
@@ -143,6 +145,7 @@ export default function reducer(state = defaultState, action = {}) {
         volumeCurrentStats: { ...state.volumeCurrentStats, ...action.payload },
       };
     case UPDATE_NODESTATS:
+    case UPDATE_NODESTATS_FETCH_ARG:
       return {
         ...state,
         nodeStats: { ...state.nodeStats, ...action.payload },
@@ -220,8 +223,8 @@ export const refreshNodeStatsAction = () => {
 export const stopRefreshNodeStatsAction = () => {
   return { type: STOP_REFRESH_NODESTATS };
 };
-export const updateNodeStatsFetchArgumentAction = () => {
-  return { type: UPDATE_NODESTATS_FETCH_ARG };
+export const updateNodeStatsFetchArgumentAction = (payload) => {
+  return { type: UPDATE_NODESTATS_FETCH_ARG, payload };
 };
 
 // Selectors

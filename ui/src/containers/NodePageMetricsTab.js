@@ -8,10 +8,7 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import { LineChart, Loader, Dropdown } from '@scality/core-ui';
-import {
-  updateNodeStatsAction,
-  updateNodeStatsFetchArgumentAction,
-} from '../ducks/app/monitoring';
+import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import {
   yAxisUsage,
   yAxis,
@@ -246,41 +243,19 @@ const NodePageMetricsTab = (props) => {
     }
   };
 
+  // Dropdown items
   const metricsTimeSpanItems = [
-    {
-      label: LAST_SEVEN_DAYS,
-      onClick: () => {
-        dispatch(
-          updateNodeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }),
-          updateNodeStatsFetchArgumentAction(),
-        );
-        writeUrlTimeSpan(LAST_SEVEN_DAYS);
-      },
-      selected: metricsTimeSpan === LAST_SEVEN_DAYS,
+    LAST_SEVEN_DAYS,
+    LAST_TWENTY_FOUR_HOURS,
+    LAST_ONE_HOUR,
+  ].map((option) => ({
+    label: option,
+    onClick: () => {
+      dispatch(updateNodeStatsFetchArgumentAction({ metricsTimeSpan: option }));
+      writeUrlTimeSpan(option);
     },
-    {
-      label: LAST_TWENTY_FOUR_HOURS,
-      onClick: () => {
-        dispatch(
-          updateNodeStatsAction({ metricsTimeSpan: LAST_TWENTY_FOUR_HOURS }),
-          updateNodeStatsFetchArgumentAction(),
-        );
-        writeUrlTimeSpan(LAST_TWENTY_FOUR_HOURS);
-      },
-      selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
-    },
-    {
-      label: LAST_ONE_HOUR,
-      onClick: () => {
-        dispatch(
-          updateNodeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }),
-          updateNodeStatsFetchArgumentAction(),
-        );
-        writeUrlTimeSpan(LAST_ONE_HOUR);
-      },
-      selected: metricsTimeSpan === LAST_ONE_HOUR,
-    },
-  ];
+    selected: metricsTimeSpan === option,
+  }));
 
   const metricsTimeSpanDropdownItems = metricsTimeSpanItems?.filter(
     (mTS) => mTS.label !== metricsTimeSpan,

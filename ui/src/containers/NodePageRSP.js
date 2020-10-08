@@ -10,7 +10,6 @@ import { getPodsListData } from '../services/PodUtils';
 import { useQuery, useRefreshEffect } from '../services/utils';
 import {
   updateNodeStatsFetchArgumentAction,
-  updateNodeStatsAction,
   refreshNodeStatsAction,
   stopRefreshNodeStatsAction,
 } from '../ducks/app/monitoring';
@@ -73,16 +72,15 @@ const NodePageRSP = (props) => {
   const pods = useSelector((state) => state.app.pods.list);
   const podsListData = getPodsListData(selectedNodeName, pods);
   useEffect(() => {
-    dispatch(updateNodeStatsFetchArgumentAction());
-    dispatch(fetchPodsAction());
     dispatch(
-      updateNodeStatsAction({
+      updateNodeStatsFetchArgumentAction({
         metricsTimeSpan,
         instanceIP,
         controlPlaneInterface,
         workloadPlaneInterface,
       }),
     );
+    dispatch(fetchPodsAction());
   }, [
     metricsTimeSpan,
     instanceIP,
