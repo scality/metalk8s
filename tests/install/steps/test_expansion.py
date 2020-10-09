@@ -37,16 +37,22 @@ def declare_node(
 
 @when(parsers.parse('we deploy the node "{node_name}"'))
 def deploy_node(host, ssh_config, version, node_name):
-    accept_ssh_key = [
-        'salt-ssh', '-i', node_name, 'test.ping', '--roster=kubernetes'
+    test_ssh = [
+        'salt-ssh', '--roster=kubernetes', '-i', node_name, '--raw-shell',
+        '--out=json', 'echo OK'
     ]
+    test_ssh_ret = json.loads(
+        utils.run_salt_command(host, test_ssh, ssh_config).stdout
+    )[node_name]
+    assert test_ssh_ret['stdout'] == 'OK\n', \
+        'Unable to connect to {} with salt-ssh: {}'.format(node_name, test_ssh_ret['stderr'])
+
     pillar = {'orchestrate': {'node_name': node_name}}
     deploy = [
         'salt-run', 'state.orchestrate', 'metalk8s.orchestrate.deploy_node',
         'saltenv=metalk8s-{}'.format(version),
         "pillar='{}'".format(json.dumps(pillar))
     ]
-    utils.run_salt_command(host, accept_ssh_key, ssh_config)
     utils.run_salt_command(host, deploy, ssh_config)
 
 
