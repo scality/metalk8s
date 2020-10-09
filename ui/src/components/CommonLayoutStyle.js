@@ -68,3 +68,12 @@ export const TextBadge = styled.span`
   font-weight: ${fontWeight.bold};
   margin-left: ${padding.smaller};
 `;
+
+export const TextBadge = styled.span`
+  background-color: ${(props) => props.theme.brand.base};
+  color: ${(props) => props.theme.brand.textPrimary};
+  padding: 2px ${padding.small};
+  border-radius: 4px;
+  font-size: ${fontSize.small}
+  font-weight: ${fontWeight.bold}
+`;
