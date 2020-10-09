@@ -65,12 +65,12 @@ def _validateKubeConfig(filename,
         return False
 
     try:
-        client_key = b64decode(b64_client_key)
-        client_cert = b64decode(b64_client_cert)
+        client_key = b64decode(b64_client_key).decode()
+        client_cert = b64decode(b64_client_cert).decode()
     except TypeError:
         return False
 
-    ca_pem_cert = b64decode(current_ca_data)
+    ca_pem_cert = b64decode(current_ca_data).decode()
 
     client_cert_detail = __salt__['x509.read_certificate'](client_cert)
 
@@ -181,8 +181,8 @@ def managed(name,
             {
                 'name': user,
                 'user': {
-                    'client-certificate-data': b64encode(client_cert),
-                    'client-key-data': b64encode(client_priv_key)
+                    'client-certificate-data': b64encode(client_cert.encode()),
+                    'client-key-data': b64encode(client_priv_key.encode())
                 }
             }
         ]

@@ -3,7 +3,7 @@
 Module for handling etcd client specific calls.
 '''
 import logging
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from salt.exceptions import CommandExecutionError
 
