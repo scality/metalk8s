@@ -103,3 +103,65 @@ def module_run(name, attemps=1, sleep_time=10, **kwargs):
             time.sleep(sleep_time)
 
     return ret
+
+
+def saltutil_cmd(name, **kwargs):
+    """Simple `saltutil.cmd` state as `salt.function` do not support roster and
+    raw ssh, https://github.com/saltstack/salt/issues/58662"""
+    ret = {
+        'name': name,
+        'changes': {},
+        'result': True,
+        'comment': ''
+    }
+
+    try:
+        cmd_ret = __salt__['saltutil.cmd'](fun=name, **kwargs)
+    except Exception as exc:  # pylint: disable=broad-except
+        ret['result'] = False
+        ret['comment'] = str(exc)
+        return ret
+
+    try:
+        ret['__jid__'] = cmd_ret[next(iter(cmd_ret))]['jid']
+    except (StopIteration, KeyError):
+        pass
+
+    fail = set()
+
+    for minion, mdata in cmd_ret.items():
+        m_ret = False
+        if mdata.get('retcode'):
+            ret['result'] = False
+            fail.add(minion)
+        if mdata.get('failed', False):
+            fail.add(minion)
+        else:
+            if 'return' in mdata and 'ret' not in mdata:
+                mdata['ret'] = mdata.pop('return')
+            if 'ret' in mdata:
+                m_ret = mdata['ret']
+            if 'stderr' in mdata or 'stdout' in mdata:
+                m_ret = {
+                    'retcode': mdata.get('retcode'),
+                    'stderr': mdata.get('stderr'),
+                    'stdout': mdata.get('stdout')
+                }
+            if m_ret is False:
+                fail.add(minion)
+
+        ret['changes'][minion] = m_ret
+
+    if not cmd_ret:
+        ret['result'] = False
+        ret['comment'] = 'No minions responded'
+    else:
+        if fail:
+            ret['result'] = False
+            ret['comment'] = 'Running function {} failed on minions: {}'.format(
+                name, ', '.join(fail)
+            )
+        else:
+            ret['comment'] = 'Function ran successfully'
+
+    return ret
