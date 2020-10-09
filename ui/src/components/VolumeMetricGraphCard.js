@@ -28,6 +28,7 @@ import {
   SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
+  queryTimeSpansCodes,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -114,22 +115,6 @@ const MetricGraphCard = (props) => {
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
-
-  // reference array to ensure consistency in encoding/decoding query params
-  const queryTimeSpansCodes = [
-    {
-      label: 'now-7d',
-      value: LAST_SEVEN_DAYS,
-    },
-    {
-      label: 'now-24h',
-      value: LAST_TWENTY_FOUR_HOURS,
-    },
-    {
-      label: 'now-1h',
-      value: LAST_ONE_HOUR,
-    },
-  ];
 
   // write the selected timespan in URL
   const writeUrlTimeSpan = (timespan) => {

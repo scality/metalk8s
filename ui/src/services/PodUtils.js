@@ -8,7 +8,7 @@ export const getPodsListData = (nodeName, pods) => {
     podsList?.map((pod) => {
       const age = fromMilliSectoAge(new Date() - pod.startTime);
 
-      const numContainer = pod.containerStatuses.length;
+      const numContainer = pod?.containerStatuses?.length;
       const containerReady =
         pod?.containerStatuses?.filter((pCS) => pCS.ready === true) ?? [];
       return {

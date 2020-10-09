@@ -1,17 +1,25 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import {
   fontSize,
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { LineChart, Loader } from '@scality/core-ui';
-import { TabContainer } from './CommonLayoutStyle';
-import { yAxisUsage, yAxis, yAxisWriteRead, yAxisInOut } from './LinechartSpec';
+import { LineChart, Loader, Dropdown } from '@scality/core-ui';
+import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
+import {
+  yAxisUsage,
+  yAxis,
+  yAxisWriteRead,
+  yAxisInOut,
+} from '../components/LinechartSpec';
+import { TabContainer } from '../components/CommonLayoutStyle';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
+  useQuery,
 } from '../services/utils';
 import {
   LAST_SEVEN_DAYS,
@@ -23,6 +31,7 @@ import {
   SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
+  queryTimeSpansCodes,
 } from '../constants';
 
 const GraphsContainer = styled.div`
@@ -57,11 +66,22 @@ const LoaderContainer = styled(Loader)`
   padding-left: ${padding.larger};
 `;
 
+const DropdownContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: ${padding.base};
+`;
+
 const NodePageMetricsTab = (props) => {
   const { nodeStats } = props;
+  const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
+  const history = useHistory();
+  const query = useQuery();
+
   const metricsTimeSpan = useSelector(
-    (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
+    (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
 
   let sampleDuration = null;
@@ -135,8 +155,10 @@ const NodePageMetricsTab = (props) => {
     type: 'temporal',
     axis: {
       // Refer to all the available time format: https://github.com/d3/d3-time-format#locale_format
-      // format: '%m/%d %H:%M',
-      format: '%H:%M', // when the timespan is `Last 24 hours`
+      format:
+        metricsTimeSpan === (LAST_ONE_HOUR || LAST_TWENTY_FOUR_HOURS)
+          ? '%H:%M'
+          : '%m/%d',
       // Boolean value that determines whether the axis should include ticks.
       ticks: true,
       tickCount: 4,
@@ -212,8 +234,43 @@ const NodePageMetricsTab = (props) => {
   };
   const lineConfig = { strokeWidth: 1.5 };
 
+  // write the selected timespan in URL
+  const writeUrlTimeSpan = (timespan) => {
+    let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
+
+    if (formatted) {
+      query.set('from', formatted.label);
+      history.push({ search: query.toString() });
+    }
+  };
+
+  // Dropdown items
+  const metricsTimeSpanItems = [
+    LAST_SEVEN_DAYS,
+    LAST_TWENTY_FOUR_HOURS,
+    LAST_ONE_HOUR,
+  ].map((option) => ({
+    label: option,
+    onClick: () => {
+      dispatch(updateNodeStatsFetchArgumentAction({ metricsTimeSpan: option }));
+      writeUrlTimeSpan(option);
+    },
+    selected: metricsTimeSpan === option,
+  }));
+
+  const metricsTimeSpanDropdownItems = metricsTimeSpanItems?.filter(
+    (mTS) => mTS.label !== metricsTimeSpan,
+  );
+
   return (
     <TabContainer>
+      <DropdownContainer>
+        <Dropdown
+          items={metricsTimeSpanDropdownItems}
+          text={metricsTimeSpan}
+          size="smaller"
+        />
+      </DropdownContainer>
       <GraphsContainer>
         <RowGraphContainer>
           <Graph>

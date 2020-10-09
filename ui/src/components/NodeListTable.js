@@ -312,8 +312,8 @@ const NodeListTable = (props) => {
   const history = useHistory();
   const location = useLocation();
   const { nodeTableData, selectedNodeName } = props;
-
   const theme = useSelector((state) => state.config.theme);
+  const query = useQuery();
 
   const columns = React.useMemo(
     () => [
@@ -391,12 +391,19 @@ const NodeListTable = (props) => {
       location.pathname.endsWith('pods');
 
     if (isTabSelected) {
-      // When switch between the nodes, keep the same tab selected
-      const currentTab = location?.pathname?.split('/')?.pop();
-      history.push(`/newNodes/${nodeName}/${currentTab}`);
+      const newPath = location.pathname.replace(
+        /\/newNodes\/[^/]*\//,
+        `/newNodes/${nodeName}/`,
+      );
+      history.push({
+        pathname: newPath,
+        search: query.toString(),
+      });
     } else {
-      // Set Health tab as default tab
-      history.push(`/newNodes/${nodeName}/health`);
+      history.push({
+        pathname: `/newNodes/${nodeName}/health`,
+        search: query.toString(),
+      });
     }
   };
 
