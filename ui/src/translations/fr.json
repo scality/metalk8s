@@ -170,5 +170,8 @@
   "PIDPressure": "PID disponible insuffisant",
   "NetworkUnavailable": "Réseau indisponible",
   "Unschedulable": "Non planifiable",
-  "advanced_metrics": "Métrique avancée"
+  "advanced_metrics": "Métrique avancée",
+  "overview": "Aperçu",
+  "volume_usage": "Utilisation du Volume",
+  "usage": "Utilisation"
 }
