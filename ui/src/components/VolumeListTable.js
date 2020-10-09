@@ -25,6 +25,7 @@ const VolumeListContainer = styled.div`
   font-family: 'Lato';
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
+  background-color: ${(props) => props.theme.brand.primary};
   .sc-progressbarcontainer {
     width: 100%;
   }
@@ -400,12 +401,26 @@ const VolumeListTable = (props) => {
   const onClickRow = (row) => {
     const query = new URLSearchParams(location.search);
     const isAddNodeFilter = query.has('node');
+    const isTabSelected = location.pathname.endsWith('/alerts');
 
-    // there are two possiable URLs
     if (isAddNodeFilter) {
       history.push(`/volumes/${row.values.name}?node=${nodeName}`);
     } else {
-      history.push(`/volumes/${row.values.name}`);
+      if (isTabSelected) {
+        const newPath = location.pathname.replace(
+          /\/volumes\/[^/]*\//,
+          `/volumes/${row.values.name}/`,
+        );
+        history.push({
+          pathname: newPath,
+          search: query.toString(),
+        });
+      } else {
+        history.push({
+          pathname: `/volumes/${row.values.name}/overview`,
+          search: query.toString(),
+        });
+      }
     }
   };
 
