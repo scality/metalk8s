@@ -1,0 +1,15 @@
+apiVersion: solutions.metalk8s.scality.com/v1alpha1
+kind: OperatorConfig
+repositories:
+  1.0.0:
+    - endpoint: metalk8s-registry-from-config.invalid/my-solution-1.0.0
+      images:
+        - grafana:6.7.4
+        - prometheus:v2.16.0
+        - prometheus-operator:v0.38.1
+  1.1.0:
+    - endpoint: metalk8s-registry-from-config.invalid/my-solution-1.1.0
+      images:
+        - grafana:7.2.1
+        - prometheus:v2.21.0
+        - prometheus-operator:v0.42.1
