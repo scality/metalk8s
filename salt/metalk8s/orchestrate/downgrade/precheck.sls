@@ -4,8 +4,7 @@
 
 {#- When downgrading saltenv should be the newest version #}
 {%- set nodes_versions = pillar.metalk8s.nodes.values() | map(attribute='version') | list %}
-{%- do nodes_versions.sort(cmp=salt.pkg.version_cmp, reverse=True) %}
-{%- set expected = nodes_versions | first %}
+{%- set expected = salt.metalk8s.cmp_sorted(nodes_versions, cmp=salt.pkg.version_cmp, reverse=True) | first %}
 {%- if salt.pkg.version_cmp(saltenv | replace('metalk8s-', ''), expected) < 0 %}
 
 Invalid saltenv "{{ saltenv }}" consider using "metalk8s-{{ expected }}":
