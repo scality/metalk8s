@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useRouteMatch } from 'react-router-dom';
 import { useHistory } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
@@ -9,6 +9,8 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
+import CircleStatus from './CircleStatus';
+import ActiveAlertsCounter from './ActiveAlertsCounter';
 import { isVolumeDeletable } from '../services/NodeVolumesUtils';
 import { deleteVolumeAction } from '../ducks/app/volumes';
 import { VOLUME_CONDITION_LINK } from '../constants';
@@ -17,23 +19,23 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumeDetailCardContainer = styled.div`
   display: flex;
-  background-color: ${(props) => props.theme.brand.primaryDark1};
   min-height: 270px;
   margin: ${padding.small};
 `;
 
 const VolumeInformation = styled.div`
-  width: 50vw;
+  width: 50%;
+  word-break: break-all;
 `;
 
 const VolumeNameTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
-  font-size: ${fontSize.large};
-  padding: ${padding.small} 0 ${padding.small} ${padding.large};
+  font-size: ${fontSize.larger};
+  padding: ${padding.small} 0 ${padding.larger} ${padding.large};
 `;
 
 const InformationSpan = styled.div`
-  padding-bottom: 7px;
+  padding-bottom: 25px;
   padding-left: ${padding.large};
   display: flex;
 `;
@@ -52,9 +54,7 @@ const InformationValue = styled.span`
 `;
 
 const DeleteButton = styled(Button)`
-  margin-right: 100px;
-  width: 165px;
-  height: 30px;
+  padding: ${padding.base};
   font-size: ${fontSize.small};
   background-color: ${(props) => props.theme.brand.critical};
   ${(props) => {
@@ -64,13 +64,15 @@ const DeleteButton = styled(Button)`
 
 const DeleteButtonContainer = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   padding-top: ${padding.base};
 `;
 
 const VolumeGraph = styled.div`
   display: flex;
   flex-direction: column;
+  width: 48%;
+  margin-left: 2%;
 `;
 
 const VolumeUsage = styled.div`
@@ -80,7 +82,7 @@ const VolumeUsage = styled.div`
   padding: 0 ${padding.base} 0 0;
 `;
 
-const VolumeUsageTitle = styled.div`
+const VolumeSectionTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
@@ -89,6 +91,10 @@ const VolumeUsageTitle = styled.div`
 
 const ProgressBarContainer = styled.div`
   margin: ${padding.small};
+
+  .sc-progressbarcontainer > div {
+    background-color: ${(props) => props.theme.brand.secondaryDark1};
+  }
 `;
 
 const NotificationButtonGroup = styled.div`
@@ -117,6 +123,12 @@ const LabelValue = styled.span`
   color: ${(props) => props.theme.brand.textPrimary};
 `;
 
+const AlertsCounterContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+
 const VolumeDetailCard = (props) => {
   const {
     name,
@@ -134,11 +146,15 @@ const VolumeDetailCard = (props) => {
     condition,
     volumeListData,
     pVList,
+    health,
+    alertlist
   } = props;
 
   const dispatch = useDispatch();
   const history = useHistory();
   const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const match = useRouteMatch();
   const theme = useSelector((state) => state.config.theme);
 
   const deleteVolume = (deleteVolumeName) =>
@@ -150,7 +166,6 @@ const VolumeDetailCard = (props) => {
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
-    const query = new URLSearchParams(location.search);
     const isAddNodefilter = query.has('node');
 
     deleteVolume(deleteVolumeName);
@@ -195,6 +210,8 @@ const VolumeDetailCard = (props) => {
     <VolumeDetailCardContainer>
       <VolumeInformation>
         <VolumeNameTitle data-cy="volume_detail_card_name">
+          <CircleStatus className="fas fa-circle fa-2x" status={health} />
+          &nbsp;
           {name}
         </VolumeNameTitle>
         <InformationSpan>
@@ -281,9 +298,21 @@ const VolumeDetailCard = (props) => {
             data-cy="delete_volume_button"
           ></DeleteButton>
         </DeleteButtonContainer>
+        {
+          alertlist &&
+          <AlertsCounterContainer>
+            <VolumeSectionTitle>
+              {intl.translate('active_alerts')}
+            </VolumeSectionTitle>
+            <ActiveAlertsCounter
+              alerts={alertlist}
+              baseLink={`${match.url}/${name}/alerts`}
+            />
+          </AlertsCounterContainer>
+        }
         {condition === VOLUME_CONDITION_LINK && (
           <VolumeUsage>
-            <VolumeUsageTitle>Volume Usage</VolumeUsageTitle>
+            <VolumeSectionTitle>{intl.translate('usage')}</VolumeSectionTitle>
             {volumeUsagePercentage !== intl.translate('unknown') ? (
               <ProgressBarContainer>
                 <ProgressBar
