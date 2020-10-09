@@ -232,7 +232,7 @@ const Layout = (props) => {
           <PrivateRoute exact path="/nodes" component={NodeList} />
           <PrivateRoute path="/newNodes" component={NodePage} />
           <PrivateRoute exact path="/environments" component={SolutionList} />
-          <PrivateRoute path="/volumes" component={VolumePage} />
+          <PrivateRoute path="/volumes/:name?" component={VolumePage} />
           <PrivateRoute
             exact
             path="/environments/create-environment"
