@@ -158,11 +158,14 @@
   "node": "Nœud",
   "used_by": "Utilisé Par",
   "backend_disk": "Backend Disk",
-  "active_alerts": "ALERTS ACTIVES",
+  "active_alerts": "Alertes actives",
   "metrics": "MÉTRIQUE",
   "volume_is_not_bound": "Le volume n'est pas encore lié",
   "no_active_alerts": "Aucune alerte active",
   "not_used": "Non utilisé",
   "no_volume_selected": "Aucun volume sélectionné",
-  "no_node_selected": "Aucun nœud sélectionné"
+  "no_node_selected": "Aucun nœud sélectionné",
+  "overview": "Aperçu",
+  "volume_usage": "Utilisation du Volume",
+  "usage": "Utilisation"
 }

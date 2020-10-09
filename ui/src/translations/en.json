@@ -158,11 +158,14 @@
   "node": "Node",
   "used_by": "Used By",
   "backend_disk": "Backend Disk",
-  "active_alerts": "ACTIVE ALERTS",
+  "active_alerts": "Active alerts",
   "metrics": "METRICS",
   "volume_is_not_bound": "The volume is not bound yet",
   "no_active_alerts": "No active alerts",
   "not_used": "Not used",
   "no_volume_selected": "No Volume Selected",
-  "no_node_selected": "No Node Selected"
+  "no_node_selected": "No Node Selected",
+  "overview": "Overview",
+  "volume_usage": "Volume Usage",
+  "usage": "Usage"
 }
