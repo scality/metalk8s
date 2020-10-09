@@ -228,7 +228,7 @@ const Layout = (props) => {
           />
           <PrivateRoute path="/nodes" component={NodePage} />
           <PrivateRoute exact path="/environments" component={SolutionList} />
-          <PrivateRoute path="/volumes" component={VolumePage} />
+          <PrivateRoute path="/volumes/:name?" component={VolumePage} />
           <PrivateRoute
             exact
             path="/environments/create-environment"
