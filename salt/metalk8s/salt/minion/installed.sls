@@ -1,7 +1,7 @@
 {%- from "metalk8s/macro.sls" import pkg_installed with context %}
 
 include :
-  - metalk8s.repo
+  - .dependencies
   - .running
 
 Install salt-minion:

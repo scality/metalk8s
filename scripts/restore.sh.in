@@ -72,6 +72,7 @@ SALT_CALL=${SALT_CALL:-salt-call}
 declare -a PACKAGES=(
     salt-minion-@@SALT_VERSION
     genisoimage
+    python36-rpm
 )
 
 # shellcheck disable=SC1090
