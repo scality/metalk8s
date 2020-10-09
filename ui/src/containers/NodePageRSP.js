@@ -5,14 +5,20 @@ import { useHistory, useLocation } from 'react-router';
 import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import { fetchNodeStatsAction } from '../ducks/app/monitoring';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
+import { useQuery, useRefreshEffect } from '../services/utils';
+import {
+  updateNodeStatsFetchArgumentAction,
+  refreshNodeStatsAction,
+  stopRefreshNodeStatsAction,
+} from '../ducks/app/monitoring';
 import NodePageHealthTab from '../components/NodePageHealthTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
-import NodePageMetricsTab from '../components/NodePageMetricsTab';
+import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
+import { queryTimeSpansCodes } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
@@ -22,10 +28,12 @@ const NodePageRSPContainer = styled.div`
 
   .sc-tabs-item-content {
     padding: 0;
+    overflow-y: auto;
   }
 `;
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
+// handles the refresh for the metrics tab
 const NodePageRSP = (props) => {
   const {
     selectedNodeName,
@@ -35,28 +43,54 @@ const NodePageRSP = (props) => {
   } = props;
   const history = useHistory();
   const location = useLocation();
-
   const dispatch = useDispatch();
   const nodeStats = useSelector(
     (state) => state.app.monitoring.nodeStats.metrics,
   );
   const theme = useSelector((state) => state.config.theme);
+
+  // Initialize the `metricsTimeSpan` in saga state base on the URL query.
+  // In order to keep the selected timespan for metrics tab when switch between the tabs.
+  const query = useQuery();
+  const nodeMetricsTimeSpan = useSelector(
+    (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
+  );
+
+  let metricsTimeSpan;
+  const queryTimespan = query.get('from');
+
+  if (queryTimespan) {
+    // If timespan query specified in query string
+    metricsTimeSpan = queryTimeSpansCodes?.find(
+      (timespan) => timespan.label === queryTimespan,
+    )?.value;
+  } else {
+    metricsTimeSpan = nodeMetricsTimeSpan;
+  }
+
+  // retrieve the podlist data
+  const pods = useSelector((state) => state.app.pods.list);
+  const podsListData = getPodsListData(selectedNodeName, pods);
   useEffect(() => {
     dispatch(
-      fetchNodeStatsAction({
+      updateNodeStatsFetchArgumentAction({
+        metricsTimeSpan,
         instanceIP,
         controlPlaneInterface,
         workloadPlaneInterface,
       }),
     );
-  }, [instanceIP, controlPlaneInterface, workloadPlaneInterface, dispatch]);
-
-  useEffect(() => {
     dispatch(fetchPodsAction());
-  }, [dispatch]);
-  // retrieve the podlist data
-  const pods = useSelector((state) => state.app.pods.list);
-  const podsListData = getPodsListData(selectedNodeName, pods);
+  }, [
+    metricsTimeSpan,
+    instanceIP,
+    controlPlaneInterface,
+    workloadPlaneInterface,
+    dispatch,
+  ]);
+
+  useRefreshEffect(refreshNodeStatsAction, stopRefreshNodeStatsAction);
+
   const isHealthTabActive = location.pathname.endsWith('/health');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
@@ -106,7 +140,13 @@ const NodePageRSP = (props) => {
           <Route
             path={`/newNodes/${selectedNodeName}/metrics`}
             render={() => (
-              <NodePageMetricsTab nodeStats={nodeStats}></NodePageMetricsTab>
+              <NodePageMetricsTab
+                nodeStats={nodeStats}
+                instanceIP={instanceIP}
+                controlPlaneInterface={controlPlaneInterface}
+                workloadPlaneInterface={workloadPlaneInterface}
+                selectedNodeName={selectedNodeName}
+              />
             )}
           />
           <Route

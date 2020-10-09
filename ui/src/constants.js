@@ -44,3 +44,18 @@ export const SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS = 720;
 export const SAMPLE_FREQUENCY_LAST_ONE_HOUR = 30;
 
 export const PORT_NODE_EXPORTER = '9100';
+
+export const queryTimeSpansCodes = [
+  {
+    label: 'now-7d',
+    value: LAST_SEVEN_DAYS,
+  },
+  {
+    label: 'now-24h',
+    value: LAST_TWENTY_FOUR_HOURS,
+  },
+  {
+    label: 'now-1h',
+    value: LAST_ONE_HOUR,
+  },
+];
