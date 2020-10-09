@@ -1,20 +1,22 @@
 import React from 'react';
 import { FormattedDate, FormattedTime } from 'react-intl';
+import { useRouteMatch, useLocation } from 'react-router';
 import styled from 'styled-components';
 import {
   fontSize,
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
+import ActiveAlertsFilters from './ActiveAlertsFilters';
 import { Chips } from '@scality/core-ui';
 import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
 
+
 const ActiveAlertsCardContainer = styled.div`
   min-height: 75px;
-  background-color: ${(props) => props.theme.brand.primaryDark1};
   margin: ${padding.small};
-  padding: 0 ${padding.large} ${padding.small} 0;
+  padding: ${padding.small};
 `;
 
 const ActiveAlertsTitle = styled.div`
@@ -22,6 +24,8 @@ const ActiveAlertsTitle = styled.div`
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
   padding: ${padding.small} 0 0 ${padding.large};
+  display: flex;
+  justify-content: space-between;
 `;
 
 const ActiveAlertsTableContainer = styled.div`
@@ -45,6 +49,8 @@ const ActiveAlertsTableContainer = styled.div`
     th {
       font-weight: bold;
       height: 56px;
+      text-align: left;
+      padding: 0.5rem;
     }
 
     td {
@@ -68,8 +74,12 @@ const NoActiveAlerts = styled.div`
 
 const ActiveAlertsCard = (props) => {
   const { alertlist, PVCName } = props;
+  const match = useRouteMatch();
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const selectedFilter = query.get('severity');
 
-  const activeAlertListData = alertlist?.map((alert) => {
+  let activeAlertListData = alertlist?.map((alert) => {
     return {
       name: alert.labels.alertname,
       severity: alert.labels.severity,
@@ -77,6 +87,8 @@ const ActiveAlertsCard = (props) => {
       active_since: alert.startsAt,
     };
   });
+  if (activeAlertListData && selectedFilter)
+    activeAlertListData = activeAlertListData.filter(item => item.severity === selectedFilter);
   // React Table for the volume list
   function Table({ columns, data }) {
     // Use the state and functions returned from useTable to build your UI
@@ -145,6 +157,7 @@ const ActiveAlertsCard = (props) => {
                       <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
                     );
                   }
+                  return null;
                 })}
               </tr>
             );
@@ -166,8 +179,15 @@ const ActiveAlertsCard = (props) => {
 
   return (
     <ActiveAlertsCardContainer>
-      <ActiveAlertsTitle>{intl.translate('active_alerts')}</ActiveAlertsTitle>
-      {PVCName && alertlist.length !== 0 ? (
+      <ActiveAlertsTitle>
+        <div>
+          {intl.translate('active_alerts')}
+        </div>
+        <ActiveAlertsFilters
+          baseLink={`${match.url}/alerts`}
+        />
+      </ActiveAlertsTitle>
+      {PVCName && activeAlertListData.length !== 0 ? (
         <ActiveAlertsTableContainer>
           <Table columns={columns} data={activeAlertListData} />
         </ActiveAlertsTableContainer>
