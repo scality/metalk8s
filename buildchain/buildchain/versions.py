@@ -353,6 +353,7 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             version=SHORT_VERSION,
             release='1.el7'
         ),
+        PackageVersion(name='python36-rpm'),
         PackageVersion(name='yum-plugin-versionlock'),
         PackageVersion(name='yum-utils'),
     ),

@@ -6,6 +6,16 @@
 {%- set roles = pillar.get('metalk8s', {}).get('nodes', {}).get(node_name, {}).get('roles', []) %}
 
 {%- if node_name not in salt.saltutil.runner('manage.up') %}
+# Salt-ssh need python3 to be installed on the destination host, so install it
+# manually using raw ssh
+Install python36:
+  metalk8s.saltutil_cmd:
+    - name: '[ "$EUID" -eq 0 ] && yum install -y python3 || sudo yum install -y python3'
+    - tgt: {{ node_name }}
+    - ssh: true
+    - raw_shell: true
+    - roster: kubernetes
+
 Deploy salt-minion on a new node:
   salt.state:
     - ssh: true

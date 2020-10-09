@@ -110,12 +110,12 @@ def add_external_repositories(salt_version: str) -> None:
         }, {
             'name': 'saltstack',
             'key': urllib.parse.urljoin(
-                'https://repo.saltstack.com/apt/ubuntu/',
+                'https://repo.saltstack.com/py3/ubuntu/',
                 '18.04/amd64/archive/{}/SALTSTACK-GPG-KEY.pub'.format(
                     salt_version
                 )
             ),
-            'source': 'deb http://repo.saltstack.com/apt/ubuntu/'\
+            'source': 'deb http://repo.saltstack.com/py3/ubuntu/'\
                       '18.04/amd64/archive/{} bionic main'.format(salt_version)
         }
     ]
