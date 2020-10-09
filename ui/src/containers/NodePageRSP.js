@@ -26,10 +26,12 @@ import { queryTimeSpansCodes } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
+  flex-direction: column;
+  width: 51%;
+  padding: 0 ${padding.small} ${padding.small} ${padding.small};
   .sc-tabs {
-    margin: ${padding.smaller} ${padding.small} 0 0;
+    margin-top: 0;
   }
-
   .sc-tabs-item-content {
     padding: 0;
     overflow-y: auto;
