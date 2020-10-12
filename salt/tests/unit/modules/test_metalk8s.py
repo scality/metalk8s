@@ -307,3 +307,18 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
                     metalk8s.format_slots(data),
                     result
                 )
+
+    @parameterized.expand([
+        param([3, 5, 2, -4], [-4, 2, 3, 5]),
+        param([3, 5, 2, -4], [5, 3, 2, -4], reverse=True),
+        param([3, 5, 2, -4], [5, 3, 2, -4], cmp=lambda a, b: -1 if a > b else 1),
+        param([3, 5, 2, -4], [2, 3, -4, 5], key=abs)
+    ])
+    def test_cmp_sorted(self, obj, result, **kwargs):
+        """
+        Tests the return of `cmp_sorted` function
+        """
+        self.assertEqual(
+            metalk8s.cmp_sorted(obj, **kwargs),
+            result
+        )
