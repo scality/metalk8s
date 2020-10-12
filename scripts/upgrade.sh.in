@@ -6,8 +6,10 @@ set -o pipefail
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/upgrade.log
 DRY_RUN=0
-SALTENV=${SALTENV:-}
-DESTINATION_VERSION=""
+DESTINATION_VERSION=${DESTINATION_VERSION:-@@VERSION}
+# SALTENV must be equal to script version and DESTINATION_VERSION
+# (checked by the precheck orchestrate)
+SALTENV="metalk8s-$DESTINATION_VERSION"
 SALT_CALL=${SALT_CALL:-salt-call}
 BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
@@ -15,8 +17,6 @@ BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 _usage() {
     echo "upgrade.sh [options]"
     echo "Options:"
-    echo "--destination-version "
-    echo "   <destination-version>:        Destination version to upgrade to"
     echo "-l/--log-file <logfile_path>:    Path to log file"
     echo "-v/--verbose:                    Run in verbose mode"
     echo "-d/--dry-run:                    Run actions in dry run mode"
@@ -32,10 +32,6 @@ while (( "$#" )); do
     -v|--verbose)
       VERBOSE=1
       shift
-      ;;
-    --destination-version)
-      DESTINATION_VERSION="$2"
-      shift 2
       ;;
     -l|--log-file)
       LOGFILE="$2"
@@ -146,22 +142,6 @@ patch_kubesystem_namespace() {
         patch="{'metadata': {'annotations': \
         {'metalk8s.scality.com/cluster-version': '$DESTINATION_VERSION'}}}"
 }
-
-get_cluster_version() {
-    DESTINATION_VERSION=$("${SALT_CALL}" \
-        pillar.get metalk8s:cluster_version --out txt | cut -c 8-)
-}
-
-if [ -z "$DESTINATION_VERSION" ]; then
-    get_cluster_version
-    run "Getting cluster version $DESTINATION_VERSION"
-fi
-
-# SALTENV should be equal to script version and DESTINATION_VERSION
-# (checked by the precheck orchestrate)
-if [ -z "$SALTENV" ]; then
-    SALTENV="metalk8s-@@VERSION"
-fi
 
 run "Performing Pre-Upgrade checks" precheck_upgrade
 [ $DRY_RUN -eq 1 ] && exit 0
