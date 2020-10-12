@@ -5,6 +5,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
+import { Switch, Route } from 'react-router-dom';
 import { Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import VolumeListTable from '../components/VolumeListTable';
@@ -184,49 +185,55 @@ const VolumePageContent = (props) => {
       {currentVolumeName && volume ? (
         <RightSidePanel>
           <Tabs activeColor={theme.brand.primary} items={tabsItems}>
-            {
-              isOverviewPage &&
-              <VolumeOverviewTab
-                name={currentVolumeName}
-                nodeName={volume?.spec?.nodeName}
-                storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
-                status={volumeStatus ?? intl.translate('unknown')}
-                storageClassName={volume?.spec?.storageClassName}
-                creationTimestamp={volume?.metadata?.creationTimestamp}
-                volumeType={
-                  volume?.spec?.rawBlockDevice
-                    ? RAW_BLOCK_DEVICE
-                    : SPARSE_LOOP_DEVICE
-                }
-                usedPodName={UsedPod ? UsedPod?.name : intl.translate('not_used')}
-                devicePath={
-                  volume?.spec?.rawBlockDevice?.devicePath ??
-                  intl.translate('not_applicable')
-                }
-                volumeUsagePercentage={currentVolume?.usage}
-                volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-                storageCapacity={
-                  volumeListData?.find((vol) => vol.name === currentVolumeName)
-                    .storageCapacity
-                }
-                health={
-                  volumeListData?.find((vol) => vol.name === currentVolumeName)
-                    .health
-                }
-                condition={currentVolume.status}
-                // the delete button inside the volume detail card should know that which volume is the first one
-                volumeListData={volumeListData}
-                pVList={pVList}
-                alertlist={alertlist}
+            <Switch>
+              <Route
+                path={`${match.url}/overview`}
+                render={() => (
+                  <VolumeOverviewTab
+                    name={currentVolumeName}
+                    nodeName={volume?.spec?.nodeName}
+                    storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
+                    status={volumeStatus ?? intl.translate('unknown')}
+                    storageClassName={volume?.spec?.storageClassName}
+                    creationTimestamp={volume?.metadata?.creationTimestamp}
+                    volumeType={
+                      volume?.spec?.rawBlockDevice
+                        ? RAW_BLOCK_DEVICE
+                        : SPARSE_LOOP_DEVICE
+                    }
+                    usedPodName={UsedPod ? UsedPod?.name : intl.translate('not_used')}
+                    devicePath={
+                      volume?.spec?.rawBlockDevice?.devicePath ??
+                      intl.translate('not_applicable')
+                    }
+                    volumeUsagePercentage={currentVolume?.usage}
+                    volumeUsageBytes={currentVolume?.usageRawData ?? 0}
+                    storageCapacity={
+                      volumeListData?.find((vol) => vol.name === currentVolumeName)
+                        .storageCapacity
+                    }
+                    health={
+                      volumeListData?.find((vol) => vol.name === currentVolumeName)
+                        .health
+                    }
+                    condition={currentVolume.status}
+                    // the delete button inside the volume detail card should know that which volume is the first one
+                    volumeListData={volumeListData}
+                    pVList={pVList}
+                    alertlist={alertlist}
+                  />
+                )}
               />
-            }
-            {
-              isAlertsPage &&
-              <VolumeAlertsTab
-                alertlist={alertlist}
-                PVCName={PVCName}
+              <Route
+                path={`${match.url}/alerts`}
+                render={() => (
+                  <VolumeAlertsTab
+                    alertlist={alertlist}
+                    PVCName={PVCName}
+                  />
+                )}
               />
-              }
+            </Switch>
           </Tabs>
         </RightSidePanel>
       ) : (
