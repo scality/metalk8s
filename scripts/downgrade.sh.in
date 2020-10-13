@@ -127,19 +127,8 @@ downgrade_bootstrap () {
         metalk8s.orchestrate.bootstrap.pre-downgrade \
         saltenv="$SALTENV"
 
-    # Salt Master states changed in 2.4.4/2.5.1
-    # NOTE: (this fix can be removed in 2.7 and higher)
-    local -r version_no_suffix="${DESTINATION_VERSION%%*-}"
-    if [ "$version_no_suffix" = "2.5.0" ] || \
-       [ "$("$SALT_CALL" --local --out txt pkg.version_cmp \
-            "$version_no_suffix" "2.4.3" | cut -c 8-)" -le 0 ]; then
-        bootstrap_state="metalk8s.roles.bootstrap"
-    else
-        bootstrap_state="metalk8s.roles.bootstrap.local"
-    fi
-
     "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
-        "$bootstrap_state" saltenv="metalk8s-$DESTINATION_VERSION" \
+        "metalk8s.roles.bootstrap.local" saltenv="metalk8s-$DESTINATION_VERSION" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
         'repositories': $repo_endpoint}}}"
 }
