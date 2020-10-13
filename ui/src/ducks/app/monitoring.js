@@ -770,7 +770,7 @@ export function* watchRefreshNodeStats() {
   while (true) {
     yield take(REFRESH_NODESTATS);
     while (true) {
-      yield fork(fetchNodeStats);
+      const fetchNodeStatsTask = yield fork(fetchNodeStats);
       const { interrupt } = yield race({
         interrupt: take(STOP_REFRESH_NODESTATS),
         // If the refresh period expires before we receive a halt,
@@ -781,7 +781,7 @@ export function* watchRefreshNodeStats() {
         update: take(UPDATE_NODESTATS_FETCH_ARG),
       });
       if (interrupt) {
-        yield cancel(fetchNodeStats);
+        yield cancel(fetchNodeStatsTask);
         break;
       }
     }
