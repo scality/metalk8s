@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useRouteMatch } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   useTable,
@@ -305,6 +305,7 @@ const NodeListTable = (props) => {
   const { nodeTableData, selectedNodeName } = props;
   const theme = useSelector((state) => state.config.theme);
   const query = useQuery();
+  const { path } = useRouteMatch();
 
   const columns = React.useMemo(
     () => [
@@ -360,9 +361,10 @@ const NodeListTable = (props) => {
       location.pathname.endsWith('pods');
 
     if (isTabSelected) {
+      // TODO: Need to change the Regex when rename to /nodes
       const newPath = location.pathname.replace(
         /\/newNodes\/[^/]*\//,
-        `/newNodes/${nodeName}/`,
+        `${path}/${nodeName}/`,
       );
       history.push({
         pathname: newPath,
