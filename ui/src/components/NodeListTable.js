@@ -353,7 +353,7 @@ const NodeListTable = (props) => {
   const onClickRow = (row) => {
     const nodeName = row.values.name.name;
     const isTabSelected =
-      location.pathname.endsWith('health') ||
+      location.pathname.endsWith('overview') ||
       location.pathname.endsWith('alerts') ||
       location.pathname.endsWith('metrics') ||
       location.pathname.endsWith('volumes') ||
@@ -370,7 +370,7 @@ const NodeListTable = (props) => {
       });
     } else {
       history.push({
-        pathname: `/newNodes/${nodeName}/health`,
+        pathname: `${path}/${nodeName}/overview`,
         search: query.toString(),
       });
     }
