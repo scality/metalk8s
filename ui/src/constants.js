@@ -22,6 +22,8 @@ export const STATUS_AVAILABLE = 'Available';
 export const STATUS_RELEASED = 'Released';
 export const STATUS_UNKNOWN = 'Unknown';
 export const STATUS_READY = 'Ready';
+export const STATUS_RUNNING = 'Running';
+export const STATUS_SUCCEEDED = 'Succeeded';
 
 export const SPARSE_LOOP_DEVICE = 'sparseLoopDevice';
 export const RAW_BLOCK_DEVICE = 'rawBlockDevice';
