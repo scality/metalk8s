@@ -106,7 +106,7 @@ const NoDataGraphText = styled.div`
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
-const MetricGraphCard = (props) => {
+const MetricsTab = (props) => {
   const { volumeCondition, volumeMetricGraphData, volumeName } = props;
   const dispatch = useDispatch();
   const history = useHistory();
@@ -442,4 +442,4 @@ const MetricGraphCard = (props) => {
   );
 };
 
-export default MetricGraphCard;
+export default MetricsTab;
