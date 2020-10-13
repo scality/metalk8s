@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"regexp"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -103,32 +103,27 @@ func TestLoadConfigurationFromFile(t *testing.T) {
 		"invalid-bad-version": {
 			filename: "invalid-bad-version.yaml",
 			result:   nil,
-			error:    "empty version number",
+			error:    "invalid value for repositories: empty version number",
 		},
 		"invalid-empty-version": {
 			filename: "invalid-empty-version.yaml",
 			result:   nil,
-			error:    "repositories missing for version 1.0.0",
+			error:    "invalid value for repositories[1.0.0]: cannot be empty",
 		},
 		"invalid-repository-bad-image": {
 			filename: "invalid-repository-bad-image.yaml",
 			result:   nil,
-			error:    "invalid repository for version 1.0.0 at index 0: missing image name at index 0",
+			error:    "invalid value for repositories[1.0.0].0: invalid value for images.0: cannot be empty",
 		},
 		"invalid-repository-no-endpoint": {
 			filename: "invalid-repository-no-endpoint.yaml",
 			result:   nil,
-			error:    "invalid repository for version 1.0.0 at index 0: missing required field: endpoint",
-		},
-		"error-non-existent-file": {
-			filename: "error-non-existent.yaml",
-			result:   nil,
-			error:    "open testdata/error-non-existent.yaml: no such file or directory",
+			error:    "invalid value for repositories[1.0.0].0: missing required field: endpoint",
 		},
 		"error-bad-format": {
 			filename: "error-bad-format.txt",
 			result:   nil,
-			error:    "operator configuration is not valid YAML",
+			error:    "yaml: unmarshal errors",
 		},
 	}
 
@@ -140,7 +135,9 @@ func TestLoadConfigurationFromFile(t *testing.T) {
 
 			if tc.error != "" {
 				assert.Error(t, err)
-				assert.Regexp(t, regexp.MustCompile(tc.error), err.Error())
+				// All errors in these cases should be validation errors
+				assert.True(t, errors.Is(err, ErrValidation))
+				assert.Contains(t, err.Error(), tc.error)
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.result, result)
@@ -149,23 +146,40 @@ func TestLoadConfigurationFromFile(t *testing.T) {
 	}
 }
 
-type BrokenBuffer struct{}
+func TestLoadConfigurationNonExistentFile(t *testing.T) {
+	nonExistentFilePath := "non-existent.yaml"
+	result, err := LoadConfigurationFromFile(nonExistentFilePath)
 
-func (b BrokenBuffer) Close() error {
+	assert.Nil(t, result)
+	assert.Error(t, err)
+	// This error is not about validation
+	assert.False(t, errors.Is(err, ErrValidation))
+	assert.True(t, errors.Is(err, os.ErrNotExist))
+	assert.Contains(t, err.Error(), nonExistentFilePath)
+}
+
+type brokenBuffer struct{}
+
+func (b brokenBuffer) Close() error {
 	return nil
 }
 
-func (b BrokenBuffer) Read(p []byte) (n int, err error) {
-	return 0, errors.New("this buffer is broken")
+var errBrokenBuffer = errors.New("this buffer is broken")
+
+func (b brokenBuffer) Read(p []byte) (n int, err error) {
+	return 0, errBrokenBuffer
 }
 
 func TestLoadConfigurationOnBrokenFile(t *testing.T) {
-	var someBrokenFile BrokenBuffer
+	var someBrokenFile brokenBuffer
 
 	result, err := LoadConfiguration(someBrokenFile)
 
 	assert.Nil(t, result)
 	assert.Error(t, err)
+	// This error is not about validation
+	assert.False(t, errors.Is(err, ErrValidation))
+	assert.True(t, errors.Is(err, errBrokenBuffer))
 	assert.Equal(
 		t,
 		"cannot read operator configuration: this buffer is broken",

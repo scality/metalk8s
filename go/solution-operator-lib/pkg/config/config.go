@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -35,15 +34,15 @@ func LoadConfiguration(input io.Reader) (*OperatorConfig, error) {
 
 	buffer, err := ioutil.ReadAll(input)
 	if err != nil {
-		return nil, fmt.Errorf("cannot read operator configuration: %v", err)
+		return nil, fmt.Errorf("cannot read operator configuration: %w", err)
 	}
 
 	if err := yaml.UnmarshalStrict(buffer, &config); err != nil {
-		return nil, fmt.Errorf("operator configuration is not valid YAML: %v", err)
+		return nil, validationError(err)
 	}
 
 	if err := config.validate(); err != nil {
-		return nil, err
+		return nil, validationError(err)
 	}
 
 	return &config, nil
@@ -55,7 +54,9 @@ func LoadConfiguration(input io.Reader) (*OperatorConfig, error) {
 func LoadConfigurationFromFile(configFile string) (*OperatorConfig, error) {
 	file, err := os.Open(configFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(
+			"cannot open operator configuration file: %w", err,
+		)
 	}
 	defer file.Close()
 
@@ -64,44 +65,52 @@ func LoadConfigurationFromFile(configFile string) (*OperatorConfig, error) {
 
 func (config *OperatorConfig) validate() error {
 	if config.APIVersion == "" {
-		return errors.New("missing required field: apiVersion")
+		return &errMissingField{field: "apiVersion"}
 	}
 	if config.APIVersion != expectedAPIVersion {
-		return fmt.Errorf(
-			"invalid value for apiVersion: got `%s`, expected `%s`",
-			config.APIVersion, expectedAPIVersion,
-		)
+		return &errBadConstant{
+			field:         "apiVersion",
+			actualValue:   config.APIVersion,
+			expectedValue: expectedAPIVersion,
+		}
 	}
 
 	if config.Kind == "" {
-		return errors.New("missing required field: kind")
+		return &errMissingField{field: "kind"}
 	}
 	if config.Kind != expectedKind {
-		return fmt.Errorf(
-			"invalid value for kind: got `%s`, expected `%s`",
-			config.Kind, expectedKind,
-		)
+		return &errBadConstant{
+			field:         "kind",
+			actualValue:   config.Kind,
+			expectedValue: expectedKind,
+		}
 	}
 
 	if len(config.Repositories) == 0 {
-		return errors.New("missing required field: repositories")
+		return &errMissingField{field: "repositories"}
 	}
 
 	for version, repositories := range config.Repositories {
 		if version == "" {
-			return errors.New("empty version number")
+			return &errBadValue{
+				field:  "repositories",
+				reason: "empty version number",
+			}
 		}
 
 		if len(repositories) == 0 {
-			return fmt.Errorf("repositories missing for version %s", version)
+			return &errBadValue{
+				field:  fmt.Sprintf("repositories[%s]", version),
+				reason: "cannot be empty",
+			}
 		}
 
 		for idx, repo := range repositories {
 			if err := repo.validate(); err != nil {
-				return fmt.Errorf(
-					"invalid repository for version %s at index %d: %v",
-					version, idx, err,
-				)
+				return &errBadValue{
+					field: fmt.Sprintf("repositories[%s].%d", version, idx),
+					err:   err,
+				}
 			}
 		}
 	}
@@ -111,12 +120,15 @@ func (config *OperatorConfig) validate() error {
 
 func (repo *Repository) validate() error {
 	if repo.Endpoint == "" {
-		return errors.New("missing required field: endpoint")
+		return &errMissingField{field: "endpoint"}
 	}
 
 	for idx, image := range repo.Images {
 		if image == "" {
-			return fmt.Errorf("missing image name at index %d", idx)
+			return &errBadValue{
+				field:  fmt.Sprintf("images.%d", idx),
+				reason: "cannot be empty",
+			}
 		}
 	}
 
