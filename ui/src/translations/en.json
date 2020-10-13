@@ -159,7 +159,7 @@
   "used_by": "Used By",
   "backend_disk": "Backend Disk",
   "active_alerts": "Active alerts",
-  "metrics": "METRICS",
+  "metrics": "Metrics",
   "volume_is_not_bound": "The volume is not bound yet",
   "no_active_alerts": "No active alerts",
   "not_used": "Not used",

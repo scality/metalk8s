@@ -439,7 +439,9 @@ const VolumeListTable = (props) => {
   const onClickRow = (row) => {
     const query = new URLSearchParams(location.search);
     const isAddNodeFilter = query.has('node');
-    const isTabSelected = location.pathname.endsWith('/alerts');
+    const isTabSelected =
+    location.pathname.endsWith('/alerts')
+    || location.pathname.endsWith('/metrics');
 
     // there are two possiable URLs
     if (isAddNodeFilter || !isNodeColumn) {

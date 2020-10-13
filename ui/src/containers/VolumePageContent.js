@@ -1,6 +1,3 @@
-// Temporarily disable the `no-unused-vars` lint until the refactoring is complete.
-/* eslint-disable no-unused-vars */
-
 import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -11,7 +8,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import VolumeAlertsTab from '../components/VolumeAlertsTab';
-import MetricGraphCard from '../components/VolumeMetricGraphCard';
+import VolumeMetricsTab from '../components/VolumeMetricsTab';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
@@ -175,7 +172,6 @@ const VolumePageContent = (props) => {
   const isAlertsPage = location.pathname.endsWith('/alerts');
   const isOverviewPage = location.pathname.endsWith('/overview');
   const isMetricsPage = location.pathname.endsWith('/metrics');
-  const isDetailsPage = location.pathname.endsWith('/details');
 
   const tabsItems = [
     {
@@ -187,6 +183,11 @@ const VolumePageContent = (props) => {
       selected: isAlertsPage,
       title: (<span>{intl.translate('alerts')}<TextBadge>{alertlist?.length}</TextBadge></span>),
       onClick: () => history.push(`${match.url}/alerts${query.toString() && `?${query.toString()}`}`),
+    },
+    {
+      selected: isMetricsPage,
+      title: (<span>{intl.translate('metrics')}</span>),
+      onClick: () => history.push(`${match.url}/metrics${query.toString() && `?${query.toString()}`}`),
     },
   ];
 
@@ -249,6 +250,18 @@ const VolumePageContent = (props) => {
                   <VolumeAlertsTab
                     alertlist={alertlist}
                     PVCName={PVCName}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.url}/metrics`}
+                render={() => (
+                  <VolumeMetricsTab
+                  volumeName={currentVolumeName}
+                  volumeMetricGraphData={volumeMetricGraphData}
+                  // the volume condition compute base on the `status` and `bound/unbound`
+                  volumeCondition={currentVolume.status}
+                  // Hardcode the port number for prometheus metrics
                   />
                 )}
               />
