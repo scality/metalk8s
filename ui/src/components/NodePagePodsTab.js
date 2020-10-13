@@ -4,6 +4,12 @@ import { useTable } from 'react-table';
 import styled from 'styled-components';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { TabContainer } from './CommonLayoutStyle';
+import {
+  STATUS_RUNNING,
+  STATUS_PENDING,
+  STATUS_FAILED,
+  STATUS_UNKNOWN,
+} from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const PodTableContainer = styled.div`
@@ -51,13 +57,22 @@ const Cell = styled.td`
   border-top: 1px solid #424242;
 `;
 
-// the color of the status depends on if all the containers are running
+// Color specification:
+// Pod Running + All Containers are running => Green
+// Pod Running + At least one container is running => Orange
+// Pod Pending => Orange
+// Pod Succeeded => Green
+// Pod Failed => Red
+// Pod Unknown => Red
 const StatusText = styled.div`
   color: ${(props) => {
-    if (props.isAllContainerRunning) {
+    const { status, numContainer, numContainerRunning } = props;
+    if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
       return props.theme.brand.healthy;
-    } else {
+    } else if (status === STATUS_RUNNING || status === STATUS_PENDING) {
       return props.theme.brand.warning;
+    } else if (status === STATUS_FAILED || status === STATUS_UNKNOWN) {
+      return props.theme.brand.danger;
     }
   }}};
 `;
@@ -140,11 +155,17 @@ const NodePagePodsTab = (props) => {
         Header: 'Status',
         accessor: 'status',
         Cell: (cellProps) => {
-          const { status, isAllContainerRunning } = cellProps.value;
-          return (
-            <StatusText isAllContainerRunning={isAllContainerRunning}>
-              {status}
+          const { status, numContainer, numContainerRunning } = cellProps.value;
+          return status === STATUS_RUNNING ? (
+            <StatusText
+              status={status}
+              numContainer={numContainer}
+              numContainerRunning={numContainerRunning}
+            >
+              {`${status} (${numContainerRunning}/${numContainer})`}
             </StatusText>
+          ) : (
+            <StatusText status={status}>{status}</StatusText>
           );
         },
       },
