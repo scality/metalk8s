@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormattedDate, FormattedTime } from 'react-intl';
+import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   padding,
@@ -52,26 +53,23 @@ const StatusText = styled.span`
 `;
 
 const NodePageOverviewTab = (props) => {
-  const { selectedNodeName, nodeTableData, nodes, volumes, pods } = props;
-
-  // the node object used by Node List Table
-  const currentNode = nodeTableData?.find(
-    (node) => node.name.name === selectedNodeName,
-  );
-  const currentNodeReturnByK8S = nodes?.find(
-    (node) => node.name === selectedNodeName,
-  );
+  const { nodeTableData, nodes, volumes, pods } = props;
+  // Retrieve the node name from URL parameter
+  const { name } = useParams();
+  // The node object used by Node List Table
+  const currentNode = nodeTableData?.find((node) => node.name.name === name);
+  const currentNodeReturnByK8S = nodes?.find((node) => node.name === name);
 
   const creationTimestamp = currentNodeReturnByK8S
     ? new Date(currentNodeReturnByK8S.creationTimestamp)
     : '';
 
   const volumesAttachedCurrentNode = volumes.filter(
-    (volume) => volume.spec.nodeName === selectedNodeName,
+    (volume) => volume.spec.nodeName === name,
   );
 
   const podsScheduledOnCurrentNode = pods.filter(
-    (pod) => pod.nodeName === selectedNodeName,
+    (pod) => pod.nodeName === name,
   );
 
   const statusColor = currentNode?.status?.statusColor;
@@ -80,9 +78,9 @@ const NodePageOverviewTab = (props) => {
     <TabContainer>
       <NodeNameContainer>
         <NodeStatusCircle color={statusColor}>
-          <i class="fas fa-circle fa-2x"></i>
+          <i className="fas fa-circle fa-2x"></i>
         </NodeStatusCircle>
-        <NodeName>{selectedNodeName}</NodeName>
+        <NodeName>{name}</NodeName>
       </NodeNameContainer>
       <InformationSpan>
         <InformationLabel>Control Plane IP</InformationLabel>
@@ -103,7 +101,10 @@ const NodePageOverviewTab = (props) => {
         <InformationValue>
           {currentNode?.status?.computedStatus?.map((cond) => {
             return (
-              <StatusText textColor={currentNode?.status?.statusColor}>
+              <StatusText
+                key={cond}
+                textColor={currentNode?.status?.statusColor}
+              >
                 {intl.translate(`${cond}`)}
               </StatusText>
             );
