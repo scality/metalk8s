@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Switch, Route } from 'react-router-dom';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -52,7 +52,7 @@ const NodePageRSP = (props) => {
   const history = useHistory();
   const location = useLocation();
   const dispatch = useDispatch();
-
+  const { path } = useRouteMatch();
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useQuery();
@@ -112,27 +112,27 @@ const NodePageRSP = (props) => {
     {
       selected: isHealthTabActive,
       title: 'Overview',
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/overview`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/overview`),
     },
     {
       selected: isAlertsTabActive,
       title: intl.translate('alerts'),
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/alerts`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/alerts`),
     },
     {
       selected: isMetricsTabActive,
       title: 'Metrics',
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/metrics`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/metrics`),
     },
     {
       selected: isVolumesTabActive,
       title: intl.translate('volumes'),
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/volumes`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/volumes`),
     },
     {
       selected: isPodsTabActive,
       title: intl.translate('pods'),
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/pods`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/pods`),
     },
   ];
 
@@ -141,10 +141,9 @@ const NodePageRSP = (props) => {
       <Tabs items={items}>
         <Switch>
           <Route
-            path={`/newNodes/${selectedNodeName}/overview`}
+            path={`${path}/:name/overview`}
             render={() => (
               <NodePageOverviewTab
-                selectedNodeName={selectedNodeName}
                 nodeTableData={nodeTableData}
                 nodes={nodes}
                 volumes={volumes}
@@ -152,28 +151,17 @@ const NodePageRSP = (props) => {
               />
             )}
           />
+          <Route path={`${path}/:name/alerts`} component={NodePageAlertsTab} />
           <Route
-            path={`/newNodes/${selectedNodeName}/alerts`}
-            component={NodePageAlertsTab}
+            path={`${path}/:name/metrics`}
+            render={() => <NodePageMetricsTab nodeStats={nodeStats} />}
           />
           <Route
-            path={`/newNodes/${selectedNodeName}/metrics`}
-            render={() => (
-              <NodePageMetricsTab
-                nodeStats={nodeStats}
-                instanceIP={instanceIP}
-                controlPlaneInterface={controlPlaneInterface}
-                workloadPlaneInterface={workloadPlaneInterface}
-                selectedNodeName={selectedNodeName}
-              />
-            )}
-          />
-          <Route
-            path={`/newNodes/${selectedNodeName}/volumes`}
+            path={`${path}/:name/volumes`}
             component={NodePageVolumesTab}
           />
           <Route
-            path={`/newNodes/${selectedNodeName}/pods`}
+            path={`${path}/:name/pods`}
             render={() => (
               <NodePagePodsTab pods={podsListData}></NodePagePodsTab>
             )}
