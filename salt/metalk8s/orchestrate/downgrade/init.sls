@@ -11,6 +11,8 @@ Execute the downgrade prechecks:
     - pillar:
         orchestrate:
           dest_version: {{ dest_version }}
+        metalk8s:
+          downgrade: {{ pillar.metalk8s.get('downgrade', {}) | tojson }}
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
