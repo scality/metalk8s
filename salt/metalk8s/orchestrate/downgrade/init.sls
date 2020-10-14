@@ -100,6 +100,8 @@ Sync module on salt-master:
   salt.runner:
     - name: saltutil.sync_all
     - saltenv: metalk8s-{{ dest_version }}
+    - require:
+      - salt: Execute the downgrade prechecks
 
 Deploy Kubernetes service config objects:
   salt.runner:
