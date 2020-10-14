@@ -1,6 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { Route, useRouteMatch, Switch } from 'react-router-dom';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { useRefreshEffect } from '../services/utils';
 import NodeListTable from '../components/NodeListTable';
@@ -16,44 +15,35 @@ import { intl } from '../translations/IntlGlobalProvider';
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
   const { nodeTableData } = props;
+  const { path } = useRouteMatch();
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
-  const nodes = useSelector((state) => state.app.nodes.list);
-  const nodesIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
 
-  const history = useHistory();
-  const selectedNodeName =
-    history?.location?.pathname?.split('/')?.slice(2)[0] || '';
-  const instanceIP =
-    nodes?.find((node) => node.name === selectedNodeName)?.internalIP ?? '';
-
-  const controlPlaneInterface =
-    nodesIPsInfo[selectedNodeName]?.controlPlane?.interface;
-  const workloadPlaneInterface =
-    nodesIPsInfo[selectedNodeName]?.workloadPlane?.interface;
   return (
     <PageContentContainer>
       <LeftSideInstanceList>
-        <NodeListTable
-          nodeTableData={nodeTableData}
-          selectedNodeName={selectedNodeName}
-        />
+        <NodeListTable nodeTableData={nodeTableData} />
       </LeftSideInstanceList>
-      {selectedNodeName ? (
-        <NodePageRSP
-          selectedNodeName={selectedNodeName}
-          instanceIP={instanceIP}
-          controlPlaneInterface={controlPlaneInterface}
-          workloadPlaneInterface={workloadPlaneInterface}
-          nodeTableData={nodeTableData}
-        />
-      ) : (
-        <NoInstanceSelectedContainer>
-          <NoInstanceSelected>
-            {intl.translate('no_node_selected')}
-          </NoInstanceSelected>
-        </NoInstanceSelectedContainer>
-      )}
+      <Switch>
+        <Route
+          path={`${path}/:name`}
+          render={() => {
+            return <NodePageRSP nodeTableData={nodeTableData} />;
+          }}
+        ></Route>
+        <Route
+          path={`${path}`}
+          render={() => {
+            return (
+              <NoInstanceSelectedContainer>
+                <NoInstanceSelected>
+                  {intl.translate('no_node_selected')}
+                </NoInstanceSelected>
+              </NoInstanceSelectedContainer>
+            );
+          }}
+        ></Route>
+      </Switch>
     </PageContentContainer>
   );
 };
