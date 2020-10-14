@@ -300,13 +300,16 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
 }
 
 const NodeListTable = (props) => {
+  const { nodeTableData } = props;
   const history = useHistory();
   const location = useLocation();
-  const { nodeTableData, selectedNodeName } = props;
-  const theme = useSelector((state) => state.config.theme);
   const query = useQuery();
-  const { path } = useRouteMatch();
 
+  const { path } = useRouteMatch();
+  const theme = useSelector((state) => state.config.theme);
+
+  const selectedNodeName =
+    history?.location?.pathname?.split('/')?.slice(2)[0] || '';
   const columns = React.useMemo(
     () => [
       {
@@ -353,6 +356,7 @@ const NodeListTable = (props) => {
   // handle the row selection by updating the URL
   const onClickRow = (row) => {
     const nodeName = row.values.name.name;
+
     const isTabSelected =
       location.pathname.endsWith('overview') ||
       location.pathname.endsWith('alerts') ||
@@ -364,7 +368,7 @@ const NodeListTable = (props) => {
       // TODO: Need to change the Regex when rename to /nodes
       const newPath = location.pathname.replace(
         /\/newNodes\/[^/]*\//,
-        `${path}/${nodeName}/`,
+        `/newNodes/${nodeName}/`,
       );
       history.push({
         pathname: newPath,
