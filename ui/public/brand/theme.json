@@ -1,7 +1,8 @@
 {
   "theme":{
     "light":{
-      "brand":{      
+      "brand":{
+        "alert": "#A39300",
         "base": "#607080",
         "primary": "#FAF9FB",
         "primaryDark1": "#F7F6F9",
@@ -10,41 +11,46 @@
         "secondaryDark1": "#1C3D59",
         "secondaryDark2": "#1C2E3F",
         "success": "#006F62",
-        "healthy": "#25AC56",
-        "healthyLight": "#75FE63",
-        "warning": "#FFC10A",
-        "danger": "#EF3340",
-        "critical": "#BE2543",
+        "healthy": "#24871D",
+        "healthyLight": "#33A919",
+        "warning": "#946F00",
+        "danger": "#AA1D05",
+        "critical": "#BE321F",
         "background": "#ffffff",
         "backgroundBluer": "#ECF4FF",
         "textPrimary": "#313B44",
         "textSecondary": "#8593A0",
-        "borderLight": "#A5A5A5",
-        "border": "#A5A5A5"
+        "textTertiary": "#A7B6C3",
+        "borderLight": "#EBEBEB",
+        "border": "#A5A5A5",
+        "info": "#8C8C8C"
       },
       "logo_path":"/brand/assets/branding-light.svg"
     },
     "dark":{
       "brand":{
-        "base": "#6A7B92",
-        "primary": "#1D1D1F",
-        "primaryDark1": "#171718",
+        "alert": "#FFE508",
+        "base": "#7B7B7B",
+        "primary": "#1D1D1D",
+        "primaryDark1": "#171717",
         "primaryDark2": "#0A0A0A",
-        "secondary": "#037AFF",
+        "secondary": "#055DFF",
         "secondaryDark1": "#1C3D59",
         "secondaryDark2": "#1C2E3F",
         "success": "#006F62",
-        "healthy": "#25AC56",
-        "healthyLight": "#75FE63",
+        "healthy": "#30AC26",
+        "healthyLight": "#69E44C",
         "warning": "#FFC10A",
-        "danger": "#EF3340",
-        "critical": "#BE2543",
-        "background": "#121214",
-        "backgroundBluer": "#182A41",
+        "danger": "#AA1D05",
+        "critical": "#BE321F",
+        "background": "#121212",
+        "backgroundBluer": "#192A41",
         "textPrimary": "#FFFFFF",
-        "textSecondary": "#A8B5C1",
-        "borderLight": "#2C3137",
-        "border": "#A5A5A5"
+        "textSecondary": "#B5B5B5",
+        "textTertiary": "#DFDFDF",
+        "borderLight": "#A5A5A5",
+        "border": "#313131",
+        "info": "#434343"
       },
       "logo_path":"/brand/assets/branding-dark.svg"
     },
