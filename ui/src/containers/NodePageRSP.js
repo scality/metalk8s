@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Switch, Route } from 'react-router-dom';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
 import { useQuery, useRefreshEffect } from '../services/utils';
@@ -13,7 +13,11 @@ import {
   refreshNodeStatsAction,
   stopRefreshNodeStatsAction,
 } from '../ducks/app/monitoring';
-import NodePageHealthTab from '../components/NodePageHealthTab';
+import {
+  refreshVolumesAction,
+  stopRefreshVolumesAction,
+} from '../ducks/app/volumes';
+import NodePageOverviewTab from '../components/NodePageOverviewTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
@@ -22,10 +26,27 @@ import { queryTimeSpansCodes } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
+  flex-direction: column;
+  width: 51%;
+  padding-left: ${padding.small};
   .sc-tabs {
-    margin: ${padding.smaller} ${padding.small} 0 ${padding.smaller};
+    margin-top: 0;
   }
-
+  .sc-tabs-bar {
+    height: 40px;
+  }
+  .sc-tabs-item-title {
+    height: 40px;
+    font-size: ${fontSize.base};
+    // set the title vertical align
+    padding: 12px 0 ${padding.base};
+  }
+  .sc-tabs-item {
+    margin-right: ${padding.smaller};
+    background-color: ${(props) => props.theme.brand.border};
+    border-radius: 3px 3px;
+    height: 40px;
+  }
   .sc-tabs-item-content {
     padding: 0;
     overflow-y: auto;
@@ -40,15 +61,13 @@ const NodePageRSP = (props) => {
     instanceIP,
     controlPlaneInterface,
     workloadPlaneInterface,
+    nodeTableData,
   } = props;
+
   const history = useHistory();
   const location = useLocation();
   const dispatch = useDispatch();
-  const nodeStats = useSelector(
-    (state) => state.app.monitoring.nodeStats.metrics,
-  );
-  const theme = useSelector((state) => state.config.theme);
-
+  const { path } = useRouteMatch();
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useQuery();
@@ -68,9 +87,6 @@ const NodePageRSP = (props) => {
     metricsTimeSpan = nodeMetricsTimeSpan;
   }
 
-  // retrieve the podlist data
-  const pods = useSelector((state) => state.app.pods.list);
-  const podsListData = getPodsListData(selectedNodeName, pods);
   useEffect(() => {
     dispatch(
       updateNodeStatsFetchArgumentAction({
@@ -90,8 +106,18 @@ const NodePageRSP = (props) => {
   ]);
 
   useRefreshEffect(refreshNodeStatsAction, stopRefreshNodeStatsAction);
+  useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
 
-  const isHealthTabActive = location.pathname.endsWith('/health');
+  // retrieve the podlist data
+  const pods = useSelector((state) => state.app.pods.list);
+  const podsListData = getPodsListData(selectedNodeName, pods);
+  const nodes = useSelector((state) => state.app.nodes.list);
+  const volumes = useSelector((state) => state.app.volumes.list);
+  const nodeStats = useSelector(
+    (state) => state.app.monitoring.nodeStats.metrics,
+  );
+
+  const isHealthTabActive = location.pathname.endsWith('/overview');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
   const isVolumesTabActive = location.pathname.endsWith('/volumes');
@@ -100,61 +126,57 @@ const NodePageRSP = (props) => {
   const items = [
     {
       selected: isHealthTabActive,
-      title: 'Health',
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/health`),
+      title: 'Overview',
+      onClick: () => history.push(`${path}/${selectedNodeName}/overview`),
     },
     {
       selected: isAlertsTabActive,
       title: intl.translate('alerts'),
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/alerts`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/alerts`),
     },
     {
       selected: isMetricsTabActive,
       title: 'Metrics',
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/metrics`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/metrics`),
     },
     {
       selected: isVolumesTabActive,
       title: intl.translate('volumes'),
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/volumes`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/volumes`),
     },
     {
       selected: isPodsTabActive,
       title: intl.translate('pods'),
-      onClick: () => history.push(`/newNodes/${selectedNodeName}/pods`),
+      onClick: () => history.push(`${path}/${selectedNodeName}/pods`),
     },
   ];
 
   return (
     <NodePageRSPContainer>
-      <Tabs items={items} activeTabColor={theme.brand.primaryDark1}>
+      <Tabs items={items}>
         <Switch>
           <Route
-            path={`/newNodes/${selectedNodeName}/health`}
-            component={NodePageHealthTab}
-          />
-          <Route
-            path={`/newNodes/${selectedNodeName}/alerts`}
-            component={NodePageAlertsTab}
-          />
-          <Route
-            path={`/newNodes/${selectedNodeName}/metrics`}
+            path={`${path}/:name/overview`}
             render={() => (
-              <NodePageMetricsTab
-                nodeStats={nodeStats}
-                instanceIP={instanceIP}
-                controlPlaneInterface={controlPlaneInterface}
-                workloadPlaneInterface={workloadPlaneInterface}
-                selectedNodeName={selectedNodeName}
+              <NodePageOverviewTab
+                nodeTableData={nodeTableData}
+                nodes={nodes}
+                volumes={volumes}
+                pods={pods}
               />
             )}
           />
+          <Route path={`${path}/:name/alerts`} component={NodePageAlertsTab} />
           <Route
-            path={`/newNodes/${selectedNodeName}/volumes`}
+            path={`${path}/:name/metrics`}
+            render={() => <NodePageMetricsTab nodeStats={nodeStats} />}
+          />
+          <Route
+            path={`${path}/:name/volumes`}
             component={NodePageVolumesTab}
           />
           <Route
-            path={`/newNodes/${selectedNodeName}/pods`}
+            path={`${path}/:name/pods`}
             render={() => (
               <NodePagePodsTab pods={podsListData}></NodePagePodsTab>
             )}

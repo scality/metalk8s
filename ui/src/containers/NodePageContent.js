@@ -1,8 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import styled from 'styled-components';
-import { padding } from '@scality/core-ui/dist/style/theme';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { useRefreshEffect } from '../services/utils';
 import NodeListTable from '../components/NodeListTable';
@@ -14,12 +12,6 @@ import {
   PageContentContainer,
 } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
-
-const NodePageRSPContainer = styled.div`
-  flex-direction: column;
-  width: 55%;
-  margin: ${padding.small} ${padding.small} ${padding.small} 0;
-`;
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
@@ -48,14 +40,13 @@ const NodePageContent = (props) => {
         />
       </LeftSideInstanceList>
       {selectedNodeName ? (
-        <NodePageRSPContainer>
-          <NodePageRSP
-            selectedNodeName={selectedNodeName}
-            instanceIP={instanceIP}
-            controlPlaneInterface={controlPlaneInterface}
-            workloadPlaneInterface={workloadPlaneInterface}
-          />
-        </NodePageRSPContainer>
+        <NodePageRSP
+          selectedNodeName={selectedNodeName}
+          instanceIP={instanceIP}
+          controlPlaneInterface={controlPlaneInterface}
+          workloadPlaneInterface={workloadPlaneInterface}
+          nodeTableData={nodeTableData}
+        />
       ) : (
         <NoInstanceSelectedContainer>
           <NoInstanceSelected>

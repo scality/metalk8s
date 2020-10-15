@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect';
+import { API_STATUS_UNKNOWN } from '../constants';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
@@ -6,15 +7,43 @@ const IP_INTERFACES = 'ip_interfaces';
 
 const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 const nodesSelector = (state) => state.app.nodes.list;
+const brandSelector = (state) => state.config.theme.brand;
 
 // Return the data used by the Node list table
 export const getNodeListData = createSelector(
   nodesSelector,
   IPsInfoSelector,
-  (nodes, nodeIPsInfo) => {
+  brandSelector,
+  (nodes, nodeIPsInfo, brand) => {
     return (
       nodes?.map((node) => {
         const IPsInfo = nodeIPsInfo?.[node.name];
+        let statusTextColor;
+        const computedStatus = [];
+        // The rules of the color of the node status
+        // "green" when status.conditions['Ready'] == True and all other conditions are false
+        // "yellow" when status.conditions['Ready'] == True and some other conditions are true
+        // "red" when status.conditions['Ready'] == False
+        // "grey" when there is no status.conditions
+        if (node?.status === 'ready' && node?.conditions.length === 0) {
+          statusTextColor = brand?.healthy;
+          computedStatus.push('ready');
+        } else if (node?.status === 'ready' && node?.conditions.length !== 0) {
+          statusTextColor = brand?.warning;
+          nodes.conditions.map((cond) => {
+            return computedStatus.push(cond);
+          });
+        } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
+          statusTextColor = brand?.textSecondary;
+          computedStatus.push('deploying');
+        } else if (node?.status !== 'ready') {
+          statusTextColor = brand?.critical;
+          computedStatus.push('not_ready');
+        } else {
+          statusTextColor = brand?.textSecondary;
+          computedStatus.push('unknown');
+        }
+
         return {
           // According to the design, the IPs of Control Plane and Workload Plane are in the same Cell with Name
           name: {
@@ -22,7 +51,12 @@ export const getNodeListData = createSelector(
             controlPlaneIP: IPsInfo?.controlPlane?.ip,
             workloadPlaneIP: IPsInfo?.workloadPlane?.ip,
           },
-          status: { status: node?.status, conditions: node?.conditions },
+          status: {
+            status: node?.status,
+            conditions: node?.conditions,
+            statusTextColor,
+            computedStatus,
+          },
           roles: node?.roles,
         };
       }) ?? []

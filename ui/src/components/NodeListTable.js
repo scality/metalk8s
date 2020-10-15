@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useRouteMatch } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   useTable,
@@ -21,6 +21,7 @@ const NodeListContainer = styled.div`
   font-family: 'Lato';
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
+  background-color: ${(props) => props.theme.brand.primary};
   .sc-progressbarcontainer {
     width: 100%;
   }
@@ -34,6 +35,7 @@ const NodeListContainer = styled.div`
       height: 10px;
     }
     tr {
+      border-bottom: 5px solid ${(props) => props.theme.brand.primary};
       :last-child {
         td {
           border-bottom: 0;
@@ -52,9 +54,7 @@ const NodeListContainer = styled.div`
     td {
       margin: 0;
       padding: 0.5rem;
-      border-bottom: 1px solid black;
       text-align: left;
-      padding: 5px;
 
       :last-child {
         border-right: 0;
@@ -75,6 +75,8 @@ const CreateNodeButton = styled(Button)`
 `;
 
 const TableRow = styled(HeadRow)`
+  height: 76px;
+  border-radius: 10px;
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
@@ -87,7 +89,7 @@ const TableRow = styled(HeadRow)`
   background-color: ${(props) =>
     props.selectedNodeName === props.row.values.name.name
       ? props.theme.brand.backgroundBluer
-      : props.theme.brand.primary};
+      : props.theme.brand.background};
 `;
 
 // * table body
@@ -101,7 +103,6 @@ const Body = styled.tbody`
 
 const Cell = styled.td`
   overflow-wrap: break-word;
-  border-top: 1px solid #424242;
 `;
 
 const ActionContainer = styled.span`
@@ -118,19 +119,9 @@ const IPText = styled.span`
   color: ${(props) => props.theme.brand.textSecondary};
 `;
 
-// the color of the status depends on the `Status` and `Condition` of the Node
 const StatusText = styled.div`
   color: ${(props) => {
-    switch (props.textColor) {
-      case 'green':
-        return props.theme.brand.healthy;
-      case 'yellow':
-        return props.theme.brand.warning;
-      case 'red':
-        return props.theme.brand.critical;
-      default:
-        return props.theme.brand.textSecondary;
-    }
+    return props.textColor;
   }};
 `;
 
@@ -284,8 +275,12 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
                       <Cell {...cellProps}>
                         <NodeNameText>{cell.value.name}</NodeNameText>
                         <div>
-                          <IPText>CP: {cell.value.controlPlaneIP}</IPText>
-                          <IPText>WP: {cell.value.workloadPlaneIP}</IPText>
+                          {cell.value.controlPlaneIP ? (
+                            <IPText>CP: {cell.value.controlPlaneIP}</IPText>
+                          ) : null}
+                          {cell.value.workloadPlaneIP ? (
+                            <IPText>WP: {cell.value.workloadPlaneIP}</IPText>
+                          ) : null}
                         </div>
                       </Cell>
                     );
@@ -314,6 +309,7 @@ const NodeListTable = (props) => {
   const { nodeTableData, selectedNodeName } = props;
   const theme = useSelector((state) => state.config.theme);
   const query = useQuery();
+  const { path } = useRouteMatch();
 
   const columns = React.useMemo(
     () => [
@@ -325,7 +321,6 @@ const NodeListTable = (props) => {
       {
         Header: 'Roles',
         accessor: 'roles',
-        cellStyle: { width: '200px' },
       },
       {
         Header: 'Health',
@@ -343,37 +338,16 @@ const NodeListTable = (props) => {
       {
         Header: 'Status',
         accessor: 'status',
-        cellStyle: { textAlign: 'center', width: '100px' },
+        cellStyle: { textAlign: 'center', width: '80px' },
         Cell: (cellProps) => {
-          const { status, conditions } = cellProps.value;
-          // the `conditions` include the other conditions that exclude "Ready".
-          // green for status.conditions['Ready'] == True and all other conditions are false
-          // yellow for status.conditions['Ready'] == True and some other conditions are true
-          // red for status.conditions['Ready'] == False
-          // grey when there is no status.conditions
-          if (status === 'ready' && conditions.length === 0) {
+          const { statusTextColor, computedStatus } = cellProps.value;
+          return computedStatus.map((status) => {
             return (
-              <StatusText textColor="green">
-                {intl.translate('ready')}
+              <StatusText textColor={statusTextColor}>
+                {intl.translate(`${status}`)}
               </StatusText>
             );
-          } else if (status === 'ready' && conditions.length !== 0) {
-            conditions.map((cond) => {
-              return <StatusText textColor="yellow">{cond}</StatusText>;
-            });
-          } else if (status !== 'ready') {
-            return (
-              <StatusText textColor="red">
-                {intl.translate('not_ready')}
-              </StatusText>
-            );
-          } else {
-            return (
-              <StatusText textColor="gray">
-                {intl.translate('unknown')}
-              </StatusText>
-            );
-          }
+          });
         },
       },
     ],
@@ -384,16 +358,17 @@ const NodeListTable = (props) => {
   const onClickRow = (row) => {
     const nodeName = row.values.name.name;
     const isTabSelected =
-      location.pathname.endsWith('health') ||
+      location.pathname.endsWith('overview') ||
       location.pathname.endsWith('alerts') ||
       location.pathname.endsWith('metrics') ||
       location.pathname.endsWith('volumes') ||
       location.pathname.endsWith('pods');
 
     if (isTabSelected) {
+      // TODO: Need to change the Regex when rename to /nodes
       const newPath = location.pathname.replace(
         /\/newNodes\/[^/]*\//,
-        `/newNodes/${nodeName}/`,
+        `${path}/${nodeName}/`,
       );
       history.push({
         pathname: newPath,
@@ -401,7 +376,7 @@ const NodeListTable = (props) => {
       });
     } else {
       history.push({
-        pathname: `/newNodes/${nodeName}/health`,
+        pathname: `${path}/${nodeName}/overview`,
         search: query.toString(),
       });
     }
