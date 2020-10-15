@@ -52,4 +52,5 @@ export const TabContainer = styled.div`
   background-color: ${(props) => props.theme.brand.primary};
   color: ${(props) => props.theme.brand.textPrimary};
   padding-top: ${padding.base};
+  padding-bottom: ${padding.base};
 `;
