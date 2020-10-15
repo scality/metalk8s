@@ -78,7 +78,7 @@ const StatusText = styled.div`
 `;
 
 const ExternalLink = styled.a`
-  color: ${(props) => props.theme.brand.border};
+  color: ${(props) => props.theme.brand.textSecondary};
 `;
 
 function Table({ columns, data }) {
