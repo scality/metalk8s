@@ -63,3 +63,16 @@ export async function getPersistentVolumeClaims() {
     return { error };
   }
 }
+
+export async function getVolumeObject(volumeName) {
+  try {
+    return await customObjects.getClusterCustomObject(
+      'storage.metalk8s.scality.com',
+      'v1alpha1',
+      'volumes',
+      volumeName,
+    );
+  } catch (error) {
+    return { error };
+  }
+}
