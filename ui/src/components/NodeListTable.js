@@ -275,8 +275,12 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
                       <Cell {...cellProps}>
                         <NodeNameText>{cell.value.name}</NodeNameText>
                         <div>
-                          <IPText>CP: {cell.value.controlPlaneIP}</IPText>
-                          <IPText>WP: {cell.value.workloadPlaneIP}</IPText>
+                          {cell.value.controlPlaneIP ? (
+                            <IPText>CP: {cell.value.controlPlaneIP}</IPText>
+                          ) : null}
+                          {cell.value.workloadPlaneIP ? (
+                            <IPText>WP: {cell.value.workloadPlaneIP}</IPText>
+                          ) : null}
                         </div>
                       </Cell>
                     );
@@ -336,10 +340,10 @@ const NodeListTable = (props) => {
         accessor: 'status',
         cellStyle: { textAlign: 'center', width: '80px' },
         Cell: (cellProps) => {
-          const { statusColor, computedStatus } = cellProps.value;
+          const { statusTextColor, computedStatus } = cellProps.value;
           return computedStatus.map((status) => {
             return (
-              <StatusText textColor={statusColor}>
+              <StatusText textColor={statusTextColor}>
                 {intl.translate(`${status}`)}
               </StatusText>
             );
