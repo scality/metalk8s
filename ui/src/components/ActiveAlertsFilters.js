@@ -26,6 +26,12 @@ export const FilterIcon = styled.i`
   padding: ${padding.smaller};
 `;
 
+export const ActiveAlertsFilterWrapper = styled.div`
+  .sc-dropdown > div {
+    background-color: ${(props) => props.theme.brand.info};
+  }
+`;
+
 const ActiveAlertsFilter = (props) => {
   const { baseLink } = props;
   const history = useHistory();
@@ -82,7 +88,11 @@ const ActiveAlertsFilter = (props) => {
     items.splice(0, 1);
   }
 
-  return <Dropdown items={items} text={dropDownLabel} size="small" />;
+  return (
+    <ActiveAlertsFilterWrapper>
+      <Dropdown items={items} text={dropDownLabel} size="small" />
+    </ActiveAlertsFilterWrapper>
+  );
 };
 
 export default ActiveAlertsFilter;
