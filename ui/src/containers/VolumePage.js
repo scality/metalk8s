@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import styled from 'styled-components';
-import { padding } from '@scality/core-ui/dist/style/theme';
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
-import { refreshAlertManagerAction, stopRefreshAlertManagerAction } from '../ducks/app/alerts';
+import {
+  refreshAlertManagerAction,
+  stopRefreshAlertManagerAction,
+} from '../ducks/app/alerts';
 import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
@@ -27,16 +28,8 @@ import {
 } from '../components/BreadcrumbStyle';
 import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { Breadcrumb } from '@scality/core-ui';
+import { PageContainer } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
-
-// should be extracted to the common style, need to change the position of other's breadcrumb
-const PageContainer = styled.div`
-  display: flex;
-  box-sizing: border-box;
-  height: 100%;
-  flex-wrap: wrap;
-  padding: ${padding.small};
-`;
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
 // the data for <VolumeMetricGraphCard>: get the default metrics time span `last 24 hours`, and the component itself can change the time span base on the dropdown selection.
@@ -63,11 +56,7 @@ const VolumePage = (props) => {
     dispatch(fetchPersistentVolumeClaimAction());
   }, [dispatch]);
 
-  useRefreshEffect(
-    refreshAlertManagerAction,
-    stopRefreshAlertManagerAction,
-  );
-
+  useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
 
   // get all the pods for all the nodes
   const theme = useSelector((state) => state.config.theme);
