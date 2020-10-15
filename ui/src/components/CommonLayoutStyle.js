@@ -66,7 +66,7 @@ export const TabTitle = styled.div`
 `;
 
 export const TextBadge = styled.span`
-  background-color: ${(props) => props.theme.brand.base};
+  background-color: ${(props) => props.theme.brand.info};
   color: ${(props) => props.theme.brand.textPrimary};
   padding: 2px ${padding.small};
   border-radius: 4px;
