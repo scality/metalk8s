@@ -173,5 +173,6 @@
   "MemoryPressure": "Insufficient RAM",
   "PIDPressure": "Insufficient PID available",
   "NetworkUnavailable": "Network Unavailable",
-  "Unschedulable": "Unschedulable"
+  "Unschedulable": "Unschedulable",
+  "error_volume_details": "Volume details request has failed."
 }

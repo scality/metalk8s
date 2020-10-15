@@ -173,5 +173,6 @@
   "MemoryPressure": "RAM insuffisante",
   "PIDPressure": "PID disponible insuffisant",
   "NetworkUnavailable": "Réseau indisponible",
-  "Unschedulable": "Non planifiable"
+  "Unschedulable": "Non planifiable",
+  "error_volume_details": "Échec de la récuperation des details du volume."
 }

@@ -9,6 +9,7 @@ import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import VolumeAlertsTab from '../components/VolumeAlertsTab';
 import VolumeMetricsTab from '../components/VolumeMetricsTab';
+import VolumeDetailsTab from '../components/VolumeDetailsTab';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
@@ -77,6 +78,7 @@ const VolumePageContent = (props) => {
     pods,
     alerts,
     volumeStats,
+    currentVolumeObject,
   } = props;
 
   const history = useHistory();
@@ -172,6 +174,7 @@ const VolumePageContent = (props) => {
   const isAlertsPage = location.pathname.endsWith('/alerts');
   const isOverviewPage = location.pathname.endsWith('/overview');
   const isMetricsPage = location.pathname.endsWith('/metrics');
+  const isDetailsPage = location.pathname.endsWith('/details');
 
   const tabsItems = [
     {
@@ -188,6 +191,11 @@ const VolumePageContent = (props) => {
       selected: isMetricsPage,
       title: (<span>{intl.translate('metrics')}</span>),
       onClick: () => history.push(`${match.url}/metrics${query.toString() && `?${query.toString()}`}`),
+    },
+    {
+      selected: isDetailsPage,
+      title: (<span>{intl.translate('details')}</span>),
+      onClick: () => history.push(`${match.url}/details${query.toString() && `?${query.toString()}`}`),
     },
   ];
 
@@ -261,6 +269,14 @@ const VolumePageContent = (props) => {
                   // the volume condition compute base on the `status` and `bound/unbound`
                   volumeCondition={currentVolume.status}
                   // Hardcode the port number for prometheus metrics
+                  />
+                )}
+              />
+              <Route
+                path={`${match.url}/details`}
+                render={() => (
+                  <VolumeDetailsTab
+                    currentVolumeObject={currentVolumeObject}
                   />
                 )}
               />
