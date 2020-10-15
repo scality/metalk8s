@@ -89,7 +89,7 @@ const TableRow = styled(HeadRow)`
   background-color: ${(props) =>
     props.selectedNodeName === props.row.values.name.name
       ? props.theme.brand.backgroundBluer
-      : props.theme.brand.primaryDark1};
+      : props.theme.brand.background};
 `;
 
 // * table body
