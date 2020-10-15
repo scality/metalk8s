@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useRouteMatch } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
@@ -15,6 +16,8 @@ import {
   refreshPersistentVolumesAction,
   stopRefreshPersistentVolumesAction,
   fetchPersistentVolumeClaimAction,
+  fetchCurrentVolumeObjectAction,
+  clearCurrentVolumeObjectAction,
 } from '../ducks/app/volumes';
 import {
   fetchVolumeStatsAction,
@@ -36,6 +39,17 @@ import { intl } from '../translations/IntlGlobalProvider';
 // <VolumeContent> component extracts the current volume name from URL and sends volume specific data to sub components.
 const VolumePage = (props) => {
   const dispatch = useDispatch();
+  const match = useRouteMatch();
+  const currentVolumeName = match.params.name;
+
+  useEffect(() => {
+    if (currentVolumeName)
+      dispatch(fetchCurrentVolumeObjectAction(currentVolumeName));
+    return(() => {
+      dispatch(clearCurrentVolumeObjectAction());
+    })
+  }, [dispatch, currentVolumeName]);
+
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
@@ -64,6 +78,7 @@ const VolumePage = (props) => {
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
+  const currentVolumeObject = useSelector((state) => state.app.volumes.currentVolumeObject);
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const alerts = useSelector((state) => state.app.alerts);
 
@@ -99,6 +114,7 @@ const VolumePage = (props) => {
         pods={pods}
         alerts={alerts}
         volumeStats={volumeStats}
+        currentVolumeObject={currentVolumeObject}
       ></VolumeContent>
     </PageContainer>
   );
