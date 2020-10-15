@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect';
+import { API_STATUS_UNKNOWN } from '../constants';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
@@ -17,7 +18,7 @@ export const getNodeListData = createSelector(
     return (
       nodes?.map((node) => {
         const IPsInfo = nodeIPsInfo?.[node.name];
-        let statusColor;
+        let statusTextColor;
         const computedStatus = [];
         // The rules of the color of the node status
         // "green" when status.conditions['Ready'] == True and all other conditions are false
@@ -25,18 +26,21 @@ export const getNodeListData = createSelector(
         // "red" when status.conditions['Ready'] == False
         // "grey" when there is no status.conditions
         if (node?.status === 'ready' && node?.conditions.length === 0) {
-          statusColor = brand?.healthy;
+          statusTextColor = brand?.healthy;
           computedStatus.push('ready');
         } else if (node?.status === 'ready' && node?.conditions.length !== 0) {
-          statusColor = brand?.warning;
+          statusTextColor = brand?.warning;
           nodes.conditions.map((cond) => {
             return computedStatus.push(cond);
           });
+        } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
+          statusTextColor = brand?.textSecondary;
+          computedStatus.push('deploying');
         } else if (node?.status !== 'ready') {
-          statusColor = brand?.critical;
-          computedStatus.push('notReady');
+          statusTextColor = brand?.critical;
+          computedStatus.push('not_ready');
         } else {
-          statusColor = brand?.textSecondary;
+          statusTextColor = brand?.textSecondary;
           computedStatus.push('unknown');
         }
 
@@ -50,7 +54,7 @@ export const getNodeListData = createSelector(
           status: {
             status: node?.status,
             conditions: node?.conditions,
-            statusColor,
+            statusTextColor,
             computedStatus,
           },
           roles: node?.roles,
