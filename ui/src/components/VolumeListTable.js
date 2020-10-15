@@ -15,22 +15,22 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import {
-  clearCurrentVolumeObjectAction
-} from '../ducks/app/volumes';
+import { clearCurrentVolumeObjectAction } from '../ducks/app/volumes';
 import CircleStatus from './CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
-  padding: ${padding.base};
   font-family: 'Lato';
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
   background-color: ${(props) => props.theme.brand.primary};
   .sc-progressbarcontainer {
     width: 100%;
+  }
+  .sc-progressbarcontainer > div {
+    background-color: ${(props) => props.theme.brand.secondaryDark1};
   }
   .ReactTable .rt-thead {
     overflow-y: scroll;
@@ -60,10 +60,9 @@ const VolumeListContainer = styled.div`
     td {
       margin: 0;
       padding: 0.5rem;
-      border-bottom: 1px solid black;
       text-align: left;
       padding: 5px;
-
+      border: none;
       :last-child {
         border-right: 0;
       }
@@ -83,8 +82,6 @@ const TableRow = styled(HeadRow)`
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
-    border-top: 1px solid ${(props) => props.theme.brand.secondary};
-    border-bottom: 1px solid ${(props) => props.theme.brand.secondary};
     outline: none;
     cursor: pointer;
   }
@@ -111,6 +108,8 @@ const Cell = styled.td`
 
 const ActionContainer = styled.span`
   display: flex;
+  padding: 0px ${padding.small};
+  justify-content: space-between;
 `;
 
 const CreateVolumeButton = styled(Button)`
@@ -314,6 +313,16 @@ const VolumeListTable = (props) => {
   const columns = React.useMemo(
     () => [
       {
+        Header: 'Health',
+        accessor: 'health',
+        cellStyle: { textAlign: 'center', width: '50px' },
+        Cell: (cellProps) => {
+          return (
+            <CircleStatus className="fas fa-circle" status={cellProps.value} />
+          );
+        },
+      },
+      {
         Header: 'Name',
         accessor: 'name',
         width: 200,
@@ -338,16 +347,6 @@ const VolumeListTable = (props) => {
         Header: 'Size',
         accessor: 'storageCapacity',
         cellStyle: { textAlign: 'center', width: '70px' },
-      },
-      {
-        Header: 'Health',
-        accessor: 'health',
-        cellStyle: { textAlign: 'center', width: '50px' },
-        Cell: (cellProps) => {
-          return (
-            <CircleStatus className="fas fa-circle" status={cellProps.value} />
-          );
-        },
       },
       {
         Header: 'Status',
@@ -406,10 +405,10 @@ const VolumeListTable = (props) => {
     const query = new URLSearchParams(location.search);
     const isAddNodeFilter = query.has('node');
     const isTabSelected =
-    location.pathname.endsWith('/alerts')
-    || location.pathname.endsWith('/metrics')
-    || location.pathname.endsWith('/details');
-    
+      location.pathname.endsWith('/alerts') ||
+      location.pathname.endsWith('/metrics') ||
+      location.pathname.endsWith('/details');
+
     // Clearing selected volume object
     dispatch(clearCurrentVolumeObjectAction());
     if (isAddNodeFilter) {
