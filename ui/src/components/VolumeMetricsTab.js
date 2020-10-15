@@ -50,9 +50,15 @@ const MetricGraphTitle = styled.div`
   .sc-dropdown {
     padding-left: 25px;
   }
-
+  
+  .sc-dropdown > div {
+    background-color: ${(props) => props.theme.brand.primary};
+    border: 1px solid ${(props) => props.theme.brand.borderLight}
+    border-radius: 3px;
+  }
+  
   .sc-button {
-    font-size: ${fontSize.small};
+    background-color: ${(props) => props.theme.brand.info};
   }
 `;
 
@@ -364,7 +370,7 @@ const MetricsTab = (props) => {
           <Dropdown
             items={metricsTimeSpanDropdownItems}
             text={metricsTimeSpan}
-            size="smaller"
+            size="small"
           />
         )}
         {config.api?.url_grafana && (
@@ -373,7 +379,7 @@ const MetricsTab = (props) => {
             variant={'base'}
             onClick={() => {}}
             icon={<i className="fas fa-external-link-alt" />}
-            size={'smaller'}
+            size={'small'}
             href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes`}
             target="_blank"
             rel="noopener noreferrer"
