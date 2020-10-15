@@ -53,6 +53,13 @@ const InformationValue = styled.span`
   font-size: ${fontSize.base};
 `;
 
+const ClickableInformationValue = styled.span`
+  color: ${(props) => props.theme.brand.secondary};
+  font-size: ${fontSize.base};
+  font-weight: ${fontWeight.semibold};
+  cursor: pointer;
+`;
+
 const DeleteButton = styled(Button)`
   padding: ${padding.base};
   font-size: ${fontSize.small};
@@ -128,7 +135,6 @@ const AlertsCounterContainer = styled.div`
   flex-direction: column;
 `;
 
-
 const VolumeDetailCard = (props) => {
   const {
     name,
@@ -147,7 +153,7 @@ const VolumeDetailCard = (props) => {
     volumeListData,
     pVList,
     health,
-    alertlist
+    alertlist,
   } = props;
 
   const dispatch = useDispatch();
@@ -190,6 +196,10 @@ const VolumeDetailCard = (props) => {
     }
   };
 
+  const onClickNodeName = () => {
+    history.push(`/nodes/${nodeName}`);
+  };
+
   const onClickCancelButton = () => {
     setisDeleteConfirmationModalOpen(false);
   };
@@ -216,7 +226,9 @@ const VolumeDetailCard = (props) => {
         </VolumeNameTitle>
         <InformationSpan>
           <InformationLabel>{intl.translate('node')}</InformationLabel>
-          <InformationValue>{nodeName}</InformationValue>
+          <ClickableInformationValue onClick={onClickNodeName}>
+            {nodeName}
+          </ClickableInformationValue>
         </InformationSpan>
         <InformationSpan>
           <InformationLabel>{intl.translate('size')}</InformationLabel>
@@ -298,8 +310,7 @@ const VolumeDetailCard = (props) => {
             data-cy="delete_volume_button"
           ></DeleteButton>
         </DeleteButtonContainer>
-        {
-          alertlist &&
+        {alertlist && (
           <AlertsCounterContainer>
             <VolumeSectionTitle>
               {intl.translate('active_alerts')}
@@ -309,7 +320,7 @@ const VolumeDetailCard = (props) => {
               baseLink={`${match.url}/${name}/alerts`}
             />
           </AlertsCounterContainer>
-        }
+        )}
         {condition === VOLUME_CONDITION_LINK && (
           <VolumeUsage>
             <VolumeSectionTitle>{intl.translate('usage')}</VolumeSectionTitle>
