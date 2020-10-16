@@ -99,3 +99,7 @@ export const NODE_ALERTS_GROUP = [
   KUBELET_PLEG_DURATION_HIGH,
   KUBELET_POD_STARTUP_LATENCY_HIGH,
 ];
+
+// The size of the status circle
+export const CIRCLE_BASE_SIZE = 'CIRCLE_BASE_SIZE';
+export const CIRCLE_DOUBLE_SIZE = 'CIRCLE_DOUBLE_SIZE';
