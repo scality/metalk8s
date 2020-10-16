@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Release 2.7.0 (in development)
+### Enhancements
+- [#2855](https://github.com/scality/metalk8s/issues/2855) - Bump `containerd`
+  version to 1.4.1 (PR [#2869](https://github.com/scality/metalk8s/pull/2869))
+
 ## Release 2.6.0 (in development)
 
 ### Breaking changes
