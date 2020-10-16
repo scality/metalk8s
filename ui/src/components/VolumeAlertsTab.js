@@ -11,9 +11,9 @@ import ActiveAlertsFilters from './ActiveAlertsFilters';
 import { Chips } from '@scality/core-ui';
 import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
+import { VolumeTab } from './CommonLayoutStyle';
 
 const ActiveAlertsCardContainer = styled.div`
-  min-height: 75px;
   margin: ${padding.small};
   padding: ${padding.small};
 `;
@@ -178,19 +178,21 @@ const ActiveAlertsCard = (props) => {
   );
 
   return (
-    <ActiveAlertsCardContainer>
-      <ActiveAlertsTitle>
-        <div>{intl.translate('active_alerts')}</div>
-        <ActiveAlertsFilters />
-      </ActiveAlertsTitle>
-      {PVCName && activeAlertListData.length !== 0 ? (
-        <ActiveAlertsTableContainer>
-          <Table columns={columns} data={activeAlertListData} />
-        </ActiveAlertsTableContainer>
-      ) : (
-        <NoActiveAlerts>{intl.translate('no_active_alerts')}</NoActiveAlerts>
-      )}
-    </ActiveAlertsCardContainer>
+    <VolumeTab>
+      <ActiveAlertsCardContainer>
+        <ActiveAlertsTitle>
+          <div>{intl.translate('active_alerts')}</div>
+          <ActiveAlertsFilters />
+        </ActiveAlertsTitle>
+        {PVCName && activeAlertListData.length !== 0 ? (
+          <ActiveAlertsTableContainer>
+            <Table columns={columns} data={activeAlertListData} />
+          </ActiveAlertsTableContainer>
+        ) : (
+          <NoActiveAlerts>{intl.translate('no_active_alerts')}</NoActiveAlerts>
+        )}
+      </ActiveAlertsCardContainer>
+    </VolumeTab>
   );
 };
 
