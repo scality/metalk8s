@@ -326,12 +326,8 @@ const NodeListTable = (props) => {
         accessor: 'health',
         cellStyle: { textAlign: 'center', width: '50px' },
         Cell: (cellProps) => {
-          return (
-            <CircleStatus
-              className="fa fa-circle fa-2x"
-              status={cellProps.value}
-            />
-          );
+          const { health } = cellProps.value;
+          return <CircleStatus status={health} />;
         },
       },
       {
@@ -342,7 +338,7 @@ const NodeListTable = (props) => {
           const { statusColor, computedStatus } = cellProps.value;
           return computedStatus.map((status) => {
             return (
-              <StatusText textColor={statusColor}>
+              <StatusText key={status} textColor={statusColor}>
                 {intl.translate(`${status}`)}
               </StatusText>
             );
