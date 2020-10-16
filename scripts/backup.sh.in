@@ -201,6 +201,8 @@ backup_etcd() {
     _save_cp \
         "${snapshot_file}" \
         "${BACKUP_DIR}/etcd_snapshot"
+
+    rm "${snapshot_file}"
 }
 
 create_archive() {
