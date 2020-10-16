@@ -22,6 +22,18 @@ Upgrade etcd cluster:
     - require:
       - salt: Execute the upgrade prechecks
 
+Upgrade apiserver instances:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.orchestrate.apiserver
+    - saltenv: {{ saltenv }}
+    - pillar:
+        orchestrate:
+          dest_version: {{ dest_version }}
+    - require:
+      - salt: Upgrade etcd cluster
+
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
 
@@ -53,6 +65,8 @@ Check pillar on {{ node }} before installing apiserver-proxy:
         raise_error: False
     - retry:
         attempts: 5
+    - require:
+      - salt: Upgrade apiserver instances
 
 Install apiserver-proxy on {{ node }}:
   salt.state:

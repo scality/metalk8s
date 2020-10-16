@@ -39,8 +39,7 @@ changes to be carried out in your MetalK8s cluster.
 
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/upgrade.sh --destination-version \
-       <destination_version> --dry-run --verbose
+     /srv/scality/metalk8s-X.X.X/upgrade.sh --dry-run --verbose
 
 Backup old credentials
 ----------------------
@@ -68,8 +67,7 @@ Ensure that the upgrade pre-requisites above have been met before you make
 any step further.
 
 To upgrade a MetalK8s cluster, run the utility script shipped
-with the **new** version you want to upgrade to providing it with the
-destination version:
+with the **new** version you want to upgrade to:
 
 .. important::
 
@@ -81,4 +79,4 @@ destination version:
 
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/upgrade.sh --destination-version <destination_version>
+     /srv/scality/metalk8s-X.X.X/upgrade.sh
