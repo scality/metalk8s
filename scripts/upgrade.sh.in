@@ -145,8 +145,13 @@ patch_kubesystem_namespace() {
 
 run "Performing Pre-Upgrade checks" precheck_upgrade
 [ $DRY_RUN -eq 1 ] && exit 0
+
+"$BASE_DIR"/backup.sh
+
 run "Upgrading bootstrap" upgrade_bootstrap
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-upgrade" launch_pre_upgrade
 run "Launching the upgrade" launch_upgrade
 run "Launching the post-upgrade" launch_post_upgrade
+
+"$BASE_DIR"/backup.sh
