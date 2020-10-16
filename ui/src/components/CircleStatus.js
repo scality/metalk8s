@@ -7,28 +7,30 @@ import {
   STATUS_SUCCESS,
   STATUS_NONE,
   STATUS_HEALTH,
+  CIRCLE_BASE_SIZE,
+  CIRCLE_DOUBLE_SIZE,
 } from '../constants.js';
 
 const Circle = styled.i`
   color: ${(props) => {
     const theme = props.theme.brand;
-    let color = theme.textPrimary;
+    let color;
 
     switch (props.status) {
       case STATUS_SUCCESS:
         color = theme.success;
         break;
       case STATUS_WARNING:
-        color = theme.warning;
+        color = theme.alert;
         break;
       case STATUS_CRITICAL:
         color = theme.danger;
         break;
       case STATUS_NONE:
-        color = theme.textPrimary;
+        color = theme.base;
         break;
       case STATUS_HEALTH:
-        color = theme.healthy;
+        color = theme.healthyLight;
         break;
       default:
         color = theme.textPrimary;
@@ -39,11 +41,19 @@ const Circle = styled.i`
 
 class CircleStatus extends React.Component {
   render() {
-    const { status } = this.props;
-    if (status === STATUS_NONE) {
-      return <Circle className="far fa-circle" status={status} />;
-    } else {
-      return <Circle className="fas fa-circle" status={status} />;
+    const { status, size } = this.props;
+    if (size === undefined || size === CIRCLE_BASE_SIZE) {
+      if (status === STATUS_NONE) {
+        return <Circle className="far fa-circle" status={status} />;
+      } else {
+        return <Circle className="fas fa-circle" status={status} />;
+      }
+    } else if (size === CIRCLE_DOUBLE_SIZE) {
+      if (status === STATUS_NONE) {
+        return <Circle className="far fa-circle fa-2x" status={status} />;
+      } else {
+        return <Circle className="fas fa-circle fa-2x" status={status} />;
+      }
     }
   }
 }
