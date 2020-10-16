@@ -20,6 +20,7 @@ import {
 } from '../constants';
 import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
+import { VolumeTab } from './CommonLayoutStyle';
 
 const VolumeDetailCardContainer = styled.div`
   display: flex;
@@ -224,168 +225,176 @@ const VolumeDetailCard = (props) => {
     : [];
 
   return (
-    <VolumeDetailCardContainer>
-      <VolumeInformation>
-        <VolumeNameTitle data-cy="volume_detail_card_name">
-          <CircleStatus className="fas fa-circle" status={health} />
-          {name}
-        </VolumeNameTitle>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('node')}</InformationLabel>
-          <ClickableInformationValue onClick={onClickNodeName}>
-            {nodeName}
-          </ClickableInformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('size')}</InformationLabel>
-          <InformationValue>{storage}</InformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('status')}</InformationLabel>
-          <InformationValue data-cy="volume_status_value">
-            {status}
-          </InformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('storageClass')}</InformationLabel>
-          <InformationValue>{storageClassName}</InformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('creationTime')}</InformationLabel>
-          {creationTimestamp ? (
-            <InformationValue>
-              <FormattedDate
-                value={creationTimestamp}
-                year="numeric"
-                month="short"
-                day="2-digit"
-              />{' '}
-              <FormattedTime
-                hour="2-digit"
-                minute="2-digit"
-                second="2-digit"
-                value={creationTimestamp}
-              />
+    <VolumeTab>
+      <VolumeDetailCardContainer>
+        <VolumeInformation>
+          <VolumeNameTitle data-cy="volume_detail_card_name">
+            <CircleStatus className="fas fa-circle" status={health} />
+            {name}
+          </VolumeNameTitle>
+          <InformationSpan>
+            <InformationLabel>{intl.translate('node')}</InformationLabel>
+            <ClickableInformationValue onClick={onClickNodeName}>
+              {nodeName}
+            </ClickableInformationValue>
+          </InformationSpan>
+          <InformationSpan>
+            <InformationLabel>{intl.translate('size')}</InformationLabel>
+            <InformationValue>{storage}</InformationValue>
+          </InformationSpan>
+          <InformationSpan>
+            <InformationLabel>{intl.translate('status')}</InformationLabel>
+            <InformationValue data-cy="volume_status_value">
+              {status}
             </InformationValue>
-          ) : (
-            ''
-          )}
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('volume_type')}</InformationLabel>
-          <InformationValue>{volumeType}</InformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('used_by')}</InformationLabel>
-          <InformationValue>{usedPodName}</InformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('backend_disk')}</InformationLabel>
-          <InformationValue>{devicePath}</InformationValue>
-        </InformationSpan>
-        <InformationSpan>
-          <InformationLabel>{intl.translate('labels')}</InformationLabel>
-          <InformationValue>
-            {labels?.map((label) => {
-              return (
-                <div key={label.name}>
-                  <LabelName data-cy="volume_label_name">
-                    {label.name}
-                  </LabelName>
-                  <LabelValue data-cy="volume_label_value">
-                    {label.value}
-                  </LabelValue>
-                </div>
-              );
-            })}
-          </InformationValue>
-        </InformationSpan>
-      </VolumeInformation>
-
-      <VolumeGraph>
-        <DeleteButtonContainer>
-          <DeleteButton
-            variant="danger"
-            icon={<i className="fas fa-sm fa-trash" />}
-            text={intl.translate('delete_volume')}
-            onClick={(e) => {
-              e.stopPropagation();
-              setisDeleteConfirmationModalOpen(true);
-            }}
-            disabled={!isEnableClick}
-            data-cy="delete_volume_button"
-          ></DeleteButton>
-        </DeleteButtonContainer>
-        {alertlist && (
-          <AlertsCounterContainer>
-            <VolumeSectionTitle>
-              {intl.translate('active_alerts')}
-            </VolumeSectionTitle>
-            <ActiveAlertsCounter
-              criticalCounter={
-                alertlist?.filter(
-                  (item) => item?.labels?.severity === STATUS_CRITICAL,
-                ).length
-              }
-              warningCounter={
-                alertlist?.filter(
-                  (item) => item?.labels?.severity === STATUS_WARNING,
-                ).length
-              }
-            />
-          </AlertsCounterContainer>
-        )}
-        {condition === VOLUME_CONDITION_LINK && (
-          <VolumeUsage>
-            <VolumeSectionTitle>{intl.translate('usage')}</VolumeSectionTitle>
-            {volumeUsagePercentage !== intl.translate('unknown') ? (
-              <ProgressBarContainer>
-                <ProgressBar
-                  size="base"
-                  percentage={volumeUsagePercentage}
-                  topRightLabel={`${volumeUsagePercentage}%`}
-                  bottomLeftLabel={`${volumeUsageBytes} USED`}
-                  bottomRightLabel={`${storageCapacity} TOTAL`}
-                  backgroundColor={theme.brand.base}
+          </InformationSpan>
+          <InformationSpan>
+            <InformationLabel>
+              {intl.translate('storageClass')}
+            </InformationLabel>
+            <InformationValue>{storageClassName}</InformationValue>
+          </InformationSpan>
+          <InformationSpan>
+            <InformationLabel>
+              {intl.translate('creationTime')}
+            </InformationLabel>
+            {creationTimestamp ? (
+              <InformationValue>
+                <FormattedDate
+                  value={creationTimestamp}
+                  year="numeric"
+                  month="short"
+                  day="2-digit"
+                />{' '}
+                <FormattedTime
+                  hour="2-digit"
+                  minute="2-digit"
+                  second="2-digit"
+                  value={creationTimestamp}
                 />
-              </ProgressBarContainer>
+              </InformationValue>
             ) : (
-              <LoaderContainer size="small" />
+              ''
             )}
-          </VolumeUsage>
-        )}
-      </VolumeGraph>
-      <Modal
-        close={() => setisDeleteConfirmationModalOpen(false)}
-        isOpen={isDeleteConfirmationModalOpen}
-        title={intl.translate('delete_volume')}
-        footer={
-          <NotificationButtonGroup>
-            <CancelButton
-              outlined
-              text={intl.translate('cancel')}
-              onClick={onClickCancelButton}
-            />
-            <Button
+          </InformationSpan>
+          <InformationSpan>
+            <InformationLabel>{intl.translate('volume_type')}</InformationLabel>
+            <InformationValue>{volumeType}</InformationValue>
+          </InformationSpan>
+          <InformationSpan>
+            <InformationLabel>{intl.translate('used_by')}</InformationLabel>
+            <InformationValue>{usedPodName}</InformationValue>
+          </InformationSpan>
+          <InformationSpan>
+            <InformationLabel>
+              {intl.translate('backend_disk')}
+            </InformationLabel>
+            <InformationValue>{devicePath}</InformationValue>
+          </InformationSpan>
+          <InformationSpan>
+            <InformationLabel>{intl.translate('labels')}</InformationLabel>
+            <InformationValue>
+              {labels?.map((label) => {
+                return (
+                  <div key={label.name}>
+                    <LabelName data-cy="volume_label_name">
+                      {label.name}
+                    </LabelName>
+                    <LabelValue data-cy="volume_label_value">
+                      {label.value}
+                    </LabelValue>
+                  </div>
+                );
+              })}
+            </InformationValue>
+          </InformationSpan>
+        </VolumeInformation>
+
+        <VolumeGraph>
+          <DeleteButtonContainer>
+            <DeleteButton
               variant="danger"
-              text={intl.translate('delete')}
-              onClick={() => {
-                onClickDeleteButton(name, nodeName);
+              icon={<i className="fas fa-sm fa-trash" />}
+              text={intl.translate('delete_volume')}
+              onClick={(e) => {
+                e.stopPropagation();
+                setisDeleteConfirmationModalOpen(true);
               }}
-              data-cy="confirm_deletion_button"
-            ></Button>
-          </NotificationButtonGroup>
-        }
-      >
-        <ModalBody>
-          <div>{intl.translate('delete_a_volume_warning')}</div>
-          <div>
-            {intl.translate('delete_a_volume_confirm')}
-            <strong>{name}</strong>?
-          </div>
-        </ModalBody>
-      </Modal>
-    </VolumeDetailCardContainer>
+              disabled={!isEnableClick}
+              data-cy="delete_volume_button"
+            ></DeleteButton>
+          </DeleteButtonContainer>
+          {alertlist && (
+            <AlertsCounterContainer>
+              <VolumeSectionTitle>
+                {intl.translate('active_alerts')}
+              </VolumeSectionTitle>
+              <ActiveAlertsCounter
+                criticalCounter={
+                  alertlist?.filter(
+                    (item) => item?.labels?.severity === STATUS_CRITICAL,
+                  ).length
+                }
+                warningCounter={
+                  alertlist?.filter(
+                    (item) => item?.labels?.severity === STATUS_WARNING,
+                  ).length
+                }
+              />
+            </AlertsCounterContainer>
+          )}
+          {condition === VOLUME_CONDITION_LINK && (
+            <VolumeUsage>
+              <VolumeSectionTitle>{intl.translate('usage')}</VolumeSectionTitle>
+              {volumeUsagePercentage !== intl.translate('unknown') ? (
+                <ProgressBarContainer>
+                  <ProgressBar
+                    size="base"
+                    percentage={volumeUsagePercentage}
+                    topRightLabel={`${volumeUsagePercentage}%`}
+                    bottomLeftLabel={`${volumeUsageBytes} USED`}
+                    bottomRightLabel={`${storageCapacity} TOTAL`}
+                    backgroundColor={theme.brand.base}
+                  />
+                </ProgressBarContainer>
+              ) : (
+                <LoaderContainer size="small" />
+              )}
+            </VolumeUsage>
+          )}
+        </VolumeGraph>
+        <Modal
+          close={() => setisDeleteConfirmationModalOpen(false)}
+          isOpen={isDeleteConfirmationModalOpen}
+          title={intl.translate('delete_volume')}
+          footer={
+            <NotificationButtonGroup>
+              <CancelButton
+                outlined
+                text={intl.translate('cancel')}
+                onClick={onClickCancelButton}
+              />
+              <Button
+                variant="danger"
+                text={intl.translate('delete')}
+                onClick={() => {
+                  onClickDeleteButton(name, nodeName);
+                }}
+                data-cy="confirm_deletion_button"
+              ></Button>
+            </NotificationButtonGroup>
+          }
+        >
+          <ModalBody>
+            <div>{intl.translate('delete_a_volume_warning')}</div>
+            <div>
+              {intl.translate('delete_a_volume_confirm')}
+              <strong>{name}</strong>?
+            </div>
+          </ModalBody>
+        </Modal>
+      </VolumeDetailCardContainer>
+    </VolumeTab>
   );
 };
 

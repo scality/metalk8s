@@ -2,14 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { intl } from '../translations/IntlGlobalProvider';
 import { padding } from '@scality/core-ui/dist/style/theme';
-
-const DetailsTabContainer = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
-`;
+import { VolumeTab } from './CommonLayoutStyle';
 
 const VolumeObjectContent = styled.div`
   white-space: pre-wrap;
-  overflow: scroll;
 `;
 
 const ErrorText = styled.div`
@@ -21,14 +17,14 @@ const VolumeDetailsTab = (props) => {
   const { data, error } = props.currentVolumeObject;
 
   return (
-    <DetailsTabContainer>
+    <VolumeTab>
       <VolumeObjectContent>
         {data && JSON.stringify(data, null, '\t')}
         {error && (
           <ErrorText>{intl.translate('error_volume_details')}</ErrorText>
         )}
       </VolumeObjectContent>
-    </DetailsTabContainer>
+    </VolumeTab>
   );
 };
 

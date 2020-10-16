@@ -67,3 +67,9 @@ export const TextBadge = styled.span`
   font-weight: ${fontWeight.bold};
   margin-left: ${padding.smaller};
 `;
+
+export const VolumeTab = styled.div`
+  overflow: scroll;
+  max-height: calc(100vh - 188px);
+  color: ${(props) => props.theme.brand.textPrimary};
+`;

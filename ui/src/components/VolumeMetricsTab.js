@@ -31,6 +31,7 @@ import {
   queryTimeSpansCodes,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
+import { VolumeTab } from './CommonLayoutStyle';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;
@@ -364,107 +365,111 @@ const MetricsTab = (props) => {
   );
 
   return (
-    <MetricGraphCardContainer>
-      <MetricGraphTitle>
-        {volumeCondition === VOLUME_CONDITION_LINK && (
-          <Dropdown
-            items={metricsTimeSpanDropdownItems}
-            text={metricsTimeSpan}
-            size="small"
-          />
+    <VolumeTab>
+      <MetricGraphCardContainer>
+        <MetricGraphTitle>
+          {volumeCondition === VOLUME_CONDITION_LINK && (
+            <Dropdown
+              items={metricsTimeSpanDropdownItems}
+              text={metricsTimeSpan}
+              size="small"
+            />
+          )}
+          {config.api?.url_grafana && (
+            <Button
+              text={intl.translate('advanced_metrics')}
+              variant={'base'}
+              onClick={() => {}}
+              icon={<i className="fas fa-external-link-alt" />}
+              size={'small'}
+              href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes`}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          )}
+        </MetricGraphTitle>
+        {volumeCondition === VOLUME_CONDITION_LINK ? (
+          <GraphsContainer>
+            <RowGraphContainer>
+              <UsageGraph>
+                <GraphTitle>USAGE (%)</GraphTitle>
+                {volumeUsageData?.length > 0 ? (
+                  <LineChart
+                    id={'volume_usage_id'}
+                    data={volumeUsageData}
+                    xAxis={xAxis}
+                    yAxis={yAxisUsage}
+                    color={colorUsage}
+                    width={285}
+                    height={80}
+                    tooltip={false}
+                  />
+                ) : (
+                  <NoDataGraphText>No available usage data</NoDataGraphText>
+                )}
+              </UsageGraph>
+              <LatencyGraph>
+                <GraphTitle>LATENCY (µs) </GraphTitle>
+                {volumeLatencyData?.length > 0 ? (
+                  <LineChart
+                    id={'volume_latency_id'}
+                    data={volumeLatencyData}
+                    xAxis={xAxis}
+                    yAxis={yAxisWriteRead}
+                    color={colors}
+                    width={285}
+                    height={80}
+                    tooltip={false}
+                  />
+                ) : (
+                  <NoDataGraphText>No available latency data</NoDataGraphText>
+                )}
+              </LatencyGraph>
+            </RowGraphContainer>
+            <SecondRowGraphContainer>
+              <TroughputGraph>
+                <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
+                {volumeThroughputData?.length > 0 ? (
+                  <LineChart
+                    id={'volume_throughput_id'}
+                    data={volumeThroughputData}
+                    xAxis={xAxis}
+                    yAxis={yAxisWriteRead}
+                    color={colors}
+                    width={285}
+                    height={80}
+                    tooltip={false}
+                  />
+                ) : (
+                  <NoDataGraphText>
+                    No available throughput data
+                  </NoDataGraphText>
+                )}
+              </TroughputGraph>
+              <IOPSGraph>
+                <GraphTitle>IOPS</GraphTitle>
+                {volumeIOPSData?.length > 0 ? (
+                  <LineChart
+                    id={'volume_IOPS_id'}
+                    data={volumeIOPSData}
+                    xAxis={xAxis}
+                    yAxis={yAxisWriteRead}
+                    color={colors}
+                    width={285}
+                    height={80}
+                    tooltip={false}
+                  />
+                ) : (
+                  <NoDataGraphText>No available IOPS data</NoDataGraphText>
+                )}
+              </IOPSGraph>
+            </SecondRowGraphContainer>
+          </GraphsContainer>
+        ) : (
+          <NoMetricsText>{intl.translate('volume_is_not_bound')}</NoMetricsText>
         )}
-        {config.api?.url_grafana && (
-          <Button
-            text={intl.translate('advanced_metrics')}
-            variant={'base'}
-            onClick={() => {}}
-            icon={<i className="fas fa-external-link-alt" />}
-            size={'small'}
-            href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes`}
-            target="_blank"
-            rel="noopener noreferrer"
-          />
-        )}
-      </MetricGraphTitle>
-      {volumeCondition === VOLUME_CONDITION_LINK ? (
-        <GraphsContainer>
-          <RowGraphContainer>
-            <UsageGraph>
-              <GraphTitle>USAGE (%)</GraphTitle>
-              {volumeUsageData?.length > 0 ? (
-                <LineChart
-                  id={'volume_usage_id'}
-                  data={volumeUsageData}
-                  xAxis={xAxis}
-                  yAxis={yAxisUsage}
-                  color={colorUsage}
-                  width={285}
-                  height={80}
-                  tooltip={false}
-                />
-              ) : (
-                <NoDataGraphText>No available usage data</NoDataGraphText>
-              )}
-            </UsageGraph>
-            <LatencyGraph>
-              <GraphTitle>LATENCY (µs) </GraphTitle>
-              {volumeLatencyData?.length > 0 ? (
-                <LineChart
-                  id={'volume_latency_id'}
-                  data={volumeLatencyData}
-                  xAxis={xAxis}
-                  yAxis={yAxisWriteRead}
-                  color={colors}
-                  width={285}
-                  height={80}
-                  tooltip={false}
-                />
-              ) : (
-                <NoDataGraphText>No available latency data</NoDataGraphText>
-              )}
-            </LatencyGraph>
-          </RowGraphContainer>
-          <SecondRowGraphContainer>
-            <TroughputGraph>
-              <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
-              {volumeThroughputData?.length > 0 ? (
-                <LineChart
-                  id={'volume_throughput_id'}
-                  data={volumeThroughputData}
-                  xAxis={xAxis}
-                  yAxis={yAxisWriteRead}
-                  color={colors}
-                  width={285}
-                  height={80}
-                  tooltip={false}
-                />
-              ) : (
-                <NoDataGraphText>No available throughput data</NoDataGraphText>
-              )}
-            </TroughputGraph>
-            <IOPSGraph>
-              <GraphTitle>IOPS</GraphTitle>
-              {volumeIOPSData?.length > 0 ? (
-                <LineChart
-                  id={'volume_IOPS_id'}
-                  data={volumeIOPSData}
-                  xAxis={xAxis}
-                  yAxis={yAxisWriteRead}
-                  color={colors}
-                  width={285}
-                  height={80}
-                  tooltip={false}
-                />
-              ) : (
-                <NoDataGraphText>No available IOPS data</NoDataGraphText>
-              )}
-            </IOPSGraph>
-          </SecondRowGraphContainer>
-        </GraphsContainer>
-      ) : (
-        <NoMetricsText>{intl.translate('volume_is_not_bound')}</NoMetricsText>
-      )}
-    </MetricGraphCardContainer>
+      </MetricGraphCardContainer>
+    </VolumeTab>
   );
 };
 
