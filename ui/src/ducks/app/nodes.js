@@ -43,6 +43,8 @@ const CREATE_NODE = 'CREATE_NODE';
 export const CREATE_NODE_FAILED = 'CREATE_NODE_FAILED';
 const CLEAR_CREATE_NODE_ERROR = 'CLEAR_CREATE_NODE_ERROR';
 const DEPLOY_NODE = 'DEPLOY_NODE';
+const READ_NODE = 'READ_NODE';
+const UPDATE_NODE_OBJECT = 'UPDATE_NODE_OBJECT';
 
 // Todo: We need to handle the refresh
 const FETCH_NODES_IPS_INTERFACES = 'FETCH_NODES_IPS_INTERFACES';
@@ -156,6 +158,7 @@ const defaultState = {
   isRefreshing: false,
   isLoading: false,
   IPsInfo: {},
+  currentNodeObject: null,
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -173,6 +176,7 @@ export default function reducer(state = defaultState, action = {}) {
         errors: { create_node: null },
       };
     case UPDATE_NODES_IPS_INTERFACES:
+    case UPDATE_NODE_OBJECT:
       return { ...state, ...action.payload };
     default:
       return state;
@@ -218,6 +222,14 @@ export const fetchNodesIPsInterfaceAction = () => {
 
 export const updateNodesIPsInterfacesAction = (payload) => {
   return { type: UPDATE_NODES_IPS_INTERFACES, payload };
+};
+
+export const readNodeAction = (payload) => {
+  return { type: READ_NODE, payload };
+};
+
+export const updateNodeObjectAction = (payload) => {
+  return { type: UPDATE_NODE_OBJECT, payload };
 };
 
 // Selectors
@@ -479,6 +491,17 @@ export function* fetchNodesIPsInterface() {
   }
 }
 
+export function* readNode({ payload }) {
+  const result = yield call(CoreApi.readNode, payload.name);
+  if (!result.error) {
+    yield put(
+      updateNodeObjectAction({
+        currentNodeObject: result.body,
+      }),
+    );
+  }
+}
+
 export function* nodesSaga() {
   yield all([
     takeEvery(FETCH_NODES, fetchNodes),
@@ -489,5 +512,6 @@ export function* nodesSaga() {
     takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion),
     takeEvery(JOB_COMPLETED, notifyDeployJobCompleted),
     takeEvery(FETCH_NODES_IPS_INTERFACES, fetchNodesIPsInterface),
+    takeEvery(READ_NODE, readNode),
   ]);
 }

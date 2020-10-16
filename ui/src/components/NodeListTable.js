@@ -362,7 +362,8 @@ const NodeListTable = (props) => {
       location.pathname.endsWith('alerts') ||
       location.pathname.endsWith('metrics') ||
       location.pathname.endsWith('volumes') ||
-      location.pathname.endsWith('pods');
+      location.pathname.endsWith('pods') ||
+      location.pathname.endsWith('details');
 
     if (isTabSelected) {
       // TODO: Need to change the Regex when rename to /nodes
