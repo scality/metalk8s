@@ -215,7 +215,7 @@ class RPMRepository(Repository):
                 builder=self.builder,
                 environment=env,
                 mounts=self._get_buildrpm_mounts(pkg.srpm, rpm.parent),
-                tmpfs={'/home/build': '', '/var/tmp': ''},
+                tmpfs={'/home/build': 'exec', '/var/tmp': ''},
                 run_config=docker_command.default_run_config(
                     constants.REDHAT_ENTRYPOINT
                 )
