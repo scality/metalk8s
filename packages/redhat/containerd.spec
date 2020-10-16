@@ -1,5 +1,5 @@
 %global goipath github.com/containerd/containerd
-Version:        1.2.13
+Version:        1.2.14
 
 %if %{defined fedora}
 %gometa
@@ -55,7 +55,7 @@ Provides:       bundled(golang(github.com/BurntSushi/toml)) = a368813c5e648fee92
 Provides:       bundled(golang(github.com/containerd/aufs)) = ffa39970e26ad01d81f540b21e65f9c1841a5f92
 Provides:       bundled(golang(github.com/containerd/btrfs)) = 2e1aa0ddf94f91fa282b6ed87c23bf0d64911244
 Provides:       bundled(golang(github.com/containerd/cgroups)) = c4b9ac5c7601384c965b9646fc515884e091ebb9
-Provides:       bundled(golang(github.com/containerd/console)) = c12b1e7919c14469339a5d38f2f8ed9b64a9de23
+Provides:       bundled(golang(github.com/containerd/console)) = 8375c3424e4d7b114e8a90a4a40c8e1b40d1d4e6
 Provides:       bundled(golang(github.com/containerd/continuity)) = bd77b46c8352f74eb12c85bdc01f4b90f69d66b4
 Provides:       bundled(golang(github.com/containerd/cri)) = b1052f3b73fb9f0a6805d3c20e884a4cef265a38
 Provides:       bundled(golang(github.com/containerd/fifo)) = 3d5202aec260678c48179c56f40e6f38a095738c
@@ -209,6 +209,9 @@ install -D -p -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/containerd/config.toml
 
 
 %changelog
+* Fri Oct 16 2020 Guillaume Demonet <guillaume.demonet@scality.com> - 1.2.14-1
+- Latest upstream
+
 * Mon Apr 6 2020 Nicolas Trangez <nicolas.trangez@scality.com> - 1.2.13-1
 - Latest upstream
 
