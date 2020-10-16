@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, useParams } from 'react-router-dom';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
@@ -22,6 +22,7 @@ import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
+import NodePageDetailsTab from '../components/NodeDetailsTab';
 import { queryTimeSpansCodes } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -46,8 +47,8 @@ const NodePageRSP = (props) => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { path, params } = useRouteMatch();
-  const selectedNodeName = params.name;
+  const { path, url } = useRouteMatch();
+  const { name } = useParams();
 
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
@@ -73,7 +74,7 @@ const NodePageRSP = (props) => {
 
   // Retrieve the podlist data
   const pods = useSelector((state) => state.app.pods.list);
-  const podsListData = getPodsListData(selectedNodeName, pods);
+  const podsListData = getPodsListData(name, pods);
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
   const nodeStats = useSelector(
@@ -81,11 +82,9 @@ const NodePageRSP = (props) => {
   );
   const nodesIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const instanceIP =
-    nodes?.find((node) => node.name === selectedNodeName)?.internalIP ?? '';
-  const controlPlaneInterface =
-    nodesIPsInfo[selectedNodeName]?.controlPlane?.interface;
-  const workloadPlaneInterface =
-    nodesIPsInfo[selectedNodeName]?.workloadPlane?.interface;
+    nodes?.find((node) => node.name === name)?.internalIP ?? '';
+  const controlPlaneInterface = nodesIPsInfo[name]?.controlPlane?.interface;
+  const workloadPlaneInterface = nodesIPsInfo[name]?.workloadPlane?.interface;
 
   useEffect(() => {
     dispatch(
@@ -110,32 +109,38 @@ const NodePageRSP = (props) => {
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
   const isVolumesTabActive = location.pathname.endsWith('/volumes');
   const isPodsTabActive = location.pathname.endsWith('/pods');
+  const isDetailsTabActive = location.pathname.endsWith('/details');
 
   const items = [
     {
       selected: isHealthTabActive,
       title: 'Overview',
-      onClick: () => history.push(`${path}/overview`),
+      onClick: () => history.push(`${url}/overview`),
     },
     {
       selected: isAlertsTabActive,
       title: intl.translate('alerts'),
-      onClick: () => history.push(`${path}/alerts`),
+      onClick: () => history.push(`${url}/alerts`),
     },
     {
       selected: isMetricsTabActive,
       title: 'Metrics',
-      onClick: () => history.push(`${path}/metrics`),
+      onClick: () => history.push(`${url}/metrics`),
     },
     {
       selected: isVolumesTabActive,
       title: intl.translate('volumes'),
-      onClick: () => history.push(`${path}/volumes`),
+      onClick: () => history.push(`${url}/volumes`),
     },
     {
       selected: isPodsTabActive,
       title: intl.translate('pods'),
-      onClick: () => history.push(`${path}/pods`),
+      onClick: () => history.push(`${url}/pods`),
+    },
+    {
+      selected: isDetailsTabActive,
+      title: intl.translate('details'),
+      onClick: () => history.push(`${url}/details`),
     },
   ];
 
@@ -166,6 +171,7 @@ const NodePageRSP = (props) => {
               <NodePagePodsTab pods={podsListData}></NodePagePodsTab>
             )}
           />
+          <Route path={`${path}/details`} component={NodePageDetailsTab} />
         </Switch>
       </Tabs>
     </NodePageRSPContainer>
