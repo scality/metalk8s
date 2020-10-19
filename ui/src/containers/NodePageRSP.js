@@ -17,6 +17,7 @@ import {
   refreshVolumesAction,
   stopRefreshVolumesAction,
 } from '../ducks/app/volumes';
+import { readNodeAction } from '../ducks/app/nodes';
 import NodePageOverviewTab from '../components/NodePageOverviewTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
@@ -49,7 +50,6 @@ const NodePageRSP = (props) => {
 
   const { path, url } = useRouteMatch();
   const { name } = useParams();
-
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useQuery();
@@ -96,12 +96,14 @@ const NodePageRSP = (props) => {
       }),
     );
     dispatch(fetchPodsAction());
+    dispatch(readNodeAction({ name }));
   }, [
     metricsTimeSpan,
     dispatch,
     instanceIP,
     controlPlaneInterface,
     workloadPlaneInterface,
+    name,
   ]);
 
   const isHealthTabActive = location.pathname.endsWith('/overview');
