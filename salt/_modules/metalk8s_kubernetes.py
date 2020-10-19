@@ -70,7 +70,7 @@ def _handle_error(exception, action):
             isinstance(exception, ApiException) and exception.status == 404:
         return None
     else:
-        raise CommandExecutionError(base_msg + str(exception).decode('utf-8'))
+        raise CommandExecutionError(base_msg + str(exception))
 
 
 def _object_manipulation_function(action):

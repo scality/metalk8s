@@ -11,6 +11,7 @@ import json
 import re
 import operator
 import os
+import six
 import time
 
 import logging
@@ -215,11 +216,9 @@ def device_info(name):
 # Volume {{{
 
 
-class Volume(object):
+@six.add_metaclass(abc.ABCMeta)
+class Volume():
     """Volume interface."""
-
-    # XXX: Will need to be updated when moving to Python 3
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, volume):
         self._volume = volume
@@ -295,7 +294,7 @@ class Volume(object):
                             .format(self.path))
         storage_class = self.get('spec.storageClass')
         # If we got a string that means the name wasn't replaced by the object.
-        if isinstance(storage_class, basestring):
+        if isinstance(storage_class, six.string_types):
             raise Exception('StorageClass {} not found'.format(storage_class))
         params = storage_class['parameters']
         # mkfs options, if any, are stored as JSON-encoded list.

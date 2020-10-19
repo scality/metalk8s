@@ -31,7 +31,7 @@ def _pick_nth_service_ip(n):
             'Pillar key "networks:service" must be set.'
         )
 
-    network = ipaddress.IPv4Network(unicode(cidr))
+    network = ipaddress.IPv4Network(cidr)
     # NOTE: hosts() method below returns usable hosts in a network.
     # The usable hosts are all the IP addresses that belong to the network,
     # except the network address itself and the network broadcast address.
