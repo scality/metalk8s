@@ -1,5 +1,4 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -70,7 +69,6 @@ const NodePageOverviewTab = (props) => {
 
   // Retrieve the node name from URL parameter
   const { name } = useParams();
-  const { url } = useRouteMatch();
 
   // the node object used by Node List Table
   const currentNode = nodeTableData?.find((node) => node.name.name === name);
@@ -177,7 +175,6 @@ const NodePageOverviewTab = (props) => {
           <ActiveAlertsCounter
             criticalCounter={currentNode?.health?.criticalAlertsCounter}
             warningCounter={currentNode?.health?.warningAlertsCounter}
-            baseLink={url.replace(/\/overview/, '/alerts')}
           ></ActiveAlertsCounter>
         </ActiveAlertWrapper>
       </Detail>
