@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import { useHistory, useLocation } from 'react-router';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
@@ -51,17 +52,18 @@ export const CounterIcon = styled.i`
 `;
 
 const ActiveAlertsCounter = (props) => {
-  const { criticalCounter, warningCounter, baseLink } = props;
+  const { criticalCounter, warningCounter } = props;
   const history = useHistory();
   const location = useLocation();
-
+  let { url } = useRouteMatch();
   const getLink = (status) => {
     const query = new URLSearchParams(location.search);
     const existing = query.getAll('severity');
     if (existing.indexOf(status) === -1) {
       query.set('severity', status);
     }
-    return `${baseLink}?${query.toString()}`;
+    url = url?.replace(/\/overview/, '/alerts');
+    return `${url}?${query.toString()}`;
   };
 
   return (

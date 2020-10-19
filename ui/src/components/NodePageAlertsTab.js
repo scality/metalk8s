@@ -221,7 +221,7 @@ const NodePageAlertsTab = (props) => {
     <TabContainer>
       <TitleContainer>
         <ActiveAlertsText theme={theme}>Active Alert</ActiveAlertsText>
-        <ActiveAlertsFilter baseLink="" />
+        <ActiveAlertsFilter />
       </TitleContainer>
       <ActiveAlertsTableContainer>
         <Table columns={columns} data={activeAlertListData} />
