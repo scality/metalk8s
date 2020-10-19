@@ -1,6 +1,10 @@
 import React from 'react';
 import { Route, useRouteMatch, Switch } from 'react-router-dom';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
+import {
+  refreshAlertManagerAction,
+  stopRefreshAlertManagerAction,
+} from '../ducks/app/alerts';
 import { useRefreshEffect } from '../services/utils';
 import NodeListTable from '../components/NodeListTable';
 import NodePageRSP from './NodePageRSP';
@@ -17,6 +21,7 @@ const NodePageContent = (props) => {
   const { nodeTableData } = props;
   const { path } = useRouteMatch();
 
+  useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   return (

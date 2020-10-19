@@ -1,4 +1,12 @@
 import { createSelector } from 'reselect';
+import {
+  NODE_ALERTS_GROUP,
+  PORT_NODE_EXPORTER,
+  STATUS_CRITICAL,
+  STATUS_WARNING,
+  STATUS_HEALTH,
+  STATUS_NONE,
+} from '../constants';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
@@ -7,17 +15,48 @@ const IP_INTERFACES = 'ip_interfaces';
 const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 const nodesSelector = (state) => state.app.nodes.list;
 const brandSelector = (state) => state.config.theme.brand;
+const alertsSelector = (state) => state.app.alerts.list;
 
 // Return the data used by the Node list table
 export const getNodeListData = createSelector(
   nodesSelector,
   IPsInfoSelector,
   brandSelector,
-  (nodes, nodeIPsInfo, brand) => {
+  alertsSelector,
+  (nodes, nodeIPsInfo, brand, alerts) => {
     return (
       nodes?.map((node) => {
         const IPsInfo = nodeIPsInfo?.[node.name];
-        let statusColor;
+        let statusColor, health;
+        const alertsNode = alerts?.filter(
+          (alert) =>
+            NODE_ALERTS_GROUP.includes(alert?.labels?.alertname) &&
+            `${node.internalIP}:${PORT_NODE_EXPORTER}` ===
+              alert.labels.instance,
+        );
+
+        const totalAlertsCounter = alertsNode?.length ?? -1;
+        const criticalAlertsCounter =
+          alertsNode?.filter(
+            (alert) => alert.labels.severity === STATUS_CRITICAL,
+          )?.length ?? -1;
+        const warningAlertsCounter =
+          alertsNode?.filter(
+            (alert) => alert.labels.severity === STATUS_WARNING,
+          )?.length ?? -1;
+
+        if (criticalAlertsCounter > 0) {
+          health = STATUS_CRITICAL;
+        } else if (warningAlertsCounter > 0) {
+          health = STATUS_WARNING;
+        } else if (criticalAlertsCounter === 0 && warningAlertsCounter === 0) {
+          // We don't know if the Node is health of not ready if there is no alerts
+          // so we need to specify the health is none when compute the status later.
+          health = STATUS_HEALTH;
+        } else {
+          health = STATUS_NONE;
+        }
+
         const computedStatus = [];
         // The rules of the color of the node status
         // "green" when status.conditions['Ready'] == True and all other conditions are false
@@ -34,10 +73,12 @@ export const getNodeListData = createSelector(
           });
         } else if (node?.status !== 'ready') {
           statusColor = brand?.critical;
-          computedStatus.push('notReady');
+          computedStatus.push('not_ready');
+          health = STATUS_NONE;
         } else {
           statusColor = brand?.textSecondary;
           computedStatus.push('unknown');
+          health = STATUS_NONE;
         }
 
         return {
@@ -54,6 +95,12 @@ export const getNodeListData = createSelector(
             computedStatus,
           },
           roles: node?.roles,
+          health: {
+            health,
+            totalAlertsCounter,
+            criticalAlertsCounter,
+            warningAlertsCounter,
+          },
         };
       }) ?? []
     );

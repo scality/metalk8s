@@ -24,7 +24,12 @@ import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
-import { queryTimeSpansCodes } from '../constants';
+import { TextBadge } from '../components/CommonLayoutStyle';
+import {
+  queryTimeSpansCodes,
+  NODE_ALERTS_GROUP,
+  PORT_NODE_EXPORTER,
+} from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
@@ -49,6 +54,7 @@ const NodePageRSP = (props) => {
 
   const { path, url } = useRouteMatch();
   const { name } = useParams();
+
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useQuery();
@@ -105,6 +111,15 @@ const NodePageRSP = (props) => {
     name,
   ]);
 
+  // Filter alerts for the specific node, base on the InstaceIP and Alert Name
+  const alerts = useSelector((state) => state.app.alerts.list);
+  const alertsNode =
+    alerts?.filter(
+      (alert) =>
+        NODE_ALERTS_GROUP.includes(alert?.labels?.alertname) &&
+        `${instanceIP}:${PORT_NODE_EXPORTER}` === alert?.labels?.instance,
+    ) ?? [];
+
   const isHealthTabActive = location.pathname.endsWith('/overview');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
@@ -120,7 +135,12 @@ const NodePageRSP = (props) => {
     },
     {
       selected: isAlertsTabActive,
-      title: intl.translate('alerts'),
+      title: (
+        <span>
+          {intl.translate('alerts')}
+          <TextBadge>{alertsNode?.length}</TextBadge>
+        </span>
+      ),
       onClick: () => history.push(`${url}/alerts`),
     },
     {
@@ -153,18 +173,32 @@ const NodePageRSP = (props) => {
             path={`${path}/overview`}
             render={() => (
               <NodePageOverviewTab
-                pods={pods}
                 nodeTableData={nodeTableData}
-                volumes={volumes}
                 nodes={nodes}
+                volumes={volumes}
+                pods={pods}
+              />
+            )}
+          />
+          <Route
+            path={`${path}/alerts`}
+            render={() => (
+              <NodePageAlertsTab alertsNode={alertsNode}></NodePageAlertsTab>
+            )}
+          />
+          <Route
+            path={`${path}/metrics`}
+            render={() => (
+              <NodePageMetricsTab
+                nodeStats={nodeStats}
+                instanceIP={instanceIP}
+                controlPlaneInterface={controlPlaneInterface}
+                workloadPlaneInterface={workloadPlaneInterface}
+                selectedNodeName={name}
               />
             )}
           />
           <Route path={`${path}/alerts`} component={NodePageAlertsTab} />
-          <Route
-            path={`${path}/metrics`}
-            render={() => <NodePageMetricsTab nodeStats={nodeStats} />}
-          />
           <Route
             path={`${path}/volumes`}
             render={() => <NodePageVolumesTab></NodePageVolumesTab>}
