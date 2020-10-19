@@ -4,7 +4,7 @@ import { Switch, Route, useParams } from 'react-router-dom';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
 import { useQuery, useRefreshEffect } from '../services/utils';
@@ -35,9 +35,24 @@ import { intl } from '../translations/IntlGlobalProvider';
 const NodePageRSPContainer = styled.div`
   flex-direction: column;
   width: 51%;
-  padding: 0 ${padding.small} ${padding.small} ${padding.small};
+  padding-left: ${padding.small};
   .sc-tabs {
     margin-top: 0;
+  }
+  .sc-tabs-bar {
+    height: 40px;
+  }
+  .sc-tabs-item-title {
+    height: 40px;
+    font-size: ${fontSize.base};
+    // set the title vertical align
+    padding: 12px 0 ${padding.base};
+  }
+  .sc-tabs-item {
+    margin-right: ${padding.smaller};
+    background-color: ${(props) => props.theme.brand.border};
+    border-radius: 3px 3px;
+    height: 40px;
   }
   .sc-tabs-item-content {
     padding: 0;
