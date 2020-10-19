@@ -65,6 +65,11 @@ UI_BUILD_ROOT : Path = config.BUILD_ROOT/'ui'
 DEBIAN_ENTRYPOINT : Path = ROOT/'packages/debian/entrypoint.sh'
 REDHAT_ENTRYPOINT : Path = ROOT/'packages/redhat/entrypoint.sh'
 
+# Path to UI static files.
+UI_PUBLIC   : Path = ROOT/'ui/public'
+UI_BRANDING : Path = UI_PUBLIC/'brand'
+UI_ASSETS   : Path = UI_BRANDING/'assets'
+
 # }}}
 # Vagrant parameters {{{
 
