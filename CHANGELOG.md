@@ -22,7 +22,7 @@
 
 ### Enhancements
 - [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump K8S version
-to 1.17.9 (PR [#2363](https://github.com/scality/metalk8s/pull/2679))
+to 1.17.13 (PR [#2859](https://github.com/scality/metalk8s/pull/2859))
 
 - [#2572](https://github.com/scality/metalk8s/issues/2572) - Bump CoreDNS
 version to 1.6.5 (PR [#2582](https://github.com/scality/metalk8s/pull/2582))

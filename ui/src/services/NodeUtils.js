@@ -6,15 +6,40 @@ const IP_INTERFACES = 'ip_interfaces';
 
 const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 const nodesSelector = (state) => state.app.nodes.list;
+const brandSelector = (state) => state.config.theme.brand;
 
 // Return the data used by the Node list table
 export const getNodeListData = createSelector(
   nodesSelector,
   IPsInfoSelector,
-  (nodes, nodeIPsInfo) => {
+  brandSelector,
+  (nodes, nodeIPsInfo, brand) => {
     return (
       nodes?.map((node) => {
         const IPsInfo = nodeIPsInfo?.[node.name];
+        let statusColor;
+        const computedStatus = [];
+        // The rules of the color of the node status
+        // "green" when status.conditions['Ready'] == True and all other conditions are false
+        // "yellow" when status.conditions['Ready'] == True and some other conditions are true
+        // "red" when status.conditions['Ready'] == False
+        // "grey" when there is no status.conditions
+        if (node?.status === 'ready' && node?.conditions.length === 0) {
+          statusColor = brand?.healthy;
+          computedStatus.push('ready');
+        } else if (node?.status === 'ready' && node?.conditions.length !== 0) {
+          statusColor = brand?.warning;
+          nodes.conditions.map((cond) => {
+            return computedStatus.push(cond);
+          });
+        } else if (node?.status !== 'ready') {
+          statusColor = brand?.critical;
+          computedStatus.push('notReady');
+        } else {
+          statusColor = brand?.textSecondary;
+          computedStatus.push('unknown');
+        }
+
         return {
           // According to the design, the IPs of Control Plane and Workload Plane are in the same Cell with Name
           name: {
@@ -22,7 +47,12 @@ export const getNodeListData = createSelector(
             controlPlaneIP: IPsInfo?.controlPlane?.ip,
             workloadPlaneIP: IPsInfo?.workloadPlane?.ip,
           },
-          status: { status: node?.status, conditions: node?.conditions },
+          status: {
+            status: node?.status,
+            conditions: node?.conditions,
+            statusColor,
+            computedStatus,
+          },
           roles: node?.roles,
         };
       }) ?? []
