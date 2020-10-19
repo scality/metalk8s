@@ -24,7 +24,7 @@ import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { TabContainer } from './CommonLayoutStyle';
 
 const TabContent = styled.div`
-  height: 70vh;
+  height: 78vh;
   .sc-progressbarcontainer {
     font-size: ${fontSize.small};
   }

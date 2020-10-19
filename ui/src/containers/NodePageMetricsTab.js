@@ -37,10 +37,12 @@ import {
 const GraphsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding-left: ${padding.small};
-  background-color: ${(props) => props.theme.brand.primaryDark1};
   overflow-y: auto;
-  height: 70vh;
+  height: 78vh;
+  // Change the background color of to primary, should change it in core-ui.
+  .sc-vegachart > svg {
+    background-color: ${(props) => props.theme.brand.primary} !important;
+  }
 `;
 
 const GraphTitle = styled.div`
@@ -71,6 +73,22 @@ const DropdownContainer = styled.div`
   flex-direction: row;
   justify-content: flex-end;
   padding-right: ${padding.base};
+
+  // TODO: Make the changes in core-ui
+  .sc-dropdown {
+    padding-left: 25px;
+  }
+  
+  .sc-dropdown > div {
+    background-color: ${(props) => props.theme.brand.primary};
+    border: 1px solid ${(props) => props.theme.brand.borderLight}
+    border-radius: 3px;
+    height: 32px;
+  }
+  
+  .sc-button {
+    background-color: ${(props) => props.theme.brand.info};
+  }
 `;
 
 const NodePageMetricsTab = (props) => {
@@ -282,7 +300,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
                 color={colorUsage}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -300,7 +318,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxis}
                 color={colorSystemLoad}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -320,7 +338,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
                 color={colorMemory}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -338,7 +356,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisWriteRead}
                 color={colorsWriteRead}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -359,7 +377,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisInOut}
                 color={colorsInOut}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -377,7 +395,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisInOut}
                 color={colorsInOut}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}

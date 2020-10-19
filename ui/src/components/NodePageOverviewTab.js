@@ -17,6 +17,11 @@ import CircleStatus from './CircleStatus';
 import { CIRCLE_DOUBLE_SIZE, API_STATUS_UNKNOWN } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
+const TabContentContainer = styled.div`
+  overflow-y: auto;
+  height: 78vh;
+`;
+
 const InformationSpan = styled.div`
   padding-bottom: ${padding.base};
   padding-left: ${padding.large};
@@ -43,9 +48,12 @@ const NodeNameContainer = styled.div`
   padding: ${padding.base} 0 ${padding.larger} ${padding.base};
 `;
 
-const NodeName = styled.div`
+const NodeNameStatusContainer = styled.div`
   display: flex;
   align-items: center;
+`;
+
+const NodeName = styled.div`
   font-size: ${fontSize.larger};
   padding-left: ${padding.smaller};
 `;
@@ -74,10 +82,6 @@ const ActiveAlertWrapper = styled.div`
 
 const DeployButton = styled(Button)`
   margin-right: ${padding.base};
-`;
-
-const NodeNameStatusContainer = styled.div`
-  display: flex;
 `;
 
 const NodeDeploymentWrapper = styled.div`
@@ -188,136 +192,143 @@ const NodePageOverviewTab = (props) => {
 
   return (
     <TabContainer>
-      <NodeNameContainer>
-        <NodeNameStatusContainer>
-          <CircleStatus
-            status={currentNode?.health?.health}
-            size={CIRCLE_DOUBLE_SIZE}
-          ></CircleStatus>
-          <NodeName>{name}</NodeName>
-        </NodeNameStatusContainer>
-        {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
-          !currentNodeReturnByK8S?.deploying ? (
-            <DeployButton
-              text={intl.translate('deploy')}
-              variant="secondary"
-              onClick={() => {
-                dispatch(deployNodeAction({ name }));
-              }}
-            />
-          ) : (
-            <DeployButton
-              text={intl.translate('deploying')}
-              disabled
-              icon={<Loader size="smaller" />}
-            />
-          )
-        ) : null}
-      </NodeNameContainer>
-      <Detail>
-        <div>
-          <InformationSpan>
-            <InformationLabel>Control Plane IP</InformationLabel>
-            <InformationValue>
-              {currentNode?.name?.controlPlaneIP}
-            </InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>Workload Plane IP</InformationLabel>
-            <InformationValue>
-              {currentNode?.name?.workloadPlaneIP}
-            </InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>Roles</InformationLabel>
-            <InformationValue>{currentNode?.roles}</InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>Status</InformationLabel>
-            <InformationValue>
-              {currentNode?.status?.computedStatus?.map((cond) => {
-                return (
-                  <StatusText
-                    key={cond}
-                    textColor={currentNode?.status?.statusColor}
-                  >
-                    {intl.translate(`${cond}`)}
-                  </StatusText>
-                );
-              })}
-            </InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>
-              {intl.translate('creationTime')}
-            </InformationLabel>
-            {creationTimestamp ? (
-              <InformationValue>
-                <FormattedDate
-                  value={creationTimestamp}
-                  year="numeric"
-                  month="short"
-                  day="2-digit"
-                />{' '}
-                <FormattedTime
-                  hour="2-digit"
-                  minute="2-digit"
-                  second="2-digit"
-                  value={creationTimestamp}
-                />
-              </InformationValue>
+      <TabContentContainer>
+        <NodeNameContainer>
+          <NodeNameStatusContainer>
+            <CircleStatus
+              status={currentNode?.health?.health}
+              size={CIRCLE_DOUBLE_SIZE}
+            ></CircleStatus>
+            <NodeName>{name}</NodeName>
+          </NodeNameStatusContainer>
+          {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
+            !currentNodeReturnByK8S?.deploying ? (
+              <DeployButton
+                text={intl.translate('deploy')}
+                variant="secondary"
+                onClick={() => {
+                  dispatch(deployNodeAction({ name }));
+                }}
+              />
             ) : (
-              ''
-            )}
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>K8s Version</InformationLabel>
-            <InformationValue>
-              {currentNodeReturnByK8S?.kubeletVersion}
-            </InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>Volumes</InformationLabel>
-            <InformationValue>
-              {volumesAttachedCurrentNode?.length ?? intl.translate('unknown')}
-            </InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>Pods</InformationLabel>
-            <InformationValue>
-              {podsScheduledOnCurrentNode?.length ?? intl.translate('unknown')}
-            </InformationValue>
-          </InformationSpan>
-        </div>
-        <ActiveAlertWrapper>
-          <ActiveAlertTitle>{intl.translate('active_alerts')}</ActiveAlertTitle>
-          <ActiveAlertsCounter
-            criticalCounter={currentNode?.health?.criticalAlertsCounter}
-            warningCounter={currentNode?.health?.warningAlertsCounter}
-          ></ActiveAlertsCounter>
-        </ActiveAlertWrapper>
-      </Detail>
+              <DeployButton
+                text={intl.translate('deploying')}
+                disabled
+                icon={<Loader size="smaller" />}
+              />
+            )
+          ) : null}
+        </NodeNameContainer>
 
-      {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
-        <NodeDeploymentWrapper>
-          <NodeDeploymentTitle>
-            {intl.translate('deployment')}
-          </NodeDeploymentTitle>
-          {activeJob === undefined ? (
-            <InfoMessage>
-              {intl.translate('no_deployment_found', { name: name })}
-            </InfoMessage>
-          ) : activeJob.completed && isEmpty(activeJob.status) ? (
-            <InfoMessage>{intl.translate('refreshing_job')}</InfoMessage>
-          ) : (
-            <NodeDeploymentContent>
-              <NodeDeploymentStatus>
-                <Steppers steps={steps} activeStep={activeStep} />
-              </NodeDeploymentStatus>
-            </NodeDeploymentContent>
-          )}
-        </NodeDeploymentWrapper>
-      ) : null}
+        <Detail>
+          <div>
+            <InformationSpan>
+              <InformationLabel>Control Plane IP</InformationLabel>
+              <InformationValue>
+                {currentNode?.name?.controlPlaneIP}
+              </InformationValue>
+            </InformationSpan>
+            <InformationSpan>
+              <InformationLabel>Workload Plane IP</InformationLabel>
+              <InformationValue>
+                {currentNode?.name?.workloadPlaneIP}
+              </InformationValue>
+            </InformationSpan>
+            <InformationSpan>
+              <InformationLabel>Roles</InformationLabel>
+              <InformationValue>{currentNode?.roles}</InformationValue>
+            </InformationSpan>
+            <InformationSpan>
+              <InformationLabel>Status</InformationLabel>
+              <InformationValue>
+                {currentNode?.status?.computedStatus?.map((cond) => {
+                  return (
+                    <StatusText
+                      key={cond}
+                      textColor={currentNode?.status?.statusColor}
+                    >
+                      {intl.translate(`${cond}`)}
+                    </StatusText>
+                  );
+                })}
+              </InformationValue>
+            </InformationSpan>
+            <InformationSpan>
+              <InformationLabel>
+                {intl.translate('creationTime')}
+              </InformationLabel>
+              {creationTimestamp ? (
+                <InformationValue>
+                  <FormattedDate
+                    value={creationTimestamp}
+                    year="numeric"
+                    month="short"
+                    day="2-digit"
+                  />{' '}
+                  <FormattedTime
+                    hour="2-digit"
+                    minute="2-digit"
+                    second="2-digit"
+                    value={creationTimestamp}
+                  />
+                </InformationValue>
+              ) : (
+                ''
+              )}
+            </InformationSpan>
+            <InformationSpan>
+              <InformationLabel>K8s Version</InformationLabel>
+              <InformationValue>
+                {currentNodeReturnByK8S?.kubeletVersion}
+              </InformationValue>
+            </InformationSpan>
+            <InformationSpan>
+              <InformationLabel>Volumes</InformationLabel>
+              <InformationValue>
+                {volumesAttachedCurrentNode?.length ??
+                  intl.translate('unknown')}
+              </InformationValue>
+            </InformationSpan>
+            <InformationSpan>
+              <InformationLabel>Pods</InformationLabel>
+              <InformationValue>
+                {podsScheduledOnCurrentNode?.length ??
+                  intl.translate('unknown')}
+              </InformationValue>
+            </InformationSpan>
+          </div>
+          <ActiveAlertWrapper>
+            <ActiveAlertTitle>
+              {intl.translate('active_alerts')}
+            </ActiveAlertTitle>
+            <ActiveAlertsCounter
+              criticalCounter={currentNode?.health?.criticalAlertsCounter}
+              warningCounter={currentNode?.health?.warningAlertsCounter}
+            ></ActiveAlertsCounter>
+          </ActiveAlertWrapper>
+        </Detail>
+
+        {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
+          <NodeDeploymentWrapper>
+            <NodeDeploymentTitle>
+              {intl.translate('deployment')}
+            </NodeDeploymentTitle>
+            {activeJob === undefined ? (
+              <InfoMessage>
+                {intl.translate('no_deployment_found', { name: name })}
+              </InfoMessage>
+            ) : activeJob.completed && isEmpty(activeJob.status) ? (
+              <InfoMessage>{intl.translate('refreshing_job')}</InfoMessage>
+            ) : (
+              <NodeDeploymentContent>
+                <NodeDeploymentStatus>
+                  <Steppers steps={steps} activeStep={activeStep} />
+                </NodeDeploymentStatus>
+              </NodeDeploymentContent>
+            )}
+          </NodeDeploymentWrapper>
+        ) : null}
+      </TabContentContainer>
     </TabContainer>
   );
 };
