@@ -126,3 +126,11 @@ export async function getNamespacedDeployment(name, namespace) {
     return { error };
   }
 }
+
+export async function readNode(name) {
+  try {
+    return await coreV1.readNode(name);
+  } catch (error) {
+    return { error };
+  }
+}
