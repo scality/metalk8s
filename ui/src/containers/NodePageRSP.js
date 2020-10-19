@@ -152,12 +152,11 @@ const NodePageRSP = (props) => {
           <Route
             path={`${path}/overview`}
             render={() => (
-              <NodePageMetricsTab
-                nodeStats={nodeStats}
-                instanceIP={instanceIP}
-                controlPlaneInterface={controlPlaneInterface}
-                workloadPlaneInterface={workloadPlaneInterface}
-                selectedNodeName={selectedNodeName}
+              <NodePageOverviewTab
+                pods={pods}
+                nodeTableData={nodeTableData}
+                volumes={volumes}
+                nodes={nodes}
               />
             )}
           />
@@ -166,7 +165,10 @@ const NodePageRSP = (props) => {
             path={`${path}/metrics`}
             render={() => <NodePageMetricsTab nodeStats={nodeStats} />}
           />
-          <Route path={`${path}/volumes`} component={NodePageVolumesTab} />
+          <Route
+            path={`${path}/volumes`}
+            render={() => <NodePageVolumesTab></NodePageVolumesTab>}
+          />
           <Route
             path={`${path}/pods`}
             render={() => (
