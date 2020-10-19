@@ -29,7 +29,7 @@ resource "openstack_networking_port_v2" "bastion_workload_plane" {
 
 resource "openstack_compute_instance_v2" "bastion" {
   name        = "${local.prefix}-bastion"
-  image_name  = var.openstack_image_name
+  image_name  = local.bastion_image
   flavor_name = var.openstack_flavour_name
   key_pair    = openstack_compute_keypair_v2.local_ssh_key.name
 
@@ -79,7 +79,7 @@ resource "openstack_compute_instance_v2" "bastion" {
   # Generate Bastion SSH keypair
   provisioner "remote-exec" {
     inline = [
-      "ssh-keygen -t rsa -b 4096 -N '' -f /home/${local.ssh_user}/.ssh/bastion",
+      "ssh-keygen -t rsa -b 4096 -N '' -f /home/centos/.ssh/bastion",
     ]
   }
 }
@@ -133,14 +133,14 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   connection {
     host        = self.access_ip_v4
     type        = "ssh"
-    user        = "centos"
+    user        = local.ssh_user
     private_key = file("~/.ssh/terraform")
   }
 
   # Provision scripts for remote-execution
   provisioner "file" {
     source      = "${path.module}/scripts"
-    destination = "/home/centos/scripts"
+    destination = "/home/${local.ssh_user}/scripts"
   }
 
   # Start interfaces for Control and Workload plane
@@ -150,6 +150,22 @@ resource "openstack_compute_instance_v2" "bootstrap" {
       "sudo scripts/network.sh eth1",
       "sudo scripts/network.sh eth2",
       "sudo systemctl restart network"
+    ]
+  }
+
+  # Register RHSM if OS = rhel
+  provisioner "remote-exec" {
+    inline = [
+      "if [ '${var.os}' = 'rhel-7' ]; then sudo chmod +x scripts/rhsm-register.sh; fi",
+      "if [ '${var.os}' = 'rhel-7' ]; then sudo scripts/rhsm-register.sh '${var.rhsm_username}' '${var.rhsm_password}'; fi"
+    ]
+  }
+
+  provisioner "remote-exec" {
+    when = "destroy"
+    on_failure = "continue"
+    inline = [
+      "if [ '${var.os}' = 'rhel-7' ]; then sudo subscription-manager unregister; fi"
     ]
   }
 }
@@ -207,14 +223,14 @@ resource "openstack_compute_instance_v2" "nodes" {
   connection {
     host        = self.access_ip_v4
     type        = "ssh"
-    user        = "centos"
+    user        = local.ssh_user
     private_key = file("~/.ssh/terraform")
   }
 
   # Provision scripts for remote-execution
   provisioner "file" {
     source      = "${path.module}/scripts"
-    destination = "/home/centos/scripts"
+    destination = "/home/${local.ssh_user}/scripts"
   }
 
   # Start interfaces for Control and Workload plane
@@ -226,6 +242,23 @@ resource "openstack_compute_instance_v2" "nodes" {
       "sudo systemctl restart network"
     ]
   }
+
+  # Register RHSM if OS = rhel
+  provisioner "remote-exec" {
+    inline = [
+      "if [ '${var.os}' = 'rhel-7' ]; then sudo chmod +x scripts/rhsm-register.sh; fi",
+      "if [ '${var.os}' = 'rhel-7' ]; then sudo scripts/rhsm-register.sh '${var.rhsm_username}' '${var.rhsm_password}'; fi"
+    ]
+  }
+
+  provisioner "remote-exec" {
+    when = "destroy"
+    on_failure = "continue"
+    inline = [
+      "if [ '${var.os}' = 'rhel-7' ]; then sudo subscription-manager unregister; fi"
+    ]
+  }
+
   count = var.nodes_count
 }
 

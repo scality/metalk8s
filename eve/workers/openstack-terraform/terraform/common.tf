@@ -3,6 +3,16 @@ variable "prefix" {
   default = ""
 }
 
+variable "rhsm_username" {
+  type    = string
+  default = ""
+}
+
+variable "rhsm_password" {
+  type    = string
+  default = ""
+}
+
 variable "debug" {
   type    = bool
   default = false
