@@ -13,13 +13,6 @@ import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import { Button } from '@scality/core-ui';
-import {
-  LAST_SEVEN_DAYS,
-  LAST_ONE_HOUR,
-  QUERY_LAST_SEVEN_DAYS,
-  QUERY_LAST_TWENTY_FOUR_HOURS,
-  QUERY_LAST_ONE_HOUR,
-} from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeListContainer = styled.div`

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
@@ -30,7 +31,7 @@ const TabContent = styled.div`
 `;
 
 const NodePageVolumesTab = (props) => {
-  const { selectedNodeName } = props;
+  const { name } = useParams();
 
   const dispatch = useDispatch();
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
@@ -61,7 +62,7 @@ const NodePageVolumesTab = (props) => {
           volumeListData={volumeListData}
           isNodeColumn={false}
           isSearchBar={false}
-          nodeName={selectedNodeName}
+          nodeName={name}
         ></VolumeListTable>
       </TabContent>
     </TabContainer>
