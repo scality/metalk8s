@@ -8,6 +8,11 @@ variable "debug" {
   default = false
 }
 
+variable "nodes_count" {
+  type    = string
+  default = "2"
+}
+
 resource "random_string" "current" {
   length  = 5
   special = false
