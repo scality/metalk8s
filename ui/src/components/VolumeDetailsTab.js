@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { intl } from '../translations/IntlGlobalProvider';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { VolumeTab } from './CommonLayoutStyle';
 
 const VolumeObjectContent = styled.div`
   white-space: pre-wrap;
+  font-size: ${fontSize.base};
 `;
 
 const ErrorText = styled.div`
