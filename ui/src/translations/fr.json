@@ -158,7 +158,7 @@
   "node": "Nœud",
   "used_by": "Utilisé Par",
   "backend_disk": "Backend Disk",
-  "active_alerts": "ALERTS ACTIVES",
+  "active_alerts": "Alertes actives",
   "metrics": "MÉTRIQUE",
   "volume_is_not_bound": "Le volume n'est pas encore lié",
   "no_active_alerts": "Aucune alerte active",
