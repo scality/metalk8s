@@ -38,18 +38,18 @@ class Metalk8sPackageManagerYumTestCase(TestCase, LoaderModuleMockMixin):
         """
         Tests the return of `__virtual__` function, success
         """
-        with patch.dict("sys.modules", yum=MagicMock()):
-            reload(metalk8s_package_manager_yum)
-            self.assertEqual(
-                metalk8s_package_manager_yum.__virtual__(),
-                'metalk8s_package_manager'
-            )
+        reload(metalk8s_package_manager_yum)
+        self.assertEqual(
+            metalk8s_package_manager_yum.__virtual__(),
+            'metalk8s_package_manager'
+        )
 
     def test_virtual_fail_import(self):
         """
         Tests the return of `__virtual__` function, unable to import yum
         """
-        with ForceImportErrorOn("yum"):
+        with patch.dict(metalk8s_package_manager_yum.__grains__,
+                        {'os_family': 'Debian'}):
             reload(metalk8s_package_manager_yum)
             self.assertEqual(
                 metalk8s_package_manager_yum.__virtual__(),
@@ -140,51 +140,39 @@ class Metalk8sPackageManagerYumTestCase(TestCase, LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["check_pkg_availability"])
     def test_check_pkg_availability(self, pkgs_info, raise_msg=None,
-                                    ybase_installs=True,
-                                    ybase_process_trans=True):
+                                    yum_install_retcode=0):
         """
         Tests the return of `check_pkg_availability` function
         """
-        def _ybase_install(name, *_args, **_kwargs):
-            success = True
+        def _yum_install_cmd(command):
+            out_kwargs = {'stdout': 'Everything looks good'}
+            if isinstance(yum_install_retcode, int):
+                out_kwargs['retcode'] = yum_install_retcode
+            elif isinstance(yum_install_retcode, list):
+                out_kwargs['retcode'] = yum_install_retcode.pop()
+            elif isinstance(yum_install_retcode, dict):
+                # `command[2]` == package name
+                out_kwargs['retcode'] = yum_install_retcode.get(command[2], 0)
 
-            if ybase_installs is False:
-                success = False
-            elif isinstance(ybase_installs, dict):
-                success = ybase_installs.get(name, True)
+            if out_kwargs.get('retcode'):
+                out_kwargs['stdout'] = 'Oh ! No ! An ErRoR'
+
+            return utils.cmd_output(**out_kwargs)
+
+        salt_dict = {
+            'cmd.run_all': MagicMock(side_effect=_yum_install_cmd)
+        }
+
+        with patch.dict(metalk8s_package_manager_yum.__salt__, salt_dict):
+            if raise_msg:
+                self.assertRaisesRegexp(
+                    CommandExecutionError,
+                    raise_msg,
+                    metalk8s_package_manager_yum.check_pkg_availability,
+                    pkgs_info
+                )
             else:
-                return ybase_installs
-
-            if success:
-                return True
-            raise Exception("An error has occurred")
-
-        ybase_mock = MagicMock()
-
-        install_mock = ybase_mock.return_value.install
-        install_mock.side_effect = _ybase_install
-        process_trans_mock = ybase_mock.return_value.processTransaction
-        if ybase_process_trans:
-            process_trans_mock.return_value = True
-        else:
-            process_trans_mock.side_effect = Exception("An error has occurred")
-
-        with patch.dict("sys.modules", {"yum": MagicMock()}):
-            reload(metalk8s_package_manager_yum)
-            with patch("yum.YumBase", ybase_mock), \
-                    patch("yum.Errors.InstallError", Exception), \
-                    patch("yum.Errors.YumDownloadError", Exception), \
-                    patch("yum.Errors.YumRPMCheckError", Exception), \
-                    patch("logging.getLogger", MagicMock()):
-                if raise_msg:
-                    self.assertRaisesRegexp(
-                        CommandExecutionError,
-                        raise_msg,
-                        metalk8s_package_manager_yum.check_pkg_availability,
-                        pkgs_info
-                    )
-                else:
-                    # This function does not return anything
-                    metalk8s_package_manager_yum.check_pkg_availability(
-                        pkgs_info
-                    )
+                # This function does not return anything
+                metalk8s_package_manager_yum.check_pkg_availability(
+                    pkgs_info
+                )

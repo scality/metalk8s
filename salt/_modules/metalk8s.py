@@ -5,6 +5,7 @@ Module for handling MetalK8s specific calls.
 import logging
 import os.path
 import re
+import six
 import socket
 import time
 
@@ -195,7 +196,7 @@ def get_archives(archives=None):
     if not archives:
         archives = __pillar__.get('metalk8s', {}).get('archives', [])
 
-    if isinstance(archives, basestring):
+    if isinstance(archives, six.string_types):
         archives = [str(archives)]
     elif not isinstance(archives, list):
         raise CommandExecutionError(
@@ -316,7 +317,7 @@ def format_slots(data):
     if isinstance(data, dict):
         return {key: format_slots(value) for key, value in data.items()}
 
-    if isinstance(data, basestring) and data.startswith('__slot__:'):
+    if isinstance(data, six.string_types) and data.startswith('__slot__:'):
         fmt = data.split(":", 2)
         if len(fmt) != 3:
             log.warning(

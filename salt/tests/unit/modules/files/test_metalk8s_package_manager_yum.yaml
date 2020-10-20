@@ -154,22 +154,15 @@ check_pkg_availability:
   # check 1 package not available - error when retrieving it
   - pkgs_info:
       nonexistent_pkg: {}
-    ybase_installs: False
-    raise_msg: "No candidate found for package: nonexistent_pkg"
+    yum_install_retcode: 1
+    raise_msg: "Check availability of package nonexistent_pkg failed: Oh ! No ! An ErRoR"
 
   # check 1 package not available with version - error when retrieving it
   - pkgs_info:
       nonexistent_pkg:
         version: "3.11.12"
-    ybase_installs: False
-    raise_msg: "No candidate found for package: nonexistent_pkg-3.11.12"
-
-  # check 1 package available - error when checking dependencies
-  - pkgs_info:
-      missing_deps_pkg:
-        version: "3.11.12"
-    ybase_process_trans: False
-    raise_msg: "Some package dependencies are missing: .*"
+    yum_install_retcode: 1
+    raise_msg: "Check availability of package nonexistent_pkg-3.11.12 failed: Oh ! No ! An ErRoR"
 
   # check 3 package (2 available, 1 not available) - error when retrieving it
   - pkgs_info:
@@ -178,17 +171,6 @@ check_pkg_availability:
       nonexistent_pkg: {}
       my_second_package:
         version: null
-    ybase_installs:
-      nonexistent_pkg: False
-    raise_msg: "No candidate found for package: nonexistent_pkg"
-
-  # check 3 package available - error when checking dependencies
-  - pkgs_info:
-      my_first_package:
-        version: "3.11.12"
-      my_second_package:
-        version: null
-      my_third_package:
-        version: "3.10.5-0.el7"
-    ybase_process_trans: False
-    raise_msg: "Some package dependencies are missing: .*"
+    yum_install_retcode:
+      nonexistent_pkg: 1
+    raise_msg: "Check availability of package nonexistent_pkg failed: Oh ! No ! An ErRoR"
