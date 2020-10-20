@@ -13,6 +13,7 @@ import {
   updateNodeStatsFetchArgumentAction,
   refreshNodeStatsAction,
   stopRefreshNodeStatsAction,
+  fetchNodeUNameInfoAction,
 } from '../ducks/app/monitoring';
 import {
   refreshVolumesAction,
@@ -118,6 +119,7 @@ const NodePageRSP = (props) => {
     );
     dispatch(fetchPodsAction());
     dispatch(readNodeAction({ name }));
+    dispatch(fetchNodeUNameInfoAction());
   }, [
     metricsTimeSpan,
     dispatch,
@@ -212,7 +214,12 @@ const NodePageRSP = (props) => {
           />
           <Route
             path={`${path}/metrics`}
-            render={() => <NodePageMetricsTab nodeStats={nodeStats} />}
+            render={() => (
+              <NodePageMetricsTab
+                nodeStats={nodeStats}
+                instanceIP={instanceIP}
+              />
+            )}
           />
           <Route
             path={`${path}/volumes`}

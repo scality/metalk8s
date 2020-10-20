@@ -32,6 +32,7 @@ import {
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   queryTimeSpansCodes,
+  PORT_NODE_EXPORTER,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -95,7 +96,7 @@ const DropdownContainer = styled.div`
 `;
 
 const NodePageMetricsTab = (props) => {
-  const { nodeStats } = props;
+  const { nodeStats, instanceIP } = props;
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
   const history = useHistory();
@@ -104,6 +105,13 @@ const NodePageMetricsTab = (props) => {
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
+
+  // To redirect to the right Node(Detailed) dashboard in Grafana
+  const unameInfos = useSelector((state) => state.app.monitoring.unameInfo);
+  const hostnameLabel = unameInfos?.find(
+    (unameInfo) =>
+      unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
+  )?.metric?.nodename;
 
   let sampleDuration = null;
   let sampleFrequency = null;
@@ -292,7 +300,7 @@ const NodePageMetricsTab = (props) => {
           onClick={() => {}}
           icon={<i className="fas fa-external-link-alt" />}
           size={'small'}
-          href={`${config.api.url_grafana}/dashboard/db/nodes-detailed`}
+          href={`${config.api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}
           target="_blank"
           rel="noopener noreferrer"
         />
