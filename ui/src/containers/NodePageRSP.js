@@ -143,11 +143,14 @@ const NodePageRSP = (props) => {
   const isPodsTabActive = location.pathname.endsWith('/pods');
   const isDetailsTabActive = location.pathname.endsWith('/details');
 
+  const queryString = query.toString();
+
   const items = [
     {
       selected: isHealthTabActive,
       title: 'Overview',
-      onClick: () => history.push(`${url}/overview`),
+      onClick: () =>
+        history.push(`${url}/overview${queryString && `?${queryString}`}`),
     },
     {
       selected: isAlertsTabActive,
@@ -157,27 +160,32 @@ const NodePageRSP = (props) => {
           <TextBadge>{alertsNode?.length}</TextBadge>
         </span>
       ),
-      onClick: () => history.push(`${url}/alerts`),
+      onClick: () =>
+        history.push(`${url}/alerts${queryString && `?${queryString}`}`),
     },
     {
       selected: isMetricsTabActive,
       title: 'Metrics',
-      onClick: () => history.push(`${url}/metrics`),
+      onClick: () =>
+        history.push(`${url}/metrics${queryString && `?${queryString}`}`),
     },
     {
       selected: isVolumesTabActive,
       title: intl.translate('volumes'),
-      onClick: () => history.push(`${url}/volumes`),
+      onClick: () =>
+        history.push(`${url}/volumes${queryString && `?${queryString}`}`),
     },
     {
       selected: isPodsTabActive,
       title: intl.translate('pods'),
-      onClick: () => history.push(`${url}/pods`),
+      onClick: () =>
+        history.push(`${url}/pods${queryString && `?${queryString}`}`),
     },
     {
       selected: isDetailsTabActive,
       title: intl.translate('details'),
-      onClick: () => history.push(`${url}/details`),
+      onClick: () =>
+        history.push(`${url}/details${queryString && `?${queryString}`}`),
     },
   ];
 
