@@ -155,7 +155,7 @@ const VolumePageContent = (props) => {
   };
 
   const isAlertsPage = location.pathname.endsWith('/alerts');
-  const isOverviewPage = location.pathname.endsWith('/overview') || !isAlertsPage;
+  const isOverviewPage = location.pathname.endsWith('/overview');
   const isMetricsPage = location.pathname.endsWith('/metrics');
   const isDetailsPage = location.pathname.endsWith('/details');
 
