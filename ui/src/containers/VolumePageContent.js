@@ -36,6 +36,24 @@ width: 100%;
   margin: 0 ${padding.small} 0 ${padding.smaller};
 }
 
+.sc-tabs-bar {
+  height: 40px;
+}
+
+.sc-tabs-item {
+  background-color: ${(props) => props.theme.brand.border};
+  margin-right: ${padding.smaller}
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+
+  .sc-tabs-item-title {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    height: 40px;
+    padding: ${padding.small}
+  }
+}
+
 .sc-tabs-item-content {
   background-color: ${(props) => props.theme.brand.primary};
   padding: ${padding.small}
