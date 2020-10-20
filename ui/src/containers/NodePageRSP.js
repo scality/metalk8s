@@ -143,7 +143,7 @@ const NodePageRSP = (props) => {
   const isPodsTabActive = location.pathname.endsWith('/pods');
   const isDetailsTabActive = location.pathname.endsWith('/details');
 
-  const queryString = query.toString();
+  const queryString = query?.toString();
 
   const items = [
     {
