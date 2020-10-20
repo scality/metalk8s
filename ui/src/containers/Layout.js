@@ -7,11 +7,9 @@ import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 
 import { intl } from '../translations/IntlGlobalProvider';
 import NodeCreateForm from './NodeCreateForm';
-import NodeList from './NodeList';
 import NodePage from './NodePage';
 import SolutionList from './SolutionList';
 import EnvironmentCreationForm from './EnvironmentCreationForm';
-import NodeInformation from './NodeInformation';
 import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
 import About from './About';
@@ -228,9 +226,7 @@ const Layout = (props) => {
             path="/volumes/createVolume"
             component={CreateVolume}
           />
-          <PrivateRoute path="/nodes/:id" component={NodeInformation} />
-          <PrivateRoute exact path="/nodes" component={NodeList} />
-          <PrivateRoute path="/newNodes" component={NodePage} />
+          <PrivateRoute path="/nodes" component={NodePage} />
           <PrivateRoute exact path="/environments" component={SolutionList} />
           <PrivateRoute path="/volumes" component={VolumePage} />
           <PrivateRoute

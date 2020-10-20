@@ -56,22 +56,25 @@ const Body = styled.tbody`
   overflow: auto;
   overflow-y: scroll;
 `;
+
 const ActiveAlertsText = styled.div`
   color: ${(props) => props.theme.brand.textTertiary};
   font-weight: ${fontWeight.bold};
 `;
+
 const TitleContainer = styled.div`
   display: flex;
   justify-content: space-between;
   padding: ${padding.large} ${padding.base} 0 ${padding.larger};
 `;
+
 const NodePageAlertsTab = (props) => {
   const { alertsNode } = props;
   const theme = useSelector((state) => state.config.theme);
   const query = useQuery();
   // Retrieve the severity filter from URL.
   // Filter more than one severity, the URL should be:
-  // `/newNodes/<node-name>/alerts?severity=warning&severity=critical`
+  // `/nodes/<node-name>/alerts?severity=warning&severity=critical`
   let alertSeverity = query.getAll('severity');
   // Display all the alerts when there is no severity filter
   if (alertSeverity?.length === 0) {
