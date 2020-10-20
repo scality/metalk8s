@@ -18,11 +18,13 @@ import {
   refreshVolumesAction,
   stopRefreshVolumesAction,
 } from '../ducks/app/volumes';
+import { readNodeAction } from '../ducks/app/nodes';
 import NodePageOverviewTab from '../components/NodePageOverviewTab';
 import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
+import NodePageDetailsTab from '../components/NodeDetailsTab';
 import { TextBadge } from '../components/CommonLayoutStyle';
 import {
   queryTimeSpansCodes,
@@ -115,12 +117,14 @@ const NodePageRSP = (props) => {
       }),
     );
     dispatch(fetchPodsAction());
+    dispatch(readNodeAction({ name }));
   }, [
     metricsTimeSpan,
     dispatch,
     instanceIP,
     controlPlaneInterface,
     workloadPlaneInterface,
+    name,
   ]);
 
   // Filter alerts for the specific node, base on the InstaceIP and Alert Name
@@ -137,6 +141,7 @@ const NodePageRSP = (props) => {
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
   const isVolumesTabActive = location.pathname.endsWith('/volumes');
   const isPodsTabActive = location.pathname.endsWith('/pods');
+  const isDetailsTabActive = location.pathname.endsWith('/details');
 
   const items = [
     {
@@ -168,6 +173,11 @@ const NodePageRSP = (props) => {
       selected: isPodsTabActive,
       title: intl.translate('pods'),
       onClick: () => history.push(`${url}/pods`),
+    },
+    {
+      selected: isDetailsTabActive,
+      title: intl.translate('details'),
+      onClick: () => history.push(`${url}/details`),
     },
   ];
 
@@ -206,6 +216,7 @@ const NodePageRSP = (props) => {
               <NodePagePodsTab pods={podsListData}></NodePagePodsTab>
             )}
           />
+          <Route path={`${path}/details`} component={NodePageDetailsTab} />
         </Switch>
       </Tabs>
     </NodePageRSPContainer>
