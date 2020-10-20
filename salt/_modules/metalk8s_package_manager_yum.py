@@ -7,12 +7,6 @@ import logging
 from contextlib import contextmanager
 from salt.exceptions import CommandExecutionError
 
-try:
-    import yum
-    HAS_YUM_LIB = True
-except ImportError:
-    HAS_YUM_LIB = False
-
 log = logging.getLogger(__name__)
 
 
@@ -20,7 +14,7 @@ __virtualname__ = 'metalk8s_package_manager'
 
 
 def __virtual__():
-    if __grains__['os_family'] == 'RedHat' and HAS_YUM_LIB:
+    if __grains__['os_family'] == 'RedHat':
         return __virtualname__
     return False
 
@@ -142,7 +136,7 @@ def list_pkg_dependents(
 
     all_pkgs.update(dependents)
 
-    for pkg_name, desired_version in all_pkgs.items():
+    for pkg_name in list(all_pkgs):
         ret = __salt__['cmd.run_all'](['rpm', '-qa', pkg_name])
 
         if ret['retcode'] != 0:
@@ -162,30 +156,6 @@ def list_pkg_dependents(
     return all_pkgs
 
 
-def _disable_yum_loggers():
-    yum_loggers = [
-        'yum.filelogging.RPMInstallCallback', 'yum.verbose.Repos',
-        'yum.verbose.plugin', 'yum.Depsolve', 'yum.verbose', 'yum.plugin',
-        'yum.Repos', 'yum', 'yum.verbose.YumBase', 'yum.filelogging',
-        'yum.verbose.YumPlugins', 'yum.RepoStorage', 'yum.YumBase',
-        'yum.filelogging.YumBase', 'yum.verbose.Depsolve',
-    ]
-
-    for logger_name in yum_loggers:
-        yum_logger = logging.getLogger(logger_name)
-        yum_logger.setLevel(yum.logginglevels.__NO_LOGGING)
-
-
-@contextmanager
-def _get_yum_base():
-    ybase = yum.YumBase()
-    try:
-        yield ybase
-    finally:
-        ybase.closeRpmDB()
-        ybase.close()
-
-
 def check_pkg_availability(pkgs_info):
     '''
     Check that provided packages and their dependencies are available
@@ -194,39 +164,21 @@ def check_pkg_availability(pkgs_info):
         Value of pillar key `repo:packages` to consider for the requiring
         packages to check (format {"<name>": {"version": "<version>"}, ...})
     '''
-    with _get_yum_base() as ybase:
-        ybase.preconf.errorlevel = 0
-        ybase.preconf.debuglevel = 0
-        ybase.conf.tsflags = 'test'
-        ybase.conf.assumeyes = True
+    for name, info in pkgs_info.items():
+        pkg_name = name
+        if info.get('version'):
+            pkg_name += '-' + str(info['version'])
 
-        _disable_yum_loggers()
+        ret = __salt__['cmd.run_all']([
+            'yum', 'install', pkg_name,
+            '--setopt', 'tsflags=test', '--assumeyes',
+            '--disableplugin=versionlock'
+        ])
 
-        for name, info in pkgs_info.items():
-
-            version = info.get('version')
-            release = None
-
-            if version:
-                version_with_release = version.split('-', 1)
-                if len(version_with_release) == 2:
-                    version = version_with_release[0]
-                    release = version_with_release[1]
-
-            try:
-                ybase.install(name=name, version=version, release=release)
-            except yum.Errors.InstallError as exc:
-                error = 'No candidate found for package: {0}{1}'.format(
-                    name, '-' + str(version) if version else ''
+        if ret['retcode'] != 0:
+            raise CommandExecutionError(
+                'Check availability of package {} failed: {}'.format(
+                    pkg_name,
+                    ret['stdout']
                 )
-                raise CommandExecutionError(error)
-
-        ybase.resolveDeps()
-        ybase.buildTransaction()
-
-        try:
-            ybase.processTransaction()
-        except (yum.Errors.YumDownloadError,
-                yum.Errors.YumRPMCheckError) as exc:
-            error = 'Some package dependencies are missing: {0}'.format(exc)
-            raise CommandExecutionError(error)
+            )

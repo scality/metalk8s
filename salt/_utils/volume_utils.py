@@ -332,7 +332,7 @@ def get_blkid_probe(
     use_partitions=False, partitions_flags=0,
 ):
     """Return a probe for the specified device."""
-    c_probe = new_probe_from_filename(filepath)
+    c_probe = new_probe_from_filename(filepath.encode())
     try:
         probe = _Probe(c_probe)
         probe.configure(use_superblocks, superblocks_flags,
