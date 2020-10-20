@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useRouteMatch } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useHistory } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
@@ -168,7 +168,6 @@ const VolumeDetailCard = (props) => {
   const history = useHistory();
   const location = useLocation();
   const query = new URLSearchParams(location.search);
-  const match = useRouteMatch();
   const theme = useSelector((state) => state.config.theme);
 
   const deleteVolume = (deleteVolumeName) =>
@@ -333,7 +332,6 @@ const VolumeDetailCard = (props) => {
                   (item) => item?.labels?.severity === STATUS_WARNING,
                 ).length
               }
-              baseLink={`${match.url}/${name}/alerts`}
             />
           </AlertsCounterContainer>
         )}
