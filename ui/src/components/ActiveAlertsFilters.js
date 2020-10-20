@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Dropdown } from '@scality/core-ui';
-import { useHistory } from 'react-router';
+import { useHistory, useRouteMatch } from 'react-router';
 import { useQuery } from '../services/utils';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants.js';
@@ -33,9 +33,9 @@ export const ActiveAlertsFilterWrapper = styled.div`
 `;
 
 const ActiveAlertsFilter = (props) => {
-  const { baseLink } = props;
   const history = useHistory();
   const query = useQuery();
+  const match = useRouteMatch();
   const selectedFilter = query.get('severity');
 
   let items = [
@@ -44,7 +44,7 @@ const ActiveAlertsFilter = (props) => {
       value: 'all',
       onClick: () => {
         query.delete('severity');
-        history.push(`${baseLink}?${query.toString()}`);
+        history.push(`${match.url}?${query.toString()}`);
       },
       iconCode: '',
     },
@@ -53,7 +53,7 @@ const ActiveAlertsFilter = (props) => {
       value: STATUS_CRITICAL,
       onClick: () => {
         query.set('severity', STATUS_CRITICAL);
-        history.push(`${baseLink}?${query.toString()}`);
+        history.push(`${match.url}?${query.toString()}`);
       },
       iconCode: 'fas fa-times-circle',
     },
@@ -62,7 +62,7 @@ const ActiveAlertsFilter = (props) => {
       value: STATUS_WARNING,
       onClick: () => {
         query.set('severity', STATUS_WARNING);
-        history.push(`${baseLink}?${query.toString()}`);
+        history.push(`${match.url}?${query.toString()}`);
       },
       iconCode: 'fas fa-exclamation-triangle',
     },
