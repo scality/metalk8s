@@ -39,7 +39,7 @@ export const CounterIcon = styled.i`
 
     switch (props.status) {
       case STATUS_WARNING:
-        color = theme.warning;
+        color = theme.alert;
         break;
       case STATUS_CRITICAL:
         color = theme.danger;
