@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Switch, Route, useParams } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
@@ -54,7 +55,6 @@ const NodePageRSPContainer = styled.div`
   }
   .sc-tabs-item-content {
     padding: 0;
-    overflow-y: auto;
   }
 `;
 
@@ -179,10 +179,10 @@ const NodePageRSP = (props) => {
             path={`${path}/overview`}
             render={() => (
               <NodePageOverviewTab
-                nodeTableData={nodeTableData}
-                nodes={nodes}
-                volumes={volumes}
                 pods={pods}
+                nodeTableData={nodeTableData}
+                volumes={volumes}
+                nodes={nodes}
               />
             )}
           />
@@ -204,7 +204,10 @@ const NodePageRSP = (props) => {
               />
             )}
           />
-          <Route path={`${path}/volumes`} component={NodePageVolumesTab} />
+          <Route
+            path={`${path}/volumes`}
+            render={() => <NodePageVolumesTab></NodePageVolumesTab>}
+          />
           <Route
             path={`${path}/pods`}
             render={() => (

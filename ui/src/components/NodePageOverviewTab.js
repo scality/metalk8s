@@ -178,11 +178,11 @@ const NodePageOverviewTab = (props) => {
     ? new Date(currentNodeReturnByK8S.creationTimestamp)
     : '';
 
-  const volumesAttachedCurrentNode = volumes.filter(
+  const volumesAttachedCurrentNode = volumes?.filter(
     (volume) => volume.spec.nodeName === name,
   );
 
-  const podsScheduledOnCurrentNode = pods.filter(
+  const podsScheduledOnCurrentNode = pods?.filter(
     (pod) => pod.nodeName === name,
   );
 
