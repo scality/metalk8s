@@ -73,14 +73,6 @@ const RowGraphContainer = styled.div`
   display: flex;
   flex-direction: row;
   padding-left: 3px;
-  justify-content: space-around;
-`;
-
-const SecondRowGraphContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding-left: 3px;
-  justify-content: space-around;
 `;
 
 const GraphTitle = styled.div`
@@ -90,21 +82,11 @@ const GraphTitle = styled.div`
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
-const UsageGraph = styled.div`
-  min-width: 308px;
+const LeftGraphContainer = styled.div`
+  padding-left: 0px;
 `;
 
-const LatencyGraph = styled.div`
-  min-width: 308px;
-  padding-left: ${padding.large};
-`;
-
-const TroughputGraph = styled.div`
-  min-width: 308px;
-`;
-
-const IOPSGraph = styled.div`
-  min-width: 308px;
+const RightGraphContainer = styled.div`
   padding-left: ${padding.large};
 `;
 
@@ -391,7 +373,7 @@ const MetricsTab = (props) => {
         {volumeCondition === VOLUME_CONDITION_LINK ? (
           <GraphsContainer>
             <RowGraphContainer>
-              <UsageGraph>
+              <LeftGraphContainer>
                 <GraphTitle>USAGE (%)</GraphTitle>
                 {volumeUsageData?.length > 0 ? (
                   <LineChart
@@ -400,15 +382,15 @@ const MetricsTab = (props) => {
                     xAxis={xAxis}
                     yAxis={yAxisUsage}
                     color={colorUsage}
-                    width={285}
-                    height={80}
+                    width={window.innerWidth / 4 - 110}
+                    height={window.innerHeight / 6 - 30}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available usage data</NoDataGraphText>
                 )}
-              </UsageGraph>
-              <LatencyGraph>
+              </LeftGraphContainer>
+              <RightGraphContainer>
                 <GraphTitle>LATENCY (µs) </GraphTitle>
                 {volumeLatencyData?.length > 0 ? (
                   <LineChart
@@ -417,17 +399,17 @@ const MetricsTab = (props) => {
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={285}
-                    height={80}
+                    width={window.innerWidth / 4 - 110}
+                    height={window.innerHeight / 6 - 30}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available latency data</NoDataGraphText>
                 )}
-              </LatencyGraph>
+              </RightGraphContainer>
             </RowGraphContainer>
-            <SecondRowGraphContainer>
-              <TroughputGraph>
+            <RowGraphContainer>
+              <LeftGraphContainer>
                 <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
                 {volumeThroughputData?.length > 0 ? (
                   <LineChart
@@ -436,8 +418,8 @@ const MetricsTab = (props) => {
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={285}
-                    height={80}
+                    width={window.innerWidth / 4 - 110}
+                    height={window.innerHeight / 6 - 30}
                     tooltip={false}
                   />
                 ) : (
@@ -445,8 +427,8 @@ const MetricsTab = (props) => {
                     No available throughput data
                   </NoDataGraphText>
                 )}
-              </TroughputGraph>
-              <IOPSGraph>
+              </LeftGraphContainer>
+              <RightGraphContainer>
                 <GraphTitle>IOPS</GraphTitle>
                 {volumeIOPSData?.length > 0 ? (
                   <LineChart
@@ -455,15 +437,15 @@ const MetricsTab = (props) => {
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={285}
-                    height={80}
+                    width={window.innerWidth / 4 - 110}
+                    height={window.innerHeight / 6 - 30}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available IOPS data</NoDataGraphText>
                 )}
-              </IOPSGraph>
-            </SecondRowGraphContainer>
+              </RightGraphContainer>
+            </RowGraphContainer>
           </GraphsContainer>
         ) : (
           <NoMetricsText>{intl.translate('volume_is_not_bound')}</NoMetricsText>
