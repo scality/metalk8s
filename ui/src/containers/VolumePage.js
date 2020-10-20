@@ -17,7 +17,6 @@ import {
   stopRefreshPersistentVolumesAction,
   fetchPersistentVolumeClaimAction,
   fetchCurrentVolumeObjectAction,
-  clearCurrentVolumeObjectAction,
 } from '../ducks/app/volumes';
 import {
   fetchVolumeStatsAction,
@@ -48,9 +47,6 @@ const VolumePage = (props) => {
   useEffect(() => {
     if (currentVolumeName)
       dispatch(fetchCurrentVolumeObjectAction(currentVolumeName));
-    return(() => {
-      dispatch(clearCurrentVolumeObjectAction());
-    })
   }, [dispatch, currentVolumeName]);
 
 
