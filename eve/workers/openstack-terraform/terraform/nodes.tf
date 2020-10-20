@@ -67,6 +67,14 @@ resource "openstack_compute_instance_v2" "bastion" {
     ]
   }
 
+  # Install Cypress requirements
+  provisioner "remote-exec" {
+    inline = [
+      "sudo chmod +x scripts/cypress-requirements.sh",
+      "scripts/cypress-requirements.sh"
+    ]
+  }
+
   # Install basic dependencies for running end-to-end tests
   provisioner "remote-exec" {
     inline = [

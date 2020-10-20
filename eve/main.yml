@@ -108,6 +108,10 @@ models:
       name: Upload sosreport logs to artifacts
       source: sosreport
       alwaysRun: True
+  - Upload: &upload_cypress_artifacts
+      name: Upload Cypress and UI Junit folder
+      source: ui-tests
+      alwaysRun: true
   - ShellCommand: &collect_sosreport
       name: Collect logs using sosreport
       command: >
@@ -414,6 +418,27 @@ models:
       env: &_env_bastion_fast_tests
         <<: *_env_bastion_tests
         PYTEST_FILTERS: "post and ci and not multinode and not slow"
+  - SetPropertyFromCommand: &set_bootstrap_cp_ip_ssh
+      name: Set the bootstrap node control plane IP as a property
+      property: bootstrap_control_plane_ip
+      command: >
+        ssh -F ssh_config bootstrap "
+            sudo salt-call grains.get metalk8s:control_plane_ip --out txt |
+            sed -rn 's/^local: (.*)$/\1/p'
+        "
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
+  - ShellCommand: &bastion_ui_tests
+      name: Run UI tests on Bastion
+      env: &_env_bastion_ui_tests
+        TEST_FILTER: "e2e"
+        TARGET_URL: "https://%(prop:bootstrap_control_plane_ip)s:8443"
+      command: >
+        ssh -F ssh_config bastion --
+        "cd metalk8s/ui &&
+        npm run test:$TEST_FILTER -- -e target_url=$TARGET_URL"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
   - ShellCommand: &add_final_status_artifact
       name: Add final status to artifacts
       command: |-
@@ -583,6 +608,19 @@ models:
           "$host:/var/tmp/sosreport-*.tar.xz" \
           "$DEST_DIR/$STEP_NAME/$host-sosreport.tar.xz"
         done
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      alwaysRun: true
+  - ShellCommand: &collect_cypress_result_ssh
+      name: Download Cypress result from Bastion
+      env:
+        SSH_HOST: bastion
+        SSH_CONFIG: ssh_config
+        DEST_DIR: "%(prop:builddir)s/build/ui-tests"
+      command: |-
+        mkdir -p "$DEST_DIR/cypress"
+        scp -r -F "$SSH_CONFIG" "$SSH_HOST":metalk8s/ui/cypress/screenshots "$DEST_DIR/cypress/"
+        scp -r -F "$SSH_CONFIG" "$SSH_HOST":metalk8s/ui/cypress/videos "$DEST_DIR/cypress/"
+        scp -r -F "$SSH_CONFIG" "$SSH_HOST":metalk8s/ui/junit "$DEST_DIR"
       workdir: build/eve/workers/openstack-terraform/terraform/
       alwaysRun: true
 
@@ -1384,40 +1422,10 @@ stages:
       - ShellCommand: *wait_pods_running_ssh
       - ShellCommand: *git_pull_ssh
       - ShellCommand: *bastion_fast_tests
-      - ShellCommand:
-          name: Copy Cypress tests
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-terraform/terraform/ssh_config
-          command: >
-            scp -r -F "$SSH_CONFIG" ui bootstrap:
-      - ShellCommand:
-          name: Run Cypress tests
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-terraform/terraform/ssh_config
-            IN_CI: 'True'
-          command: >
-            ssh -F "$SSH_CONFIG" bootstrap "
-              cd ui && IN_CI=$IN_CI bash cypress.sh
-            "
-          haltOnFailure: true
-      - ShellCommand: &prepare_cypress_artifacts_ssh
-          name: Prepare Cypress upload folder
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-terraform/terraform/ssh_config
-            SSH_HOST: bootstrap
-          command: |-
-            mkdir -p upload/cypress
-            scp -r -F "$SSH_CONFIG" "$SSH_HOST":ui/cypress/screenshots upload/cypress/
-            scp -r -F "$SSH_CONFIG" "$SSH_HOST":ui/cypress/videos upload/cypress/
-            scp -r -F "$SSH_CONFIG" "$SSH_HOST":ui/junit upload/
-          alwaysRun: true
-      - Upload: &upload_cypress_artifacts
-          name: Upload Cypress and JUnit folder
-          source: upload
-          alwaysRun: true
+      - SetPropertyFromCommand: *set_bootstrap_cp_ip_ssh
+      - ShellCommand: *bastion_ui_tests
+      - ShellCommand: *collect_cypress_result_ssh
+      - Upload: *upload_cypress_artifacts
       - ShellCommand:
           <<: *generate_report_over_ssh
           env:
@@ -2036,10 +2044,7 @@ stages:
         CLASS_NAME: single node.centos7
         TEST_NAME: solutions
     simultaneous_builds: 20
-    worker:
-      <<: *single_node_worker
-      flavor: m1.medium
-      path: eve/workers/openstack-single-node-with-cypress
+    worker: *terraform_worker
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -2055,49 +2060,22 @@ stages:
       - ShellCommand: *check_iso_checksum
       - ShellCommand: *terraform_install
       - ShellCommand: *terraform_install_check
-      - ShellCommand:
-          <<: *terraform_init
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-      - ShellCommand:
-          <<: *terraform_validate
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
+      - ShellCommand: *terraform_init
+      - ShellCommand: *terraform_validate
       - ShellCommand:
           <<: *terraform_apply
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-      - ShellCommand:
-          <<: *copy_iso_bootstrap_ssh
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-      - ShellCommand:
-          <<: *create_mountpoint_ssh
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-      - ShellCommand:
-          <<: *mount_iso_ssh
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-      - ShellCommand:
-          <<: *run_bootstrap_ssh
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-      - ShellCommand:
-          name: Provision Prometheus and AlertManager storage
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-with-cypress/terraform/ssh_config
-          command: >
-            scp -F $SSH_CONFIG eve/create-volumes.sh bootstrap:/tmp/create-volumes.sh &&
-            ssh -F $SSH_CONFIG bootstrap
-            sudo env
-            PRODUCT_TXT=/var/tmp/metalk8s/product.txt
-            PRODUCT_MOUNT=/var/tmp/metalk8s
-            /tmp/create-volumes.sh
-          haltOnFailure: true
-      - ShellCommand:
-          <<: *install_kubectl_bootstrap_ssh
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-      - ShellCommand:
-          <<: *wait_pods_running_ssh
-          env:
-            <<: *_env_wait_pods_running_ssh
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-with-cypress/terraform/ssh_config
+          env: &_env_terraform_single_node_solutions
+            <<: *_env_terraform
+            TF_VAR_nodes_count: "0"
+      - ShellCommand: *set_bootstrap_minion_id_ssh
+      - ShellCommand: *bootstrap_config_ssh
+      - ShellCommand: *copy_iso_bootstrap_ssh
+      - ShellCommand: *create_mountpoint_ssh
+      - ShellCommand: *mount_iso_ssh
+      - ShellCommand: *run_bootstrap_ssh
+      - ShellCommand: *provision_volumes_ssh
+      - ShellCommand: *install_kubectl_bootstrap_ssh
+      - ShellCommand: *wait_pods_running_ssh
       - SetPropertyFromCommand: *set_example_solution_version
       - SetPropertyFromCommand:
           name: Set Example Solution version next property
@@ -2130,39 +2108,19 @@ stages:
           name: Copy Solutions ISOs to bootstrap node
           command: >
             scp -F ssh_config
-            ../../../../example-solution.iso
-            ../../../../example-solution-next.iso
+            "%(prop:builddir)s/build/example-solution.iso"
+            "%(prop:builddir)s/build/example-solution-next.iso"
             "bootstrap:/var/tmp"
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
+          workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
+      - ShellCommand: *git_pull_ssh
       - ShellCommand:
-          name: Run Solutions CLI tests
+          <<: *bastion_tests
+          name: Run Solutions CLI tests on Bastion
           env:
-            SSH_CONFIG_FILE: >-
-              "eve/workers/openstack-single-node-with-cypress/terraform/ssh_config"
-            ISO_MOUNTPOINT: "/var/tmp/metalk8s"
-            TEST_HOSTS_LIST: "bootstrap"
+            <<: *_env_bastion_tests
             PYTEST_FILTERS: "solution"
-          command: >
-            tox -e tests -- -m "$PYTEST_FILTERS"
-          haltOnFailure: true
-      - SetPropertyFromCommand:
-          name: Set the bootstrap node control plane IP as a property
-          property: bootstrap_control_plane_ip
-          command: >
-            ssh -F ssh_config bootstrap "
-                sudo salt-call grains.get metalk8s:control_plane_ip --out txt |
-                sed -rn 's/^local: (.*)$/\1/p'
-            "
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          name: Copy cypress tests on cypress VM
-          env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-with-cypress/terraform/ssh_config
-          command: scp -r -F "$SSH_CONFIG" ui "cypress:"
-          haltOnFailure: true
+      - SetPropertyFromCommand: *set_bootstrap_cp_ip_ssh
       - ShellCommand: &import_solution_archive_ssh
           name: Import Solution example-solution archive
           env:
@@ -2171,7 +2129,7 @@ stages:
             ssh -F ssh_config bootstrap
             sudo /var/tmp/metalk8s/solutions.sh
             import --archive "$SOLUTION_ARCHIVE"
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
+          workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
       - ShellCommand:
           <<: *import_solution_archive_ssh
@@ -2179,34 +2137,18 @@ stages:
           env:
             SOLUTION_ARCHIVE: /var/tmp/example-solution-next.iso
       - ShellCommand:
+          <<: *bastion_ui_tests
           name: Run Solutions UI tests
-          command: >
-            ssh -F ssh_config cypress "
-                cd ui &&
-                npm run test:e2esolutions -- -e \
-                target_url='https://%(prop:bootstrap_control_plane_ip)s:8443'
-            "
-          haltOnFailure: true
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform/
-      - ShellCommand:
-          <<: *prepare_cypress_artifacts_ssh
           env:
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-with-cypress/terraform/ssh_config
-            SSH_HOST: cypress
+            <<: *_env_bastion_ui_tests
+            TEST_FILTER: "e2esolutions"
+      - ShellCommand: *collect_cypress_result_ssh
       - Upload: *upload_cypress_artifacts
-      - ShellCommand:
-          <<: *generate_report_over_ssh
-          env:
-            <<: *_env_generate_report_over_ssh
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-with-cypress/terraform/ssh_config
+      - ShellCommand: *generate_report_over_ssh
       - ShellCommand:
           <<: *collect_report_over_ssh
           env:
             <<: *_env_collect_report_over_ssh
-            SSH_CONFIG: >-
-              eve/workers/openstack-single-node-with-cypress/terraform/ssh_config
             STEP_NAME: single-node-solutions
       - Upload: *upload_report_artifacts
       - ShellCommand:
@@ -2222,4 +2164,4 @@ stages:
             STEP_NAME: single-node-solutions
       - ShellCommand:
           <<: *terraform_destroy
-          workdir: build/eve/workers/openstack-single-node-with-cypress/terraform
+          env: *_env_terraform_single_node_solutions
