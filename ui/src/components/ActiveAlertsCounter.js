@@ -51,7 +51,7 @@ export const CounterIcon = styled.i`
 `;
 
 const ActiveAlertsCounter = (props) => {
-  const { alerts, baseLink } = props;
+  const { criticalCounter, warningCounter, baseLink } = props;
   const history = useHistory();
   const location = useLocation();
 
@@ -63,13 +63,6 @@ const ActiveAlertsCounter = (props) => {
     }
     return `${baseLink}?${query.toString()}`;
   };
-
-  const criticalCounter = alerts?.filter(
-    (item) => item?.labels?.severity === STATUS_CRITICAL,
-  ).length;
-  const warningCounter = alerts?.filter(
-    (item) => item?.labels?.severity === STATUS_WARNING,
-  ).length;
 
   return (
     <CountersWrapper>
