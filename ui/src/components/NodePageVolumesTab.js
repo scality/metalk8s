@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import {
   refreshVolumesAction,
@@ -32,8 +31,12 @@ const TabContent = styled.div`
 
 const NodePageVolumesTab = (props) => {
   const { name } = useParams();
-
   const dispatch = useDispatch();
+
+  const volumeListData = useSelector((state) =>
+    getVolumeListData(state, null, name),
+  );
+
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
     refreshCurrentVolumeStatsAction,
@@ -51,10 +54,7 @@ const NodePageVolumesTab = (props) => {
     dispatch(refreshAlertsAction());
     return () => dispatch(stopRefreshAlertsAction());
   }, [dispatch]);
-  const history = useHistory();
-  const volumeListData = useSelector((state) =>
-    getVolumeListData(state, history),
-  );
+
   return (
     <TabContainer>
       <TabContent>

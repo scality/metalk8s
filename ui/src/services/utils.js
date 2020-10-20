@@ -147,11 +147,11 @@ export const sortCapacity = createSelector(
   (list) => list,
 );
 
-export const getNodeNameFromUrl = (state, props) => {
-  // There are two different URLs which we want to extract the node name from
-  // `/nodes/<node-name>`
-  // `/volumes/?node=<node-name>`
-  // `/newNodes/<node-name>` temporary URL
+export const getNodeNameFromUrl = (state, props, name) => {
+  // Exceptional: don't need to get the name from URL.
+  if (name) {
+    return name;
+  }
   const location = props?.location?.pathname?.split('/')[1];
   if (location === 'volumes') {
     const query = new URLSearchParams(props.location.search);
@@ -161,14 +161,6 @@ export const getNodeNameFromUrl = (state, props) => {
     } else {
       return '';
     }
-  } else if (location === 'nodes') {
-    if (props && props.match && props.match.params && props.match.params.id) {
-      return props.match.params.id;
-    } else {
-      return '';
-    }
-  } else if (location === 'newNodes') {
-    return props?.location?.pathname?.split('/')?.slice(2)[0] ?? '';
   }
 };
 
