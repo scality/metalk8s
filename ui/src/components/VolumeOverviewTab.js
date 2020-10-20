@@ -37,8 +37,10 @@ const VolumeNameTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.larger};
   padding: ${padding.small} 0 ${padding.larger} ${padding.large};
+  display: flex;
+  justify-content: space-between;
 
-  > i {
+  i.fa-circle {
     margin-right: ${padding.small};
   }
 `;
@@ -71,17 +73,12 @@ const ClickableInformationValue = styled.span`
 
 const DeleteButton = styled(Button)`
   padding: ${padding.base};
+  margin: 0px ${padding.base};
   font-size: ${fontSize.small};
   background-color: ${(props) => props.theme.brand.critical};
   ${(props) => {
     if (props.disabled) return { opacity: 0.2 };
   }};
-`;
-
-const DeleteButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding-top: ${padding.base};
 `;
 
 const VolumeGraph = styled.div`
@@ -226,12 +223,25 @@ const VolumeDetailCard = (props) => {
 
   return (
     <VolumeTab>
+      <VolumeNameTitle data-cy="volume_detail_card_name">
+        <div>
+          <CircleStatus className="fas fa-circle" status={health} />
+          {name}
+        </div>
+        <DeleteButton
+          variant="danger"
+          icon={<i className="fas fa-sm fa-trash" />}
+          text={intl.translate('delete_volume')}
+          onClick={(e) => {
+            e.stopPropagation();
+            setisDeleteConfirmationModalOpen(true);
+          }}
+          disabled={!isEnableClick}
+          data-cy="delete_volume_button"
+        />
+      </VolumeNameTitle>
       <VolumeDetailCardContainer>
         <VolumeInformation>
-          <VolumeNameTitle data-cy="volume_detail_card_name">
-            <CircleStatus className="fas fa-circle" status={health} />
-            {name}
-          </VolumeNameTitle>
           <InformationSpan>
             <InformationLabel>{intl.translate('node')}</InformationLabel>
             <ClickableInformationValue onClick={onClickNodeName}>
@@ -311,19 +321,6 @@ const VolumeDetailCard = (props) => {
         </VolumeInformation>
 
         <VolumeGraph>
-          <DeleteButtonContainer>
-            <DeleteButton
-              variant="danger"
-              icon={<i className="fas fa-sm fa-trash" />}
-              text={intl.translate('delete_volume')}
-              onClick={(e) => {
-                e.stopPropagation();
-                setisDeleteConfirmationModalOpen(true);
-              }}
-              disabled={!isEnableClick}
-              data-cy="delete_volume_button"
-            ></DeleteButton>
-          </DeleteButtonContainer>
           {alertlist && (
             <AlertsCounterContainer>
               <VolumeSectionTitle>
