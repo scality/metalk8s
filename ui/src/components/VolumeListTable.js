@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -15,7 +15,6 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { clearCurrentVolumeObjectAction } from '../ducks/app/volumes';
 import CircleStatus from './CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -339,7 +338,6 @@ const VolumeListTable = (props) => {
     isSearchBar,
   } = props;
   const history = useHistory();
-  const dispatch = useDispatch();
   const location = useLocation();
 
   const theme = useSelector((state) => state.config.theme);
@@ -445,8 +443,6 @@ const VolumeListTable = (props) => {
       location.pathname.endsWith('/metrics') ||
       location.pathname.endsWith('/details');
 
-    // Clearing selected volume object
-    dispatch(clearCurrentVolumeObjectAction());
     if (isAddNodeFilter || !isNodeColumn) {
       history.push(`/volumes/${row.values.name}?node=${nodeName}`);
     } else {

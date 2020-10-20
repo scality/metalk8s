@@ -34,7 +34,6 @@ const UPDATE_PERSISTENT_VOLUMES_REFRESHING =
 const UPDATE_VOLUMES = 'UPDATE_VOLUMES';
 const FETCH_CURRENT_VOLUME_OBJECT = 'FETCH_CURRENT_VOLUME_OBJECT';
 const SET_CURRENT_VOLUME_OBJECT = 'SET_CURRENT_VOLUME_OBJECT';
-const CLEAR_CURRENT_VOLUME_OBJECT = 'CLEAR_CURRENT_VOLUME_OBJECT';
 
 // Reducer
 const defaultState = {
@@ -75,11 +74,6 @@ export default function reducer(state = defaultState, action = {}) {
     }
     case SET_CURRENT_VOLUME_OBJECT:
       return { ...state, currentVolumeObject: action.payload };
-    case CLEAR_CURRENT_VOLUME_OBJECT:
-      return {
-        ...state,
-        currentVolumeObject: defaultState.currentVolumeObject,
-      };
     default:
       return state;
   }
@@ -163,10 +157,6 @@ export const fetchCurrentVolumeObjectAction = (volumeName) => {
 
 export const setCurrentVolumeObjectAction = (payload) => {
   return { type: SET_CURRENT_VOLUME_OBJECT, payload };
-};
-
-export const clearCurrentVolumeObjectAction = () => {
-  return { type: CLEAR_CURRENT_VOLUME_OBJECT };
 };
 
 // Selectors
