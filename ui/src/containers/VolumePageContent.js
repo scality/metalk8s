@@ -167,7 +167,7 @@ const VolumePageContent = (props) => {
     },
     {
       selected: isAlertsPage,
-      title: (<span>{intl.translate('alerts')}&nbsp;&nbsp;<TextBadge>{alertlist?.length}</TextBadge></span>),
+      title: (<span>{intl.translate('alerts')}<TextBadge>{alertlist?.length}</TextBadge></span>),
       onClick: () => history.push(`${match.url}/alerts${query.toString() && `?${query.toString()}`}`),
     },
   ];
