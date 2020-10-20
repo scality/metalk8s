@@ -228,7 +228,7 @@ const VolumeDetailCard = (props) => {
     <VolumeDetailCardContainer>
       <VolumeInformation>
         <VolumeNameTitle data-cy="volume_detail_card_name">
-          <CircleStatus className="fas fa-circle fa-2x" status={health} />
+          <CircleStatus className="fas fa-circle" status={health} />
           {name}
         </VolumeNameTitle>
         <InformationSpan>
