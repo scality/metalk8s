@@ -169,8 +169,13 @@ fi
 
 run "Performing Pre-Downgrade checks" precheck_downgrade
 [ $DRY_RUN -eq 1 ] && exit 0
+
+"$BASE_DIR"/backup.sh
+
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-downgrade" launch_pre_downgrade
 run "Downgrading bootstrap" downgrade_bootstrap
 run "Launching the downgrade" launch_downgrade
 run "Launching the post-downgrade" launch_post_downgrade
+
+"$BASE_DIR"/backup.sh

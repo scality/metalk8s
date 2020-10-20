@@ -8,7 +8,7 @@
 {%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
 
 {%- set solution_archives = {} %}
-{%- set solutions_available = pillar.metalk8s.get('solutions', {}).get('available', {}) %}
+{%- set solutions_available = salt.metalk8s_solutions.list_available() %}
 {%- for versions in solutions_available.values() %}
   {%- for version in versions %}
     {%- set version_sanitized = version.id | replace('.', '-') %}
