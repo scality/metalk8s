@@ -169,5 +169,6 @@
   "MemoryPressure": "Insufficient RAM",
   "PIDPressure": "Insufficient PID available",
   "NetworkUnavailable": "Network Unavailable",
-  "Unschedulable": "Unschedulable"
+  "Unschedulable": "Unschedulable",
+  "advanced_metrics": "Advanced Metrics"
 }

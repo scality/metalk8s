@@ -7,7 +7,7 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { LineChart, Loader, Dropdown } from '@scality/core-ui';
+import { LineChart, Loader, Dropdown, Button } from '@scality/core-ui';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import {
   yAxisUsage,
@@ -33,6 +33,7 @@ import {
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   queryTimeSpansCodes,
 } from '../constants';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const GraphsContainer = styled.div`
   display: flex;
@@ -68,12 +69,14 @@ const LoaderContainer = styled(Loader)`
   padding-left: ${padding.larger};
 `;
 
-const DropdownContainer = styled.div`
+const ActionContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
   padding-right: ${padding.base};
+`;
 
+const DropdownContainer = styled.div`
   // TODO: Make the changes in core-ui
   .sc-dropdown {
     padding-left: 25px;
@@ -97,7 +100,7 @@ const NodePageMetricsTab = (props) => {
   const theme = useSelector((state) => state.config.theme);
   const history = useHistory();
   const query = useQuery();
-
+  const config = useSelector((state) => state.config);
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
@@ -282,13 +285,25 @@ const NodePageMetricsTab = (props) => {
 
   return (
     <TabContainer>
-      <DropdownContainer>
-        <Dropdown
-          items={metricsTimeSpanDropdownItems}
-          text={metricsTimeSpan}
-          size="smaller"
+      <ActionContainer>
+        <Button
+          text={intl.translate('advanced_metrics')}
+          variant={'base'}
+          onClick={() => {}}
+          icon={<i className="fas fa-external-link-alt" />}
+          size={'small'}
+          href={`${config.api.url_grafana}/dashboard/db/nodes-detailed`}
+          target="_blank"
+          rel="noopener noreferrer"
         />
-      </DropdownContainer>
+        <DropdownContainer>
+          <Dropdown
+            items={metricsTimeSpanDropdownItems}
+            text={metricsTimeSpan}
+            size="smaller"
+          />
+        </DropdownContainer>
+      </ActionContainer>
       <GraphsContainer>
         <RowGraphContainer>
           <Graph>
