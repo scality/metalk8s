@@ -36,6 +36,10 @@ const VolumeNameTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.larger};
   padding: ${padding.small} 0 ${padding.larger} ${padding.large};
+
+  > i {
+    margin-right: ${padding.small};
+  }
 `;
 
 const InformationSpan = styled.div`
@@ -225,7 +229,6 @@ const VolumeDetailCard = (props) => {
       <VolumeInformation>
         <VolumeNameTitle data-cy="volume_detail_card_name">
           <CircleStatus className="fas fa-circle fa-2x" status={health} />
-          &nbsp;
           {name}
         </VolumeNameTitle>
         <InformationSpan>
