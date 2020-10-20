@@ -6,6 +6,7 @@ import {
   STATUS_WARNING,
   STATUS_HEALTH,
   STATUS_NONE,
+  API_STATUS_UNKNOWN,
 } from '../constants';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
@@ -27,7 +28,7 @@ export const getNodeListData = createSelector(
     return (
       nodes?.map((node) => {
         const IPsInfo = nodeIPsInfo?.[node.name];
-        let statusColor, health;
+        let statusTextColor, health;
         const alertsNode = alerts?.filter(
           (alert) =>
             NODE_ALERTS_GROUP.includes(alert?.labels?.alertname) &&
@@ -64,19 +65,23 @@ export const getNodeListData = createSelector(
         // "red" when status.conditions['Ready'] == False
         // "grey" when there is no status.conditions
         if (node?.status === 'ready' && node?.conditions.length === 0) {
-          statusColor = brand?.healthy;
+          statusTextColor = brand?.healthy;
           computedStatus.push('ready');
         } else if (node?.status === 'ready' && node?.conditions.length !== 0) {
-          statusColor = brand?.warning;
+          statusTextColor = brand?.warning;
           nodes.conditions.map((cond) => {
             return computedStatus.push(cond);
           });
+        } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
+          statusTextColor = brand?.textSecondary;
+          computedStatus.push('deploying');
+          health = STATUS_NONE;
         } else if (node?.status !== 'ready') {
-          statusColor = brand?.critical;
+          statusTextColor = brand?.critical;
           computedStatus.push('not_ready');
           health = STATUS_NONE;
         } else {
-          statusColor = brand?.textSecondary;
+          statusTextColor = brand?.textSecondary;
           computedStatus.push('unknown');
           health = STATUS_NONE;
         }
@@ -91,7 +96,7 @@ export const getNodeListData = createSelector(
           status: {
             status: node?.status,
             conditions: node?.conditions,
-            statusColor,
+            statusTextColor,
             computedStatus,
           },
           roles: node?.roles,
