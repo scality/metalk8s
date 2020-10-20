@@ -75,6 +75,7 @@ export const getNodeListData = createSelector(
         } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
           statusTextColor = brand?.textSecondary;
           computedStatus.push('deploying');
+          health = STATUS_NONE;
         } else if (node?.status !== 'ready') {
           statusTextColor = brand?.critical;
           computedStatus.push('not_ready');
