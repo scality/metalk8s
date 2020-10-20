@@ -366,10 +366,9 @@ const NodeListTable = (props) => {
       location.pathname.endsWith('details');
 
     if (isTabSelected) {
-      // TODO: Need to change the Regex when rename to /nodes
       const newPath = location.pathname.replace(
-        /\/newNodes\/[^/]*\//,
-        `/newNodes/${nodeName}/`,
+        /\/nodes\/[^/]*\//,
+        `/nodes/${nodeName}/`,
       );
       history.push({
         pathname: newPath,
