@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormattedDate, FormattedTime } from 'react-intl';
-import { useRouteMatch, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 import styled from 'styled-components';
 import {
   fontSize,
@@ -11,7 +11,6 @@ import ActiveAlertsFilters from './ActiveAlertsFilters';
 import { Chips } from '@scality/core-ui';
 import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
-
 
 const ActiveAlertsCardContainer = styled.div`
   min-height: 75px;
@@ -74,7 +73,6 @@ const NoActiveAlerts = styled.div`
 
 const ActiveAlertsCard = (props) => {
   const { alertlist, PVCName } = props;
-  const match = useRouteMatch();
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const selectedFilter = query.get('severity');
@@ -88,7 +86,9 @@ const ActiveAlertsCard = (props) => {
     };
   });
   if (activeAlertListData && selectedFilter)
-    activeAlertListData = activeAlertListData.filter(item => item.severity === selectedFilter);
+    activeAlertListData = activeAlertListData.filter(
+      (item) => item.severity === selectedFilter,
+    );
   // React Table for the volume list
   function Table({ columns, data }) {
     // Use the state and functions returned from useTable to build your UI
@@ -180,12 +180,8 @@ const ActiveAlertsCard = (props) => {
   return (
     <ActiveAlertsCardContainer>
       <ActiveAlertsTitle>
-        <div>
-          {intl.translate('active_alerts')}
-        </div>
-        <ActiveAlertsFilters
-          baseLink={`${match.url}/alerts`}
-        />
+        <div>{intl.translate('active_alerts')}</div>
+        <ActiveAlertsFilters />
       </ActiveAlertsTitle>
       {PVCName && activeAlertListData.length !== 0 ? (
         <ActiveAlertsTableContainer>
