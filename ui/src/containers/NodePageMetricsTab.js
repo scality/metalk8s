@@ -73,7 +73,7 @@ const ActionContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding-right: ${padding.base};
+  padding: ${padding.large} ${padding.base};
 `;
 
 const DropdownContainer = styled.div`
