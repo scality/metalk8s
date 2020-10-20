@@ -716,7 +716,7 @@ it('updates the current volume object on API success', () => {
     },
   };
   expect(gen.next(result).value).toEqual(
-    put(setCurrentVolumeObjectAction({ data: result.body, error: null })),
+    put(setCurrentVolumeObjectAction({ data: result.body })),
   );
   gen.next(result);
   const finalGen = gen.next();
@@ -732,7 +732,7 @@ it('does not update the current volume object on API error', () => {
     },
   };
   expect(gen.next(result).value).toEqual(
-    put(setCurrentVolumeObjectAction({ data: null, error: result.error })),
+    put(setCurrentVolumeObjectAction({ data: null })),
   );
   const finalGen = gen.next();
   expect(finalGen.done).toEqual(true);

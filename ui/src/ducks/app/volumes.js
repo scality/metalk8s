@@ -46,7 +46,6 @@ const defaultState = {
   isLoading: false,
   isSCLoading: false,
   currentVolumeObject: {
-    error: null,
     data: null,
   },
 };
@@ -326,11 +325,9 @@ export function* fetchPersistentVolumeClaims() {
 export function* fetchCurrentVolumeObject({ volumeName }) {
   const result = yield call(VolumesApi.getVolumeObject, volumeName);
   if (!result.error) {
-    yield put(setCurrentVolumeObjectAction({ data: result.body, error: null }));
+    yield put(setCurrentVolumeObjectAction({ data: result.body }));
   } else {
-    yield put(
-      setCurrentVolumeObjectAction({ data: null, error: result.error }),
-    );
+    yield put(setCurrentVolumeObjectAction({ data: null }));
   }
 }
 

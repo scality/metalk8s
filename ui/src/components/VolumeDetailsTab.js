@@ -14,13 +14,13 @@ const ErrorText = styled.div`
 `;
 
 const VolumeDetailsTab = (props) => {
-  const { data, error } = props.currentVolumeObject;
+  const { data } = props.currentVolumeObject;
 
   return (
     <VolumeTab>
       <VolumeObjectContent>
         {data && JSON.stringify(data, null, '\t')}
-        {error && (
+        {!data && (
           <ErrorText>{intl.translate('error_volume_details')}</ErrorText>
         )}
       </VolumeObjectContent>
