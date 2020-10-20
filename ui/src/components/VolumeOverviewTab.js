@@ -13,7 +13,11 @@ import CircleStatus from './CircleStatus';
 import ActiveAlertsCounter from './ActiveAlertsCounter';
 import { isVolumeDeletable } from '../services/NodeVolumesUtils';
 import { deleteVolumeAction } from '../ducks/app/volumes';
-import { VOLUME_CONDITION_LINK } from '../constants';
+import {
+  VOLUME_CONDITION_LINK,
+  STATUS_CRITICAL,
+  STATUS_WARNING,
+} from '../constants';
 import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -316,7 +320,16 @@ const VolumeDetailCard = (props) => {
               {intl.translate('active_alerts')}
             </VolumeSectionTitle>
             <ActiveAlertsCounter
-              alerts={alertlist}
+              criticalCounter={
+                alertlist?.filter(
+                  (item) => item?.labels?.severity === STATUS_CRITICAL,
+                ).length
+              }
+              warningCounter={
+                alertlist?.filter(
+                  (item) => item?.labels?.severity === STATUS_WARNING,
+                ).length
+              }
               baseLink={`${match.url}/${name}/alerts`}
             />
           </AlertsCounterContainer>
