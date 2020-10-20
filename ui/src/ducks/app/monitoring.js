@@ -1,4 +1,16 @@
-import { put, takeEvery, takeLatest, call, all, delay, select } from 'redux-saga/effects';
+import {
+  put,
+  takeEvery,
+  takeLatest,
+  call,
+  all,
+  delay,
+  select,
+  take,
+  cancel,
+  fork,
+  race,
+} from 'redux-saga/effects';
 import {
   getAlerts,
   queryPrometheus,
@@ -44,8 +56,13 @@ const FETCH_CURRENT_VOLUESTATS = 'FETCH_CURRENT_VOLUESTATS';
 const REFRESH_CURRENT_VOLUMESTATS = 'REFRESH_CURRENT_VOLUMESTATS';
 const STOP_REFRESH_CURRENT_VOLUMESTATS = 'STOP_REFRESH_CURRENT_VOLUMESTATS';
 
+// To update the `app.monitoring.nodeStats.metrics`
 const UPDATE_NODESTATS = 'UPDATE_NODESTATS';
 const FETCH_NODESTATS = 'FETCH_NODESTATS';
+const REFRESH_NODESTATS = 'REFRESH_NODESTATS';
+const STOP_REFRESH_NODESTATS = 'STOP_REFRESH_NODESTATS';
+// To update the arguments to fetch nodeStats
+const UPDATE_NODESTATS_FETCH_ARG = 'UPDATE_NODESTATS_FETCH_ARG';
 
 // Reducer
 const defaultState = {
@@ -87,6 +104,9 @@ const defaultState = {
   },
   nodeStats: {
     metricsTimeSpan: LAST_TWENTY_FOUR_HOURS,
+    instanceIP: '',
+    controlPlaneInterface: '',
+    workloadPlaneInterface: '',
     metrics: {
       cpuUsage: [],
       systemLoad: [],
@@ -125,6 +145,7 @@ export default function reducer(state = defaultState, action = {}) {
         volumeCurrentStats: { ...state.volumeCurrentStats, ...action.payload },
       };
     case UPDATE_NODESTATS:
+    case UPDATE_NODESTATS_FETCH_ARG:
       return {
         ...state,
         nodeStats: { ...state.nodeStats, ...action.payload },
@@ -190,11 +211,20 @@ export const stopRefreshCurrentVolumeStatsAction = () => {
 export const updateCurrentVolumeStatsAction = (payload) => {
   return { type: UPDATE_CURRENT_VOLUMESTATS, payload };
 };
-export const fetchNodeStatsAction = (payload) => {
-  return { type: FETCH_NODESTATS, payload };
+export const fetchNodeStatsAction = () => {
+  return { type: FETCH_NODESTATS };
 };
 export const updateNodeStatsAction = (payload) => {
   return { type: UPDATE_NODESTATS, payload };
+};
+export const refreshNodeStatsAction = () => {
+  return { type: REFRESH_NODESTATS };
+};
+export const stopRefreshNodeStatsAction = () => {
+  return { type: STOP_REFRESH_NODESTATS };
+};
+export const updateNodeStatsFetchArgumentAction = (payload) => {
+  return { type: UPDATE_NODESTATS_FETCH_ARG, payload };
 };
 
 // Selectors
@@ -210,6 +240,13 @@ const volumeMetricsTimeSpan = (state) =>
   state.app.monitoring.volumeStats.metricsTimeSpan;
 const nodeMetricsTimeSpan = (state) =>
   state.app.monitoring.nodeStats.metricsTimeSpan;
+export const isNodeStatsRefreshing = (state) =>
+  state.app.monitoring.nodeStats.isRefreshing;
+const instanceIPSelector = (state) => state.app.monitoring.nodeStats.instanceIP;
+const controlPlaneInterfaceSelector = (state) =>
+  state.app.monitoring.nodeStats.controlPlaneInterface;
+const workloadPlaneInterfaceSelector = (state) =>
+  state.app.monitoring.nodeStats.workloadPlaneInterface;
 
 // Sagas
 function getClusterQueryStatus(result) {
@@ -557,8 +594,10 @@ export function* stopRefreshCurrentStats() {
   yield put(updateCurrentVolumeStatsAction({ isRefreshing: false }));
 }
 
-export function* fetchNodeStats({ payload }) {
-  const { instanceIP, controlPlaneInterface, workloadPlaneInterface } = payload;
+export function* fetchNodeStats() {
+  const instanceIP = yield select(instanceIPSelector);
+  const controlPlaneInterface = yield select(controlPlaneInterfaceSelector);
+  const workloadPlaneInterface = yield select(workloadPlaneInterfaceSelector);
 
   let cpuUsage = [];
   let systemLoad = [];
@@ -725,7 +764,32 @@ export function* fetchNodeStats({ payload }) {
   yield put(updateNodeStatsAction({ metrics: metrics }));
 }
 
+// A long-running saga to handle the refresh, we should launch this saga as part of the root saga.
+// Avoid starting it manually to make sure there is only one loop that exists.
+export function* watchRefreshNodeStats() {
+  while (true) {
+    yield take(REFRESH_NODESTATS);
+    while (true) {
+      const fetchNodeStatsTask = yield fork(fetchNodeStats);
+      const { interrupt } = yield race({
+        interrupt: take(STOP_REFRESH_NODESTATS),
+        // If the refresh period expires before we receive a halt,
+        // we can refresh the stats
+        requeue: delay(REFRESH_METRCIS_GRAPH),
+        // whenever we change one of the parameters for "fetchNodeStats",
+        // it gets triggered again
+        update: take(UPDATE_NODESTATS_FETCH_ARG),
+      });
+      if (interrupt) {
+        yield cancel(fetchNodeStatsTask);
+        break;
+      }
+    }
+  }
+}
+
 export function* monitoringSaga() {
+  yield fork(watchRefreshNodeStats);
   yield takeLatest(FETCH_VOLUMESTATS, fetchVolumeStats);
   yield takeEvery(REFRESH_VOLUMESTATS, refreshVolumeStats);
   yield takeEvery(STOP_REFRESH_VOLUMESTATS, stopRefreshVolumeStats);
@@ -737,5 +801,4 @@ export function* monitoringSaga() {
   yield takeEvery(STOP_REFRESH_ALERTS, stopRefreshAlerts);
   yield takeEvery(STOP_REFRESH_CLUSTER_STATUS, stopRefreshClusterStatus);
   yield takeEvery(FETCH_NODESTATS, fetchNodeStats);
-  yield takeEvery(UPDATE_NODESTATS, updateNodeStatsAction);
 }
