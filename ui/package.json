@@ -42,8 +42,8 @@
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
     "test:nowatch": "CI=true react-app-rewired test --env=jsdom --reporters=default --reporters=jest-junit",
-    "test:e2e": "cypress run --spec 'cypress/integration/common/**/*'",
-    "test:e2esolutions": "cypress run --spec 'cypress/integration/solutions/**/*'",
+    "test:e2e": "cypress run --spec 'cypress/integration/e2e/**/!(Solutions).feature'",
+    "test:e2esolutions": "cypress run --spec 'cypress/integration/e2e/Solutions.feature'",
     "flow": "flow check"
   },
   "eslintConfig": {
@@ -82,7 +82,9 @@
     "source-map-explorer": "^2.0.1"
   },
   "cypress-cucumber-preprocessor": {
-    "nonGlobalStepDefinitions": true
+    "nonGlobalStepDefinitions": true,
+    "nonGlobalStepBaseDir": "cypress/integration/e2e",
+    "stepDefinitions": "cypress/integration/e2e"
   },
   "jest-junit": {
     "output": "junit/jest-junit.xml",
