@@ -273,7 +273,9 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
                   if (cell.column.Header === 'Name') {
                     return (
                       <Cell {...cellProps}>
-                        <NodeNameText>{cell.value.name}</NodeNameText>
+                        <NodeNameText data-cy="node_table_name_cell">
+                          {cell.value.name}
+                        </NodeNameText>
                         <div>
                           {cell.value.controlPlaneIP ? (
                             <IPText>CP: {cell.value.controlPlaneIP}</IPText>
