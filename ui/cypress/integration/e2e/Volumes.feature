@@ -1,4 +1,7 @@
-Feature: Create and delete volume scenario
+Feature: Volumes
+
+  I can manage volumes from the Volume page.
+
   Scenario: I can create a SparseLoopDevice volume
     Given I am logged in
     And I am on the volume creation page
