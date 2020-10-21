@@ -445,6 +445,7 @@ it('should return the volume list filtered by a specific node', () => {
       usageRawData: '20MiB',
       health: 'health',
       latency: undefined,
+      namespace: 'metalk8s-monitoring',
     },
     {
       name: 'prom-m0-reldev',
@@ -457,6 +458,7 @@ it('should return the volume list filtered by a specific node', () => {
       usageRawData: '4GiB',
       health: 'health',
       latency: '900 µs',
+      namespace: 'metalk8s-monitoring',
     },
   ];
   expect(result).toEqual(volumelistFilteredByNode);

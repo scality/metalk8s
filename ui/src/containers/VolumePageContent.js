@@ -265,6 +265,8 @@ const VolumePageContent = (props) => {
                 render={() => (
                   <VolumeMetricsTab
                   volumeName={currentVolumeName}
+                  volumeNamespace={currentVolume?.namespace}
+                  volumePVCName={PVCName}
                   volumeMetricGraphData={volumeMetricGraphData}
                   // the volume condition compute base on the `status` and `bound/unbound`
                   volumeCondition={currentVolume.status}

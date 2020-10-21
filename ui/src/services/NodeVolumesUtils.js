@@ -267,6 +267,7 @@ export const getVolumeListData = createSelector(
             ? Math.round(volumeCurrentLatency?.value[1]) + ' µs'
             : undefined,
         errorReason: volume?.status?.conditions[0]?.reason,
+        namespace: volumePVC?.metadata?.namespace,
       };
     });
 
@@ -280,6 +281,6 @@ export const getVolumeListData = createSelector(
       weights[STATUS_HEALTH] = 0;
 
       return weights[b.health] - weights[a.health];
-    })
+    });
   },
 );
