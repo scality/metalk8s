@@ -308,6 +308,7 @@ CALICO_RPM = _rpm_package(
 CONTAINERD_RPM = _rpm_package(
     name='containerd',
     sources=[
+        Path('0001-Revert-commit-for-Windows-metrics.patch'),
         Path('containerd.service'),
         Path('containerd.toml'),
         Path('containerd-{}.tar.gz'.format(versions.CONTAINERD_VERSION)),

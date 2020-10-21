@@ -87,7 +87,7 @@ class RPMPackage(Package):
     """A RPM software package for CentOS 7."""
 
     SUFFIX = 'el7'
-    SOURCE_URL_PATTERN = re.compile(r'^Source\d+:\s+(?P<url>.+)$')
+    SOURCE_URL_PATTERN = re.compile(r'^(Source|Patch)\d+:\s+(?P<url>.+)$')
 
     def __init__(
         self,

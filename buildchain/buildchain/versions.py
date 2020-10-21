@@ -20,8 +20,8 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 CALICO_VERSION     : str = '3.16.1'
 K8S_VERSION        : str = '1.18.10'
 SALT_VERSION       : str = '3000.3'
-CONTAINERD_VERSION : str = '1.2.14'
-CONTAINERD_RELEASE : str = '2.el7'
+CONTAINERD_VERSION : str = '1.4.1'
+CONTAINERD_RELEASE : str = '1.el7'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""

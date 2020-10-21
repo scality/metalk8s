@@ -184,9 +184,28 @@ backup_etcd() {
         --state Running)"
     echo "Running '${cmd[*]}' in etcd container $etcd_container"
     crictl exec -i "$etcd_container" sh -c "${cmd[*]}"
+
+    local -r rootfs_v1="/run/containerd/io.containerd.runtime.v1.linux/k8s.io/${etcd_container}/rootfs"
+    local -r rootfs_v2="/run/containerd/io.containerd.runtime.v2.task/k8s.io/${etcd_container}/rootfs"
+    local rootfs=''
+    if test -d "${rootfs_v2}"; then
+        rootfs="${rootfs_v2}"
+    elif test -d "${rootfs_v1}"; then
+        rootfs="${rootfs_v1}"
+    else
+        die "Unable to find etcd container rootfs"
+    fi
+
+    local -r snapshot_file="${rootfs}/${etcd_snapshot}"
+    if ! test -f "${snapshot_file}"; then
+        die "etcd snapshot file not found"
+    fi
+
     _save_cp \
-        "/run/containerd/io.containerd.runtime.v1.linux/k8s.io/${etcd_container}/rootfs/${etcd_snapshot}" \
+        "${snapshot_file}" \
         "${BACKUP_DIR}/etcd_snapshot"
+
+    rm "${snapshot_file}"
 }
 
 create_archive() {
