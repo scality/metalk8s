@@ -20,7 +20,7 @@
     "react-redux": "^7.1.0",
     "react-router": "^5.1.0",
     "react-router-dom": "^5.1.0",
-    "react-scripts": "^3.4.3",
+    "react-scripts": "^3.4.4",
     "react-select": "^3.0.8",
     "react-table": "^7.2.2",
     "react-virtualized": "^9.21.0",
