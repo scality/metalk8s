@@ -510,18 +510,18 @@ stages:
       - TriggerStages:
           name: Trigger build, docs and lint stages simultaneously
           stage_names:
-            - build
-            - docs
-            - lint
+            # - build
+            # - docs
+            # - lint
             - unit_tests
           haltOnFailure: true
-      - SetPropertyFromCommand: *set_version_prop
-      - SetPropertyFromCommand: *set_short_version_prop
-      - TriggerStages:
-          name: Trigger multiple-nodes step with built ISO
-          stage_names:
-            - single-node-install-rhel
-            - multiple-nodes-centos
+      # - SetPropertyFromCommand: *set_version_prop
+      # - SetPropertyFromCommand: *set_short_version_prop
+      # - TriggerStages:
+      #     name: Trigger multiple-nodes step with built ISO
+      #     stage_names:
+      #       - single-node-install-rhel
+      #       - multiple-nodes-centos
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
 
@@ -909,8 +909,8 @@ stages:
           name: Trigger all unit tests simultaneously
           stage_names:
             - unit_tests_ui
-            - unit_tests_storage_operator
-            - unit_tests_salt
+            # - unit_tests_storage_operator
+            # - unit_tests_salt
 
   unit_tests_ui:
     _metalk8s_internal_info:
