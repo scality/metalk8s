@@ -268,7 +268,7 @@ export function* createVolumes({ payload }) {
     if (!result.error) {
       yield call(
         history.push,
-        `/volumes/${newVolume.name}?node=${newVolume.node}`,
+        `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
       );
       yield put(
         addNotificationSuccessAction({
