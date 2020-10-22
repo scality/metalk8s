@@ -948,6 +948,11 @@ stages:
             npm run test:nowatch --no-update-notifier
           haltOnFailure: true
       - ShellCommand:
+          name: Run all UI integration tests
+          workdir: build/ui
+          command: >
+            npm run test:integration --no-update-notifier
+      - ShellCommand:
           name: Prepare upload folder
           command: >
             mkdir upload && mv junit upload
