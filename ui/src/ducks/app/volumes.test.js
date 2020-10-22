@@ -347,7 +347,10 @@ it('create volume with the type sparseloopdevice', () => {
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/volumes/${newVolume.name}?node=${newVolume.node}`),
+    call(
+      history.push,
+      `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
+    ),
   );
 
   expect(gen.next().value.payload.action.type).toEqual(
@@ -421,7 +424,10 @@ it('create a volume with the type rawBlockdevice', () => {
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/volumes/${newVolume.name}?node=${newVolume.node}`),
+    call(
+      history.push,
+      `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
+    ),
   );
   expect(gen.next().value.payload.action.type).toEqual(
     ADD_NOTIFICATION_SUCCESS,
