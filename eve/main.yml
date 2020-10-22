@@ -936,14 +936,15 @@ stages:
             STEP_NAME: unit_tests_ui
       - ShellCommand: *setup_cache
       - ShellCommand:
+          name: Install UI dependencies
+          workdir: build/ui
+          command: >
+            npm ci --prefer-offline --no-audit
+          haltOnFailure: true
+      - ShellCommand:
           name: Run all UI unit tests
           workdir: build/ui
           command: >
-            npm ci
-            --no-cache
-            --no-save
-            -q
-            --no-update-notifier &&
             npm run test:nowatch --no-update-notifier
           haltOnFailure: true
       - ShellCommand:

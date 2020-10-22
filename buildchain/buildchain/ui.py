@@ -90,6 +90,10 @@ def run_ui_builder(cmd: str) -> docker_command.DockerRun:
                 target=Path('/home/node/build'),
                 source=constants.UI_BUILD_ROOT,
             ),
+            utils.bind_mount(
+                target=Path('/home/node'),
+                source=constants.ROOT/'ui',
+            ),
         ],
     )
 

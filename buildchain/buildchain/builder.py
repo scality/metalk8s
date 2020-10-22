@@ -86,15 +86,11 @@ UI_BUILDER : LocalImage = _builder_image(
     name='ui',
     dockerfile=constants.ROOT/'ui'/'Dockerfile',
     build_args={'NODE_IMAGE_VERSION': versions.NODEJS_IMAGE_VERSION},
-    file_dep=(
-        list(coreutils.ls_files_rec(constants.ROOT/'ui'/'public')) +
-        list(coreutils.ls_files_rec(constants.ROOT/'ui'/'src')) +
-        [
-            constants.ROOT/'ui'/'package.json',
-            constants.ROOT/'ui'/'package-lock.json',
-            constants.ROOT/'ui'/'entrypoint.sh',
-        ]
-    )
+    file_dep=[
+        constants.ROOT/'ui'/'package.json',
+        constants.ROOT/'ui'/'package-lock.json',
+        constants.ROOT/'ui'/'entrypoint.sh',
+    ]
 )
 
 

@@ -3,7 +3,6 @@
 set -eu
 
 build() {
-    npm ci
     npm run build
 }
 
