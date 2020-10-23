@@ -384,6 +384,18 @@ models:
         "/srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh"
         --archive "$(readlink -f "${ISO_PATH}")" --verbose
       haltOnFailure: true
+  - ShellCommand: &add_archive_ssh
+      name: Add ISO to cluster from Bootstrap
+      env: &_env_add_archive_ssh
+        ISO_PATH: metalk8s.iso
+        PRODUCT_VERSION: "%(prop:metalk8s_version)s"
+      command: >
+        ssh -F ssh_config bootstrap "
+        sudo bash
+        /srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh
+        --archive \"\$(readlink -f \"${ISO_PATH}\")\" --verbose"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
   - ShellCommand: &local_tests
       name: Run tests locally
       env: &_env_local_tests
@@ -1482,10 +1494,10 @@ stages:
                 echo "false"
               fi
       - TriggerStages:
-          name: Trigger single-node steps with patch Artifact ISO
+          name: Trigger upgrade stages with patch Artifact ISO
           doStepIf: "%(prop:patch_present)s"
           stage_names:
-            - single-node-upgrade-promoted-centos
+            - snapshot-single-node-upgrades
             - single-node-downgrade-promoted-centos
 
   lifecycle-minor-version:
@@ -1516,122 +1528,149 @@ stages:
                 echo "true"
               fi
       - TriggerStages:
-          name: Trigger single-node steps with minor Artifact ISO
+          name: Trigger upgrade stages with minor Artifact ISO
           doStepIf: "%(prop:minor_present)s"
           stage_names:
-            - single-node-upgrade-promoted-centos
+            - snapshot-single-node-upgrades
             # Cannot downgrade from a 3.4 etcd cluster to 3.3
             #- single-node-downgrade-promoted-centos
 
+  snapshot-single-node-upgrades:
+    # NOTE: This stage just set `environment_type` property to
+    # `single node` and trigger all upgrade single nodes stages
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set environment type to single node
+          property: environment_type
+          value: single node
+      - TriggerStages:
+          name: Trigger single-node upgrade stages
+          stage_names:
+            - snapshot-simple-environment-upgrade
 
-# --- Upgrade for promoted versions ---
-  single-node-upgrade-promoted-centos:
+  snapshot-simple-environment-upgrade:
+    # NOTE: This stage just set `environment_name` property to
+    # `simple environment` and trigger the real upgrade tests
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set environment name to simple environment
+          property: environment_name
+          value: simple environment
+      - TriggerStages:
+          name: Trigger simple environment upgrade stage
+          stage_names:
+            - snapshot-upgrade
+
+  # --- Upgrade from snapshot ---
+  # NOTE: This stage do every kind of upgrade from snapshot
+  # argument come from property
+  # Mandatory:
+  # - product_promoted_version  (MetalK8s version to start upgrade)
+  # - environment_type          (Type of environment e.g.: single node)
+  # - environment_name          (Name of environment e.g.: simple environment)
+  # Optional:
+  # - os                        (Operating system, default: centos-7)
+  # - promoted_version_type     ("patch" or "minor", default: unknown)
+  # - nodes_count               (Number of nodes to spawn, default: 0)
+  # Snapshot need to be named:
+  # - "metalk8s-<product_promoted_version>-<os>-<environement_type>-<environment_name>-bootstrap"
+  # - "metalk8s-<product_promoted_version>-<os>-<environement_type>-<environment_name>-node-X"
+  snapshot-upgrade:
     _metalk8s_internal_info:
-      junit_info: &_upgrade_promoted_single-node_junit_info
+      junit_info: &_snapshot_upgrade_junit_info
         TEST_SUITE: upgrade
         # NOTE: promoted_version_type should be "patch" or "minor"
-        CLASS_NAME: "%(prop:promoted_version_type)s.single node.centos7"
-        TEST_NAME: simple environment
+        CLASS_NAME: "%(prop:promoted_version_type:-unknown)s.%(prop:environment_type)s.%(prop:os:-centos-7)s"
+        TEST_NAME: "%(prop:environment_name)s"
     simultaneous_build: 20
-    worker: *single_node_worker
+    worker: *terraform_worker
     steps:
       - Git: *git_pull
       - ShellCommand:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
-            <<: *_upgrade_promoted_single-node_junit_info
-            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
+            <<: *_snapshot_upgrade_junit_info
+            STEP_NAME: "%(prop:environment_type)s-%(prop:environment_name)s-upgrade-%(prop:promoted_version_type:-unknown)s-%(prop:os:-centos-7)s"
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
-      # --- Get ISO for promoted version from Artefacts ---
-      - ShellCommand: &retrieve_promoted_version_iso_checksum
-          <<: *retrieve_iso_checksum
-          name: Retrieve promoted ISO image checksum
-          env: &_env_promoted_artifacts
-            DEST_DIR: "/tmp"
-            BASE_URL: "http://artifacts/builds/github:scality:metalk8s:\
-                      promoted-%(prop:product_promoted_version)s"
-      - ShellCommand: &retrieve_promoted_version_iso
-          <<: *retrieve_iso
-          name: Retrieve promoted ISO image
-          env:
-            <<: *_env_retrieve_artifact_retry
-            <<: *_env_promoted_artifacts
-      - ShellCommand: &check_promoted_version_iso_checksum
-          <<: *check_iso_checksum
-          name: Check promoted ISO image with checksum
-          workdir: "/tmp"
-      # --- Prepare for Bootstrap with promoted version ---
+      # --- Terraform stuff ---
+      - ShellCommand: *terraform_install
+      - ShellCommand: *terraform_install_check
+      - ShellCommand: *terraform_init
+      - ShellCommand: *terraform_validate
       - ShellCommand:
-          <<: *create_mountpoint
-          env: &_env_promoted_version
-            PRODUCT_VERSION: "%(prop:product_promoted_version)s"
-      - ShellCommand:
-          <<: *mount_iso
-          env:
-            <<: *_env_promoted_version
-            ISO_PATH: /tmp/metalk8s.iso
-      - ShellCommand:
-          <<: *bootstrap_config
-          env:
-            <<: *_env_promoted_version
-            DEBUG: "%(prop:metalk8s_debug:-false)s"
-      # --- Install promoted version ---
-      - ShellCommand:
-          <<: *run_bootstrap
-          env: *_env_promoted_version
-      - ShellCommand:
-          name: Provision Prometheus and AlertManager storage
-          command: >
-            git checkout %(prop:product_promoted_version)s --quiet &&
-            sudo env
-            PRODUCT_TXT=/srv/scality/metalk8s-%(prop:product_promoted_version)s/product.txt
-            PRODUCT_MOUNT=/srv/scality/metalk8s-%(prop:product_promoted_version)s
-            eve/create-volumes.sh
-          haltOnFailure: true
-      - ShellCommand: *wait_pods_running
+          <<: *terraform_apply
+          env: &_env_terraform_upgrade
+            <<: *_env_terraform
+            TF_VAR_restore_env: "%(prop:product_promoted_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
+            TF_VAR_nodes_count: "%(prop:nodes_count:-0)s"
+            TF_VAR_os: "%(prop:os:-centos-7)s"
+            TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
+            TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
+      # --- Wait for all pods to be running ---
+      - ShellCommand: *wait_pods_running_ssh
       # --- We do not need to Test promoted version ---
       # --- Upgrade to version N ---
+      - ShellCommand: *copy_iso_bootstrap_ssh
       - ShellCommand:
-          <<: *add_archive
-          name: Add current ISO to cluster
+          <<: *add_archive_ssh
           env:
-            <<: *_env_add_archive
-            <<: *_env_promoted_version
+            <<: *_env_add_archive_ssh
+            PRODUCT_VERSION: "%(prop:product_promoted_version)s"
       - ShellCommand:
           name: Run upgrade from promoted version
           command: >
+            ssh -F ssh_config bootstrap "
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --verbose
+            --verbose"
+          workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
-      - ShellCommand: *provision_prometheus_volumes
-      - ShellCommand: *wait_pods_running
-      # --- Test version N ---
-      - ShellCommand: *fast_tests
-      # --- Collect logs ---
-      - ShellCommand: *collect_sosreport
       - ShellCommand:
-          <<: *copy_report_artifacts
+          <<: *provision_volumes_ssh
           env:
-            DEST_DIR: sosreport/sosreport/single-node-upgrade-%(prop:promoted_version_type)s-centos
+            <<: *_env_provision_volumes
+            PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+            PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt"
+      - ShellCommand: *wait_pods_running_ssh
+      # --- Test version N ---
+      - ShellCommand: *git_pull_ssh
+      - ShellCommand:
+          <<: *bastion_fast_tests
+          env:
+            <<: *_env_bastion_fast_tests
+            ISO_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+      # --- Collect logs ---
+      - ShellCommand: *generate_report_over_ssh
+      - ShellCommand:
+          <<: *collect_report_over_ssh
+          env:
+            <<: *_env_collect_report_over_ssh
+            STEP_NAME: "%(prop:environment_type)s-%(prop:environment_name)s-upgrade-%(prop:promoted_version_type:-unknown)s-%(prop:os:-centos-7)s"
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
-            <<: *_upgrade_promoted_single-node_junit_info
-            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
+            <<: *_snapshot_upgrade_junit_info
+            STEP_NAME: "%(prop:environment_type)s-%(prop:environment_name)s-upgrade-%(prop:promoted_version_type:-unknown)s-%(prop:os:-centos-7)s"
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           env:
-            STEP_NAME: "single-node-upgrade-%(prop:promoted_version_type)s-centos"
+            STEP_NAME: "%(prop:environment_type)s-%(prop:environment_name)s-upgrade-%(prop:promoted_version_type:-unknown)s-%(prop:os:-centos-7)s"
+      - ShellCommand:
+          <<: *terraform_destroy
+          env: *_env_terraform_upgrade
 
   # --- Downgrade for promoted versions ---
   single-node-downgrade-promoted-centos:
@@ -1657,9 +1696,23 @@ stages:
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
       # --- Get ISO for promoted version from Artefacts ---
-      - ShellCommand: *retrieve_promoted_version_iso_checksum
-      - ShellCommand: *retrieve_promoted_version_iso
-      - ShellCommand: *check_promoted_version_iso_checksum
+      - ShellCommand:
+          <<: *retrieve_iso_checksum
+          name: Retrieve promoted ISO image checksum
+          env: &_env_promoted_artifacts
+            DEST_DIR: "/tmp"
+            BASE_URL: "http://artifacts/builds/github:scality:metalk8s:\
+                      promoted-%(prop:product_promoted_version)s"
+      - ShellCommand:
+          <<: *retrieve_iso
+          name: Retrieve promoted ISO image
+          env:
+            <<: *_env_retrieve_artifact_retry
+            <<: *_env_promoted_artifacts
+      - ShellCommand:
+          <<: *check_iso_checksum
+          name: Check promoted ISO image with checksum
+          workdir: "/tmp"
       # --- Prepare for Bootstrap with version N ---
       - ShellCommand: *create_mountpoint
       - ShellCommand: *mount_iso
