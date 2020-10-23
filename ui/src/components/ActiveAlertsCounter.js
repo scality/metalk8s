@@ -1,5 +1,4 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router';
 import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
