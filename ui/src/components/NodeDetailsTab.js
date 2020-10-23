@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { TabContainer } from './CommonLayoutStyle';
 
 const NodeObjectContent = styled.div`
@@ -9,6 +9,7 @@ const NodeObjectContent = styled.div`
   white-space: pre-wrap;
   overflow-y: auto;
   height: 78vh;
+  font-size: ${fontSize.base};
 `;
 
 const NodePageDetailsTab = (props) => {
