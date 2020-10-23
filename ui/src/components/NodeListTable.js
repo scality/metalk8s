@@ -89,7 +89,7 @@ const TableRow = styled(HeadRow)`
   background-color: ${(props) =>
     props.selectedNodeName === props.row.values.name.name
       ? props.theme.brand.backgroundBluer
-      : props.theme.brand.primaryDark1};
+      : props.theme.brand.background};
 `;
 
 // * table body
@@ -273,10 +273,16 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
                   if (cell.column.Header === 'Name') {
                     return (
                       <Cell {...cellProps}>
-                        <NodeNameText>{cell.value.name}</NodeNameText>
+                        <NodeNameText data-cy="node_table_name_cell">
+                          {cell.value.name}
+                        </NodeNameText>
                         <div>
-                          <IPText>CP: {cell.value.controlPlaneIP}</IPText>
-                          <IPText>WP: {cell.value.workloadPlaneIP}</IPText>
+                          {cell.value.controlPlaneIP ? (
+                            <IPText>CP: {cell.value.controlPlaneIP}</IPText>
+                          ) : null}
+                          {cell.value.workloadPlaneIP ? (
+                            <IPText>WP: {cell.value.workloadPlaneIP}</IPText>
+                          ) : null}
                         </div>
                       </Cell>
                     );
@@ -326,12 +332,8 @@ const NodeListTable = (props) => {
         accessor: 'health',
         cellStyle: { textAlign: 'center', width: '50px' },
         Cell: (cellProps) => {
-          return (
-            <CircleStatus
-              className="fa fa-circle fa-2x"
-              status={cellProps.value}
-            />
-          );
+          const { health } = cellProps.value;
+          return <CircleStatus status={health} />;
         },
       },
       {
@@ -339,10 +341,10 @@ const NodeListTable = (props) => {
         accessor: 'status',
         cellStyle: { textAlign: 'center', width: '80px' },
         Cell: (cellProps) => {
-          const { statusColor, computedStatus } = cellProps.value;
+          const { statusTextColor, computedStatus } = cellProps.value;
           return computedStatus.map((status) => {
             return (
-              <StatusText textColor={statusColor}>
+              <StatusText key={status} textColor={statusTextColor}>
                 {intl.translate(`${status}`)}
               </StatusText>
             );
@@ -362,13 +364,13 @@ const NodeListTable = (props) => {
       location.pathname.endsWith('alerts') ||
       location.pathname.endsWith('metrics') ||
       location.pathname.endsWith('volumes') ||
-      location.pathname.endsWith('pods');
+      location.pathname.endsWith('pods') ||
+      location.pathname.endsWith('details');
 
     if (isTabSelected) {
-      // TODO: Need to change the Regex when rename to /nodes
       const newPath = location.pathname.replace(
-        /\/newNodes\/[^/]*\//,
-        `/newNodes/${nodeName}/`,
+        /\/nodes\/[^/]*\//,
+        `/nodes/${nodeName}/`,
       );
       history.push({
         pathname: newPath,

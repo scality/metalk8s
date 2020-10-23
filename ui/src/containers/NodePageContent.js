@@ -1,22 +1,25 @@
 import React from 'react';
-import { Route, useRouteMatch, Switch } from 'react-router-dom';
+import { Route, useRouteMatch, Switch, Redirect } from 'react-router-dom';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
+import {
+  refreshAlertManagerAction,
+  stopRefreshAlertManagerAction,
+} from '../ducks/app/alerts';
 import { useRefreshEffect } from '../services/utils';
 import NodeListTable from '../components/NodeListTable';
 import NodePageRSP from './NodePageRSP';
 import {
   LeftSideInstanceList,
-  NoInstanceSelectedContainer,
-  NoInstanceSelected,
   PageContentContainer,
 } from '../components/CommonLayoutStyle';
-import { intl } from '../translations/IntlGlobalProvider';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
   const { nodeTableData } = props;
   const { path } = useRouteMatch();
+  const defaultSelectNodeName = nodeTableData[0]?.name?.name;
 
+  useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   return (
@@ -25,22 +28,20 @@ const NodePageContent = (props) => {
         <NodeListTable nodeTableData={nodeTableData} />
       </LeftSideInstanceList>
       <Switch>
+        {/* Auto select the first node in the list */}
+        <Route
+          exact
+          path={`${path}`}
+          render={() =>
+            defaultSelectNodeName && (
+              <Redirect to={`${path}/${defaultSelectNodeName}/overview`} />
+            )
+          }
+        ></Route>
         <Route
           path={`${path}/:name`}
           render={() => {
             return <NodePageRSP nodeTableData={nodeTableData} />;
-          }}
-        ></Route>
-        <Route
-          path={`${path}`}
-          render={() => {
-            return (
-              <NoInstanceSelectedContainer>
-                <NoInstanceSelected>
-                  {intl.translate('no_node_selected')}
-                </NoInstanceSelected>
-              </NoInstanceSelectedContainer>
-            );
           }}
         ></Route>
       </Switch>

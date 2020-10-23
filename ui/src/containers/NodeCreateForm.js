@@ -285,7 +285,7 @@ const NodeCreateForm = () => {
                         text={intl.translate('cancel')}
                         type="button"
                         outlined
-                        onClick={() => history.push('/nodes')}
+                        onClick={() => history.goBack()}
                       />
                       <Button
                         text={intl.translate('create')}

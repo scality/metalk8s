@@ -63,6 +63,9 @@ const REFRESH_NODESTATS = 'REFRESH_NODESTATS';
 const STOP_REFRESH_NODESTATS = 'STOP_REFRESH_NODESTATS';
 // To update the arguments to fetch nodeStats
 const UPDATE_NODESTATS_FETCH_ARG = 'UPDATE_NODESTATS_FETCH_ARG';
+// To retrieve nodename label
+const FETCH_NODE_UNAME_INFO = 'FETCH_NODE_UNAME_INFO';
+const UPDATE_NODE_UNAME_INFO = 'UPDATE_NODE_UNAME_INFO';
 
 // Reducer
 const defaultState = {
@@ -121,6 +124,7 @@ const defaultState = {
     },
     isRefreshing: false,
   },
+  unameInfo: [],
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -149,6 +153,11 @@ export default function reducer(state = defaultState, action = {}) {
       return {
         ...state,
         nodeStats: { ...state.nodeStats, ...action.payload },
+      };
+    case UPDATE_NODE_UNAME_INFO:
+      return {
+        ...state,
+        ...action.payload,
       };
     default:
       return state;
@@ -225,6 +234,12 @@ export const stopRefreshNodeStatsAction = () => {
 };
 export const updateNodeStatsFetchArgumentAction = (payload) => {
   return { type: UPDATE_NODESTATS_FETCH_ARG, payload };
+};
+export const fetchNodeUNameInfoAction = () => {
+  return { type: FETCH_NODE_UNAME_INFO };
+};
+export const updateNodeUNameInfoAction = (payload) => {
+  return { type: UPDATE_NODE_UNAME_INFO, payload };
 };
 
 // Selectors
@@ -788,6 +803,14 @@ export function* watchRefreshNodeStats() {
   }
 }
 
+export function* fetchNodeUNameInfo() {
+  const fetchNodeUNameInfoQuery = 'node_uname_info';
+  const result = yield call(queryPrometheus, fetchNodeUNameInfoQuery);
+  if (!result.error) {
+    yield put(updateNodeUNameInfoAction({ unameInfo: result.data.result }));
+  }
+}
+
 export function* monitoringSaga() {
   yield fork(watchRefreshNodeStats);
   yield takeLatest(FETCH_VOLUMESTATS, fetchVolumeStats);
@@ -801,4 +824,5 @@ export function* monitoringSaga() {
   yield takeEvery(STOP_REFRESH_ALERTS, stopRefreshAlerts);
   yield takeEvery(STOP_REFRESH_CLUSTER_STATUS, stopRefreshClusterStatus);
   yield takeEvery(FETCH_NODESTATS, fetchNodeStats);
+  yield takeEvery(FETCH_NODE_UNAME_INFO, fetchNodeUNameInfo);
 }

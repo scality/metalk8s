@@ -126,6 +126,7 @@ const VolumePageContent = (props) => {
           volumeListData={volumeListData}
           nodeName={node?.name}
           volumeName={currentVolumeName}
+          isSearchBar={true}
         ></VolumeListTable>
       </LeftSideInstanceList>
 
