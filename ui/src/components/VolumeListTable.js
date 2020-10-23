@@ -444,7 +444,7 @@ const VolumeListTable = (props) => {
       location.pathname.endsWith('/details');
 
     if (isAddNodeFilter || !isNodeColumn) {
-      history.push(`/volumes/${row.values.name}?node=${nodeName}`);
+      history.push(`/volumes/${row.values.name}/overview?node=${nodeName}`);
     } else {
       if (isTabSelected) {
         const newPath = location.pathname.replace(
