@@ -15,3 +15,9 @@ spec:
         memory: 2Gi
     command: ["/bin/sh"]
     args: ["-c", "buildbot-worker create-worker . ${BUILDMASTER}:${BUILDMASTER_PORT} ${WORKERNAME} ${WORKERPASS} && buildbot-worker start --nodaemon"]
+    volumeMounts:
+      - name: worker-workspace
+        mountPath: /home/eve/workspace
+  volumes:
+    - name: worker-workspace
+      emptyDir: {}
