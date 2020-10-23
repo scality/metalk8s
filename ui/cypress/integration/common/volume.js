@@ -38,7 +38,7 @@ And('I click [Create] button', () => {
 });
 
 Then(`I am redirected to the {string} volume page`, (volumeName) => {
-  cy.location('pathname').should('eq', `/volumes/${volumeName}`);
+  cy.location('pathname').should('eq', `/volumes/${volumeName}/overview`);
 });
 
 And(`the volume {string} becomes Ready`, (volumeName) => {

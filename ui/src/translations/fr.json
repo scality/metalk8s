@@ -158,8 +158,9 @@
   "node": "Nœud",
   "used_by": "Utilisé Par",
   "backend_disk": "Backend Disk",
-  "active_alerts": "Alertes actives",
-  "metrics": "MÉTRIQUE",
+  "active_alert": "Alerte Active",
+  "metrics": "Métrique",
+  "advanced_metrics": "Métrique avancée",
   "volume_is_not_bound": "Le volume n'est pas encore lié",
   "no_active_alerts": "Aucune alerte active",
   "not_used": "Non utilisé",
@@ -170,5 +171,8 @@
   "PIDPressure": "PID disponible insuffisant",
   "NetworkUnavailable": "Réseau indisponible",
   "Unschedulable": "Non planifiable",
-  "advanced_metrics": "Métrique avancée"
+  "overview": "Aperçu",
+  "volume_usage": "Utilisation du Volume",
+  "usage": "Utilisation",
+  "error_volume_details": "Échec de la récuperation des details du volume."
 }

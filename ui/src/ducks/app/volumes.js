@@ -32,6 +32,8 @@ const STOP_REFRESH_PERSISTENT_VOLUMES = 'STOP_REFRESH_PERSISTENT_VOLUMES';
 const UPDATE_PERSISTENT_VOLUMES_REFRESHING =
   'UPDATE_PERSISTENT_VOLUMES_REFRESHING';
 const UPDATE_VOLUMES = 'UPDATE_VOLUMES';
+const FETCH_CURRENT_VOLUME_OBJECT = 'FETCH_CURRENT_VOLUME_OBJECT';
+const SET_CURRENT_VOLUME_OBJECT = 'SET_CURRENT_VOLUME_OBJECT';
 
 // Reducer
 const defaultState = {
@@ -43,6 +45,9 @@ const defaultState = {
   isPVRefreshing: false,
   isLoading: false,
   isSCLoading: false,
+  currentVolumeObject: {
+    data: null,
+  },
 };
 
 export default function reducer(state = defaultState, action = {}) {
@@ -66,6 +71,8 @@ export default function reducer(state = defaultState, action = {}) {
     case UPDATE_STORAGECLASS: {
       return { ...state, isSCLoading: action.payload };
     }
+    case SET_CURRENT_VOLUME_OBJECT:
+      return { ...state, currentVolumeObject: action.payload };
     default:
       return state;
   }
@@ -141,6 +148,14 @@ export const stopRefreshPersistentVolumesAction = () => {
 
 export const updateVolumesAction = (payload) => {
   return { type: UPDATE_VOLUMES, payload };
+};
+
+export const fetchCurrentVolumeObjectAction = (volumeName) => {
+  return { type: FETCH_CURRENT_VOLUME_OBJECT, volumeName };
+};
+
+export const setCurrentVolumeObjectAction = (payload) => {
+  return { type: SET_CURRENT_VOLUME_OBJECT, payload };
 };
 
 // Selectors
@@ -253,7 +268,7 @@ export function* createVolumes({ payload }) {
     if (!result.error) {
       yield call(
         history.push,
-        `/volumes/${newVolume.name}?node=${newVolume.node}`,
+        `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
       );
       yield put(
         addNotificationSuccessAction({
@@ -304,6 +319,15 @@ export function* fetchPersistentVolumeClaims() {
   const result = yield call(VolumesApi.getPersistentVolumeClaims);
   if (!result.error) {
     yield put(setPersistentVolumeClaimAction(result.body.items));
+  }
+}
+
+export function* fetchCurrentVolumeObject({ volumeName }) {
+  const result = yield call(VolumesApi.getVolumeObject, volumeName);
+  if (!result.error) {
+    yield put(setCurrentVolumeObjectAction({ data: result.body }));
+  } else {
+    yield put(setCurrentVolumeObjectAction({ data: null }));
   }
 }
 
@@ -361,4 +385,5 @@ export function* volumesSaga() {
     STOP_REFRESH_PERSISTENT_VOLUMES,
     stopRefreshPersistentVolumes,
   );
+  yield takeLatest(FETCH_CURRENT_VOLUME_OBJECT, fetchCurrentVolumeObject);
 }

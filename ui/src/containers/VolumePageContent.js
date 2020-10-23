@@ -1,9 +1,15 @@
 import React from 'react';
-import { useHistory } from 'react-router';
+import { useSelector } from 'react-redux';
+import styled from 'styled-components';
+import { useHistory, useLocation, useRouteMatch } from 'react-router';
+import { Switch, Route } from 'react-router-dom';
+import { Tabs } from '@scality/core-ui';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import VolumeListTable from '../components/VolumeListTable';
-import VolumeDetailCard from '../components/VolumeDetailCard';
-import ActiveAlertsCard from '../components/VolumeActiveAlertsCard';
-import MetricGraphCard from '../components/VolumeMetricGraphCard';
+import VolumeOverviewTab from '../components/VolumeOverviewTab';
+import VolumeAlertsTab from '../components/VolumeAlertsTab';
+import VolumeMetricsTab from '../components/VolumeMetricsTab';
+import VolumeDetailsTab from '../components/VolumeDetailsTab';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
@@ -12,15 +18,55 @@ import {
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
 import {
   LeftSideInstanceList,
-  RightSidePanel,
   NoInstanceSelectedContainer,
   NoInstanceSelected,
-  PageContentContainer,
+  TextBadge
 } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
+const VolumePageContentContainer = styled.div`
+display: flex;
+flex-direction: row;
+height: 100%;
+width: 100%;
+
+.sc-tabs {
+  margin: 0 ${padding.small} 0 ${padding.smaller};
+}
+
+.sc-tabs-bar {
+  height: 40px;
+}
+
+.sc-tabs-item {
+  background-color: ${(props) => props.theme.brand.border};
+  margin-right: ${padding.smaller}
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+
+  .sc-tabs-item-title {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    height: 40px;
+    padding: ${padding.small}
+  }
+}
+
+.sc-tabs-item-content {
+  background-color: ${(props) => props.theme.brand.primary};
+  padding: ${padding.small}
+}
+`;
+
+const RightSidePanel = styled.div`
+  flex-direction: column;
+  width: 55%;
+  overflow-y: scroll;
+  margin: 0 ${padding.small} ${padding.small} 0;
+`;
+
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
-// The three components in RightSidePanel (<VolumeDetailCard> / <ActiveAlertsCard> / <MetricGraphCard>) are dumb components,
+// The three components in RightSidePanel (<VolumeOverviewTab> / <VolumeAlertsTab> / <MetricGraphCard>) are dumb components,
 // so that with the implementation of Tabs no re-render should happen during the switch.
 const VolumePageContent = (props) => {
   const {
@@ -32,11 +78,17 @@ const VolumePageContent = (props) => {
     pods,
     alerts,
     volumeStats,
+    currentVolumeObject,
   } = props;
 
   const history = useHistory();
-  const currentVolumeName =
-    history?.location?.pathname?.split('/').slice(2)[0] || '';
+  const location = useLocation();
+  const match = useRouteMatch();
+  const query = new URLSearchParams(location.search);
+
+  const theme = useSelector((state) => state.config.theme);
+
+  const currentVolumeName = match.params.name;
   const volume = volumes?.find(
     (volume) => volume.metadata.name === currentVolumeName,
   );
@@ -119,62 +171,119 @@ const VolumePageContent = (props) => {
     queryStartingTime,
   };
 
+  const isAlertsPage = location.pathname.endsWith('/alerts');
+  const isOverviewPage = location.pathname.endsWith('/overview');
+  const isMetricsPage = location.pathname.endsWith('/metrics');
+  const isDetailsPage = location.pathname.endsWith('/details');
+
+  const tabsItems = [
+    {
+      selected: isOverviewPage,
+      title: intl.translate('overview'),
+      onClick: () => history.push(`${match.url}/overview${query.toString() && `?${query.toString()}`}`),
+    },
+    {
+      selected: isAlertsPage,
+      title: (<span>{intl.translate('alerts')}<TextBadge>{alertlist?.length}</TextBadge></span>),
+      onClick: () => history.push(`${match.url}/alerts${query.toString() && `?${query.toString()}`}`),
+    },
+    {
+      selected: isMetricsPage,
+      title: (<span>{intl.translate('metrics')}</span>),
+      onClick: () => history.push(`${match.url}/metrics${query.toString() && `?${query.toString()}`}`),
+    },
+    {
+      selected: isDetailsPage,
+      title: (<span>{intl.translate('details')}</span>),
+      onClick: () => history.push(`${match.url}/details${query.toString() && `?${query.toString()}`}`),
+    },
+  ];
+
   return (
-    <PageContentContainer>
+    <VolumePageContentContainer>
       <LeftSideInstanceList>
         <VolumeListTable
           volumeListData={volumeListData}
           nodeName={node?.name}
           volumeName={currentVolumeName}
           isSearchBar={true}
+          isNodeColumn={true}
         ></VolumeListTable>
       </LeftSideInstanceList>
 
       {currentVolumeName && volume ? (
         <RightSidePanel>
-          <VolumeDetailCard
-            name={currentVolumeName}
-            nodeName={volume?.spec?.nodeName}
-            storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
-            status={volumeStatus ?? intl.translate('unknown')}
-            storageClassName={volume?.spec?.storageClassName}
-            creationTimestamp={volume?.metadata?.creationTimestamp}
-            volumeType={
-              volume?.spec?.rawBlockDevice
-                ? RAW_BLOCK_DEVICE
-                : SPARSE_LOOP_DEVICE
-            }
-            usedPodName={UsedPod ? UsedPod?.name : intl.translate('not_used')}
-            devicePath={
-              volume?.spec?.rawBlockDevice?.devicePath ??
-              intl.translate('not_applicable')
-            }
-            volumeUsagePercentage={currentVolume?.usage}
-            volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-            storageCapacity={
-              volumeListData?.find((vol) => vol.name === currentVolumeName)
-                .storageCapacity
-            }
-            health={
-              volumeListData?.find((vol) => vol.name === currentVolumeName)
-                .health
-            }
-            condition={currentVolume.status}
-            // the delete button inside the volume detail card should know that which volume is the first one
-            volumeListData={volumeListData}
-            pVList={pVList}
-          ></VolumeDetailCard>
-          <ActiveAlertsCard
-            alertlist={alertlist}
-            PVCName={PVCName}
-          ></ActiveAlertsCard>
-          <MetricGraphCard
-            volumeName={currentVolumeName}
-            volumeMetricGraphData={volumeMetricGraphData}
-            // the volume condition compute base on the `status` and `bound/unbound`
-            volumeCondition={currentVolume.status}
-            // Hardcode the port number for prometheus metrics
-          ></MetricGraphCard>
+          <Tabs activeColor={theme.brand.primary} items={tabsItems}>
+            <Switch>
+              <Route
+                path={`${match.url}/overview`}
+                render={() => (
+                  <VolumeOverviewTab
+                    name={currentVolumeName}
+                    nodeName={volume?.spec?.nodeName}
+                    storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
+                    status={volumeStatus ?? intl.translate('unknown')}
+                    storageClassName={volume?.spec?.storageClassName}
+                    creationTimestamp={volume?.metadata?.creationTimestamp}
+                    volumeType={
+                      volume?.spec?.rawBlockDevice
+                        ? RAW_BLOCK_DEVICE
+                        : SPARSE_LOOP_DEVICE
+                    }
+                    usedPodName={UsedPod ? UsedPod?.name : intl.translate('not_used')}
+                    devicePath={
+                      volume?.spec?.rawBlockDevice?.devicePath ??
+                      intl.translate('not_applicable')
+                    }
+                    volumeUsagePercentage={currentVolume?.usage}
+                    volumeUsageBytes={currentVolume?.usageRawData ?? 0}
+                    storageCapacity={
+                      volumeListData?.find((vol) => vol.name === currentVolumeName)
+                        .storageCapacity
+                    }
+                    health={
+                      volumeListData?.find((vol) => vol.name === currentVolumeName)
+                        .health
+                    }
+                    condition={currentVolume.status}
+                    // the delete button inside the volume detail card should know that which volume is the first one
+                    volumeListData={volumeListData}
+                    pVList={pVList}
+                    alertlist={alertlist}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.url}/alerts`}
+                render={() => (
+                  <VolumeAlertsTab
+                    alertlist={alertlist}
+                    PVCName={PVCName}
+                  />
+                )}
+              />
+              <Route
+                path={`${match.url}/metrics`}
+                render={() => (
+                  <VolumeMetricsTab
+                  volumeName={currentVolumeName}
+                  volumeMetricGraphData={volumeMetricGraphData}
+                  // the volume condition compute base on the `status` and `bound/unbound`
+                  volumeCondition={currentVolume.status}
+                  // Hardcode the port number for prometheus metrics
+                  />
+                )}
+              />
+              <Route
+                path={`${match.url}/details`}
+                render={() => (
+                  <VolumeDetailsTab
+                    currentVolumeObject={currentVolumeObject}
+                  />
+                )}
+              />
+            </Switch>
+          </Tabs>
         </RightSidePanel>
       ) : (
         <NoInstanceSelectedContainer>
@@ -183,7 +292,7 @@ const VolumePageContent = (props) => {
           </NoInstanceSelected>
         </NoInstanceSelectedContainer>
       )}
-    </PageContentContainer>
+    </VolumePageContentContainer>
   );
 };
 

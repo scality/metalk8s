@@ -21,12 +21,15 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
-  padding: ${padding.base};
   font-family: 'Lato';
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
+  background-color: ${(props) => props.theme.brand.primary};
   .sc-progressbarcontainer {
     width: 100%;
+  }
+  .sc-progressbarcontainer > div {
+    background-color: ${(props) => props.theme.brand.secondaryDark1};
   }
   .ReactTable .rt-thead {
     overflow-y: scroll;
@@ -56,10 +59,9 @@ const VolumeListContainer = styled.div`
     td {
       margin: 0;
       padding: 0.5rem;
-      border-bottom: 1px solid black;
       text-align: left;
       padding: 5px;
-
+      border: none;
       :last-child {
         border-right: 0;
       }
@@ -79,8 +81,6 @@ const TableRow = styled(HeadRow)`
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
-    border-top: 1px solid ${(props) => props.theme.brand.secondary};
-    border-bottom: 1px solid ${(props) => props.theme.brand.secondary};
     outline: none;
     cursor: pointer;
   }
@@ -345,6 +345,16 @@ const VolumeListTable = (props) => {
   const columns = React.useMemo(
     () => [
       {
+        Header: 'Health',
+        accessor: 'health',
+        cellStyle: { textAlign: 'center', width: '50px' },
+        Cell: (cellProps) => {
+          return (
+            <CircleStatus className="fas fa-circle" status={cellProps.value} />
+          );
+        },
+      },
+      {
         Header: 'Name',
         accessor: 'name',
       },
@@ -367,16 +377,6 @@ const VolumeListTable = (props) => {
         Header: 'Size',
         accessor: 'storageCapacity',
         cellStyle: { textAlign: 'center', width: '70px' },
-      },
-      {
-        Header: 'Health',
-        accessor: 'health',
-        cellStyle: { textAlign: 'center', width: '50px' },
-        Cell: (cellProps) => {
-          return (
-            <CircleStatus className="fas fa-circle" status={cellProps.value} />
-          );
-        },
       },
       {
         Header: 'Status',
@@ -438,12 +438,29 @@ const VolumeListTable = (props) => {
   const onClickRow = (row) => {
     const query = new URLSearchParams(location.search);
     const isAddNodeFilter = query.has('node');
+    const isTabSelected =
+      location.pathname.endsWith('/alerts') ||
+      location.pathname.endsWith('/metrics') ||
+      location.pathname.endsWith('/details');
 
-    // there are two possiable URLs
     if (isAddNodeFilter || !isNodeColumn) {
-      history.push(`/volumes/${row.values.name}?node=${nodeName}`);
+      history.push(`/volumes/${row.values.name}/overview?node=${nodeName}`);
     } else {
-      history.push(`/volumes/${row.values.name}`);
+      if (isTabSelected) {
+        const newPath = location.pathname.replace(
+          /\/volumes\/[^/]*\//,
+          `/volumes/${row.values.name}/`,
+        );
+        history.push({
+          pathname: newPath,
+          search: query.toString(),
+        });
+      } else {
+        history.push({
+          pathname: `/volumes/${row.values.name}/overview`,
+          search: query.toString(),
+        });
+      }
     }
   };
 
