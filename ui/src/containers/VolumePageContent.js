@@ -104,6 +104,7 @@ const VolumePageContent = (props) => {
 
   // get the used pod(s)
   const PVCName = pV?.spec?.claimRef?.name;
+  const PVCNamespace = pV?.spec?.claimRef?.namespace;
 
   // we need to make sure that `PVCName` is exist otherwise may return undefined `persistentVolumeClaim` pod
   const UsedPod =
@@ -270,7 +271,8 @@ const VolumePageContent = (props) => {
                   volumeMetricGraphData={volumeMetricGraphData}
                   // the volume condition compute base on the `status` and `bound/unbound`
                   volumeCondition={currentVolume.status}
-                  // Hardcode the port number for prometheus metrics
+                  volumePVCName={PVCName}
+                  volumeNamespace={PVCNamespace}
                   />
                 )}
               />
