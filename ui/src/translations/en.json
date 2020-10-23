@@ -158,7 +158,7 @@
   "node": "Node",
   "used_by": "Used By",
   "backend_disk": "Backend Disk",
-  "active_alerts": "Active alerts",
+  "active_alert": "Active Alert",
   "metrics": "Metrics",
   "advanced_metrics": "Advanced Metrics",
   "volume_is_not_bound": "The volume is not bound yet",

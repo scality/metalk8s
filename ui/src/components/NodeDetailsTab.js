@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { TabContainer } from './CommonLayoutStyle';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeObjectContent = styled.div`
   padding: ${padding.large} 50px 0 ${padding.larger};
@@ -10,6 +11,11 @@ const NodeObjectContent = styled.div`
   overflow-y: auto;
   height: 78vh;
   font-size: ${fontSize.base};
+`;
+
+const ErrorText = styled.div`
+  text-align: center;
+  padding: ${padding.base};
 `;
 
 const NodePageDetailsTab = (props) => {
@@ -20,7 +26,11 @@ const NodePageDetailsTab = (props) => {
   return (
     <TabContainer>
       <NodeObjectContent>
-        {currentNodeObject && JSON.stringify(currentNodeObject, null, '\t')}
+        {currentNodeObject ? (
+          JSON.stringify(currentNodeObject, null, '\t')
+        ) : (
+          <ErrorText>{intl.translate('error_volume_details')}</ErrorText>
+        )}
       </NodeObjectContent>
     </TabContainer>
   );
