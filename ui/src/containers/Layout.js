@@ -64,6 +64,7 @@ const Layout = (props) => {
           exact: true,
           strict: true,
         }),
+        'data-cy': 'sidebar_item_monitoring',
       },
       {
         label: intl.translate('nodes'),
@@ -76,6 +77,7 @@ const Layout = (props) => {
           exact: false,
           strict: true,
         }),
+        'data-cy': 'sidebar_item_nodes',
       },
       {
         label: intl.translate('volumes'),
@@ -88,6 +90,7 @@ const Layout = (props) => {
           exact: false,
           strict: true,
         }),
+        'data-cy': 'sidebar_item_volumes',
       },
       {
         label: intl.translate('environments'),
@@ -100,6 +103,7 @@ const Layout = (props) => {
           exact: false,
           strict: true,
         }),
+        'data-cy': 'sidebar_item_environments',
       },
     ],
   };
