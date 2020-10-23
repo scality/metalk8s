@@ -45,6 +45,10 @@ export const SAMPLE_FREQUENCY_LAST_SEVEN_DAYS = 60 * 60;
 export const SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS = 720;
 export const SAMPLE_FREQUENCY_LAST_ONE_HOUR = 30;
 
+export const QUERY_LAST_SEVEN_DAYS = 'now-7d';
+export const QUERY_LAST_TWENTY_FOUR_HOURS = 'now-24h';
+export const QUERY_LAST_ONE_HOUR = 'now-1h';
+
 export const PORT_NODE_EXPORTER = '9100';
 
 export const queryTimeSpansCodes = [
@@ -61,3 +65,45 @@ export const queryTimeSpansCodes = [
     value: LAST_ONE_HOUR,
   },
 ];
+
+// alert
+const NODE_FILESYSTEM_SPACE_FILLINGUP = 'NodeFilesystemSpaceFillingUp';
+const NODE_FILESYSTEM_ALMOST_OUTOF_SPACE = 'NodeFilesystemAlmostOutOfSpace';
+const NODE_FILESYSTEM_FILES_FILLINGUP = 'NodeFilesystemFilesFillingUp';
+const NODE_FILESYSTEM_ALMOST_OUTOF_FILES = 'NodeFilesystemAlmostOutOfFiles';
+const NODE_NETWORK_RECEIVE_ERRS = 'NodeNetworkReceiveErrs';
+const NODE_NETWORK_TRANSMIT_ERRS = 'NodeNetworkTransmitErrs';
+const NODE_HIGHNUMBER_CONNTRACKENTRIES_USED =
+  'NodeHighNumberConntrackEntriesUsed';
+const NODE_CLOCK_SKEW_DETECTED = 'NodeClockSkewDetected';
+const NODE_CLOCK_NOT_SYNCHRONISING = 'NodeClockNotSynchronising';
+const NODE_NETWORK_INTERFACE_FLAPPING = 'NodeNetworkInterfaceFlapping';
+const KUBE_NODE_NOT_READY = 'KubeNodeNotReady';
+const KUBE_NODE_UNREACHABLE = 'KubeNodeUnreachable';
+const KUBELET_TOOMANY_PODS = 'KubeletTooManyPods';
+const KUBE_NODE_READINESS_FLAPPING = 'KubeNodeReadinessFlapping';
+const KUBELET_PLEG_DURATION_HIGH = 'KubeletPlegDurationHigh';
+const KUBELET_POD_STARTUP_LATENCY_HIGH = 'KubeletPodStartUpLatencyHigh';
+
+export const NODE_ALERTS_GROUP = [
+  NODE_FILESYSTEM_SPACE_FILLINGUP,
+  NODE_FILESYSTEM_ALMOST_OUTOF_SPACE,
+  NODE_FILESYSTEM_FILES_FILLINGUP,
+  NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
+  NODE_NETWORK_RECEIVE_ERRS,
+  NODE_NETWORK_TRANSMIT_ERRS,
+  NODE_HIGHNUMBER_CONNTRACKENTRIES_USED,
+  NODE_CLOCK_SKEW_DETECTED,
+  NODE_CLOCK_NOT_SYNCHRONISING,
+  NODE_NETWORK_INTERFACE_FLAPPING,
+  KUBE_NODE_NOT_READY,
+  KUBE_NODE_UNREACHABLE,
+  KUBELET_TOOMANY_PODS,
+  KUBE_NODE_READINESS_FLAPPING,
+  KUBELET_PLEG_DURATION_HIGH,
+  KUBELET_POD_STARTUP_LATENCY_HIGH,
+];
+
+// The size of the status circle
+export const CIRCLE_BASE_SIZE = 'CIRCLE_BASE_SIZE';
+export const CIRCLE_DOUBLE_SIZE = 'CIRCLE_DOUBLE_SIZE';

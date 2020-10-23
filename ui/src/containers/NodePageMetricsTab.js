@@ -7,7 +7,7 @@ import {
   padding,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { LineChart, Loader, Dropdown } from '@scality/core-ui';
+import { LineChart, Loader, Dropdown, Button } from '@scality/core-ui';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import {
   yAxisUsage,
@@ -32,15 +32,19 @@ import {
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   queryTimeSpansCodes,
+  PORT_NODE_EXPORTER,
 } from '../constants';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const GraphsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding-left: ${padding.small};
-  background-color: ${(props) => props.theme.brand.primaryDark1};
   overflow-y: auto;
-  height: 70vh;
+  height: 78vh;
+  // Change the background color of to primary, should change it in core-ui.
+  .sc-vegachart > svg {
+    background-color: ${(props) => props.theme.brand.primary} !important;
+  }
 `;
 
 const GraphTitle = styled.div`
@@ -66,23 +70,48 @@ const LoaderContainer = styled(Loader)`
   padding-left: ${padding.larger};
 `;
 
-const DropdownContainer = styled.div`
+const ActionContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding-right: ${padding.base};
+  padding: ${padding.large} ${padding.base};
+`;
+
+const DropdownContainer = styled.div`
+  // TODO: Make the changes in core-ui
+  .sc-dropdown {
+    padding-left: 25px;
+  }
+  
+  .sc-dropdown > div {
+    background-color: ${(props) => props.theme.brand.primary};
+    border: 1px solid ${(props) => props.theme.brand.borderLight}
+    border-radius: 3px;
+    height: 32px;
+  }
+  
+  .sc-button {
+    background-color: ${(props) => props.theme.brand.info};
+  }
 `;
 
 const NodePageMetricsTab = (props) => {
-  const { nodeStats } = props;
+  const { nodeStats, instanceIP } = props;
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
   const history = useHistory();
   const query = useQuery();
-
+  const config = useSelector((state) => state.config);
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
+
+  // To redirect to the right Node(Detailed) dashboard in Grafana
+  const unameInfos = useSelector((state) => state.app.monitoring.unameInfo);
+  const hostnameLabel = unameInfos?.find(
+    (unameInfo) =>
+      unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
+  )?.metric?.nodename;
 
   let sampleDuration = null;
   let sampleFrequency = null;
@@ -264,13 +293,25 @@ const NodePageMetricsTab = (props) => {
 
   return (
     <TabContainer>
-      <DropdownContainer>
-        <Dropdown
-          items={metricsTimeSpanDropdownItems}
-          text={metricsTimeSpan}
-          size="smaller"
+      <ActionContainer>
+        <Button
+          text={intl.translate('advanced_metrics')}
+          variant={'base'}
+          onClick={() => {}}
+          icon={<i className="fas fa-external-link-alt" />}
+          size={'small'}
+          href={`${config.api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}
+          target="_blank"
+          rel="noopener noreferrer"
         />
-      </DropdownContainer>
+        <DropdownContainer>
+          <Dropdown
+            items={metricsTimeSpanDropdownItems}
+            text={metricsTimeSpan}
+            size="smaller"
+          />
+        </DropdownContainer>
+      </ActionContainer>
       <GraphsContainer>
         <RowGraphContainer>
           <Graph>
@@ -282,7 +323,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
                 color={colorUsage}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -300,7 +341,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxis}
                 color={colorSystemLoad}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -320,7 +361,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
                 color={colorMemory}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -338,7 +379,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisWriteRead}
                 color={colorsWriteRead}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -359,7 +400,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisInOut}
                 color={colorsInOut}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}
@@ -377,7 +418,7 @@ const NodePageMetricsTab = (props) => {
                 xAxis={xAxis}
                 yAxis={yAxisInOut}
                 color={colorsInOut}
-                width={window.innerWidth / 4 - 50}
+                width={window.innerWidth / 4 - 60}
                 height={window.innerHeight / 6 - 30}
                 tooltip={false}
                 lineConfig={lineConfig}

@@ -186,11 +186,10 @@ FLUENT_BIT_DASHBOARD    : Path = constants.ROOT.joinpath(
     'charts/fluent-bit-dashboard.json'
 )
 
-SCALITY_LOGO : Path = constants.ROOT/'ui/public/brand/assets/login/logo.png'
-SCALITY_FAVICON : Path = constants.ROOT.joinpath(
-    'ui/public/brand/assets/login/favicon.png'
-)
-LOGIN_STYLE : Path = constants.ROOT/'ui/public/brand/assets/login/styles.css'
+SCALITY_LOGO     : Path = constants.UI_ASSETS/'login/logo.png'
+SCALITY_FAVICON  : Path = constants.UI_ASSETS/'login/favicon.png'
+LOGIN_STYLE      : Path = constants.UI_ASSETS/'login/styles.css'
+UI_THEME_OPTIONS : Path = constants.UI_BRANDING/'theme.json'
 
 # List of salt files to install.
 SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
@@ -372,7 +371,22 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/ui/deployed/init.sls'),
     Path('salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml'),
     Path('salt/metalk8s/addons/ui/deployed/namespace.sls'),
-    Path('salt/metalk8s/addons/ui/deployed/ui.sls'),
+    targets.TemplateFile(
+        task_name='salt/metalk8s/addons/ui/deployed/ui.sls',
+        source=constants.ROOT.joinpath(
+            'salt/metalk8s/addons/ui/deployed/ui.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt/metalk8s/addons/ui/deployed/ui.sls'
+        ),
+        context={
+            'ThemeConfig': textwrap.indent(
+                UI_THEME_OPTIONS.read_text(encoding='utf-8'),
+                12 * ' '
+            ),
+        },
+        file_dep=[UI_THEME_OPTIONS],
+    ),
 
     Path('salt/metalk8s/addons/solutions/deployed/configmap.sls'),
     Path('salt/metalk8s/addons/solutions/deployed/init.sls'),
