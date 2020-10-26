@@ -104,7 +104,13 @@ const NoDataGraphText = styled.div`
 `;
 
 const MetricsTab = (props) => {
-  const { volumeCondition, volumeMetricGraphData, volumeName } = props;
+  const {
+    volumeCondition,
+    volumeMetricGraphData,
+    volumeName,
+    volumeNamespace,
+    volumePVCName,
+  } = props;
   const dispatch = useDispatch();
   const history = useHistory();
   const query = new URLSearchParams(history?.location?.search);
@@ -357,14 +363,14 @@ const MetricsTab = (props) => {
               size="small"
             />
           )}
-          {config.api?.url_grafana && (
+          {config.api?.url_grafana && volumeNamespace && volumePVCName && (
             <Button
               text={intl.translate('advanced_metrics')}
               variant={'base'}
               onClick={() => {}}
               icon={<i className="fas fa-external-link-alt" />}
               size={'small'}
-              href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes`}
+              href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
               target="_blank"
               rel="noopener noreferrer"
             />
