@@ -13,13 +13,15 @@ import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from '../components/CircleStatus';
 import {
   refreshClusterStatusAction,
-  refreshAlertsAction,
-  stopRefreshAlertsAction,
   stopRefreshClusterStatusAction,
   CLUSTER_STATUS_UP,
   CLUSTER_STATUS_DOWN,
   CLUSTER_STATUS_UNKNOWN,
 } from '../ducks/app/monitoring';
+import {
+  refreshAlertManagerAction,
+  stopRefreshAlertManagerAction,
+} from '../ducks/app/alerts';
 import { STATUS_CRITICAL, STATUS_SUCCESS } from '../constants';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
@@ -104,14 +106,14 @@ const ControlPlaneStatusLabel = styled.span`
 
 const ClusterMonitoring = (props) => {
   const dispatch = useDispatch();
-  const alerts = useSelector((state) => state.app.monitoring.alert);
+  const alerts = useSelector((state) => state.app.alerts);
   const clusterStatus = useSelector((state) => makeClusterStatus(state, props));
   const cluster = useSelector((state) => state.app.monitoring.cluster);
   const config = useSelector((state) => state.config);
 
   useEffect(() => {
-    dispatch(refreshAlertsAction());
-    return () => dispatch(stopRefreshAlertsAction());
+    dispatch(refreshAlertManagerAction());
+    return () => dispatch(stopRefreshAlertManagerAction());
   }, [dispatch]);
 
   useEffect(() => {
@@ -171,7 +173,7 @@ const ClusterMonitoring = (props) => {
         name: alert.labels.alertname,
         severity: alert.labels.severity,
         message: alert.annotations.message,
-        activeAt: alert.activeAt,
+        activeAt: alert.startsAt,
       };
     });
 
