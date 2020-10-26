@@ -1,6 +1,13 @@
 ---
 metalk8s:
   debug: false
+  downgrade:
+    # Define if the downgrade from this minor version is supported.
+    # It should be set to false if manual operations are needed
+    # (e.g. downgrade of etcd), prior to downgrading the cluster.
+    # The downgrade can still be forced setting `metalk8s.downgrade.enabled`
+    # to `True` in the pillar.
+    enabled: false
 
 kubernetes:
   cluster: kubernetes
