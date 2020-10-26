@@ -202,7 +202,7 @@ const VolumeDetailCard = (props) => {
   };
 
   const onClickNodeName = () => {
-    history.push(`/nodes/${nodeName}`);
+    history.push(`/nodes/${nodeName}/overview`);
   };
 
   const onClickCancelButton = () => {
