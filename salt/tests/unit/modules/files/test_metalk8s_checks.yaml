@@ -1,0 +1,19 @@
+sysctl:
+  - params:
+      net.ipv4.ip_forward: 1
+    data:
+      net.ipv4.ip_forward: '1'
+    result: ''
+  - params:
+      net.ipv4.ip_forward: '1'
+      kernel.sysrq: '1'
+    data:
+      net.ipv4.ip_forward: '1'
+      kernel.sysrq: '1'
+    result: ''
+  - params:
+      net.ipv4.ip_forward: 1
+    data:
+      net.ipv4.ip_forward: '0'
+    result: 'Incorrect value for .*'
+    raises: True
