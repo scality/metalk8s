@@ -29,6 +29,7 @@ Cypress.Commands.add('setupMocks', () => {
   cy.server();
 
   cy.route('/config.json', 'fixture:config.json');
+  cy.route('/brand/theme.json', 'fixture:theme.json');
   cy.route(
     '/oidc/.well-known/openid-configuration',
     'fixture:openid-config.json',
